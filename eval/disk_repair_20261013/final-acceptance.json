@@ -1,0 +1,13 @@
+{
+  "p4_deployed_hashes_verified": true,
+  "running_container_health_verified": true,
+  "root_free_gib": 38.6932373046875,
+  "tests": {
+    "p1_p3_passed": 31,
+    "p4_passed": 37,
+    "p4_existing_clock_fixture_deselected": 1,
+    "policy_lookup_passed": 7
+  },
+  "long_term_growth_acceptance": "not_completed",
+  "projection_backlog": "still_present"
+}

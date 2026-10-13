@@ -1,0 +1,53 @@
+{
+  "services": {
+    "site-access": {
+      "container_id": "2467f3fa0beaeaf4028172d9f4d2e7721b6f3a3216c5353c56bbf9a5fa9a5168",
+      "image": "sha256:6ba737865e733dfe8fbcc3c30672a0e7e00ac311665b81b5e32120b6b0726075",
+      "tag": "doxagent-site-access:lifecycle-20261013-r2",
+      "started": "2026-10-12T19:17:49.928223871Z",
+      "compose_files": "/home/ubuntu/doxagent/docker-compose.v2-production.yml,/home/ubuntu/doxagent/deploy/docker-compose.server.yml,/home/ubuntu/barrons_ticker_fix_20260930/compose.override.yml,/home/ubuntu/source-repair-20261004/eval/message_source_repair_20261004/compose.override.yml,/home/ubuntu/source-repair-20261006/compose.override.yml,/home/ubuntu/source-repair-20261009/compose.override.yml,/home/ubuntu/source-repair-20261012/compose.override.yml,/home/ubuntu/service-busy-repair-20261013/v2-site-access.yaml,/home/ubuntu/service-busy-repair-20261013/v2-site-access-r2.yaml"
+    },
+    "message-bus": {
+      "container_id": "0ed1d987185dd6afa6fa1ecb075f1af0a67b0e30753dcb3d7505580bbe9891af",
+      "image": "sha256:fc73fe1403509ff0d2e4ff10fe38490afe0f3fbe6ca682e3a80056a8e9d0d4ac",
+      "tag": "doxagent-v2:disk-repair-bus-20261013-r2",
+      "started": "2026-10-12T20:48:35.494270123Z",
+      "compose_files": "/home/ubuntu/doxagent/docker-compose.v2-production.yml,/home/ubuntu/doxagent/deploy/docker-compose.server.yml,/home/ubuntu/barrons_ticker_fix_20260930/compose.override.yml,/home/ubuntu/source-repair-20261004/eval/message_source_repair_20261004/compose.override.yml,/home/ubuntu/source-repair-20261006/compose.override.yml,/home/ubuntu/source-repair-20261009/compose.override.yml,/home/ubuntu/source-repair-20261012/compose.override.yml,/home/ubuntu/v21-production-20261012/compose-v2-message-bus.yaml,/home/ubuntu/disk-repair-20261013/v2-message-bus.yaml"
+    },
+    "api": {
+      "container_id": "79dcd55a85aa99412a1232a6083511cb6ab39d8794130b9cce3eb7a8f88584a8",
+      "image": "sha256:86150631d2f6ea37d9659d8fbd55d40ae3fd2e1e6d92c895828ec853c33bc42a",
+      "tag": "doxagent-v2:service-busy-20261013-r1",
+      "started": "2026-10-12T21:55:32.113416382Z",
+      "compose_files": "/home/ubuntu/doxagent-case-release-d11f7fa1/docker-compose.v2-production.yml,/home/ubuntu/doxagent-case-release-d11f7fa1/deploy/docker-compose.server.yml,/home/ubuntu/doxagent-store-recovery-20261002/compose.override.yml,/home/ubuntu/doxagent-runtime-search-20261009/compose.override.yml,/home/ubuntu/v21-production-20261012/compose-v2-api.yaml,/home/ubuntu/service-busy-repair-20261013/v2-api.yaml"
+    },
+    "web": {
+      "container_id": "e8b6250acc98cf4232e1aff24546d44376566ab69a0b391399a8a284dcebcab2",
+      "image": "sha256:5bfd2e7b49dadf8e2ff8e2a3415c0dac4660132cb6ee4e91a39a5229f5661cbe",
+      "tag": "doxagent-v2-web:v21-production-20261012-r1",
+      "started": "2026-10-12T14:11:46.034236612Z",
+      "compose_files": "/home/ubuntu/doxagent-case-release-d11f7fa1/docker-compose.v2-production.yml,/home/ubuntu/doxagent-case-release-d11f7fa1/deploy/docker-compose.server.yml,/home/ubuntu/doxagent-store-recovery-20261002/compose.override.yml,/home/ubuntu/doxagent-runtime-search-20261009/compose.override.yml,/home/ubuntu/v21-production-20261012/compose-v2-web.json"
+    },
+    "chrome-supervisor": {
+      "container_id": "88b79b5b3d0e2ae078ded27064ffcfbe6c1058b81f422c594b3eefb4b25e9511",
+      "image": "sha256:cc38be0a0fe83e1003320a205bcb6ca1a0ee581ce9debd51983779f0b76ec7d3",
+      "tag": "doxagent-chrome-supervisor:server",
+      "started": "2026-09-24T20:18:25.88524306Z",
+      "compose_files": "/home/ubuntu/doxagent/docker-compose.v2-production.yml,/home/ubuntu/doxagent/deploy/docker-compose.server.yml"
+    },
+    "content-enrichment": {
+      "container_id": "a6f492ba10f2b29d07d01cf11f49a2ee3dfeb56235bc64f13e976898ba5de15d",
+      "image": "sha256:31a24e36e06acc5e7cbc2ca05635da967642ad79387c97f0742753ff30bfab9c",
+      "tag": "doxagent-v2:source-recovery-enrich-20261012-r1",
+      "started": "2026-10-12T20:48:35.310544976Z",
+      "compose_files": "/home/ubuntu/doxagent/docker-compose.v2-production.yml,/home/ubuntu/doxagent/deploy/docker-compose.server.yml,/home/ubuntu/barrons_ticker_fix_20260930/compose.override.yml,/home/ubuntu/source-repair-20261004/eval/message_source_repair_20261004/compose.override.yml,/home/ubuntu/source-repair-20261006/compose.override.yml,/home/ubuntu/source-repair-20261009/compose.override.yml,/home/ubuntu/source-repair-20261012/compose.override.yml"
+    },
+    "projector": {
+      "container_id": "30f94f29ba52b6b5ca4e5a4dd365e0ff8120a906351c701b8c31e021291dbe91",
+      "image": "sha256:eae04db6b7f1a6e494fae7bab0190cce47fd8b1ee6e2b3edd939f032dd056459",
+      "tag": "doxagent-v2:disk-repair-read-20261013-r10",
+      "started": "2026-10-12T22:22:38.831130625Z",
+      "compose_files": "/home/ubuntu/doxagent/docker-compose.v2-production.yml,/home/ubuntu/doxagent/deploy/docker-compose.server.yml,/home/ubuntu/disk-repair-20261013/v2-projector.yaml,/home/ubuntu/disk-repair-20261013/v2-maintenance.yaml,/home/ubuntu/disk-repair-20261013/v2-projector-lookup.yaml"
+    }
+  }
+}

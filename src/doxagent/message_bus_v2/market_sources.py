@@ -216,6 +216,7 @@ class MarketTickerAdapter:
                 return PollResult(
                     window_done=False,
                     site_access_deferred=True,
+                    site_access_deferred_reason=exc.result.reason_code,
                     site_access_retry_not_before=exc.result.retry_not_before,
                 )
             raise

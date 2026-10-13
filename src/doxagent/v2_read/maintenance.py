@@ -69,7 +69,7 @@ def backup_manifest(sources, destination, *, artifact_roots=()):
                 {"original": str(path), "file": relative.as_posix(), "sha256": before}
             )
     tracked = {entry["file"] for entry in manifest["artifacts"]}
-    for root_name in ("native-files", "content-files", "receipt-files"):
+    for root_name in ("native-files", "content-files", "receipt-files", "receipt-packs"):
         for path in (destination / root_name).rglob("*"):
             if path.is_symlink():
                 raise ValueError("backup content must not contain symlinks")
@@ -81,20 +81,26 @@ def backup_manifest(sources, destination, *, artifact_roots=()):
     return manifest
 
 
-def collect(store, *, now=None, limit=500, budget=.1):
+def collect(store, *, now=None, limit=500, budget=.1, time_floor=None):
     """Keep all 24h views/cursors, including the pre-event image needed by REMOVE."""
     if not 1 <= limit <= 5000:
         raise ValueError("GC limit must be 1..5000")
     now = now or datetime.now(UTC)
     import time
     counts = {}
+    scanned = 0
+    from .settings import Limits
+    cutoff = instant(now - timedelta(hours=Limits.load().mvcc_hours))
+    # The retention index may cover a busy day's million commits. Read it
+    # before taking the writer lock; batch write time stays bounded separately.
+    if time_floor is None:
+        with store.connect() as reader:
+            row = reader.execute("SELECT MIN(seq) FROM commit_retention INDEXED BY commit_retention_at WHERE projected_at>=?", (cutoff,)).fetchone()
+            time_floor = row[0] if row[0] is not None else store.highwater(reader)
+    floor = time_floor
     with store.connect(write=True, timeout=.05) as db:
         until = time.monotonic() + budget
         db.set_progress_handler(lambda: time.monotonic() >= until, 1000)
-        from .settings import Limits
-        cutoff = instant(now - timedelta(hours=Limits.load().mvcc_hours))
-        row = db.execute("SELECT MIN(seq) FROM commit_retention WHERE projected_at>=?", (cutoff,)).fetchone()
-        floor = row[0] if row[0] is not None else store.highwater(db)
         row = db.execute(
             "SELECT MIN(seq) FROM views WHERE expires_at>?", (instant(now),)
         ).fetchone()
@@ -107,37 +113,92 @@ def collect(store, *, now=None, limit=500, budget=.1):
         ).fetchone()
         if row[0] is not None:
             floor = min(floor, max(0, row[0] - 1))
-        if db.execute("SELECT 1 FROM gaps LIMIT 1").fetchone():
-            floor = 0  # Dependency repair can require an earlier pre-image.
+        gap_sources = {row[0] for row in db.execute("SELECT DISTINCT source FROM gaps")}
+        # Unknown repair dependencies still protect business history and aggregates.
+        # Poll state is Bus-local technical state, never a runtime provenance input.
+        # Its expired intervals may be collected while runtime repairs remain pinned.
+        protected = bool(gap_sources)
+        technical_only = protected and "bus" not in gap_sources
+        object_filter = " AND kind='native:poll_states'" if technical_only else ""
+        effective_floor = floor if not protected or technical_only else 0
         for table in ("views", "cursors"):
             counts[table] = db.execute(
                 f"DELETE FROM {table} WHERE rowid IN (SELECT rowid FROM {table} "
                 "WHERE expires_at<=? LIMIT ?)",
                 (instant(now), limit),
             ).rowcount
-        # Legacy closed business intervals must reach the durable directory before GC.
-        db.execute("INSERT OR IGNORE INTO business_revisions SELECT * FROM objects WHERE rowid IN (SELECT rowid FROM objects WHERE valid_to IS NOT NULL AND valid_to<? LIMIT ?) AND kind NOT IN ('ticker','navigation','capture_coverage','native:runtime_tasks','native:runtime_values','native:poll_states')", (floor,limit))
-        for table in ("objects", "contributions", "metric_buckets"):
-            counts[table] = db.execute(
-                f"DELETE FROM {table} WHERE rowid IN (SELECT rowid FROM {table} "
-                "WHERE valid_to IS NOT NULL AND valid_to<? LIMIT ?)",
-                (floor, limit),
-            ).rowcount
-        counts["changes"] = db.execute(
-            "DELETE FROM changes WHERE rowid IN (SELECT rowid FROM changes WHERE seq<? LIMIT ?)",
-            (floor, limit),
-        ).rowcount
+        for table in ("objects", "contributions", "metric_buckets", "changes"):
+            if protected and table in {"contributions", "metric_buckets"}:
+                counts[table] = 0
+                continue
+            key = "gc_scan_" + table
+            prior = db.execute("SELECT value FROM read_meta WHERE key=?", (key,)).fetchone()
+            next_cursor = None
+            if technical_only and table == "objects":
+                key = 'gc_poll_objects'
+                prior = db.execute("SELECT value FROM read_meta WHERE key=?", (key,)).fetchone()
+                coordinate = json.loads(prior[0]) if prior else ['', '', '', 0]
+                selected = db.execute(
+                    "SELECT rowid,ticker,sort_key,id FROM objects INDEXED BY objects_page "
+                    "WHERE kind='native:poll_states' AND (ticker,sort_key,id,rowid)>(?,?,?,?) "
+                    "ORDER BY ticker,sort_key,id,rowid LIMIT ?", (*coordinate, limit)).fetchall()
+                candidates = [r[0] for r in selected]
+                next_cursor = encode([selected[-1][1], selected[-1][2], selected[-1][3], selected[-1][0]]) if selected else encode(['', '', '', 0])
+            elif technical_only and table == "changes":
+                key = 'gc_poll_changes'
+                prior = db.execute("SELECT value FROM read_meta WHERE key=?", (key,)).fetchone()
+                ticker, sequence, ordinal = json.loads(prior[0]) if prior else ['', 0, -1]
+                tickers = [r[0] for r in db.execute("SELECT DISTINCT ticker FROM object_current WHERE kind='native:poll_states' ORDER BY ticker")]
+                ticker = ticker if ticker in tickers else tickers[0] if tickers else ''
+                selected = db.execute(
+                    "SELECT rowid,seq,ordinal FROM changes INDEXED BY changes_scope "
+                    "WHERE ticker=? AND kind='native:poll_states' AND (seq,ordinal)>(?,?) "
+                    "ORDER BY seq,ordinal LIMIT ?", (ticker, sequence, ordinal, limit)).fetchall()
+                candidates = [r[0] for r in selected]
+                next_ticker = tickers[(tickers.index(ticker) + 1) % len(tickers)] if tickers else ''
+                next_cursor = encode([ticker, selected[-1][1], selected[-1][2]]) if selected else encode([next_ticker, 0, -1])
+            else:
+                candidates = [r[0] for r in db.execute(
+                    f"SELECT rowid FROM {table} WHERE rowid>? ORDER BY rowid LIMIT ?",
+                    (int(prior[0]) if prior else 0, limit))]
+            scanned += len(candidates)
+            counts[table] = 0
+            if candidates:
+                placeholders = ','.join('?' for _ in candidates)
+                eligible = "seq<?" if table == "changes" else "valid_to IS NOT NULL AND valid_to<?"
+                predicate = (f"rowid IN ({placeholders}) AND " + eligible
+                             + (object_filter if table in {"objects", "changes"} else ""))
+                params = [*candidates, effective_floor]
+                if table == "objects" and not protected:
+                    db.execute("INSERT OR IGNORE INTO business_revisions SELECT * FROM objects NOT INDEXED WHERE "
+                               + predicate + " AND kind NOT IN ('ticker','navigation','capture_coverage','native:runtime_tasks','native:runtime_values','native:poll_states')", params)
+                counts[table] = db.execute(f"DELETE FROM {table} NOT INDEXED WHERE " + predicate, params).rowcount
+            db.execute("INSERT INTO read_meta(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",
+                       (key, next_cursor if next_cursor is not None else str(candidates[-1] if candidates else 0)))
         # Unresolved repairs still rely on the original source-to-read receipt mapping.
-        if not db.execute("SELECT 1 FROM gaps LIMIT 1").fetchone():
+        cursor = db.execute("SELECT value FROM read_meta WHERE key='gc_commit_scan'").fetchone()
+        candidates = [row[0] for row in db.execute(
+            "SELECT seq FROM commit_retention WHERE seq>? AND seq<? ORDER BY seq LIMIT ?",
+            (int(cursor[0]) if cursor else 0, floor, limit))]
+        counts["commits"] = 0
+        if candidates:
+            placeholders = ','.join('?' for _ in candidates)
             counts["commits"] = db.execute(
-                "DELETE FROM commits WHERE seq IN (SELECT seq FROM commits WHERE seq<? "
-                "AND EXISTS(SELECT 1 FROM checkpoints cp WHERE cp.source=commits.source AND cp.position>=CAST(commits.source_event AS INTEGER)) AND source_event NOT GLOB '*[^0-9]*' "
-                "AND seq NOT IN (SELECT seq FROM changes) LIMIT ?)", (floor, limit)
-            ).rowcount
-            db.execute("DELETE FROM commit_retention WHERE seq IN (SELECT seq FROM commit_retention WHERE seq<? AND seq NOT IN (SELECT seq FROM commits) LIMIT ?)", (floor, limit))
+                "DELETE FROM commits WHERE seq IN (" + placeholders + ") "
+                "AND NOT EXISTS(SELECT 1 FROM gaps g WHERE g.source=commits.source) "
+                "AND EXISTS(SELECT 1 FROM checkpoints cp WHERE cp.source=commits.source AND cp.position>=CAST(commits.source_event AS INTEGER)) "
+                "AND source_event NOT GLOB '*[^0-9]*' "
+                "AND NOT EXISTS(SELECT 1 FROM changes WHERE changes.seq=commits.seq)", candidates).rowcount
+            db.execute("DELETE FROM commit_retention WHERE seq IN (" + placeholders + ") "
+                       "AND NOT EXISTS(SELECT 1 FROM commits WHERE commits.seq=commit_retention.seq)", candidates)
+        db.execute("INSERT INTO read_meta(key,value) VALUES('gc_commit_scan',?) "
+                   "ON CONFLICT(key) DO UPDATE SET value=excluded.value",
+                   (str(candidates[-1] if candidates else 0),))
         db.execute("UPDATE read_meta SET value=max(CAST(value AS INTEGER),?) WHERE key='retained_floor'", (floor,))
     # Immutable content identities and unpositioned deduplication receipts are retained.
-    return {"retention_floor": floor, "deleted": counts}
+    return {"retention_floor": floor, "time_floor": time_floor, "deleted": counts, "scanned": scanned,
+            "protected_sources": sorted(gap_sources),
+            "policy": "BUS_POLL_ONLY" if technical_only else "PINNED" if protected else "ALL_EXPIRED"}
 
 
 def rebuild(sources, target, *, event_root=None, max_batches=10000):
@@ -331,28 +392,36 @@ def compact(source, target):
             "requires_catchup_and_verify": True}
 
 
-def run_gc(store, *, once=False, interval=60, budget=2):
+def run_gc(store, *, once=False, interval=15, budget=2):
     import time
     from doxagent.trade_execution.worker import WriterLock
     with WriterLock(Path(str(store.path) + ".maintenance")):
+        batch = 128
         while True:
             started = time.monotonic()
             total = {}
+            errors = []
+            result = {}
             import sqlite3
-            batch = 500
             while time.monotonic() - started < budget:
                 try:
-                    result = collect(store, limit=batch)
-                except sqlite3.OperationalError:
-                    batch //= 2
+                    result = collect(store, limit=batch, time_floor=result.get("time_floor"))
+                except sqlite3.OperationalError as exc:
+                    errors.append(str(exc))
+                    if "locked" not in str(exc):
+                        batch //= 2
                     if batch < 10:
                         break
                     continue
                 for name, count in result["deleted"].items():
                     total[name] = total.get(name, 0) + count
-                if not any(result["deleted"].values()):
+                if not any(result["deleted"].values()) and not result.get("scanned"):
                     break
-            print(json.dumps({"maintenance": "gc", "deleted": total,
+                batch = min(500, batch * 2)
+            print(json.dumps({"maintenance": "gc", "deleted": total, "errors": errors,
+                              "retention_floor": result.get("retention_floor"),
+                              "protected_sources": result.get("protected_sources"),
+                              "policy": result.get("policy"),
                               "elapsed_seconds": time.monotonic() - started}), flush=True)
             if once:
                 return

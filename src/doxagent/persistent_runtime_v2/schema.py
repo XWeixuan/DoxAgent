@@ -81,6 +81,7 @@ class W3CaseStatus(StrEnum):
 
 
 class W3ThreadKind(StrEnum):
+    CASE = "CASE"
     MAIN = "MAIN"
     FALLBACK = "FALLBACK"
 
@@ -96,6 +97,7 @@ class RuntimeSideEffect(StrEnum):
     CREATE_TRADE_RECORD = "create_trade_record"
     MARK_BADCASE = "mark_badcase"
     ROUTE_TO_W3 = "route_to_w3"
+    W3_POST_DECISION = "w3_post_decision"
 
 
 class RuntimeCaseStatus(StrEnum):
@@ -149,6 +151,7 @@ class SourceMessageSnapshot(RuntimeV2Model):
     """
 
     ticker: str = Field(min_length=1)
+    source_name: str | None = None
     title: str | None = None
     body: str | None = None
 
@@ -216,6 +219,11 @@ class SourceMessageEnvelope(RuntimeV2Model):
             ),
             snapshot=SourceMessageSnapshot(
                 ticker=value.item.ticker,
+                source_name=(
+                    latest.source_name
+                    if not is_buffered or len({m.source_name for m in value.members}) == 1
+                    else None
+                ),
                 title=latest.title if not is_buffered else None,
                 body=compiled.body if is_buffered else latest.body,
             ),
@@ -498,6 +506,12 @@ class RuntimeEffect(RuntimeV2Model):
 
 
 class RuntimeCase(RuntimeV2Model):
+    w3_contract_version: str | None = None
+    w3_trade_decision: JsonObject | None = None
+    w3_operations_result: JsonObject | None = None
+    w3_operations_status: str | None = None
+    w3_operations_error: str | None = None
+    decision_completed_at: datetime | None = None
     orchestration_revision: Literal[1, 2, 3] = 1
     w2_alignment: W2NovelFactAlignmentResult | None = None
     first_round_tags: list[FirstRoundTag] = Field(default_factory=list)
@@ -581,6 +595,7 @@ class PolicyActivationRecord(RuntimeV2Model):
 
 
 class TradeRecord(RuntimeV2Model):
+    w3_trade_decision: JsonObject | None = None
     executed_condition_id: str | None = None
     executed_condition_revision: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
     usage_generation: int | None = Field(default=None, ge=1)
@@ -843,6 +858,9 @@ class W3ThreadSlot(RuntimeV2Model):
 
 
 class W3RouteCase(RuntimeV2Model):
+    trade_decision: JsonObject | None = None
+    operations_result: JsonObject | None = None
+    operations_status: str | None = None
     orchestration_revision: Literal[1, 2, 3] = 1
     w2_alignment: W2NovelFactAlignmentResult | None = None
     first_round_tags: list[FirstRoundTag] = Field(default_factory=list)
@@ -877,7 +895,7 @@ class W3CoverageGapRecord(RuntimeV2Model):
     trading_date: date
     source: SourceMessageEnvelope
     policy_set_version: int = Field(ge=1)
-    result: W3CaseResultV3 | W3CaseResult
+    result: W3CaseResultV3 | W3CaseResult | JsonObject
     daily_status: DailyRecordStatus = DailyRecordStatus.PENDING
     created_at: datetime = Field(default_factory=utc_now)
 

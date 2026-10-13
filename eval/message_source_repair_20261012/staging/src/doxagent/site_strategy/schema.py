@@ -234,6 +234,10 @@ class ProxyEgress(SiteModel):
     probe_endpoint: str | None = None
     consecutive_probe_failures: int = Field(default=0, ge=0)
     last_probe_error_at: datetime | None = None
+    last_probe_attempt: datetime | None = None
+    next_probe_at: datetime | None = None
+    last_probe_error: str | None = None
+    last_probe_seconds: float | None = None
     generation: int = Field(default=1, ge=1)
     status: Literal["READY", "UNVERIFIED", "CONFIG_MISSING", "UNAVAILABLE"] = "UNVERIFIED"
 
@@ -572,6 +576,7 @@ class AccessResult(SiteModel):
     runtime_generation: int | None = None
     exit_ip_observation: str | None = None
     attempts: list[AccessAttempt] = Field(default_factory=list)
+    combination_skips: list[JsonObject] = Field(default_factory=list)
     queue_wait_ms: int = 0
     network_ms: int = 0
 

@@ -42,7 +42,8 @@ async def test_staged_candidate_promotion_is_idempotent_and_does_not_activate(ri
     assert first.document_schema_version == "document3.v3"
     bundle = rig.runtime.get_bundle(result.run_id)
     assert bundle.handoff == first
-    assert len(bundle.artifacts) == 4
+    assert len(bundle.artifacts) == 5
+    assert any(a.relative_path.endswith("policy_origins.json") for a in bundle.artifacts)
     path = result.handoff.files["coverage_map.json"]
     await rig.workspace.write_text(result.run_id, path, "corrupt")
     with pytest.raises(ValueError, match="checksum"):
@@ -155,6 +156,25 @@ async def test_large_native_candidate_uses_configured_published_storage(rig):
         .policies[0]
         .transmission.startswith("Large native")
     )
+
+
+@pytest.mark.asyncio
+async def test_large_sqlite_candidate_without_external_storage_is_consumable(rig):
+    from doxagent.codex_runtime.repository import SQLiteCodexRuntimeRepository
+    from doxagent.v2_read.artifacts import PublishedArtifacts
+    from tests.test_codex_document3_v21_orchestration import draft
+
+    rig.worker.policy = dict(draft(), transmission="Local production research. " * 100000)
+    result = await rig.orchestrator.initialize(ticker="MU", as_of=NOW, run_id="local-large")
+    repository = SQLiteCodexRuntimeRepository(rig.policy.path)
+    handoff = await finalize_candidate_v21(
+        result.run_id, state=rig.state, workspace=rig.workspace,
+        runtime_repository=repository, policy_repository=rig.policy,
+    )
+    document = repository.get_published_document(result.run_id, handoff.published_artifact.artifact_id)
+    assert len(document.content_text.encode()) > 2 * 1024 * 1024
+    assert document.storage_path is None
+    assert PublishedArtifacts(repository.path).body(result.run_id, document.artifact_id)[1] == document.content_text
 
 
 @pytest.mark.asyncio

@@ -1,0 +1,219 @@
+{
+  "services": {
+    "site-access": {
+      "container_id": "2467f3fa0beaeaf4028172d9f4d2e7721b6f3a3216c5353c56bbf9a5fa9a5168",
+      "image": "sha256:6ba737865e733dfe8fbcc3c30672a0e7e00ac311665b81b5e32120b6b0726075",
+      "tag": "doxagent-site-access:lifecycle-20261013-r2",
+      "started": "2026-10-12T19:17:49.928223871Z",
+      "compose_files": "/home/ubuntu/doxagent/docker-compose.v2-production.yml,/home/ubuntu/doxagent/deploy/docker-compose.server.yml,/home/ubuntu/barrons_ticker_fix_20260930/compose.override.yml,/home/ubuntu/source-repair-20261004/eval/message_source_repair_20261004/compose.override.yml,/home/ubuntu/source-repair-20261006/compose.override.yml,/home/ubuntu/source-repair-20261009/compose.override.yml,/home/ubuntu/source-repair-20261012/compose.override.yml,/home/ubuntu/service-busy-repair-20261013/v2-site-access.yaml,/home/ubuntu/service-busy-repair-20261013/v2-site-access-r2.yaml"
+    },
+    "message-bus": {
+      "container_id": "0ed1d987185dd6afa6fa1ecb075f1af0a67b0e30753dcb3d7505580bbe9891af",
+      "image": "sha256:fc73fe1403509ff0d2e4ff10fe38490afe0f3fbe6ca682e3a80056a8e9d0d4ac",
+      "tag": "doxagent-v2:disk-repair-bus-20261013-r2",
+      "started": "2026-10-12T20:48:35.494270123Z",
+      "compose_files": "/home/ubuntu/doxagent/docker-compose.v2-production.yml,/home/ubuntu/doxagent/deploy/docker-compose.server.yml,/home/ubuntu/barrons_ticker_fix_20260930/compose.override.yml,/home/ubuntu/source-repair-20261004/eval/message_source_repair_20261004/compose.override.yml,/home/ubuntu/source-repair-20261006/compose.override.yml,/home/ubuntu/source-repair-20261009/compose.override.yml,/home/ubuntu/source-repair-20261012/compose.override.yml,/home/ubuntu/v21-production-20261012/compose-v2-message-bus.yaml,/home/ubuntu/disk-repair-20261013/v2-message-bus.yaml"
+    },
+    "api": {
+      "container_id": "79dcd55a85aa99412a1232a6083511cb6ab39d8794130b9cce3eb7a8f88584a8",
+      "image": "sha256:86150631d2f6ea37d9659d8fbd55d40ae3fd2e1e6d92c895828ec853c33bc42a",
+      "tag": "doxagent-v2:service-busy-20261013-r1",
+      "started": "2026-10-12T21:55:32.113416382Z",
+      "compose_files": "/home/ubuntu/doxagent-case-release-d11f7fa1/docker-compose.v2-production.yml,/home/ubuntu/doxagent-case-release-d11f7fa1/deploy/docker-compose.server.yml,/home/ubuntu/doxagent-store-recovery-20261002/compose.override.yml,/home/ubuntu/doxagent-runtime-search-20261009/compose.override.yml,/home/ubuntu/v21-production-20261012/compose-v2-api.yaml,/home/ubuntu/service-busy-repair-20261013/v2-api.yaml"
+    },
+    "web": {
+      "container_id": "e8b6250acc98cf4232e1aff24546d44376566ab69a0b391399a8a284dcebcab2",
+      "image": "sha256:5bfd2e7b49dadf8e2ff8e2a3415c0dac4660132cb6ee4e91a39a5229f5661cbe",
+      "tag": "doxagent-v2-web:v21-production-20261012-r1",
+      "started": "2026-10-12T14:11:46.034236612Z",
+      "compose_files": "/home/ubuntu/doxagent-case-release-d11f7fa1/docker-compose.v2-production.yml,/home/ubuntu/doxagent-case-release-d11f7fa1/deploy/docker-compose.server.yml,/home/ubuntu/doxagent-store-recovery-20261002/compose.override.yml,/home/ubuntu/doxagent-runtime-search-20261009/compose.override.yml,/home/ubuntu/v21-production-20261012/compose-v2-web.json"
+    },
+    "chrome-supervisor": {
+      "container_id": "88b79b5b3d0e2ae078ded27064ffcfbe6c1058b81f422c594b3eefb4b25e9511",
+      "image": "sha256:cc38be0a0fe83e1003320a205bcb6ca1a0ee581ce9debd51983779f0b76ec7d3",
+      "tag": "doxagent-chrome-supervisor:server",
+      "started": "2026-09-24T20:18:25.88524306Z",
+      "compose_files": "/home/ubuntu/doxagent/docker-compose.v2-production.yml,/home/ubuntu/doxagent/deploy/docker-compose.server.yml"
+    },
+    "content-enrichment": {
+      "container_id": "a6f492ba10f2b29d07d01cf11f49a2ee3dfeb56235bc64f13e976898ba5de15d",
+      "image": "sha256:31a24e36e06acc5e7cbc2ca05635da967642ad79387c97f0742753ff30bfab9c",
+      "tag": "doxagent-v2:source-recovery-enrich-20261012-r1",
+      "started": "2026-10-12T20:48:35.310544976Z",
+      "compose_files": "/home/ubuntu/doxagent/docker-compose.v2-production.yml,/home/ubuntu/doxagent/deploy/docker-compose.server.yml,/home/ubuntu/barrons_ticker_fix_20260930/compose.override.yml,/home/ubuntu/source-repair-20261004/eval/message_source_repair_20261004/compose.override.yml,/home/ubuntu/source-repair-20261006/compose.override.yml,/home/ubuntu/source-repair-20261009/compose.override.yml,/home/ubuntu/source-repair-20261012/compose.override.yml"
+    },
+    "projector": {
+      "container_id": "30f94f29ba52b6b5ca4e5a4dd365e0ff8120a906351c701b8c31e021291dbe91",
+      "image": "sha256:eae04db6b7f1a6e494fae7bab0190cce47fd8b1ee6e2b3edd939f032dd056459",
+      "tag": "doxagent-v2:disk-repair-read-20261013-r10",
+      "started": "2026-10-12T22:22:38.831130625Z",
+      "compose_files": "/home/ubuntu/doxagent/docker-compose.v2-production.yml,/home/ubuntu/doxagent/deploy/docker-compose.server.yml,/home/ubuntu/disk-repair-20261013/v2-projector.yaml,/home/ubuntu/disk-repair-20261013/v2-maintenance.yaml,/home/ubuntu/disk-repair-20261013/v2-projector-lookup.yaml"
+    }
+  },
+  "after": {
+    "site-access": {
+      "container_id": "f4dcae5cc4f77049a85ffcaaa900cffc6a85fe5f0db0f6c3c2b84011a58ef8ff",
+      "image": "sha256:aa398f4ebdea630f1867932c5455b766511500b697478d2b24f3207e3b43f416",
+      "tag": "doxagent-site-access:login-feed-20261014-r1",
+      "started": "2026-10-13T18:53:28.667086595Z",
+      "status": "running",
+      "health": "healthy"
+    },
+    "message-bus": {
+      "container_id": "f7b9e7c31d950159c02ef782367895aa11c7548ee088d646cd81d072bae343e1",
+      "image": "sha256:04e08cfc73a57a3268cd0ce283ff83bbcf0f0abc78f4840782c43b504ecae9ee",
+      "tag": "doxagent-v2:login-feed-bus-20261014-r1",
+      "started": "2026-10-13T19:03:09.17883934Z",
+      "status": "running",
+      "health": null
+    },
+    "api": {
+      "container_id": "a8e89b533057e211e1a7714d1d6180b31adcd2a8be091b58b6797d72036a1ef9",
+      "image": "sha256:2c3f67f280100226da99283a7a91295f186a9046fd030d3362ad277988854dce",
+      "tag": "doxagent-v2:login-feed-api-20261014-r1",
+      "started": "2026-10-13T18:53:59.983849601Z",
+      "status": "running",
+      "health": "healthy"
+    },
+    "web": {
+      "container_id": "1fe9b6ab85f877e6edda179a81b9d122c5b0d3c54e149151f019bcb00dbb485b",
+      "image": "sha256:258d234ad80e4af6a875e8ae14020620f49ac3a84693fce11bcaa97e3266f7d5",
+      "tag": "doxagent-v2-web:login-feed-20261014-r1",
+      "started": "2026-10-13T18:54:01.584081764Z",
+      "status": "running",
+      "health": "healthy"
+    },
+    "chrome-supervisor": {
+      "container_id": "88b79b5b3d0e2ae078ded27064ffcfbe6c1058b81f422c594b3eefb4b25e9511",
+      "image": "sha256:cc38be0a0fe83e1003320a205bcb6ca1a0ee581ce9debd51983779f0b76ec7d3",
+      "tag": "doxagent-chrome-supervisor:server",
+      "started": "2026-09-24T20:18:25.88524306Z",
+      "status": "running",
+      "health": "healthy"
+    },
+    "content-enrichment": {
+      "container_id": "a6f492ba10f2b29d07d01cf11f49a2ee3dfeb56235bc64f13e976898ba5de15d",
+      "image": "sha256:31a24e36e06acc5e7cbc2ca05635da967642ad79387c97f0742753ff30bfab9c",
+      "tag": "doxagent-v2:source-recovery-enrich-20261012-r1",
+      "started": "2026-10-12T20:48:35.310544976Z",
+      "status": "running",
+      "health": null
+    },
+    "projector": {
+      "container_id": "30f94f29ba52b6b5ca4e5a4dd365e0ff8120a906351c701b8c31e021291dbe91",
+      "image": "sha256:eae04db6b7f1a6e494fae7bab0190cce47fd8b1ee6e2b3edd939f032dd056459",
+      "tag": "doxagent-v2:disk-repair-read-20261013-r10",
+      "started": "2026-10-12T22:22:38.831130625Z",
+      "status": "running",
+      "health": null
+    }
+  },
+  "accepted_at": "2026-10-13T19:17:18.748281+00:00",
+  "files": [
+    {
+      "service": "site-access",
+      "path": "site_strategy/api.py",
+      "sha256": "f13cd2a76240f9546122571ffb1652230c983e9d043e40eea6f09e0d7a8b292e",
+      "matches_staging": true
+    },
+    {
+      "service": "site-access",
+      "path": "site_strategy/runtime.py",
+      "sha256": "308b7e6cb09b7a2e7eba84cdb1a17d9ce49f52c1fbbc310c82beebf2b79596c4",
+      "matches_staging": true
+    },
+    {
+      "service": "site-access",
+      "path": "site_strategy/service.py",
+      "sha256": "c6bc2e70c038f82a40a2614ddd10488414614451b8795bbc43611de5b5a6eda2",
+      "matches_staging": true
+    },
+    {
+      "service": "site-access",
+      "path": "site_strategy/browser_runtime.py",
+      "sha256": "1a8a364466b3c567b0cffafc6b55402dbf8ea5b1c0823c7958fb2f74e96205e3",
+      "matches_staging": true
+    },
+    {
+      "service": "message-bus",
+      "path": "settings.py",
+      "sha256": "86c9caf599f140dfe4e30596b9ad1e2dcf71da6b2008c484ca41702f8f411a9d",
+      "matches_staging": true
+    },
+    {
+      "service": "message-bus",
+      "path": "message_bus_v2/scheduler.py",
+      "sha256": "774f06d21773eb4fcc22bdf24bbcb1e61e643133758588ad3b482f85afc711f5",
+      "matches_staging": true
+    },
+    {
+      "service": "message-bus",
+      "path": "message_bus_v2/schema.py",
+      "sha256": "682c5d5ac7829f7848dd29347f0abd538a1e962c720829eab192718b05b17478",
+      "matches_staging": true
+    },
+    {
+      "service": "message-bus",
+      "path": "message_bus_v2/market_sources.py",
+      "sha256": "0bdfb351e68ddf593545aabac8a4d01e7813252dbad147314de49970f0b06416",
+      "matches_staging": true
+    },
+    {
+      "service": "message-bus",
+      "path": "message_bus_v2/news_adapters.py",
+      "sha256": "b028097017ba6209f6775fca8c114ef9787f2dfe6c10dbb210a882fc3ba0642c",
+      "matches_staging": true
+    },
+    {
+      "service": "message-bus",
+      "path": "message_bus_v2/http_routes.py",
+      "sha256": "1f04869313cc47c333133f41b0449e6a83285cdf96250ca7ef09589667a02ee5",
+      "matches_staging": true
+    },
+    {
+      "service": "message-bus",
+      "path": "message_bus_v2/adapters.py",
+      "sha256": "41907d77e61baf1826df98da7d409e231e71634842bfc46cf8cce554d8385148",
+      "matches_staging": true
+    },
+    {
+      "service": "message-bus",
+      "path": "message_bus_v2/yahoo_transport.py",
+      "sha256": "d407a362fa19ccac2943351fc70d3f7f9cd67527ea7067063fe21f187968bb6c",
+      "matches_staging": true
+    },
+    {
+      "service": "message-bus",
+      "path": "message_bus_v2/industry_sources.py",
+      "sha256": "52cd121cfa655db47032b11ff0a307191ac91063c479a1bd236b886cbb6060f2",
+      "matches_staging": true
+    },
+    {
+      "service": "message-bus",
+      "path": "message_bus_v2/manifests.py",
+      "sha256": "8a681ed7b58568b1056703cc5da3b3c1f87ef3d2c25a9db9c6e408718d600229",
+      "matches_staging": true
+    },
+    {
+      "service": "api",
+      "path": "api_v2/bus.py",
+      "sha256": "8ae7ebb424673c72a27dc5180bc41d64e35b0936a3d319a60ec5b570bcd23fbe",
+      "matches_staging": true
+    }
+  ],
+  "providers": {
+    "SSRDOG": {
+      "attempted_at": "2026-10-13T19:16:53.151071+00:00",
+      "status": "STALE",
+      "stale": true,
+      "error": "ValueError"
+    },
+    "Flower_SS": {
+      "attempted_at": "2026-10-13T19:16:53.615342+00:00",
+      "status": "STALE",
+      "stale": true,
+      "error": "HTTPError",
+      "http_status": 403
+    }
+  }
+}

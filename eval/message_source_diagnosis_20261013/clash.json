@@ -1,0 +1,93 @@
+{
+  "at": "2026-10-13T10:11:41.113387+00:00",
+  "fixed": {
+    "doxagent-egress-jp-standard-6": "🇩🇪 德国标准 IEPL 专线 2",
+    "doxagent-egress-us-standard-5": "🇩🇪 德国标准 IEPL 专线 1",
+    "doxagent-egress-nl-standard-2": "🇩🇪 德国标准 IEPL 专线 2",
+    "doxagent-egress-de-standard-1": "🇩🇪 德国标准 IEPL 专线 1",
+    "doxagent-egress-server-direct": "DIRECT",
+    "doxagent-egress-tr-standard-1": "🇹🇷 土耳其标准 IEPL 专线 1"
+  },
+  "inline_nodes": 129,
+  "providers": {},
+  "subscription_labels": [],
+  "probes": [
+    {
+      "name": "🇩🇪 德国标准 IEPL 专线 2",
+      "type": "ss",
+      "port": 11057,
+      "upstream_tcp": false,
+      "tcp_error": "TimeoutError",
+      "delay": {
+        "error": "URLError",
+        "message": "<urlopen error [Errno 111] Connection refused>"
+      }
+    },
+    {
+      "name": "🇩🇪 德国标准 IEPL 专线 1",
+      "type": "ss",
+      "port": 11056,
+      "upstream_tcp": false,
+      "tcp_error": "TimeoutError",
+      "delay": {
+        "error": "URLError",
+        "message": "<urlopen error [Errno 111] Connection refused>"
+      }
+    },
+    {
+      "name": "🇹🇷 土耳其标准 IEPL 专线 1",
+      "type": "ss",
+      "port": 11055,
+      "upstream_tcp": false,
+      "tcp_error": "TimeoutError",
+      "delay": {
+        "error": "URLError",
+        "message": "<urlopen error [Errno 111] Connection refused>"
+      }
+    },
+    {
+      "name": "🇭🇰 香港实验性 IEPL 专线 1",
+      "type": "ss",
+      "port": 10011,
+      "upstream_tcp": false,
+      "tcp_error": "TimeoutError",
+      "delay": {
+        "error": "URLError",
+        "message": "<urlopen error [Errno 111] Connection refused>"
+      }
+    },
+    {
+      "name": "🇯🇵 日本实验性 IEPL 专线 1",
+      "type": "ss",
+      "port": 10021,
+      "upstream_tcp": false,
+      "tcp_error": "TimeoutError",
+      "delay": {
+        "error": "URLError",
+        "message": "<urlopen error [Errno 111] Connection refused>"
+      }
+    },
+    {
+      "name": "🇺🇸 美国实验性 IEPL 专线 1",
+      "type": "ss",
+      "port": 10051,
+      "upstream_tcp": false,
+      "tcp_error": "TimeoutError",
+      "delay": {
+        "error": "URLError",
+        "message": "<urlopen error [Errno 111] Connection refused>"
+      }
+    },
+    {
+      "name": "🇭🇰 香港高级 IEPL 专线 1",
+      "type": "ss",
+      "port": 12002,
+      "upstream_tcp": false,
+      "tcp_error": "TimeoutError",
+      "delay": {
+        "error": "URLError",
+        "message": "<urlopen error [Errno 111] Connection refused>"
+      }
+    }
+  ]
+}

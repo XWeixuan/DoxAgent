@@ -1,0 +1,28 @@
+TYPE            TOTAL     ACTIVE    SIZE      RECLAIMABLE
+Images          84        14        34.83GB   -2.86e+10B (-82%)
+Containers      48        22        132.8MB   46.76MB (35%)
+Local Volumes   10        5         114GB     455.6MB (0%)
+Build Cache     239       0         3.415GB   67.27MB
+/home/ubuntu/doxagent/docker-compose.v2-production.yml,/home/ubuntu/doxagent/deploy/docker-compose.server.yml,/home/ubuntu/v21-production-20261012/compose-v2-projector.yaml
+3355593 Ss         04:49  0.0 bash            bash -c sudo -n docker system df; sudo -n docker inspect doxagent-v2-v2-projector-1 --format "{{index .Config.Labels \"com.docker.compose.project.config_files\"}}"; sudo -n ps -eo pid,stat,etime,pcpu,comm,args | grep -E "du -x|dbstat|python3 -|docker system df|v2_read.cli gc"; sudo -n ls -lh /var/lib/docker/volumes/doxagent-v2_v2-data/_data/production-backups/v21-20261012; sudo -n ls -lh /var/lib/docker/volumes/doxagent-v2_v2-data/_data/bus/bus.sqlite3*
+3361866 S          00:00  0.0 grep            grep -E du -x|dbstat|python3 -|docker system df|v2_read.cli gc
+total 8.9G
+-rw-r--r-- 1 root   root      0 Oct 12 21:34 asset-backup-scratch.sqlite3
+-rw------- 1 root   root   4.2K Oct 12 22:01 backup-manifest.json
+-rw------- 1 root   root   4.2K Oct 12 22:01 backup-manifest.partial.json
+-rw-r--r-- 1 root   root   2.5G Oct 12 21:47 bus.sqlite3.gz
+-rw-r--r-- 1 ubuntu ubuntu  61M Oct 12 21:36 business-files-manifest.json
+-rw-r--r-- 1 root   root    216 Oct 12 21:57 business-files-offhost.json
+-rw-r--r-- 1 ubuntu ubuntu  233 Oct 12 21:36 business-files-receipt.json
+-rw-r--r-- 1 root   root   223K Oct 12 21:38 event-configuration-databases-manifest.json
+-rw-r--r-- 1 root   root    158 Oct 12 21:38 event-configuration-databases-receipt.json
+-rw-r--r-- 1 root   root   794M Oct 12 21:37 event-configuration-databases.tar.gz
+-rw-r--r-- 1 root   root   105M Oct 12 21:29 initialization.sqlite3.gz
+-rw-r--r-- 1 root   root   1.5K Oct 12 22:01 o4.sqlite3.gz
+-rw-r--r-- 1 root   root   4.4G Oct 12 21:51 read.sqlite3.gz
+-rw-r--r-- 1 root   root    14M Oct 12 21:29 research.sqlite3.gz
+-rw-r--r-- 1 root   root   1.1G Oct 12 21:32 runtime.sqlite3.gz
+-rw-r--r-- 1 root   root   2.2K Oct 12 22:01 scheduler.sqlite3.gz
+-rw-r--r-- 1 root   root   1.4K Oct 12 22:09 upgrade-v21-receipt.json
+-rw-r--r-- 1 root   root    777 Oct 12 22:01 usage.sqlite3.gz
+-rw-r--r-- 1 root   root    27M Oct 12 22:01 worker.sqlite3.gz

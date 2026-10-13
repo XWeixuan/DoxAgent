@@ -1,4 +1,5 @@
 import { LoadMore } from "@/components/load-more";
+import { CitationProvider, CitationText } from "@/components/citation-text";
 import {
   Library,
   Plus,
@@ -412,59 +413,70 @@ function EventContent({
         ?.scrollIntoView({ block: "center" });
   }, [data.event_key, facts, focusFactId]);
   return (
-    <div className="event-content">
-      <p className="event-summary">{e.canonical_summary}</p>
-      <div className="fact-list">
-        {facts.map(({ fact: f, ...row }) => (
-          <article
-            key={row.fact_key}
-            id={`event-${data.event_key}-fact-${f.fact_id}`}
-          >
-            <header>
-              <strong>{f.fact_id}</strong>
-              <span className="domain-tag">{f.assertion_state}</span>
-              {(!row.member_of_event || row.lifecycle === "RETIRED") && (
-                <span className="tone-warning">已移出 / 失效</span>
-              )}
-            </header>
-            <p>{f.proposition}</p>
-            <div className="fact-times">
-              {f.subject_time && <span>所述时间 {f.subject_time}</span>}
-              {f.fact_occurred_at && <span>发生时间 {f.fact_occurred_at}</span>}
-            </div>
-          </article>
-        ))}
-      </div>
-      {!loadFully && (pages.hasNextPage || (!more && data.facts.has_more)) && (
-        <LoadMore
-          variant="outline"
-          onClick={() => (more ? void pages.fetchNextPage() : setMore(true))}
-        >
-          更多事实
-        </LoadMore>
-      )}
-      {pages.error && (
-        <Notice danger>
-          {pages.error.message}
-          <Button variant="link" onClick={() => void pages.fetchNextPage()}>
-            重试加载事实
-          </Button>
-        </Notice>
-      )}
-      {(e.related_event_ids.length > 0 ||
-        e.derived_from_event_ids.length > 0 ||
-        e.supersedes_event_id) && (
-        <div className="event-relations">
-          {e.related_event_ids.length > 0 && (
-            <span>关联 {e.related_event_ids.join("、")}</span>
-          )}
-          {e.derived_from_event_ids.length > 0 && (
-            <span>衍生自 {e.derived_from_event_ids.join("、")}</span>
-          )}
-          {e.supersedes_event_id && <span>替代 {e.supersedes_event_id}</span>}
+    <CitationProvider key={data.event_key} source={{ event: e, facts }}>
+      <div className="event-content">
+        <p className="event-summary">
+          <CitationText text={e.canonical_summary} />
+        </p>
+        <div className="fact-list">
+          {facts.map(({ fact: f, ...row }) => (
+            <article
+              key={row.fact_key}
+              id={`event-${data.event_key}-fact-${f.fact_id}`}
+            >
+              <header>
+                <strong>{f.fact_id}</strong>
+                <span className="domain-tag">{f.assertion_state}</span>
+                {(!row.member_of_event || row.lifecycle === "RETIRED") && (
+                  <span className="tone-warning">已移出 / 失效</span>
+                )}
+              </header>
+              <p>
+                <CitationText text={f.proposition} />
+              </p>
+              <div className="fact-times">
+                {f.subject_time && <span>所述时间 {f.subject_time}</span>}
+                {f.fact_occurred_at && (
+                  <span>发生时间 {f.fact_occurred_at}</span>
+                )}
+              </div>
+            </article>
+          ))}
         </div>
-      )}
-    </div>
+        {!loadFully &&
+          (pages.hasNextPage || (!more && data.facts.has_more)) && (
+            <LoadMore
+              variant="outline"
+              onClick={() =>
+                more ? void pages.fetchNextPage() : setMore(true)
+              }
+            >
+              更多事实
+            </LoadMore>
+          )}
+        {pages.error && (
+          <Notice danger>
+            {pages.error.message}
+            <Button variant="link" onClick={() => void pages.fetchNextPage()}>
+              重试加载事实
+            </Button>
+          </Notice>
+        )}
+        {(e.related_event_ids.length > 0 ||
+          e.derived_from_event_ids.length > 0 ||
+          e.supersedes_event_id) && (
+          <div className="event-relations">
+            {e.related_event_ids.length > 0 && (
+              <span>关联 {e.related_event_ids.join("、")}</span>
+            )}
+            {e.derived_from_event_ids.length > 0 && (
+              <span>衍生自 {e.derived_from_event_ids.join("、")}</span>
+            )}
+            {e.supersedes_event_id && <span>替代 {e.supersedes_event_id}</span>}
+          </div>
+        )}
+      </div>
+    </CitationProvider>
   );
 }
 function DeltaEvents({

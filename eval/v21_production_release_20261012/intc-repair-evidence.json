@@ -1,0 +1,426 @@
+[
+  {
+    "ticker": "INTC",
+    "path": "output/work/v21/final/policies/0006/policy_02_open_chiplet_procurement.json",
+    "policy_id": "pol_72b5958ba40445d8afe95eed77e79659",
+    "source_final_edit_hash": "ac62ef9aac3a4bea717cacd5e053bd060e7b834ce36fda24deb95b4ca8e520b9",
+    "repaired_hash": "2961adb40e6cdcd93c8fcc0418b94b4ebb67d3619de3c860420b59b524f535a6",
+    "identity_corrections": {
+      "pol_531ec6cee0c34200ad54f67e5243483b:C2": "C2"
+    },
+    "intended_final_edit": {
+      "activation_conditions": [
+        {
+          "calibration": {
+            "reference_state": "截至2026-10-10，UCIe 3.0支持48/64 GT/s等接口能力，Intel于2025年设立Chiplet Alliance并开展QuickLogic、TSSi等POC；Intel对外称多供应商无缝芯粒市场仍处早期。公开材料没有显示客户已能在跨厂die组合上直接采购一套许可、测试数据和封装责任均明确的通用商业包。KGD有价值但仍需装后互连测试/修复。",
+            "trigger_boundary": "一个完整可采购生产选项就可将标准/POC推进为客户实际能选择的中立封装入口；物理适配、可执行再组合许可、KGD与后段测试/诊断及责任交接共同识别这一商业对象，不是等待多个客户、首批出货或重复采购的附加确认。开放接口本身不授予IP权利，KGD不能替代装后连接测试；仅联盟、愿景、接口兼容或封闭POC不足。"
+          },
+          "condition_id": "C1",
+          "criterion": "一个客户可商业订购或取得正式生产报价的跨供应商/晶圆厂芯粒组合，实际许可客户组合生产并再授权给独立封装商，交接KGD筛选及装后die-to-die测试/诊断资料，明确缺陷与返修责任，且允许Intel按其适用封装服务范围作为独立非排他供应商承接或报价；不要求Intel制造所有die或最终赢单。",
+          "decision": "LONG",
+          "trigger_layer": "MIDDLE"
+        },
+        {
+          "calibration": {
+            "reference_state": "当前尚无公开的跨厂芯粒现货/正式可订购市场，UCIe接口规范与Intel联盟POC是现有技术基础而不是客户获得的生产重组权。故一个新发布的单一闭环产品、非Intel厂商自己的普通设计胜出，或标准继续迭代都不表示已有Intel可服务组合被关闭。",
+            "trigger_boundary": "比较同一组合之前可采购且适用Intel的开放许可/资料/责任与变更后的绑定安排；实际收回有意义的开放范围足够，不需Intel既有客户迁出或所有组合封闭。此前从未开放的新非Intel商业闭环不构成既有开放机会丧失，UCIe或Alliance本身也不能构造旧商业权利。许可重组、跨客户适用、KGD与装后诊断以及缺陷/返修承担共同影响迁移成本与失败损失，不能只看接口标签。"
+          },
+          "condition_id": "pol_531ec6cee0c34200ad54f67e5243483b:C2",
+          "criterion": "一项此前公开可采购、明确允许Intel独立承接的跨供应商芯粒组合/目录，因正式许可变更、再授权撤回、KGD或封装后测试/诊断资料交接收回，实际失去同一生产组合由Intel组装测试的权利，并被重新绑定到排他的非Intel整包供货/责任链。",
+          "decision": "SHORT",
+          "trigger_layer": "MIDDLE"
+        }
+      ],
+      "match_scope": "匹配芯粒供方、设计服务商、系统商、Intel及封装伙伴发布实际商业化的多供应商芯粒目录、可拼装参考组合、共享KGD/装后测试数据、再组合许可、可选封装测试服务或相关排他条款。关注客户是否能分别采购来自不同设计商/晶圆厂的die并选择中立封装商，以及封装商是否承担或转移芯片损失、测试和返修责任。UCIe版本升级、联盟成员、参考流程、单一封闭供应链POC或接口兼容声明可与范围相关，但不单独构成可采购市场。",
+      "policy_id": "pol_72b5958ba40445d8afe95eed77e79659",
+      "ref": [
+        "output/work/v21/discovery/S0003.jsonl#L19",
+        "context/document3/v21/d2/shell-0003.json#/units/3",
+        "【cite:O130】",
+        "【cite:O147】",
+        "【cite:O129】",
+        "【cite:O117】",
+        "https://www.uciexpress.org/specifications",
+        "https://www.intel.com/content/www/us/en/newsroom/news/corporate/intel-foundry-gathers-customers-partners-outlines-priorities.html",
+        "https://community.intel.com/t5/Blogs/Intel-Foundry/Systems-Foundry-for-the-AI-Era/Intel-Foundry-Collaborates-with-Partners-to-Drive-an-Open/post/1728616",
+        "https://www.synopsys.com/articles/test-die-to-die-phy.html",
+        "output/work/v21/research/S0003/0028/policy_02_open_chiplet_procurement.json"
+      ],
+      "title": "跨厂芯粒可采购性与中立封装入口",
+      "transmission": "UCIe等标准可以统一部分物理层、协议、管理和测试接口，但实际多芯粒组合还需要电气、凸点/布线、热、可靠性与封装适配；KGD数据、芯片IP组合授权以及装后互连测试/修复能力决定失败成本是否可控。裸片测试不能覆盖所有凸点和芯片间故障，昂贵die仍可能在封装后报废。Intel Foundry Chiplet Alliance及QuickLogic、TSSi等POC支持生态建设，Intel公开说明行业仍处于形成多供应商市场的早期阶段。只有出现可商业购买的、实物与授权/测试责任可交接的跨厂芯粒组合，并让Intel能够作为独立封装测试方参与，开放接口才真正把封装选择从晶圆来源解绑、降低小项目重复工程成本并扩大Intel服务机会；若由替代供应商以封闭授权、数据和责任安排控制整包，开放标准本身不增加Intel获客。复用可能压低NRE，也会把昂贵芯粒的质量和赔付责任推向集成商，故可采购性与风险承担一并影响服务经济性。 封闭整包市场本已存在，新增一个不允许Intel参加的产品不自动减少Intel机会；只有此前公开适用Intel的商业组合权利或测试资料被撤回，才可确认同口径可服务集合收缩。"
+    },
+    "previously_accepted": {
+      "activation_conditions": [
+        {
+          "calibration": {
+            "reference_state": "截至2026-10-10，UCIe 3.0支持48/64 GT/s等接口能力，Intel于2025年设立Chiplet Alliance并开展QuickLogic、TSSi等POC；Intel对外称多供应商无缝芯粒市场仍处早期。公开材料没有显示客户已能在跨厂die组合上直接采购一套许可、测试数据和封装责任均明确的通用商业包。KGD有价值但仍需装后互连测试/修复。",
+            "trigger_boundary": "出现首个可供客户采购/报价、跨供应商die可组合且Intel可以作为中立封装商承接的完整商业选项，就把开放集成从标准/POC愿景推进到实际可选择的服务入口；不要求公布首批出货、多个客户、确切NRE节省或收入。"
+          },
+          "condition_id": "C1",
+          "criterion": "一个对客户可商业订购或报价的芯粒组合/参考系统，实际支持来自不同供应商或晶圆厂的die，并公开可执行的组合许可与KGD/装后测试责任，同时把Intel列为可独立承接该组合封装或组装测试的供应商；该能力不以Intel制造所有die为前提。",
+          "decision": "LONG",
+          "trigger_layer": "MIDDLE"
+        },
+        {
+          "calibration": {
+            "reference_state": "当前基线是开放芯粒市场尚处早期、UCIe/Alliance提供使能和POC，但没有已知跨厂芯粒的现货组合或成熟的中立整包责任机制；公开多供应商系统仍可能采用封闭采购、许可和测试安排。",
+            "trigger_boundary": "首个明确生产用途的商业组合将客户实际采购限制在替代供应商的排他整包闭环，足以说明开放接口没有把该平台的封装收入机会转化为Intel可服务范围；无需等市场全面封闭，也不把单纯专有设计或非商业POC算作此事实。"
+          },
+          "condition_id": "C2",
+          "criterion": "一个可商业订购、面向生产系统的多芯粒组合由替代供应商以排他方式承接封装/测试，且其公开许可、测试数据或供应条款不允许客户把该组合交给Intel等独立封装商集成，或明确将芯粒、封装和责任绑定在同一非Intel闭环内。",
+          "decision": "SHORT",
+          "trigger_layer": "MIDDLE"
+        }
+      ],
+      "match_scope": "匹配芯粒供方、设计服务商、系统商、Intel及封装伙伴发布实际商业化的多供应商芯粒目录、可拼装参考组合、共享KGD/装后测试数据、再组合许可、可选封装测试服务或相关排他条款。关注客户是否能分别采购来自不同设计商/晶圆厂的die并选择中立封装商，以及封装商是否承担或转移芯片损失、测试和返修责任。UCIe版本升级、联盟成员、参考流程、单一封闭供应链POC或接口兼容声明可与范围相关，但不单独构成可采购市场。",
+      "policy_id": "pol_72b5958ba40445d8afe95eed77e79659",
+      "ref": [
+        "output/work/v21/discovery/S0003.jsonl#L19",
+        "context/document3/v21/d2/shell-0003.json#/units/3",
+        "【cite:O130】",
+        "【cite:O147】",
+        "【cite:O129】",
+        "【cite:O117】",
+        "https://www.uciexpress.org/specifications",
+        "https://www.intel.com/content/www/us/en/newsroom/news/corporate/intel-foundry-gathers-customers-partners-outlines-priorities.html",
+        "https://community.intel.com/t5/Blogs/Intel-Foundry/Systems-Foundry-for-the-AI-Era/Intel-Foundry-Collaborates-with-Partners-to-Drive-an-Open/post/1728616",
+        "https://www.synopsys.com/articles/test-die-to-die-phy.html"
+      ],
+      "title": "跨厂芯粒可采购性与中立封装入口",
+      "transmission": "UCIe等标准可以统一部分物理层、协议、管理和测试接口，但实际多芯粒组合还需要电气、凸点/布线、热、可靠性与封装适配；KGD数据、芯片IP组合授权以及装后互连测试/修复能力决定失败成本是否可控。裸片测试不能覆盖所有凸点和芯片间故障，昂贵die仍可能在封装后报废。Intel Foundry Chiplet Alliance及QuickLogic、TSSi等POC支持生态建设，Intel公开说明行业仍处于形成多供应商市场的早期阶段。只有出现可商业购买的、实物与授权/测试责任可交接的跨厂芯粒组合，并让Intel能够作为独立封装测试方参与，开放接口才真正把封装选择从晶圆来源解绑、降低小项目重复工程成本并扩大Intel服务机会；若由替代供应商以封闭授权、数据和责任安排控制整包，开放标准本身不增加Intel获客。复用可能压低NRE，也会把昂贵芯粒的质量和赔付责任推向集成商，故可采购性与风险承担一并影响服务经济性。"
+    }
+  },
+  {
+    "ticker": "INTC",
+    "path": "output/work/v21/final/policies/0007/advanced_manufacturing_credit_cash_basis.json",
+    "policy_id": "pol_7ee89cc81cbd494db1090ce1c888dd47",
+    "source_final_edit_hash": "2581c26b37d1e27f7b06cd58f04f0f764752e220ed2b364b34fc4c7130a433df",
+    "repaired_hash": "52fa14d7fc835a40177b97a0631237757ddcc800fb1dd802e8b4f04dfc0b5707",
+    "identity_corrections": {
+      "pol_a3270ec9cb594e218eadd03088935ce9:C3": "C3",
+      "pol_a3270ec9cb594e218eadd03088935ce9:C4": "C4"
+    },
+    "intended_final_edit": {
+      "activation_conditions": [
+        {
+          "calibration": {
+            "reference_state": "截至2026-10-10，IRS对第48D条已公布的修正口径区分合格财产投用年度，2025年底前投用适用25%、其后适用35%；Intel披露H1约6.78亿美元AMIC相关抵免/激励确认和主要与AMIC有关的88亿美元税收应收。该应收是当前权利/办理基线而非新的可抵税基；Intel未披露逐设施、逐投用年的完整可抵免基数。",
+            "trigger_boundary": "比较同一重要财产/投用年度的旧新适用资格与本金，不用5亿/10亿美元、历史应收或确认比例作为统一充分性；规则直接映射已公开Intel资产即可，不另等公司确认。2026前投用25%、其余合格财产35%及2026-08说明修正已是基线。不能最高税率乘全球CapEx；缺具体税基/官方影响且无法比较重要集合时留缺口。普通申报或重分类不等新本金，时间提前不重复记新增授予。"
+          },
+          "condition_id": "C1",
+          "criterion": "生效法律、IRS/Treasury适用规则或正式申报决定，对可定位的Intel重要合格资产/年度集合增加抵免资格、税率、税基或可主张本金；相对既有25%/35%与原申报权利，可公开对应的资产和影响显示有意义永久净权利改善，已知替代/追索或新增责任不实质抵销。",
+          "decision": "LONG",
+          "trigger_layer": "OUTER"
+        },
+        {
+          "calibration": {
+            "reference_state": "当前合格财产、投用年度及已披露抵免/应收按前述25%/35%规则和Intel截至2026-06-27的申报状态计；88亿美元税收应收主要与AMIC申报有关但不是全额AMIC或已到期支付金额。没有公开证据表明Intel全部该应收已被拒绝或追索。",
+            "trigger_boundary": "永久权利损失与暂时办理等待分开，以同一资产/年度旧新资格、追索和本金比较分量，无统一5亿/10亿美元下限。规则直接涵盖公开重要Intel资产可成立，不能要求所有全球投资同时变化或全部内部净额。普通审查、未定政策/争议或没有资产映射的讲话不足；税收应收不是合格税基，未知项目本金不填造。"
+          },
+          "condition_id": "C2",
+          "criterion": "生效法规/正式资格或追索决定使Intel可定位重要合格资产/申报年度失去已有抵免资格、税率、税基或本金，拒绝/追回有意义权利；相对原可主张权利与已知替代现金/抵免，永久净负担实质增加。",
+          "decision": "SHORT",
+          "trigger_layer": "OUTER"
+        },
+        {
+          "calibration": {
+            "reference_state": "Intel报告当前税收应收款88亿美元，主要与AMIC有关，但没有披露完整AMIC应收分项和退款日历。H1现金利息收入所反映的约4%年化流动资金机会收益只作为资金等待成本的近似值，不是Intel的实际融资成本。",
+            "trigger_boundary": "原基准可为实际合同/处理状态或可信公开预计窗口，不统一要求正式保证日期/完整一年；没有日历不得编造，泛称加快不充分。重要金额/资产集合与原新可用窗口及建设资金需求共同提供分量，不用1.5亿美元现值或4%唯一估值。只计既有本金的资金时间/实现概率增量，不再计一次本金，也不把88亿全额假定退款。当前逐项目剩余退款与资金日历仍缺。"
+          },
+          "condition_id": "pol_a3270ec9cb594e218eadd03088935ce9:C3",
+          "criterion": "主管机关处理、直接适用Intel已披露重要申报/资产的行政规则或可信直接更新，使已有抵税/退款权相对原实际或可信公开预期明显提前可用；可定位款项、旧新支付窗口及建设资金需要显示重要等待/融资约束实质减轻。",
+          "decision": "LONG",
+          "trigger_layer": "MIDDLE"
+        },
+        {
+          "calibration": {
+            "reference_state": "与LONG时间条件相同：88亿美元是税收应收总额且主要为AMIC，并非全部AMIC余额的逐笔付款承诺；没有公开的全额退款日历。约4%只代理资金的时间机会成本，不预测借款成本或诉讼结果。",
+            "trigger_boundary": "同口径旧新权利、可用窗口及重要建设资金需要可比较即可，不需要预先正式保证日或完整年度，不虚造未知日历。无1.5亿美元现值门槛，4%只是历史尺度；小额常规排队/跨季记账不等重要融资损失，已知替代资金和责任按实际影响比较。永久拒绝/追索按本金入口；与同次本金决定无独立时间增量时合并证据。"
+          },
+          "condition_id": "pol_a3270ec9cb594e218eadd03088935ce9:C4",
+          "criterion": "主管机关正式处理或直接适用重要Intel申报资产的规则/可靠更新，将一笔已有抵扣/退款权的实际或可信公开预计可用窗口实质后移/暂停；同一权利及资金需求比较显示重要等待或建设融资压力增加，而非永久资格已失。",
+          "decision": "SHORT",
+          "trigger_layer": "MIDDLE"
+        }
+      ],
+      "match_scope": "匹配IRS、Treasury或国会对第48D条抵免资格、税基、投用日期、申报、抵扣/退款办理的生效规则和正式个案处理，以及Intel对已披露AMIC申报、具名设施/设备、抵免权和税收应收的更新。代表性情景包括一项生效规则改变已公开Intel申报所涵盖的合格财产类别或可用税率；IRS正式准许/拒绝一项已申报权利；或一笔已量化退款相对原实际或可信公开预计处理窗口提前/延期。2026年8月IRS对2025年Form 3468的说明修正是当前基线而非新触发。只给一般资本预算、按全球CapEx估税基、或不确定适用资产/年度且没有可算金额的讲话不触发。非股权项目补助及Secure Enclave现金—股份安排不在本范围。",
+      "policy_id": "pol_7ee89cc81cbd494db1090ce1c888dd47",
+      "ref": [
+        "output/work/v21/discovery/S0005.jsonl#L10",
+        "context/document3/v21/d2/shell-0005.json",
+        "context/document3/v21/shared/d1/c1.md",
+        "context/document3/v21/shared/document2.json",
+        "https://www.irs.gov/credits-deductions/advanced-manufacturing-investment-credit",
+        "https://www.irs.gov/forms-pubs/correction-to-the-2025-instructions-for-form-3468-of-the-applicability-of-the-35-rate-on-line-1c-in-part-iv-advanced-manufacturing-investment-credit-under-section-48d",
+        "https://www.sec.gov/Archives/edgar/data/50863/000005086326000157/intc-20260627.htm",
+        "output/work/v21/research/S0005/0043/advanced_manufacturing_credit_cash_basis.json"
+      ],
+      "title": "第48D条制造抵免的资格本金与兑现时间",
+      "transmission": "美国《国内税收法》第48D条先进制造投资抵免不是对Intel全球资本开支统一乘一个最高税率。IRS当前说明：合格财产于2022年12月31日后至2025年12月31日投用按合格投资基数的25%，2025年后投用适用35%；2025 Form 3468修正说明确认此按财产投用日期切分，而非要求企业财年必须到2026年才适用35%。合格投资是纳税人于先进制造设施投用、属于该设施的合格财产税基；财产须为可折旧/摊销的有形资产并对制造设施运营不可或缺，由纳税人建造，或在购入时原始用途始于该纳税人；设施主要用途须为美国半导体或半导体设备制造，办公及管理用房不纳入。Intel截至2026年6月披露H1归属于AMIC的激励6.78亿美元，超过未清所得税负的部分可退现金；同期税收应收款合计88亿美元、主要关联AMIC申报，但应收和确认不是同日可用现金。 永久资格/税率/税基变化改变本金，办理或支付窗口变化改变资金等待与建设资金可用性；同一次决定若无独立增量不把本金和到款双计。历史约4%流动资金收益只是尺度，非实际融资成本或唯一价值通道。88亿美元为税收应收总额且主要关联AMIC，不全作AMIC，确认额与不同集合到账差也不作待退款。逐设施税基及剩余退税/建设资金日历尚未完整公开，不能填造；规则若直接涵盖可定位Intel资产，不需Intel第二确认。非股权项目支持与政府股权/SE是不同对象。"
+    },
+    "previously_accepted": {
+      "activation_conditions": [
+        {
+          "calibration": {
+            "reference_state": "当前公开规则为2025年底前投用财产25%、2025年后投用财产35%，均仅乘符合第48D条定义的合格投资税基。Intel报告H1 AMIC激励6.78亿美元及税收应收款88亿美元（主要关联AMIC claims）；现金退还限于超过所得税负的可退部分。Shell另列H1非股权资本激励现金收款1.67亿美元。税基按设施和投用资产而非全球CapEx建立；已确认应收款和已授项目款是现有路径，不代表以后各期已可自由使用。",
+            "trigger_boundary": "新增或提前至少10亿美元可用现金/抵税权利，且超出截至cutoff已报告的税收应收或既定收款路径，首次足以实质降低近期资金桥接：该额约为已报88亿美元税收应收的11%、6月末现金及短投297.27亿美元的3.4%，亦高于H1 6.78亿美元AMIC激励确认。一次常规申报、既有权利的会计重分类或未明确具体Intel项目/金额的政策表态不足。"
+          },
+          "condition_id": "C1",
+          "criterion": "IRS/Treasury的生效解释或Intel与主管机关公开的项目决定，明确适用于Intel一项具名美国先进制造设施/设备或非股权项目激励，并确认此前未计入当前申报或已披露收款路径的合格税收抵免、退款/现金支付获准，或至少同额资金被明确提前可用；消息需披露金额与支付/抵税状态，不把全球资本开支、一般拨款上限或联邦股权投资计入。",
+          "decision": "LONG",
+          "trigger_layer": "OUTER"
+        },
+        {
+          "calibration": {
+            "reference_state": "截至2026-06-27，Intel已有H1 AMIC激励确认6.78亿美元、主要与AMIC有关的税收应收款88亿美元；C1/D2区分此等应收、抵税与现金到账。第48D条基数取决于合格财产、设施及投用日期，单有地点新闻或资本预算变化不能推定抵免资格变化。材料未建立Intel已被追索或大规模项目资格被否定的事实。",
+            "trigger_boundary": "最终被否或被追回、或因具体地点/投用/财产分类改变而从未来12个月移出的现金/抵免达到10亿美元，已经约等于现有税收应收的11%及6月末流动储备的3.4%，足以重新抬高资本净负担/桥接需求；若公告只说“可能受影响”而没有确定金额、适用设施或时间变化，不构成充分触发。"
+          },
+          "condition_id": "C2",
+          "criterion": "IRS/Treasury对Intel具名项目的最终资格或追索决定，或主管机关/Intel确认的场址、设施用途、合格财产或投用日期变动，明确使已申报/确认的AMIC权利或非股权项目付款被拒、撤回、追缴，或把其可用日期推后；消息需量化影响并说明未由替代项目款、抵税额或退款路径补足。行业性法规变化若没有Intel项目适用结果，不命中。",
+          "decision": "SHORT",
+          "trigger_layer": "MIDDLE"
+        }
+      ],
+      "match_scope": "匹配IRS/Treasury对第48D条资格、合格投资基数、投用日期与退款办理的正式规则或个案处理；Intel对具名美国先进制造设施、设备、税收应收/抵免申报、退款和追索的披露；Commerce/项目机关对非股权制造项目奖励、资格、预算、付款批准、地点或投用调整的正式行动。代表情景包括一座设施的合格资产由2025投用改到2026以后而税率随之不同、IRS对Intel已申报税基作出准许或否决、或项目机关修改一笔已批准的非股权付款。一般政策讲话、只给全公司CapEx总额、用35%乘全部全球购建、普通政府股权估值变化或已经按当前条款正常到账不构成 Condition。",
+      "policy_id": "pol_7ee89cc81cbd494db1090ce1c888dd47",
+      "ref": [
+        "output/work/v21/discovery/S0005.jsonl#L10",
+        "context/document3/v21/d2/shell-0005.json",
+        "context/document3/v21/shared/d1/c1.md",
+        "context/document3/v21/shared/document2.json",
+        "https://www.irs.gov/credits-deductions/advanced-manufacturing-investment-credit",
+        "https://www.irs.gov/forms-pubs/correction-to-the-2025-instructions-for-form-3468-of-the-applicability-of-the-35-rate-on-line-1c-in-part-iv-advanced-manufacturing-investment-credit-under-section-48d",
+        "https://www.sec.gov/Archives/edgar/data/50863/000005086326000157/intc-20260627.htm"
+      ],
+      "title": "美国先进制造抵免与非股权项目激励的资格及现金落地",
+      "transmission": "美国《国内税收法》第48D条先进制造投资抵免不是对Intel全球资本开支统一乘一个最高税率。IRS当前说明：合格财产于2022年12月31日后至2025年12月31日投用按合格投资基数的25%，2025年后投用适用35%；2025 Form 3468修正说明确认此按财产投用日期切分，而非要求企业财年必须到2026年才适用35%。合格投资是纳税人于先进制造设施投用、属于该设施的合格财产税基；财产须为可折旧/摊销的有形资产并对制造设施运营不可或缺，由纳税人建造，或在购入时原始用途始于该纳税人；设施主要用途须为美国半导体或半导体设备制造，办公及管理用房不纳入。Intel截至2026年6月披露H1归属于AMIC的激励6.78亿美元，超过未清所得税负的部分可退现金；同期税收应收款合计88亿美元、主要关联AMIC申报，但应收和确认不是同日可用现金。Shell材料另将H1资本激励现金收款与AMIC确认分列（1.67亿美元），反映非股权项目款、抵税、退款/现金支付属不同集合。合格设施地点、财产属性和投用日期改变可抵免税基及资金释放时点；最终资格与办理延迟分别影响经济负担和桥接峰值。Secure Enclave及联邦股权融资另由政府资本条款观察，不重复计作税收抵免或非股权补助。"
+    }
+  },
+  {
+    "ticker": "INTC",
+    "path": "output/work/v21/final/policies/0007/equity_financing_proceeds_per_share.json",
+    "policy_id": "pol_a6b42e4a0d1d43b6825c729e16bb57af",
+    "source_final_edit_hash": "d9d480b38dc916d022e11701d053f909cf8a719937a446bca235043e851172b0",
+    "repaired_hash": "3b2874824f667e5619c09cfc9cd0b9ddd5ea08dd44704e41898094ffdb1155b3",
+    "identity_corrections": {
+      "pol_e765a49a924040b69b3d553fbcb66d0a:C1": "C1"
+    },
+    "intended_final_edit": {
+      "activation_conditions": [
+        {
+          "calibration": {
+            "reference_state": "截至截止日最近的可比主发行是2026-08-10定价、08-11超额配售全额行使：210.526百万股基础发行加31.579百万股超配，合计242.105百万股；发行前5.043十亿股，静态新增4.80%。每股95美元、上一交易日97.52美元；每股净款约93.43美元、全额净款估计226.2亿美元。按发行前市场值静算，全成本/折价摩擦约9.9亿美元而非4.8%全部价值损失。文件只规定一般公司用途和可临时投资现金/高质量债券，未表明具体商业收益；现有有限的2027调整EPS约2.08美元不是完整市场共识或全部项目的统一利润门槛。",
+            "trigger_boundary": "统一比较旧股每股权利：原资本价值及未融资/替代路径，与净新资本、真正新股和已知新增价值/责任。绑定资金/重要长期机会可早于现金与完整财报，不要求首年EPS、回赚8月全部股数、5000万美元或完整内部模型；可执行合同最低现金与可信公开路径足够提供回收锚时使用。现金本金与其未来利息非两份免费利益，不把多年利息单独抵掉发行摩擦再加本金；利息价值按同风险/期间权益一致处理。普通一般用途、注册授权或未定价意向不独立证明正向，未被资本/伙伴/产品条件承接的非收购用途回报仍缺可比锚。"
+          },
+          "condition_id": "pol_e765a49a924040b69b3d553fbcb66d0a:C1",
+          "criterion": "Intel未来普通股主发行正式定价或形成不可撤销配售，公开实际新股、净价格/费用及资金权利；同笔绑定安排或可信公开资金/项目路径表明，相对未融资或可行替代融资，重要资金约束解除、可归属长期项目/合同回收或资本选择价值改善，足以支持新增权益与发行摩擦的净比较。",
+          "decision": "LONG",
+          "trigger_layer": "MIDDLE"
+        },
+        {
+          "calibration": {
+            "reference_state": "8月发行的全成本/折价摩擦约9.9亿美元，约为发行前市值的0.20%，但若资金留作流动性储备也能产生现金利息并降低资金风险；按H1利息收入6.67亿美元及期初/期末现金与短投均值，粗略储备收益约4.0%年化，非发行后实得收益。Q2公司称未来12个月及更长期有足够资金来源；然而该声明及297.27亿美元流动储备为6月末、早于8月发行，未来判定必须以新发行文件时点公司自己的债务与付款表为准。",
+            "trigger_boundary": "以实际新股m、未受消息影响q、净款C识别m×q−C，再统一旧股每股权利与新资本用途/风险比较，无10%×10%、5000万美元年化或至少完整一年储备门槛。发行折价/费用是即刻转移，储备本金/未来利息是新增资本权益，不用多年免费利息抵摩擦同时计现金本金。无需公司正面声称完全无用途，清楚重要不利净比较可观察；一般用途不等无回报，已知重要融资保障/长期项目价值须处理，主导用途/机会未知不凭沉默SHORT。旧8月发行不再触发，已有钱后续使用不重复计股。"
+          },
+          "condition_id": "C3",
+          "criterion": "Intel未来普通股主发行正式定价/不可撤销配售的真实新股、净款及全部费用显示有意义即时旧股权益价值转移；相对未融资/可行替代路径，已知资金保障、项目回收或选择价值不足以抵销该转移，或公开具体用途/约束造成重要每股价值损害。",
+          "decision": "SHORT",
+          "trigger_layer": "MIDDLE"
+        }
+      ],
+      "match_scope": "匹配Intel未来向公司发行的新普通股/战略配售的正式最终招股文件、已定价承销或已完成私募，以及同笔交易的净款、股份数、每股售价和有约束力资金用途。可观察的补偿包括该交易正式连接的债务净利息节省、未付款将发生的合同取消/停工现金损失、公开的客户最低购买/补偿金额或由签署文件给出的多年度项目回报。二级市场股东售股、未定价的注册/授权、政府托管股例行释放、既有2026年8月发行、股酬股份和SCIP/Secure Enclave各自的融资权利不属于新发行事件；不因一般资本开支增长、毛募资额或无公告而触发。",
+      "policy_id": "pol_a6b42e4a0d1d43b6825c729e16bb57af",
+      "ref": [
+        "output/work/v21/discovery/S0005.jsonl#L12",
+        "context/document3/v21/d2/shell-0005.json",
+        "context/document3/v21/shared/d1/c5.md",
+        "context/document3/v21/shared/document2.json",
+        "https://www.intc.com/news-events/press-releases/detail/1779/intel-announces-upsize-and-pricing-of-20-billion-common",
+        "https://www.sec.gov/Archives/edgar/data/50863/000119312526346806/d117670d8k.htm",
+        "https://www.sec.gov/Archives/edgar/data/50863/000119312526345221/d98483d424b5.htm",
+        "https://www.sec.gov/Archives/edgar/data/50863/000005086326000157/intc-20260627.htm",
+        "output/work/v21/research/S0005/0041/build_construction_capital_timing.json",
+        "output/work/v21/research/S0005/0041/manufacturing_partner_capital_terms.json",
+        "output/work/v21/research/S0005/0043/secure_enclave_public_capital_terms.json",
+        "output/work/v21/research/S0005/0044/equity_financing_proceeds_per_share.json",
+        "output/work/v21/research/S0005/0045/debt_net_cash_interest_cost.json"
+      ],
+      "title": "未来普通股发行的即时权益转移与资金用途",
+      "transmission": "2026年8月242.105百万股、95美元定价和全額预计净款226.2亿美元是已披露基线，预计净款不等实际到账，不能拼到6月297.27亿美元储备。后续已有钱偿债/投资不再加这批股份；未来真正发行才增加新权益。新股数m、净款C、发行前未受消息影响每股价格q对应即时折价/费用转移m×q−C，衡量旧股每股价值须将净资本C和新增权益一起纳入；不能把摩擦又从已净费用的款项扣一次。储备本金及以后利息属于新资本经济权益，不是旧股东免费收益；多年利息不能直接免费抵销一次发行摩擦同时再计全部净现金。绑定资金保障、重要长期项目权利或避免融资/停工风险可早于回报形成价值，须与未融资/可行替代路径比较；一般用途不等无回报，至少留储备一年或正面声明超额且无任何用途不是必要门槛。政府既有经济权益、实际新股与期间加权分开。已筹资金用于非收购商业/营运/资本项目的机会仍存在，建设付款/伙伴条款与产品规则各有范围；其中未被实际条件承接的回收/风险比较当前未建立，是具体资金用途缺口，不因新文件数消失。"
+    },
+    "previously_accepted": {
+      "activation_conditions": [
+        {
+          "calibration": {
+            "reference_state": "2026-06-27公司披露现金及短投297.27亿美元、债务505.37亿美元、未提款循环额度100亿美元；这是8月发股前余额，完整当前净债务、偿付梯度与日后净到账尚未同日对齐。8月全额行使后新股242.1百万股，按SEC最终招股文件预计净款约226.2亿美元，实际用途和净到账未在截止日前单独确认。招股文件列出的Q2新债票息为4.65%—6.20%，但不同债券条款及可赎回日须逐笔判断。C5截至截止日的2027调整EPS 2.08美元仅是有限公开预测；不能假定它完全排除或包含某项尚未宣布的偿债收益。",
+            "trigger_boundary": "比较同一完整经营年度的净现金收益：已消灭债务的税后现金利息节约，减去放弃的储备利息、赎回溢价/费用及同额替代融资后，须至少达到发行规模对应的有意义每股增量。作为量级锚，8月发行股数比发行前普通股约多4.80%；若以约52.85亿发行后股份和2.08美元EPS作静态年度基准，约需新增0.10美元/股、即约5.3亿美元税后年度利润，才足以抵住同量级4.8%股份增长。若用4.65%—6.20%票息债务偿还，且粗略假设20%税、没有放弃的现金收益，需约107亿—143亿美元本金；真实边界以逐笔合同利息节约和储备收益净差为准，所需本金可能更大。低于该水平仍可降低再融资风险，但不单凭还债宣称已形成同等规模的每股回报；若要约只覆盖部分年度，按结算日加权，不把全年节约提前入账。"
+          },
+          "condition_id": "C1",
+          "criterion": "Intel、债券受托人或承销/债务要约文件公开确认，公司已用既筹普通股资金完成一项指定债务的现金赎回、要约回购或提前偿还，并披露被消灭的本金、合同现金票息、赎回费用/溢价和结算时间；交易没有以新的借款、发行或同等债务义务把相同融资负担重新带回。只宣布拟偿债、降低账面债务而未说明现金利息/本金、或将债务利息资本化/费用化不属于该事实。",
+          "decision": "LONG",
+          "trigger_layer": "MIDDLE"
+        },
+        {
+          "calibration": {
+            "reference_state": "8月发行披露只把资金用途写为一般公司用途，可包括资本开支和营运资金，且允许待用资金暂投现金、等价物或高质量债务证券；没有为特定项目提供额度、收益率或客户现金流。当前没有可用的同日发行后流动性/净债务或设施级回收表。用于比较的公开卖方2027调整EPS约2.08美元是有限快照；本研究不把目标股价/约50倍恒等式当作确定市场要求，也不将制造伙伴出资视作Intel新增利润。",
+            "trigger_boundary": "只在新用途的税后经常性利润/净现金贡献（或合同已保证、可归属Intel的现金流）在对应的完整收入年度达到由实际新股加权增量推导的每股回报要求时作LONG。以本次4.80%发行股份尺度作可读门槛，需要大约4.8%的基准年度利润增量，即在52.85亿股与2.08美元EPS参考下约5.3亿美元/年税后贡献；若新发股比例较低/较高，按“新加权股数÷原加权股数×同期间原利润”线性调整。项目只在2027年以后可能回款、但未披露后续约束或现金流路径时，仍不足以证明当前有每股回报；若交易已由当前预测或同一披露包含，应只认新的超出部分，不能重复加分子。"
+          },
+          "condition_id": "C2",
+          "criterion": "Intel以已筹股权资金签署并生效/交割一项具名资本投资、资产收购或生产/营运资本使用安排，且Intel、标的、具名客户或合同对手的正常公开交易文件给出可归于Intel的税后利润/净现金贡献，或能从公开合同明确计算的非撤销付款/补偿净回收。单一采购承诺只有在适用数量、现金到账期间及增量成本已由现有公开材料建立、足以算出净贡献时才构成回报证据；制造扩建须与实际出资阶段匹配，收购须披露对价和交易后可归属利润/现金。仅称“战略意义”“增长机会”、宣布预算额度、未绑定意向、毛订单额或未来会评估回报不构成完整条件。",
+          "decision": "LONG",
+          "trigger_layer": "MIDDLE"
+        },
+        {
+          "calibration": {
+            "reference_state": "2026-08发行的实际条款是每股95美元；最终招股文件记载发行日Nasdaq前收盘97.52美元，折价约2.6%，承销商后来全额行使超额配售使新股约占发行前股数4.8%。文件估计全额行使净款约226.2亿美元且用途广泛，说明大额融资可提高现金选择权，但本任务截止日并没有把其估计净款当作现有现金。市场价格和share count比较必须使用未来交易日当时、未受消息影响的收盘及最终新发行股份。",
+            "trigger_boundary": "10%新股增量本身需约10%年度利润增加才能保持每股盈利不变；若同时以九折发行，且所得只留作一般用途、没有披露足以抵销的现金收益，简化的即刻每股资产价值为(1+10%×90%)/(1+10%)约99.1%，相当于旧股东约0.9%的价值转移，尚未计发行费用和后续等待；这显著大于2026年已完成交易约0.12%的同式折价转移参考。该边界不是“发股即利空”：以公平或溢价定价、较小股份、已签高回报用途或有可量化避免停工价值的发行都不命中。"
+          },
+          "condition_id": "C3",
+          "criterion": "Intel在未来公开定价并完成一项向公司注入现金的主发行/战略配售，最终文件显示新普通股至少相当于交易前普通股的10%，且发行价较发行启动前未受消息影响的Nasdaq上一交易日收盘价低至少10%；同时文件仅给一般营运、储备或多年资本用途，没有同笔交易中能覆盖新增股份的已签合同现金回款、实际净利息节约或具名项目回报。若文件直接证明融资避免一项近期不可延期付款/停工且其可量化损失足以抵销折价转移，或收益已经满足上条门槛，则不命中此SHORT。二级配售、仅授权/注册尚未定价、期权/政府或股酬股份变化均不算该项主发行。",
+          "decision": "SHORT",
+          "trigger_layer": "MIDDLE"
+        },
+        {
+          "calibration": {
+            "reference_state": "公开C5参考为2027调整EPS约2.08美元，且样本不完整；8月发行后的52.85亿股只是招股文件交割后估计，不包括未来员工股酬、政府或有股份和未行使Foundry控制权认股权。此前这类无合同回报的AI/Foundry投资不能自动视为Intel现金收益；单有现金投资意味着少了可赚取利息的储备，而不是Intel自动获得标的收入。",
+            "trigger_boundary": "以交易公告的同一财政年度、同一调整口径比较交易前基线及交割后pro forma：新加权普通股比例为x时，新增归属利润若仍低于约x×交易前利润，EPS即下修；以本次4.8%股份尺度、2027年2.08美元参考，约等于少0.10美元/原有股份或约5.3亿美元年度税后利润缺口。新发行股数按结算时间进入加权分母；已计基本股数的托管股不再添加，未归属RSU/PSU或仍或有权利仅在符合条件的同期间口径下纳入。公司若公开明确该缺口持续完整的首个年度、目标现金流/合同回款不足以补足且盈利兑现推迟到以后年度，已足以构成每股兑现下修，不必等待季度实际盈利确认；较小的一次性整合费用或只看收购价，不足以单独越界。"
+          },
+          "condition_id": "C4",
+          "criterion": "Intel签署并公开一项由新增普通股或已筹股票发行款支持的商业资产/公司控制权收购，新增普通股至少相当于交易前实际加权普通股的4.8%，且SEC交易文件或Intel/标的正式公告给出交易后可比年度的每股盈利或归属现金预期；在实际新增股份权利计入后，文件明确该交易首个完整年度的新增利润不足以跟上新增股数，且没有同一交易可量化的现金利息节约、买方合同净回款或更早实现的协同收入补足。未披露的“可能协同”、标的估值上涨、少数投资账面收益或仅有收购传闻不构成条件。",
+          "decision": "SHORT",
+          "trigger_layer": "MIDDLE"
+        }
+      ],
+      "match_scope": "匹配Intel新发行普通股或战略配售的公开定价、承销商超额配售、实际交割净款，以及随后依法披露的资金用途、债务赎回、带有现金回款/利润信息的资本项目或收购。常见入口包括最终招股文件、8-K及承销/债务要约文件、Intel或交易对手公开的生效合同和交易公告；评估新发行股数要用交割后新增普通股和实际生效/加权日期，战略方投资只有在钱进入Intel且有可核实的交易价值时才进入。旧的2026年8月发行只是参考，不再次触发；二级市场股东卖股、政府托管股例行释放/或有认股权、常规股酬授权、一般资本开支指引、只重复毛募资数字、单靠现金余额的季度财报、项目技术里程碑和匿名投资传闻均不自动命中。储备本身只有在新披露改变现金收益或可避免的支付/停工约束时才有方向；制造建设付款与SCIP伙伴条款分别由既有资本建设/制造伙伴研究负责，本Policy不要求未来消息披露内部项目分摊或净利润预测。",
+      "policy_id": "pol_a6b42e4a0d1d43b6825c729e16bb57af",
+      "ref": [
+        "output/work/v21/discovery/S0005.jsonl#L12",
+        "context/document3/v21/d2/shell-0005.json",
+        "context/document3/v21/shared/d1/c5.md",
+        "context/document3/v21/shared/document2.json",
+        "https://www.intc.com/news-events/press-releases/detail/1779/intel-announces-upsize-and-pricing-of-20-billion-common",
+        "https://www.sec.gov/Archives/edgar/data/50863/000119312526346806/d117670d8k.htm",
+        "https://www.sec.gov/Archives/edgar/data/50863/000119312526345221/d98483d424b5.htm",
+        "https://www.sec.gov/Archives/edgar/data/50863/000005086326000157/intc-20260627.htm",
+        "output/work/v21/research/S0005/0041/build_construction_capital_timing.json",
+        "output/work/v21/research/S0005/0041/manufacturing_partner_capital_terms.json",
+        "output/work/v21/research/S0005/0043/secure_enclave_public_capital_terms.json"
+      ],
+      "title": "普通股融资的净资金用途与每股权益兑现",
+      "transmission": "截至2026-10-10，Intel 8月普通股发行不是只有意向：8月11日承销商全额行使超额配售，合同合计242,105,262股、每股95美元，毛额约230亿美元；最终招股文件按全额行使估计扣除承销折扣及费用后净款约226.2亿美元，但仍是估算，并未披露截止日实际净到账或发行后同日现金余额。文件只承诺一般公司用途（可包括资本开支、营运资金），待使用期间可投资现金及高质量债券。不能把这笔毛额或估计净额拼加到6月27日现金与短投297.27亿美元：同日债务505.37亿美元、未提款额度100亿美元，均是发行前快照；上半年经营现金81.02亿美元减购建76.15亿美元只余4.87亿美元，未含租赁、伙伴及其他资金流，也不是永久烧钱率。242.1百万股相当于6月末50.43亿股的4.80%；若总利润不变，静态每股占有会下降约4.58%，但资金也提高支付弹性、可能降低停工或滚续风险，发行本身不能定多空。资金用于偿债时，真正收益是扣除失去的储备利息、赎回溢价及税后后的现金利息节约；留储备有利息和选择权但不等于项目回报；建设、营运资本或收购则先付现，需由可公开验证的客户承诺、合同现金回款或交易后利润来衡量等待。当前有限的2027调整EPS公开参考为2.08美元，不是完整市场共识；截至6月末约1.43亿托管股中约7100万已非或有并计入基本分母、约7100万仍或有；另外最高约2.41亿股的Foundry认股权只在Intel不再直接/间接持有至少51% Foundry时可行使。RSU/PSU股酬是持续权益成本，发行股数、已计入基本股数的托管股、仍或有股、控制权认股权及股酬须各按实际权利状态和加权时间处理，不能重复加成一个“潜在分母”。"
+    }
+  },
+  {
+    "ticker": "INTC",
+    "path": "output/work/v21/final/policies/0007/secure_enclave_public_capital_terms.json",
+    "policy_id": "pol_bdf960d5597b41c985bbc5dc8f7cf4b5",
+    "source_final_edit_hash": "ed121c7b91381a669ff8595706577832a15da0cba9a4bfc0a582b8b1ebacfeac",
+    "repaired_hash": "e2b1d5168ddf2d1cd86aa12257d0d4dfe04450aa7a87743d5e4dfba65d7a07ed",
+    "identity_corrections": {
+      "pol_0b3cfcb91d5a457aa466c3c77411e6fd:C3": "C3",
+      "pol_0b3cfcb91d5a457aa466c3c77411e6fd:C4": "C4"
+    },
+    "intended_final_edit": {
+      "activation_conditions": [
+        {
+          "calibration": {
+            "reference_state": "既有SE总额31.748亿美元、最多1.5874亿托管股，每20美元现金换算一股；Q2约1.43亿未释放，其中约7100万非或有计basic EPS、约7100万或有。会计分母不等法律所有权，§4.4限定Commerce释放转名之前没有权益；付款日历未公开，不自造。",
+            "trigger_boundary": "生效验收/关键确认实质改变重要实现概率即可早于到账或诉讼终局，正常原约验收而无概率/权利新增则不足。比较实际现金及原新权益，不以2.5亿美元或5000万股统一划重要性；已发行权益、待释放转移与原先预期处分分开。是否计入basic EPS不单独证明法律所有权、全部经济稀释或注销利益；期末正常一半交DOC/一半注销已经预期，不再自动LONG。用实际增量权利和市价，20美元只换算协议股数；新款与对应授股同一交换不双计价值。"
+          },
+          "condition_id": "C1",
+          "criterion": "有执行力验收/阶段支付决定或生效修约，使重要SE现金权可执行、实质提高其兑现概率，或相对原现金/托管股份路径改善Intel可保留权益；可定位同一款项、实际股份/或有转移及已知新增履约/追索/补偿，显示有意义净改善。",
+          "decision": "LONG",
+          "trigger_layer": "MIDDLE"
+        },
+        {
+          "calibration": {
+            "reference_state": "合同规定适用项目期末未释放的托管股一半可无额外对价交给DOC，另一半自动注销；截至cutoff未有公开的准确最后资格日期/逐期支付日历。H1已释放1,300万股，约1.43亿股仍托管；非或有和或有份额各约7,100万股且口径有四舍五入。现有诉讼程序状态不等于协议已失效。 原合同正常期末50/50处置是既定预期，EPS或有状态不能代替实际法律/经济权益变化。",
+            "trigger_boundary": "不普遍要求最终诉讼终局，重要可执行阶段决定已改概率/权利可观察；投诉/普通动议不足。正常原约期末50/50处分及已预期释放不自动SHORT，须有新偏离/概率增量。实际剩余股份、已发行经济权与或有转移按原新路径比较，basic EPS计入不是零新增法律/经济影响的唯一依据；但既有经济稀释不能重算。无2.5亿门槛，实际市价非20美元协议换算，无准确股数/旧路径时不造价值。股份和现金同次决定只计净差，不把衍生计量当退款。"
+          },
+          "condition_id": "C2",
+          "criterion": "有执行力政府/法院/合同决定减少重要SE现金权、实质降低其兑现概率，或相对原预期托管股份处置增加无对价转移/限制并减少Intel权益；同款现金与实际股份、补偿、履约/追索的旧新比较显示有意义净损害。",
+          "decision": "SHORT",
+          "trigger_layer": "MIDDLE"
+        },
+        {
+          "calibration": {
+            "reference_state": "Secure Enclave总额和股份换算已有正式合同，但截至2026-10-10没有公开的逐期款项日期。约4%为Intel流动资金的年度机会成本代理，不是借款成本。",
+            "trigger_boundary": "旧窗口可为真实公开预期而非必须正式保证日，但未知日历不编造。比较同笔资金、付款/权益原新窗口及建设需要，无5000万美元/4%唯一现值阈值；普通既有分期与账面重分类不足。只计时间/概率独立增量，不把既有本金全加为新款；同次股份/现金变化净比一次。"
+          },
+          "condition_id": "pol_0b3cfcb91d5a457aa466c3c77411e6fd:C3",
+          "criterion": "有效支付安排/可靠直接更新将可定位重要SE既有现金权的实际或可信公开预计支付窗口实质提前，且对应股份/约束及新增代价相比旧路径不实质抵销资金等待或重要项目融资改善。",
+          "decision": "LONG",
+          "trigger_layer": "MIDDLE"
+        },
+        {
+          "calibration": {
+            "reference_state": "合同未披露逐期分期日历；Q2每股托管衍生负债/公允价值变动不能代替现金付款日期。现有材料亦未证明某笔款被主管机关暂停。",
+            "trigger_boundary": "不要求先有保证日期、一个完整年度或5000万美元现值；可信原预期与新有效窗口可比较，普通小款排队/跨季不足，原日历未知不填造。比较同笔现金与真实权益/约束，衍生负债不替现金；本金拒绝/追索另论，同一次永久权利与时间决定无独立新增意义则合并证据，正常预期股份处置不重复计。"
+          },
+          "condition_id": "pol_0b3cfcb91d5a457aa466c3c77411e6fd:C4",
+          "criterion": "生效支付决定或可靠项目日程更新将重要SE既有现金款的实际或可信公开预计可用窗口实质后移，本金权仍在；旧新资金需要、股份处置及已知代价比较显示重要等待/融资压力增加。",
+          "decision": "SHORT",
+          "trigger_layer": "MIDDLE"
+        }
+      ],
+      "match_scope": "匹配Secure Enclave可执行验收、阶段拨付/支付决定、付款计划、生效合同修订/和解/裁判以及实际剩余托管股份的转交、注销和限制变化。比较同一原新现金权/窗口、实际股份及既有约束；正常按原期收款/50-50处分、会计公允价值、诉状/动议不提供新增方向。Foundry认股权单列，不以政府股东身份推商业客户或将DFA再计成SE新增。",
+      "policy_id": "pol_bdf960d5597b41c985bbc5dc8f7cf4b5",
+      "ref": [
+        "output/work/v21/discovery/S0005.jsonl#L11",
+        "context/document3/v21/d2/shell-0005.json",
+        "context/document3/v21/shared/d1/c4e_formal_scan.json",
+        "context/document3/v21/shared/d1/c4e_network_build.md",
+        "context/document3/v21/shared/event_library.md",
+        "context/document3/v21/shared/document2.json",
+        "https://www.sec.gov/Archives/edgar/data/50863/000005086325000129/intc-20250822.htm",
+        "https://www.intc.com/filings-reports/all-sec-filings/content/0000050863-25-000129/a08222025formex101stockand.htm",
+        "https://www.sec.gov/Archives/edgar/data/50863/000005086326000157/intc-20260627.htm",
+        "https://www.intel.com/content/www/us/en/newsroom/news/corporate/intel-and-trump-administration-reach-historic-agreement.html",
+        "output/work/v21/research/S0005/0043/secure_enclave_public_capital_terms.json",
+        "https://www.sec.gov/Archives/edgar/data/50863/000005086325000129/a08222025formex101stockand.htm"
+      ],
+      "title": "Secure Enclave拨款、托管股与付款条件的增量价值",
+      "transmission": "2025年协议总拨付88.698亿美元包括DFA56.95亿及Secure Enclave31.748亿，SE对应最多1.5874亿托管股，每20美元拨款释放一股；20美元是现金/股数换算不是当前市场损失。合同§4.4规定托管股先以Intel名义发行，释放并转入Commerce名下前Commerce没有所有权、投票、经济或转让权；法律权利不能仅由是否计入basic EPS判断。Q2约1.43亿股仍托管、约7100万非或有/7100万或有及H1释放1300万是舍入披露；会计非或有/或有、已发行经济权益及或有转移须与法律处置分别读。适用期末未释放部分原约一半无新增对价交DOC、一半注销，此预期处置已在基线，正常发生不是新利好/利空。生效验收/阶段决定可实质改变重要收款概率或权利，早于到账/诉讼终局；付款窗口变动仅计资金时间，永久权利变化与股份交换须同口径净比。股份注销价值依真实旧新权益而非只看EPS未计数；同一次现金/股份决定不双计。Q2衍生负债156亿美元及公允损失125.29亿不是现金。现无逐期付款/资格日历，不编造；约4%仅历史尺度，非唯一价值算法。"
+    },
+    "previously_accepted": {
+      "activation_conditions": [
+        {
+          "calibration": {
+            "reference_state": "2025协议列明Secure Enclave拨付总额31.748亿美元和最多1.5874亿托管股、每股按20美元与拨款释放相连；不应把剩余DFA资金或政府已持股份重复加为新补助。2026-06-27时Intel称H1释放1,300万股、约1.43亿仍托管，其中约7,100万股仍为或有。当前材料未提供全额/逐期Secure Enclave收款日历，因此只有正式修改/付款决定明确给出相对既有路径的金额和提前时点才可比较。",
+            "trigger_boundary": "至少10亿美元净新增或提前到手的可用现金，约为Secure Enclave原拨付总额的31.5%、6月末现金及短投297.27亿美元的3.4%；此时现金桥改善超过正常分期收款的噪音。若资金以额外股数或新的购买/追索负担换取，必须在条款中扣除，不能只按毛拨款读作利好。"
+          },
+          "condition_id": "C1",
+          "criterion": "Intel与DOC/主管项目机关签署生效修订，或正式项目付款/预算决定，明确将至少10亿美元Secure Enclave现金拨付在原公开合同/收款路径之前提供给Intel，或将至少同额尚未支付的项目资金转为无需额外发行股份、认股权、追索或新增最低采购义务的现金支持。信息须能识别金额、可用时间及托管股份/替代对价；按原协议正常验收、按期收款并释放已约定托管股份不属于新增上修。",
+          "decision": "LONG",
+          "trigger_layer": "MIDDLE"
+        },
+        {
+          "calibration": {
+            "reference_state": "SEC 2025年8-K已说明Secure Enclave拨付依项目条款、资金/适用法律仍可能变化；协议期末有未释放股份时可一半无新增对价转给DOC、另一半注销。Intel 2026年Q2披露13百万股已释放、约71百万股仍或有；没有披露Intel已被追回Secure Enclave款。SEC同季记载一宗股东派生诉讼于2026年3月提起、4月移送，5月有驳回动议，但不等于裁判或合同失效。",
+            "trigger_boundary": "损失/延迟至少10亿美元（原31.748亿美元项目金额的31.5%，约为6月末流动储备的3.4%），或无匹配现金转让5,000万股（按合同20美元/股约10亿美元、约占6月末50.43亿普通股1.0%），足以新增资金需求或股东权益让渡。法院/政府行动须明确金额、现金时间或股份结果；诉讼声称交易违法、托管股公允价值波动及平常履约不代表现金已损失。"
+          },
+          "condition_id": "C2",
+          "criterion": "生效的政府拨付决定/协议修订、最终且具执行效力的法院裁定或和解，明确取消、拒绝或追缴至少10亿美元Secure Enclave未付/已付现金；或确认至少5,000万托管股将无相应现金拨付而转给政府，且没有同额非股权款项或其他对价补足。单有投诉、撤案/管辖程序或驳回动议，未改写拨款/股份条款时不触发。",
+          "decision": "SHORT",
+          "trigger_layer": "MIDDLE"
+        }
+      ],
+      "match_scope": "匹配Intel、DOC/商务部、Secure Enclave项目办公室或法院对既有Secure Enclave工作范围、验收/拨款、付款时点、托管股份、履约期限、支持形式或协议条款的可执行变化，以及Paisner等政府股权诉讼中直接改变协议权利/义务的终局裁定、和解或修订。具辨识度的情景包括项目验收后被确认提前收到一笔具金额的拨付；正式修改支付形式；法院仅在判决或双方和解实际要求返款、改股权或停止拨付时改变资金路径。普通政府持股市值/纸面利润报道、诉讼主张/动议、例行的既有托管股释放、RAMP-C原型进展、政府持股被称为商业客户或发生Foundry股权交易的传闻均不自动命中。Foundry交易还须披露对应净款、控制比例、存续经营/购买义务和认股权实际行使/结算，不以51%阈值单独推定方向。",
+      "policy_id": "pol_bdf960d5597b41c985bbc5dc8f7cf4b5",
+      "ref": [
+        "output/work/v21/discovery/S0005.jsonl#L11",
+        "context/document3/v21/d2/shell-0005.json",
+        "context/document3/v21/shared/d1/c4e_formal_scan.json",
+        "context/document3/v21/shared/d1/c4e_network_build.md",
+        "context/document3/v21/shared/event_library.md",
+        "context/document3/v21/shared/document2.json",
+        "https://www.sec.gov/Archives/edgar/data/50863/000005086325000129/intc-20250822.htm",
+        "https://www.intc.com/filings-reports/all-sec-filings/content/0000050863-25-000129/a08222025formex101stockand.htm",
+        "https://www.sec.gov/Archives/edgar/data/50863/000005086326000157/intc-20260627.htm",
+        "https://www.intel.com/content/www/us/en/newsroom/news/corporate/intel-and-trump-administration-reach-historic-agreement.html"
+      ],
+      "title": "Secure Enclave项目款与政府条件权益的现金—股份条款",
+      "transmission": "2025年8月22日的Commerce—Intel协议把原有公共资金与普通股及条件权利相连：政府约88.698亿美元总拨付含DFA加速款56.95亿美元及Secure Enclave款31.748亿美元；协议对应最多4.33323亿股（其中DFA已发行股按资金到账、Secure Enclave最多1.5874亿股入托管并按款项收到释放，Secure Enclave对应20美元/股），另有最多2.4051615亿股、行权价20美元的五年认股权，仅在Intel不再直接或间接持有至少51% Foundry时可行使。Secure Enclave未完成款项有履约和期限条件：期末仍未释放的托管股一半可在无新增对价下给DOC，另一半注销；所以协议金额不是无成本补助，也不能把DFA、Secure Enclave、政府已持股三次相加。2026年Q2 10-Q称H1已有1,300万托管股释放（Q2 700万），仍有约1.43亿股未释放，其中约7,100万股非或有、约7,100万股仍依Secure Enclave拨付条件；这些数量有四舍五入。6月末托管衍生负债156亿美元及Q2公允价值损失125.29亿美元为会计计量，不是同额现金债务或股价损失。由此，支付时间变化可改善/恶化企业现金桥，但须与合同既有股数、是否额外授股、剩余或有股份及可能追索一起读。政府为被动股东、无董事席位或一般治理权；是否改变Foundry控制、是否行权及交易保留收益属于不同层次。2026年3月股东派生诉讼仅提出指控，Intel截至Q2报告称已被移送联邦法院且被告于5月提出驳回动议；该程序本身不是合同已被撤销或政府已被判责。"
+    }
+  }
+]

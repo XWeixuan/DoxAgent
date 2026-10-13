@@ -41,6 +41,8 @@ class CaseEvidence:
                         "w2_final",
                         "w2_round1",
                         "w3_result",
+                        "w3_trade_decision",
+                        "w3_operations_result",
                         "frozen_inputs.policy_watch_followup",
                         "output",
                         "candidate",
@@ -67,6 +69,7 @@ class CaseEvidence:
                 dict(row)
                 for row in db.execute(
                     "SELECT route AS node, json_extract(payload,'$.round') AS round, "
+                    "json_extract(payload,'$.phase') AS phase, "
                     "COUNT(*) AS count, "
                     "COUNT(json_extract(payload,'$.timing.first_started_at.value')) AS starts, "
                     "COUNT(json_extract(payload,'$.timing.completed_at.value')) AS ends, "
@@ -75,7 +78,7 @@ class CaseEvidence:
                     "MAX(rtrim(json_extract(payload,'$.timing.completed_at.value'),'Z')) "
                     "|| 'Z' AS last_at "
                     "FROM objects WHERE kind='attempt' AND ticker=? AND parent=? "
-                    "AND valid_from<=? AND (valid_to IS NULL OR valid_to>?) GROUP BY route,round",
+                    "AND valid_from<=? AND (valid_to IS NULL OR valid_to>?) GROUP BY route,round,phase",
                     (self.ticker, self.case_id, self.seq, self.seq),
                 )
             ]

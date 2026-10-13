@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+import sqlite3
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -15,9 +16,15 @@ from openai_codex import ApprovalMode, AsyncCodex, CodexConfig, Sandbox
 from openai_codex.types import ReasoningEffort, ReasoningSummary
 
 from doxagent.codex_runtime.models import codex_execution_model
-from doxagent.codex_runtime.schema import CodexD2Node, CodexD3Node, CodexMonitoringO4Node
+from doxagent.codex_runtime.schema import (
+    CodexD2Node,
+    CodexD3Node,
+    CodexMonitoringO4Node,
+    CodexPersistentRuntimeNode,
+)
 from doxagent.codex_worker.schema import WorkerRunRequest, WorkerTurnTelemetry
 from doxagent.codex_worker.telemetry import project_turn_telemetry
+from doxagent.codex_worker.turn_usage import read_turn_usage, rollout_path
 from doxagent.data_runtime.contracts import build_data_tool_contracts
 from doxagent.data_runtime.policy import DataCapabilityCodec, DataToolPolicyRegistry
 from doxagent.mcp.data_server import GUIDE_TOOL_NAME, READ_TOOL_NAME
@@ -50,12 +57,38 @@ class CodexExecutionRuntime(Protocol):
 
 
 class _SdkTurnHandle:
-    def __init__(self, *, thread_id: str, handle: Any, audit_path: Path | None = None) -> None:
+    def __init__(self, *, thread_id: str, handle: Any, audit_path: Path | None = None,
+                 codex_home: Path | None = None) -> None:
         self._thread_id = thread_id
         self.thread_id = thread_id
         self.turn_id = getattr(handle, "id", None)
         self._handle = handle
         self._audit_path = audit_path
+        self._codex_home = codex_home
+
+    async def _complete_usage(self, telemetry: WorkerTurnTelemetry, turn_id: str) -> None:
+        if self._codex_home is None:
+            return
+        # Native persistence can finish just after the completion notification.
+        for attempt in range(3):
+            try:
+                path = await asyncio.to_thread(rollout_path, self._codex_home, self._thread_id)
+                if path is not None:
+                    usage, complete = await asyncio.to_thread(
+                        read_turn_usage, path, self._thread_id, turn_id
+                    )
+                    if usage is not None:
+                        telemetry.usage = type(telemetry.usage)(**usage)
+                        telemetry.observed_usage = usage
+                        telemetry.usage_source = "native_turn_receipts_v1"
+                        telemetry.usage_complete = complete
+                        if complete:
+                            return
+            except (OSError, ValueError, sqlite3.Error):
+                # Accounting must not fail or retry a business turn.
+                pass
+            if attempt < 2:
+                await asyncio.sleep(0.1)
 
     async def run(self) -> WorkerTurnResult:
         if self._audit_path is not None and hasattr(self._handle, "stream"):
@@ -71,6 +104,7 @@ class _SdkTurnHandle:
                 usage=getattr(result, "usage", None),
                 duration_ms=getattr(result, "duration_ms", None),
             )
+            await self._complete_usage(telemetry, result.id)
         return WorkerTurnResult(
             thread_id=self._thread_id,
             turn_id=result.id,
@@ -150,6 +184,7 @@ class _SdkTurnHandle:
         summary.usage = projected.usage
         summary.observed_usage = projected.observed_usage
         summary.sdk_duration_ms = projected.sdk_duration_ms
+        await self._complete_usage(summary, completed.id)
         return WorkerTurnResult(
             self.thread_id,
             completed.id,
@@ -178,6 +213,10 @@ class OpenAICodexRuntime:
     ) -> None:
         self._settings = settings or DoxAgentSettings()
         self._client = AsyncCodex(config or CodexConfig(client_name="doxagent-codex-worker"))
+        self._codex_home = Path(
+            ((config.env or {}).get("CODEX_HOME") if config else None)
+            or os.environ.get("CODEX_HOME") or Path.home() / ".codex"
+        )
         self.receipt_callback: Any = None
         self._reasoning_summary = reasoning_summary
         self._preserve_requested_model = preserve_requested_model
@@ -217,7 +256,10 @@ class OpenAICodexRuntime:
         requested_model = request.model
         execution_model = (
             request.model or self._settings.codex_model
-            if self._preserve_requested_model
+            if self._preserve_requested_model or (
+                request.node == CodexPersistentRuntimeNode.W3
+                and request.model in {"gpt-6-sol", "gpt-6-luna"}
+            )
             else codex_execution_model(
                 request.model or self._settings.codex_model, request.model_provider
             )
@@ -431,7 +473,10 @@ class OpenAICodexRuntime:
         for server in ("data", "source_capture", "o4_operations", "d2_discovery"):
             if (
                 request.read_only
-                and not request.data_mcp_enabled
+                and (
+                    not request.data_mcp_enabled
+                    or (request.node == CodexPersistentRuntimeNode.W3 and server != "data")
+                )
                 and f"mcp_servers.{server}.command" in sdk_config
             ):
                 sdk_config[f"mcp_servers.{server}.enabled"] = False
@@ -439,7 +484,9 @@ class OpenAICodexRuntime:
                 for name in ("DOXAGENT_CAPSULE_ID", "DOXAGENT_MCP_BUDGET_ROOT"):
                     if os.environ.get(name):
                         sdk_config[f"mcp_servers.{server}.env.{name}"] = os.environ[name]
-        if request.read_only and not request.data_mcp_enabled:
+        if request.web_search_mode is not None:
+            sdk_config["web_search"] = request.web_search_mode
+        elif request.read_only and not request.data_mcp_enabled:
             sdk_config["web_search"] = "disabled"
         if request.thread_id:
             thread = await self._client.thread_resume(
@@ -505,6 +552,7 @@ class OpenAICodexRuntime:
             thread_id=thread.id,
             handle=handle,
             audit_path=cwd / "attempts" / request.attempt_id / "audit" / "sdk_loop.jsonl",
+            codex_home=self._codex_home,
         )
 
 

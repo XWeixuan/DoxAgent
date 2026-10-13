@@ -1,0 +1,55 @@
+Mon Oct 12 22:22:38 2026    /data/read/disk-repair-profile.stats
+
+         10296580 function calls (9878025 primitive calls) in 18.584 seconds
+
+   Ordered by: cumulative time
+   List reduced from 3399 to 45 due to restriction <45>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+    524/1    0.026    0.000   18.591   18.591 {built-in method builtins.exec}
+        1    0.000    0.000   18.591   18.591 <string>:1(<module>)
+        1    0.000    0.000   18.591   18.591 <frozen runpy>:201(run_module)
+        1    0.000    0.000   18.588   18.588 <frozen runpy>:65(_run_code)
+        1    0.000    0.000   18.588   18.588 /app/src/doxagent/v2_read/cli.py:1(<module>)
+        1    0.009    0.009   16.209   16.209 /app/src/doxagent/v2_read/cli.py:73(main)
+        1    0.003    0.003   16.182   16.182 /app/src/doxagent/v2_read/projector.py:25(tick)
+       40    0.004    0.000   14.088    0.352 /app/src/doxagent/v2_read/formal.py:36(__call__)
+        1    0.023    0.023   13.588   13.588 /app/src/doxagent/v2_read/reference.py:12(project)
+        2    0.134    0.067   11.138    5.569 /app/src/doxagent/v2_read/libraries.py:23(index)
+125400/22242    0.045    0.000    9.723    0.000 {built-in method builtins.next}
+     6402    0.017    0.000    7.757    0.001 /app/src/doxagent/api_v2/dto.py:31(validate)
+     6402    0.016    0.000    7.732    0.001 /app/.venv/lib/python3.11/site-packages/jsonschema/validators.py:349(iter_errors)
+53156/6402    0.100    0.000    7.716    0.001 /app/.venv/lib/python3.11/site-packages/jsonschema/_keywords.py:274(ref)
+214160/6402    0.923    0.000    7.334    0.001 /app/.venv/lib/python3.11/site-packages/jsonschema/validators.py:396(descend)
+12188/6402    0.141    0.000    6.993    0.001 /app/.venv/lib/python3.11/site-packages/jsonschema/_keywords.py:290(properties)
+    49705    3.866    0.000    3.866    0.000 {method 'execute' of 'sqlite3.Connection' objects}
+     2816    0.043    0.000    2.835    0.001 /app/src/doxagent/event_library/repository.py:703(fact_status)
+   326/21    0.003    0.000    2.452    0.117 <frozen importlib._bootstrap>:1165(_find_and_load)
+   319/21    0.002    0.000    2.451    0.117 <frozen importlib._bootstrap>:1120(_find_and_load_unlocked)
+   296/26    0.002    0.000    2.446    0.094 <frozen importlib._bootstrap>:666(_load_unlocked)
+   263/26    0.001    0.000    2.444    0.094 <frozen importlib._bootstrap_external>:934(exec_module)
+    51579    0.084    0.000    2.437    0.000 /app/.venv/lib/python3.11/site-packages/jsonschema/validators.py:459(_validate_reference)
+   957/58    0.001    0.000    2.437    0.042 <frozen importlib._bootstrap>:233(_call_with_frames_removed)
+    51579    0.206    0.000    2.354    0.000 /app/.venv/lib/python3.11/site-packages/referencing/_core.py:653(lookup)
+35556/30683    0.148    0.000    2.268    0.000 /app/.venv/lib/python3.11/site-packages/jsonschema/_keywords.py:337(anyOf)
+    76/25    0.000    0.000    2.101    0.084 {built-in method builtins.__import__}
+   190549    0.861    0.000    1.925    0.000 /app/.venv/lib/python3.11/site-packages/jsonschema/validators.py:339(evolve)
+        1    0.000    0.000    1.648    1.648 /app/src/doxagent/persistent_runtime_v2/__init__.py:1(<module>)
+        1    0.000    0.000    1.636    1.636 /app/src/doxagent/persistent_runtime_v2/schema.py:1(<module>)
+     7162    0.009    0.000    1.495    0.000 /app/src/doxagent/event_library/repository.py:98(_read)
+       40    0.104    0.003    1.481    0.037 /app/src/doxagent/v2_read/repository.py:289(ingest)
+     7634    0.008    0.000    1.456    0.000 /usr/local/lib/python3.11/contextlib.py:132(__enter__)
+    51579    0.487    0.000    1.439    0.000 /app/.venv/lib/python3.11/site-packages/referencing/_core.py:254(pointer)
+      759    0.013    0.000    1.405    0.002 /app/src/doxagent/event_library/repository.py:658(get_event)
+1370/1014    0.023    0.000    1.349    0.001 {built-in method builtins.__build_class__}
+     3581    0.031    0.000    1.261    0.000 /app/src/doxagent/event_library/repository.py:81(_connect)
+      287    0.014    0.000    1.187    0.004 /app/.venv/lib/python3.11/site-packages/pydantic/_internal/_model_construction.py:84(__new__)
+     1518    0.050    0.000    1.135    0.001 /app/src/doxagent/event_library/repository.py:724(_event_from_connection)
+      264    0.004    0.000    0.861    0.003 <frozen importlib._bootstrap_external>:1007(get_code)
+     3002    0.842    0.000    0.842    0.000 {built-in method builtins.compile}
+   190556    0.204    0.000    0.828    0.000 <attrs generated methods jsonschema.validators.create.<locals>.Validator>:26(__init__)
+      289    0.013    0.000    0.793    0.003 /app/.venv/lib/python3.11/site-packages/pydantic/_internal/_model_construction.py:600(complete_model_class)
+      245    0.001    0.000    0.782    0.003 <frozen importlib._bootstrap_external>:999(source_to_code)
+     3860    0.027    0.000    0.729    0.000 /usr/local/lib/python3.11/pathlib.py:981(resolve)
+
+

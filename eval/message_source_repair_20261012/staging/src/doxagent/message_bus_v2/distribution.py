@@ -47,8 +47,16 @@ class DistributionWorker:
         self.terms = terms
         self.jev = jev
         self.concurrency = max(1, min(concurrency, 8))
+        self._jev_retry_at = 0.0
+        self._jev_half_open = False
+        self._retirement_at = 0.0
 
     async def run_once(self) -> int:
+        if time.monotonic() >= self._retirement_at:
+            self._retirement_at = time.monotonic() + 60
+            retired = await asyncio.to_thread(self.repository.expire_runs)
+            if retired:
+                logger.info("retired expired realtime distribution runs count=%s", retired)
         rows = self.repository.claim_deliveries(limit=16)
         groups: dict[tuple[str, int], list[dict[str, Any]]] = defaultdict(list)
         for row in rows:
@@ -71,13 +79,14 @@ class DistributionWorker:
         message = RawMessageInput.model_validate_json(rows[0]["enriched_json"])
         source = SourceDefinition.model_validate_json(rows[0]["source_json"])
         current_source = self.bus.repository.get_source(source.source_id)
-        if (
-            _complete_body_required(current_source or source)
-            and not _complete_body_verified(message)
+        if _complete_body_required(current_source or source) and not _complete_body_verified(
+            message
         ):
             for row in rows:
                 self.repository.finish_delivery(
-                    row["delivery_id"], row["claim_token"], "NO_PUBLIC_BODY",
+                    row["delivery_id"],
+                    row["claim_token"],
+                    "NO_PUBLIC_BODY",
                     {"reason": "complete_public_body_required"},
                 )
             return
@@ -161,6 +170,20 @@ class DistributionWorker:
     ) -> tuple[dict[str, float], dict[str, int], dict[str, str]]:
         if self.jev is None:
             return {}, {}, {ticker: "JEV_DISABLED" for ticker in definitions}
+        if time.monotonic() < self._jev_retry_at or self._jev_half_open:
+            return {}, {}, {ticker: "JEV_PROVIDER_UNAVAILABLE" for ticker in definitions}
+        half_open = bool(self._jev_retry_at)
+        if half_open:
+            self._jev_half_open = True
+        try:
+            return await self._jev_attempts(message, definitions)
+        finally:
+            if half_open:
+                self._jev_half_open = False
+
+    async def _jev_attempts(
+        self, message: RawMessageInput, definitions: dict[str, TickerMonitoringTerms]
+    ) -> tuple[dict[str, float], dict[str, int], dict[str, str]]:
         states = _article_states(message)
         if states is None:
             return {}, {}, {ticker: "JEV_INPUT_LIMIT" for ticker in definitions}
@@ -190,9 +213,20 @@ class DistributionWorker:
                 try:
                     async with asyncio.timeout(min(15.0, remaining)):
                         result = await self.jev.classify(state, target)
+                    self._jev_retry_at = 0.0
                 except httpx.HTTPStatusError as exc:
                     status = exc.response.status_code
                     logger.warning("Jev decision HTTP failure: %s", status)
+                    if status == 402:
+                        self._jev_retry_at = time.monotonic() + 300
+                        errors.update(
+                            {
+                                ticker: "JEV_PROVIDER_UNAVAILABLE"
+                                for ticker in definitions
+                                if ticker not in positive
+                            }
+                        )
+                        break
                     if status in {400, 401, 403, 404, 422}:
                         errors.update({ticker: f"JEV_HTTP_{status}" for ticker in target})
                     elif status == 429:

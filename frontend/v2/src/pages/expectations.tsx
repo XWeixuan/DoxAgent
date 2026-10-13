@@ -7,6 +7,7 @@ import {
   History as HistoryIcon,
   ChevronDown,
   CalendarDays,
+  Ruler,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
@@ -15,9 +16,6 @@ import type {
   ShellSummary,
   ExpectationUnit,
   ExpectationUnitLegacy,
-  ExpectationUnitV21,
-  StateValueData,
-  ParameterType,
   ContentRef,
 } from "@contract";
 import { usePageContext, useRead, tickerPath, id } from "@/core/page-query";
@@ -28,12 +26,24 @@ import { Button } from "@/components/ui/button";
 import { PageTitle, History, DownloadButton } from "@/components/page-kit";
 import { Module, Notice } from "@/components/state";
 import { Citations } from "@/components/citations";
+import { CitationProvider, CitationText } from "@/components/citation-text";
+import { roles, stateValue } from "@/core/expectation-format";
+import {
+  UnitV21,
+  expectationModes,
+  type ExpectationMode,
+} from "@/components/expectation-unit";
 const modeIcons = {
   ALL: Layers3,
+  BASELINE: Ruler,
   STATE: ChartNoAxesCombined,
   FACTORS: GitPullRequestArrow,
   GAPS: Split,
 };
+function ModeIcon({ mode }: { mode: keyof typeof modeIcons }) {
+  const Icon = modeIcons[mode];
+  return <Icon aria-hidden="true" />;
+}
 const modes = [
   ["ALL", "全部内容"],
   ["STATE", "当前状态"],
@@ -187,7 +197,11 @@ export function ShellBody({
   shell: ShellSummary;
 }) {
   const [params, setParams] = useSearchParams();
-  const mode = params.get("content") ?? "ALL",
+  const mode: ExpectationMode = expectationModes.includes(
+      params.get("content") as ExpectationMode,
+    )
+      ? (params.get("content") as ExpectationMode)
+      : "ALL",
     unit = params.get("unit");
   const units = usePages<ExpectationUnit, "ShellContent">(
     "ShellContent",
@@ -230,245 +244,213 @@ export function ShellBody({
     setParams(p);
   };
   return (
-    <div className="document-layout">
-      <div>
-        <section className="shell-overview" aria-label="Shell 概况">
-          <h2>Shell 概况</h2>
-          <dl>
-            <dt>核心问题</dt>
-            <dd>
-              {("name" in shell ? shell.name : shell.core_question) || "未提供"}
-            </dd>
-            {"scope" in shell && (
+    <CitationProvider key={data.run.run_id + shell.shell_id} source={indexed}>
+      <div className="document-layout">
+        <div>
+          <section className="shell-overview" aria-label="Shell 概况">
+            <h2>Shell 概况</h2>
+            <dl>
+              <dt>核心问题</dt>
+              <dd>
+                {("name" in shell ? shell.name : shell.core_question) ||
+                  "未提供"}
+              </dd>
+              {"scope" in shell && (
+                <>
+                  <dt>范围</dt>
+                  <dd>{shell.scope}</dd>
+                </>
+              )}
+              <dt>边界规则</dt>
+              <dd>
+                {("boundary" in shell ? shell.boundary : shell.boundary_rule) ||
+                  "未提供"}
+              </dd>
+            </dl>
+          </section>
+          {shell.status === "FAILED" && (
+            <Notice danger>
+              {shell.failure?.message ?? "Shell 研究失败"} ·{" "}
+              {shell.failed_stage}
+            </Notice>
+          )}
+          <Module query={units} label="预期单元">
+            {(page) => (
               <>
-                <dt>范围</dt>
-                <dd>{shell.scope}</dd>
-              </>
-            )}
-            <dt>边界规则</dt>
-            <dd>
-              {("boundary" in shell ? shell.boundary : shell.boundary_rule) ||
-                "未提供"}
-            </dd>
-          </dl>
-        </section>
-        {shell.status === "FAILED" && (
-          <Notice danger>
-            {shell.failure?.message ?? "Shell 研究失败"} · {shell.failed_stage}
-          </Notice>
-        )}
-        <Module query={units} label="预期单元">
-          {(page) => (
-            <>
-              {unit && !listedUnit && (
-                <Module query={focused} label="指定预期单元">
-                  {(u) => (
+                {unit && !listedUnit && (
+                  <Module query={focused} label="指定预期单元">
+                    {(u) => (
+                      <Unit
+                        unit={u}
+                        mode={mode}
+                        ticker={ticker}
+                        content={shell.content.data}
+                      />
+                    )}
+                  </Module>
+                )}
+                {page.items
+                  .filter(
+                    (u) =>
+                      unitId(u) ===
+                      (activeUnit ? unitId(activeUnit) : undefined),
+                  )
+                  .map((u) => (
                     <Unit
+                      key={unitId(u)}
                       unit={u}
                       mode={mode}
                       ticker={ticker}
                       content={shell.content.data}
                     />
-                  )}
-                </Module>
-              )}
-              {page.items
-                .filter(
-                  (u) =>
-                    unitId(u) === (activeUnit ? unitId(activeUnit) : undefined),
-                )
-                .map((u) => (
-                  <Unit
-                    key={unitId(u)}
-                    unit={u}
-                    mode={mode}
-                    ticker={ticker}
-                    content={shell.content.data}
-                  />
-                ))}
-              {!page.items.length && <Notice>没有已发布的 Unit 内容</Notice>}
-            </>
-          )}
-        </Module>
-      </div>
-      <aside className="reading-sidebar">
-        <section className="document-meta">
-          <h2>
-            <FileCheck2 aria-hidden="true" />
-            文档状态
-          </h2>
-          <dl>
-            <dt>版本</dt>
-            <dd>
-              <span
-                className={
-                  "document-version" + (data.run.is_active ? " current" : "")
-                }
-              >
-                {data.run.is_active ? "现行文档" : "历史文档"}
-              </span>
-            </dd>
-            <dt>D2 运行状态</dt>
-            <dd>{data.run.run_status}</dd>
-            <dt>发布状态</dt>
-            <dd>{data.run.publication_state ?? "未发布"}</dd>
-            <dt>发布时间</dt>
-            <dd>{valueText(data.run.published_at, formatInstant)}</dd>
-          </dl>
-        </section>
-        <nav className="content-index" aria-label="Shell 内容路由">
-          <h2>
-            <Layers3 aria-hidden="true" />
-            内容索引
-          </h2>
-          <h3>预期单元</h3>
-          <div className="unit-picker">
-            {indexed.map((u, index) => (
-              <button
-                key={unitId(u)}
-                aria-current={
-                  (activeUnit ? unitId(activeUnit) : undefined) === unitId(u)
-                    ? "page"
-                    : undefined
-                }
-                onClick={() => select("ALL", unitId(u))}
-              >
-                <span className="unit-index-number">{index + 1}</span>
-                <span>{"name" in u ? u.name : u.proposition}</span>
-              </button>
-            ))}
-          </div>
-          {activeUnit && "view_id" in activeUnit && (
-            <div className="unit-content-tree">
-              {(
-                [
-                  ["STATE", "当前状态", activeUnit.state.parameters],
-                  ["BASELINE", "预期基线", activeUnit.expectation_baseline],
-                  ["FACTORS", "实现因素", activeUnit.realization_factors],
-                  ["GAPS", "潜在差异", activeUnit.potential_gaps],
-                ] as const
-              ).map(([key, label, children]) => (
-                <details key={key} open>
-                  <summary>
-                    <ChevronDown />
-                    {label}
-                    <small>{children.length}</small>
-                  </summary>
-                  {children.map((child, index) => (
-                    <button
-                      key={index}
-                      className="tree-leaf"
-                      onClick={() =>
-                        select(
-                          key,
-                          unitId(activeUnit),
-                          `${key.toLowerCase()}-${index}`,
-                        )
-                      }
-                    >
-                      {child.name}
-                    </button>
                   ))}
-                </details>
+                {!page.items.length && <Notice>没有已发布的 Unit 内容</Notice>}
+              </>
+            )}
+          </Module>
+        </div>
+        <aside className="reading-sidebar">
+          <section className="document-meta">
+            <h2>
+              <FileCheck2 aria-hidden="true" />
+              文档状态
+            </h2>
+            <dl>
+              <dt>版本</dt>
+              <dd>
+                <span
+                  className={
+                    "document-version" + (data.run.is_active ? " current" : "")
+                  }
+                >
+                  {data.run.is_active ? "现行文档" : "历史文档"}
+                </span>
+              </dd>
+              <dt>D2 运行状态</dt>
+              <dd>{data.run.run_status}</dd>
+              <dt>发布状态</dt>
+              <dd>{data.run.publication_state ?? "未发布"}</dd>
+              <dt>发布时间</dt>
+              <dd>{valueText(data.run.published_at, formatInstant)}</dd>
+            </dl>
+          </section>
+          <nav className="content-index" aria-label="Shell 内容路由">
+            <h2>
+              <Layers3 aria-hidden="true" />
+              内容索引
+            </h2>
+            <h3>预期单元</h3>
+            <div className="unit-picker">
+              {indexed.map((u, index) => (
+                <button
+                  key={unitId(u)}
+                  aria-current={
+                    (activeUnit ? unitId(activeUnit) : undefined) === unitId(u)
+                      ? "page"
+                      : undefined
+                  }
+                  onClick={() => select("ALL", unitId(u))}
+                >
+                  <span className="unit-index-number">{index + 1}</span>
+                  <span>{"name" in u ? u.name : u.proposition}</span>
+                </button>
               ))}
             </div>
-          )}
-          {activeUnit && !("view_id" in activeUnit) && (
-            <div className="unit-content-tree">
-              {modes
-                .filter(([key]) => key !== "ALL")
-                .map(([key, label]) => {
-                  const Icon = modeIcons[key];
-                  const children =
-                    key === "STATE"
-                      ? activeUnit.state.values.map((v) => ({
-                          id: v.state_value_id,
-                          label:
-                            (activeUnit.state.parameters.find(
-                              (p) => p.parameter_id === v.parameter_id,
-                            )?.definition ?? v.parameter_id) +
-                            " · " +
-                            roles[v.source_role],
-                        }))
-                      : key === "FACTORS"
-                        ? activeUnit.realization_factors.map((f) => ({
-                            id: f.factor_id,
-                            label: f.condition,
+            {activeUnit && "view_id" in activeUnit && (
+              <div className="unit-content-tree">
+                {(
+                  [
+                    ["STATE", "当前状态", activeUnit.state.parameters],
+                    ["BASELINE", "预期基线", activeUnit.expectation_baseline],
+                    ["FACTORS", "实现因素", activeUnit.realization_factors],
+                    ["GAPS", "潜在差异", activeUnit.potential_gaps],
+                  ] as const
+                ).map(([key, label, children]) => (
+                  <details key={key} open>
+                    <summary>
+                      <ChevronDown />
+                      <ModeIcon mode={key} />
+                      {label}
+                      <small>{children.length}</small>
+                    </summary>
+                    {children.map((child, index) => (
+                      <button
+                        key={index}
+                        className="tree-leaf"
+                        onClick={() =>
+                          select(
+                            key,
+                            unitId(activeUnit),
+                            `${key.toLowerCase()}-${index}`,
+                          )
+                        }
+                      >
+                        {child.name}
+                      </button>
+                    ))}
+                  </details>
+                ))}
+              </div>
+            )}
+            {activeUnit && !("view_id" in activeUnit) && (
+              <div className="unit-content-tree">
+                {modes
+                  .filter(([key]) => key !== "ALL")
+                  .map(([key, label]) => {
+                    const Icon = modeIcons[key];
+                    const children =
+                      key === "STATE"
+                        ? activeUnit.state.values.map((v) => ({
+                            id: v.state_value_id,
+                            label:
+                              (activeUnit.state.parameters.find(
+                                (p) => p.parameter_id === v.parameter_id,
+                              )?.definition ?? v.parameter_id) +
+                              " · " +
+                              roles[v.source_role],
                           }))
-                        : activeUnit.potential_gaps.map((g) => ({
-                            id: g.gap_id,
-                            label: g.possible_occurrence,
-                          }));
-                  return (
-                    <details key={key} open>
-                      <summary>
-                        <ChevronDown />
-                        <Icon />
-                        {label}
-                        <small>{children.length}</small>
-                      </summary>
-                      {children.map((child) => (
-                        <button
-                          key={child.id}
-                          className="tree-leaf"
-                          title={child.label}
-                          aria-current={
-                            selectedItem === child.id ? "location" : undefined
-                          }
-                          onClick={() =>
-                            select(key, unitId(activeUnit), child.id)
-                          }
-                        >
-                          {child.label}
-                        </button>
-                      ))}
-                    </details>
-                  );
-                })}
-            </div>
-          )}
-        </nav>
-      </aside>
-    </div>
+                        : key === "FACTORS"
+                          ? activeUnit.realization_factors.map((f) => ({
+                              id: f.factor_id,
+                              label: f.condition,
+                            }))
+                          : activeUnit.potential_gaps.map((g) => ({
+                              id: g.gap_id,
+                              label: g.possible_occurrence,
+                            }));
+                    return (
+                      <details key={key} open>
+                        <summary>
+                          <ChevronDown />
+                          <Icon />
+                          {label}
+                          <small>{children.length}</small>
+                        </summary>
+                        {children.map((child) => (
+                          <button
+                            key={child.id}
+                            className="tree-leaf"
+                            title={child.label}
+                            aria-current={
+                              selectedItem === child.id ? "location" : undefined
+                            }
+                            onClick={() =>
+                              select(key, unitId(activeUnit), child.id)
+                            }
+                          >
+                            {child.label}
+                          </button>
+                        ))}
+                      </details>
+                    );
+                  })}
+              </div>
+            )}
+          </nav>
+        </aside>
+      </div>
+    </CitationProvider>
   );
-}
-const roles: Record<string, string> = {
-  ACTUAL: "实际",
-  MANAGEMENT: "管理层",
-  SELL_SIDE: "卖方",
-  INDUSTRY_CHAIN: "产业链",
-  MARKET_IMPLIED: "市场隐含",
-  CURRENT: "当前",
-  SUPERSEDED: "已替代",
-  DISPUTED: "存在争议",
-  RETRACTED: "已撤回",
-  REQUIRED: "必要条件",
-  BLOCKER: "阻碍因素",
-  MODIFIER: "修正因素",
-};
-function stateValue(type: ParameterType, value: StateValueData) {
-  switch (type) {
-    case "NUMBER": {
-      const v = value as Extract<StateValueData, { number: number }>;
-      return `${v.number} ${v.unit}`;
-    }
-    case "RANGE": {
-      const v = value as Extract<StateValueData, { lower: number }>;
-      return `${v.lower}–${v.upper} ${v.unit}`;
-    }
-    case "TIME": {
-      const v = value as Extract<StateValueData, { precision: string }>;
-      return v.point ?? `${v.start ?? "未记录"} — ${v.end ?? "未记录"}`;
-    }
-    case "STAGE":
-      return (value as { stage: string }).stage;
-    case "DIRECTION":
-      return (value as { direction: string }).direction;
-    case "EVIDENCE": {
-      const v = value as { stance: string; strength: string };
-      return `${v.stance} · ${v.strength}`;
-    }
-  }
 }
 function unitId(unit: ExpectationUnit) {
   return "view_id" in unit
@@ -477,7 +459,7 @@ function unitId(unit: ExpectationUnit) {
 }
 function Unit(props: {
   unit: ExpectationUnit;
-  mode: string;
+  mode: ExpectationMode;
   ticker: string;
   content: ContentRef | null;
 }) {
@@ -487,126 +469,6 @@ function Unit(props: {
     <LegacyUnit {...props} unit={props.unit} />
   );
 }
-function UnitV21({ unit, mode }: { unit: ExpectationUnitV21; mode: string }) {
-  const refs = (values: string[]) =>
-    values.length ? <p className="source-links">{values.join(" · ")}</p> : null;
-  return (
-    <article className="unit-panel">
-      <header>
-        <h2>{unit.name}</h2>
-        <span>{unit.horizon}</span>
-      </header>
-      <p>{unit.scope}</p>
-      {refs(unit.ref)}
-      {["ALL", "STATE"].includes(mode) && (
-        <section>
-          <h3>当前状态</h3>
-          {unit.state.parameters.map((p, i) => (
-            <article id={`d2-state-${i}`} className="condition" key={i}>
-              <div>
-                <h4>{p.name}</h4>
-                <p>{p.definition}</p>
-                {refs(p.ref)}
-                {unit.state.values
-                  .filter((v) => v.parameter === p.name)
-                  .map((v, j) => (
-                    <dl key={j}>
-                      <dt>{roles[v.source_role] ?? v.source_role}</dt>
-                      <dd>{stateValue(p.value_type, v.value)}</dd>
-                      <dt>时间范围</dt>
-                      <dd>
-                        {v.time_scope} · {v.as_of}
-                      </dd>
-                      <dt>有效性</dt>
-                      <dd>{roles[v.validity_state] ?? v.validity_state}</dd>
-                      <dt>来源</dt>
-                      <dd>{v.ref.join(" · ") || "未提供"}</dd>
-                      {v.previous_value && (
-                        <>
-                          <dt>先前值</dt>
-                          <dd>{stateValue(p.value_type, v.previous_value)}</dd>
-                        </>
-                      )}
-                    </dl>
-                  ))}
-              </div>
-            </article>
-          ))}
-        </section>
-      )}
-      {["ALL", "BASELINE"].includes(mode) && (
-        <section>
-          <h3>预期基线</h3>
-          {unit.expectation_baseline.map((b, i) => (
-            <article id={`d2-baseline-${i}`} className="condition" key={i}>
-              <div>
-                <h4>{b.name}</h4>
-                <dl>
-                  <dt>基线</dt>
-                  <dd>{b.baseline}</dd>
-                  <dt>正常推进</dt>
-                  <dd>{b.ordinary_progress}</dd>
-                  <dt>开放前沿</dt>
-                  <dd>{b.open_frontier}</dd>
-                  <dt>时间范围</dt>
-                  <dd>{b.time_scope}</dd>
-                </dl>
-                {refs(b.ref)}
-              </div>
-            </article>
-          ))}
-        </section>
-      )}
-      {["ALL", "FACTORS"].includes(mode) && (
-        <section>
-          <h3>实现因素</h3>
-          {unit.realization_factors.map((f, i) => (
-            <article id={`d2-factors-${i}`} className="condition" key={i}>
-              <div>
-                <h4>{f.name}</h4>
-                <dl>
-                  <dt>机制</dt>
-                  <dd>{f.mechanism}</dd>
-                  <dt>当前状态</dt>
-                  <dd>{f.current_status}</dd>
-                  <dt>重要性</dt>
-                  <dd>{f.materiality_context}</dd>
-                  <dt>范围边界</dt>
-                  <dd>{f.scope_boundary}</dd>
-                </dl>
-                {refs(f.ref)}
-              </div>
-            </article>
-          ))}
-        </section>
-      )}
-      {["ALL", "GAPS"].includes(mode) && (
-        <section>
-          <h3>潜在差异</h3>
-          {unit.potential_gaps.map((g, i) => (
-            <article id={`d2-gaps-${i}`} className="condition" key={i}>
-              <div>
-                <h4>{g.name}</h4>
-                <dl>
-                  <dt>为何仍开放</dt>
-                  <dd>{g.why_live}</dd>
-                  <dt>修正逻辑</dt>
-                  <dd>{g.revision_logic}</dd>
-                </dl>
-                {g.possibility_space.map((p, j) => (
-                  <p key={j}>
-                    <strong>{p.name}</strong> · {p.implication}
-                  </p>
-                ))}
-                {refs(g.ref)}
-              </div>
-            </article>
-          ))}
-        </section>
-      )}
-    </article>
-  );
-}
 function LegacyUnit({
   unit,
   mode,
@@ -614,14 +476,16 @@ function LegacyUnit({
   content,
 }: {
   unit: ExpectationUnitLegacy;
-  mode: string;
+  mode: ExpectationMode;
   ticker: string;
   content: ContentRef | null;
 }) {
   return (
     <article className="unit-panel">
       <header>
-        <h2>{unit.proposition}</h2>
+        <h2>
+          <CitationText text={unit.proposition} />
+        </h2>
         <span>
           <CalendarDays aria-hidden="true" />
           {unit.horizon}
@@ -664,17 +528,32 @@ function LegacyUnit({
                   );
                   return (
                     <tr key={v.state_value_id} id={"d2-" + v.state_value_id}>
-                      <td>{parameter?.definition ?? "参数定义未记录"}</td>
+                      <td>
+                        <CitationText
+                          text={parameter?.definition ?? "参数定义未记录"}
+                        />
+                      </td>
                       <td>{roles[v.source_role]}</td>
                       <td className="state-number">
-                        {parameter
-                          ? stateValue(parameter.value_type, v.value)
-                          : "未记录"}
+                        <CitationText
+                          text={
+                            parameter
+                              ? stateValue(parameter.value_type, v.value)
+                              : "未记录"
+                          }
+                        />
                       </td>
                       <td>
-                        {parameter && v.previous_value
-                          ? stateValue(parameter.value_type, v.previous_value)
-                          : "—"}
+                        <CitationText
+                          text={
+                            parameter && v.previous_value
+                              ? stateValue(
+                                  parameter.value_type,
+                                  v.previous_value,
+                                )
+                              : "—"
+                          }
+                        />
                       </td>
                       <td>
                         {v.time_scope}
@@ -707,14 +586,22 @@ function LegacyUnit({
             {unit.realization_factors.map((f) => (
               <article key={f.factor_id} id={"d2-" + f.factor_id}>
                 <span className="domain-tag">{roles[f.structural_role]}</span>
-                <h4>{f.condition}</h4>
+                <h4>
+                  <CitationText text={f.condition} />
+                </h4>
                 <dl>
                   <dt>当前状态</dt>
-                  <dd>{f.current_status}</dd>
+                  <dd>
+                    <CitationText text={f.current_status} />
+                  </dd>
                   <dt>影响</dt>
-                  <dd>{f.impact}</dd>
+                  <dd>
+                    <CitationText text={f.impact} />
+                  </dd>
                   <dt>可观测条件</dt>
-                  <dd>{f.observability.match_condition}</dd>
+                  <dd>
+                    <CitationText text={f.observability.match_condition} />
+                  </dd>
                 </dl>
                 <Citations
                   ticker={ticker}
@@ -735,15 +622,23 @@ function LegacyUnit({
           </h3>
           {unit.potential_gaps.map((g) => (
             <article className="gap-card" key={g.gap_id} id={"d2-" + g.gap_id}>
-              <h4>{g.possible_occurrence}</h4>
-              <p>{g.derivation}</p>
+              <h4>
+                <CitationText text={g.possible_occurrence} />
+              </h4>
+              <p>
+                <CitationText text={g.derivation} />
+              </p>
               <dl>
                 <dt>预期修正</dt>
-                <dd>{g.expected_revision}</dd>
+                <dd>
+                  <CitationText text={g.expected_revision} />
+                </dd>
                 {g.recognition_criteria && (
                   <>
                     <dt>识别条件</dt>
-                    <dd>{g.recognition_criteria}</dd>
+                    <dd>
+                      <CitationText text={g.recognition_criteria} />
+                    </dd>
                   </>
                 )}
               </dl>

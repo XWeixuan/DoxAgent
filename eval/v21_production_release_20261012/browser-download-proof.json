@@ -1,0 +1,26 @@
+[
+  {
+    "path": "C:\\Users\\WEIXUANXIE\\Downloads\\document2 (2).json",
+    "size": 2386738,
+    "sha256": "3ca00df0d85eef063dc64979f0d7175d8182d532d5b41c825f8b0bf80dd9924d",
+    "schema": null,
+    "schema_version": "document2.v2.1",
+    "ticker": "MU",
+    "run_id": "mu-v21-20261010-02-d2",
+    "version": null,
+    "policy_count": 0,
+    "shell_count": 12
+  },
+  {
+    "path": "C:\\Users\\WEIXUANXIE\\Downloads\\policy-set (1).json",
+    "size": 1583532,
+    "sha256": "7b55edcda0dd2d354543544845d6ec973f80bd7be591df021fe642c56b38213a",
+    "schema": null,
+    "schema_version": "document3.v3",
+    "ticker": "MU",
+    "run_id": null,
+    "version": 22,
+    "policy_count": 262,
+    "shell_count": 0
+  }
+]

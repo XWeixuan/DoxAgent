@@ -4,6 +4,7 @@ import { usePages } from "@/core/paged-query";
 import { tickerPath, id } from "@/core/page-query";
 import { Button } from "./ui/button";
 import { Module } from "./state";
+import { ReferenceMarks, CitationText } from "./citation-text";
 export function Citations({
   ticker,
   content,
@@ -25,6 +26,7 @@ export function Citations({
   if (!aliases.length) return null;
   return (
     <div className="citations">
+      <ReferenceMarks refs={aliases} />
       <Button variant="link" size="sm" onClick={() => setOpen(!open)}>
         引用 {aliases.length}
       </Button>
@@ -42,11 +44,11 @@ export function Citations({
                       {ref?.status === "RESOLVED" &&
                       /^https?:\/\//.test(ref.url ?? "") ? (
                         <a href={ref.url!} target="_blank" rel="noreferrer">
-                          {ref.title ?? alias}
+                          <CitationText text={ref.title ?? alias} />
                         </a>
                       ) : (
                         <span>
-                          {ref?.title ?? alias} ·{" "}
+                          <CitationText text={ref?.title ?? alias} /> ·{" "}
                           {ref?.warning ?? "引用尚未解析"}
                         </span>
                       )}

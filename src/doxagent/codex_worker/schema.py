@@ -21,6 +21,18 @@ class WorkerModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
+class ThreadForkRequest(WorkerModel):
+    parent_thread_id: str = Field(min_length=1)
+    run_id: str = Field(pattern=r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$")
+    idempotency_key: str = Field(min_length=1, max_length=512)
+    model: str | None = None
+    model_provider: str | None = None
+
+
+class TemplateRegisterRequest(WorkerModel):
+    job_id: str
+
+
 class WorkspaceWriteRequest(WorkerModel):
     content: str
     expected_sha256: str | None = None
@@ -46,6 +58,8 @@ class WorkspaceInventoryQuery(WorkerModel):
 
 
 class WorkerRunRequest(WorkerModel):
+    task_phase: Literal["w3_template", "trade_decision", "post_decision_operations"] | None = None
+    web_search_mode: Literal["disabled", "live"] | None = None
     workflow_version: CodexWorkflowVersion = CODEX_D1_WORKFLOW_VERSION
     research_lane: ResearchLane = ResearchLane.LEGACY_DOCUMENT1
     run_id: str
@@ -93,6 +107,8 @@ class WorkerLoopEvent(WorkerModel):
 class WorkerTurnTelemetry(WorkerModel):
     usage: WorkerTokenUsage = Field(default_factory=WorkerTokenUsage)
     observed_usage: dict[str, int | None] | None = None
+    usage_source: str = "sdk_last_request"
+    usage_complete: bool = False
     sdk_duration_ms: int | None = Field(default=None, ge=0)
     worker_wall_time_ms: int | None = Field(default=None, ge=0)
     mcp_call_count: int = Field(default=0, ge=0)

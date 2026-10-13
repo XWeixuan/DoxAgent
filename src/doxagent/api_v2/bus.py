@@ -30,6 +30,9 @@ def source_status(store, binding, seq, view):
         if status == "succeeded"
         else "ABNORMAL"
     )
+    deferred = (poll.get("last_error_code") or "").startswith("SOURCE_DEFERRED:")
+    if deferred and enabled:
+        health = "ABNORMAL"
     due = poll.get("target_due_at")
     now = datetime.fromisoformat(view["as_of"])
     countdown = "SCHEDULED" if due else "UNKNOWN"
@@ -66,7 +69,9 @@ def source_status(store, binding, seq, view):
             ),
             "last_published_count": observed("last_standard_revision_count"),
             "last_poll_latency_seconds": observed("last_latency_ms", lambda value: value / 1000),
-            "current_error": ApiFailure(poll["last_error_code"]).payload(native.binding_id)["error"]
+            "current_error": ApiFailure(
+                poll["last_error_code"], retryable=deferred
+            ).payload(native.binding_id)["error"]
             if poll.get("last_error_code")
             else None,
             "target_interval_seconds": native.polling.target_interval_seconds,

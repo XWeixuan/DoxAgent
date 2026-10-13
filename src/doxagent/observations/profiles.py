@@ -44,7 +44,8 @@ _TOP_LEVEL_ENVELOPE_KEYS = {
 }
 _TOOL_ENVELOPE_KEYS = {
     "ibkr.contract_search": {"transport", "contract_count"},
-    "ibkr.market_history": {"transport", "con_id", "period", "bar", "outside_rth"},
+    "ibkr.market_history": {"transport", "con_id", "period", "bar", "outside_rth",
+                            "duration", "bar_size", "end_datetime", "what_to_show"},
     "ibkr.market_snapshot": {"transport", "con_id", "market_data_type"},
 }
 

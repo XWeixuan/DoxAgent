@@ -1,0 +1,19 @@
+{
+  "verified": true,
+  "before_free": 10891464704,
+  "files": [
+    {
+      "path": "/var/lib/docker/volumes/doxagent-v2_v2-data/_data/read/v2.disk-repair-20261013.precompact.sqlite3",
+      "bytes": 31672459264
+    },
+    {
+      "path": "/var/lib/docker/volumes/doxagent-v2_v2-data/_data/read/v2.disk-repair-20261013.precompact.sqlite3-wal",
+      "bytes": 0
+    },
+    {
+      "path": "/var/lib/docker/volumes/doxagent-v2_v2-data/_data/read/v2.disk-repair-20261013.precompact.sqlite3-shm",
+      "bytes": 32768
+    }
+  ],
+  "after_free": 42572656640
+}

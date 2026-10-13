@@ -1,0 +1,16 @@
+--- 
+
++++ 
+
+@@ -63,6 +63,10 @@
+
+             identities = [r[0] for r in db.execute("SELECT DISTINCT digest FROM v2_receipt_archive")]
+             for (name,) in db.execute("SELECT source FROM v2_source_state"):
+                 ContentFiles(source.parent / "receipt-files" / name).copy(identities, target.parent / "receipt-files" / name)
++        if db.execute("SELECT 1 FROM sqlite_master WHERE name='v2_receipt_packs'").fetchone():
++            identities = [r[0] for r in db.execute("SELECT DISTINCT digest FROM v2_receipt_packs")]
++            for (name,) in db.execute("SELECT source FROM v2_source_state"):
++                ContentFiles(source.parent / "receipt-packs" / name).copy(identities, target.parent / "receipt-packs" / name)
+ 
+ 
+ 

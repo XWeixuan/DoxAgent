@@ -1,0 +1,468 @@
+2026-10-13T02:35:16+08:00
+Images space usage:
+
+REPOSITORY                             TAG                                             IMAGE ID       CREATED        SIZE      SHARED SIZE   UNIQUE SIZE   CONTAINERS
+doxagent-v2                            v21-production-20261012-r2                      92163da1783a   4 hours ago    5.47GB    4.192GB       1.276GB       2
+doxagent-v2                            v21-production-20261012-r1                      7d3612194b29   5 hours ago    5.47GB    4.192GB       1.276GB       11
+doxagent-v2-web                        v21-production-20261012-r1                      5bfd2e7b49da   5 hours ago    113MB     79.82MB       32.97MB       1
+doxagent-v2                            source-recovery-bus-20261012-r1                 fd811880b1da   6 hours ago    3.22GB    2.379GB       839.3MB       0
+doxagent-v2                            source-recovery-enrich-20261012-r1              31a24e36e06a   6 hours ago    4.77GB    3.559GB       1.21GB        1
+doxagent-site-access                   source-recovery-20261012-r1                     d12fb2a9bd3e   6 hours ago    3.29GB    2.434GB       855.8MB       1
+doxagent-v2                            rklb-v21-20261012                               aa2c0b71d498   10 hours ago   5.45GB    4.173GB       1.272GB       5
+doxagent-v2                            be-v21-20261011                                 54ca236f9843   27 hours ago   5.45GB    3.966GB       1.479GB       5
+doxagent-v2                            intc-v21-20261011                               e2a232d7cf05   44 hours ago   5.45GB    3.966GB       1.479GB       5
+doxagent-v2                            mu-v21-worker-20261010                          0c70eb7d7246   2 days ago     5.21GB    3.966GB       1.247GB       1
+doxagent-v2-web                        runtime-title-search-20261009                   90f7c0db812d   3 days ago     109MB     79.82MB       29.62MB       0
+doxagent-v2                            runtime-title-search-20261009                   ecbf14e1ca55   3 days ago     3.45GB    2.586GB       863.7MB       0
+doxagent-v2                            source-storage-bus-20261009-r1                  d9ee1338c54c   3 days ago     3.22GB    2.379GB       838.6MB       0
+doxagent-site-access                   source-storage-20261009-r1                      e12498a10e66   3 days ago     3.29GB    2.434GB       855.2MB       0
+doxagent-v2                            source-storage-enrich-20261009-r1               5e9ac95b4c87   3 days ago     4.77GB    3.559GB       1.21GB        0
+doxagent-site-access                   source-recovery-20261006-r3                     e0a4204fbb90   6 days ago     3.29GB    2.433GB       855.2MB       0
+doxagent-site-access                   source-recovery-20261006-r2                     87963933bab6   6 days ago     3.29GB    2.433GB       855.4MB       0
+doxagent-site-access                   source-recovery-20261006-r1                     1c326369c340   6 days ago     3.29GB    2.433GB       855.4MB       0
+doxagent-v2                            event-maintenance-20261006                      930acffaf471   6 days ago     4.99GB    3.762GB       1.224GB       0
+doxagent-v2                            sweep-priority-20261006                         f4e02aa610f4   6 days ago     3.22GB    2.379GB       838.6MB       0
+doxagent-v2                            recurring-repair-bus-20261004-r4                a5c5d2b59c48   8 days ago     3.22GB    2.379GB       838.6MB       0
+doxagent-site-access                   recurring-repair-20261004-r5                    5dca9377ebdd   8 days ago     3.29GB    2.433GB       855.1MB       0
+doxagent-v2                            recurring-repair-bus-20261004-r3                fb172ceba734   8 days ago     3.22GB    2.378GB       839.2MB       0
+doxagent-site-access                   recurring-repair-20261004-r4                    7e9466cc214d   8 days ago     3.29GB    2.433GB       855.4MB       0
+doxagent-site-access                   recurring-repair-rollback-compatible-20261004   519978e66c3f   8 days ago     3.29GB    2.432GB       855.1MB       0
+doxagent-site-access                   recurring-repair-20261004-r3                    b10df446b212   8 days ago     3.29GB    2.433GB       855.4MB       0
+doxagent-v2                            recurring-repair-bus-20261004-r2                d71a619a4cea   8 days ago     3.22GB    2.378GB       839.2MB       0
+doxagent-site-access                   recurring-repair-20261004-r2                    90e1b519b57a   8 days ago     3.29GB    2.432GB       855.7MB       0
+doxagent-v2                            recurring-repair-bus-20261004-r1                a0a49514964e   8 days ago     3.22GB    2.378GB       839.2MB       0
+doxagent-site-access                   recurring-repair-20261004-r1                    322a6ec68c1a   8 days ago     3.29GB    2.432GB       855.7MB       0
+doxagent-v2-web                        gateway-viewfix2-20261003                       78e8fe112832   9 days ago     106MB     77.22MB       28.93MB       0
+doxagent-v2                            maintenance-scheduler-20261003-r3               5f68f63a3ff1   9 days ago     4.99GB    3.762GB       1.223GB       0
+doxagent-v2                            maintenance-scheduler-20261003-r2               672c5ed15db0   9 days ago     4.99GB    3.762GB       1.223GB       0
+doxagent-v2                            maintenance-worker-20261003                     d83f8d86c67c   10 days ago    4.98GB    3.762GB       1.223GB       0
+doxagent-v2                            maintenance-scheduler-20261003                  c3d1c83c0248   10 days ago    4.98GB    3.762GB       1.223GB       0
+doxagent-v2                            store-recovery-20261002                         cf19a05b0112   10 days ago    3.45GB    2.586GB       863.6MB       0
+doxagent-v2-web                        store-recovery-20261002                         b62dad69724e   10 days ago    104MB     75.6MB        28.48MB       0
+doxagent-site-access                   market-news-1f0ad0db                            d331d8f79b76   10 days ago    3.29GB    2.432GB       855.1MB       0
+doxagent-v2                            market-news-enrich-3ef317a4                     7efc5969a77b   10 days ago    4.77GB    3.559GB       1.21GB        0
+doxagent-v2                            market-news-bus-3ef317a4                        785f4025bdce   10 days ago    3.22GB    2.378GB       838.5MB       0
+doxagent-site-access                   market-news-3ef317a4                            6e85222a37d4   10 days ago    3.29GB    2.432GB       855MB         0
+doxagent-site-access                   market-source-preview3-20261002                 b71b225161fa   10 days ago    3.29GB    2.432GB       855.2MB       0
+doxagent-site-access                   market-source-preview2-20261002                 d20b274b102b   10 days ago    3.29GB    2.432GB       855.2MB       0
+doxagent-v2-web                        d2-download-47f6515f                            f520163db3ea   10 days ago    101MB     73MB          27.79MB       0
+doxagent-v2                            d2-download-47f6515f                            e6f584af91ff   10 days ago    3.45GB    2.586GB       863.6MB       0
+doxagent-site-access                   market-source-preview-20261002                  35a84c89ecf3   10 days ago    3.29GB    2.432GB       855.4MB       0
+doxagent-v2                            codex-gpt6-template-0.159.3                     090b53b6bcb7   10 days ago    3.96GB    2.747GB       1.214GB       1
+doxagent-v2                            codex-sdk-template-0.159.3-base                 659da7f5c7bc   10 days ago    3.73GB    2.747GB       981.3MB       0
+doxagent-initialization-repair-agent   codex-gpt6-0.159.3                              ed36f1dc6509   10 days ago    4.19GB    2.922GB       1.268GB       0
+doxagent-v2                            codex-gpt6-guardian-0.159.3                     2a0dba949b63   10 days ago    4.98GB    3.554GB       1.431GB       0
+doxagent-v2                            codex-gpt6-scheduler-0.159.3                    a3e36eb6c06e   10 days ago    4.98GB    3.762GB       1.223GB       0
+doxagent-v2                            codex-gpt6-research-0.159.3                     37a10a578d88   10 days ago    4.98GB    3.554GB       1.431GB       10
+doxagent-v2                            codex-gpt6-worker-0.159.3                       1c738df3eefa   10 days ago    4.98GB    3.762GB       1.223GB       0
+doxagent-initialization-repair-agent   codex-sdk-0.159.3-base                          0e8de80af110   10 days ago    3.96GB    2.922GB       1.035GB       0
+doxagent-v2                            codex-sdk-0.159.3-base                          c4ffae69cc07   10 days ago    4.75GB    3.554GB       1.198GB       0
+doxagent-v2                            policy-kpi-20261001                             cccf8b29f8a6   11 days ago    3.45GB    2.586GB       863.6MB       0
+doxagent-v2                            source-repair-392bd994                          46dbe07b3e48   11 days ago    3.22GB    2.378GB       838.5MB       0
+doxagent-v2                            policy-visibility-20261001                      f9f04d3adccd   11 days ago    3.45GB    2.586GB       863.6MB       0
+doxagent-site-access                   source-repair-ced70346                          e56b45f8749c   11 days ago    3.29GB    2.432GB       855MB         0
+doxagent-v2                            source-repair-ced70346                          7ce9eb90d2c6   11 days ago    3.22GB    2.378GB       838.5MB       0
+doxagent-v2-web                        case-template-6e2e2dd4                          3fe37c5d084d   11 days ago    98.8MB    71.45MB       27.38MB       0
+doxagent-v2                            case-template-6e2e2dd4                          41e6538e95d8   11 days ago    3.45GB    2.586GB       863.6MB       0
+doxagent-v2-web                        policy-recalled-0271a18b                        0f67f5de3cea   12 days ago    96.8MB    69.89MB       26.96MB       0
+doxagent-v2                            policy-recalled-0271a18b                        71c15aba1ca7   12 days ago    3.45GB    2.586GB       863.5MB       0
+doxagent-v2                            trade-projector-8c55fcd3-patch                  18f51d9faf4b   12 days ago    3.45GB    2.586GB       863.6MB       0
+doxagent-v2-web                        trade-delivery-9dd43b03                         e1563f37b01f   12 days ago    94.7MB    68.2MB        26.46MB       0
+doxagent-v2                            trade-delivery-9dd43b03-patch                   97e611bfc281   12 days ago    3.45GB    2.586GB       863.5MB       0
+doxagent-v2-web                        case-d11f7fa1                                   580e7c2710b0   12 days ago    96.8MB    68.2MB        28.65MB       0
+doxagent-v2                            case-d11f7fa1                                   4309b23d96e2   12 days ago    3.45GB    2.585GB       863.5MB       0
+doxagent-v2                            codex-gpt6-baseline-system                      5c19ed90874f   12 days ago    3.22GB    2.378GB       838.5MB       0
+doxagent-v2                            enrich-retry-d7b9026b                           7b9827a49b21   12 days ago    4.77GB    3.559GB       1.21GB        0
+doxagent-v2                            barrons-ticker-b83edcd1                         55c120d02e22   12 days ago    4.77GB    3.559GB       1.21GB        0
+doxagent-site-access                   barrons-ticker-3fc53c72                         4c9609d9d055   12 days ago    4.84GB    3.613GB       1.227GB       0
+doxagent-v2                            barrons-ticker-3fc53c72                         17669fb0636e   12 days ago    4.77GB    3.559GB       1.21GB        0
+doxagent-site-access                   server                                          8fc58e6e66df   12 days ago    4.84GB    3.613GB       1.226GB       0
+doxagent-v2                            trade-427ad43d                                  1b97b60d0fcc   13 days ago    3.22GB    2.378GB       838.5MB       0
+doxagent-v2-web                        release-f3da669b                                3dae4d641521   13 days ago    94.7MB    68.2MB        26.46MB       0
+doxagent-v2-web                        production                                      b96ff3427868   2 weeks ago    94.6MB    66.49MB       28.13MB       0
+doxagent-chrome-supervisor             server                                          cc38be0a0fe8   2 weeks ago    5.4GB     193.3MB       5.207GB       1
+doxagent-v2                            production                                      c09e5647fa35   2 weeks ago    3.22GB    193.3MB       3.023GB       0
+doxagent-initialization-repair-agent   before-gpt6-20261002                            3cc03c11fd9d   2 weeks ago    3.45GB    2.553GB       892.8MB       0
+doxagent-v2                            init-repair-source-1b74f2e                      0522bf4e87bd   3 weeks ago    3.22GB    2.377GB       838.6MB       1
+metacubex/mihomo                       v1.19.31                                        739edd73a352   4 weeks ago    143MB     0B            143.3MB       1
+<none>                                 <none>                                          49893e0e515b   4 weeks ago    4.06GB    193.3MB       3.867GB       0
+
+Containers space usage:
+
+CONTAINER ID   IMAGE                                              COMMAND                  LOCAL VOLUMES   SIZE      CREATED        STATUS                    NAMES
+92ab7069d26d   doxagent-v2:v21-production-20261012-r2             "python -m doxagent.…"   1               32.8kB    4 hours ago    Up 4 hours                doxagent-v2-v2-projector-1
+ae262a172d1f   doxagent-v2:v21-production-20261012-r2             "sh -c 'python -m do…"   1               20.5kB    4 hours ago    Up 4 hours (healthy)      doxagent-v2-v2-api-1
+4d1bca4864e8   doxagent-v2:v21-production-20261012-r1             "python -m doxagent.…"   1               41kB      4 hours ago    Up 4 hours                doxagent-v2-v2-message-bus-1
+fadaa75b8737   doxagent-v2:v21-production-20261012-r1             "python -m doxagent.…"   1               32.8kB    4 hours ago    Up 22 minutes             doxagent-v2-v2-scheduler-1
+55de53390e78   doxagent-v2:v21-production-20261012-r1             "python -m doxagent.…"   1               28.7kB    4 hours ago    Up 13 minutes (healthy)   doxagent-v2-v2-cdecr-executor-1
+0c4401b6d7e8   doxagent-v2:v21-production-20261012-r1             "python -m doxagent.…"   1               20.5kB    4 hours ago    Up 13 minutes             doxagent-v2-v2-control-1
+2408ee2b8979   doxagent-v2:v21-production-20261012-r1             "python -m doxagent.…"   1               20.5kB    4 hours ago    Up 22 minutes             doxagent-v2-v2-executor-1
+072eafcf425c   doxagent-v2:v21-production-20261012-r1             "python -m doxagent.…"   1               20.5kB    4 hours ago    Up 13 minutes             doxagent-v2-v2-delivery-1
+bb4f5ff4f868   doxagent-v2:v21-production-20261012-r1             "python -m doxagent.…"   1               28.7kB    4 hours ago    Up 4 hours                doxagent-v2-v2-o4-1
+146d6f3a5f4e   doxagent-v2:v21-production-20261012-r1             "doxagent-initializa…"   1               49.2kB    4 hours ago    Up 4 hours                doxagent-v2-initialization-guardian-1
+0938c6ee45ee   doxagent-v2:v21-production-20261012-r1             "python -m doxagent.…"   1               69.6kB    4 hours ago    Up 14 minutes             doxagent-v2-v2-initialization-1
+e8b6250acc98   doxagent-v2-web:v21-production-20261012-r1         "/docker-entrypoint.…"   0               81.9kB    4 hours ago    Up 4 hours (healthy)      doxagent-v2-v2-web-1
+b3cfb63ac3a8   doxagent-v2:v21-production-20261012-r1             "python -m doxagent.…"   1               15.5MB    4 hours ago    Up 4 hours (healthy)      doxagent-v2-codex-worker-1
+437e79db9be6   doxagent-v2:v21-production-20261012-r1             "python -m doxagent.…"   1               15.3MB    5 hours ago    Exited (0) 4 hours ago    v21-production-smoke-worker
+092e45f2ec39   0fc1f0690c82                                       "python -m doxagent.…"   1               15.3MB    5 hours ago    Exited (0) 5 hours ago    v21-production-smoke-worker-second
+499ecd103873   b6d8de3fb5c7                                       "python -m doxagent.…"   1               15.3MB    5 hours ago    Exited (0) 5 hours ago    v21-production-smoke-worker-first
+654025d6af05   doxagent-v2:rklb-v21-20261012                      "python -u scripts/o…"   1               28.7kB    6 hours ago    Up 2 minutes              doxagent-rklb-v21-01-d3
+a6f492ba10f2   doxagent-v2:source-recovery-enrich-20261012-r1     "python -m doxagent.…"   2               49.2kB    6 hours ago    Up 24 minutes             doxagent-v2-v2-content-enrichment-1
+03b037cd9eab   doxagent-site-access:source-recovery-20261012-r1   "/usr/local/bin/site…"   2               639kB     6 hours ago    Up 6 hours (unhealthy)    doxagent-v2-v2-site-access-1
+948c08aeb890   doxagent-v2:rklb-v21-20261012                      "python -u scripts/o…"   1               28.7kB    8 hours ago    Exited (0) 6 hours ago    doxagent-rklb-v21-01-d2
+3bf628fef78a   doxagent-v2:rklb-v21-20261012                      "python -u scripts/o…"   1               28.7kB    8 hours ago    Exited (0) 8 hours ago    doxagent-rklb-v21-01-d2-o0
+6b50d2e19fef   doxagent-v2:rklb-v21-20261012                      "python -u scripts/o…"   1               28.7kB    10 hours ago   Exited (0) 8 hours ago    doxagent-rklb-v21-01-d1
+1d36ee856ba6   doxagent-v2:rklb-v21-20261012                      "python -m doxagent.…"   1               16.1MB    10 hours ago   Up 10 hours               doxagent-rklb-v21-worker
+7194a496124b   doxagent-v2:be-v21-20261011                        "python -u scripts/o…"   1               28.7kB    23 hours ago   Exited (0) 10 hours ago   doxagent-be-v21-01-d3
+e13e179e8965   doxagent-v2:be-v21-20261011                        "python -u scripts/o…"   1               28.7kB    25 hours ago   Exited (0) 24 hours ago   doxagent-be-v21-01-d2
+6994bc982564   doxagent-v2:be-v21-20261011                        "python -u scripts/o…"   1               28.7kB    25 hours ago   Exited (0) 25 hours ago   doxagent-be-v21-01-d2-o0
+1a4b2469ddcc   doxagent-v2:be-v21-20261011                        "python -u scripts/o…"   1               28.7kB    27 hours ago   Exited (0) 25 hours ago   doxagent-be-v21-01-d1
+a0501b261a67   doxagent-v2:be-v21-20261011                        "python -m doxagent.…"   1               16.1MB    27 hours ago   Up 27 hours               doxagent-be-v21-worker
+80eec799bcad   doxagent-v2:intc-v21-20261011                      "python -u scripts/o…"   1               69.6kB    41 hours ago   Exited (0) 28 hours ago   doxagent-intc-v21-01-d3
+8bc529325e37   doxagent-v2:intc-v21-20261011                      "python -u scripts/o…"   1               28.7kB    42 hours ago   Exited (0) 41 hours ago   doxagent-intc-v21-01-d2
+4f4a59b27875   doxagent-v2:intc-v21-20261011                      "python -u scripts/o…"   1               28.7kB    42 hours ago   Exited (0) 42 hours ago   doxagent-intc-v21-01-d2-o0
+70caca3a8182   doxagent-v2:intc-v21-20261011                      "python -u scripts/o…"   1               61.4kB    44 hours ago   Exited (0) 42 hours ago   doxagent-intc-v21-01-d1
+8c4d33e83574   doxagent-v2:intc-v21-20261011                      "python -m doxagent.…"   1               18.2MB    44 hours ago   Up 44 hours               doxagent-intc-v21-worker
+73ba88d9b32c   doxagent-v2:codex-gpt6-research-0.159.3            "python -m scripts.o…"   1               36.9kB    2 days ago     Exited (0) 2 days ago     doxagent-mu-v21-02-d3-resume-parallel
+d63b42468de0   doxagent-v2:codex-gpt6-research-0.159.3            "python -m scripts.o…"   1               24.6kB    2 days ago     Exited (137) 2 days ago   doxagent-mu-v21-02-d3-resume-main
+33dd82fcba0d   doxagent-v2:codex-gpt6-research-0.159.3            "python -m scripts.o…"   1               24.6kB    2 days ago     Exited (0) 2 days ago     doxagent-mu-v21-02-d3-resume-canary
+301deddd74fa   doxagent-v2:codex-gpt6-research-0.159.3            "python -u scripts/o…"   1               36.9kB    2 days ago     Exited (0) 2 days ago     doxagent-mu-v21-02-d3
+ad9e17dec66b   doxagent-v2:codex-gpt6-research-0.159.3            "python -u scripts/o…"   1               36.9kB    2 days ago     Exited (0) 2 days ago     doxagent-mu-v21-02-d2
+4b794af7af16   doxagent-v2:codex-gpt6-research-0.159.3            "python -u scripts/o…"   1               36.9kB    2 days ago     Exited (0) 2 days ago     doxagent-mu-v21-02-c4-retry2
+f58da4b019e8   doxagent-v2:mu-v21-worker-20261010                 "python -m doxagent.…"   1               15.6MB    2 days ago     Up 2 days                 doxagent-mu-v21-worker
+66aabc48e0d9   doxagent-v2:codex-gpt6-research-0.159.3            "python -u scripts/o…"   1               36.9kB    3 days ago     Exited (1) 2 days ago     doxagent-mu-v21-02-c4-resume
+f159c2f98779   doxagent-v2:codex-gpt6-research-0.159.3            "python -u scripts/o…"   1               24.6kB    3 days ago     Exited (137) 3 days ago   doxagent-mu-v21-03-d1
+bb4dca98ba44   doxagent-v2:codex-gpt6-research-0.159.3            "python -u scripts/o…"   1               36.9kB    3 days ago     Exited (0) 3 days ago     doxagent-mu-v21-02-d1
+1c6f90b31d21   doxagent-v2:codex-gpt6-research-0.159.3            "python -u scripts/o…"   1               36.9kB    3 days ago     Exited (137) 3 days ago   doxagent-mu-v21-d1
+648211f2cbc1   doxagent-v2:codex-gpt6-template-0.159.3            "python -c 'raise Sy…"   0               4.1kB     10 days ago    Created                   doxagent-v2-initialization-repair-template
+88b79b5b3d0e   doxagent-chrome-supervisor:server                  "/usr/local/bin/chro…"   2               3.38MB    2 weeks ago    Up 2 weeks (healthy)      doxagent-v2-v2-chrome-supervisor-1
+592faee5c4aa   doxagent-v2:init-repair-source-1b74f2e             "python -c 'raise Sy…"   0               16.4kB    2 weeks ago    Created                   doxagent-v2-initialization-repair-template-before-gpt6-20261002
+f113a98afbf8   metacubex/mihomo:v1.19.31                          "/mihomo"                1               4.1kB     3 weeks ago    Up 2 weeks                doxagent-egress-clash
+
+Local Volumes space usage:
+
+VOLUME NAME                                                        LINKS     SIZE
+aa65271055f4655e6024bff4c456cf3ce135b39a25d3313c16801ce4463f16c4   1         29.89MB
+doxagent-v2_v2-data                                                42        101.5GB
+doxagent-v2_v2-enrichment-identities                               1         545B
+doxagent-barrons-chrome-control-profile                            0         183.5MB
+doxagent-barrons-cdp-attach-control-profile                        0         203.7MB
+doxagent-v2_v2-site-strategy                                       2         11.84GB
+99760e7dd5411e658e79df03be92adb05374b53408ff88d70f50c4cb0d8be276   0         29.89MB
+doxagent-barrons-playwright-chrome-control-profile                 0         8.619MB
+doxagent-v2_v2-chrome-control                                      2         5B
+aedb5b14b26e83adba0c9148be0f3966c2d829833c46153cb1940112ecd5ee01   0         29.87MB
+
+Build cache usage: 3.415GB
+
+CACHE ID       CACHE TYPE     SIZE      CREATED       LAST USED     USAGE     SHARED
+re9csiwkkyvk   regular        24.7MB    6 hours ago   6 hours ago   1         true
+j88uqmvgwpov   regular        414kB     6 hours ago   6 hours ago   1         true
+yzozy1u9spz9   regular        2.5MB     6 hours ago   6 hours ago   1         true
+c7vwui78bog3   regular        238kB     6 hours ago   6 hours ago   1         true
+gkywjvtzvyzq   regular        65.3kB    6 hours ago   6 hours ago   1         true
+p6tn70x8ckkm   regular        16.5MB    6 hours ago   6 hours ago   1         true
+y0ktc2zdxzvs   regular        1.05kB    6 hours ago   6 hours ago   1         true
+hhqdj024hsay   regular        978B      6 hours ago   6 hours ago   1         true
+o65wstadr4u1   regular        1.8kB     6 hours ago   6 hours ago   1         true
+s5saunxi8rik   regular        4.26kB    6 hours ago   6 hours ago   1         true
+k6v57a2qbgjs   regular        3.13kB    6 hours ago   6 hours ago   1         true
+oh74aen5i4g9   regular        9.41kB    6 hours ago   6 hours ago   1         true
+w8jzot5ebzk2   regular        4.86kB    6 hours ago   6 hours ago   1         true
+r9cuc8et0rio   regular        13.6kB    6 hours ago   6 hours ago   1         true
+uro1p3tnaidp   regular        12kB      6 hours ago   6 hours ago   1         true
+x89hvnx3blpf   regular        7.11kB    6 hours ago   6 hours ago   1         true
+tjb90wo687qc   regular        3.93kB    6 hours ago   6 hours ago   1         true
+ayvurzoxxxfy   regular        4.8kB     6 hours ago   6 hours ago   1         true
+t8cju1pb2bm9   regular        32B       6 hours ago   6 hours ago   1         true
+ki05rpnbqvq2   regular        32B       6 hours ago   6 hours ago   1         true
+ua050rai9aia   regular        32B       6 hours ago   6 hours ago   1         true
+ifogqqzbaube   regular        4.85kB    6 hours ago   6 hours ago   1         true
+46x28uior57x   regular        32B       6 hours ago   6 hours ago   1         true
+mu7e1prx7sjv   regular        12kB      6 hours ago   6 hours ago   1         true
+ayq49igqqhny   regular        32B       6 hours ago   6 hours ago   1         true
+cle32pw8cyul   regular        32B       6 hours ago   6 hours ago   1         true
+qbwhfnkn3wv1   regular        32B       6 hours ago   6 hours ago   1         true
+ckodwerzf0or   regular        4.29kB    6 hours ago   6 hours ago   1         true
+ksdd9k3ypk54   regular        12.1kB    6 hours ago   6 hours ago   1         true
+nmxs4f393ze5   regular        2.13kB    6 hours ago   6 hours ago   1         true
+tbhed9b2mian   regular        2.69kB    6 hours ago   6 hours ago   1         true
+kpbns25hxd2u   regular        5.41kB    6 hours ago   6 hours ago   1         true
+qynutf02kq5b   regular        14kB      6 hours ago   6 hours ago   1         true
+6umfog17vfeo   regular        4.04kB    6 hours ago   6 hours ago   1         true
+xq8l496ncpmy   regular        1.77kB    6 hours ago   6 hours ago   1         true
+ti0lz7f5rknv   regular        8.84kB    6 hours ago   6 hours ago   1         true
+vodcztsq7s73   regular        6.81kB    6 hours ago   6 hours ago   1         true
+piwfmsrcbnhn   regular        12.9kB    6 hours ago   6 hours ago   1         true
+xe7rutyxn5r2   regular        14.8kB    6 hours ago   6 hours ago   1         true
+51nzqwj4drpl   regular        12.4kB    6 hours ago   6 hours ago   1         true
+ftcpx5u6gcbc   regular        2.23kB    6 hours ago   6 hours ago   1         true
+zczi6w8ig1aw   regular        48.9kB    6 hours ago   6 hours ago   1         true
+p8wdtpijrm93   regular        43.3kB    6 hours ago   6 hours ago   1         true
+nuheplj0jav8   regular        26.5kB    6 hours ago   6 hours ago   1         true
+mnz8owca4cw9   regular        57.7kB    6 hours ago   6 hours ago   1         true
+gjnkhhk5e7nv   regular        51.9kB    6 hours ago   6 hours ago   1         true
+jjo09ja9lnfw   regular        62.8kB    6 hours ago   6 hours ago   1         true
+gvah84qioqo7   regular        147kB     6 hours ago   6 hours ago   1         true
+lv34q1dc2fbd   regular        61.7kB    6 hours ago   6 hours ago   1         true
+pmn6qf16khkp   regular        47.8kB    6 hours ago   6 hours ago   1         true
+lvxt1yqrkufg   regular        103kB     6 hours ago   6 hours ago   1         true
+o5b30pbtsrcm   regular        93B       6 hours ago   6 hours ago   2         true
+3z5zq3oycvyu   regular        32.9MB    6 hours ago   6 hours ago   2         true
+w74iabgd46p6   regular        140kB     6 hours ago   6 hours ago   2         true
+wh9wnvcgj9zt   regular        272MB     6 hours ago   6 hours ago   2         true
+t5aori72wy3k   regular        437MB     6 hours ago   6 hours ago   2         true
+liyc1c10ytat   regular        24.7MB    6 hours ago   6 hours ago   1         true
+lpevpxgtbidi   regular        408kB     6 hours ago   6 hours ago   1         true
+jccxhn51q2dx   regular        2.5MB     6 hours ago   6 hours ago   1         true
+bgezxq3hfnbq   regular        238kB     6 hours ago   6 hours ago   1         true
+i28e19sq499g   regular        65.3kB    6 hours ago   6 hours ago   1         true
+gkaqb206pzud   regular        4.26kB    6 hours ago   6 hours ago   1         true
+39m15mn18n32   regular        3.14kB    6 hours ago   6 hours ago   1         true
+skg29x01a9tb   regular        9.41kB    6 hours ago   6 hours ago   1         true
+nzthzhv3y4jx   regular        4.86kB    6 hours ago   6 hours ago   1         true
+3fj4f8gij4c8   regular        13.6kB    6 hours ago   6 hours ago   1         true
+4155j2vk3185   regular        12kB      6 hours ago   6 hours ago   1         true
+ukdrsad6k03t   regular        7.12kB    6 hours ago   6 hours ago   1         true
+vk5r5bibqo8j   regular        3.93kB    6 hours ago   6 hours ago   1         true
+z438m91au1n7   regular        4.81kB    6 hours ago   6 hours ago   1         true
+iiai7wrv2yzq   regular        4.29kB    6 hours ago   6 hours ago   1         true
+ck7kicpinme1   regular        12.1kB    6 hours ago   6 hours ago   1         true
+tei4j6mwa7n5   regular        2.13kB    6 hours ago   6 hours ago   1         true
+bszqso4tj28n   regular        2.69kB    6 hours ago   6 hours ago   1         true
+oniaziridqo6   regular        5.41kB    6 hours ago   6 hours ago   1         true
+i73160r6fa0f   regular        14kB      6 hours ago   6 hours ago   1         true
+yw8vxqwfq8i7   regular        4.04kB    6 hours ago   6 hours ago   1         true
+v9v81ub8934f   regular        1.77kB    6 hours ago   6 hours ago   1         true
+u915ee2v0uni   regular        8.84kB    6 hours ago   6 hours ago   1         true
+thx7jt97bbbd   regular        6.81kB    6 hours ago   6 hours ago   1         true
+hn4eiyqlldvw   regular        12.9kB    6 hours ago   6 hours ago   1         true
+czmshj09i1vi   regular        4.01kB    6 hours ago   6 hours ago   1         true
+stebge1slc8b   regular        12.5kB    6 hours ago   6 hours ago   1         true
+ntnk82eti0kw   regular        53.2kB    6 hours ago   6 hours ago   1         true
+8obh5c0h4pc1   regular        57.6kB    6 hours ago   6 hours ago   1         false
+0ztp57d68ff1   regular        57.8kB    6 hours ago   6 hours ago   1         false
+1hldwuarzek6   regular        77.2kB    6 hours ago   6 hours ago   1         false
+4jus2rk652tz   regular        71.5kB    6 hours ago   6 hours ago   1         true
+ogsmp207xte3   regular        71.9kB    6 hours ago   6 hours ago   1         false
+pj93etfgbdf9   regular        48.9kB    6 hours ago   6 hours ago   1         false
+qbpss1bnc9px   regular        2.75kB    6 hours ago   6 hours ago   1         true
+2om0t7fyznzf   regular        47.8kB    6 hours ago   6 hours ago   1         false
+x6t2ra72azy1   regular        42.5kB    6 hours ago   6 hours ago   1         true
+voje8yfd4de4   regular        68.6kB    6 hours ago   6 hours ago   1         true
+skbij0qyfe8y   regular        62.8kB    6 hours ago   6 hours ago   1         false
+ideq3ou4euft   regular        32.9MB    6 hours ago   6 hours ago   1         true
+04zdjn0v0h9j   regular        140kB     6 hours ago   6 hours ago   1         true
+a8hjthino5ev   regular        24.7MB    6 hours ago   6 hours ago   1         true
+dmdz66ggr3zf   regular        634MB     6 hours ago   6 hours ago   1         true
+tix1nz1no9tf   regular        437MB     6 hours ago   6 hours ago   1         true
+xfbf9sehfe26   regular        238kB     6 hours ago   6 hours ago   1         true
+kjratt7kpzut   regular        11.5MB    6 hours ago   6 hours ago   1         true
+c05ngx3xkdut   regular        5.58kB    6 hours ago   6 hours ago   1         true
+wwrd7g5btvaa   regular        908kB     6 hours ago   6 hours ago   1         true
+k2ibtnbcoxva   regular        4.54kB    6 hours ago   6 hours ago   1         true
+wi0nt81v3c7u   regular        4.26kB    6 hours ago   6 hours ago   1         true
+ppgunpqoro74   regular        3.14kB    6 hours ago   6 hours ago   1         true
+igdmtgurxi5y   regular        9.41kB    6 hours ago   6 hours ago   1         true
+z9tiu926hbpx   regular        4.86kB    6 hours ago   6 hours ago   1         true
+l1yoz1g6fkkm   regular        13.6kB    6 hours ago   6 hours ago   1         true
+cc4v3v6p58nx   regular        12kB      6 hours ago   6 hours ago   1         true
+utrd27xiw1ch   regular        7.12kB    6 hours ago   6 hours ago   1         true
+tz0s72x8oveo   regular        3.93kB    6 hours ago   6 hours ago   1         true
+ojfu49mvpxfn   regular        4.81kB    6 hours ago   6 hours ago   1         true
+03ex42mxc22b   regular        4.88kB    6 hours ago   6 hours ago   1         true
+x8ep6uxudmgh   regular        2.74kB    6 hours ago   6 hours ago   1         true
+jrfhv100nrmb   regular        62.8kB    6 hours ago   6 hours ago   1         true
+2j4k7jozuziy   regular        47.8kB    6 hours ago   6 hours ago   1         true
+j0n8zo7olud9   regular        38.4kB    6 hours ago   6 hours ago   2         true
+jghj0ez28wlc   regular        86.9kB    6 hours ago   6 hours ago   2         false
+79x210s6bipv   regular        47.8kB    6 hours ago   6 hours ago   1         false
+ayguc3ndskii   regular        48.9kB    6 hours ago   6 hours ago   1         false
+lszhfpl9fqze   regular        57.8kB    6 hours ago   6 hours ago   1         false
+gzmay0muf8n7   regular        77.2kB    6 hours ago   6 hours ago   1         false
+p1c8vqdq5m9s   regular        71.9kB    6 hours ago   6 hours ago   1         false
+07r136sizkx2   regular        57.6kB    6 hours ago   6 hours ago   1         false
+i8y7oxb7go7j   regular        62.8kB    6 hours ago   6 hours ago   1         false
+3an8ihccm7oq   source.local   348kB     6 hours ago   6 hours ago   6         false
+iar2omqqijn6   source.local   4.1kB     6 hours ago   6 hours ago   6         false
+wgh49unu9j30   regular        56.5kB    6 hours ago   6 hours ago   2         true
+2l3r7t8kykq7   regular        87.1kB    6 hours ago   6 hours ago   1         true
+xyqj8ff98h46   source.local   8.19kB    6 hours ago   6 hours ago   7         false
+r489mflscw97   regular        57.6kB    6 hours ago   6 hours ago   1         true
+mnmhi4ycyaxb   regular        62.8kB    6 hours ago   6 hours ago   1         true
+j85vsjw3mj1p   regular        77.2kB    6 hours ago   6 hours ago   1         true
+uhal48s5g9bp   regular        47.8kB    6 hours ago   6 hours ago   1         true
+88q2dsv7hz9w   regular        71.9kB    6 hours ago   6 hours ago   1         true
+z1i21cl7e1h8   regular        48.9kB    6 hours ago   6 hours ago   1         true
+kwtxkxiivdtw   regular        57.8kB    6 hours ago   6 hours ago   1         true
+681l8j0jid0k   regular        10.2MB    6 hours ago   6 hours ago   1         true
+h4ps207l0jch   regular        1.39MB    6 hours ago   6 hours ago   1         true
+xk09ma6z879o   regular        16.4kB    6 hours ago   6 hours ago   1         true
+rrnwrshs8lil   regular        705kB     6 hours ago   6 hours ago   1         true
+tarukkwqlzmk   regular        15MB      5 hours ago   5 hours ago   1         true
+9scgdqoi46qr   regular        1.72MB    5 hours ago   5 hours ago   1         true
+vcfqgu0skcnd   regular        771kB     5 hours ago   5 hours ago   1         true
+7jmv8fdnakth   regular        8.22kB    5 hours ago   5 hours ago   1         false
+zn3dhmmzfdxc   regular        17.4kB    5 hours ago   5 hours ago   1         true
+s2oqwege3ks5   regular        4.42MB    5 hours ago   5 hours ago   1         false
+mvpaqd3iz40a   regular        3.86MB    5 hours ago   5 hours ago   1         true
+y3ofkbzw7ru6   regular        1.83MB    5 hours ago   5 hours ago   1         true
+rf7b5uqedevd   regular        626B      5 hours ago   5 hours ago   1         true
+rzsr6lckg4n3   regular        956B      5 hours ago   5 hours ago   1         true
+w4bpyqfps6c1   regular        405B      5 hours ago   5 hours ago   1         true
+983t7xvec26v   regular        1.21kB    5 hours ago   5 hours ago   1         true
+ji6g7b3czx6u   regular        1.4kB     5 hours ago   5 hours ago   1         true
+j6k4ywiu36t6   regular        20.3MB    5 hours ago   5 hours ago   1         true
+riausoo20ps2   regular        781B      5 hours ago   5 hours ago   1         true
+d2h9ot48nk1c   regular        494kB     5 hours ago   5 hours ago   1         true
+u610lhvi93hq   regular        495kB     5 hours ago   5 hours ago   1         true
+l17gyaf6jelq   regular        418kB     5 hours ago   5 hours ago   1         true
+14see3flkdte   regular        418kB     5 hours ago   5 hours ago   1         true
+2bbrahi63swu   regular        689kB     5 hours ago   5 hours ago   1         true
+u7sleut9hjv0   regular        447kB     5 hours ago   5 hours ago   1         true
+b68zk3pjgwct   source.local   4.1kB     5 hours ago   5 hours ago   2         false
+y5pqy0r0356s   source.local   8.19kB    5 hours ago   5 hours ago   2         false
+j1bg4iu7kxqf   regular        29.5kB    5 hours ago   5 hours ago   1         false
+0v9w72kpclbv   regular        2.17MB    5 hours ago   5 hours ago   1         false
+vmmktvpahvo9   source.local   1.71MB    6 hours ago   5 hours ago   3         false
+m2s50umbexh0   regular        8.22kB    5 hours ago   5 hours ago   1         false
+5atjuu025zzu   regular        771kB     5 hours ago   5 hours ago   1         true
+429ddxji8gg2   regular        15MB      5 hours ago   5 hours ago   1         true
+4o1etot104tt   regular        1.72MB    5 hours ago   5 hours ago   1         true
+ip5zm3wl4kjj   regular        17.4kB    5 hours ago   5 hours ago   1         true
+xbxm5gawd4t4   regular        4.42MB    5 hours ago   5 hours ago   1         false
+uytr6lpmgsvh   regular        1.72MB    5 hours ago   5 hours ago   1         true
+zrzrpbsy2pse   regular        776kB     5 hours ago   5 hours ago   1         true
+e6uplwtvvf1e   regular        17.4kB    5 hours ago   5 hours ago   1         true
+0904qkdqv1fv   regular        8.22kB    5 hours ago   5 hours ago   1         true
+lvj9xjkh7sdx   regular        4.42MB    5 hours ago   5 hours ago   1         false
+sggvdjz3osxa   regular        690kB     5 hours ago   5 hours ago   2         true
+kn7uwkhfw30j   regular        3.41MB    5 hours ago   5 hours ago   1         true
+jfg6cqe9vzeo   regular        17.4kB    5 hours ago   5 hours ago   1         false
+1ey3i5ldxwwu   regular        15MB      5 hours ago   5 hours ago   2         true
+hcuddswlyhh2   regular        4.42MB    5 hours ago   5 hours ago   1         false
+4y5htrthk1eq   regular        771kB     5 hours ago   5 hours ago   1         false
+z5mcbzd4i4ru   regular        8.22kB    5 hours ago   5 hours ago   1         false
+s7crtgy4f7ps   regular        1.72MB    5 hours ago   5 hours ago   1         false
+ng49dd1c4til   regular        29.5kB    5 hours ago   5 hours ago   2         true
+j083vmbjiti3   regular        15MB      5 hours ago   5 hours ago   1         true
+x8beeubbdyx9   regular        776kB     5 hours ago   5 hours ago   1         true
+tskkps0fig4p   regular        17.4kB    5 hours ago   5 hours ago   1         true
+pnwmjqbqz27i   regular        1.72MB    5 hours ago   5 hours ago   1         true
+by6qu6g3tl8g   regular        4.42MB    5 hours ago   5 hours ago   1         false
+do75rq86lsyh   regular        8.22kB    5 hours ago   5 hours ago   1         true
+ojo9rtk2n64v   source.local   8.19kB    6 hours ago   5 hours ago   10        false
+9x7mbun5xmly   source.local   4.1kB     6 hours ago   5 hours ago   10        false
+k9klbjnvx2gj   source.local   15.4MB    5 hours ago   5 hours ago   9         false
+s2n8gmyhnzbk   regular        28.2MB    6 hours ago   4 hours ago   5         true
+q1z5z8xdwinp   regular        3.52MB    6 hours ago   4 hours ago   5         true
+nxtt4yi7uqn3   regular        16.2MB    6 hours ago   4 hours ago   5         true
+z01ugkyj58mc   regular        250B      6 hours ago   4 hours ago   5         true
+la133f1e8fxn   regular        20MB      6 hours ago   4 hours ago   5         true
+tk8r0jnbu7ir   regular        93B       6 hours ago   4 hours ago   3         true
+3b40zychmeog   regular        32.9MB    6 hours ago   4 hours ago   2         true
+p5xo812bibfm   regular        140kB     6 hours ago   4 hours ago   2         true
+v9g747rpbvbh   regular        272MB     6 hours ago   4 hours ago   2         true
+qmut2gagbuj0   regular        437MB     6 hours ago   4 hours ago   2         true
+kh0xbftlmnq5   regular        24.7MB    6 hours ago   4 hours ago   2         true
+ukwidnhxrhzj   regular        414kB     6 hours ago   4 hours ago   2         true
+r5wdr3jb0p1s   regular        2.5MB     6 hours ago   4 hours ago   2         true
+q2xr9aosd9ar   regular        238kB     6 hours ago   4 hours ago   2         true
+wdnvip5hxeta   regular        65.3kB    6 hours ago   4 hours ago   2         true
+jagslcoxzs9t   regular        134kB     6 hours ago   4 hours ago   2         true
+3jx0h70yoonh   regular        359MB     6 hours ago   4 hours ago   2         true
+uxe56jygkzpb   regular        142B      6 hours ago   4 hours ago   2         true
+v1elw8e2oxv0   regular        24.7MB    6 hours ago   4 hours ago   2         true
+k9hqnsflizjb   regular        238kB     6 hours ago   4 hours ago   2         true
+gwowlwybdhv6   regular        109kB     6 hours ago   4 hours ago   2         true
+knjkl1q9lgca   regular        4.69kB    6 hours ago   4 hours ago   2         true
+le0kg0lw66qn   regular        5.49kB    6 hours ago   4 hours ago   2         true
+gavt1z6hpbon   regular        5.27kB    6 hours ago   4 hours ago   2         true
+b92fbtvs5ecy   regular        24.5MB    6 hours ago   4 hours ago   2         true
+dd5btd601j8n   regular        24.5MB    6 hours ago   4 hours ago   2         true
+aut4ibnatx0y   regular        326kB     6 hours ago   4 hours ago   2         true
+ovl7g5on4nyf   regular        209kB     6 hours ago   4 hours ago   2         true
+kf5h26ewfics   regular        4.13kB    6 hours ago   4 hours ago   2         true
+a4jnwvn6fu6c   regular        531kB     6 hours ago   4 hours ago   7         true
+6rfcik8fgqhq   regular        15MB      5 hours ago   4 hours ago   2         false
+uj3jc6o1499y   regular        1.72MB    5 hours ago   4 hours ago   2         false
+th7w4rospvrw   regular        776kB     5 hours ago   4 hours ago   2         false
+rpoznv344hfl   regular        17.4kB    5 hours ago   4 hours ago   2         false
+mkh005uuxofm   regular        8.22kB    5 hours ago   4 hours ago   2         false
+1t9nyxf3hl9s   source.local   8.19kB    4 hours ago   4 hours ago   1         false
+u4vr5ebl059t   regular        52.9kB    4 hours ago   4 hours ago   1         false
+vimx7oxj7nqb   regular        48.2kB    4 hours ago   4 hours ago   1         false
+wi19u807rz1x   source.local   4.1kB     4 hours ago   4 hours ago   1         false
+zib5hl2ww4mj   source.local   49.2kB    4 hours ago   4 hours ago   1         false
+m9h4gt2lfyer   regular        4.42MB    5 hours ago   4 hours ago   2         false
+92ab7069d26d doxagent-v2-v2-projector-1 doxagent-v2:v21-production-20261012-r2 Up 4 hours
+ae262a172d1f doxagent-v2-v2-api-1 doxagent-v2:v21-production-20261012-r2 Up 4 hours (healthy)
+4d1bca4864e8 doxagent-v2-v2-message-bus-1 doxagent-v2:v21-production-20261012-r1 Up 4 hours
+fadaa75b8737 doxagent-v2-v2-scheduler-1 doxagent-v2:v21-production-20261012-r1 Up 25 minutes
+55de53390e78 doxagent-v2-v2-cdecr-executor-1 doxagent-v2:v21-production-20261012-r1 Up 16 minutes (healthy)
+0c4401b6d7e8 doxagent-v2-v2-control-1 doxagent-v2:v21-production-20261012-r1 Up 16 minutes
+2408ee2b8979 doxagent-v2-v2-executor-1 doxagent-v2:v21-production-20261012-r1 Up 25 minutes
+072eafcf425c doxagent-v2-v2-delivery-1 doxagent-v2:v21-production-20261012-r1 Up 16 minutes
+bb4f5ff4f868 doxagent-v2-v2-o4-1 doxagent-v2:v21-production-20261012-r1 Up 4 hours
+146d6f3a5f4e doxagent-v2-initialization-guardian-1 doxagent-v2:v21-production-20261012-r1 Up 4 hours
+0938c6ee45ee doxagent-v2-v2-initialization-1 doxagent-v2:v21-production-20261012-r1 Up 17 minutes
+e8b6250acc98 doxagent-v2-v2-web-1 doxagent-v2-web:v21-production-20261012-r1 Up 4 hours (healthy)
+b3cfb63ac3a8 doxagent-v2-codex-worker-1 doxagent-v2:v21-production-20261012-r1 Up 4 hours (healthy)
+437e79db9be6 v21-production-smoke-worker doxagent-v2:v21-production-20261012-r1 Exited (0) 4 hours ago
+092e45f2ec39 v21-production-smoke-worker-second 0fc1f0690c82 Exited (0) 5 hours ago
+499ecd103873 v21-production-smoke-worker-first b6d8de3fb5c7 Exited (0) 5 hours ago
+654025d6af05 doxagent-rklb-v21-01-d3 doxagent-v2:rklb-v21-20261012 Up 5 minutes
+a6f492ba10f2 doxagent-v2-v2-content-enrichment-1 doxagent-v2:source-recovery-enrich-20261012-r1 Up 28 minutes
+03b037cd9eab doxagent-v2-v2-site-access-1 doxagent-site-access:source-recovery-20261012-r1 Up 6 hours (unhealthy)
+948c08aeb890 doxagent-rklb-v21-01-d2 doxagent-v2:rklb-v21-20261012 Exited (0) 6 hours ago
+3bf628fef78a doxagent-rklb-v21-01-d2-o0 doxagent-v2:rklb-v21-20261012 Exited (0) 8 hours ago
+6b50d2e19fef doxagent-rklb-v21-01-d1 doxagent-v2:rklb-v21-20261012 Exited (0) 8 hours ago
+1d36ee856ba6 doxagent-rklb-v21-worker doxagent-v2:rklb-v21-20261012 Up 10 hours
+7194a496124b doxagent-be-v21-01-d3 doxagent-v2:be-v21-20261011 Exited (0) 10 hours ago
+e13e179e8965 doxagent-be-v21-01-d2 doxagent-v2:be-v21-20261011 Exited (0) 24 hours ago
+6994bc982564 doxagent-be-v21-01-d2-o0 doxagent-v2:be-v21-20261011 Exited (0) 25 hours ago
+1a4b2469ddcc doxagent-be-v21-01-d1 doxagent-v2:be-v21-20261011 Exited (0) 25 hours ago
+a0501b261a67 doxagent-be-v21-worker doxagent-v2:be-v21-20261011 Up 27 hours
+80eec799bcad doxagent-intc-v21-01-d3 doxagent-v2:intc-v21-20261011 Exited (0) 28 hours ago
+8bc529325e37 doxagent-intc-v21-01-d2 doxagent-v2:intc-v21-20261011 Exited (0) 41 hours ago
+4f4a59b27875 doxagent-intc-v21-01-d2-o0 doxagent-v2:intc-v21-20261011 Exited (0) 42 hours ago
+70caca3a8182 doxagent-intc-v21-01-d1 doxagent-v2:intc-v21-20261011 Exited (0) 42 hours ago
+8c4d33e83574 doxagent-intc-v21-worker doxagent-v2:intc-v21-20261011 Up 44 hours
+73ba88d9b32c doxagent-mu-v21-02-d3-resume-parallel doxagent-v2:codex-gpt6-research-0.159.3 Exited (0) 2 days ago
+d63b42468de0 doxagent-mu-v21-02-d3-resume-main doxagent-v2:codex-gpt6-research-0.159.3 Exited (137) 2 days ago
+33dd82fcba0d doxagent-mu-v21-02-d3-resume-canary doxagent-v2:codex-gpt6-research-0.159.3 Exited (0) 2 days ago
+301deddd74fa doxagent-mu-v21-02-d3 doxagent-v2:codex-gpt6-research-0.159.3 Exited (0) 2 days ago
+ad9e17dec66b doxagent-mu-v21-02-d2 doxagent-v2:codex-gpt6-research-0.159.3 Exited (0) 2 days ago
+4b794af7af16 doxagent-mu-v21-02-c4-retry2 doxagent-v2:codex-gpt6-research-0.159.3 Exited (0) 2 days ago
+f58da4b019e8 doxagent-mu-v21-worker doxagent-v2:mu-v21-worker-20261010 Up 2 days
+66aabc48e0d9 doxagent-mu-v21-02-c4-resume doxagent-v2:codex-gpt6-research-0.159.3 Exited (1) 3 days ago
+f159c2f98779 doxagent-mu-v21-03-d1 doxagent-v2:codex-gpt6-research-0.159.3 Exited (137) 3 days ago
+bb4dca98ba44 doxagent-mu-v21-02-d1 doxagent-v2:codex-gpt6-research-0.159.3 Exited (0) 3 days ago
+1c6f90b31d21 doxagent-mu-v21-d1 doxagent-v2:codex-gpt6-research-0.159.3 Exited (137) 3 days ago
+648211f2cbc1 doxagent-v2-initialization-repair-template doxagent-v2:codex-gpt6-template-0.159.3 Created
+88b79b5b3d0e doxagent-v2-v2-chrome-supervisor-1 doxagent-chrome-supervisor:server Up 2 weeks (healthy)
+592faee5c4aa doxagent-v2-initialization-repair-template-before-gpt6-20261002 doxagent-v2:init-repair-source-1b74f2e Created
+f113a98afbf8 doxagent-egress-clash metacubex/mihomo:v1.19.31 Up 2 weeks
+NEXT                                 LEFT LAST                               PASSED UNIT                           ACTIVATES
+Tue 2026-10-13 02:40:00 CST      1min 32s Tue 2026-10-13 02:30:01 CST      8min ago sysstat-collect.timer          sysstat-collect.service
+Tue 2026-10-13 02:40:20 CST      1min 52s Mon 2026-10-12 02:40:20 CST       23h ago systemd-tmpfiles-clean.timer   systemd-tmpfiles-clean.service
+Tue 2026-10-13 02:45:54 CST          7min Tue 2026-10-13 01:00:45 CST  1h 37min ago fwupd-refresh.timer            fwupd-refresh.service
+Tue 2026-10-13 04:11:12 CST      1h 32min Mon 2026-10-12 13:52:55 CST       12h ago apt-daily.timer                apt-daily.service
+Tue 2026-10-13 06:09:52 CST      3h 31min Mon 2026-10-12 06:34:51 CST       20h ago apt-daily-upgrade.timer        apt-daily-upgrade.service
+Tue 2026-10-13 11:40:09 CST            9h Mon 2026-10-12 22:49:39 CST  3h 48min ago motd-news.timer                motd-news.service
+Tue 2026-10-13 14:19:47 CST           11h Tue 2026-10-13 00:24:46 CST  2h 13min ago certbot.timer                  certbot.service
+Wed 2026-10-14 00:00:00 CST           21h Tue 2026-10-13 00:00:00 CST  2h 38min ago dpkg-db-backup.timer           dpkg-db-backup.service
+Wed 2026-10-14 00:00:00 CST           21h Tue 2026-10-13 00:00:00 CST  2h 38min ago sysstat-rotate.timer           sysstat-rotate.service
+Wed 2026-10-14 00:07:00 CST           21h Tue 2026-10-13 00:07:00 CST  2h 31min ago sysstat-summary.timer          sysstat-summary.service
+Wed 2026-10-14 00:32:13 CST           21h Tue 2026-10-13 00:52:34 CST  1h 45min ago logrotate.timer                logrotate.service
+Wed 2026-10-14 02:31:00 CST           23h Tue 2026-10-13 02:31:00 CST      7min ago update-notifier-download.timer update-notifier-download.service
+Wed 2026-10-14 05:18:03 CST      1 day 2h Tue 2026-10-13 01:25:06 CST  1h 13min ago man-db.timer                   man-db.service
+Sun 2026-10-18 03:10:03 CST        5 days Sun 2026-10-11 03:11:01 CST 1 day 23h ago xfs_scrub_all.timer            xfs_scrub_all.service
+Sun 2026-10-18 03:10:54 CST        5 days Sun 2026-10-11 03:11:01 CST 1 day 23h ago e2scrub_all.timer              e2scrub_all.service
+Mon 2026-10-19 01:14:04 CST        5 days Mon 2026-10-12 00:11:48 CST  1 day 2h ago fstrim.timer                   fstrim.service
+Sat 2026-10-24 19:03:08 CST 1 week 4 days Mon 2026-10-12 15:15:49 CST       11h ago update-notifier-motd.timer     update-notifier-motd.service
+-                                       - -                                       - apport-autoreport.timer        apport-autoreport.service
+-                                       - -                                       - snapd.snap-repair.timer        snapd.snap-repair.service
+-                                       - -                                       - ua-timer.timer                 ua-timer.service
+
+20 timers listed.

@@ -1,0 +1,268 @@
+{
+  "release": {
+    "before": {
+      "doxagent-v2-v2-site-access-1": {
+        "id": "99aa0897dacfcf94447d14f324f22e7f77041bf83840cdc958facd0662d77629",
+        "image": "sha256:e12498a10e668db405b0b0142bc8834935ffbd9b09669a0b702ff365465e789b",
+        "tag": "doxagent-site-access:source-storage-20261009-r1",
+        "started": "2026-10-12T12:01:09.999097721Z"
+      },
+      "doxagent-v2-v2-message-bus-1": {
+        "id": "98afdf55d7bae0b2d33d32dc6105b2cc216fbbc3f40cfdfe73167210272c6fe6",
+        "image": "sha256:d9ee1338c54cbd591e64f3e1ad297db60dc94add8385d2b03551dd1a234e8261",
+        "tag": "doxagent-v2:source-storage-bus-20261009-r1",
+        "started": "2026-10-12T09:56:31.931103096Z"
+      },
+      "doxagent-v2-v2-content-enrichment-1": {
+        "id": "ae0ab19600c3d71d8dcdc14f8eeef764b37ed7b265c22e8334743dc2e6a7f6cd",
+        "image": "sha256:5e9ac95b4c874dfcf8a175209b07fd1581358df5de97d4b7d16006d0bb16e18c",
+        "tag": "doxagent-v2:source-storage-enrich-20261009-r1",
+        "started": "2026-10-12T09:42:04.707867956Z"
+      },
+      "doxagent-v2-v2-chrome-supervisor-1": {
+        "id": "88b79b5b3d0e2ae078ded27064ffcfbe6c1058b81f422c594b3eefb4b25e9511",
+        "image": "sha256:cc38be0a0fe83e1003320a205bcb6ca1a0ee581ce9debd51983779f0b76ec7d3",
+        "tag": "doxagent-chrome-supervisor:server",
+        "started": "2026-09-24T20:18:25.88524306Z"
+      }
+    },
+    "compose_files": [
+      "/home/ubuntu/doxagent/docker-compose.v2-production.yml",
+      "/home/ubuntu/doxagent/deploy/docker-compose.server.yml",
+      "/home/ubuntu/barrons_ticker_fix_20260930/compose.override.yml",
+      "/home/ubuntu/source-repair-20261004/eval/message_source_repair_20261004/compose.override.yml",
+      "/home/ubuntu/source-repair-20261006/compose.override.yml",
+      "/home/ubuntu/source-repair-20261009/compose.override.yml"
+    ],
+    "overlay": "/home/ubuntu/source-repair-20261012/compose.override.yml",
+    "after": {
+      "doxagent-v2-v2-site-access-1": {
+        "id": "03b037cd9eab3f200c62f91b429cd725b693a006f3c832511e762d1512dff293",
+        "image": "sha256:d12fb2a9bd3e65e8966d2221f4d67247e5d0f4eeace49fee9c1296f764d4574d",
+        "tag": "doxagent-site-access:source-recovery-20261012-r1",
+        "started": "2026-10-12T12:29:58.346349882Z"
+      },
+      "doxagent-v2-v2-message-bus-1": {
+        "id": "adbd22669a9d69b966b9129147a2bd84384046eaa9435c047eed41318395a0c4",
+        "image": "sha256:fd811880b1da9b21db477b39cce9068f8a3be1cd0c86e3af33e81d6fb7e391f7",
+        "tag": "doxagent-v2:source-recovery-bus-20261012-r1",
+        "started": "2026-10-12T12:44:41.715542685Z"
+      },
+      "doxagent-v2-v2-content-enrichment-1": {
+        "id": "a6f492ba10f2b29d07d01cf11f49a2ee3dfeb56235bc64f13e976898ba5de15d",
+        "image": "sha256:31a24e36e06acc5e7cbc2ca05635da967642ad79387c97f0742753ff30bfab9c",
+        "tag": "doxagent-v2:source-recovery-enrich-20261012-r1",
+        "started": "2026-10-12T12:30:24.973007354Z"
+      },
+      "doxagent-v2-v2-chrome-supervisor-1": {
+        "id": "88b79b5b3d0e2ae078ded27064ffcfbe6c1058b81f422c594b3eefb4b25e9511",
+        "image": "sha256:cc38be0a0fe83e1003320a205bcb6ca1a0ee581ce9debd51983779f0b76ec7d3",
+        "tag": "doxagent-chrome-supervisor:server",
+        "started": "2026-09-24T20:18:25.88524306Z"
+      }
+    }
+  },
+  "files": [
+    {
+      "container": "doxagent-v2-v2-site-access-1",
+      "path": "/app/src/doxagent/message_bus_v2/yahoo_sources.py",
+      "before_sha256": "888cbbe7cb09e03df576364ae1082f815d278087d4ae8d4e6fd010d0a7e82c07",
+      "after_sha256": "7163e4455a819476be0059b967fe24e9fea5684171fd12871270e2b6d6bd38a7",
+      "staged_sha256": "7163e4455a819476be0059b967fe24e9fea5684171fd12871270e2b6d6bd38a7",
+      "match": true
+    },
+    {
+      "container": "doxagent-v2-v2-site-access-1",
+      "path": "/app/src/doxagent/site_strategy/api.py",
+      "before_sha256": "dabf4f556ffc7afe7152a6b4ce94d023ecced54861a0ed6dab3bad4beab138f2",
+      "after_sha256": "efed53b792bb8b3e696d2615f3f0c6d91e344a9035c80949268f02361b5c0524",
+      "staged_sha256": "efed53b792bb8b3e696d2615f3f0c6d91e344a9035c80949268f02361b5c0524",
+      "match": true
+    },
+    {
+      "container": "doxagent-v2-v2-site-access-1",
+      "path": "/app/src/doxagent/site_strategy/egress.py",
+      "before_sha256": "3ba9d211f71a78d6375991c4bd19b1829d4f317b9191b79c877510a47445126b",
+      "after_sha256": "ee2cf42a2b90ce4b5e6320758202f6e621537c10e9cd3baf66db5ea758a29617",
+      "staged_sha256": "ee2cf42a2b90ce4b5e6320758202f6e621537c10e9cd3baf66db5ea758a29617",
+      "match": true
+    },
+    {
+      "container": "doxagent-v2-v2-site-access-1",
+      "path": "/app/src/doxagent/site_strategy/external_runtime.py",
+      "before_sha256": "d1c76f0a3afbf438830a0b8a6320c68a730fd31c95bcd9e9c2aa646d5de889ea",
+      "after_sha256": "5dedc506b4964e02d76f73fcd5f61a91ead7ac52d8e11c4833a682d029ec7b17",
+      "staged_sha256": "5dedc506b4964e02d76f73fcd5f61a91ead7ac52d8e11c4833a682d029ec7b17",
+      "match": true
+    },
+    {
+      "container": "doxagent-v2-v2-site-access-1",
+      "path": "/app/src/doxagent/site_strategy/health.py",
+      "before_sha256": "ded4292dc5e8548b5b61a6a8ea0a7258ae6c5017a34a376c5b477fc08794988b",
+      "after_sha256": "4546849131b301ba3c6017f2b504101b58e30176566144b8ec298eec81df60ab",
+      "staged_sha256": "4546849131b301ba3c6017f2b504101b58e30176566144b8ec298eec81df60ab",
+      "match": true
+    },
+    {
+      "container": "doxagent-v2-v2-site-access-1",
+      "path": "/app/src/doxagent/site_strategy/runtime.py",
+      "before_sha256": "4bc2c71ff6bc9a35d3f26dc284f396354162a960197ef20545d1c4aebecd019a",
+      "after_sha256": "55b64a4666369ebf848ee058e2895e85da68dc7eb22fb3ca566d0b50507383a8",
+      "staged_sha256": "55b64a4666369ebf848ee058e2895e85da68dc7eb22fb3ca566d0b50507383a8",
+      "match": true
+    },
+    {
+      "container": "doxagent-v2-v2-site-access-1",
+      "path": "/app/src/doxagent/site_strategy/schema.py",
+      "before_sha256": "d45852847adceb69c0e8e01fec730d19ef510a57fbb37c1957ed690fe38f6e12",
+      "after_sha256": "3c9f15c4130140b8ae79d14405833d4e7b8bb79b992b18f0bc06068559501498",
+      "staged_sha256": "3c9f15c4130140b8ae79d14405833d4e7b8bb79b992b18f0bc06068559501498",
+      "match": true
+    },
+    {
+      "container": "doxagent-v2-v2-site-access-1",
+      "path": "/app/src/doxagent/site_strategy/service.py",
+      "before_sha256": "43a09d192a9b0a0e8dd8044a63d9acb1874fbb5faa362a47239c8ad36d34516d",
+      "after_sha256": "1c31591ba600f3095b4cc1239f22b8d70a2bbdae589dc69fb8974a0347c2c360",
+      "staged_sha256": "1c31591ba600f3095b4cc1239f22b8d70a2bbdae589dc69fb8974a0347c2c360",
+      "match": true
+    },
+    {
+      "container": "doxagent-v2-v2-site-access-1",
+      "path": "/app/src/doxagent/site_strategy/client.py",
+      "before_sha256": "6542600c5c2dc80c4a047f4c2757e0f44a01a639d85ee08987b7a3bfa664457f",
+      "after_sha256": "860ed49ce99f2e85ae583f3f98252b0931edc93c647e518fc7cf53332027b581",
+      "staged_sha256": "860ed49ce99f2e85ae583f3f98252b0931edc93c647e518fc7cf53332027b581",
+      "match": true
+    },
+    {
+      "container": "doxagent-v2-v2-site-access-1",
+      "path": "/app/src/doxagent/site_strategy/supervisor_client.py",
+      "before_sha256": "68f36b5f88a972176154e8b5b2a226b35b34b4c91d951eb8e3b50c8a322ad8c5",
+      "after_sha256": "26730e640fc54b194ce4915f6090b4951dddaa6a994018096e3bfabe0653bf75",
+      "staged_sha256": "26730e640fc54b194ce4915f6090b4951dddaa6a994018096e3bfabe0653bf75",
+      "match": true
+    },
+    {
+      "container": "doxagent-v2-v2-message-bus-1",
+      "path": "/app/src/doxagent/message_bus_v2/distribution.py",
+      "before_sha256": "0abbe11bd6ee2252f5e378c915960ad44e5781dcd876a824c70ddba66cb9c93c",
+      "after_sha256": "4c937d624811574e55e061c784cab41271f8041207a2eab87816d984d624356e",
+      "staged_sha256": "4c937d624811574e55e061c784cab41271f8041207a2eab87816d984d624356e",
+      "match": true
+    },
+    {
+      "container": "doxagent-v2-v2-message-bus-1",
+      "path": "/app/src/doxagent/message_bus_v2/distribution_repository.py",
+      "before_sha256": "874f0c53516d5826ccd110913e48f1a1f313d2b1527f75b3da2689fb0fb4d5f4",
+      "after_sha256": "cab4190ff5e2ccceaef079ded55f7a647596d6282ac0058b7d3970d04ba636bb",
+      "staged_sha256": "cab4190ff5e2ccceaef079ded55f7a647596d6282ac0058b7d3970d04ba636bb",
+      "match": true
+    },
+    {
+      "container": "doxagent-v2-v2-message-bus-1",
+      "path": "/app/src/doxagent/message_bus_v2/factory.py",
+      "before_sha256": "96cc31fe3a1e62ac643acc941a201fce0243d4b5603f59d3bf8ac286f348da5a",
+      "after_sha256": "235f571a0b7d6dbcea47f88b3d0450198d4855b3540725655428ff81039b7873",
+      "staged_sha256": "235f571a0b7d6dbcea47f88b3d0450198d4855b3540725655428ff81039b7873",
+      "match": true
+    },
+    {
+      "container": "doxagent-v2-v2-message-bus-1",
+      "path": "/app/src/doxagent/message_bus_v2/industry_sources.py",
+      "before_sha256": "11820cc7cc5f6f8821142e21a99e0b3d2e1cc834c0f50cc708c22f8d15e8e86f",
+      "after_sha256": "ed801970bc82a7da49970ad69d5c0667e5717c76a49cc91c993d5013391bbb14",
+      "staged_sha256": "ed801970bc82a7da49970ad69d5c0667e5717c76a49cc91c993d5013391bbb14",
+      "match": true
+    },
+    {
+      "container": "doxagent-v2-v2-message-bus-1",
+      "path": "/app/src/doxagent/message_bus_v2/manifests.py",
+      "before_sha256": "70e369e2599e944fecbfb1ffe655ce1fdb4bb11ddcf268da171cab284e27135f",
+      "after_sha256": "88dc94943b0a7e75361aafdcc0a0bbc2fb0375ed9f0feae810f807501c36153a",
+      "staged_sha256": "88dc94943b0a7e75361aafdcc0a0bbc2fb0375ed9f0feae810f807501c36153a",
+      "match": true
+    },
+    {
+      "container": "doxagent-v2-v2-message-bus-1",
+      "path": "/app/src/doxagent/message_bus_v2/news_adapters.py",
+      "before_sha256": "7c98203f71cfa30f3b6e732c7e160dbb502be32203b2dd4ac5107058a64f3b05",
+      "after_sha256": "defe4f5109250a37f33adf77fda6783194db1083bbc144b40b6d65ad8b4ff6f1",
+      "staged_sha256": "defe4f5109250a37f33adf77fda6783194db1083bbc144b40b6d65ad8b4ff6f1",
+      "match": true
+    },
+    {
+      "container": "doxagent-v2-v2-message-bus-1",
+      "path": "/app/src/doxagent/message_bus_v2/scheduler.py",
+      "before_sha256": "40959681f2d8b4a8bae81ec9f30a9c53b80669bd02811b82ad4639abe189f1f5",
+      "after_sha256": "f2e99d71acf986c54439c56f68877d53716800dafb6eb26323ca4952731dc714",
+      "staged_sha256": "f2e99d71acf986c54439c56f68877d53716800dafb6eb26323ca4952731dc714",
+      "match": true
+    },
+    {
+      "container": "doxagent-v2-v2-message-bus-1",
+      "path": "/app/src/doxagent/message_bus_v2/yahoo_sources.py",
+      "before_sha256": "888cbbe7cb09e03df576364ae1082f815d278087d4ae8d4e6fd010d0a7e82c07",
+      "after_sha256": "7163e4455a819476be0059b967fe24e9fea5684171fd12871270e2b6d6bd38a7",
+      "staged_sha256": "7163e4455a819476be0059b967fe24e9fea5684171fd12871270e2b6d6bd38a7",
+      "match": true
+    },
+    {
+      "container": "doxagent-v2-v2-message-bus-1",
+      "path": "/app/src/doxagent/persistent_runtime_v2/journal.py",
+      "before_sha256": "279070ec44ecba19df26581731d4801c3b57f0151c9cb12cc5c4fab9cba69f80",
+      "after_sha256": "c95ec970598c4cf205189c0381834d3b14f77a87c4eea5c6e5491f10f1e0cf58",
+      "staged_sha256": "c95ec970598c4cf205189c0381834d3b14f77a87c4eea5c6e5491f10f1e0cf58",
+      "match": true
+    },
+    {
+      "container": "doxagent-v2-v2-message-bus-1",
+      "path": "/app/src/doxagent/persistent_runtime_v2/bus_orchestration.py",
+      "before_sha256": "977fb990ceee155c5a76fe5dc1c81ccad5251b1433eba0960813e795a3cce50b",
+      "after_sha256": "f05a4447ce9a47d839106a9ceaa8691806cffd48f63548a0bc015e9fc6d82050",
+      "staged_sha256": "f05a4447ce9a47d839106a9ceaa8691806cffd48f63548a0bc015e9fc6d82050",
+      "match": true
+    },
+    {
+      "container": "doxagent-v2-v2-message-bus-1",
+      "path": "/app/src/doxagent/settings.py",
+      "before_sha256": "d4d0454f3cef2d0586ffbd322c20589b7fb46329a50e846953564f95cea2ec97",
+      "after_sha256": "e43f3619e43a2ea93355e61cb925b91ebfa92af1ff942ab47891468a1b1deca8",
+      "staged_sha256": "e43f3619e43a2ea93355e61cb925b91ebfa92af1ff942ab47891468a1b1deca8",
+      "match": true
+    },
+    {
+      "container": "doxagent-v2-v2-message-bus-1",
+      "path": "/app/src/doxagent/site_strategy/schema.py",
+      "before_sha256": "d45852847adceb69c0e8e01fec730d19ef510a57fbb37c1957ed690fe38f6e12",
+      "after_sha256": "3c9f15c4130140b8ae79d14405833d4e7b8bb79b992b18f0bc06068559501498",
+      "staged_sha256": "3c9f15c4130140b8ae79d14405833d4e7b8bb79b992b18f0bc06068559501498",
+      "match": true
+    },
+    {
+      "container": "doxagent-v2-v2-message-bus-1",
+      "path": "/app/src/doxagent/site_strategy/client.py",
+      "before_sha256": "6542600c5c2dc80c4a047f4c2757e0f44a01a639d85ee08987b7a3bfa664457f",
+      "after_sha256": "860ed49ce99f2e85ae583f3f98252b0931edc93c647e518fc7cf53332027b581",
+      "staged_sha256": "860ed49ce99f2e85ae583f3f98252b0931edc93c647e518fc7cf53332027b581",
+      "match": true
+    },
+    {
+      "container": "doxagent-v2-v2-content-enrichment-1",
+      "path": "/app/src/doxagent/site_strategy/schema.py",
+      "before_sha256": "1225458002a57c5a5706563c8f0a7e71fe21bdc8f3b86cff6dead20be9e6bf1b",
+      "after_sha256": "3c9f15c4130140b8ae79d14405833d4e7b8bb79b992b18f0bc06068559501498",
+      "staged_sha256": "3c9f15c4130140b8ae79d14405833d4e7b8bb79b992b18f0bc06068559501498",
+      "match": true
+    },
+    {
+      "container": "doxagent-v2-v2-content-enrichment-1",
+      "path": "/app/src/doxagent/site_strategy/client.py",
+      "before_sha256": "6542600c5c2dc80c4a047f4c2757e0f44a01a639d85ee08987b7a3bfa664457f",
+      "after_sha256": "860ed49ce99f2e85ae583f3f98252b0931edc93c647e518fc7cf53332027b581",
+      "staged_sha256": "860ed49ce99f2e85ae583f3f98252b0931edc93c647e518fc7cf53332027b581",
+      "match": true
+    }
+  ],
+  "all_match": true
+}

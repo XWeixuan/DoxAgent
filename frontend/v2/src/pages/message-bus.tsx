@@ -1,4 +1,5 @@
 import { LoadMore } from "@/components/load-more";
+import { Badge } from "@/components/ui/badge";
 import {
   Radio,
   Settings2,
@@ -632,8 +633,9 @@ export function SourceCard({
             </span>
           </div>
         </div>
-        <span className={"poll-state poll-" + s.poll_status}>
+        <Badge variant={s.current_error ? "destructive" : "secondary"}>
           {
+            s.current_error?.code.startsWith("SOURCE_DEFERRED:") ? "采集延期" : "上次结果：" +
             {
               succeeded: "正常",
               partial: "部分失败",
@@ -642,7 +644,7 @@ export function SourceCard({
               never_polled: "未轮询",
             }[s.poll_status]
           }
-        </span>
+        </Badge>
       </header>
       <div className="source-status-body">
         <div
@@ -763,7 +765,7 @@ function MessageCard({
         <div>
           <h2>{valueText(m.title, (v) => v || "无标题消息")}</h2>
           <div className="message-meta">
-            <span>{m.source.name}</span>
+            <span>{m.source_name ?? m.source.name}</span>
             <span>{m.source.kind === "api" ? "API" : "爬虫"}</span>
             <span>发布 {formatInstant(m.source_published_at)}</span>
             <span>抓取 {formatInstant(m.collected_at)}</span>

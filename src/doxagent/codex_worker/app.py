@@ -18,6 +18,8 @@ from doxagent.codex_runtime.errors import CodexRuntimeError
 from doxagent.codex_worker.io_budget import DiskBudget, blocking
 from doxagent.codex_worker.jobs import QueueHighWatermark, WorkerJobManager
 from doxagent.codex_worker.schema import (
+    TemplateRegisterRequest,
+    ThreadForkRequest,
     WorkerJob,
     WorkerRunRequest,
     WorkspaceFileResponse,
@@ -91,6 +93,50 @@ def create_worker_app(
         expected = f"Bearer {bearer_token}"
         if authorization is None or not hmac.compare_digest(authorization, expected):
             raise HTTPException(status_code=401, detail="invalid worker credentials")
+
+    @app.post("/v1/threads/register-template", dependencies=[Depends(require_service_auth)])
+    async def register_template(request: TemplateRegisterRequest):
+        try:
+            return await jobs.thread_lifecycle.register_template(request.job_id)
+        except ValueError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+    @app.post("/v1/threads/register-legacy", dependencies=[Depends(require_service_auth)])
+    async def register_legacy(request: TemplateRegisterRequest):
+        try:
+            return await jobs.thread_lifecycle.register_legacy(request.job_id)
+        except ValueError as exc:
+            raise HTTPException(409, str(exc)) from exc
+
+    @app.post("/v1/threads/fork", dependencies=[Depends(require_service_auth)])
+    async def fork_thread(request: ThreadForkRequest):
+        try:
+            return await jobs.thread_lifecycle.fork(request)
+        except ValueError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+    @app.get("/v1/threads/{thread_id}/status", dependencies=[Depends(require_service_auth)])
+    async def thread_status(thread_id: str):
+        try:
+            return await jobs.thread_lifecycle.status(thread_id)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail="unknown W3 thread") from exc
+
+    @app.delete("/v1/threads/{thread_id}", dependencies=[Depends(require_service_auth)])
+    async def delete_thread(thread_id: str):
+        try:
+            return await jobs.thread_lifecycle.delete(thread_id)
+        except ValueError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+    @app.post("/v1/jobs/{job_id}/acknowledge", dependencies=[Depends(require_service_auth)])
+    async def acknowledge_job(job_id: str):
+        try:
+            job = await disk.run(jobs.store.acknowledge, job_id)
+            await disk.run(jobs._persist, job)
+            return {"job_id": job.job_id, "acknowledged": True}
+        except ValueError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
 
     def require_capability(
         run_id: str,

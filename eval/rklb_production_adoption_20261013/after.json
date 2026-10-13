@@ -1,0 +1,38 @@
+{
+  "active": {
+    "artifacts": {
+      "document1": {
+        "run_id": "rklb-v21-20261012-01-d1"
+      },
+      "document2": {
+        "run_id": "rklb-v21-20261012-01-d2"
+      },
+      "document3": {
+        "run_id": "adopt-v21-rklb-20261013-b30ac7c1ddf4-d3",
+        "version": 13
+      },
+      "event_library": {
+        "root": "/data/runtime/runtime_artifacts/runtime-maintain-30f13af8cf26a87a350faf44/events",
+        "version": 25
+      },
+      "monitoring_configuration": {
+        "database": "/data/bus/initialization-configurations/init-rklb-9631e4071e75470a97313eafbbdc51aa/message_bus.sqlite3",
+        "enabled_binding_count": 5,
+        "initialization_id": "init-rklb-9631e4071e75470a97313eafbbdc51aa",
+        "plan_id": "o4_plan_8f4a53f6bed24aa89b922838ba7162a0",
+        "plan_version": 1
+      }
+    },
+    "base_revision": "runtime-maintain-30f13af8cf26a87a350faf44-activation",
+    "research_cutoff_at": "2026-10-12T08:45:17.165493+00:00",
+    "revision_id": "init-rklb-dffa67ede084412b83b0897850f8c89e-activation",
+    "ticker": "RKLB"
+  },
+  "event_ref_preserved": true,
+  "event_files_unchanged": true,
+  "monitoring_preserved": true,
+  "acks": {
+    "bus": true,
+    "runtime": true
+  }
+}

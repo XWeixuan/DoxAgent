@@ -1,0 +1,1 @@
+{"error": "interrupted", "last_sql": "DELETE FROM objects WHERE rowid IN (1,2,3,4,5,6,7,8,9,10) AND valid_to IS NOT NULL AND valid_to<4217812 AND kind='native:poll_states'", "elapsed": 0.5790743920952082}

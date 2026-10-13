@@ -125,7 +125,11 @@ class AdapterRegistry:
             "globenewswire_search": GlobeNewswireSearchAdapter(
                 crawler_plane.browser if crawler_plane is not None else None
             ),
-            "globenewswire_semiconductors_rss": SharedFeedAdapter(self.client, "GlobeNewswire"),
+            "globenewswire_semiconductors_rss": SharedFeedAdapter(
+                self.client,
+                "GlobeNewswire",
+                browser=crawler_plane.browser if crawler_plane is not None else None,
+            ),
         }
         self._dynamic_cache: dict[tuple[str, int], SourceAdapter] = {}
 

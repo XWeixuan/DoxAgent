@@ -171,8 +171,10 @@ class DataToolPolicyRegistry:
         )
         self._by_role[CodexEventLibraryAgentRole.O2] = frozenset()
         self._by_role[CodexD3AgentRole.O3] = self._by_role[CodexD2AgentRole.O1]
-        # W3 uses live Web Search under its own skill contract. It has no Data MCP budget.
-        self._by_role[CodexPersistentRuntimeAgentRole.W3] = frozenset()
+        # W3 only checks historical price repricing; history resolves its own contract.
+        self._by_role[CodexPersistentRuntimeAgentRole.W3] = frozenset({
+            "ibkr.market_history",
+        })
         legacy_o4_tools = self._by_role[CodexAgentRole.C5]
         self._by_node: dict[CodexResearchNode, frozenset[str]] = {
             CodexD1Node.O4_A: legacy_o4_tools,

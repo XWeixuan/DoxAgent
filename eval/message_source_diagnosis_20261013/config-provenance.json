@@ -1,0 +1,45 @@
+{
+  "same_bytes": true,
+  "disk_sha256": "5208fd46822f5b1d53509821e920a8ddc0770c2f308c76dd8351831f660d9056",
+  "mounted_sha256": "5208fd46822f5b1d53509821e920a8ddc0770c2f308c76dd8351831f660d9056",
+  "configs": {
+    "disk": {
+      "nodes": 129,
+      "controller": "127.0.0.1:9090",
+      "provider_names": [],
+      "labels": [],
+      "fixed": {
+        "doxagent-egress-jp-standard-6": "MATCH,🇩🇪 德国标准 IEPL 专线 2",
+        "doxagent-egress-us-standard-5": "MATCH,🇩🇪 德国标准 IEPL 专线 1",
+        "doxagent-egress-nl-standard-2": "MATCH,🇩🇪 德国标准 IEPL 专线 2",
+        "doxagent-egress-de-standard-1": "MATCH,🇩🇪 德国标准 IEPL 专线 1",
+        "doxagent-egress-server-direct": "MATCH,DIRECT",
+        "doxagent-egress-tr-standard-1": "MATCH,🇹🇷 土耳其标准 IEPL 专线 1"
+      },
+      "endpoint_hashes": {
+        "🇹🇷 土耳其标准 IEPL 专线 1": "ffcfd839fec7",
+        "🇩🇪 德国标准 IEPL 专线 1": "fa06ec291954",
+        "🇩🇪 德国标准 IEPL 专线 2": "630a038c074d"
+      }
+    },
+    "mounted": {
+      "nodes": 129,
+      "controller": "127.0.0.1:9090",
+      "provider_names": [],
+      "labels": [],
+      "fixed": {
+        "doxagent-egress-jp-standard-6": "MATCH,🇩🇪 德国标准 IEPL 专线 2",
+        "doxagent-egress-us-standard-5": "MATCH,🇩🇪 德国标准 IEPL 专线 1",
+        "doxagent-egress-nl-standard-2": "MATCH,🇩🇪 德国标准 IEPL 专线 2",
+        "doxagent-egress-de-standard-1": "MATCH,🇩🇪 德国标准 IEPL 专线 1",
+        "doxagent-egress-server-direct": "MATCH,DIRECT",
+        "doxagent-egress-tr-standard-1": "MATCH,🇹🇷 土耳其标准 IEPL 专线 1"
+      },
+      "endpoint_hashes": {
+        "🇹🇷 土耳其标准 IEPL 专线 1": "ffcfd839fec7",
+        "🇩🇪 德国标准 IEPL 专线 1": "fa06ec291954",
+        "🇩🇪 德国标准 IEPL 专线 2": "630a038c074d"
+      }
+    }
+  }
+}

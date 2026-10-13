@@ -71,6 +71,8 @@ def route_runtime_case(
     w1: W1NoveltyResult,
     w2: W2PolicyResult | W2PolicyAssessmentResult,
     alignment: W2NovelFactAlignmentResult | None = None,
+    *,
+    w3_contract_version: str | None = None,
 ) -> RuntimeRouteDecision:
     w1_low = w1.confidence is RuntimeConfidence.LOW
     w2_low = w2.confidence is RuntimeConfidence.LOW
@@ -89,7 +91,11 @@ def route_runtime_case(
             else RuntimePrimaryRoute.W3
         )
     else:
-        primary = RuntimePrimaryRoute.W3 if policy_hit else RuntimePrimaryRoute.ARCHIVE
+        primary = (
+            RuntimePrimaryRoute.W3
+            if policy_hit and w3_contract_version != "persistent-runtime.w3.v4"
+            else RuntimePrimaryRoute.ARCHIVE
+        )
 
     effects: list[RuntimeSideEffect] = []
     if primary is RuntimePrimaryRoute.ARCHIVE:

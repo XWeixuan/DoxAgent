@@ -1,0 +1,3 @@
+FROM doxagent-v2:source-storage-enrich-20261009-r1
+COPY staging/src/doxagent/site_strategy/schema.py /app/src/doxagent/site_strategy/schema.py
+COPY staging/src/doxagent/site_strategy/client.py /app/src/doxagent/site_strategy/client.py

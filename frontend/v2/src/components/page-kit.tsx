@@ -49,6 +49,7 @@ export function DetailPanel({
 import { formatInstant, valueText } from "@/core/format";
 import { Document } from "./document";
 import { Citations } from "./citations";
+import { CitationProvider, CitationText } from "./citation-text";
 
 export function PageTitle({
   title,
@@ -307,6 +308,19 @@ export function StructuredDocument({
   value: Json;
   depth?: number;
 }) {
+  return (
+    <CitationProvider source={value}>
+      <StructuredContent value={value} depth={depth} />
+    </CitationProvider>
+  );
+}
+function StructuredContent({
+  value,
+  depth = 0,
+}: {
+  value: Json;
+  depth?: number;
+}) {
   if (value === null) return <span className="muted">未记录</span>;
   if (typeof value !== "object")
     return typeof value === "string" ? (
@@ -319,7 +333,7 @@ export function StructuredDocument({
       <div className="structured-list">
         {value.map((item, i) => (
           <section key={i}>
-            <StructuredDocument value={item} depth={depth + 1} />
+            <StructuredContent value={item} depth={depth + 1} />
           </section>
         ))}
       </div>
@@ -329,7 +343,7 @@ export function StructuredDocument({
       {Object.entries(value).map(([key, item]) => (
         <details key={key} open={depth < 2}>
           <summary>{fieldNames[key] ?? key.replace(/_/g, " ")}</summary>
-          <StructuredDocument value={item} depth={depth + 1} />
+          <StructuredContent value={item} depth={depth + 1} />
         </details>
       ))}
     </div>
@@ -400,61 +414,63 @@ export function ContentReader({
     }
   }
   return (
-    <div className="content-reader">
-      {error ? (
-        <Notice danger>{error}</Notice>
-      ) : chunks.length > 0 ? (
-        <>
-          {response.error && (
-            <Notice danger>
-              {response.error.message}
-              <Button variant="link" onClick={() => void response.refetch()}>
-                重试
-              </Button>
-            </Notice>
-          )}
-          {content.content_type === "application/json" ? (
-            json !== undefined ? (
-              <StructuredDocument value={json} />
+    <CitationProvider key={content.content_id} source={text}>
+      <div className="content-reader">
+        {error ? (
+          <Notice danger>{error}</Notice>
+        ) : chunks.length > 0 ? (
+          <>
+            {response.error && (
+              <Notice danger>
+                {response.error.message}
+                <Button variant="link" onClick={() => void response.refetch()}>
+                  重试
+                </Button>
+              </Notice>
+            )}
+            {content.content_type === "application/json" ? (
+              json !== undefined ? (
+                <StructuredDocument value={json} />
+              ) : (
+                <p>正文尚未加载完整</p>
+              )
+            ) : presentation === "message" ? (
+              <Document markdown={text} />
             ) : (
-              <p>正文尚未加载完整</p>
-            )
-          ) : presentation === "message" ? (
-            <Document markdown={text} />
-          ) : (
-            <SectionedMarkdown text={text} />
-          )}
-        </>
-      ) : (
-        <Module query={response} label="正文">
-          {() => null}
-        </Module>
-      )}
-      {!loadFully &&
-        !collapsed &&
-        chunks.length > 0 &&
-        !chunks.at(-1)!.complete && (
-          <Button
-            variant="outline"
-            disabled={response.isFetching}
-            onClick={() => setCursor(chunks.at(-1)!.next_cursor!)}
-          >
-            继续加载正文
-          </Button>
+              <SectionedMarkdown text={text} />
+            )}
+          </>
+        ) : (
+          <Module query={response} label="正文">
+            {() => null}
+          </Module>
         )}
-      {presentation === "document" && (
-        <Citations
-          key={content.content_id}
-          ticker={ticker}
-          content={content}
-          aliases={[
-            ...new Set(
-              [...text.matchAll(/【cite:([^】]+)】/g)].map((m) => m[1]),
-            ),
-          ]}
-        />
-      )}
-    </div>
+        {!loadFully &&
+          !collapsed &&
+          chunks.length > 0 &&
+          !chunks.at(-1)!.complete && (
+            <Button
+              variant="outline"
+              disabled={response.isFetching}
+              onClick={() => setCursor(chunks.at(-1)!.next_cursor!)}
+            >
+              继续加载正文
+            </Button>
+          )}
+        {presentation === "document" && (
+          <Citations
+            key={content.content_id}
+            ticker={ticker}
+            content={content}
+            aliases={[
+              ...new Set(
+                [...text.matchAll(/【cite:([^】]+)】/g)].map((m) => m[1]),
+              ),
+            ]}
+          />
+        )}
+      </div>
+    </CitationProvider>
   );
 }
 function SectionedMarkdown({ text }: { text: string }) {
@@ -465,13 +481,15 @@ function SectionedMarkdown({ text }: { text: string }) {
         const heading = /^(#{1,3})\s+(.+)\n?/.exec(block);
         return heading && !block.slice(heading[0].length).trim() ? (
           <h2 className="report-title" key={i}>
-            {heading[2]}
+            <CitationText text={heading[2]} />
           </h2>
         ) : heading ? (
           <details open key={i}>
             <summary>
               <ChevronDown aria-hidden="true" />
-              <span>{heading[2]}</span>
+              <span>
+                <CitationText text={heading[2]} />
+              </span>
             </summary>
             <Document markdown={block.slice(heading[0].length)} />
           </details>

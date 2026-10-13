@@ -497,8 +497,8 @@ class PublishedDocument(StrictModel):
             actual = len(self.content_text.encode("utf-8"))
             if actual != self.size_bytes:
                 raise ValueError("published document size_bytes does not match content_text")
-            if actual > 2 * 1024 * 1024:
-                raise ValueError("published document content exceeds 2 MiB")
+            # Local research bodies are not subject to remote transport limits.
+            # Remote repositories and publishers enforce their storage boundary.
         return self
 
 

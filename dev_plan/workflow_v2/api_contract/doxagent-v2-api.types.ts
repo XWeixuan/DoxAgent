@@ -455,8 +455,14 @@ export interface PolicySummaryV3 {
   consumed: Value<boolean>; consumed_at: Value<Instant>; effective: Value<boolean>; matched_filters: PolicyFilter[];
 }
 export type PolicySummary = PolicySummaryLegacy | PolicySummaryV3;
-export interface PolicyDetailLegacy { summary: PolicySummaryLegacy; source_document2: DocumentRef; activation_semantics: "OR"; policy: PolicyLegacy }
-export interface PolicyDetailV3 { summary: PolicySummaryV3; source_document2: DocumentRef | null; activation_semantics: "OR"; policy: PolicyV3; policy_usage: JsonObject[] }
+export interface RelatedExpectation {
+  run_id: Id; shell_id: Id; shell_name: string;
+  unit_id: Id | null; unit_name: string | null;
+  content: "ALL" | "STATE" | "BASELINE" | "FACTORS" | "GAPS";
+  item: string | null; item_name: string | null; refs: string[];
+}
+export interface PolicyDetailLegacy { related_expectations?: RelatedExpectation[]; summary: PolicySummaryLegacy; source_document2: DocumentRef; activation_semantics: "OR"; policy: PolicyLegacy }
+export interface PolicyDetailV3 { related_expectations?: RelatedExpectation[]; summary: PolicySummaryV3; source_document2: DocumentRef | null; activation_semantics: "OR"; policy: PolicyV3; policy_usage: JsonObject[] }
 export type PolicyDetail = PolicyDetailLegacy | PolicyDetailV3;
 export type PolicyShellSummary = Pick<ShellSummaryLegacy, "shell_id" | "ordinal" | "core_question"> | Pick<ShellSummaryV21, "shell_id" | "ordinal" | "name">;
 export interface PolicyContext {
@@ -554,6 +560,7 @@ export interface CaseLink {
 }
 export type MessageRouteFilter = "ALL" | "ARCHIVE" | "TRADE" | "ADD_TO_DELTA" | "W3_PENDING" | "FAILED" | "NOT_PROCESSED";
 export interface MessageSummary extends MessageKey {
+  source_name?: string | null;
   row_revision: Count;
   title: Value<string>; source: SourceLabel; url: string;
   source_published_at: Instant; collected_at: Instant; normalized_at: Instant;
@@ -655,6 +662,8 @@ export interface RuntimeMetrics {
 }
 export type FirstRoundTag = "FIRST_ROUND_TRADE" | "POLICY_RELATED_EVENT" | "SUSPECTED_DUPLICATE_HIT";
 export interface CaseSummary {
+  source_name?: string | null;
+  w3_operations_status?: string | null;
   first_round_tags?: FirstRoundTag[];
   case_id: Id; revision: Count; semantic_day: Day; runtime_mode: "REALTIME" | "CLOSED";
   first_round_shape: "PARALLEL" | "SEQUENTIAL" | "W1_ONLY" | "UNDETERMINED";
@@ -668,7 +677,7 @@ export interface CaseSummary {
   results: ResultKind[];
   trade: { intent_count: Count; state: CaseTradeState; reason_codes: string[] };
   result_settled: boolean;
-  trade_disposition: "NOT_EVALUATED" | "ANALYSIS_ONLY" | "SUPPRESSED_BY_CONTROL" | "MODE_UNAVAILABLE" | "CANDIDATE" | "READY" | "DUPLICATE_POLICY" | "DUPLICATE_REALTIME_OUTPUT" | "EXPIRED_SEMANTIC_DAY" | "SELECTED_CONDITION_INVALID" | "POLICY_MIGRATION_UNRESOLVED" | "EXECUTION_ACCEPTED" | "OUTPUT_RECORDED";
+  trade_disposition: "NOT_EVALUATED" | "ANALYSIS_ONLY" | "SUPPRESSED_BY_CONTROL" | "MODE_UNAVAILABLE" | "CANDIDATE" | "READY" | "DUPLICATE_POLICY" | "DUPLICATE_REALTIME_OUTPUT" | "DUPLICATE_EVENT_TRADE" | "EXPIRED_SEMANTIC_DAY" | "SELECTED_CONDITION_INVALID" | "POLICY_MIGRATION_UNRESOLVED" | "EXECUTION_ACCEPTED" | "OUTPUT_RECORDED";
   stream_item_id: Id; member_count: Count;
 }
 export type NodeId = "SOURCE" | "W1" | "W2" | "W3" | "ARCHIVE" | "EVENT_DISCOVERY" | "FIRST_ROUND_TRADE" | "POLICY_RELATED_EVENT" | "TRADE_INTENT" | "TRADE_EXECUTION" | "TRADE_NOT_EXECUTED" | "FAILURE";
@@ -691,6 +700,7 @@ export interface Timing {
   basis: "RECORDED" | "DERIVED_FROM_RECORDED_INTERVALS" | "UNAVAILABLE";
 }
 export interface ModelAttempt {
+  phase?: "w3_template" | "trade_decision" | "post_decision_operations" | null;
   context_mode?: "EXPLICIT" | "PREVIOUS_RESPONSE" | "REPLAY_PARENT";
   attempt_id: Id; turn_id: Id | null; node_id: "W1" | "W2" | "W3";
   round: "R1" | "R2" | "R3" | "AGENT"; ordinal: Count; attempt_number: Count;
@@ -746,7 +756,19 @@ export interface W2Detail {
   skipped: boolean; policy_hit: Value<boolean>; confidence: Value<Confidence>;
   policies: PolicyLink[]; timing: Timing; attempts: Page<ModelAttempt>; reasoning: Resource<ContentRef>;
 }
+export interface W3TradeDecision {
+  decision: "NO_TRADE" | "POLICY_TRADE" | "EXPERT_TRADE";
+  reason: string;
+  policy_trade: {policy_id: Id; condition_id: Id} | null;
+  expert_trade: {direction: "LONG" | "SHORT"; prior_expectation: string; expectation_delta: string} | null;
+}
 export interface W3Detail {
+  trade_timing?: Timing;
+  operations_timing?: Timing;
+  decision?: W3TradeDecision | null;
+  operations_result?: JsonObject | null;
+  operations_status?: string | null;
+  operations_error?: string | null;
   unresolved_reference_ids?: Id[];
   unresolved_policy_ids?: Id[];
   status: CaseLink["w3_status"]; mode: "UNCOVERED_NEW" | "REVALIDATE_THEN_EVALUATE";
@@ -764,6 +786,7 @@ export interface Candidate {
   provisional_event_id: Id | null; created_at: Instant;
 }
 export interface CaseDetail {
+  w3_state?: {watch: JsonObject | null; pins: JsonObject | null; receipt: JsonObject | null};
   policy_watch?: {followup: JsonObject[]; actions: JsonObject[]; receipt: JsonObject | null};
   policy_execution?: JsonObject | null;
   summary: CaseSummary;

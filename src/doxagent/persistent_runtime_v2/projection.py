@@ -54,7 +54,7 @@ class RuntimeTerminalProjection(RuntimeV2Model):
             resolved_route=(
                 case.resolved_route.primary_route.value if case.resolved_route else None
             ),
-            w3_resolved=case.w3_result is not None,
+            w3_resolved=case.w3_result is not None or case.w3_trade_decision is not None,
             event_library_version=case.version_pin.event_library_version,
             policy_set_version=case.version_pin.policy_set_version,
             hot_path_latency_ms=case.hot_path_latency_ms,

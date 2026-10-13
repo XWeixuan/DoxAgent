@@ -47,7 +47,7 @@ class Views:
             raise ApiFailure("VALIDATION_FAILED", 422)
         if page == "OVERVIEW" and period == "ALL":
             raise ApiFailure("VALIDATION_FAILED", 422)
-        with self.store.connect(write=True) as db:
+        with self.store.connect() as db:
             seq = self.store.highwater(db)
             rows = db.execute(
                 "SELECT ticker,payload FROM object_current WHERE kind='ticker' "
@@ -145,11 +145,13 @@ class Views:
                 "freshness": self.store.freshness(now),
                 "capture_proofs": {row[0]: json.loads(row[1]) for row in db.execute("SELECT source,payload FROM capture_proofs")},
             }
-            identity = self.store.save_token(
-                owner, self.scope(page, ticker), snapshot, view=True, now=now, connection=db
-            )
-            value["view_id"] = identity
-            return value
+        # Pin the completed read snapshot in a short, separate write transaction.
+        # Calendar and metadata reads must not hold up the projection writer.
+        identity = self.store.save_token(
+            owner, self.scope(page, ticker), snapshot, view=True, now=now
+        )
+        value["view_id"] = identity
+        return value
 
     @staticmethod
     def scope(page: str, ticker: str | None) -> str:

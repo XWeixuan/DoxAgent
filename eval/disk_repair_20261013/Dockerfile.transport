@@ -1,0 +1,7 @@
+FROM doxagent-v2:disk-repair-base-read-20261013
+COPY src/doxagent/v2_read/outbox.py /app/src/doxagent/v2_read/outbox.py
+COPY src/doxagent/v2_read/cli.py /app/src/doxagent/v2_read/cli.py
+COPY src/doxagent/v2_read/transport_archive.py /app/src/doxagent/v2_read/transport_archive.py
+COPY src/doxagent/v2_read/maintenance.py /app/src/doxagent/v2_read/maintenance.py
+COPY src/doxagent/message_bus_v2/distribution_repository.py /app/src/doxagent/message_bus_v2/distribution_repository.py
+RUN python -m compileall -q /app/src/doxagent/v2_read

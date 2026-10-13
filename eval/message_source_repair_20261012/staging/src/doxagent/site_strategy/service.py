@@ -454,15 +454,25 @@ class SiteStrategyService:
 
     async def _run_due_probes(self) -> None:
         now = utc_now()
-        for egress in self.repository.list_egresses():
+        slots = asyncio.Semaphore(2)
+
+        async def check_egress(egress: ProxyEgress) -> None:
             if not egress.enabled or (
-                egress.observed_at is not None and now - egress.observed_at < timedelta(minutes=30)
+                (egress.next_probe_at is not None and now < egress.next_probe_at)
+                or (
+                    egress.next_probe_at is None
+                    and egress.observed_at is not None
+                    and now - egress.observed_at < timedelta(minutes=30)
+                )
             ):
-                continue
+                return
             try:
-                await self.probe_egress(egress.egress_id)
+                async with slots:
+                    await self.probe_egress(egress.egress_id)
             except Exception:
                 logger.exception("egress maintenance probe failed: %s", egress.egress_id)
+
+        await asyncio.gather(*(check_egress(e) for e in self.repository.list_egresses()))
         for head, spec in self.repository.list_active_strategies():
             if not head.enabled or spec.site_id == "generic" or not self._recovery_probe_url(spec):
                 continue
@@ -504,6 +514,21 @@ class SiteStrategyService:
         if prior is None:
             raise KeyError(egress_id)
         updated = await probe_egress(self.repository, egress_id)
+        if updated.status != prior.status:
+            self.repository.append_event(
+                AccessEvent(
+                    operation_id=f"egress-state:{egress_id}:{utc_now().isoformat()}",
+                    site_id="_egress",
+                    category="EGRESS_STATE_CHANGED",
+                    payload={
+                        "egress_id": egress_id,
+                        "before": prior.status,
+                        "after": updated.status,
+                        "error": updated.last_probe_error,
+                        "seconds": updated.last_probe_seconds,
+                    },
+                )
+            )
         if updated.generation != prior.generation:
             await self.runtime.reset_egress(egress_id)
             self.repository.append_event(
@@ -874,6 +899,86 @@ class SiteStrategyService:
                 started=started,
             )
 
+    async def effective_candidates(
+        self,
+        resolved: ResolvedSite,
+        purpose: SitePurpose,
+        mode: AccessMode = AccessMode.BROWSER,
+        excluded: set[str] | None = None,
+    ) -> list[dict[str, object]]:
+        """Read-only explanation of the real purpose/health/resource selection."""
+        combinations = self._purpose_combinations(resolved, purpose)
+        state, ready, _ = await self.health.candidates(
+            resolved.runtime_key,
+            combinations,
+            excluded=excluded or set(),
+            transport=mode,
+            purpose=purpose,
+            read_only=True,
+        )
+        eligible_ids = {c.combination_id for c in ready}
+        purpose_ids = {c.combination_id for c in combinations}
+        rows = []
+        for original in resolved.access.combinations:
+            combo = self._materialize_combination(original)
+            runtime = state.combinations.get(original.combination_id)
+            profile = self.repository.get_profile(combo.profile_id or "") if combo else None
+            egress = self.repository.get_egress(combo.egress_id or "") if combo else None
+            reasons = []
+            if not original.enabled:
+                reasons.append("disabled")
+            if original.combination_id not in purpose_ids:
+                reasons.append("purpose_override")
+            if original.combination_id in (excluded or set()):
+                reasons.append("request_excluded")
+            if combo is None:
+                reasons.append("identity_disabled")
+            if profile is None:
+                reasons.append("profile_missing")
+            if (
+                egress is None
+                or not egress.enabled
+                or egress.status in {"CONFIG_MISSING", "UNAVAILABLE"}
+            ):
+                reasons.append("egress_unavailable")
+            auth_state = (
+                self._auth_state(resolved, combo, profile)
+                if combo and profile
+                else AuthState.UNKNOWN
+            )
+            if self._auth_required(resolved, purpose) and auth_state is not AuthState.VALID:
+                reasons.append("auth_required")
+            if runtime and original.combination_id not in eligible_ids:
+                if mode is not AccessMode.HTTP_PUBLIC and runtime.manual_attention_required:
+                    reasons.append("manual_attention")
+                elif runtime.purpose_rejected_until.get(purpose.value, utc_now()) > utc_now():
+                    reasons.append("purpose_cooldown")
+                elif original.enabled and original.combination_id in purpose_ids:
+                    reasons.append("cooldown")
+            identity = self._identity_for(combo, profile) if combo and profile else None
+            external = getattr(getattr(self.runtime, "browser_runtimes", None), "external", None)
+            entries = getattr(external, "_entries", {})
+            attached = bool(identity and identity.identity_id in entries)
+            rows.append(
+                {
+                    "combination_id": original.combination_id,
+                    "enabled": original.enabled,
+                    "identity_id": original.identity_id,
+                    "profile_id": combo.profile_id if combo else None,
+                    "egress_id": combo.egress_id if combo else None,
+                    "egress_status": egress.status if egress else None,
+                    "auth_state": auth_state.value,
+                    "runtime_kind": identity.runtime_kind.value if identity else None,
+                    "runtime_attached": attached,
+                    "cold_start_capacity": "not_required"
+                    if attached
+                    else "requires_supervisor_check",
+                    "skip_reasons": reasons,
+                    "selectable": not reasons,
+                }
+            )
+        return rows
+
     async def _execute_uncached(self, request: AccessRequest) -> AccessResult:
         started = time.monotonic()
         resolved = self.resolve(request.url, revision=request.strategy_revision)
@@ -886,6 +991,10 @@ class SiteStrategyService:
                 started=started,
             )
         combinations = self._purpose_combinations(resolved, request.purpose)
+        view = await self.effective_candidates(
+            resolved, request.purpose, request.mode, set(request.excluded_combinations)
+        )
+        skips = [row for row in view if row["skip_reasons"]]
         _, candidates, next_retry = await self.health.candidates(
             resolved.runtime_key,
             combinations,
@@ -894,12 +1003,16 @@ class SiteStrategyService:
             purpose=request.purpose,
         )
         if not candidates:
+            manual = any("manual_attention" in row["skip_reasons"] for row in skips)
             return self._result(
                 request,
                 resolved,
                 AccessDisposition.ACCESS_EXHAUSTED,
-                category=FailureCategory.ACCESS_RATE_LIMIT,
-                reason="access_combinations_unavailable",
+                category=FailureCategory.ACCESS_CHALLENGE
+                if manual
+                else FailureCategory.ACCESS_RATE_LIMIT,
+                reason="manual_attention_required" if manual else "access_combinations_unavailable",
+                combination_skips=skips,
                 retry_not_before=next_retry,
                 started=started,
             )
@@ -938,15 +1051,8 @@ class SiteStrategyService:
                 }
             ):
                 unavailable += 1
-                attempts.append(
-                    AccessAttempt(
-                        combination_id=combination.combination_id,
-                        generation=self.repository.get_runtime(resolved.runtime_key).generation,
-                        transport=request.mode,
-                        failure_category=FailureCategory.EGRESS_UNAVAILABLE,
-                        reason_code="egress_or_profile_unavailable",
-                    )
-                )
+                # Resource admission is not a real browser/network attempt.
+                # Its exact blockers are already carried by combination_skips.
                 continue
             if (
                 self._auth_required(resolved, request.purpose)
@@ -1223,6 +1329,9 @@ class SiteStrategyService:
             disposition = AccessDisposition.SERVICE_UNAVAILABLE
             category = FailureCategory.EGRESS_UNAVAILABLE
             reason = "access_resources_unavailable"
+        if not attempts and unavailable and not auth_missing:
+            reason = "egress_unavailable"
+            next_retry = max(next_retry or utc_now(), utc_now() + timedelta(seconds=120))
         return self._result(
             request,
             resolved,
@@ -1231,6 +1340,7 @@ class SiteStrategyService:
             reason=reason,
             attempts=attempts,
             retry_not_before=next_retry,
+            combination_skips=skips,
             generation=refreshed.generation,
             started=started,
         )
@@ -1264,7 +1374,9 @@ class SiteStrategyService:
                     retry_after_seconds=float(getattr(exc, "retry_after_seconds", 0) or 0),
                 )
                 category, reason = (
-                    classify_response(response) if status else classify_exception(exc)
+                    classify_response(response)
+                    if status and not getattr(exc, "diagnostics", None)
+                    else classify_exception(exc)
                 )
                 if category is FailureCategory.RUNTIME_UNAVAILABLE:
                     identity_id = combination.identity_id or profile.profile_id
@@ -1904,6 +2016,7 @@ class SiteStrategyService:
         reason: str | None = None,
         attempts: list[AccessAttempt] | None = None,
         retry_not_before: datetime | None = None,
+        combination_skips: list[dict[str, object]] | None = None,
         generation: int = 0,
         started: float,
     ) -> AccessResult:
@@ -1914,6 +2027,7 @@ class SiteStrategyService:
             failure_category=category,
             reason_code=reason,
             retry_not_before=retry_not_before,
+            combination_skips=combination_skips or [],
             site_id=resolved.site_id,
             runtime_key=resolved.runtime_key,
             strategy_revision=resolved.strategy_revision,
@@ -2020,7 +2134,11 @@ def classify_exception(exc: Exception) -> tuple[FailureCategory, str]:
     if status:
         return classify_response(RuntimeResponse(status, "https://invalid.example/", {}, str(exc)))[
             0
-        ] or FailureCategory.UNKNOWN, f"http_{status}"
+        ] or FailureCategory.UNKNOWN, (
+            f"http_{status}:phase={exc.diagnostics.get('phase')}:url={exc.diagnostics.get('url')}"
+            if getattr(exc, "diagnostics", None)
+            else f"http_{status}"
+        )
     name = type(exc).__name__.casefold()
     message = str(exc).casefold()
     if any(

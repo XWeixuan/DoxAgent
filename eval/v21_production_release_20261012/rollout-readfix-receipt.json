@@ -1,0 +1,14 @@
+{
+  "v2-api": {
+    "before": "1ec39bbea2264f0c3649483b97c084620ce58cf23576e359f809a69efaa336e1",
+    "after": "ae262a172d1fffb1d7bef59f7685f1c2c81bc4305187f4d32de989dafbf4fef2",
+    "image": "sha256:92163da1783aa178ee33a108af19dec17ef3a60651033e4be2571af21da1e7a3",
+    "status": "running"
+  },
+  "v2-projector": {
+    "before": "27f45e60c92a574958dd0889ab5b428024d1bc7e1a9c302d8fa70bdb3894e782",
+    "after": "92ab7069d26d37af42aaf5d53e1e2da9d99344aa24844288af4081a2af9dc7c0",
+    "image": "sha256:92163da1783aa178ee33a108af19dec17ef3a60651033e4be2571af21da1e7a3",
+    "status": "running"
+  }
+}

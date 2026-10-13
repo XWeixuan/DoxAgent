@@ -496,8 +496,11 @@ _HORIZONTAL_TOOL_SPECS: dict[str, tuple[str, list[str], str]] = {
         "Collect available bid, ask, last, OHLC, size, and volume snapshot fields without trading.",
     ),
     "ibkr.market_history": (
-        "Read IBKR historical bars for one stock through the official local TWS socket API.",
-        ["symbol", "conid", "period", "bar", "outside_rth"],
+        "Read IBKR historical trade bars. Use bar=10min or 1d; outside_rth=true includes "
+        "extended hours. Optional duration uses IBKR units (e.g. 7200 S, 2 D); "
+        "end_datetime uses IBKR UTC format YYYYMMDD HH:MM:SS UTC, defaulting to the "
+        "task cutoff when available. The stock contract is resolved internally.",
+        ["symbol", "conid", "period", "bar", "outside_rth", "duration", "end_datetime"],
         "Collect compact auditable OHLCV history; no option, rate, or valuation "
         "derivation is performed.",
     ),

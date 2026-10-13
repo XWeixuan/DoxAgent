@@ -1,0 +1,74 @@
+{
+  "services": {
+    "v2-migrate": {
+      "before_image": null,
+      "after_image": "sha256:0b8796650974278812987fba86a9c45bac9dfc78f54914e6735f9c6662776815",
+      "before_id": null,
+      "after_id": "d169ce1b4fe12f8813abb083d5ff70cb482ccac8385930e839fa44ae1d2f1992",
+      "signature_preserved": true,
+      "logging": {
+        "Type": "json-file",
+        "Config": {
+          "max-file": "3",
+          "max-size": "20m"
+        }
+      },
+      "files": [
+        "/home/ubuntu/doxagent/docker-compose.v2-production.yml",
+        "/home/ubuntu/doxagent/deploy/docker-compose.server.yml",
+        "/home/ubuntu/doxagent/deploy/docker-compose.codex-gpt6.yml",
+        "/home/ubuntu/doxagent-maintenance-20261003/docker-compose.maintenance-recovery.yml",
+        "/home/ubuntu/barrons_ticker_fix_20260930/compose.override.yml",
+        "/home/ubuntu/source-repair-20261004/eval/message_source_repair_20261004/compose.override.yml",
+        "/home/ubuntu/event-maintenance-20261006/compose.override.yml",
+        "/home/ubuntu/v21-production-20261012/compose-v2-scheduler.yaml",
+        "/home/ubuntu/disk-repair-20261013/v2-p4.yaml"
+      ]
+    },
+    "v2-transport-maintenance": {
+      "before_image": "sha256:524a83469ece0acf45ea2561412abfc980638d38b169a61f74efbe3e9a4d7394",
+      "after_image": "sha256:0b8796650974278812987fba86a9c45bac9dfc78f54914e6735f9c6662776815",
+      "before_id": "4ee4d72922b958d47ab6b26667a4567ca934ddc8eefb874b2b4ccc5358daae79",
+      "after_id": "61588a4b16f6270f427a9c3703a25a6e5055fbcedd34861ea9e9c5d912e2624c",
+      "signature_preserved": true,
+      "logging": {
+        "Type": "json-file",
+        "Config": {
+          "max-file": "3",
+          "max-size": "20m"
+        }
+      },
+      "files": [
+        "/home/ubuntu/doxagent/docker-compose.v2-production.yml",
+        "/home/ubuntu/doxagent/deploy/docker-compose.server.yml",
+        "/home/ubuntu/disk-repair-20261013/v2-projector.yaml",
+        "/home/ubuntu/disk-repair-20261013/v2-maintenance.yaml",
+        "/home/ubuntu/disk-repair-20261013/v2-p4.yaml"
+      ]
+    },
+    "initialization-guardian": {
+      "before_image": "sha256:7d3612194b29db3d8a17dad1ac78aa00f28c1d26f557bb2db5b9067f84d9bf62",
+      "after_image": "sha256:493566de0047cf68d7bda2f1829e17bfe315d128caa8283d952ceeb2663f58a3",
+      "before_id": "146d6f3a5f4e307914055054cdbf6ef95cec504fc6257cc32279744f19410189",
+      "after_id": "3227b15f7dd87f26cc8e6afece055aad7248346ba244b50fc727ac804374c7ec",
+      "signature_preserved": true,
+      "logging": {
+        "Type": "json-file",
+        "Config": {
+          "max-file": "3",
+          "max-size": "20m"
+        }
+      },
+      "files": [
+        "/home/ubuntu/doxagent/docker-compose.v2-production.yml",
+        "/home/ubuntu/doxagent/deploy/docker-compose.server.yml",
+        "/home/ubuntu/doxagent/deploy/docker-compose.initialization-repair.yml",
+        "/home/ubuntu/doxagent/deploy/docker-compose.codex-gpt6.yml",
+        "/home/ubuntu/v21-production-20261012/compose-initialization-guardian.yaml",
+        "/home/ubuntu/disk-repair-20261013/v2-p4.yaml"
+      ],
+      "docker_cli_supplied": true
+    }
+  },
+  "migration_executed": false
+}

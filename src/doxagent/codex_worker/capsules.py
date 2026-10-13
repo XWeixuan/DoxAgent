@@ -180,6 +180,15 @@ class CapsuleRuntime:
             raise
         return capsule
 
+    async def release_thread(self, thread_id: str) -> None:
+        async with self._lock:
+            for capsule in list(self.pool):
+                if capsule.thread_id == thread_id:
+                    if capsule.busy:
+                        raise ValueError("cannot release an active thread capsule")
+                    await capsule.close()
+                    self.pool.remove(capsule)
+
     async def start(self, request: WorkerRunRequest, cwd: Path) -> Capsule:
         capsule = await self._take(request.thread_id)
         self.active[self.key(request)] = capsule

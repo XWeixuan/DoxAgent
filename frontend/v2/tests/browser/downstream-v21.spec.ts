@@ -8,6 +8,10 @@ for (const width of [1262, 1559]) {
     await expect(
       page.getByRole("heading", { name: "客户订单", exact: true }),
     ).toBeVisible();
+    await expect(page.locator(".d2-state-table")).toBeVisible();
+    expect(
+      await page.locator(".citation-badge").count(),
+    ).toBeGreaterThanOrEqual(35);
     await expect(
       page.getByRole("heading", { name: "预期基线", exact: true }),
     ).toBeVisible();
@@ -29,7 +33,9 @@ for (const width of [1262, 1559]) {
     });
     expect(errors).toEqual([]);
   });
-  test(`Policy native directions and raw refs ${width}`, async ({ page }) => {
+  test(`Policy directions, collapsed refs and named navigation ${width}`, async ({
+    page,
+  }) => {
     const errors: string[] = [];
     page.on("pageerror", (e) => errors.push(e.message));
     await page.setViewportSize({ width, height: 1000 });
@@ -41,10 +47,20 @@ for (const width of [1262, 1559]) {
     await expect(
       page.getByText("订单影响收入与盈利", { exact: true }),
     ).toBeVisible();
+    await expect(page.getByText("传导环节", { exact: true })).toBeVisible();
+    await expect(page.getByText("可用", { exact: true })).toBeVisible();
+    await expect(page.getByText("已消费", { exact: true })).toBeVisible();
+    await expect(
+      page.getByText("context/document2.json#客户订单", { exact: true }),
+    ).toBeHidden();
+    await page.getByText("资料引用（1）", { exact: true }).click();
     await expect(
       page.getByText("context/document2.json#客户订单", { exact: true }),
     ).toBeVisible();
-    await expect(page.locator(".source-links a")).toHaveCount(0);
+    await page.locator(".policy-expectation-links a").click();
+    await expect(
+      page.getByRole("heading", { name: "客户订单", exact: true }),
+    ).toBeVisible();
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth),
     ).toBeLessThanOrEqual(width);

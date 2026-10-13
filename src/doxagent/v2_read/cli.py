@@ -37,6 +37,23 @@ def backup(source: Path, target: Path) -> None:
     from .content_files import ContentFiles
     ContentFiles(source.parent / "content-files").backup(target, target.parent / "content-files")
     native_root = source.parent / "native-files"
+    published_root = source.parent / "published-contents"
+    if published_root.exists():
+        import hashlib
+        import shutil
+
+        for item in published_root.iterdir():
+            if not item.is_file():
+                continue
+            if hashlib.sha256(item.read_bytes()).hexdigest() != item.name:
+                raise ValueError("published content backup checksum mismatch")
+            destination_file = target.parent / "published-contents" / item.name
+            destination_file.parent.mkdir(parents=True, exist_ok=True)
+            if destination_file.exists():
+                if destination_file.read_bytes() != item.read_bytes():
+                    raise ValueError("immutable published backup collision")
+            else:
+                shutil.copyfile(item, destination_file)
     if native_root.exists():
         identities = [path.parent.name for path in native_root.glob("*/*/manifest.json")]
         ContentFiles(native_root).copy(identities, target.parent / "native-files")
@@ -46,6 +63,10 @@ def backup(source: Path, target: Path) -> None:
             identities = [r[0] for r in db.execute("SELECT DISTINCT digest FROM v2_receipt_archive")]
             for (name,) in db.execute("SELECT source FROM v2_source_state"):
                 ContentFiles(source.parent / "receipt-files" / name).copy(identities, target.parent / "receipt-files" / name)
+        if db.execute("SELECT 1 FROM sqlite_master WHERE name='v2_receipt_packs'").fetchone():
+            identities = [r[0] for r in db.execute("SELECT DISTINCT digest FROM v2_receipt_packs")]
+            for (name,) in db.execute("SELECT source FROM v2_source_state"):
+                ContentFiles(source.parent / "receipt-packs" / name).copy(identities, target.parent / "receipt-packs" / name)
 
 
 
@@ -70,6 +91,7 @@ def main() -> None:
             "import-history",
             "verify",
             "reproject-trade-outcomes",
+            "policy-query-indexes",
         ),
     )
     parser.add_argument("--read-db", type=Path, default=Path(".tmp/v2_read.sqlite3"))
@@ -118,6 +140,10 @@ def main() -> None:
                 {"dry_run": args.dry_run, "sources": report, "read_schema": ReadStore.VERSION}
             )
         )
+    elif args.command == "policy-query-indexes":
+        if not args.dry_run:
+            store.migrate_policy_query_indexes()
+        print(json.dumps({"policy_query_indexes": "planned" if args.dry_run else "ready", "dry_run": args.dry_run}))
     elif args.command == "inventory":
         from .artifact_registry import inventory
         print(json.dumps(inventory(store,limit=args.limit)))
@@ -228,7 +254,17 @@ def main() -> None:
 
         with WriterLock(Path(str(store.path) + ".projector")):
             while True:
-                worker.tick(limit=args.limit)
+                try:
+                    worker.tick(limit=args.limit)
+                except sqlite3.OperationalError as exc:
+                    if args.once or (getattr(exc, "sqlite_errorcode", 0) & 255) not in (
+                        sqlite3.SQLITE_BUSY, sqlite3.SQLITE_LOCKED
+                    ):
+                        raise
+                    # Transactions and checkpoints already fence committed work;
+                    # retry the next bounded tick without restarting the process.
+                    import logging
+                    logging.getLogger(__name__).warning("projection tick deferred: SQLite contention")
                 if args.once:
                     return
                 time.sleep(1)

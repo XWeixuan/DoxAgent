@@ -1,0 +1,64 @@
+{
+  "verified": true,
+  "phase": "switched",
+  "coordinates": {
+    "public_seq": 4400496,
+    "generation": "cc84f6f117fd4a0d8418adb1e14c8f83",
+    "positions": [
+      [
+        "bus",
+        2275352
+      ],
+      [
+        "initialization",
+        103657
+      ],
+      [
+        "research",
+        5798
+      ],
+      [
+        "runtime",
+        1804511
+      ]
+    ],
+    "gaps": [
+      [
+        "runtime",
+        "1240145",
+        "PROVENANCE_UNVERIFIED",
+        4462,
+        "2026-10-12T20:53:12.673446Z"
+      ],
+      [
+        "runtime",
+        "1240148",
+        "PROVENANCE_UNVERIFIED",
+        4462,
+        "2026-10-12T20:53:12.673446Z"
+      ],
+      [
+        "runtime",
+        "1240191",
+        "PROVENANCE_UNVERIFIED",
+        4461,
+        "2026-10-12T20:53:12.673446Z"
+      ],
+      [
+        "runtime",
+        "1240193",
+        "PROVENANCE_UNVERIFIED",
+        4461,
+        "2026-10-12T20:53:12.673446Z"
+      ]
+    ]
+  },
+  "tokens": {
+    "views": 79,
+    "cursors": 41
+  },
+  "before_bytes": 31672459264,
+  "after_bytes": 24614690816,
+  "retired_path": "/var/lib/docker/volumes/doxagent-v2_v2-data/_data/read/v2.disk-repair-20261013.precompact.sqlite3",
+  "shadow_manifest": "/var/lib/docker/volumes/doxagent-v2_v2-data/_data/read/v2.disk-repair-20261013.shadow.sqlite3.manifest.json"
+}

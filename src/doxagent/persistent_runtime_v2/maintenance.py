@@ -142,6 +142,8 @@ class RuntimeMaintenance:
             task["ticker"],
             int(event_ref["version"]),
         )
+        self.journal.set("w3_library_lineage", str(candidate_root),
+                         self.journal.get("w3_library_lineage", str(source_root), str(source_root)))
         worker = (
             self.worker_factory()
             if self.worker_factory
@@ -163,17 +165,22 @@ class RuntimeMaintenance:
         assets = self.journal.get("maintenance_assets", run_id)
         if assets is None:
             execution = frame.get("execution_bundle_id")
-            published_assets = (
-                self.runtime.execution_bundles.get(execution)["assets"]
+            execution_bundle = (
+                self.runtime.execution_bundles.get(execution)
                 if execution and self.runtime.execution_bundles
                 else {}
             )
+            published_assets = execution_bundle.get("assets", {})
             assets = {
                 key: value
                 for key, value in published_assets.items()
                 if key.startswith(("event_library/", "document3/", "open_event_atlas/"))
             }
             for component in ("event_library", "document3", "open_event_atlas"):
+                if execution_bundle.get("orchestration_revision", 1) >= 3:
+                    if not any(key.startswith(component + "/") for key in assets):
+                        raise ValueError(f"frozen maintenance assets missing: {component}")
+                    continue
                 source = Path("prompts/codex_v2") / component
                 for path in source.rglob("*"):
                     if (
@@ -302,6 +309,9 @@ class RuntimeMaintenance:
                     o2={"version": version, "root": str(candidate_root)},
                 )
             published = task["receipt"]["o2"]
+            from .w3_context import sync_event_links
+
+            sync_event_links(self.journal, task["ticker"], published["root"], published["version"])
             compiler = EventLibraryViewCompiler(repository)
             from .reference_capture import actual_delta
 

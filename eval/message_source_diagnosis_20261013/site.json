@@ -1,0 +1,457 @@
+{
+  "at": "2026-10-13T10:06:30.841576+00:00",
+  "ready": {
+    "status": "ready",
+    "external_driver": {
+      "state": "READY",
+      "ready": true,
+      "epoch": 4,
+      "pid": 143559,
+      "rss_bytes": 90886144,
+      "age_seconds": 9848.828234462067,
+      "attachments": 5,
+      "active_pages": 0,
+      "acquiring_pages": 0,
+      "last_recovery_reason": "max_driver_age"
+    },
+    "registry": true,
+    "storage": {
+      "state": "ready",
+      "unavailable": false,
+      "available_bytes": 38750732288,
+      "last_commit_at": "2026-10-13T10:06:27.870269+00:00",
+      "last_error": null
+    },
+    "browser_driver": true,
+    "accepting": true
+  },
+  "diagnostics": {
+    "external_driver": {
+      "state": "READY",
+      "ready": true,
+      "epoch": 4,
+      "pid": 143559,
+      "rss_bytes": 90886144,
+      "age_seconds": 9848.831405043136,
+      "attachments": 5,
+      "active_pages": 0,
+      "acquiring_pages": 0,
+      "last_recovery_reason": "max_driver_age"
+    },
+    "stalled": false,
+    "operations": [],
+    "storage": {
+      "state": "ready",
+      "unavailable": false,
+      "available_bytes": 38750732288,
+      "last_commit_at": "2026-10-13T10:06:27.870269+00:00",
+      "last_error": null
+    },
+    "queue_waiters": 0,
+    "queue_locked": false,
+    "site_active": {
+      "digitimes": 0,
+      "globenewswire": 0,
+      "trendforce": 0,
+      "barrons": 0,
+      "investorshub": 0,
+      "yahoo_finance": 0,
+      "chartmill": 0,
+      "generic:www.investors.com:c26defaa38bd07b9": 0,
+      "digitimes_tw": 0,
+      "generic:www.kedglobal.com:29e9d4da1e7eb0eb": 0,
+      "generic:www.marketscreener.com:df88f94ac726b4c4": 0,
+      "etnews": 0
+    },
+    "identity_active": {
+      "digitimes-nl-1": 0,
+      "globenewswire-1": 0,
+      "trendforce-1": 0,
+      "dowjones-main": 0,
+      "public-markets-nl": 0,
+      "yahoo-main": 0,
+      "chartmill-1": 0,
+      "generic-c0b250fa6418-jp-standard-6": 0,
+      "digitimes-tw-nl-1": 0,
+      "generic-3c70f23259ff-jp-standard-6": 0,
+      "generic-3dd0ac48babf-jp-standard-6": 0,
+      "etnews-1": 0,
+      "yahoo-backup": 0,
+      "yahoo-tr-main": 0,
+      "digitimes-de-1": 0
+    }
+  },
+  "identities": {
+    "dowjones-main": {
+      "ok": true,
+      "running": true,
+      "identity_id": "dowjones-main",
+      "instance_id": "0854db06758b49a68cdce663ce78e922",
+      "generation": 1,
+      "pid": 236756,
+      "cdp_http_url": "http://127.0.0.1:9222",
+      "cdp_websocket_url": "ws://127.0.0.1:9222/devtools/browser/809c9d94-7296-4b74-9218-12f9c2d71e7f",
+      "display": ":100",
+      "vnc_port": 5920,
+      "runtime_kind": "external_chrome",
+      "profile_id": "dowjones-main",
+      "egress_id": "us-standard-5"
+    },
+    "digitimes-nl-1": {
+      "ok": true,
+      "running": true,
+      "identity_id": "digitimes-nl-1",
+      "instance_id": "03259f271d684527b235137c3e6acc33",
+      "generation": 1,
+      "pid": 2684792,
+      "cdp_http_url": "http://127.0.0.1:9226",
+      "cdp_websocket_url": "ws://127.0.0.1:9226/devtools/browser/65dcd131-165e-4aee-8648-9594eb9b3795",
+      "display": ":104",
+      "vnc_port": 5924,
+      "runtime_kind": "external_chrome",
+      "profile_id": "digitimes-nl-1",
+      "egress_id": "nl-standard-2"
+    },
+    "digitimes-de-1": {
+      "ok": true,
+      "running": true,
+      "identity_id": "digitimes-de-1",
+      "instance_id": "916734b760404c92b38ed856391ff95f",
+      "generation": 1,
+      "pid": 3517502,
+      "cdp_http_url": "http://127.0.0.1:9228",
+      "cdp_websocket_url": "ws://127.0.0.1:9228/devtools/browser/719843ac-3e69-42ce-9dc5-66a7882f25be",
+      "display": ":103",
+      "vnc_port": 5923,
+      "runtime_kind": "external_chrome",
+      "profile_id": "digitimes-de-1",
+      "egress_id": "de-standard-1"
+    },
+    "public-markets-nl": {
+      "ok": true,
+      "running": true,
+      "identity_id": "public-markets-nl",
+      "instance_id": "c357918a6ead4c3eb3ad972261dac144",
+      "generation": 3,
+      "pid": 1264482,
+      "cdp_http_url": "http://127.0.0.1:9227",
+      "cdp_websocket_url": "ws://127.0.0.1:9227/devtools/browser/9a00d57d-652c-40e8-b1db-d32c5d114421",
+      "display": ":105",
+      "vnc_port": 5925,
+      "runtime_kind": "external_chrome",
+      "profile_id": "public-markets-nl",
+      "egress_id": "nl-standard-2"
+    },
+    "yahoo-main": {
+      "ok": true,
+      "running": true,
+      "identity_id": "yahoo-main",
+      "instance_id": "d3b0110cdb2f43cf84d424548ae15f98",
+      "generation": 2,
+      "pid": 1303325,
+      "cdp_http_url": "http://127.0.0.1:9224",
+      "cdp_websocket_url": "ws://127.0.0.1:9224/devtools/browser/91dcf8ee-642f-44ef-9419-a7836083a494",
+      "display": ":102",
+      "vnc_port": 5922,
+      "runtime_kind": "external_chrome",
+      "profile_id": "yahoo-main",
+      "egress_id": "jp-standard-6"
+    },
+    "seeking-alpha-main": {
+      "ok": true,
+      "running": true,
+      "identity_id": "seeking-alpha-main",
+      "instance_id": "0f6fb958d3ef41ed9e94296a007ef047",
+      "generation": 1,
+      "pid": 236960,
+      "cdp_http_url": "http://127.0.0.1:9223",
+      "cdp_websocket_url": "ws://127.0.0.1:9223/devtools/browser/9d30066c-d970-4b9b-90f2-3ea90f7a741c",
+      "display": ":101",
+      "vnc_port": 5921,
+      "runtime_kind": "external_chrome",
+      "profile_id": "seeking-alpha-main",
+      "egress_id": "us-standard-5"
+    }
+  },
+  "tables": [
+    "site_strategy_revisions",
+    "site_strategy_heads",
+    "proxy_egresses",
+    "browser_profiles",
+    "site_runtime",
+    "access_events",
+    "body_outcomes",
+    "browser_identity_revisions",
+    "browser_identity_heads",
+    "identity_runtime",
+    "site_identity_auth"
+  ],
+  "body_outcomes_recent": [
+    {
+      "final_site_id": "etnews",
+      "outcome": "FULL",
+      "reason": null,
+      "n": 5,
+      "last": "2026-10-13T08:03:14.169771+00:00"
+    },
+    {
+      "final_site_id": "etnews",
+      "outcome": "PARTIAL",
+      "reason": "egress_unavailable",
+      "n": 25,
+      "last": "2026-10-13T08:34:13.738489+00:00"
+    },
+    {
+      "final_site_id": "etnews",
+      "outcome": "SHORT_FULL",
+      "reason": null,
+      "n": 1,
+      "last": "2026-10-13T09:04:06.981974+00:00"
+    },
+    {
+      "final_site_id": "fool",
+      "outcome": "FULL",
+      "reason": null,
+      "n": 1,
+      "last": "2026-10-13T06:01:07.445303+00:00"
+    },
+    {
+      "final_site_id": "generic",
+      "outcome": "UNAVAILABLE",
+      "reason": "egress_unavailable",
+      "n": 22,
+      "last": "2026-10-13T10:06:16.537539+00:00"
+    },
+    {
+      "final_site_id": "globenewswire",
+      "outcome": "FULL",
+      "reason": null,
+      "n": 17,
+      "last": "2026-10-13T10:01:29.367494+00:00"
+    },
+    {
+      "final_site_id": "thelec",
+      "outcome": "FULL",
+      "reason": null,
+      "n": 4,
+      "last": "2026-10-13T07:46:05.006101+00:00"
+    },
+    {
+      "final_site_id": "thelec",
+      "outcome": "SHORT_FULL",
+      "reason": null,
+      "n": 1,
+      "last": "2026-10-13T07:37:06.483027+00:00"
+    },
+    {
+      "final_site_id": "thelec",
+      "outcome": "UNAVAILABLE",
+      "reason": "egress_unavailable",
+      "n": 1,
+      "last": "2026-10-13T07:24:07.544226+00:00"
+    },
+    {
+      "final_site_id": "tomshardware",
+      "outcome": "FULL",
+      "reason": null,
+      "n": 1,
+      "last": "2026-10-13T10:04:12.670100+00:00"
+    },
+    {
+      "final_site_id": "trendforce",
+      "outcome": "FULL",
+      "reason": null,
+      "n": 4,
+      "last": "2026-10-13T08:35:11.453736+00:00"
+    },
+    {
+      "final_site_id": "www.benzinga.com",
+      "outcome": "FULL",
+      "reason": null,
+      "n": 1,
+      "last": "2026-10-13T09:44:06.566487+00:00"
+    }
+  ],
+  "events": [
+    {
+      "event_id": "sae_7ff28d5517734b77bcd268c7277c39ae",
+      "operation_id": "poll_affa67b60ec64d478681aba74eb33b56:7fadc6e8a14543dd428bd8e7:1",
+      "site_id": "globenewswire",
+      "combination_id": "globenewswire-1",
+      "occurred_at": "2026-10-13T10:06:27.866011+00:00",
+      "category": "ACCESS_RESULT",
+      "payload_json": "{\"disposition\":\"SUCCESS\",\"failure_category\":null,\"generation\":1,\"network_ms\":650,\"purpose\":\"CRAWLER\",\"reason\":\"ok\",\"strategy_ref\":\"builtin:globenewswire_search@1\",\"strategy_revision\":4}"
+    },
+    {
+      "event_id": "sae_b48bc33bf6b9403e9149f7a3079b608d",
+      "operation_id": "poll_affa67b60ec64d478681aba74eb33b56:7fadc6e8a14543dd428bd8e7:1",
+      "site_id": "globenewswire",
+      "combination_id": "globenewswire-1",
+      "occurred_at": "2026-10-13T10:06:27.854602+00:00",
+      "category": "ACCESS_SUCCEEDED",
+      "payload_json": "{\"combination_id\":\"globenewswire-1\",\"exit_ip\":\"43.163.67.97\",\"failure_category\":null,\"generation\":1,\"identity_id\":\"globenewswire-1\",\"network_ms\":650,\"observed_at\":\"2026-10-13T10:06:27.848929Z\",\"queue_wait_ms\":0,\"reason_code\":\"ok\",\"runtime_generation\":2,\"runtime_instance_id\":\"managed:globenewswire-1:130951537880400\",\"runtime_kind\":\"managed_playwright\",\"status_code\":200,\"transport\":\"BROWSER\"}"
+    },
+    {
+      "event_id": "sae_3957f6142fa24772999b3e1ca2298dfd",
+      "operation_id": "poll_affa67b60ec64d478681aba74eb33b56:480dedaad12eae792911939f:1",
+      "site_id": "globenewswire",
+      "combination_id": "globenewswire-1",
+      "occurred_at": "2026-10-13T10:06:27.161562+00:00",
+      "category": "ACCESS_RESULT",
+      "payload_json": "{\"disposition\":\"SUCCESS\",\"failure_category\":null,\"generation\":1,\"network_ms\":872,\"purpose\":\"CRAWLER\",\"reason\":\"ok\",\"strategy_ref\":\"builtin:globenewswire_search@1\",\"strategy_revision\":4}"
+    },
+    {
+      "event_id": "sae_0bfc75b6c6564191ae8bf9ce4cdf6921",
+      "operation_id": "poll_affa67b60ec64d478681aba74eb33b56:480dedaad12eae792911939f:1",
+      "site_id": "globenewswire",
+      "combination_id": "globenewswire-1",
+      "occurred_at": "2026-10-13T10:06:27.151392+00:00",
+      "category": "ACCESS_SUCCEEDED",
+      "payload_json": "{\"combination_id\":\"globenewswire-1\",\"exit_ip\":\"43.163.67.97\",\"failure_category\":null,\"generation\":1,\"identity_id\":\"globenewswire-1\",\"network_ms\":872,\"observed_at\":\"2026-10-13T10:06:27.140165Z\",\"queue_wait_ms\":0,\"reason_code\":\"ok\",\"runtime_generation\":2,\"runtime_instance_id\":\"managed:globenewswire-1:130951537880400\",\"runtime_kind\":\"managed_playwright\",\"status_code\":200,\"transport\":\"BROWSER\"}"
+    },
+    {
+      "event_id": "sae_d69a845d0bd349d7bb7ec3cba1ddacb7",
+      "operation_id": "poll_3564eb88b1764b8897a1eedca22f023f",
+      "site_id": "yahoo_finance",
+      "combination_id": "yahoo_finance-tr-1",
+      "occurred_at": "2026-10-13T10:06:26.007882+00:00",
+      "category": "ACCESS_RESULT",
+      "payload_json": "{\"disposition\":\"CONTENT_ERROR\",\"failure_category\":\"CONTENT_ERROR\",\"generation\":2,\"network_ms\":7969,\"purpose\":\"CRAWLER\",\"reason\":\"http_404:phase=page_js_fetch:url=https://finance.yahoo.com/xhr/ncp\",\"strategy_ref\":\"builtin:yahoo_latest_news@1\",\"strategy_revision\":5}"
+    },
+    {
+      "event_id": "sae_a81c0b63ae164e4d848b9cf910867de0",
+      "operation_id": "poll_affa67b60ec64d478681aba74eb33b56:1697715f9d2664d932c29fe2:1",
+      "site_id": "globenewswire",
+      "combination_id": "globenewswire-1",
+      "occurred_at": "2026-10-13T10:06:25.771822+00:00",
+      "category": "ACCESS_RESULT",
+      "payload_json": "{\"disposition\":\"SUCCESS\",\"failure_category\":null,\"generation\":1,\"network_ms\":1376,\"purpose\":\"CRAWLER\",\"reason\":\"ok\",\"strategy_ref\":\"builtin:globenewswire_search@1\",\"strategy_revision\":4}"
+    },
+    {
+      "event_id": "sae_6379b16cc1204822a212113578d43098",
+      "operation_id": "poll_affa67b60ec64d478681aba74eb33b56:1697715f9d2664d932c29fe2:1",
+      "site_id": "globenewswire",
+      "combination_id": "globenewswire-1",
+      "occurred_at": "2026-10-13T10:06:25.753047+00:00",
+      "category": "ACCESS_SUCCEEDED",
+      "payload_json": "{\"combination_id\":\"globenewswire-1\",\"exit_ip\":\"43.163.67.97\",\"failure_category\":null,\"generation\":1,\"identity_id\":\"globenewswire-1\",\"network_ms\":1376,\"observed_at\":\"2026-10-13T10:06:25.739952Z\",\"queue_wait_ms\":0,\"reason_code\":\"ok\",\"runtime_generation\":2,\"runtime_instance_id\":\"managed:globenewswire-1:130951537880400\",\"runtime_kind\":\"managed_playwright\",\"status_code\":200,\"transport\":\"BROWSER\"}"
+    },
+    {
+      "event_id": "sae_362cca7b84514c518273dfa53719725e",
+      "operation_id": "poll_e335c8a19fe44561bcdafdd71d96872c:investing",
+      "site_id": "investing",
+      "combination_id": null,
+      "occurred_at": "2026-10-13T10:06:24.242091+00:00",
+      "category": "ACCESS_RESULT",
+      "payload_json": "{\"disposition\":\"ACCESS_EXHAUSTED\",\"failure_category\":\"ACCESS_CHALLENGE\",\"generation\":0,\"network_ms\":0,\"purpose\":\"CRAWLER\",\"reason\":\"manual_attention_required\",\"strategy_ref\":\"builtin:investing_ticker@1\",\"strategy_revision\":13}"
+    },
+    {
+      "event_id": "sae_94f8fb56ef7744828fd915b210d8f321",
+      "operation_id": "poll_e7f829feb59d495f95f1e3eba5948161:c2c83e5610b9f51db2ffdd4e:1",
+      "site_id": "globenewswire",
+      "combination_id": "globenewswire-1",
+      "occurred_at": "2026-10-13T10:06:19.587086+00:00",
+      "category": "ACCESS_RESULT",
+      "payload_json": "{\"disposition\":\"SUCCESS\",\"failure_category\":null,\"generation\":1,\"network_ms\":1628,\"purpose\":\"CRAWLER\",\"reason\":\"ok\",\"strategy_ref\":\"builtin:globenewswire_search@1\",\"strategy_revision\":4}"
+    },
+    {
+      "event_id": "sae_dd6703d4cec74c129a966ab4802c073a",
+      "operation_id": "poll_e7f829feb59d495f95f1e3eba5948161:c2c83e5610b9f51db2ffdd4e:1",
+      "site_id": "globenewswire",
+      "combination_id": "globenewswire-1",
+      "occurred_at": "2026-10-13T10:06:19.562268+00:00",
+      "category": "ACCESS_SUCCEEDED",
+      "payload_json": "{\"combination_id\":\"globenewswire-1\",\"exit_ip\":\"43.163.67.97\",\"failure_category\":null,\"generation\":1,\"identity_id\":\"globenewswire-1\",\"network_ms\":1628,\"observed_at\":\"2026-10-13T10:06:19.544044Z\",\"queue_wait_ms\":0,\"reason_code\":\"ok\",\"runtime_generation\":2,\"runtime_instance_id\":\"managed:globenewswire-1:130951537880400\",\"runtime_kind\":\"managed_playwright\",\"status_code\":200,\"transport\":\"BROWSER\"}"
+    },
+    {
+      "event_id": "sae_aaa04ae064e84291afcc1c67f762b7dd",
+      "operation_id": "poll_103494ab178e45248fc10be24d9fb907:8cc58b4e7babda7c85fc36f9:0",
+      "site_id": "reuters",
+      "combination_id": null,
+      "occurred_at": "2026-10-13T10:06:18.013503+00:00",
+      "category": "ACCESS_RESULT",
+      "payload_json": "{\"disposition\":\"ACCESS_EXHAUSTED\",\"failure_category\":\"ACCESS_CHALLENGE\",\"generation\":0,\"network_ms\":0,\"purpose\":\"CRAWLER\",\"reason\":\"manual_attention_required\",\"strategy_ref\":\"builtin:reuters_search@1\",\"strategy_revision\":9}"
+    },
+    {
+      "event_id": "sae_dbdd49a601fa485a90e069937bc8b454",
+      "operation_id": "body:direct:d91e6389026d8e88d10b",
+      "site_id": "generic",
+      "combination_id": null,
+      "occurred_at": "2026-10-13T10:06:16.534361+00:00",
+      "category": "ACCESS_RESULT",
+      "payload_json": "{\"disposition\":\"SERVICE_UNAVAILABLE\",\"failure_category\":\"EGRESS_UNAVAILABLE\",\"generation\":1,\"network_ms\":0,\"purpose\":\"BODY\",\"reason\":\"egress_unavailable\",\"strategy_ref\":\"builtin:generic@1\",\"strategy_revision\":1}"
+    },
+    {
+      "event_id": "sae_6cb55fdb90c84aa99a8e89d9145a2495",
+      "operation_id": "poll_e7f829feb59d495f95f1e3eba5948161:be07dca67b9bd7439815a33b:1",
+      "site_id": "globenewswire",
+      "combination_id": "globenewswire-1",
+      "occurred_at": "2026-10-13T10:06:16.159281+00:00",
+      "category": "ACCESS_RESULT",
+      "payload_json": "{\"disposition\":\"SUCCESS\",\"failure_category\":null,\"generation\":1,\"network_ms\":501,\"purpose\":\"CRAWLER\",\"reason\":\"ok\",\"strategy_ref\":\"builtin:globenewswire_search@1\",\"strategy_revision\":4}"
+    },
+    {
+      "event_id": "sae_5d7408d3c7b34e70869ea7be5a98be90",
+      "operation_id": "poll_e7f829feb59d495f95f1e3eba5948161:be07dca67b9bd7439815a33b:1",
+      "site_id": "globenewswire",
+      "combination_id": "globenewswire-1",
+      "occurred_at": "2026-10-13T10:06:16.154704+00:00",
+      "category": "ACCESS_SUCCEEDED",
+      "payload_json": "{\"combination_id\":\"globenewswire-1\",\"exit_ip\":\"43.163.67.97\",\"failure_category\":null,\"generation\":1,\"identity_id\":\"globenewswire-1\",\"network_ms\":501,\"observed_at\":\"2026-10-13T10:06:16.149845Z\",\"queue_wait_ms\":0,\"reason_code\":\"ok\",\"runtime_generation\":2,\"runtime_instance_id\":\"managed:globenewswire-1:130951537880400\",\"runtime_kind\":\"managed_playwright\",\"status_code\":200,\"transport\":\"BROWSER\"}"
+    },
+    {
+      "event_id": "sae_e7ff7acffdc448d98dc5e9935b3e3e58",
+      "operation_id": "poll_e7f829feb59d495f95f1e3eba5948161:fecbee1076843391581eb992:1",
+      "site_id": "globenewswire",
+      "combination_id": "globenewswire-1",
+      "occurred_at": "2026-10-13T10:06:14.901493+00:00",
+      "category": "ACCESS_RESULT",
+      "payload_json": "{\"disposition\":\"SUCCESS\",\"failure_category\":null,\"generation\":1,\"network_ms\":811,\"purpose\":\"CRAWLER\",\"reason\":\"ok\",\"strategy_ref\":\"builtin:globenewswire_search@1\",\"strategy_revision\":4}"
+    },
+    {
+      "event_id": "sae_076d9572e9cf4b378c322140c6152a21",
+      "operation_id": "poll_e7f829feb59d495f95f1e3eba5948161:fecbee1076843391581eb992:1",
+      "site_id": "globenewswire",
+      "combination_id": "globenewswire-1",
+      "occurred_at": "2026-10-13T10:06:14.879970+00:00",
+      "category": "ACCESS_SUCCEEDED",
+      "payload_json": "{\"combination_id\":\"globenewswire-1\",\"exit_ip\":\"43.163.67.97\",\"failure_category\":null,\"generation\":1,\"identity_id\":\"globenewswire-1\",\"network_ms\":811,\"observed_at\":\"2026-10-13T10:06:14.862290Z\",\"queue_wait_ms\":0,\"reason_code\":\"ok\",\"runtime_generation\":2,\"runtime_instance_id\":\"managed:globenewswire-1:130951537880400\",\"runtime_kind\":\"managed_playwright\",\"status_code\":200,\"transport\":\"BROWSER\"}"
+    },
+    {
+      "event_id": "sae_f296cbb51f314e22a541f986fe186d75",
+      "operation_id": "poll_8d833c40f354437db9e9f29edd1624aa:investing",
+      "site_id": "investing",
+      "combination_id": null,
+      "occurred_at": "2026-10-13T10:06:14.066543+00:00",
+      "category": "ACCESS_RESULT",
+      "payload_json": "{\"disposition\":\"ACCESS_EXHAUSTED\",\"failure_category\":\"ACCESS_CHALLENGE\",\"generation\":0,\"network_ms\":0,\"purpose\":\"CRAWLER\",\"reason\":\"manual_attention_required\",\"strategy_ref\":\"builtin:investing_ticker@1\",\"strategy_revision\":13}"
+    },
+    {
+      "event_id": "sae_77ddc9dbb58648cbbf540fc96413616e",
+      "operation_id": "poll_1a369a54915f4845bb38a2c03ae7d119",
+      "site_id": "yahoo_finance",
+      "combination_id": "yahoo_finance-tr-1",
+      "occurred_at": "2026-10-13T10:06:13.355500+00:00",
+      "category": "ACCESS_RESULT",
+      "payload_json": "{\"disposition\":\"CONTENT_ERROR\",\"failure_category\":\"CONTENT_ERROR\",\"generation\":2,\"network_ms\":9158,\"purpose\":\"CRAWLER\",\"reason\":\"http_404:phase=page_js_fetch:url=https://finance.yahoo.com/xhr/ncp\",\"strategy_ref\":\"builtin:yahoo_latest_news@1\",\"strategy_revision\":5}"
+    },
+    {
+      "event_id": "sae_2b4042778d664728acfad05471f67227",
+      "operation_id": "dist-973c9ddb902b0439d0ba1f23c285f763:trendforce_news",
+      "site_id": "trendforce",
+      "combination_id": "trendforce-1",
+      "occurred_at": "2026-10-13T10:06:12.112842+00:00",
+      "category": "ACCESS_RESULT",
+      "payload_json": "{\"disposition\":\"SUCCESS\",\"failure_category\":null,\"generation\":1,\"network_ms\":1342,\"purpose\":\"CRAWLER\",\"reason\":\"ok\",\"strategy_ref\":\"builtin:trendforce_listings@1\",\"strategy_revision\":1}"
+    },
+    {
+      "event_id": "sae_78448f1568f949568f3d4312e638dcf9",
+      "operation_id": "dist-973c9ddb902b0439d0ba1f23c285f763:trendforce_news",
+      "site_id": "trendforce",
+      "combination_id": "trendforce-1",
+      "occurred_at": "2026-10-13T10:06:12.104137+00:00",
+      "category": "ACCESS_SUCCEEDED",
+      "payload_json": "{\"combination_id\":\"trendforce-1\",\"exit_ip\":\"43.163.67.97\",\"failure_category\":null,\"generation\":1,\"identity_id\":\"trendforce-1\",\"network_ms\":1342,\"observed_at\":\"2026-10-13T10:06:12.094569Z\",\"queue_wait_ms\":0,\"reason_code\":\"ok\",\"runtime_generation\":2,\"runtime_instance_id\":\"managed:trendforce-1:130951578312336\",\"runtime_kind\":\"managed_playwright\",\"status_code\":200,\"transport\":\"BROWSER\"}"
+    }
+  ]
+}

@@ -17,6 +17,29 @@ def _rig(tmp_path):
 
 
 @pytest.mark.asyncio
+async def test_maintain_prepares_the_baseline_document2_not_latest(rig):
+    from tests.fixtures.codex_document3 import _policy_set
+
+    original = rig.orchestrator.preparer.prepare
+    calls = []
+    baseline_ref = _policy_set().document2_ref
+
+    async def pinned_prepare(**kwargs):
+        calls.append(kwargs)
+        prepared = await original(**{k: v for k, v in kwargs.items() if k != "document2_run_id"})
+        prepared["document2_ref"] = baseline_ref.model_dump(mode="json")
+        return prepared
+
+    rig.orchestrator.preparer.prepare = pinned_prepare
+    initial = await rig.orchestrator.initialize(ticker="MU", as_of=NOW, run_id="pinned-base")
+    rig.worker.patch = {"base_policy_set_version": initial.policy_set_version,
+                        "upsert_policies": [], "retire_policy_ids": [], "summary": "unchanged"}
+    await rig.orchestrator.maintain(ticker="MU", base_policy_version=initial.policy_set_version,
+                                   as_of=NOW, explicit_maintenance=True, run_id="pinned-maintain")
+    assert calls[-1]["document2_run_id"] == baseline_ref.run_id
+
+
+@pytest.mark.asyncio
 async def test_maintain_single_node_feed_without_event_and_bad_condition_base_preserved(rig):
     initial = await rig.orchestrator.initialize(ticker="MU", as_of=NOW, run_id="d3v21-base")
     version = initial.handoff.policy_set_version

@@ -995,7 +995,7 @@ export function CaseRows({
           <button key={c.case_id} onClick={() => select(c.case_id)}>
             <strong>{valueText(c.title)}</strong>
             <div className="node-case-meta">
-              <span>{c.source.name}</span>
+              <span>{c.source_name ?? c.source.name}</span>
               <span>{valueText(c.duration_seconds, duration)}</span>
             </div>
             <CaseResults row={c} />
@@ -1077,7 +1077,7 @@ export function CaseRows({
                 >
                   {valueText(c.title)}
                 </button>
-                <span className="case-source">{c.source.name}</span>
+                <span className="case-source">{c.source_name ?? c.source.name}</span>
               </td>
               <td>
                 <CaseResults row={c} />

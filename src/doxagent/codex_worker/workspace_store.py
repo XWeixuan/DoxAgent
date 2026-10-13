@@ -293,6 +293,18 @@ class LocalWorkspaceStore:
                             )
         return hashlib.sha256(json.dumps(exported, sort_keys=True).encode()).hexdigest()
 
+    def delete_w3_workspace(self, run_id: str) -> None:
+        """Only new W3 child workspaces; templates and legacy shared roots are excluded."""
+        self._validate_identifier(run_id, "run_id")
+        target = self._run_root(run_id)
+        if not run_id.startswith("w3-case-") or target.parent != self.root.resolve():
+            raise InvalidWorkspacePath("not a dedicated W3 Case workspace")
+        with self._lock:
+            if target.is_symlink():
+                raise InvalidWorkspacePath("W3 workspace cannot be a symlink")
+            if target.exists():
+                shutil.rmtree(target)
+
     def delete_attempt(self, run_id: str, attempt_id: str) -> None:
         self._validate_identifier(run_id, "run_id")
         self._validate_identifier(attempt_id, "attempt_id")

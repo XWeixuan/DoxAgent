@@ -1,0 +1,289 @@
+--- production/message_bus_v2\distribution_repository.py
+
++++ repair/message_bus_v2\distribution_repository.py
+
+@@ -106,7 +106,53 @@
+
+                     ON distribution_runs(source_id,created_at DESC);
+                 CREATE INDEX IF NOT EXISTS idx_distribution_deliveries_run_state
+                     ON distribution_deliveries(run_id,state);
++                CREATE TABLE IF NOT EXISTS distribution_snapshots (
++                    snapshot_id TEXT PRIMARY KEY, payload TEXT NOT NULL
++                );
++                CREATE TABLE IF NOT EXISTS distribution_delivery_keys (
++                    business_key TEXT PRIMARY KEY, delivery_id TEXT NOT NULL,
++                    first_seen_at TEXT NOT NULL, last_seen_at TEXT NOT NULL,
++                    seen_count INTEGER NOT NULL DEFAULT 1
++                );
++                CREATE TABLE IF NOT EXISTS distribution_observation_sets (
++                    run_id TEXT PRIMARY KEY, articles_json TEXT NOT NULL
++                );
+             """)
++
++    @staticmethod
++    def _snapshot(db, value: Any) -> str:
++        payload = canonical_json(value)
++        identity = sha256_text(payload)
++        db.execute("INSERT OR IGNORE INTO distribution_snapshots VALUES(?,?)", (identity, payload))
++        return canonical_json({"$snapshot": identity})
++
++    @staticmethod
++    def _expand(db, payload: str) -> str:
++        value = json.loads(payload)
++        if isinstance(value, dict) and "$snapshot" in value:
++            row = db.execute("SELECT payload FROM distribution_snapshots WHERE snapshot_id=?",
++                             (value["$snapshot"],)).fetchone()
++            if row is None:
++                raise RuntimeError("distribution_snapshot_missing")
++            return row[0]
++        return payload
++
++    def _delivery_identity(self, db, run, article_id, binding, revision, admission, reason, now):
++        # Poll slots are execution identities, not new business work. Sweep ownership
++        # and eligibility transitions (future -> eligible -> expired) remain distinct.
++        scope = run["run_id"] if run["mode"] == "CLOSED_SWEEP" else "REALTIME"
++        key = sha256_text(canonical_json([scope, article_id, binding, revision,
++                                         run["source_json"], admission, reason, "classifier:v1"]))
++        identity = "delivery-" + key[:32]
++        row = db.execute("SELECT delivery_id FROM distribution_delivery_keys WHERE business_key=?",
++                         (key,)).fetchone()
++        if row:
++            db.execute("UPDATE distribution_delivery_keys SET last_seen_at=?,seen_count=seen_count+1 "
++                       "WHERE business_key=?", (now, key))
++            return row[0]
++        db.execute("INSERT INTO distribution_delivery_keys VALUES(?,?,?,?,1)",
++                   (key, identity, now, now))
++        return identity
+ 
+     def get_or_create_run(
+         self,
+@@ -126,12 +172,12 @@
+
+                     run_id,
+                     work_key,
+                     source.source_id,
+-                    canonical_json(source.model_dump(mode="json")),
++                    self._snapshot(db, source.model_dump(mode="json")),
+                     mode,
+                     window_start.isoformat() if window_start else None,
+                     cutoff.isoformat() if cutoff else None,
+                     "{}",
+-                    canonical_json(
++                    self._snapshot(db,
+                         [
+                             {
+                                 "binding": binding.model_dump(mode="json"),
+@@ -151,7 +197,10 @@
+
+             row = db.execute(
+                 "SELECT * FROM distribution_runs WHERE work_key=?", (work_key,)
+             ).fetchone()
+-        return dict(row)
++            result = dict(row)
++            for field in ("source_json", "roster_json"):
++                result[field] = self._expand(db, result[field])
++        return result
+ 
+     def claim_run(self, run_id: str, *, lease_seconds: int = 600) -> str | None:
+         now = utc_now()
+@@ -173,7 +222,12 @@
+
+     def run(self, run_id: str) -> dict[str, Any] | None:
+         with self.bus._connect() as db:
+             row = db.execute("SELECT * FROM distribution_runs WHERE run_id=?", (run_id,)).fetchone()
+-        return dict(row) if row else None
++            if row:
++                result = dict(row)
++                for field in ("source_json", "roster_json"):
++                    result[field] = self._expand(db, result[field])
++                return result
++        return None
+ 
+     def release_run(self, run_id: str, token: str) -> None:
+         with self.bus.transaction() as db:
+@@ -189,11 +243,11 @@
+
+         """A later sweep owner may reuse the run while retaining its own admission context."""
+         with self.bus.transaction() as db:
+             run = db.execute(
+-                "SELECT roster_json FROM distribution_runs WHERE run_id=?", (run_id,)
++                "SELECT * FROM distribution_runs WHERE run_id=?", (run_id,)
+             ).fetchone()
+             if run is None:
+                 raise ValueError(f"distribution run not found: {run_id}")
+-            roster = json.loads(run[0])
++            roster = json.loads(self._expand(db, run["roster_json"]))
+             if not any(item["binding"]["ticker"] == binding.ticker for item in roster):
+                 roster.append(
+                     {
+@@ -204,24 +258,30 @@
+
+                 )
+                 db.execute(
+                     "UPDATE distribution_runs SET roster_json=? WHERE run_id=?",
+-                    (canonical_json(roster), run_id),
++                    (self._snapshot(db, roster), run_id),
+                 )
+             articles = db.execute(
+                 "SELECT o.article_id,a.body_state,a.original_json FROM distribution_observations o "
+                 "JOIN distribution_articles a USING(article_id) WHERE o.run_id=?",
+                 (run_id,),
+             ).fetchall()
++            membership = db.execute("SELECT articles_json FROM distribution_observation_sets WHERE run_id=?",
++                                    (run_id,)).fetchone()
++            if membership:
++                identities = json.loads(self._expand(db, membership[0]))
++                articles = [db.execute("SELECT article_id,body_state,original_json FROM distribution_articles "
++                                       "WHERE article_id=?", (identity,)).fetchone()
++                            for identity in identities]
+             for article in articles:
+                 article_id = article["article_id"]
+-                delivery_id = (
+-                    "delivery-"
+-                    + sha256_text(canonical_json([run_id, article_id, binding.ticker]))[:32]
+-                )
+                 state = _delivery_state(article["body_state"])
+                 original = RawMessageInput.model_validate_json(article["original_json"])
+                 reason = _admission_reason(original, admission)
+                 if reason:
+                     state = "ADMISSION_REJECTED"
++                delivery_id = self._delivery_identity(
++                    db, run, article_id, binding.model_dump(mode="json"), revision,
++                    admission, reason, utc_now().isoformat())
+                 db.execute(
+                     "INSERT OR IGNORE INTO distribution_deliveries "
+                     "(delivery_id,run_id,article_id,ticker,binding_json,"
+@@ -232,9 +292,9 @@
+
+                         run_id,
+                         article_id,
+                         binding.ticker,
+-                        canonical_json(binding.model_dump(mode="json")),
++                        self._snapshot(db, binding.model_dump(mode="json")),
+                         revision,
+-                        canonical_json(admission),
++                        self._snapshot(db, admission),
+                         state,
+                         canonical_json({"reason": reason}) if reason else None,
+                         utc_now().isoformat(),
+@@ -270,6 +330,9 @@
+
+                         message.summary,
+                         message.body,
+                         message.url,
++                        message.published_at.isoformat()
++                        if message.publication_time_basis != "UNKNOWN_FIRST_SEEN" else None,
++                        message.publication_time_basis,
+                         message.raw_payload.get("updated_at")
+                         if isinstance(message.raw_payload, dict)
+                         else None,
+@@ -280,12 +343,12 @@
+
+             now = utc_now().isoformat()
+             with self.bus.transaction() as db:
+                 active_run = db.execute(
+-                    "SELECT roster_json,claim_token FROM distribution_runs WHERE run_id=?",
++                    "SELECT * FROM distribution_runs WHERE run_id=?",
+                     (run_id,),
+                 ).fetchone()
+                 if active_run is None or active_run["claim_token"] != token:
+                     raise RuntimeError("distribution_run_lease_lost")
+-                roster = json.loads(active_run["roster_json"])
++                roster = json.loads(self._expand(db, active_run["roster_json"]))
+                 db.execute(
+                     "INSERT OR IGNORE INTO distribution_articles VALUES(?,?,?,?,?,?,?,?,?,?)",
+                     (
+@@ -306,22 +369,22 @@
+
+                     (now, article_id),
+                 )
+                 article = db.execute(
+-                    "SELECT body_state FROM distribution_articles WHERE article_id=?",
++                    "SELECT body_state,original_json FROM distribution_articles WHERE article_id=?",
+                     (article_id,),
+                 ).fetchone()
+                 delivery_state = _delivery_state(article[0])
+-                db.execute(
+-                    "INSERT OR IGNORE INTO distribution_observations VALUES(?,?,?)",
+-                    (run_id, article_id, now),
+-                )
++                original = RawMessageInput.model_validate_json(article["original_json"])
++                new_work = False
++                needs_body = False
+                 for target in roster:
+                     binding = target["binding"]
+                     ticker = binding["ticker"]
+-                    delivery_id = (
+-                        "delivery-" + sha256_text(canonical_json([run_id, article_id, ticker]))[:32]
+-                    )
+-                    reason = _admission_reason(message, target["admission"])
+-                    db.execute(
++                    reason = _admission_reason(original, target["admission"])
++                    needs_body = needs_body or reason is None
++                    delivery_id = self._delivery_identity(
++                        db, active_run, article_id, binding, target["terms_revision"],
++                        target["admission"], reason, now)
++                    inserted = db.execute(
+                         "INSERT OR IGNORE INTO distribution_deliveries "
+                         "(delivery_id,run_id,article_id,ticker,binding_json,"
+                         "terms_revision,admission_json,state,result_json,created_at) "
+@@ -331,19 +394,31 @@
+
+                             run_id,
+                             article_id,
+                             ticker,
+-                            canonical_json(binding),
++                            self._snapshot(db, binding),
+                             target["terms_revision"],
+-                            canonical_json(target["admission"]),
++                            self._snapshot(db, target["admission"]),
+                             "ADMISSION_REJECTED" if reason else delivery_state,
+                             canonical_json({"reason": reason}) if reason else None,
+                             now,
+                         ),
+-                    )
++                    ).rowcount
++                    new_work = new_work or bool(inserted)
++                if new_work or active_run["mode"] == "CLOSED_SWEEP":
++                    db.execute("INSERT OR IGNORE INTO distribution_observations VALUES(?,?,?)",
++                               (run_id, article_id, now))
++                if active_run["mode"] == "REALTIME":
++                    prior = db.execute("SELECT articles_json FROM distribution_observation_sets WHERE run_id=?",
++                                       (run_id,)).fetchone()
++                    identities = set(json.loads(self._expand(db, prior[0]))) if prior else set()
++                    identities.add(article_id)
++                    db.execute("INSERT INTO distribution_observation_sets VALUES(?,?) "
++                               "ON CONFLICT(run_id) DO UPDATE SET articles_json=excluded.articles_json",
++                               (run_id, self._snapshot(db, sorted(identities))))
+             with self.bus._connect() as db:
+                 article = db.execute(
+                     "SELECT body_state FROM distribution_articles WHERE article_id=?", (article_id,)
+                 ).fetchone()
+-            if article and article[0] == "WAIT_BODY":
++            if needs_body and article and article[0] == "WAIT_BODY":
+                 intake_key = sha256_text(canonical_json(["distribution", article_id]))
+                 job = EnrichmentJob(
+                     job_id="enrich-" + intake_key,
+@@ -458,7 +533,10 @@
+
+                     "lease_until=?,attempts=attempts+1 WHERE delivery_id=?",
+                     (token, (now + timedelta(seconds=90)).isoformat(), row["delivery_id"]),
+                 )
+-                claimed.append({**dict(row), "claim_token": token})
++                result = {**dict(row), "claim_token": token}
++                for field in ("binding_json", "admission_json", "source_json"):
++                    result[field] = self._expand(db, result[field])
++                claimed.append(result)
+         return claimed
+ 
+     def expire_runs(self, *, limit: int = 200) -> int:
+@@ -490,7 +568,7 @@
+
+                         and datetime.fromisoformat(row["lease_until"]) > now
+                     ):
+                         break
+-                    admission = AdmissionContext.model_validate_json(row["admission_json"])
++                    admission = AdmissionContext.model_validate_json(self._expand(db, row["admission_json"]))
+                     message = RawMessageInput.model_validate_json(row["original_json"])
+                     if (
+                         admission.mode != "REALTIME"

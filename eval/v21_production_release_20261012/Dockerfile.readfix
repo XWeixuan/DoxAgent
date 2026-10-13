@@ -1,0 +1,4 @@
+FROM doxagent-v2:v21-production-20261012-r1
+COPY src/doxagent/api_v2/views.py /app/src/doxagent/api_v2/views.py
+COPY src/doxagent/v2_read/cli.py /app/src/doxagent/v2_read/cli.py
+LABEL doxagent.v21.source.sha256="d496d4aac72ceab35a2ee5412e965918dca4c3a1c387aa8419ee437f5d4e1952"

@@ -1115,6 +1115,14 @@ class Document3OrchestratorV21:
                                     missing=[*latest["missing"], f"final edit incomplete:{path}"],
                                 )
                             accepted_draft = self.state.get_draft(run_id, path)
+                            if policy and accepted_draft:
+                                from .research_origins import edit_origins
+
+                                accepted_draft["origin_shells"] = edit_origins(
+                                    run, self.state.drafts(run_id), editable,
+                                    batch["related_targets"],
+                                )
+                                self.state.save_draft(run_id, path, accepted_draft)
                             if (
                                 policy
                                 and accepted_draft
@@ -1332,23 +1340,21 @@ class Document3OrchestratorV21:
             "publication_state": policy_set.publication_state,
             "host_missing": run["missing"],
         }
-        markdown = (
-            f"# {policy_set.ticker} Document3 V3\n\n"
-            f"Version: {commit['version']} · {run['status']} · publication candidate\n\n"
-            f"As of: {policy_set.as_of.isoformat()}\n\n"
-            f"Coverage: {canonical(run['coverage'])}\n\n"
+        from .publication_v21 import render_policy_markdown
+
+        markdown = render_policy_markdown(
+            policy_set, status=run["status"], coverage=run["coverage"]
         )
-        for policy in policy_set.policies:
-            markdown += f"## {policy.title}\n\n{policy.transmission}\n\n"
-            for condition in policy.activation_conditions:
-                markdown += (
-                    f"- {condition.condition_id} / {condition.decision} / "
-                    f"{condition.trigger_layer}: {condition.criterion}\n"
-                    f"  - Reference: {condition.calibration.reference_state}\n"
-                    f"  - Boundary: {condition.calibration.trigger_boundary}\n"
-                )
-            markdown += "\n"
+        from .research_origins import policy_origins
+
+        inherited = {}
+        base_version = run["identity"].get("base_policy_version")
+        if base_version is not None:
+            base = self.state.get_staged_by_run(self._base_run_id(policy_set.ticker, base_version))
+            inherited = base[1].get("policy_origins", {}) if base else {}
+        origins = policy_origins(run, self.state.drafts(run_id), inherited)
         content = {
+            "policy_origins.json": canonical(origins),
             "document3.json": policy_set.model_dump_json(indent=2),
             "runtime_projection.json": canonical(project_policy_set_v3(policy_set)),
             "coverage_map.json": canonical(metadata),
@@ -1388,6 +1394,7 @@ class Document3OrchestratorV21:
             "files": paths,
             "hashes": hashes,
             "projection": project_policy_set_v3(policy_set),
+            "policy_origins": origins,
             "release_manifest_path": release_manifest,
         }
         self.state.save_staged_v3(run_id, policy_set, receipt)
@@ -1461,6 +1468,7 @@ class Document3OrchestratorV21:
                 {"phase": "INPUT_PREPARE", "mode": "maintain", "identity": identity},
             )
             base_row = self.state.get_staged_by_run(self._base_run_id(ticker, base_policy_version))
+            self.state.update(run_id, base_policy_origins=base_row[1].get("policy_origins", {}))
             base_file = await self.workspace.read_text(
                 self._base_run_id(ticker, base_policy_version),
                 base_row[1]["files"]["document3.json"],
@@ -1513,6 +1521,7 @@ class Document3OrchestratorV21:
                 prepared = await self.preparer.prepare(
                     ticker=ticker,
                     as_of=as_of,
+                    document2_run_id=base.document2_ref.run_id if base.document2_ref else None,
                     event_library_version=event_library_version,
                     additional_materials=additional_materials,
                 )

@@ -1,0 +1,250 @@
+[
+  {
+    "source": "barrons",
+    "url": "https://www.barrons.com/articles/memory-chip-stocks-drop-cxmt-threat-51baf6e0",
+    "outcome": "FULL",
+    "content_length": 3584,
+    "extraction_method": "browser_article_dom",
+    "http_status": 200
+  },
+  {
+    "source": "barrons",
+    "url": "https://www.barrons.com/articles/stock-market-things-to-know-today-earnings-oil-b765556b",
+    "outcome": "FULL",
+    "payload": {
+      "standard_message_id": "acceptance",
+      "source_id": "barrons",
+      "ticker": "MU",
+      "title": "Put the Bull Market’s 4th Birthday Celebrations on Hold",
+      "final_url": "https://www.barrons.com/articles/stock-market-things-to-know-today-earnings-oil-b765556b",
+      "source_name": null,
+      "final_domain": "barrons.com",
+      "succeeded": true,
+      "reason": null,
+      "latency_ms": 26548,
+      "fetch_profile": null,
+      "http_status": 200,
+      "extraction_method": "browser_article_dom",
+      "attempts": [
+        {
+          "phase": "browser",
+          "url": "https://www.barrons.com/articles/stock-market-things-to-know-today-earnings-oil-b765556b",
+          "domain": null,
+          "final_url": "https://www.barrons.com/articles/stock-market-things-to-know-today-earnings-oil-b765556b",
+          "fetch_profile": null,
+          "status_code": 200,
+          "latency_ms": null,
+          "reason": null,
+          "response_bytes": null,
+          "retry_after_seconds": null,
+          "transient_hint": false
+        }
+      ],
+      "content_length": 7366,
+      "existing_quality": {
+        "body_length": 0,
+        "sentence_count": 0,
+        "reason": "empty",
+        "complete_like": false
+      },
+      "extracted_quality": {
+        "body_length": 7291,
+        "sentence_count": 78,
+        "reason": "truncated_or_paywall_marker",
+        "complete_like": false
+      }
+    }
+  },
+  {
+    "source": "digitimes_tw",
+    "url": "https://www.digitimes.com.tw/tech/dt/n/shwnws.asp?id=0000771083_K5G1O9RQ7T2SFK4PE9G7V",
+    "outcome": "FULL",
+    "payload": {
+      "standard_message_id": "acceptance",
+      "source_id": "digitimes_tw",
+      "ticker": "MU",
+      "title": "DIGITIMES Today：Vicor 再告台廠 鴻海、廣達、台達電入列 | 華為供應東協資料中心設備 |友達轉型邁入新階段",
+      "final_url": "https://www.digitimes.com.tw/tech/dt/n/shwnws.asp?id=0000771083_K5G1O9RQ7T2SFK4PE9G7V",
+      "source_name": null,
+      "final_domain": "digitimes.com.tw",
+      "succeeded": true,
+      "reason": null,
+      "latency_ms": 3617,
+      "fetch_profile": null,
+      "http_status": 200,
+      "extraction_method": "browser_article_dom",
+      "attempts": [
+        {
+          "phase": "browser",
+          "url": "https://www.digitimes.com.tw/tech/dt/n/shwnws.asp?id=0000771083_K5G1O9RQ7T2SFK4PE9G7V",
+          "domain": null,
+          "final_url": "https://www.digitimes.com.tw/tech/dt/n/shwnws.asp?id=0000771083_K5G1O9RQ7T2SFK4PE9G7V",
+          "fetch_profile": null,
+          "status_code": 200,
+          "latency_ms": null,
+          "reason": null,
+          "response_bytes": null,
+          "retry_after_seconds": null,
+          "transient_hint": false
+        }
+      ],
+      "content_length": 2030,
+      "existing_quality": {
+        "body_length": 0,
+        "sentence_count": 0,
+        "reason": "empty",
+        "complete_like": false
+      },
+      "extracted_quality": {
+        "body_length": 2010,
+        "sentence_count": 36,
+        "reason": "complete_like",
+        "complete_like": true
+      }
+    }
+  },
+  {
+    "source": "digitimes_tw",
+    "url": "https://www.digitimes.com.tw/tech/dt/n/shwnws.asp?id=0000770437_ONE3KFVK4VG0QU672XFCB",
+    "outcome": "FULL",
+    "payload": {
+      "standard_message_id": "acceptance",
+      "source_id": "digitimes_tw",
+      "ticker": "MU",
+      "title": "DIGITIMES Today：Musk證實與台積電洽談德州廠 | 南韓面板雙雄迎戰紅色供應鏈 | 中國十一手機消費觀察",
+      "final_url": "https://www.digitimes.com.tw/tech/dt/n/shwnws.asp?id=0000770437_ONE3KFVK4VG0QU672XFCB",
+      "source_name": null,
+      "final_domain": "digitimes.com.tw",
+      "succeeded": true,
+      "reason": null,
+      "latency_ms": 7347,
+      "fetch_profile": null,
+      "http_status": 200,
+      "extraction_method": "browser_article_dom",
+      "attempts": [
+        {
+          "phase": "browser",
+          "url": "https://www.digitimes.com.tw/tech/dt/n/shwnws.asp?id=0000770437_ONE3KFVK4VG0QU672XFCB",
+          "domain": null,
+          "final_url": "https://www.digitimes.com.tw/tech/dt/n/shwnws.asp?id=0000770437_ONE3KFVK4VG0QU672XFCB",
+          "fetch_profile": null,
+          "status_code": 200,
+          "latency_ms": null,
+          "reason": null,
+          "response_bytes": null,
+          "retry_after_seconds": null,
+          "transient_hint": false
+        }
+      ],
+      "content_length": 2052,
+      "existing_quality": {
+        "body_length": 0,
+        "sentence_count": 0,
+        "reason": "empty",
+        "complete_like": false
+      },
+      "extracted_quality": {
+        "body_length": 2031,
+        "sentence_count": 31,
+        "reason": "complete_like",
+        "complete_like": true
+      }
+    }
+  },
+  {
+    "source": "investorshub",
+    "url": "https://investorshub.advfn.com/stock-market/NYSE/bloom-energy-BE/stock-news/99474508/bloom-energy-to-announce-third-quarter-2026-financ",
+    "outcome": "FULL",
+    "payload": {
+      "standard_message_id": "acceptance",
+      "source_id": "investorshub",
+      "ticker": "MU",
+      "title": "Bloom Energy to Announce Third Quarter 2026 Financial Results on October 22, 2026",
+      "final_url": "https://investorshub.advfn.com/stock-market/NYSE/bloom-energy-BE/stock-news/99474508/bloom-energy-to-announce-third-quarter-2026-financ",
+      "source_name": null,
+      "final_domain": "investorshub.advfn.com",
+      "succeeded": true,
+      "reason": null,
+      "latency_ms": 39454,
+      "fetch_profile": null,
+      "http_status": 200,
+      "extraction_method": "browser_trafilatura",
+      "attempts": [
+        {
+          "phase": "browser",
+          "url": "https://investorshub.advfn.com/stock-market/NYSE/bloom-energy-BE/stock-news/99474508/bloom-energy-to-announce-third-quarter-2026-financ",
+          "domain": null,
+          "final_url": "https://investorshub.advfn.com/stock-market/NYSE/bloom-energy-BE/stock-news/99474508/bloom-energy-to-announce-third-quarter-2026-financ",
+          "fetch_profile": null,
+          "status_code": 200,
+          "latency_ms": null,
+          "reason": null,
+          "response_bytes": null,
+          "retry_after_seconds": null,
+          "transient_hint": false
+        }
+      ],
+      "content_length": 1674,
+      "existing_quality": {
+        "body_length": 0,
+        "sentence_count": 0,
+        "reason": "empty",
+        "complete_like": false
+      },
+      "extracted_quality": {
+        "body_length": 1674,
+        "sentence_count": 26,
+        "reason": "complete_like",
+        "complete_like": true
+      }
+    }
+  },
+  {
+    "source": "investorshub",
+    "url": "https://investorshub.advfn.com/stock-market/NASDAQ/intel-INTC/stock-news/99471515/ai-revenue-questions-pull-semiconductor-stocks-off",
+    "outcome": "FULL",
+    "payload": {
+      "standard_message_id": "acceptance",
+      "source_id": "investorshub",
+      "ticker": "MU",
+      "title": "AI Revenue Questions Pull Semiconductor Stocks Off October Highs",
+      "final_url": "https://investorshub.advfn.com/stock-market/NASDAQ/intel-INTC/stock-news/99471515/ai-revenue-questions-pull-semiconductor-stocks-off",
+      "source_name": null,
+      "final_domain": "investorshub.advfn.com",
+      "succeeded": true,
+      "reason": null,
+      "latency_ms": 24454,
+      "fetch_profile": null,
+      "http_status": 200,
+      "extraction_method": "browser_trafilatura",
+      "attempts": [
+        {
+          "phase": "browser",
+          "url": "https://investorshub.advfn.com/stock-market/NASDAQ/intel-INTC/stock-news/99471515/ai-revenue-questions-pull-semiconductor-stocks-off",
+          "domain": null,
+          "final_url": "https://investorshub.advfn.com/stock-market/NASDAQ/intel-INTC/stock-news/99471515/ai-revenue-questions-pull-semiconductor-stocks-off",
+          "fetch_profile": null,
+          "status_code": 200,
+          "latency_ms": null,
+          "reason": null,
+          "response_bytes": null,
+          "retry_after_seconds": null,
+          "transient_hint": false
+        }
+      ],
+      "content_length": 8057,
+      "existing_quality": {
+        "body_length": 0,
+        "sentence_count": 0,
+        "reason": "empty",
+        "complete_like": false
+      },
+      "extracted_quality": {
+        "body_length": 8057,
+        "sentence_count": 72,
+        "reason": "complete_like",
+        "complete_like": true
+      }
+    }
+  }
+]

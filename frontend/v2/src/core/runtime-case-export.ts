@@ -326,6 +326,13 @@ export async function collectRuntimeCases(
     };
     const w3 = {
       研判模式: third?.mode ?? null,
+      交易决策: third?.decision ?? null,
+      后置操作状态: third?.operations_status ?? null,
+      后置操作错误: third?.operations_error ?? null,
+      后置操作结果: third?.operations_result ?? null,
+      决策耗时: third?.trade_timing ?? null,
+      后置耗时: third?.operations_timing ?? null,
+      WATCH_PIN: detail.w3_state ?? null,
       新旧复判: {
         结论: third?.novelty.value ?? null,
         判断理由: third ? await text(third.reasoning.novelty) : null,
@@ -419,7 +426,7 @@ export async function collectRuntimeCases(
       基本信息: {
         "Case ID": s.case_id,
         标题: s.title.value ?? null,
-        来源: s.source.name,
+        来源: s.source_name ?? s.source.name,
         语义交易日: s.semantic_day,
         接收时间: s.received_at,
         完成时间: s.completed_at.value ?? null,

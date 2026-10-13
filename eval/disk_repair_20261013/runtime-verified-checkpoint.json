@@ -1,0 +1,10 @@
+{
+  "source": "runtime",
+  "epoch": "396321d9866688b788c2f9f0363daee3",
+  "head": 1801607,
+  "retained_floor": 0,
+  "checkpoint": "D:\\DoxAgentPilot\\backups\\v21-production-20261012\\runtime-transport-checkpoint-20261013.sqlite3",
+  "archive": "D:\\DoxAgentPilot\\backups\\v21-production-20261012\\runtime.sqlite3.gz",
+  "verified_compressed_sha256": "84ff57322a00831535fff771a9d3c587693c8497a1593ccc2535d2720672dac4",
+  "verified_source_sha256": "7166f2d749f076e1bfdd3b7ad6ef4d95c05cfecbfd441213be7332684fb9fdb4"
+}

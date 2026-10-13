@@ -1,0 +1,41 @@
+{
+  "active": {
+    "artifacts": {
+      "document1": {
+        "run_id": "init-rklb-9631e4071e75470a97313eafbbdc51aa-d1"
+      },
+      "document2": {
+        "run_id": "init-rklb-9631e4071e75470a97313eafbbdc51aa-d2"
+      },
+      "document3": {
+        "run_id": "runtime-maintain-30f13af8cf26a87a350faf44-o3",
+        "version": 12
+      },
+      "event_library": {
+        "root": "/data/runtime/runtime_artifacts/runtime-maintain-30f13af8cf26a87a350faf44/events",
+        "version": 25
+      },
+      "monitoring_configuration": {
+        "database": "/data/bus/initialization-configurations/init-rklb-9631e4071e75470a97313eafbbdc51aa/message_bus.sqlite3",
+        "enabled_binding_count": 5,
+        "initialization_id": "init-rklb-9631e4071e75470a97313eafbbdc51aa",
+        "plan_id": "o4_plan_8f4a53f6bed24aa89b922838ba7162a0",
+        "plan_version": 1
+      }
+    },
+    "base_revision": "runtime-maintain-ee2a270c056661bb49a20feb-activation",
+    "research_cutoff_at": "2026-09-14T10:16:29+00:00",
+    "revision_id": "runtime-maintain-30f13af8cf26a87a350faf44-activation",
+    "runtime_metadata": {
+      "control_epoch": 1,
+      "frame_hash": "7ff49e7dd68c81c1d4bffbb693d0953c582b12c1d6f6d4b2ea9d5a7cfb573c61",
+      "maintenance_id": "daily:RKLB:2026-10-12",
+      "visibility_day": "2026-10-13"
+    },
+    "ticker": "RKLB"
+  },
+  "event_files": {
+    "US/RKLB/event_library.sqlite3": "eb562f32c4e357f701fb143f4088741a973d54fb7357b90426e882e23cb400db",
+    "US/RKLB/artifacts/event_library/import_diagnostics/aae4e4d1ffa5b4e1cc74e5b1a96e6a9ab53ae5df5dc556ec31797b6b23da192e.json": "4aa3545d30e800601905e199271fd2c674be805597c411ba36426fc61c4d4db1"
+  }
+}

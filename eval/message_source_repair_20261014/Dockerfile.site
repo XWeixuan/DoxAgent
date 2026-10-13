@@ -1,0 +1,2 @@
+FROM doxagent-site-access:lifecycle-20261013-r2
+COPY staging/site-access/ /app/src/doxagent/

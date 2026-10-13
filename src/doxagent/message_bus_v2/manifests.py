@@ -343,6 +343,8 @@ def initial_sources() -> list[SourceDefinition]:
         _source(
             "globenewswire_semiconductors_rss",
             "GlobeNewswire Semiconductors RSS",
+            properties={"feed_browser_fallback": {"type": "boolean"}},
+            default_parameters={"feed_browser_fallback": True},
             acquisition_mode=AcquisitionMode.BY_DISTRIBUTION,
             content_language="en",
             site_id="globenewswire",

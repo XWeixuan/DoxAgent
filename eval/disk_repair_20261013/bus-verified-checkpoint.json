@@ -1,0 +1,10 @@
+{
+  "source": "bus",
+  "epoch": "a782a752932379cb2ece4cfd8ea3e324",
+  "head": 2259296,
+  "retained_floor": 0,
+  "checkpoint": "D:\\DoxAgentPilot\\backups\\v21-production-20261012\\bus-transport-checkpoint-20261013.sqlite3",
+  "archive": "D:\\DoxAgentPilot\\backups\\v21-production-20261012\\bus.sqlite3.gz",
+  "verified_compressed_sha256": "31e0a47c5c63eaa2050da7d1c46d24db8dab7e97df7807cd0d143cee9b7b425a",
+  "verified_source_sha256": "985e8cc5771c8798c5b76276d3e41ee6dc5286c92973a8ce355ce18a28f3c2fb"
+}

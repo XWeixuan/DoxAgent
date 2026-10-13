@@ -164,7 +164,11 @@ def create_app(
     app.state.bindings = bindings
     if os.environ.get("DOXAGENT_MESSAGE_BUS_V2_SQLITE_PATH"):
         from doxagent.v2_control.monitoring_terms import MonitoringTermsControl
-        app.state.monitoring_terms = MonitoringTermsControl(os.environ["DOXAGENT_MESSAGE_BUS_V2_SQLITE_PATH"])
+        # Migrate once in the API parent, never while replacing a query/control
+        # worker: serving reads must not depend on acquiring the Bus write lock.
+        app.state.monitoring_terms = MonitoringTermsControl(
+            os.environ["DOXAGENT_MESSAGE_BUS_V2_SQLITE_PATH"], initialize=not query_worker
+        )
     else:
         app.state.monitoring_terms = None
 

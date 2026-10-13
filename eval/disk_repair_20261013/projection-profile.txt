@@ -1,0 +1,55 @@
+Mon Oct 12 22:19:19 2026    /data/read/disk-repair-profile.stats
+
+         3121408 function calls (3040478 primitive calls) in 14.702 seconds
+
+   Ordered by: cumulative time
+   List reduced from 3401 to 45 due to restriction <45>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+    529/1    0.026    0.000   14.710   14.710 {built-in method builtins.exec}
+        1    0.000    0.000   14.710   14.710 <string>:1(<module>)
+        1    0.000    0.000   14.710   14.710 <frozen runpy>:201(run_module)
+        1    0.000    0.000   14.707   14.707 <frozen runpy>:65(_run_code)
+        1    0.000    0.000   14.707   14.707 /app/src/doxagent/v2_read/cli.py:1(<module>)
+        1    0.002    0.002   12.257   12.257 /app/src/doxagent/v2_read/cli.py:73(main)
+        1    0.003    0.003   12.235   12.235 /app/src/doxagent/v2_read/projector.py:25(tick)
+       35    0.001    0.000    9.038    0.258 /app/src/doxagent/v2_read/formal.py:36(__call__)
+       35    0.002    0.000    9.037    0.258 /app/src/doxagent/v2_read/projectors.py:90(__call__)
+        1    0.415    0.415    8.476    8.476 /app/src/doxagent/v2_read/policy_hits.py:8(project)
+      262    0.004    0.000    6.891    0.026 /app/src/doxagent/v2_read/lifecycle.py:14(rows)
+      262    1.551    0.006    6.260    0.024 /app/src/doxagent/v2_read/lifecycle.py:24(<dictcomp>)
+    77131    0.136    0.000    3.914    0.000 /usr/local/lib/python3.11/json/__init__.py:299(loads)
+    77131    0.213    0.000    3.704    0.000 /usr/local/lib/python3.11/json/decoder.py:332(decode)
+     7193    3.642    0.001    3.642    0.001 {method 'execute' of 'sqlite3.Connection' objects}
+    77131    3.318    0.000    3.318    0.000 /usr/local/lib/python3.11/json/decoder.py:343(raw_decode)
+       39    0.035    0.001    2.553    0.065 /app/src/doxagent/v2_read/repository.py:289(ingest)
+   331/24    0.003    0.000    2.529    0.105 <frozen importlib._bootstrap>:1165(_find_and_load)
+   324/24    0.002    0.000    2.528    0.105 <frozen importlib._bootstrap>:1120(_find_and_load_unlocked)
+   301/29    0.002    0.000    2.521    0.087 <frozen importlib._bootstrap>:666(_load_unlocked)
+   268/29    0.001    0.000    2.520    0.087 <frozen importlib._bootstrap_external>:934(exec_module)
+   967/63    0.001    0.000    2.509    0.040 <frozen importlib._bootstrap>:233(_call_with_frames_removed)
+    76/25    0.000    0.000    2.173    0.087 {built-in method builtins.__import__}
+        1    0.000    0.000    1.689    1.689 /app/src/doxagent/persistent_runtime_v2/__init__.py:1(<module>)
+        1    0.000    0.000    1.677    1.677 /app/src/doxagent/persistent_runtime_v2/schema.py:1(<module>)
+      686    0.010    0.000    1.511    0.002 /app/src/doxagent/v2_read/repository.py:573(get)
+1371/1015    0.023    0.000    1.434    0.001 {built-in method builtins.__build_class__}
+    76080    0.276    0.000    1.277    0.000 /app/src/doxagent/v2_read/native_content.py:58(row)
+      287    0.014    0.000    1.266    0.004 /app/.venv/lib/python3.11/site-packages/pydantic/_internal/_model_construction.py:84(__new__)
+11664/10568    0.010    0.000    1.119    0.000 {built-in method builtins.next}
+   234744    0.269    0.000    1.001    0.000 /app/src/doxagent/v2_read/native_content.py:60(<genexpr>)
+     2048    0.018    0.000    0.939    0.000 /app/src/doxagent/v2_read/repository.py:61(connect)
+      269    0.004    0.000    0.856    0.003 <frozen importlib._bootstrap_external>:1007(get_code)
+     3002    0.844    0.000    0.844    0.000 {built-in method builtins.compile}
+      289    0.015    0.000    0.843    0.003 /app/.venv/lib/python3.11/site-packages/pydantic/_internal/_model_construction.py:600(complete_model_class)
+       39    0.000    0.000    0.803    0.021 /app/src/doxagent/v2_read/bus_aggregates.py:7(contributions)
+      527    0.011    0.000    0.802    0.002 /app/src/doxagent/v2_read/native_content.py:55(text)
+      245    0.001    0.000    0.782    0.003 <frozen importlib._bootstrap_external>:999(source_to_code)
+        1    0.000    0.000    0.635    0.635 /app/src/doxagent/v2_read/artifacts.py:1(<module>)
+21284/527    0.097    0.000    0.618    0.001 /app/src/doxagent/v2_read/native_content.py:32(decode)
+ 3183/527    0.015    0.000    0.606    0.001 /app/src/doxagent/v2_read/native_content.py:50(<dictcomp>)
+ 1099/289    0.007    0.000    0.594    0.002 /app/.venv/lib/python3.11/site-packages/pydantic/_internal/_generate_schema.py:717(generate_schema)
+ 2984/289    0.016    0.000    0.585    0.002 /app/.venv/lib/python3.11/site-packages/pydantic/_internal/_generate_schema.py:1017(_generate_schema_inner)
+  533/283    0.014    0.000    0.576    0.002 /app/.venv/lib/python3.11/site-packages/pydantic/_internal/_generate_schema.py:756(_model_schema)
+     4853    0.009    0.000    0.570    0.000 /usr/local/lib/python3.11/contextlib.py:141(__exit__)
+
+

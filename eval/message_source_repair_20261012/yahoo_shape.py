@@ -14,9 +14,14 @@ out['article_links']=[{'url':a.get('href'), 'text':a.text_content()[:200],
 out['article_count']=len(links)
 body=v.get('body','')
 out['markers']={marker:body.find(marker) for marker in ('pubDate','latestNews','tickerStream','newsStream','streamItems','data-testid="storyitem"')}
+out['storyitems']=[]
+out['timestamp_shapes']={marker:body[max(0,body.find(marker)-150):body.find(marker)+600] for marker in ('publishTime','publishedAt','providerPublishTime','pubdate','cbe75531-d7c4-3e52-b70d-437215be6c6e') if body.find(marker)>=0}
+out['script_sources']=[x.get('src') for x in tree.xpath('//script[@src]')]
+out['news_scripts']=[(x.text or '')[:1200] for x in tree.xpath('//script') if 'finance-US-en-US-ticker-news' in (x.text or '')]
+out['news_config']=[body[max(0,body.find(marker)-250):body.find(marker)+700] for marker in ('latestNews','newsStream') if body.find(marker)>=0]
 for el in tree.xpath('//script[@data-sveltekit-fetched]'):
     url=el.get('data-url','')
-    if not any(x in url for x in ('/xhr/cds','/xhr/ncp')): continue
+    if not url.startswith('/'):continue
     row={'url':url.split('?')[0]}
     try:
         env=json.loads(el.text);p=json.loads(env.get('body','{}'))
@@ -25,13 +30,13 @@ for el in tree.xpath('//script[@data-sveltekit-fetched]'):
         def walk(x,path='',depth=0):
             if depth>10:return
             if isinstance(x,dict):
-                if any(k in x for k in ('title','pubDate','published_at','content','stream')):
+                if any(k in x for k in ('title','pubDate','published_at','content','stream','pub_time','publishTime','items')):
                     row['shapes'].append({'path':path,'keys':list(x)[:16]})
-                if 'title' in x and any(k in x for k in ('pubDate','canonicalUrl','clickThroughUrl','published_at')):
-                    row['news_samples'].append({k:x.get(k) for k in ('title','pubDate','canonicalUrl','clickThroughUrl','summary','provider') if k in x})
+                if 'title' in x:
+                    row['news_samples'].append({k:v for k,v in x.items() if any(t in k.lower() for t in ('title','publish','pub','url','time','date'))})
                 for k,v in x.items():walk(v,path+'.'+k,depth+1)
             elif isinstance(x,list):
-                for i,v in enumerate(x[:3]):walk(v,path+f'[{i}]',depth+1)
+                for i,v in enumerate(x[:5]):walk(v,path+f'[{i}]',depth+1)
         walk(p);row['shapes']=row['shapes'][:15];row['news_samples']=row['news_samples'][:2]
     except Exception as exc:row['error']=type(exc).__name__
     out['scripts'].append(row)

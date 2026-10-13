@@ -138,6 +138,12 @@ services:
     memswap_limit: 3g
     pids_limit: 64
     image: ${DOXAGENT_V2_IMAGE:-doxagent-v2:server}
+  v2-transport-maintenance:
+    <<: *cgroup-boundary
+    mem_limit: 2g
+    memswap_limit: 3g
+    pids_limit: 64
+    image: ${DOXAGENT_V2_IMAGE:-doxagent-v2:server}
   v2-executor:
     <<: *cgroup-boundary
     mem_limit: 2g

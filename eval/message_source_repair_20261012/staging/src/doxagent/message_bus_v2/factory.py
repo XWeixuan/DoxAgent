@@ -56,7 +56,7 @@ def build_message_bus_v2_runtime(settings: DoxAgentSettings) -> MessageBusV2Runt
         from doxagent.persistent_runtime_v2.journal import RuntimeJournal
 
         scheduler.runtime_orchestration = BusOrchestration(
-            RuntimeJournal(settings.persistent_runtime_v2_sqlite_path)
+            RuntimeJournal(settings.persistent_runtime_v2_sqlite_path, busy_timeout_seconds=0.05)
         )
     if settings.ticker_initialization_control_path:
         from doxagent.ticker_initialization.consumers import admit_bus_revisions

@@ -17,13 +17,20 @@ from xml.etree import ElementTree
 
 
 class YahooPageUnavailable(RuntimeError):
-    def __init__(self, message: str, *, status_code=None, retry_after_seconds=0):
+    def __init__(
+        self, message: str, *, status_code=None, retry_after_seconds=0, phase=None, url=None
+    ):
         self.status_code = status_code
         self.retry_after_seconds = retry_after_seconds
+        self.diagnostics = {
+            "phase": phase,
+            "url": (url or "").split("?", 1)[0],
+            "status": status_code,
+        }
         super().__init__(message)
 
 
-def page_http_failure(status: int, headers: dict) -> YahooPageUnavailable:
+def page_http_failure(status: int, headers: dict, *, phase=None, url=None) -> YahooPageUnavailable:
     retry = headers.get("retry-after") or headers.get("Retry-After")
     try:
         seconds = float(retry)
@@ -35,6 +42,8 @@ def page_http_failure(status: int, headers: dict) -> YahooPageUnavailable:
     return YahooPageUnavailable(
         f"Yahoo browser HTTP {status}",
         status_code=status,
+        phase=phase,
+        url=url,
         retry_after_seconds=max(0, seconds) if seconds < float("inf") else 0,
     )
 
@@ -93,7 +102,11 @@ async def capture_latest_news(page, ticker: str, *, timeout_seconds=20, snippet_
         if not latest_news_response(response, ticker) or captured.done():
             return
         if response.status != 200:
-            captured.set_exception(page_http_failure(response.status, response.headers))
+            captured.set_exception(
+                page_http_failure(
+                    response.status, response.headers, phase=capture_method, url=response.url
+                )
+            )
             return
         try:
             payload = await response.json()
@@ -134,7 +147,12 @@ async def capture_latest_news(page, ticker: str, *, timeout_seconds=20, snippet_
                 timeout=int(timeout_seconds * 1000),
             )
             if response is not None and response.status >= 400:
-                raise page_http_failure(response.status, response.headers)
+                raise page_http_failure(
+                    response.status,
+                    response.headers,
+                    phase="navigation",
+                    url=getattr(response, "url", page.url),
+                )
             location = urlparse(page.url)
             if location.hostname != "finance.yahoo.com" or not location.path.startswith(
                 f"/quote/{quote(ticker, safe='')}/"
@@ -192,7 +210,10 @@ async def capture_latest_news(page, ticker: str, *, timeout_seconds=20, snippet_
                     )
                     if result["status"] != 200:
                         raise page_http_failure(
-                            result["status"], {"Retry-After": result["retryAfter"]}
+                            result["status"],
+                            {"Retry-After": result["retryAfter"]},
+                            phase="page_js_fetch",
+                            url="https://finance.yahoo.com/xhr/ncp",
                         )
                     payload = json.loads(result["text"])
                     rows = _yahoo_contents(payload)

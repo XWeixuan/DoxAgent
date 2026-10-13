@@ -1,0 +1,24 @@
+--- production/v2_read\outbox.py
+
++++ repair/v2_read\outbox.py
+
+@@ -215,6 +215,18 @@
+
+                             for r in columns
+                             if r[1] not in technical
+                         )
++                        if table == "poll_states":
++                            # Scheduling-only writes do not change observed health or
++                            # freshness. Completed attempts and failures still capture
++                            # exact timestamps, counters and current observation data.
++                            volatile = "'$.next_dispatch_at','$.target_due_at','$.updated_at'"
++                            changed = (
++                                'OLD.binding_id IS NOT NEW.binding_id OR '
++                                'OLD.source_id IS NOT NEW.source_id OR OLD.ticker IS NOT NEW.ticker OR '
++                                'OLD.status IS NOT NEW.status OR '
++                                f'json_remove(OLD.data_json,{volatile}) IS NOT '
++                                f'json_remove(NEW.data_json,{volatile})'
++                            )
+                         condition += (" AND " if condition else "WHEN ") + f"({changed})"
+                     db.execute(
+                         "CREATE TRIGGER IF NOT EXISTS "

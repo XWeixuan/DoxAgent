@@ -1,0 +1,97 @@
+--- production/v2_read\maintenance.py
+
++++ repair/v2_read\maintenance.py
+
+@@ -107,8 +107,14 @@
+
+         ).fetchone()
+         if row[0] is not None:
+             floor = min(floor, max(0, row[0] - 1))
+-        if db.execute("SELECT 1 FROM gaps LIMIT 1").fetchone():
+-            floor = 0  # Dependency repair can require an earlier pre-image.
++        gap_sources = {row[0] for row in db.execute("SELECT DISTINCT source FROM gaps")}
++        # Unknown repair dependencies still protect business history and aggregates.
++        # Poll state is Bus-local technical state, never a runtime provenance input.
++        # Its expired intervals may be collected while runtime repairs remain pinned.
++        protected = bool(gap_sources)
++        technical_only = protected and "bus" not in gap_sources
++        object_filter = " AND kind='native:poll_states'" if technical_only else ""
++        effective_floor = floor if not protected or technical_only else 0
+         for table in ("views", "cursors"):
+             counts[table] = db.execute(
+                 f"DELETE FROM {table} WHERE rowid IN (SELECT rowid FROM {table} "
+@@ -116,28 +122,33 @@
+
+                 (instant(now), limit),
+             ).rowcount
+         # Legacy closed business intervals must reach the durable directory before GC.
+-        db.execute("INSERT OR IGNORE INTO business_revisions SELECT * FROM objects WHERE rowid IN (SELECT rowid FROM objects WHERE valid_to IS NOT NULL AND valid_to<? LIMIT ?) AND kind NOT IN ('ticker','navigation','capture_coverage','native:runtime_tasks','native:runtime_values','native:poll_states')", (floor,limit))
++        if not protected:
++            db.execute("INSERT OR IGNORE INTO business_revisions SELECT * FROM objects WHERE rowid IN (SELECT rowid FROM objects WHERE valid_to IS NOT NULL AND valid_to<? LIMIT ?) AND kind NOT IN ('ticker','navigation','capture_coverage','native:runtime_tasks','native:runtime_values','native:poll_states')", (floor,limit))
+         for table in ("objects", "contributions", "metric_buckets"):
+             counts[table] = db.execute(
+                 f"DELETE FROM {table} WHERE rowid IN (SELECT rowid FROM {table} "
+-                "WHERE valid_to IS NOT NULL AND valid_to<? LIMIT ?)",
+-                (floor, limit),
++                "WHERE valid_to IS NOT NULL AND valid_to<? "
++                + (object_filter if table == "objects" else "") + " LIMIT ?)",
++                (effective_floor if table == "objects" else (0 if protected else floor), limit),
+             ).rowcount
+         counts["changes"] = db.execute(
+-            "DELETE FROM changes WHERE rowid IN (SELECT rowid FROM changes WHERE seq<? LIMIT ?)",
+-            (floor, limit),
++            "DELETE FROM changes WHERE rowid IN (SELECT rowid FROM changes WHERE seq<? "
++            + object_filter + " LIMIT ?)",
++            (effective_floor, limit),
+         ).rowcount
+         # Unresolved repairs still rely on the original source-to-read receipt mapping.
+-        if not db.execute("SELECT 1 FROM gaps LIMIT 1").fetchone():
+-            counts["commits"] = db.execute(
++        counts["commits"] = db.execute(
+                 "DELETE FROM commits WHERE seq IN (SELECT seq FROM commits WHERE seq<? "
++                "AND NOT EXISTS(SELECT 1 FROM gaps g WHERE g.source=commits.source) "
+                 "AND EXISTS(SELECT 1 FROM checkpoints cp WHERE cp.source=commits.source AND cp.position>=CAST(commits.source_event AS INTEGER)) AND source_event NOT GLOB '*[^0-9]*' "
+                 "AND seq NOT IN (SELECT seq FROM changes) LIMIT ?)", (floor, limit)
+             ).rowcount
+-            db.execute("DELETE FROM commit_retention WHERE seq IN (SELECT seq FROM commit_retention WHERE seq<? AND seq NOT IN (SELECT seq FROM commits) LIMIT ?)", (floor, limit))
++        db.execute("DELETE FROM commit_retention WHERE seq IN (SELECT seq FROM commit_retention WHERE seq<? AND seq NOT IN (SELECT seq FROM commits) LIMIT ?)", (floor, limit))
+         db.execute("UPDATE read_meta SET value=max(CAST(value AS INTEGER),?) WHERE key='retained_floor'", (floor,))
+     # Immutable content identities and unpositioned deduplication receipts are retained.
+-    return {"retention_floor": floor, "deleted": counts}
++    return {"retention_floor": floor, "deleted": counts,
++            "protected_sources": sorted(gap_sources),
++            "policy": "BUS_POLL_ONLY" if technical_only else "PINNED" if protected else "ALL_EXPIRED"}
+ 
+ 
+ def rebuild(sources, target, *, event_root=None, max_batches=10000):
+@@ -338,12 +349,15 @@
+
+         while True:
+             started = time.monotonic()
+             total = {}
++            errors = []
++            result = {}
+             import sqlite3
+             batch = 500
+             while time.monotonic() - started < budget:
+                 try:
+                     result = collect(store, limit=batch)
+-                except sqlite3.OperationalError:
++                except sqlite3.OperationalError as exc:
++                    errors.append(str(exc))
+                     batch //= 2
+                     if batch < 10:
+                         break
+@@ -352,7 +366,10 @@
+
+                     total[name] = total.get(name, 0) + count
+                 if not any(result["deleted"].values()):
+                     break
+-            print(json.dumps({"maintenance": "gc", "deleted": total,
++            print(json.dumps({"maintenance": "gc", "deleted": total, "errors": errors,
++                              "retention_floor": result.get("retention_floor"),
++                              "protected_sources": result.get("protected_sources"),
++                              "policy": result.get("policy"),
+                               "elapsed_seconds": time.monotonic() - started}), flush=True)
+             if once:
+                 return

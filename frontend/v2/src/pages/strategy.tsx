@@ -3,6 +3,10 @@ import {
   Crosshair,
   GitPullRequestArrow,
   Link2,
+  Workflow,
+  CheckCircle2,
+  MinusCircle,
+  CircleHelp,
   History as HistoryIcon,
 } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -16,7 +20,7 @@ import type {
   ChangeEvent,
   PolicyShellSummary,
   Policy,
-  PolicySetDownload,
+  RelatedExpectation,
 } from "@contract";
 import { useRuntime } from "@/core/runtime";
 import { usePageContext, useRead, tickerPath, id } from "@/core/page-query";
@@ -32,6 +36,8 @@ import {
 import { Module, Notice } from "@/components/state";
 import { EventRail } from "@/components/event-rail";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { CitationProvider, CitationText } from "@/components/citation-text";
 const filters = [
   ["ACTIVE", "当前生效"],
   ["ADDED", "周期新增"],
@@ -208,7 +214,7 @@ function Policies({
             items={[
               { label: "生效数量", metric: m.active, current: true },
               {
-                label: "LONG / SHORT",
+                label: "LONG / SHORT 可用覆盖",
                 metric: m.long_ratio,
                 secondary: m.short_ratio,
                 current: true,
@@ -387,6 +393,7 @@ function PolicyBody({
             ticker={ticker}
             policy={d.policy}
             sourceRun={d.source_document2?.run_id ?? ""}
+            relatedExpectations={d.related_expectations}
             eligibility={
               "directions" in d.summary
                 ? {
@@ -406,97 +413,206 @@ export function PolicyDocument({
   policy,
   sourceRun,
   eligibility,
+  relatedExpectations = [],
 }: {
   ticker: string;
   policy: Policy;
   sourceRun: string;
+  relatedExpectations?: RelatedExpectation[];
   eligibility?: { executable: string[]; consumed: string[] };
 }) {
+  const refs =
+    "ref" in policy
+      ? policy.ref
+      : policy.source_refs.map(
+          (s) => `${s.shell_id} / ${s.expectation_id} / ${s.gap_id}`,
+        );
+  const mappedRefs = new Set(relatedExpectations.flatMap((r) => r.refs));
+  const rawRefs = [...new Set(refs)].filter((r) => !mappedRefs.has(r));
+  const hasD2Refs =
+    "source_refs" in policy ||
+    refs.some((r) =>
+      /^context\/document3\/v21\/(d2\/|shared\/document2\.json)/.test(r),
+    );
   return (
-    <article className="policy-document">
-      <header>
-        {"decision" in policy && (
-          <span
-            className={`decision decision-${policy.decision.toLowerCase()}`}
-          >
-            {policy.decision}
-          </span>
+    <CitationProvider key={sourceRun + policy.policy_id} source={policy}>
+      <article className="policy-document">
+        <header>
+          {"decision" in policy && (
+            <span
+              className={`decision decision-${policy.decision.toLowerCase()}`}
+            >
+              {policy.decision}
+            </span>
+          )}
+          <h2>
+            <CitationText text={policy.title} />
+          </h2>
+        </header>
+        {"transmission" in policy && (
+          <section>
+            <h3>
+              <Workflow aria-hidden="true" />
+              经济传导
+            </h3>
+            <p>
+              <CitationText text={policy.transmission} />
+            </p>
+          </section>
         )}
-        <h2>{policy.title}</h2>
-      </header>
-      {"transmission" in policy && (
         <section>
-          <h3>经济传导</h3>
-          <p>{policy.transmission}</p>
+          <h3>
+            <Crosshair aria-hidden="true" />
+            匹配范围
+          </h3>
+          <p>
+            <CitationText text={policy.match_scope} />
+          </p>
         </section>
-      )}
-      <section>
-        <h3>
-          <Crosshair aria-hidden="true" />
-          匹配范围
-        </h3>
-        <p>{policy.match_scope}</p>
-      </section>
-      <section>
-        <h3>
-          <GitPullRequestArrow aria-hidden="true" />
-          激活条件 <span className="domain-tag">任一满足 · OR</span>
-        </h3>
-        {policy.activation_conditions.map((c, i) => (
-          <article className="condition" key={c.condition_id}>
-            <span className="condition-number">{i + 1}</span>
-            <div>
-              {"decision" in c && (
-                <p>
-                  <span
-                    className={`decision decision-${c.decision.toLowerCase()}`}
+        <section>
+          <h3>
+            <GitPullRequestArrow aria-hidden="true" />
+            激活条件 <span className="domain-tag">任一满足 · OR</span>
+          </h3>
+          {policy.activation_conditions.map((c, i) => (
+            <article className="condition" key={c.condition_id}>
+              <span className="condition-number">{i + 1}</span>
+              <div>
+                {"decision" in c && (
+                  <div className="policy-condition-meta">
+                    <Badge
+                      variant="outline"
+                      className={`decision decision-${c.decision.toLowerCase()}`}
+                    >
+                      {c.decision}
+                    </Badge>
+                    <Badge
+                      variant="outline"
+                      aria-label={`触发层级 ${c.trigger_layer}`}
+                    >
+                      {
+                        {
+                          OUTER: "外部驱动",
+                          MIDDLE: "传导环节",
+                          INNER: "经营结果",
+                        }[c.trigger_layer]
+                      }
+                    </Badge>
+                    {eligibility &&
+                      (() => {
+                        const state = eligibility.consumed.includes(c.decision)
+                          ? "consumed"
+                          : eligibility.executable.includes(c.decision)
+                            ? "available"
+                            : "unknown";
+                        const Icon =
+                          state === "available"
+                            ? CheckCircle2
+                            : state === "consumed"
+                              ? MinusCircle
+                              : CircleHelp;
+                        return (
+                          <span
+                            className="policy-direction-status"
+                            data-state={state}
+                          >
+                            <Icon aria-hidden="true" />
+                            {state === "available"
+                              ? "可用"
+                              : state === "consumed"
+                                ? "已消费"
+                                : "未确认"}
+                          </span>
+                        );
+                      })()}
+                  </div>
+                )}
+                <h4>
+                  <CitationText text={c.criterion} />
+                </h4>
+                <dl>
+                  <dt>参考状态</dt>
+                  <dd>
+                    <CitationText text={c.calibration.reference_state} />
+                  </dd>
+                  <dt>触发边界</dt>
+                  <dd>
+                    <CitationText text={c.calibration.trigger_boundary} />
+                  </dd>
+                </dl>
+              </div>
+            </article>
+          ))}
+        </section>
+        {(relatedExpectations.length > 0 || hasD2Refs) && (
+          <section>
+            <h3>
+              <Link2 aria-hidden="true" />
+              关联预期
+            </h3>
+            {relatedExpectations.length > 0 ? (
+              <div className="policy-expectation-links">
+                {relatedExpectations.map((r) => (
+                  <Link
+                    key={[
+                      r.run_id,
+                      r.shell_id,
+                      r.unit_id,
+                      r.content,
+                      r.item,
+                    ].join(":")}
+                    to={`/ticker/${id(ticker)}/expectations${queryString({ run: r.run_id, shell: r.shell_id, unit: r.unit_id ?? undefined, content: r.content, item: r.item ?? undefined })}`}
                   >
-                    {c.decision}
-                  </span>{" "}
-                  · {c.trigger_layer}
-                  {eligibility && (
-                    <span className="domain-tag">
-                      {eligibility.consumed.includes(c.decision)
-                        ? "该方向已消费"
-                        : eligibility.executable.includes(c.decision)
-                          ? "该方向可执行"
-                          : "方向资格未确认"}
-                    </span>
-                  )}
-                </p>
+                    {r.item_name ?? r.unit_name ?? r.shell_name}
+                    {r.unit_name && (
+                      <small>
+                        {r.shell_name}
+                        {r.item_name ? ` · ${r.unit_name}` : ""}
+                      </small>
+                    )}
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <p className="muted">预期关联未解析</p>
+            )}
+          </section>
+        )}
+        {refs.length > 0 && (
+          <section>
+            <details className="policy-references">
+              <summary>资料引用（{new Set(refs).size}）</summary>
+              <ul>
+                {rawRefs.map((ref) => (
+                  <li key={ref}>
+                    {/^https?:\/\//.test(ref) ? (
+                      <a href={ref} target="_blank" rel="noreferrer noopener">
+                        {ref}
+                      </a>
+                    ) : (
+                      <CitationText text={ref} />
+                    )}
+                  </li>
+                ))}
+              </ul>
+              {mappedRefs.size > 0 && (
+                <details>
+                  <summary>预期定位来源（{mappedRefs.size}）</summary>
+                  <ul>
+                    {[...mappedRefs].map((ref) => (
+                      <li key={ref}>{ref}</li>
+                    ))}
+                  </ul>
+                </details>
               )}
-              <h4>{c.criterion}</h4>
-              <dl>
-                <dt>参考状态</dt>
-                <dd>{c.calibration.reference_state}</dd>
-                <dt>触发边界</dt>
-                <dd>{c.calibration.trigger_boundary}</dd>
-              </dl>
-            </div>
-          </article>
-        ))}
-      </section>
-      <section>
-        <h3>
-          <Link2 aria-hidden="true" />
-          关联预期
-        </h3>
-        <div className="source-links">
-          {"source_refs" in policy
-            ? policy.source_refs.map((s, i) => (
-                <Link
-                  key={i}
-                  to={`/ticker/${id(ticker)}/expectations?run=${id(sourceRun)}&shell=${id(s.shell_id)}&unit=${id(s.expectation_id)}&content=GAPS&item=${id(s.gap_id)}`}
-                >
-                  {s.shell_id} / {s.expectation_id} / {s.gap_id}
-                </Link>
-              ))
-            : policy.ref.map((ref, i) => <span key={i}>{ref}</span>)}
-        </div>
-      </section>
-    </article>
+            </details>
+          </section>
+        )}
+      </article>
+    </CitationProvider>
   );
 }
+
 function PinnedPolicy({
   ticker,
   policyId,
@@ -512,28 +628,15 @@ function PinnedPolicy({
   const pinned = useQuery({
     queryKey: [scope, "pinned-policy", ticker, policyId, version, activationId],
     queryFn: async ({ signal }) => {
-      const { blob } = await api.download(
+      const result = await api.request(
+        "Policy",
         tickerPath(ticker) +
-          `/policy-sets/${id(version)}/download` +
+          `/policy-sets/${id(version)}/policies/${id(policyId)}` +
           queryString({ runtime_activation_id: activationId }),
-        signal,
+        { signal },
       );
-      const artifact: unknown = JSON.parse(await blob.text());
-      if (
-        !artifact ||
-        typeof artifact !== "object" ||
-        !("ticker" in artifact) ||
-        artifact.ticker !== ticker ||
-        !("policy_set_version" in artifact) ||
-        String(artifact.policy_set_version) !== version ||
-        !("policies" in artifact) ||
-        !Array.isArray(artifact.policies)
-      )
-        throw new Error("引用的 Policy Set 内容不匹配");
-      const data = artifact as PolicySetDownload;
-      const policy = data.policies.find((item) => item.policy_id === policyId);
-      if (!policy) throw new Error("引用的 Policy 不在该版本中");
-      return { policy, sourceRun: data.document2_ref?.run_id ?? "" };
+      if (!result.data.data) throw new Error("引用的 Policy 正文不可用");
+      return result.data.data;
     },
   });
   useEffect(() => {
@@ -559,7 +662,8 @@ function PinnedPolicy({
         <PolicyDocument
           ticker={ticker}
           policy={pinned.data.policy}
-          sourceRun={pinned.data.sourceRun}
+          sourceRun={pinned.data.source_document2?.run_id ?? ""}
+          relatedExpectations={pinned.data.related_expectations}
         />
       ) : null}
     </div>

@@ -1,0 +1,15 @@
+{
+  "frontend/v2/src/pages/expectations.tsx": "7a33e71f7243f528a54f6b3edca24ee5556ea094554758a970a49ca7ff94502c",
+  "frontend/v2/src/pages/strategy.tsx": "99d9af48134c87edde256ee8e2f471e95061f2d064b029f46c34204e89e06fcb",
+  "frontend/v2/src/components/document.tsx": "02afc7aeb5f14816a79d9d1d01857d12fd7698fdc042ce4f4ff0c9194aac287d",
+  "frontend/v2/src/components/page-kit.tsx": "04414d23941efe034591e269aa643d2847838cfa1c928e6635f45caca6c41191",
+  "frontend/v2/src/components/citations.tsx": "2ed2d666bc7d8a02e23c493bae3fb856465f48f80b990a905c8b24d8b1fa81ff",
+  "frontend/v2/src/refinement.css": "2fd5cb54494bbe20191bdf42defb6cb90fa1ad1959e4f45b599e5a8579e538e6",
+  "frontend/v2/src/core/api.ts": "d89b0e166e6c3454d397a4e8579ab7c905644c84d4aae98de868da7c5e085533",
+  "dev_plan/workflow_v2/api_contract/doxagent-v2-api.types.ts": "17b46fb4529bcb1a6251d7a02e7613a68ac06427f94eb38396da0855c77cb106",
+  "src/doxagent/api_v2/policies.py": "15028ad17128a8ff03c34fcfd3d62a190ee807da1b626bb4711d4eb0981fc33d",
+  "src/doxagent/api_v2/libraries.py": "bbc12865775e9e4a9b8c19901af74e48bd738ba28faf09cb542079da7aa2189a",
+  "src/doxagent/v2_read/repository.py": "0535f1377e668a01157582c48b6921c697a92f0dbf33153a9b5556e182ae3440",
+  "src/doxagent/v2_read/cli.py": "7a8d5aa0fd7604bdfb6aed1cfabd4d66d72251356bcb8c0281d8cac938b94446",
+  "changelog": "ecb7c108a0e1cbcab25bae643ce4c8a2b8d9c188de0a39889ed704f9547350d3"
+}

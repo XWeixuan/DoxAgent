@@ -246,6 +246,19 @@ def _request(
             code = "SERVICE_UNAVAILABLE"
             message = "The Site Access service is temporarily unavailable."
         suggestion = "Refresh the status and try again."
+        if isinstance(detail, dict) and detail.get("code") == "MAINTENANCE_OPEN_FAILED":
+            code = "MAINTENANCE_OPEN_FAILED"
+            stage = detail.get("stage")
+            labels = {
+                "page_allocation": "browser page allocation",
+                "navigation_gate": "navigation protection",
+                "viewer_selection": "browser viewer selection",
+            }
+            message = "Could not complete " + labels.get(stage, "browser startup") + "."
+            suggestion = (
+                "No login window was allocated. Retry or ask the administrator "
+                "to inspect the browser runtime."
+            )
         if isinstance(detail, str) and "subscription" in detail.lower():
             suggestion = "The account may not have the required subscription."
         raise AdminError(code, message, suggestion)
@@ -376,6 +389,8 @@ def _inventory() -> dict[str, Any]:
                     "egress_id": egress["egress_id"],
                     "egress_node": egress["node_ref"],
                     "egress_enabled": bool(egress["enabled"]),
+                    "egress_status": egress.get("status", "UNKNOWN"),
+                    "last_probe_attempt": egress.get("last_probe_attempt"),
                     "auth_state": auth_state,
                     "operational_state": (identity_entry or {})
                     .get("runtime", {})
@@ -468,7 +483,8 @@ def command_open(profile_id: str, site_id: str | None = None) -> dict[str, Any]:
                     "VNC_UNAVAILABLE",
                     "The browser started, but the viewer is unavailable.",
                     "Refresh and retry. If this persists, ask the administrator to check port 5900."
-                    if closed else "The maintenance session is retained; cancel it or retry recovery.",
+                    if closed
+                    else "The maintenance session is retained; cancel it or retry recovery.",
                 )
             time.sleep(0.1)
         return {
@@ -479,6 +495,7 @@ def command_open(profile_id: str, site_id: str | None = None) -> dict[str, Any]:
             "egress_node": selected["egress_node"],
             "browser_host": urlsplit(str(response.get("url") or "")).hostname,
             "opened_in_seconds": round(time.monotonic() - started, 2),
+            "navigation_state": response.get("navigation_state", "PENDING"),
         }
 
 
@@ -569,7 +586,8 @@ def command_verify(
             "VALID": "Signed in with access to subscription articles.",
             "REAUTH_REQUIRED": "The login is still invalid. Sign in again.",
             "ENTITLEMENT_MISSING": (
-                "Subscription access is unavailable. Sign in with an entitled account and verify again."
+                "Subscription access is unavailable. "
+                "Sign in with an entitled account and verify again."
             ),
             "UNKNOWN": "Verification failed. The article may have expired or was not recognized.",
         }
@@ -664,6 +682,8 @@ def command_recover() -> dict[str, Any]:
             "browser": {
                 "host": urlsplit(str(inspection.get("url") or "")).hostname,
                 "title": inspection.get("title"),
+                "navigation_state": inspection.get("navigation_state"),
+                "navigation_error": inspection.get("navigation_error"),
             },
         }
 

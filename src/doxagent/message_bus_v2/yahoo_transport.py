@@ -18,6 +18,8 @@ from typing import Any
 import httpx
 from curl_cffi.requests import AsyncSession, RequestsError
 
+from .http_routes import approved_routes, transport_routes
+
 
 class YahooRateLimited(RuntimeError):
     def __init__(self, seconds: float) -> None:
@@ -40,13 +42,18 @@ class YahooTransport:
         wall_clock=time.time,
         sleep=asyncio.sleep,
         proxy_url: str | None = None,
+        http_routes: tuple[str, ...] | None = None,
     ) -> None:
         self._factory, self._gap, self._jitter = session_factory, gap, jitter
         self._clock, self._wall_clock, self._sleep = clock, wall_clock, sleep
         self._proxy_url = proxy_url
         self._session = None
+        self._http_routes = approved_routes(http_routes) if http_routes is not None else None
+        self._route_sessions = {}
+        self.last_http_route = "legacy"
         self._next_start = 0.0
         self._circuits = {}
+        self._endpoint_circuits = {}
         self._loop = asyncio.new_event_loop()
         self._thread = threading.Thread(
             target=self._loop.run_forever, name="yahoo-http", daemon=True
@@ -62,20 +69,47 @@ class YahooTransport:
         if self._lock is None:
             self._lock = asyncio.Lock()
         async with self._lock:
+            endpoint_until, endpoint_status = self._endpoint_circuits.get(url, (0, 0))
+            if self._clock() < endpoint_until:
+                raise YahooEndpointUnavailable(
+                    f"Yahoo endpoint circuit open HTTP {endpoint_status}",
+                    request=httpx.Request(method, url),
+                    response=httpx.Response(endpoint_status),
+                )
             until, strikes = self._circuits.get(rate_scope, (0, 0))
             if self._clock() < until:
                 raise YahooRateLimited(until - self._clock())
             await self._sleep(max(0, self._next_start - self._clock()))
             if self._clock() < until:
                 raise YahooRateLimited(until - self._clock())
-            if self._session is None:
+            if self._session is None and self._http_routes is None:
                 options = {"impersonate": "chrome", "max_clients": 1}
                 if self._proxy_url:
                     options["proxy"] = self._proxy_url
                 self._session = self._factory(**options)
             self._next_start = self._clock() + self._gap + random.uniform(0, self._jitter)
             try:
-                response = await self._session.request(method, url, **kwargs)
+                if self._http_routes is None:
+                    response = await self._session.request(method, url, **kwargs)
+                else:
+
+                    async def send(proxy):
+                        if proxy not in self._route_sessions:
+                            self._route_sessions[proxy] = self._factory(
+                                impersonate="chrome",
+                                max_clients=1,
+                                proxy=proxy or "",
+                                trust_env=False,
+                            )
+                        options = {**kwargs, "timeout": min(10, float(kwargs.get("timeout") or 30))}
+                        return await self._route_sessions[proxy].request(method, url, **options)
+
+                    async with asyncio.timeout(float(kwargs.get("timeout") or 30)):
+                        response, self.last_http_route = await transport_routes(
+                            send,
+                            self._http_routes,
+                            (RequestsError, httpx.TransportError),
+                        )
             except RequestsError as exc:
                 raise httpx.RequestError(
                     "Yahoo browser transport request failed", request=httpx.Request(method, url)
@@ -95,6 +129,8 @@ class YahooTransport:
                 self._circuits[rate_scope] = (self._clock() + delay, strikes)
                 raise YahooRateLimited(delay)
             if not 200 <= response.status_code < 300:
+                if response.status_code in {404, 405, 410}:
+                    self._endpoint_circuits[url] = (self._clock() + 600, response.status_code)
                 error = (
                     YahooEndpointUnavailable
                     if response.status_code in {404, 405, 410}
@@ -110,6 +146,10 @@ class YahooTransport:
             return response
 
     async def _close(self):
+        for session in self._route_sessions.values():
+            close = getattr(session, "aclose", None) or session.close
+            await close()
+        self._route_sessions.clear()
         if self._session is not None:
             close = getattr(self._session, "aclose", None) or self._session.close
             await close()
@@ -132,10 +172,12 @@ _shared = None
 _shared_lock = threading.Lock()
 
 
-def shared_yahoo_transport(proxy_url: str | None = None) -> YahooTransport:
+def shared_yahoo_transport(
+    proxy_url: str | None = None, *, http_routes: tuple[str, ...] | None = None
+) -> YahooTransport:
     global _shared
     with _shared_lock:
         if _shared is None:
-            _shared = YahooTransport(proxy_url=proxy_url)
+            _shared = YahooTransport(proxy_url=proxy_url, http_routes=http_routes)
             atexit.register(_shared.close)
         return _shared

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "source_sha256": "e442060f45f20eaffffc7e50ae91e429824e648ffc55952beab005a014dbacec",
+  "source_sha256": "7ec7e86b7741c6abcf37a144e949fbe96cf5178e0d8590cb95c8d3b45b487ca5",
   "$defs": {
     "Id": {
       "type": "string"
@@ -4680,9 +4680,106 @@
         }
       ]
     },
+    "RelatedExpectation": {
+      "type": "object",
+      "properties": {
+        "run_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "shell_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "shell_name": {
+          "type": "string"
+        },
+        "unit_id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Id"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "unit_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "content": {
+          "anyOf": [
+            {
+              "const": "ALL"
+            },
+            {
+              "const": "STATE"
+            },
+            {
+              "const": "BASELINE"
+            },
+            {
+              "const": "FACTORS"
+            },
+            {
+              "const": "GAPS"
+            }
+          ]
+        },
+        "item": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "item_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "refs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "run_id",
+        "shell_id",
+        "shell_name",
+        "unit_id",
+        "unit_name",
+        "content",
+        "item",
+        "item_name",
+        "refs"
+      ],
+      "additionalProperties": false
+    },
     "PolicyDetailLegacy": {
       "type": "object",
       "properties": {
+        "related_expectations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RelatedExpectation"
+          }
+        },
         "summary": {
           "$ref": "#/$defs/PolicySummaryLegacy"
         },
@@ -4707,6 +4804,12 @@
     "PolicyDetailV3": {
       "type": "object",
       "properties": {
+        "related_expectations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RelatedExpectation"
+          }
+        },
         "summary": {
           "$ref": "#/$defs/PolicySummaryV3"
         },
@@ -6192,6 +6295,16 @@
         "revision": {
           "$ref": "#/$defs/Count"
         },
+        "source_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "row_revision": {
           "$ref": "#/$defs/Count"
         },
@@ -7461,6 +7574,26 @@
     "CaseSummary": {
       "type": "object",
       "properties": {
+        "source_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "w3_operations_status": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "first_round_tags": {
           "type": "array",
           "items": {
@@ -7628,6 +7761,9 @@
             },
             {
               "const": "DUPLICATE_REALTIME_OUTPUT"
+            },
+            {
+              "const": "DUPLICATE_EVENT_TRADE"
             },
             {
               "const": "EXPIRED_SEMANTIC_DAY"
@@ -8004,6 +8140,22 @@
     "ModelAttempt": {
       "type": "object",
       "properties": {
+        "phase": {
+          "anyOf": [
+            {
+              "const": "w3_template"
+            },
+            {
+              "const": "trade_decision"
+            },
+            {
+              "const": "post_decision_operations"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "context_mode": {
           "anyOf": [
             {
@@ -8752,9 +8904,140 @@
       ],
       "additionalProperties": false
     },
+    "W3TradeDecision": {
+      "type": "object",
+      "properties": {
+        "decision": {
+          "anyOf": [
+            {
+              "const": "NO_TRADE"
+            },
+            {
+              "const": "POLICY_TRADE"
+            },
+            {
+              "const": "EXPERT_TRADE"
+            }
+          ]
+        },
+        "reason": {
+          "type": "string"
+        },
+        "policy_trade": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "policy_id": {
+                  "$ref": "#/$defs/Id"
+                },
+                "condition_id": {
+                  "$ref": "#/$defs/Id"
+                }
+              },
+              "required": [
+                "policy_id",
+                "condition_id"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "expert_trade": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "direction": {
+                  "anyOf": [
+                    {
+                      "const": "LONG"
+                    },
+                    {
+                      "const": "SHORT"
+                    }
+                  ]
+                },
+                "prior_expectation": {
+                  "type": "string"
+                },
+                "expectation_delta": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "direction",
+                "prior_expectation",
+                "expectation_delta"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "decision",
+        "reason",
+        "policy_trade",
+        "expert_trade"
+      ],
+      "additionalProperties": false
+    },
     "W3Detail": {
       "type": "object",
       "properties": {
+        "trade_timing": {
+          "$ref": "#/$defs/Timing"
+        },
+        "operations_timing": {
+          "$ref": "#/$defs/Timing"
+        },
+        "decision": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/W3TradeDecision"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "operations_result": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/JsonObject"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "operations_status": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "operations_error": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "unresolved_reference_ids": {
           "type": "array",
           "items": {
@@ -9029,6 +9312,47 @@
     "CaseDetail": {
       "type": "object",
       "properties": {
+        "w3_state": {
+          "type": "object",
+          "properties": {
+            "watch": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/JsonObject"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "pins": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/JsonObject"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "receipt": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/JsonObject"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "watch",
+            "pins",
+            "receipt"
+          ],
+          "additionalProperties": false
+        },
         "policy_watch": {
           "type": "object",
           "properties": {
@@ -17482,6 +17806,98 @@
       ],
       "additionalProperties": false
     },
+    "RelatedExpectationResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/RelatedExpectation"
+        },
+        "meta": {
+          "$ref": "#/$defs/Meta"
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ],
+      "additionalProperties": false
+    },
+    "Page__b77229694f49": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RelatedExpectation"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "has_more": {
+          "type": "boolean"
+        },
+        "snapshot_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "limit": {
+          "$ref": "#/$defs/Count"
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor",
+        "has_more",
+        "snapshot_id",
+        "limit"
+      ],
+      "additionalProperties": false
+    },
+    "RelatedExpectationPage": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RelatedExpectation"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "has_more": {
+          "type": "boolean"
+        },
+        "snapshot_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "limit": {
+          "$ref": "#/$defs/Count"
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor",
+        "has_more",
+        "snapshot_id",
+        "limit"
+      ],
+      "additionalProperties": false
+    },
     "PolicyDetailLegacyResponse": {
       "type": "object",
       "properties": {
@@ -23939,6 +24355,98 @@
           "type": "array",
           "items": {
             "$ref": "#/$defs/W2Detail"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "has_more": {
+          "type": "boolean"
+        },
+        "snapshot_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "limit": {
+          "$ref": "#/$defs/Count"
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor",
+        "has_more",
+        "snapshot_id",
+        "limit"
+      ],
+      "additionalProperties": false
+    },
+    "W3TradeDecisionResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/W3TradeDecision"
+        },
+        "meta": {
+          "$ref": "#/$defs/Meta"
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ],
+      "additionalProperties": false
+    },
+    "Page__d1b3f1c58f6b": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/W3TradeDecision"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "has_more": {
+          "type": "boolean"
+        },
+        "snapshot_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "limit": {
+          "$ref": "#/$defs/Count"
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor",
+        "has_more",
+        "snapshot_id",
+        "limit"
+      ],
+      "additionalProperties": false
+    },
+    "W3TradeDecisionPage": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/W3TradeDecision"
           }
         },
         "next_cursor": {

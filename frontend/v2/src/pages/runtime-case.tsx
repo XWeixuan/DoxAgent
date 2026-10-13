@@ -1,4 +1,5 @@
 import { LoadMore } from "@/components/load-more";
+import { CitationText } from "@/components/citation-text";
 import { useState, type ReactNode } from "react";
 import type {
   ContentRef,
@@ -12,6 +13,8 @@ import type {
   PolicyLink,
   RuntimeRound,
   FactAttribution,
+  CaseDetail,
+  JsonObject,
 } from "@contract";
 import { useRead, tickerPath, id } from "@/core/page-query";
 import { usePages } from "@/core/paged-query";
@@ -55,7 +58,7 @@ export default function CaseDetails({
             ))}
           </div>
           <p className="case-source">
-            {d.summary.source.name} ·{" "}
+            {d.summary.source_name ?? d.summary.source.name} ·{" "}
             {d.summary.source.kind === "api" ? "API" : "爬虫"}
           </p>
           {d.failures.map((f) => (
@@ -281,15 +284,33 @@ export default function CaseDetails({
           </section>
           {d.w3.data && (
             <section>
-              <h3>W3 · 二轮研判</h3>
+              <h3>W3 · {d.w3.data.decision ? "交易与后置研判" : "二轮研判"}</h3>
               <div className="verdict">
-                <strong>{valueText(d.w3.data.novelty)}</strong>
-                <span>{d.w3.data.status}</span>
-                <span>
-                  {valueText(d.w3.data.policy_hit, (v) =>
-                    v ? "Policy 命中" : "Policy 未命中",
-                  )}
-                </span>
+                {d.w3.data.decision ? (
+                  <>
+                    <strong>交易决策已提交</strong>
+                    {d.w3.data.operations_result ? (
+                      <span>
+                        {valueText(d.w3.data.novelty)} ·{" "}
+                        {valueText(d.w3.data.policy_hit, (v) =>
+                          v ? "Policy 命中" : "Policy 未命中",
+                        )}
+                      </span>
+                    ) : (
+                      <span>后置判定未完成</span>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <strong>{valueText(d.w3.data.novelty)}</strong>
+                    <span>{d.w3.data.status}</span>
+                    <span>
+                      {valueText(d.w3.data.policy_hit, (v) =>
+                        v ? "Policy 命中" : "Policy 未命中",
+                      )}
+                    </span>
+                  </>
+                )}
                 {d.w3.data.policies.map((p) => (
                   <span key={p.policy_id}>{p.policy_id}</span>
                 ))}
@@ -304,10 +325,24 @@ export default function CaseDetails({
               ))}
               <dl>
                 <dt>
-                  {d.policy_execution ? "Policy 执行判定" : "专家交易判定"}
+                  {d.w3.data.decision
+                    ? "交易决策"
+                    : d.policy_execution
+                      ? "Policy 执行判定"
+                      : "专家交易判定"}
                 </dt>
                 <dd>
-                  {d.policy_execution ? (
+                  {d.w3.data.decision ? (
+                    <>
+                      {d.w3.data.decision.decision}
+                      {d.w3.data.decision.policy_trade &&
+                        ` · ${d.w3.data.decision.policy_trade.policy_id}/${d.w3.data.decision.policy_trade.condition_id}`}
+                      {d.w3.data.decision.expert_trade &&
+                        ` · ${d.w3.data.decision.expert_trade.direction}`}
+                      {" · "}
+                      {d.w3.data.decision.reason}
+                    </>
+                  ) : d.policy_execution ? (
                     <>
                       {d.policy_execution.selected_condition
                         ? `交易 · ${String((d.policy_execution.selected_condition as Record<string, unknown>).policy_id)}/${String((d.policy_execution.selected_condition as Record<string, unknown>).condition_id)}`
@@ -324,10 +359,30 @@ export default function CaseDetails({
                     </>
                   )}
                 </dd>
+                {d.w3.data.decision && (
+                  <>
+                    <dt>后置操作</dt>
+                    <dd>
+                      {d.w3.data.operations_status ?? "PENDING"}
+                      {d.w3.data.operations_error &&
+                        ` · ${d.w3.data.operations_error}`}
+                    </dd>
+                    <dt>决策 / 后置（秒）</dt>
+                    <dd>
+                      {d.w3.data.trade_timing
+                        ? valueText(d.w3.data.trade_timing.wall_seconds)
+                        : "未记录"}{" "}
+                      /{" "}
+                      {d.w3.data.operations_timing
+                        ? valueText(d.w3.data.operations_timing.wall_seconds)
+                        : "未记录"}
+                    </dd>
+                  </>
+                )}
                 <dt>原有预期</dt>
-                <dd>{valueText(d.w3.data.prior_expectation)}</dd>
+                <dd><CitationText text={valueText(d.w3.data.prior_expectation)} /></dd>
                 <dt>预期变化</dt>
-                <dd>{valueText(d.w3.data.expectation_delta)}</dd>
+                <dd><CitationText text={valueText(d.w3.data.expectation_delta)} /></dd>
               </dl>
               <Attempts
                 ticker={ticker}
@@ -353,6 +408,7 @@ export default function CaseDetails({
               />
             </section>
           )}
+          {d.w3_state && <W3State state={d.w3_state} />}
           {d.candidate_count.state === "AVAILABLE" &&
             d.candidate_count.value > 0 && (
               <Candidates ticker={ticker} caseId={caseId} view={view} />
@@ -382,6 +438,69 @@ export default function CaseDetails({
         </div>
       )}
     </Module>
+  );
+}
+function W3State({ state }: { state: NonNullable<CaseDetail["w3_state"]> }) {
+  const watches = (state.watch?.items ?? []) as JsonObject[];
+  const pins = (state.pins?.items ?? []) as JsonObject[];
+  const actions = Object.entries(state.receipt ?? {})
+    .filter(([kind]) => ["watch", "pins"].includes(kind))
+    .flatMap(([kind, rows]) =>
+      Array.isArray(rows)
+        ? rows.map((r) => ({ kind, row: r as JsonObject }))
+        : [],
+    );
+  return (
+    <section>
+      <h3>WATCH / PIN</h3>
+      <dl>
+        <dt>可见 WATCH · {watches.length}/2</dt>
+        <dd>
+          {watches.length
+            ? watches.map((w) => (
+                <p key={String(w.policy_id)}>
+                  {String(w.policy_id)} · {String(w.reason)} · 到期{" "}
+                  {formatInstant(String(w.expires_at))}
+                </p>
+              ))
+            : "无"}
+        </dd>
+        <dt>可见 PIN · {pins.length}/2</dt>
+        <dd>
+          {pins.length
+            ? pins.map((p) => {
+                const message = (p.message ?? {}) as JsonObject;
+                return (
+                  <details key={String(p.pin_id)}>
+                    <summary>
+                      {String(message.title ?? "消息")} · {String(p.reason)}
+                    </summary>
+                    <p>
+                      {String(message.source_name ?? "来源未记录")} · 到期{" "}
+                      {formatInstant(String(p.expires_at))}
+                    </p>
+                    <p className="whitespace-pre-wrap break-words">
+                      {String(message.body ?? "")}
+                    </p>
+                  </details>
+                );
+              })
+            : "无"}
+        </dd>
+        <dt>动作接纳结果</dt>
+        <dd>
+          {actions.length
+            ? actions.map(({ kind, row }, i) => (
+                <p key={kind + i}>
+                  {kind.toUpperCase()} ·{" "}
+                  {String(row.policy_id ?? row.pin_id ?? "")} ·{" "}
+                  {String(row.action)} · {String(row.status)}
+                </p>
+              ))
+            : "尚未记录"}
+        </dd>
+      </dl>
+    </section>
   );
 }
 function Reason({
@@ -542,7 +661,12 @@ export function RoundRows({
       {attempts.map((a) => (
         <tr key={a.attempt_id}>
           <td>
-            {a.node_id} · {a.round}
+            {a.node_id} ·{" "}
+            {a.phase === "trade_decision"
+              ? "交易决策"
+              : a.phase === "post_decision_operations"
+                ? "后置操作"
+                : a.round}
           </td>
           <td>{a.attempt_number}</td>
           <td>{a.status}</td>

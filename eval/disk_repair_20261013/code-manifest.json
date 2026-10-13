@@ -1,0 +1,20 @@
+{
+  "src/doxagent/message_bus_v2/distribution_repository.py": "79b229deb34bef8e1cb2f558c14252ebe0488ec5000aa4386d75bd7f21b1caa4",
+  "src/doxagent/v2_read/outbox.py": "54d073d63843cefe39d7a0aed2b7f64f4d963935506daa67e4c381457181c28a",
+  "src/doxagent/v2_read/maintenance.py": "a622844be198a8dfc6257f7fa81cbf6511e4ab266d8667b6e72cb9fbb9bbafdd",
+  "src/doxagent/v2_read/cli.py": "7a8d5aa0fd7604bdfb6aed1cfabd4d66d72251356bcb8c0281d8cac938b94446",
+  "src/doxagent/v2_read/transport_archive.py": "b6f46c45d1b00e2a493a3f2733de6eb40497f9d273e82ae04c1ee75df3b6de5d",
+  "src/doxagent/v2_read/shadow_compact.py": "fa9c73d4009bee054255c22bed49edef4a5dc10a6a0494ef959dbfaae904981e",
+  "scripts/ops/distribution_cold_archive.py": "217d40fa11c20cbd5bf781080a8e81ceb97bfb324ddbb893f33811c909a15af1",
+  "scripts/ops/pull_storage_archives.py": "93b3dd2ef3fc6ba1e9797c234d1351ec6017485ab6a5e21239a343d86b924bc8",
+  "scripts/ops/sqlite_gzip_checkpoint.py": "828f63650566dfc369b4f532cb6c9d4c56cd6564a78c34653474d5ad154c8925",
+  "src/doxagent/production_v2.py": "dd108181c9a217c3606f63766e5a0fb084ed29e063fc2c1c60dffd8dad372195",
+  "src/doxagent/v2_read/backup_retention.py": "2150ae97c36b195c665e300959c2ba327d7b3e16089050954d7854149ba73b99",
+  "src/doxagent/v2_read/policy_hits.py": "2cf466c872919ce0dc91e598894e426951bfef90e951c196602c40f81e5fc4f8",
+  "src/doxagent/initialization_repair/containers.py": "3228a2c621d2142674c103c8108ed9107e718e4bcb254ef9b3c48a90c1ae7f8b",
+  "src/doxagent/source_maintenance/containers.py": "08d27dfc75bb89fc71c00127798e785c24e32dc79325b34ad7137401baacb3f5",
+  "scripts/ops/storage_report.py": "21d736734222a036314af6c073531f52c2e4bdbf3565f7159f109a801613de79",
+  "deploy/Dockerfile.initialization-guardian": "f68736e3dc49b4314f09c55f2b7c33e61c4ed6ab1d95d41ef0468021823c53b8",
+  "deploy/docker-compose.initialization-repair.yml": "c738b18c947b6c37063912b8eca270b77f286af47d99a54119c60c6525b377fd",
+  "deploy/docker-compose.source-maintenance.yml": "02e977d32da633c3c9414e3ebf84bec3db4fda3f6ddacda1e0d3ab4f4bf1fc1e"
+}

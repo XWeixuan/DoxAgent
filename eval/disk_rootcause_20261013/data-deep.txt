@@ -1,0 +1,85 @@
+12885417984	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data
+11857215488	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles
+10689224704	/var/lib/docker/volumes/doxagent-v2_v2-data/_data/runtime
+9902125056	/var/lib/docker/volumes/doxagent-v2_v2-data/_data/codex-home
+6004363264	/var/lib/docker/volumes/doxagent-v2_v2-data/_data/codex-home/sessions
+6004359168	/var/lib/docker/volumes/doxagent-v2_v2-data/_data/codex-home/sessions/2026
+4377083904	/var/lib/docker/volumes/doxagent-v2_v2-data/_data/runtime/runtime_artifacts
+1821573120	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/dowjones-main
+1703784448	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/yahoo-main
+1116721152	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/trendforce-1
+1098530816	/var/lib/docker/volumes/doxagent-v2_v2-data/_data/runtime/native-files
+1056657408	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/public-markets-nl
+885198848	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/reuters-1
+832106496	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/yahoo-tr-main
+695078912	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/digitimes-nl-1
+576163840	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/registry
+324173824	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/digitimes-de-1
+318078976	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/globenewswire-1
+269844480	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/seeking-alpha-main
+263417856	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/digitimes-1
+244764672	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/backups
+207265792	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/snapshots
+139735040	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/generic-c0b250fa6418-jp-standard-6
+116064256	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/digitimes-tw-nl-1
+83890176	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/etnews-1
+57548800	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/seeking_alpha-direct-1
+52994048	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/generic-c88e77b20ac3-us-standard-5
+52609024	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/seeking_alpha-1
+49557504	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/yahoo_finance-1
+46985216	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/seeking_alpha-2
+41918464	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/digitimes_tw-1
+40701952	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/generic-3dd0ac48babf-jp-standard-6
+40136704	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/generic-9095efe6b27d-jp-standard-6
+40091648	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/generic-06f9239fca26-jp-standard-6
+39895040	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/digitimes-tw-de-1
+38662144	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/barrons-1
+38551552	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/barrons-direct-1
+36335616	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/generic-bac4a2d5cbaf-jp-standard-6
+34172928	/var/lib/docker/volumes/doxagent-v2_v2-data/_data/codex-home/cache
+32862208	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/investing-2
+32657408	/var/lib/docker/volumes/doxagent-v2_v2-data/_data/codex-home/plugins
+32649216	/var/lib/docker/volumes/doxagent-v2_v2-data/_data/codex-home/plugins/cache
+32342016	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/generic-7243a6817813-jp-standard-6
+32223232	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/wsj-1
+32002048	/var/lib/docker/volumes/doxagent-v2_v2-data/_data/codex-home/cache/remote_plugin_catalog
+31961088	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/247wallst-1
+31862784	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/reuters-2
+31784960	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/generic-b587da4c9517-jp-standard-6
+31023104	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/generic-d05c8e6264b2-jp-standard-6
+30392320	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/generic-6476fe48a73d-jp-standard-6
+30269440	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/huggingnews-1
+30265344	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/generic-e03b355a059b-jp-standard-6
+30179328	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/generic-379c2b2c9609-jp-standard-6
+30142464	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/generic-99c834dea49d-jp-standard-6
+29872128	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/chartmill-1
+COMMAND       PID             USER  FD   TYPE DEVICE SIZE/OFF NLINK     NODE NAME
+systemd         1             root  65u   REG    0,1        0     0     2063 /memfd:systemd-udevd (deleted)
+networkd-    1570             root txt    REG  253,3  7477096     0   133417 /usr/bin/python3.14 (deleted)
+unattende    1733             root txt    REG  253,3  7477096     0   133417 /usr/bin/python3.14 (deleted)
+pulseaudi    2311          lightdm   6u   REG    0,1 67108864     0     2087 /memfd:pulseaudio (deleted)
+lightdm-g    2313          lightdm   6u   REG    0,1     4096     0     3118 /memfd:lp_dma_buf (deleted)
+lightdm-g    2313          lightdm  10u   REG    0,1        0     0     3119 /memfd:allocation fd (deleted)
+lightdm-g    2313          lightdm  23r   REG  253,3       64     0  2129081 /var/lib/lightdm/.local/share/gvfs-metadata/root (deleted)
+lightdm-g    2313          lightdm  25r   REG  253,3    32768     0  2129082 /var/lib/lightdm/.local/share/gvfs-metadata/root-3b02401a.log (deleted)
+sh           4845             root   6u   REG   0,42      158     0      103 /tmp/sgdaemon.log (deleted)
+Xvfb       138330            10001 mem    REG    0,1  8625366     0  1016211 /SYSV00000000
+Xvfb       138330            10001 mem    REG    0,1  8625366     0  1016210 /SYSV00000000
+Xvfb       138330            10001 mem    REG    0,1   184320     0  1016208 /SYSV00000000
+Xvfb       138330            10001 mem    REG    0,1   180224     0  1016207 /SYSV00000000
+Xvfb       138330            10001 mem    REG    0,1   176128     0  1016206 /SYSV00000000
+Xvfb       138330            10001 mem    REG    0,1   172032     0  1016205 /SYSV00000000
+Xvfb       138330            10001 mem    REG    0,1   167936     0  1016204 /SYSV00000000
+Xvfb       138330            10001 mem    REG    0,1   163840     0  1016203 /SYSV00000000
+Xvfb       138330            10001 mem    REG    0,1   159744     0  1016202 /SYSV00000000
+Xvfb       138330            10001 mem    REG    0,1   155648     0  1016201 /SYSV00000000
+Xvfb       138330            10001 mem    REG    0,1   151552     0  1016200 /SYSV00000000
+Xvfb       138330            10001 mem    REG    0,1   147456     0  1016199 /SYSV00000000
+Xvfb       138330            10001 mem    REG    0,1   143360     0  1016198 /SYSV00000000
+Xvfb       138330            10001 mem    REG    0,1   139264     0  1016197 /SYSV00000000
+Xvfb       138330            10001 mem    REG    0,1   135168     0  1016196 /SYSV00000000
+Xvfb       138330            10001 mem    REG    0,1   131072     0  1016195 /SYSV00000000
+Xvfb       138330            10001 mem    REG    0,1   126976     0  1016194 /SYSV00000000
+Xvfb       138330            10001 mem    REG    0,1   122880     0  1016193 /SYSV00000000
+Xvfb       138330            10001 mem    REG    0,1   118784     0  1016192 /SYSV00000000
+Xvfb       138330            10001 mem    REG    0,1   114688     0  1016191 /SYSV00000000

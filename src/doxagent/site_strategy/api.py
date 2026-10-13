@@ -13,6 +13,7 @@ from fastapi import Depends, FastAPI, Header, HTTPException, Query
 from pydantic import BaseModel, Field
 
 from .credentials import CredentialStore
+from .runtime import MaintenanceOpenError
 from .schema import (
     AccessRequest,
     AccessResult,
@@ -21,8 +22,8 @@ from .schema import (
     BrowserProfile,
     ProxyEgress,
     ResolvedSite,
-    SiteStrategySpec,
     SitePurpose,
+    SiteStrategySpec,
 )
 from .service import SiteStrategyService
 from .storage import storage_failure
@@ -370,6 +371,11 @@ def create_app(
     ) -> dict[str, str]:
         try:
             return await service.open_identity_login(request.site_id, identity_id)
+        except MaintenanceOpenError as exc:
+            raise HTTPException(
+                status_code=503,
+                detail={"code": "MAINTENANCE_OPEN_FAILED", "stage": exc.stage, "retryable": True},
+            ) from exc
         except KeyError as exc:
             raise HTTPException(status_code=404, detail="browser identity not found") from exc
         except (ValueError, RuntimeError) as exc:
@@ -488,6 +494,11 @@ def create_app(
     async def login_open(profile_id: str) -> dict[str, str]:
         try:
             return await service.open_profile_login(profile_id)
+        except MaintenanceOpenError as exc:
+            raise HTTPException(
+                status_code=503,
+                detail={"code": "MAINTENANCE_OPEN_FAILED", "stage": exc.stage, "retryable": True},
+            ) from exc
         except KeyError as exc:
             raise HTTPException(status_code=404, detail="profile not found") from exc
         except (ValueError, RuntimeError) as exc:

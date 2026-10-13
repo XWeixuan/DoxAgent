@@ -49,6 +49,18 @@ def binding_id_for(ticker: str, source_id: str) -> str:
 class BusModel(BaseModel):
     model_config = ConfigDict(extra="forbid", populate_by_name=True)
 
+    @model_validator(mode="after")
+    def fill_publisher_identity(self):
+        if hasattr(self, "source_name") and self.source_name is None:
+            from .source_identity import resolve_source_name
+
+            self.source_name = resolve_source_name(
+                publisher_name=getattr(self, "publisher_name", None) or getattr(self, "source", None),
+                resolved_domain=getattr(self, "resolved_domain", None),
+                url=getattr(self, "url", None),
+            )
+        return self
+
 
 class UpdateActor(StrEnum):
     USER = "user"
@@ -374,6 +386,7 @@ class RawMessageInput(BusModel):
     body: str | None = None
     summary: str | None = None
     source: str | None = None
+    source_name: str | None = None
     publisher_name: str | None = None
     url: str
     raw_url: str | None = None
@@ -466,6 +479,7 @@ class RawMessage(BusModel):
     title: str | None = None
     body: str
     source: str
+    source_name: str | None = None
     publisher_name: str | None = None
     resolved_domain: str | None = None
     url: str
@@ -510,6 +524,7 @@ class StandardMessage(BusModel):
     title: str | None = None
     body: str
     source: str
+    source_name: str | None = None
     publisher_name: str | None = None
     resolved_domain: str | None = None
     url: str
@@ -537,6 +552,7 @@ class MaterializedStreamMember(BusModel):
     title: str | None = None
     body: str
     source: str
+    source_name: str | None = None
     publisher_name: str | None = None
     resolved_domain: str | None = None
     url: str
@@ -639,6 +655,7 @@ class SchedulerGroupState(BusModel):
 
 
 class PollResult(BusModel):
+    site_access_deferred_reason: str | None = None
     window_coverage: Literal["COMPLETE", "PARTIAL", "UNKNOWN"] = "UNKNOWN"
     window_done: bool = True
 

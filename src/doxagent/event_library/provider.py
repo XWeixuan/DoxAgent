@@ -81,6 +81,30 @@ class PublishedEventLibraryReader:
             sha256=hashlib.sha256(payload.encode("utf-8")).hexdigest(),
         )
 
+    def resolve_runtime_subject(
+        self, ticker: str, *, event_id: str | None = None,
+        source_message_id: str | None = None, candidate_index: int | None = None,
+        version: int,
+    ) -> str | None:
+        """Resolve only durable mappings and version-visible explicit redirects."""
+        repository = self._repository(ticker)
+        if repository is None:
+            return None
+        if source_message_id is not None and candidate_index is not None:
+            event_id, _ = repository.runtime_target_suggestion(
+                f"runtime-v2:{ticker.upper()}",
+                f"runtime-v2-msg:{source_message_id}:{candidate_index}",
+            )
+        seen = set()
+        while event_id and event_id not in seen:
+            seen.add(event_id)
+            state = repository.event_status(ticker, event_id, version)
+            if state and state[1]:
+                event_id = state[1]
+                continue
+            return event_id if repository.get_event(ticker, event_id, version) else None
+        return None
+
     def event_details(
         self, ticker: str, event_ids: list[str], *, version: int | None = None
     ) -> EventDetailSnapshot | None:

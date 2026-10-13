@@ -1,0 +1,5 @@
+FROM sha256:7d3612194b29db3d8a17dad1ac78aa00f28c1d26f557bb2db5b9067f84d9bf62
+COPY src/doxagent/message_bus_v2/distribution_repository.py /app/src/doxagent/message_bus_v2/distribution_repository.py
+COPY src/doxagent/v2_read/outbox.py /app/src/doxagent/v2_read/outbox.py
+COPY src/doxagent/v2_read/maintenance.py /app/src/doxagent/v2_read/maintenance.py
+RUN python -m compileall -q /app/src/doxagent/message_bus_v2/distribution_repository.py /app/src/doxagent/v2_read/outbox.py /app/src/doxagent/v2_read/maintenance.py

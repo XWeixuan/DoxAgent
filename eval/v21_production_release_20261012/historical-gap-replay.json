@@ -1,0 +1,38 @@
+[
+  {
+    "seq": 1240145,
+    "passed": false,
+    "error": "PROVENANCE_UNVERIFIED",
+    "traceback": "Traceback (most recent call last):\n  File \"/ops/replay_historical_gaps.py\", line 24, in <module>\n    records,metrics=mapper(event)\n                    ^^^^^^^^^^^^^\n  File \"/app/src/doxagent/v2_read/projectors.py\", line 412, in __call__\n    raise ValueError(\"PROVENANCE_UNVERIFIED\")\nValueError: PROVENANCE_UNVERIFIED\n"
+  },
+  {
+    "seq": 1240148,
+    "passed": true,
+    "records": 1,
+    "metrics": 0
+  },
+  {
+    "seq": 1240191,
+    "passed": false,
+    "error": "PROVENANCE_UNVERIFIED",
+    "traceback": "Traceback (most recent call last):\n  File \"/ops/replay_historical_gaps.py\", line 24, in <module>\n    records,metrics=mapper(event)\n                    ^^^^^^^^^^^^^\n  File \"/app/src/doxagent/v2_read/projectors.py\", line 412, in __call__\n    raise ValueError(\"PROVENANCE_UNVERIFIED\")\nValueError: PROVENANCE_UNVERIFIED\n"
+  },
+  {
+    "seq": 1240193,
+    "passed": true,
+    "records": 1,
+    "metrics": 0
+  },
+  {
+    "seq": 1257748,
+    "passed": false,
+    "error": "CaseSummary/trade_disposition: anyOf",
+    "traceback": "Traceback (most recent call last):\n  File \"/ops/replay_historical_gaps.py\", line 24, in <module>\n    records,metrics=mapper(event)\n                    ^^^^^^^^^^^^^\n  File \"/app/src/doxagent/v2_read/projectors.py\", line 546, in __call__\n    case_record, count = project_case_trade(self.store, case_ticker, summary, records)\n                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/src/doxagent/v2_read/trade_outcomes.py\", line 118, in project_case_trade\n    updated = rollup_case_trade(case, list(siblings.values()))\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/src/doxagent/v2_read/trade_outcomes.py\", line 83, in rollup_case_trade\n    return validate(\n           ^^^^^^^^^\n  File \"/app/src/doxagent/api_v2/dto.py\", line 36, in validate\n    raise ValueError(f\"{name}/{location}: {error.validator}\")\nValueError: CaseSummary/trade_disposition: anyOf\n"
+  },
+  {
+    "seq": 1257924,
+    "passed": false,
+    "error": "CaseSummary/trade_disposition: anyOf",
+    "traceback": "Traceback (most recent call last):\n  File \"/ops/replay_historical_gaps.py\", line 24, in <module>\n    records,metrics=mapper(event)\n                    ^^^^^^^^^^^^^\n  File \"/app/src/doxagent/v2_read/projectors.py\", line 546, in __call__\n    case_record, count = project_case_trade(self.store, case_ticker, summary, records)\n                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/src/doxagent/v2_read/trade_outcomes.py\", line 118, in project_case_trade\n    updated = rollup_case_trade(case, list(siblings.values()))\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/src/doxagent/v2_read/trade_outcomes.py\", line 83, in rollup_case_trade\n    return validate(\n           ^^^^^^^^^\n  File \"/app/src/doxagent/api_v2/dto.py\", line 36, in validate\n    raise ValueError(f\"{name}/{location}: {error.validator}\")\nValueError: CaseSummary/trade_disposition: anyOf\n"
+  }
+]

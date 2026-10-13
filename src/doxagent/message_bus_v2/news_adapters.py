@@ -161,11 +161,13 @@ class YahooFinanceNewsAdapter:
         self.settings = settings
         # The registry's httpx client remains for other providers; Yahoo owns no session.
         self.transport = transport or shared_yahoo_transport(
-            settings.message_bus_v2_yahoo_http_proxy_url or settings.crawler_egress_proxy_url
+            settings.message_bus_v2_yahoo_http_proxy_url or settings.crawler_egress_proxy_url,
+            http_routes=settings.message_bus_v2_yahoo_http_routes,
         )
         self.browser = browser
         self._browser_retry_at = 0.0
         self._page_api_retry_at = 0.0
+        self._browser_endpoint_retry_at = 0.0
         self._page_strikes = 0
 
     async def poll(self, context: PollContext) -> PollResult:
@@ -178,11 +180,13 @@ class YahooFinanceNewsAdapter:
             else max(10, min(20, int(context.binding.source_parameters.get("snippet_count", 20))))
         )
         attempts: list[dict[str, Any]] = []
+        browser_deferred = None
         managed_browser = bool(getattr(self.browser, "site_managed", False))
         if (
             context.binding.source_parameters.get("page_network_enabled", True)
             and self.browser is not None
             and (managed_browser or monotonic_time.monotonic() >= self._browser_retry_at)
+            and monotonic_time.monotonic() >= self._browser_endpoint_retry_at
         ):
             # Reserve the probe before awaiting: concurrent tickers must not queue
             # repeated browser probes while the first one is still running.
@@ -206,13 +210,24 @@ class YahooFinanceNewsAdapter:
                     context, rows, "page_network_ncp", count, {**metadata, "attempts": attempts}
                 )
             except Exception as exc:
-                if isinstance(exc, SiteAccessError) and exc.site_access_deferred:
+                if getattr(exc, "status_code", None) in {404, 405, 410}:
+                    self._browser_endpoint_retry_at = monotonic_time.monotonic() + 600
+                if (
+                    isinstance(exc, SiteAccessError)
+                    and exc.site_access_deferred
+                    and exc.result.reason_code == "storage_unavailable"
+                ):
                     return PollResult(
                         window_done=False,
                         site_access_deferred=True,
                         site_access_retry_not_before=exc.result.retry_not_before,
+                        site_access_deferred_reason=exc.result.reason_code,
                         acquisition_metadata={"attempts": attempts},
                     )
+                if isinstance(exc, SiteAccessError) and exc.site_access_deferred:
+                    # Browser queue/egress admission does not disable the
+                    # independent fixed HTTP route. Keep browser -> NCP -> RSS.
+                    browser_deferred = exc.result
                 if not managed_browser:
                     self._browser_retry_at = monotonic_time.monotonic() + 300
                 if not managed_browser and getattr(exc, "status_code", None) == 429:
@@ -270,6 +285,14 @@ class YahooFinanceNewsAdapter:
                 )
         except Exception as exc:
             attempts.append({"route": "legacy_headline_rss", "error": type(exc).__name__})
+            if browser_deferred is not None:
+                return PollResult(
+                    window_done=False,
+                    site_access_deferred=True,
+                    site_access_retry_not_before=browser_deferred.retry_not_before,
+                    site_access_deferred_reason=browser_deferred.reason_code,
+                    acquisition_metadata={"attempts": attempts},
+                )
             # Preserve the transport exception contract, including status/retry fields.
             exc.acquisition_attempts = attempts
             exc.args = ("Yahoo acquisition failed: " + json.dumps(attempts, separators=(",", ":")),)

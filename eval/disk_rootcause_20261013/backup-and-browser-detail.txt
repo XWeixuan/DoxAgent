@@ -1,0 +1,58 @@
+22311825408	/var/lib/docker/volumes/doxagent-v2_v2-data/_data/bus
+2563387392	/var/lib/doxagent
+2563305472	/var/lib/doxagent/initialization-repair
+2563264512	/var/lib/doxagent/initialization-repair/backups
+2328662016	/home/ubuntu/doxagent-backups
+2313670656	/home/ubuntu/doxagent-backups/runtime-trade-20260930
+1821573120	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/dowjones-main
+1703784448	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/yahoo-main
+1511116800	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/dowjones-main/Default
+1382187008	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/yahoo-main/Default
+1172455424	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/dowjones-main/Default/Cache
+1044828160	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/yahoo-main/Default/Cache
+506068992	/var/lib/docker/volumes/doxagent-v2_v2-data/_data/bus/backups
+425254912	/var/lib/docker/volumes/doxagent-v2_v2-data/_data/bus/repair-backups
+317972480	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/yahoo-main/Default/Code Cache
+308277248	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/dowjones-main/Default/Code Cache
+97124352	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/yahoo-main/segmentation_platform
+85028864	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/dowjones-main/segmentation_platform
+48656384	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/yahoo-main/optimization_guide_model_store
+48656384	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/dowjones-main/optimization_guide_model_store
+46780416	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/yahoo-main/WasmTtsEngine
+46780416	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/dowjones-main/WasmTtsEngine
+41361408	/var/lib/docker/volumes/doxagent-v2_v2-data/_data/bus/native-files
+40153088	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/dowjones-main/CertificateRevocation
+40132608	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/yahoo-main/CertificateRevocation
+39104512	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/dowjones-main/component_crx_cache
+39092224	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/yahoo-main/component_crx_cache
+37593088	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/yahoo-main/optimization_guide_model_store/43
+37593088	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/dowjones-main/optimization_guide_model_store/43
+23396352	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/yahoo-main/WasmTtsEngine/20260917.1
+23396352	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/dowjones-main/WasmTtsEngine/20260917.1
+23379968	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/yahoo-main/WasmTtsEngine/20260904.1
+23379968	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/dowjones-main/WasmTtsEngine/20260904.1
+19816448	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/yahoo-main/Safe Browsing
+19812352	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/dowjones-main/Safe Browsing
+14934016	/home/ubuntu/doxagent-backups/site-access-20260921T184045Z
+7950336	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/yahoo-main/OnDeviceHeadSuggestModel
+7950336	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/dowjones-main/OnDeviceHeadSuggestModel
+7946240	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/yahoo-main/OnDeviceHeadSuggestModel/20251024.824731831.14
+7946240	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/dowjones-main/OnDeviceHeadSuggestModel/20251024.824731831.14
+5959680	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/dowjones-main/Default/Sessions
+5668864	/var/lib/docker/volumes/doxagent-v2_v2-data/_data/bus/initialization-configurations
+5632000	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/dowjones-main/Default/Sessions_Encrypted
+5332992	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/yahoo-main/OptimizationHints
+5328896	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/dowjones-main/OptimizationHints
+4632576	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/yahoo-main/optimization_guide_model_store/24
+4632576	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/dowjones-main/optimization_guide_model_store/24
+3653632	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/yahoo-main/optimization_guide_model_store/25
+3653632	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/dowjones-main/optimization_guide_model_store/25
+2658304	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/yahoo-main/ActorSafetyLists
+2658304	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/dowjones-main/ActorSafetyLists
+2654208	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/yahoo-main/ActorSafetyLists/9.8200.9609
+2654208	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/dowjones-main/ActorSafetyLists/9.8200.9609
+2580480	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/yahoo-main/Default/IndexedDB
+2306048	/var/lib/docker/volumes/doxagent-v2_v2-site-strategy/_data/profiles/yahoo-main/Default/Extensions
+2026-10-13T02:45:16+08:00
+Filesystem        1B-blocks         Used  Available Use% Mounted on
+/dev/vda3      189559676928 177632399360 4103143424  98% /

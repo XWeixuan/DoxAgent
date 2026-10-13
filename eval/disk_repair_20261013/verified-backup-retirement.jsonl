@@ -1,0 +1,6 @@
+{"file": "research.sqlite3.gz", "sha256": "14cfe177e98a51cf14b0b5f861b6af595729a22047fb41c06805982334a2740c", "size": 14488140, "action": "retired_verified_offhost_copy"}
+{"file": "initialization.sqlite3.gz", "sha256": "10cd05b6a892c7d4818e82f083d9ae559d92bd39ec87e755c77841b007fdc972", "size": 109881742, "action": "retired_verified_offhost_copy"}
+{"file": "runtime.sqlite3.gz", "sha256": "84ff57322a00831535fff771a9d3c587693c8497a1593ccc2535d2720672dac4", "size": 1142641030, "action": "retired_verified_offhost_copy"}
+{"file": "event-configuration-databases.tar.gz", "size": 832047938, "sha256": "fc925fe1f219de77c73c69f629a0673c4b89683d88e2ebff48b4eb2adc18a26c", "action": "retired_verified_offhost_copy"}
+{"file": "bus.sqlite3.gz", "size": 2590263328, "sha256": "31e0a47c5c63eaa2050da7d1c46d24db8dab7e97df7807cd0d143cee9b7b425a", "action": "retired_verified_offhost_copy"}
+{"file": "read.sqlite3.gz", "size": 4680360216, "sha256": "27e124367d861df23ddf5ee702e8a2e0564f325d69bee5dc6d30459ae6b204e7", "action": "retired_verified_offhost_copy"}

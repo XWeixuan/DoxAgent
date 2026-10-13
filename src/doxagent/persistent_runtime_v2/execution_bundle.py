@@ -18,6 +18,8 @@ class ExecutionBundles:
         *,
         assets: dict[str, str] | None = None,
         orchestration_revision: int | None = None,
+        w3_contract_version: str | None = None,
+        activate: bool = True,
     ) -> str:
         value: dict[str, Any] = {
             "compatibility": 1,
@@ -28,8 +30,9 @@ class ExecutionBundles:
         if any(item is not None and not item.strip() for item in value["prompts"].values()):
             raise ValueError("empty runtime prompt")
         if value["orchestration_revision"] >= 3:
-            from .schema import W3CaseResultV3
             from doxagent.workflows.codex_document3.schema import strict_json_schema
+
+            from .schema import W3CaseResultV3
 
             schema = strict_json_schema(W3CaseResultV3.model_json_schema())
             value["contracts"] = dict(
@@ -40,8 +43,26 @@ class ExecutionBundles:
                 w3_output_schema=schema,
                 w3_output_schema_hash=digest(schema),
             )
+        if w3_contract_version is not None:
+            from .schema import strict_json_schema
+            from .w3_contracts import W3_CONTRACT, W3OperationsResult, W3TradeDecision
+
+            if w3_contract_version != W3_CONTRACT:
+                raise ValueError("unsupported W3 execution contract")
+            if value["orchestration_revision"] != 3:
+                raise ValueError("W3 v4 requires the native Policy orchestration revision 3")
+            required = ("w3/AGENTS.md", "w3/skills/skill.md")
+            if any(not value["assets"].get(key, "").strip() for key in required):
+                raise ValueError("W3 v4 requires AGENTS.md and the single skills/skill.md")
+            value.setdefault("contracts", {}).update(
+                w3_contract_version=W3_CONTRACT,
+                w3_asset_layout="agents-skill.v1",
+                w3_trade_schema=strict_json_schema(W3TradeDecision.model_json_schema()),
+                w3_operations_schema=strict_json_schema(W3OperationsResult.model_json_schema()),
+            )
         identity = self.journal.freeze(value)
-        self.journal.set("execution", "active", identity)
+        if activate:
+            self.journal.set("execution", "active", identity)
         return identity
 
     def load_manifest(self, path: str | Path) -> str:
@@ -83,7 +104,11 @@ class ExecutionBundles:
         )
         active = self.journal.get("execution", "active")
         previous = self.get(active)["assets"] if active else {}
-        return self.publish(prompts, assets={**previous, **assets}, orchestration_revision=revision)
+        return self.publish(
+            prompts, assets={**previous, **assets}, orchestration_revision=revision,
+            w3_contract_version=manifest.get("w3_contract_version"),
+            activate=manifest.get("activate", True),
+        )
 
     def get(self, identity: str) -> dict[str, Any]:
         value = self.journal.snapshot(identity)

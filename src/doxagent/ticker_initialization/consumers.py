@@ -100,7 +100,8 @@ def _admit_bus(
         current = CandidateConfiguration(bus.repository.path, head, revision["ticker"])
         if current.previous_head() == candidate.initialization_id:
             current.rollback()
-    candidate.install()
+    if head != candidate.initialization_id:
+        candidate.install()
     if candidate.current_head() != candidate.initialization_id:
         raise ValueError("Message Bus configuration does not match active revision")
     state = bus.repository.get_ticker_state(revision["ticker"])

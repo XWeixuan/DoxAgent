@@ -1,0 +1,80 @@
+{
+  "execution_bundle_id": "478ab2bc49f5eb96f1222156cfc93c987f85a2416bcfd28cb03c49224ece6fd8",
+  "orchestration_revision": 3,
+  "contracts": {
+    "maintenance_feed": "persistent-runtime.o3-maintenance-feed.v2",
+    "policy_schema": "document3.v3",
+    "projection_schema": "document3.runtime_projection.v5",
+    "w3_output_schema_hash": "242e2c36baaf5dc5138a6a3852f83695dde3bdcf9b76784f93e813fa3a13dcb0",
+    "w3_result": "persistent-runtime.w3-result.v3"
+  },
+  "asset_count": 40,
+  "atlas": [
+    "open_event_atlas/Open_Event_Atlas_General.md",
+    "open_event_atlas/Open_Event_Atlas_L1-01.md"
+  ],
+  "w3_asset_count": 4,
+  "models": {
+    "w12_model": "qwen3.8-flash",
+    "w12_effort": "medium",
+    "w3_model": "gpt-6-luna",
+    "w3_effort": "max",
+    "codex_model": "gpt-6-luna",
+    "codex_effort": "max",
+    "codex_provider": null
+  },
+  "read_checkpoints": [
+    [
+      "bus",
+      2259829
+    ],
+    [
+      "runtime",
+      1801762
+    ],
+    [
+      "initialization",
+      103599
+    ],
+    [
+      "research",
+      5404
+    ]
+  ],
+  "gaps": [
+    [
+      "runtime",
+      "1240145",
+      "PROVENANCE_UNVERIFIED",
+      4419
+    ],
+    [
+      "runtime",
+      "1240148",
+      "PROVENANCE_UNVERIFIED",
+      4419
+    ],
+    [
+      "runtime",
+      "1240191",
+      "PROVENANCE_UNVERIFIED",
+      4418
+    ],
+    [
+      "runtime",
+      "1240193",
+      "PROVENANCE_UNVERIFIED",
+      4418
+    ]
+  ],
+  "read_active_revisions": {
+    "MU": null,
+    "BE": null,
+    "INTC": null
+  },
+  "direction_watch_triggers": [
+    "CREATE TRIGGER \"v2_capture_runtime_values_INSERT\" AFTER INSERT ON \"runtime_values\" WHEN NEW.namespace IN ('trade_intents','trade_receipts','analysis_trade_decisions','candidates','worker_receipts','worker_requests','round_inputs','schedule','selection_snapshot','worker_invocations','reference_deliveries','policy_direction_usage','policy_consumptions','policy_authorization_head','policy_authorization_applied','policy_consumption_migration','policy_watch','policy_watch_applied','policy_watch_validation') BEGIN INSERT INTO v2_source_receipts(payload) VALUES(json_object('namespace',NEW.\"namespace\",'key',NEW.\"key\",'payload',NEW.\"payload\")); INSERT INTO v2_source_outbox(table_name,entity_id,operation,receipt_id,recorded_at) VALUES('runtime_values',json_array(NEW.\"namespace\",NEW.\"key\"),'INSERT',last_insert_rowid(),strftime('%Y-%m-%dT%H:%M:%fZ','now')); END",
+    "CREATE TRIGGER \"v2_capture_runtime_values_UPDATE\" AFTER UPDATE ON \"runtime_values\" WHEN NEW.namespace IN ('trade_intents','trade_receipts','analysis_trade_decisions','candidates','worker_receipts','worker_requests','round_inputs','schedule','selection_snapshot','worker_invocations','reference_deliveries','policy_direction_usage','policy_consumptions','policy_authorization_head','policy_authorization_applied','policy_consumption_migration','policy_watch','policy_watch_applied','policy_watch_validation') AND (OLD.\"namespace\" IS NOT NEW.\"namespace\" OR OLD.\"key\" IS NOT NEW.\"key\" OR OLD.\"payload\" IS NOT NEW.\"payload\") BEGIN INSERT INTO v2_source_receipts(payload) VALUES(json_object('namespace',NEW.\"namespace\",'key',NEW.\"key\",'payload',NEW.\"payload\")); INSERT INTO v2_source_outbox(table_name,entity_id,operation,receipt_id,recorded_at) VALUES('runtime_values',json_array(NEW.\"namespace\",NEW.\"key\"),'UPDATE',last_insert_rowid(),strftime('%Y-%m-%dT%H:%M:%fZ','now')); END",
+    "CREATE TRIGGER \"v2_capture_runtime_values_DELETE\" AFTER DELETE ON \"runtime_values\" WHEN OLD.namespace IN ('trade_intents','trade_receipts','analysis_trade_decisions','candidates','worker_receipts','worker_requests','round_inputs','schedule','selection_snapshot','worker_invocations','reference_deliveries','policy_direction_usage','policy_consumptions','policy_authorization_head','policy_authorization_applied','policy_consumption_migration','policy_watch','policy_watch_applied','policy_watch_validation') BEGIN INSERT INTO v2_source_receipts(payload) VALUES(json_object('namespace',OLD.\"namespace\",'key',OLD.\"key\",'payload',OLD.\"payload\")); INSERT INTO v2_source_outbox(table_name,entity_id,operation,receipt_id,recorded_at) VALUES('runtime_values',json_array(OLD.\"namespace\",OLD.\"key\"),'DELETE',last_insert_rowid(),strftime('%Y-%m-%dT%H:%M:%fZ','now')); END"
+  ]
+}

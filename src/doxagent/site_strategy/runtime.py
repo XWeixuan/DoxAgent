@@ -8,6 +8,7 @@ import inspect
 import json
 import logging
 import os
+import re
 import time
 from collections import OrderedDict
 from dataclasses import dataclass
@@ -142,6 +143,7 @@ class _RawBrowserCDP:
         self._counter = 0
         self._pending: dict[int, asyncio.Future[dict[str, Any]]] = {}
         self._policies: dict[str, _PopupPolicy] = {}
+        self._owned_targets: set[str] = set()
         self._children: dict[str, tuple[str, str, _PopupPolicy]] = {}
         self._tasks: set[asyncio.Task[None]] = set()
 
@@ -208,15 +210,31 @@ class _RawBrowserCDP:
         if self._socket is None:
             return
         try:
+            for target_id in tuple(self._owned_targets):
+                try:
+                    await self.send("Target.closeTarget", {"targetId": target_id})
+                    self._owned_targets.discard(target_id)
+                except Exception:
+                    logger.warning("owned target cleanup failed target=%s", target_id)
             await self.send(
                 "Target.setAutoAttach",
                 {"autoAttach": False, "waitForDebuggerOnStart": False, "flatten": True},
             )
         except Exception:
             pass
-        await self._socket.close()
-        self._socket = None
+        finally:
+            await self._close_transport()
+
+    async def _close_transport(self) -> None:
+        socket, self._socket = self._socket, None
+        try:
+            await socket.close()
+        finally:
+            await self._finish_tasks()
+
+    async def _finish_tasks(self) -> None:
         if self._reader is not None:
+            self._reader.cancel()
             await asyncio.gather(self._reader, return_exceptions=True)
             self._reader = None
         if self._tasks:
@@ -663,6 +681,12 @@ class PersistentBrowserPool:
 
 async def _close_owned_page(page: Any, cdp: _RawBrowserCDP, *, timeout_seconds: float = 5) -> None:
     """Bound cleanup separately: cancellation does not bound awaited finally blocks."""
+    target_id = getattr(page, "_doxagent_target_id", None)
+    if target_id:
+        # CDP does not wait for Playwright's unbounded abort acknowledgement.
+        await cdp.send("Target.closeTarget", {"targetId": target_id})
+        getattr(cdp, "_owned_targets", set()).discard(target_id)
+        return
     try:
         async with asyncio.timeout(timeout_seconds):
             await page.close()
@@ -819,6 +843,17 @@ class _MaintenancePage:
     profile_id: str
     identity_id: str
     site_id: str
+    navigation_state: str = "PENDING"
+    navigation_error: str = ""
+    navigation_task: asyncio.Task[None] | None = None
+
+
+class MaintenanceOpenError(RuntimeError):
+    """Safe stage-specific failure; a website navigation error is not an open failure."""
+
+    def __init__(self, stage: str) -> None:
+        self.stage = stage
+        super().__init__(f"maintenance_open_failed:{stage}")
 
 
 class SiteAccessRuntime:
@@ -875,6 +910,7 @@ class SiteAccessRuntime:
     async def close(self) -> None:
         for token, maintained in list(self._maintenance_pages.items()):
             self._maintenance_pages.pop(token, None)
+            await self._finish_maintenance_navigation(maintained)
             await maintained.gate.close()
             abandon = getattr(maintained.lease, "abandon", None)
             if abandon is not None:
@@ -1193,19 +1229,33 @@ class SiteAccessRuntime:
             egress_id=egress.egress_id,
             environment=profile.environment,
         )
-        lease = await self.browser_runtimes.page(effective_identity, egress)
-        await self.browser_runtimes.select_maintenance(effective_identity)
-        page = await lease.__aenter__()
-        gate = _DocumentNavigationGate(page, self.resolver, resolved, lease.browser_cdp)
+        lease = None
+        gate = None
+        stage = "page_allocation"
         try:
-            await gate.start()
-            await page.goto(url, wait_until="domcontentloaded", timeout=30_000)
-        except Exception:
-            await gate.close()
-            await lease.__aexit__(None, None, None)
-            raise
+            deadline = time.monotonic() + 30
+            async with asyncio.timeout_at(deadline):
+                lease = await self.browser_runtimes.page(
+                    effective_identity, egress, deadline=deadline
+                )
+                page = await lease.__aenter__()
+                stage = "navigation_gate"
+                gate = _DocumentNavigationGate(page, self.resolver, resolved, lease.browser_cdp)
+                await gate.start()
+                stage = "viewer_selection"
+                await self.browser_runtimes.select_maintenance(effective_identity)
+        except BaseException as exc:
+            try:
+                if gate is not None:
+                    await gate.close()
+            finally:
+                if lease is not None:
+                    await lease.__aexit__(None, None, None)
+            if not isinstance(exc, Exception):
+                raise
+            raise MaintenanceOpenError(stage) from exc
         session_token = token or uuid4().hex
-        self._maintenance_pages[session_token] = _MaintenancePage(
+        maintained = _MaintenancePage(
             lease,
             page,
             gate,
@@ -1213,18 +1263,65 @@ class SiteAccessRuntime:
             effective_identity.identity_id,
             target_site_id,
         )
+        self._maintenance_pages[session_token] = maintained
+        maintained.navigation_task = asyncio.create_task(
+            self._navigate_maintenance(maintained, url), name="site-login-navigation"
+        )
         return {
             "login_token": session_token,
             "url": page.url,
             "identity_id": effective_identity.identity_id,
             "runtime_kind": effective_identity.runtime_kind.value,
+            "navigation_state": maintained.navigation_state,
         }
+
+    async def _navigate_maintenance(self, maintained: _MaintenancePage, url: str) -> None:
+        """Navigate on the existing owner socket; retain the window on transport failure."""
+        cdp = maintained.lease.browser_cdp
+        session_id = None
+        try:
+            async with asyncio.timeout(30):
+                attachment = await cdp.send(
+                    "Target.attachToTarget",
+                    {"targetId": maintained.gate.root_target_id, "flatten": True},
+                )
+                session_id = str(attachment["sessionId"])
+                result = await cdp.send("Page.navigate", {"url": url}, session_id=session_id)
+                if result.get("errorText"):
+                    raise RuntimeError(str(result["errorText"]))
+                maintained.navigation_state = "READY"
+        except asyncio.CancelledError:
+            raise
+        except Exception as exc:
+            maintained.navigation_state = "FAILED"
+            match = re.search(r"(?:net::)?ERR_[A-Z_]+", str(exc))
+            maintained.navigation_error = match.group(0) if match else type(exc).__name__
+        finally:
+            if session_id:
+                try:
+                    async with asyncio.timeout(2):
+                        await cdp.send("Target.detachFromTarget", {"sessionId": session_id})
+                except Exception:
+                    pass
+
+    @staticmethod
+    async def _finish_maintenance_navigation(maintained: _MaintenancePage) -> None:
+        task = maintained.navigation_task
+        if task is not None:
+            task.cancel()
+            await asyncio.gather(task, return_exceptions=True)
+            maintained.navigation_task = None
 
     async def inspect_login(self, token: str) -> dict[str, str]:
         maintained = self._maintenance_pages.get(token)
         if maintained is None:
             raise KeyError(token)
-        return {"url": maintained.page.url, "title": await maintained.page.title()}
+        return {
+            "url": maintained.page.url,
+            "title": "",
+            "navigation_state": maintained.navigation_state,
+            "navigation_error": maintained.navigation_error,
+        }
 
     async def recover_login(
         self,
@@ -1237,6 +1334,7 @@ class SiteAccessRuntime:
     ) -> dict[str, str]:
         previous = self._maintenance_pages.pop(token, None)
         if previous is not None:
+            await self._finish_maintenance_navigation(previous)
             # A driver death invalidates Python handles, not the native login
             # window. Release the old controller permits without closing it.
             try:
@@ -1265,7 +1363,13 @@ class SiteAccessRuntime:
             await external_lease.abandon()
             raise
         self._maintenance_pages[token] = _MaintenancePage(
-            lease, page, gate, profile.profile_id, identity.identity_id, site_id
+            lease,
+            page,
+            gate,
+            profile.profile_id,
+            identity.identity_id,
+            site_id,
+            navigation_state="READY",
         )
         return {
             "login_token": token,
@@ -1306,8 +1410,11 @@ class SiteAccessRuntime:
         if maintained is None:
             raise KeyError(token)
         profile_id = maintained.profile_id
-        await maintained.gate.close()
-        await maintained.lease.__aexit__(None, None, None)
+        await self._finish_maintenance_navigation(maintained)
+        try:
+            await maintained.gate.close()
+        finally:
+            await maintained.lease.__aexit__(None, None, None)
         return profile_id
 
 

@@ -1,6 +1,6 @@
-// Isolated synthetic component test. No model, production data or activation.
+// Isolated reading test; real=1 uses a published research snapshot. No business actions.
 import { createRoot } from "react-dom/client";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, useLocation, useSearchParams } from "react-router-dom";
 import { createRuntime, RuntimeProvider } from "../../src/core/runtime";
 import { createTestAuth } from "../fixtures/auth";
 import { resource, value } from "../fixtures/wire";
@@ -11,7 +11,11 @@ import type {
   ExpectationsSummary,
   ShellSummary,
   PolicyV3,
+  PolicyDetailV3,
+  RelatedExpectation,
 } from "@contract";
+import realSnapshot from "../fixtures/v21-reading.real.json";
+import { Document } from "../../src/components/document";
 import "../../src/styles.css";
 import "../../src/business.css";
 import "../../src/refinement.css";
@@ -22,7 +26,7 @@ const unit: ExpectationUnitV21 = {
   name: "客户订单",
   scope: "客户需求",
   horizon: "FY27",
-  ref: ["D1-O1"],
+  ref: Array.from({ length: 35 }, (_, i) => `O${i + 1}`),
   state: {
     parameters: [
       {
@@ -71,7 +75,10 @@ const unit: ExpectationUnitV21 = {
       name: "客户结构",
       why_live: "新增客户",
       revision_logic: "市场扩展",
-      possibility_space: [{ name: "持续", implication: "上修" }],
+      possibility_space: [
+        { name: "持续", implication: "上修" },
+        { name: "客户流失", implication: "订单减少，收入预期下修。" },
+      ],
       ref: ["D1-O1"],
     },
   ],
@@ -103,11 +110,19 @@ const policy: PolicyV3 = {
   ],
 };
 const runtime = createRuntime(createTestAuth());
-runtime.api.request = async () =>
+const real = new URLSearchParams(location.search).has("real");
+runtime.api.request = async (_schema, path) =>
   ({
     data: resource({
       units: {
-        items: [unit],
+        items: real
+          ? ((realSnapshot.units_by_shell as Record<string, unknown[]>)[
+              decodeURIComponent(
+                path.match(/shells\/([^/]+)/)?.[1] ??
+                  realSnapshot.shell.shell_id,
+              )
+            ] ?? [])
+          : [unit],
         has_more: false,
         next_cursor: null,
         snapshot_id: "fixture",
@@ -118,7 +133,7 @@ runtime.api.request = async () =>
   }) as never;
 const data = {
   run: {
-    run_id: "d2",
+    run_id: real ? realSnapshot.run : "d2",
     is_active: true,
     run_status: "PUBLISHED",
     publication_state: "COMPLETE",
@@ -138,16 +153,63 @@ const shell = {
   content: resource(null),
 } as unknown as ShellSummary;
 const mode = new URLSearchParams(location.search).get("mode");
+const relation: RelatedExpectation[] = [
+  {
+    run_id: "d2",
+    shell_id: "shell-0000",
+    shell_name: "需求研究",
+    unit_id: "unit-0000",
+    unit_name: "客户订单",
+    content: "ALL",
+    item: null,
+    item_name: null,
+    refs: [],
+  },
+];
+function Fixture() {
+  const loc = useLocation();
+  const [params] = useSearchParams();
+  const detail = realSnapshot.detail as unknown as PolicyDetailV3;
+  const selectedShell =
+    realSnapshot.shells.find((s) => s.shell_id === params.get("shell")) ??
+    realSnapshot.shell;
+  return (
+    <main className="p-4">
+      {mode === "markdown" ? (
+        <Document
+          markdown={
+            "# 报告正文\n\n**结论【cite:O1】**与段落内引用【cite:O229】。\n\n| 指标 | 证据 |\n| --- | --- |\n| 收入 | 【cite:O1】 |\n\n`【cite:O3】`"
+          }
+        />
+      ) : mode === "policy" && loc.pathname === "/" ? (
+        <PolicyDocument
+          ticker={real ? realSnapshot.ticker : "MU"}
+          policy={real ? detail.policy : policy}
+          sourceRun={real ? realSnapshot.run : "d2"}
+          relatedExpectations={real ? detail.related_expectations : relation}
+          eligibility={
+            real
+              ? {
+                  executable: detail.summary.executable_directions,
+                  consumed: detail.summary.consumed_directions,
+                }
+              : { executable: ["LONG"], consumed: ["SHORT"] }
+          }
+        />
+      ) : (
+        <ShellBody
+          ticker={real ? realSnapshot.ticker : "MU"}
+          data={data}
+          shell={real ? (selectedShell as unknown as ShellSummary) : shell}
+        />
+      )}
+    </main>
+  );
+}
 createRoot(document.getElementById("root")!).render(
   <RuntimeProvider runtime={runtime}>
     <MemoryRouter>
-      <main className="p-4">
-        {mode === "policy" ? (
-          <PolicyDocument ticker="MU" policy={policy} sourceRun="d2" />
-        ) : (
-          <ShellBody ticker="MU" data={data} shell={shell} />
-        )}
-      </main>
+      <Fixture />
     </MemoryRouter>
   </RuntimeProvider>,
 );

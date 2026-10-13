@@ -29,6 +29,28 @@ class OfflineAuth:
         return Principal("developer", "DEVELOPER", time.time() + 3600)
 
 
+def test_read_context_does_not_hold_projection_writer_during_calendar_work(tmp_path):
+    from doxagent.api_v2.views import Views
+    from doxagent.v2_read.calendar import PageCalendar
+
+    store = ReadStore(tmp_path / "read.db")
+    store.migrate()
+    store.ingest("fixture", "ticker", [
+        {"kind": "ticker", "ticker": "MU", "id": "MU", "data": {"removed": False}},
+    ])
+
+    class ConcurrentCalendar(PageCalendar):
+        def clock(self, now, **kwargs):
+            with store.connect(write=True, timeout=0) as db:
+                db.execute("INSERT OR REPLACE INTO read_meta VALUES('concurrent-proof','ok')")
+            return super().clock(now, **kwargs)
+
+    views = Views(store, ConcurrentCalendar())
+    value = views.create("developer", "RESEARCH", "MU", None)
+    pinned = views.get("developer", value["view_id"], "MU")
+    assert pinned["wire"]["ticker"] == "MU"
+
+
 @pytest.mark.parametrize("day", ["2026-09-27", "2026-12-25"])
 def test_overview_closed_day_current_period_is_validation_not_store_failure(tmp_path, day):
     from doxagent.api_v2.views import Views

@@ -539,7 +539,7 @@ async def test_buffer_compilation_restart_and_independent_cursors(tmp_path: Path
     envelope = SourceMessageEnvelope.from_stream_item(item)
     assert item.item.member_count == 2
     assert "[MESSAGE 1]" in compiled.body and "[MESSAGE 2]" in compiled.body
-    assert "source: Reuters" in compiled.body
+    assert "source: reuters" in compiled.body
     assert compiled.latest.standard_message_id == item.members[1].standard_message_id
     assert envelope.source_message_id == item.members[1].standard_message_id
     assert envelope.url == item.members[1].url
@@ -1310,4 +1310,8 @@ async def test_site_access_deferral_preserves_checkpoint_and_skips_acceptance(
     assert execution.next_checkpoint == {"cursor": "stable"}
     assert refreshed.checkpoint == {"cursor": "stable"}
     assert refreshed.next_dispatch_at == NOW + timedelta(seconds=17)
+    assert refreshed.last_error_code == "SOURCE_DEFERRED:access_budget_deferred"
+    assert refreshed.last_success_at == state.last_success_at
+    assert refreshed.last_attempt_at == state.last_attempt_at
+    assert refreshed.status == state.status
     assert repository.list_raw(ticker="MU") == []

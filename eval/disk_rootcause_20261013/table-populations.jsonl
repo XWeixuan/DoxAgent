@@ -1,0 +1,54 @@
+{"table": "source_definitions", "last": [24, 1254]}
+{"table": "source_definition_revisions", "last": [40, 1439]}
+{"table": "default_profiles", "last": [1, 3019]}
+{"table": "default_profile_revisions", "last": [7, 3019]}
+{"table": "ticker_monitoring_states", "last": [4, 279]}
+{"table": "ticker_source_bindings", "last": [68, 592]}
+{"table": "ticker_source_binding_revisions", "last": [137, 631]}
+{"table": "raw_messages", "last": [6566, 10926]}
+{"table": "source_item_baselines", "last": [173]}
+{"table": "standard_messages", "last": [6393, 8937]}
+{"table": "stream_items", "last": [6392, 261]}
+{"table": "stream_members", "last": [6392, 138]}
+{"table": "consumer_offsets", "last": [4, 121]}
+{"table": "poll_states", "last": [68, 957]}
+{"table": "buffer_entries", "last": null}
+{"table": "acquisition_failures", "last": [13139, 647]}
+{"table": "operational_alerts", "last": [88, 465]}
+{"table": "scheduler_group_states", "last": [20, 219]}
+{"table": "audit_log", "last": [17607, 781]}
+{"table": "v2_capture_meta", "last": [1]}
+{"table": "v2_binding_commands", "last": null}
+{"table": "v2_source_receipts", "last": [2271907, 970]}
+{"table": "v2_source_outbox", "last": [2271907]}
+{"table": "v2_backfill_checkpoint", "last": [8]}
+{"table": "v2_consumer_control", "last": [4, 583]}
+{"table": "initialization_config_receipts", "last": [4]}
+{"table": "initialization_config_head", "last": [4]}
+{"table": "content_enrichment_jobs", "last": null}
+{"table": "message_first_seen", "last": [11490]}
+{"table": "message_admission_results", "last": [13171564, 329]}
+{"table": "v2_source_state", "last": [1]}
+{"table": "v2_source_consumers", "last": [1]}
+{"table": "v2_source_pins", "last": null}
+{"table": "v2_receipt_archive", "last": null}
+{"table": "artifact", "last": [1792]}
+{"table": "artifact_ref", "last": [2033]}
+{"table": "retention_hold", "last": null}
+{"table": "artifact_deletions", "last": null}
+{"table": "message_observations", "last": [16778, 3437]}
+{"table": "logical_message_versions", "last": [5123, 205]}
+{"table": "message_identity_aliases", "last": [10539]}
+{"table": "message_content_revisions", "last": [5837, 10351]}
+{"table": "site_strategy_result_outbox", "last": [13666]}
+{"table": "ticker_monitoring_terms", "last": [3]}
+{"table": "ticker_monitoring_term_revisions", "last": [9]}
+{"table": "distribution_runs", "last": [143037]}
+{"table": "distribution_articles", "last": [2286]}
+{"table": "distribution_observations", "last": [3779558]}
+{"table": "distribution_decisions", "last": [2791]}
+{"table": "distribution_deliveries", "last": [11338674]}
+{"table": "v2_monitoring_terms_commands", "last": [5]}
+{"database": "bus/bus.sqlite3", "query": "outbox_by_table", "rows": [["acquisition_failures", 78879], ["audit_log", 23293], ["poll_states", 2000408], ["source_definitions", 57], ["standard_messages", 151258], ["stream_items", 8927], ["stream_members", 8927], ["ticker_monitoring_states", 10], ["ticker_source_bindings", 148]]}
+{"database": "read/v2.sqlite3", "query": "poll_objects_history", "rows": [[1995828, 71750, 4389826]]}
+{"database": "read/v2.sqlite3", "query": "poll_objects_current", "rows": [[68]]}

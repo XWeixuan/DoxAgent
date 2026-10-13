@@ -76,6 +76,21 @@ class DomainProjectors:
     def __init__(self, store: ReadStore) -> None:
         self.store = store
 
+    @staticmethod
+    def source_name(source):
+        from doxagent.message_bus_v2.source_identity import resolve_source_name
+
+        snapshot = source.get("snapshot")
+        if snapshot is not None:
+            return snapshot.get("source_name") or (
+                resolve_source_name(url=source.get("url"))
+                if source.get("member_count", 1) <= 1 else None
+            )
+        return source.get("source_name") or resolve_source_name(
+            publisher_name=source.get("publisher_name") or source.get("source"),
+            resolved_domain=source.get("resolved_domain"), url=source.get("url"),
+        )
+
     def source_label(self, source: dict[str, Any]) -> dict[str, Any]:
         definition = self.store.get("native:source_definitions", "", source["source_id"])
         if not definition:
@@ -408,7 +423,10 @@ class DomainProjectors:
             records.extend(hits)
             metrics.extend(counts)
         elif table == "runtime_values" and row["namespace"] == "worker_invocations":
-            if not value.get("case_id") and value.get("control_epoch") is None:
+            template_source = value.get("source_case_id") if value.get("task_phase") == "w3_template" else None
+            if template_source and not self.store.get("business_provenance", ticker, template_source):
+                raise ValueError("PROVENANCE_UNVERIFIED")
+            if not value.get("case_id") and value.get("control_epoch") is None and not template_source:
                 raise ValueError("PROVENANCE_UNVERIFIED")
             if value.get("case_id") and not self.store.get(
                 "business_provenance", ticker, value["case_id"]
@@ -577,7 +595,8 @@ class DomainProjectors:
         w1, w2 = value.get("w1_final"), value.get("w2_final")
         initial = (value.get("route") or {}).get("primary_route")
         resolved = (value.get("resolved_route") or {}).get("primary_route")
-        final = value.get("w3_result")
+        final = value.get("w3_operations_result") or value.get("w3_result")
+        decision = value.get("w3_trade_decision")
         if final:
             w1, w2 = final.get("novelty", w1), final.get("policy", w2)
         pending = initial == "W3" and not resolved
@@ -604,6 +623,8 @@ class DomainProjectors:
             if source["snapshot"].get("title")
             else missing(),
             "source": self.source_label(source),
+            "source_name": self.source_name(source),
+            "w3_operations_status": value.get("w3_operations_status"),
             "received_at": timestamp(created),
             "completed_at": available(timestamp(completed)) if completed else missing(),
             "duration_seconds": available(
@@ -615,7 +636,7 @@ class DomainProjectors:
             else missing(),
             "initial_route": initial,
             "resolved_route": resolved,
-            "w3_status": "RESOLVED" if final else "PENDING" if pending else None,
+            "w3_status": "RESOLVED" if final or decision else "PENDING" if pending else None,
             "final_novelty": available(w1["result"]) if w1 and not pending else missing(),
             "final_policy_hit": available(w2.get("policy_hit", bool(w2["policy_ids"])))
             if w2 and not pending
@@ -658,9 +679,11 @@ class DomainProjectors:
             # Historical routing marker is not a recorded recall explanation.
             reasons.pop("w2", None)
         for name in ("novelty", "policy", "expert_trade"):
-            result = (value.get("w3_result") or {}).get(name)
+            result = (value.get("w3_operations_result") or value.get("w3_result") or {}).get(name)
             if result and result.get("reason"):
                 reasons["w3_" + name] = self.store.put_content(ticker, result["reason"])
+        if decision:
+            reasons["w3_expert_trade"] = self.store.put_content(ticker, decision["reason"])
         records.append(
             {"kind": "case_reasoning", "ticker": ticker, "id": value["case_id"], "data": reasons}
         )
@@ -735,6 +758,7 @@ class DomainProjectors:
             row_revision=revision,
             title=available(message["title"]) if message.get("title") else missing(),
             source=self.source_label(message),
+            source_name=self.source_name(message),
             source_published_at=timestamp(message["published_at"]),
             collected_at=timestamp(message["collected_at"]),
             normalized_at=timestamp(message["normalized_at"]),

@@ -56,6 +56,7 @@ class RuntimeCoordinator:
         self._effect_future: Future[Any] | None = None
         self._delivery = ThreadPoolExecutor(max_workers=1, thread_name_prefix="runtime-delivery")
         self._delivery_future: Future[Any] | None = None
+        self._w3_maintenance_future: Future[Any] | None = None
 
     def mode(self, ticker: str, now: datetime | None = None) -> tuple[str, str | None]:
         at = now or self.journal.clock()
@@ -312,6 +313,18 @@ class RuntimeCoordinator:
                 except Exception as exc:
                     self.journal.gap("effects-pump", ticker, type(exc).__name__, str(exc)[:1000])
             self._effect_future = self._effects.submit(self._pump_effects)
+        maintenance = getattr(self.runtime, "maintain_w3_threads", None)
+        if maintenance and getattr(self.runtime, "_w3_agent", None) is not None and (
+            self._w3_maintenance_future is None or self._w3_maintenance_future.done()
+        ):
+            if self._w3_maintenance_future is not None:
+                try:
+                    self._w3_maintenance_future.result()
+                except Exception as exc:
+                    self.journal.gap("w3-housekeeping", ticker, type(exc).__name__, str(exc)[:1000])
+            next_at = self.journal.get("w3_housekeeping", "next_at")
+            if not next_at or next_at <= self.journal.clock().isoformat():
+                self._w3_maintenance_future = self._background.submit(maintenance)
         if not self.external_delivery and (
             self._delivery_future is None or self._delivery_future.done()
         ):

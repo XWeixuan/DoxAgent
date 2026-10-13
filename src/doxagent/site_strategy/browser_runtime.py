@@ -99,8 +99,9 @@ class BrowserRuntimeManager:
                 await self._page_slots.acquire()
         lock = self._locks.setdefault(identity.identity_id, asyncio.Lock())
         try:
-            async with lock:
-                inner = await self.adapter(identity).page(identity, egress, deadline=deadline)
+            async with asyncio.timeout_at(deadline):
+                async with lock:
+                    inner = await self.adapter(identity).page(identity, egress, deadline=deadline)
             return _ManagerLease(inner, self._page_slots)
         except BaseException:
             self._page_slots.release()

@@ -64,9 +64,9 @@ def build_persistent_runtime_v2_service(
             raise ValueError("managed initialization requires W3 execution to be configured")
         root = Path(settings.persistent_runtime_v2_w3_prompt_root)
         for relative in (
-            "agent.md",
-            "skills/uncovered_new.md",
-            "skills/revalidate_then_evaluate.md",
+            "AGENTS.md",
+            "skills/skill.md",
+            "skills/weekend_sweep.md",
         ):
             if not (root / relative).is_file():
                 raise ValueError(f"W3 execution asset unavailable: {relative}")
@@ -208,6 +208,7 @@ def build_persistent_runtime_v2_service(
     if journal:
         from .execution_bundle import ExecutionBundles
         from .prompts import RuntimeV2PromptSet
+        from .w3_contracts import W3_CONTRACT
 
         w3_root = Path(settings.persistent_runtime_v2_w3_prompt_root)
         assets = {
@@ -215,7 +216,7 @@ def build_persistent_runtime_v2_service(
             for path in w3_root.rglob("*")
             if path.is_file()
         }
-        for component in ("event_library", "document3"):
+        for component in ("event_library", "document3", "open_event_atlas"):
             component_root = Path("prompts/codex_v2") / component
             assets.update(
                 {
@@ -241,6 +242,7 @@ def build_persistent_runtime_v2_service(
             RuntimeV2PromptSet.load(Path(settings.persistent_runtime_v2_prompt_root)),
             assets=assets,
             orchestration_revision=3,
+            w3_contract_version=W3_CONTRACT if settings.persistent_runtime_v2_w3_enabled else None,
         )
     service = PersistentRuntimeV2Service(
         journal=journal,

@@ -1,0 +1,123 @@
+3350035 (process ID) old priority 0, new priority 19
+doxagent-v2-v2-projector-1 Up 4 hours
+doxagent-v2-v2-api-1 Up 4 hours (healthy)
+doxagent-v2-v2-message-bus-1 Up 4 hours
+doxagent-v2-v2-scheduler-1 Up 25 minutes
+doxagent-v2-v2-cdecr-executor-1 Up 15 minutes (healthy)
+doxagent-v2-v2-control-1 Up 15 minutes
+doxagent-v2-v2-executor-1 Up 25 minutes
+doxagent-v2-v2-delivery-1 Up 15 minutes
+doxagent-v2-v2-o4-1 Up 4 hours
+doxagent-v2-initialization-guardian-1 Up 4 hours
+doxagent-v2-v2-initialization-1 Up 17 minutes
+doxagent-v2-v2-web-1 Up 4 hours (healthy)
+doxagent-v2-codex-worker-1 Up 4 hours (healthy)
+v21-production-smoke-worker Exited (0) 4 hours ago
+v21-production-smoke-worker-second Exited (0) 5 hours ago
+v21-production-smoke-worker-first Exited (0) 5 hours ago
+doxagent-rklb-v21-01-d3 Up 4 minutes
+doxagent-v2-v2-content-enrichment-1 Up 27 minutes
+doxagent-v2-v2-site-access-1 Up 6 hours (unhealthy)
+doxagent-rklb-v21-01-d2 Exited (0) 6 hours ago
+doxagent-rklb-v21-01-d2-o0 Exited (0) 8 hours ago
+doxagent-rklb-v21-01-d1 Exited (0) 8 hours ago
+doxagent-rklb-v21-worker Up 10 hours
+doxagent-be-v21-01-d3 Exited (0) 10 hours ago
+doxagent-be-v21-01-d2 Exited (0) 24 hours ago
+doxagent-be-v21-01-d2-o0 Exited (0) 25 hours ago
+doxagent-be-v21-01-d1 Exited (0) 25 hours ago
+doxagent-be-v21-worker Up 27 hours
+doxagent-intc-v21-01-d3 Exited (0) 28 hours ago
+doxagent-intc-v21-01-d2 Exited (0) 41 hours ago
+doxagent-intc-v21-01-d2-o0 Exited (0) 42 hours ago
+doxagent-intc-v21-01-d1 Exited (0) 42 hours ago
+doxagent-intc-v21-worker Up 44 hours
+doxagent-mu-v21-02-d3-resume-parallel Exited (0) 2 days ago
+doxagent-mu-v21-02-d3-resume-main Exited (137) 2 days ago
+doxagent-mu-v21-02-d3-resume-canary Exited (0) 2 days ago
+doxagent-mu-v21-02-d3 Exited (0) 2 days ago
+doxagent-mu-v21-02-d2 Exited (0) 2 days ago
+doxagent-mu-v21-02-c4-retry2 Exited (0) 2 days ago
+doxagent-mu-v21-worker Up 2 days
+doxagent-mu-v21-02-c4-resume Exited (1) 2 days ago
+doxagent-mu-v21-03-d1 Exited (137) 3 days ago
+doxagent-mu-v21-02-d1 Exited (0) 3 days ago
+doxagent-mu-v21-d1 Exited (137) 3 days ago
+doxagent-v2-initialization-repair-template Created
+doxagent-v2-v2-chrome-supervisor-1 Up 2 weeks (healthy)
+doxagent-v2-initialization-repair-template-before-gpt6-20261002 Created
+doxagent-egress-clash Up 2 weeks
+Error response from daemon: No such container: doxagent-v2-v2-read-gc-1
+total 28M
+-rw-------  1 ubuntu ubuntu    0 Sep 22 12:27 $tmp;
+-rw-rw-r--  1 ubuntu ubuntu   13 Sep 11 04:08 &3
+drwxr-x--- 39 ubuntu ubuntu 4.0K Oct 12 21:01 .
+drwxr-xr-x  5 root   root   4.0K Sep 10 13:29 ..
+-rw-r--r--  1 ubuntu ubuntu 1.3K Sep 21 06:12 .bash_history
+-rw-r--r--  1 ubuntu ubuntu  220 Feb 13  2026 .bash_logout
+-rw-r--r--  1 ubuntu ubuntu 3.7K Feb 13  2026 .bashrc
+drwx------  3 ubuntu ubuntu 4.0K Oct  2 04:27 .cache
+drwx------  3 ubuntu ubuntu 4.0K Sep 10 13:27 .config
+drwx------  2 ubuntu ubuntu 4.0K Sep 15 19:33 .doxagent-backups
+drwx------  2 ubuntu ubuntu 4.0K Sep 28 05:30 .doxagent-egress-import
+drwxrwxr-x  3 ubuntu ubuntu 4.0K Sep 14 04:41 .local
+-rw-r--r--  1 ubuntu ubuntu   44 Sep 10 12:31 .npmrc
+drwxr-xr-x  2 ubuntu ubuntu 4.0K Sep 10 12:37 .orca_term
+drwxr-xr-x  2 ubuntu ubuntu 4.0K Sep 10 12:31 .pip
+-rw-r--r--  1 ubuntu ubuntu  807 Feb 13  2026 .profile
+-rw-r--r--  1 ubuntu ubuntu   73 Sep 10 12:31 .pydistutils.cfg
+drwx------  2 ubuntu ubuntu 4.0K Sep 10 12:31 .ssh
+drwxrwxr-x  2 ubuntu ubuntu 4.0K Oct  2 16:18 barrons_ticker_fix_20260930
+-rw-rw-r--  1 ubuntu ubuntu  206 Sep 30 23:58 case-backend-20260930.Dockerfile
+-rw-rw-r--  1 ubuntu ubuntu  133 Sep 30 23:58 case-web-20260930.Dockerfile
+-rw-rw-r--  1 ubuntu ubuntu 478K Sep 30 23:58 case-web-20260930.tar.gz
+-rw-rw-r--  1 ubuntu ubuntu  13M Sep 16 00:38 cdecr-US-RKLB-20260914T101629Z-89daa0d286a7.tar.zst
+drwxrwxr-x 32 ubuntu ubuntu 4.0K Oct  2 16:23 doxagent
+drwxrwxr-x  2 ubuntu ubuntu 4.0K Sep 22 03:18 doxagent-acceptance
+drwxrwxr-x  5 ubuntu ubuntu 4.0K Sep 30 23:51 doxagent-backups
+drwxrwxr-x 30 ubuntu ubuntu 4.0K Oct  1 19:13 doxagent-barrons-egress-build
+drwxrwxr-x 16 ubuntu ubuntu 4.0K Oct 11 23:54 doxagent-be-v21-20261011
+drwxrwxr-x 31 ubuntu ubuntu 4.0K Oct 12 22:11 doxagent-case-release-d11f7fa1
+drwxrwxr-x  3 ubuntu ubuntu 4.0K Oct  1 21:51 doxagent-case-template-20261001
+drwxrwxr-x 30 ubuntu ubuntu 4.0K Sep 24 21:37 doxagent-challenge
+drwxrwxr-x  3 ubuntu ubuntu 4.0K Oct  2 15:27 doxagent-d2-download-20261002
+drwxrwxr-x 30 ubuntu ubuntu 4.0K Sep 24 22:29 doxagent-driver-prod
+drwxrwxr-x  3 ubuntu ubuntu 4.0K Oct  3 16:59 doxagent-gateway-viewfix-20261003
+drwxrwxr-x  3 ubuntu ubuntu 4.0K Oct  3 17:11 doxagent-gateway-viewfix2-20261003
+drwxrwxr-x 17 ubuntu ubuntu 4.0K Oct 11 18:39 doxagent-intc-v21-20261011
+drwxrwxr-x 30 ubuntu ubuntu 4.0K Sep 29 19:22 doxagent-luna-recovery
+drwxrwxr-x  5 ubuntu ubuntu 4.0K Oct  3 03:03 doxagent-maintenance-20261003
+drwxrwxr-x 16 ubuntu ubuntu 4.0K Oct 10 02:58 doxagent-mu-v21-20261010
+drwxrwxr-x  3 ubuntu ubuntu 4.0K Oct  1 02:26 doxagent-policy-recalled-20261001
+drwxrwxr-x 30 ubuntu ubuntu 4.0K Oct 12 22:15 doxagent-release-f3da669b
+drwxrwxr-x 17 ubuntu ubuntu 4.0K Oct 12 16:44 doxagent-rklb-v21-20261012
+drwxrwxr-x  5 ubuntu ubuntu 4.0K Oct  9 22:34 doxagent-runtime-search-20261009
+drwx------  7 ubuntu ubuntu 4.0K Oct 12 20:20 doxagent-stage
+drwxrwxr-x  4 ubuntu ubuntu 4.0K Oct  3 17:09 doxagent-store-recovery-20261002
+-rw-rw-r--  1 ubuntu ubuntu 2.8K Oct  1 00:18 doxagent_case_apply_20260930.py
+-rw-rw-r--  1 ubuntu ubuntu  891 Sep 30 23:49 doxagent_case_audit_20260930.py
+-rw-rw-r--  1 ubuntu ubuntu 2.8K Oct  1 00:02 doxagent_case_shadow_20260930.py
+-rw-rw-r--  1 ubuntu ubuntu 2.4K Oct  1 00:32 doxagent_case_verify_20261001.py
+-rw-rw-r--  1 ubuntu ubuntu 1.2K Sep 30 23:51 doxagent_read_backup_20260930.py
+drwxrwxr-x  3 ubuntu ubuntu 4.0K Oct  6 04:53 event-maintenance-20261006
+-rw-rw-r--  1 ubuntu ubuntu 672K Oct  6 04:39 event-maintenance-20261006-before.zip
+-rw-rw-r--  1 ubuntu ubuntu  69K Oct  6 04:46 event-maintenance-20261006-deploy.tar.gz
+-rw-rw-r--  1 ubuntu ubuntu 6.1K Sep 29 18:02 luna_recovery_20260929.py
+-rw-rw-r--  1 ubuntu ubuntu 7.6K Sep 30 00:56 luna_recovery_parallel_20260930.py
+-rw-rw-r--  1 ubuntu ubuntu 330K Oct  2 16:15 market_news_source_3ef317a4.tar
+-rw-rw-r--  1 ubuntu ubuntu 6.0K Oct  2 16:01 market_sources_smoke_20261002.py
+-rw-r--r--  1 ubuntu ubuntu  14M Oct  6 04:43 mu-maintenance-badcase-20261006.sqlite3
+-rw-r--r--  1 ubuntu ubuntu 109K Oct  6 04:44 mu-maintenance-bundle-20261006.zip
+-rw-rw-r--  1 ubuntu ubuntu  835 Oct  1 19:05 policy-empty-audit.py
+-rw-rw-r--  1 ubuntu ubuntu  11K Sep 16 00:38 rklb-prebuilt-publish-20260916.json
+drwxrwxr-x  5 ubuntu ubuntu 4.0K Oct  4 13:50 source-repair-20261004
+drwxrwxr-x  4 ubuntu ubuntu 4.0K Oct  6 18:04 source-repair-20261006
+drwxrwxr-x  3 ubuntu ubuntu 4.0K Oct  9 20:19 source-repair-20261009
+drwxrwxr-x  4 ubuntu ubuntu 4.0K Oct 12 20:29 source-repair-20261012
+-rw-rw-r--  1 ubuntu ubuntu 4.7K Oct  2 17:32 store-unavailable-diagnose-20261002.py
+-rw-rw-r--  1 ubuntu ubuntu  41K Oct  2 17:32 store-unavailable-diagnosis-20261002.jsonl
+-rw-rw-r--  1 ubuntu ubuntu  802 Oct  2 17:41 store-unavailable-query-candidate-20261002.jsonl
+-rw-rw-r--  1 ubuntu ubuntu 5.1K Oct  2 17:41 store-unavailable-query-candidate-20261002.py
+drwxr-xr-x  8 ubuntu ubuntu 4.0K Oct 12 22:25 v21-production-20261012
+-rw-rw-r--  1 ubuntu ubuntu 2.0K Sep 16 00:34 verify_rklb_ready_20260916.py
+Archived and active journals take up 300.6M in the file system.

@@ -1,0 +1,92 @@
+{
+  "at": "2026-10-12T13:29:04.736908+00:00",
+  "databases": {
+    "research": {
+      "source": "/data/research/research.sqlite3",
+      "archive": "/data/production-backups/v21-20261012/research.sqlite3.gz",
+      "size": 59609088,
+      "sha256": "23b073a0887e573d171d27d01ed5ffbeae53d2bbe0815c4544beac2abd07b8ed",
+      "compressed_size": 14488140,
+      "archive_sha256": "14cfe177e98a51cf14b0b5f861b6af595729a22047fb41c06805982334a2740c",
+      "quick_check": "ok"
+    },
+    "initialization": {
+      "source": "/data/initialization/control.sqlite3",
+      "archive": "/data/production-backups/v21-20261012/initialization.sqlite3.gz",
+      "size": 524951552,
+      "sha256": "71db1310825f173cd83215af2e92813a635872e0e18b9162070abb8cc44ac72b",
+      "compressed_size": 109881742,
+      "archive_sha256": "10cd05b6a892c7d4818e82f083d9ae559d92bd39ec87e755c77841b007fdc972",
+      "quick_check": "ok"
+    },
+    "runtime": {
+      "source": "/data/runtime/runtime.sqlite3",
+      "archive": "/data/production-backups/v21-20261012/runtime.sqlite3.gz",
+      "size": 5086810112,
+      "sha256": "7166f2d749f076e1bfdd3b7ad6ef4d95c05cfecbfd441213be7332684fb9fdb4",
+      "compressed_size": 1142641030,
+      "archive_sha256": "84ff57322a00831535fff771a9d3c587693c8497a1593ccc2535d2720672dac4",
+      "quick_check": "ok"
+    },
+    "bus": {
+      "source": "/data/bus/bus.sqlite3",
+      "archive": "/data/production-backups/v21-20261012/bus.sqlite3.gz",
+      "size": 21215612928,
+      "sha256": "985e8cc5771c8798c5b76276d3e41ee6dc5286c92973a8ce355ce18a28f3c2fb",
+      "compressed_size": 2590263328,
+      "archive_sha256": "31e0a47c5c63eaa2050da7d1c46d24db8dab7e97df7807cd0d143cee9b7b425a",
+      "quick_check": "DEFERRED_LARGE_DATABASE",
+      "verification": "WAL_ZERO_DECOMPRESSED_SIZE_AND_SHA256_MATCH_FROZEN_SOURCE"
+    },
+    "read": {
+      "source": "/data/read/v2.sqlite3",
+      "archive": "/data/production-backups/v21-20261012/read.sqlite3.gz",
+      "size": 31312191488,
+      "sha256": "2539037f095239f9b4e1fd6aee0da25cfdcae49984f2e14ddc0406d6bca5a2b0",
+      "compressed_size": 4680360216,
+      "archive_sha256": "27e124367d861df23ddf5ee702e8a2e0564f325d69bee5dc6d30459ae6b204e7",
+      "quick_check": "DEFERRED_LARGE_DATABASE",
+      "verification": "WAL_ZERO_DECOMPRESSED_SIZE_AND_SHA256_MATCH_FROZEN_SOURCE"
+    },
+    "scheduler": {
+      "source": "/data/scheduler/scheduler.sqlite3",
+      "archive": "/data/production-backups/v21-20261012/scheduler.sqlite3.gz",
+      "size": 36864,
+      "sha256": "d44512f1b339f6c0615d02590fe371361ad0f12f28b2e8867b90d710724be5ca",
+      "compressed_size": 2172,
+      "archive_sha256": "5423dae62ed8445aa4affb4fdc18684e1a72744515075e388dafbc9b21a360fc",
+      "quick_check": "ok",
+      "verification": "WAL_ZERO_DECOMPRESSED_SIZE_AND_SHA256_MATCH_FROZEN_SOURCE"
+    },
+    "usage": {
+      "source": "/data/usage/usage.sqlite3",
+      "archive": "/data/production-backups/v21-20261012/usage.sqlite3.gz",
+      "size": 32768,
+      "sha256": "75b0095518acec06b9a670f1f3d1a3c17a1e09e9c96c024a4da92a37356cce8e",
+      "compressed_size": 777,
+      "archive_sha256": "eb50cb672fabd8bf65db9cb3a95575e83f80c4514bdd744b734b90792c85b591",
+      "quick_check": "ok",
+      "verification": "WAL_ZERO_DECOMPRESSED_SIZE_AND_SHA256_MATCH_FROZEN_SOURCE"
+    },
+    "o4": {
+      "source": "/data/o4/o4.sqlite3",
+      "archive": "/data/production-backups/v21-20261012/o4.sqlite3.gz",
+      "size": 90112,
+      "sha256": "e7cb2825b768b68d933a6837b6145cfc62861aa3c48254b3d68c1d040b403a17",
+      "compressed_size": 1453,
+      "archive_sha256": "2ef8f71f174b1c230363cdad0f75d64c1646c10cd6f0c2d6170276fa6b1714c9",
+      "quick_check": "ok",
+      "verification": "WAL_ZERO_DECOMPRESSED_SIZE_AND_SHA256_MATCH_FROZEN_SOURCE"
+    },
+    "worker": {
+      "source": "/data/workspaces/worker-jobs.sqlite3",
+      "archive": "/data/production-backups/v21-20261012/worker.sqlite3.gz",
+      "size": 141606912,
+      "sha256": "d74fe4d9e6fa8a73305879b942523cc39494624bbc3c24b45d5e42a5ae1dd92e",
+      "compressed_size": 27534190,
+      "archive_sha256": "f791c606f87ac95553e87799c5429ee1ef9f0f65048c59b406aa2784e269bf6b",
+      "quick_check": "ok",
+      "verification": "WAL_ZERO_DECOMPRESSED_SIZE_AND_SHA256_MATCH_FROZEN_SOURCE"
+    }
+  }
+}

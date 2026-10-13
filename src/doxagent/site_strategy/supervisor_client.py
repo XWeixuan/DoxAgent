@@ -66,7 +66,17 @@ class ChromeSupervisorClient:
             "ensure",
             {
                 "identity": identity.model_dump(mode="json"),
-                "egress": egress.model_dump(mode="json"),
+                # Probe telemetry belongs to Site Access, not the supervisor
+                # wire contract. Older long-lived supervisors reject extra fields.
+                "egress": egress.model_dump(
+                    mode="json",
+                    exclude={
+                        "last_probe_attempt",
+                        "next_probe_at",
+                        "last_probe_error",
+                        "last_probe_seconds",
+                    },
+                ),
             },
         )
         return SupervisorInstance(

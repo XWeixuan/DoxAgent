@@ -342,6 +342,10 @@ class GlobalPollScheduler:
                         self.repository.save_poll_state(state.model_copy(update={
                             "next_dispatch_at": retry_at,
                             "updated_at": utc_now(),
+                            "last_error_code": "SOURCE_DEFERRED:" + (
+                                result.site_access_deferred_reason or "access_budget_deferred"
+                            ),
+                            "last_error_message": "Acquisition deferred until " + retry_at.isoformat(),
                         }))
                 return PollExecutionResult(
                     binding_id=f"shared:{source.source_id}",
@@ -507,6 +511,10 @@ class GlobalPollScheduler:
                             "next_dispatch_at": retry_at,
                             "last_latency_ms": max(0, int((self._clock() - started_at) * 1000)),
                             "updated_at": attempted_at,
+                            "last_error_code": "SOURCE_DEFERRED:" + (
+                                result.site_access_deferred_reason or "access_budget_deferred"
+                            ),
+                            "last_error_message": "Acquisition deferred until " + retry_at.isoformat(),
                         }
                     )
                 )

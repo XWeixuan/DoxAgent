@@ -9,6 +9,7 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+from uuid import uuid4
 
 from doxagent.resource_safety import SafetyLevel, SafetyStateReader
 
@@ -73,6 +74,9 @@ class _ExternalLease:
         if self._closed:
             return
         self._closed = True
+        getattr(self.entry.cdp, "_owned_targets", set()).discard(
+            getattr(self.page, "_doxagent_target_id", None)
+        )
         async with self.adapter._lock:
             self.entry.active_pages -= 1
             self.entry.last_used = time.monotonic()
@@ -98,6 +102,7 @@ class ExternalChromeRuntime:
         self.driver_state = "STARTING"
         self._driver_started = 0.0
         self._high_rss_samples = 0
+        self._probe_failures = 0
         self._acquiring = 0
         self._retry_at = 0.0
         self._recovery_failures = 0
@@ -162,6 +167,7 @@ class ExternalChromeRuntime:
             "age_seconds": max(0, time.monotonic() - self._driver_started),
             "attachments": len(self._entries),
             "active_pages": sum(e.active_pages for e in self._entries.values()),
+            "acquiring_pages": self._acquiring,
             "last_recovery_reason": self.last_recovery_reason,
         }
 
@@ -191,18 +197,24 @@ class ExternalChromeRuntime:
         # Old leases retain their own entry and release their own permits exactly
         # once. They cannot decrement a replacement attachment's counters.
         entries = list(self._entries.values())
-        self._entries.clear()
         for entry in entries:
             try:
                 async with asyncio.timeout(6):
                     if not self.driver_ready and not self.rotation_paused:
                         for target_id in tuple(getattr(entry.cdp, "_policies", {})):
                             await entry.cdp.send("Target.closeTarget", {"targetId": target_id})
-                    await entry.cdp.close()
             except Exception:
                 logger.warning(
-                    "external raw CDP detach failed identity=%s", entry.identity.identity_id
+                    "external target cleanup failed identity=%s", entry.identity.identity_id
                 )
+            finally:
+                try:
+                    await entry.cdp.close()
+                except Exception:
+                    logger.exception("external raw CDP close failed")
+                finally:
+                    if self._entries.get(entry.identity.identity_id) is entry:
+                        self._entries.pop(entry.identity.identity_id)
         playwright, self._playwright = self._playwright, None
         if playwright is not None:
             try:
@@ -226,8 +238,17 @@ class ExternalChromeRuntime:
                 async with asyncio.timeout(5):
                     session = await entry.browser.new_browser_cdp_session()
                     await session.send("Browser.getVersion")
-            except Exception:
-                self.driver_state = "FAILED"
+            except Exception as exc:
+                self._probe_failures += 1
+                logger.warning(
+                    "external control probe degraded failures=%s error=%s",
+                    self._probe_failures,
+                    type(exc).__name__,
+                )
+                if not entry.browser.is_connected() or self._probe_failures >= 2:
+                    self.driver_state = "FAILED"
+            else:
+                self._probe_failures = 0
             finally:
                 if session is not None:
                     try:
@@ -237,6 +258,8 @@ class ExternalChromeRuntime:
                         pass
             if self.driver_state == "FAILED":
                 await self.start()
+                return
+            if self._probe_failures:
                 return
         diagnostic = self.diagnostics()
         self._high_rss_samples = (
@@ -356,17 +379,55 @@ class ExternalChromeRuntime:
                 await self._page_slots.acquire()
         try:
             self._acquiring += 1
-            entry = await self._entry(identity, egress)
-            page = await entry.context.new_page()
-            async with self._lock:
-                entry.active_pages += 1
-                entry.last_used = time.monotonic()
-            return _ExternalLease(self, entry, page)
+            # Playwright new_page cancellation waits for an unbounded __abort__
+            # acknowledgement (1.63). Create via our existing CDP connection:
+            # ownership is known before waiting for Playwright initialization.
+            async with asyncio.timeout_at(deadline):
+                entry = await self._entry(identity, egress)
+                page = await self._create_owned_page(entry)
+            # No cancellation point between allocation and lease registration.
+            lease = _ExternalLease(self, entry, page)
+            entry.active_pages += 1
+            entry.last_used = time.monotonic()
+            return lease
         except BaseException:
             self._page_slots.release()
             raise
         finally:
             self._acquiring -= 1
+
+    async def _create_owned_page(self, entry: _ExternalEntry) -> Any:
+        marker = "about:blank#doxagent-" + uuid4().hex
+        target_id = None
+        try:
+            result = await entry.cdp.send("Target.createTarget", {"url": marker})
+            target_id = str(result["targetId"])
+            entry.cdp._owned_targets.add(target_id)
+            # context.pages/url are local Playwright state, not cancellable RPCs.
+            # The marker separates concurrent allocations in the same context.
+            while True:
+                page = next((p for p in entry.context.pages if p.url == marker), None)
+                if page is not None:
+                    page._doxagent_target_id = target_id
+                    return page
+                await asyncio.sleep(0.01)
+        except BaseException:
+            try:
+                if target_id is None:
+                    # The command may have reached Chrome before iwarning: in the working copy of 'src/doxagent/site_strategy/runtime.py', LF will be replaced by CRLF the next time Git touches it
+                    # lost. Only this allocation's unique marker is ours.
+                    result = await entry.cdp.send("Target.getTargets")
+                    target_id = next(
+                        (t["targetId"] for t in result["targetInfos"] if t.get("url") == marker),
+                        None,
+                    )
+                if target_id:
+                    entry.cdp._owned_targets.add(target_id)
+                    await entry.cdp.send("Target.closeTarget", {"targetId": target_id})
+                    entry.cdp._owned_targets.discard(target_id)
+            except Exception:
+                logger.exception("external allocation cleanup failed target=%s", target_id)
+            raise
 
     async def prewarm(
         self, identity: BrowserIdentitySpec, egress: ProxyEgress

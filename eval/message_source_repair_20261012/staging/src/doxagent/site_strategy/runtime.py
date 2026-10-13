@@ -142,6 +142,7 @@ class _RawBrowserCDP:
         self._counter = 0
         self._pending: dict[int, asyncio.Future[dict[str, Any]]] = {}
         self._policies: dict[str, _PopupPolicy] = {}
+        self._owned_targets: set[str] = set()
         self._children: dict[str, tuple[str, str, _PopupPolicy]] = {}
         self._tasks: set[asyncio.Task[None]] = set()
 
@@ -208,18 +209,36 @@ class _RawBrowserCDP:
         if self._socket is None:
             return
         try:
+            for target_id in tuple(self._owned_targets):
+                try:
+                    await self.send("Target.closeTarget", {"targetId": target_id})
+                    self._owned_targets.discard(target_id)
+                except Exception:
+                    logger.warning("owned target cleanup failed target=%s", target_id)
             await self.send(
                 "Target.setAutoAttach",
                 {"autoAttach": False, "waitForDebuggerOnStart": False, "flatten": True},
             )
         except Exception:
             pass
-        await self._socket.close()
-        self._socket = None
+        finally:
+            await self._close_transport()
+
+    async def _close_transport(self) -> None:
+        socket, self._socket = self._socket, None
+        try:
+            await socket.close()
+        finally:
+            await self._finish_tasks()
+
+    async def _finish_tasks(self) -> None:
         if self._reader is not None:
+            self._reader.cancel()
             await asyncio.gather(self._reader, return_exceptions=True)
             self._reader = None
         if self._tasks:
+            for task in tuple(self._tasks):
+                task.cancel()
             await asyncio.gather(*tuple(self._tasks), return_exceptions=True)
         for future in self._pending.values():
             if not future.done():
@@ -254,7 +273,17 @@ class _RawBrowserCDP:
     def _track(self, coroutine: Any) -> None:
         task = asyncio.create_task(coroutine)
         self._tasks.add(task)
-        task.add_done_callback(self._tasks.discard)
+        task.add_done_callback(self._task_done)
+
+    def _task_done(self, task: asyncio.Task[None]) -> None:
+        self._tasks.discard(task)
+        if not task.cancelled() and (error := task.exception()) is not None:
+            count = getattr(self, "_task_errors", 0) + 1
+            self._task_errors = count
+            if count <= 3 or count % 100 == 0:
+                logger.warning(
+                    "raw CDP task failure count=%s error=%s", count, type(error).__name__
+                )
 
     async def _attached(self, event: dict[str, Any]) -> None:
         session_id = str(event.get("sessionId") or "")
@@ -265,7 +294,17 @@ class _RawBrowserCDP:
         if not session_id:
             return
         if target.get("type") != "page" or policy is None:
-            await self.send("Runtime.runIfWaitingForDebugger", session_id=session_id)
+            for attempt in range(2):
+                try:
+                    await self.send("Runtime.runIfWaitingForDebugger", session_id=session_id)
+                    break
+                except Exception:
+                    if attempt:
+                        logger.warning(
+                            "raw CDP unmanaged target resume failed target=%s session=%s",
+                            target_id,
+                            session_id,
+                        )
             return
         try:
             await self.send(
@@ -641,6 +680,12 @@ class PersistentBrowserPool:
 
 async def _close_owned_page(page: Any, cdp: _RawBrowserCDP, *, timeout_seconds: float = 5) -> None:
     """Bound cleanup separately: cancellation does not bound awaited finally blocks."""
+    target_id = getattr(page, "_doxagent_target_id", None)
+    if target_id:
+        # CDP does not wait for Playwright's unbounded abort acknowledgement.
+        await cdp.send("Target.closeTarget", {"targetId": target_id})
+        getattr(cdp, "_owned_targets", set()).discard(target_id)
+        return
     try:
         async with asyncio.timeout(timeout_seconds):
             await page.close()

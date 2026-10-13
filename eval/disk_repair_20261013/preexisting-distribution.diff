@@ -1,0 +1,21 @@
+diff --git a/src/doxagent/message_bus_v2/distribution_repository.py b/src/doxagent/message_bus_v2/distribution_repository.py
+index 88baffac..0730cd3c 100644
+--- a/src/doxagent/message_bus_v2/distribution_repository.py
++++ b/src/doxagent/message_bus_v2/distribution_repository.py
+@@ -508,12 +508,14 @@ class DistributionRepository:
+                         "retirement_reason": "ORIGINAL_REALTIME_WINDOW_EXPIRED",
+                     }
+                     db.execute(
+-                        "UPDATE distribution_runs SET status='EXPIRED',claim_token=NULL,lease_until=NULL,checkpoint_json=? WHERE run_id=?",
++                        "UPDATE distribution_runs SET status='EXPIRED',claim_token=NULL,"
++                        "lease_until=NULL,checkpoint_json=? WHERE run_id=?",
+                         (canonical_json(audit), run["run_id"]),
+                     )
+                     for delivery_id in expired:
+                         db.execute(
+-                            "UPDATE distribution_deliveries SET state='EXPIRED',claim_token=NULL,lease_until=NULL,result_json=? WHERE delivery_id=?",
++                            "UPDATE distribution_deliveries SET state='EXPIRED',claim_token=NULL,"
++                            "lease_until=NULL,result_json=? WHERE delivery_id=?",
+                             (
+                                 canonical_json({"reason": "ORIGINAL_REALTIME_WINDOW_EXPIRED"}),
+                                 delivery_id,

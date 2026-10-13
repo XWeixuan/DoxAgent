@@ -1,0 +1,150 @@
+{
+  "at": "2026-10-12T21:20:31.578058+00:00",
+  "apply": true,
+  "reason": "Superseded completed repair copies; newer 20261012 recovery set verified on D",
+  "before_free": 10086150144,
+  "files": [
+    {
+      "path": "/var/lib/docker/volumes/doxagent-v2_v2-data/_data/backups/event-maintenance-20261006/runtime.sqlite3",
+      "bytes": 3557679104,
+      "handles": [],
+      "references": [],
+      "deleted": true
+    },
+    {
+      "path": "/var/lib/docker/volumes/doxagent-v2_v2-data/_data/backups/event-maintenance-20261006/runtime.sqlite3-wal",
+      "bytes": 0,
+      "handles": [],
+      "references": [],
+      "deleted": true
+    },
+    {
+      "path": "/var/lib/docker/volumes/doxagent-v2_v2-data/_data/backups/event-maintenance-20261006/runtime.sqlite3-shm",
+      "bytes": 32768,
+      "handles": [],
+      "references": [],
+      "deleted": true
+    },
+    {
+      "path": "/var/lib/docker/volumes/doxagent-v2_v2-data/_data/backups/event-maintenance-20261006/control.sqlite3",
+      "bytes": 524378112,
+      "handles": [],
+      "references": [],
+      "deleted": true
+    },
+    {
+      "path": "/var/lib/docker/volumes/doxagent-v2_v2-data/_data/backups/event-maintenance-20261006/control.sqlite3-wal",
+      "bytes": 0,
+      "handles": [],
+      "references": [],
+      "deleted": true
+    },
+    {
+      "path": "/var/lib/docker/volumes/doxagent-v2_v2-data/_data/backups/event-maintenance-20261006/control.sqlite3-shm",
+      "bytes": 32768,
+      "handles": [],
+      "references": [],
+      "deleted": true
+    },
+    {
+      "path": "/var/lib/docker/volumes/doxagent-v2_v2-data/_data/bus/backups/pre-monitoring-activation-20260924.sqlite3",
+      "bytes": 506028032,
+      "handles": [],
+      "references": [],
+      "deleted": true
+    },
+    {
+      "path": "/var/lib/docker/volumes/doxagent-v2_v2-data/_data/bus/backups/pre-monitoring-activation-20260924.sqlite3-wal",
+      "bytes": 0,
+      "handles": [],
+      "references": [],
+      "deleted": true
+    },
+    {
+      "path": "/var/lib/docker/volumes/doxagent-v2_v2-data/_data/bus/backups/pre-monitoring-activation-20260924.sqlite3-shm",
+      "bytes": 32768,
+      "handles": [],
+      "references": [],
+      "deleted": true
+    },
+    {
+      "path": "/var/lib/docker/volumes/doxagent-v2_v2-data/_data/bus/repair-backups/raw_d1c63813861a403c9778278e0002e4eb-20260923T174428Z.sqlite3",
+      "bytes": 425213952,
+      "handles": [],
+      "references": [],
+      "deleted": true
+    },
+    {
+      "path": "/var/lib/docker/volumes/doxagent-v2_v2-data/_data/bus/repair-backups/raw_d1c63813861a403c9778278e0002e4eb-20260923T174428Z.sqlite3-wal",
+      "bytes": 0,
+      "handles": [],
+      "references": [],
+      "deleted": true
+    },
+    {
+      "path": "/var/lib/docker/volumes/doxagent-v2_v2-data/_data/bus/repair-backups/raw_d1c63813861a403c9778278e0002e4eb-20260923T174428Z.sqlite3-shm",
+      "bytes": 32768,
+      "handles": [],
+      "references": [],
+      "deleted": true
+    },
+    {
+      "path": "/home/ubuntu/doxagent-backups/runtime-trade-20260930/case-shadow.sqlite3",
+      "bytes": 392613888,
+      "handles": [],
+      "references": [],
+      "deleted": true
+    },
+    {
+      "path": "/home/ubuntu/doxagent-backups/runtime-trade-20260930/case-shadow.sqlite3-wal",
+      "bytes": 0,
+      "handles": [],
+      "references": [],
+      "deleted": true
+    },
+    {
+      "path": "/home/ubuntu/doxagent-backups/runtime-trade-20260930/case-shadow.sqlite3-shm",
+      "bytes": 32768,
+      "handles": [],
+      "references": [],
+      "deleted": true
+    },
+    {
+      "path": "/home/ubuntu/doxagent-backups/runtime-trade-20260930/case-shadow.sqlite3.projector.executor.lock",
+      "bytes": 1,
+      "handles": [],
+      "references": [],
+      "deleted": true
+    },
+    {
+      "path": "/home/ubuntu/doxagent-backups/runtime-trade-20260930/read-before-backfill.sqlite3.zst",
+      "bytes": 1920837456,
+      "handles": [],
+      "references": [],
+      "deleted": true
+    },
+    {
+      "path": "/var/lib/doxagent/initialization-repair/backups/initialization-20260922T042943Z.sqlite3",
+      "bytes": 522506240,
+      "handles": [],
+      "references": [],
+      "deleted": true
+    },
+    {
+      "path": "/var/lib/doxagent/initialization-repair/backups/initialization-20260922T042844Z.sqlite3",
+      "bytes": 522469376,
+      "handles": [],
+      "references": [],
+      "deleted": true
+    },
+    {
+      "path": "/var/lib/doxagent/initialization-repair/backups/runtime-20260922T042943Z.sqlite3",
+      "bytes": 1518276608,
+      "handles": [],
+      "references": [],
+      "deleted": true
+    }
+  ],
+  "deleted_bytes": 9890166609,
+  "after_free": 19944275968
+}

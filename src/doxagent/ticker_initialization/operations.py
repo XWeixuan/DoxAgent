@@ -17,6 +17,7 @@ def submit_activation(
     cutoff: datetime,
     operation: str = "ACTIVATE",
     expected_base_revision: str | None = None,
+    preserve_monitoring_configuration: bool = False,
 ) -> RunRecord:
     if not reason.strip():
         raise ValueError("operator reason required")
@@ -26,7 +27,11 @@ def submit_activation(
         if node.key in {"activation.prepare", "activation.commit", "bus.ready", "runtime.ready"}
     ]
     plan[0].dependencies = []
-    plan[0].inputs = {"artifacts": artifacts, "operator_reason": reason}
+    plan[0].inputs = {
+        "artifacts": artifacts,
+        "operator_reason": reason,
+        "preserve_monitoring_configuration": preserve_monitoring_configuration,
+    }
     return repository.submit(
         ticker,
         cutoff,

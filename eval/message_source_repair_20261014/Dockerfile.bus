@@ -1,0 +1,2 @@
+FROM doxagent-v2:disk-repair-bus-20261013-r2
+COPY staging/message-bus/ /app/src/doxagent/

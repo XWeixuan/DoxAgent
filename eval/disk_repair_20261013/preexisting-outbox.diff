@@ -1,0 +1,47 @@
+diff --git a/src/doxagent/v2_read/outbox.py b/src/doxagent/v2_read/outbox.py
+index 4227684e..95f74201 100644
+--- a/src/doxagent/v2_read/outbox.py
++++ b/src/doxagent/v2_read/outbox.py
+@@ -422,20 +422,29 @@ class SourceOutbox:
+                 )
+             return len(rows)
+ 
+-    def backfill(self, table: str, *, limit: int = 100) -> int:
++    def backfill(
++        self, table: str, *, limit: int = 100, namespaces: tuple[str, ...] | None = None
++    ) -> int:
+         """Bounded source snapshot; new writes remain captured throughout the backfill."""
+         if table not in TABLES[self.source] or not 1 <= limit <= 500:
+             raise ValueError("invalid backfill scope")
++        if namespaces is not None and (table != "runtime_values" or not namespaces):
++            raise ValueError("namespace backfill requires runtime_values and a nonempty scope")
++        checkpoint = table if namespaces is None else table + ":" + ",".join(sorted(namespaces))
+         db = self.connection(write=True)
+         try:
+             db.execute("BEGIN IMMEDIATE")
+             prior = db.execute(
+-                "SELECT position FROM v2_backfill_checkpoint WHERE table_name=?", (table,)
++                "SELECT position FROM v2_backfill_checkpoint WHERE table_name=?", (checkpoint,)
+             ).fetchone()
++            namespace_filter = (
++                "AND namespace IN (" + ",".join("?" for _ in namespaces) + ") "
++                if namespaces else ""
++            )
+             rows = db.execute(
+                 f"SELECT rowid AS _v2_rowid,* FROM {quoted(table)} WHERE rowid>? "
+-                "ORDER BY rowid LIMIT ?",
+-                (prior[0] if prior else 0, limit),
++                + namespace_filter + "ORDER BY rowid LIMIT ?",
++                (prior[0] if prior else 0, *(namespaces or ()), limit),
+             ).fetchall()
+             columns = list(db.execute(f"PRAGMA table_info({quoted(table)})"))
+             keys = [r[1] for r in sorted((r for r in columns if r[5]), key=lambda r: r[5])]
+@@ -483,7 +492,7 @@ class SourceOutbox:
+                 db.execute(
+                     "INSERT INTO v2_backfill_checkpoint VALUES(?,?) ON CONFLICT(table_name) "
+                     "DO UPDATE SET position=excluded.position",
+-                    (table, rows[-1]["_v2_rowid"]),
++                    (checkpoint, rows[-1]["_v2_rowid"]),
+                 )
+             db.commit()
+             return len(rows)

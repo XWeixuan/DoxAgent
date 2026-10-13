@@ -11,56 +11,13 @@ from .dto import available, coverage, missing
 from .errors import ApiFailure
 
 
-def selection(ticker, seq, shell, days):
-    validity = "valid_from<=? AND (valid_to IS NULL OR valid_to>?)"
-    period = " AND day IN (SELECT value FROM json_each(?))" if days is not None else ""
-    period_args = [json.dumps(days)] if days is not None else []
-    clauses, args = [], []
-    for label, kind in (("ADDED", "ADD"), ("MODIFIED", "MODIFY"), ("RETIRED", "RETIRE")):
-        clauses.append(
-            "EXISTS (SELECT 1 FROM objects ch WHERE ch.kind='policy_change' "
-            "AND ch.ticker=p.ticker AND ch.route=p.id AND (?='ALL' OR ch.parent=?) AND "
-            + validity
-            + period
-            + " AND json_extract(ch.payload,'$.type')=?) AS "
-            + label
-        )
-        args.extend([shell, shell, seq, seq, *period_args, kind])
-    for label, metric in (("HIT", "policy_ar_hits"), ("EXECUTED", "policy_executed")):
-        clauses.append(
-            "EXISTS (SELECT 1 FROM contributions c WHERE c.ticker=p.ticker "
-            "AND c.metric=? AND json_extract(c.dimensions,'$.business_key')=p.id "
-            "AND CAST(c.value AS NUMERIC)>0 AND " + validity + period + ") AS " + label
-        )
-        args.extend([metric, seq, seq, *period_args])
-    sql = (
-        "SELECT p.id,p.payload,"
-        + ",".join(clauses)
-        + (
-            ",json_extract(p.payload,'$.lifecycle')='ACTIVE' AND json_extract(p.payload,'$.effective.value')=1 AND json_extract(p.payload,'$.consumed.value')=0 AS ACTIVE,"
-            "json_extract(p.payload,'$.lifecycle')='ACTIVE' "
-            "AND coalesce(json_extract(p.payload,'$.effective.value'),1)=1 "
-            "AND coalesce(json_extract(p.payload,'$.consumed.value'),0)=0 "
-            "AND (json_extract(p.payload,'$.effective.value') IS NULL "
-            "OR json_extract(p.payload,'$.consumed.value') IS NULL) AS ACTIVE_UNKNOWN FROM objects p "
-            "WHERE p.kind='policy_catalog' AND p.ticker=? AND "
-            + validity
-            + " AND (?='ALL' OR EXISTS (SELECT 1 FROM json_each(p.payload,'$.shell_ids') WHERE value=?))"
-        )
-    )
-    return sql, [*args, ticker, seq, seq, shell, shell]
+# Kept as a public query builder for read-contract regression consumers.
+from .policy_queries import selection, metrics as query_metrics, page as query_page
 
 
 def install(app):
     prefix = "/api/doxagent/v2/tickers/{ticker}/policies"
     store, views = app.state.store, app.state.views
-
-    def uncertain(sql, parameters):
-        with store.connect() as db:
-            return db.execute(
-                "SELECT count(*) FROM (" + sql + ") WHERE ACTIVE_UNKNOWN",
-                parameters,
-            ).fetchone()[0]
 
     def context(request, ticker, args):
         view = views.get(request.state.principal.user_id, args.get("view_id", ""), ticker)
@@ -104,18 +61,7 @@ def install(app):
                 raise ApiFailure("CURSOR_EXPIRED", 410) from None
             except ValueError:
                 raise ApiFailure("INVALID_CURSOR", 400) from None
-        sql, parameters = selection(ticker, view["seq"], shell, days)
-        sql = sql.replace("FROM objects ", "FROM " + store.snapshot_table(view["seq"]) + " ")
-        unknown = uncertain(sql, parameters) if selected == "ACTIVE" else 0
-        # Formal current definitions must remain readable when historical
-        # consumption coverage is unknown. Keep metrics and evidence unknown;
-        # never restore a positively retired/consumed/ineffective policy.
-        predicate = "(ACTIVE OR ACTIVE_UNKNOWN)" if selected == "ACTIVE" else selected
-        with store.connect() as db:
-            rows = db.execute(
-                "SELECT * FROM (" + sql + ") WHERE " + predicate + " AND id>? ORDER BY id LIMIT ?",
-                [*parameters, after, limit + 1],
-            ).fetchall()
+        rows, unknown = query_page(store, ticker, view["seq"], shell, days, selected, after, limit + 1)
         items = []
         for row in rows[:limit]:
             value = json.loads(row["payload"])
@@ -175,22 +121,8 @@ def install(app):
     async def metrics(ticker: str, request: Request):
         args = app.state.query(request, {"view_id", "shell_id"})
         view, shell, days = context(request, ticker, args)
-        sql, parameters = selection(ticker, view["seq"], shell, days)
-        sql = sql.replace("FROM objects ", "FROM " + store.snapshot_table(view["seq"]) + " ")
-        with store.connect() as db:
-            result = db.execute(
-                "SELECT coalesce(sum(ACTIVE OR ACTIVE_UNKNOWN),0) AS active, "
-                "coalesce(sum((ACTIVE OR ACTIVE_UNKNOWN) AND (json_extract(payload,'$.decision')='LONG' OR EXISTS (SELECT 1 FROM json_each(payload,'$.executable_directions') WHERE value='LONG'))),0) "
-                "AS long_active, "
-                "coalesce(sum((ACTIVE OR ACTIVE_UNKNOWN) AND (json_extract(payload,'$.decision')='SHORT' OR EXISTS (SELECT 1 FROM json_each(payload,'$.executable_directions') WHERE value='SHORT'))),0) "
-                "AS short_active, "
-                "coalesce(sum(ADDED),0) AS added, coalesce(sum(HIT),0) AS hit, "
-                "coalesce(sum(MODIFIED),0) AS modified, coalesce(sum(RETIRED),0) AS retired, "
-                "coalesce(sum(EXECUTED),0) AS executed FROM (" + sql + ")",
-                parameters,
-            ).fetchone()
-        values = dict(result)
-        unknown = uncertain(sql, parameters)
+        values = query_metrics(store, ticker, view["seq"], shell, days)
+        unknown = values.pop("unknown_count")
         values.update(
             long_ratio=Decimal(values["long_active"]) / values["active"]
             if values["active"]

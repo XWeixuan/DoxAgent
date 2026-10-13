@@ -1,0 +1,302 @@
+{
+  "untouched_before": {
+    "doxagent-v2-v2-projector-1": {
+      "id": "92ab7069d26d37af42aaf5d53e1e2da9d99344aa24844288af4081a2af9dc7c0",
+      "image": "sha256:92163da1783aa178ee33a108af19dec17ef3a60651033e4be2571af21da1e7a3",
+      "tag": "doxagent-v2:v21-production-20261012-r2",
+      "started": "2026-10-12T14:24:56.970076303Z"
+    },
+    "doxagent-v2-v2-message-bus-1": {
+      "id": "4d1bca4864e8ec9a7379b45ee36cc226f3d355dd1749c11c516301086f423364",
+      "image": "sha256:7d3612194b29db3d8a17dad1ac78aa00f28c1d26f557bb2db5b9067f84d9bf62",
+      "tag": "doxagent-v2:v21-production-20261012-r1",
+      "started": "2026-10-12T14:15:20.066793173Z"
+    },
+    "doxagent-v2-v2-scheduler-1": {
+      "id": "fadaa75b8737edf196841b84f07c9bd5411df6513073c0ac7bd9729ac2a7a4cd",
+      "image": "sha256:7d3612194b29db3d8a17dad1ac78aa00f28c1d26f557bb2db5b9067f84d9bf62",
+      "tag": "doxagent-v2:v21-production-20261012-r1",
+      "started": "2026-10-12T18:12:49.773542541Z"
+    },
+    "doxagent-v2-v2-cdecr-executor-1": {
+      "id": "55de53390e78eadf26d7b4438368e13091c7bb1597f5d80dae174a5173236b1d",
+      "image": "sha256:7d3612194b29db3d8a17dad1ac78aa00f28c1d26f557bb2db5b9067f84d9bf62",
+      "tag": "doxagent-v2:v21-production-20261012-r1",
+      "started": "2026-10-12T18:22:04.644593554Z"
+    },
+    "doxagent-v2-v2-control-1": {
+      "id": "0c4401b6d7e843592ec043f28e53323430bdbde8a613feddb8b1648445cfc567",
+      "image": "sha256:7d3612194b29db3d8a17dad1ac78aa00f28c1d26f557bb2db5b9067f84d9bf62",
+      "tag": "doxagent-v2:v21-production-20261012-r1",
+      "started": "2026-10-12T18:22:04.646361799Z"
+    },
+    "doxagent-v2-v2-executor-1": {
+      "id": "2408ee2b8979673bb9279af123bf9b9de291d13602b115a6a58ad053b5921882",
+      "image": "sha256:7d3612194b29db3d8a17dad1ac78aa00f28c1d26f557bb2db5b9067f84d9bf62",
+      "tag": "doxagent-v2:v21-production-20261012-r1",
+      "started": "2026-10-12T18:12:49.772794441Z"
+    },
+    "doxagent-v2-v2-delivery-1": {
+      "id": "072eafcf425c636d8c592358302ac52cd36a09e49918ddc9a815388894ae0127",
+      "image": "sha256:7d3612194b29db3d8a17dad1ac78aa00f28c1d26f557bb2db5b9067f84d9bf62",
+      "tag": "doxagent-v2:v21-production-20261012-r1",
+      "started": "2026-10-12T18:22:02.294874142Z"
+    },
+    "doxagent-v2-v2-o4-1": {
+      "id": "bb4f5ff4f8687853f35bde7968527fa55a75536a16d94b9fed1d8931f25ed546",
+      "image": "sha256:7d3612194b29db3d8a17dad1ac78aa00f28c1d26f557bb2db5b9067f84d9bf62",
+      "tag": "doxagent-v2:v21-production-20261012-r1",
+      "started": "2026-10-12T14:14:24.407759958Z"
+    },
+    "doxagent-v2-initialization-guardian-1": {
+      "id": "146d6f3a5f4e307914055054cdbf6ef95cec504fc6257cc32279744f19410189",
+      "image": "sha256:7d3612194b29db3d8a17dad1ac78aa00f28c1d26f557bb2db5b9067f84d9bf62",
+      "tag": "doxagent-v2:v21-production-20261012-r1",
+      "started": "2026-10-12T14:14:22.951462023Z"
+    },
+    "doxagent-v2-v2-initialization-1": {
+      "id": "0938c6ee45ee9ab9d7b08662a1a7510ad16a9986151d164265d896b74fd1e366",
+      "image": "sha256:7d3612194b29db3d8a17dad1ac78aa00f28c1d26f557bb2db5b9067f84d9bf62",
+      "tag": "doxagent-v2:v21-production-20261012-r1",
+      "started": "2026-10-12T18:20:42.52205462Z"
+    },
+    "doxagent-v2-v2-web-1": {
+      "id": "e8b6250acc98cf4232e1aff24546d44376566ab69a0b391399a8a284dcebcab2",
+      "image": "sha256:5bfd2e7b49dadf8e2ff8e2a3415c0dac4660132cb6ee4e91a39a5229f5661cbe",
+      "tag": "doxagent-v2-web:v21-production-20261012-r1",
+      "started": "2026-10-12T14:11:46.034236612Z"
+    },
+    "doxagent-v2-codex-worker-1": {
+      "id": "b3cfb63ac3a8a1912a28ca9cdd7e72f619bdd65df2824ff8a9c127edec3bcad8",
+      "image": "sha256:7d3612194b29db3d8a17dad1ac78aa00f28c1d26f557bb2db5b9067f84d9bf62",
+      "tag": "doxagent-v2:v21-production-20261012-r1",
+      "started": "2026-10-12T14:11:12.147509593Z"
+    },
+    "doxagent-rklb-v21-01-d3": {
+      "id": "654025d6af05c804214d84b928765be67b7b0f18a4c09fde10d923cbe3774206",
+      "image": "sha256:aa2c0b71d498d50a786f880db065393a8b6741d947d997b14ec94e3c5c097273",
+      "tag": "doxagent-v2:rklb-v21-20261012",
+      "started": "2026-10-12T18:33:12.915113453Z"
+    },
+    "doxagent-v2-v2-content-enrichment-1": {
+      "id": "a6f492ba10f2b29d07d01cf11f49a2ee3dfeb56235bc64f13e976898ba5de15d",
+      "image": "sha256:31a24e36e06acc5e7cbc2ca05635da967642ad79387c97f0742753ff30bfab9c",
+      "tag": "doxagent-v2:source-recovery-enrich-20261012-r1",
+      "started": "2026-10-12T18:10:19.283228864Z"
+    },
+    "doxagent-rklb-v21-worker": {
+      "id": "1d36ee856ba65ce47be4eca70aaff85adfde01d4ae4eae760197213f168d64b8",
+      "image": "sha256:aa2c0b71d498d50a786f880db065393a8b6741d947d997b14ec94e3c5c097273",
+      "tag": "doxagent-v2:rklb-v21-20261012",
+      "started": "2026-10-12T08:45:04.443669741Z"
+    },
+    "doxagent-be-v21-worker": {
+      "id": "a0501b261a67327e9c83b8c4020a70effecc334a4f0ca22f21a2ce0ec3844522",
+      "image": "sha256:54ca236f9843a1bdeb5879ddbe2f3345b2bf0099949acea72af09e7ee47d8b62",
+      "tag": "doxagent-v2:be-v21-20261011",
+      "started": "2026-10-11T15:54:06.400025606Z"
+    },
+    "doxagent-intc-v21-worker": {
+      "id": "8c4d33e83574dd37bd71f67aeb8f64e6431100941dbd298a5bf60bfdaecfb455",
+      "image": "sha256:e2a232d7cf05db682a0c79ac64bbe54302a266a6caad3f7bf99f4b6558fef7e8",
+      "tag": "doxagent-v2:intc-v21-20261011",
+      "started": "2026-10-10T23:01:41.020193003Z"
+    },
+    "doxagent-mu-v21-worker": {
+      "id": "f58da4b019e8ab869c5103d673686d071a0e995e66f5fb9196e36a61ddd2a2e1",
+      "image": "sha256:0c70eb7d7246b0295d781ea2ce7796e9a4ecad3dfe2ab65db414d8ca15c51fec",
+      "tag": "doxagent-v2:mu-v21-worker-20261010",
+      "started": "2026-10-09T19:22:34.125029526Z"
+    },
+    "doxagent-v2-v2-chrome-supervisor-1": {
+      "id": "88b79b5b3d0e2ae078ded27064ffcfbe6c1058b81f422c594b3eefb4b25e9511",
+      "image": "sha256:cc38be0a0fe83e1003320a205bcb6ca1a0ee581ce9debd51983779f0b76ec7d3",
+      "tag": "doxagent-chrome-supervisor:server",
+      "started": "2026-09-24T20:18:25.88524306Z"
+    },
+    "doxagent-egress-clash": {
+      "id": "f113a98afbf8c7c2c2315d0eda599022ae5f0f9597a5ca1f2e817c0c87dc72b7",
+      "image": "sha256:739edd73a352d6beb82fad6790ef9d417a4d6f061584cc3cab1bd4536d1c60e5",
+      "tag": "metacubex/mihomo:v1.19.31",
+      "started": "2026-09-23T19:31:40.787817618Z"
+    }
+  },
+  "services": {
+    "v2-api": {
+      "before": {
+        "id": "ae262a172d1fffb1d7bef59f7685f1c2c81bc4305187f4d32de989dafbf4fef2",
+        "image": "sha256:92163da1783aa178ee33a108af19dec17ef3a60651033e4be2571af21da1e7a3",
+        "tag": "doxagent-v2:v21-production-20261012-r2",
+        "started": "2026-10-12T14:24:54.740529567Z"
+      },
+      "compose_files": [
+        "/home/ubuntu/doxagent-case-release-d11f7fa1/docker-compose.v2-production.yml",
+        "/home/ubuntu/doxagent-case-release-d11f7fa1/deploy/docker-compose.server.yml",
+        "/home/ubuntu/doxagent-store-recovery-20261002/compose.override.yml",
+        "/home/ubuntu/doxagent-runtime-search-20261009/compose.override.yml",
+        "/home/ubuntu/v21-production-20261012/compose-v2-api.yaml"
+      ],
+      "overlay": "/home/ubuntu/service-busy-repair-20261013/v2-api.yaml",
+      "after": {
+        "id": "79dcd55a85aa99412a1232a6083511cb6ab39d8794130b9cce3eb7a8f88584a8",
+        "image": "sha256:86150631d2f6ea37d9659d8fbd55d40ae3fd2e1e6d92c895828ec853c33bc42a",
+        "tag": "doxagent-v2:service-busy-20261013-r1",
+        "started": "2026-10-12T19:03:04.395028706Z"
+      }
+    },
+    "v2-site-access": {
+      "before": {
+        "id": "03b037cd9eab3f200c62f91b429cd725b693a006f3c832511e762d1512dff293",
+        "image": "sha256:d12fb2a9bd3e65e8966d2221f4d67247e5d0f4eeace49fee9c1296f764d4574d",
+        "tag": "doxagent-site-access:source-recovery-20261012-r1",
+        "started": "2026-10-12T12:29:58.346349882Z"
+      },
+      "compose_files": [
+        "/home/ubuntu/doxagent/docker-compose.v2-production.yml",
+        "/home/ubuntu/doxagent/deploy/docker-compose.server.yml",
+        "/home/ubuntu/barrons_ticker_fix_20260930/compose.override.yml",
+        "/home/ubuntu/source-repair-20261004/eval/message_source_repair_20261004/compose.override.yml",
+        "/home/ubuntu/source-repair-20261006/compose.override.yml",
+        "/home/ubuntu/source-repair-20261009/compose.override.yml",
+        "/home/ubuntu/source-repair-20261012/compose.override.yml"
+      ],
+      "overlay": "/home/ubuntu/service-busy-repair-20261013/v2-site-access.yaml",
+      "after": {
+        "id": "2467f3fa0beaeaf4028172d9f4d2e7721b6f3a3216c5353c56bbf9a5fa9a5168",
+        "image": "sha256:6ba737865e733dfe8fbcc3c30672a0e7e00ac311665b81b5e32120b6b0726075",
+        "tag": "doxagent-site-access:lifecycle-20261013-r2",
+        "started": "2026-10-12T19:17:49.928223871Z"
+      },
+      "r1_after": {
+        "id": "e3fd28529af02ce3b7142aee3b8fc1ab825367c20db08f7ccd3dbbd954694e88",
+        "image": "sha256:5aa051fbd83b2ad31e0c16125fb7b08f0f7ac8c8b5ddb8c255013cb589e946ba",
+        "tag": "doxagent-site-access:lifecycle-20261013-r1",
+        "started": "2026-10-12T19:03:28.748315432Z"
+      },
+      "r2_overlay": "/home/ubuntu/service-busy-repair-20261013/v2-site-access-r2.yaml"
+    }
+  },
+  "mount_check_note": "Site mount list order changed; exact destination/source/read-write mapping verified unchanged. Deployment script comparison normalized.",
+  "untouched_after": {
+    "doxagent-v2-v2-projector-1": {
+      "id": "92ab7069d26d37af42aaf5d53e1e2da9d99344aa24844288af4081a2af9dc7c0",
+      "image": "sha256:92163da1783aa178ee33a108af19dec17ef3a60651033e4be2571af21da1e7a3",
+      "tag": "doxagent-v2:v21-production-20261012-r2",
+      "started": "2026-10-12T14:24:56.970076303Z"
+    },
+    "doxagent-v2-v2-message-bus-1": {
+      "id": "4d1bca4864e8ec9a7379b45ee36cc226f3d355dd1749c11c516301086f423364",
+      "image": "sha256:7d3612194b29db3d8a17dad1ac78aa00f28c1d26f557bb2db5b9067f84d9bf62",
+      "tag": "doxagent-v2:v21-production-20261012-r1",
+      "started": "2026-10-12T14:15:20.066793173Z"
+    },
+    "doxagent-v2-v2-scheduler-1": {
+      "id": "fadaa75b8737edf196841b84f07c9bd5411df6513073c0ac7bd9729ac2a7a4cd",
+      "image": "sha256:7d3612194b29db3d8a17dad1ac78aa00f28c1d26f557bb2db5b9067f84d9bf62",
+      "tag": "doxagent-v2:v21-production-20261012-r1",
+      "started": "2026-10-12T18:12:49.773542541Z"
+    },
+    "doxagent-v2-v2-cdecr-executor-1": {
+      "id": "55de53390e78eadf26d7b4438368e13091c7bb1597f5d80dae174a5173236b1d",
+      "image": "sha256:7d3612194b29db3d8a17dad1ac78aa00f28c1d26f557bb2db5b9067f84d9bf62",
+      "tag": "doxagent-v2:v21-production-20261012-r1",
+      "started": "2026-10-12T18:22:04.644593554Z"
+    },
+    "doxagent-v2-v2-control-1": {
+      "id": "0c4401b6d7e843592ec043f28e53323430bdbde8a613feddb8b1648445cfc567",
+      "image": "sha256:7d3612194b29db3d8a17dad1ac78aa00f28c1d26f557bb2db5b9067f84d9bf62",
+      "tag": "doxagent-v2:v21-production-20261012-r1",
+      "started": "2026-10-12T18:22:04.646361799Z"
+    },
+    "doxagent-v2-v2-executor-1": {
+      "id": "2408ee2b8979673bb9279af123bf9b9de291d13602b115a6a58ad053b5921882",
+      "image": "sha256:7d3612194b29db3d8a17dad1ac78aa00f28c1d26f557bb2db5b9067f84d9bf62",
+      "tag": "doxagent-v2:v21-production-20261012-r1",
+      "started": "2026-10-12T18:12:49.772794441Z"
+    },
+    "doxagent-v2-v2-delivery-1": {
+      "id": "072eafcf425c636d8c592358302ac52cd36a09e49918ddc9a815388894ae0127",
+      "image": "sha256:7d3612194b29db3d8a17dad1ac78aa00f28c1d26f557bb2db5b9067f84d9bf62",
+      "tag": "doxagent-v2:v21-production-20261012-r1",
+      "started": "2026-10-12T18:22:02.294874142Z"
+    },
+    "doxagent-v2-v2-o4-1": {
+      "id": "bb4f5ff4f8687853f35bde7968527fa55a75536a16d94b9fed1d8931f25ed546",
+      "image": "sha256:7d3612194b29db3d8a17dad1ac78aa00f28c1d26f557bb2db5b9067f84d9bf62",
+      "tag": "doxagent-v2:v21-production-20261012-r1",
+      "started": "2026-10-12T14:14:24.407759958Z"
+    },
+    "doxagent-v2-initialization-guardian-1": {
+      "id": "146d6f3a5f4e307914055054cdbf6ef95cec504fc6257cc32279744f19410189",
+      "image": "sha256:7d3612194b29db3d8a17dad1ac78aa00f28c1d26f557bb2db5b9067f84d9bf62",
+      "tag": "doxagent-v2:v21-production-20261012-r1",
+      "started": "2026-10-12T14:14:22.951462023Z"
+    },
+    "doxagent-v2-v2-initialization-1": {
+      "id": "0938c6ee45ee9ab9d7b08662a1a7510ad16a9986151d164265d896b74fd1e366",
+      "image": "sha256:7d3612194b29db3d8a17dad1ac78aa00f28c1d26f557bb2db5b9067f84d9bf62",
+      "tag": "doxagent-v2:v21-production-20261012-r1",
+      "started": "2026-10-12T18:20:42.52205462Z"
+    },
+    "doxagent-v2-v2-web-1": {
+      "id": "e8b6250acc98cf4232e1aff24546d44376566ab69a0b391399a8a284dcebcab2",
+      "image": "sha256:5bfd2e7b49dadf8e2ff8e2a3415c0dac4660132cb6ee4e91a39a5229f5661cbe",
+      "tag": "doxagent-v2-web:v21-production-20261012-r1",
+      "started": "2026-10-12T14:11:46.034236612Z"
+    },
+    "doxagent-v2-codex-worker-1": {
+      "id": "b3cfb63ac3a8a1912a28ca9cdd7e72f619bdd65df2824ff8a9c127edec3bcad8",
+      "image": "sha256:7d3612194b29db3d8a17dad1ac78aa00f28c1d26f557bb2db5b9067f84d9bf62",
+      "tag": "doxagent-v2:v21-production-20261012-r1",
+      "started": "2026-10-12T14:11:12.147509593Z"
+    },
+    "doxagent-rklb-v21-01-d3": {
+      "id": "654025d6af05c804214d84b928765be67b7b0f18a4c09fde10d923cbe3774206",
+      "image": "sha256:aa2c0b71d498d50a786f880db065393a8b6741d947d997b14ec94e3c5c097273",
+      "tag": "doxagent-v2:rklb-v21-20261012",
+      "started": "2026-10-12T18:33:12.915113453Z"
+    },
+    "doxagent-v2-v2-content-enrichment-1": {
+      "id": "a6f492ba10f2b29d07d01cf11f49a2ee3dfeb56235bc64f13e976898ba5de15d",
+      "image": "sha256:31a24e36e06acc5e7cbc2ca05635da967642ad79387c97f0742753ff30bfab9c",
+      "tag": "doxagent-v2:source-recovery-enrich-20261012-r1",
+      "started": "2026-10-12T18:10:19.283228864Z"
+    },
+    "doxagent-rklb-v21-worker": {
+      "id": "1d36ee856ba65ce47be4eca70aaff85adfde01d4ae4eae760197213f168d64b8",
+      "image": "sha256:aa2c0b71d498d50a786f880db065393a8b6741d947d997b14ec94e3c5c097273",
+      "tag": "doxagent-v2:rklb-v21-20261012",
+      "started": "2026-10-12T08:45:04.443669741Z"
+    },
+    "doxagent-be-v21-worker": {
+      "id": "a0501b261a67327e9c83b8c4020a70effecc334a4f0ca22f21a2ce0ec3844522",
+      "image": "sha256:54ca236f9843a1bdeb5879ddbe2f3345b2bf0099949acea72af09e7ee47d8b62",
+      "tag": "doxagent-v2:be-v21-20261011",
+      "started": "2026-10-11T15:54:06.400025606Z"
+    },
+    "doxagent-intc-v21-worker": {
+      "id": "8c4d33e83574dd37bd71f67aeb8f64e6431100941dbd298a5bf60bfdaecfb455",
+      "image": "sha256:e2a232d7cf05db682a0c79ac64bbe54302a266a6caad3f7bf99f4b6558fef7e8",
+      "tag": "doxagent-v2:intc-v21-20261011",
+      "started": "2026-10-10T23:01:41.020193003Z"
+    },
+    "doxagent-mu-v21-worker": {
+      "id": "f58da4b019e8ab869c5103d673686d071a0e995e66f5fb9196e36a61ddd2a2e1",
+      "image": "sha256:0c70eb7d7246b0295d781ea2ce7796e9a4ecad3dfe2ab65db414d8ca15c51fec",
+      "tag": "doxagent-v2:mu-v21-worker-20261010",
+      "started": "2026-10-09T19:22:34.125029526Z"
+    },
+    "doxagent-v2-v2-chrome-supervisor-1": {
+      "id": "88b79b5b3d0e2ae078ded27064ffcfbe6c1058b81f422c594b3eefb4b25e9511",
+      "image": "sha256:cc38be0a0fe83e1003320a205bcb6ca1a0ee581ce9debd51983779f0b76ec7d3",
+      "tag": "doxagent-chrome-supervisor:server",
+      "started": "2026-09-24T20:18:25.88524306Z"
+    },
+    "doxagent-egress-clash": {
+      "id": "f113a98afbf8c7c2c2315d0eda599022ae5f0f9597a5ca1f2e817c0c87dc72b7",
+      "image": "sha256:739edd73a352d6beb82fad6790ef9d417a4d6f061584cc3cab1bd4536d1c60e5",
+      "tag": "metacubex/mihomo:v1.19.31",
+      "started": "2026-09-23T19:31:40.787817618Z"
+    }
+  }
+}

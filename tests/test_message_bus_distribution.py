@@ -236,8 +236,11 @@ async def test_expired_shared_article_skips_regex_and_jev_before_delivery(tmp_pa
     assert distribution.summary(source.source_id)["delivery_states"] == {
         "ADMISSION_REJECTED": 1
     }
-    job = repository.claim_enrichment_jobs(limit=1)[0]
-    distribution.finalize_article(job, message, None)
+    assert repository.claim_enrichment_jobs(limit=1) == []
+    # Simulate a pending delivery left by a release that enriched expired input.
+    with repository.transaction() as db:
+        db.execute("UPDATE distribution_articles SET enriched_json=original_json, "
+                   "content_version='legacy',body_state='READY'")
     bus.start_ticker("NVDA")
     late_binding = bus.configure_binding(
         ticker="NVDA", source_id=source.source_id, actor=UpdateActor.SYSTEM

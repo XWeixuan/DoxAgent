@@ -1,0 +1,128 @@
+{
+  "assessment": "Historical API feasibility passed for sampled tickers and sessions; W3 integration and Agent decision behavior not implemented or validated",
+  "test_time_utc": {
+    "start": "2026-10-13T13:00:05.627559+00:00",
+    "end": "2026-10-13T13:03:02.290836+00:00"
+  },
+  "remote": "doxagent-sg; existing message-bus container and TWS socket; independent read-only client IDs",
+  "recorded_history_calls": 24,
+  "successful_recorded_history_calls": 24,
+  "warm_api_latency_ms": {
+    "count": 18,
+    "min": 488.644,
+    "median": 749.0575,
+    "max": 1312.465
+  },
+  "cold_hmds_smoke_latency_ms": 5387,
+  "cold_smoke_provenance": "initial interactive remote smoke call before durable batch; HMDS inactive-to-active messages observed",
+  "filtered_24h_coverage": [
+    {
+      "symbol": "MU",
+      "window_start": "2026-10-12T13:00:07.155463+00:00",
+      "window_end": "2026-10-13T13:00:07.155463+00:00",
+      "filtered_bars": 192,
+      "first_bar": "2026-10-12T13:05:00+00:00",
+      "last_bar": "2026-10-13T13:00:00+00:00",
+      "session_bars": {
+        "premarket": 66,
+        "regular": 78,
+        "afterhours": 48
+      },
+      "zero_volume_slots": 0,
+      "valid_ohlc": true,
+      "latency_ms": 696.158
+    },
+    {
+      "symbol": "INTC",
+      "window_start": "2026-10-12T13:00:07.856533+00:00",
+      "window_end": "2026-10-13T13:00:07.856533+00:00",
+      "filtered_bars": 192,
+      "first_bar": "2026-10-12T13:05:00+00:00",
+      "last_bar": "2026-10-13T13:00:00+00:00",
+      "session_bars": {
+        "premarket": 66,
+        "regular": 78,
+        "afterhours": 48
+      },
+      "zero_volume_slots": 0,
+      "valid_ohlc": true,
+      "latency_ms": 1312.465
+    },
+    {
+      "symbol": "BE",
+      "window_start": "2026-10-12T13:00:09.188378+00:00",
+      "window_end": "2026-10-13T13:00:09.188378+00:00",
+      "filtered_bars": 192,
+      "first_bar": "2026-10-12T13:05:00+00:00",
+      "last_bar": "2026-10-13T13:00:00+00:00",
+      "session_bars": {
+        "premarket": 66,
+        "regular": 78,
+        "afterhours": 48
+      },
+      "zero_volume_slots": 18,
+      "valid_ohlc": true,
+      "latency_ms": 973.064
+    },
+    {
+      "symbol": "RKLB",
+      "window_start": "2026-10-12T13:00:10.170153+00:00",
+      "window_end": "2026-10-13T13:00:10.170153+00:00",
+      "filtered_bars": 192,
+      "first_bar": "2026-10-12T13:05:00+00:00",
+      "last_bar": "2026-10-13T13:00:00+00:00",
+      "session_bars": {
+        "premarket": 66,
+        "regular": 78,
+        "afterhours": 48
+      },
+      "zero_volume_slots": 3,
+      "valid_ohlc": true,
+      "latency_ms": 1062.403
+    }
+  ],
+  "api_concurrency": {
+    "kind": "concurrency",
+    "requests": 4,
+    "same_connection": true,
+    "batch_ms": 1135.393
+  },
+  "existing_semantic_concurrency": {
+    "kind": "semantic_concurrency",
+    "batch_ms": 2596.204,
+    "requests": 2,
+    "session_lock": true
+  },
+  "timestamp_comparison": {
+    "kind": "timestamp_comparison",
+    "same_times": true,
+    "same_ohlcv": true
+  },
+  "live_mode_confirmed": true,
+  "payload_demo_bytes": 6576,
+  "payload_demo_bar_count": 122,
+  "findings": [
+    "1 D returned only the current partial extended-hours trading day in this premarket test; not a rolling 24-hour guarantee.",
+    "86400 S returned 289 bars reaching back over the weekend. Must locally filter actual timestamps; do not treat duration as a wall-clock coverage guarantee.",
+    "2 D covered the previous full US session and current premarket. Existing semantic tool does not expose 2d but supports 1w, tested as a wider fallback requiring local trim.",
+    "Zero volume and zero barCount flat bars exist for BE/RKLB. Do not treat these as actual trades or proof of no price reaction.",
+    "Latest partial bar was returned and revised across repeated snapshots; bar start is not latest trade timestamp. Completed bars can also be revised by the provider.",
+    "Native volume is available, but shares-versus-lots configuration was not independently verified. Relative volumes within a consistent configuration are usable.",
+    "The semantic tool reconnects and resolves contracts each call, uses a process-wide session lock, and does not cache historical-bar results.",
+    "Error 366 observed after cancellation of already completed one-shot requests, including probe reuse of current cleanup pattern; distinct from data failure or pacing error.",
+    "W3 Data MCP is disabled and its allowed-tool set is empty on the deployed Worker. Skill changes alone cannot expose the tool."
+  ],
+  "limits": [
+    "Live freshness exercised in premarket only; regular/afterhours checked as already completed historical sessions, not live tests during those sessions.",
+    "No OVERNIGHT contract/history queried; 20:00-04:00 ET explicitly outside scope.",
+    "No sustained saturation or maximum frequency/concurrency test; four concurrent requests and short repeats do not establish a production capacity ceiling.",
+    "No real Agent, W3 task, trade intent, account request or order executed; no source, production settings, subscriptions or services changed.",
+    "IBKR bars do not establish the first news-disclosure time or causal attribution of the price move."
+  ],
+  "official_sources": [
+    "https://www.interactivebrokers.com/docs/tws-api/doc/market-data-historical/historical-data-limitations/historical-data-filtering",
+    "https://www.interactivebrokers.com/docs/tws-api/doc/market-data-historical/historical-data-limitations/historical-volume-scaling",
+    "https://www.interactivebrokers.com/docs/tws-api/doc/market-data-historical/historical-data-limitations/pacing-violations-for-small-bars-30-secs-or-less",
+    "https://www.interactivebrokers.com/docs/tws-api/doc/pacing-limitations/pacing-behavior"
+  ]
+}

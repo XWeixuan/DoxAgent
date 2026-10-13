@@ -1,0 +1,40 @@
+{
+  "scope": "W3 single-skill orchestration and prelaunch checks; no deployment or orders",
+  "prompt_files_unchanged": {
+    "w3/AGENTS.md": "bcf0567221026db01e3ff848ba5df6e6f4fb70c10347a7f8becd1bdbed61aeb8",
+    "w3/skills/skill.md": "626fc16cceca8abb6bfee8fcf3f06a73bea40e0c110452310c21138cc35ebde4",
+    "w3/skills/weekend_sweep.md": "7ae2e01cfc2b3c5a1c177b803116ddaecc6983224b51fce66c00ff13a16f73bb"
+  },
+  "remote_worker": {
+    "ibapi_installed": true,
+    "ibkr_host": "host.docker.internal",
+    "ibkr_port": 7496,
+    "tcp_reachable": true,
+    "provider_authenticated": true
+  },
+  "exact_model_probes": [
+    {
+      "checked_at": "2026-10-13T19:08:13.976743+00:00",
+      "model": "gpt-6-luna", "effort": "max", "actual_model": "gpt-6-luna",
+      "thread_id": "01a136aa-54cf-7ad3-b931-d635e902d302", "status": "completed"
+    },
+    {
+      "checked_at": "2026-10-13T19:08:13.977871+00:00",
+      "model": "gpt-6-sol", "effort": "medium", "actual_model": "gpt-6-sol",
+      "thread_id": "01a136aa-543c-7772-956f-9358e1492ba5", "status": "completed"
+    }
+  ],
+  "ibkr_history_probes": [
+    {
+      "container": "doxagent-v2-codex-worker-1", "checked_at": "2026-10-13T19:05:20.222656+00:00",
+      "client_id": 38101427, "error_type": "IbkrTwsConnectionError", "handshake_timeout_seconds": 15
+    },
+    {
+      "container": "doxagent-v2-v2-message-bus-1", "checked_at": "2026-10-13T19:06:20.463617+00:00",
+      "client_id": 38101427, "error_type": "IbkrTwsConnectionError", "handshake_timeout_seconds": 15
+    }
+  ],
+  "host_listener": {"address": "172.17.0.1:7496", "process": "socat", "pid": 3633},
+  "remaining_dependency": "Restore the IBKR API nextValidId handshake and verify actual 10-minute TRADES history from the Worker execution environment",
+  "not_claimed": ["new W3 real-business two-phase acceptance", "production deployment", "IBKR historical-data success in this prelaunch check"]
+}

@@ -41,7 +41,7 @@ def install(app: FastAPI) -> None:
         case = evidence.fields(
             "native:runtime_v2_cases",
             case_id,
-            ["version_pin", "w2_round1", "w2_final", "w3_result"],
+            ["version_pin", "w2_round1", "w2_final", "w3_result", "w3_operations_result", "w3_trade_decision"],
         )
         if not case or not store.get("case", ticker, case_id, view["seq"]):
             raise ApiFailure("RESOURCE_NOT_FOUND", 404)
@@ -53,6 +53,10 @@ def install(app: FastAPI) -> None:
         for field in ("hit_condition_ids", "matched_condition_ids"):
             referenced.update(g["policy_id"] for g in (case.get("w2_final") or {}).get(field, []))
         referenced.update(((case.get("w3_result") or {}).get("policy") or {}).get("policy_ids", []))
+        referenced.update(((case.get("w3_operations_result") or {}).get("policy") or {}).get("policy_ids", []))
+        selected = (case.get("w3_trade_decision") or {}).get("policy_trade")
+        if selected:
+            referenced.add(selected["policy_id"])
         if policy_id not in referenced:
             raise ApiFailure("RESOURCE_NOT_FOUND", 404)
         pin = case.get("version_pin") or {}
@@ -116,6 +120,10 @@ def install(app: FastAPI) -> None:
                 "w2_round1",
                 "w2_skipped",
                 "w3_result",
+                "w3_trade_decision",
+                "w3_operations_result",
+                "w3_operations_status",
+                "w3_operations_error",
                 "frozen_inputs.policy_watch_followup",
                 "error_code",
                 "status",
@@ -494,6 +502,33 @@ def install(app: FastAPI) -> None:
                     for k in ("novelty", "policy", "expert_trade")
                 },
             }
+        if case.get("w3_trade_decision"):
+            decision = case["w3_trade_decision"]
+            ops = case.get("w3_operations_result") or {}
+            expert = decision.get("expert_trade") or {}
+            if third is None:
+                route = evidence.fields("native:runtime_v2_w3_cases", case_id, ["mode"])
+                third = dict(mode=(route or {}).get("mode", "UNCOVERED_NEW"))
+            third.update(
+                status="RESOLVED", decision=decision,
+                operations_result=case.get("w3_operations_result"),
+                operations_status=case.get("w3_operations_status"),
+                operations_error=case.get("w3_operations_error"),
+                trade_timing=evidence.interval([g for g in groups if g.get("phase") == "trade_decision"], "W3"),
+                operations_timing=evidence.interval([g for g in groups if g.get("phase") == "post_decision_operations"], "W3"),
+                novelty=available(ops["novelty"]["result"]) if ops else missing(),
+                references=references(ops["novelty"]) if ops else [],
+                policy_hit=available(bool(ops["policy"]["policy_ids"])) if ops else missing(),
+                policies=policies(ops["policy"]) if ops else [],
+                expert_trade_evaluated=available(decision["decision"] == "EXPERT_TRADE"),
+                expert_trade=available(decision["decision"] == "EXPERT_TRADE"),
+                direction=available(expert["direction"]) if expert else missing(),
+                prior_expectation=available(expert["prior_expectation"]) if expert else missing(),
+                expectation_delta=available(expert["expectation_delta"]) if expert else missing(),
+                timing=interval("W3"), attempts=page("attempt", "W3"),
+                reasoning={k: resource(reasons.get("w3_" + k))
+                           for k in ("novelty", "policy", "expert_trade")},
+            )
         with store.connect() as db:
             counts = {
                 kind: db.execute(
@@ -567,6 +602,14 @@ def install(app: FastAPI) -> None:
                 receipt=receipt,
             )
             value["policy_execution"] = (w3 or {}).get("policy_execution")
+        if case.get("w3_trade_decision"):
+            state = store.get("native:runtime_values", ticker, "w3_operations_input:" + case_id, seq)
+            state = state or store.get("native:runtime_values", ticker, "w3_global_input:" + case_id, seq) or {}
+            value["w3_state"] = dict(
+                watch=state.get("watch"), pins=state.get("pins"),
+                receipt=store.get("native:runtime_values", ticker, "w3_operations_applied:" + case_id, seq),
+            )
+            value["policy_watch"]["actions"] = (case.get("w3_operations_result") or {}).get("watch_actions", [])
         return app.state.respond(
             request,
             "CaseDetail",

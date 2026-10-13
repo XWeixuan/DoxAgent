@@ -1,0 +1,1 @@
+{"retired": "/var/lib/docker/volumes/doxagent-v2_v2-data/_data/bus/bus.disk-repair-20261013.precompact.sqlite3", "bytes": 21367558144, "live_bytes": 6333575168, "source": ["a782a752932379cb2ece4cfd8ea3e324", 2281856], "disk": {"total": 189559676928, "used": 155243036672, "free": 26492506112}}

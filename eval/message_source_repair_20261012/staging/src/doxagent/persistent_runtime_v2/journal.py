@@ -8,7 +8,10 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
+import os
 import sqlite3
+import time
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from datetime import UTC, datetime, timedelta
@@ -29,13 +32,27 @@ class LeaseLost(RuntimeError):
     pass
 
 
+def is_sqlite_contention(exc: BaseException) -> bool:
+    return isinstance(exc, sqlite3.OperationalError) and (
+        getattr(exc, "sqlite_errorcode", 0) & 255
+    ) in {sqlite3.SQLITE_BUSY, sqlite3.SQLITE_LOCKED}
+
+
 class RuntimeJournal:
     VERSION = 1
 
-    def __init__(self, path: str | Path, *, clock: Callable[[], datetime] | None = None,
-                 initialize: bool = True) -> None:
+    def __init__(
+        self,
+        path: str | Path,
+        *,
+        clock: Callable[[], datetime] | None = None,
+        initialize: bool = True,
+        busy_timeout_seconds: float = 30,
+    ) -> None:
         self.path = Path(path)
+        self.busy_timeout_seconds = max(0, busy_timeout_seconds)
         from doxagent.v2_read.native_content import NativeContent
+
         self.content = NativeContent(self.path)
         self.clock = clock or (lambda: datetime.now(UTC))
         if not initialize:
@@ -88,21 +105,39 @@ class RuntimeJournal:
             )
 
     @contextmanager
-    def transaction(self, *, write: bool = True) -> Iterator[sqlite3.Connection]:
-        db = sqlite3.connect(self.path, timeout=30)
+    def transaction(
+        self, *, write: bool = True, operation: str = "transaction"
+    ) -> Iterator[sqlite3.Connection]:
+        started = time.monotonic()
+        acquired = None
+        primary_code = None
+        db = sqlite3.connect(self.path, timeout=self.busy_timeout_seconds)
         db.row_factory = self.content.row
         try:
             if write:
                 db.execute("PRAGMA journal_mode=WAL")
                 db.execute("PRAGMA synchronous=FULL")
             db.execute("BEGIN IMMEDIATE" if write else "BEGIN")
+            acquired = time.monotonic()
             yield db
             db.commit()
-        except BaseException:
+        except BaseException as exc:
+            primary_code = getattr(exc, "sqlite_errorcode", 0) & 255
             db.rollback()
             raise
         finally:
             db.close()
+            elapsed = time.monotonic() - started
+            if elapsed >= 0.25 or primary_code:
+                logging.getLogger(__name__).warning(
+                    "runtime_transaction pid=%s operation=%s write=%s elapsed_ms=%s wait_ms=%s sqlite_code=%s",
+                    os.getpid(),
+                    operation,
+                    write,
+                    round(elapsed * 1000),
+                    round(((acquired or time.monotonic()) - started) * 1000),
+                    primary_code,
+                )
 
     @staticmethod
     def _task(row: sqlite3.Row) -> dict[str, Any]:

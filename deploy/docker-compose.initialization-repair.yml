@@ -4,8 +4,16 @@ services:
     mem_limit: 2g
     memswap_limit: 3g
     pids_limit: 128
-    image: ${DOXAGENT_V2_IMAGE:-doxagent-v2:production}
+    image: ${DOXAGENT_INITIALIZATION_GUARDIAN_IMAGE:-doxagent-initialization-guardian:production}
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.initialization-guardian
+      args:
+        DOXAGENT_BASE_IMAGE: ${DOXAGENT_V2_IMAGE:-doxagent-v2:production}
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options: {max-size: "20m", max-file: "3"}
     init: true
     env_file: ["${DOXAGENT_V2_ENV_FILE:-.env.v2}"]
     environment:

@@ -69,6 +69,7 @@ async def test_cancelled_external_page_creation_returns_capacity(service, monkey
     async def entry(_identity, _egress):
         return SimpleNamespace(context=Context())
     monkeypatch.setattr(adapter, "_entry", entry)
+    monkeypatch.setattr(adapter, "_create_owned_page", lambda entry: entry.context.new_page())
     task = asyncio.create_task(adapter.page(None, None))
     await started.wait()
     task.cancel()

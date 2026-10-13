@@ -1,0 +1,3 @@
+{"at": "2026-10-12T22:21:49.702151+00:00", "sources": {"bus": {"head": 2291658, "checkpoint": 2278393, "backlog": 13265}, "runtime": {"head": 1806401, "checkpoint": 1804997, "backlog": 1404}}}
+{"at": "2026-10-12T22:22:08.655021+00:00", "sources": {"bus": {"head": 2291679, "checkpoint": 2278516, "backlog": 13163}, "runtime": {"head": 1806401, "checkpoint": 1805003, "backlog": 1398}}}
+{"at": "2026-10-12T22:23:20.983074+00:00", "sources": {"bus": {"head": 2291816, "checkpoint": 2278692, "backlog": 13124}, "runtime": {"head": 1806401, "checkpoint": 1805038, "backlog": 1363}}}

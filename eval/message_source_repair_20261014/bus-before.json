@@ -1,0 +1,749 @@
+{
+  "at": "2026-10-13T18:38:13.900036+00:00",
+  "polls": [
+    {
+      "binding_id": "MU:benzinga_news",
+      "source_id": "benzinga_news",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:37:02.782077Z",
+      "last_success_at": "2026-10-13T18:37:02.782077Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "MU:finnhub_company_news",
+      "source_id": "finnhub_company_news",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:37:02.782077Z",
+      "last_success_at": "2026-10-13T18:37:02.782077Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "MU:tikhub_x_user_posts",
+      "source_id": "tikhub_x_user_posts",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:30:08.445291Z",
+      "last_success_at": "2026-10-13T18:30:08.445291Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "MU:ibkr_news",
+      "source_id": "ibkr_news",
+      "status": "failed",
+      "last_attempt_at": "2026-10-13T18:35:59.677197Z",
+      "last_success_at": "2026-10-13T15:44:01.351399Z",
+      "last_error_code": "RuntimeError",
+      "last_error_message": "IBKR news connection timed out",
+      "consecutive_failures": 124
+    },
+    {
+      "binding_id": "MU:reuters_site_search",
+      "source_id": "reuters_site_search",
+      "status": "failed",
+      "last_attempt_at": "2026-10-13T18:37:02.782077Z",
+      "last_success_at": "2026-10-12T07:17:32.068911Z",
+      "last_error_code": "search_query_failed",
+      "last_error_message": "manual_attention_required",
+      "consecutive_failures": 1749
+    },
+    {
+      "binding_id": "MU:yahoo_finance_news",
+      "source_id": "yahoo_finance_news",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:35:48.405005Z",
+      "last_success_at": "2026-10-13T18:35:48.405005Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "RKLB:benzinga_news",
+      "source_id": "benzinga_news",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:37:18.503957Z",
+      "last_success_at": "2026-10-13T18:37:18.503957Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "RKLB:finnhub_company_news",
+      "source_id": "finnhub_company_news",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:37:18.503957Z",
+      "last_success_at": "2026-10-13T18:37:18.503957Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "RKLB:ibkr_news",
+      "source_id": "ibkr_news",
+      "status": "failed",
+      "last_attempt_at": "2026-10-13T18:36:20.890337Z",
+      "last_success_at": "2026-10-13T15:44:16.215320Z",
+      "last_error_code": "RuntimeError",
+      "last_error_message": "IBKR news connection timed out",
+      "consecutive_failures": 124
+    },
+    {
+      "binding_id": "RKLB:reuters_site_search",
+      "source_id": "reuters_site_search",
+      "status": "failed",
+      "last_attempt_at": "2026-10-13T18:37:18.503957Z",
+      "last_success_at": "2026-10-12T07:17:18.827059Z",
+      "last_error_code": "search_query_failed",
+      "last_error_message": "manual_attention_required",
+      "consecutive_failures": 1835
+    },
+    {
+      "binding_id": "RKLB:yahoo_finance_news",
+      "source_id": "yahoo_finance_news",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:35:48.405005Z",
+      "last_success_at": "2026-10-13T18:35:48.405005Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "BE:benzinga_news",
+      "source_id": "benzinga_news",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:37:30.442630Z",
+      "last_success_at": "2026-10-13T18:37:30.442630Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "BE:finnhub_company_news",
+      "source_id": "finnhub_company_news",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:37:30.442630Z",
+      "last_success_at": "2026-10-13T18:37:30.442630Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "BE:google_news_search_rss",
+      "source_id": "google_news_search_rss",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:37:30.442630Z",
+      "last_success_at": "2026-10-13T18:37:30.442630Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "BE:ibkr_news",
+      "source_id": "ibkr_news",
+      "status": "failed",
+      "last_attempt_at": "2026-10-13T18:36:34.826135Z",
+      "last_success_at": "2026-10-13T15:44:30.369404Z",
+      "last_error_code": "RuntimeError",
+      "last_error_message": "IBKR news connection timed out",
+      "consecutive_failures": 124
+    },
+    {
+      "binding_id": "BE:newswire_rss",
+      "source_id": "newswire_rss",
+      "status": "failed",
+      "last_attempt_at": "2026-10-13T18:37:30.442630Z",
+      "last_success_at": null,
+      "last_error_code": "HTTPStatusError",
+      "last_error_message": "Client error '403 Forbidden' for url 'https://investor.bloomenergy.com/rss/pressrelease.aspx'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403",
+      "consecutive_failures": 22708
+    },
+    {
+      "binding_id": "BE:reuters_site_search",
+      "source_id": "reuters_site_search",
+      "status": "failed",
+      "last_attempt_at": "2026-10-13T18:37:30.442630Z",
+      "last_success_at": "2026-10-12T12:01:33.196333Z",
+      "last_error_code": "search_query_failed",
+      "last_error_message": "manual_attention_required",
+      "consecutive_failures": 1533
+    },
+    {
+      "binding_id": "BE:yahoo_finance_news",
+      "source_id": "yahoo_finance_news",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:35:41.091526Z",
+      "last_success_at": "2026-10-13T18:35:41.091526Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "INTC:benzinga_news",
+      "source_id": "benzinga_news",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:37:47.464777Z",
+      "last_success_at": "2026-10-13T18:37:47.464777Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "INTC:finnhub_company_news",
+      "source_id": "finnhub_company_news",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:36:48.647216Z",
+      "last_success_at": "2026-10-13T18:36:48.647216Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "INTC:google_news_search_rss",
+      "source_id": "google_news_search_rss",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:37:02.782077Z",
+      "last_success_at": "2026-10-13T18:37:02.782077Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "INTC:ibkr_news",
+      "source_id": "ibkr_news",
+      "status": "failed",
+      "last_attempt_at": "2026-10-13T18:35:34.270671Z",
+      "last_success_at": "2026-10-13T15:44:46.240861Z",
+      "last_error_code": "RuntimeError",
+      "last_error_message": "IBKR news connection timed out",
+      "consecutive_failures": 123
+    },
+    {
+      "binding_id": "INTC:newswire_rss",
+      "source_id": "newswire_rss",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:37:02.782077Z",
+      "last_success_at": "2026-10-13T18:37:02.782077Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "INTC:reuters_site_search",
+      "source_id": "reuters_site_search",
+      "status": "failed",
+      "last_attempt_at": "2026-10-13T18:37:47.464777Z",
+      "last_success_at": "2026-10-12T07:17:03.981290Z",
+      "last_error_code": "search_query_failed",
+      "last_error_message": "manual_attention_required",
+      "consecutive_failures": 1751
+    },
+    {
+      "binding_id": "INTC:yahoo_finance_news",
+      "source_id": "yahoo_finance_news",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:35:41.091526Z",
+      "last_success_at": "2026-10-13T18:35:41.091526Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "BE:barrons_ticker_news",
+      "source_id": "barrons_ticker_news",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:33:19.036968Z",
+      "last_success_at": "2026-10-13T18:33:19.036968Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "INTC:barrons_ticker_news",
+      "source_id": "barrons_ticker_news",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:31:24.286211Z",
+      "last_success_at": "2026-10-13T18:31:24.286211Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "MU:barrons_ticker_news",
+      "source_id": "barrons_ticker_news",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:34:40.778212Z",
+      "last_success_at": "2026-10-13T18:34:40.778212Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "RKLB:barrons_ticker_news",
+      "source_id": "barrons_ticker_news",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:35:28.188346Z",
+      "last_success_at": "2026-10-13T18:35:28.188346Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "BE:digitimes_semiconductors",
+      "source_id": "digitimes_semiconductors",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:37:02.782077Z",
+      "last_success_at": "2026-10-13T18:37:02.782077Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "INTC:digitimes_semiconductors",
+      "source_id": "digitimes_semiconductors",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:37:02.782077Z",
+      "last_success_at": "2026-10-13T18:37:02.782077Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "MU:digitimes_semiconductors",
+      "source_id": "digitimes_semiconductors",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:37:02.782077Z",
+      "last_success_at": "2026-10-13T18:37:02.782077Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "BE:etnews_rss",
+      "source_id": "etnews_rss",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:37:02.782077Z",
+      "last_success_at": "2026-10-13T18:37:02.782077Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "INTC:etnews_rss",
+      "source_id": "etnews_rss",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:37:02.782077Z",
+      "last_success_at": "2026-10-13T18:37:02.782077Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "MU:etnews_rss",
+      "source_id": "etnews_rss",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:37:02.782077Z",
+      "last_success_at": "2026-10-13T18:37:02.782077Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "BE:digitimes_tw_rss",
+      "source_id": "digitimes_tw_rss",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:37:02.782077Z",
+      "last_success_at": "2026-10-13T18:37:02.782077Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "INTC:digitimes_tw_rss",
+      "source_id": "digitimes_tw_rss",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:37:02.782077Z",
+      "last_success_at": "2026-10-13T18:37:02.782077Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "MU:digitimes_tw_rss",
+      "source_id": "digitimes_tw_rss",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:37:02.782077Z",
+      "last_success_at": "2026-10-13T18:37:02.782077Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "BE:thelec_semiconductors_rss",
+      "source_id": "thelec_semiconductors_rss",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:37:02.782077Z",
+      "last_success_at": "2026-10-13T18:37:02.782077Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "INTC:thelec_semiconductors_rss",
+      "source_id": "thelec_semiconductors_rss",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:37:02.782077Z",
+      "last_success_at": "2026-10-13T18:37:02.782077Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "MU:thelec_semiconductors_rss",
+      "source_id": "thelec_semiconductors_rss",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:37:02.782077Z",
+      "last_success_at": "2026-10-13T18:37:02.782077Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "BE:huggingnews_rss",
+      "source_id": "huggingnews_rss",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:37:02.782077Z",
+      "last_success_at": "2026-10-13T18:37:02.782077Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "INTC:huggingnews_rss",
+      "source_id": "huggingnews_rss",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:37:02.782077Z",
+      "last_success_at": "2026-10-13T18:37:02.782077Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "MU:huggingnews_rss",
+      "source_id": "huggingnews_rss",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:37:02.782077Z",
+      "last_success_at": "2026-10-13T18:37:02.782077Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "BE:trendforce_news",
+      "source_id": "trendforce_news",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:37:02.782077Z",
+      "last_success_at": "2026-10-13T18:37:02.782077Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "INTC:trendforce_news",
+      "source_id": "trendforce_news",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:37:02.782077Z",
+      "last_success_at": "2026-10-13T18:37:02.782077Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "MU:trendforce_news",
+      "source_id": "trendforce_news",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:37:02.782077Z",
+      "last_success_at": "2026-10-13T18:37:02.782077Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "BE:tomshardware_rss",
+      "source_id": "tomshardware_rss",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:37:02.782077Z",
+      "last_success_at": "2026-10-13T18:37:02.782077Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "INTC:tomshardware_rss",
+      "source_id": "tomshardware_rss",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:37:02.782077Z",
+      "last_success_at": "2026-10-13T18:37:02.782077Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "MU:tomshardware_rss",
+      "source_id": "tomshardware_rss",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:37:02.782077Z",
+      "last_success_at": "2026-10-13T18:37:02.782077Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "BE:trendforce_press_releases",
+      "source_id": "trendforce_press_releases",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:37:02.782077Z",
+      "last_success_at": "2026-10-13T18:37:02.782077Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "INTC:trendforce_press_releases",
+      "source_id": "trendforce_press_releases",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:37:02.782077Z",
+      "last_success_at": "2026-10-13T18:37:02.782077Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "MU:trendforce_press_releases",
+      "source_id": "trendforce_press_releases",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:37:02.782077Z",
+      "last_success_at": "2026-10-13T18:37:02.782077Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "BE:globenewswire_search",
+      "source_id": "globenewswire_search",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:37:08.130484Z",
+      "last_success_at": "2026-10-13T18:37:08.130484Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "INTC:globenewswire_search",
+      "source_id": "globenewswire_search",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:37:30.442630Z",
+      "last_success_at": "2026-10-13T18:37:30.442630Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "MU:globenewswire_search",
+      "source_id": "globenewswire_search",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:37:39.245327Z",
+      "last_success_at": "2026-10-13T18:37:39.245327Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "BE:investing_ticker_news",
+      "source_id": "investing_ticker_news",
+      "status": "failed",
+      "last_attempt_at": "2026-10-13T18:37:08.130484Z",
+      "last_success_at": "2026-10-06T14:34:02.345033Z",
+      "last_error_code": "SiteAccessError",
+      "last_error_message": "manual_attention_required",
+      "consecutive_failures": 7165
+    },
+    {
+      "binding_id": "INTC:investing_ticker_news",
+      "source_id": "investing_ticker_news",
+      "status": "failed",
+      "last_attempt_at": "2026-10-13T18:37:30.442630Z",
+      "last_success_at": "2026-10-06T14:36:07.362440Z",
+      "last_error_code": "SiteAccessError",
+      "last_error_message": "manual_attention_required",
+      "consecutive_failures": 7164
+    },
+    {
+      "binding_id": "MU:investing_ticker_news",
+      "source_id": "investing_ticker_news",
+      "status": "failed",
+      "last_attempt_at": "2026-10-13T18:37:39.245327Z",
+      "last_success_at": "2026-10-06T14:33:24.750221Z",
+      "last_error_code": "SiteAccessError",
+      "last_error_message": "manual_attention_required",
+      "consecutive_failures": 7158
+    },
+    {
+      "binding_id": "BE:investorshub_ticker_news",
+      "source_id": "investorshub_ticker_news",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:36:48.647216Z",
+      "last_success_at": "2026-10-13T18:36:48.647216Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "INTC:investorshub_ticker_news",
+      "source_id": "investorshub_ticker_news",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:35:59.677197Z",
+      "last_success_at": "2026-10-13T18:35:59.677197Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "MU:investorshub_ticker_news",
+      "source_id": "investorshub_ticker_news",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:34:15.575710Z",
+      "last_success_at": "2026-10-13T18:34:15.575710Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "RKLB:globenewswire_search",
+      "source_id": "globenewswire_search",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:37:53.040733Z",
+      "last_success_at": "2026-10-13T18:37:53.040733Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "RKLB:investing_ticker_news",
+      "source_id": "investing_ticker_news",
+      "status": "failed",
+      "last_attempt_at": "2026-10-13T18:37:53.040733Z",
+      "last_success_at": "2026-10-06T14:35:43.019439Z",
+      "last_error_code": "SiteAccessError",
+      "last_error_message": "manual_attention_required",
+      "consecutive_failures": 7164
+    },
+    {
+      "binding_id": "RKLB:investorshub_ticker_news",
+      "source_id": "investorshub_ticker_news",
+      "status": "succeeded",
+      "last_attempt_at": "2026-10-13T18:36:27.625945Z",
+      "last_success_at": "2026-10-13T18:36:27.625945Z",
+      "last_error_code": null,
+      "last_error_message": null,
+      "consecutive_failures": 0
+    },
+    {
+      "binding_id": "BE:globenewswire_semiconductors_rss",
+      "source_id": "globenewswire_semiconductors_rss",
+      "status": "failed",
+      "last_attempt_at": "2026-10-13T18:38:02.539283Z",
+      "last_success_at": "2026-10-09T13:40:01.992271Z",
+      "last_error_code": "HTTPStatusError",
+      "last_error_message": "Client error '403 Forbidden' for url 'https://www.globenewswire.com/RssFeed/industry/9576-Semiconductors/feedTitle/GlobeNewswire%20-%20Industry%20News%20on%20Semiconductors'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403",
+      "consecutive_failures": 2903
+    },
+    {
+      "binding_id": "INTC:globenewswire_semiconductors_rss",
+      "source_id": "globenewswire_semiconductors_rss",
+      "status": "failed",
+      "last_attempt_at": "2026-10-13T18:38:02.539283Z",
+      "last_success_at": "2026-10-09T13:40:01.992271Z",
+      "last_error_code": "HTTPStatusError",
+      "last_error_message": "Client error '403 Forbidden' for url 'https://www.globenewswire.com/RssFeed/industry/9576-Semiconductors/feedTitle/GlobeNewswire%20-%20Industry%20News%20on%20Semiconductors'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403",
+      "consecutive_failures": 2903
+    },
+    {
+      "binding_id": "MU:globenewswire_semiconductors_rss",
+      "source_id": "globenewswire_semiconductors_rss",
+      "status": "failed",
+      "last_attempt_at": "2026-10-13T18:38:02.539283Z",
+      "last_success_at": "2026-10-09T13:40:01.992271Z",
+      "last_error_code": "HTTPStatusError",
+      "last_error_message": "Client error '403 Forbidden' for url 'https://www.globenewswire.com/RssFeed/industry/9576-Semiconductors/feedTitle/GlobeNewswire%20-%20Industry%20News%20on%20Semiconductors'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403",
+      "consecutive_failures": 2903
+    }
+  ],
+  "feeds": [
+    {
+      "source_id": "newswire_rss",
+      "entry_url": null,
+      "default_parameters": {},
+      "version": 1
+    },
+    {
+      "source_id": "yahoo_finance_news",
+      "entry_url": null,
+      "default_parameters": {},
+      "version": 1
+    },
+    {
+      "source_id": "google_news_search_rss",
+      "entry_url": null,
+      "default_parameters": {},
+      "version": 2
+    },
+    {
+      "source_id": "huggingnews_rss",
+      "entry_url": "https://huggingnews.com/feed.xml",
+      "default_parameters": {
+        "feed_proxy_url": "http://doxagent-egress-clash:18083"
+      },
+      "version": 2
+    },
+    {
+      "source_id": "tomshardware_rss",
+      "entry_url": "https://www.tomshardware.com/feeds.xml",
+      "default_parameters": {},
+      "version": 2
+    },
+    {
+      "source_id": "thelec_semiconductors_rss",
+      "entry_url": "https://www.thelec.kr/rss/S1N2.xml",
+      "default_parameters": {},
+      "version": 2
+    },
+    {
+      "source_id": "etnews_rss",
+      "entry_url": "https://rss.etnews.com/06.xml",
+      "default_parameters": {},
+      "version": 2
+    },
+    {
+      "source_id": "digitimes_tw_rss",
+      "entry_url": "https://www.digitimes.com.tw/tech/rss/xml/xmlrss_10_40.xml",
+      "default_parameters": {
+        "feed_proxy_url": "http://doxagent-egress-clash:18083",
+        "feed_http_routes": [
+          "de-standard-1",
+          "direct"
+        ]
+      },
+      "version": 6
+    },
+    {
+      "source_id": "globenewswire_semiconductors_rss",
+      "entry_url": "https://www.globenewswire.com/RssFeed/industry/9576-Semiconductors/feedTitle/GlobeNewswire%20-%20Industry%20News%20on%20Semiconductors",
+      "default_parameters": {},
+      "version": 1
+    }
+  ]
+}

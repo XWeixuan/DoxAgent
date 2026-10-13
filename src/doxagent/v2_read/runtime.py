@@ -164,6 +164,7 @@ def worker_records(value: dict) -> tuple[list[dict], list[dict]]:
             "turn_id": job.get("turn_id"),
             "node_id": "W3",
             "round": "AGENT",
+            "phase": value.get("task_phase"),
             "ordinal": value["ordinal"],
             "attempt_number": value["ordinal"],
             "status": {
@@ -207,7 +208,8 @@ def worker_records(value: dict) -> tuple[list[dict], list[dict]]:
                 "usage": usage,
                 "cost_usd": missing("CODEX_SUBSCRIPTION_NOT_PRICED", "NOT_APPLICABLE"),
                 "coverage": "COMPLETE"
-                if usage and all(v is not None for v in usage.values())
+                if (job.get("telemetry") or {}).get("usage_complete", False)
+                and usage and all(v is not None for v in usage.values())
                 else "PARTIAL",
             },
         },
@@ -262,6 +264,10 @@ def worker_usage(value):
             "usage": usage,
             "timing": timing(job["started_at"], job.get("finished_at")),
             "cost_usd": missing("CODEX_SUBSCRIPTION_NOT_PRICED", "NOT_APPLICABLE"),
+            "coverage": "COMPLETE"
+            if (job.get("telemetry") or {}).get("usage_complete", False)
+            and usage and all(v is not None for v in usage.values())
+            else "PARTIAL",
         },
     }
     counts = [

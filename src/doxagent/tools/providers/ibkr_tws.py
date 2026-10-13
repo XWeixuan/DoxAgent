@@ -484,6 +484,7 @@ class IbkrTwsSession:
         bar_size: str = "1 day",
         what_to_show: str = "TRADES",
         use_rth: bool = True,
+        end_datetime: str = "",
     ) -> dict[str, Any]:
         app = self._require_app()
         request_id = next(self._request_ids)
@@ -495,7 +496,7 @@ class IbkrTwsSession:
             app.reqHistoricalData(
                 request_id,
                 _to_official_contract(app, contract),
-                "",
+                end_datetime,
                 duration,
                 bar_size,
                 what_to_show,
@@ -526,6 +527,7 @@ class IbkrTwsSession:
             "bar_size": bar_size,
             "what_to_show": what_to_show,
             "use_rth": use_rth,
+            "end_datetime": end_datetime,
             "bars": bars,
         }
 

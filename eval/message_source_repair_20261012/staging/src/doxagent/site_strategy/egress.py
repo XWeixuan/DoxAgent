@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import hashlib
-from datetime import UTC, datetime
+import time
+from datetime import UTC, datetime, timedelta
 from ipaddress import ip_address
 from typing import Any
 
@@ -93,6 +94,9 @@ async def probe_egress(
     if egress is None:
         raise KeyError(egress_id)
     status = "UNAVAILABLE"
+    started = time.monotonic()
+    attempted_at = datetime.now(UTC)
+    last_error = None
     observed_ip: str | None = None
     probe_endpoint: str | None = None
     async with httpx.AsyncClient(proxy=egress.endpoint, timeout=timeout_seconds) as client:
@@ -107,7 +111,8 @@ async def probe_egress(
                     probe_endpoint = ip_url
                     break
                 observed_ip = None
-            except (httpx.HTTPError, ValueError):
+            except (httpx.HTTPError, ValueError) as exc:
+                last_error = type(exc).__name__
                 continue
     observed_at = datetime.now(UTC)
     probe_succeeded = status == "READY"
@@ -116,11 +121,7 @@ async def probe_egress(
         # One failed probe round is not proof that a previously verified proxy
         # is down. Keep routing through it and let the real request/fallback path
         # decide; only two consecutive full probe failures withdraw the egress.
-        status = (
-            "READY"
-            if egress.status == "READY" and failure_count < 2
-            else "UNAVAILABLE"
-        )
+        status = "READY" if egress.status == "READY" and failure_count < 2 else "UNAVAILABLE"
         observed_ip = egress.observed_ip
         probe_endpoint = egress.probe_endpoint
     updated = egress.model_copy(
@@ -131,6 +132,13 @@ async def probe_egress(
             "probe_endpoint": probe_endpoint,
             "consecutive_probe_failures": failure_count,
             "last_probe_error_at": None if probe_succeeded else observed_at,
+            "last_probe_attempt": attempted_at,
+            "next_probe_at": observed_at
+            + timedelta(
+                seconds=1800 if probe_succeeded else min(900, 60 * 2 ** min(failure_count, 4))
+            ),
+            "last_probe_error": None if probe_succeeded else last_error or "invalid_ip_response",
+            "last_probe_seconds": round(time.monotonic() - started, 3),
             # A provider may rotate the observed exit IP behind the same fixed
             # listener and node. This is telemetry, not a binding/configuration
             # change: bumping generation strands an attached External Chrome.

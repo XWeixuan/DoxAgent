@@ -126,10 +126,10 @@ def migrate(*, resume_backup=None):
     if resume_backup and (backup_root.parent != backup_parent.resolve() or not backup_root.is_dir()):
         raise ValueError("resume backup must be an existing production backup directory")
     if not resume_backup:
-        estimated = sum(path.stat().st_size for name, path in locations.items()
-                        if name in {"research", "initialization", "bus", "runtime", "read"}
-                        and path.exists())
-        reserve = int(os.environ.get("DOXAGENT_BACKUP_RESERVE_BYTES", str(20 * 1024**3)))
+        from doxagent.v2_read.backup_retention import estimate_migration_backup
+        estimated = estimate_migration_backup({name: path for name, path in locations.items()
+                                              if name in {"research", "initialization", "bus", "runtime", "read"}})
+        reserve = int(os.environ.get("DOXAGENT_BACKUP_RESERVE_BYTES", str(2 * 1024**3)))
         if shutil.disk_usage(locations["read"].parent).free < estimated + reserve:
             raise RuntimeError("insufficient storage for migration backup plus reserve; archive backups or expand disk")
     # Refuse migrations while managed writers still own these databases.
@@ -142,8 +142,10 @@ def migrate(*, resume_backup=None):
         WriterLock(Path(str(locations["read"]) + ".projector")),
     ):
         affected = {"research", "initialization", "bus", "runtime", "read"}
+        backed_up = {}
         for name, path in locations.items():
             if path.exists() and name in affected:
+                backed_up[name] = path
                 target = backup_root / (name + ".sqlite3")
                 if resume_backup:
                     if not target.is_file():
@@ -199,6 +201,10 @@ def migrate(*, resume_backup=None):
                 }
             )
         )
+    # Compress/retire immutable copies after releasing the business writer fences.
+    from doxagent.v2_read.backup_retention import complete_migration_backup
+    if backed_up:
+        print(json.dumps({"backup_retention": complete_migration_backup(backup_root, backed_up)}), flush=True)
 
 
 def main():
@@ -206,6 +212,7 @@ def main():
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser("check")
     commands.add_parser("migrate").add_argument("--resume-backup", type=Path)
+    commands.add_parser("upgrade-v21").add_argument("--backup-manifest", type=Path, required=True)
     binding = commands.add_parser("bind-profile")
     binding.add_argument(
         "--ticker",
@@ -219,6 +226,10 @@ def main():
     args = parser.parse_args()
     if args.command == "migrate":
         migrate(resume_backup=args.resume_backup)
+    elif args.command == "upgrade-v21":
+        from doxagent.production_v21 import upgrade_v21
+
+        print(json.dumps(upgrade_v21(paths(check()), args.backup_manifest)))
     elif args.command == "check":
         check()
         print(json.dumps({"configuration": "ready", "orders_submitted": 0}))

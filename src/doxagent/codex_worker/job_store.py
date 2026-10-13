@@ -83,6 +83,39 @@ class JobStore:
                 )
             ]
 
+    def acknowledge(self, job_id: str) -> WorkerJob:
+        job = self.get(job_id)
+        request = self.request(job_id)
+        if job is None or job.status not in {"succeeded", "failed", "cancelled"}:
+            raise ValueError("only a terminal persisted job may be acknowledged")
+        if request is not None and request.task_phase not in {
+            "w3_template", "trade_decision", "post_decision_operations",
+        }:
+            raise ValueError("payload compaction is restricted to W3 Case phases")
+        if job.telemetry:
+            job.telemetry.events = []
+        job.final_response = None
+        with closing(self.connect()) as db, db:
+            db.execute("UPDATE jobs SET request=NULL,payload=? WHERE id=?",
+                       (job.model_dump_json(), job_id))
+            db.execute("DELETE FROM events WHERE job_id=?", (job_id,))
+        if request is not None:
+            from .result_receipt import receipt_path
+
+            run_root = (self.root / request.run_id).resolve()
+            targets = [
+                run_root / "attempts" / request.attempt_id / "audit" / "agent_loop.jsonl",
+                receipt_path(self.root, request),
+            ]
+            for target in targets:
+                if not target.resolve().is_relative_to(self.root.resolve()):
+                    raise ValueError("job payload path escapes worker root")
+                target.unlink(missing_ok=True)
+            audit = run_root / "audit" / "jobs" / (job_id + ".json")
+            if audit.is_file() and audit.resolve().is_relative_to(self.root.resolve()):
+                audit.write_text(job.model_dump_json(), encoding="utf-8")
+        return job
+
     @staticmethod
     def _lane_expression() -> str:
         return (

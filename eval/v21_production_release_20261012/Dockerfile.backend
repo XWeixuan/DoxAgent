@@ -1,0 +1,10 @@
+FROM doxagent-v2:rklb-v21-20261012
+WORKDIR /app
+COPY pyproject.toml uv.lock README.md ./
+COPY src ./src
+COPY prompts ./prompts
+COPY dev_plan/workflow_v2/api_contract ./dev_plan/workflow_v2/api_contract
+COPY ops/catalog-hashes.json /app/ops/catalog-hashes.json
+RUN python -c "import json,hashlib,pathlib; d=json.load(open('/app/ops/catalog-hashes.json')); assert all(hashlib.sha256(pathlib.Path('/app',p).read_bytes()).hexdigest()==h for p,h in d.items()), 'base catalog differs from release'"
+RUN uv sync --frozen --no-group dev --inexact && python -c "import ibapi,openai_codex; import doxagent.research_adoption"
+LABEL doxagent.v21.source.sha256="bbfac491b188ca804e0a90fc50126ed3994d1ef9aff668404a40a294b5d1dd80"

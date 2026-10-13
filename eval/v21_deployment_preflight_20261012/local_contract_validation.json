@@ -1,0 +1,38 @@
+{
+  "MU": {
+    "d2_schema": "document2.v2.1",
+    "d2_run": "mu-v21-20261010-02-d2",
+    "d1_run": "mu-v21-20261010-02-d1",
+    "shell_count": 12,
+    "policy_schema": "document3.v3",
+    "policy_count": 262,
+    "projection_schema": "document3.runtime_projection.v5",
+    "projection_matches": true,
+    "d2_ref_matches": true,
+    "d3_sha256": "7b55edcda0dd2d354543544845d6ec973f80bd7be591df021fe642c56b38213a"
+  },
+  "BE": {
+    "d2_schema": "document2.v2.1",
+    "d2_run": "be-v21-20261011-01-d2",
+    "d1_run": "be-v21-20261011-01-d1",
+    "shell_count": 6,
+    "policy_schema": "document3.v3",
+    "policy_count": 124,
+    "projection_schema": "document3.runtime_projection.v5",
+    "projection_matches": true,
+    "d2_ref_matches": true,
+    "d3_sha256": "3fd35a30f0a0288525a35635c993e5d8d8fa8de054ca39bd4171297f0452f67a"
+  },
+  "INTC": {
+    "d2_schema": "document2.v2.1",
+    "d2_run": "intc-v21-20261011-01-d2",
+    "d1_run": "intc-v21-20261011-01-d1",
+    "shell_count": 6,
+    "policy_schema": "document3.v3",
+    "policy_count": 173,
+    "projection_schema": "document3.runtime_projection.v5",
+    "projection_matches": true,
+    "d2_ref_matches": true,
+    "d3_sha256": "8e280dfa1a3fc7cc1d1027b674110a592a5c338d259fab356721e0aac45ddc07"
+  }
+}

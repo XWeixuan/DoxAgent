@@ -63,8 +63,12 @@ def region_label(egress_id: str, node: str) -> str:
     # Egress IDs are stable slots, not a guarantee of the currently selected
     # country. Prefer the real subscription node's country marker.
     for marker, country in {
-        "🇳🇱": "Netherlands", "🇩🇪": "Germany", "🇺🇸": "United States",
-        "🇯🇵": "Japan", "🇹🇼": "Taiwan", "🇸🇬": "Singapore",
+        "🇳🇱": "Netherlands",
+        "🇩🇪": "Germany",
+        "🇺🇸": "United States",
+        "🇯🇵": "Japan",
+        "🇹🇼": "Taiwan",
+        "🇸🇬": "Singapore",
     }.items():
         if marker in node:
             return f"{country} ({egress_id})"
@@ -258,7 +262,10 @@ class SiteLoginApp:
                     else "Managed",
                     role,
                     region_label(row["egress_id"], row["egress_node"])
-                    + (f" / {row['observed_ip']}" if row.get("observed_ip") else ""),
+                    + (f" / {row['observed_ip']}" if row.get("observed_ip") else "")
+                    + (
+                        " [egress unavailable]" if row.get("egress_status") == "UNAVAILABLE" else ""
+                    ),
                     state,
                 ),
             )
@@ -335,6 +342,7 @@ class SiteLoginApp:
 
     def _opened(self, payload: dict[str, Any]) -> None:
         self.status_value.set(f"Browser opened in {payload.get('opened_in_seconds')} seconds")
+        self._stop_owned_viewer()
         self._launch_viewer()
         messagebox.showinfo(
             "Complete Website Login",
@@ -372,6 +380,16 @@ class SiteLoginApp:
             )
         self.root.after(1500, self._watch_viewer)
 
+    def _stop_owned_viewer(self) -> None:
+        viewer, self.viewer = self.viewer, None
+        if viewer and viewer.poll() is None:
+            try:
+                viewer.terminate()
+                viewer.wait(timeout=2)
+            except (OSError, subprocess.TimeoutExpired):
+                # Do not kill arbitrary desktop VNC processes or the Chrome session.
+                pass
+
     def _watch_viewer(self) -> None:
         if not self.session:
             return
@@ -387,6 +405,14 @@ class SiteLoginApp:
         self.session = payload.get("session")
         self._render_session()
         self.status_value.set(str(payload.get("message") or "Maintenance session recovered"))
+        browser = payload.get("browser") or {}
+        if browser.get("navigation_state") == "FAILED":
+            self.status_value.set(
+                "Browser is open; navigation failed: "
+                + str(browser.get("navigation_error") or "network unavailable")
+            )
+        elif browser.get("navigation_state") == "PENDING" and self.session:
+            self.root.after(1500, self._recover)
 
     def _continue_viewer(self) -> None:
         self._launch_viewer()
@@ -425,6 +451,7 @@ class SiteLoginApp:
         self._run(lambda: call_admin(arguments), self._verified)
 
     def _verified(self, payload: dict[str, Any]) -> None:
+        self._stop_owned_viewer()
         self.session = None
         self._render_session()
         message = str(payload.get("message") or "Verification completed.")
@@ -445,6 +472,7 @@ class SiteLoginApp:
         self._run(lambda: call_admin(["close"]), self._cancelled)
 
     def _cancelled(self, payload: dict[str, Any]) -> None:
+        self._stop_owned_viewer()
         self.session = None
         self._render_session()
         self.status_value.set(str(payload.get("message") or "Maintenance cancelled"))

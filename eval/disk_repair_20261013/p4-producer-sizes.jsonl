@@ -1,0 +1,8 @@
+{"root": "/var/lib/docker/volumes/doxagent-v2_v2-data/_data/codex-home", "result": "10123497472\t/var/lib/docker/volumes/doxagent-v2_v2-data/_data/codex-home", "error": ""}
+{"root": "/var/lib/docker/volumes/doxagent-v2_v2-data/_data/workspaces", "result": "6706479104\t/var/lib/docker/volumes/doxagent-v2_v2-data/_data/workspaces", "error": ""}
+{"root": "/var/lib/docker/volumes/doxagent-v2_v2-data/_data/v21-production-validation", "result": "3216941056\t/var/lib/docker/volumes/doxagent-v2_v2-data/_data/v21-production-validation", "error": ""}
+{"root": "/var/lib/docker/volumes/doxagent-v2_v2-data/_data/backups", "result": "4111192064\t/var/lib/docker/volumes/doxagent-v2_v2-data/_data/backups", "error": ""}
+{"root": "/var/lib/docker/volumes/doxagent-v2_v2-data/_data/bus/backups", "result": "506068992\t/var/lib/docker/volumes/doxagent-v2_v2-data/_data/bus/backups", "error": ""}
+{"root": "/var/lib/docker/volumes/doxagent-v2_v2-data/_data/bus/repair-backups", "result": "425254912\t/var/lib/docker/volumes/doxagent-v2_v2-data/_data/bus/repair-backups", "error": ""}
+{"root": "/home/ubuntu/doxagent-backups", "result": "2328662016\t/home/ubuntu/doxagent-backups", "error": ""}
+{"root": "/var/lib/doxagent/initialization-repair/backups", "result": "2563264512\t/var/lib/doxagent/initialization-repair/backups", "error": ""}

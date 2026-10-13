@@ -1,0 +1,738 @@
+{
+  "at": "2026-10-12T12:52:57.388874+00:00",
+  "ready": {
+    "status": "ready",
+    "external_driver": {
+      "state": "READY",
+      "ready": true,
+      "epoch": 1,
+      "pid": 33,
+      "rss_bytes": 230453248,
+      "age_seconds": 1375.178918036865,
+      "attachments": 4,
+      "active_pages": 2,
+      "last_recovery_reason": null
+    },
+    "registry": true,
+    "storage": {
+      "state": "warning",
+      "unavailable": false,
+      "available_bytes": 20408467456,
+      "last_commit_at": "2026-10-12T12:52:56.980219+00:00",
+      "last_error": null
+    },
+    "browser_driver": true,
+    "accepting": true
+  },
+  "diagnostics": {
+    "external_driver": {
+      "state": "READY",
+      "ready": true,
+      "epoch": 1,
+      "pid": 33,
+      "rss_bytes": 230453248,
+      "age_seconds": 1375.1827621809207,
+      "attachments": 4,
+      "active_pages": 2,
+      "last_recovery_reason": null
+    },
+    "stalled": false,
+    "operations": [
+      {
+        "task": "site-access:barrons:access_f45f6c8173e64190aa3ae3a7068304d6",
+        "age_ms": 39691,
+        "budget_ms": 45000,
+        "done": false,
+        "stalled": false,
+        "awaiting": [
+          "_execute_deadlined:890",
+          "_execute_uncached:1107",
+          "_attempt:1360",
+          "execute:903",
+          "_browser:1114",
+          "_capture_barrons_ticker_cards:1343",
+          "get_attribute:19475",
+          "get_attribute:469",
+          "get_attribute:758",
+          "send:76",
+          "wrap_api_call:630",
+          "_inner_send:147"
+        ]
+      },
+      {
+        "task": "site-access:yahoo_finance:access_8fb4f7c40eec489784c803cf72c92530",
+        "age_ms": 14372,
+        "budget_ms": 45000,
+        "done": false,
+        "stalled": false,
+        "awaiting": [
+          "_execute_deadlined:890",
+          "_execute_uncached:1107",
+          "_attempt:1360",
+          "execute:903",
+          "_browser:985",
+          "page:103",
+          "page:371",
+          "_entry:337",
+          "connect_over_cdp:17276",
+          "connect_over_cdp:209",
+          "send_return_as_dict:103",
+          "wrap_api_call:630"
+        ]
+      },
+      {
+        "task": "site-access:investorshub:access_53ef3bf7bb9947a1917906ebbb83b673",
+        "age_ms": 1895,
+        "budget_ms": 180000,
+        "done": false,
+        "stalled": false,
+        "awaiting": [
+          "_execute_deadlined:890",
+          "_execute_uncached:1107",
+          "_attempt:1360",
+          "execute:903",
+          "_browser:1038",
+          "goto:9901",
+          "goto:562",
+          "goto:157",
+          "send:76",
+          "wrap_api_call:630",
+          "_inner_send:147",
+          "wait:428"
+        ]
+      }
+    ],
+    "storage": {
+      "state": "warning",
+      "unavailable": false,
+      "available_bytes": 20408467456,
+      "last_commit_at": "2026-10-12T12:52:56.980219+00:00",
+      "last_error": null
+    },
+    "queue_waiters": 0,
+    "queue_locked": false,
+    "site_active": {
+      "yahoo_finance": 1,
+      "investorshub": 1,
+      "digitimes": 0,
+      "barrons": 1,
+      "globenewswire": 0,
+      "trendforce": 0,
+      "huggingnews": 0,
+      "digitimes_tw": 0
+    },
+    "identity_active": {
+      "yahoo-main": 1,
+      "public-markets-nl": 1,
+      "digitimes-nl-1": 0,
+      "dowjones-main": 1,
+      "globenewswire-1": 0,
+      "trendforce-1": 0,
+      "huggingnews-1": 0,
+      "digitimes-tw-nl-1": 0
+    }
+  },
+  "identities": {
+    "dowjones-main": {
+      "ok": true,
+      "running": true,
+      "identity_id": "dowjones-main",
+      "instance_id": "0854db06758b49a68cdce663ce78e922",
+      "generation": 1,
+      "pid": 236756,
+      "cdp_http_url": "http://127.0.0.1:9222",
+      "cdp_websocket_url": "ws://127.0.0.1:9222/devtools/browser/809c9d94-7296-4b74-9218-12f9c2d71e7f",
+      "display": ":100",
+      "vnc_port": 5920,
+      "runtime_kind": "external_chrome",
+      "profile_id": "dowjones-main",
+      "egress_id": "us-standard-5"
+    },
+    "digitimes-nl-1": {
+      "ok": true,
+      "running": true,
+      "identity_id": "digitimes-nl-1",
+      "instance_id": "03259f271d684527b235137c3e6acc33",
+      "generation": 1,
+      "pid": 2684792,
+      "cdp_http_url": "http://127.0.0.1:9226",
+      "cdp_websocket_url": "ws://127.0.0.1:9226/devtools/browser/65dcd131-165e-4aee-8648-9594eb9b3795",
+      "display": ":104",
+      "vnc_port": 5924,
+      "runtime_kind": "external_chrome",
+      "profile_id": "digitimes-nl-1",
+      "egress_id": "nl-standard-2"
+    },
+    "digitimes-de-1": {
+      "ok": true,
+      "running": true,
+      "identity_id": "digitimes-de-1",
+      "instance_id": "916734b760404c92b38ed856391ff95f",
+      "generation": 1,
+      "pid": 3517502,
+      "cdp_http_url": "http://127.0.0.1:9228",
+      "cdp_websocket_url": "ws://127.0.0.1:9228/devtools/browser/719843ac-3e69-42ce-9dc5-66a7882f25be",
+      "display": ":103",
+      "vnc_port": 5923,
+      "runtime_kind": "external_chrome",
+      "profile_id": "digitimes-de-1",
+      "egress_id": "de-standard-1"
+    },
+    "public-markets-nl": {
+      "ok": true,
+      "running": true,
+      "identity_id": "public-markets-nl",
+      "instance_id": "c357918a6ead4c3eb3ad972261dac144",
+      "generation": 3,
+      "pid": 1264482,
+      "cdp_http_url": "http://127.0.0.1:9227",
+      "cdp_websocket_url": "ws://127.0.0.1:9227/devtools/browser/9a00d57d-652c-40e8-b1db-d32c5d114421",
+      "display": ":105",
+      "vnc_port": 5925,
+      "runtime_kind": "external_chrome",
+      "profile_id": "public-markets-nl",
+      "egress_id": "nl-standard-2"
+    },
+    "yahoo-main": {
+      "ok": true,
+      "running": true,
+      "identity_id": "yahoo-main",
+      "instance_id": "c19bf9032f274015aa1b4a901ba4c104",
+      "generation": 1,
+      "pid": 237095,
+      "cdp_http_url": "http://127.0.0.1:9224",
+      "cdp_websocket_url": "ws://127.0.0.1:9224/devtools/browser/cb5aee43-82eb-4c9e-8b98-013656d7d1c2",
+      "display": ":102",
+      "vnc_port": 5922,
+      "runtime_kind": "external_chrome",
+      "profile_id": "yahoo-main",
+      "egress_id": "jp-standard-6"
+    },
+    "seeking-alpha-main": {
+      "ok": true,
+      "running": true,
+      "identity_id": "seeking-alpha-main",
+      "instance_id": "0f6fb958d3ef41ed9e94296a007ef047",
+      "generation": 1,
+      "pid": 236960,
+      "cdp_http_url": "http://127.0.0.1:9223",
+      "cdp_websocket_url": "ws://127.0.0.1:9223/devtools/browser/9d30066c-d970-4b9b-90f2-3ea90f7a741c",
+      "display": ":101",
+      "vnc_port": 5921,
+      "runtime_kind": "external_chrome",
+      "profile_id": "seeking-alpha-main",
+      "egress_id": "us-standard-5"
+    }
+  },
+  "candidates": {
+    "barrons": [
+      {
+        "combination_id": "barrons-1",
+        "enabled": true,
+        "identity_id": "dowjones-main",
+        "profile_id": "dowjones-main",
+        "egress_id": "us-standard-5",
+        "egress_status": "READY",
+        "auth_state": "VALID",
+        "runtime_kind": "external_chrome",
+        "runtime_attached": true,
+        "cold_start_capacity": "not_required",
+        "skip_reasons": [],
+        "selectable": true
+      },
+      {
+        "combination_id": "barrons-2",
+        "enabled": true,
+        "identity_id": "dowjones-backup",
+        "profile_id": "dowjones-backup",
+        "egress_id": "jp-standard-6",
+        "egress_status": "READY",
+        "auth_state": "UNKNOWN",
+        "runtime_kind": "external_chrome",
+        "runtime_attached": false,
+        "cold_start_capacity": "requires_supervisor_check",
+        "skip_reasons": [
+          "auth_required"
+        ],
+        "selectable": false
+      },
+      {
+        "combination_id": "barrons-direct-1",
+        "enabled": true,
+        "identity_id": "barrons-direct-1",
+        "profile_id": "barrons-direct-1",
+        "egress_id": "server-direct",
+        "egress_status": "READY",
+        "auth_state": "UNKNOWN",
+        "runtime_kind": "managed_playwright",
+        "runtime_attached": false,
+        "cold_start_capacity": "requires_supervisor_check",
+        "skip_reasons": [
+          "purpose_override",
+          "auth_required"
+        ],
+        "selectable": false
+      }
+    ],
+    "reuters": [
+      {
+        "combination_id": "reuters-1",
+        "enabled": true,
+        "identity_id": null,
+        "profile_id": "reuters-1",
+        "egress_id": "nl-standard-2",
+        "egress_status": "READY",
+        "auth_state": "UNKNOWN",
+        "runtime_kind": "managed_playwright",
+        "runtime_attached": false,
+        "cold_start_capacity": "requires_supervisor_check",
+        "skip_reasons": [
+          "manual_attention"
+        ],
+        "selectable": false
+      },
+      {
+        "combination_id": "reuters-2",
+        "enabled": true,
+        "identity_id": null,
+        "profile_id": "reuters-2",
+        "egress_id": "de-standard-1",
+        "egress_status": "READY",
+        "auth_state": "UNKNOWN",
+        "runtime_kind": "managed_playwright",
+        "runtime_attached": false,
+        "cold_start_capacity": "requires_supervisor_check",
+        "skip_reasons": [
+          "manual_attention"
+        ],
+        "selectable": false
+      },
+      {
+        "combination_id": "reuters-direct-1",
+        "enabled": true,
+        "identity_id": null,
+        "profile_id": "reuters-direct-1",
+        "egress_id": "server-direct",
+        "egress_status": "READY",
+        "auth_state": "UNKNOWN",
+        "runtime_kind": "managed_playwright",
+        "runtime_attached": false,
+        "cold_start_capacity": "requires_supervisor_check",
+        "skip_reasons": [
+          "manual_attention"
+        ],
+        "selectable": false
+      },
+      {
+        "combination_id": "reuters-native-direct",
+        "enabled": false,
+        "identity_id": "digitimes-1",
+        "profile_id": "digitimes-1",
+        "egress_id": "server-direct",
+        "egress_status": "READY",
+        "auth_state": "UNKNOWN",
+        "runtime_kind": "external_chrome",
+        "runtime_attached": false,
+        "cold_start_capacity": "requires_supervisor_check",
+        "skip_reasons": [
+          "disabled",
+          "manual_attention"
+        ],
+        "selectable": false
+      },
+      {
+        "combination_id": "reuters-native-de",
+        "enabled": true,
+        "identity_id": "digitimes-de-1",
+        "profile_id": "digitimes-de-1",
+        "egress_id": "de-standard-1",
+        "egress_status": "READY",
+        "auth_state": "UNKNOWN",
+        "runtime_kind": "external_chrome",
+        "runtime_attached": false,
+        "cold_start_capacity": "requires_supervisor_check",
+        "skip_reasons": [
+          "manual_attention"
+        ],
+        "selectable": false
+      }
+    ],
+    "investing": [
+      {
+        "combination_id": "investing-external-nl",
+        "enabled": true,
+        "identity_id": "public-markets-nl",
+        "profile_id": "public-markets-nl",
+        "egress_id": "nl-standard-2",
+        "egress_status": "READY",
+        "auth_state": "UNKNOWN",
+        "runtime_kind": "external_chrome",
+        "runtime_attached": true,
+        "cold_start_capacity": "not_required",
+        "skip_reasons": [
+          "manual_attention"
+        ],
+        "selectable": false
+      },
+      {
+        "combination_id": "investing-2",
+        "enabled": true,
+        "identity_id": "investing-2",
+        "profile_id": "investing-2",
+        "egress_id": "de-standard-1",
+        "egress_status": "READY",
+        "auth_state": "UNKNOWN",
+        "runtime_kind": "managed_playwright",
+        "runtime_attached": false,
+        "cold_start_capacity": "requires_supervisor_check",
+        "skip_reasons": [
+          "purpose_override",
+          "manual_attention"
+        ],
+        "selectable": false
+      },
+      {
+        "combination_id": "investing-1",
+        "enabled": true,
+        "identity_id": "investing-1",
+        "profile_id": "investing-1",
+        "egress_id": "server-direct",
+        "egress_status": "READY",
+        "auth_state": "UNKNOWN",
+        "runtime_kind": "managed_playwright",
+        "runtime_attached": false,
+        "cold_start_capacity": "requires_supervisor_check",
+        "skip_reasons": [
+          "purpose_override"
+        ],
+        "selectable": false
+      }
+    ],
+    "investorshub": [
+      {
+        "combination_id": "investorshub-external-nl",
+        "enabled": true,
+        "identity_id": "public-markets-nl",
+        "profile_id": "public-markets-nl",
+        "egress_id": "nl-standard-2",
+        "egress_status": "READY",
+        "auth_state": "UNKNOWN",
+        "runtime_kind": "external_chrome",
+        "runtime_attached": true,
+        "cold_start_capacity": "not_required",
+        "skip_reasons": [],
+        "selectable": true
+      },
+      {
+        "combination_id": "investorshub-managed-main",
+        "enabled": true,
+        "identity_id": "generic-c88e77b20ac3-jp-standard-6",
+        "profile_id": "generic-c88e77b20ac3-jp-standard-6",
+        "egress_id": "jp-standard-6",
+        "egress_status": "READY",
+        "auth_state": "UNKNOWN",
+        "runtime_kind": "managed_playwright",
+        "runtime_attached": false,
+        "cold_start_capacity": "requires_supervisor_check",
+        "skip_reasons": [
+          "purpose_override",
+          "manual_attention"
+        ],
+        "selectable": false
+      },
+      {
+        "combination_id": "investorshub-2",
+        "enabled": true,
+        "identity_id": "investorshub-2",
+        "profile_id": "investorshub-2",
+        "egress_id": "jp-standard-6",
+        "egress_status": "READY",
+        "auth_state": "UNKNOWN",
+        "runtime_kind": "managed_playwright",
+        "runtime_attached": false,
+        "cold_start_capacity": "requires_supervisor_check",
+        "skip_reasons": [
+          "purpose_override"
+        ],
+        "selectable": false
+      },
+      {
+        "combination_id": "investorshub-1",
+        "enabled": true,
+        "identity_id": "investorshub-1",
+        "profile_id": "investorshub-1",
+        "egress_id": "server-direct",
+        "egress_status": "READY",
+        "auth_state": "UNKNOWN",
+        "runtime_kind": "managed_playwright",
+        "runtime_attached": false,
+        "cold_start_capacity": "requires_supervisor_check",
+        "skip_reasons": [
+          "purpose_override",
+          "manual_attention"
+        ],
+        "selectable": false
+      }
+    ],
+    "digitimes": [
+      {
+        "combination_id": "digitimes-1",
+        "enabled": false,
+        "identity_id": "digitimes-1",
+        "profile_id": "digitimes-1",
+        "egress_id": "server-direct",
+        "egress_status": "READY",
+        "auth_state": "UNKNOWN",
+        "runtime_kind": "external_chrome",
+        "runtime_attached": false,
+        "cold_start_capacity": "requires_supervisor_check",
+        "skip_reasons": [
+          "disabled"
+        ],
+        "selectable": false
+      },
+      {
+        "combination_id": "digitimes-de-1",
+        "enabled": true,
+        "identity_id": "digitimes-de-1",
+        "profile_id": "digitimes-de-1",
+        "egress_id": "de-standard-1",
+        "egress_status": "READY",
+        "auth_state": "UNKNOWN",
+        "runtime_kind": "external_chrome",
+        "runtime_attached": false,
+        "cold_start_capacity": "requires_supervisor_check",
+        "skip_reasons": [],
+        "selectable": true
+      },
+      {
+        "combination_id": "digitimes-nl-1",
+        "enabled": true,
+        "identity_id": "digitimes-nl-1",
+        "profile_id": "digitimes-nl-1",
+        "egress_id": "nl-standard-2",
+        "egress_status": "READY",
+        "auth_state": "VALID",
+        "runtime_kind": "external_chrome",
+        "runtime_attached": true,
+        "cold_start_capacity": "not_required",
+        "skip_reasons": [],
+        "selectable": true
+      }
+    ]
+  },
+  "bodies_since_release": [
+    {
+      "final_site_id": "247wallst",
+      "outcome": "FULL",
+      "reason": null,
+      "n": 2
+    },
+    {
+      "final_site_id": "247wallst.com",
+      "outcome": "UNAVAILABLE",
+      "reason": "deadline_exceeded",
+      "n": 1
+    },
+    {
+      "final_site_id": "finance.yahoo.com",
+      "outcome": "UNAVAILABLE",
+      "reason": "deadline_exceeded",
+      "n": 1
+    },
+    {
+      "final_site_id": "generic",
+      "outcome": "UNAVAILABLE",
+      "reason": "risk_combinations_exhausted",
+      "n": 1
+    },
+    {
+      "final_site_id": "globenewswire",
+      "outcome": "FULL",
+      "reason": null,
+      "n": 1
+    },
+    {
+      "final_site_id": "huggingnews",
+      "outcome": "FULL",
+      "reason": null,
+      "n": 5
+    },
+    {
+      "final_site_id": "huggingnews",
+      "outcome": "PARTIAL",
+      "reason": "risk_combinations_exhausted",
+      "n": 1
+    },
+    {
+      "final_site_id": "investorshub",
+      "outcome": "FULL",
+      "reason": null,
+      "n": 1
+    },
+    {
+      "final_site_id": "tomshardware",
+      "outcome": "FULL",
+      "reason": null,
+      "n": 3
+    },
+    {
+      "final_site_id": "yahoo_finance",
+      "outcome": "FULL",
+      "reason": null,
+      "n": 1
+    }
+  ],
+  "access_since_release": [
+    {
+      "site_id": "247wallst",
+      "category": "ACCESS_RESULT",
+      "n": 2,
+      "last": "2026-10-12T12:50:51.798868+00:00"
+    },
+    {
+      "site_id": "247wallst",
+      "category": "ACCESS_SUCCEEDED",
+      "n": 2,
+      "last": "2026-10-12T12:50:51.794727+00:00"
+    },
+    {
+      "site_id": "_egress",
+      "category": "DUPLICATE_EXIT",
+      "n": 3,
+      "last": "2026-10-12T12:36:41.594849+00:00"
+    },
+    {
+      "site_id": "barrons",
+      "category": "ACCESS_RESULT",
+      "n": 40,
+      "last": "2026-10-12T12:52:20.900509+00:00"
+    },
+    {
+      "site_id": "barrons",
+      "category": "ACCESS_SUCCEEDED",
+      "n": 35,
+      "last": "2026-10-12T12:52:20.873387+00:00"
+    },
+    {
+      "site_id": "digitimes",
+      "category": "ACCESS_RESULT",
+      "n": 24,
+      "last": "2026-10-12T12:52:14.294914+00:00"
+    },
+    {
+      "site_id": "digitimes",
+      "category": "ACCESS_SUCCEEDED",
+      "n": 22,
+      "last": "2026-10-12T12:52:14.279160+00:00"
+    },
+    {
+      "site_id": "digitimes_tw",
+      "category": "ACCESS_RESULT",
+      "n": 2,
+      "last": "2026-10-12T12:52:32.528021+00:00"
+    },
+    {
+      "site_id": "digitimes_tw",
+      "category": "ACCESS_SUCCEEDED",
+      "n": 2,
+      "last": "2026-10-12T12:52:32.523470+00:00"
+    },
+    {
+      "site_id": "generic",
+      "category": "ACCESS_RESULT",
+      "n": 2,
+      "last": "2026-10-12T12:42:56.891722+00:00"
+    },
+    {
+      "site_id": "generic",
+      "category": "COMBINATION_RISK_FAILURE",
+      "n": 4,
+      "last": "2026-10-12T12:42:56.880481+00:00"
+    },
+    {
+      "site_id": "globenewswire",
+      "category": "ACCESS_RESULT",
+      "n": 129,
+      "last": "2026-10-12T12:52:56.975292+00:00"
+    },
+    {
+      "site_id": "globenewswire",
+      "category": "ACCESS_SUCCEEDED",
+      "n": 129,
+      "last": "2026-10-12T12:52:56.961665+00:00"
+    },
+    {
+      "site_id": "huggingnews",
+      "category": "ACCESS_RESULT",
+      "n": 7,
+      "last": "2026-10-12T12:40:59.776282+00:00"
+    },
+    {
+      "site_id": "huggingnews",
+      "category": "ACCESS_SUCCEEDED",
+      "n": 7,
+      "last": "2026-10-12T12:40:59.767045+00:00"
+    },
+    {
+      "site_id": "investing",
+      "category": "ACCESS_RESULT",
+      "n": 73,
+      "last": "2026-10-12T12:52:43.524970+00:00"
+    },
+    {
+      "site_id": "investorshub",
+      "category": "ACCESS_RESULT",
+      "n": 71,
+      "last": "2026-10-12T12:52:55.462123+00:00"
+    },
+    {
+      "site_id": "investorshub",
+      "category": "ACCESS_SUCCEEDED",
+      "n": 65,
+      "last": "2026-10-12T12:52:55.389292+00:00"
+    },
+    {
+      "site_id": "reuters",
+      "category": "ACCESS_RESULT",
+      "n": 187,
+      "last": "2026-10-12T12:52:46.396570+00:00"
+    },
+    {
+      "site_id": "tomshardware",
+      "category": "ACCESS_RESULT",
+      "n": 3,
+      "last": "2026-10-12T12:51:26.866969+00:00"
+    },
+    {
+      "site_id": "tomshardware",
+      "category": "ACCESS_SUCCEEDED",
+      "n": 3,
+      "last": "2026-10-12T12:51:26.862506+00:00"
+    },
+    {
+      "site_id": "trendforce",
+      "category": "ACCESS_RESULT",
+      "n": 51,
+      "last": "2026-10-12T12:52:29.919081+00:00"
+    },
+    {
+      "site_id": "trendforce",
+      "category": "ACCESS_SUCCEEDED",
+      "n": 50,
+      "last": "2026-10-12T12:52:29.904610+00:00"
+    },
+    {
+      "site_id": "yahoo_finance",
+      "category": "ACCESS_RESULT",
+      "n": 25,
+      "last": "2026-10-12T12:52:41.678014+00:00"
+    },
+    {
+      "site_id": "yahoo_finance",
+      "category": "ACCESS_SUCCEEDED",
+      "n": 1,
+      "last": "2026-10-12T12:42:54.488622+00:00"
+    }
+  ]
+}

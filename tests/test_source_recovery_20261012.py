@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import sqlite3
 import time
+from contextlib import asynccontextmanager
 from datetime import timedelta
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
@@ -18,6 +19,74 @@ from doxagent.site_strategy.client import SiteAccessError
 from doxagent.site_strategy.external_runtime import ExternalChromeRuntime
 from doxagent.site_strategy.runtime import _RawBrowserCDP
 from doxagent.site_strategy.schema import AccessMode, AccessResult, SitePurpose
+
+
+def test_expiry_preserves_active_claim_and_closed_sweep(tmp_path):
+    from doxagent.message_bus_v2.distribution_repository import DistributionRepository
+    from doxagent.message_bus_v2.repository import MessageBusV2Repository
+    from doxagent.message_bus_v2.schema import utc_now
+    from doxagent.message_bus_v2.service import MessageBusV2Service
+
+    bus = MessageBusV2Repository(tmp_path / "bus.db")
+    service = MessageBusV2Service(bus)
+    service.bootstrap()
+    source = bus.get_source("ctee_semiconductor")
+    distribution = DistributionRepository(bus)
+    runs = []
+    for key, mode in (("expired", "REALTIME"), ("owned", "REALTIME"), ("sweep", "CLOSED_SWEEP")):
+        runs.append(
+            distribution.get_or_create_run(
+                work_key=key, source=source, mode=mode, window_start=None, cutoff=None, roster=[]
+            )
+        )
+    with bus.transaction() as db:
+        db.execute(
+            "UPDATE distribution_runs SET created_at=?",
+            ((utc_now() - timedelta(days=5)).isoformat(),),
+        )
+    assert distribution.claim_run(runs[1]["run_id"])
+    assert distribution.expire_runs() == 1
+    with bus.transaction() as db:
+        states = dict(db.execute("SELECT work_key,status FROM distribution_runs"))
+    assert states == {"expired": "EXPIRED", "owned": "RUNNING", "sweep": "PENDING"}
+
+
+@pytest.mark.asyncio
+async def test_feed_fallback_is_only_for_transport_not_403(monkeypatch):
+    from doxagent.message_bus_v2.industry_sources import SharedFeedAdapter
+    from doxagent.message_bus_v2.schema import utc_now
+
+    @asynccontextmanager
+    async def permit():
+        yield
+
+    routes = []
+
+    class Client:
+        def __init__(self, **kwargs):
+            routes.append(kwargs.get("proxy"))
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *args):
+            pass
+
+        async def get(self, url):
+            return httpx.Response(403, request=httpx.Request("GET", url))
+
+    monkeypatch.setattr(httpx, "AsyncClient", Client)
+    source = SimpleNamespace(
+        entry_url="https://example.com/rss",
+        content_language="en",
+        default_parameters={"feed_http_routes": ["de-standard-1", "direct"]},
+    )
+    context = SimpleNamespace(
+        source=source, requested_at=utc_now(), window_start=None, request_permit=permit
+    )
+    with pytest.raises(httpx.HTTPStatusError):
+        await SharedFeedAdapter(SimpleNamespace(), "test").poll_shared(context)
+    assert len(routes) == 1
 
 
 @pytest.mark.asyncio
@@ -181,3 +250,44 @@ async def test_jev_402_opens_circuit_without_guessing_relevance():
     assert scores == {} and errors == {"MU": "JEV_PROVIDER_UNAVAILABLE"}
     await worker._jev(message, terms)
     assert jev.classify.await_count == 1
+
+
+@pytest.mark.asyncio
+async def test_yahoo_browser_queue_deferral_can_use_independent_rss(tmp_path):
+    from doxagent.message_bus_v2.news_adapters import YahooFinanceNewsAdapter
+    from doxagent.settings import DoxAgentSettings
+    from tests.test_message_bus_v2_news_sources import _context
+    from tests.test_yahoo_browser_transport import make_transport
+    from tests.test_yahoo_page_rss import RSS
+
+    transport, _ = make_transport(
+        lambda request: httpx.Response(404 if request.url.path == "/xhr/ncp" else 200, text=RSS)
+    )
+    browser = SimpleNamespace(
+        site_managed=True,
+        yahoo_latest_news=AsyncMock(
+            side_effect=SiteAccessError(
+                AccessResult(
+                    operation_id="queue",
+                    request_id="queue",
+                    site_id="yahoo_finance",
+                    runtime_key="yahoo_finance",
+                    strategy_revision=1,
+                    disposition="BUDGET_DEFERRED",
+                    reason_code="site_queue_timeout",
+                )
+            )
+        ),
+    )
+    context, _ = _context(tmp_path, "yahoo_finance_news", {})
+    try:
+        async with httpx.AsyncClient() as client:
+            result = await YahooFinanceNewsAdapter(
+                DoxAgentSettings(_env_file=None), client, transport=transport, browser=browser
+            ).poll(context)
+        assert not result.site_access_deferred
+        assert len(result.messages) == 1
+        assert result.messages[0].publication_time_basis == "EXACT"
+        assert result.acquisition_metadata["query_mode"] == "legacy_headline_rss"
+    finally:
+        transport.close()

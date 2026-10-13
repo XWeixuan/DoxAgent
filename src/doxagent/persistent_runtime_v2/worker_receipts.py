@@ -16,11 +16,13 @@ class ReceiptWorker:
         scope: str,
         *,
         case_id: str | None = None,
+        source_case_id: str | None = None,
         control_epoch: int | None = None,
         replace_failed_model: bool = False,
     ) -> None:
         self.worker, self.journal, self.scope = worker, journal, scope
         self.case_id = case_id
+        self.source_case_id = source_case_id
         self.control_epoch = control_epoch
         self.replace_failed_model = replace_failed_model
 
@@ -30,6 +32,9 @@ class ReceiptWorker:
     async def run(self, request: WorkerRunRequest) -> WorkerJob:
         # O3 has one maintenance turn; its native attempt counter may advance on resume.
         phase = (
+            request.task_phase
+            if request.task_phase is not None
+            else
             "maintain"
             if str(request.node) == "d3_o3_maintain"
             else "case"
@@ -37,6 +42,8 @@ class ReceiptWorker:
             else request.attempt_id
         )
         identity = f"runtime-worker:{self.scope}:{request.run_id}:{request.node}:{phase}"
+        if request.task_phase is not None and self.case_id:
+            identity += f":{self.case_id}"
         self.last_identity = identity
         rejected = self.journal.get("worker_rejected", identity, False)
         frozen = self.journal.get("worker_requests", identity)
@@ -85,8 +92,10 @@ class ReceiptWorker:
                     dispatched_request.model, dispatched_request.model_provider
                 ),
                 "requested_model": dispatched_request.model,
+                "task_phase": request.task_phase,
                 "provider": dispatched_request.model_provider,
                 "case_id": self.case_id,
+                "source_case_id": self.source_case_id,
                 "control_epoch": self.control_epoch,
                 "run_id": request.run_id,
                 "ordinal": self.journal.get("worker_generation", identity, 0) + 1,

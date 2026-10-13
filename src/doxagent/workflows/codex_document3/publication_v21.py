@@ -15,6 +15,28 @@ from .consumer_contracts import parse_policy_set, parse_runtime_projection
 from .schema import Document3Bundle, Document3Handoff
 
 
+def render_policy_markdown(policy_set, *, status, coverage):
+    from .state_v21 import canonical
+
+    markdown = (
+        f"# {policy_set.ticker} Document3 V3\n\n"
+        f"Version: {policy_set.policy_set_version} · {status} · publication candidate\n\n"
+        f"As of: {policy_set.as_of.isoformat()}\n\n"
+        f"Coverage: {canonical(coverage)}\n\n"
+    )
+    for policy in policy_set.policies:
+        markdown += f"## {policy.title}\n\n{policy.transmission}\n\n"
+        for condition in policy.activation_conditions:
+            markdown += (
+                f"- {condition.condition_id} / {condition.decision} / "
+                f"{condition.trigger_layer}: {condition.criterion}\n"
+                f"  - Reference: {condition.calibration.reference_state}\n"
+                f"  - Boundary: {condition.calibration.trigger_boundary}\n"
+            )
+        markdown += "\n"
+    return markdown
+
+
 async def finalize_candidate_v21(
     run_id, *, state, workspace, runtime_repository, policy_repository, published_storage=None
 ):
@@ -41,7 +63,8 @@ async def finalize_candidate_v21(
     )
     entries = {v["relative_path"]: v["sha256"] for v in manifest["artifacts"]}
     artifacts = {}
-    for name in ("document3.json", "runtime_projection.json", "coverage_map.json", "document3.md"):
+    for name in ("document3.json", "runtime_projection.json", "coverage_map.json", "document3.md",
+                 *(["policy_origins.json"] if "policy_origins.json" in receipt["files"] else [])):
         path = receipt["files"][name]
         text = (await workspace.read_text(run_id, path)).content
         sha = hashlib.sha256(text.encode()).hexdigest()
@@ -69,14 +92,21 @@ async def finalize_candidate_v21(
         runtime_repository.save_artifact(artifact)
         location = {"content_text": text}
         if artifact.size_bytes > 2 * 1024 * 1024:
-            if published_storage is None:
+            from doxagent.codex_runtime.repository import SQLiteCodexRuntimeRepository
+
+            if published_storage is None and not isinstance(
+                runtime_repository, SQLiteCodexRuntimeRepository
+            ):
                 raise ValueError("D3 published artifact exceeds inline limit without storage")
             from doxagent.codex_runtime.published_storage import cache_local_published_content
 
             cache_local_published_content(runtime_repository, sha, text.encode("utf-8"))
-            storage_path = f"codex/document3/{run_id}/{artifact.artifact_id}/{name}"
-            await published_storage.put(storage_path, text.encode("utf-8"), artifact.content_type)
-            location = {"storage_path": storage_path}
+            if published_storage is not None:
+                storage_path = f"codex/document3/{run_id}/{artifact.artifact_id}/{name}"
+                await published_storage.put(
+                    storage_path, text.encode("utf-8"), artifact.content_type
+                )
+                location = {"storage_path": storage_path}
         runtime_repository.save_published_document(
             PublishedDocument(
                 artifact_id=artifact.artifact_id,

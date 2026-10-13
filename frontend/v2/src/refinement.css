@@ -2719,3 +2719,94 @@
   flex: 1;
   min-width: 0;
 }
+
+/* v2.1 reading: references are render-only; each research section has its own structure. */
+.citation-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  margin: 0 2px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--muted);
+  color: var(--muted-foreground);
+  font-size: 13px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  vertical-align: 0.08em;
+}
+.citation-badge[data-digits="3"] { width: 26px; height: 26px; }
+.citation-badge[data-digits="4"] { width: 32px; height: 32px; }
+.citation-badge[data-digits="5"] { width: 40px; height: 40px; }
+.reference-marks { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.reference-marks .citation-badge { margin: 0; }
+.reference-raw { width: 100%; font-size: 14px; }
+.reference-raw summary { color: var(--muted-foreground); cursor: pointer; }
+.reference-raw ul { margin: 8px 0 0; padding-left: 20px; }
+.reference-raw li { margin: 6px 0; overflow-wrap: anywhere; }
+.d2-native-unit { min-width: 0; }
+.d2-native-unit > header { padding: 18px 20px; }
+.d2-native-unit > header h2 { font-size: 20px; }
+.d2-unit-overview { padding: 14px 20px; border-bottom: 1px solid var(--border); }
+.d2-unit-overview > p { margin: 0 0 10px; font-size: 15px; line-height: 1.75; }
+.d2-native-unit > section { padding: 18px 20px; }
+.d2-native-unit > section > h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 14px; font-size: 16px; }
+.d2-native-unit h3 > svg { width: 18px; height: 18px; color: var(--primary); }
+.d2-native-unit h4 { font-size: 16px; font-weight: 600; line-height: 1.6; margin: 0 0 12px; }
+.d2-state-table { min-width: 760px; table-layout: fixed; }
+.d2-state-table th, .d2-state-table td { padding: 10px; font-size: 14px; line-height: 1.7; overflow-wrap: anywhere; vertical-align: top; }
+.d2-state-table th:nth-child(1) { width: 19%; }
+.d2-state-table thead th:nth-child(2) { width: 9%; }
+.d2-state-table thead th:nth-child(3) { width: 16%; }
+.d2-state-table thead th:nth-child(4) { width: 11%; }
+.d2-state-table thead th:nth-child(5) { width: 24%; }
+.d2-state-table thead th:nth-child(6) { width: 9%; }
+.d2-state-table thead th:nth-child(7) { width: 12%; }
+.d2-state-table tbody th { background: var(--card); text-align: left; font-weight: 400; }
+.d2-state-table small { display: block; color: var(--muted-foreground); margin-top: 4px; font-size: 13px; line-height: 1.6; }
+.d2-state-table .d2-parameter-start > * { border-top: 1px solid var(--border); }
+.d2-definition { margin: 8px 0; color: var(--muted-foreground); font-size: 14px; }
+.d2-definition summary { cursor: pointer; }
+.d2-numeric { text-align: right; font-variant-numeric: tabular-nums; }
+.d2-validity { font-size: 13px; color: var(--muted-foreground); white-space: nowrap; }
+.d2-validity[data-state="CURRENT"] { color: var(--success); }
+.d2-validity[data-state="DISPUTED"] { color: var(--warning); }
+.d2-validity[data-state="RETRACTED"] { color: var(--destructive); }
+.d2-native-unit .d2-fields { grid-template-columns: 92px minmax(0,1fr); gap: 10px 14px; margin: 0; font-size: 14px; line-height: 1.8; }
+.d2-native-unit .d2-fields dt { color: var(--foreground); font-weight: 500; }
+.d2-native-unit .d2-fields dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.d2-baseline-panel { padding: 14px 0; border-top: 1px solid var(--border); }
+.d2-baseline-panel > header { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px 18px; margin-bottom: 10px; }
+.d2-baseline-panel > header h4 { margin: 0; }
+.d2-baseline-panel > header > span { color: var(--muted-foreground); font-size: 13px; }
+.d2-baseline-panel > .d2-fields > dt:first-child, .d2-baseline-panel > .d2-fields > dd:nth-child(2) { font-weight: 500; }
+.d2-baseline-panel > .reference-marks, .d2-factor-card > .reference-marks, .d2-gap-card > .reference-marks { margin-top: 12px; }
+.d2-factor-card, .d2-gap-card { padding: 16px; margin-top: 12px; border: 1px solid var(--border); border-radius: 6px; }
+.d2-factor-card { border-left: 3px solid var(--info); background: var(--card); }
+.d2-gap-card { border-left: 3px solid var(--primary); background: color-mix(in srgb, var(--primary) 4%, var(--card)); }
+.d2-possibilities { margin-top: 16px; padding: 14px; background: var(--card); border-radius: 4px; }
+.d2-possibilities h5 { font-size: 14px; color: var(--muted-foreground); font-weight: 500; margin: 0 0 10px; }
+.d2-possibilities ol { margin: 0; padding-left: 22px; list-style: decimal; }
+.d2-possibilities li { padding: 12px 0; }
+.d2-possibilities li + li { border-top: 1px solid var(--border); }
+.d2-possibilities li::marker { color: var(--primary); font-variant-numeric: tabular-nums; }
+.d2-possibilities h6 { font-size: 15px; font-weight: 600; margin: 0 0 8px; line-height: 1.7; }
+.d2-empty { padding: 10px 0; color: var(--muted-foreground); }
+.policy-condition-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 0 0 10px; }
+.policy-condition-meta [data-slot="badge"] { font-size: 13px; }
+.policy-direction-status { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: var(--muted-foreground); }
+.policy-direction-status svg { width: 14px; height: 14px; }
+.policy-direction-status[data-state="available"] { color: var(--success); }
+.policy-document .condition h4 { font-weight: 500; }
+.policy-expectation-links { display: flex; flex-direction: column; gap: 10px; }
+.policy-expectation-links a { color: var(--primary); text-decoration: none; font-size: 15px; }
+.policy-expectation-links a:hover { text-decoration: underline; }
+.policy-expectation-links small { display: block; color: var(--muted-foreground); font-size: 13px; margin-top: 2px; }
+.policy-references { margin-top: 14px; font-size: 14px; }
+.policy-references summary { cursor: pointer; color: var(--muted-foreground); }
+.policy-references ul { padding-left: 20px; margin-top: 10px; }
+.policy-references li { overflow-wrap: anywhere; margin: 8px 0; line-height: 1.7; }

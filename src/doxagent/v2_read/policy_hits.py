@@ -12,33 +12,28 @@ def project(store, case, summary, event):
     hit_ids = set(result.get("policy_ids", [])) if final is True else set()
     policies = (case.get("frozen_inputs", {}).get("projection") or {}).get("policies", [])
     records, contributions = [], []
+    revisions = None
     for policy in policies:
         policy_id = policy["policy_id"]
         ar = policy.get("activation_revision")
         if ar is None:
-            details = store.get(
-                "activation_revision",
-                ticker,
-                case["version_pin"].get("activation_revision_id") or "",
-            )
-            artifact_id = (details or {}).get("policy_set", {}).get("artifact_id")
-            from .lifecycle import rows
-
-            match = (
-                next(
-                    (
-                        d
-                        for d in rows(store, "policy_detail", ticker, artifact_id).values()
-                        if d["summary"]["policy_id"] == policy_id
-                    ),
-                    None,
+            if revisions is None:
+                details = store.get(
+                    "activation_revision", ticker,
+                    case["version_pin"].get("activation_revision_id") or "",
                 )
-                if artifact_id
-                else None
-            )
-            if not match:
+                artifact_id = (details or {}).get("policy_set", {}).get("artifact_id")
+                from .lifecycle import rows
+
+                revisions = {}
+                if artifact_id:
+                    for detail in rows(store, "policy_detail", ticker, artifact_id).values():
+                        item = detail["summary"]
+                        # Preserve the prior first-match behavior for duplicate IDs.
+                        revisions.setdefault(item["policy_id"], item["policy_revision_id"])
+            if policy_id not in revisions:
                 continue
-            ar = match["summary"]["policy_revision_id"]
+            ar = revisions[policy_id]
         identity = case_id + ":" + policy_id
         old = store.get("policy_hit_observation", ticker, identity)
         hit = policy_id in hit_ids

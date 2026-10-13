@@ -1,0 +1,16 @@
+services:
+  v2-projector:
+    image: doxagent-v2:disk-repair-read-20261013-r7
+  v2-maintenance:
+    image: doxagent-v2:disk-repair-read-20261013-r7
+  v2-transport-maintenance:
+    image: doxagent-v2:disk-repair-read-20261013-r8
+    command: [python, -m, doxagent.v2_read.transport_archive, --source, bus=/data/bus/bus.sqlite3, --source, runtime=/data/runtime/runtime.sqlite3]
+    restart: unless-stopped
+    volumes: [v2-data:/data]
+    mem_limit: 2g
+    memswap_limit: 3g
+    pids_limit: 64
+    logging:
+      driver: json-file
+      options: {max-size: "20m", max-file: "3"}

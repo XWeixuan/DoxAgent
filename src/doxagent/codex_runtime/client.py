@@ -49,6 +49,35 @@ class WorkspaceClient(Protocol):
 
 
 class HttpCodexWorkerClient:
+    async def register_template(self, job_id: str) -> dict:
+        response = await self._client.post("/v1/threads/register-template", json={"job_id": job_id})
+        response.raise_for_status()
+        return response.json()
+
+    async def register_legacy_thread(self, job_id: str) -> dict:
+        response = await self._client.post("/v1/threads/register-legacy", json={"job_id": job_id})
+        response.raise_for_status()
+        return response.json()
+
+    async def fork_thread(self, request) -> dict:
+        response = await self._client.post("/v1/threads/fork", json=request.model_dump(mode="json"))
+        response.raise_for_status()
+        return response.json()
+
+    async def thread_status(self, thread_id: str) -> dict:
+        response = await self._client.get(f"/v1/threads/{thread_id}/status")
+        response.raise_for_status()
+        return response.json()
+
+    async def delete_thread(self, thread_id: str) -> dict:
+        response = await self._client.delete(f"/v1/threads/{thread_id}")
+        response.raise_for_status()
+        return response.json()
+
+    async def acknowledge_job(self, job_id: str) -> None:
+        response = await self._client.post(f"/v1/jobs/{job_id}/acknowledge")
+        response.raise_for_status()
+
     def __init__(
         self,
         base_url: str,

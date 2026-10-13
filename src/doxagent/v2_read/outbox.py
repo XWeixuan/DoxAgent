@@ -202,7 +202,7 @@ class SourceOutbox:
                         "'round_inputs','schedule','selection_snapshot','worker_invocations',"
                         "'reference_deliveries','policy_direction_usage','policy_consumptions',"
                         "'policy_authorization_head','policy_authorization_applied','policy_consumption_migration',"
-                        "'policy_watch','policy_watch_applied','policy_watch_validation')"
+                        "'policy_watch','policy_watch_applied','policy_watch_validation','message_pins','w3_operations_applied','w3_global_input','w3_operations_input')"
                         if table == "runtime_values"
                         else ""
                     )
@@ -215,6 +215,18 @@ class SourceOutbox:
                             for r in columns
                             if r[1] not in technical
                         )
+                        if table == "poll_states":
+                            # Scheduling-only writes do not change observed health or
+                            # freshness. Completed attempts and failures still capture
+                            # exact timestamps, counters and current observation data.
+                            volatile = "'$.next_dispatch_at','$.target_due_at','$.updated_at'"
+                            changed = (
+                                'OLD.binding_id IS NOT NEW.binding_id OR '
+                                'OLD.source_id IS NOT NEW.source_id OR OLD.ticker IS NOT NEW.ticker OR '
+                                'OLD.status IS NOT NEW.status OR '
+                                f'json_remove(OLD.data_json,{volatile}) IS NOT '
+                                f'json_remove(NEW.data_json,{volatile})'
+                            )
                         condition += (" AND " if condition else "WHEN ") + f"({changed})"
                     db.execute(
                         "CREATE TRIGGER IF NOT EXISTS "
@@ -245,6 +257,9 @@ class SourceOutbox:
             raise ValueError("source batch limit must be 1..500")
         db = self.connection()
         try:
+            from .transport_archive import has_packs
+            if has_packs(db) and db.execute("SELECT 1 FROM v2_receipt_packs WHERE seq>? LIMIT 1", (after,)).fetchone():
+                return [self.event(sequence) for sequence in self.coordinates(after, limit)]
             rows = db.execute(
                 "SELECT o.*,r.payload FROM v2_source_outbox o "
                 "JOIN v2_source_receipts r ON r.id=o.receipt_id "
@@ -275,11 +290,14 @@ class SourceOutbox:
             raise ValueError("invalid projection batch size")
         db = self.connection()
         try:
+            from .transport_archive import has_packs
+            packed = (" UNION SELECT seq FROM (SELECT seq FROM v2_receipt_packs WHERE seq>? ORDER BY seq LIMIT ?)"
+                      if has_packs(db) else "")
             return [
                 row[0]
                 for row in db.execute(
-                    "SELECT seq FROM (SELECT seq FROM (SELECT seq FROM v2_source_outbox WHERE seq>? ORDER BY seq LIMIT ?) UNION SELECT seq FROM (SELECT seq FROM v2_receipt_archive WHERE seq>? ORDER BY seq LIMIT ?)) ORDER BY seq LIMIT ?",
-                    (after, limit, after, limit, limit),
+                    "SELECT seq FROM (SELECT seq FROM (SELECT seq FROM v2_source_outbox WHERE seq>? ORDER BY seq LIMIT ?) UNION SELECT seq FROM (SELECT seq FROM v2_receipt_archive WHERE seq>? ORDER BY seq LIMIT ?)" + packed + ") ORDER BY seq LIMIT ?",
+                    (after, limit, after, limit, *((after, limit) if packed else ()), limit),
                 )
             ]
         finally:
@@ -319,6 +337,14 @@ class SourceOutbox:
             ).fetchone()
             if row:
                 return {**dict(row), "row": self.content.source_row(json.loads(row["payload"]))}
+            from .transport_archive import has_packs, load_pack
+            packed = db.execute("SELECT digest,size,ordinal FROM v2_receipt_packs WHERE seq=?",
+                                (sequence,)).fetchone() if has_packs(db) else None
+            if packed:
+                value = load_pack(str(self.path.parent / 'receipt-packs' / self.source), packed[0], packed[1])[packed[2]]
+                if value['seq'] != sequence:
+                    raise ValueError('transport pack coordinate mismatch')
+                return {**value, "row": self.content.source_row(json.loads(value["payload"]))}
             archived = db.execute(
                 "SELECT digest,size FROM v2_receipt_archive WHERE seq=?", (sequence,)
             ).fetchone()
@@ -422,20 +448,29 @@ class SourceOutbox:
                 )
             return len(rows)
 
-    def backfill(self, table: str, *, limit: int = 100) -> int:
+    def backfill(
+        self, table: str, *, limit: int = 100, namespaces: tuple[str, ...] | None = None
+    ) -> int:
         """Bounded source snapshot; new writes remain captured throughout the backfill."""
         if table not in TABLES[self.source] or not 1 <= limit <= 500:
             raise ValueError("invalid backfill scope")
+        if namespaces is not None and (table != "runtime_values" or not namespaces):
+            raise ValueError("namespace backfill requires runtime_values and a nonempty scope")
+        checkpoint = table if namespaces is None else table + ":" + ",".join(sorted(namespaces))
         db = self.connection(write=True)
         try:
             db.execute("BEGIN IMMEDIATE")
             prior = db.execute(
-                "SELECT position FROM v2_backfill_checkpoint WHERE table_name=?", (table,)
+                "SELECT position FROM v2_backfill_checkpoint WHERE table_name=?", (checkpoint,)
             ).fetchone()
+            namespace_filter = (
+                "AND namespace IN (" + ",".join("?" for _ in namespaces) + ") "
+                if namespaces else ""
+            )
             rows = db.execute(
                 f"SELECT rowid AS _v2_rowid,* FROM {quoted(table)} WHERE rowid>? "
-                "ORDER BY rowid LIMIT ?",
-                (prior[0] if prior else 0, limit),
+                + namespace_filter + "ORDER BY rowid LIMIT ?",
+                (prior[0] if prior else 0, *(namespaces or ()), limit),
             ).fetchall()
             columns = list(db.execute(f"PRAGMA table_info({quoted(table)})"))
             keys = [r[1] for r in sorted((r for r in columns if r[5]), key=lambda r: r[5])]
@@ -462,6 +497,10 @@ class SourceOutbox:
                     "policy_watch",
                     "policy_watch_applied",
                     "policy_watch_validation",
+                    "message_pins",
+                    "w3_operations_applied",
+                    "w3_global_input",
+                    "w3_operations_input",
                 }:
                     continue
                 identity = (
@@ -483,7 +522,7 @@ class SourceOutbox:
                 db.execute(
                     "INSERT INTO v2_backfill_checkpoint VALUES(?,?) ON CONFLICT(table_name) "
                     "DO UPDATE SET position=excluded.position",
-                    (table, rows[-1]["_v2_rowid"]),
+                    (checkpoint, rows[-1]["_v2_rowid"]),
                 )
             db.commit()
             return len(rows)

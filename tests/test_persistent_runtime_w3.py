@@ -423,7 +423,7 @@ def test_w3_schema_and_resolved_routes_fail_closed() -> None:
         )
 
 
-def test_w3_has_web_search_skill_but_no_data_mcp_budget() -> None:
+def test_w3_data_mcp_budget_is_ibkr_only() -> None:
     from doxagent.codex_runtime.schema import (
         CodexPersistentRuntimeAgentRole,
         CodexPersistentRuntimeNode,
@@ -434,7 +434,9 @@ def test_w3_has_web_search_skill_but_no_data_mcp_budget() -> None:
             CodexPersistentRuntimeNode.W3,
             CodexPersistentRuntimeAgentRole.W3,
         )
-        == frozenset()
+        == frozenset({
+            "ibkr.market_history",
+        })
     )
 
 
@@ -767,7 +769,7 @@ def test_codex_w3_runner_uses_main_thread_and_strict_isolated_request(
     assert request.effort == "max"
     assert case.frozen_inputs["models"]["w3_model"] == "gpt-6-luna"
     assert request.read_only is True
-    assert request.data_mcp_enabled is False
+    assert request.data_mcp_enabled is True
     assert request.allow_subagents is False and request.max_subagents == 0
     assert any(path.endswith(":cases/w3-case/task.json") for path in workspace.files)
     assert any(path.endswith(":cases/w3-case/context/policy_set.json") for path in workspace.files)

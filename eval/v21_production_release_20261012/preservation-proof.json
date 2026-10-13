@@ -1,0 +1,65 @@
+{
+  "MU": {
+    "event_library": true,
+    "monitoring_configuration": true
+  },
+  "BE": {
+    "event_library": true,
+    "monitoring_configuration": true
+  },
+  "INTC": {
+    "event_library": true,
+    "monitoring_configuration": true
+  },
+  "RKLB": {
+    "document1": true,
+    "document2": true,
+    "document3": true,
+    "event_library": true,
+    "monitoring_configuration": true
+  },
+  "monitoring_tables": {
+    "ticker_monitoring_states": true,
+    "ticker_source_bindings": true,
+    "ticker_source_binding_revisions": true,
+    "v2_binding_commands": true
+  },
+  "control": {
+    "MU": {
+      "epoch": true,
+      "mode": true,
+      "requested_mode": true,
+      "removed": true,
+      "removal_epoch": true,
+      "cutoff_at": true,
+      "mode_effective_at": true
+    },
+    "RKLB": {
+      "epoch": true,
+      "mode": true,
+      "requested_mode": true,
+      "removed": true,
+      "removal_epoch": true,
+      "cutoff_at": true,
+      "mode_effective_at": true
+    },
+    "BE": {
+      "epoch": true,
+      "mode": true,
+      "requested_mode": true,
+      "removed": true,
+      "removal_epoch": true,
+      "cutoff_at": true,
+      "mode_effective_at": true
+    },
+    "INTC": {
+      "epoch": true,
+      "mode": true,
+      "requested_mode": true,
+      "removed": true,
+      "removal_epoch": true,
+      "cutoff_at": true,
+      "mode_effective_at": true
+    }
+  }
+}

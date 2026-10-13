@@ -100,6 +100,12 @@ class DistributionRepository:
                 );
                 CREATE INDEX IF NOT EXISTS idx_distribution_delivery_state
                     ON distribution_deliveries(state,lease_until);
+                CREATE INDEX IF NOT EXISTS idx_distribution_runs_status_time
+                    ON distribution_runs(status,created_at);
+                CREATE INDEX IF NOT EXISTS idx_distribution_runs_source_time
+                    ON distribution_runs(source_id,created_at DESC);
+                CREATE INDEX IF NOT EXISTS idx_distribution_deliveries_run_state
+                    ON distribution_deliveries(run_id,state);
             """)
 
     def get_or_create_run(
@@ -153,7 +159,7 @@ class DistributionRepository:
         with self.bus.transaction() as db:
             changed = db.execute(
                 "UPDATE distribution_runs SET claim_token=?,lease_until=?,status='RUNNING' "
-                "WHERE run_id=? AND status NOT IN ('DONE','PARTIAL') "
+                "WHERE run_id=? AND status NOT IN ('DONE','PARTIAL','EXPIRED','ABANDONED') "
                 "AND (claim_token IS NULL OR lease_until<=?)",
                 (
                     token,
@@ -394,7 +400,9 @@ class DistributionRepository:
         state = (
             "NO_PUBLIC_BODY"
             if complete_body_required and not _complete_body_verified(message)
-            else "READY" if valid else "EMPTY_CONTENT"
+            else "READY"
+            if valid
+            else "EMPTY_CONTENT"
         )
         with self.bus.transaction() as db:
             if job.claim_token:
@@ -437,7 +445,8 @@ class DistributionRepository:
                 "SELECT d.*,a.enriched_json,a.original_json,a.content_version,r.source_json "
                 "FROM distribution_deliveries d JOIN distribution_articles a USING(article_id) "
                 "JOIN distribution_runs r USING(run_id) "
-                "WHERE d.state='PENDING' OR (d.state='RUNNING' AND d.lease_until<=?) "
+                "WHERE r.status NOT IN ('EXPIRED','ABANDONED') AND "
+                "(d.state='PENDING' OR (d.state='RUNNING' AND d.lease_until<=?)) "
                 "ORDER BY d.created_at LIMIT ?",
                 (now.isoformat(), limit),
             ).fetchall()
@@ -451,6 +460,69 @@ class DistributionRepository:
                 )
                 claimed.append({**dict(row), "claim_token": token})
         return claimed
+
+    def expire_runs(self, *, limit: int = 200) -> int:
+        """Retain audit rows; never retire an owned claim or a durable closed sweep."""
+        now = utc_now()
+        # Three days also covers DATE/UNKNOWN inputs' today+yesterday admission.
+        before = (now - timedelta(days=3)).isoformat()
+        count = 0
+        with self.bus.transaction() as db:
+            runs = db.execute(
+                "SELECT run_id,checkpoint_json FROM distribution_runs "
+                "WHERE status IN ('PENDING','RUNNING') AND mode='REALTIME' "
+                "AND created_at<? AND (claim_token IS NULL OR lease_until<=?) "
+                "ORDER BY created_at LIMIT ?",
+                (before, now.isoformat(), limit),
+            ).fetchall()
+            for run in runs:
+                pending = db.execute(
+                    "SELECT d.delivery_id,d.state,d.lease_until,d.admission_json,a.original_json "
+                    "FROM distribution_deliveries d JOIN distribution_articles a USING(article_id) "
+                    "WHERE d.run_id=? AND d.state IN ('WAIT_BODY','PENDING','RUNNING')",
+                    (run["run_id"],),
+                ).fetchall()
+                expired = []
+                for row in pending:
+                    if (
+                        row["state"] == "RUNNING"
+                        and row["lease_until"]
+                        and datetime.fromisoformat(row["lease_until"]) > now
+                    ):
+                        break
+                    admission = AdmissionContext.model_validate_json(row["admission_json"])
+                    message = RawMessageInput.model_validate_json(row["original_json"])
+                    if (
+                        admission.mode != "REALTIME"
+                        or evaluate_admission(
+                            message.published_at, admission, now, message.publication_time_basis
+                        )
+                        is None
+                    ):
+                        break
+                    expired.append(row["delivery_id"])
+                else:
+                    audit = {
+                        **json.loads(run["checkpoint_json"]),
+                        "retired_at": now.isoformat(),
+                        "retirement_reason": "ORIGINAL_REALTIME_WINDOW_EXPIRED",
+                    }
+                    db.execute(
+                        "UPDATE distribution_runs SET status='EXPIRED',claim_token=NULL,"
+                        "lease_until=NULL,checkpoint_json=? WHERE run_id=?",
+                        (canonical_json(audit), run["run_id"]),
+                    )
+                    for delivery_id in expired:
+                        db.execute(
+                            "UPDATE distribution_deliveries SET state='EXPIRED',claim_token=NULL,"
+                            "lease_until=NULL,result_json=? WHERE delivery_id=?",
+                            (
+                                canonical_json({"reason": "ORIGINAL_REALTIME_WINDOW_EXPIRED"}),
+                                delivery_id,
+                            ),
+                        )
+                    count += 1
+        return count
 
     def finish_delivery(
         self, delivery_id: str, claim_token: str, state: str, result: dict[str, Any]

@@ -1,0 +1,1 @@
+{"captured_at": "2026-10-12T12:27:21.803255+00:00", "capture_policy_usage": false, "capture_watch": false, "schema_meta": [[3]], "checkpoints_schema": [[0, "source", "TEXT", 0, null, 1], [1, "position", "INTEGER", 0, null, 0]], "checkpoints": [["bus", 2252095], ["runtime", 1800854], ["initialization", 103454], ["research", 3923]], "gaps_count": 6}

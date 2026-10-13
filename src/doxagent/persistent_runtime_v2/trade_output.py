@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+from contextlib import nullcontext
 import json
 from datetime import date
 from typing import Any, Protocol
@@ -20,6 +21,8 @@ from .schema import PolicyActivationRecord, RuntimeCase, TradeRecord
 
 def event_trade_key(trade: TradeRecord) -> str | None:
     """Claim only an unambiguous known-fact state transition, not text similarity."""
+    if trade.w3_trade_decision is not None:
+        return None
     if trade.decision_origin.value != "W3" or not trade.w3_result:
         return None
     attributions = trade.w1_result.fact_attributions or []
@@ -94,6 +97,8 @@ class TradeOutputService:
         *,
         release_day: date | None = None,
         selection_id: str | None = None,
+        db=None,
+        disposition_override: str | None = None,
     ) -> str:
         if case.runtime_mode == "CLOSED" and selection_id is None:
             identity = f"candidate:{case.case_id}"
@@ -108,11 +113,11 @@ class TradeOutputService:
                 "created_at": self.journal.clock().isoformat(),
                 "trade": trade.model_dump(mode="json"),
             }
-            with self.journal.transaction() as db:
+            with (self.journal.transaction() if db is None else nullcontext(db)) as db:
                 assert_write_lease(db)
                 reason, _ = output_permission(db, case.ticker, case.case_id)
-                value["origin_trade_eligible"] = reason is None
-                value["trade_disposition"] = reason
+                value["origin_trade_eligible"] = reason is None and disposition_override is None
+                value["trade_disposition"] = disposition_override or reason
                 db.execute(
                     "INSERT OR IGNORE INTO runtime_values VALUES('candidates',?,?)",
                     (identity, encode(value)),
@@ -120,7 +125,7 @@ class TradeOutputService:
             return "CANDIDATE"
         day = release_day or case.trading_date
         identity = f"trade:{selection_id or case.case_id}"
-        with self.journal.transaction() as db:
+        with (self.journal.transaction() if db is None else nullcontext(db)) as db:
             assert_write_lease(db)
             old = db.execute(
                 "SELECT payload FROM runtime_values WHERE namespace='trade_intents' AND key=?",
@@ -145,7 +150,7 @@ class TradeOutputService:
             expired = (case.trade_expired and selection_id is None) or (
                 semantic_day(self.journal.clock()) != day
             )
-            status = "EXPIRED_SEMANTIC_DAY" if expired else "READY"
+            status = disposition_override or ("EXPIRED_SEMANTIC_DAY" if expired else "READY")
             if status == "READY" and selection_id:
                 prior = db.execute(
                     "SELECT 1 FROM runtime_values WHERE namespace='trade_intents' "
@@ -267,6 +272,9 @@ class TradeOutputService:
                 "INSERT INTO runtime_values VALUES('trade_intents',?,?)", (identity, encode(intent))
             )
         return status
+
+    def record_in_transaction(self, db, case, trade, **kwargs):
+        return self.record(case, trade, db=db, **kwargs)
 
     async def deliver(self, adapter: TradeExecutionAdapter, *, limit: int = 20) -> int:
         count = 0

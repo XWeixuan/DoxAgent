@@ -1,0 +1,44 @@
+2026-10-13T02:37:29+08:00
+ 02:37:29 up 22 days, 15 min,  6 users,  load average: 15.90, 18.21, 49.76
+    PID    PPID STAT     ELAPSED %CPU COMMAND         COMMAND
+3352928 3352925 R          00:00  600 ps              ps -eo pid,ppid,stat,etime,pcpu,comm,args --sort=-pcpu
+3324828 3324480 Rl         24:17 37.4 python          python -m doxagent.runtime_scheduler.v2
+3352279 3097317 Rsl        00:25 28.9 python          /app/.venv/bin/python -m doxagent.codex_worker.capsule_child
+3352129 3097317 Rsl        00:31 26.4 python          /app/.venv/bin/python -m doxagent.codex_worker.capsule_child
+3350035 3350030 Dl         02:12 23.6 du              du -x -B1 --max-depth=2 /var /home /opt /root /usr
+3331204 3330116 Sl         15:36 19.8 python          python -m doxagent.ticker_initialization.cli worker
+3104850 3104819 Rl      04:22:09 14.4 python          python -m doxagent.message_bus_v2.cli run-worker
+3331594 3331530 Sl         15:24 12.6 python          python -m doxagent.v2_control.worker --runtime-db /data/runtime/runtime.sqlite3 --initialization-db /data/initialization/control.sqlite3 --bus-db /data/bus/bus.sqlite3 --scheduler-db /data/scheduler/scheduler.sqlite3
+3119732 3119692 R       04:12:32  7.2 python          python -m doxagent.v2_read.cli project --read-db /data/read/v2.sqlite3 --source research=/data/research/research.sqlite3 --source initialization=/data/initialization/control.sqlite3 --source bus=/data/bus/bus.sqlite3 --source runtime=/data/runtime/runtime.sqlite3 --event-root /data/events
+3346679 3346654 Ssl        04:16  7.0 python          python -u scripts/ops/rklb_v21_remote_initialize.py d3 --run-prefix rklb-v21-20261012-01 --as-of 2026-10-12T08:45:17.165493+00:00 --event-library-version 1
+3324821 3324472 Sl         24:17  6.0 python          python -m doxagent.trade_execution.cli --db /data/runtime/runtime.sqlite3 run-worker
+1690987 1920749 Sl   14-21:17:08  5.6 chrome          /usr/bin/google-chrome-stable --user-data-dir=/site-data/profiles/dowjones-main --proxy-server=http://doxagent-egress-clash:18081 --proxy-bypass-list=<-loopback> --window-size=1440,1000 --remote-debugging-address=127.0.0.1 --remote-debugging-port=9222 --no-first-run --no-default-browser-check about:blank
+3348878 2625877 Ssl        02:46  5.1 python          /app/.venv/bin/python -m doxagent.codex_worker.capsule_child
+3349207 3349115 Sl         02:37  4.5 python          /app/.venv/bin/python -m doxagent.mcp.data_server
+3347988 2625877 Ssl        03:25  4.1 python          /app/.venv/bin/python -m doxagent.codex_worker.capsule_child
+1691923 1920749 Sl   14-21:16:28  4.0 chrome          /usr/bin/google-chrome-stable --user-data-dir=/site-data/profiles/yahoo-main --proxy-server=http://doxagent-egress-clash:18080 --proxy-bypass-list=<-loopback> --window-size=1440,1000 --remote-debugging-address=127.0.0.1 --remote-debugging-port=9224 --no-first-run --no-default-browser-check about:blank
+3347290 2625877 Ssl        03:51  3.8 python          /app/.venv/bin/python -m doxagent.codex_worker.capsule_child
+108120764416	/var/lib/docker/volumes/doxagent-v2_v2-data/_data
+33097809920	/var/lib/docker/volumes/doxagent-v2_v2-data/_data/read
+22366105600	/var/lib/docker/volumes/doxagent-v2_v2-data/_data/bus
+10685779968	/var/lib/docker/volumes/doxagent-v2_v2-data/_data/runtime
+9880399872	/var/lib/docker/volumes/doxagent-v2_v2-data/_data/codex-home
+9461665792	/var/lib/docker/volumes/doxagent-v2_v2-data/_data/production-backups
+5977300992	/var/lib/docker/volumes/doxagent-v2_v2-data/_data/workspaces
+4111192064	/var/lib/docker/volumes/doxagent-v2_v2-data/_data/backups
+3911254016	/var/lib/docker/volumes/doxagent-v2_v2-data/_data/mu-v21-test
+3216941056	/var/lib/docker/volumes/doxagent-v2_v2-data/_data/v21-production-validation
+1474174976	/var/lib/docker/volumes/doxagent-v2_v2-data/_data/initialization
+1242460160	/var/lib/docker/volumes/doxagent-v2_v2-data/_data/intc-v21-test
+1066659840	/var/lib/docker/volumes/doxagent-v2_v2-data/_data/be-v21-test
+950185984	/var/lib/docker/volumes/doxagent-v2_v2-data/_data/research
+468926464	/var/lib/docker/volumes/doxagent-v2_v2-data/_data/rklb-v21-test
+191885312	/var/lib/docker/volumes/doxagent-v2_v2-data/_data/prebuilt
+15896576	/var/lib/docker/volumes/doxagent-v2_v2-data/_data/events
+1286144	/var/lib/docker/volumes/doxagent-v2_v2-data/_data/browser-identities
+491520	/var/lib/docker/volumes/doxagent-v2_v2-data/_data/operator
+163840	/var/lib/docker/volumes/doxagent-v2_v2-data/_data/crawler-plane
+94208	/var/lib/docker/volumes/doxagent-v2_v2-data/_data/o4
+45056	/var/lib/docker/volumes/doxagent-v2_v2-data/_data/scheduler
+36864	/var/lib/docker/volumes/doxagent-v2_v2-data/_data/usage
+4096	/var/lib/docker/volumes/doxagent-v2_v2-data/_data/incident-backups

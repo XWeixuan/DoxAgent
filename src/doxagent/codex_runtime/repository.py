@@ -1887,6 +1887,8 @@ class PostgresCodexRuntimeRepository:
         size = (
             len(document.content_text.encode("utf-8")) if document.content_text is not None else 0
         )
+        if size > _HARD_BYTES["document"]:
+            raise ValueError("remote published document content exceeds 2 MiB")
         if size > _WARN_BYTES["document"]:
             record_postgres_payload(
                 operation="codex.document.warning",

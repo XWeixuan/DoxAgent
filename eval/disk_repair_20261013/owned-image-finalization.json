@@ -1,0 +1,63 @@
+{
+  "before_free": 42464718848,
+  "retired": [
+    {
+      "id": "sha256:9ca3442d5e46d4300b26b0a3d96e8c58b9e52c760e610ba16a2c6587dc26b2d8",
+      "tags": [
+        "doxagent-v2:disk-repair-bus-20261013-r1"
+      ],
+      "result": "Untagged: doxagent-v2:disk-repair-bus-20261013-r1\nDeleted: sha256:9ca3442d5e46d4300b26b0a3d96e8c58b9e52c760e610ba16a2c6587dc26b2d8\n",
+      "error": ""
+    },
+    {
+      "id": "sha256:676f34afac34aca2e0ce10f5593a3e54eac73324488b3540d00b62ad5fe13afd",
+      "tags": [
+        "doxagent-v2:disk-repair-read-20261013-r2"
+      ],
+      "result": "Untagged: doxagent-v2:disk-repair-read-20261013-r2\nDeleted: sha256:676f34afac34aca2e0ce10f5593a3e54eac73324488b3540d00b62ad5fe13afd\n",
+      "error": ""
+    },
+    {
+      "id": "sha256:4026f8650fc718a7546c20bff6648610956778e4539f2f50eeed1944f7f05877",
+      "tags": [
+        "doxagent-v2:disk-repair-read-20261013-r4"
+      ],
+      "result": "Untagged: doxagent-v2:disk-repair-read-20261013-r4\nDeleted: sha256:4026f8650fc718a7546c20bff6648610956778e4539f2f50eeed1944f7f05877\n",
+      "error": ""
+    },
+    {
+      "id": "sha256:ec9de3be3f21e1f616071397140ee67b5649a860dc66ab114daed22bcbf36228",
+      "tags": [
+        "doxagent-v2:disk-repair-read-20261013-r5"
+      ],
+      "result": "Untagged: doxagent-v2:disk-repair-read-20261013-r5\nDeleted: sha256:ec9de3be3f21e1f616071397140ee67b5649a860dc66ab114daed22bcbf36228\n",
+      "error": ""
+    },
+    {
+      "id": "sha256:468d866e1457c05b48f0ffb8f3a8fcf6d1a341a0ba31003c37b6eb5b3b79d479",
+      "tags": [
+        "doxagent-v2:disk-repair-read-20261013-r6"
+      ],
+      "result": "Untagged: doxagent-v2:disk-repair-read-20261013-r6\nDeleted: sha256:468d866e1457c05b48f0ffb8f3a8fcf6d1a341a0ba31003c37b6eb5b3b79d479\n",
+      "error": ""
+    },
+    {
+      "id": "sha256:d75464a063a5f79b66a27f2c089396bce3c42b59ae4203eaac42c8f63008c76d",
+      "tags": [
+        "doxagent-v2:disk-repair-read-20261013-r1"
+      ],
+      "result": "Untagged: doxagent-v2:disk-repair-read-20261013-r1\nDeleted: sha256:d75464a063a5f79b66a27f2c089396bce3c42b59ae4203eaac42c8f63008c76d\n",
+      "error": ""
+    },
+    {
+      "id": "sha256:97a50a8fdbaf9c610a0abf5d895a72ae5ec63c0194faab62274828386c5e92da",
+      "tags": [
+        "doxagent-v2:disk-repair-read-20261013-r3"
+      ],
+      "result": "Untagged: doxagent-v2:disk-repair-read-20261013-r3\nDeleted: sha256:97a50a8fdbaf9c610a0abf5d895a72ae5ec63c0194faab62274828386c5e92da\n",
+      "error": ""
+    }
+  ],
+  "retained": [],
+  "after_free": 42466131968
+}

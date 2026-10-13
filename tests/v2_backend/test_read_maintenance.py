@@ -37,3 +37,30 @@ def test_alias_adopts_new_generation_and_explicitly_resets_old_cursor(tmp_path):
     assert active.path == new.path
     with pytest.raises(TimeoutError):
         active.token(token, "owner")
+
+
+def test_runtime_gaps_preserve_business_but_do_not_pin_expired_bus_poll_versions(tmp_path):
+    store = ReadStore(tmp_path / "read.db")
+    store.migrate()
+    now = datetime.now(UTC)
+    old = (now - timedelta(days=5)).isoformat()
+    for n in range(1, 5):
+        store.ingest("bus", str(n), [{"kind": "native:poll_states", "ticker": "MU",
+                                      "id": "b", "data": {"n": n}}], at=old)
+        store.ingest("runtime", str(n), [{"kind": "case", "ticker": "MU",
+                                          "id": "c", "data": {"n": n}}], at=old)
+    with store.connect(write=True) as db:
+        db.execute("UPDATE commit_retention SET projected_at=?", (old,))
+        for coordinate in (1240145, 1240148, 1240191, 1240193):
+            db.execute("INSERT INTO gaps(source,event,reason) VALUES('runtime',?,'PROVENANCE_UNVERIFIED')", (str(coordinate),))
+    result = collect(store, now=now, budget=1)
+    assert result["policy"] == "BUS_POLL_ONLY"
+    assert result["deleted"]["objects"] == 3
+    with store.connect() as db:
+        assert db.execute("SELECT count(*) FROM gaps").fetchone()[0] == 4
+        assert db.execute("SELECT count(*) FROM objects WHERE kind='case'").fetchone()[0] == 4
+        assert db.execute("SELECT count(*) FROM objects WHERE kind='native:poll_states'").fetchone()[0] == 1
+    # A Bus repair protects those versions too.
+    with store.connect(write=True) as db:
+        db.execute("INSERT INTO gaps(source,event,reason) VALUES('bus','1','UNKNOWN')")
+    assert collect(store, now=now, budget=1)["policy"] == "PINNED"

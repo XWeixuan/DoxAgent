@@ -290,6 +290,7 @@ class PersistentRuntimeV2Service:
         self._dispatch_effects = dispatch_effects
         self._projection_outbox = projection_outbox
         self._w3_agent = w3_agent
+        self._w3_v4_execution = None
         self._w3_lease_seconds = w3_lease_seconds
         self._hot_executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="prv2-hot")
         self._effect_executor = ThreadPoolExecutor(
@@ -420,6 +421,15 @@ class PersistentRuntimeV2Service:
             case.frozen_inputs["prompts"] = bundle["prompts"]
             case.frozen_inputs["w3_assets"] = bundle["assets"]
             case.orchestration_revision = bundle.get("orchestration_revision", 1)
+            case.w3_contract_version = bundle.get("contracts", {}).get("w3_contract_version")
+            if case.w3_contract_version:
+                case.frozen_inputs["w3_assets"] = {
+                    k: v for k, v in bundle["assets"].items()
+                    if (k in {"w3/AGENTS.md", "w3/skills/skill.md"}
+                        if bundle["contracts"].get("w3_asset_layout") == "agents-skill.v1"
+                        else k.startswith("w3/"))
+                }
+                case.frozen_inputs["w3_contracts"] = bundle["contracts"]
             if not isinstance(projection, RuntimePolicyProjectionV5):
                 case.orchestration_revision = min(case.orchestration_revision, 2)
         else:
@@ -488,7 +498,10 @@ class PersistentRuntimeV2Service:
             ) or strict_json_schema(W3CaseResultV3.model_json_schema())
             case.frozen_inputs["w3_output_schema"] = schema
             case.frozen_inputs["w3_output_schema_hash"] = digest(schema)
-        models = case.frozen_inputs.get("w3_assets", {}).get("runtime_models.json")
+        models = (
+            bundle["assets"].get("runtime_models.json")
+            if case.execution_bundle_id and self.execution_bundles else None
+        )
         if models:
             import json
 
@@ -605,7 +618,10 @@ class PersistentRuntimeV2Service:
             return self._fail_case(case, exc)
 
         case.first_round_tags = first_round_tags(w1_final, w2_final, case.w2_alignment)
-        route = route_runtime_case(w1_final, w2_final, case.w2_alignment)
+        route = route_runtime_case(
+            w1_final, w2_final, case.w2_alignment,
+            w3_contract_version=case.w3_contract_version,
+        )
         if case.orchestration_revision >= 3 and self.journal:
             from .policy_watch import freeze_followup
 
@@ -761,6 +777,18 @@ class PersistentRuntimeV2Service:
                 for p in case.frozen_inputs["policy_usage"]
                 if p["executable_directions"]
             }
+            if case.w3_contract_version == "persistent-runtime.w3.v4" and self.journal:
+                from .message_pin import active_states
+
+                if "watch_recall_policy_ids" not in case.frozen_inputs:
+                    with self.journal.transaction(write=False) as db:
+                        case.frozen_inputs["watch_recall_policy_ids"] = [
+                            r["policy_id"] for r in active_states(
+                                db, "policy_watch", case.ticker, self.journal.clock()
+                            )
+                        ]
+                    self.repository.save_case(case)
+                allowed.update(case.frozen_inputs["watch_recall_policy_ids"])
             recall_projection = projection.model_copy(
                 update={"policies": [p for p in projection.policies if p.policy_id in allowed]}
             )
@@ -1265,6 +1293,10 @@ class PersistentRuntimeV2Service:
     def _enqueue_route_effects(self, case: RuntimeCase, w1_response_id: str) -> None:
         if case.route is None:
             raise ValueError("Cannot enqueue effects before routing")
+        if case.route.primary_route.value == "W3":
+            from .w3_models import freeze_case_profile
+
+            freeze_case_profile(case, provider=getattr(self._w3_agent, "_model_provider", None))
         effects: list[RuntimeEffect] = []
         for effect_type in case.route.side_effects:
             payload: dict[str, Any] = {}
@@ -1274,7 +1306,10 @@ class PersistentRuntimeV2Service:
                 RuntimeEffect(
                     case_id=case.case_id,
                     effect_type=effect_type,
-                    idempotency_key=f"{case.case_id}:{effect_type.value}",
+                    idempotency_key=(f"{case.case_id}:W3:trade_decision"
+                                     if case.w3_contract_version == "persistent-runtime.w3.v4"
+                                     and effect_type is RuntimeSideEffect.ROUTE_TO_W3
+                                     else f"{case.case_id}:{effect_type.value}"),
                     payload=payload,
                 )
             )
@@ -1322,7 +1357,9 @@ class PersistentRuntimeV2Service:
 
         dispatched = 0
         for effect in self.repository.claim_effects(limit=limit):
-            if effect.effect_type is RuntimeSideEffect.ROUTE_TO_W3:
+            if effect.effect_type in {
+                RuntimeSideEffect.ROUTE_TO_W3, RuntimeSideEffect.W3_POST_DECISION,
+            }:
                 thread = Thread(
                     target=self._run_w3_effect_thread,
                     args=(effect,),
@@ -1384,8 +1421,17 @@ class PersistentRuntimeV2Service:
                     )
                 )
                 return 0
+            if getattr(exc, "code", None) == "w3_template_initializing":
+                self.repository.save_effect(effect.model_copy(update=dict(
+                    status=RuntimeEffectStatus.PENDING_RETRY,
+                    available_at=utc_now() + timedelta(seconds=5),
+                    last_error="W3 template initialization is active",
+                )))
+                return 0
             next_attempt = effect.attempt_count + 1
             retryable = not isinstance(exc, RuntimeResponsesError) and next_attempt < 3
+            if getattr(exc, "code", None) in {"w3_operations_expired", "w3_case_thread_missing"}:
+                retryable = False
             failed = effect.model_copy(
                 update={
                     "status": (
@@ -1404,6 +1450,20 @@ class PersistentRuntimeV2Service:
                 }
             )
             self.repository.save_effect(failed)
+            current = self.repository.get_case(effect.case_id)
+            if (
+                current and current.w3_contract_version == "persistent-runtime.w3.v4"
+                and effect.effect_type in {
+                    RuntimeSideEffect.ROUTE_TO_W3, RuntimeSideEffect.W3_POST_DECISION,
+                }
+            ):
+                from .w3_contracts import OPERATIONS_PHASE, TRADE_PHASE
+
+                self._v4_execution().record_failure(
+                    effect.case_id,
+                    OPERATIONS_PHASE if effect.effect_type is RuntimeSideEffect.W3_POST_DECISION
+                    else TRADE_PHASE, exc, retryable=retryable,
+                )
             if effect.effect_type is RuntimeSideEffect.ROUTE_TO_W3:
                 self._record_w3_failure(effect.case_id, exc, retryable=retryable)
             self._refresh_case_completion(effect.case_id)
@@ -1427,6 +1487,15 @@ class PersistentRuntimeV2Service:
             raise RuntimeInputUnavailable(
                 "invalid_admission", "Message excluded by admission reconciliation"
             )
+        if case.w3_contract_version == "persistent-runtime.w3.v4" and effect.effect_type in {
+            RuntimeSideEffect.ROUTE_TO_W3, RuntimeSideEffect.W3_POST_DECISION,
+        }:
+            execution = self._v4_execution()
+            if effect.effect_type is RuntimeSideEffect.ROUTE_TO_W3:
+                execution.trade(case)
+            else:
+                execution.operations(case)
+            return
         if effect.effect_type is RuntimeSideEffect.EMIT_DELTA:
             self._execute_r3(case, effect)
             return
@@ -1469,6 +1538,29 @@ class PersistentRuntimeV2Service:
             self._execute_w3(case)
             return
         raise ValueError(f"Unsupported Runtime V2 effect: {effect.effect_type}")
+
+    def _v4_execution(self):
+        if self._w3_v4_execution is None:
+            from .w3_execution import W3Execution
+
+            with self._w3_threads_lock:
+                if self._w3_v4_execution is None:
+                    self._w3_v4_execution = W3Execution(self)
+        return self._w3_v4_execution
+
+    def maintain_w3_threads(self):
+        if self.journal is None or self._w3_agent is None:
+            return
+        if self._w3_v4_execution is None:
+            with self.journal.transaction(write=False) as db:
+                exists = db.execute(
+                    "SELECT 1 FROM sqlite_master WHERE name='runtime_v2_w3_threads'"
+                ).fetchone()
+            if not exists:
+                self.journal.set("w3_housekeeping", "next_at",
+                                 (self.journal.clock() + timedelta(hours=1)).isoformat())
+                return
+        self._v4_execution().maintain()
 
     def _execute_w3(self, case: RuntimeCase) -> None:
         if self._w3_agent is None:
@@ -1999,6 +2091,17 @@ class PersistentRuntimeV2Service:
         if case is None:
             return
         effects = self.repository.list_effects(case_id)
+        if case.w3_contract_version == "persistent-runtime.w3.v4":
+            effects = [
+                e for e in effects if e.effect_type is not RuntimeSideEffect.W3_POST_DECISION
+            ]
+            if case.decision_completed_at is not None:
+                self.repository.save_case(case.model_copy(update=dict(
+                    status=RuntimeCaseStatus.COMPLETED, technical_status=RuntimeTechnicalStatus.OK,
+                    completed_at=case.completed_at or case.decision_completed_at,
+                )))
+                self._project_terminal(self.repository.get_case(case_id))
+                return
         if any(effect.status is RuntimeEffectStatus.FAILED for effect in effects):
             status = RuntimeCaseStatus.FAILED
             technical = RuntimeTechnicalStatus.FAILED

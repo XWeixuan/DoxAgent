@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import re
+import time
 from datetime import UTC, datetime, timedelta
 from email.utils import parsedate_to_datetime
 from html import unescape
@@ -17,21 +18,14 @@ from lxml import html as lxml_html  # type: ignore[import-untyped]
 
 from doxagent.site_strategy.client import SiteAccessError
 
+from .http_routes import HTTP_EGRESSES, approved_routes, transport_routes
 from .schema import PollContext, PollResult, RawMessageInput, SharedPollContext
 
 _TAIPEI = ZoneInfo("Asia/Taipei")
 _SEOUL = ZoneInfo("Asia/Seoul")
 _NEW_YORK = ZoneInfo("America/New_York")
 # Fixed deployment listeners, never arbitrary caller-provided proxy destinations.
-FEED_HTTP_EGRESSES = {
-    "direct": None,
-    "jp-standard-6": "http://doxagent-egress-clash:18080",
-    "us-standard-5": "http://doxagent-egress-clash:18081",
-    "nl-standard-2": "http://doxagent-egress-clash:18082",
-    "de-standard-1": "http://doxagent-egress-clash:18083",
-    "server-direct": "http://doxagent-egress-clash:18084",
-    "tr-standard-1": "http://doxagent-egress-clash:18085",
-}
+FEED_HTTP_EGRESSES = HTTP_EGRESSES
 _BARRONS_ET_DATE = re.compile(
     r"\b([A-Z][a-z]{2}) (\d{1,2}), (\d{4}) (\d{1,2}):(\d{2}) ([ap])\.m\. ET"
 )
@@ -386,6 +380,7 @@ class IndustryListingAdapter:
                     window_done=False,
                     site_access_deferred=True,
                     site_access_retry_not_before=exc.result.retry_not_before,
+                    site_access_deferred_reason=exc.result.reason_code,
                 )
             raise
         if status != 200 or urlparse(final_url).hostname != urlparse(url).hostname:
@@ -547,9 +542,10 @@ def parse_shared_feed(
 
 
 class SharedFeedAdapter:
-    def __init__(self, client: httpx.AsyncClient, publisher: str) -> None:
+    def __init__(self, client: httpx.AsyncClient, publisher: str, *, browser: Any = None) -> None:
         self.client = client
         self.publisher = publisher
+        self.browser = browser
 
     async def poll(self, context: PollContext) -> PollResult:
         raise RuntimeError("shared publisher feed requires poll_shared")
@@ -560,49 +556,75 @@ class SharedFeedAdapter:
             raise RuntimeError("shared publisher feed URL/language is missing")
         proxy = source.default_parameters.get("feed_proxy_url")
         routes = source.default_parameters.get("feed_http_routes")
-        if routes is not None and (
-            not isinstance(routes, list)
-            or not 1 <= len(routes) <= 2
-            or any(route not in FEED_HTTP_EGRESSES for route in routes)
+        if routes is not None:
+            approved_routes(routes)
+        browser_fallback = source.default_parameters.get("feed_browser_fallback", False)
+        if browser_fallback and (
+            getattr(source, "source_id", None) != "globenewswire_semiconductors_rss"
+            or self.browser is None
         ):
-            raise ValueError(
-                "feed_http_routes requires one primary and at most one approved fallback"
-            )
+            raise ValueError("browser feed fallback is only approved for GlobeNewswire")
+        deadline = time.monotonic() + 30
         route_used = routes[0] if routes else "legacy"
         async with context.request_permit():
             # One retry for read-only connection loss; all attempts share a short
             # deadline so an RSS failure cannot occupy the shared collector for minutes.
             async with asyncio.timeout(30):
-                for attempt in range(2):
+                selected_routes = approved_routes(routes) if routes else [("legacy", proxy)]
+                if len(selected_routes) == 1 and not browser_fallback:
+                    selected_routes *= 2
+
+                async def send(route_proxy):
+                    timeout = httpx.Timeout(12, connect=5, pool=5)
+                    if route_proxy:
+                        async with httpx.AsyncClient(
+                            proxy=str(route_proxy), timeout=timeout
+                        ) as client:
+                            return await client.get(source.entry_url)
+                    return await self.client.get(source.entry_url, timeout=timeout)
+
+                transport_errors = (
+                    httpx.ConnectError, httpx.ConnectTimeout, httpx.ReadError,
+                    httpx.ReadTimeout, httpx.RemoteProtocolError,
+                )
+                try:
+                    response, route_used = await transport_routes(
+                        send, selected_routes, transport_errors,
+                    )
+                    status = response.status_code
+                    body = response.text
+                except transport_errors:
+                    if not browser_fallback:
+                        raise
+                    # The explicitly approved same-feed browser path also covers
+                    # a broken HTTP connection, without stacking another budget.
+                    status, body = 0, ""
+                if status in (0, 403) and browser_fallback:
                     try:
-                        if routes:
-                            route_used = routes[min(attempt, len(routes) - 1)]
-                            proxy = FEED_HTTP_EGRESSES[route_used]
-                        if proxy:
-                            async with httpx.AsyncClient(
-                                proxy=str(proxy), timeout=httpx.Timeout(25, connect=5, pool=5)
-                            ) as client:
-                                response = await client.get(source.entry_url)
-                        else:
-                            response = await self.client.get(
-                                source.entry_url, timeout=httpx.Timeout(25, connect=5, pool=5)
-                            )
-                        break
-                    except (
-                        httpx.ConnectError,
-                        httpx.ConnectTimeout,
-                        httpx.ReadError,
-                        httpx.ReadTimeout,
-                        httpx.RemoteProtocolError,
-                    ):
-                        if attempt:
+                        status, _final, _headers, body = await self.browser.get(
+                            source.entry_url,
+                            remaining_budget_ms=max(1, int((deadline - time.monotonic()) * 1000)),
+                            operation_id=f"{context.run_id}:feed-browser",
+                        )
+                    except SiteAccessError as exc:
+                        if not exc.site_access_deferred:
                             raise
-                        await asyncio.sleep(0.2)
-        response.raise_for_status()
-        if len(response.content) > 2_000_000:
+                        return PollResult(
+                            window_done=False,
+                            site_access_deferred=True,
+                            site_access_deferred_reason=exc.result.reason_code,
+                            site_access_retry_not_before=exc.result.retry_not_before,
+                        )
+                    if status != 200:
+                        raise RuntimeError(f"publisher_browser_feed_http_{status}")
+                    body = normalize_browser_feed(body)
+                    route_used = "managed_browser"
+        if route_used != "managed_browser":
+            response.raise_for_status()
+        if len(body.encode("utf-8")) > 2_000_000:
             raise RuntimeError("publisher_feed_exceeds_size_limit")
         messages = parse_shared_feed(
-            response.text,
+            body,
             feed_url=source.entry_url,
             publisher=self.publisher,
             language=source.content_language,
@@ -618,10 +640,27 @@ class SharedFeedAdapter:
                 "feed_url": source.entry_url,
                 "item_count": len(messages),
                 "http_route": route_used,
-                "http_status": response.status_code,
+                "http_status": status,
                 "xml_valid": True,
             },
         )
+
+
+def normalize_browser_feed(body: str) -> str:
+    """Chrome may display XML as escaped text; never accept an HTML refusal as XML."""
+    if len(body.encode("utf-8")) > 2_000_000:
+        raise RuntimeError("publisher_feed_exceeds_size_limit")
+    try:
+        root = ElementTree.fromstring(body)
+    except ElementTree.ParseError:
+        root = None
+    if root is not None and root.tag.rsplit("}", 1)[-1] in {"rss", "feed", "RDF"}:
+        return body
+    text = lxml_html.fromstring(body).text_content().strip()
+    root = ElementTree.fromstring(text)
+    if root.tag.rsplit("}", 1)[-1] not in {"rss", "feed", "RDF"}:
+        raise RuntimeError("publisher_browser_feed_not_xml")
+    return text
 
 
 __all__ = [

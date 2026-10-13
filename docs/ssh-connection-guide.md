@@ -107,11 +107,11 @@ AND,((IP-CIDR,43.163.67.97/32),(DST-PORT,22)),DIRECT
 ```
 
 因此 SSH 仍通过本机 `127.0.0.1:7897` 进入 Clash，但由 Clash 对该目标直连；
-其他端口及其他目标仍按原有规则和所选节点处理。该规则保存在当前 Flower_SS
-订阅的规则扩展文件
-`C:/Users/WEIXUANXIE/AppData/Roaming/io.github.clash-verge-rev.clash-verge-rev/profiles/r1YxLIJdAYq8.yaml`，
-运行时配置中也已加载。规则模式下，切换 `Proxies` 节点无需修改 SSH 别名。
-切换到其他订阅或全局模式时，应重新核查规则是否生效。
+其他端口及其他目标仍按原有规则和所选节点处理。2026-10-14 因更换订阅后原
+订阅规则扩展丢失，已将该规则迁入 Clash Verge 全局扩展脚本：
+`C:/Users/WEIXUANXIE/AppData/Roaming/io.github.clash-verge-rev.clash-verge-rev/profiles/Script.js`。
+脚本在生成各订阅配置时前置规则并去重，运行时配置也已加载。规则模式下，切换
+`Proxies` 节点无需修改 SSH 别名；全局模式会跳过规则，应保持规则模式使用。
 
 这条规则只解决当前工作站到新加坡服务器的 SSH 连接；它不会改变代理服务商
 的新加坡节点对 TCP 22 的支持情况。2026-09-29 已在“新加坡高级 3”“新加坡高级 1”

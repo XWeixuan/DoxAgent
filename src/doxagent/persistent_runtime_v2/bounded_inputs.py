@@ -111,6 +111,7 @@ def unfinished(repository: Any, journal: Any, task: dict[str, Any]) -> bool:
                 "SELECT 1 FROM runtime_v2_cases c WHERE "
                 + where
                 + " AND EXISTS (SELECT 1 FROM runtime_v2_effects e WHERE e.case_id=c.case_id "
+                "AND e.effect_type!='w3_post_decision' "
                 "AND e.status NOT IN ('COMPLETED','FAILED')) LIMIT 1",
                 args,
             ).fetchone():
@@ -150,7 +151,9 @@ def unfinished(repository: Any, journal: Any, task: dict[str, Any]) -> bool:
             )
     # In-memory test backend has no native files or historical hydration.
     selected = members(repository, journal, task, freeze=False)
-    if any(e[2] not in {"COMPLETED", "FAILED"} for c in selected for e in c["effects"]):
+    if any(e.status.value not in {"COMPLETED", "FAILED"}
+           and e.effect_type.value != "w3_post_decision"
+           for c in selected for e in repository.list_effects(c["case_id"])):
         return True
     sources = {c["source_message_id"] for c in selected}
     for t in journal.tasks(ticker=ticker, kind="CASE", active_only=True):

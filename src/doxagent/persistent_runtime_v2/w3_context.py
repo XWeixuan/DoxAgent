@@ -1,0 +1,373 @@
+"""Current evidence, exact-identity labels and complete rolling trade history."""
+
+from __future__ import annotations
+
+import hashlib
+import json
+from datetime import UTC, timedelta
+
+from .journal import encode
+from .message_pin import active_states, message_content, pin_snapshot
+from .policy_consumption import put_value
+from .policy_watch import watch_snapshot
+
+
+def policy_associations(w2):
+    hit = list(w2.policy_ids) if w2.policy_hit else []
+    related = [g.policy_id for g in w2.matched_condition_ids] if w2.policy_related else []
+    return list(dict.fromkeys(hit + related))
+
+
+def event_matches(source_case, *, root=None):
+    """Only explicit OLD coverage is a match; NEW references are Prior, not matches."""
+    w1 = source_case.get("w1_final") or source_case.get("w1_result") or {}
+    final = source_case.get("w3_operations_result") or source_case.get("w3_result") or {}
+    novelty = final.get("novelty") or w1
+    if novelty.get("result") != "OLD":
+        return []
+    pin = source_case.get("version_pin", {})
+    namespace = root if root is not None else pin.get("event_library_root")
+    provisionals = source_case.get("frozen_inputs", {}).get("provisional", [])
+    scoped = {p["provisional_event_id"]: p for p in provisionals}
+    keys = []
+    for eid in novelty.get("reference_ids", []):
+        if eid in scoped:
+            p = scoped[eid]
+            key = [namespace, "atomic", p["source_message_id"], p["candidate_index"]]
+        else:
+            key = [namespace, "event", eid]
+        keys.append(encode(key))
+    return keys
+
+
+def resolve_event_subjects(journal, case, keys):
+    """Keep provisional identities distinct until a formal mapping is visible."""
+    from doxagent.event_library.provider import PublishedEventLibraryReader
+
+    root = case.version_pin.event_library_root
+    if not root:
+        return keys
+    reader = PublishedEventLibraryReader(root)
+    lineage = journal.get("w3_library_lineage", root, root)
+    resolved = []
+    for key in keys:
+        value = json.loads(key)
+        if journal.get("w3_library_lineage", value[0], value[0]) != lineage:
+            resolved.append(key)
+            continue
+        target = reader.resolve_runtime_subject(
+            case.ticker,
+            version=case.version_pin.event_library_version,
+            **(
+                dict(source_message_id=value[2], candidate_index=value[3])
+                if value[1] == "atomic"
+                else dict(event_id=value[2])
+            ),
+        )
+        if target:
+            canonical = encode([lineage, "event", target])
+            with journal.transaction() as db:
+                db.execute(
+                    "INSERT OR IGNORE INTO runtime_v2_w3_thread_links "
+                    "SELECT record_id,ticker,link_kind,?,source_case_id "
+                    "FROM runtime_v2_w3_thread_links "
+                    "WHERE ticker=? AND link_kind='EVENT' AND subject_key=?",
+                    (canonical, case.ticker, key),
+                )
+            resolved.append(canonical)
+        else:
+            resolved.append(key)
+    return list(dict.fromkeys(resolved))
+
+
+def sync_event_links(journal, ticker, root, version):
+    from types import SimpleNamespace
+
+    with journal.transaction(write=False) as db:
+        if not db.execute(
+            "SELECT 1 FROM sqlite_master WHERE name='runtime_v2_w3_thread_links'"
+        ).fetchone():
+            return
+        subjects = [
+            r[0]
+            for r in db.execute(
+                "SELECT DISTINCT subject_key FROM runtime_v2_w3_thread_links "
+                "WHERE ticker=? AND link_kind='EVENT'",
+                (ticker,),
+            )
+        ]
+    case = SimpleNamespace(
+        ticker=ticker,
+        version_pin=SimpleNamespace(event_library_root=root, event_library_version=version),
+    )
+    resolve_event_subjects(journal, case, subjects)
+
+
+def actual_policy_hits(value):
+    final = value.get("w3_operations_result") or value.get("w3_result") or {}
+    if "policy" in final:
+        return final["policy"].get("policy_ids", [])
+    w2 = value.get("w2_final") or value.get("w2_result") or {}
+    ids = list(w2.get("policy_ids", [])) if w2.get("policy_hit", bool(w2.get("policy_ids"))) else []
+    decision = value.get("w3_trade_decision") or {}
+    if decision.get("decision") == "POLICY_TRADE":
+        ids.append(decision["policy_trade"]["policy_id"])
+    return list(dict.fromkeys(ids))
+
+
+def case_labels(case, *, history_matches, watch_followup, event_keys=None):
+    w2 = case.w2_final
+    main = (
+        "POLICY_HIT_REVIEW"
+        if w2.policy_hit
+        else "POLICY_RELATED_EVALUATION"
+        if w2.policy_related
+        else "OPEN_EVENT_EVALUATION"
+    )
+    tags = []
+    if case.w1_final.confidence.value == "low":
+        tags.append("W1_LOW_CONFIDENCE")
+    if w2.confidence.value == "low":
+        tags.append("W2_LOW_CONFIDENCE")
+    if watch_followup:
+        tags.append("WATCH_FOLLOWUP")
+    if not (case.source.snapshot.body or "").strip():
+        tags.append("BODY_MISSING")
+    current_events = set(
+        event_keys if event_keys is not None else event_matches(case.model_dump(mode="json"))
+    )
+    current_policies = set(w2.policy_ids if w2.policy_hit else [])
+    if any(
+        current_events.intersection(m["events"]) or current_policies.intersection(m["policies"])
+        for m in history_matches
+    ):
+        tags.append("RECENT_TRADE")
+    return dict(case_type=main, additional_tags=tags)
+
+
+def global_snapshot(db, ticker, now):
+    return dict(
+        ticker=ticker,
+        watch=watch_snapshot(db, ticker, now),
+        pins=pin_snapshot(db, ticker, now),
+        watch_rows=active_states(db, "policy_watch", ticker, now),
+    )
+
+
+def _execution_snapshot(db, identity, value, released):
+    receipt_row = db.execute(
+        "SELECT payload FROM runtime_values WHERE namespace='trade_receipts' AND key=?",
+        (identity,),
+    ).fetchone()
+    receipt = json.loads(receipt_row[0]) if receipt_row else {}
+    has_execution = db.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name='te_executions'"
+    ).fetchone()
+    row = (
+        db.execute("SELECT payload FROM te_executions WHERE id=?", (identity,)).fetchone()
+        if has_execution
+        else None
+    )
+    execution = json.loads(row[0]) if row else {}
+    return dict(
+        output_status=value.get("status") or value.get("trade_disposition"),
+        delivery_status=receipt.get("status", "UNKNOWN"),
+        intent_released=released,
+        entry_result=execution.get("entry_result"),
+        filled_qty=execution.get("filled_qty"),
+        error=execution.get("error") or receipt.get("error"),
+    )
+
+
+def freeze_history(journal, case, accepted_at):
+    identity = case.case_id
+    saved = journal.get("w3_history_members", identity)
+    if saved is not None:
+        return saved
+    cutoff = accepted_at - timedelta(hours=72)
+    with journal.transaction() as db:
+        rows = []
+        for namespace, field in (
+            ("trade_intents", "released_at"),
+            ("analysis_trade_decisions", "recorded_at"),
+        ):
+            for row in db.execute(
+                "SELECT key,payload FROM runtime_values WHERE namespace=? "
+                "AND json_extract(payload,'$.ticker')=? "
+                f"AND julianday(json_extract(payload,'$.{field}'))>=julianday(?) "
+                f"AND julianday(json_extract(payload,'$.{field}'))<julianday(?) ORDER BY key",
+                (namespace, case.ticker, cutoff.isoformat(), accepted_at.isoformat()),
+            ):
+                value = json.loads(row[1])
+                if value.get("case_id") != case.case_id:
+                    rows.append(
+                        dict(
+                            identity=row[0],
+                            namespace=namespace,
+                            initiated_at=value[field],
+                            execution=_execution_snapshot(
+                                db, row[0], value, namespace == "trade_intents"
+                            ),
+                        )
+                    )
+        saved = dict(
+            accepted_at=accepted_at.isoformat(),
+            members=sorted(rows, key=lambda r: (r["initiated_at"], r["identity"])),
+        )
+        put_value(db, "w3_history_members", identity, saved)
+    return saved
+
+
+def history_payload(journal, repository, case, membership):
+    items, matches = [], []
+    frozen = journal.get("w3_history_matches", case.case_id)
+    with journal.transaction(write=False) as db:
+        for member in membership["members"]:
+            row = db.execute(
+                "SELECT payload FROM runtime_values WHERE namespace=? AND key=?",
+                (member["namespace"], member["identity"]),
+            ).fetchone()
+            if row is None:
+                raise ValueError("frozen history business record is unavailable")
+            value = json.loads(row[0])
+            trade = value["trade"]
+            current = repository.get_case(trade["case_id"])
+            business = current.model_dump(mode="json") if current else trade
+            w1 = trade["w1_result"]
+            w2 = trade["w2_result"]
+            w3 = trade.get("w3_trade_decision")
+            if w3 is None and trade.get("w3_result"):
+                old = trade["w3_result"]
+                w3 = dict(
+                    novelty=old["novelty"], policy=old["policy"], expert_trade=old["expert_trade"]
+                )
+            message = message_content(trade["source"])
+            message.pop("url", None)
+            items.append(
+                dict(
+                    message=message,
+                    w1={k: w1.get(k) for k in ("result", "reference_ids")},
+                    w2={
+                        k: w2.get(k)
+                        for k in (
+                            "policy_hit",
+                            "policy_related",
+                            "policy_ids",
+                            "hit_condition_ids",
+                            "matched_condition_ids",
+                        )
+                    },
+                    w3_decision=w3,
+                    direction=trade["decision"],
+                    initiated_at=member["initiated_at"],
+                    execution=member.get("execution")
+                    or _execution_snapshot(
+                        db, member["identity"], value, member["namespace"] == "trade_intents"
+                    ),
+                )
+            )
+            if member["namespace"] == "trade_intents":
+                matches.append(
+                    dict(events=event_matches(business), policies=actual_policy_hits(business))
+                )
+    if frozen is None:
+        for match in matches:
+            match["events"] = resolve_event_subjects(journal, case, match["events"])
+    if frozen is None:
+        journal.set("w3_history_matches", case.case_id, matches)
+    else:
+        matches = frozen
+    return items, matches
+
+
+def trading_context(case, journal=None):
+    from doxagent.semantic_clock import expires_at
+
+    value = dict(
+        runtime_mode=case.runtime_mode,
+        semantic_day=case.trading_date.isoformat(),
+        intent_expires_at=expires_at(case.trading_date).isoformat()
+        if case.runtime_mode != "CLOSED" else None,
+        output_kind="CANDIDATE" if case.runtime_mode == "CLOSED" else "TRADE_INTENT",
+        holding_exit_at=None,
+        exit_before_regular_close_minutes=None,
+    )
+    if journal is not None:
+        from doxagent.v2_control.repository import output_permission
+
+        with journal.transaction(write=False) as db:
+            _, binding = output_permission(db, case.ticker, case.case_id)
+            binding = binding or journal.get("trade_execution", "active")
+            exists = db.execute(
+                "SELECT 1 FROM sqlite_master WHERE type='table' AND name='te_profiles'"
+            ).fetchone()
+            row = db.execute(
+                "SELECT payload FROM te_profiles WHERE revision=?", (binding["revision"],)
+            ).fetchone() if binding and exists else None
+        if row:
+            from doxagent.trade_execution.schema import ExecutionProfile
+            from doxagent.trade_execution.sessions import Sessions
+
+            offset = ExecutionProfile.model_validate_json(row[0]).strategy.exit_offset_minutes
+            value["exit_before_regular_close_minutes"] = offset
+            if case.runtime_mode != "CLOSED":
+                value["holding_exit_at"] = Sessions(journal).exit_at(
+                    case.source.message_bus_event_time, offset
+                ).isoformat()
+    return value
+
+
+def build_case_payload(case, context, *, events, history, labels, state, journal=None):
+    w1 = case.w1_final.model_dump(mode="json")
+    w1.pop("reference_ids", None)
+    w1.pop("fact_attributions", None)
+    w1["events"] = events
+    wanted = set(policy_associations(case.w2_final))
+    policies = [
+        p.model_dump(mode="json") for p in context.policy_set.policies if p.policy_id in wanted
+    ]
+    usage = []
+    for row in case.frozen_inputs.get("policy_usage", []):
+        usage.append(
+            dict(
+                policy_id=row["policy_id"],
+                directions=[
+                    {k: d[k] for k in ("direction", "consumed")} for d in row["directions"]
+                ],
+                executable_directions=row["executable_directions"],
+                consumed_directions=row["consumed_directions"],
+            )
+        )
+    payload = dict(
+        ticker=case.ticker,
+        cutoff_at=case.source.message_bus_event_time.isoformat(),
+        trading_context=trading_context(case, journal),
+        ibkr_history=dict(
+            # Separate read-only API clients for concurrently evaluated cases.
+            client_id=100_000_000 + int.from_bytes(
+                hashlib.sha256(case.case_id.encode()).digest()[:4], "big"
+            ) % 1_000_000_000,
+            end_datetime=case.source.message_bus_event_time.astimezone(UTC).strftime(
+                "%Y%m%d %H:%M:%S UTC"
+            ),
+        ),
+        **labels,
+        message=message_content(case.source),
+        w1=w1,
+        w2=case.w2_final.model_dump(mode="json"),
+        policies=policies,
+        policy_usage=usage,
+        watch=state["watch"],
+        pins=state["pins"],
+        recent_trade_intents=history,
+        contexts=[
+            dict(name=name, cutoff_at=cutoff)
+            for name, cutoff in getattr(context, "context_cutoffs", {}).items()
+        ],
+    )
+    if case.w2_alignment is not None:
+        from .router import alignment_flags
+
+        hit, related = alignment_flags(case.w2_final, case.w2_alignment)
+        payload["alignment"] = dict(hit_has_new_fact=hit, related_has_new_fact=related)
+    return payload

@@ -33,11 +33,23 @@ class BusOrchestration:
                     if result is not None and key != "distribution-worker":
                         results.append(result)
                 except Exception as exc:
-                    logging.getLogger(__name__).warning("bus task failed key=%s error=%s", key, type(exc).__name__)
+                    logging.getLogger(__name__).warning(
+                        "bus task failed key=%s error=%s", key, type(exc).__name__
+                    )
                     try:
-                        await self._journal_call(self.journal.gap, "source:" + key, "", type(exc).__name__, type(exc).__name__)
+                        await self._journal_call(
+                            self.journal.gap,
+                            "source:" + key,
+                            "",
+                            type(exc).__name__,
+                            type(exc).__name__,
+                        )
                     except Exception as gap_exc:
-                        logging.getLogger(__name__).warning("bus gap persistence failed key=%s error=%s", key, type(gap_exc).__name__)
+                        logging.getLogger(__name__).warning(
+                            "bus gap persistence failed key=%s error=%s",
+                            key,
+                            type(gap_exc).__name__,
+                        )
                         if not is_sqlite_contention(gap_exc):
                             raise
                 finally:
@@ -50,56 +62,18 @@ class BusOrchestration:
         try:
             day = semantic_day(now)
             realtime_mode = await self._journal_call(self.calendar.is_session, day)
-            if not await self._journal_call(self.calendar.is_session, day - timedelta(days=1)) and now < boundary(
-                day, minute=1
-            ):
+            if not await self._journal_call(
+                self.calendar.is_session, day - timedelta(days=1)
+            ) and now < boundary(day, minute=1):
                 realtime_mode = False
         except Exception as exc:
             realtime_mode = None
             calendar_error = str(exc)
         calendar_failed_tickers: set[str] = set()
-        for source, binding in eligible:
-            if self.journal.get("pause", binding.ticker) == "all":
-                continue
-            if realtime_mode is None:
-                if binding.ticker not in calendar_failed_tickers:
-                    await self._journal_call(self.journal.gap,
-                        f"bus-calendar:{binding.ticker}", binding.ticker,
-                        "CALENDAR_UNAVAILABLE", calendar_error or "calendar unavailable",
-                    )
-                    calendar_failed_tickers.add(binding.ticker)
-                realtime = (
-                    self.journal.get("schedule", binding.ticker, {}).get("mode") == "REALTIME"
-                )
-            else:
-                realtime = realtime_mode
-            if realtime:
-                from doxagent.source_maintenance.settings import enabled as maintenance_enabled
-                from doxagent.source_maintenance.signals import scheduler as maintenance_scheduler
-
-                if maintenance_enabled():
-                    maintenance_scheduler(
-                        binding, scheduler.repository.get_poll_state(binding),
-                        now, binding.binding_id in self._inflight,
-                    )
-                if source.acquisition_mode is AcquisitionMode.BY_DISTRIBUTION:
-                    shared_realtime.setdefault(source.source_id, (source, []))[1].append(binding)
-                    continue
-                state = scheduler.repository.get_poll_state(binding)
-                if state.next_dispatch_at is None or state.next_dispatch_at <= now:
-                    if binding.binding_id not in self._inflight:
-                        self._inflight[binding.binding_id] = asyncio.create_task(
-                            asyncio.wait_for(scheduler._poll(source, binding, now), timeout=600)
-                        )
-        for source, bindings in shared_realtime.values():
-            key = f"shared:{source.source_id}"
-            if key not in self._inflight and scheduler.distribution_due(bindings, now):
-                self._inflight[key] = asyncio.create_task(
-                    asyncio.wait_for(
-                        scheduler._poll_distribution(source, bindings, now), timeout=600
-                    )
-                )
-        for sweep in self.journal.tasks(kind="SWEEP"):
+        sweep_distribution_sources: set[str] = set()
+        for sweep in sorted(
+            self.journal.tasks(kind="SWEEP"), key=lambda item: item["inputs"]["cutoff"]
+        ):
             if sweep["status"] in {"SUCCEEDED", "FAILED"}:
                 continue
             if self.journal.get("pause", sweep["ticker"]) == "all":
@@ -111,7 +85,8 @@ class BusOrchestration:
                     if binding.ticker != sweep["ticker"]:
                         continue
                     identity = f"{sweep['id']}:source:{binding.binding_id}"
-                    await self._journal_call(self.journal.put_task,
+                    await self._journal_call(
+                        self.journal.put_task,
                         identity,
                         binding.ticker,
                         "SOURCE_SWEEP",
@@ -130,11 +105,67 @@ class BusOrchestration:
                 pending = self.journal.get_task(identity)
                 assert pending is not None
                 key = pending["inputs"]["binding"]["binding_id"]
-                if key in self._inflight:
+                shared_key = f"shared:{pending['inputs']['source']['source_id']}"
+                if key in self._inflight or shared_key in self._inflight:
                     continue
                 task = await self._journal_call(self.journal.claim, identity, seconds=1800)
                 if task:
+                    if (
+                        task["inputs"]["source"]["acquisition_mode"]
+                        == AcquisitionMode.BY_DISTRIBUTION
+                    ):
+                        sweep_distribution_sources.add(task["inputs"]["source"]["source_id"])
                     self._inflight[key] = asyncio.create_task(self._source(scheduler, task))
+        for source, binding in eligible:
+            if self.journal.get("pause", binding.ticker) == "all":
+                continue
+            if realtime_mode is None:
+                if binding.ticker not in calendar_failed_tickers:
+                    await self._journal_call(
+                        self.journal.gap,
+                        f"bus-calendar:{binding.ticker}",
+                        binding.ticker,
+                        "CALENDAR_UNAVAILABLE",
+                        calendar_error or "calendar unavailable",
+                    )
+                    calendar_failed_tickers.add(binding.ticker)
+                realtime = (
+                    self.journal.get("schedule", binding.ticker, {}).get("mode") == "REALTIME"
+                )
+            else:
+                realtime = realtime_mode
+            if realtime:
+                from doxagent.source_maintenance.settings import enabled as maintenance_enabled
+                from doxagent.source_maintenance.signals import scheduler as maintenance_scheduler
+
+                if maintenance_enabled():
+                    maintenance_scheduler(
+                        binding,
+                        scheduler.repository.get_poll_state(binding),
+                        now,
+                        binding.binding_id in self._inflight,
+                    )
+                if source.acquisition_mode is AcquisitionMode.BY_DISTRIBUTION:
+                    if source.source_id in sweep_distribution_sources or any(
+                        key.endswith(":" + source.source_id) for key in self._inflight
+                    ):
+                        continue
+                    shared_realtime.setdefault(source.source_id, (source, []))[1].append(binding)
+                    continue
+                state = scheduler.repository.get_poll_state(binding)
+                if state.next_dispatch_at is None or state.next_dispatch_at <= now:
+                    if binding.binding_id not in self._inflight:
+                        self._inflight[binding.binding_id] = asyncio.create_task(
+                            asyncio.wait_for(scheduler._poll(source, binding, now), timeout=600)
+                        )
+        for source, bindings in shared_realtime.values():
+            key = f"shared:{source.source_id}"
+            if key not in self._inflight and scheduler.distribution_due(bindings, now):
+                self._inflight[key] = asyncio.create_task(
+                    asyncio.wait_for(
+                        scheduler._poll_distribution(source, bindings, now), timeout=600
+                    )
+                )
         # Let newly scheduled I/O start, without waiting for a source or model.
         if (
             scheduler.distribution_worker is not None
@@ -195,7 +226,8 @@ class BusOrchestration:
                     if found is not None
                     else None
                 )
-                await self._journal_call(self.journal.checkpoint, 
+                await self._journal_call(
+                    self.journal.checkpoint,
                     task,
                     window_start=start,
                     cutoff=cutoff.isoformat(),
@@ -240,7 +272,8 @@ class BusOrchestration:
                     raise RuntimeError(result.error_code)
                 # A replay may re-read this page after a crash. Intake identity deduplication
                 # returns the same live job IDs; completed provider payloads are also deduped.
-                await self._journal_call(self.journal.checkpoint, 
+                await self._journal_call(
+                    self.journal.checkpoint,
                     task,
                     job_ids=sorted(set(receipt["job_ids"]) | set(result.enrichment_job_ids)),
                     page_cursor=result.next_checkpoint,
@@ -253,7 +286,9 @@ class BusOrchestration:
             receipt = task["receipt"]
             pending = scheduler.repository.pending_enrichment_ids(receipt["job_ids"])
             if pending:
-                await self._journal_call(self.journal.checkpoint, task, pending_job_count=len(pending))
+                await self._journal_call(
+                    self.journal.checkpoint, task, pending_job_count=len(pending)
+                )
                 await self._journal_call(self._yield_source, task)
                 return result
             scheduler.service.flush_binding(binding.binding_id, force=True)
@@ -265,12 +300,14 @@ class BusOrchestration:
                 else "UNKNOWN"
             )
             if coverage != "PARTIAL":
-                await self._journal_call(self.journal.set, 
+                await self._journal_call(
+                    self.journal.set,
                     "source_sweep_cursor",
                     cursor_key,
                     {"cutoff": cutoff.isoformat(), "source_task": task["id"], "coverage": coverage},
                 )
-            await self._journal_call(self.journal.finish, 
+            await self._journal_call(
+                self.journal.finish,
                 task,
                 pending_job_count=0,
                 coverage=coverage,
@@ -285,13 +322,15 @@ class BusOrchestration:
             if task.get("failures", 0) + 1 >= task.get("max_failures", 3) and task["receipt"].get(
                 "job_ids"
             ):
-                await self._journal_call(self.journal.gap, 
+                await self._journal_call(
+                    self.journal.gap,
                     "coverage:" + task["id"],
                     task["ticker"],
                     "SOURCE_WINDOW_PARTIAL",
                     type(exc).__name__,
                 )
-                await self._journal_call(self.journal.checkpoint, 
+                await self._journal_call(
+                    self.journal.checkpoint,
                     task,
                     poll_done=True,
                     page_coverages=[*task["receipt"].get("page_coverages", []), "PARTIAL"],
@@ -340,13 +379,15 @@ class BusOrchestration:
                 timeout=600,
             )
             if result.error_code:
-                await self._journal_call(self.journal.gap, 
+                await self._journal_call(
+                    self.journal.gap,
                     "coverage:" + task["id"],
                     binding.ticker,
                     "SOURCE_WINDOW_PARTIAL",
                     result.error_code,
                 )
-            await self._journal_call(self.journal.checkpoint, 
+            await self._journal_call(
+                self.journal.checkpoint,
                 task,
                 distribution_run_id=result.poll_run_id,
                 pending_distribution_delivery_ids=[],
@@ -361,21 +402,25 @@ class BusOrchestration:
         run_id = task["receipt"].get("distribution_run_id")
         pending = scheduler.distribution.pending_for_run(run_id, binding.ticker) if run_id else []
         if pending:
-            await self._journal_call(self.journal.checkpoint, task, pending_distribution_delivery_ids=pending)
+            await self._journal_call(
+                self.journal.checkpoint, task, pending_distribution_delivery_ids=pending
+            )
             await self._journal_call(self._yield_source, task)
             return result
-        failures = (
-            scheduler.distribution.failures_for_run(run_id, binding.ticker) if run_id else []
-        )
+        failures = scheduler.distribution.failures_for_run(run_id, binding.ticker) if run_id else []
         coverage = task["receipt"].get("coverage", "UNKNOWN")
         if failures:
             coverage = "PARTIAL"
-            await self._journal_call(self.journal.gap, 
-                "distribution:" + task["id"], binding.ticker,
-                "DISTRIBUTION_DELIVERY_FAILED", f"{len(failures)} terminal delivery failures",
+            await self._journal_call(
+                self.journal.gap,
+                "distribution:" + task["id"],
+                binding.ticker,
+                "DISTRIBUTION_DELIVERY_FAILED",
+                f"{len(failures)} terminal delivery failures",
             )
         scheduler.service.flush_binding(binding.binding_id, force=True)
-        await self._journal_call(self.journal.finish, 
+        await self._journal_call(
+            self.journal.finish,
             task,
             pending_distribution_delivery_ids=[],
             coverage=coverage,

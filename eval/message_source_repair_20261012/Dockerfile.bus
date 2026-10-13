@@ -1,0 +1,14 @@
+FROM doxagent-v2:source-storage-bus-20261009-r1
+COPY staging/src/doxagent/message_bus_v2/distribution.py /app/src/doxagent/message_bus_v2/distribution.py
+COPY staging/src/doxagent/message_bus_v2/distribution_repository.py /app/src/doxagent/message_bus_v2/distribution_repository.py
+COPY staging/src/doxagent/message_bus_v2/factory.py /app/src/doxagent/message_bus_v2/factory.py
+COPY staging/src/doxagent/message_bus_v2/industry_sources.py /app/src/doxagent/message_bus_v2/industry_sources.py
+COPY staging/src/doxagent/message_bus_v2/manifests.py /app/src/doxagent/message_bus_v2/manifests.py
+COPY staging/src/doxagent/message_bus_v2/news_adapters.py /app/src/doxagent/message_bus_v2/news_adapters.py
+COPY staging/src/doxagent/message_bus_v2/scheduler.py /app/src/doxagent/message_bus_v2/scheduler.py
+COPY staging/src/doxagent/message_bus_v2/yahoo_sources.py /app/src/doxagent/message_bus_v2/yahoo_sources.py
+COPY staging/src/doxagent/persistent_runtime_v2/journal.py /app/src/doxagent/persistent_runtime_v2/journal.py
+COPY staging/src/doxagent/persistent_runtime_v2/bus_orchestration.py /app/src/doxagent/persistent_runtime_v2/bus_orchestration.py
+COPY staging/src/doxagent/settings.py /app/src/doxagent/settings.py
+COPY staging/src/doxagent/site_strategy/schema.py /app/src/doxagent/site_strategy/schema.py
+COPY staging/src/doxagent/site_strategy/client.py /app/src/doxagent/site_strategy/client.py

@@ -1,0 +1,165 @@
+{
+  "MU": {
+    "document1_chars": 36110,
+    "document2_bytes": 1812234,
+    "policy_count": 262,
+    "reference_chars": 256386,
+    "version_pin": {
+      "document1_run_id": "mu-v21-20261010-02-d1",
+      "document2_run_id": "mu-v21-20261010-02-d2",
+      "event_library_version": 39,
+      "policy_set_version": 1
+    }
+  },
+  "BE": {
+    "document1_chars": 26479,
+    "document2_bytes": 756581,
+    "policy_count": 124,
+    "reference_chars": 53318,
+    "version_pin": {
+      "document1_run_id": "be-v21-20261011-01-d1",
+      "document2_run_id": "be-v21-20261011-01-d2",
+      "event_library_version": 21,
+      "policy_set_version": 1
+    }
+  },
+  "INTC": {
+    "document1_chars": 29547,
+    "document2_bytes": 896062,
+    "policy_count": 173,
+    "reference_chars": 261317,
+    "version_pin": {
+      "document1_run_id": "intc-v21-20261011-01-d1",
+      "document2_run_id": "intc-v21-20261011-01-d2",
+      "event_library_version": 32,
+      "policy_set_version": 1
+    }
+  },
+  "w2": {
+    "seconds": 37.06069951108657,
+    "r1": {
+      "candidate_policy_ids": [
+        "pol_d87ccefd84b64686964f300ee8a86481"
+      ],
+      "reason": "\u6d88\u606f\u63cf\u8ff0\u6307\u6570\u65b9\u786e\u5b9aMU\u6210\u5206\u6743\u91cd\u5904\u7406\u53ca\u8ba1\u5165\u80a1\u6570\u53d8\u5316\uff0c\u4f7fQQQ\u3001SMH\u3001IWF\u7b49\u5b9e\u7269\u8ddf\u8e2a\u7ec4\u5408\u7684MU\u76ee\u6807\u6301\u80a1\u51c0\u589e\u52a0\uff0c\u76f4\u63a5\u5c5e\u4e8e\u8be5Policy\u89c2\u5bdf\u7684\u6307\u6570\u6743\u91cd\u8c03\u6574\u4e0e\u8ddf\u8e2a\u4ea7\u54c1\u5bf9\u5e94\u6301\u80a1\u91cd\u7f6e\u8303\u56f4\u3002"
+    },
+    "r2": {
+      "policy_hit": true,
+      "policy_related": true,
+      "policy_ids": [
+        "pol_d87ccefd84b64686964f300ee8a86481"
+      ],
+      "hit_condition_ids": [
+        {
+          "policy_id": "pol_d87ccefd84b64686964f300ee8a86481",
+          "condition_ids": [
+            "C1"
+          ]
+        }
+      ],
+      "matched_condition_ids": [
+        {
+          "policy_id": "pol_d87ccefd84b64686964f300ee8a86481",
+          "condition_ids": [
+            "C1"
+          ]
+        }
+      ],
+      "confidence": "normal",
+      "reason": "\u6d88\u606f\u660e\u786e\u9648\u8ff0\u6307\u6570\u65b9\u5df2\u786e\u5b9a\u5bf9MU\u751f\u6548\u7684\u6210\u5206/\u8ba1\u5165\u80a1\u6570/\u6743\u91cd\u5904\u7406\uff0c\u589e\u52a0\u5b9e\u7269\u8ddf\u8e2a\u7ec4\u5408MU\u76ee\u6807\u6301\u80a1\uff0c\u516c\u5f00\u53c2\u6570\u53ef\u76f4\u63a5\u5224\u5b9a\u65b0\u589e\u914d\u7f6e\u91cf\u4e0e\u5b9e\u65bd\u7a97\u53e3\uff1b\u91cf\u5316\u7ed3\u679c\u8fbe\u5230C1 trigger_boundary\u7ea6100\u4e07\u80a1\u51c0\u589e\u52a0\u95e8\u69db\uff0c\u4f7f\u7528\u540c\u53c2\u8003\u4ef7\u3001\u56fa\u5b9a\u4ea7\u54c1\u89c4\u6a21\u3001\u4ec5\u8ba1\u5df2\u6838\u5b9e\u5b9e\u7269\u8d44\u91d1\u3001\u4e00\u4e2a\u5927\u7ec4\u5408\u5373\u6ee1\u8db3\uff0c\u5b8c\u6574\u547d\u4e2dC1\u3002C2\u4e3a\u51cf\u914d\u65b9\u5411\uff0c\u4e0e\u6d88\u606f\u589e\u914d\u4e8b\u5b9e\u76f8\u53cd\uff0c\u4e0d\u6210\u7acb\u3002"
+    },
+    "response_id": "resp_4ee712cc-e4ef-97a7-81cd-5845e413a3d6"
+  },
+  "w3": {
+    "seconds": 66.15126795088872,
+    "result": {
+      "w3_case_id": "w3_023150ee2f47446196e39ec7e9116589",
+      "novelty": {
+        "result": "NEW",
+        "reference_ids": [],
+        "reason": "Under the fixture's express assumption that a formal announcement is newly published and verified, it establishes a new binding allocation decision or upward revision producing about 1 million net additional MU shares in the same implementation batch. No corresponding fact is identified in the Reference View; this is not merely a routine confirmation of an expected rebalance."
+      },
+      "policy": {
+        "policy_ids": [
+          "pol_d87ccefd84b64686964f300ee8a86481"
+        ],
+        "matched_condition_ids": [
+          {
+            "policy_id": "pol_d87ccefd84b64686964f300ee8a86481",
+            "condition_ids": [
+              "C1"
+            ]
+          }
+        ],
+        "reason": "The new positive allocation decision meets C1's stated boundary: a same-batch net target increase of approximately 1 million MU shares, identifiable from verified physical-tracking assets and public parameters. C2 concerns a reduction and does not match."
+      },
+      "expert_trade": {
+        "evaluated": false,
+        "trade": false,
+        "direction": null,
+        "prior_expectation": null,
+        "expectation_delta": null,
+        "reason": "Not independently evaluated because the new fact is covered by Policy C1."
+      },
+      "delta_candidates": [
+        {
+          "proposition": "The index provider formally determined a new MU allocation or upward revision that increases physical-tracking portfolios' target MU holdings by approximately 1 million shares net in the same implementation batch, with the increment identifiable from public parameters.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": "2026-10-12",
+          "entities": [
+            "MU"
+          ]
+        }
+      ],
+      "result_contract_version": "persistent-runtime.w3-result.v3",
+      "policy_execution": {
+        "selected_condition": {
+          "policy_id": "pol_d87ccefd84b64686964f300ee8a86481",
+          "condition_id": "C1"
+        },
+        "reason": "Execute C1 because the newly determined positive allocation directly meets its calibrated net-increase boundary. C2 is opposite in direction and is not selected."
+      },
+      "watch_actions": []
+    },
+    "thread": "01a13057-f583-7661-90dd-9f3f0af32602",
+    "pin": {
+      "document1_run_id": "mu-v21-20261010-02-d1",
+      "document2_run_id": "mu-v21-20261010-02-d2",
+      "event_library_version": 39,
+      "policy_set_version": 1
+    }
+  },
+  "maintain": {
+    "seconds": 218.85756072588265,
+    "result": {
+      "orchestration_version": "v2.1",
+      "run_id": "v21-deployment-maintain-smoke-3",
+      "ticker": "MU",
+      "mode": "maintain",
+      "status": "PARTIAL",
+      "staged": true,
+      "handoff": {
+        "staged": true,
+        "policy_set_version": 3,
+        "files": {
+          "document3.json": "artifacts/document3/releases/3/document3.json",
+          "runtime_projection.json": "artifacts/document3/releases/3/runtime_projection.json",
+          "coverage_map.json": "artifacts/document3/releases/3/coverage_map.json",
+          "document3.md": "artifacts/document3/releases/3/document3.md"
+        },
+        "hashes": {
+          "document3.json": "ef83cdf9e0be0a29b3459c51b309480c14ec13de30512fd165f13639c8dfc8d7",
+          "runtime_projection.json": "13141cf8410b33860b389bcb0ba7033f5758c4a2eebfe825029e93260507a871",
+          "coverage_map.json": "f2a01b861c9ed0b383244068af6770314073229bf56ffa3913fdbe43d0acf8a8",
+          "document3.md": "75a85800c71c4e9e61589c22c2776ecd3bef92b1a13c8ee291cb56321523ce58"
+        },
+        "release_manifest_path": "published/2676b45071d4d115dc23/manifest.json"
+      },
+      "policy_set_version": 3,
+      "missing": [
+        "remaining research gaps"
+      ]
+    }
+  }
+}

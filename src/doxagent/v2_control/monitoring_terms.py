@@ -40,10 +40,11 @@ def issues(exc: Exception) -> list[dict[str, str]]:
 
 
 class MonitoringTermsControl(Bindings):
-    def __init__(self, path):
+    def __init__(self, path, *, initialize: bool = True):
         super().__init__(path)
-        with self.connect(write=True) as db:
-            migrate(db)
+        if initialize:
+            with self.connect(write=True) as db:
+                migrate(db)
 
     def _snapshot(self, db, ticker: str, configuration_override=None):
         repo = TransactionRepository(self.path, db)

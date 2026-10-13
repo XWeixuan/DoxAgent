@@ -22,6 +22,7 @@ from .schema import (
     ProxyEgress,
     ResolvedSite,
     SiteStrategySpec,
+    SitePurpose,
 )
 from .service import SiteStrategyService
 from .storage import storage_failure
@@ -105,6 +106,8 @@ def create_app(
     admin_token: str,
     credential_store: CredentialStore | None = None,
     close_service: bool = True,
+    maintenance_token: str | None = None,
+    maintenance_sites: list[str] | None = None,
 ) -> FastAPI:
     if not worker_token or not admin_token:
         raise ValueError("worker and admin tokens are required")
@@ -119,6 +122,10 @@ def create_app(
                 await service.close()
 
     app = FastAPI(title="DoxAgent Site Access", version="1", lifespan=lifespan)
+    if maintenance_token:
+        from doxagent.source_maintenance.site_api import router
+
+        app.include_router(router(service, maintenance_token, maintenance_sites or []))
 
     def authorize(expected: str) -> Callable[..., Awaitable[None]]:
         async def dependency(authorization: Annotated[str | None, Header()] = None) -> None:
@@ -162,6 +169,12 @@ def create_app(
     @app.get("/v1/diagnostics/access", dependencies=[Depends(admin)])
     async def access_diagnostics() -> dict[str, object]:
         return service.access_diagnostics()
+
+    @app.get("/v1/diagnostics/candidates", dependencies=[Depends(admin)])
+    async def effective_candidates(
+        url: str, purpose: SitePurpose = SitePurpose.CRAWLER
+    ) -> list[dict[str, object]]:
+        return await service.effective_candidates(service.resolve(url), purpose)
 
     @app.get(
         "/v1/resolve",

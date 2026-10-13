@@ -29,7 +29,17 @@ class ActivationAdapter:
             for dependency in context.node.dependencies:
                 refs.update(context.dependency(dependency).artifacts)
             refs.update(context.node.inputs.get("artifacts", {}))
-            if context.run.operation_kind in {"ACTIVATE", "REPLACE_ARTIFACT", "ROLLBACK"}:
+            preserve = context.node.inputs.get("preserve_monitoring_configuration", False)
+            if preserve:
+                active = context.repository.active_revision(context.run.ticker)
+                if (
+                    active is None
+                    or active["revision_id"] != context.run.base_revision
+                    or refs["monitoring_configuration"]
+                    != active["artifacts"]["monitoring_configuration"]
+                ):
+                    raise ValueError("preserved monitoring configuration must match current base")
+            elif context.run.operation_kind in {"ACTIVATE", "REPLACE_ARTIFACT", "ROLLBACK"}:
                 from .configuration import CandidateConfiguration, candidate_bus_path
 
                 source = refs["monitoring_configuration"]["initialization_id"]

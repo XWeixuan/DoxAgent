@@ -165,7 +165,9 @@ class DockerRuntime:
                     raise ContainerError("repair container disappeared while starting")
                 return started
             return existing
-        args = ["create", "--name", spec.name, "--restart", "no"]
+        args = ["create", "--name", spec.name, "--restart", "no",
+                "--log-driver", "json-file", "--log-opt", "max-size=20m",
+                "--log-opt", "max-file=3"]
         if spec.cgroup_parent:
             self._validate_identity(spec.cgroup_parent, "cgroup parent")
             args.extend(["--cgroup-parent", spec.cgroup_parent])

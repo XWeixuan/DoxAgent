@@ -17,10 +17,13 @@ class CompiledStreamInput:
 
 
 def format_member(member: MaterializedStreamMember, *, display_index: int) -> str:
+    from .source_identity import business_publication_time
+
     lines = [
         f"[MESSAGE {display_index}]",
-        f"source: {member.source}",
-        f"published_at: {member.published_at.isoformat()}",
+        f"source: {member.source_name or 'null'}",
+        "published_at: "
+        + (business_publication_time(member.published_at, member.publication_time_basis) or "null"),
     ]
     if member.title:
         lines.append(f"title: {member.title}")

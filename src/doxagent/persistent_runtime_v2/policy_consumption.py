@@ -131,10 +131,14 @@ def claim_ready_in_transaction(db, *, case, trade, intent_id, now):
         encode([trade.ticker, trade.executed_policy_id, trade.decision.value]),
         dict(state, consumed=True, consumption_id=identity),
     )
-    db.execute(
-        "DELETE FROM runtime_values WHERE namespace='policy_watch' AND key=?",
-        (encode([trade.ticker, trade.executed_policy_id]),),
-    )
+    watch = get_value(db, "policy_watch", encode([trade.ticker, trade.executed_policy_id]))
+    if watch and not watch.get("retain_after_ready", False) and (
+        case.w3_contract_version != "persistent-runtime.w3.v4"
+    ):
+        db.execute(
+            "DELETE FROM runtime_values WHERE namespace='policy_watch' AND key=?",
+            (encode([trade.ticker, trade.executed_policy_id]),),
+        )
     return "READY"
 
 

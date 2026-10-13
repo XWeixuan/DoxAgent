@@ -1,0 +1,504 @@
+{
+  "at": "2026-10-12T22:23:18.553431+00:00",
+  "disk": {
+    "total": 189559676928,
+    "used": 140188995584,
+    "free": 41546547200
+  },
+  "containers": [
+    {
+      "name": "/doxagent-v2-v2-projector-1",
+      "image": "sha256:eae04db6b7f1a6e494fae7bab0190cce47fd8b1ee6e2b3edd939f032dd056459",
+      "tag": "doxagent-v2:disk-repair-read-20261013-r10",
+      "running": true,
+      "health": null,
+      "started": "2026-10-12T22:22:38.831130625Z",
+      "finished": "2026-10-12T22:22:19.040530545Z",
+      "logging": {
+        "Type": "json-file",
+        "Config": {
+          "max-file": "3",
+          "max-size": "20m"
+        }
+      },
+      "last_pause_seconds": 19.7906
+    },
+    {
+      "name": "/doxagent-v2-initialization-guardian-1",
+      "image": "sha256:493566de0047cf68d7bda2f1829e17bfe315d128caa8283d952ceeb2663f58a3",
+      "tag": "doxagent-v2:disk-repair-guardian-20261013-r2",
+      "running": true,
+      "health": null,
+      "started": "2026-10-12T22:07:53.242819421Z",
+      "finished": "0001-01-01T00:00:00Z",
+      "logging": {
+        "Type": "json-file",
+        "Config": {
+          "max-file": "3",
+          "max-size": "20m"
+        }
+      }
+    },
+    {
+      "name": "/doxagent-v2-v2-transport-maintenance-1",
+      "image": "sha256:0b8796650974278812987fba86a9c45bac9dfc78f54914e6735f9c6662776815",
+      "tag": "doxagent-v2:disk-repair-read-20261013-r9",
+      "running": true,
+      "health": null,
+      "started": "2026-10-12T22:00:32.180989498Z",
+      "finished": "0001-01-01T00:00:00Z",
+      "logging": {
+        "Type": "json-file",
+        "Config": {
+          "max-file": "3",
+          "max-size": "20m"
+        }
+      }
+    },
+    {
+      "name": "/doxagent-v2-v2-migrate-1",
+      "image": "sha256:0b8796650974278812987fba86a9c45bac9dfc78f54914e6735f9c6662776815",
+      "tag": "doxagent-v2:disk-repair-read-20261013-r9",
+      "running": false,
+      "health": null,
+      "started": "0001-01-01T00:00:00Z",
+      "finished": "0001-01-01T00:00:00Z",
+      "logging": {
+        "Type": "json-file",
+        "Config": {
+          "max-file": "3",
+          "max-size": "20m"
+        }
+      }
+    },
+    {
+      "name": "/doxagent-v2-v2-maintenance-1",
+      "image": "sha256:982219f5a78ec8908b178fea39369113430268756f33cd74ae67d234dd062639",
+      "tag": "doxagent-v2:disk-repair-read-20261013-r7",
+      "running": true,
+      "health": null,
+      "started": "2026-10-12T21:55:32.581404457Z",
+      "finished": "2026-10-12T20:49:38.606778579Z",
+      "logging": {
+        "Type": "json-file",
+        "Config": {
+          "max-file": "3",
+          "max-size": "20m"
+        }
+      }
+    },
+    {
+      "name": "/doxagent-v2-v2-message-bus-1",
+      "image": "sha256:fc73fe1403509ff0d2e4ff10fe38490afe0f3fbe6ca682e3a80056a8e9d0d4ac",
+      "tag": "doxagent-v2:disk-repair-bus-20261013-r2",
+      "running": true,
+      "health": null,
+      "started": "2026-10-12T20:48:35.494270123Z",
+      "finished": "2026-10-12T20:37:03.458699124Z",
+      "logging": {
+        "Type": "json-file",
+        "Config": {
+          "max-file": "3",
+          "max-size": "20m"
+        }
+      }
+    },
+    {
+      "name": "/doxagent-v2-v2-site-access-1",
+      "image": "sha256:6ba737865e733dfe8fbcc3c30672a0e7e00ac311665b81b5e32120b6b0726075",
+      "tag": "doxagent-site-access:lifecycle-20261013-r2",
+      "running": true,
+      "health": "healthy",
+      "started": "2026-10-12T19:17:49.928223871Z",
+      "finished": "0001-01-01T00:00:00Z",
+      "logging": {
+        "Type": "json-file",
+        "Config": {
+          "max-file": "3",
+          "max-size": "20m"
+        }
+      }
+    },
+    {
+      "name": "/doxagent-v2-v2-api-1",
+      "image": "sha256:86150631d2f6ea37d9659d8fbd55d40ae3fd2e1e6d92c895828ec853c33bc42a",
+      "tag": "doxagent-v2:service-busy-20261013-r1",
+      "running": true,
+      "health": "healthy",
+      "started": "2026-10-12T21:55:32.113416382Z",
+      "finished": "2026-10-12T21:55:31.626345221Z",
+      "logging": {
+        "Type": "json-file",
+        "Config": {
+          "max-file": "3",
+          "max-size": "20m"
+        }
+      },
+      "last_pause_seconds": 0.487071
+    },
+    {
+      "name": "/doxagent-v2-v2-scheduler-1",
+      "image": "sha256:7d3612194b29db3d8a17dad1ac78aa00f28c1d26f557bb2db5b9067f84d9bf62",
+      "tag": "doxagent-v2:v21-production-20261012-r1",
+      "running": true,
+      "health": null,
+      "started": "2026-10-12T20:48:35.136244289Z",
+      "finished": "2026-10-12T20:38:04.548353278Z",
+      "logging": {
+        "Type": "json-file",
+        "Config": {
+          "max-file": "3",
+          "max-size": "20m"
+        }
+      }
+    },
+    {
+      "name": "/doxagent-v2-v2-cdecr-executor-1",
+      "image": "sha256:7d3612194b29db3d8a17dad1ac78aa00f28c1d26f557bb2db5b9067f84d9bf62",
+      "tag": "doxagent-v2:v21-production-20261012-r1",
+      "running": true,
+      "health": "healthy",
+      "started": "2026-10-12T18:22:04.644593554Z",
+      "finished": "2026-10-12T18:21:58.790384644Z",
+      "logging": {
+        "Type": "json-file",
+        "Config": {
+          "max-file": "3",
+          "max-size": "20m"
+        }
+      }
+    },
+    {
+      "name": "/doxagent-v2-v2-control-1",
+      "image": "sha256:7d3612194b29db3d8a17dad1ac78aa00f28c1d26f557bb2db5b9067f84d9bf62",
+      "tag": "doxagent-v2:v21-production-20261012-r1",
+      "running": true,
+      "health": null,
+      "started": "2026-10-12T19:11:16.244089281Z",
+      "finished": "2026-10-12T19:06:08.500297908Z",
+      "logging": {
+        "Type": "json-file",
+        "Config": {
+          "max-file": "3",
+          "max-size": "20m"
+        }
+      }
+    },
+    {
+      "name": "/doxagent-v2-v2-executor-1",
+      "image": "sha256:7d3612194b29db3d8a17dad1ac78aa00f28c1d26f557bb2db5b9067f84d9bf62",
+      "tag": "doxagent-v2:v21-production-20261012-r1",
+      "running": true,
+      "health": null,
+      "started": "2026-10-12T19:11:16.592523167Z",
+      "finished": "2026-10-12T19:11:16.515079633Z",
+      "logging": {
+        "Type": "json-file",
+        "Config": {
+          "max-file": "3",
+          "max-size": "20m"
+        }
+      }
+    },
+    {
+      "name": "/doxagent-v2-v2-delivery-1",
+      "image": "sha256:7d3612194b29db3d8a17dad1ac78aa00f28c1d26f557bb2db5b9067f84d9bf62",
+      "tag": "doxagent-v2:v21-production-20261012-r1",
+      "running": true,
+      "health": null,
+      "started": "2026-10-12T19:11:16.567559568Z",
+      "finished": "2026-10-12T19:11:16.458593861Z",
+      "logging": {
+        "Type": "json-file",
+        "Config": {
+          "max-file": "3",
+          "max-size": "20m"
+        }
+      }
+    },
+    {
+      "name": "/doxagent-v2-v2-o4-1",
+      "image": "sha256:7d3612194b29db3d8a17dad1ac78aa00f28c1d26f557bb2db5b9067f84d9bf62",
+      "tag": "doxagent-v2:v21-production-20261012-r1",
+      "running": true,
+      "health": null,
+      "started": "2026-10-12T14:14:24.407759958Z",
+      "finished": "0001-01-01T00:00:00Z",
+      "logging": {
+        "Type": "json-file",
+        "Config": {
+          "max-file": "3",
+          "max-size": "20m"
+        }
+      }
+    },
+    {
+      "name": "/doxagent-v2-v2-initialization-1",
+      "image": "sha256:7d3612194b29db3d8a17dad1ac78aa00f28c1d26f557bb2db5b9067f84d9bf62",
+      "tag": "doxagent-v2:v21-production-20261012-r1",
+      "running": true,
+      "health": null,
+      "started": "2026-10-12T18:20:42.52205462Z",
+      "finished": "2026-10-12T18:20:42.496354565Z",
+      "logging": {
+        "Type": "json-file",
+        "Config": {
+          "max-file": "3",
+          "max-size": "20m"
+        }
+      }
+    },
+    {
+      "name": "/doxagent-v2-v2-web-1",
+      "image": "sha256:5bfd2e7b49dadf8e2ff8e2a3415c0dac4660132cb6ee4e91a39a5229f5661cbe",
+      "tag": "doxagent-v2-web:v21-production-20261012-r1",
+      "running": true,
+      "health": "healthy",
+      "started": "2026-10-12T14:11:46.034236612Z",
+      "finished": "0001-01-01T00:00:00Z",
+      "logging": {
+        "Type": "json-file",
+        "Config": {
+          "max-file": "3",
+          "max-size": "20m"
+        }
+      }
+    },
+    {
+      "name": "/doxagent-v2-codex-worker-1",
+      "image": "sha256:7d3612194b29db3d8a17dad1ac78aa00f28c1d26f557bb2db5b9067f84d9bf62",
+      "tag": "doxagent-v2:v21-production-20261012-r1",
+      "running": true,
+      "health": "healthy",
+      "started": "2026-10-12T14:11:12.147509593Z",
+      "finished": "0001-01-01T00:00:00Z",
+      "logging": {
+        "Type": "json-file",
+        "Config": {
+          "max-file": "3",
+          "max-size": "20m"
+        }
+      }
+    },
+    {
+      "name": "/doxagent-rklb-v21-01-d3",
+      "image": "sha256:aa2c0b71d498d50a786f880db065393a8b6741d947d997b14ec94e3c5c097273",
+      "tag": "doxagent-v2:rklb-v21-20261012",
+      "running": true,
+      "health": null,
+      "started": "2026-10-12T18:33:12.915113453Z",
+      "finished": "2026-10-12T17:29:50.32165564Z",
+      "logging": {
+        "Type": "json-file",
+        "Config": {}
+      }
+    },
+    {
+      "name": "/doxagent-v2-v2-content-enrichment-1",
+      "image": "sha256:31a24e36e06acc5e7cbc2ca05635da967642ad79387c97f0742753ff30bfab9c",
+      "tag": "doxagent-v2:source-recovery-enrich-20261012-r1",
+      "running": true,
+      "health": null,
+      "started": "2026-10-12T20:48:35.310544976Z",
+      "finished": "2026-10-12T20:37:04.312036202Z",
+      "logging": {
+        "Type": "json-file",
+        "Config": {
+          "max-file": "3",
+          "max-size": "20m"
+        }
+      }
+    },
+    {
+      "name": "/doxagent-rklb-v21-worker",
+      "image": "sha256:aa2c0b71d498d50a786f880db065393a8b6741d947d997b14ec94e3c5c097273",
+      "tag": "doxagent-v2:rklb-v21-20261012",
+      "running": true,
+      "health": null,
+      "started": "2026-10-12T08:45:04.443669741Z",
+      "finished": "0001-01-01T00:00:00Z",
+      "logging": {
+        "Type": "json-file",
+        "Config": {}
+      }
+    },
+    {
+      "name": "/doxagent-be-v21-worker",
+      "image": "sha256:54ca236f9843a1bdeb5879ddbe2f3345b2bf0099949acea72af09e7ee47d8b62",
+      "tag": "doxagent-v2:be-v21-20261011",
+      "running": true,
+      "health": null,
+      "started": "2026-10-11T15:54:06.400025606Z",
+      "finished": "0001-01-01T00:00:00Z",
+      "logging": {
+        "Type": "json-file",
+        "Config": {}
+      }
+    },
+    {
+      "name": "/doxagent-intc-v21-worker",
+      "image": "sha256:e2a232d7cf05db682a0c79ac64bbe54302a266a6caad3f7bf99f4b6558fef7e8",
+      "tag": "doxagent-v2:intc-v21-20261011",
+      "running": true,
+      "health": null,
+      "started": "2026-10-10T23:01:41.020193003Z",
+      "finished": "0001-01-01T00:00:00Z",
+      "logging": {
+        "Type": "json-file",
+        "Config": {}
+      }
+    },
+    {
+      "name": "/doxagent-mu-v21-worker",
+      "image": "sha256:0c70eb7d7246b0295d781ea2ce7796e9a4ecad3dfe2ab65db414d8ca15c51fec",
+      "tag": "doxagent-v2:mu-v21-worker-20261010",
+      "running": true,
+      "health": null,
+      "started": "2026-10-09T19:22:34.125029526Z",
+      "finished": "0001-01-01T00:00:00Z",
+      "logging": {
+        "Type": "json-file",
+        "Config": {}
+      }
+    },
+    {
+      "name": "/doxagent-v2-v2-chrome-supervisor-1",
+      "image": "sha256:cc38be0a0fe83e1003320a205bcb6ca1a0ee581ce9debd51983779f0b76ec7d3",
+      "tag": "doxagent-chrome-supervisor:server",
+      "running": true,
+      "health": "healthy",
+      "started": "2026-09-24T20:18:25.88524306Z",
+      "finished": "0001-01-01T00:00:00Z",
+      "logging": {
+        "Type": "json-file",
+        "Config": {
+          "max-file": "3",
+          "max-size": "20m"
+        }
+      }
+    },
+    {
+      "name": "/doxagent-egress-clash",
+      "image": "sha256:739edd73a352d6beb82fad6790ef9d417a4d6f061584cc3cab1bd4536d1c60e5",
+      "tag": "metacubex/mihomo:v1.19.31",
+      "running": true,
+      "health": null,
+      "started": "2026-09-23T19:31:40.787817618Z",
+      "finished": "2026-09-23T19:31:40.674318834Z",
+      "logging": {
+        "Type": "json-file",
+        "Config": {}
+      }
+    }
+  ],
+  "databases": {
+    "read": {
+      "bytes": 24652673024,
+      "pages": 6018719,
+      "free_pages": 43777,
+      "head": 4404327,
+      "positions": [
+        [
+          "bus",
+          2278664
+        ],
+        [
+          "initialization",
+          103657
+        ],
+        [
+          "research",
+          5798
+        ],
+        [
+          "runtime",
+          1805036
+        ]
+      ],
+      "gaps": [
+        [
+          "runtime",
+          "1240145",
+          "PROVENANCE_UNVERIFIED"
+        ],
+        [
+          "runtime",
+          "1240148",
+          "PROVENANCE_UNVERIFIED"
+        ],
+        [
+          "runtime",
+          "1240191",
+          "PROVENANCE_UNVERIFIED"
+        ],
+        [
+          "runtime",
+          "1240193",
+          "PROVENANCE_UNVERIFIED"
+        ]
+      ]
+    },
+    "bus": {
+      "bytes": 6333575168,
+      "pages": 1546283,
+      "free_pages": 526167,
+      "source": [
+        [
+          "bus",
+          "a782a752932379cb2ece4cfd8ea3e324",
+          2291807,
+          1512853
+        ]
+      ],
+      "pins": [],
+      "stable_delivery_keys": [
+        1515,
+        131,
+        98145
+      ],
+      "published": 1325
+    },
+    "runtime": {
+      "bytes": 5291769856,
+      "pages": 1291936,
+      "free_pages": 410237,
+      "source": [
+        [
+          "runtime",
+          "396321d9866688b788c2f9f0363daee3",
+          1806401,
+          1240144
+        ]
+      ],
+      "pins": [
+        [
+          "read:282cca7d3b8ab85e3d218091:repair",
+          1240145,
+          "repair"
+        ]
+      ]
+    }
+  },
+  "maintenance": {
+    "v2-maintenance": [
+      "{\"maintenance\": \"gc\", \"deleted\": {\"views\": 0, \"cursors\": 0, \"objects\": 0, \"contributions\": 0, \"metric_buckets\": 0, \"changes\": 0, \"commits\": 16}, \"errors\": [], \"retention_floor\": 4217812, \"protected_sources\": [\"runtime\"], \"policy\": \"BUS_POLL_ONLY\", \"elapsed_seconds\": 1.6532454770058393}",
+      "{\"maintenance\": \"gc\", \"deleted\": {\"views\": 0, \"cursors\": 0, \"objects\": 0, \"contributions\": 0, \"metric_buckets\": 0, \"changes\": 0, \"commits\": 9334}, \"errors\": [\"interrupted\"], \"retention_floor\": 4217812, \"protected_sources\": [\"runtime\"], \"policy\": \"BUS_POLL_ONLY\", \"elapsed_seconds\": 2.0329189910553396}"
+    ],
+    "v2-transport-maintenance": [
+      "{\"maintenance\": \"transport_archive\", \"sources\": {\"bus\": {\"archived\": 15, \"error\": null, \"checkpoint_available\": true}, \"runtime\": {\"archived\": 0, \"error\": null, \"checkpoint_available\": true}}, \"elapsed_seconds\": 0.028829364106059074}",
+      "{\"maintenance\": \"transport_archive\", \"sources\": {\"bus\": {\"archived\": 33, \"error\": null, \"checkpoint_available\": true}, \"runtime\": {\"archived\": 0, \"error\": null, \"checkpoint_available\": true}}, \"elapsed_seconds\": 0.06442935881204903}"
+    ]
+  },
+  "p4_code_sha256": {
+    "doxagent-v2-v2-transport-maintenance-1": {
+      "/app/src/doxagent/production_v2.py": "dd108181c9a217c3606f63766e5a0fb084ed29e063fc2c1c60dffd8dad372195",
+      "/app/src/doxagent/v2_read/backup_retention.py": "2150ae97c36b195c665e300959c2ba327d7b3e16089050954d7854149ba73b99",
+      "/app/src/doxagent/v2_read/maintenance.py": "a622844be198a8dfc6257f7fa81cbf6511e4ab266d8667b6e72cb9fbb9bbafdd",
+      "/app/src/doxagent/v2_read/cli.py": "7a8d5aa0fd7604bdfb6aed1cfabd4d66d72251356bcb8c0281d8cac938b94446"
+    },
+    "doxagent-v2-initialization-guardian-1": {
+      "/app/src/doxagent/initialization_repair/containers.py": "3228a2c621d2142674c103c8108ed9107e718e4bcb254ef9b3c48a90c1ae7f8b",
+      "/app/src/doxagent/source_maintenance/containers.py": "08d27dfc75bb89fc71c00127798e785c24e32dc79325b34ad7137401baacb3f5"
+    }
+  }
+}

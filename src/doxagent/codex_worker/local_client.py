@@ -58,6 +58,24 @@ class LocalWorkspaceClient:
 class EmbeddedCodexWorkerClient:
     """Run the normal WorkerJobManager in-process for bounded node-loop evaluation."""
 
+    async def register_template(self, job_id):
+        return await self.manager.thread_lifecycle.register_template(job_id)
+
+    async def register_legacy_thread(self, job_id):
+        return await self.manager.thread_lifecycle.register_legacy(job_id)
+
+    async def fork_thread(self, request):
+        return await self.manager.thread_lifecycle.fork(request)
+
+    async def thread_status(self, thread_id):
+        return await self.manager.thread_lifecycle.status(thread_id)
+
+    async def delete_thread(self, thread_id):
+        return await self.manager.thread_lifecycle.delete(thread_id)
+
+    async def acknowledge_job(self, job_id):
+        self.manager.store.acknowledge(job_id)
+
     def __init__(self, manager: WorkerJobManager, *, poll_seconds: float = 0.1) -> None:
         self.manager = manager
         self.poll_seconds = poll_seconds

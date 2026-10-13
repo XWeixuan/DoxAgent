@@ -1,7 +1,11 @@
 # Separate, opt-in topology. NOT included by any production deployment entrypoint.
 # A profile alone does not enable the Controller: the explicit flag still defaults false.
+x-logging: &logging
+  driver: json-file
+  options: {max-size: "20m", max-file: "3"}
 services:
   source-maintenance-controller:
+    logging: *logging
     profiles: [source-maintenance]
     image: ${DOXAGENT_SOURCE_MAINTENANCE_IMAGE:-doxagent-source-maintenance-agent:local}
     restart: "no"
@@ -44,6 +48,7 @@ services:
     networks: [default, production]
 
   source-maintenance-model-proxy:
+    logging: *logging
     profiles: [source-maintenance]
     image: ${DOXAGENT_SOURCE_MAINTENANCE_IMAGE:-doxagent-source-maintenance-agent:local}
     command: [python, -m, doxagent.source_maintenance.proxy]
@@ -61,6 +66,7 @@ services:
       SOURCE_MAINTENANCE_MODEL_HOSTS: chatgpt.com,api.openai.com,auth.openai.com
 
   source-maintenance-evidence:
+    logging: *logging
     profiles: [source-maintenance]
     image: ${DOXAGENT_SOURCE_MAINTENANCE_IMAGE:-doxagent-source-maintenance-agent:local}
     command: [python, -m, doxagent.source_maintenance.cli, evidence-server]

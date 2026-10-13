@@ -1,0 +1,42 @@
+{"completed": "research", "source": "/data/research/research.sqlite3", "archive": "/data/production-backups/v21-20261012/research.sqlite3.gz", "size": 59609088, "sha256": "23b073a0887e573d171d27d01ed5ffbeae53d2bbe0815c4544beac2abd07b8ed", "compressed_size": 14488140, "archive_sha256": "14cfe177e98a51cf14b0b5f861b6af595729a22047fb41c06805982334a2740c", "quick_check": "ok"}
+{"completed": "initialization", "source": "/data/initialization/control.sqlite3", "archive": "/data/production-backups/v21-20261012/initialization.sqlite3.gz", "size": 524951552, "sha256": "71db1310825f173cd83215af2e92813a635872e0e18b9162070abb8cc44ac72b", "compressed_size": 109881742, "archive_sha256": "10cd05b6a892c7d4818e82f083d9ae559d92bd39ec87e755c77841b007fdc972", "quick_check": "ok"}
+{"completed": "runtime", "source": "/data/runtime/runtime.sqlite3", "archive": "/data/production-backups/v21-20261012/runtime.sqlite3.gz", "size": 5086810112, "sha256": "7166f2d749f076e1bfdd3b7ad6ef4d95c05cfecbfd441213be7332684fb9fdb4", "compressed_size": 1142641030, "archive_sha256": "84ff57322a00831535fff771a9d3c587693c8497a1593ccc2535d2720672dac4", "quick_check": "ok"}
+-rw-r--r-- 1 root root 967M Oct 12 21:46 /var/lib/docker/volumes/doxagent-v2_v2-data/_data/production-backups/v21-20261012/bus.sqlite3.gz
+[
+  {
+    "seq": 1240145,
+    "passed": false,
+    "error": "PROVENANCE_UNVERIFIED",
+    "traceback": "Traceback (most recent call last):\n  File \"/ops/replay_historical_gaps.py\", line 24, in <module>\n    records,metrics=mapper(event)\n                    ^^^^^^^^^^^^^\n  File \"/app/src/doxagent/v2_read/projectors.py\", line 412, in __call__\n    raise ValueError(\"PROVENANCE_UNVERIFIED\")\nValueError: PROVENANCE_UNVERIFIED\n"
+  },
+  {
+    "seq": 1240148,
+    "passed": true,
+    "records": 1,
+    "metrics": 0
+  },
+  {
+    "seq": 1240191,
+    "passed": false,
+    "error": "PROVENANCE_UNVERIFIED",
+    "traceback": "Traceback (most recent call last):\n  File \"/ops/replay_historical_gaps.py\", line 24, in <module>\n    records,metrics=mapper(event)\n                    ^^^^^^^^^^^^^\n  File \"/app/src/doxagent/v2_read/projectors.py\", line 412, in __call__\n    raise ValueError(\"PROVENANCE_UNVERIFIED\")\nValueError: PROVENANCE_UNVERIFIED\n"
+  },
+  {
+    "seq": 1240193,
+    "passed": true,
+    "records": 1,
+    "metrics": 0
+  },
+  {
+    "seq": 1257748,
+    "passed": true,
+    "records": 18,
+    "metrics": 92
+  },
+  {
+    "seq": 1257924,
+    "passed": true,
+    "records": 18,
+    "metrics": 92
+  }
+]

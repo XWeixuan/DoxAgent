@@ -1,0 +1,11 @@
+FROM doxagent-site-access:source-storage-20261009-r1
+COPY staging/src/doxagent/message_bus_v2/yahoo_sources.py /app/src/doxagent/message_bus_v2/yahoo_sources.py
+COPY staging/src/doxagent/site_strategy/api.py /app/src/doxagent/site_strategy/api.py
+COPY staging/src/doxagent/site_strategy/egress.py /app/src/doxagent/site_strategy/egress.py
+COPY staging/src/doxagent/site_strategy/external_runtime.py /app/src/doxagent/site_strategy/external_runtime.py
+COPY staging/src/doxagent/site_strategy/health.py /app/src/doxagent/site_strategy/health.py
+COPY staging/src/doxagent/site_strategy/runtime.py /app/src/doxagent/site_strategy/runtime.py
+COPY staging/src/doxagent/site_strategy/schema.py /app/src/doxagent/site_strategy/schema.py
+COPY staging/src/doxagent/site_strategy/service.py /app/src/doxagent/site_strategy/service.py
+COPY staging/src/doxagent/site_strategy/client.py /app/src/doxagent/site_strategy/client.py
+COPY staging/src/doxagent/site_strategy/supervisor_client.py /app/src/doxagent/site_strategy/supervisor_client.py

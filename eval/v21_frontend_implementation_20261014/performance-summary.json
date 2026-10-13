@@ -1,0 +1,35 @@
+{
+  "acceptance_sql": {
+    "scopes": 60,
+    "samples": 300,
+    "p95_ms": 352.84,
+    "max_ms": 569.67,
+    "max_scope_p95_ms": 569.67,
+    "per_scope_target_met": false
+  },
+  "acceptance_api": {
+    "scopes": 60,
+    "samples": 300,
+    "p95_ms": 481.37,
+    "max_ms": 1043.16,
+    "max_scope_p95_ms": 1043.16,
+    "per_scope_target_met": false
+  },
+  "cold_sql": {
+    "scopes": 12,
+    "samples": 60,
+    "p95_ms": 417.18,
+    "max_ms": 1070.51,
+    "max_scope_p95_ms": 1070.51,
+    "per_scope_target_met": false
+  },
+  "cold_api": {
+    "scopes": 12,
+    "samples": 60,
+    "p95_ms": 271.51,
+    "max_ms": 311.17,
+    "max_scope_p95_ms": 311.17,
+    "per_scope_target_met": true
+  },
+  "policy_queries_sha256": "2b500cbacaed17aa4879a240d7634c3acf1dff7b0aba3723fd426a917d17251a"
+}

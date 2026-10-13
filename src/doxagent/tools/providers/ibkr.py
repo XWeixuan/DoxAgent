@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import threading
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
@@ -43,6 +44,7 @@ _PERIODS = {
 _BARS = {
     "1min": "1 min",
     "5min": "5 mins",
+    "10min": "10 mins",
     "15min": "15 mins",
     "30min": "30 mins",
     "1h": "1 hour",
@@ -221,13 +223,23 @@ class IbkrMarketHistoryClient(_IbkrClient):
                 raise ValueError("period is not an allowed IBKR TWS history period.")
             if bar not in _BARS:
                 raise ValueError("bar is not an allowed IBKR TWS bar size.")
+            duration = " ".join(_input_str(request, "duration", _PERIODS[period]).upper().split())
+            if re.fullmatch(r"[1-9][0-9]* [SDWMY]", duration) is None:
+                raise ValueError("duration must be a positive integer and an IBKR unit S/D/W/M/Y.")
+            end_datetime = _input_str(request, "end_datetime", "")
+            if not end_datetime and request.metadata.get("cutoff_at"):
+                cutoff = datetime.fromisoformat(str(request.metadata["cutoff_at"]))
+                if cutoff.tzinfo is None:
+                    raise ValueError("cutoff_at must include a timezone.")
+                end_datetime = cutoff.astimezone(UTC).strftime("%Y%m%d %H:%M:%S UTC")
             with self._session() as session:
                 contract = _resolve_or_build_contract(session, symbol, conid)
                 history = session.historical_bars(
                     contract,
-                    duration=_PERIODS[period],
+                    duration=duration,
                     bar_size=_BARS[bar],
                     use_rth=_bool_input(request.input.get("outside_rth"), inverted=True),
+                    end_datetime=end_datetime,
                 )
             bars = history["bars"]
             return self._success_result(
@@ -238,6 +250,10 @@ class IbkrMarketHistoryClient(_IbkrClient):
                     "con_id": contract.con_id,
                     "period": period,
                     "bar": bar,
+                    "duration": duration,
+                    "bar_size": _BARS[bar],
+                    "end_datetime": end_datetime,
+                    "what_to_show": "TRADES",
                     "outside_rth": not history["use_rth"],
                     "as_of": bars[-1]["date"],
                     "bars": bars,

@@ -46,7 +46,12 @@ def test_closed_poll_once_and_slow_source_never_blocks_loop(tmp_path):
         assert not calls  # No background continuous Poll on a closed day.
         journal.put_task("sweep", "MU", "SWEEP", {"cutoff": now[0].isoformat()})
         await asyncio.wait_for(owner.run_once(scheduler), timeout=1)
-        await owner.run_once(scheduler)
+        # Journal transactions now yield to a worker thread; allow the short
+        # transaction to complete without assuming two loop turns are enough.
+        async with asyncio.timeout(1):
+            while not calls:
+                await owner.run_once(scheduler)
+                await asyncio.sleep(0.01)
         assert len(calls) == 1
         assert journal.tasks(kind="SOURCE_SWEEP")[0]["status"] == "RUNNING"
         gate.set()

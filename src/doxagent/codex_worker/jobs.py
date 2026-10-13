@@ -100,6 +100,9 @@ class WorkerJobManager:
         self._tasks: dict[str, asyncio.Task[None]] = {}
         self._starting: set[str] = set()
         self._handles: dict[str, TurnHandle] = {}
+        from .thread_lifecycle import WorkerThreadLifecycle
+
+        self.thread_lifecycle = WorkerThreadLifecycle(self, workspaces)
         self._condition = asyncio.Condition()
         self._recover_snapshots()
         if hasattr(runtime, "receipt_callback"):
@@ -115,8 +118,12 @@ class WorkerJobManager:
                 return
 
     async def submit(self, request: WorkerRunRequest) -> WorkerJob:
+        hash_payload = request.model_dump(mode="json")
+        for name in ("task_phase", "web_search_mode"):
+            if hash_payload.get(name) is None:
+                hash_payload.pop(name, None)
         request_sha256 = hashlib.sha256(
-            json.dumps(request.model_dump(mode="json"), sort_keys=True).encode()
+            json.dumps(hash_payload, sort_keys=True).encode()
         ).hexdigest()
         job_id = (
             hashlib.sha256(f"{request.run_id}:{request.idempotency_key}".encode()).hexdigest()
@@ -131,6 +138,7 @@ class WorkerJobManager:
             return existing.model_copy(deep=True)
         if self._closed or len(self.store.queued()) >= self.queue_high_watermark:
             raise QueueHighWatermark("QUEUE_STORAGE_HIGH_WATERMARK")
+        self.thread_lifecycle.validate_run(request)
         job = WorkerJob(
             job_id=job_id,
             run_id=request.run_id,
@@ -401,6 +409,7 @@ class WorkerJobManager:
             if self._jobs[key].execution_phase != "CLEANING":
                 task.cancel()
         await asyncio.gather(*list(self._tasks.values()), return_exceptions=True)
+        await self.thread_lifecycle.close()
         close = getattr(self._runtime, "close", None)
         if close is not None:
             await close()

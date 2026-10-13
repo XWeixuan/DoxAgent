@@ -1,0 +1,107 @@
+2026-10-13T02:35:16+08:00
+160458784768	/var
+160004665344	/var/lib
+122268483584	/var/lib/docker
+34914131968	/var/lib/containerd
+8733945856	/home
+7617196032	/home/ubuntu
+4835319808	/usr
+2563387392	/var/lib/doxagent
+2446131200	/usr/lib
+2328662016	/home/ubuntu/doxagent-backups
+1116729344	/home/doxagent-desktop
+1105178624	/opt
+935645184	/usr/lib/x86_64-linux-gnu
+830775296	/home/doxagent-desktop/.cache
+808009728	/home/ubuntu/doxagent
+760889344	/usr/lib/firmware
+757432320	/usr/local
+757153792	/usr/local/qcloud
+601112576	/usr/share
+544174080	/opt/ibgateway
+529051648	/home/ubuntu/doxagent-intc-v21-20261011
+528699392	/home/ubuntu/doxagent-rklb-v21-20261012
+514621440	/usr/bin
+455655424	/opt/google
+455651328	/opt/google/chrome
+402763776	/var/log
+381313024	/home/ubuntu/doxagent-case-release-d11f7fa1
+379682816	/home/ubuntu/doxagent-barrons-egress-build
+379490304	/home/ubuntu/doxagent-release-f3da669b
+379084800	/home/ubuntu/doxagent-luna-recovery
+375156736	/home/ubuntu/doxagent-driver-prod
+374890496	/home/ubuntu/doxagent-challenge
+315211776	/var/log/journal
+311144448	/home/ubuntu/doxagent-be-v21-20261011
+310652928	/home/ubuntu/doxagent-mu-v21-20261010
+296902656	/home/ubuntu/doxagent-stage
+292278272	/opt/ibgateway/jre
+271024128	/home/doxagent-desktop/.config
+266338304	/usr/lib/python3
+249806848	/usr/libexec
+246255616	/opt/ibgateway/jars
+180412416	/usr/lib/modules
+178765824	/usr/src
+159600640	/var/lib/apt
+157339648	/home/ubuntu/.cache
+155848704	/usr/libexec/docker
+145879040	/usr/src/linux-headers-7.0.0-14
+140091392	/usr/share/icons
+121827328	/usr/lib/snapd
+105328640	/opt/doxagent-egress-clash
+104439808	/opt/doxagent-egress-clash/backups
+75304960	/usr/libexec/gcc
+68673536	/usr/share/locale
+62726144	/usr/sbin
+58036224	/usr/share/doc
+51109888	/var/lib/dpkg
+48156672	/var/cache
+46374912	/usr/share/vim
+36204544	/usr/share/man
+32985088	/var/lib/kdump
+32882688	/usr/src/linux-headers-7.0.0-14-generic
+32104448	/usr/lib/python3.14
+24887296	/var/cache/fwupd
+24657920	/usr/lib/udev
+24100864	/home/ubuntu/v21-production-20261012
+Archived and active journals take up 300.6M in the file system.
+COMMAND       PID             USER  FD   TYPE DEVICE SIZE/OFF NLINK     NODE NAME
+systemd         1             root  65u   REG    0,1        0     0     2063 /memfd:systemd-udevd (deleted)
+networkd-    1570             root txt    REG  253,3  7477096     0   133417 /usr/bin/python3.14 (deleted)
+unattende    1733             root txt    REG  253,3  7477096     0   133417 /usr/bin/python3.14 (deleted)
+pulseaudi    2311          lightdm   6u   REG    0,1 67108864     0     2087 /memfd:pulseaudio (deleted)
+lightdm-g    2313          lightdm   6u   REG    0,1     4096     0     3118 /memfd:lp_dma_buf (deleted)
+lightdm-g    2313          lightdm  10u   REG    0,1        0     0     3119 /memfd:allocation fd (deleted)
+lightdm-g    2313          lightdm  23r   REG  253,3       64     0  2129081 /var/lib/lightdm/.local/share/gvfs-metadata/root (deleted)
+lightdm-g    2313          lightdm  25r   REG  253,3    32768     0  2129082 /var/lib/lightdm/.local/share/gvfs-metadata/root-3b02401a.log (deleted)
+sh           4845             root   6u   REG   0,42      158     0      103 /tmp/sgdaemon.log (deleted)
+Xvfb       138330            10001 mem    REG    0,1  8625366     0  1016211 /SYSV00000000
+Xvfb       138330            10001 mem    REG    0,1  8625366     0  1016210 /SYSV00000000
+Xvfb       138330            10001 mem    REG    0,1   184320     0  1016208 /SYSV00000000
+Xvfb       138330            10001 mem    REG    0,1   180224     0  1016207 /SYSV00000000
+Xvfb       138330            10001 mem    REG    0,1   176128     0  1016206 /SYSV00000000
+Xvfb       138330            10001 mem    REG    0,1   172032     0  1016205 /SYSV00000000
+Xvfb       138330            10001 mem    REG    0,1   167936     0  1016204 /SYSV00000000
+Xvfb       138330            10001 mem    REG    0,1   163840     0  1016203 /SYSV00000000
+Xvfb       138330            10001 mem    REG    0,1   159744     0  1016202 /SYSV00000000
+Xvfb       138330            10001 mem    REG    0,1   155648     0  1016201 /SYSV00000000
+Xvfb       138330            10001 mem    REG    0,1   151552     0  1016200 /SYSV00000000
+Xvfb       138330            10001 mem    REG    0,1   147456     0  1016199 /SYSV00000000
+Xvfb       138330            10001 mem    REG    0,1   143360     0  1016198 /SYSV00000000
+Xvfb       138330            10001 mem    REG    0,1   139264     0  1016197 /SYSV00000000
+Xvfb       138330            10001 mem    REG    0,1   135168     0  1016196 /SYSV00000000
+Xvfb       138330            10001 mem    REG    0,1   131072     0  1016195 /SYSV00000000
+Xvfb       138330            10001 mem    REG    0,1   126976     0  1016194 /SYSV00000000
+Xvfb       138330            10001 mem    REG    0,1   122880     0  1016193 /SYSV00000000
+Xvfb       138330            10001 mem    REG    0,1   118784     0  1016192 /SYSV00000000
+Xvfb       138330            10001 mem    REG    0,1   114688     0  1016191 /SYSV00000000
+Xvfb       138330            10001 mem    REG    0,1   110592     0  1016190 /SYSV00000000
+Xvfb       138330            10001 mem    REG    0,1   106496     0  1016189 /SYSV00000000
+Xvfb       138330            10001 mem    REG    0,1   102400     0  1016188 /SYSV00000000
+Xvfb       138330            10001 mem    REG    0,1    98304     0  1016187 /SYSV00000000
+Xvfb       138330            10001 mem    REG    0,1    94208     0  1016186 /SYSV00000000
+Xvfb       138330            10001 mem    REG    0,1    90112     0  1016185 /SYSV00000000
+Xvfb       138330            10001 mem    REG    0,1    86016     0  1016184 /SYSV00000000
+Xvfb       138330            10001 mem    REG    0,1    81920     0  1016183 /SYSV00000000
+Xvfb       138330            10001 mem    REG    0,1    77824     0  1016182 /SYSV00000000
+Xvfb       138330            10001 mem    REG    0,1    73728     0  1016181 /SYSV00000000

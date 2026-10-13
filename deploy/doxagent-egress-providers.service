@@ -1,0 +1,15 @@
+[Unit]
+Description=Refresh DoxAgent approved provider candidate snapshots
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=root
+UMask=0077
+ExecStart=/usr/local/sbin/doxagent-refresh-egress-providers
+TimeoutStartSec=60
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/opt/doxagent-egress-clash/providers

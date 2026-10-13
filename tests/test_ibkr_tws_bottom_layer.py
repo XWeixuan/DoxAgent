@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from decimal import Decimal
+from itertools import count
+from types import SimpleNamespace
 
 import pytest
 
@@ -8,6 +10,7 @@ from doxagent.settings import DoxAgentSettings
 from doxagent.tools.providers.ibkr_tws import (
     IbkrApiError,
     IbkrTwsConfig,
+    IbkrTwsSession,
     ResolvedContract,
     _decode_connection_time,
     _json_tick_value,
@@ -15,7 +18,9 @@ from doxagent.tools.providers.ibkr_tws import (
 )
 
 
-def test_tws_config_allows_loopback_and_docker_gateway_only(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_tws_config_allows_loopback_and_docker_gateway_only(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setenv("IBKR_TWS_MARKET_DATA_TYPE", "4")
     settings = DoxAgentSettings(
         IBKR_TWS_HOST="localhost",
@@ -74,3 +79,34 @@ def test_resolved_contract_output_is_bounded_and_json_ready() -> None:
     assert payload["symbol"] == "MU"
     assert payload["valid_exchanges"] == ["SMART", "NASDAQ"]
     assert "account" not in payload
+
+
+def test_historical_bars_passes_explicit_cutoff_and_preserves_default(monkeypatch):
+    calls = []
+    app = SimpleNamespace(
+        historical_events={}, historical_results={}, reqMarketDataType=lambda *_: None,
+        cancelHistoricalData=lambda *_: None,
+    )
+
+    def receive(*args):
+        calls.append(args)
+        app.historical_results[args[0]] = [{"date": "20261013", "close": 100}]
+        app.historical_events[args[0]].set()
+
+    app.reqHistoricalData = receive
+    session = IbkrTwsSession(IbkrTwsConfig())
+    session._request_ids = count(1)
+    monkeypatch.setattr(session, "_require_app", lambda: app)
+    monkeypatch.setattr(session, "_wait", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(session, "_raise_request_error", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr("doxagent.tools.providers.ibkr_tws._to_official_contract", lambda *_: "MU")
+    contract = ResolvedContract(con_id=1, symbol="MU", security_type="STK", exchange="SMART",
+                                currency="USD")
+    cutoff = "20261013 13:00:00 UTC"
+    result = session.historical_bars(contract, end_datetime=cutoff, duration="1 D",
+                                     bar_size="10 mins", use_rth=False)
+    assert calls[-1][2:8] == (cutoff, "1 D", "10 mins", "TRADES", 0, 1)
+    assert result["end_datetime"] == cutoff
+    session.historical_bars(contract)
+    assert calls[-1][2] == ""
+    assert app.historical_events == app.historical_results == {}

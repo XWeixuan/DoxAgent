@@ -1,0 +1,11 @@
+{
+  "start": "01a135b3-0300-7242-8cf7-c28127309c7d",
+  "model": "gpt-6.1-sol",
+  "initialization": "completed",
+  "fork": "01a135b3-c1a6-70d3-8405-29e9f2298d36",
+  "read": "01a135b3-c1a6-70d3-8405-29e9f2298d36",
+  "resume": "01a135b3-c1a6-70d3-8405-29e9f2298d36",
+  "list": 1,
+  "delete_child": {},
+  "delete_parent": {}
+}

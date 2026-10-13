@@ -6,6 +6,7 @@ import asyncio
 import hashlib
 import inspect
 import logging
+import re
 import sqlite3
 import time
 from collections import OrderedDict
@@ -1066,15 +1067,8 @@ class SiteStrategyService:
                 }
             ):
                 unavailable += 1
-                attempts.append(
-                    AccessAttempt(
-                        combination_id=combination.combination_id,
-                        generation=self.repository.get_runtime(resolved.runtime_key).generation,
-                        transport=request.mode,
-                        failure_category=FailureCategory.EGRESS_UNAVAILABLE,
-                        reason_code="egress_or_profile_unavailable",
-                    )
-                )
+                # Resource admission is not a real browser/network attempt.
+                # Its exact blockers are already carried by combination_skips.
                 continue
             if (
                 self._auth_required(resolved, request.purpose)
@@ -1351,7 +1345,7 @@ class SiteStrategyService:
             disposition = AccessDisposition.SERVICE_UNAVAILABLE
             category = FailureCategory.EGRESS_UNAVAILABLE
             reason = "access_resources_unavailable"
-        if attempts and all(a.reason_code == "egress_or_profile_unavailable" for a in attempts):
+        if not attempts and unavailable and not auth_missing:
             reason = "egress_unavailable"
             next_retry = max(next_retry or utc_now(), utc_now() + timedelta(seconds=120))
         return self._result(
@@ -2163,6 +2157,9 @@ def classify_exception(exc: Exception) -> tuple[FailureCategory, str]:
         )
     name = type(exc).__name__.casefold()
     message = str(exc).casefold()
+    net_error = re.search(r"(?:net::)?ERR_[A-Z_]+", str(exc))
+    if net_error:
+        return FailureCategory.TRANSIENT_TRANSPORT, net_error.group(0)
     if any(
         marker in message
         for marker in (

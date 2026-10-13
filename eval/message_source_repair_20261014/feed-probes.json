@@ -1,0 +1,36 @@
+[
+  {
+    "source": "yahoo",
+    "port": 18083,
+    "status": 429
+  },
+  {
+    "source": "yahoo",
+    "port": 18085,
+    "status": 429
+  },
+  {
+    "source": "huggingnews",
+    "port": 18083,
+    "status": 200,
+    "items": 50,
+    "xml_valid": true
+  },
+  {
+    "source": "huggingnews",
+    "port": 18085,
+    "status": 200,
+    "items": 50,
+    "xml_valid": true
+  },
+  {
+    "source": "be_ir",
+    "port": 18083,
+    "status": 403
+  },
+  {
+    "source": "be_ir",
+    "port": 18085,
+    "status": 403
+  }
+]

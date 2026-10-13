@@ -38,8 +38,8 @@ const timing = {
   basis: "RECORDED" as const,
 };
 const attempt = (
-  node: "W1" | "W2",
-  round: "R1" | "R2" | "R3",
+  node: "W1" | "W2" | "W3",
+  round: "R1" | "R2" | "R3" | "AGENT",
   status: ModelAttempt["status"],
   n = 1,
 ): ModelAttempt => ({
@@ -233,6 +233,74 @@ const details = {
       : noReason,
 } as unknown as CaseDetail;
 const runtime = createRuntime(createTestAuth());
+if (mode === "v4") {
+  details.summary.source_name = "Reuters";
+  details.w3 = resource({
+    ...details.w3.data,
+    status: "RESOLVED",
+    mode: "REVALIDATE_THEN_EVALUATE",
+    decision: {
+      decision: "EXPERT_TRADE",
+      reason: "新增产能改变短期预期",
+      policy_trade: null,
+      expert_trade: {
+        direction: "LONG",
+        prior_expectation: "试产",
+        expectation_delta: "量产",
+      },
+    },
+    operations_status: "FAILED",
+    operations_error: "后置操作重试耗尽",
+    novelty: value(null),
+    policy_hit: value(null),
+    references: [],
+    policies: [],
+    expert_trade: value(true),
+    expert_trade_evaluated: value(true),
+    direction: value("LONG"),
+    prior_expectation: value("试产"),
+    expectation_delta: value("量产"),
+    timing,
+    attempts: page([
+      { ...attempt("W3", "AGENT", "SUCCEEDED"), phase: "trade_decision" },
+      {
+        ...attempt("W3", "AGENT", "FAILED", 2),
+        phase: "post_decision_operations",
+      },
+    ]),
+    reasoning: {
+      novelty: noReason,
+      policy: noReason,
+      expert_trade: resource(reasonRef),
+    },
+  } as never);
+  details.w3_state = {
+    watch: {
+      items: [
+        {
+          policy_id: "P8",
+          reason: "等待订单",
+          expires_at: "2026-10-14T04:00:00Z",
+        },
+      ],
+    },
+    pins: {
+      items: [
+        {
+          pin_id: "pin1",
+          message: {
+            title: "量产基线",
+            source_name: "Reuters",
+            body: "完整业务正文",
+          },
+          reason: "观察后续",
+          expires_at: "2026-10-14T04:00:00Z",
+        },
+      ],
+    },
+    receipt: { watch: [{ policy_id: "P8", action: "SET", status: "APPLIED" }] },
+  };
+}
 runtime.api.request = async (name) =>
   ({
     data:

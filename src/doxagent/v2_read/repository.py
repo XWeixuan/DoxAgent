@@ -42,6 +42,16 @@ def migrate_case_evidence_indexes(db) -> None:
 class ReadStore:
     VERSION = 3
 
+    def migrate_policy_query_indexes(self):
+        """Explicit, idempotent Policy read migration; never run on a GET/startup."""
+        with self.connect(write=True) as db:
+            db.execute("CREATE INDEX IF NOT EXISTS policy_positive_current ON contributions_current("
+                       "metric,ticker,day,json_extract(dimensions,'$.business_key'),valid_from) "
+                       "WHERE metric IN ('policy_ar_hits','policy_executed') AND CAST(value AS NUMERIC)>0")
+            db.execute("CREATE INDEX IF NOT EXISTS policy_positive_history ON contributions("
+                       "metric,ticker,valid_to,valid_from,day,json_extract(dimensions,'$.business_key')) "
+                       "WHERE valid_to IS NOT NULL AND metric IN ('policy_ar_hits','policy_executed') AND CAST(value AS NUMERIC)>0")
+
     def __init__(self, path: str | Path) -> None:
         self.path = Path(path).resolve()
         if self.path.suffix == ".json":

@@ -9,6 +9,7 @@ from fastapi.responses import StreamingResponse
 
 from .dto import available
 from .errors import ApiFailure
+from .expectation_refs import enrich_policy
 
 
 def install(app: FastAPI) -> None:
@@ -192,7 +193,33 @@ def install(app: FastAPI) -> None:
                 )
                 for direction in summary["directions"]
             ]
-        return respond(request, "PolicyDetail", value, view_id=args.get("view_id"))
+        return respond(request, "PolicyDetail", enrich_policy(store, ticker, value, view["seq"] if view else None), view_id=args.get("view_id"))
+
+    @app.get(prefix + "/policy-sets/{policy_set_version}/policies/{policy_id}")
+    async def pinned_policy(ticker: str, policy_set_version: int, policy_id: str, request: Request) -> Any:
+        import json
+        args = query(request, {"runtime_activation_id"})
+        activation = store.get("activation_revision", ticker, args.get("runtime_activation_id", ""))
+        if not activation or activation["policy_set"]["policy_set_version"] != policy_set_version:
+            raise ApiFailure("RESOURCE_NOT_FOUND", 404)
+        ref = activation["policy_set"]
+        policy_set = store.get("policy_set", ticker, ref["artifact_id"])
+        if not policy_set or policy_set["reference"]["content_sha256"] != ref["content_sha256"]:
+            raise ApiFailure("PINNED_ARTIFACT_MISSING", 404)
+        with store.connect() as db:
+            seq = store.highwater(db)
+            row = db.execute(
+                "SELECT payload FROM object_current WHERE kind='policy_detail' AND ticker=? AND parent=? "
+                "AND json_extract(payload,'$.summary.policy_id')=? LIMIT 1",
+                (ticker, ref["artifact_id"], policy_id),
+            ).fetchone()
+        if row is None:
+            raise ApiFailure("RESOURCE_NOT_FOUND", 404)
+        value = json.loads(row[0])
+        if value["summary"]["policy_set_version"] != policy_set_version:
+            raise ApiFailure("SCOPE_MISMATCH", 400)
+        # Immutable definition only: do not apply present-day usage to a historical pin.
+        return respond(request, "PolicyDetail", enrich_policy(store, ticker, value, seq))
 
     @app.get(prefix + "/policy-sets/{policy_set_version}/download")
     async def policy_download(ticker: str, policy_set_version: int, request: Request) -> Any:

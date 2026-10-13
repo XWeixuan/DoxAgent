@@ -61,6 +61,14 @@ def test_trade_state_priority_and_distinct_results():
     assert rollup_case_trade(case(), [])["trade"]["state"] == "NOT_APPLICABLE"
 
 
+def test_duplicate_event_intent_remains_visible_as_not_executed():
+    summary = {**case(), "trade_disposition": "DUPLICATE_EVENT_TRADE"}
+    result = rollup_case_trade(summary, [execution(status="DUPLICATE_EVENT_TRADE")])
+    assert result["trade_disposition"] == "DUPLICATE_EVENT_TRADE"
+    assert result["trade"]["state"] == "NOT_EXECUTED"
+    assert "TRADE_NOT_EXECUTED" in result["results"]
+
+
 def test_delivery_failure_updates_case_without_invalid_trade_disposition(tmp_path):
     store = ReadStore(tmp_path / "read.db")
     store.migrate()

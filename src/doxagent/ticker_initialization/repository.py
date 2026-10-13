@@ -1757,11 +1757,7 @@ class InitializationRepository:
             current_id = current[0] if current else None
             if current_id == revision_id:
                 return
-            if current_id != revision["base_revision"] and run.operation_kind not in {
-                "ACTIVATE",
-                "REPLACE_ARTIFACT",
-                "ROLLBACK",
-            }:
+            if current_id != revision["base_revision"]:
                 raise InitializationError("active revision changed")
             db.execute(
                 """INSERT INTO ticker_active_revision VALUES(?,?)

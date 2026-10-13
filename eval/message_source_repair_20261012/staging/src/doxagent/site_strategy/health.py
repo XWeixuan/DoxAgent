@@ -38,6 +38,7 @@ class CombinationHealthManager:
         transport: AccessMode = AccessMode.BROWSER,
         now: datetime | None = None,
         purpose: SitePurpose | None = None,
+        read_only: bool = False,
     ) -> tuple[SiteRuntimeState, list[AccessCombination], datetime | None]:
         instant = now or utc_now()
         async with self._locks[runtime_key]:
@@ -93,7 +94,7 @@ class CombinationHealthManager:
                     if runtime.state == "HALF_OPEN":
                         continue
                 ready.append(item)
-            if changed:
+            if changed and not read_only:
                 prior = state.generation
                 state.generation += 1
                 self.repository.save_runtime(state, expected_generation=prior)
