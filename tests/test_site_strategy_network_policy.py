@@ -6,7 +6,9 @@ from pathlib import Path
 
 import pytest
 import yaml
+from fastapi.testclient import TestClient
 
+from doxagent.site_strategy.api import create_app
 from doxagent.site_strategy.egress import render_fixed_listeners
 from doxagent.site_strategy.repository import SiteStrategyRepository
 from doxagent.site_strategy.runtime import (
@@ -15,7 +17,16 @@ from doxagent.site_strategy.runtime import (
     SiteAccessRuntime,
     _DocumentNavigationGate,
 )
-from doxagent.site_strategy.schema import AccessMode, FailureCategory, ProxyEgress
+from doxagent.site_strategy.schema import (
+    AccessDisposition,
+    AccessMode,
+    AccessRequest,
+    AccessResult,
+    BrowserRuntimeKind,
+    FailureCategory,
+    ProxyEgress,
+    SitePurpose,
+)
 from doxagent.site_strategy.seeds import bootstrap_seed, seed_specs
 from doxagent.site_strategy.service import SiteStrategyService, classify_response
 
@@ -192,3 +203,213 @@ async def test_popup_private_document_is_blocked_before_navigation(tmp_path: Pat
     finally:
         await pool.close()
         repository.close()
+
+
+@pytest.mark.asyncio
+async def test_yahoo_recipe_returns_rows_without_serializing_page_html(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repository = SiteStrategyRepository(tmp_path / "site.sqlite3")
+    service = SiteStrategyService(repository, profile_root=tmp_path / "profiles")
+    bootstrap_seed(repository, service)
+    url = "https://finance.yahoo.com/quote/MU/latest-news/"
+    page = type("Page", (), {"url": url})()
+
+    async def content():
+        raise AssertionError("Yahoo recipe must not read the full page")
+
+    page.content = content
+
+    class Lease:
+        browser_cdp = object()
+        provenance = type("Provenance", (), {"instance_id": "yahoo-test"})()
+
+        async def __aenter__(self):
+            return page
+
+        async def __aexit__(self, *_args):
+            pass
+
+    class Gate:
+        blocked = []
+
+        def __init__(self, *_args):
+            pass
+
+        async def start(self):
+            pass
+
+        async def close(self):
+            pass
+
+    async def acquire(*_args, **_kwargs):
+        return Lease()
+
+    async def capture(*_args, **_kwargs):
+        return [{"id": "news-1"}], {"page_url": url}
+
+    async def validate(*_args, **_kwargs):
+        pass
+
+    monkeypatch.setattr("doxagent.site_strategy.runtime._DocumentNavigationGate", Gate)
+    monkeypatch.setattr("doxagent.site_strategy.runtime.capture_latest_news", capture)
+    monkeypatch.setattr("doxagent.site_strategy.runtime.public_url", validate)
+    service.runtime.browser_runtimes.page = acquire  # type: ignore[method-assign]
+    identity = repository.get_identity("barrons-1")
+    egress = repository.get_egress("us-standard-5")
+    assert identity is not None and egress is not None
+    result = await service.runtime._browser(
+        AccessRequest(
+            operation_id="yahoo-rows",
+            purpose=SitePurpose.CRAWLER,
+            url=url,
+            mode=AccessMode.BROWSER,
+            recipe_ref="builtin:yahoo_latest_news@1",
+            recipe_parameters={"ticker": "MU"},
+        ),
+        service.resolve(url),
+        identity,
+        egress,
+    )
+    assert result.status_code == 200
+    assert result.body == ""
+    assert result.recipe_result == {"rows": [{"id": "news-1"}], "metadata": {"page_url": url}}
+    repository.close()
+
+
+def test_profile_probe_reports_extraction_quality_without_returning_body(
+    tmp_path: Path,
+) -> None:
+    repository = SiteStrategyRepository(tmp_path / "site.sqlite3")
+    service = SiteStrategyService(repository, profile_root=tmp_path / "profiles")
+    bootstrap_seed(repository, service)
+    title = "Memory Prices Could Peak Early. What That Means for Micron Stock."
+    url = "https://www.barrons.com/articles/micron-stock-price-rise-8033b63a"
+    body = "This is a full article sentence. " * 45
+    html = f"<html><h1>{title}</h1><article><p>{body}</p></article></html>"
+
+    async def probe(*_args):
+        return AccessResult(
+            request_id="probe-test",
+            operation_id="probe-test",
+            disposition=AccessDisposition.SUCCESS,
+            status_code=200,
+            final_url=url,
+            body=html,
+            site_id="barrons",
+            runtime_key="barrons",
+            strategy_revision=1,
+            identity_id="barrons-1",
+            profile_id="barrons-1",
+        )
+
+    service.probe_profile = probe  # type: ignore[method-assign]
+    client = TestClient(create_app(service, worker_token="worker", admin_token="admin"))
+    mismatched = client.post(
+        "/v1/profiles/barrons-1:probe",
+        json={"url": url, "expected_title": "An unrelated article", "certify_site_auth": True},
+        headers={"Authorization": "Bearer admin"},
+    )
+    assert mismatched.status_code == 200
+    assert mismatched.json()["content_diagnostic"]["auth_certified"] is False
+    prior_auth = repository.get_site_identity_auth("barrons", "barrons-1")
+    assert prior_auth is None or prior_auth.auth_state.value != "VALID"
+    response = client.post(
+        "/v1/profiles/barrons-1:probe",
+        json={"url": url, "expected_title": title, "certify_site_auth": True},
+        headers={"Authorization": "Bearer admin"},
+    )
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    assert "body" not in payload
+    assert payload["content_diagnostic"]["html_bytes"] == len(html.encode())
+    assert payload["content_diagnostic"]["outcome"] == "FULL"
+    assert payload["content_diagnostic"]["auth_certified"] is True
+    auth = repository.get_site_identity_auth("barrons", "barrons-1")
+    assert auth is not None and auth.auth_state.value == "VALID"
+    repository.close()
+
+
+@pytest.mark.asyncio
+async def test_external_challenge_retains_triggering_page_without_extra_clicks(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repository = SiteStrategyRepository(tmp_path / "site.sqlite3")
+    service = SiteStrategyService(repository, profile_root=tmp_path / "profiles")
+    bootstrap_seed(repository, service)
+    url = "https://www.barrons.com/articles/example"
+    identity = repository.get_identity("barrons-1")
+    egress = repository.get_egress("us-standard-5")
+    assert identity is not None and egress is not None
+    identity = identity.model_copy(update={"runtime_kind": BrowserRuntimeKind.EXTERNAL_CHROME})
+    calls: list[str] = []
+
+    class Page:
+        def __init__(self):
+            self.url = url
+
+        async def goto(self, target, **_kwargs):
+            calls.append(f"goto:{target}")
+            return self
+
+        status = 200
+
+        async def all_headers(self):
+            return {}
+
+        async def content(self):
+            return "<html><title>Access is temporarily restricted</title></html>"
+
+    class Lease:
+        browser_cdp = object()
+        provenance = type("Provenance", (), {"instance_id": "chrome-1"})()
+
+        async def __aenter__(self):
+            return Page()
+
+        async def __aexit__(self, *_args):
+            calls.append("close")
+
+    class Gate:
+        root_target_id = "target-1"
+        blocked = []
+
+        def __init__(self, *_args):
+            pass
+
+        async def start(self):
+            calls.append("gate-start")
+
+        async def close(self):
+            calls.append("gate-close")
+
+    async def page(*_args, **_kwargs):
+        return Lease()
+
+    async def public_url(*_args, **_kwargs):
+        return None
+
+    monkeypatch.setattr("doxagent.site_strategy.runtime._DocumentNavigationGate", Gate)
+    monkeypatch.setattr("doxagent.site_strategy.runtime.public_url", public_url)
+    service.runtime.browser_runtimes.page = page  # type: ignore[method-assign]
+    result = await service.runtime._browser(
+        AccessRequest(
+            operation_id="challenge-1",
+            purpose=SitePurpose.BODY,
+            url=url,
+            mode=AccessMode.BROWSER,
+            recipe_parameters={"expand": True},
+        ),
+        service.resolve(url),
+        identity,
+        egress,
+    )
+    assert result.challenge_token in service.runtime._maintenance_pages
+    assert result.challenge_target_id == "target-1"
+    assert calls == ["gate-start", f"goto:{url}", "gate-close"]
+    state = await service.runtime.inspect_login(result.challenge_token)
+    assert state["navigation_state"] == "READY"
+    await service.runtime.verify_login(result.challenge_token, url)
+    assert calls == ["gate-start", f"goto:{url}", "gate-close"]
+    repository.close()

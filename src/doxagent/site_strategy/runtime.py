@@ -17,6 +17,7 @@ from typing import Any
 from urllib.parse import urljoin, urlsplit
 from uuid import uuid4
 
+from doxagent.content_enrichment.quality import inspect_html
 from doxagent.content_enrichment.transport import public_url
 from doxagent.message_bus_v2.reuters_sources import (
     capture_reuters_search,
@@ -56,6 +57,8 @@ class RuntimeResponse:
     reason: str | None = None
     retry_after_seconds: float | None = None
     provenance: RuntimeProvenance | None = None
+    challenge_token: str | None = None
+    challenge_target_id: str | None = None
 
 
 class OwnerFileLock:
@@ -124,6 +127,7 @@ class _BrowserEntry:
     owner_lock: OwnerFileLock
     last_used: float
     active_pages: int = 0
+    pages_opened: int = 0
     closing: bool = False
 
 
@@ -393,11 +397,24 @@ class PersistentBrowserPool:
 
     @property
     def driver_ready(self) -> bool:
-        return self._playwright is not None and not self._stopping
+        return self._playwright is not None and not self._stopping and self.driver_exit_code is None
+
+    @property
+    def driver_exit_code(self) -> int | None:
+        """Report a dead Playwright driver even when its Python wrapper remains set."""
+        if self._playwright is None:
+            return None
+        impl = getattr(self._playwright, "_impl_obj", None)
+        connection = getattr(impl, "_connection", None)
+        transport = getattr(connection, "_transport", None)
+        process = getattr(transport, "_proc", None)
+        return None if process is None else process.returncode
 
     async def start(self) -> None:
         async with self._start_lock:
             if self._playwright is not None:
+                if self.driver_exit_code is not None:
+                    raise RuntimeError(f"playwright_driver_exited:{self.driver_exit_code}")
                 return
             if self._stopping:
                 raise RuntimeError("browser_pool_stopping")
@@ -465,11 +482,17 @@ class PersistentBrowserPool:
             await self._close_entry(entry, reason="idle_timeout")
         return len(entries)
 
-    async def page(self, profile: BrowserProfile, egress: ProxyEgress) -> _PageLease:
+    async def page(
+        self,
+        profile: BrowserProfile,
+        egress: ProxyEgress,
+        *,
+        max_context_pages: int | None = None,
+    ) -> _PageLease:
         await self.start()
         await self._page_slots.acquire()
         try:
-            entry = await self._entry(profile, egress)
+            entry = await self._entry(profile, egress, max_context_pages=max_context_pages)
             async with self._lock:
                 if self._entries.get(profile.profile_id) is not entry or entry.closing:
                     raise RuntimeError("browser_profile_closing")
@@ -481,21 +504,36 @@ class PersistentBrowserPool:
                 async with self._lock:
                     entry.active_pages -= 1
                 raise
+            async with self._lock:
+                entry.pages_opened += 1
             return _PageLease(page, entry, self)
         except BaseException:
             self._page_slots.release()
             raise
 
-    async def _entry(self, profile: BrowserProfile, egress: ProxyEgress) -> _BrowserEntry:
+    async def _entry(
+        self,
+        profile: BrowserProfile,
+        egress: ProxyEgress,
+        *,
+        max_context_pages: int | None = None,
+    ) -> _BrowserEntry:
         start_lock = self._profile_start_locks.setdefault(profile.profile_id, asyncio.Lock())
         async with start_lock:
-            return await self._entry_serialized(profile, egress)
+            return await self._entry_serialized(
+                profile, egress, max_context_pages=max_context_pages
+            )
 
     async def _entry_serialized(
-        self, profile: BrowserProfile, egress: ProxyEgress
+        self,
+        profile: BrowserProfile,
+        egress: ProxyEgress,
+        *,
+        max_context_pages: int | None = None,
     ) -> _BrowserEntry:
         while True:
             retire: _BrowserEntry | None = None
+            retire_reason = "capacity_or_egress_change"
             wait_for_capacity = False
             async with self._lock:
                 if self._stopping:
@@ -518,6 +556,16 @@ class PersistentBrowserPool:
                         raise RuntimeError("egress_changed_while_profile_busy")
                     retire = self._entries.pop(profile.profile_id)
                     retire.closing = True
+                    entry = None
+                if (
+                    entry is not None
+                    and max_context_pages is not None
+                    and entry.pages_opened >= max_context_pages
+                    and entry.active_pages == 0
+                ):
+                    retire = self._entries.pop(profile.profile_id)
+                    retire.closing = True
+                    retire_reason = "page_use_limit"
                     entry = None
                 if entry is not None:
                     self._entries.move_to_end(profile.profile_id)
@@ -542,7 +590,13 @@ class PersistentBrowserPool:
                 await asyncio.sleep(0.05)
                 continue
             if retire is not None:
-                await self._close_entry(retire, reason="capacity_or_egress_change")
+                if retire_reason == "page_use_limit":
+                    logger.info(
+                        "recycling profile %s after %s pages",
+                        retire.profile.profile_id,
+                        retire.pages_opened,
+                    )
+                await self._close_entry(retire, reason=retire_reason)
                 continue
             break
         try:
@@ -843,6 +897,7 @@ class _MaintenancePage:
     profile_id: str
     identity_id: str
     site_id: str
+    challenge_url: str | None = None
     navigation_state: str = "PENDING"
     navigation_error: str = ""
     navigation_task: asyncio.Task[None] | None = None
@@ -1038,8 +1093,10 @@ class SiteAccessRuntime:
                 )
             except RuntimeError:
                 pass
-        async with lease as page:
-            gate = _DocumentNavigationGate(page, self.resolver, resolved, lease.browser_cdp)
+        page = await lease.__aenter__()
+        gate = _DocumentNavigationGate(page, self.resolver, resolved, lease.browser_cdp)
+        retained = False
+        try:
             try:
                 await gate.start()
                 if request.recipe_ref == "builtin:yahoo_latest_news@1":
@@ -1053,7 +1110,9 @@ class SiteAccessRuntime:
                         200,
                         str(metadata.get("page_url") or page.url or request.url),
                         {},
-                        body=await page.content(),
+                        # The caller consumes only the parsed rows. Returning the
+                        # whole Yahoo page needlessly serializes megabytes per poll.
+                        body="",
                         recipe_result={"rows": rows, "metadata": metadata},
                         provenance=lease.provenance,
                     )
@@ -1100,7 +1159,17 @@ class SiteAccessRuntime:
                     response = await wait_for_native_document_redirect(page, response)
                 status = response.status if response is not None else 200
                 headers = await response.all_headers() if response is not None else {}
-                if status == 200 and resolved.site_id in {"investorshub", "investing"}:
+                initial_html = await page.content()
+                initial_challenge = (
+                    identity.runtime_kind is BrowserRuntimeKind.EXTERNAL_CHROME
+                    and inspect_html(initial_html, page.url, "").access_reason
+                    == "challenge_required"
+                )
+                if (
+                    not initial_challenge
+                    and status == 200
+                    and resolved.site_id in {"investorshub", "investing"}
+                ):
                     path = urlsplit(request.url).path.rstrip("/")
                     listing = (
                         request.purpose.value == "CRAWLER"
@@ -1146,7 +1215,7 @@ class SiteAccessRuntime:
                         ),
                         timeout=min(request.remaining_budget_ms, 15_000),
                     )
-                if request.recipe_ref == "builtin:barrons_ticker@1":
+                if request.recipe_ref == "builtin:barrons_ticker@1" and not initial_challenge:
                     html = await _capture_barrons_ticker_cards(page)
                     return RuntimeResponse(
                         int(status),
@@ -1155,10 +1224,10 @@ class SiteAccessRuntime:
                         body=html,
                         provenance=lease.provenance,
                     )
-                if request.recipe_parameters.get("expand"):
+                if request.recipe_parameters.get("expand") and not initial_challenge:
                     await _expand_article(page)
                 wait_selector = request.recipe_parameters.get("wait_selector")
-                if isinstance(wait_selector, str) and wait_selector:
+                if isinstance(wait_selector, str) and wait_selector and not initial_challenge:
                     await page.locator(wait_selector).first.wait_for(
                         state="visible", timeout=min(request.remaining_budget_ms, 10_000)
                     )
@@ -1171,15 +1240,41 @@ class SiteAccessRuntime:
                         reason="response_too_large",
                         provenance=lease.provenance,
                     )
+                challenge = (
+                    identity.runtime_kind is BrowserRuntimeKind.EXTERNAL_CHROME
+                    and inspect_html(html, page.url, "").access_reason == "challenge_required"
+                )
+                token = uuid4().hex if challenge else None
+                if token is not None:
+                    # The user now owns this tab. Drop document interception and
+                    # popup instrumentation while they resolve the challenge.
+                    await gate.close()
+                    self._maintenance_pages[token] = _MaintenancePage(
+                        lease,
+                        page,
+                        gate,
+                        identity.profile_id,
+                        identity.identity_id,
+                        resolved.site_id,
+                        request.url,
+                        navigation_state="READY",
+                    )
+                    retained = True
                 return RuntimeResponse(
                     int(status),
                     page.url,
                     _filtered_headers({str(k).lower(): str(v) for k, v in headers.items()}),
                     body=html,
                     provenance=lease.provenance,
+                    challenge_token=token,
+                    challenge_target_id=gate.root_target_id if challenge else None,
                 )
             finally:
-                await gate.close()
+                if not retained:
+                    await gate.close()
+        finally:
+            if not retained:
+                await lease.__aexit__(None, None, None)
 
     async def reset_egress(self, egress_id: str) -> None:
         stale = [key for key in self._http_sessions if key[1] == egress_id]
@@ -1323,6 +1418,36 @@ class SiteAccessRuntime:
             "navigation_error": maintained.navigation_error,
         }
 
+    async def adopt_challenge(
+        self,
+        profile: BrowserProfile,
+        egress: ProxyEgress,
+        *,
+        identity: BrowserIdentitySpec,
+        site_id: str,
+        token: str,
+    ) -> dict[str, str]:
+        maintained = self._maintenance_pages.get(token)
+        if maintained is None:
+            return await self.recover_login(
+                profile, egress, identity=identity, site_id=site_id, token=token
+            )
+        if (
+            maintained.profile_id != profile.profile_id
+            or maintained.identity_id != identity.identity_id
+            or maintained.site_id != site_id
+        ):
+            raise ValueError("challenge session binding mismatch")
+        await self.browser_runtimes.select_maintenance(identity)
+        return {
+            "login_token": token,
+            "url": maintained.page.url,
+            "identity_id": identity.identity_id,
+            "runtime_kind": identity.runtime_kind.value,
+            "challenge_url": maintained.challenge_url or "",
+            "navigation_state": maintained.navigation_state,
+        }
+
     async def recover_login(
         self,
         profile: BrowserProfile,
@@ -1352,11 +1477,14 @@ class SiteAccessRuntime:
                 site_spec.auth.login_url or "",
             )
         )
-        lease = await self.browser_runtimes.recover_page(identity, egress)
+        lease = await self.browser_runtimes.recover_page(
+            identity, egress, target_id=profile.challenge_target_id
+        )
         page = await lease.__aenter__()
         gate = _DocumentNavigationGate(page, self.resolver, resolved, lease.browser_cdp)
         try:
-            await gate.start()
+            if profile.challenge_url is None:
+                await gate.start()
             await self.browser_runtimes.select_maintenance(identity)
         except Exception:
             external_lease: Any = lease
@@ -1369,6 +1497,7 @@ class SiteAccessRuntime:
             profile.profile_id,
             identity.identity_id,
             site_id,
+            challenge_url=profile.challenge_url,
             navigation_state="READY",
         )
         return {
@@ -1385,9 +1514,25 @@ class SiteAccessRuntime:
         if maintained is None:
             raise KeyError(token)
         await public_url(article_url, trusted_proxy_dns=True)
-        response = await maintained.page.goto(
-            article_url, wait_until="domcontentloaded", timeout=timeout_ms
-        )
+        if maintained.challenge_url and article_url != maintained.challenge_url:
+            raise ValueError("challenge verification must use the triggering article")
+        if maintained.challenge_url and (
+            urlsplit(maintained.page.url).path != urlsplit(article_url).path
+        ):
+            return RuntimeResponse(
+                0,
+                maintained.page.url,
+                {},
+                body=await maintained.page.content(),
+                reason="challenge_article_not_open",
+            )
+        # Human challenge resolution often leaves the original article in this tab.
+        # Inspect it in place; a second programmatic navigation can retrigger WAF.
+        response = None
+        if not maintained.challenge_url:
+            response = await maintained.page.goto(
+                article_url, wait_until="domcontentloaded", timeout=timeout_ms
+            )
         if maintained.gate.blocked:
             return RuntimeResponse(
                 0,

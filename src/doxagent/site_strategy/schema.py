@@ -390,8 +390,7 @@ class BrowserProfile(SiteModel):
     operational_state: ProfileOperationalState = ProfileOperationalState.AVAILABLE
     operational_revision: int = Field(default=0, ge=0)
     maintenance_session_id: str | None = Field(default=None, max_length=128)
-    # Older production identities persisted these maintenance/challenge markers.
-    # Keep them round-trippable while legacy Chrome Profiles remain in service.
+    # Persist the triggering page so manual challenge recovery survives restarts.
     challenge_url: str | None = None
     challenge_site_id: str | None = None
     challenge_identity_id: str | None = None

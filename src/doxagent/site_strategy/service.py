@@ -6,7 +6,9 @@ import asyncio
 import hashlib
 import inspect
 import logging
+import os
 import re
+import signal
 import sqlite3
 import time
 from collections import OrderedDict
@@ -69,6 +71,7 @@ class ProfileUseCoordinator:
         self._condition = asyncio.Condition()
         self._active: dict[str, int] = {}
         self._maintenance_profile: str | None = None
+        self._challenge_profiles: set[str] = set()
         self._accepting = True
 
     @property
@@ -79,6 +82,7 @@ class ProfileUseCoordinator:
         async with self._condition:
             self._accepting = True
             self._maintenance_profile = None
+            self._challenge_profiles.clear()
             external_profiles = {
                 identity.profile_id
                 for _, identity in self.repository.list_active_identities()
@@ -87,11 +91,53 @@ class ProfileUseCoordinator:
             for profile in self.repository.list_profiles():
                 if (
                     profile.profile_id in external_profiles
-                    and profile.operational_state is ProfileOperationalState.MAINTENANCE
+                    and profile.challenge_url
+                    and profile.maintenance_session_id
+                    and profile.operational_state
+                    in {
+                        ProfileOperationalState.MAINTENANCE,
+                        ProfileOperationalState.DRAINING_FOR_MAINTENANCE,
+                    }
+                ):
+                    self._challenge_profiles.add(profile.profile_id)
+                    if (
+                        profile.operational_state
+                        is ProfileOperationalState.DRAINING_FOR_MAINTENANCE
+                    ):
+                        self.repository.save_profile(
+                            profile.model_copy(
+                                update={
+                                    "operational_state": ProfileOperationalState.MAINTENANCE,
+                                    "operational_revision": profile.operational_revision + 1,
+                                    "updated_at": utc_now(),
+                                }
+                            )
+                        )
+                    continue
+                if (
+                    profile.profile_id in external_profiles
+                    and profile.operational_state
+                    in {
+                        ProfileOperationalState.MAINTENANCE,
+                        ProfileOperationalState.DRAINING_FOR_MAINTENANCE,
+                    }
                     and profile.maintenance_session_id
                     and self._maintenance_profile is None
                 ):
                     self._maintenance_profile = profile.profile_id
+                    if (
+                        profile.operational_state
+                        is ProfileOperationalState.DRAINING_FOR_MAINTENANCE
+                    ):
+                        self.repository.save_profile(
+                            profile.model_copy(
+                                update={
+                                    "operational_state": ProfileOperationalState.MAINTENANCE,
+                                    "operational_revision": profile.operational_revision + 1,
+                                    "updated_at": utc_now(),
+                                }
+                            )
+                        )
                     continue
                 auth_state = (
                     AuthState.UNKNOWN
@@ -142,7 +188,7 @@ class ProfileUseCoordinator:
         async with self._condition:
             if not self._accepting:
                 raise ProfileUnavailableError("service_draining")
-            if self._maintenance_profile is not None:
+            if self._maintenance_profile is not None or self._challenge_profiles:
                 raise ProfileUnavailableError("another_profile_is_in_maintenance")
             profile = self.repository.get_profile(profile_id)
             if profile is None:
@@ -180,6 +226,63 @@ class ProfileUseCoordinator:
             )
             return session_id
 
+    async def begin_challenge(
+        self,
+        profile_id: str,
+        *,
+        token: str,
+        site_id: str,
+        identity_id: str,
+        combination_id: str,
+        article_url: str,
+        target_id: str | None,
+    ) -> None:
+        """Block new work while the triggering business lease is still active."""
+        async with self._condition:
+            if not self._accepting:
+                raise ProfileUnavailableError("service_draining")
+            profile = self.repository.get_profile(profile_id)
+            if (
+                profile is None
+                or profile.operational_state is not ProfileOperationalState.AVAILABLE
+            ):
+                raise ProfileUnavailableError("profile_in_maintenance")
+            self._challenge_profiles.add(profile_id)
+            self.repository.save_profile(
+                profile.model_copy(
+                    update={
+                        "operational_state": ProfileOperationalState.DRAINING_FOR_MAINTENANCE,
+                        "operational_revision": profile.operational_revision + 1,
+                        "maintenance_session_id": token,
+                        "challenge_url": article_url,
+                        "challenge_site_id": site_id,
+                        "challenge_identity_id": identity_id,
+                        "challenge_combination_id": combination_id,
+                        "challenge_target_id": target_id,
+                        "challenge_verified": False,
+                        "updated_at": utc_now(),
+                    }
+                )
+            )
+
+    async def finish_challenge(self, profile_id: str, token: str) -> None:
+        async with self._condition:
+            async with asyncio.timeout(30):
+                while self._active.get(profile_id, 0):
+                    await self._condition.wait()
+            profile = self.repository.get_profile(profile_id)
+            if profile is None or profile.maintenance_session_id != token:
+                raise ProfileUnavailableError("invalid_maintenance_session")
+            self.repository.save_profile(
+                profile.model_copy(
+                    update={
+                        "operational_state": ProfileOperationalState.MAINTENANCE,
+                        "operational_revision": profile.operational_revision + 1,
+                        "updated_at": utc_now(),
+                    }
+                )
+            )
+
     async def recover_maintenance(self, profile_id: str, session_id: str) -> BrowserProfile:
         async with self._condition:
             if self._maintenance_profile not in {None, profile_id}:
@@ -214,7 +317,10 @@ class ProfileUseCoordinator:
                 profile is None
                 or profile.operational_state is not ProfileOperationalState.MAINTENANCE
                 or profile.maintenance_session_id != session_id
-                or self._maintenance_profile != profile_id
+                or (
+                    self._maintenance_profile != profile_id
+                    and profile_id not in self._challenge_profiles
+                )
             ):
                 raise ProfileUnavailableError("invalid_maintenance_session")
             return profile
@@ -233,12 +339,19 @@ class ProfileUseCoordinator:
                     "operational_state": ProfileOperationalState.AVAILABLE,
                     "operational_revision": profile.operational_revision + 1,
                     "maintenance_session_id": None,
+                    "challenge_url": None,
+                    "challenge_site_id": None,
+                    "challenge_identity_id": None,
+                    "challenge_combination_id": None,
+                    "challenge_target_id": None,
+                    "challenge_verified": False,
                     "updated_at": utc_now(),
                 }
             )
         )
         if self._maintenance_profile == profile_id:
             self._maintenance_profile = None
+        self._challenge_profiles.discard(profile_id)
         self._condition.notify_all()
 
     async def begin_shutdown(self) -> None:
@@ -430,6 +543,16 @@ class SiteStrategyService:
     async def _maintenance_loop(self) -> None:
         last_diagnostic_prune = 0.0
         while True:
+            exit_code = self.runtime.browser_pool.driver_exit_code
+            if exit_code is not None:
+                # A dead Node driver cannot be replaced safely while Chrome
+                # contexts and profile writer locks still belong to this process.
+                # Let the container restart the entire Site Access owner.
+                logger.critical(
+                    "Playwright driver exited code=%s; restarting Site Access", exit_code
+                )
+                os.kill(os.getpid(), signal.SIGTERM)
+                return
             if self.repository.storage.diagnostics()["unavailable"]:
                 await asyncio.sleep(60)
                 continue
@@ -1129,6 +1252,16 @@ class SiteStrategyService:
                                 profile,
                                 egress,
                             )
+                        if response.challenge_token is not None:
+                            await self.profile_use.begin_challenge(
+                                profile.profile_id,
+                                token=response.challenge_token,
+                                site_id=resolved.site_id,
+                                identity_id=identity.identity_id,
+                                combination_id=combination.combination_id,
+                                article_url=request.url,
+                                target_id=response.challenge_target_id,
+                            )
                     attempt = AccessAttempt(
                         combination_id=combination.combination_id,
                         generation=current.generation,
@@ -1180,6 +1313,23 @@ class SiteStrategyService:
                     transport=request.mode,
                 )
                 self._event(request, resolved, combination, "COMBINATION_RISK_FAILURE", attempt)
+                if response.challenge_token is not None:
+                    await self.profile_use.finish_challenge(
+                        profile.profile_id, response.challenge_token
+                    )
+                    return self._result_from_response(
+                        request,
+                        resolved,
+                        combination,
+                        profile,
+                        egress,
+                        response,
+                        AccessDisposition.ACCESS_EXHAUSTED,
+                        category=category,
+                        reason="challenge_waiting_for_manual_resolution",
+                        attempts=attempts,
+                        started=started,
+                    )
                 continue
             if category is FailureCategory.EGRESS_UNAVAILABLE:
                 unavailable += 1
@@ -1380,6 +1530,17 @@ class SiteStrategyService:
             except Exception as exc:
                 if isinstance(exc, sqlite3.Error) and storage_failure(exc):
                     raise
+                logger.exception(
+                    "runtime attempt failed: operation=%s site=%s purpose=%s "
+                    "mode=%s combination=%s identity=%s retry=%s",
+                    request.operation_id,
+                    resolved.site_id,
+                    request.purpose.value,
+                    request.mode.value,
+                    combination.combination_id,
+                    combination.identity_id or profile.profile_id,
+                    retry + 1,
+                )
                 status = int(getattr(exc, "status_code", 0) or 0)
                 response = RuntimeResponse(
                     status,
@@ -1589,6 +1750,17 @@ class SiteStrategyService:
                 response, category, reason, network_ms = await self._attempt(
                     request, resolved, combination, current_profile, egress
                 )
+                if response.challenge_token is not None:
+                    identity = self._identity_for(combination, current_profile)
+                    await self.profile_use.begin_challenge(
+                        profile_id,
+                        token=response.challenge_token,
+                        site_id=resolved.site_id,
+                        identity_id=identity.identity_id,
+                        combination_id=combination.combination_id,
+                        article_url=url,
+                        target_id=response.challenge_target_id,
+                    )
         runtime = self.repository.get_runtime(resolved.runtime_key)
         attempt = AccessAttempt(
             combination_id=combination.combination_id,
@@ -1619,6 +1791,8 @@ class SiteStrategyService:
                 transport=AccessMode.BROWSER,
             )
         self._event(request, resolved, combination, "PROFILE_PROBE", attempt)
+        if response.challenge_token is not None:
+            await self.profile_use.finish_challenge(profile_id, response.challenge_token)
         if category is None and 200 <= response.status_code < 300:
             disposition = AccessDisposition.SUCCESS
         elif category in {FailureCategory.AUTH_REQUIRED, FailureCategory.ENTITLEMENT_MISSING}:
@@ -1647,6 +1821,55 @@ class SiteStrategyService:
             started,
             generation=self.repository.get_runtime(resolved.runtime_key).generation,
         )
+
+    async def certify_profile_probe(
+        self, profile_id: str, article_url: str, result: AccessResult
+    ) -> None:
+        """Record site auth after the admin probe proves a full titled article."""
+        resolved = self.resolve(article_url)
+        if (
+            result.disposition is not AccessDisposition.SUCCESS
+            or result.site_id != resolved.site_id
+            or result.profile_id != profile_id
+            or not result.identity_id
+        ):
+            raise ValueError("probe result does not match the requested site profile")
+        identity = self.repository.get_identity(result.identity_id)
+        if identity is None or identity.profile_id != profile_id:
+            raise ValueError("probe identity binding is unavailable")
+        async with self.profile_use.business(profile_id):
+            runtime = self.repository.get_identity_runtime(identity.identity_id)
+            if (
+                result.runtime_instance_id
+                and runtime.instance_id
+                and result.runtime_instance_id != runtime.instance_id
+            ):
+                raise RuntimeError("browser instance changed after article probe")
+            self.repository.save_site_identity_auth(
+                SiteIdentityAuth(
+                    site_id=resolved.runtime_key,
+                    identity_id=identity.identity_id,
+                    auth_state=AuthState.VALID,
+                    verified_at=utc_now(),
+                    verification_url=article_url,
+                    reason_code="full_article_probe",
+                    observed_session_revision=runtime.session_revision,
+                )
+            )
+            self.repository.append_event(
+                AccessEvent(
+                    operation_id=result.operation_id,
+                    site_id=resolved.site_id,
+                    combination_id=result.combination_id,
+                    category="PROFILE_VERIFIED",
+                    payload={
+                        "profile_id": profile_id,
+                        "identity_id": identity.identity_id,
+                        "state": AuthState.VALID.value,
+                        "reason": "full_article_probe",
+                    },
+                )
+            )
 
     async def snapshot_profile(self, profile_id: str, *, browser_version: str) -> dict[str, str]:
         session_id = await self.profile_use.begin_maintenance(profile_id)
@@ -1751,6 +1974,21 @@ class SiteStrategyService:
         url = (spec.auth.maintenance_url or spec.auth.login_url) or profile.login_url
         if not url:
             raise ValueError("profile has no maintenance URL")
+        if profile.challenge_url is not None:
+            if profile.challenge_site_id != site_id or profile.challenge_identity_id != identity_id:
+                raise ValueError("challenge belongs to another site identity")
+            if not profile.maintenance_session_id:
+                raise RuntimeError("challenge session is missing")
+            await self.profile_use.assert_session(
+                profile.profile_id, profile.maintenance_session_id
+            )
+            return await self.runtime.adopt_challenge(
+                profile,
+                egress,
+                identity=identity,
+                site_id=site_id,
+                token=profile.maintenance_session_id,
+            )
         session_id = await self.profile_use.begin_maintenance(profile.profile_id)
         external = self.runtime.browser_runtimes.external
         if external is not None:
@@ -1783,6 +2021,15 @@ class SiteStrategyService:
         egress = self.repository.get_egress(identity.egress_id)
         if egress is None or not egress.enabled:
             raise RuntimeError("bound egress is unavailable")
+        stored_profile = self.repository.get_profile(identity.profile_id)
+        if stored_profile is not None and stored_profile.challenge_url is not None:
+            if stored_profile.maintenance_session_id != login_token:
+                raise ValueError("invalid challenge session")
+            if (
+                stored_profile.challenge_site_id != site_id
+                or stored_profile.challenge_identity_id != identity_id
+            ):
+                raise ValueError("challenge session binding mismatch")
         profile = await self.profile_use.recover_maintenance(identity.profile_id, login_token)
         external = self.runtime.browser_runtimes.external
         if external is not None:
@@ -1796,10 +2043,23 @@ class SiteStrategyService:
                 token=login_token,
             )
         except Exception:
-            await self.profile_use.end_maintenance(identity.profile_id, login_token)
+            # A failed controller reconnect must not release the human-owned
+            # challenge page or reopen this identity for business requests.
+            if profile.challenge_url is None:
+                await self.profile_use.end_maintenance(identity.profile_id, login_token)
             raise
 
     async def close_profile_login(self, token: str) -> None:
+        challenge_profile = next(
+            (
+                profile
+                for profile in self.repository.list_profiles()
+                if profile.maintenance_session_id == token and profile.challenge_url
+            ),
+            None,
+        )
+        if challenge_profile is not None and not challenge_profile.challenge_verified:
+            raise RuntimeError("challenge article has not been verified")
         try:
             profile_id = await self.runtime.close_login(token)
         except KeyError:
@@ -1818,17 +2078,36 @@ class SiteStrategyService:
                     value
                     for _, value in self.repository.list_active_identities()
                     if value.profile_id == profile.profile_id
+                    and (
+                        challenge_profile is None
+                        or value.identity_id == challenge_profile.challenge_identity_id
+                    )
                 ),
                 None,
             )
             if identity is not None:
                 egress = self.repository.get_egress(identity.egress_id)
                 if egress is not None:
-                    await self.runtime.browser_runtimes.close_stale_maintenance_page(
-                        identity, egress
-                    )
+                    if challenge_profile is not None:
+                        await self.runtime.recover_login(
+                            profile,
+                            egress,
+                            identity=identity,
+                            site_id=challenge_profile.challenge_site_id or profile.site_id,
+                            token=token,
+                        )
+                        await self.runtime.close_login(token)
+                    else:
+                        await self.runtime.browser_runtimes.close_stale_maintenance_page(
+                            identity, egress
+                        )
             profile_id = profile.profile_id
         await self.profile_use.end_maintenance(profile_id, token)
+        if challenge_profile is not None and challenge_profile.challenge_combination_id:
+            resolved = self.resolve(challenge_profile.challenge_url)
+            await self.health.clear_manual_attention(
+                resolved.runtime_key, challenge_profile.challenge_combination_id
+            )
 
     async def verify_profile(
         self, profile_id: str, article_url: str, login_token: str
@@ -1862,6 +2141,13 @@ class SiteStrategyService:
         if identity is None:
             raise KeyError(identity_id)
         profile = await self.profile_use.assert_session(identity.profile_id, login_token)
+        if profile.challenge_url is not None:
+            if (
+                profile.challenge_site_id != site_id
+                or profile.challenge_identity_id != identity_id
+                or profile.challenge_url != article_url
+            ):
+                raise ValueError("challenge verification must use the triggering article")
         egress = self.repository.get_egress(identity.egress_id)
         if egress is None or not egress.enabled:
             raise RuntimeError("bound egress is unavailable")
@@ -1927,6 +2213,9 @@ class SiteStrategyService:
             }
         )
         self.repository.save_profile(updated)
+        if profile.challenge_url is not None and state is AuthState.VALID:
+            updated = updated.model_copy(update={"challenge_verified": True})
+            self.repository.save_profile(updated)
         identity_runtime = self.repository.get_identity_runtime(identity_id)
         next_session_revision = identity_runtime.session_revision + 1
         self.repository.save_identity_runtime(

@@ -12,6 +12,8 @@ from typing import Annotated, Literal
 from fastapi import Depends, FastAPI, Header, HTTPException, Query
 from pydantic import BaseModel, Field
 
+from doxagent.content_enrichment.quality import choose_candidate, inspect_html
+
 from .credentials import CredentialStore
 from .runtime import MaintenanceOpenError
 from .schema import (
@@ -81,6 +83,8 @@ class ProfileRestoreRequest(BaseModel):
 
 class ProfileProbeRequest(BaseModel):
     url: str = Field(min_length=1)
+    expected_title: str | None = Field(default=None, max_length=500)
+    certify_site_auth: bool = False
 
 
 class LoginSessionRequest(BaseModel):
@@ -461,14 +465,44 @@ def create_app(
 
     @app.post("/v1/profiles/{profile_id}:probe", dependencies=[Depends(admin)])
     async def probe_profile(profile_id: str, request: ProfileProbeRequest) -> dict[str, object]:
-        """Probe one exact Profile+egress without changing its authentication state."""
+        """Diagnose one Profile; certify auth only when explicitly requested and proven."""
+        if request.certify_site_auth and not request.expected_title:
+            raise HTTPException(status_code=422, detail="expected_title is required")
         try:
             result = await service.probe_profile(profile_id, request.url)
         except KeyError as exc:
             raise HTTPException(status_code=404, detail="profile not found") from exc
         except (ValueError, RuntimeError) as exc:
             raise HTTPException(status_code=409, detail=str(exc)) from exc
-        return result.model_dump(mode="json", exclude={"body", "headers", "recipe_result"})
+        payload = result.model_dump(mode="json", exclude={"body", "headers", "recipe_result"})
+        resolved = service.resolve(request.url)
+        inspection = inspect_html(
+            result.body,
+            result.final_url or request.url,
+            request.expected_title,
+            strategy_ref=resolved.body.ref,
+            strategy_parameters=resolved.body.parameters,
+        )
+        candidate, outcome, reason = choose_candidate(inspection, request.expected_title)
+        payload["content_diagnostic"] = {
+            "html_bytes": len(result.body.encode("utf-8")),
+            "page_kind": inspection.page_kind,
+            "access_reason": inspection.access_reason,
+            "headline": inspection.headline,
+            "outcome": outcome,
+            "reason": reason,
+            "candidate_chars": len(candidate.text) if candidate else 0,
+        }
+        if request.certify_site_auth:
+            if result.disposition.value == "SUCCESS" and outcome == "FULL" and candidate:
+                try:
+                    await service.certify_profile_probe(profile_id, request.url, result)
+                except (ValueError, RuntimeError) as exc:
+                    raise HTTPException(status_code=409, detail=str(exc)) from exc
+                payload["content_diagnostic"]["auth_certified"] = True
+            else:
+                payload["content_diagnostic"]["auth_certified"] = False
+        return payload
 
     @app.post("/v1/profiles/{profile_id}:snapshot", dependencies=[Depends(admin)])
     async def snapshot_profile(profile_id: str, request: ProfileSnapshotRequest) -> dict[str, str]:
