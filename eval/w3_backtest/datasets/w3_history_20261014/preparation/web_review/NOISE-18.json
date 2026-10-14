@@ -1,0 +1,198 @@
+{
+  "case_key": "NOISE-18",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-10-05T13:46:44.129567Z",
+  "reviewed_at": "2026-10-13T22:58:33.022252Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 6,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a13775-f924-73f0-af2c-eed50dda3936",
+    "turn_id": "01a13775-f933-7323-a712-390e2a31e952",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 91904,
+        "inputTokens": 98096,
+        "outputTokens": 11834,
+        "reasoningOutputTokens": 9322,
+        "totalTokens": 109930
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 416000,
+        "inputTokens": 505328,
+        "outputTokens": 19617,
+        "reasoningOutputTokens": 16544,
+        "totalTokens": 524945
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "cfa481df38503dcae7b42b209ada2290ffe42d49892dd47e1dd261ddc6f9e012",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://www.globenewswire.com/news-release/2026/10/05/3374668/28124/en/quantum-technology-market-report-2026-global-size-share-trends-and-forecast-to-2030-capture-5-41b-as-microsoft-ibm-aws-huawei-and-intel-scale-quantum-security.html",
+      "title": "Quantum Technology Market Report 2026: Global Size, Share, Trends, and Forecast to 2030",
+      "published_at": "2026-10-05T13:32:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn1search0"
+      ],
+      "source_call_ids": [
+        "exec-d8dc6e28-b2d4-45d2-a702-b5c6544e48ef"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://uk.finance.yahoo.com/news/quantum-technology-market-report-2026-133200431.html",
+      "title": "Quantum Technology Market Report 2026: Global Size, Share, Trends, and Forecast to 2030",
+      "published_at": "2026-10-05T13:32:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search0"
+      ],
+      "source_call_ids": [
+        "exec-737141ba-b6e9-4ebd-9e9a-f1b76520fbd6"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://www.globenewswire.com/de/news-release/2026/10/05/3374669/28124/en/quantum-computing-and-technologies-market-report-2026-global-size-trends-and-2030-forecast-capitalize-on-quantum-cloud-and-ai-growth-with-google-microsoft-ibm-aws-and-ionq.html",
+      "title": "Quantum Computing and Technologies Market Report 2026: Global Size, Trends and 2030 Forecast",
+      "published_at": "2026-10-05T13:33:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search4"
+      ],
+      "source_call_ids": [
+        "exec-737141ba-b6e9-4ebd-9e9a-f1b76520fbd6"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://www.researchandmarkets.com/reports/5983846/quantum-technology-market-report",
+      "title": "Quantum Technology Market Report 2026",
+      "published_at": "2026-02",
+      "time_precision": "UNKNOWN",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn0search1"
+      ],
+      "source_call_ids": [
+        "exec-737141ba-b6e9-4ebd-9e9a-f1b76520fbd6"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S5",
+      "url": "https://www.thebusinessresearchcompany.com/report/quantum-technology-global-market-report",
+      "title": "Quantum Technology Market Size, Trends Report 2026-2030",
+      "published_at": "2026-09",
+      "time_precision": "UNKNOWN",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn4search0"
+      ],
+      "source_call_ids": [
+        "exec-8d6bc6db-fe99-4755-9d4b-bfebf3c51000"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "At 09:32 ET (13:32Z) on October 5, Research and Markets announced that its Quantum Technology Market Report 2026 had been added to its offering. The release gives market-wide 2025 and 2026 figures and a 2030 forecast, and names Intel among the report's companies.",
+      "source_urls": [
+        "https://www.globenewswire.com/news-release/2026/10/05/3374668/28124/en/quantum-technology-market-report-2026-global-size-share-trends-and-forecast-to-2030-capture-5-41b-as-microsoft-ibm-aws-huawei-and-intel-scale-quantum-security.html"
+      ],
+      "event_time": "UNKNOWN",
+      "publication_time": "2026-10-05T13:32:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "These are report estimates/forecasts, not realized Intel results. The release gives no Intel-specific order, product, customer, deployment, or financial event."
+    },
+    {
+      "observation": "A Yahoo Finance copy carries the same release headline and 09:32 ET timestamp; the supplied feed snapshot was collected before cutoff.",
+      "source_urls": [
+        "https://uk.finance.yahoo.com/news/quantum-technology-market-report-2026-133200431.html"
+      ],
+      "event_time": "UNKNOWN",
+      "publication_time": "2026-10-05T13:32:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This is syndication of the same Research and Markets release, not independent reporting. Live page opening was rate-limited."
+    },
+    {
+      "observation": "At 09:33 ET (13:33Z), Research and Markets issued a separate release for a 'Quantum Computing and Technologies' market with different 2026 and 2030 estimates; Intel also appears in that report's company list.",
+      "source_urls": [
+        "https://www.globenewswire.com/de/news-release/2026/10/05/3374669/28124/en/quantum-computing-and-technologies-market-report-2026-global-size-trends-and-2030-forecast-capitalize-on-quantum-cloud-and-ai-growth-with-google-microsoft-ibm-aws-and-ionq.html"
+      ],
+      "event_time": "UNKNOWN",
+      "publication_time": "2026-10-05T13:33:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "It is a separate report by the same source with a different stated market scope, so the different values are not a like-for-like revision or direct contradiction."
+    },
+    {
+      "observation": "Current R&M and The Business Research Company catalog pages label the underlying report February 2026 and September 2026, respectively, while showing the same broad estimates.",
+      "source_urls": [
+        "https://www.researchandmarkets.com/reports/5983846/quantum-technology-market-report",
+        "https://www.thebusinessresearchcompany.com/report/quantum-technology-global-market-report"
+      ],
+      "event_time": "UNKNOWN",
+      "publication_time": "UNKNOWN",
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "Both catalog pages were accessed after cutoff without dated pre-cutoff snapshots; the displayed month discrepancy does not resolve when the report's figures first became public."
+    }
+  ],
+  "gaps": [
+    "No independent contemporaneous editorial report was located in the focused search. Yahoo and other surfaced copies reproduce the press release; the official report-publisher catalog is not an independent news account.",
+    "The underlying report's exact first-publication date and as-of-cutoff catalog text remain unverified because the current distributor and publisher pages conflict on publication month and lack dated pre-cutoff snapshots.",
+    "The public release does not provide enough methodology or source detail to independently validate the forecast assumptions; the full underlying report was not reviewed."
+  ],
+  "research_notes": "Cutoff: 2026-10-05T13:46:44.129567Z. The earliest traceable dated public release located is Research and Markets' GlobeNewswire announcement at 13:32Z; it reports market-wide estimates and includes Intel in a company list, but reports no Intel-specific action or result. The supplied W1 says these estimates and the listing were already covered by E1315/E1316. Yahoo's same-time copy is syndication, not independent corroboration. Current R&M and TBRC catalogs disagree on the underlying report's publication month (February versus September 2026); neither has a verified pre-cutoff page snapshot, so its first public availability is unresolved."
+}

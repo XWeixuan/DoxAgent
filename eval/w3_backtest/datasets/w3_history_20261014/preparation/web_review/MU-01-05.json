@@ -1,0 +1,181 @@
+{
+  "case_key": "MU-01-05",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-09-28T11:59:51.905006Z",
+  "reviewed_at": "2026-10-13T22:58:31.882275Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 6,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a1375d-569e-72b3-a037-1ea2cef117c8",
+    "turn_id": "01a1375d-56ac-7bd1-a5f7-12a8628eef11",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 81664,
+        "inputTokens": 91091,
+        "outputTokens": 12064,
+        "reasoningOutputTokens": 9977,
+        "totalTokens": 103155
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 367104,
+        "inputTokens": 461850,
+        "outputTokens": 15866,
+        "reasoningOutputTokens": 13156,
+        "totalTokens": 477716
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "61f57bd99d14163882bf78fc922a42a767030619afae73ec01b02857ad8234ad",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://s201.q4cdn.com/141608511/files/doc_presentations/2026/09/2026-NDR_.pdf",
+      "title": "Fall 2026 Non-Deal Roadshow Presentation",
+      "published_at": "2026-09-27",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn5search3",
+        "turn5search4"
+      ],
+      "source_call_ids": [
+        "exec-daa367bc-2710-478d-8a4f-c8b83b2d4ec7"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://www.tradethenews.com/tweet?id=55250",
+      "title": "Discloses commitments increased from $119B last quarter to $279B; commitments primarily related to procurement of memory - investor slides",
+      "published_at": "2026-09-28T11:43:49Z",
+      "time_precision": "EXACT",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search0"
+      ],
+      "source_call_ids": [
+        "exec-fce22898-d853-4769-847c-be1b1250f70d"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://news.bloomberglaw.com/antitrust/anthropic-seals-35-billion-cloud-deal-with-nvidia-backed-lambda",
+      "title": "Anthropic Signs $35 Billion Pact With Nvidia-Backed Lambda (1)",
+      "published_at": "2026-09-01T17:07:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search11"
+      ],
+      "source_call_ids": [
+        "exec-fce22898-d853-4769-847c-be1b1250f70d"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://bloomberg.com/news/articles/2026-09-24/anthropic-strikes-12-billion-deal-with-akamai-for-ai-computing",
+      "title": "Anthropic Strikes $12 Billion Deal With Akamai for AI Computing",
+      "published_at": "2026-09-24T20:02:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": "2026-09-25T13:43:00Z",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "BEFORE_CUTOFF",
+      "content_state": "UPDATED",
+      "decision": "KEEP",
+      "reason": "The supplied publication and revision times do not exceed the case cutoff.",
+      "source_result_refs": [
+        "turn4search3"
+      ],
+      "source_call_ids": [
+        "exec-01d35fd5-064d-4074-a136-7fa1fe1d8d99"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "NVIDIA’s September 27 presentation gave two distinct Anthropic figures: 2.6 GW contracted to date in NVIDIA AI infrastructure for shipment through 2028, and more than $180 billion in Anthropic reported contracted value across multiple cloud providers and neoclouds.",
+      "source_urls": [
+        "https://s201.q4cdn.com/141608511/files/doc_presentations/2026/09/2026-NDR_.pdf"
+      ],
+      "event_time": "2026-09-27",
+      "publication_time": "2026-09-27",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The presentation describes the $180 billion as Anthropic’s multi-provider reported value; it does not describe it as a single direct NVIDIA-Anthropic contract or as NVIDIA revenue. It does not identify Micron or allocate the memory-procurement commitments to any supplier."
+    },
+    {
+      "observation": "Trade The News relayed the presentation’s Anthropic figures at 2026-09-28 11:43:49 UTC, the earliest timestamped third-party dissemination located in this search.",
+      "source_urls": [
+        "https://www.tradethenews.com/tweet?id=55250",
+        "https://s201.q4cdn.com/141608511/files/doc_presentations/2026/09/2026-NDR_.pdf"
+      ],
+      "event_time": "2026-09-27",
+      "publication_time": "2026-09-28T11:43:49Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This establishes a timestamped relay before cutoff, not that no earlier public circulation occurred."
+    },
+    {
+      "observation": "Before the roadshow, Bloomberg had reported separate large Anthropic compute agreements: $35 billion with NVIDIA-backed Lambda on September 1 and an $11.6 billion, seven-year Akamai agreement on September 24. This indicates that major compute contracting was already public; the roadshow added an aggregate figure and a distinct NVIDIA-infrastructure shipment figure. This comparison is an inference from the cited reports.",
+      "source_urls": [
+        "https://news.bloomberglaw.com/antitrust/anthropic-seals-35-billion-cloud-deal-with-nvidia-backed-lambda",
+        "https://bloomberg.com/news/articles/2026-09-24/anthropic-strikes-12-billion-deal-with-akamai-for-ai-computing"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-24T20:02:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The earlier reports concern individual agreements and do not establish the composition, terms, or calculation of NVIDIA’s later aggregate figure."
+    },
+    {
+      "observation": "The same NVIDIA presentation reported company commitments increasing from $119 billion to $279 billion, primarily related to memory procurement.",
+      "source_urls": [
+        "https://s201.q4cdn.com/141608511/files/doc_presentations/2026/09/2026-NDR_.pdf"
+      ],
+      "event_time": "2026-09-27",
+      "publication_time": "2026-09-27",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The presentation does not name memory suppliers or connect this figure to Micron."
+    }
+  ],
+  "gaps": [
+    "The precise hour when NVIDIA’s roadshow presentation first appeared publicly is not stated; the investor-relations listing dates it September 27, and Trade The News provides a verified third-party timestamp on September 28.",
+    "No separate independent newsroom report of the $180 billion figure with a verifiable pre-cutoff publication time was established. Same-day coverage without a usable timestamp or dated pre-cutoff snapshot was not relied on.",
+    "The cited presentation does not break down the $180 billion aggregate, its payment or cancellation terms, or its provider-by-provider composition.",
+    "The sources do not establish a direct link from Anthropic’s agreements or NVIDIA’s memory procurement commitments to Micron orders, revenue, or supplier share."
+  ],
+  "research_notes": "Cutoff: 2026-09-28T11:59:51.905006Z. The earliest traceable primary disclosure located is NVIDIA’s Fall 2026 Non-Deal Roadshow presentation, listed by NVIDIA as dated September 27; the earliest timestamped third-party dissemination found is Trade The News at 11:43:49 UTC on September 28. Earlier Bloomberg reports show that large Anthropic compute agreements were already public. The inference that the new information was the quantified aggregate and NVIDIA-infrastructure schedule—not the existence of compute buying—is a comparison of those sources, not a claim about market expectations or Micron-specific sales."
+}

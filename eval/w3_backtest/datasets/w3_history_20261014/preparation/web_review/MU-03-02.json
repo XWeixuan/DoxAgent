@@ -1,0 +1,157 @@
+{
+  "case_key": "MU-03-02",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-09-30T19:42:56.394271Z",
+  "reviewed_at": "2026-10-13T22:58:32.097822Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 5,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a13760-bd34-7761-b6fa-b637a9f80863",
+    "turn_id": "01a13760-bd44-7fd2-b5c5-e23a2aefe637",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 77568,
+        "inputTokens": 82649,
+        "outputTokens": 7749,
+        "reasoningOutputTokens": 5754,
+        "totalTokens": 90398
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 302592,
+        "inputTokens": 378055,
+        "outputTokens": 14309,
+        "reasoningOutputTokens": 11801,
+        "totalTokens": 392364
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "96430635ca8e62883da70f79aaf0807049e50e65a4da675326049a032daa4cf2",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://finance.yahoo.com/markets/stocks/article/ai-spending-will-fuel-wins-for-micron-nvidia-intel-and-other-chip-stocks-bofa-analyst-193925832.html",
+      "title": "AI spending will fuel wins for Micron, Nvidia, Intel, and other chip stocks: BofA analyst",
+      "published_at": "2026-09-30T19:39:25Z",
+      "time_precision": "EXACT",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search0"
+      ],
+      "source_call_ids": [
+        "exec-49c9f8c2-3e52-405f-ae2e-04d75d24a688"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://www.prnewswire.com/news-releases/global-ai-market-could-hit-6-trillion-annually-by-2031-through-unlocking-value-and-innovation--bain--cos-7th-global-technology-report-302891178.html",
+      "title": "Global AI market could hit $6 trillion annually by 2031 through unlocking value and innovation - Bain & Co's 7th Global Technology Report",
+      "published_at": "2026-09-29T00:05:00-04:00",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn1search0"
+      ],
+      "source_call_ids": [
+        "exec-970eb80d-05b6-4567-bc67-473b3108ff4b"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://www.axios.com/2026/09/30/ai-profits-spending-hyperscalers",
+      "title": "Investors' P-doom scenario in AI: Lack of profits",
+      "published_at": "2026-09-30T11:20:07Z",
+      "time_precision": "EXACT",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn1news24"
+      ],
+      "source_call_ids": [
+        "exec-970eb80d-05b6-4567-bc67-473b3108ff4b"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "BofA’s reported sector estimate changed from $1.8 trillion at 33% annual growth to $2.2 trillion at 40% for CY26–30 AI data-center systems. The article attributes the forecast to agentic-tool adoption, AI-lab competition, and limited chip supply.",
+      "source_urls": [
+        "https://finance.yahoo.com/markets/stocks/article/ai-spending-will-fuel-wins-for-micron-nvidia-intel-and-other-chip-stocks-bofa-analyst-193925832.html"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-30T19:39:25Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The underlying BofA note’s exact release time was not verified. This is an analyst forecast, not realized demand or Micron-specific revenue, shipments, share, pricing, or margins."
+    },
+    {
+      "observation": "The article named Micron among five semiconductor picks and cited a December 9 buyback start. The supplied prior research already tracks that buyback date; the forecast increase is the distinct information change in this coverage.",
+      "source_urls": [
+        "https://finance.yahoo.com/markets/stocks/article/ai-spending-will-fuel-wins-for-micron-nvidia-intel-and-other-chip-stocks-bofa-analyst-193925832.html"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-30T19:39:25Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "An analyst’s stock selection and cited catalyst are not company disclosures or evidence of Micron-specific operating change."
+    },
+    {
+      "observation": "Bain’s September 29 report put a substantial revenue hurdle on the AI-infrastructure buildout: $6 trillion of annual AI revenue by 2031, with $4.2 trillion of that potentially coming from new categories beyond existing consumer and enterprise applications.",
+      "source_urls": [
+        "https://www.prnewswire.com/news-releases/global-ai-market-could-hit-6-trillion-annually-by-2031-through-unlocking-value-and-innovation--bain--cos-7th-global-technology-report-302891178.html"
+      ],
+      "event_time": "2026-09-29T00:05:00-04:00",
+      "publication_time": "2026-09-29T00:05:00-04:00",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This is Bain’s scenario and revenue requirement, not a finding that demand will fail; Bain also described new innovation categories as potential sources of revenue."
+    },
+    {
+      "observation": "Axios reported a Stanford-economist analysis estimating a large gap between hyperscaler AI spending and AI revenue and describing a demanding revenue-growth path to support the investment.",
+      "source_urls": [
+        "https://www.axios.com/2026/09/30/ai-profits-spending-hyperscalers"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-30T11:20:07Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This is a reported model-based analysis, not Micron-specific evidence. The article notes assumptions, including treatment of the cost of capital, and cites a more optimistic view of eventual returns."
+    }
+  ],
+  "gaps": [
+    "The full BofA research note and its distribution timestamp were not independently retrieved; the exact time of the forecast change itself remains unknown.",
+    "The Yahoo article does not translate the sector-level market estimate into Micron-specific demand, revenue, product mix, or financial outcomes.",
+    "No additional independent pre-cutoff report directly covering the same BofA note was verified."
+  ],
+  "research_notes": "The earliest traceable public coverage found for this BofA call is Yahoo Finance at 2026-09-30 19:39:25 UTC, about 3.5 minutes before the evidence cutoff; the supplied capture was collected before cutoff. Yahoo reports a change in BofA’s sector forecast: CY26–30 AI data-center systems addressable market rose from $1.8 trillion at 33% annual growth to $2.2 trillion at 40%. The underlying BofA note and its distribution time were not independently retrieved, so Yahoo is the earliest accessible coverage verified here, not necessarily the first distribution. The article also names Micron among five semiconductor picks and cites a December 9 buyback start; the supplied prior research already tracks that date. Bain’s September 29 report and Axios’s September 30 coverage provide contemporaneous counterpoints about the revenue and monetization needed to support AI infrastructure investment. These are sector forecasts and analyses, not Micron operating results or company guidance."
+}

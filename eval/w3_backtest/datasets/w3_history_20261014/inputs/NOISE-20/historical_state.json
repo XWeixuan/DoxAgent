@@ -1,0 +1,897 @@
+{
+  "recent_trade_intents": [
+    {
+      "message": {
+        "title": "JPMorgan Says Micron's Rally May Not Be Over",
+        "body": "This article first appeared on GuruFocus.\n\nMicron Technology (NASDAQ:MU) heads into Wednesday's earnings report after a roughly 278% gain this year, but JPMorgan analyst Harlan Sur still sees room for the memory-chip maker to surprise Wall Street and raise its outlook again.\n\nMicron shares gained about 2.5% Tuesday as investors positioned for the fiscal fourth-quarter report.\n\nWe see the setup as constructive with multiple beat-and-raise levers still in play, Sur said.\n\nWall Street currently expects roughly $51.4 billion in revenue, an 86.2% gross margin and earnings of $31.73 per share. Sur expects Micron to exceed those forecasts.\n\nOne of the most important parts of his thesis is memory pricing.\n\nManagement has previously discussed moderating price increases, but Sur does not interpret that as weakening demand.\n\nIn our view, moderation here reflects a strategic decision to preserve customer relationships and cement long-term SCA commitments rather than any demandside softening, he said.\n\nThose supply commitment agreements could become increasingly important for investors.\n\nSur estimates SCAs may now cover more than 35% of Micron's forward bit production and believes contracted volumes could already exceed 50%.\n\nWe think the market underappreciates the pace at which SCA coverage is compounding, Sur said.\n\nThat could give Micron greater revenue visibility and reduce some of the cyclicality historically associated with memory markets.\n\nSur also expects management to raise its November-quarter outlook, pointing to stronger customer requirements, tighter memory availability expected during 2027 and continued progress with Micron's HBM4 ramp.\n\nHe believes HBM supply could remain insufficient through 2028.\n\nInvestor Takeaway\n\nCapital returns could provide another catalyst.\n\nMicron reaches the second anniversary of its definitive CHIPS Act agreements in December, after which management plans to increase shareholder returns and ultimately return 100% of excess cash, primarily through buybacks.\n\nSur called that a substantial value-unlock lever that has yet to be fully priced in.\n\nJPMorgan (NYSE:JPM) maintains an Overweight rating and $1,540 price target, implying roughly 43% upside from the level cited Tuesday.\n\nAfter Micron's enormous 2026 rally, Wednesday's report will need to show that stronger pricing, HBM demand and longer-term contracts can support durable earnings rather than simply another cyclical peak.",
+        "source_name": "yahoo",
+        "published_at": "2026-09-29T19:21:32Z"
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": [
+          "E231",
+          "E251"
+        ]
+      },
+      "w2": {
+        "policy_hit": false,
+        "policy_related": false,
+        "policy_ids": [],
+        "hit_condition_ids": [],
+        "matched_condition_ids": []
+      },
+      "w3_decision": {
+        "novelty": {
+          "reason": "The prior record already covered JPMorgan's constructive view, Overweight rating, Micron's existing SCA framework, FY26 Q4 guidance, HBM4 progress, and the post-December buyback timing. New information is the specific SCA coverage estimates, the interpretation of moderating price increases, the expected November-quarter outlook raise, and the forecast of HBM undersupply through 2028.",
+          "reference_ids": [
+            "E231",
+            "E251",
+            "E9",
+            "E1",
+            "E65",
+            "E75"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "No policy criterion is met. The message contains analyst estimates and interpretations, not formal company or customer disclosures of the continuous operational, contractual, qualification, supply, or financial conditions required by the policies."
+        },
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "JPMorgan's Harlan Sur expects Micron to exceed already elevated consensus of roughly $51.4 billion revenue, 86.2% gross margin, and $31.73 EPS, while estimating SCA coverage above 35% of forward bit production and contracted volumes above 50%. He also interprets moderating price increases as relationship-preserving SCA strategy rather than weakening demand, expects a November-quarter outlook raise, and forecasts HBM undersupply through 2028. This raises the expected duration, certainty, and visibility of revenue, pricing, margin, and cash-return support.",
+          "prior_expectation": "The pre-event baseline was Micron FY26 Q4 management guidance of approximately $49-$51 billion revenue, about 86% GAAP gross margin, and $29.73-$31.73 GAAP EPS; existing SCAs covered about 20% of DRAM bits and 33% of NAND bits with at least half of eventual revenue expected when fully executed, while HBM4 progress and contract fulfillment remained only partly verified. JPMorgan was already constructive but had not established these more specific coverage estimates.",
+          "reason": "TRADE/LONG: the specific contract-coverage and multi-year HBM-tightness estimates are a positive incremental signal beyond the already bullish baseline. Greater contracted volume visibility and persistent HBM scarcity can support MU revenue, high-value mix, gross margin, and EPS durability. Analyst estimates are not formal company disclosures and SCA price caps and earnings-event risk are offsets, but the direct MU transmission is sufficiently material for a long bias.",
+          "trade": true
+        }
+      },
+      "direction": "LONG",
+      "initiated_at": "2026-09-29T19:47:34.510542+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    },
+    {
+      "message": {
+        "title": "Anthropic Files for $2T IPO with $518B Multi Year AI Spend",
+        "body": "← Back to live feed · 1 stories across 1 day\nMonday, Sep 28, 2026\n1 story1 Anthropic Files for $2T IPO with $518B Multi Year AI Spend AI Sep 28, 7:16 PM EDT 65/42 \n Anthropic has released its initial public offering prospectus and clarified that its planned expenditure of $518 billion on cloud and infrastructure will span multiple years. This detail corrects an earlier report stating the costs would occur within a single year, as the AI lab moves toward a listing that could value the company above $2 trillion. The public filing provides a first look at the capital requirements of a frontier AI lab competing with rivals such as OpenAI, Google, Meta and xAI.\nFinancials for 2025 show revenue grew 1,088% to $4.59 billion, but the company posted a GAAP net loss of $41.97 billion. This figure includes a $34 billion non cash accounting charge for the rising value of financing instruments, while the operating loss widened to $8.06 billion. Anthropic spent $7.33 billion on compute and infrastructure and ended 2025 with $20.28 billion in cash. The company warned that 24% of sales came from its two largest customers who are not locked into long term contracts, and noted risks involving the behavior of autonomous AI. The IPO follows the November US midterm elections.",
+        "source_name": "huggingnews.com",
+        "published_at": "2026-09-29T01:05:06.301000Z"
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": [
+          "E180",
+          "E181"
+        ]
+      },
+      "w2": {
+        "policy_hit": false,
+        "policy_related": false,
+        "policy_ids": [],
+        "hit_condition_ids": [],
+        "matched_condition_ids": []
+      },
+      "w3_decision": {
+        "novelty": {
+          "reason": "The Reference View covers Anthropic's confidential IPO filing, the expectation of an official filing, reported contracted AI capacity above $180 billion, and a separate cloud-capacity agreement, but not the completed public prospectus, its $518 billion multi-year infrastructure plan, or the detailed FY2025 financial and customer-concentration disclosures.",
+          "reference_ids": [
+            "E180",
+            "E181",
+            "E1480",
+            "E1000"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "No existing Policy criterion is met. The filing provides no Micron-specific order, product volume, price, qualification, delivery, share, capacity, or financial metric; it is an uncovered change in the timing and certainty of a broad AI-infrastructure demand signal."
+        },
+        "expert_trade": {
+          "direction": "SHORT",
+          "evaluated": true,
+          "expectation_delta": "The prospectus increases the certainty of Anthropic's total planned commitment but explicitly spreads the $518 billion across multiple years, materially reducing the near-term annualized compute deployment implied by the earlier report. The filing also reveals customer concentration and financing risks, requiring a downward revision to near-term accelerator, HBM, server-DRAM, and SSD demand expectations relative to the one-year interpretation.",
+          "prior_expectation": "Immediately before this filing, the newly circulated report implied that Anthropic would incur approximately $518 billion of cloud and compute obligations within one year. More broadly, the baseline expected strong AI infrastructure demand and an Anthropic-Micron architecture and supply relationship, but no confirmed Micron volumes or prices.",
+          "reason": "The timing correction is a material negative surprise for MU's near-term AI-memory demand assumptions. Anthropic's compute obligations transmit through accelerator deployment to HBM, server DRAM, and storage, and Anthropic is already a named Micron architecture and supply collaborator. The formal filing and large multi-year total are offsets, and no MU order is disclosed, but the immediate annualization reset supports a cautious SHORT.",
+          "trade": true
+        }
+      },
+      "direction": "SHORT",
+      "initiated_at": "2026-09-29T01:15:01.109608+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    },
+    {
+      "message": {
+        "title": "AI Server Demand Sustains Memory Contract Price Increases in 4Q26, While Consumer-Side Pressure Persists, Says TrendForce",
+        "body": "Conventional DRAM contract prices are projected to grow 10–15% QoQ in 4Q26, while NAND Flash contract prices are expected to increase 15–20%\n\nEnterprise SSDs are the only category expected to see price growth accelerate due to strong demand from CSPs\n\nTrendForce’s latest memory industry research reveals that DRAM suppliers continue to prioritize advanced-process capacity for high-performance server products in 4Q26, keeping the overall market undersupplied. However, the pace of contract price increases is expected to moderate, with conventional DRAM prices projected to rise 10–15% QoQ.\n\nMeanwhile, the NAND Flash market is seeing a divergence between accelerating AI demand and weak consumer demand, although prices are still rising across segments. Overall NAND Flash contract prices are projected to increase 15–20% QoQ.\n\nFor PC DRAM, notebook inventories are increasingly reflecting higher component costs in the fourth quarter, weighing on end-market sales. Nevertheless, PC OEMs continue to procure aggressively amid expectations that DRAM supply will remain tight in 2027, providing continued support for prices. On the supply side, DRAM suppliers have been fulfilling agreed volumes to PC OEMs and module makers every quarter throughout 2026. However, the PC DRAM supply could decline in 2027 as more capacity shifts to server applications.\n\nIn the server DRAM market, improving server CPU availability has prompted CSPs and server OEMs to increase bit procurement from suppliers to meet growing RDIMM demand for general servers supporting agentic AI workloads. Memory suppliers have increased the share of lower-capacity RDIMMs in their product mix to better address customer demand. However, constraints in component supply, packaging and testing capacity, and front-end DRAM production flexibility continue to prevent supply from fully aligning with demand. Server DRAM is therefore expected to remain undersupplied in 4Q26. On the pricing front, increases for some suppliers are expected to lag the market average due to pricing mechanisms stipulated in long-term agreements (LTAs).\n\nFor mobile DRAM, rising costs and the depletion of low-cost inventories continue to weigh on smartphone production, suppressing overall bit demand. At the same time, strong demand and higher margins in AI-related applications are prompting suppliers to continue shifting capacity toward server products, leaving mobile DRAM allocations tight. Consequently, the upward price trend remains firmly in place. However, because substantial increases were already priced in during previous quarters, growth is expected to moderate in 4Q26.\n\nIn graphics DRAM, some PC brands are reconsidering GDDR6 as a means of reducing overall BOM costs. GDDR7 demand, meanwhile, continues to be driven primarily by AI chips, with procurement momentum outperforming the PC market.\n \nOn the supply side, suppliers continue to scale back GDDR6 production while gradually exiting the market. GDDR7 output also remains limited as advanced-process capacity is increasingly allocated to applications such as server DRAM. These constraints are expected to keep graphics DRAM prices on an upward trajectory.\n\nFor consumer DRAM, recent incremental demand has come primarily from SSD customers, supplementing existing demand from consumer networking and TV applications. In particular, the improved outlook for QLC SSD demand has increased corresponding demand for DRAM components. However, major suppliers remain committed to production cuts, leaving the market heavily reliant on Taiwanese suppliers. Prices are therefore expected to continue rising—albeit at a slower pace.\n\nTurning to client SSDs, PC OEMs can rely on finished-goods inventories and channel stock built during the first half of the year to support fourth-quarter shipments, limiting procurement largely to components in short supply. PC brands are also reducing SSD capacities in mainstream models to lower BOM costs, resulting in declines in both procurement volumes and average capacity per device. With buyers holding sufficient inventories and purchasing requirements remaining limited, NAND Flash suppliers have adopted a more flexible pricing stance, restraining the magnitude of price increases.\n\nThe enterprise SSD market presents a markedly different picture. Bit demand for enterprise SSDs is projected to grow by more than 80% YoY in 2026 as CSPs continue to expand AI inference infrastructure. Demand is also shifting from LLM training toward actual AI deployment. Additionally, the large-scale rollout of agentic AI is driving exponential growth in data volumes for real-time retrieval and caching, while QLC penetration in vector databases continues to rise.\n\nIn response, suppliers are expanding QLC capacity and the availability of high-capacity products, while PCIe 6.0 adoption is ramping alongside next-generation AI server platforms. However, most incremental supply has already been committed, leaving little available on the open market. Enterprise SSD price growth is therefore expected to accelerate in 4Q26, making it the only memory product category to see a larger increase than in the previous quarter.\n\nFor eMMC/UFS, smartphone brands—the primary source of demand—are largely relying on existing inventories to support fourth-quarter production, resulting in very limited incremental procurement from suppliers. Lower-margin products such as TVs, set-top boxes, and wearables have even less room to absorb higher prices.\n\nAlthough suppliers are seeking broader price increases on the back of strong AI-driven pricing momentum, OEMs are responding with only the minimum purchase volumes needed to maintain supplier relationships. As a result, negotiations have effectively narrowed to price confirmation for relatively small order volumes.\n\nIn the NAND Flash wafer market, prices have reached historical highs that downstream retail channels are increasingly unable to absorb. This has prompted module makers—the primary buyers—to adopt a more cautious procurement stance.\n\nOn the supply side, suppliers continue to prioritize capacity based on profitability, keeping overall wafer availability constrained. However, weak purchasing momentum among module makers is expected to limit overall price growth to a modest increase.",
+        "source_name": "trendforce.com",
+        "published_at": "2026-09-30"
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": [
+          "E4"
+        ]
+      },
+      "w2": {
+        "policy_hit": false,
+        "policy_related": false,
+        "policy_ids": [],
+        "hit_condition_ids": [],
+        "matched_condition_ids": []
+      },
+      "w3_decision": {
+        "novelty": {
+          "reason": "E4覆盖的是3Q26行业合同价预测；当前消息首次给出4Q26具体价格区间、企业级SSD价格加速及服务器DRAM持续供不应求判断。",
+          "reference_ids": [
+            "E4"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息是TrendForce的单期行业预测，未确认Micron连续报告窗口的组合、ASP、bit shipments、份额或财务变化，不满足任何Policy条件。"
+        },
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "4Q26行业更新显示NAND合同价涨幅上调至15%-20%，企业级SSD成为唯一价格加速品类，CSP推理基础设施使企业级SSD位需求预计同比增长逾80%；同时服务器DRAM仍供不应求。虽然常规DRAM涨幅放缓至10%-15%、消费端承压，但数据中心和SSD的价格与供给持续性较此前基线更强。",
+          "prior_expectation": "事件前基线是AI服务器需求支持内存价格，但4Q26价格涨幅将较3Q26放缓；TrendForce此前预计3Q26常规DRAM和NAND合同价分别环比上涨13%-18%和10%-15%，Micron公开FY26 Q4收入指引约500亿美元、市场公开收入基线约521亿美元。",
+          "reason": "这是对Micron高价值数据中心内存和SSD近期价格/组合预期的中等正向修订。TrendForce的行业价格与供需判断可通过Micron已处于高量生产或出货的服务器DRAM、SOCAMM2、PCIe Gen6及大容量QLC SSD传导至CDBU/CMBU收入和毛利；消费端压力、长期协议价格机制和DRAM涨幅放缓构成抵消，但不足以消除整体正向方向。",
+          "trade": true
+        }
+      },
+      "direction": "LONG",
+      "initiated_at": "2026-09-30T08:00:25.017425+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    },
+    {
+      "message": {
+        "title": "OpenAI Annual Revenue Hits Nearly $70B Following Enterprise Surge",
+        "body": "← Back to live feed · 1 stories across 1 day\nTuesday, Sep 29, 2026\n1 story1 NEWOpenAI Annual Revenue Hits Nearly $70B Following Enterprise Surge AI Sep 29, 10:20 AM EDT 25/18 \n The creator of ChatGPT saw its business-facing sales grow by more than 100% since July to accelerate AI adoption among corporate clients. This enterprise surge helped push OpenAI's annual recurring revenue to nearly $70 billion, an increase of more than 70% since the start of the third quarter, Axios reported. The company also added more revenue from consumer subscriptions in Q3 alone than it did throughout all of 2025.\nThe revenue expansion coincides with OpenAI and rival Anthropic preparing for potential initial public offerings. Current data suggest that previous estimates of the startup's recurring revenue, including a $40 billion figure reported by Bloomberg, significantly understated its current run rate.",
+        "source_name": "huggingnews.com",
+        "published_at": "2026-09-29T14:43:04.893000Z"
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": [
+          "E52"
+        ]
+      },
+      "w2": {
+        "policy_hit": false,
+        "policy_related": false,
+        "policy_ids": [],
+        "hit_condition_ids": [],
+        "matched_condition_ids": []
+      },
+      "w3_decision": {
+        "novelty": {
+          "reason": "E52 recorded OpenAI's annualized revenue at approximately $40 billion, but the current report adds a run rate near $70 billion, more than 100% enterprise-sales growth since July, and stronger Q3 consumer monetization.",
+          "reference_ids": [
+            "E52"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "No Policy applies. The report does not disclose Micron-specific memory shipments, pricing, qualification, allocation, contracts, capacity, or financial results."
+        },
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "OpenAI's reported run rate near $70 billion, up more than 70% since the start of Q3, and enterprise sales more than doubling since July materially raise the expected scale and pace of AI workload adoption versus the prior $40 billion baseline. This increases expected training and inference compute demand and the duration of server-memory tightness.",
+          "prior_expectation": "The pre-event baseline included OpenAI annualized revenue of approximately $40 billion and strong but still developing AI-infrastructure demand, with Micron's CMBU/CDBU exposure dependent on continued workload growth and tight server-memory supply.",
+          "reason": "LONG: the revenue acceleration is a substantial positive surprise in a major AI demand source. The path from enterprise AI adoption to compute deployment, HBM/DRAM/NAND demand, and Micron's data-center businesses is clear enough for an actionable directional edge despite the absence of Micron-specific order disclosure.",
+          "trade": true
+        }
+      },
+      "direction": "LONG",
+      "initiated_at": "2026-09-29T14:47:31.358303+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    },
+    {
+      "message": {
+        "title": "Nvidia Discloses Anthropic Contract Value Above $180B",
+        "body": "Trending \n ← Back to live feed · 1 stories across 1 day\nMonday, Sep 28, 2026\n1 story1 NEWNvidia Discloses Anthropic Contract Value Above $180B AI Sep 28, 7:42 AM EDT 5/5 \n 1\n NEWNvidia Discloses Anthropic Contract Value Above $180B\n AI Sep 28, 7:42 AM EDT 5/5\n Infrastructure commitments for generative AI have reached a new order of magnitude in recent commercial disclosures. The reported contracted value for AI lab Anthropic exceeds $180 billion, according to data attributed to Nvidia, signaling a massive allocation of computing power for the startup.\nThe figures emerged on Sept. 28 via multiple market news sources. This disclosure highlights the scale of the relationship between the primary provider of AI chips and the developers of foundational models who require vast hardware fleets to train their systems.",
+        "source_name": "huggingnews.com",
+        "published_at": "2026-09-28T11:52:08.852000Z"
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": []
+      },
+      "w2": {
+        "policy_hit": false,
+        "policy_related": false,
+        "policy_ids": [],
+        "hit_condition_ids": [],
+        "matched_condition_ids": []
+      },
+      "w3_decision": {
+        "novelty": {
+          "reason": "消息新增了据Nvidia数据披露的Anthropic合同价值超过1800亿美元这一量化、命名客户的AI计算基础设施承诺。Reference View已覆盖Anthropic收入增长、广义AI基础设施承诺和Akamai向Anthropic提供约116亿美元云容量的协议，但没有该Nvidia-Anthropic合同规模。",
+          "reference_ids": [
+            "E52",
+            "E96",
+            "E1181"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息没有披露Micron自身的HBM/DRAM/NAND合同、产品规格、份额、价格、交付、资格或财务数据，因此未满足现行Policy的具体触发条件。"
+        },
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "据报道的超过1800亿美元Nvidia-Anthropic合同价值显著上调了Anthropic计算部署的规模和持续时间预期，提升AI服务器机群扩张以及HBM、服务器DRAM和数据中心SSD需求超过一般AI增长基线的概率。由于Anthropic已与Micron开展内存/存储协作，该需求增量也提高了Micron获得部分价值的概率，尽管不会立即改变FY26 Q4已锁定的收入预期。",
+          "prior_expectation": "事件前基线已预期Anthropic和其他基础模型公司的增长将支持AI数据中心、HBM、服务器DRAM和SSD需求；Micron与Anthropic已有AI内存/存储架构及供需协作，但客户数量、价格和采购规模未公开。市场没有一个已量化的、超过1800亿美元的Anthropic计算承诺作为需求锚点。",
+          "reason": "这是规模极大的命名AI客户计算承诺，具备从Anthropic合同到Nvidia计算硬件部署、再到AI内存需求和Micron既有客户协作的清晰传导，且潜在持续期和Materiality显著。合同的确切时间、内存BOM及Micron份额仍未披露，来源也属于据报道，但这些不确定性降低强度而不消除方向性；未覆盖Policy不妨碍该未覆盖需求信号支持LONG。",
+          "trade": true
+        }
+      },
+      "direction": "LONG",
+      "initiated_at": "2026-09-28T12:02:21.353889+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    },
+    {
+      "message": {
+        "title": "HBM Supply Constraints Persist, 2027 Price Outlook Revised Upward with Blended ASP Forecast to Rise 121% YoY, Says TrendForce",
+        "body": "TrendForce’s latest research reveals that continued expansion in AI server demand is keeping HBM and conventional DRAM in competition for limited advanced-process and wafer capacity. Meanwhile, yields and output for next-generation products will take time to ramp, keeping memory supply tight through 2027.\n\nAgainst a backdrop of continued memory price increases, suppliers have also taken a firmer stance on raising HBM prices in 2027. TrendForce has raised its 2027 HBM price outlook to reflect persistent supply constraints, a growing share of higher-priced HBM4, and the gradual ramp-up of HBM4e in 2H27. Blended ASP is now projected to jump 121% YoY.\n\nSupply and cost constraints drive capacity adjustments, with 8-Hi emerging as a priority option\n\nTrendForce reports that GPU and ASIC manufacturers are now considering reducing HBM capacity per device. This shift is driven not by waning end-market demand but by limited HBM supply and quickly increasing system costs.\n\nCompared to earlier plans for 12-Hi HBM modules, 8-Hi configurations use fewer DRAM dies, lowering both the cost per stack and the overall GPU bill of materials. These configurations also enable the same HBM bit output to support more GPUs. Given the ongoing tight HBM supply, 8-Hi setups are expected to be a priority for evaluation by many GPU and ASIC vendors in 2027, balancing performance, supply, and cost.\n\nHowever, reducing HBM capacity does not necessarily translate into a lower price per gigabit. Each HBM stack requires one base die, and this cost does not decline proportionally with the number of DRAM layers. An 8-Hi stack has less DRAM capacity over which to spread the base-die cost than a 12-Hi stack, making its per-Gb cost actually higher. TrendForce expects 8-Hi products to carry a roughly 10–20% price premium per Gb over 12-Hi products in 2027.\n\nOverall, TrendForce expects the HBM market to remain supply-constrained in 2027. With both availability and rising costs shaping purchasing decisions, 8-Hi penetration is expected to increase as more GPU and ASIC vendors evaluate the configuration. However, its higher per-Gb cost relative to 12-Hi will remain an important consideration in specification negotiations and supply-chain planning. As a result, while adjustments to HBM capacity may help alleviate some GPU cost pressure in 2027, they are unlikely to reverse the broader trend of substantial HBM price increases.",
+        "source_name": "trendforce.com",
+        "published_at": "2026-09-29"
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": []
+      },
+      "w2": {
+        "policy_hit": false,
+        "policy_related": false,
+        "policy_ids": [],
+        "hit_condition_ids": [],
+        "matched_condition_ids": []
+      },
+      "w3_decision": {
+        "novelty": {
+          "reason": "No existing Reference View fact covers TrendForce's upward revision of the 2027 HBM blended-ASP forecast to 121% year over year, the expected industry-wide prioritization of 8-Hi configurations, or the projected 8-Hi per-gigabit premium.",
+          "reference_ids": [],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "The message contains forward-looking industry forecasts and vendor evaluation expectations rather than formal platform production specifications or sustained deployment evidence. It therefore does not satisfy the existing Policy boundaries, despite being directly relevant to HBM pricing and configuration."
+        },
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "TrendForce's revision materially raises the expected 2027 HBM pricing and revenue opportunity, extends supply tightness through 2027, and places the HBM4E ramp in the second half of 2027. The move toward 8-Hi is attributed to supply and cost constraints rather than weaker demand; the same HBM bits can support more accelerators, while 8-Hi is forecast to command a 10%–20% per-gigabit premium over 12-Hi.",
+          "prior_expectation": "The pre-event baseline included Micron HBM4 high-volume shipments, an HBM4E production roadmap for 2027, and persistent but uncertain HBM supply tightness. It did not include a specific upward revision to a 121% 2027 HBM blended-ASP increase or a quantified 8-Hi premium.",
+          "reason": "The surprise is material because the explicit ASP revision changes the medium-term price and mix outlook for Micron's high-value HBM business. The transmission is direct: persistent HBM scarcity and higher per-gigabit pricing can raise realized ASP, HBM revenue, and margins, while Micron already has HBM4 high-volume shipments and a 2027 HBM4E path. The forecast and 8-Hi adoption remain unconfirmed, and lower capacity per accelerator is a countervailing risk, but the upward price revision and continued demand strength are sufficient for a LONG judgment.",
+          "trade": true
+        }
+      },
+      "direction": "LONG",
+      "initiated_at": "2026-09-29T08:10:43.556490+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    },
+    {
+      "message": {
+        "title": "Anthropic Locked Into $518B of Compute Deals, 80% Non-Cancelable",
+        "body": "← Back to live feed · 1 stories across 1 day\nTuesday, Sep 29, 2026\n1 story1 Anthropic Locked Into $518B of Compute Deals, 80% Non-Cancelable↩︎ AI Sep 28, 7:16 PM EDT 182/87 \n Anthropic is locked into more than $518 billion of cloud, compute and infrastructure spending over 10 years with six partners, and about 80% of the total is non-cancelable or payable regardless of usage, its IPO filing shows. The commitments include $252 billion in non-cancelable compute obligations across Microsoft, Google and Amazon, and $161.2 billion in Broadcom TPU leases that are largely non-cancelable.\nThe company also agreed to pay SpaceX up to $84.5 billion through 2029 for Nvidia-based compute, nearly double the roughly $45 billion cap SpaceX disclosed in May, The Information reported. Most of the SpaceX spending can be canceled with 90 days' notice, unlike the bulk of the buildout.\nThe obligations are more than 100 times Anthropic's 2025 revenue of $4.59 billion and roughly 25 times the $20.28 billion in cash, cash equivalents and short-term investments it held at year-end. The company posted an $8.06 billion operating loss in 2025, and its $41.97 billion net loss included about $34 billion in non-cash charges tied to the rising value of financing that could convert into shares. Its two largest customers accounted for 24% of revenue, and Anthropic warned that many of its largest clients are not locked into long-term contracts and could reduce or stop spending, even as it cannot cancel most of its own compute bill. Google and Amazon, both major investors in Anthropic, supply much of the infrastructure behind Claude. The IPO could value the company above $2 trillion.",
+        "source_name": "huggingnews.com",
+        "published_at": "2026-09-29T18:10:19.614000Z"
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": [
+          "E207"
+        ]
+      },
+      "w2": {
+        "policy_hit": false,
+        "policy_related": false,
+        "policy_ids": [],
+        "hit_condition_ids": [],
+        "matched_condition_ids": []
+      },
+      "w3_decision": {
+        "novelty": {
+          "reason": "Existing references cover Anthropic's approximately $518 billion aggregate future infrastructure obligations and its separate cloud-services agreement, but not the newly disclosed non-cancelability, partner-level allocation, TPU leases, or expanded SpaceX compute commitment.",
+          "reference_ids": [
+            "E207",
+            "E214",
+            "E131"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "No current Policy directly covers Anthropic's compute-contract enforceability or partner-level obligations. The message does not disclose a Micron-specific order, allocation, pricing, shipment, qualification, or capacity change."
+        },
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "The IPO filing materially increases the certainty and duration of AI-compute demand: approximately 80% of the $518 billion obligation is non-cancelable or payable regardless of usage, including $252 billion of cloud-compute commitments and $161.2 billion of largely non-cancelable Broadcom TPU leases. This reduces the probability that Anthropic usage weakness removes planned infrastructure demand and raises expected sustained server-memory, HBM, and data-center SSD demand through the deployment horizon, with potential value capture through Micron's Anthropic architecture and supply collaboration.",
+          "prior_expectation": "The pre-event MU baseline recognized Anthropic as a named AI-memory architecture and supply collaborator and supported strong external AI demand, but public information did not establish how much of Anthropic's $518 billion obligation was non-cancelable, which partners held the commitments, or how durable the resulting compute deployment would be; Micron quantities and pricing remained undisclosed.",
+          "reason": "The scale and enforceability of the commitments create a non-trivial positive surprise versus the prior aggregate-only baseline. The transmission is compute obligations to cloud/accelerator deployment, then memory content and Micron's named architecture/supply relationship. Anthropic's losses, customer concentration, and undisclosed MU share limit confidence but do not negate the directional demand signal; the result supports a LONG trade.",
+          "trade": true
+        }
+      },
+      "direction": "LONG",
+      "initiated_at": "2026-09-29T18:39:11.663900+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    }
+  ],
+  "history_matches": [
+    {
+      "events": [],
+      "policies": []
+    },
+    {
+      "events": [],
+      "policies": []
+    },
+    {
+      "events": [],
+      "policies": []
+    },
+    {
+      "events": [],
+      "policies": []
+    },
+    {
+      "events": [],
+      "policies": []
+    },
+    {
+      "events": [],
+      "policies": []
+    },
+    {
+      "events": [],
+      "policies": []
+    }
+  ],
+  "watches": [],
+  "pins": [],
+  "policy_consumptions": [],
+  "provisional": [
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Samsung Electro-Mechanics",
+          "Server components",
+          "Long-term supply agreements"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Samsung Electro-Mechanics在2026年签署了另一项服务器元件长期供货协议，使其当年已披露供货协议总额达到约26亿美元。",
+        "subject_time": "2026 annual disclosed server-component supply agreements"
+      },
+      "candidate_index": 0,
+      "case_id": "case_3de0faf18ae54b06a9902cb18978f7e6",
+      "created_at": "2026-09-30T06:09:48.076923Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E207",
+      "runtime_signature": "bb92d51286abbf94380bb914d8c092d86210124f74583bfbd48fb01db7548f43",
+      "snapshot_version": 1,
+      "source_message_id": "std_199d01de8d6349c395a3134e75eb7d4d",
+      "ticker": "MU",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ONGOING",
+        "entities": [
+          "Samsung Electro-Mechanics",
+          "High-performance passive components",
+          "AI servers"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "高性能被动元件需求持续上升，推动Samsung Electro-Mechanics扩大服务器元件长期供货合作。",
+        "subject_time": "2026年服务器基础设施需求周期"
+      },
+      "candidate_index": 1,
+      "case_id": "case_3de0faf18ae54b06a9902cb18978f7e6",
+      "created_at": "2026-09-30T06:09:48.109575Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E208",
+      "runtime_signature": "29e352debb2b446d645e0196ecb1eb3fb0629a9104595a0efcea04c50381f0b3",
+      "snapshot_version": 2,
+      "source_message_id": "std_199d01de8d6349c395a3134e75eb7d4d",
+      "ticker": "MU",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ONGOING",
+        "entities": [
+          "HBM",
+          "GPU-HBM CoWoS",
+          "AI semiconductor packaging"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "HBM在GPU-HBM CoWoS封装中的成本占比正接近一半，显示其不再只是AI计算中的被动组件。",
+        "subject_time": "Current GPU-HBM CoWoS package cost structure"
+      },
+      "candidate_index": 0,
+      "case_id": "case_a4c94e4309de4f628861636ddca514c2",
+      "created_at": "2026-09-30T06:11:21.708126Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E209",
+      "runtime_signature": "b8111113f2e0a5e1c615570d1860e5ba341386dcf1ad70159f996a2e61e29978",
+      "snapshot_version": 3,
+      "source_message_id": "std_3a1068a6c2174dda9b3f48158ce80862",
+      "ticker": "MU",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Zhipu AI",
+          "GLM-5.3",
+          "Anthropic",
+          "Claude Mythos Preview"
+        ],
+        "occurrence_date": "2026-09-29",
+        "proposition": "Anthropic研究显示，GLM-5.3在410次测试中构建出可运行的浏览器漏洞利用工具50次，接近Claude Mythos Preview的56次。",
+        "subject_time": "September 29, 2026 AI cybersecurity evaluation"
+      },
+      "candidate_index": 0,
+      "case_id": "case_0c09de4b5df04282a7fc7cef20a1031f",
+      "created_at": "2026-09-30T06:45:04.382538Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E210",
+      "runtime_signature": "51a78a32036cfae2e5d0857203daf8ea139b4172fd05a57af92465cbf641532f",
+      "snapshot_version": 4,
+      "source_message_id": "std_ca2e0647593e4a88820548371afaeb7c",
+      "ticker": "MU",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Anthropic",
+          "GLM-5.3",
+          "AI safety safeguards"
+        ],
+        "occurrence_date": "2026-09-29",
+        "proposition": "Anthropic研究团队以约4400美元和2200个GPU小时移除GLM-5.3的拒答机制，使拒答率从超过90%降至最低约2%，且一般智能和科学能力未显著下降。",
+        "subject_time": "September 29, 2026 abliteration research"
+      },
+      "candidate_index": 1,
+      "case_id": "case_0c09de4b5df04282a7fc7cef20a1031f",
+      "created_at": "2026-09-30T06:45:04.396943Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E211",
+      "runtime_signature": "e544adea04d1748e57b5cad69aa41fd2b9d56341d35b2d1ebcaeb37a1aa0febb",
+      "snapshot_version": 5,
+      "source_message_id": "std_ca2e0647593e4a88820548371afaeb7c",
+      "ticker": "MU",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "OpenAI",
+          "GLM-5.3",
+          "Codex"
+        ],
+        "occurrence_date": "2026-09-29",
+        "proposition": "OpenAI在该安全研究发布当日将GLM-5.3加入Codex订阅。",
+        "subject_time": "September 29, 2026 Codex availability"
+      },
+      "candidate_index": 2,
+      "case_id": "case_0c09de4b5df04282a7fc7cef20a1031f",
+      "created_at": "2026-09-30T06:45:04.413517Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E212",
+      "runtime_signature": "138cae065dd700c932808b918c9b82b069e9439f9a8a751920f3eb437c85eb40",
+      "snapshot_version": 6,
+      "source_message_id": "std_ca2e0647593e4a88820548371afaeb7c",
+      "ticker": "MU",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "TrendForce",
+          "Conventional DRAM",
+          "DRAM contract prices"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "TrendForce预计常规DRAM合同价格在4Q26环比上涨10%-15%。",
+        "subject_time": "4Q26"
+      },
+      "candidate_index": 0,
+      "case_id": "case_263bdf4e7658437f917b5fd78fc4d57d",
+      "created_at": "2026-09-30T08:00:24.874908Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E213",
+      "runtime_signature": "d2e785e73a562fcc328b19366e8db7929d0c73837343780dfc244ee167475e05",
+      "snapshot_version": 7,
+      "source_message_id": "std_a5ebc5e8f331496399aae3ac64fa5884",
+      "ticker": "MU",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "TrendForce",
+          "NAND Flash",
+          "NAND contract prices"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "TrendForce预计NAND Flash合同价格在4Q26环比上涨15%-20%。",
+        "subject_time": "4Q26"
+      },
+      "candidate_index": 1,
+      "case_id": "case_263bdf4e7658437f917b5fd78fc4d57d",
+      "created_at": "2026-09-30T08:00:24.889762Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E214",
+      "runtime_signature": "1e4134952df8ffef2baadc0cc3b0e8e227298b9afcdc0407d330f1167e50301d",
+      "snapshot_version": 8,
+      "source_message_id": "std_a5ebc5e8f331496399aae3ac64fa5884",
+      "ticker": "MU",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "Enterprise SSDs",
+          "Cloud service providers",
+          "AI inference infrastructure"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "企业级SSD预计是4Q26唯一价格涨幅加速的内存产品类别，受云服务商AI推理基础设施扩张推动。",
+        "subject_time": "4Q26"
+      },
+      "candidate_index": 2,
+      "case_id": "case_263bdf4e7658437f917b5fd78fc4d57d",
+      "created_at": "2026-09-30T08:00:24.911421Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E215",
+      "runtime_signature": "141faed04c1be85635ca14b761576eeef51b2b1c44363198f5b0f5a1554cd945",
+      "snapshot_version": 9,
+      "source_message_id": "std_a5ebc5e8f331496399aae3ac64fa5884",
+      "ticker": "MU",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "Enterprise SSDs",
+          "CSPs",
+          "AI inference",
+          "Agentic AI"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "企业级SSD位需求预计在2026年同比增长超过80%，需求从大语言模型训练进一步转向实际AI部署和agentic AI。",
+        "subject_time": "Calendar year 2026"
+      },
+      "candidate_index": 3,
+      "case_id": "case_263bdf4e7658437f917b5fd78fc4d57d",
+      "created_at": "2026-09-30T08:00:24.932144Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E216",
+      "runtime_signature": "393d994d736cc875635565b579e05db2713c3916b637d9457db470574dce78cc",
+      "snapshot_version": 10,
+      "source_message_id": "std_a5ebc5e8f331496399aae3ac64fa5884",
+      "ticker": "MU",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "EXPECTED",
+        "entities": [
+          "Server DRAM",
+          "CSPs",
+          "Server OEMs",
+          "Packaging and testing capacity"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "TrendForce预计4Q26服务器DRAM仍将供不应求，CSP和服务器OEM的位采购增加，但组件、封装测试和前端DRAM产能约束仍限制供给匹配。",
+        "subject_time": "4Q26"
+      },
+      "candidate_index": 4,
+      "case_id": "case_263bdf4e7658437f917b5fd78fc4d57d",
+      "created_at": "2026-09-30T08:00:24.953792Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E217",
+      "runtime_signature": "a0139f8174ac6612f78192df6c23d9048a22e22d012b175813d0f2384e715ed7",
+      "snapshot_version": 11,
+      "source_message_id": "std_a5ebc5e8f331496399aae3ac64fa5884",
+      "ticker": "MU",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "EXPECTED",
+        "entities": [
+          "PHLX Semiconductor Index",
+          "SOXX",
+          "AMD",
+          "Intel"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "半导体板块股票反弹，PHLX Semiconductor Index（SOXX）有望录得2026年6月以来最佳月度表现，AMD和Intel是主要驱动因素。",
+        "subject_time": "September 2026 trading month"
+      },
+      "candidate_index": 0,
+      "case_id": "case_3eace4e92d6f478fbe8a0d1b013fe30d",
+      "created_at": "2026-09-30T08:08:58.239678Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E218",
+      "runtime_signature": "8f1408702f8c654b1232a7219237c8e95eba89fc7be5518b5a38db53b1ba889e",
+      "snapshot_version": 12,
+      "source_message_id": "std_72dbf3b08c474073a7451dbaae9cca89",
+      "ticker": "MU",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ONGOING",
+        "entities": [
+          "NVIDIA",
+          "Rubin Ultra NVL576",
+          "Hydrocarbon-resin CCL",
+          "Hydrocarbon PP",
+          "PCB"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "NVIDIA正在评估以碳氢树脂为基础的无玻璃铜箔基板和烃类聚丙烯，用于Rubin Ultra NVL576交换托盘PCB，以替代无玻璃PTFE基CCL并提升生产良率。",
+        "subject_time": "Preliminary Rubin Ultra NVL576 material evaluation"
+      },
+      "candidate_index": 0,
+      "case_id": "case_fb484985e87b464aac9cc157bc78b558",
+      "created_at": "2026-09-30T08:15:32.452327Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E219",
+      "runtime_signature": "d1071edc5214f3e71532076b5a39a0e538819f97a6bce3bcfaaf91491d7a3be3",
+      "snapshot_version": 13,
+      "source_message_id": "std_862863e2bebf44cc93c6b6c05b59eeea",
+      "ticker": "MU",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ONGOING",
+        "entities": [
+          "Shengyi Technology",
+          "NVIDIA",
+          "SG1030N",
+          "SIF09",
+          "Rubin Ultra NVL576"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Shengyi Technology为该Rubin Ultra NVL576材料评估的主要供应商，提供SG1030N和SIF09材料；相关测试仍处于初步阶段，尚未确定Rubin Ultra的最终材料方案。",
+        "subject_time": "Rubin Ultra NVL576 preliminary material qualification"
+      },
+      "candidate_index": 1,
+      "case_id": "case_fb484985e87b464aac9cc157bc78b558",
+      "created_at": "2026-09-30T08:15:32.463974Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E220",
+      "runtime_signature": "6513bb6f1eb4528fdea109ffb05926e0e50d2b22bb74b9efc0e10f63a789eb36",
+      "snapshot_version": 14,
+      "source_message_id": "std_862863e2bebf44cc93c6b6c05b59eeea",
+      "ticker": "MU",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLANNED",
+        "entities": [
+          "NVIDIA",
+          "Rubin Ultra NVL576",
+          "Eight-rack interconnected server"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Rubin Ultra NVL576相关八机架互连服务器的量产时间线指向2027年下半年。",
+        "subject_time": "Second half of 2027"
+      },
+      "candidate_index": 2,
+      "case_id": "case_fb484985e87b464aac9cc157bc78b558",
+      "created_at": "2026-09-30T08:15:32.479748Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E221",
+      "runtime_signature": "fba35d9bec36da05efac3f43085ceca8cefa8b8347254a7b211c9865b6838304",
+      "snapshot_version": 15,
+      "source_message_id": "std_862863e2bebf44cc93c6b6c05b59eeea",
+      "ticker": "MU",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMORED",
+        "entities": [
+          "Micron Technology",
+          "MU",
+          "Retail traders",
+          "Stock split"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "FY2026 Q4财报前，零售交易者在社交媒体上猜测Micron可能宣布股票拆分。",
+        "subject_time": "Ahead of the September 30, 2026 FY2026 Q4 earnings release"
+      },
+      "candidate_index": 0,
+      "case_id": "case_2ca225b9c8954c41b28fcfffba6408a8",
+      "created_at": "2026-09-30T08:32:19.394766Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E222",
+      "runtime_signature": "dc95fadb528d6f38d68570a385ca2de49312464b06ca508ab7a8500120ad7a6f",
+      "snapshot_version": 16,
+      "source_message_id": "std_f86d57b04bcf41798bc626aecb285104",
+      "ticker": "MU",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMORED",
+        "entities": [
+          "Micron Technology",
+          "MU",
+          "10-for-1 stock split",
+          "Q1 2027"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "部分社交媒体帖子提出Micron可能进行10-for-1股票拆分，或在2027年第一季度宣布拆分。",
+        "subject_time": "Potential Q1 2027 stock-split announcement"
+      },
+      "candidate_index": 1,
+      "case_id": "case_2ca225b9c8954c41b28fcfffba6408a8",
+      "created_at": "2026-09-30T08:32:19.425294Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E223",
+      "runtime_signature": "23126f4c04f5c9c695a498ac8ffbef47e569fc97d4e2efec2c308778059ef86c",
+      "snapshot_version": 17,
+      "source_message_id": "std_f86d57b04bcf41798bc626aecb285104",
+      "ticker": "MU",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "KyungDong Navien",
+          "2026 KCSI",
+          "Boilers"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "KyungDong Navien was selected as the number-one company in the boiler category of the 2026 Korean Industry Customer Satisfaction Index for the 13th consecutive year.",
+        "subject_time": "2026 KCSI boiler-category ranking"
+      },
+      "candidate_index": 0,
+      "case_id": "case_466b2752290e4126a39c849f3c1ba2f0",
+      "created_at": "2026-09-30T08:35:30.475757Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E224",
+      "runtime_signature": "227321193f49978d97bbcda1333cfc0764e9e137f10b313d8f7255643b925127",
+      "snapshot_version": 18,
+      "source_message_id": "std_5e51b094636f4a6f8bc245685144d3e1",
+      "ticker": "MU",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "EXPECTED",
+        "entities": [
+          "Anthropic",
+          "AMD",
+          "AI computing capacity"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "AMD预计将向Anthropic提供超过200亿美元的AI计算能力。",
+        "subject_time": "Future Anthropic AI-compute supply arrangements"
+      },
+      "candidate_index": 0,
+      "case_id": "case_5fc63b2c19e8414b816171bd4a150817",
+      "created_at": "2026-09-30T08:41:02.204910Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E225",
+      "runtime_signature": "c8687fba313ee99d3fac5fe9b6cecb983c47553f6b1f59aed24c631ac29836fa",
+      "snapshot_version": 19,
+      "source_message_id": "std_9753879b9da64679b4f7d6e56e6ffa8c",
+      "ticker": "MU",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLANNED",
+        "entities": [
+          "Anthropic",
+          "xAI",
+          "NVIDIA",
+          "AI computing capacity"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Anthropic与xAI的协议可能导致其到2029年在基于NVIDIA的计算能力上支出最高845亿美元，且相关承诺大多可提前90天取消。",
+        "subject_time": "Through 2029"
+      },
+      "candidate_index": 1,
+      "case_id": "case_5fc63b2c19e8414b816171bd4a150817",
+      "created_at": "2026-09-30T08:41:02.236138Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E226",
+      "runtime_signature": "24abef7eed2f6a196a79f69f27bc2a5b040ea95adf66840bb2c5e78889898d7b",
+      "snapshot_version": 20,
+      "source_message_id": "std_9753879b9da64679b4f7d6e56e6ffa8c",
+      "ticker": "MU",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "EXPECTED",
+        "entities": [
+          "Anthropic",
+          "Initial public offering",
+          "U.S. midterm elections"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Anthropic预计最早于2026年10月中旬开始IPO营销，上市可能在11月美国中期选举前几天完成。",
+        "subject_time": "Mid-October to November 2026 IPO process"
+      },
+      "candidate_index": 2,
+      "case_id": "case_5fc63b2c19e8414b816171bd4a150817",
+      "created_at": "2026-09-30T08:41:02.269184Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E227",
+      "runtime_signature": "0fe91621693a4ddefe5737106b64c11752011d0b55b7181036ca9c31e8040e70",
+      "snapshot_version": 21,
+      "source_message_id": "std_9753879b9da64679b4f7d6e56e6ffa8c",
+      "ticker": "MU",
+      "trading_date": "2026-09-30"
+    }
+  ],
+  "limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "global_state": {
+    "watches": [],
+    "pins": []
+  },
+  "event_details": {
+    "requested_event_ids": [],
+    "canonical_events": [],
+    "provisional_events": [],
+    "missing_event_ids": []
+  }
+}

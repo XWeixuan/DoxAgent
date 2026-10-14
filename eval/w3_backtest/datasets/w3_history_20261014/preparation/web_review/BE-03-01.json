@@ -1,0 +1,323 @@
+{
+  "case_key": "BE-03-01",
+  "evidence_cutoff_at": "2026-09-29T15:00:18.122882Z",
+  "reviewed_at": "2026-10-13T22:58:31.438604Z",
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a13746-0306-70c0-8335-44dc9256f938",
+    "turn_id": "01a13746-031f-7f62-b001-ca5e420ea081",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 168704,
+        "inputTokens": 172789,
+        "outputTokens": 12985,
+        "reasoningOutputTokens": 8337,
+        "totalTokens": 185774
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 1469952,
+        "inputTokens": 1650075,
+        "outputTokens": 37157,
+        "reasoningOutputTokens": 31019,
+        "totalTokens": 1687232
+      }
+    },
+    "prompt_version": "w3-web-evidence-v1",
+    "input_fingerprint": "4994678c20494903da445497913921cd3a62dd0c2612bc61fae2a43603e98cc5",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://www.sec.gov/Archives/edgar/data/1664703/000162828026006516/be-20251231.htm",
+      "title": "Bloom Energy Corp. 2025 Form 10-K",
+      "published_at": "2026-02-09",
+      "time_precision": "DAY",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn8search5",
+        "turn8search2"
+      ],
+      "source_call_ids": [
+        "exec-b01a25c9-6a87-4c6b-967e-1136250d2367"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://investor.bloomenergy.com/press-releases/press-release-details/2026/Bloom-Energy-Reports-Record-Second-Quarter-2026-Financial-Results-and-Raises-Full-Year-2026-Guidance/default.aspx",
+      "title": "Bloom Energy Reports Record Second Quarter 2026 Financial Results and Raises Full Year 2026 Guidance",
+      "published_at": "2026-07-28",
+      "time_precision": "DAY",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn4search5"
+      ],
+      "source_call_ids": [
+        "exec-27221b0a-040e-4b50-a3e3-b177638e62c2"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://content.govdelivery.com/bulletins/gd/CAFREMONT-4293ade?wgt_ref=CAFREMONT_WIDGET_5",
+      "title": "Fremont Economy Monthly | September 2026",
+      "published_at": "2026-09-22 11:43 PDT",
+      "time_precision": "MINUTE",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn2search0"
+      ],
+      "source_call_ids": [
+        "exec-f2ba117b-f8af-4edc-8375-b9bffd62c76f"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://techcrunch.com/2026/09/24/oracle-sends-force-majeure-notice-on-its-new-mexico-stargate-data-center/",
+      "title": "Oracle sends force majeure notice on its New Mexico Stargate data center",
+      "published_at": "2026-09-24 11:11 PDT",
+      "time_precision": "MINUTE",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn12search1"
+      ],
+      "source_call_ids": [
+        "exec-f4b2d246-5fe8-4f53-9c74-7176159818bd"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S5",
+      "url": "https://www.efis.psc.mo.gov/Case/FilingDisplay/654708",
+      "title": "Ameren Missouri 2026 IRP Filing - Part 1, docket EO-2027-0098",
+      "published_at": "2026-09-28 16:35 (timezone unspecified)",
+      "time_precision": "MINUTE",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn9search1",
+        "turn9search0"
+      ],
+      "source_call_ids": [
+        "exec-858171b5-4e7e-4651-b383-4734c1ffba13"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S6",
+      "url": "https://www.sec.gov/Archives/edgar/data/100826/000110465926111420/tm2626189d1_8k.htm",
+      "title": "Ameren Corporation Form 8-K, September 28, 2026",
+      "published_at": "2026-09-28",
+      "time_precision": "DAY",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn9search10"
+      ],
+      "source_call_ids": [
+        "exec-858171b5-4e7e-4651-b383-4734c1ffba13"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S7",
+      "url": "https://ameren.mediaroom.com/2026-09-28-Ameren-Missouri-updates-20-year-energy-roadmap-to-maintain-and-develop-cost-effective-energy-resources-to-keep-grid-reliable-for-customers",
+      "title": "Ameren Missouri updates 20-year energy roadmap to maintain and develop cost-effective energy resources to keep grid reliable for customers",
+      "published_at": "2026-09-28",
+      "time_precision": "DAY",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn9search4"
+      ],
+      "source_call_ids": [
+        "exec-858171b5-4e7e-4651-b383-4734c1ffba13"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S8",
+      "url": "https://www.tipranks.com/news/the-fly/bloom-energys-new-facility-an-indicator-of-strong-demand-say-rbc-capital-thefly-news",
+      "title": "Bloom Energy’s new facility an indicator of strong demand, say RBC Capital",
+      "published_at": "2026-09-28 20:25 (timezone unspecified)",
+      "time_precision": "MINUTE",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn6search0"
+      ],
+      "source_call_ids": [
+        "exec-603dd19c-485a-4c8a-9844-e74537a1ea50"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S9",
+      "url": "https://apnews.com/article/open-ai-artificial-intelligence-altman-trump-astra-5afb865b2cddc439efdcf31ebdc406a5",
+      "title": "OpenAI delays latest model over security concerns, as industry faces new safety pressures",
+      "published_at": "2026-09-29T01:45:14Z",
+      "time_precision": "EXACT",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0news31"
+      ],
+      "source_call_ids": [
+        "exec-554cea3a-1fa5-4545-b407-432c5a44cbae"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S10",
+      "url": "https://www-web.itiger.com/news/2671524336",
+      "title": "Why Bloom Energy and AI Stocks Rise Even as OpenAI Safety Concerns Persist",
+      "published_at": "2026-09-29T14:56:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn2search2",
+        "turn5search0"
+      ],
+      "source_call_ids": [
+        "exec-0e75abf7-e11d-400c-8bb4-10ec0823749b",
+        "exec-f2ba117b-f8af-4edc-8375-b9bffd62c76f"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "The earliest dated public facility disclosure located is the City of Fremont’s September 22 bulletin, which said Bloom had acquired a 158,000-square-foot facility and described it as doubling Bloom’s Fremont footprint. The bulletin also anticipated added manufacturing jobs.",
+      "source_urls": [
+        "https://content.govdelivery.com/bulletins/gd/CAFREMONT-4293ade?wgt_ref=CAFREMONT_WIDGET_5"
+      ],
+      "event_time": "UNKNOWN (the underlying facility transaction date is not stated)",
+      "publication_time": "2026-09-22 11:43 PDT",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The City’s wording is not a transaction document; deal form and terms, commissioning date, incremental annual output, and qualified MW are not disclosed. A later pre-cutoff analyst-news item called it a lease, so transaction form was unresolved."
+    },
+    {
+      "observation": "Prior company disclosures already set a substantial capacity and growth baseline: Bloom described a Fremont 1-to-2-GW annual production run-rate expansion by year-end 2026, possible scale to about 5 GW, and July 2026 FY revenue guidance of $3.9–4.2 billion.",
+      "source_urls": [
+        "https://www.sec.gov/Archives/edgar/data/1664703/000162828026006516/be-20251231.htm",
+        "https://investor.bloomenergy.com/press-releases/press-release-details/2026/Bloom-Energy-Reports-Record-Second-Quarter-2026-Financial-Results-and-Raises-Full-Year-2026-Guidance/default.aspx"
+      ],
+      "event_time": "UNKNOWN (the 10-K says the capacity plan was announced in 2025; exact original announcement date is not specified in the cited passage)",
+      "publication_time": "2026-07-28 (latest cited company baseline; 10-K filed 2026-02-09)",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "These were plans and guidance, not realized output. The cited September disclosures do not quantify incremental production from the new building or state that management revised the capacity target or guidance."
+    },
+    {
+      "observation": "Ameren Missouri’s September 28 IRP included 500 MW of natural-gas fuel cells by 2030. The company’s SEC filing described the IRP as non-binding and listed a wider portfolio of gas, renewable, storage, and nuclear resources.",
+      "source_urls": [
+        "https://www.efis.psc.mo.gov/Case/FilingDisplay/654708",
+        "https://www.sec.gov/Archives/edgar/data/100826/000110465926111420/tm2626189d1_8k.htm",
+        "https://ameren.mediaroom.com/2026-09-28-Ameren-Missouri-updates-20-year-energy-roadmap-to-maintain-and-develop-cost-effective-energy-resources-to-keep-grid-reliable-for-customers"
+      ],
+      "event_time": "2026-09-28 (IRP filing date)",
+      "publication_time": "2026-09-28 16:35 (docket time; timezone unspecified)",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The plan does not name Bloom or establish a procurement, supplier award, or Bloom order; the sources also do not establish how the 500-MW item differs from prior internal or prior-IRP expectations."
+    },
+    {
+      "observation": "TheFly/TipRanks relayed an RBC analyst interpretation on September 28 that the added manufacturing space could indicate demand above Bloom’s current forecast. The September 29 Barron’s/Dow Jones report combined the facility and Ameren items with a Morgan Stanley demand interpretation.",
+      "source_urls": [
+        "https://www.tipranks.com/news/the-fly/bloom-energys-new-facility-an-indicator-of-strong-demand-say-rbc-capital-thefly-news",
+        "https://www-web.itiger.com/news/2671524336"
+      ],
+      "event_time": "UNKNOWN (original broker-note release times were not independently established)",
+      "publication_time": "TheFly page: 2026-09-28 20:25 (timezone unspecified); Barron’s: 2026-09-29T14:56:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The demand claims are analyst interpretations reported by media, not primary evidence of customer demand, an award, or output. The original research notes were not available for direct review."
+    },
+    {
+      "observation": "Before cutoff, reporting linked Oracle’s Project Jupiter force-majeure notice and a delayed gas pipeline to a planned Bloom-powered campus; the same reporting said Oracle considered the project on schedule and Blue Owl said financial commitments were unchanged.",
+      "source_urls": [
+        "https://techcrunch.com/2026/09/24/oracle-sends-force-majeure-notice-on-its-new-mexico-stargate-data-center/"
+      ],
+      "event_time": "2026-09-24 (notice; exact time not stated)",
+      "publication_time": "2026-09-24 11:11 PDT",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The article attributed pipeline-delay details partly to Bloomberg; it did not establish cancellation or a revised Bloom delivery/commissioning commitment, and it did not identify the delayed route by the Green Chile name."
+    },
+    {
+      "observation": "AP reported before cutoff that OpenAI had delayed GPT-6.1 Astra on September 28 and had paused training its most advanced models the prior week. Barron’s also presented these developments as a concurrent AI-growth concern.",
+      "source_urls": [
+        "https://apnews.com/article/open-ai-artificial-intelligence-altman-trump-astra-5afb865b2cddc439efdcf31ebdc406a5",
+        "https://www-web.itiger.com/news/2671524336"
+      ],
+      "event_time": "2026-09-28 (model delay); training pause described as the prior week",
+      "publication_time": "2026-09-29T01:45:14Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This is sector-level information and does not directly measure Bloom’s power deployments; the Barron’s report also noted OpenAI said other models meeting its safety bar were forthcoming."
+    }
+  ],
+  "gaps": [
+    "No pre-cutoff company transaction filing or property instrument was located to resolve whether the 158,000-square-foot facility was purchased or leased, when the transaction closed, or its cost and operational timetable.",
+    "No source establishes installed equipment, qualified capacity, utilization, incremental annual production, shipped or accepted MW, or customer contracts attributable to the new facility.",
+    "Ameren’s 500-MW fuel-cell item is a non-binding IRP planning figure; vendor selection, procurement, project financing, approvals, and implementation timing remain unestablished.",
+    "The available analyst statements are not a timestamped sell-side consensus or forecast-revision series; the supplied research context says such data were unavailable.",
+    "Project Jupiter reporting left route attribution and project-specific operational consequences unresolved; Oracle and Blue Owl statements in the same report limited the inference of a project cancellation or committed financing change."
+  ],
+  "research_notes": "Cutoff: 2026-09-29T15:00:18.122882Z. The earliest dated public primary source located for the Fremont facility is the City of Fremont’s September 22 economic-development bulletin, which said Bloom had acquired a 158,000-square-foot facility. TheFly/TipRanks carried an RBC analyst interpretation on September 28; the supplied Barron’s/Dow Jones report was published at 14:56Z on September 29 and captured at 14:56:42Z. Ameren Missouri’s September 28 IRP included 500 MW of natural-gas fuel cells by 2030, but Ameren’s SEC filing calls the plan non-binding and lists a broader mix of resources. Bloom had already disclosed a Fremont 1-to-2-GW annual run-rate expansion plan for year-end 2026, potential scale to about 5 GW, and July 2026 revenue guidance of $3.9–4.2 billion. The facility news therefore does not itself establish a revised capacity target, operational output, customer order, or guidance change. The City said “acquired,” while TheFly relayed RBC’s wording as a lease; transaction form and terms were not reconciled in pre-cutoff sources. Project Jupiter execution reporting and OpenAI model-safety developments were concurrent counterpoints. Analyst demand comments are interpretations, not primary order evidence. No prices, post-cutoff reporting, or later outcomes are used. Supplied W1/W2 context says timestamped analyst consensus and revisions were unavailable, so surprise relative to consensus cannot be identified.",
+  "collection_prompt_version": "w3-web-evidence-v1"
+}

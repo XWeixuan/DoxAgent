@@ -1,0 +1,245 @@
+{
+  "case_key": "RKLB-01-01",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-09-22T17:06:24.143456Z",
+  "reviewed_at": "2026-10-13T22:58:33.319715Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 6,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a13764-e696-77f3-b0a7-ec894dbfb115",
+    "turn_id": "01a13764-e6a4-7ac2-9351-22ed5bf278ce",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 82688,
+        "inputTokens": 93084,
+        "outputTokens": 17137,
+        "reasoningOutputTokens": 13755,
+        "totalTokens": 110221
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 374016,
+        "inputTokens": 459154,
+        "outputTokens": 21208,
+        "reasoningOutputTokens": 17251,
+        "totalTokens": 480362
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "e0f83a1eb1506f04ddb0abdf217235a4674cf7bf93072ae6956f3ff4612c9612",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://mobile.schaeffersresearch.com/content/analysis/2026/09/22/rocket-lab-stock-breaks-above-key-trendline",
+      "title": "Rocket Lab Stock Breaks Above Key Trendline",
+      "published_at": "2026-09-22 12:57 PM (page time; timezone not stated)",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn2search0",
+        "turn4search0"
+      ],
+      "source_call_ids": [
+        "exec-37b10e6e-eca5-4fb8-8df1-f82b8ec76af5",
+        "exec-4e0e1cea-5853-4dcd-8aa8-d072dfc57633"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://finviz.com/news/394408/rocket-lab-stock-breaks-above-key-trendline",
+      "title": "Rocket Lab Stock Breaks Above Key Trendline",
+      "published_at": "2026-09-22 12:57 PM (displayed article time; timezone not stated)",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn0search0"
+      ],
+      "source_call_ids": [
+        "exec-dbc8c3d4-bbf4-455e-a6b6-be6884c15f3f"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://www.benzinga.com/markets/large-cap/26/09/61919462",
+      "title": "Rocket Lab Analyst Calls Neutron Launch the ‘Most Material Catalyst’",
+      "published_at": "2026-09-22 9:22 AM (page time; timezone not stated)",
+      "time_precision": "UNKNOWN",
+      "updated_at": null,
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn4search2"
+      ],
+      "source_call_ids": [
+        "exec-37b10e6e-eca5-4fb8-8df1-f82b8ec76af5"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://invezz.com/news/2026/09/22/rocket-lab-stock-has-slowly-formed-a-bullish-pattern-time-to-buy/",
+      "title": "Rocket Lab stock has slowly formed a bullish pattern: time to buy?",
+      "published_at": "2026-09-22 09:12 AM (page time; timezone not stated)",
+      "time_precision": "UNKNOWN",
+      "updated_at": null,
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn4search7"
+      ],
+      "source_call_ids": [
+        "exec-37b10e6e-eca5-4fb8-8df1-f82b8ec76af5"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S5",
+      "url": "https://economictimes.indiatimes.com/markets/us-stocks/news/rocket-lab-shares-surge-over-8-whats-driving-the-rklb-rally/slideshow/134404512.cms?from=mdr",
+      "title": "Rocket Lab shares surge over 8%: What's driving the RKLB rally?",
+      "published_at": "2026-09-22T11:52:23+05:30",
+      "time_precision": "EXACT",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn2search3",
+        "turn4search5"
+      ],
+      "source_call_ids": [
+        "exec-37b10e6e-eca5-4fb8-8df1-f82b8ec76af5",
+        "exec-4e0e1cea-5853-4dcd-8aa8-d072dfc57633"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S6",
+      "url": "https://investors.rocketlabcorp.com/node/13331/pdf",
+      "title": "MISSION SUCCESS: Rocket Lab Launches 96th Electron Mission",
+      "published_at": "2026-09-19",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn4search13"
+      ],
+      "source_call_ids": [
+        "exec-37b10e6e-eca5-4fb8-8df1-f82b8ec76af5"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "At the report time, Schaeffer's said RKLB was up 2.2% at $71.45 and had crossed above its 50-day moving average, after prior July/August rejections and a rebound from around $60. The case-supplied Yahoo copy is timestamped 16:57:28Z, about nine minutes before cutoff; this is an intraday report, not a closing-price observation.",
+      "source_urls": [
+        "https://mobile.schaeffersresearch.com/content/analysis/2026/09/22/rocket-lab-stock-breaks-above-key-trendline",
+        "https://finance.yahoo.com/markets/stocks/articles/rocket-lab-stock-breaks-above-165728910.html"
+      ],
+      "event_time": "2026-09-22T16:57Z (reported intraday state)",
+      "publication_time": "2026-09-22T16:57:28Z (case-supplied Yahoo metadata; Schaeffer page displays 12:57 PM without timezone)",
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "The article does not provide a timestamped price series or moving-average methodology. It describes technical price action, not a new Rocket Lab operating, financing, or transaction disclosure."
+    },
+    {
+      "observation": "Schaeffer's historical comparison is based on eight prior crossovers over ten years and reports shares higher one month later in 88% of cases, with a 16.8% mean gain.",
+      "source_urls": [
+        "https://mobile.schaeffersresearch.com/content/analysis/2026/09/22/rocket-lab-stock-breaks-above-key-trendline"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-22 12:57 PM (page time; timezone not stated)",
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "This is the publisher's retrospective statistic; the article supplies no event list, sample construction, or independent verification. Eight prior cases is a small stated sample and does not establish a future result."
+    },
+    {
+      "observation": "Benzinga's same-day report describes a premarket quote of $71.03 and a 50-day average of $69.67, while also calling the longer-term picture weaker: below the 100-day and 200-day averages, neutral RSI, and a 20-day average below the 50-day average.",
+      "source_urls": [
+        "https://www.benzinga.com/markets/large-cap/26/09/61919462"
+      ],
+      "event_time": "2026-09-22 premarket (page shows 9:22 AM; timezone unstated)",
+      "publication_time": "2026-09-22 9:22 AM (timezone unstated)",
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "The page's timezone is omitted, so its placement relative to the UTC cutoff is not verified. The longer-term measures are a counterpoint to reading a single 50-day crossover as a broad trend reversal."
+    },
+    {
+      "observation": "Invezz's Sep. 22 article says RKLB remained below its 50-day average and describes support around $60, differing from the averages and status reported elsewhere that day.",
+      "source_urls": [
+        "https://invezz.com/news/2026/09/22/rocket-lab-stock-has-slowly-formed-a-bullish-pattern-time-to-buy/",
+        "https://www.benzinga.com/markets/large-cap/26/09/61919462",
+        "https://mobile.schaeffersresearch.com/content/analysis/2026/09/22/rocket-lab-stock-breaks-above-key-trendline"
+      ],
+      "event_time": "2026-09-22 (page time is 9:12 AM; timezone unstated)",
+      "publication_time": "2026-09-22 9:12 AM (timezone unstated)",
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "Because the timezone and a pre-cutoff snapshot are not verified, this is a time-uncertain discrepancy, not confirmed pre-cutoff counterevidence. Differing measurement times or methods may account for the difference."
+    },
+    {
+      "observation": "ETMarkets reported a prior-session 8.2% rise to $69.89 on Sep. 21 and associated the move with a reiterated Cantor rating/target and investor attention to Neutron and Iridium. The report was published at 06:22:23Z on Sep. 22.",
+      "source_urls": [
+        "https://economictimes.indiatimes.com/markets/us-stocks/news/rocket-lab-shares-surge-over-8-whats-driving-the-rklb-rally/slideshow/134404512.cms?from=mdr"
+      ],
+      "event_time": "2026-09-21 (trading session; exact event time unknown)",
+      "publication_time": "2026-09-22T06:22:23Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This is prior-session context and an outlet's explanation, not evidence that those factors caused the Sep. 22 intraday crossover."
+    },
+    {
+      "observation": "Before the reported price event, Rocket Lab's Sep. 19 company release said Electron successfully delivered Synspective's 12th StriX satellite, marking Electron's 96th flight and Rocket Lab's 17th launch of 2026.",
+      "source_urls": [
+        "https://investors.rocketlabcorp.com/node/13331/pdf"
+      ],
+      "event_time": "2026-09-19T03:22Z (launch time converted from 3:22 p.m. NZST)",
+      "publication_time": "2026-09-19 (release date; time not stated)",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This confirms a recent operational milestone but does not establish a link to the later technical price report."
+    }
+  ],
+  "gaps": [
+    "The supplied Yahoo Finance page returned 429 on direct open; the identical text and original timing were checked against Schaeffer's original article and the Finviz copy.",
+    "Schaeffer's page does not specify the timezone for its 12:57 PM timestamp or publish the underlying time-stamped price and moving-average calculation.",
+    "Benzinga and Invezz display Sep. 22 morning times without timezones; neither is treated as verified pre-cutoff evidence. Invezz's below-50-day statement therefore remains a time-uncertain same-day discrepancy.",
+    "No source found establishes that the reported technical crossover was driven by a new company-specific disclosure; the prior-session attribution to analyst commentary and other themes is media framing, not verified causality."
+  ],
+  "research_notes": "Six Web Search calls were used. The earliest traceable public source found for the technical claim is Schaeffer’s Investment Research, whose dated original page carries the same text as the case-supplied Yahoo Finance item. Schaeffer’s page gives 12:57 p.m. but does not state a timezone; the supplied Yahoo metadata gives 2026-09-22T16:57:28Z, within the 17:06:24Z cutoff. Yahoo’s page could not be fetched directly (429). Evidence here concerns a reported intraday price/technical event, not a new company disclosure. Do not treat Schaeffer’s eight-prior-crossover statistic as a robust or independently reproduced forecast. Later market prices and post-cutoff coverage were excluded."
+}

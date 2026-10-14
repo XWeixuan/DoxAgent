@@ -1,0 +1,23 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-10-07T05:25:39.830258Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "The exact time and full wording of Tan's comment, and a direct transcript or recording, were not located.",
+    "No pre-cutoff primary disclosure was found specifying whether continued involvement meant design, process licensing, construction, fab operation, or another defined scope; no contract, capacity, quantities, schedule, or binding production commitment was disclosed.",
+    "Culpium's Oct. 2 report is paywalled beyond the accessible opening passage; its Oct. 3 post links it and supplies the chronology, but the underlying sourcing and the claim that Intel collaboration was not progressing could not be independently verified.",
+    "No direct pre-cutoff statement from TSMC establishing its role or any signed agreement was identified."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

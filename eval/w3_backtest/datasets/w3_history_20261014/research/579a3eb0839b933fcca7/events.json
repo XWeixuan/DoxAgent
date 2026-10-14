@@ -1,0 +1,168 @@
+{
+  "ticker": "MU",
+  "version": 12,
+  "requested_event_ids": [
+    "E6"
+  ],
+  "events": [
+    {
+      "event_id": "E6",
+      "ticker": "MU",
+      "title": "Memory-market share and competitive-position disclosures updated Micron's baseline",
+      "event_type": "SUPPLY_DEMAND_UPDATE",
+      "occurred_at": "UNKNOWN",
+      "occurrence_time_precision": "UNKNOWN",
+      "status": "ACTIVE",
+      "canonical_summary": "Quarterly and current share disclosures updated Micron's DRAM, NAND and HBM competitive position alongside CXMT, SK Hynix, YMTC and SanDisk, including Q2 total-market growth and a reported possible CXMT entry into NAND.",
+      "known_event_summary": "2026-08-28..2026-09-18 Q2 memory-market baseline: Micron held about 24% of DRAM and 15% of NAND, while CXMT, YMTC, SK Hynix and SanDisk shares and total DRAM/NAND growth disclosures updated the competitive structure; Reuters later reported CXMT was considering entering NAND.",
+      "is_important": true,
+      "include_in_reference_view": true,
+      "related_event_ids": [
+        "E4",
+        "E11"
+      ],
+      "supersedes_event_id": null,
+      "derived_from_event_ids": [],
+      "facts": [
+        {
+          "fact_id": "F210",
+          "proposition": "Samsung Electronics and Micron Technology each held 21% of global HBM revenue in Q1 2026.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "FY2026-Q1",
+          "fact_occurred_at": "2026-08-28",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F211",
+          "proposition": "SK hynix held 58% of global HBM revenue in Q1 2026.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "FY2026-Q1",
+          "fact_occurred_at": "2026-08-28",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F212",
+          "proposition": "CXMT's first-half 2026 revenue increased by 874%.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "FY2026-H1",
+          "fact_occurred_at": "2026-08-31",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F213",
+          "proposition": "CXMT held approximately 7% of the global DRAM market by revenue in Q2 2026.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "FY2026-Q2",
+          "fact_occurred_at": "2026-09-14",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F214",
+          "proposition": "A majority of Micron's 2025 DRAM output came from Taiwan.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "FY2025",
+          "fact_occurred_at": "2026-09-01",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F215",
+          "proposition": "SK Hynix held approximately 25% of the DRAM market in Q2 2026, down from approximately 29% in Q1 2026.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "FY2026-Q2",
+          "fact_occurred_at": "2026-09-14",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F216",
+          "proposition": "YMTC increased its NAND revenue or shipment share to about 14% in Q2 2026, from about 9%.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "FY2026-Q2",
+          "fact_occurred_at": "2026-09-01",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F217",
+          "proposition": "SK Hynix holds a 22% share of the NAND flash market.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "fact_occurred_at": "2026-09-01",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F218",
+          "proposition": "Micron held approximately 24% of the DRAM market in Q2 2026, up from about 22%.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "FY2026-Q2",
+          "fact_occurred_at": "2026-09-03",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F219",
+          "proposition": "Micron held approximately 15% of the NAND market in Q2 2026, up from about 13%, ranking third.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "FY2026-Q2",
+          "fact_occurred_at": "2026-09-03",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F220",
+          "proposition": "CXMT held about 10% of global DRAM revenue in Q2 2026, up from 4% a year earlier.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "FY2026-Q2",
+          "fact_occurred_at": "2026-09-03",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F221",
+          "proposition": "The combined market share held by Samsung Electronics, SK Hynix, and Micron was reduced to 87% from 94%.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "FY2026-Q2",
+          "fact_occurred_at": "2026-09-03",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F222",
+          "proposition": "DRAM accounts for roughly three-quarters of Micron's revenue.",
+          "assertion_state": "ONGOING",
+          "subject_time": null,
+          "fact_occurred_at": "2026-09-04",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F318",
+          "proposition": "SanDisk's NAND market share fell to approximately 11% in Q2 2026 from approximately 13% in Q1 2026.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "FY2026-Q2",
+          "fact_occurred_at": "2026-09-14",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F319",
+          "proposition": "The global DRAM market grew approximately 57% quarter over quarter in Q2 2026.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "FY2026-Q2",
+          "fact_occurred_at": "2026-09-14",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F320",
+          "proposition": "The global NAND flash market grew approximately 70% quarter over quarter in Q2 2026.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "FY2026-Q2",
+          "fact_occurred_at": "2026-09-14",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F435",
+          "proposition": "Reuters reported that CXMT was considering entering the NAND/flash-memory market, with Samsung and YMTC as competitors.",
+          "assertion_state": "PLAN",
+          "subject_time": "future flash-memory/NAND entry",
+          "fact_occurred_at": "2026-09-18",
+          "fact_occurrence_time_precision": "DAY"
+        }
+      ],
+      "price_analysis": null
+    }
+  ],
+  "missing_event_ids": []
+}

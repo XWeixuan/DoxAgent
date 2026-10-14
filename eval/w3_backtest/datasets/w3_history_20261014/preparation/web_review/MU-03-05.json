@@ -1,0 +1,170 @@
+{
+  "case_key": "MU-03-05",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-10-06T12:14:06.424952Z",
+  "reviewed_at": "2026-10-13T22:58:32.212611Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 4,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a13762-f17e-78b1-bc9f-885bfe51881d",
+    "turn_id": "01a13762-f18c-7c60-be8a-acc426f5bd00",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 69376,
+        "inputTokens": 80049,
+        "outputTokens": 12866,
+        "reasoningOutputTokens": 10578,
+        "totalTokens": 92915
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 230144,
+        "inputTokens": 304558,
+        "outputTokens": 17872,
+        "reasoningOutputTokens": 15071,
+        "totalTokens": 322430
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "09f07674ddaaa57b612d00aa9b3b923824588d4236be3592d6c0c5d026f0b915",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://www.prnewswire.com/news-releases/netlist-and-micron-enter-patent-license-and-settlement-agreements-302899647.html",
+      "title": "Netlist and Micron Enter Patent License and Settlement Agreements",
+      "published_at": "2026-10-06T12:00:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search4"
+      ],
+      "source_call_ids": [
+        "exec-a5bc53f3-826b-41bb-b313-861073b1d97c"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://www.sec.gov/Archives/edgar/data/1282631/000110465926113897/tm2626949d1_8k.htm",
+      "title": "Netlist, Inc. Form 8-K, filed October 6, 2026",
+      "published_at": "2026-10-06T12:05:21Z",
+      "time_precision": "EXACT",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search1",
+        "turn0search2"
+      ],
+      "source_call_ids": [
+        "exec-a5bc53f3-826b-41bb-b313-861073b1d97c"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://www.investing.com/news/assorted/netlist-and-micron-reach-600m-patent-license-and-settlement-deal-432SI-4934250",
+      "title": "Netlist and Micron reach $600M patent license and settlement deal",
+      "published_at": "2026-10-06T12:10:04Z",
+      "time_precision": "EXACT",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn3search0"
+      ],
+      "source_call_ids": [
+        "exec-0eaabe3b-c80b-4498-a95d-17b807bae8ef"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://www.investing.com/news/stock-market-news/netlist-seeks-us-import-ban-on-micron-chips-used-in-google-nvidia-ai-computing-4923043",
+      "title": "Netlist seeks U.S. import ban on Micron chips used in Google, Nvidia AI computing",
+      "published_at": "2026-09-29 10:41 AM (site-displayed time; timezone not stated)",
+      "time_precision": "MINUTE",
+      "updated_at": "2026-09-29 11:55 AM (site-displayed time; timezone not stated)",
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UPDATED",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn1search9"
+      ],
+      "source_call_ids": [
+        "exec-8b10d66b-c3cd-434a-9401-f1f173479abb"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "Netlist’s agreement announcement changes the public status from active patent disputes to an agreement to settle and mutually release pending proceedings. The 8-K dates the agreements Oct. 5; the public release followed Oct. 6 at 08:00 ET. The release describes the scope broadly, while the 8-K specifies proceedings identified in the settlement agreement.",
+      "source_urls": [
+        "https://www.prnewswire.com/news-releases/netlist-and-micron-enter-patent-license-and-settlement-agreements-302899647.html",
+        "https://www.sec.gov/Archives/edgar/data/1282631/000110465926113897/tm2626949d1_8k.htm",
+        "https://www.investing.com/news/assorted/netlist-and-micron-reach-600m-patent-license-and-settlement-deal-432SI-4934250"
+      ],
+      "event_time": "2026-10-05 (agreement date; exact execution time not stated)",
+      "publication_time": "2026-10-06T12:00:00Z (08:00 ET)",
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "The disclosure establishes an agreement to settle/release proceedings, not that court dismissal orders had already been entered by the cutoff. The collected 8-K does not provide the full agreement text or identify every affected docket in the passages reviewed."
+    },
+    {
+      "observation": "The disclosed license economics are scheduled rather than an upfront $600 million receipt: 20 quarterly fees of $30 million, spanning Q4 2026 through Q3 2031. The 8-K also describes a separate 10-million-share purchase for $1 million, with closing contemplated on or before Oct. 6.",
+      "source_urls": [
+        "https://www.sec.gov/Archives/edgar/data/1282631/000110465926113897/tm2626949d1_8k.htm"
+      ],
+      "event_time": "2026-10-05 (agreements dated)",
+      "publication_time": "2026-10-06T12:05:21Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The filing expressly identifies collection risk for amounts owed under the license. It does not timestamp completion of the share-purchase closing or establish receipt of any quarterly license fee by cutoff."
+    },
+    {
+      "observation": "Immediately before the settlement announcement, Reuters reported Netlist’s new HBM-related ITC complaint seeking import restrictions on Micron products used in AI-related products, alongside prior patent litigation. This is the public pre-event context against which the settlement announcement should be read.",
+      "source_urls": [
+        "https://www.investing.com/news/stock-market-news/netlist-seeks-us-import-ban-on-micron-chips-used-in-google-nvidia-ai-computing-4923043"
+      ],
+      "event_time": "2026-09-25 (complaint reportedly first filed under seal)",
+      "publication_time": "2026-09-29 10:41 AM (site-displayed time; timezone not stated)",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The report concerns allegations and requested relief, not an ITC finding of infringement or an import ban. It records that Micron declined comment on that complaint; it is not a response to the later settlement announcement."
+    }
+  ],
+  "gaps": [
+    "The collected 8-K summary does not include the full settlement/license agreement text; exact docket-by-docket release scope, exceptions, effective-date mechanics, and required court actions remain unverified.",
+    "No evidence available by cutoff confirms that the first license payment was received, that the share-purchase closing occurred, or that courts had entered dismissal orders.",
+    "The supplied Investing.com/Reuters item provides the pre-cutoff independent report and exact publication metadata; a separate full-page archival snapshot of that specific item was not retrieved."
+  ],
+  "research_notes": "Cutoff: 2026-10-06T12:14:06.424952Z. The earliest traceable public announcement located is Netlist’s PR Newswire release at 08:00 ET on Oct. 6 (12:00Z); the SEC filing was accepted at 08:05:21 ET (12:05:21Z). The supplied Investing.com/Reuters message was published at 12:10:04Z and captured at 12:11:52Z, both before cutoff. The agreement itself is dated Oct. 5. Before the announcement, public reporting described active Netlist-Micron litigation, including a recent HBM-related ITC complaint seeking import restrictions. The new disclosure describes agreements to settle and mutually release pending proceedings, but the collected filing does not establish that courts had already entered dismissal orders or that any scheduled license payment had been collected. No later market reaction or post-cutoff fact is used."
+}

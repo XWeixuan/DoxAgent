@@ -1,0 +1,259 @@
+{
+  "case_key": "BE-03-02",
+  "evidence_cutoff_at": "2026-09-29T16:32:49.143492Z",
+  "reviewed_at": "2026-10-13T22:58:31.447607Z",
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a13747-b146-7121-96b1-0e671800c1fe",
+    "turn_id": "01a13747-b154-7e81-8912-ed1478d5ccf2",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 147200,
+        "inputTokens": 158647,
+        "outputTokens": 15797,
+        "reasoningOutputTokens": 11958,
+        "totalTokens": 174444
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 1487872,
+        "inputTokens": 1646103,
+        "outputTokens": 25708,
+        "reasoningOutputTokens": 20235,
+        "totalTokens": 1671811
+      }
+    },
+    "prompt_version": "w3-web-evidence-v1",
+    "input_fingerprint": "fec20926ed5f799ecb79d99fda1f7d80e583b46295a3183c48801676b846d9dd",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://www.goldmansachs.com/insights/articles/global-investment-is-forecast-to-exceed-1-trillion-in-2026",
+      "title": "Global AI Investment Is Forecast to Exceed $1 Trillion in 2026",
+      "published_at": "2026-08-07",
+      "time_precision": "DAY",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn7search0"
+      ],
+      "source_call_ids": [
+        "exec-8c1d218d-1be3-4efb-ba90-390bea00a4ab"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://www.goldmansachs.com/insights/articles/consumer-agents-signal-new-phase-for-ai-growth",
+      "title": "Consumer Agents Signal New Phase for AI Growth",
+      "published_at": "2026-09-18",
+      "time_precision": "DAY",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn8search2"
+      ],
+      "source_call_ids": [
+        "exec-8e9e0c47-ea48-4a81-b1f0-f365325a91cd"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://ramp.com/data/ai-index-sept-2026",
+      "title": "September 2026 Ramp AI Index: Cracks in the AI Thesis, Part 2",
+      "published_at": "2026-09-09",
+      "time_precision": "DAY",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn13search3"
+      ],
+      "source_call_ids": [
+        "exec-a8e25461-960b-44f2-b6da-90f8b818c344"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://www.apollo.com/wealth/insights-news/insights/daily-spark/ai-adoption-is-spreading-ai-spending-is-concentrating",
+      "title": "AI Adoption Is Spreading. AI Spending Is Concentrating",
+      "published_at": "2026-09-24",
+      "time_precision": "DAY",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn13search0"
+      ],
+      "source_call_ids": [
+        "exec-a8e25461-960b-44f2-b6da-90f8b818c344"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S5",
+      "url": "https://bloomberg.com/news/articles/2026-09-25/goldman-sees-hyperscaler-ai-capex-rising-50-to-1-2-trillion",
+      "title": "Goldman Sees Hyperscaler AI Capex Rising 50% to $1.2 Trillion",
+      "published_at": "2026-09-25T12:10:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn4search1"
+      ],
+      "source_call_ids": [
+        "exec-6042e118-08c6-4904-a766-3b1e4c0a82f5"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S6",
+      "url": "https://www.investing.com/news/stock-market-news/hyperscalers-need-300-billion-in-annual-ai-revenue-to-break-even-goldman-4917423",
+      "title": "Hyperscalers Need $300 Billion in Annual AI Revenue to Break Even: Goldman",
+      "published_at": "2026-09-25 08:11 (page display; timezone unspecified)",
+      "time_precision": "MINUTE",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn8search0"
+      ],
+      "source_call_ids": [
+        "exec-8e9e0c47-ea48-4a81-b1f0-f365325a91cd"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S7",
+      "url": "https://www.axios.com/2026/09/29/scoop-openais-annual-recurring-revenue-nears-70b",
+      "title": "Scoop: OpenAI’s Annual Recurring Revenue Nears $70B",
+      "published_at": "2026-09-29T14:15:40Z",
+      "time_precision": "EXACT",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn8news24"
+      ],
+      "source_call_ids": [
+        "exec-8e9e0c47-ea48-4a81-b1f0-f365325a91cd"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S8",
+      "url": "https://huggingnews.com/ai/update-us-cloud-giants-boost-ai-capex-outlook-66percent-to-189-trillion-bc651306",
+      "title": "US Cloud Giants Boost AI Capex Outlook 66% to $1.89 Trillion",
+      "published_at": "2026-09-29T16:27:24.496Z",
+      "time_precision": "EXACT",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UPDATED",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn5view0"
+      ],
+      "source_call_ids": [
+        "exec-678f5b5f-4c58-4f85-9ccb-d3cc6b7bc1ff"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "Prior context: Goldman’s Aug. 7 public estimate put 2026 consensus hyperscaler capex near $800B. Its Sep. 18 interview cited a $1.4T 2027 US hyperscaler capital-deployment estimate, with memory, power, and land constraints. Since the measures are not clearly comparable, the Sep. 25 report should not be described as a direct upward or downward Goldman revision from $1.4T.",
+      "source_urls": [
+        "https://www.goldmansachs.com/insights/articles/global-investment-is-forecast-to-exceed-1-trillion-in-2026",
+        "https://www.goldmansachs.com/insights/articles/consumer-agents-signal-new-phase-for-ai-growth"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-18",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "Goldman’s Aug. 7 $1T figure is broader global AI investment, not the same as US hyperscaler capex; the Sep. 18 $1.4T figure is phrased as capital deployment, not the exact AI-infrastructure-capex measure in Bloomberg."
+    },
+    {
+      "observation": "The earliest traceable public coverage found for Goldman’s client note is Bloomberg’s Sep. 25 06:10 MDT report (12:10Z): $1.2T in 2027 AI-infrastructure spending by five US hyperscalers, above $1.1T Street consensus, with about $300B in annual AI revenue needed to break even. Investing.com’s page displays publication at 08:11 AM the same day and relays related details.",
+      "source_urls": [
+        "https://bloomberg.com/news/articles/2026-09-25/goldman-sees-hyperscaler-ai-capex-rising-50-to-1-2-trillion",
+        "https://www.investing.com/news/stock-market-news/hyperscalers-need-300-billion-in-annual-ai-revenue-to-break-even-goldman-4917423"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-25T12:10:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The original Goldman client note was not located publicly. The coverage also reports monetization evidence: cloud revenue annualized about $70B above pre-AI trend in Q2 and announced backlogs above $1.5T; these do not equal realized AI revenue or returns."
+    },
+    {
+      "observation": "The supplied Sep. 29 feed capture reports a different claim: combined 2026–27 capex estimates of $1.89T, up 66% (about $750B) since the start of the year. That aggregate is not reconciled by the Sep. 25 public coverage found, which reports a single-year 2027 estimate of $1.2T.",
+      "source_urls": [
+        "https://huggingnews.com/ai/update-us-cloud-giants-boost-ai-capex-outlook-66percent-to-189-trillion-bc651306",
+        "https://bloomberg.com/news/articles/2026-09-25/goldman-sees-hyperscaler-ai-capex-rising-50-to-1-2-trillion"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-29T16:27:24.496Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "Feed text is a synthesis, not primary disclosure. Its company-level forecast series, 2026–27 scope, and January baseline remain unverified; do not equate the figure with company guidance or committed spending."
+    },
+    {
+      "observation": "Material contemporaneous evidence was mixed: Apollo’s Sep. 24 Ramp-based analysis found broader adoption but highly concentrated model-serving and neocloud spending; Ramp’s Sep. 9 index also reported slower adoption and falling sampled spend/prices. Separately, Axios reported on Sep. 29 that OpenAI’s annualized revenue was nearing $70B and B2B revenue had more than doubled since Q3 began.",
+      "source_urls": [
+        "https://www.apollo.com/wealth/insights-news/insights/daily-spark/ai-adoption-is-spreading-ai-spending-is-concentrating",
+        "https://ramp.com/data/ai-index-sept-2026",
+        "https://www.axios.com/2026/09/29/scoop-openais-annual-recurring-revenue-nears-70b"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-29T14:15:40Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "Ramp figures are sample-based and Apollo notes that the top customer decile accounts for most sampled spend; Axios relied on sources familiar with OpenAI’s financials and did not establish expenses or profitability."
+    }
+  ],
+  "gaps": [
+    "Goldman’s underlying Sep. 25 client note and its company-level forecast table were not publicly located; the original note’s distribution time is unknown.",
+    "The $1.89T aggregate, +66% revision, provider-by-provider values, and start-of-2026 comparison baseline in the supplied feed were not independently verified. Definitions and whether these are consensus or Goldman estimates remain unclear.",
+    "The feed’s $183B current AI-revenue estimate and its attribution to Anthropic/OpenAI were not independently validated against a consistent, auditable market-wide revenue measure.",
+    "The incoming HuggingNews page is dynamic and its current version may contain later additions. Only the supplied timestamped pre-cutoff feed capture is used for the 1.89T claim; later page content and post-cutoff material are excluded.",
+    "The news concerns aggregate AI infrastructure investment and monetization. It contains no Bloom Energy-specific order, contract, project, capacity, delivery, or customer-acceptance evidence."
+  ],
+  "research_notes": "Cutoff: 2026-09-29T16:32:49.143492Z. The supplied feed record was published at 16:27:24.496Z and collected at 16:29:19.792Z, before cutoff. Its $1.89T / +66% claim is a two-year 2026–27 aggregate; I could not independently verify its underlying company estimates or starting baseline. The earliest traceable public coverage found for the Goldman client note is Bloomberg on Sep. 25 at 06:10 MDT (12:10Z): it reports a $1.2T 2027 estimate, above $1.1T Street consensus, and about $300B in annual AI revenue needed to break even. Investing.com followed at 08:11 AM (timezone not stated on the page). These are not the same metric as the feed’s $1.89T two-year aggregate. Prior Goldman public commentary on Sep. 18 estimated $1.4T of 2027 US hyperscaler capital deployment, but its scope is not demonstrably comparable; do not characterize the Sep. 25 report as a direct revision from that figure. Demand/monetization evidence was mixed: Goldman cited stronger cloud revenues and backlogs; OpenAI revenue growth was reported on Sep. 29, while Apollo and Ramp data showed concentrated spend and possible adoption/price constraints. This is broad AI-infrastructure context, not evidence of Bloom Energy orders, projects, or allocated capacity. No prices or market reactions are used.",
+  "collection_prompt_version": "w3-web-evidence-v1"
+}

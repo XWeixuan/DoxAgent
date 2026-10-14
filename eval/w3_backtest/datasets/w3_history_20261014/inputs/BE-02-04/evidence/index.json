@@ -1,0 +1,23 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-29T09:26:01.472751Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "The Reuters Events original page returned an access error, and the earliest traceable listing establishes the publication date but not the exact publication hour or a dated archived text snapshot.",
+    "The case-provided Reuters.com record is later than cutoff; it was excluded. The accessible same-day Reuters syndication is dated 2026-09-28 but has no time-of-day or update marker.",
+    "No located source identifies a Bloom-associated project that switched from Bloom to gas turbines, gives a Bloom-specific lost order, or quantifies comparative deployment economics for a named project.",
+    "Forecasts and announced supply transactions do not establish realized BTM additions, turbine deliveries, commissioning, or technology allocation by the cutoff."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

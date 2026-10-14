@@ -1,0 +1,23 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-10-05T11:21:01.102359Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "未找到 Susquehanna 原始报告、完整样本范围、型号份额定义及统计截止日；相应数字目前只能作为新闻转述的分析师估计处理。",
+    "Culpium 初始报道和后续页面仅提供日期；Musk 帖的嵌入时间没有时区。案例报道与嵌入帖的发帖日期不一致，精确 UTC 事件时间未核实。",
+    "未找到 cutoff 前可核实的 TSMC 或 Intel 官方公告说明讨论条款、最终角色、订单或产能安排。",
+    "未找到能在 cutoff 前明确核实发布时间的另一篇独立同日深度报道；已检索到的 DCD 10 月 5 日页面只有日期，没有可用于判断是否早于 cutoff 的具体时刻。"
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

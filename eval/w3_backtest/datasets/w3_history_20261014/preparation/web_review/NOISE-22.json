@@ -1,0 +1,98 @@
+{
+  "case_key": "NOISE-22",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-09-29T11:13:23.496227Z",
+  "reviewed_at": "2026-10-13T22:58:33.161445Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 3,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a13778-efd8-7541-b39c-3e8b5fb60a28",
+    "turn_id": "01a13778-efe7-7070-aa66-b0a958498f1b",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 72448,
+        "inputTokens": 74761,
+        "outputTokens": 5321,
+        "reasoningOutputTokens": 4108,
+        "totalTokens": 80082
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 173056,
+        "inputTokens": 224434,
+        "outputTokens": 13538,
+        "reasoningOutputTokens": 12081,
+        "totalTokens": 237972
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "7458aadd01bb16ba59c648e7cf54d4ffeb318c0a9728d1802675011d41cdd9de",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://www.tomshardware.com/pc-components/grab-this-4k-ready-gaming-pc-with-a-7800x3d-and-rtx-5070-for-under-usd2-000-right-now-saving-you-usd170-cyberpowerpc-machine-ships-with-32gb-ddr5-and-a-1tb-ssd-ready-for-high-performance-gameplay",
+      "title": "Grab this 4K-ready gaming PC with a 7800X3D and RTX 5070 for under $2,000 right now, saving you $170 — CyberPowerPC machine ships with 32GB DDR5 and a 1TB SSD, ready for high-performance gameplay",
+      "published_at": "2026-09-29T11:10:00Z",
+      "time_precision": "EXACT",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search0"
+      ],
+      "source_call_ids": [
+        "exec-8cf5496d-25da-4a2f-854a-f7a9cbfc274c"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "Tom's Hardware reported the PC offer in an item published at 2026-09-29T11:10:00Z. This establishes what the article reported before cutoff, not the offer's start/end time or completed sales.",
+      "source_urls": [
+        "https://www.tomshardware.com/pc-components/grab-this-4k-ready-gaming-pc-with-a-7800x3d-and-rtx-5070-for-under-usd2-000-right-now-saving-you-usd170-cyberpowerpc-machine-ships-with-32gb-ddr5-and-a-1tb-ssd-ready-for-high-performance-gameplay"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-29T11:10:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The item describes one consumer PC configuration and an advertised price; it does not identify a DRAM supplier, component shipment volume, or a Micron-specific sale. The publication timestamp is not evidence of the promotion's exact start or end."
+    },
+    {
+      "observation": "The reported 32GB DDR5 specification does not identify the memory maker or connect the system to Micron. The inference is limited to the article's stated configuration; it does not establish a broader consumer-memory trend or change in Micron's company-level metrics.",
+      "source_urls": [
+        "https://www.tomshardware.com/pc-components/grab-this-4k-ready-gaming-pc-with-a-7800x3d-and-rtx-5070-for-under-usd2-000-right-now-saving-you-usd170-cyberpowerpc-machine-ships-with-32gb-ddr5-and-a-1tb-ssd-ready-for-high-performance-gameplay"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-29T11:10:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "A single retail bundle is not supplier attribution, industry pricing evidence, or a measure of memory shipments, demand, or market share."
+    }
+  ],
+  "gaps": [
+    "No contemporaneous archived retailer listing or checkout capture was verified, so the advertised price and availability are supported here by the editorial report rather than an independently captured transaction page.",
+    "The PC offer does not name the DRAM manufacturer, memory-module part, or Micron as a supplier.",
+    "Independent same-deal coverage was located, but its initial publication time and pre-cutoff content snapshot could not be verified; it is not used as contemporaneous corroboration.",
+    "The promotion's exact start/end time, inventory, and sales volume remain unknown."
+  ],
+  "research_notes": "Cutoff: 2026-09-29T11:13:23.496227Z. The earliest traceable item located is the Tom's Hardware report; the supplied RSS record gives a publication time of 11:10:00Z and a collection time of 11:12:56.591136Z, both before cutoff. The search-found article page was crawled later, so only claims present in that pre-cutoff RSS title/body are used. The item reports a consumer PC offer, not a Micron disclosure or memory-market data point. Compared with the supplied research context, which focuses on Micron and AI/server memory measures, this adds no attributable Micron supplier, shipment, share, ASP, or revenue information. No trade decision or past-decision evaluation is made."
+}

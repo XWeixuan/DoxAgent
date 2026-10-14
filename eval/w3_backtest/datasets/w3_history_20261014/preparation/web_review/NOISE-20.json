@@ -1,0 +1,206 @@
+{
+  "case_key": "NOISE-20",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-09-30T09:16:50.129146Z",
+  "reviewed_at": "2026-10-13T22:58:33.105185Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 6,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a13776-bb72-7dc1-b6b9-8fde5bc7ba45",
+    "turn_id": "01a13776-bb80-7771-9d86-3a0d1e89252f",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 76544,
+        "inputTokens": 86512,
+        "outputTokens": 13008,
+        "reasoningOutputTokens": 10839,
+        "totalTokens": 99520
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 357632,
+        "inputTokens": 437159,
+        "outputTokens": 15361,
+        "reasoningOutputTokens": 12626,
+        "totalTokens": 452520
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "1e14e29d6ecc1feeb214e744ff6c0ca639c768d34d0a0766209a48728d07d963",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://www.ey.gov.tw/File/B93CA360D6EA132C/a6af8f74-e024-489b-a261-2a905524f759?A=C",
+      "title": "行政院卓院長向立法院第11屆第6會期所提口頭施政報告",
+      "published_at": "2026-09-29",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn4view0",
+        "turn5search0"
+      ],
+      "source_call_ids": [
+        "exec-61fe4856-83c1-436e-b775-d5bcdb0a024d",
+        "exec-d185dd35-3557-4829-9015-94189b480349"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://www.digitimes.com/news/a20260930PD240/taiwan-tsmc-manufacturing-development-government.html",
+      "title": "Taiwan backs TSMC's US push but insists core R&D stays home",
+      "published_at": "2026-09-30T09:04:00Z",
+      "time_precision": "EXACT",
+      "updated_at": "2026-09-30T09:06:00Z",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "BEFORE_CUTOFF",
+      "content_state": "UPDATED",
+      "decision": "KEEP",
+      "reason": "The supplied publication and revision times do not exceed the case cutoff.",
+      "source_result_refs": [
+        "turn0search0",
+        "turn4search0",
+        "turn5search2"
+      ],
+      "source_call_ids": [
+        "exec-61fe4856-83c1-436e-b775-d5bcdb0a024d",
+        "exec-d185dd35-3557-4829-9015-94189b480349",
+        "exec-e00e67f2-6a41-4e15-87c9-acb153b3fadd"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://udn.com/news/story/6656/9782755?from=udn-catelistnews_ch2",
+      "title": "藍委不進場、綠委不捧場 卓榮泰立院施政報告拋4懇求場面冷清",
+      "published_at": "2026-09-29T02:35:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn5search10"
+      ],
+      "source_call_ids": [
+        "exec-d185dd35-3557-4829-9015-94189b480349"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://english.ey.gov.tw/Page/61BF20C3E89B856/c05dc0da-a607-4418-affd-949a11abd0b7",
+      "title": "Taiwan commits major funding to semiconductor facilities, chip design software",
+      "published_at": "2026-09-10",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn2search4"
+      ],
+      "source_call_ids": [
+        "exec-42ffa63f-c509-4a88-93b7-6670080769d5"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S5",
+      "url": "https://focustaiwan.tw/business/202609260007",
+      "title": "Economics Ministry approves US$44B in TSMC U.S. investments since 2020",
+      "published_at": "2026-09-26T07:44:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn4search4"
+      ],
+      "source_call_ids": [
+        "exec-61fe4856-83c1-436e-b775-d5bcdb0a024d"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "The Executive Yuan archive lists Cho’s oral policy report to the 11th Legislature’s sixth session as dated September 29, 2026. The official PDF is the earliest primary-source record located, but the retrieved text extract did not show the particular three-continent passage.",
+      "source_urls": [
+        "https://www.ey.gov.tw/File/B93CA360D6EA132C/a6af8f74-e024-489b-a261-2a905524f759?A=C",
+        "https://www.ey.gov.tw/Page/5C208DA85C814C47"
+      ],
+      "event_time": "2026-09-29",
+      "publication_time": "2026-09-29",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The date is documented, but the report’s exact relevant wording and any facility-level details were not verified from the extracted PDF passage."
+    },
+    {
+      "observation": "DigiTimes’ September 30 lead attributes to Cho a description of Taiwan’s semiconductor industry as having expanded from Hsinchu through the Central and Southern Taiwan science parks to manufacturing bases on three continents. The page shows publication at 09:04Z and update at 09:06Z, before cutoff.",
+      "source_urls": [
+        "https://www.digitimes.com/news/a20260930PD240/taiwan-tsmc-manufacturing-development-government.html"
+      ],
+      "event_time": "2026-09-29",
+      "publication_time": "2026-09-30T09:04:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "Only the headline and lead were accessible. The claim gives no named countries, facilities, capacity, schedule, or company-specific details; the headline’s R&D framing is not enough to establish the status of any particular R&D site."
+    },
+    {
+      "observation": "UDN contemporaneously reported Cho’s policy report to the Legislature on September 29, independently corroborating the public delivery and setting but not the specific three-continent statement.",
+      "source_urls": [
+        "https://udn.com/news/story/6656/9782755?from=udn-catelistnews_ch2"
+      ],
+      "event_time": "2026-09-29",
+      "publication_time": "2026-09-29T02:35:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The retrieved report focused on the legislative session and Cho’s requests to lawmakers, not the semiconductor-footprint wording; its revision status is unknown."
+    },
+    {
+      "observation": "Prior public context included a September 10 government plan for domestic semiconductor facilities and R&D-related infrastructure, as well as a September 26 report on TSMC’s Arizona expansion plan. Inference: global manufacturing presence and continued Taiwan-based R&D policy can coexist; the broad statement alone does not establish a new operational milestone.",
+      "source_urls": [
+        "https://english.ey.gov.tw/Page/61BF20C3E89B856/c05dc0da-a607-4418-affd-949a11abd0b7",
+        "https://focustaiwan.tw/business/202609260007"
+      ],
+      "event_time": "2026-09-10 to 2026-09-26",
+      "publication_time": "2026-09-10 to 2026-09-26",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The government plan and TSMC investment plan are contextual facts; the retrieved material does not demonstrate completed projects, the identity of all three continents, or a change in Micron’s operations."
+    }
+  ],
+  "gaps": [
+    "The relevant paragraph in the September 29 primary report was not exposed in the retrieved PDF text; exact original wording and any named locations remain unverified.",
+    "DigiTimes’ remaining article text is paywalled, limiting verification of its support for the footprint claim and the distinction between core R&D and other overseas R&D.",
+    "No pre-cutoff independent report located in this collection repeated the specific three-continent claim.",
+    "The supplied statement contains no Micron-specific facility, product, capacity, shipment, customer, or financial detail."
+  ],
+  "research_notes": "Cutoff: 2026-09-30T09:16:50Z (17:16:50 Taipei). The Executive Yuan archive lists Cho’s sixth-session oral report dated September 29; it is the earliest primary-source record located, though the extracted PDF text did not expose the specific three-continent sentence. The earliest accessible coverage located with that sentence is DigiTimes, published at 09:04Z and updated at 09:06Z on September 30, both before cutoff; only its headline and lead were accessible. Earlier policy context already paired a Taiwan-rooted semiconductor strategy with global expansion, alongside plans for domestic semiconductor R&D infrastructure. Inference: the broad footprint statement does not itself identify a new facility, added capacity, timing, or a Micron-specific development. No post-cutoff coverage, market reaction, or prices are used."
+}

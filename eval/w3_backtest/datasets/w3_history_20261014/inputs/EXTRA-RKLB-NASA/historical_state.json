@@ -1,0 +1,4230 @@
+{
+  "recent_trade_intents": [],
+  "history_matches": [],
+  "watches": [],
+  "pins": [],
+  "policy_consumptions": [],
+  "provisional": [
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Rocket Lab",
+          "RKLB",
+          "Kepler Communications",
+          "Neutron"
+        ],
+        "occurrence_date": null,
+        "proposition": "Rocket Lab sold Kepler Communications one dedicated Neutron flight.",
+        "subject_time": "Dedicated Neutron flight"
+      },
+      "candidate_index": 0,
+      "case_id": "case_889ca83a2d034aa7b8c6c93032ff3fa7",
+      "created_at": "2026-09-30T11:16:32.518719Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E96",
+      "runtime_signature": "5ae3271daf057de30f863fb952ab3dc1a6bd07388c6d960848e6f96cddd204cf",
+      "snapshot_version": 1,
+      "source_message_id": "std_24a193740c96414baddc15bd4c9b9d5e",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "AST SpaceMobile",
+          "ASTS",
+          "Abel Avellan"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "AST SpaceMobile董事会通过了一项涵盖CEO Abel Avellan及其他高级管理人员的变更控制遣散安排。",
+        "subject_time": "2026-09-30"
+      },
+      "candidate_index": 0,
+      "case_id": "case_341175c83ba4437094c989802edf1697",
+      "created_at": "2026-09-30T14:19:07.370372Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E97",
+      "runtime_signature": "94a53523f6c15d31d692d27572c841475091b090ee4238199188eb2a7652f018",
+      "snapshot_version": 2,
+      "source_message_id": "std_99f5ec0dea924440a10f19dadfdb5d30",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "AST SpaceMobile",
+          "ASTS"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "该变更控制遣散安排通常要求同时发生控制权变更和符合条件的高管离职。",
+        "subject_time": "2026-09-30"
+      },
+      "candidate_index": 1,
+      "case_id": "case_341175c83ba4437094c989802edf1697",
+      "created_at": "2026-09-30T14:19:07.387049Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E98",
+      "runtime_signature": "252103c74eacc821f5ae9f61f9f0c19c63c1104bea3021e8e48bcd3356f3e052",
+      "snapshot_version": 3,
+      "source_message_id": "std_99f5ec0dea924440a10f19dadfdb5d30",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMORED",
+        "entities": [
+          "AST SpaceMobile",
+          "ASTS"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "零售交易者因该披露猜测AST SpaceMobile可能进行战略投资或被收购，但消息未确认存在交易。",
+        "subject_time": "2026-09-30"
+      },
+      "candidate_index": 2,
+      "case_id": "case_341175c83ba4437094c989802edf1697",
+      "created_at": "2026-09-30T14:19:07.411333Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E99",
+      "runtime_signature": "32be2263436ce285407267ad4612cdf3c206236832ca4c4331cbe422c3db10bd",
+      "snapshot_version": 4,
+      "source_message_id": "std_99f5ec0dea924440a10f19dadfdb5d30",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "AST SpaceMobile",
+          "ASTS"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "AST SpaceMobile股价在周三早盘上涨约5%至62.30美元。",
+        "subject_time": "2026-09-30 early trading"
+      },
+      "candidate_index": 3,
+      "case_id": "case_341175c83ba4437094c989802edf1697",
+      "created_at": "2026-09-30T14:19:07.432555Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E100",
+      "runtime_signature": "c47a5ee0e4ff957b28025e1a0a5003186eb1676c1872f17b8c6bc206683bb963",
+      "snapshot_version": 5,
+      "source_message_id": "std_99f5ec0dea924440a10f19dadfdb5d30",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Rocket Lab",
+          "RKLB"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Rocket Lab股价在周三早盘上涨约5%至73.51美元。",
+        "subject_time": "2026-09-30 early trading"
+      },
+      "candidate_index": 4,
+      "case_id": "case_341175c83ba4437094c989802edf1697",
+      "created_at": "2026-09-30T14:19:07.449856Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E101",
+      "runtime_signature": "4768179360082a80f40c475521bdf86514fd29b39885c28e30e018b28d01d8da",
+      "snapshot_version": 6,
+      "source_message_id": "std_99f5ec0dea924440a10f19dadfdb5d30",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-30"
+    }
+  ],
+  "limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "global_state": {
+    "watches": [],
+    "pins": []
+  },
+  "event_details": {
+    "requested_event_ids": [
+      "E1",
+      "E2",
+      "E3",
+      "E4",
+      "E5",
+      "E6",
+      "E7",
+      "E8",
+      "E9",
+      "E10",
+      "E11",
+      "E12",
+      "E13",
+      "E14",
+      "E15",
+      "E16",
+      "E17",
+      "E18",
+      "E19",
+      "E20",
+      "E21",
+      "E22",
+      "E23",
+      "E24",
+      "E25",
+      "E26",
+      "E27",
+      "E28",
+      "E29",
+      "E30",
+      "E31",
+      "E32",
+      "E33",
+      "E34",
+      "E35",
+      "E36",
+      "E37",
+      "E38",
+      "E39",
+      "E40",
+      "E41",
+      "E42",
+      "E43",
+      "E44",
+      "E45",
+      "E46",
+      "E47",
+      "E48",
+      "E49",
+      "E50",
+      "E51",
+      "E52",
+      "E53",
+      "E54",
+      "E55",
+      "E56",
+      "E57",
+      "E58",
+      "E59",
+      "E60",
+      "E61",
+      "E62",
+      "E63",
+      "E64",
+      "E65",
+      "E67",
+      "E68",
+      "E69",
+      "E70",
+      "E71",
+      "E72",
+      "E73",
+      "E74",
+      "E75",
+      "E76",
+      "E77",
+      "E78",
+      "E79",
+      "E80",
+      "E81",
+      "E82",
+      "E83",
+      "E84",
+      "E85",
+      "E86",
+      "E87",
+      "E88",
+      "E89",
+      "E90",
+      "E91",
+      "E92",
+      "E93",
+      "E94",
+      "E95"
+    ],
+    "canonical_events": [
+      {
+        "event_id": "E1",
+        "title": "Rocket Lab goes public through a SPAC merger",
+        "event_type": "OTHER_CORPORATE_EVENT",
+        "occurred_at": "2021-08-25",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab became publicly traded through a SPAC merger and began trading at $11.58 on its first trading day.",
+        "known_event_summary": "On 2021-08-25, Rocket Lab went public through a SPAC merger and began trading.",
+        "related_event_ids": [],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F1",
+            "proposition": "Rocket Lab started trading at $11.58 on its first day of trading.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2021-08-25",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F2",
+            "proposition": "Rocket Lab went public through a merger with a SPAC on August 25, 2021.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2021-08-25",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E2",
+        "title": "Rocket Lab receives the $816 million SDA Tracking Layer Tranche 3 award",
+        "event_type": "MATERIAL_CONTRACT",
+        "occurred_at": "2025-12-19",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab received an $816 million Space Development Agency Tracking Layer Tranche 3 award.",
+        "known_event_summary": "On 2025-12-19, Rocket Lab received the $816 million SDA Tracking Layer Tranche 3 award.",
+        "related_event_ids": [],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F3",
+            "proposition": "$816 million of Rocket Lab's Space Development Agency Tracking Layer Tranche 3 contract was awarded.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2025-12-19",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E3",
+        "title": "Rocket Lab's Neutron Stage 1 tank fails a pressure test",
+        "event_type": "PRODUCT_MILESTONE",
+        "occurred_at": "2026-01-21",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "A hydrostatic pressure test failed when Neutron's first-stage tank ruptured.",
+        "known_event_summary": "On 2026-01-21, a Neutron first-stage tank ruptured during a hydrostatic pressure test.",
+        "related_event_ids": [],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F4",
+            "proposition": "A hydrostatic pressure test failed when the Neutron rocket's first-stage tank ruptured on 2026-01-21.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-01-21",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E4",
+        "title": "NASA Goddard awards Rocket Lab a Mars communications architecture study",
+        "event_type": "MATERIAL_CONTRACT",
+        "occurred_at": "2026-02-23",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "NASA Goddard awarded Rocket Lab a $390,936 study of Mars communications architectures, a completed study distinct from the later Mars network competition.",
+        "known_event_summary": "On 2026-02-23, NASA Goddard awarded Rocket Lab a $390,936 Mars communications architecture study.",
+        "related_event_ids": [],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F5",
+            "proposition": "NASA Goddard awarded Rocket Lab a $390,936 study on Mars communications architectures.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-02-23",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E5",
+        "title": "Rocket Lab updates Neutron's debut after the Stage 1 tank failure",
+        "event_type": "PRODUCT_MILESTONE",
+        "occurred_at": "2026-02-26",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab reported that the Stage 1 tank pressure-test failure pushed Neutron's expected debut to late or Q4 2026.",
+        "known_event_summary": "On 2026-02-26, Rocket Lab updated Neutron's debut after the Stage 1 tank failure.",
+        "related_event_ids": [
+          "E3",
+          "E19"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F6",
+            "proposition": "The Neutron Stage 1 tank pressure-test failure pushed the expected debut from mid-2026 to late or Q4 2026.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q4",
+            "fact_occurred_at": "2026-02-26",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E6",
+        "title": "Rocket Lab signs the $190 million HASTE MACH-TB 2.0 contract",
+        "event_type": "MATERIAL_CONTRACT",
+        "occurred_at": "2026-03-18",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab's HASTE work for MACH-TB 2.0 covers 20 hypersonic test flights under a roughly $190 million contract led in part by Kratos.",
+        "known_event_summary": "On 2026-03-18, Rocket Lab announced a roughly $190 million HASTE contract for 20 MACH-TB 2.0 hypersonic test flights.",
+        "related_event_ids": [],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F7",
+            "proposition": "Rocket Lab announced a US$190 million HASTE contract for 20 hypersonic test flights under MACH-TB 2.0.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-03-18",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F8",
+            "proposition": "Kratos Defense & Security Solutions leads Task Area 1 of the MACH-TB 2.0 program under which Rocket Lab will perform the HASTE flights.",
+            "assertion_state": "ONGOING",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-03-18",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F9",
+            "proposition": "Rocket Lab described the March 2026 HASTE award as its single largest launch agreement at the time.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-03-18",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F10",
+            "proposition": "MACH-TB 2.0 aims to expand the number and frequency of hypersonic flight-test opportunities.",
+            "assertion_state": "ONGOING",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-03-18",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F11",
+            "proposition": "Rocket Lab Corporation's HASTE vehicle has a payload capacity of up to approximately 700 kilograms.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-09",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F12",
+            "proposition": "MACH-TB 2.0 is a US$1.45 billion program.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-09",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E7",
+        "title": "Rocket Lab updates material bookings and launch backlog",
+        "event_type": "MATERIAL_CONTRACT",
+        "occurred_at": "2026-03-31..2026-09-12",
+        "occurrence_time_precision": "INTERVAL",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab reported material launch and space-systems bookings, more than 90 launches in backlog, more than $1 billion in new contracts, and a 45.5% near-term conversion expectation.",
+        "known_event_summary": "From Q2 through early Q3 2026, Rocket Lab reported material bookings and a launch backlog above 90 missions.",
+        "related_event_ids": [],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F13",
+            "proposition": "Rocket Lab booked more than $437 million in orders for Electron, HASTE, and Neutron.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-08-10",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F14",
+            "proposition": "Rocket Lab reported more than $1 billion in new contracts spanning Q2 2026 and the subsequent early-Q3 period.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q2 and early Q3",
+            "fact_occurred_at": "2026-08-10",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F15",
+            "proposition": "Rocket Lab exited Q2 2026 with a backlog of more than 90 launches.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q2",
+            "fact_occurred_at": "2026-08-10",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F16",
+            "proposition": "Rocket Lab reported more than $1 billion in new contracts across launch and space-systems businesses during Q3 2026.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q3",
+            "fact_occurred_at": "2026-09-01",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F17",
+            "proposition": "Management expected approximately 45.5% of the current backlog to convert into revenue over the next 12 months.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "next 12 months",
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F18",
+            "proposition": "Rocket Lab had more than 90 signed launch contracts in its Electron, HASTE, and Neutron backlog.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F19",
+            "proposition": "Rocket Lab won additional national-security contracts in the recent period.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-12",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E8",
+        "title": "Rocket Lab completes the Mynaric acquisition",
+        "event_type": "M_AND_A",
+        "occurred_at": "2026-04-14",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab completed the Mynaric acquisition in Q2 2026.",
+        "known_event_summary": "In Q2 2026, Rocket Lab completed the Mynaric acquisition.",
+        "related_event_ids": [],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F20",
+            "proposition": "Rocket Lab completed the acquisition of Mynaric in Q2 2026.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q2",
+            "fact_occurred_at": "2026-04-14",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E9",
+        "title": "Rocket Lab and Raytheon selected for Golden Dome interceptor work",
+        "event_type": "MATERIAL_CONTRACT",
+        "occurred_at": "2026-05-07",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab was selected with Raytheon for Golden Dome Space Based Interceptor work.",
+        "known_event_summary": "On 2026-05-07, Rocket Lab was selected with Raytheon for Golden Dome work.",
+        "related_event_ids": [],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F21",
+            "proposition": "Rocket Lab was selected to work with Raytheon on the Golden Dome Space Based Interceptor program.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-05-07",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E10",
+        "title": "Rocket Lab secures additional Synspective Electron bookings",
+        "event_type": "MATERIAL_CONTRACT",
+        "occurred_at": "2026-06-01..2026-09-04",
+        "occurrence_time_precision": "INTERVAL",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab and Synspective reported 16 additional dedicated Electron missions booked through 2030, following a June contract described as covering 17 launches.",
+        "known_event_summary": "From June through September 2026, Rocket Lab reported additional Synspective Electron bookings through 2030.",
+        "related_event_ids": [
+          "E36"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F22",
+            "proposition": "Rocket Lab had 16 additional dedicated Electron missions booked for Synspective through 2030.",
+            "assertion_state": "ONGOING",
+            "subject_time": "2030",
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F23",
+            "proposition": "Synspective signed a contract for 17 additional Electron launches with Rocket Lab in June 2026.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "2026-06",
+            "fact_occurred_at": "2026-09-03",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E11",
+        "title": "Rocket Lab proposes an approximately $8 billion Iridium acquisition",
+        "event_type": "M_AND_A",
+        "occurred_at": "2026-06-07",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab proposed an approximately $8 billion half-stock, half-cash Iridium acquisition; the target profile and expected strategic and financial effects remain prospective.",
+        "known_event_summary": "On 2026-06-07, Rocket Lab proposed an approximately $8 billion half-stock, half-cash acquisition of Iridium.",
+        "related_event_ids": [],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F24",
+            "proposition": "Iridium generated approximately $288 million of positive free cash flow over the last 12 months.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "TTM",
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F25",
+            "proposition": "The proposed acquisition would add Iridium's 66-satellite network, approximately 2.5 million subscribers, and more than $870 million in annual revenue to Rocket Lab.",
+            "assertion_state": "EXPECTED",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F26",
+            "proposition": "Rocket Lab proposed acquiring Iridium Communications in an approximately $8 billion half-stock, half-cash transaction.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F27",
+            "proposition": "Rocket Lab was expected to become profitable and free-cash-flow positive after the Iridium acquisition.",
+            "assertion_state": "EXPECTED",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-03",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F28",
+            "proposition": "Iridium Communications had a constellation of 66 satellites and more than 2.5 million subscribers.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-04",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F29",
+            "proposition": "Iridium was forecast to generate more than $313 million of positive free cash flow and more than $135 million of GAAP profit in 2027.",
+            "assertion_state": "FORECAST",
+            "subject_time": "FY2027",
+            "fact_occurred_at": "2026-09-07",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F30",
+            "proposition": "Iridium generated approximately $884 million in annual revenue with 72% gross-profit margins.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-07",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F31",
+            "proposition": "Peter Beck said the pending Iridium acquisition could position Rocket Lab as a self-launching, tier-one space company.",
+            "assertion_state": "EXPECTED",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-08",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E12",
+        "title": "SpaceX IPO-linked pullback affects space-sector stocks",
+        "event_type": "MARKET_EPISODE",
+        "occurred_at": "2026-06-12",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Space-sector and Rocket Lab shares experienced a pullback associated with the SpaceX IPO, with Rocket Lab later reported down roughly 40% from the IPO.",
+        "known_event_summary": "On 2026-06-12, the SpaceX IPO was followed by a space-sector pullback; by 2026-09-29 Rocket Lab was reported down roughly 40% since the IPO.",
+        "related_event_ids": [
+          "E13"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F32",
+            "proposition": "Rocket Lab (RKLB) stock fell 10.8% following SpaceX's June 12 debut.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-06-12",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F33",
+            "proposition": "Space stocks experienced a sharp pullback following the completion of the SpaceX IPO.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-01",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F34",
+            "proposition": "The SpaceX IPO broadened investor interest beyond traditional space-focused funds.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-04",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F35",
+            "proposition": "Share prices of space-economy stocks collapsed following the SpaceX IPO.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-05",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F289",
+            "proposition": "Rocket Lab shares had fallen roughly 40% since SpaceX's initial public offering.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "2026-06-12..2026-09-29",
+            "fact_occurred_at": "2026-09-29",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E13",
+        "title": "SpaceX conducts a June 2026 initial public offering",
+        "event_type": "FINANCING",
+        "occurred_at": "2026-06-12",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "SpaceX conducted a June 2026 initial public offering and was reported at a very high valuation; the external catalyst is retained for sector context.",
+        "known_event_summary": "On 2026-06-12, SpaceX conducted an initial public offering.",
+        "related_event_ids": [],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F36",
+            "proposition": "SpaceX listed at a valuation of approximately $1.75 trillion, corresponding to about 94 times its annual sales of $18.67 billion and a net loss of $4.94 billion.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-06-12",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F37",
+            "proposition": "SpaceX conducted an IPO in June where it floated only a small portion of its shares.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-09",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E14",
+        "title": "Rocket Lab launches Pioneer for the U.S. Space Force",
+        "event_type": "PRODUCT_MILESTONE",
+        "occurred_at": "2026-06-19",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab launched the Pioneer spacecraft aboard Electron for the U.S. Space Force.",
+        "known_event_summary": "On 2026-06-19, Rocket Lab launched Pioneer for the U.S. Space Force.",
+        "related_event_ids": [],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F38",
+            "proposition": "Rocket Lab launched the Pioneer spacecraft aboard the Electron rocket for the U.S. Space Force on 2026-06-19.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-06-19",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E15",
+        "title": "ARK Investment Management reduces its Q2 Rocket Lab position",
+        "event_type": "INVESTOR_EVENT",
+        "occurred_at": "2026-06-30",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "ARK Investment Management ended Q2 2026 with a materially smaller Rocket Lab position, holding 1.63 million shares versus 2.24 million three months earlier, approximately a 27% reduction.",
+        "known_event_summary": "On 2026-06-30, ARK Investment Management held 1.63 million Rocket Lab shares versus 2.24 million three months earlier, a roughly 27% Q2 reduction.",
+        "related_event_ids": [],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F39",
+            "proposition": "ARK Investment Management ended Q2 2026 with 1.63 million shares of Rocket Lab versus 2.24 million shares three months earlier, a reduction of approximately 27%.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q2",
+            "fact_occurred_at": "2026-06-30",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E16",
+        "title": "Rocket Lab surpasses 250 spacecraft delivered",
+        "event_type": "PRODUCT_MILESTONE",
+        "occurred_at": "2026-06-30",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab reported delivering more than 250 spacecraft through June 30, 2026.",
+        "known_event_summary": "On 2026-06-30, Rocket Lab reported more than 250 spacecraft delivered.",
+        "related_event_ids": [],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F40",
+            "proposition": "Rocket Lab delivered more than 250 spacecraft through June 30.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-06-30",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E17",
+        "title": "Rocket Lab receives a Space Force RSLP award for up to 18 missions",
+        "event_type": "MATERIAL_CONTRACT",
+        "occurred_at": "2026-07-27",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab received a $266 million RSLP contract covering up to 18 suborbital missile-defense missions.",
+        "known_event_summary": "On 2026-07-27, Rocket Lab received a $266 million Space Force RSLP award for up to 18 suborbital missions.",
+        "related_event_ids": [],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F41",
+            "proposition": "Rocket Lab received a U.S. Space Force RSLP award for up to 18 suborbital missile-defense missions, reported as a contract worth $266 million.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-07-27",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E18",
+        "title": "Rocket Lab wins the $397 million Space Force Flatellite contract",
+        "event_type": "MATERIAL_CONTRACT",
+        "occurred_at": "2026-08-04",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab received a $397 million SB-AMTI contract to build and launch Flatellite spacecraft and expand into space-based airborne-threat tracking.",
+        "known_event_summary": "On 2026-08-04, Rocket Lab received a $397 million U.S. Space Force SB-AMTI Flatellite contract.",
+        "related_event_ids": [],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F42",
+            "proposition": "Rocket Lab received a $397 million U.S. Space Force SB-AMTI contract to build and launch Flatellite spacecraft.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-08-04",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F43",
+            "proposition": "Rocket Lab was expanding into space-based airborne-threat tracking using Flatellite buses.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-08-04",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E19",
+        "title": "Rocket Lab narrows Neutron's launch window toward a possible 2027 debut",
+        "event_type": "PRODUCT_MILESTONE",
+        "occurred_at": "2026-08-10..2026-09-10",
+        "occurrence_time_precision": "INTERVAL",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab reported a narrowing end-2026 launch window, no specific date, and expectations that the first launch could move into early 2027.",
+        "known_event_summary": "From 2026-08-10 through 2026-09-10, Rocket Lab narrowed Neutron's launch window and raised a possible 2027 debut.",
+        "related_event_ids": [
+          "E5",
+          "E24",
+          "E26"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F44",
+            "proposition": "Management said Neutron's end-of-year 2026 launch window was narrowing.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q4",
+            "fact_occurred_at": "2026-08-10",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F45",
+            "proposition": "Rocket Lab had not provided a specific first-Neutron launch date and the debut had been delayed from earlier targets.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F46",
+            "proposition": "Neutron had not yet reached orbit as of the reviewed period.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F47",
+            "proposition": "Neutron's first full test flight was planned for late 2026 or early 2027.",
+            "assertion_state": "PLAN",
+            "subject_time": "2026-10-01..2027-03-31",
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E20",
+        "title": "Rocket Lab presents Neutron's economic outlook and demand signals",
+        "event_type": "PRODUCT_MILESTONE",
+        "occurred_at": "2026-08-10..2026-09-13",
+        "occurrence_time_precision": "INTERVAL",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab described proposed Neutron orders, high pre-first-flight demand, expected revenue per flight, a post-flight cash-flow path, and planned payload capacity.",
+        "known_event_summary": "From 2026-08-10 through 2026-09-13, Rocket Lab reported Neutron economic and demand expectations, including high demand before first flight.",
+        "related_event_ids": [
+          "E24",
+          "E26"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F48",
+            "proposition": "Management expected meaningful cash-flow improvement approximately 18 to 24 months after Neutron's first successful flight.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "18 to 24 months after Neutron's first successful flight",
+            "fact_occurred_at": "2026-08-10",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F49",
+            "proposition": "Management expected adjusted EBITDA to turn positive in the quarter following Neutron's first successful flight.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "quarter following Neutron's first successful flight",
+            "fact_occurred_at": "2026-08-10",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F50",
+            "proposition": "Neutron had received proposed orders from commercial operators and the U.S. government.",
+            "assertion_state": "PLAN",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-05",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F51",
+            "proposition": "Neutron flights were expected to generate approximately $50 million in revenue per flight.",
+            "assertion_state": "EXPECTED",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-07",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F52",
+            "proposition": "Rocket Lab's planned Neutron rocket had a payload capacity of 13 tons to low Earth orbit.",
+            "assertion_state": "PLAN",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-13",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F278",
+            "proposition": "Rocket Lab management stated that demand for Neutron was already very high before its first flight.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "pre-first-flight Neutron demand",
+            "fact_occurred_at": "2026-08-10",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E21",
+        "title": "Rocket Lab reports Neutron Q2 qualification progress",
+        "event_type": "PRODUCT_MILESTONE",
+        "occurred_at": "2026-08-10",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab advanced Neutron qualification testing, first-flight hardware integration, Archimedes engine testing, and reusable fairing systems.",
+        "known_event_summary": "On 2026-08-10, Rocket Lab reported Neutron qualification and first-flight hardware progress.",
+        "related_event_ids": [],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F53",
+            "proposition": "Rocket Lab advanced Neutron qualification testing, first-flight hardware integration, Archimedes engine testing and reusable fairing systems.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q2",
+            "fact_occurred_at": "2026-08-10",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E22",
+        "title": "Rocket Lab reports Q2 2026 results and Q3 guidance",
+        "event_type": "EARNINGS_RELEASE",
+        "occurred_at": "2026-08-10",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab reported record Q2 revenue, segment results, backlog, a 45.5% near-term backlog conversion expectation, cash, margins, expenses, and Q3 revenue, margin, EBITDA, and cash-flow guidance.",
+        "known_event_summary": "On 2026-08-10, Rocket Lab reported Q2 2026 results, a $2.36 billion backlog with an expected 45.5% 12-month conversion, and Q3 guidance.",
+        "related_event_ids": [
+          "E7",
+          "E8",
+          "E23"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F54",
+            "proposition": "Rocket Lab incurred $8.576 million in acquisition-related transaction costs during Q2 2026.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q2",
+            "fact_occurred_at": "2026-08-10",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F55",
+            "proposition": "Rocket Lab reported an adjusted EBITDA loss of $8.8 million in Q2 2026.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q2",
+            "fact_occurred_at": "2026-08-10",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F56",
+            "proposition": "Rocket Lab reported an adjusted loss of $0.08 per share for Q2, compared with an analyst expectation of a $0.05 loss.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q2",
+            "fact_occurred_at": "2026-08-10",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F57",
+            "proposition": "Rocket Lab reported a record backlog of $2.36 billion at the end of Q2, representing a 137% increase year over year.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q2",
+            "fact_occurred_at": "2026-08-10",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F58",
+            "proposition": "Rocket Lab's backlog increased by 137% year over year.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q2",
+            "fact_occurred_at": "2026-08-10",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F59",
+            "proposition": "Rocket Lab held approximately $2.4 billion in cash and marketable securities at the end of Q2 2026.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q2",
+            "fact_occurred_at": "2026-08-10",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F60",
+            "proposition": "Rocket Lab CEO Peter Beck stated that Q2 highlighted record results and massive momentum continuing after the close.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-08-10",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F61",
+            "proposition": "Management expects the margin mix to improve beyond Q3 2026.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "after FY2026-Q3",
+            "fact_occurred_at": "2026-08-10",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F62",
+            "proposition": "Rocket Lab reported GAAP EPS of -0.08 for Q2, missing expectations.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q2",
+            "fact_occurred_at": "2026-08-10",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F63",
+            "proposition": "Rocket Lab's GAAP gross margin was 36.1% in Q2 2026.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q2",
+            "fact_occurred_at": "2026-08-10",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F64",
+            "proposition": "Rocket Lab reported $434 million in business for the first half of 2026.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "H1 2026",
+            "fact_occurred_at": "2026-08-10",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F65",
+            "proposition": "Rocket Lab’s Launch Services revenues totaled $44.6 million in Q2 2026, down 4% year over year due to revenue-recognition timing for HASTE missions.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q2",
+            "fact_occurred_at": "2026-08-10",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F66",
+            "proposition": "Rocket Lab reported a Q2 2026 loss of $0.06 per share, beating the Zacks Consensus Estimate of a $0.07 loss with a 14.3% earnings surprise.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q2",
+            "fact_occurred_at": "2026-08-10",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F67",
+            "proposition": "Rocket Lab reported a Q2 GAAP net loss of $49.3 million.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q2",
+            "fact_occurred_at": "2026-08-10",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F68",
+            "proposition": "Rocket Lab reported a non-GAAP gross margin of 41.5% in Q2 2026, which exceeded its prior guidance ranges.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q2",
+            "fact_occurred_at": "2026-08-10",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F69",
+            "proposition": "Rocket Lab’s operating expenses totaled $142.1 million in Q2 2026.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q2",
+            "fact_occurred_at": "2026-08-10",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F70",
+            "proposition": "Rocket Lab's current operating margin is its best performance in three years.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "three-year",
+            "fact_occurred_at": "2026-08-10",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F71",
+            "proposition": "Rocket Lab generated $181.3 million in product revenues in Q2 2026.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q2",
+            "fact_occurred_at": "2026-08-10",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F72",
+            "proposition": "Rocket Lab had a non-GAAP free cash flow outflow of $110.1 million in Q2 2026.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q2",
+            "fact_occurred_at": "2026-08-10",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F73",
+            "proposition": "Management guided an adjusted EBITDA loss of $17 million to $23 million for Q3 2026.",
+            "assertion_state": "GUIDANCE",
+            "subject_time": "FY2026-Q3",
+            "fact_occurred_at": "2026-08-10",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F74",
+            "proposition": "Management expects Rocket Lab's free cash flow burn to remain elevated in Q3 2026.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "FY2026-Q3",
+            "fact_occurred_at": "2026-08-10",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F75",
+            "proposition": "Management guided Rocket Lab's GAAP gross margin for Q3 2026 to a range of 29% to 31%.",
+            "assertion_state": "GUIDANCE",
+            "subject_time": "FY2026-Q3",
+            "fact_occurred_at": "2026-08-10",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F76",
+            "proposition": "Rocket Lab guided for third-quarter revenue between $250 million and $265 million.",
+            "assertion_state": "GUIDANCE",
+            "subject_time": "FY2026-Q3",
+            "fact_occurred_at": "2026-08-10",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F77",
+            "proposition": "Rocket Lab’s research and development expenses were $82.4 million in Q2 2026, rising 25% year over year due to Neutron development and other factors.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q2",
+            "fact_occurred_at": "2026-08-10",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F78",
+            "proposition": "Rocket Lab reported increased revenue and a record backlog in the second quarter.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q2",
+            "fact_occurred_at": "2026-08-10",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F79",
+            "proposition": "Rocket Lab reported its Q2 2026 financial results on August 10, 2026.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-08-10",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F80",
+            "proposition": "Rocket Lab reported revenue of $234 million in Q2 2026.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q2",
+            "fact_occurred_at": "2026-08-10",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F81",
+            "proposition": "In Q2 2026, Rocket Lab's Space Systems revenue reached $189.5 million while Launch Services revenue was $44.6 million.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q2",
+            "fact_occurred_at": "2026-08-10",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F82",
+            "proposition": "Rocket Lab generated $52.7 million in service revenues in Q2 2026.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q2",
+            "fact_occurred_at": "2026-08-10",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F83",
+            "proposition": "Rocket Lab’s selling, general and administrative expenses were $59.7 million in Q2 2026, representing a 50% increase.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q2",
+            "fact_occurred_at": "2026-08-10",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F84",
+            "proposition": "Rocket Lab’s Space Systems revenues amounted to $189.5 million in Q2 2026, an increase of 94% year over year driven by spacecraft manufacturing growth and acquisitions.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q2",
+            "fact_occurred_at": "2026-08-10",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F85",
+            "proposition": "Rocket Lab's Q2 results showed revenue growth of more than 130% on a two-year stacked basis.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q2",
+            "fact_occurred_at": "2026-08-10",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F86",
+            "proposition": "Launch services account for 25%-30% of Rocket Lab's total revenue, while the space systems segment accounts for more than 70%.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-03",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F279",
+            "proposition": "Management expected approximately 45.5% of Rocket Lab's Q2 backlog to convert into revenue within the following 12 months.",
+            "assertion_state": "FORECAST",
+            "subject_time": "12 months following FY2026-Q2",
+            "fact_occurred_at": "2026-08-10",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E23",
+        "title": "Rocket Lab reports Q2 and first-half ATM financing",
+        "event_type": "FINANCING",
+        "occurred_at": "2026-08-10..2026-09-08",
+        "occurrence_time_precision": "INTERVAL",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab reported Q2 and first-half ATM proceeds, strategic earmarking for the Iridium transaction, and an updated agreement for the unsold remainder.",
+        "known_event_summary": "From 2026-08-10 through 2026-09-08, Rocket Lab reported Q2 and first-half ATM financing and strategic earmarks.",
+        "related_event_ids": [
+          "E11"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F87",
+            "proposition": "Rocket Lab raised approximately $1.08 billion through its ATM offering in Q2 2026.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q2",
+            "fact_occurred_at": "2026-08-10",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F88",
+            "proposition": "Rocket Lab earmarked approximately $1.08 billion of cash for strategic outlays including the pending Iridium transaction.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-08-10",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F89",
+            "proposition": "Rocket Lab replaced its stock-sale agreement with one covering the unsold remainder of up to approximately $1.9 billion.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-08-13",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F90",
+            "proposition": "Rocket Lab raised approximately $1.5 billion, reported elsewhere as $1.53 billion, through stock sales in the first half of 2026.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "H1 2026",
+            "fact_occurred_at": "2026-09-08",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E24",
+        "title": "Rocket Lab reports ongoing Neutron qualification progress",
+        "event_type": "PRODUCT_MILESTONE",
+        "occurred_at": "2026-08-10..2026-09-07",
+        "occurrence_time_precision": "INTERVAL",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab described ongoing Neutron qualification, first-flight hardware, infrastructure, and launch-execution progress and risks.",
+        "known_event_summary": "From 2026-08-10 through 2026-09-07, Rocket Lab reported ongoing Neutron qualification and infrastructure progress.",
+        "related_event_ids": [],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F91",
+            "proposition": "Rocket Lab engineering teams were making steady progress on Neutron qualification testing, first-flight hardware integration, and infrastructure builds.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-08-10",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F92",
+            "proposition": "Development and launch execution remained key risks for Rocket Lab's Neutron program.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F93",
+            "proposition": "Rocket Lab is developing the Neutron rocket.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-03",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F94",
+            "proposition": "Rocket Lab was approaching important milestones for Neutron.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-07",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E25",
+        "title": "Rocket Lab shares reprice in the post-Q2 market episode",
+        "event_type": "MARKET_EPISODE",
+        "occurred_at": "2026-08-10..2026-09-28",
+        "occurrence_time_precision": "INTERVAL",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab shares remained in a bounded post-Q2 repricing episode through 2026-09-28, with declines measured over multiple horizons and a 12.9% gain from August 31 to September 28.",
+        "known_event_summary": "From 2026-08-10 through 2026-09-28, Rocket Lab shares remained in a post-Q2 repricing episode; shares gained 12.9% from August 31 to September 28.",
+        "related_event_ids": [],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F95",
+            "proposition": "Rocket Lab shares sit far below their 52-week high of $151, representing a peak-to-current drawdown exceeding 57%.",
+            "assertion_state": "ONGOING",
+            "subject_time": "52-week window",
+            "fact_occurred_at": "2026-09-01",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F96",
+            "proposition": "RKLB stock ended August with a loss, marking its third consecutive monthly decline.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-01",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F97",
+            "proposition": "Rocket Lab shares are down 6.39% over the past week and 8.37% year to date.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "past week",
+            "fact_occurred_at": "2026-09-01",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F98",
+            "proposition": "Rocket Lab shares reached a high of $151 earlier in 2026 before falling to the low $60s.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "trading year",
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F99",
+            "proposition": "Rocket Lab (RKLB) stock slumped by more than 33% in 2026.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "2026",
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F100",
+            "proposition": "RKLB stock declined by 10.4% year-to-date.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "year-to-date",
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F101",
+            "proposition": "Rocket Lab's stock price declined by 16.03% year to date.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "year to date",
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F102",
+            "proposition": "Rocket Lab shares have declined 8.37% year-to-date as of September 2026.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "year to date",
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F103",
+            "proposition": "Rocket Lab stock price fell by approximately 49% over the past three months.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-03",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F104",
+            "proposition": "Rocket Lab stock was down 10% year-to-date through the prior close.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-03",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F105",
+            "proposition": "Rocket Lab stock is down 14.33% over the past month and 8.53% year to date.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-04",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F106",
+            "proposition": "Rocket Lab's stock price declined by 42.03% over the past 90 days.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "past 90 days",
+            "fact_occurred_at": "2026-09-04",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F107",
+            "proposition": "Rocket Lab Corp. shares declined by approximately 15.7% over the past month and 42% over the last three months.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-04",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F108",
+            "proposition": "Rocket Lab's stock price declined significantly from its 2026 high.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-07",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F109",
+            "proposition": "Rocket Lab stock declined by 24% and approximately $20 per share over the past two weeks.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-07",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F110",
+            "proposition": "Rocket Lab shares decreased by 14.11% over the past month.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "past month",
+            "fact_occurred_at": "2026-09-08",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F111",
+            "proposition": "Rocket Lab Corporation shares declined by approximately 17.7% since the last earnings report, underperforming the S&P 500.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "since_last_earnings_report",
+            "fact_occurred_at": "2026-09-09",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F112",
+            "proposition": "Rocket Lab Corporation shares declined 21.26% over the past month relative to September 2026.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-10",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F113",
+            "proposition": "RKLB stock fell 2% on Thursday, continuing a losing streak towards a fifth consecutive weekly decline.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-10",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F114",
+            "proposition": "Rocket Lab (RKLB) stock price declined by 39% between mid-June and September 10, 2026.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-11",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F115",
+            "proposition": "Rocket Lab shares decreased by 22.6% over the past month.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "past month",
+            "fact_occurred_at": "2026-09-11",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F116",
+            "proposition": "Rocket Lab Corporation shares are up 30.23% over the past year relative to September 2026.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "past year",
+            "fact_occurred_at": "2026-09-11",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F117",
+            "proposition": "Rocket Lab shares decreased by 11.2% year to date.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "year to date",
+            "fact_occurred_at": "2026-09-11",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F118",
+            "proposition": "RKLB stock had shed more than 18% so far in 2026.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "2026-year-to-date",
+            "fact_occurred_at": "2026-09-11",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F119",
+            "proposition": "RKLB stock fell 2% for the week.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "week",
+            "fact_occurred_at": "2026-09-14",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F290",
+            "proposition": "Rocket Lab shares gained 12.9% from the August 31, 2026 close to the September 28, 2026 close.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "2026-08-31..2026-09-28",
+            "fact_occurred_at": "2026-09-28",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E26",
+        "title": "Rocket Lab targets Neutron pad delivery in Q4 2026",
+        "event_type": "PRODUCT_MILESTONE",
+        "occurred_at": "2026-08-10..2026-09-02",
+        "occurrence_time_precision": "INTERVAL",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab continued to target delivery of Neutron first-flight hardware to its Virginia launch pad in Q4 2026.",
+        "known_event_summary": "From 2026-08-10 through 2026-09-02, Rocket Lab kept Neutron pad delivery targeted for Q4 2026.",
+        "related_event_ids": [
+          "E24"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F120",
+            "proposition": "Rocket Lab kept Neutron's delivery to its Virginia launch pad targeted for Q4 2026.",
+            "assertion_state": "PLAN",
+            "subject_time": "FY2026-Q4",
+            "fact_occurred_at": "2026-08-10",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E27",
+        "title": "Cantor Fitzgerald maintains its Overweight Rocket Lab view",
+        "event_type": "ANALYST_RESPONSE_EPISODE",
+        "occurred_at": "2026-08-11",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Cantor Fitzgerald maintained an Overweight rating, raised its target to $122, characterized Rocket Lab as a premier SpaceX alternative, and later reiterated the Overweight/$122 view while citing its commercial and government customer mix, international presence, and dedicated launch sites.",
+        "known_event_summary": "On 2026-08-11, Cantor Fitzgerald maintained Overweight and raised Rocket Lab's target to $122; later reports described Rocket Lab as a premier SpaceX alternative and on 2026-09-28 reiterated Overweight with a $122 target based on its customer mix, international presence, and dedicated launch sites.",
+        "related_event_ids": [],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F121",
+            "proposition": "Cantor Fitzgerald maintained an Overweight rating and raised its Rocket Lab price target to $122.",
+            "assertion_state": "FORECAST",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-08-11",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F122",
+            "proposition": "Cantor Fitzgerald characterized Rocket Lab as a premier alternative to SpaceX.",
+            "assertion_state": "FORECAST",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-04",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F287",
+            "proposition": "Cantor Fitzgerald reiterated an Overweight rating and a $122 price target for Rocket Lab, identifying its mix of commercial and government customers, international presence, and dedicated launch sites as material competitive advantages.",
+            "assertion_state": "FORECAST",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-28",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E28",
+        "title": "Citizens maintains a Market Outperform rating and $130 target",
+        "event_type": "ANALYST_ACTION",
+        "occurred_at": "2026-08-11",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Citizens maintained a Market Outperform rating and a $130 Rocket Lab price target.",
+        "known_event_summary": "On 2026-08-11, Citizens maintained Market Outperform and a $130 target.",
+        "related_event_ids": [],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F123",
+            "proposition": "Citizens maintained a Market Outperform rating and a $130 price forecast for Rocket Lab.",
+            "assertion_state": "FORECAST",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-08-11",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E29",
+        "title": "Rocket Lab joins the U.S. Space Force NITE-STAR IDIQ",
+        "event_type": "MATERIAL_CONTRACT",
+        "occurred_at": "2026-08-17",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab was selected and onboarded to the NITE-STAR IDIQ program under a $981 million umbrella contract, creating eligibility for future task orders.",
+        "known_event_summary": "On 2026-08-17, Rocket Lab joined the U.S. Space Force NITE-STAR IDIQ program.",
+        "related_event_ids": [],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F124",
+            "proposition": "Rocket Lab was selected and onboarded to the U.S. Space Force NITE-STAR IDIQ program under a $981 million umbrella contract, making it eligible to compete for task orders.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-08-17",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E30",
+        "title": "Rocket Lab joins the Space Data Network Consortium and wins $12 million in orders",
+        "event_type": "MATERIAL_CONTRACT",
+        "occurred_at": "2026-08-18",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab joined the U.S. Space Force Space Data Network Consortium and received two delivery orders totaling $12 million for the SDN Backbone.",
+        "known_event_summary": "On 2026-08-18, Rocket Lab joined the Space Data Network Consortium and received $12 million in delivery orders.",
+        "related_event_ids": [],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F125",
+            "proposition": "Rocket Lab was selected for the U.S. Space Force Space Data Network Consortium and was awarded two delivery orders totaling $12 million to support the Space Data Network Backbone.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-08-18",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E31",
+        "title": "Rocket Lab completes its 93rd Electron launch for iQPS",
+        "event_type": "PRODUCT_MILESTONE",
+        "occurred_at": "2026-08-20",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab completed its 93rd successful Electron launch for iQPS and deployed an Earth-observation satellite.",
+        "known_event_summary": "On 2026-08-20, Rocket Lab completed its 93rd successful Electron launch for iQPS.",
+        "related_event_ids": [
+          "E46"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F126",
+            "proposition": "Rocket Lab completed its 93rd successful Electron launch for iQPS, deploying an Earth-observation satellite to orbit.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-08-20",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E32",
+        "title": "ARK Invest continues disclosed Rocket Lab buying into September 28",
+        "event_type": "INVESTOR_EVENT",
+        "occurred_at": "2026-08-31..2026-09-28",
+        "occurrence_time_precision": "INTERVAL",
+        "status": "ACTIVE",
+        "canonical_summary": "From late August through September 28, ARK Invest reported substantial Rocket Lab purchases, including a latest disclosure of approximately $64 million in trades across two stocks that included an RKLB-related purchase.",
+        "known_event_summary": "Between 2026-08-31 and 2026-09-28, ARK Invest reported more than 705,000 Rocket Lab shares purchased through September 23 and a later approximately $64 million two-stock trade disclosure including an RKLB purchase.",
+        "related_event_ids": [
+          "E25"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F127",
+            "proposition": "ARK Invest reported purchases totaling more than 705,000 Rocket Lab shares across late-August and early-September sessions.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-01",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F128",
+            "proposition": "ARK Invest continued acquiring Rocket Lab shares during the reviewed late-August/September period.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-07",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F129",
+            "proposition": "ARK ETFs purchased additional Rocket Lab shares, including 2,341 shares through ARKX on September 8, 2026.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-08",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F280",
+            "proposition": "ARK Invest purchased 359,612 Rocket Lab shares worth approximately $25.7 million across the ARKK, ARKQ, and ARKX ETFs during the 2026-09-23 trading session.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-23",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F288",
+            "proposition": "ARK Invest/Cathie Wood's latest disclosed trades totaled approximately $64 million across two stocks, including a purchase of Rocket Lab shares.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "Latest reported trading period",
+            "fact_occurred_at": "2026-09-28",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E33",
+        "title": "Bank of America maintains Buy and lowers Rocket Lab target to $110",
+        "event_type": "ANALYST_ACTION",
+        "occurred_at": "2026-08-31",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Bank of America Securities maintained a Buy rating while lowering its Rocket Lab price target to $110.",
+        "known_event_summary": "On 2026-08-31, Bank of America maintained Buy and lowered its Rocket Lab target to $110.",
+        "related_event_ids": [],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F130",
+            "proposition": "Bank of America Securities maintained a Buy rating while lowering its Rocket Lab price target to $110.",
+            "assertion_state": "FORECAST",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-08-31",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E34",
+        "title": "KeyBanc maintains a $135 Rocket Lab price target",
+        "event_type": "ANALYST_ACTION",
+        "occurred_at": "2026-09-01",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "KeyBanc maintained a $135 Rocket Lab price target.",
+        "known_event_summary": "On 2026-09-01, KeyBanc maintained a $135 Rocket Lab price target.",
+        "related_event_ids": [],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F131",
+            "proposition": "KeyBanc maintains a price target of $135.00 for Rocket Lab, implying roughly 111% upside.",
+            "assertion_state": "FORECAST",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-09-01",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E35",
+        "title": "NASA awards the Mars Telecommunications Network to Blue Origin; Rocket Lab loses the bid",
+        "event_type": "MATERIAL_CONTRACT",
+        "occurred_at": "2026-09-01",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "NASA selected Blue Origin to build, launch, and operate the Mars Telecommunications Network; the decision left Rocket Lab outside the award and remains relevant to its Mars communications opportunity.",
+        "known_event_summary": "On 2026-09-01, NASA selected Blue Origin to build, launch, and operate the Mars Telecommunications Network; Rocket Lab did not win the contract.",
+        "related_event_ids": [],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F132",
+            "proposition": "NASA selected Blue Origin to build, launch, and operate the Mars Telecommunications Network.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-09-01",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F133",
+            "proposition": "Blue Origin is contracted to deliver the Mars Telecommunications Network spacecraft by December 31, 2028.",
+            "assertion_state": "SCHEDULED",
+            "subject_time": "2028-12-31",
+            "fact_occurred_at": "2026-09-01",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F134",
+            "proposition": "Rocket Lab did not win NASA's Mars Telecommunications Network contract, which was awarded to Blue Origin.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-01",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F135",
+            "proposition": "NASA expects the Mars Telecommunications Network to be operating by 2030.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "2030",
+            "fact_occurred_at": "2026-09-01",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E36",
+        "title": "Rocket Lab describes its then-current sole-provider Synspective launch relationship",
+        "event_type": "OTHER_CORPORATE_EVENT",
+        "occurred_at": "2026-09-01..2026-09-03",
+        "occurrence_time_precision": "INTERVAL",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab described its then-current Synspective relationship, including a 2020 start, 10 dedicated missions, and sole-provider status as of early September 2026.",
+        "known_event_summary": "From 2026-09-01 through 2026-09-03, Rocket Lab described its then-current long-running sole-provider Synspective relationship.",
+        "related_event_ids": [],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F136",
+            "proposition": "Rocket Lab completed 10 dedicated missions for Synspective.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-01",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F137",
+            "proposition": "As of 2026-09-02, Rocket Lab was the sole launch provider for Synspective's constellation.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F138",
+            "proposition": "Rocket Lab and Synspective began their partnership in 2020.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "2020",
+            "fact_occurred_at": "2026-09-03",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E37",
+        "title": "Rocket Lab schedules and delays the Synspective Owl Around the World mission",
+        "event_type": "PRODUCT_MILESTONE",
+        "occurred_at": "2026-09-01",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab scheduled the Synspective Owl Around the World mission and reported wind-related delays before the mission was completed.",
+        "known_event_summary": "On 2026-09-01, Rocket Lab scheduled the Owl Around the World mission and reported a wind delay.",
+        "related_event_ids": [
+          "E42"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F139",
+            "proposition": "The Owl Around the World mission was expected to be Rocket Lab's 94th Electron flight.",
+            "assertion_state": "EXPECTED",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-01",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F140",
+            "proposition": "Rocket Lab planned the Owl Around the World Electron mission for September 2, 2026.",
+            "assertion_state": "SCHEDULED",
+            "subject_time": "2026-09-02",
+            "fact_occurred_at": "2026-09-01",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F141",
+            "proposition": "Strong winds delayed the Synspective launch window before the mission was completed.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-01",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E38",
+        "title": "Rocket Lab shares decline after the NASA Mars award decision",
+        "event_type": "MARKET_EPISODE",
+        "occurred_at": "2026-09-01",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab shares declined after NASA selected Blue Origin for the Mars Telecommunications Network.",
+        "known_event_summary": "On 2026-09-01, Rocket Lab shares declined after the NASA Mars award decision.",
+        "related_event_ids": [
+          "E35"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F142",
+            "proposition": "RKLB stock price decreased by 2%.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-09-01",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E39",
+        "title": "Rocket Lab updates component and manufacturing acquisitions",
+        "event_type": "M_AND_A",
+        "occurred_at": "2026-09-01..2026-09-08",
+        "occurrence_time_precision": "INTERVAL",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab reported closing and integrating multiple component and manufacturing acquisitions during 2026.",
+        "known_event_summary": "From 2026-09-01 through 2026-09-08, Rocket Lab described completed component and manufacturing acquisitions.",
+        "related_event_ids": [
+          "E8"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F143",
+            "proposition": "Rocket Lab disclosed that it closed and integrated multiple component and manufacturing acquisitions during 2026.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "2026",
+            "fact_occurred_at": "2026-09-01",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E40",
+        "title": "Berenberg initiates Rocket Lab coverage with a Buy and $83 target",
+        "event_type": "ANALYST_ACTION",
+        "occurred_at": "2026-09-02",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Berenberg initiated Rocket Lab coverage with a Buy rating, an $83 target, and a qualitative end-to-end space-company view.",
+        "known_event_summary": "On 2026-09-02, Berenberg initiated Rocket Lab coverage with a Buy rating and an $83 target.",
+        "related_event_ids": [],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F144",
+            "proposition": "Berenberg analyst Michael Filatov initiated coverage of Rocket Lab with a Buy rating.",
+            "assertion_state": "FORECAST",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F145",
+            "proposition": "Berenberg initiated coverage on Rocket Lab with an $83 price target, implying 36% upside potential.",
+            "assertion_state": "FORECAST",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F146",
+            "proposition": "Michael Filatov characterized Rocket Lab as the only end-to-end public pure-play in space.",
+            "assertion_state": "FORECAST",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E41",
+        "title": "Rocket Lab CFO Adam Spice exercises options and sells shares",
+        "event_type": "OTHER_CORPORATE_EVENT",
+        "occurred_at": "2026-09-02",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab CFO Adam Spice exercised options and sold 140,157 shares in a transaction reported under a Rule 10b5-1 plan, with resulting holdings and derivatives disclosed.",
+        "known_event_summary": "On 2026-09-02, CFO Adam Spice exercised options and sold 140,157 Rocket Lab shares.",
+        "related_event_ids": [],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F147",
+            "proposition": "The disposal was executed as part of a Rule 10b5-1 trading plan adopted on June 3, 2026.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-06-03",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F148",
+            "proposition": "Adam Spice maintains approximately 2.4 million derivative securities following the transaction.",
+            "assertion_state": "ONGOING",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F149",
+            "proposition": "The sale price represented a 0.74% discount to the market close of $63.10 on September 2, 2026.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F150",
+            "proposition": "The post-transaction value of Adam C. Spice’s holdings was approximately $88.72 million.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F151",
+            "proposition": "Adam Spice exercised 140,157 stock options at a strike price of $1.09 per share.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F152",
+            "proposition": "Adam Spice liquidated the resulting equity at a weighted average price of $62.63.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F153",
+            "proposition": "Adam C. Spice, CFO of Rocket Lab, sold 140,157 shares on September 2, 2026.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F154",
+            "proposition": "Post-transaction total shares held by Adam C. Spice were approximately 1.4 million.",
+            "assertion_state": "ONGOING",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F155",
+            "proposition": "The transaction value for the share sale was approximately $8.8 million.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F156",
+            "proposition": "Rocket Lab CFO Adam Spice plans to sell 140,157 shares, acquired via option exercise, under a Rule 10b5-1 plan.",
+            "assertion_state": "PLAN",
+            "subject_time": "2026-09-02",
+            "fact_occurred_at": "2026-09-03",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E42",
+        "title": "Rocket Lab completes the 94th Electron launch for Synspective",
+        "event_type": "PRODUCT_MILESTONE",
+        "occurred_at": "2026-09-02",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab completed the Synspective Owl Around the World mission as its 94th Electron launch and deployed a StriX radar satellite using a tailored fairing.",
+        "known_event_summary": "On 2026-09-02, Rocket Lab completed the 94th Electron Owl Around the World mission for Synspective.",
+        "related_event_ids": [
+          "E10",
+          "E31",
+          "E36",
+          "E66"
+        ],
+        "supersedes_event_id": "E66",
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F157",
+            "proposition": "Rocket Lab used a payload fairing tailored to Synspective's StriX satellite.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F158",
+            "proposition": "The 94th Electron mission deployed Synspective's StriX radar-imaging satellite into low Earth orbit.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F159",
+            "proposition": "Rocket Lab completed the Owl Around the World mission as its 94th Electron launch and 15th Electron launch of 2026.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F160",
+            "proposition": "Rocket Lab maintained a 100% mission-success record for Synspective payloads on Electron.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E43",
+        "title": "Rocket Lab director Merline Saintil transfers shares to a revocable trust",
+        "event_type": "OTHER_CORPORATE_EVENT",
+        "occurred_at": "2026-09-02",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab director Merline Saintil transferred 261,903 shares to her revocable living trust; the assigned proposition does not assert an economic sale.",
+        "known_event_summary": "On 2026-09-02, Rocket Lab director Merline Saintil transferred 261,903 shares to her revocable living trust.",
+        "related_event_ids": [],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F161",
+            "proposition": "Rocket Lab director Merline Saintil transferred 261,903 shares to her revocable living trust.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E44",
+        "title": "Rocket Lab expects the proposed Iridium acquisition to close around mid-2027",
+        "event_type": "M_AND_A",
+        "occurred_at": "2026-09-02",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "The proposed Iridium acquisition was expected to close around mid-2027, subject to transaction conditions.",
+        "known_event_summary": "On 2026-09-02, Rocket Lab's proposed Iridium acquisition was expected to close around mid-2027.",
+        "related_event_ids": [],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F162",
+            "proposition": "The proposed Rocket Lab-Iridium acquisition was expected to close around mid-2027.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "2027-06",
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E45",
+        "title": "Rocket Lab presents the forward Neutron capability and market outlook",
+        "event_type": "PRODUCT_MILESTONE",
+        "occurred_at": "2026-08-10..2026-09-11",
+        "occurrence_time_precision": "INTERVAL",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab described Neutron's $50 million-$55 million launch pricing and demand, proposed orders, medium-lift and defense-market expansion, and 2027 capability outlook.",
+        "known_event_summary": "From 2026-08-10 through 2026-09-11, Rocket Lab described Neutron's $50 million-$55 million launch pricing, demand, and expected medium-lift, defense, and 2027 capability expansion.",
+        "related_event_ids": [
+          "E19",
+          "E20"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F163",
+            "proposition": "Management stated that early Neutron launch manifests had not experienced significant discounting and were priced at approximately $50 million to $55 million per launch.",
+            "assertion_state": "GUIDANCE",
+            "subject_time": "early Neutron launch manifests",
+            "fact_occurred_at": "2026-08-10",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F164",
+            "proposition": "Competition from SpaceX could pressure Neutron pricing.",
+            "assertion_state": "HYPOTHETICAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F165",
+            "proposition": "Launch availability remains a constraint on Rocket Lab's market position.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F166",
+            "proposition": "Neutron is expected to expand Rocket Lab's addressable market into medium-lift constellation and defense launches.",
+            "assertion_state": "EXPECTED",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F167",
+            "proposition": "Neutron represents a potential larger opportunity for Rocket Lab because it is designed for higher-value missions.",
+            "assertion_state": "HYPOTHETICAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F168",
+            "proposition": "Rocket Lab is viewed as a credible Western alternative to SpaceX.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F169",
+            "proposition": "Rocket Lab's longer-term upside depends heavily on Neutron's development and successful launches.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F170",
+            "proposition": "The Neutron rocket does not currently generate revenue.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-05",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F171",
+            "proposition": "Neutron can carry 13 tons of cargo to low Earth orbit.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-07",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F172",
+            "proposition": "The Neutron craft is 43 meters tall.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-07",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F173",
+            "proposition": "Neutron is expected to expand Rocket Lab's capabilities in 2027.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "FY2027",
+            "fact_occurred_at": "2026-09-11",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F174",
+            "proposition": "Peter Beck stated that customers were locking in Neutron launch slots because launch capacity was constrained.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-11",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E46",
+        "title": "Rocket Lab updates Electron operating milestones and track record",
+        "event_type": "PRODUCT_MILESTONE",
+        "occurred_at": "2026-09-02..2026-09-13",
+        "occurrence_time_precision": "INTERVAL",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab reported Electron's cumulative launch and spacecraft-delivery record, its active operating status, and its progress toward the 100th mission and annual launch record.",
+        "known_event_summary": "Between 2026-09-02 and 2026-09-13, Rocket Lab described Electron's 94-launch track record and its approach to the 100th mission and annual record.",
+        "related_event_ids": [],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F175",
+            "proposition": "Rocket Lab operates the Electron small-orbital launch vehicle.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F176",
+            "proposition": "Rocket Lab's Electron rocket is among the world's most active launch vehicles.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F177",
+            "proposition": "Rocket Lab has launched Electron rockets 94 times to deploy over 265 satellites.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-03",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F178",
+            "proposition": "Rocket Lab is approaching its annual launch record of 21 missions.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-11",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F179",
+            "proposition": "Rocket Lab is five launches away from reaching its 100th Electron mission.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-11",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F180",
+            "proposition": "Rocket Lab has achieved a milestone of 94 successful launches.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-13",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E47",
+        "title": "Rocket Lab CFO Adam Spice reports an August share sale",
+        "event_type": "OTHER_CORPORATE_EVENT",
+        "occurred_at": "2026-09-03",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Adam Spice sold 56,303 Rocket Lab shares in August for approximately $4.45 million.",
+        "known_event_summary": "On 2026-09-03, Rocket Lab disclosed Adam Spice's August sale of 56,303 shares.",
+        "related_event_ids": [],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F181",
+            "proposition": "Adam Spice sold 56,303 Rocket Lab shares in August for approximately $4.45 million.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "2026-08",
+            "fact_occurred_at": "2026-09-03",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E48",
+        "title": "Rocket Lab advances its Explorer-platform Mars orbiter proposal",
+        "event_type": "OTHER_CORPORATE_EVENT",
+        "occurred_at": "2026-09-03..2026-09-14",
+        "occurrence_time_precision": "INTERVAL",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab publicly proposed an Explorer-platform standalone Mars communications orbiter and cited its twin ESCAPADE spacecraft experience.",
+        "known_event_summary": "From 2026-09-03 through 2026-09-14, Rocket Lab advanced its standalone Mars orbiter proposal.",
+        "related_event_ids": [
+          "E35",
+          "E68"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F182",
+            "proposition": "Rocket Lab Corp. cited its experience building NASA's twin ESCAPADE Mars spacecraft.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-03",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F183",
+            "proposition": "Rocket Lab publicly proposed an Explorer-platform standalone communications orbiter for NASA's Mars communications opportunity.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-03",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E49",
+        "title": "Rocket Lab reports nine dedicated iQPS Electron bookings through 2030",
+        "event_type": "MATERIAL_CONTRACT",
+        "occurred_at": "2026-09-03",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Nine dedicated Electron launches for iQPS were booked through 2030.",
+        "known_event_summary": "On 2026-09-03, Rocket Lab reported nine dedicated iQPS Electron launches booked through 2030.",
+        "related_event_ids": [
+          "E31"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F184",
+            "proposition": "Nine dedicated Electron launches for iQPS are booked through 2030.",
+            "assertion_state": "ONGOING",
+            "subject_time": "2030",
+            "fact_occurred_at": "2026-09-03",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E50",
+        "title": "Rocket Lab expects SDA Tracking Layer revenue conversion in 2027-2028",
+        "event_type": "MATERIAL_CONTRACT",
+        "occurred_at": "2026-09-04",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Revenue growth from SDA conversions was expected in 2027 to 2028.",
+        "known_event_summary": "On 2026-09-04, Rocket Lab-related reporting expected SDA conversions in 2027-2028.",
+        "related_event_ids": [
+          "E2",
+          "E59"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F185",
+            "proposition": "Revenue growth from Rocket Lab's SDA Tracking Layer conversions was expected in 2027 to 2028.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "2027-01-01..2028-12-31",
+            "fact_occurred_at": "2026-09-04",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E51",
+        "title": "Rocket Lab schedules its Q3 2026 earnings release",
+        "event_type": "EARNINGS_RELEASE",
+        "occurred_at": "2026-09-04",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab scheduled its Q3 2026 earnings report for November 9, 2026.",
+        "known_event_summary": "On 2026-09-04, Rocket Lab scheduled its Q3 2026 earnings report for 2026-11-09.",
+        "related_event_ids": [],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F186",
+            "proposition": "Rocket Lab Corp. earnings report is scheduled for November 9, 2026.",
+            "assertion_state": "SCHEDULED",
+            "subject_time": "2026-11-09",
+            "fact_occurred_at": "2026-09-04",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E52",
+        "title": "Rocket Lab's 2026 launch outlook reaches at least 21 missions",
+        "event_type": "OTHER_CORPORATE_EVENT",
+        "occurred_at": "2026-09-04",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab was projected to complete at least 21 launches in 2026.",
+        "known_event_summary": "On 2026-09-04, Rocket Lab was projected to complete at least 21 launches in 2026.",
+        "related_event_ids": [
+          "E46"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F187",
+            "proposition": "Rocket Lab was projected to complete at least 21 launches in 2026.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "FY2026",
+            "fact_occurred_at": "2026-09-04",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E53",
+        "title": "SpaceX rideshare capacity becomes unavailable for future reservations",
+        "event_type": "SUPPLY_DEMAND_UPDATE",
+        "occurred_at": "2026-09-04..2026-09-10",
+        "occurrence_time_precision": "INTERVAL",
+        "status": "ACTIVE",
+        "canonical_summary": "Reports said SpaceX Transporter and Falcon 9 capacity was unavailable or fully booked into 2028 or 2029, creating an indirect launch-supply constraint.",
+        "known_event_summary": "Between 2026-09-04 and 2026-09-10, reports said SpaceX rideshare capacity was unavailable or fully booked into 2028 or 2029.",
+        "related_event_ids": [
+          "E45"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F188",
+            "proposition": "At least seven spacecraft companies were informed that Falcon 9 launch capacity was fully booked until 2028 or 2029.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-04",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F189",
+            "proposition": "Nine or more partners and customers found SpaceX Transporter reservations unavailable for dates beyond late 2028 or early 2029.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-04",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F190",
+            "proposition": "SpaceX has stopped accepting future rideshare launch reservations.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-10",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E54",
+        "title": "Rocket Lab plans a Photon in-orbit demonstration",
+        "event_type": "PRODUCT_MILESTONE",
+        "occurred_at": "2026-09-07",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab planned to use a Photon spacecraft for an in-orbit demonstration.",
+        "known_event_summary": "On 2026-09-07, Rocket Lab planned a Photon in-orbit demonstration.",
+        "related_event_ids": [],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F191",
+            "proposition": "Rocket Lab will use a Photon spacecraft for an in-orbit demonstration.",
+            "assertion_state": "PLAN",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-09-07",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E55",
+        "title": "Rocket Lab recounts Neutron's historical launch targets",
+        "event_type": "PRODUCT_MILESTONE",
+        "occurred_at": "2026-09-07",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab recounted the 2020 Neutron plan and successive 2024, late-2025, and Q1 2026 target windows.",
+        "known_event_summary": "On 2026-09-07, Rocket Lab recounted successive historical Neutron launch targets.",
+        "related_event_ids": [
+          "E19"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F192",
+            "proposition": "Rocket Lab initially targeted Neutron's inaugural launch for 2024.",
+            "assertion_state": "PLAN",
+            "subject_time": "FY2024",
+            "fact_occurred_at": "2026-09-07",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F193",
+            "proposition": "Rocket Lab later targeted a late-2025 Neutron launch.",
+            "assertion_state": "PLAN",
+            "subject_time": "FY2025-H2",
+            "fact_occurred_at": "2026-09-07",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F194",
+            "proposition": "Rocket Lab then targeted a Q1 2026 Neutron launch.",
+            "assertion_state": "PLAN",
+            "subject_time": "FY2026-Q1",
+            "fact_occurred_at": "2026-09-07",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F195",
+            "proposition": "Sir Peter Beck announced plans to build a Neutron rocketship in 2020.",
+            "assertion_state": "PLAN",
+            "subject_time": "2020",
+            "fact_occurred_at": "2026-09-07",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E56",
+        "title": "Rocket Lab highlights durable NASA solar-technology heritage",
+        "event_type": "PRODUCT_MILESTONE",
+        "occurred_at": "2026-09-08..2026-09-09",
+        "occurrence_time_precision": "INTERVAL",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab highlighted solar technology supplied to NASA missions and more than a decade of satellite deployment and heritage.",
+        "known_event_summary": "In disclosures on 2026-09-08 and 2026-09-09, Rocket Lab highlighted its NASA solar-technology heritage.",
+        "related_event_ids": [],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F196",
+            "proposition": "Rocket Lab supplied space-grade solar technology for NASA's Artemis lunar exploration program.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-08",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F197",
+            "proposition": "Rocket Lab's inverted metamorphic multi-junction cell technology had been deployed on satellites for more than a decade.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-08",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F198",
+            "proposition": "Rocket Lab's IMM solar technology powered NASA's Ingenuity Mars Helicopter.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-08",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F199",
+            "proposition": "Rocket Lab supplied space-grade solar technology for the James Webb Space Telescope.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-08",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F200",
+            "proposition": "Rocket Lab's solar products had supported the James Webb Space Telescope and NASA's Artemis missions.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-09",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E57",
+        "title": "Rocket Lab releases the IMM Apex germanium-free solar cell",
+        "event_type": "PRODUCT_ANNOUNCEMENT",
+        "occurred_at": "2026-09-08",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab released IMM Apex, a germanium-free solar cell with 31.5% beginning-of-life efficiency, 40% lower mass, immediate order availability, and production and heritage attributes.",
+        "known_event_summary": "On 2026-09-08, Rocket Lab released IMM Apex, a germanium-free solar cell for satellite and space applications.",
+        "related_event_ids": [],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F201",
+            "proposition": "IMM Apex was a mechanical and electrical drop-in replacement for legacy cells.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-08",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F202",
+            "proposition": "IMM Apex offers 31.5% beginning-of-life solar conversion efficiency.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-08",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F203",
+            "proposition": "Rocket Lab's inverted metamorphic multi-junction technology powered NASA's Ingenuity Mars Helicopter.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-08",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F204",
+            "proposition": "IMM Apex reduces solar-cell mass by 40% versus conventional alternatives.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-08",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F205",
+            "proposition": "The underlying IMM technology had operated in orbit for more than a decade.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-08",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F206",
+            "proposition": "IMM Apex was available immediately for customer orders.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-08",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F207",
+            "proposition": "IMM Apex is based on Rocket Lab's inverted metamorphic multi-junction cell technology.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-08",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F208",
+            "proposition": "IMM Apex technology had undergone more than a decade of testing and qualification.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-08",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F209",
+            "proposition": "Rocket Lab released IMM Apex, a germanium-free solar cell for satellite and space applications.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-09-08",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F210",
+            "proposition": "IMM Apex eliminated germanium substrates, reducing exposure to material costs and supply constraints.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-08",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F211",
+            "proposition": "Rocket Lab produced IMM Apex solar cells in multi-100-kilowatt volumes using optimized manufacturing processes and targeted capital investment.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-08",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E58",
+        "title": "Investors react to Rocket Lab's IMM Apex release",
+        "event_type": "MARKET_EPISODE",
+        "occurred_at": "2026-09-09",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Investors reacted to the IMM Apex release and ARK buying; Rocket Lab shares rose in premarket trading.",
+        "known_event_summary": "On 2026-09-09, investors reacted to the IMM Apex product release and ARK buying.",
+        "related_event_ids": [
+          "E57"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F212",
+            "proposition": "Investors reacted to the IMM Apex launch and ARK Invest's buying activity.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-09-09",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F213",
+            "proposition": "Following the IMM Apex unveiling, Rocket Lab shares rose roughly 2.4% to 4.89% in premarket trading.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-09-09",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E59",
+        "title": "Rocket Lab passes preliminary design review for SDA Tracking Layer Tranche 3",
+        "event_type": "MATERIAL_CONTRACT",
+        "occurred_at": "2026-09-09",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab passed the preliminary design review for 18 SDA Tracking Layer Tranche 3 satellites.",
+        "known_event_summary": "On 2026-09-09, Rocket Lab passed the preliminary design review for 18 SDA Tracking Layer Tranche 3 satellites.",
+        "related_event_ids": [
+          "E2"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F214",
+            "proposition": "Rocket Lab passed the preliminary design review for 18 satellites in the SDA Tracking Layer Tranche 3 constellation.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-09",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E60",
+        "title": "Rocket Lab shares fall in a September 9 space-sector risk-off episode",
+        "event_type": "MARKET_EPISODE",
+        "occurred_at": "2026-09-09",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab shares declined in a bounded space-sector risk-off episode associated with oil and interest-rate sentiment.",
+        "known_event_summary": "On 2026-09-09, Rocket Lab shares fell in a space-sector risk-off episode.",
+        "related_event_ids": [],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F215",
+            "proposition": "A risk-off market sentiment regarding oil and interest rates acted as a secondary negative factor for space stocks.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-09-09",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F216",
+            "proposition": "Rocket Lab stock price decreased by 3% to $63.92.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-09-09",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E61",
+        "title": "SpaceX reaches its 90-day insider share unlock",
+        "event_type": "MARKET_EPISODE",
+        "occurred_at": "2026-09-09",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "SpaceX reached a 90-day insider unlock milestone, creating a potential supply overhang and coincident price context.",
+        "known_event_summary": "On 2026-09-09, SpaceX reached its 90-day insider share unlock milestone.",
+        "related_event_ids": [
+          "E13"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F217",
+            "proposition": "Elon Musk's stake in SpaceX remains locked for approximately one year from the IPO date.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-09",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F218",
+            "proposition": "SpaceX stock price decreased by 5% to $146.35 during midday trading on Wednesday.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-09-09",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F219",
+            "proposition": "SpaceX's IPO prospectus established a staggered, accelerated insider unlock schedule based on time milestones post-IPO.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-09",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F220",
+            "proposition": "The 90-calendar-day insider share unlock milestone for SpaceX came due.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-09-09",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F221",
+            "proposition": "The newly unlocked tranche of SpaceX insider shares represents up to $47.2 billion in potential selling pressure.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-09-09",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E62",
+        "title": "U.S. Transportation Department launches the SPACE Task Force",
+        "event_type": "REGULATORY_ACTION",
+        "occurred_at": "2026-09-09",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "The U.S. Transportation Department announced a task force and policy directives intended to accelerate commercial-space transportation, launch corridors, and spaceports.",
+        "known_event_summary": "On 2026-09-09, the U.S. Transportation Department announced the SPACE Task Force and related commercial-space policy.",
+        "related_event_ids": [
+          "E53"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F222",
+            "proposition": "Officials project 10,000 FAA-licensed launches and reentries annually by 2035.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "2035",
+            "fact_occurred_at": "2026-09-09",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F223",
+            "proposition": "The National Space Transportation Policy targets more than 1,000 U.S. launches and reentries annually by 2030.",
+            "assertion_state": "PLAN",
+            "subject_time": "2030",
+            "fact_occurred_at": "2026-09-09",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F224",
+            "proposition": "The SPACE Task Force includes directives for additional spaceports and priority launch corridors.",
+            "assertion_state": "PLAN",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-09",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F225",
+            "proposition": "The SPACE Task Force will implement the space transportation policy issued in August 2026.",
+            "assertion_state": "PLAN",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-09",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F226",
+            "proposition": "Transportation Secretary Sean Duffy announced the SPACE Task Force, created by the Trump administration to accelerate commercial-space growth.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-09",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F227",
+            "proposition": "Transportation Secretary Sean Duffy stated that America should lead the next era of space transportation rather than China.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-09",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F228",
+            "proposition": "Under Secretary Ryan McCormack leads the SPACE Task Force.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-09",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E63",
+        "title": "American Century highlights Rocket Lab in its Q2 2026 letter",
+        "event_type": "INVESTOR_EVENT",
+        "occurred_at": "2026-09-10",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "American Century Investments highlighted Rocket Lab as a Q2 performance contributor and linked its rally to company results and demand.",
+        "known_event_summary": "On 2026-09-10, American Century highlighted Rocket Lab in its Q2 2026 investor letter.",
+        "related_event_ids": [],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F229",
+            "proposition": "American Century Investments Focused Dynamic Growth Fund highlighted Rocket Lab Corporation as a notable contributor to performance in its second-quarter 2026 investor letter.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q2",
+            "fact_occurred_at": "2026-09-10",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F230",
+            "proposition": "Rocket Lab Corporation rallied due to record revenue and strong guidance supported by a large backlog and demand for its launch and space systems businesses.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-10",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E64",
+        "title": "Raymond James initiates Rocket Lab coverage with an Outperform rating and $80 target",
+        "event_type": "ANALYST_ACTION",
+        "occurred_at": "2026-09-11",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Raymond James initiated coverage with an Outperform rating and $80 target, described Neutron and M&A upside and identified execution and integration risks.",
+        "known_event_summary": "On 2026-09-11, Raymond James initiated Rocket Lab coverage with an Outperform rating and an $80 target.",
+        "related_event_ids": [],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F231",
+            "proposition": "Raymond James identified execution, integration of acquired businesses, and margin risks for Rocket Lab.",
+            "assertion_state": "FORECAST",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-09-11",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F232",
+            "proposition": "Raymond James initiated coverage on Rocket Lab with an Outperform rating and an $80 price target.",
+            "assertion_state": "FORECAST",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-09-11",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F233",
+            "proposition": "Raymond James projected a path to positive adjusted EBITDA and free cash flow for Rocket Lab around 2027-2028.",
+            "assertion_state": "FORECAST",
+            "subject_time": "2027-01-01..2028-12-31",
+            "fact_occurred_at": "2026-09-11",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F234",
+            "proposition": "Raymond James stated that Neutron and the Iridium/Mynaric expansion offer significant upside for Rocket Lab.",
+            "assertion_state": "FORECAST",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-09-11",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F235",
+            "proposition": "Rocket Lab USA shares gained more than 2% in premarket trading alongside the Raymond James coverage disclosure.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-09-11",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E65",
+        "title": "Rocket Lab completes its 95th Electron launch with Happily Ever Faster",
+        "event_type": "PRODUCT_MILESTONE",
+        "occurred_at": "2026-09-11",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab completed Happily Ever Faster as its 16th Electron mission of 2026 and 95th overall, deploying an Earth-observation satellite for a confidential customer.",
+        "known_event_summary": "On 2026-09-11, Rocket Lab completed the Happily Ever Faster mission as its 16th Electron mission of 2026 and 95th overall.",
+        "related_event_ids": [
+          "E42",
+          "E46"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F236",
+            "proposition": "Rocket Lab launched a dedicated Electron mission for a confidential customer.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-09-11",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F237",
+            "proposition": "The Happily Ever Faster mission deployed an Earth-observation satellite into a 500-kilometer circular low Earth orbit for a confidential customer.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-09-11",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F238",
+            "proposition": "The Happily Ever Faster mission lifted off from Launch Complex 1 in New Zealand at 3:28 p.m. NZST.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-09-11",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F239",
+            "proposition": "Rocket Lab completed its 16th Electron mission of 2026 and its 95th overall.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-09-11",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F240",
+            "proposition": "Rocket Lab completed 95 launches overall as of the Happily Ever Faster mission.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-09-11",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E67",
+        "title": "Rocket Lab plans a Neutron mission for the Flatellite constellation",
+        "event_type": "PRODUCT_MILESTONE",
+        "occurred_at": "2026-09-12",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab planned for Neutron to launch its Flatellite constellation.",
+        "known_event_summary": "On 2026-09-12, Rocket Lab designated Neutron to launch the Flatellite constellation.",
+        "related_event_ids": [
+          "E18",
+          "E45"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F242",
+            "proposition": "Neutron is designated to launch Rocket Lab's Flatellite constellation.",
+            "assertion_state": "PLAN",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-09-12",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E68",
+        "title": "Rocket Lab files a GAO protest over the NASA Mars award",
+        "event_type": "LITIGATION_MILESTONE",
+        "occurred_at": "2026-09-14",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab filed a GAO protest alleging that NASA's Blue Origin award decision conflicted with eligibility requirements and wrongly rejected its standalone orbiter proposal.",
+        "known_event_summary": "On 2026-09-14, Rocket Lab filed a GAO protest over NASA's Mars award decision.",
+        "related_event_ids": [
+          "E35",
+          "E48"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F243",
+            "proposition": "Eligibility criteria for the Mars contract required bidders to be U.S. commercial providers with prior NASA funding and a standalone orbiter proposal.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-14",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F244",
+            "proposition": "Rocket Lab alleges that NASA's award decision was inconsistent with congressionally mandated eligibility criteria.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-14",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F245",
+            "proposition": "Rocket Lab cited the twin Escapade spacecraft as evidence of its delivery capability.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-14",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F246",
+            "proposition": "Rocket Lab claims it was the only commercial bidder to propose a standalone communications orbiter.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-14",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F247",
+            "proposition": "Rocket Lab claims NASA conducted a punitive review resulting in incorrect assertions.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-14",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F248",
+            "proposition": "Rocket Lab filed a protest with the U.S. Government Accountability Office regarding NASA's award decision.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-14",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E69",
+        "title": "Rocket Lab shares react to the GAO protest",
+        "event_type": "MARKET_EPISODE",
+        "occurred_at": "2026-09-14",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab shares slipped in overnight trading after the protest over NASA's Blue Origin selection.",
+        "known_event_summary": "On 2026-09-14, Rocket Lab shares slipped after the GAO protest filing.",
+        "related_event_ids": [
+          "E68"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F249",
+            "proposition": "Rocket Lab shares slipped in overnight trading following the protest filing against NASA's selection of Blue Origin.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "overnight_trading",
+            "fact_occurred_at": "2026-09-14",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E70",
+        "title": "Rocket Lab builds the Pioneer spacecraft in June 2026",
+        "event_type": "PRODUCT_MILESTONE",
+        "occurred_at": "2026-06",
+        "occurrence_time_precision": "MONTH",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab built the Pioneer spacecraft during June 2026.",
+        "known_event_summary": "In June 2026, Rocket Lab built the Pioneer spacecraft.",
+        "related_event_ids": [],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F250",
+            "proposition": "Rocket Lab built the Pioneer spacecraft in June.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "2026-06",
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E71",
+        "title": "FCC accepts Rocket Lab and Iridium license-transfer applications for filing",
+        "event_type": "REGULATORY_ACTION",
+        "occurred_at": "2026-09-16",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "The FCC accepted Rocket Lab and Iridium's license-transfer applications for filing and opened a public-comment process for the proposed acquisition.",
+        "known_event_summary": "On 2026-09-16, the FCC accepted Rocket Lab and Iridium's license-transfer applications for filing; comments and petitions are due October 15, oppositions October 30, and replies November 9.",
+        "related_event_ids": [
+          "E11",
+          "E44",
+          "E72"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F251",
+            "proposition": "The FCC accepted Rocket Lab and Iridium's license-transfer applications for filing, opening a public-comment period with comments and petitions due October 15, oppositions due October 30, and replies due November 9.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "SAME",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E72",
+        "title": "Rocket Lab completes financing for the proposed Iridium acquisition",
+        "event_type": "FINANCING",
+        "occurred_at": "2026-09-16",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab announced that $1.94 billion of equity financing fully funded the proposed Iridium acquisition and enabled termination of the $3.6 billion bridge facility; Iridium amended its term loan to permit the change of control.",
+        "known_event_summary": "On 2026-09-16, Rocket Lab raised $1.94 billion through 29.3 million shares to fully finance the Iridium acquisition, while Iridium amended its $1.775 billion term loan for the change of control.",
+        "related_event_ids": [
+          "E11",
+          "E23",
+          "E44",
+          "E71"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F252",
+            "proposition": "Rocket Lab announced it had fully financed the Iridium acquisition after raising $1.94 billion through the sale of 29.3 million shares, enabling termination of its $3.6 billion bridge facility.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "SAME",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F253",
+            "proposition": "Iridium amended its $1.775 billion term loan to permit the change of control for the Rocket Lab acquisition.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "SAME",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E73",
+        "title": "Space Capital praises Rocket Lab's IMM Apex solar cell",
+        "event_type": "INVESTOR_EVENT",
+        "occurred_at": "2026-09-16",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Space Capital publicly praised Rocket Lab's IMM Apex solar cell as evidence that space infrastructure extends beyond launch.",
+        "known_event_summary": "On 2026-09-16, Space Capital praised Rocket Lab's IMM Apex solar cell as evidence that space infrastructure extends beyond launch.",
+        "related_event_ids": [
+          "E57",
+          "E58",
+          "E56"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F254",
+            "proposition": "Space Capital publicly praised Rocket Lab's IMM Apex solar cell on X, highlighting it as evidence that space infrastructure extends beyond launch.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "SAME",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E74",
+        "title": "Rocket Lab is selected for the MDA SHIELD program",
+        "event_type": "MATERIAL_CONTRACT",
+        "occurred_at": "2025-12-02",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab was selected for the Missile Defense Agency's SHIELD program, creating eligibility to compete for future launch and space-systems work.",
+        "known_event_summary": "On 2025-12-02, Rocket Lab was selected for the MDA SHIELD program.",
+        "related_event_ids": [
+          "E6",
+          "E9",
+          "E17",
+          "E29"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F255",
+            "proposition": "Rocket Lab was selected for the MDA SHIELD program.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2025-12-02",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E75",
+        "title": "Rocket Lab reports new Neutron fairing and second-stage test-stand milestones",
+        "event_type": "PRODUCT_MILESTONE",
+        "occurred_at": "2026-09-17",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab reported completion of pre-flight testing for Neutron's reusable Hungry Hippo fairing and installation of a 10-meter second-stage test stand in Virginia, advancing pre-flight infrastructure.",
+        "known_event_summary": "On 2026-09-17, Rocket Lab completed Neutron Hungry Hippo fairing pre-flight testing and installed a 10-meter second-stage test stand in Virginia.",
+        "related_event_ids": [
+          "E19",
+          "E21",
+          "E24",
+          "E26",
+          "E45"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F256",
+            "proposition": "Rocket Lab completed pre-flight testing of Neutron's reusable Hungry Hippo fairing.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-09-17",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F257",
+            "proposition": "Rocket Lab installed a 10-meter test stand for Neutron's second stage in Virginia.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-09-17",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E76",
+        "title": "Rocket Lab signs a confidential five-Neutron launch contract",
+        "event_type": "MATERIAL_CONTRACT",
+        "occurred_at": "2026-05-07",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab signed a confidential customer agreement covering five dedicated Neutron missions through 2029, adding durable demand for the unflown vehicle.",
+        "known_event_summary": "On 2026-05-07, a confidential customer booked five dedicated Neutron missions through 2029.",
+        "related_event_ids": [
+          "E7",
+          "E20",
+          "E45",
+          "E67"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F258",
+            "proposition": "A confidential customer booked five Neutron missions through 2029.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "2026..2029",
+            "fact_occurred_at": "2026-05-07",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E77",
+        "title": "SpaceX comments on Iridium during the Rocket Lab acquisition review",
+        "event_type": "REGULATORY_ACTION",
+        "occurred_at": "2026-09-17",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "SpaceX asked the FCC to examine Iridium's conduct toward rival satellite operators while stating that it did not oppose Rocket Lab's proposed acquisition of Iridium.",
+        "known_event_summary": "On 2026-09-17, SpaceX asked the FCC to examine Iridium's conduct while saying it did not oppose Rocket Lab's proposed Iridium acquisition.",
+        "related_event_ids": [
+          "E11",
+          "E44",
+          "E71",
+          "E72"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F259",
+            "proposition": "SpaceX asked the FCC to examine Iridium Communications' conduct toward rival satellite operators while stating that it does not oppose Rocket Lab's proposed acquisition of Iridium.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "The FCC public-comment period for the proposed Iridium acquisition",
+            "fact_occurred_at": "2026-09-17",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E78",
+        "title": "Rocket Lab shares fall in a September 18 space-sector decline",
+        "event_type": "MARKET_EPISODE",
+        "occurred_at": "2026-09-18",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "On 2026-09-18, Rocket Lab shares fell 5% to $64.38 in morning trading as AST SpaceMobile, Planet Labs, Iridium Communications, the Procure Space ETF, and SPY also declined.",
+        "known_event_summary": "On 2026-09-18, Rocket Lab fell 5% to $64.38; AST SpaceMobile, Planet Labs, Iridium, Procure Space ETF, and SPY fell 6%, 4%, 2%, 2%, and 0.2%, respectively.",
+        "related_event_ids": [
+          "E25",
+          "E60"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F260",
+            "proposition": "Rocket Lab shares fell 5% to $64.38 in Friday morning trading on 2026-09-18.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "Friday morning trading",
+            "fact_occurred_at": "SAME",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F261",
+            "proposition": "On 2026-09-18, AST SpaceMobile, Planet Labs, and Iridium Communications shares fell 6%, 4%, and 2%, respectively, alongside Rocket Lab's decline.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "SAME",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F262",
+            "proposition": "On 2026-09-18, the Procure Space ETF fell 2% while the SPDR S&P 500 ETF fell 0.2%.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "SAME",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E79",
+        "title": "Rocket Lab completes its 96th Electron launch for Synspective",
+        "event_type": "PRODUCT_MILESTONE",
+        "occurred_at": "2026-09-19",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab completed the Owl By The Dozen mission as its 17th Electron launch of 2026 and 96th overall, deploying Synspective's 12th StriX synthetic aperture radar satellite into a 572-kilometer orbit from New Zealand.",
+        "known_event_summary": "On 2026-09-19, Rocket Lab completed Owl By The Dozen as its 17th Electron mission of 2026 and 96th overall, deploying Synspective's 12th StriX satellite into a 572-kilometer orbit.",
+        "related_event_ids": [
+          "E65",
+          "E42",
+          "E10",
+          "E36"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F263",
+            "proposition": "Rocket Lab's 96th Electron mission, 'Owl By The Dozen,' deployed Synspective's 12th StriX synthetic aperture radar satellite into a 572-kilometer orbit from New Zealand, marking Rocket Lab's 17th launch of 2026.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-09-19",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E80",
+        "title": "Rocket Lab schedules its 97th Electron Synspective mission, Owlright Owlright Owlright",
+        "event_type": "PRODUCT_MILESTONE",
+        "occurred_at": "2026-09-20",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab scheduled the Owlright Owlright Owlright mission for September 25, 2026, a planned 97th Electron flight carrying a Synspective StriX satellite from Pad B at Launch Complex 1 in New Zealand.",
+        "known_event_summary": "On 2026-09-20, Rocket Lab scheduled Owlright Owlright Owlright for 2026-09-25 as its 97th Electron flight carrying a Synspective StriX satellite.",
+        "related_event_ids": [
+          "E79",
+          "E65",
+          "E10",
+          "E36"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F264",
+            "proposition": "Rocket Lab's 97th Electron mission, 'Owlright Owlright Owlright,' is scheduled to lift off at 8:15 p.m. EDT from Pad B at Rocket Lab Launch Complex 1 in New Zealand, carrying a Synspective synthetic aperture radar satellite into a 559-kilometer low-Earth orbit.",
+            "assertion_state": "SCHEDULED",
+            "subject_time": "2026-09-25",
+            "fact_occurred_at": "2026-09-20",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E81",
+        "title": "Synspective books two StriX launches on Mitsubishi Heavy Industries' H3 rocket",
+        "event_type": "MATERIAL_CONTRACT",
+        "occurred_at": "2026-09-20",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Synspective signed with Mitsubishi Heavy Industries for two additional StriX launches on Japan's H3 rocket in 2027, introducing a launch provider other than Rocket Lab's Electron to the constellation.",
+        "known_event_summary": "On 2026-09-20, Synspective signed for two additional StriX launches on Mitsubishi Heavy Industries' H3 in 2027, its first non-Electron booking.",
+        "related_event_ids": [
+          "E10"
+        ],
+        "supersedes_event_id": "E36",
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F265",
+            "proposition": "Synspective signed an agreement with Mitsubishi Heavy Industries to fly two additional StriX satellites aboard Japan's H3 rocket in 2027, its first launch booking on a vehicle other than Electron.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "2027",
+            "fact_occurred_at": "2026-09-20",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E82",
+        "title": "Kepler Communications reserves a dedicated Neutron launch from Rocket Lab",
+        "event_type": "MATERIAL_CONTRACT",
+        "occurred_at": "2026-09-20",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Kepler Communications reserved a dedicated Rocket Lab Neutron launch no earlier than 2028, adding a named commercial customer to Neutron's forward demand.",
+        "known_event_summary": "On 2026-09-20, Kepler Communications reserved a dedicated Rocket Lab Neutron launch scheduled no earlier than 2028.",
+        "related_event_ids": [
+          "E76",
+          "E67",
+          "E45",
+          "E7"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F266",
+            "proposition": "Kepler Communications has reserved a dedicated Neutron launch from Rocket Lab no earlier than 2028.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "2028",
+            "fact_occurred_at": "2026-09-20",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E83",
+        "title": "Cantor Fitzgerald forecasts Rocket Lab revenue before and after the proposed Iridium acquisition",
+        "event_type": "ANALYST_ACTION",
+        "occurred_at": "2026-09-21",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "On 2026-09-21, Cantor Fitzgerald forecast Rocket Lab revenue above $900 million in FY2026 and roughly double annual revenue after the proposed Iridium acquisition closes.",
+        "known_event_summary": "On 2026-09-21, Cantor Fitzgerald forecast Rocket Lab revenue above $900 million in 2026 and roughly double annual revenue after the proposed Iridium acquisition closes.",
+        "related_event_ids": [
+          "E11",
+          "E27",
+          "E44",
+          "E71",
+          "E72",
+          "E77"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F267",
+            "proposition": "Cantor Fitzgerald expects Rocket Lab to generate more than $900 million in revenue in 2026.",
+            "assertion_state": "FORECAST",
+            "subject_time": "FY2026",
+            "fact_occurred_at": "2026-09-21",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F268",
+            "proposition": "Cantor Fitzgerald analyst Andres Sheppard estimated that Rocket Lab's total annual revenue could roughly double after the Iridium acquisition closes.",
+            "assertion_state": "FORECAST",
+            "subject_time": "after 2027-06",
+            "fact_occurred_at": "2026-09-21",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E84",
+        "title": "Rocket Lab sets a plan to reuse each Neutron engine up to 20 times",
+        "event_type": "PRODUCT_MILESTONE",
+        "occurred_at": "2026-09-21",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Rocket Lab stated a plan to reuse each Neutron engine up to 20 times, defining a long-term reusable-vehicle capability target while Neutron remains in development.",
+        "known_event_summary": "On 2026-09-21, Rocket Lab planned to reuse each Neutron engine up to 20 times.",
+        "related_event_ids": [
+          "E19",
+          "E20",
+          "E21",
+          "E24",
+          "E26",
+          "E45",
+          "E67",
+          "E75",
+          "E76",
+          "E82"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F269",
+            "proposition": "Rocket Lab plans to reuse each Neutron engine up to 20 times.",
+            "assertion_state": "PLAN",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-21",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E85",
+        "title": "Peter Beck outlines L-band and constellation rationale for Rocket Lab's proposed Iridium acquisition",
+        "event_type": "M_AND_A",
+        "occurred_at": "2026-09-23",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "On 2026-09-23, Peter Beck described Iridium's L-band spectrum as a key asset in Rocket Lab's proposed acquisition and discussed hypothetical defense-positioning benefits and a lower-cost, faster path to a comparable constellation.",
+        "known_event_summary": "On 2026-09-23, Peter Beck described Iridium's L-band spectrum as a key asset in Rocket Lab's proposed acquisition, including a potential harder-to-jam positioning service and a $350 million, 12-to-24-month alternative to Iridium's estimated $3 billion, more-than-five-year constellation path.",
+        "related_event_ids": [
+          "E11",
+          "E44",
+          "E71",
+          "E72",
+          "E77",
+          "E83"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F270",
+            "proposition": "Peter Beck identified Iridium's L-band spectrum as a key asset in Rocket Lab's proposed acquisition.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-23",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F271",
+            "proposition": "Peter Beck stated that Iridium's L-band spectrum could support reliable defense communications and potentially provide a harder-to-jam alternative to GPS.",
+            "assertion_state": "HYPOTHETICAL",
+            "subject_time": "potential post-acquisition communications and positioning services",
+            "fact_occurred_at": "2026-09-23",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F272",
+            "proposition": "Peter Beck estimated that Rocket Lab could develop and deploy an Iridium-like constellation for approximately $350 million versus an estimated $3 billion for Iridium.",
+            "assertion_state": "HYPOTHETICAL",
+            "subject_time": "counterfactual constellation development and deployment",
+            "fact_occurred_at": "2026-09-23",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F273",
+            "proposition": "Peter Beck suggested that Rocket Lab could develop and deploy the constellation in 12 to 24 months rather than more than five years.",
+            "assertion_state": "HYPOTHETICAL",
+            "subject_time": "counterfactual constellation development and deployment",
+            "fact_occurred_at": "2026-09-23",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F274",
+            "proposition": "Peter Beck said Iridium's L-band signal could be approximately 1,000 times stronger than GPS and harder to jam for a potential alternative positioning service.",
+            "assertion_state": "HYPOTHETICAL",
+            "subject_time": "potential alternative positioning service",
+            "fact_occurred_at": "2026-09-23",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E86",
+        "title": "Iridium shareholders are scheduled to vote on Rocket Lab's proposed acquisition",
+        "event_type": "M_AND_A",
+        "occurred_at": "2026-09-23",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "On 2026-09-23, Rocket Lab's proposed Iridium acquisition had a shareholder vote scheduled for 2026-09-24.",
+        "known_event_summary": "On 2026-09-23, Iridium shareholders were scheduled to vote on Rocket Lab's proposed acquisition on 2026-09-24.",
+        "related_event_ids": [
+          "E11",
+          "E44",
+          "E71",
+          "E72",
+          "E77"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F275",
+            "proposition": "Iridium shareholders are scheduled to vote on Rocket Lab's proposed acquisition on 2026-09-24.",
+            "assertion_state": "SCHEDULED",
+            "subject_time": "2026-09-24",
+            "fact_occurred_at": "2026-09-23",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E87",
+        "title": "Rocket Lab completes the SB-AMTI demonstration program kickoff",
+        "event_type": "PRODUCT_MILESTONE",
+        "occurred_at": "2026-09-22",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "On 2026-09-22, Rocket Lab reported completing a kickoff for Space-Based Airborne Moving Target Indicator demonstrations under the Flatellite program.",
+        "known_event_summary": "On 2026-09-22, Rocket Lab completed a kickoff for Space-Based Airborne Moving Target Indicator demonstrations under the SB-AMTI Flatellite program.",
+        "related_event_ids": [
+          "E18",
+          "E67"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F276",
+            "proposition": "Rocket Lab reported that it had completed a program kickoff for Space-Based Airborne Moving Target Indicator demonstrations.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-22",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E88",
+        "title": "Viasat selects Rocket Lab for a PTS-G protected-communications satellite bus",
+        "event_type": "MATERIAL_CONTRACT",
+        "occurred_at": "2026-09-22",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "On 2026-09-22, Viasat selected Rocket Lab to provide a satellite bus for its PTS-G protected-communications program, also identified as Lightning-GEO.",
+        "known_event_summary": "On 2026-09-22, Viasat selected Rocket Lab to provide the satellite bus for the PTS-G/Lightning-GEO protected-communications program.",
+        "related_event_ids": [],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F277",
+            "proposition": "Viasat selected Rocket Lab to provide a satellite bus for its PTS-G protected communications project, Lightning-GEO.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-22",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E89",
+        "title": "StockStory places Rocket Lab on its buy list",
+        "event_type": "ANALYST_ACTION",
+        "occurred_at": "2026-09-23",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "StockStory published a buy-list recommendation for Rocket Lab on September 23, 2026.",
+        "known_event_summary": "On 2026-09-23, StockStory placed Rocket Lab on its buy list.",
+        "related_event_ids": [],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F281",
+            "proposition": "StockStory published an investment recommendation placing Rocket Lab on its buy list.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-09-23",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E90",
+        "title": "Iridium shareholders approve Rocket Lab's proposed acquisition",
+        "event_type": "M_AND_A",
+        "occurred_at": "2026-09-24",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "On 2026-09-24, Iridium shareholders approved Rocket Lab's proposed acquisition at a special meeting, with approximately 99.6% of votes cast in favor, representing approximately 81.0% of outstanding shares entitled to vote.",
+        "known_event_summary": "On 2026-09-24, Iridium shareholders approved Rocket Lab's proposed acquisition; approximately 99.6% of votes cast favored the transaction, representing approximately 81.0% of outstanding shares entitled to vote.",
+        "related_event_ids": [
+          "E11",
+          "E44",
+          "E71",
+          "E72",
+          "E77",
+          "E85"
+        ],
+        "supersedes_event_id": "E86",
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F282",
+            "proposition": "Iridium stockholders adopted the merger agreement with Rocket Lab at the special meeting held on 2026-09-24.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "SAME",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F283",
+            "proposition": "Approximately 99.6% of votes cast at the special meeting favored the transaction, representing approximately 81.0% of Iridium's outstanding shares entitled to vote.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "SAME",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E91",
+        "title": "Rocket Lab completes its 97th Electron launch and Synspective's 13th StriX deployment",
+        "event_type": "PRODUCT_MILESTONE",
+        "occurred_at": "2026-09-26",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "On 2026-09-26, Rocket Lab completed its 97th Electron launch and 18th launch of 2026 from Launch Complex 1 in New Zealand, deploying Synspective's 13th StriX satellite into a 559-kilometer low-Earth orbit. Rocket Lab reported that all 13 Synspective StriX deployments had succeeded and that 14 further constellation launches remained scheduled through the end of the decade.",
+        "known_event_summary": "On 2026-09-26, Rocket Lab completed its 97th Electron and 18th 2026 launch from Launch Complex 1, deploying Synspective's 13th StriX satellite to a 559-kilometer orbit; all 13 StriX deployments were successful and 14 more launches remained scheduled through the end of the decade.",
+        "related_event_ids": [
+          "E79",
+          "E46",
+          "E10",
+          "E36"
+        ],
+        "supersedes_event_id": "E80",
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F284",
+            "proposition": "Rocket Lab completed its 97th Electron launch and 18th launch of 2026 on 2026-09-26, deploying Synspective's 13th StriX synthetic-aperture-radar satellite into a 559-kilometer low-Earth orbit from Launch Complex 1 in New Zealand.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "SAME",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F285",
+            "proposition": "Rocket Lab reported 100% mission success across all 13 Synspective StriX satellites deployed by Electron.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "SAME",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F286",
+            "proposition": "A further 14 Synspective constellation launches remain on schedule through the end of the decade.",
+            "assertion_state": "SCHEDULED",
+            "subject_time": "LONG_TERM",
+            "fact_occurred_at": "SAME",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E92",
+        "title": "FAA proposes rule to streamline commercial space-launch approvals",
+        "event_type": "REGULATORY_ACTION",
+        "occurred_at": "2026-09-29",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "On 2026-09-29, the FAA proposed a rule intended to streamline commercial space-launch approvals by waiving some environmental laws and regulations that can slow launch cadence.",
+        "known_event_summary": "On 2026-09-29, the FAA proposed a rule to waive some environmental laws and regulations that slow commercial space-launch approvals and launch cadence.",
+        "related_event_ids": [
+          "E62"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F291",
+            "proposition": "The U.S. Federal Aviation Administration proposed a rule intended to streamline commercial space-launch approvals by waiving some environmental laws and regulations that slow launch cadence.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-09-29",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E93",
+        "title": "Rocket Lab enters the Nasdaq-100 index",
+        "event_type": "INVESTOR_EVENT",
+        "occurred_at": "2026-06-22",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "On 2026-06-22, Rocket Lab entered the Nasdaq-100 index, establishing an ongoing index-membership status.",
+        "known_event_summary": "On 2026-06-22, Rocket Lab entered the Nasdaq-100 index.",
+        "related_event_ids": [],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F292",
+            "proposition": "Rocket Lab entered the Nasdaq-100 index on 2026-06-22.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-06-22",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E94",
+        "title": "Rocket Lab agrees to acquire Iridium at $54 per share",
+        "event_type": "M_AND_A",
+        "occurred_at": "2026-09-28",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "On 2026-09-28, Rocket Lab agreed to acquire Iridium at $54 per share, valuing Iridium equity at approximately $6 billion; the transaction rationale also included Iridium communications and defense capabilities.",
+        "known_event_summary": "On 2026-09-28, Rocket Lab agreed to acquire Iridium at $54 per share, valuing Iridium equity at approximately $6 billion; Iridium was described as bringing APNT, NB-NTN, Aireon ADS-B, satellite voice, and Department of Defense capabilities.",
+        "related_event_ids": [
+          "E11",
+          "E44",
+          "E71",
+          "E72",
+          "E77",
+          "E83",
+          "E85",
+          "E90"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F293",
+            "proposition": "Rocket Lab agreed to acquire Iridium Communications at $54 per share.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-09-28",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F294",
+            "proposition": "The Rocket Lab-Iridium transaction valued Iridium equity at approximately $6 billion.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-09-28",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F295",
+            "proposition": "Iridium was described as bringing an APNT ASIC, NB-NTN capability, ADS-B tracking through Aireon, satellite voice, and Department of Defense contracts in addition to its spectrum assets.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-29",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E95",
+        "title": "Citizens and Roth Capital raise Rocket Lab targets after Iridium deal",
+        "event_type": "ANALYST_RESPONSE_EPISODE",
+        "occurred_at": "2026-09-29",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "On 2026-09-29, Citizens and Roth Capital raised their Rocket Lab price targets to $130 and rated the shares Buy after the Iridium acquisition announcement.",
+        "known_event_summary": "On 2026-09-29, Citizens raised Rocket Lab's target from $95 to $130 and Roth Capital raised its target from $100 to $130; both rated the shares Buy after the Iridium acquisition announcement.",
+        "related_event_ids": [
+          "E94",
+          "E27",
+          "E28",
+          "E33",
+          "E34",
+          "E40",
+          "E64",
+          "E83",
+          "E89"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F296",
+            "proposition": "Citizens analyst Trevor Walsh raised his Rocket Lab price target from $95 to $130 and rated the shares Buy.",
+            "assertion_state": "FORECAST",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-09-29",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F297",
+            "proposition": "Roth Capital analyst Suji Desilva raised his Rocket Lab price target from $100 to $130 and rated the shares Buy.",
+            "assertion_state": "FORECAST",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-09-29",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      }
+    ],
+    "provisional_events": [],
+    "missing_event_ids": [],
+    "event_library_version": 13,
+    "known_index_sha256": "e5123946d6ac203178f12112fb012390c41cbc912e8015e1aca168f5052e8238"
+  },
+  "reconstruction_notes": [
+    "Synthetic NASA case uses nearest prepared pre-cutoff RKLB research; source is partial."
+  ]
+}

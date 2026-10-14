@@ -1,0 +1,263 @@
+{
+  "case_key": "BE-01-04",
+  "evidence_cutoff_at": "2026-09-24T20:46:45.107799Z",
+  "reviewed_at": "2026-10-13T22:58:31.374327Z",
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a1373b-388b-7531-a780-7644923566b4",
+    "turn_id": "01a1373b-38ab-7b70-8b40-6865cfd33cb5",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 168704,
+        "inputTokens": 182840,
+        "outputTokens": 14019,
+        "reasoningOutputTokens": 10509,
+        "totalTokens": 196859
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 1565952,
+        "inputTokens": 1757190,
+        "outputTokens": 32783,
+        "reasoningOutputTokens": 27621,
+        "totalTokens": 1789973
+      }
+    },
+    "prompt_version": "w3-web-evidence-v1",
+    "input_fingerprint": "188e9b2229be51a664b90a4b15da7f6dcb262c5341389e1700256f9a41852862",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://www.bloomberg.com/news/articles/2026-09-24/oracle-cites-force-majeure-to-shield-itself-on-controversial-data-center",
+      "title": "Oracle Cites ‘Force Majeure’ to Shield Itself on Controversial Data Center",
+      "published_at": "2026-09-24T12:25:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": "2026-09-24T16:50:00Z",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "BEFORE_CUTOFF",
+      "content_state": "UPDATED",
+      "decision": "KEEP",
+      "reason": "The supplied publication and revision times do not exceed the case cutoff.",
+      "source_result_refs": [
+        "turn6search0",
+        "turn1search0"
+      ],
+      "source_call_ids": [
+        "exec-082bdb25-79a9-4c4e-afff-9157d73641b4",
+        "exec-412d9f7d-c443-4783-9f5d-c6726604d2de"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://news.bloomberglaw.com/environment-and-energy/oracle-cites-force-majeure-to-shield-itself-on-big-data-center",
+      "title": "Oracle Cites Force Majeure to Shield Itself on Data Center (2)",
+      "published_at": "2026-09-24T16:50:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UPDATED",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn3search0",
+        "turn10search8"
+      ],
+      "source_call_ids": [
+        "exec-6742e411-930c-4802-819e-f3f80f73e96a",
+        "exec-9ee12857-5a1b-47a8-8227-2da493a63183"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://techcrunch.com/2026/09/24/oracle-sends-force-majeure-notice-on-its-new-mexico-stargate-data-center/",
+      "title": "Oracle sends force majeure notice on its New Mexico Stargate data center",
+      "published_at": "2026-09-24T18:11:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn13search0",
+        "turn3search2"
+      ],
+      "source_call_ids": [
+        "exec-0c327714-249f-4304-98b9-9079aa5919f4",
+        "exec-6742e411-930c-4802-819e-f3f80f73e96a"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://www.barrons.com/articles/stock-movers-45e41551?siteid=yhoof2&yptr=yahoo",
+      "title": "Oracle, Qualcomm, Meta, Everpure, BlackBerry, MGM, Nebius, and More Stocks That Explain Today’s Market",
+      "published_at": "2026-09-24T20:32:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn4search1"
+      ],
+      "source_call_ids": [
+        "exec-14085319-317c-4322-9858-246595882fed"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S5",
+      "url": "https://www.nmstatelands.org/2026/07/15/commissioner-garcia-richard-again-denies-request-to-run-portion-of-project-jupiter-pipeline-through-state-lands/",
+      "title": "Commissioner Garcia Richard Again Denies Request to Run Portion of Project Jupiter Pipeline Through State Lands",
+      "published_at": "2026-07-15",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn7search0"
+      ],
+      "source_call_ids": [
+        "exec-0a76b066-1bf0-491e-95fc-fd2c3ce7aba2"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S6",
+      "url": "https://www.govinfo.gov/content/pkg/FR-2026-09-10/pdf/2026-18455.pdf",
+      "title": "Notice of Availability of the Environmental Assessment for the Proposed Green Chile Project",
+      "published_at": "2026-09-10",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn9search12",
+        "turn9search13"
+      ],
+      "source_call_ids": [
+        "exec-269503ea-c12c-4312-bfd9-69efac703923"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S7",
+      "url": "https://www.oracle.com/news/announcement/project-jupiter-statement-on-construction-permitting-2026-09-14/",
+      "title": "Project Jupiter Statement on Construction Permitting",
+      "published_at": "2026-09-14",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn11search5"
+      ],
+      "source_call_ids": [
+        "exec-017a663e-128e-4f3f-b528-f8633cee70a6"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "Bloomberg’s first traceable report said Oracle had sent a force-majeure notice to the Project Jupiter developer, a Blue Owl unit, and described the intended protection as possible payment deferral if the campus misses its planned 2028 online date. Bloomberg said Oracle was not seeking to exit as tenant.",
+      "source_urls": [
+        "https://www.bloomberg.com/news/articles/2026-09-24/oracle-cites-force-majeure-to-shield-itself-on-controversial-data-center"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-24T12:25:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The notice’s delivery time and text are not public in the sources found; the first report relied on unnamed sources. The report does not establish an actual delay, payment deferral, or change to Bloom Energy’s scope."
+    },
+    {
+      "observation": "By its 16:50Z update, Bloomberg reported Oracle’s position that the notice alone did not establish a delay or change delivery expectations, and Blue Owl’s position that project financial commitments remained unchanged. TechCrunch repeated those positions before cutoff and described Bloom fuel cells as the planned power source.",
+      "source_urls": [
+        "https://news.bloomberglaw.com/environment-and-energy/oracle-cites-force-majeure-to-shield-itself-on-big-data-center",
+        "https://techcrunch.com/2026/09/24/oracle-sends-force-majeure-notice-on-its-new-mexico-stargate-data-center/"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-24T16:50:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "These are company positions reported by the press, not the notice or lease text. They limit inferences about schedule and payment consequences but do not negate that a notice was reported."
+    },
+    {
+      "observation": "The State Land Office’s July 14 letter, announced July 15, again denied rights-of-way and a business lease for a segment of the proposed gas pipeline serving Project Jupiter, citing emissions and resource concerns.",
+      "source_urls": [
+        "https://www.nmstatelands.org/2026/07/15/commissioner-garcia-richard-again-denies-request-to-run-portion-of-project-jupiter-pipeline-through-state-lands/"
+      ],
+      "event_time": "2026-07-14",
+      "publication_time": "2026-07-15",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This is a pipeline route action, not a rejection of Project Jupiter itself; subsequent federal environmental review remained open."
+    },
+    {
+      "observation": "FERC’s Sept. 10 notice made its environmental assessment for the proposed Green Chile pipeline public, with comments due Oct. 5; staff’s assessment found no significant environmental effect under the stated standard.",
+      "source_urls": [
+        "https://www.govinfo.gov/content/pkg/FR-2026-09-10/pdf/2026-18455.pdf"
+      ],
+      "event_time": "2026-09-10",
+      "publication_time": "2026-09-10",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This was a favorable environmental assessment, not a final project authorization; the comment period was still open at cutoff."
+    },
+    {
+      "observation": "Oracle’s Sept. 14 statement distinguished campus construction from the separately permitted microgrid, saying construction of the data-center buildings did not require the air permit while microgrid review continued.",
+      "source_urls": [
+        "https://www.oracle.com/news/announcement/project-jupiter-statement-on-construction-permitting-2026-09-14/"
+      ],
+      "event_time": "2026-09-14",
+      "publication_time": "2026-09-14",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This is Oracle’s own statement and does not establish that the site’s power supply or overall commissioning schedule was secured."
+    },
+    {
+      "observation": "The supplied Barron’s message, published at 20:32Z, repeated the notice claim shortly before cutoff; it followed Bloomberg’s earlier report and TechCrunch’s same-day coverage.",
+      "source_urls": [
+        "https://www.barrons.com/articles/stock-movers-45e41551?siteid=yhoof2&yptr=yahoo",
+        "https://techcrunch.com/2026/09/24/oracle-sends-force-majeure-notice-on-its-new-mexico-stargate-data-center/"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-24T20:32:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "Barron’s item is downstream dissemination; the supplied excerpt’s capture is pre-cutoff, but the current page’s revision history is not visible."
+    }
+  ],
+  "gaps": [
+    "The notice itself, the lease or contract clause, its stated force-majeure basis, and its delivery date and time were not located in public sources.",
+    "Whether Blue Owl accepted any force-majeure trigger, whether any payment deferral could actually occur, and whether any project milestone changed remained unresolved by cutoff.",
+    "No pre-cutoff source found documents a cancellation or change to Bloom Energy’s project scope, capacity, order, or delivery obligations; the reported notice alone does not establish one.",
+    "The supplied W1 references an earlier rumored state, but no separately dated public rumor item was independently traced in this search.",
+    "The Barron’s page does not expose a precise article timestamp or revision history in the live rendering; pre-cutoff verification is limited to the supplied source-message excerpt captured before cutoff."
+  ],
+  "research_notes": "Cutoff: 2026-09-24T20:46:45.107799Z. Earliest traceable public report found is Bloomberg at 12:25Z on Sept. 24, citing people familiar with the matter. Bloomberg’s 16:50Z update and TechCrunch’s 18:11Z coverage preceded the cutoff; the supplied Barron’s message is a later dissemination at 20:32Z, not the first report. The notice’s delivery time is not disclosed. The reported new information is a contractual step to preserve a possible payment-deferral position if Project Jupiter misses its planned 2028 online date—not a reported project cancellation or confirmed schedule change. Prior public context included the State Land Office’s pipeline-route denial and an open FERC review; FERC staff’s environmental assessment was favorable on significance, but was not final authorization. Oracle had also said the data-center buildings and separately permitted microgrid were distinct facilities. W1’s earlier rumor classification is supplied context; no separately dated public item for that rumor was independently located. Post-cutoff coverage and market reactions are excluded.",
+  "collection_prompt_version": "w3-web-evidence-v1"
+}

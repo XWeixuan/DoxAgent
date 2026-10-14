@@ -1,0 +1,286 @@
+{
+  "case_key": "BE-02-04",
+  "evidence_cutoff_at": "2026-09-29T09:26:01.472751Z",
+  "reviewed_at": "2026-10-13T22:58:31.421374Z",
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a13745-2f73-7ef3-b0e7-fbff605e6690",
+    "turn_id": "01a13745-2f8a-7d63-b508-518281d8313f",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 96000,
+        "inputTokens": 111319,
+        "outputTokens": 11342,
+        "reasoningOutputTokens": 7847,
+        "totalTokens": 122661
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 807168,
+        "inputTokens": 916978,
+        "outputTokens": 22520,
+        "reasoningOutputTokens": 17902,
+        "totalTokens": 939498
+      }
+    },
+    "prompt_version": "w3-web-evidence-v1",
+    "input_fingerprint": "1d611ce7951daeb442baa78cd8dc3e74f4c6c4eb60e67d94777e21f34b50223c",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://www.reutersevents.com/renewables/solar-pv/dash-small-gas-turbines-set-impact-data-center-costs",
+      "title": "Dash for small gas turbines set to impact data center costs",
+      "published_at": "2026-09-28",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn3search0"
+      ],
+      "source_call_ids": [
+        "exec-e0828906-ee0d-4f85-8916-49e9a4088a17"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://www.pgjonline.com/news/2026/september/dash-for-small-gas-turbines-set-to-impact-data-center-costs",
+      "title": "Dash for small gas turbines set to impact data center costs",
+      "published_at": "2026-09-28",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn3search2"
+      ],
+      "source_call_ids": [
+        "exec-e0828906-ee0d-4f85-8916-49e9a4088a17"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://www.enverus.com/blog/data-center-sites-powered-by-gas-isnt-the-same-as-ready-to-build/",
+      "title": "Data Center Sites Powered by Gas Isn’t the Same As Ready to Build",
+      "published_at": "2026-09-17",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search0"
+      ],
+      "source_call_ids": [
+        "exec-0d841f8c-93ac-4385-aac2-bdb4f174c7bf"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://www.enverus.com/blog/build-more-wait-less-modular-gas-wins-btm-buildout/",
+      "title": "Build More, Wait Less | Modular Gas Wins the BTM Buildout",
+      "published_at": "2026-08-18",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search3"
+      ],
+      "source_call_ids": [
+        "exec-0d841f8c-93ac-4385-aac2-bdb4f174c7bf"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S5",
+      "url": "https://www.gevernova.com/news/print/pdf/node/143884",
+      "title": "GE Vernova and Crusoe announce major 29-unit aeroderivative gas turbine deal to deliver power to AI data centers",
+      "published_at": "2025-07-22",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn1search12"
+      ],
+      "source_call_ids": [
+        "exec-a4d1f31b-a513-4846-be41-9cfbaea82be5"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S6",
+      "url": "https://www.bergenengines.com/bergen-engines-signs-750mw-agreement-with-crusoe/",
+      "title": "Bergen Engines Signs Approx. 750MW U.S. Power Agreement with Crusoe for AI Data Centers",
+      "published_at": "2026-06-03",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search5"
+      ],
+      "source_call_ids": [
+        "exec-0d841f8c-93ac-4385-aac2-bdb4f174c7bf"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S7",
+      "url": "https://www.gevernova.com/news/print/pdf/node/143702",
+      "title": "GE Vernova announces more than $160 million investment in Greenville facility",
+      "published_at": "2025-01-29",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn2search12"
+      ],
+      "source_call_ids": [
+        "exec-e047cb4a-8970-433c-a686-fdbdf7f66c74"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S8",
+      "url": "https://news.mecknc.gov/siemens-energy-will-expand-operations-mecklenburg-county-creating-additional-jobs",
+      "title": "Siemens Energy Will Expand Operations in Mecklenburg County, Creating Additional Jobs",
+      "published_at": "2026-02-03",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn2search9"
+      ],
+      "source_call_ids": [
+        "exec-e047cb4a-8970-433c-a686-fdbdf7f66c74"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "The earliest traceable Reuters Events listing for the report is dated 2026-09-28; a Reuters-attributed full-text syndication on the same date describes data-center developers seeking small open-cycle and aeroderivative turbines for BTM generation and quicker power access. The report does not identify Bloom or a project previously associated with Bloom.",
+      "source_urls": [
+        "https://www.reutersevents.com/renewables/solar-pv/dash-small-gas-turbines-set-impact-data-center-costs",
+        "https://www.pgjonline.com/news/2026/september/dash-for-small-gas-turbines-set-impact-data-center-costs",
+        "https://muckrack.com/media-outlet/reuters-renewables"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-28",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "Exact hour is unknown; the direct Reuters Events page was inaccessible. The 2026-09-29 Reuters.com record supplied in the case is after cutoff and is not used."
+    },
+    {
+      "observation": "Before the Reuters coverage, Enverus had published the core forecast: 29.6 GW is gas-generation capacity needed, while 88% refers to data centers’ share of 25.5 GW projected BTM demand (22.5 GW).",
+      "source_urls": [
+        "https://www.enverus.com/blog/data-center-sites-powered-by-gas-isnt-the-same-as-ready-to-build/"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-17",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "These are forecasts, not completed builds or Bloom allocations. Enverus also describes project readiness risks including permits, pipeline routes, water, community acceptance, and offtakers."
+    },
+    {
+      "observation": "Enverus’s August 2026 public analysis had already described modular gas and fuel cells as faster alternatives to large CCGTs and forecast they could capture a substantial share of planned gas builds; it also presented SOFCs as a competing BTM technology.",
+      "source_urls": [
+        "https://www.enverus.com/blog/build-more-wait-less-modular-gas-wins-btm-buildout/"
+      ],
+      "event_time": null,
+      "publication_time": "2026-08-18",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This was an industry forecast, not proof of realized customer adoption or a specific technology’s share at any Bloom-related site."
+    },
+    {
+      "observation": "Crusoe’s 29-unit GE Vernova aeroderivative-turbine order was publicly announced in July 2025: 19 units booked in June 2025 and 10 previously ordered in December 2024. The September 2026 report repeats an already disclosed transaction.",
+      "source_urls": [
+        "https://www.gevernova.com/news/print/pdf/node/143884"
+      ],
+      "event_time": "2024-12; 2025-06",
+      "publication_time": "2025-07-22",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The company described expected capacity and supply; the release does not establish that all turbines had been delivered or commissioned."
+    },
+    {
+      "observation": "Bergen’s June 2026 announcement of a roughly 750 MW Crusoe agreement split the amount into approximately 438 MW of contract and 310 MW of LOI, with delivery phased through 2027.",
+      "source_urls": [
+        "https://www.bergenengines.com/bergen-engines-signs-750mw-agreement-with-crusoe/"
+      ],
+      "event_time": "2026-06-03",
+      "publication_time": "2026-06-03",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "An LOI is not the same evidentiary status as contracted capacity; the announcement does not prove delivery or operation by the cutoff."
+    },
+    {
+      "observation": "The Reuters-attributed report itself included counterpoints: it reported that smaller turbines can have higher capital cost per unit of electricity, while larger CCGTs can have lower lifetime costs and emissions per MWh; it also described batteries, hybrid resources, grid enhancements, and efficiency as alternatives.",
+      "source_urls": [
+        "https://www.pgjonline.com/news/2026/september/dash-for-small-gas-turbines-set-to-impact-data-center-costs"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-28",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "These are attributed estimates and views, not project-specific comparisons; they do not identify the route chosen for a Bloom-associated project."
+    },
+    {
+      "observation": "Manufacturing responses were already public before cutoff: GE Vernova announced a Greenville expansion plan in January 2025, and Mecklenburg County reported in February 2026 that Siemens Energy planned to resume gas-turbine manufacturing in Charlotte.",
+      "source_urls": [
+        "https://www.gevernova.com/news/print/pdf/node/143702",
+        "https://news.mecknc.gov/siemens-energy-will-expand-operations-mecklenburg-county-creating-additional-jobs"
+      ],
+      "event_time": null,
+      "publication_time": "2025-01-29; 2026-02-03",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "Announcements and future expansion do not establish additional turbine output available by the cutoff."
+    }
+  ],
+  "gaps": [
+    "The Reuters Events original page returned an access error, and the earliest traceable listing establishes the publication date but not the exact publication hour or a dated archived text snapshot.",
+    "The case-provided Reuters.com record is later than cutoff; it was excluded. The accessible same-day Reuters syndication is dated 2026-09-28 but has no time-of-day or update marker.",
+    "No located source identifies a Bloom-associated project that switched from Bloom to gas turbines, gives a Bloom-specific lost order, or quantifies comparative deployment economics for a named project.",
+    "Forecasts and announced supply transactions do not establish realized BTM additions, turbine deliveries, commissioning, or technology allocation by the cutoff."
+  ],
+  "research_notes": "Cutoff: 2026-09-29T09:26:01.472751Z. The earliest traceable listing found for Neil Ford’s Reuters Events story is dated 2026-09-28; the full Reuters-attributed text also appears on Pipeline & Gas Journal with that date. Neither shows an hour. The Reuters Events page could not be fetched, so its listing is used only to trace dissemination. The case-provided Reuters.com record is dated 2026-09-29 with a 16:00Z publication value, after cutoff, and is not used as evidence. Enverus had already published the principal BTM forecast and modular-technology context before the Reuters coverage. Its figures distinguish 29.6 GW of gas generation capacity from 25.5 GW of BTM demand, of which data centers account for 22.5 GW (88%). Crusoe’s 29-turbine order and Bergen agreement were also publicly disclosed earlier. No located source identifies a Bloom-associated project switching routes or a Bloom-specific order change.",
+  "collection_prompt_version": "w3-web-evidence-v1"
+}

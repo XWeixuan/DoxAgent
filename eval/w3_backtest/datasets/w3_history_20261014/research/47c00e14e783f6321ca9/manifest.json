@@ -1,0 +1,14 @@
+{
+  "research_key": "47c00e14e783f6321ca9",
+  "ticker": "BE",
+  "version_pin": {
+    "activation_revision_id": "runtime-maintain-b09c83ce979e9df7d966897a-activation",
+    "document1_run_id": "init-be-788adefdd31844d98a907468b883176d-d1",
+    "document2_run_id": "init-be-788adefdd31844d98a907468b883176d-d2",
+    "event_library_root": "/data/runtime/runtime_artifacts/runtime-maintain-b09c83ce979e9df7d966897a/events",
+    "event_library_version": 10,
+    "policy_set_version": 4,
+    "provisional_snapshot_version": 177,
+    "runtime_projection_version": 4
+  }
+}

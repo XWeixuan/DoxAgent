@@ -1,0 +1,22 @@
+{
+  "dataset_id": "smoke_current_20261014",
+  "case_count": 3,
+  "cases": [
+    {
+      "case_key": "BE-01-03",
+      "path": "inputs/BE-01-03/case.json",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "MU-02-02",
+      "path": "inputs/MU-02-02/case.json",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "EXTRA-RKLB-SYNSPECTIVE",
+      "path": "inputs/EXTRA-RKLB-SYNSPECTIVE/case.json",
+      "group": "extra"
+    }
+  ],
+  "origin_dataset": "w3_history_20261014"
+}

@@ -1,0 +1,85 @@
+{
+  "ticker": "BE",
+  "version": 2,
+  "requested_event_ids": [
+    "E16"
+  ],
+  "events": [
+    {
+      "event_id": "E16",
+      "ticker": "BE",
+      "title": "Bloom Energy disclosed Oracle and Nebius data-center deployment and contracted-capacity updates",
+      "event_type": "MATERIAL_CONTRACT",
+      "occurred_at": "2026-09-09..2026-09-15",
+      "occurrence_time_precision": "INTERVAL",
+      "status": "ACTIVE",
+      "canonical_summary": "Between 2026-09-09 and 2026-09-15, Bloom Energy disclosed Oracle and Nebius commercial relationships, Oracle data-center fuel-cell deployment, and approximately 1.2 GW of contracted capacity being deployed across U.S. projects.",
+      "known_event_summary": "During 2026-09-09–09-15, Bloom described major Oracle/Nebius deals, Oracle data-center fuel-cell deployment, and 1.2 GW of contracted capacity being deployed across U.S. projects.",
+      "is_important": true,
+      "include_in_reference_view": true,
+      "related_event_ids": [],
+      "supersedes_event_id": null,
+      "derived_from_event_ids": [],
+      "facts": [
+        {
+          "fact_id": "F41",
+          "proposition": "Bloom Energy has major deals with Oracle and Nebius.",
+          "assertion_state": "ONGOING",
+          "subject_time": null,
+          "fact_occurred_at": "2026-09-09",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F42",
+          "proposition": "Bloom Energy named Oracle as its first direct hyperscaler customer.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "fact_occurred_at": "2026-09-09",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F43",
+          "proposition": "Bloom Energy committed to providing power at Oracle's first data center within 90 days.",
+          "assertion_state": "PLAN",
+          "subject_time": "within 90 days",
+          "fact_occurred_at": "2026-09-09",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F44",
+          "proposition": "Bloom Energy will deliver power-generation solutions to some of Oracle's data centers.",
+          "assertion_state": "EXPECTED",
+          "subject_time": null,
+          "fact_occurred_at": "2026-09-09",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F45",
+          "proposition": "Clay Magouyrk stated that using Bloom Energy fuel cells is the most environmentally friendly way to generate power.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "fact_occurred_at": "2026-09-11",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F46",
+          "proposition": "Oracle is using Bloom Energy fuel cells for on-site power at its New Mexico data center.",
+          "assertion_state": "ONGOING",
+          "subject_time": null,
+          "fact_occurred_at": "2026-09-11",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F47",
+          "proposition": "An initial 1.2 GW of capacity is contracted and being deployed across U.S. projects.",
+          "assertion_state": "ONGOING",
+          "subject_time": null,
+          "fact_occurred_at": "2026-09-15",
+          "fact_occurrence_time_precision": "DAY"
+        }
+      ],
+      "price_analysis": null
+    }
+  ],
+  "missing_event_ids": []
+}

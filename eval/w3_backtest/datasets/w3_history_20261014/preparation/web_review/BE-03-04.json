@@ -1,0 +1,335 @@
+{
+  "case_key": "BE-03-04",
+  "evidence_cutoff_at": "2026-09-30T04:47:21.648615Z",
+  "reviewed_at": "2026-10-13T22:58:31.466120Z",
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a1374a-ee16-7710-a658-0c1e83100f3d",
+    "turn_id": "01a1374a-ee27-7b70-b9dd-6521d2b495f1",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 167680,
+        "inputTokens": 179454,
+        "outputTokens": 27037,
+        "reasoningOutputTokens": 22456,
+        "totalTokens": 206491
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 1829376,
+        "inputTokens": 2010075,
+        "outputTokens": 41133,
+        "reasoningOutputTokens": 34977,
+        "totalTokens": 2051208
+      }
+    },
+    "prompt_version": "w3-web-evidence-v1",
+    "input_fingerprint": "53a5840f08bf5a7f6f124ee88952fcab827be17a8399ae5f49967638af933aef",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://www.thelec.kr/news/articleView.html?idxno=63014",
+      "title": "온세미, 2030년 매출 110억달러 목표…자동차 넘어 AI 데이터센터로",
+      "published_at": "2026-09-30T04:36:13Z",
+      "time_precision": "EXACT",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn6search0"
+      ],
+      "source_call_ids": [
+        "exec-7c3de316-4e9a-4f34-8901-60799deb5e24"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://onsemi.gcs-web.com/news-releases/news-release-details/onsemi-charts-path-power-next-decade-innovation",
+      "title": "onsemi Charts Path to Power the Next Decade of Innovation",
+      "published_at": "2026-09-16T18:30:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn5search4"
+      ],
+      "source_call_ids": [
+        "exec-2dc9248c-bc13-46da-b2bd-633bc593590f"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://www.sec.gov/Archives/edgar/data/1097864/000114036126036771/ef20081954_425.htm",
+      "title": "onsemi Investor Day 2026 presentation, filed as Form 425",
+      "published_at": "2026-09-16T20:02:25Z",
+      "time_precision": "EXACT",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn5search6",
+        "turn12search0"
+      ],
+      "source_call_ids": [
+        "exec-2dc9248c-bc13-46da-b2bd-633bc593590f",
+        "exec-a3f7cea3-2bf0-4c56-8cc4-6d1d772c55a2"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://www.onsemi.com/company/newsroom/news-and-insights/onsemi-reports-second-quarter-2026-results",
+      "title": "onsemi Reports Second Quarter 2026 Results",
+      "published_at": "2026-08-03",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn3search1"
+      ],
+      "source_call_ids": [
+        "exec-f1d7e701-b9a5-45f4-b46e-82d26ed564cc"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S5",
+      "url": "https://www.onsemi.com/company/newsroom/news-and-insights/onsemi-presents-its-path-to-accelerate-revenue-growth-at-3x-the-semiconductor-industry",
+      "title": "onsemi Presents its Path to Accelerate Revenue Growth at 3x the Semiconductor Industry",
+      "published_at": "2023-05-22",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn4search0"
+      ],
+      "source_call_ids": [
+        "exec-39aa05b5-87c2-486e-8ef4-e52ac9418a77"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S6",
+      "url": "https://www.investing.com/news/analyst-ratings/wells-fargo-cuts-on-semiconductor-stock-price-target-on-valuation-93CH-4887451?ampMode=1",
+      "title": "Wells Fargo cuts ON Semiconductor stock price target on valuation",
+      "published_at": "2026-09-03",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn15search2"
+      ],
+      "source_call_ids": [
+        "exec-0a277888-7a09-45ba-8ff4-113db6694a5e"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S7",
+      "url": "https://investor.onsemi.com/news-releases/news-release-details/onsemi-reports-fourth-quarter-and-full-year-2025-results-0",
+      "title": "onsemi Reports Fourth Quarter and Full Year 2025 Results",
+      "published_at": "2026-02-09T21:15:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn13search2"
+      ],
+      "source_call_ids": [
+        "exec-e9ed6930-d357-4a4a-8213-23ce0683e9e1"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S8",
+      "url": "https://www.streetinsider.com/Analyst+Comments/ON+Semiconductor+%28ON%29+PT+Lowered+to+%2475+at+Stifel+on+Lower+EPS+Power+vs.+Analog+Peers/27072715.html?classic=1",
+      "title": "ON Semiconductor: Stifel commentary following Investor Day",
+      "published_at": "2026-09-17T11:30:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn15search10"
+      ],
+      "source_call_ids": [
+        "exec-0a277888-7a09-45ba-8ff4-113db6694a5e"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S9",
+      "url": "https://www.onsemi.com/company/newsroom/news-and-insights/onsemi-to-acquire-synaptics-to-enable-the-next-generation-of-intelligent-systems-for-physical-ai",
+      "title": "onsemi to Acquire Synaptics to Enable the Next Generation of Intelligent Systems for Physical AI",
+      "published_at": "2026-06-25",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn16search1"
+      ],
+      "source_call_ids": [
+        "exec-bd174e1d-a4d6-464e-b386-f8fcf3056bda"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S10",
+      "url": "https://investor.onsemi.com/news-releases/news-release-details/onsemi-host-financial-analyst-day-0",
+      "title": "onsemi to Host Financial Analyst Day",
+      "published_at": "2026-02-24T21:15:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn5search3"
+      ],
+      "source_call_ids": [
+        "exec-2dc9248c-bc13-46da-b2bd-633bc593590f"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "The event occurred on Sept. 16, 2026. The earliest exact-time primary dissemination found is onsemi’s 2:30 PM EDT release (18:30Z); the full financial slide deck was filed by 4:02:25 PM EDT (20:02:25Z). The Elec report arrived on Sept. 30 at 04:36:13Z, shortly before cutoff, so it is a later recap rather than the initial source.",
+      "source_urls": [
+        "https://onsemi.gcs-web.com/news-releases/news-release-details/onsemi-charts-path-power-next-decade-innovation",
+        "https://www.sec.gov/Archives/edgar/data/1097864/000114036126036771/ef20081954_425.htm",
+        "https://www.thelec.kr/news/articleView.html?idxno=63014"
+      ],
+      "event_time": "2026-09-16",
+      "publication_time": "2026-09-16T18:30:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The Investor Day may have disclosed figures live earlier; the retrieved dated records do not establish the precise first-spoken time of each figure."
+    },
+    {
+      "observation": "The deck states 2026E revenue of $6.5B and a 12–14% revenue CAGR from 2026E through 2030, alongside 38% operating-margin and 30–35% free-cash-flow-margin targets. The Elec’s roughly $10.2–11.0B 2030 revenue range is consistent with compounding the stated base and CAGR over four years; it is not a standalone exact revenue point target in the deck.",
+      "source_urls": [
+        "https://www.sec.gov/Archives/edgar/data/1097864/000114036126036771/ef20081954_425.htm",
+        "https://www.thelec.kr/news/articleView.html?idxno=63014"
+      ],
+      "event_time": "2026-09-16",
+      "publication_time": "2026-09-16T20:02:25Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The deck’s future margins and cash-flow measures are non-GAAP forward-looking targets, not realized results; onsemi cautions against relying on them alone."
+    },
+    {
+      "observation": "AI-data-center growth was already part of the pre-event context: in August, onsemi reported Q2 revenue growth and said it expected AI-data-center revenue to more than double in 2026. The Sept. 16 addition was a longer-term 2030 target framework.",
+      "source_urls": [
+        "https://www.onsemi.com/company/newsroom/news-and-insights/onsemi-reports-second-quarter-2026-results",
+        "https://www.sec.gov/Archives/edgar/data/1097864/000114036126036771/ef20081954_425.htm"
+      ],
+      "event_time": "2026-09-16",
+      "publication_time": "2026-08-03",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The 2026 AI-data-center expectation was management guidance; it did not establish realized 2030 revenue."
+    },
+    {
+      "observation": "The prior corporate plan cited 10–12% revenue CAGR for 2022–2027. A pre-event report attributed an 11–13% 2030 growth model to Wells Fargo; onsemi’s new 12–14% 2026E–2030 target overlaps that reported model. The older corporate plan and newer model use different bases and horizons, and the Wells Fargo report is not marketwide consensus.",
+      "source_urls": [
+        "https://www.onsemi.com/company/newsroom/news-and-insights/onsemi-presents-its-path-to-accelerate-revenue-growth-at-3x-the-semiconductor-industry",
+        "https://www.investing.com/news/analyst-ratings/wells-fargo-cuts-on-semiconductor-stock-price-target-on-valuation-93CH-4887451?ampMode=1",
+        "https://www.sec.gov/Archives/edgar/data/1097864/000114036126036771/ef20081954_425.htm"
+      ],
+      "event_time": "2026-09-16",
+      "publication_time": "2026-09-03",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The sell-side model is one reported analyst estimate; it cannot stand in for consensus."
+    },
+    {
+      "observation": "The historical base was mixed: onsemi reported 2025 revenue below 2024, while Q2 2026 revenue was up year over year. A Sept. 17 report of Stifel commentary said the long-term model could be below expectations and that near-/mid-term margin progression remained unclear.",
+      "source_urls": [
+        "https://investor.onsemi.com/news-releases/news-release-details/onsemi-reports-fourth-quarter-and-full-year-2025-results-0",
+        "https://www.onsemi.com/company/newsroom/news-and-insights/onsemi-reports-second-quarter-2026-results",
+        "https://www.streetinsider.com/Analyst+Comments/ON+Semiconductor+%28ON%29+PT+Lowered+to+%2475+at+Stifel+on+Lower+EPS+Power+vs.+Analog+Peers/27072715.html?classic=1"
+      ],
+      "event_time": "2026-09-16",
+      "publication_time": "2026-09-17T11:30:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The Stifel item is a single analyst view; historical results and commentary do not determine whether future targets will be met."
+    },
+    {
+      "observation": "The physical-AI strategy had a material pre-event corporate transaction context: onsemi had announced a proposed Synaptics acquisition in June, with a stated mid-2027 expected close subject to approvals. That was an agreement, not completed integration or realized synergies by cutoff.",
+      "source_urls": [
+        "https://www.onsemi.com/company/newsroom/news-and-insights/onsemi-to-acquire-synaptics-to-enable-the-next-generation-of-intelligent-systems-for-physical-ai"
+      ],
+      "event_time": "2026-06-25",
+      "publication_time": "2026-06-25",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The closing timeline and benefits were forward-looking and conditional."
+    },
+    {
+      "observation": "The searched onsemi disclosure concerns semiconductor, sensing, and system-level power products. It does not identify Bloom Energy, an Energy Server project, a Bloom order, or Bloom deployment data; it should not be treated as direct evidence of Bloom-specific demand or execution.",
+      "source_urls": [
+        "https://www.thelec.kr/news/articleView.html?idxno=63014",
+        "https://onsemi.gcs-web.com/news-releases/news-release-details/onsemi-charts-path-power-next-decade-innovation",
+        "https://www.sec.gov/Archives/edgar/data/1097864/000114036126036771/ef20081954_425.htm"
+      ],
+      "event_time": "2026-09-16",
+      "publication_time": "2026-09-16T18:30:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The news concerns onsemi’s own addressable markets and targets; it supplies no evidence of customer allocation to Bloom."
+    }
+  ],
+  "gaps": [
+    "The precise time when Investor Day speakers first stated the 2030 financial assumptions is not established by a timestamped pre-cutoff transcript; 18:30Z is the earliest exact-time issuer release found, not proof that the figures were first spoken then.",
+    "No company-issued single-point total-revenue target of exactly $11B was located in the deck; the reported range is a calculation from the stated 2026E revenue and CAGR.",
+    "The reviewed sources do not establish broad sell-side consensus for the 2030 model or validate the targets independently.",
+    "No Bloom-specific customer, project, order, or deployment connection was found in this onsemi event."
+  ],
+  "research_notes": "Cutoff: 2026-09-30T04:47:21.648615Z. The supplied The Elec article was published at 04:36:13Z and its text was captured at 04:46:01.950877Z, before cutoff. It is a later recap, not the origin. The earliest exact-time primary dissemination found was onsemi’s Sept. 16 release at 18:30Z; its Investor Day deck was in an SEC filing by 20:02:25Z. The live event may have disclosed details earlier, but the first-spoken time of each target is not established here. The Elec’s roughly $10.2–11.0B figure is derived from the company’s $6.5B 2026E revenue and 12–14% 2026E–2030 CAGR, rather than a single-point revenue target stated in the deck. Q2 had already disclosed expected AI-data-center revenue more than doubling in 2026; the new information was the longer-term model. No post-cutoff material, prices, or market reactions are used. The source concerns onsemi; it supplies no Bloom-specific project, order, or deployment evidence.",
+  "collection_prompt_version": "w3-web-evidence-v1"
+}

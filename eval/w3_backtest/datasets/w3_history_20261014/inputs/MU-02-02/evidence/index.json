@@ -1,0 +1,23 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-29T08:08:53.180822Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "The exact intraday publication and revision time of TrendForce’s 29 September official page is not stated; only the supplied pre-cutoff capture verifies that its current passage was present by 08:04:41Z.",
+    "No independently sourced customer, GPU/ASIC vendor, or memory supplier confirmation of finalized 8-Hi platform specifications or sustained shipments was verified in the sources reviewed.",
+    "The 121% estimate’s underlying model, previous numerical forecast, contract data, and assumptions are not available in the public summary; MoneyDJ repeats the same attribution rather than independently corroborating it.",
+    "The 22 September TrendForce report summary shows that the directional outlook predated the 29 September release, but the available page does not establish whether the exact 121% figure was already disclosed then."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

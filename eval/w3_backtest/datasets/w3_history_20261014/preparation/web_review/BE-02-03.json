@@ -1,0 +1,305 @@
+{
+  "case_key": "BE-02-03",
+  "evidence_cutoff_at": "2026-09-25T15:06:01.639279Z",
+  "reviewed_at": "2026-10-13T22:58:31.410881Z",
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a13741-6964-73a0-80e4-0276d67b5f3f",
+    "turn_id": "01a13741-6976-78b3-aa31-7757f2bb2458",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 189184,
+        "inputTokens": 191926,
+        "outputTokens": 7266,
+        "reasoningOutputTokens": 3373,
+        "totalTokens": 199192
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 1797888,
+        "inputTokens": 1989473,
+        "outputTokens": 38720,
+        "reasoningOutputTokens": 33102,
+        "totalTokens": 2028193
+      }
+    },
+    "prompt_version": "w3-web-evidence-v1",
+    "input_fingerprint": "fcd7ff30e06c63a0c685f30ccf0082602b4d7a9389eaa5e93037a51a7df7fa95",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://www.prnewswire.com/news-releases/oracle-borderplex-and-bloom-energy-to-power-project-jupiter-with-cleaner-water-efficient-fuel-cell-technology-302754698.html",
+      "title": "Oracle, BorderPlex, and Bloom Energy to Power Project Jupiter with Cleaner, Water-Efficient Fuel Cell Technology",
+      "published_at": "2026-04-27T20:05:00Z",
+      "time_precision": "EXACT",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn7search1",
+        "turn12view4"
+      ],
+      "source_call_ids": [
+        "exec-169f82d1-6a66-4940-bfeb-c261e7171600",
+        "exec-1d4d0e08-7315-4326-ab04-4a66ca9b4f15"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://www.oracle.com/news/announcement/project-jupiter-statement-on-construction-permitting-2026-09-14/",
+      "title": "Project Jupiter Statement on Construction Permitting",
+      "published_at": "2026-09-14",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn13search0",
+        "turn14view1"
+      ],
+      "source_call_ids": [
+        "exec-457d62c4-e276-4a3d-8c4e-0822aed0ecdf",
+        "exec-7aa25904-b67f-4cf6-bcde-911032dc4701"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://www.nmstatelands.org/2026/07/15/commissioner-garcia-richard-again-denies-request-to-run-portion-of-project-jupiter-pipeline-through-state-lands/",
+      "title": "Commissioner Garcia Richard Again Denies Request to Run Portion of Project Jupiter Pipeline Through State Lands",
+      "published_at": "2026-07-15",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn7search0",
+        "turn12view3"
+      ],
+      "source_call_ids": [
+        "exec-169f82d1-6a66-4940-bfeb-c261e7171600",
+        "exec-1d4d0e08-7315-4326-ab04-4a66ca9b4f15"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://news.bloomberglaw.com/esg/gas-pipeline-for-proposed-oracle-data-center-delayed-to-2027-2",
+      "title": "Gas Pipeline for Proposed Oracle Data Center Delayed to 2027",
+      "published_at": "2026-08-14T19:47:00Z",
+      "time_precision": "EXACT",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn7search4",
+        "turn12view0"
+      ],
+      "source_call_ids": [
+        "exec-169f82d1-6a66-4940-bfeb-c261e7171600",
+        "exec-1d4d0e08-7315-4326-ab04-4a66ca9b4f15"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S5",
+      "url": "https://nmcourts.gov/wp-content/uploads/2026/09/Orders-in-Project-Jupiter-air-quality-permit-and-water-cases.pdf",
+      "title": "Orders in Project Jupiter Air-Quality Permit and Water Cases",
+      "published_at": "2026-09-17",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn11search12",
+        "turn11search3"
+      ],
+      "source_call_ids": [
+        "exec-8eee7657-8795-4509-a365-62a269c6df2b"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S6",
+      "url": "https://bloomberg.com/news/articles/2026-09-24/oracle-cites-force-majeure-to-shield-itself-on-controversial-data-center",
+      "title": "Oracle Cites ‘Force Majeure’ to Shield Itself on Controversial Data Center",
+      "published_at": "2026-09-24T12:25:00Z",
+      "time_precision": "UNKNOWN",
+      "updated_at": "2026-09-24T16:50:00Z",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "BEFORE_CUTOFF",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn1search0",
+        "turn6view3"
+      ],
+      "source_call_ids": [
+        "exec-0307dad3-c3a3-49e8-a6df-6deb475f5660",
+        "exec-d6e63c08-9548-44b0-a746-b99777d807d2"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S7",
+      "url": "https://www.marketscreener.com/news/oracle-stock-slides-on-report-of-notice-citing-force-majeure-to-data-center-developer-ce785aded18cfe2c",
+      "title": "Oracle Stock Slides on Report of Notice Citing 'Force Majeure' to Data-Center Developer",
+      "published_at": "2026-09-24T14:20:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": "2026-09-24T14:21:00Z",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "BEFORE_CUTOFF",
+      "content_state": "UPDATED",
+      "decision": "KEEP",
+      "reason": "The supplied publication and revision times do not exceed the case cutoff.",
+      "source_result_refs": [
+        "turn0search2",
+        "turn12view5"
+      ],
+      "source_call_ids": [
+        "exec-0c20bfbb-f4ad-478b-8229-16cd5d71b57c",
+        "exec-1d4d0e08-7315-4326-ab04-4a66ca9b4f15"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S8",
+      "url": "https://www.wsj.com/finance/investing/cracks-in-oracles-ai-data-center-build-out-appear-in-massive-new-mexico-project-effb51c2",
+      "title": "Cracks in Oracle’s AI Data-Center Build-Out Appear in Massive New Mexico Project",
+      "published_at": "2026-09-25T13:46:40Z",
+      "time_precision": "EXACT",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn5search1",
+        "turn6view1",
+        "turn12view7"
+      ],
+      "source_call_ids": [
+        "exec-18d0f712-0b53-480f-ac28-8ee077aac97f",
+        "exec-1d4d0e08-7315-4326-ab04-4a66ca9b4f15",
+        "exec-d6e63c08-9548-44b0-a746-b99777d807d2"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S9",
+      "url": "https://huggingnews.com/ai/update-oracle-invokes-force-majeure-on-165b-ai-center-as-bonds-hit-first-237d11ef",
+      "title": "HuggingNews live-feed item on Project Jupiter",
+      "published_at": "2026-09-25T14:57:17.932Z",
+      "time_precision": "EXACT",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UPDATED",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn6view0"
+      ],
+      "source_call_ids": [
+        "exec-d6e63c08-9548-44b0-a746-b99777d807d2"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "As pre-event context, Oracle and BorderPlex announced that Project Jupiter's planned power design would use up to 2.45 GW of Bloom fuel cells, replacing the earlier gas-turbine and diesel-generator design. This defines the announced configuration, not proven installed or accepted capacity.",
+      "source_urls": [
+        "https://www.prnewswire.com/news-releases/oracle-borderplex-and-bloom-energy-to-power-project-jupiter-with-cleaner-water-efficient-fuel-cell-technology-302754698.html"
+      ],
+      "event_time": "2026-04-27",
+      "publication_time": "2026-04-27T20:05:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The announcement does not establish permits, fuel availability, delivery, commissioning, or customer acceptance."
+    },
+    {
+      "observation": "The proposed gas supply route was already facing a public constraint before the notice coverage: the State Land Office reaffirmed denial of the state-land crossing request in July, and August reporting on an operator filing put the pipeline's estimated in-service date at February 1, 2027, rather than August 15, 2026. These were prior context, not a new disclosure in the force-majeure report.",
+      "source_urls": [
+        "https://www.nmstatelands.org/2026/07/15/commissioner-garcia-richard-again-denies-request-to-run-portion-of-project-jupiter-pipeline-through-state-lands/",
+        "https://news.bloomberglaw.com/esg/gas-pipeline-for-proposed-oracle-data-center-delayed-to-2027-2"
+      ],
+      "event_time": "2026-07-14",
+      "publication_time": "2026-08-14T19:47:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "A pipeline forecast and a denied right-of-way do not by themselves prove a project-wide delay or a change in Bloom's announced scope."
+    },
+    {
+      "observation": "Before the force-majeure coverage, Oracle said the data-center campus and proposed microgrid were separate facilities, with the microgrid subject to its own air-permit proceeding. On September 17, the New Mexico Supreme Court denied challenges and allowed the proceedings to resume; that was a procedural development, not issuance of the permit.",
+      "source_urls": [
+        "https://www.oracle.com/news/announcement/project-jupiter-statement-on-construction-permitting-2026-09-14/",
+        "https://nmcourts.gov/wp-content/uploads/2026/09/Orders-in-Project-Jupiter-air-quality-permit-and-water-cases.pdf",
+        "https://sourcenm.com/2026/09/17/new-mexico-supreme-court-rejects-2-project-jupiter-challenges-allows-permitting-process-to-resume/"
+      ],
+      "event_time": "2026-09-17",
+      "publication_time": "2026-09-17",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "Oracle's permit distinction is the company's statement; the court ruling did not establish that the microgrid permit was granted or that all project gates were closed."
+    },
+    {
+      "observation": "Bloomberg is the earliest traceable report by visible publication metadata, but its current page was updated after cutoff and its original text was not verified in a pre-cutoff snapshot. A Dow Jones article published before cutoff attributed to Bloomberg the report that Oracle had sent a notice seeking conditional payment relief if the 2028 plan were missed. Oracle said the project remained on schedule and that it was committed to New Mexico.",
+      "source_urls": [
+        "https://bloomberg.com/news/articles/2026-09-24/oracle-cites-force-majeure-to-shield-itself-on-controversial-data-center",
+        "https://www.marketscreener.com/news/oracle-stock-slides-on-report-of-notice-citing-force-majeure-to-data-center-developer-ce785aded18cfe2c"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-24T14:20:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The actual notice delivery time and legal effect were not verified in a primary notice or filing. The report does not establish a completed project delay, cancellation, or successful force-majeure claim."
+    },
+    {
+      "observation": "The September 25 WSJ coverage reported that Oracle had removed a key land-and-power partner from Project Jupiter; the near-cutoff HuggingNews capture identified the partner as BorderPlex Digital Assets. The WSJ described the change as having occurred in recent months, so the underlying event date is not pinned down. No verified pre-cutoff passage says that Bloom's announced capacity was reduced or cancelled.",
+      "source_urls": [
+        "https://www.wsj.com/finance/investing/cracks-in-oracles-ai-data-center-build-out-appear-in-massive-new-mexico-project-effb51c2",
+        "https://huggingnews.com/ai/update-oracle-invokes-force-majeure-on-165b-ai-center-as-bonds-hit-first-237d11ef"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-25T13:46:40Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The exact partner-transition date and replacement scope were not established in the verified pre-cutoff capture; Oracle's prior schedule statement remains a counterpoint, not independent proof of completion."
+    }
+  ],
+  "gaps": [
+    "No dated primary copy of Oracle's force-majeure notice or underlying lease was located; the public report's delivery timing and legal consequences remain attributed reporting.",
+    "The exact date, settlement terms, and replacement arrangement for BorderPlex were not independently established in the verified pre-cutoff passages.",
+    "No pre-cutoff evidence located here establishes a project-specific revised operating date, a change in Bloom's contracted capacity, or Bloom shipment, commissioning, acceptance, or revenue consequences.",
+    "The supplied digest's bond-yield, credit-spread, and loan-quote assertions are omitted because they are market-price information; no post-cutoff coverage or market reaction is used."
+  ],
+  "research_notes": "Evidence is limited to material publicly available by 2026-09-25T15:06:01.639279Z. The actual notice-delivery time is not established in the verified pre-cutoff passages. Bloomberg is the earliest traceable report by visible publication metadata, but its page was updated after cutoff and no pre-update text snapshot was verified; its current body is not used. The pre-existing pipeline and permit issues are distinguished from the later notice and partner-removal reports. No post-cutoff coverage, market reactions, or price/yield figures are included.",
+  "collection_prompt_version": "w3-web-evidence-v1"
+}

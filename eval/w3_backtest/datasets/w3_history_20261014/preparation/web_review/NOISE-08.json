@@ -1,0 +1,271 @@
+{
+  "case_key": "NOISE-08",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-09-27T08:28:52.441980Z",
+  "reviewed_at": "2026-10-13T22:58:32.621029Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 6,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a1376e-5ae1-7931-ae8d-cad0e72f5f79",
+    "turn_id": "01a1376e-5af0-7c82-8a20-ef82933b2ba3",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 88832,
+        "inputTokens": 97815,
+        "outputTokens": 12651,
+        "reasoningOutputTokens": 9322,
+        "totalTokens": 110466
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 407808,
+        "inputTokens": 497706,
+        "outputTokens": 19132,
+        "reasoningOutputTokens": 15221,
+        "totalTokens": 516838
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "3c2dc31a4cd24e263bee0f00700d8022028f55066ec1d6490d24e9d6f2b6d307",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://stocktwits.com/news-articles/markets/equity/intc-amd-slide-premarket-after-nvidia-unveils-new-pc-processor-intel-s-xeon-6-data-center-cpu-launch-overshadowed/cZ0gngrReHd",
+      "title": "INTC, AMD Slide Premarket After Nvidia Unveils New PC Processor – Intel’s Xeon 6 Data Center CPU Launch Overshadowed",
+      "published_at": "UNKNOWN (live page displays 2026-06-01 05:46 EDT; case feed gives 2026-09-26T19:01:07Z)",
+      "time_precision": "UNKNOWN",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn0search0"
+      ],
+      "source_call_ids": [
+        "exec-0d7c2bd5-ef0a-4080-b746-47699b6b1133"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://www.axios.com/2026/05/30/nvidia-microsoft-pcs-ai-surface-dell",
+      "title": "Scoop: First Windows PCs powered by Nvidia chips to debut next week",
+      "published_at": "2026-05-30T12:00:07Z",
+      "time_precision": "EXACT",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn3news39"
+      ],
+      "source_call_ids": [
+        "exec-7f804af1-bc57-4ca7-88cb-1607cc0eedd6"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://nvidianews.nvidia.com/news/nvidia-microsoft-windows-pcs-agents-rtx-spark",
+      "title": "NVIDIA and Microsoft Reinvent Windows PCs for the Age of Personal AI",
+      "published_at": "2026-05-31",
+      "time_precision": "DAY",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn3search2"
+      ],
+      "source_call_ids": [
+        "exec-7f804af1-bc57-4ca7-88cb-1607cc0eedd6"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://blogs.windows.com/windowsexperience/2026/05/31/introducing-a-powerful-new-chapter-for-windows-pcs-accelerated-by-nvidia-rtx-spark/",
+      "title": "Introducing a powerful new chapter for Windows PCs, accelerated by NVIDIA RTX Spark",
+      "published_at": "2026-05-31",
+      "time_precision": "DAY",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn3search5"
+      ],
+      "source_call_ids": [
+        "exec-7f804af1-bc57-4ca7-88cb-1607cc0eedd6"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S5",
+      "url": "https://ca.investing.com/news/stock-market-news/nvidia-launches-new-chip-to-bring-ai-directly-to-personal-computers-4667868",
+      "title": "Nvidia launches new chip to bring AI directly to personal computers",
+      "published_at": "2026-06-01T05:06:00-04:00",
+      "time_precision": "MINUTE",
+      "updated_at": "2026-06-01T14:37:00-04:00",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "BEFORE_CUTOFF",
+      "content_state": "UPDATED",
+      "decision": "KEEP",
+      "reason": "The supplied publication and revision times do not exceed the case cutoff.",
+      "source_result_refs": [
+        "turn3search3"
+      ],
+      "source_call_ids": [
+        "exec-7f804af1-bc57-4ca7-88cb-1607cc0eedd6"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S6",
+      "url": "https://newsroom.intel.com/data-center/intel-puts-agentic-ai-xeon-6-networking-ai-systems",
+      "title": "Intel Puts Agentic AI to Work with Xeon 6+, Networking, and AI Systems",
+      "published_at": "2026-05-31",
+      "time_precision": "DAY",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn2search0"
+      ],
+      "source_call_ids": [
+        "exec-3fc54a59-f36a-4716-99a2-7190149cd23b"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S7",
+      "url": "https://www.datacenterdynamics.com/en/news/intel-launches-xeon-6-cpu-pitches-it-for-agentic-ai-boom/",
+      "title": "Intel launches Xeon 6+ CPU, pitches it for Agentic AI boom",
+      "published_at": "2026-06-01",
+      "time_precision": "DAY",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn2search1"
+      ],
+      "source_call_ids": [
+        "exec-3fc54a59-f36a-4716-99a2-7190149cd23b"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S8",
+      "url": "https://www.investing.com/news/stock-market-news/analysisnvidias-ai-pc-push-banks-on-unproven-demand-beyond-niche-users-4733771",
+      "title": "Analysis—Nvidia’s AI PC push banks on unproven demand beyond niche users",
+      "published_at": "2026-06-09T15:04:00-04:00",
+      "time_precision": "MINUTE",
+      "updated_at": "2026-06-09T15:07:00-04:00",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "BEFORE_CUTOFF",
+      "content_state": "UPDATED",
+      "decision": "KEEP",
+      "reason": "The supplied publication and revision times do not exceed the case cutoff.",
+      "source_result_refs": [
+        "turn3search10"
+      ],
+      "source_call_ids": [
+        "exec-7f804af1-bc57-4ca7-88cb-1607cc0eedd6"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "The supplied case-feed publication time for the Stocktwits item (September 26) conflicts with the live page’s displayed publication time (June 1, 2026, 5:46 a.m. EDT). The accessible article describes the June 1 Computex story; without a pre-cutoff snapshot, its exact publication history and as-of-cutoff text cannot be established.",
+      "source_urls": [
+        "https://stocktwits.com/news-articles/markets/equity/intc-amd-slide-premarket-after-nvidia-unveils-new-pc-processor-intel-s-xeon-6-data-center-cpu-launch-overshadowed/cZ0gngrReHd"
+      ],
+      "event_time": "2026-06-01",
+      "publication_time": "UNKNOWN (live page: 2026-06-01 05:46 EDT; case feed: 2026-09-26T19:01:07Z)",
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "The page’s own displayed date and supplied feed timestamp are both pre-cutoff, but no archived dated copy resolves the conflict or verifies the current page contents at cutoff."
+    },
+    {
+      "observation": "Before the reveal, Axios reported that NVIDIA and Microsoft were expected to introduce Windows PCs using NVIDIA chips at Computex/Build. NVIDIA’s May 31 release then formally announced RTX Spark; it described a Blackwell GPU plus Grace CPU, MediaTek’s role in the CPU design, partner makers, and planned fall availability.",
+      "source_urls": [
+        "https://www.axios.com/2026/05/30/nvidia-microsoft-pcs-ai-surface-dell",
+        "https://nvidianews.nvidia.com/news/nvidia-microsoft-windows-pcs-agents-rtx-spark"
+      ],
+      "event_time": "2026-06-01",
+      "publication_time": "Axios: 2026-05-30T12:00:07Z; NVIDIA release: 2026-05-31",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The pre-event Axios report framed the announcement as expected, while the formal company release uses the RTX Spark name and identifies MediaTek in the custom CPU design; these are not identical descriptions to the Stocktwits page’s N1X/Microsoft wording."
+    },
+    {
+      "observation": "Reuters’ independent report was published June 1 at 5:06 a.m. EDT and updated at 2:37 p.m. EDT. It covered the Computex PC-chip disclosure and planned fall partner devices. This is the earliest independent same-day report located; Stocktwits’ currently displayed 5:46 a.m. EDT date is later.",
+      "source_urls": [
+        "https://ca.investing.com/news/stock-market-news/nvidia-launches-new-chip-to-bring-ai-directly-to-personal-computers-4667868",
+        "https://stocktwits.com/news-articles/markets/equity/intc-amd-slide-premarket-after-nvidia-unveils-new-pc-processor-intel-s-xeon-6-data-center-cpu-launch-overshadowed/cZ0gngrReHd"
+      ],
+      "event_time": "2026-06-01",
+      "publication_time": "Reuters: 2026-06-01T05:06:00-04:00; Stocktwits page display: 2026-06-01 05:46 EDT",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This comparison only ranks the dated reports located in this search; it does not establish that Reuters was the first report worldwide. No price or market-reaction information is included."
+    },
+    {
+      "observation": "Intel’s Xeon 6+ launch was announced in the same Computex news cycle. Intel’s release search result identifies Xeon 6+ as built on 18A and its first data-center CPU using that process; DCD independently reported the launch at Computex on June 1. Stocktwits’ “overshadowed” description is not independently quantified by these sources.",
+      "source_urls": [
+        "https://newsroom.intel.com/data-center/intel-puts-agentic-ai-xeon-6-networking-ai-systems",
+        "https://www.datacenterdynamics.com/en/news/intel-launches-xeon-6-cpu-pitches-it-for-agentic-ai-boom/",
+        "https://stocktwits.com/news-articles/markets/equity/intc-amd-slide-premarket-after-nvidia-unveils-new-pc-processor-intel-s-xeon-6-data-center-cpu-launch-overshadowed/cZ0gngrReHd"
+      ],
+      "event_time": "2026-06-01",
+      "publication_time": "Intel release: 2026-05-31 (June 1 Taipei dateline); DCD: 2026-06-01",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "Intel’s primary release page timed out during retrieval; its search result and DCD’s event coverage support the chronology, but do not establish comparative attention or reception."
+    },
+    {
+      "observation": "Reuters’ June 8/9 analysis described uncertainty about broad demand for NVIDIA’s AI PC: analysts cited premium pricing and memory constraints as potential limits, and expected conventional Intel, AMD, and Qualcomm processors to remain the majority of PC sales in the near term.",
+      "source_urls": [
+        "https://www.investing.com/news/stock-market-news/analysisnvidias-ai-pc-push-banks-on-unproven-demand-beyond-niche-users-4733771"
+      ],
+      "event_time": "2026-06-01",
+      "publication_time": "2026-06-09T15:04:00-04:00 (page metadata; article body dated June 8 by Reuters)",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This is contemporaneous analyst-based coverage, not a verified later adoption or shipment result."
+    }
+  ],
+  "gaps": [
+    "No archived, dated pre-cutoff snapshot of the Stocktwits article was located; its case-feed timestamp and live page publication date conflict.",
+    "The Intel Newsroom source page timed out; exact primary-release wording was not independently verified from the full page, though the search result and DCD report provide partial corroboration.",
+    "The sources do not independently quantify Stocktwits’ “overshadowed” characterization or establish shipment volumes, realized adoption, or a confirmed September 22 publication of this article."
+  ],
+  "research_notes": "Cutoff used: 2026-09-27T08:28:52.441980Z. The supplied Stocktwits URL currently displays “Published Jun 01, 2026 | 5:46 AM EDT,” while the case feed gives 2026-09-26T19:01:07Z. No dated pre-cutoff snapshot was verified to reconcile those times or confirm the page’s content at cutoff. The currently accessible story concerns the June 1 Computex announcements. The earliest formal disclosure located is NVIDIA’s May 31 release; Axios previewed the expected announcement on May 30, and Reuters’ June 1, 5:06 a.m. EDT report is the earliest independent same-day coverage located. Intel’s Xeon 6+ announcement was concurrent. Reuters later reported demand and cost uncertainties. No prices or market reactions are used. “Overshadowed” is reported only as Stocktwits’ editorial characterization, not as a verified measurable fact. Supplied W1 context identified existing records for Intel Xeon, NVIDIA Vera, and September 22 share movements; those records were used to focus the search, not independently reverified here."
+}

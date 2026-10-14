@@ -1,0 +1,3442 @@
+{
+  "schema_version": "w3-backtest.case.v1",
+  "case_key": "MU-02-03",
+  "group": "reviewed",
+  "original_case_id": "case_36bc442141224337890f79ba2d52a48a",
+  "ticker": "MU",
+  "evidence_cutoff_at": "2026-09-29T14:46:20.403687Z",
+  "cutoff_basis": "original_worker_started_at",
+  "research_key": "996b0043584e37b104c5",
+  "research_path": "research/996b0043584e37b104c5",
+  "original_case": {
+    "case_id": "case_36bc442141224337890f79ba2d52a48a",
+    "trading_date": "2026-09-29",
+    "source": {
+      "admission_context": {
+        "cutoff": null,
+        "mode": "REALTIME",
+        "policy_version": 1,
+        "source_task_id": null,
+        "sweep_id": null,
+        "window_start": null
+      },
+      "binding_id": "MU:huggingnews_rss",
+      "business_version": 1,
+      "collected_at": "2026-09-29T14:45:16.366995Z",
+      "eligibility_at": "2026-09-29T14:45:16.363616Z",
+      "logical_message_id": "message_2b5948e8fa60400490c0d1a337bad590",
+      "member_count": 1,
+      "member_message_ids": [
+        "std_592d989aa31f4fd5bb24556a8eb5a009"
+      ],
+      "message_bus_event_time": "2026-09-29T14:45:16.366995Z",
+      "normalized_at": null,
+      "previous_raw_message_id": null,
+      "publication_time_basis": "EXACT",
+      "published_at": "2026-09-29T14:43:04.893000Z",
+      "snapshot": {
+        "body": "← Back to live feed · 1 stories across 1 day\nTuesday, Sep 29, 2026\n1 story1 NEWOpenAI Annual Revenue Hits Nearly $70B Following Enterprise Surge AI Sep 29, 10:20 AM EDT 25/18 \n The creator of ChatGPT saw its business-facing sales grow by more than 100% since July to accelerate AI adoption among corporate clients. This enterprise surge helped push OpenAI's annual recurring revenue to nearly $70 billion, an increase of more than 70% since the start of the third quarter, Axios reported. The company also added more revenue from consumer subscriptions in Q3 alone than it did throughout all of 2025.\nThe revenue expansion coincides with OpenAI and rival Anthropic preparing for potential initial public offerings. Current data suggest that previous estimates of the startup's recurring revenue, including a $40 billion figure reported by Bloomberg, significantly understated its current run rate.",
+        "ticker": "MU",
+        "title": "OpenAI Annual Revenue Hits Nearly $70B Following Enterprise Surge"
+      },
+      "source_id": "huggingnews_rss",
+      "source_message_id": "std_592d989aa31f4fd5bb24556a8eb5a009",
+      "stream_item_id": "stream_965b178506254b33b70969933fe4af8c",
+      "update_kind": "NEW_MESSAGE",
+      "url": "https://huggingnews.com/earnings/openai-annual-revenue-hits-nearly-70b-following-enterprise-surge-0481a074"
+    },
+    "version_pin": {
+      "activation_revision_id": "runtime-maintain-a6b55ab81185a47e34c94f28-activation",
+      "document1_run_id": "init-mu-1f3e9130ae304b01a7fdf2991a35e028-d1",
+      "document2_run_id": "init-mu-ce1a897cebf549f88d93fa485671644b-d2",
+      "event_library_root": "/data/runtime/runtime_artifacts/runtime-maintain-a6b55ab81185a47e34c94f28/events",
+      "event_library_version": 17,
+      "policy_set_version": 8,
+      "provisional_snapshot_version": 117,
+      "runtime_projection_version": 8
+    },
+    "runtime_mode": "REALTIME",
+    "closed_cycle_id": null,
+    "w1_final": {
+      "confidence": "normal",
+      "fact_attributions": [
+        {
+          "event_id": "E52",
+          "fact_ids": [
+            "F372"
+          ]
+        }
+      ],
+      "reason": "OpenAI ARR 从已知约 $40B（F372）跃升至近 $70B，且企业端销售自 7 月以来增长超 100%、Q3 消费者订阅收入超过整个 2025 年、OpenAI 与 Anthropic 正筹备潜在 IPO——均为 E52 已加载事实未覆盖的新核心进展。",
+      "reference_ids": [
+        "E52"
+      ],
+      "result": "NEW"
+    },
+    "w1_extraction": null,
+    "w2_final": {
+      "confidence": "normal",
+      "matched_condition_ids": [],
+      "policy_ids": [],
+      "reason": "消息报道OpenAI企业收入增长推动ARR接近700亿美元，属于AI服务商业务层面的宏观需求信号。该消息未涉及Micron的任何具体指标（CMBU/CDBU占比、HBM出货、ASP、毛利率、费用结构）、产品资格或交付状态、战略合同条款、扩产项目进展，也未直接披露服务器/HBM合同价格、内存供给约束或竞争供应商份额变化。与现有Policy criteria之间仅存在\"AI行业整体需求强\"这一宽泛主题层面的间接关联，缺乏具体、直接的触发事实对应，不满足Candidate召回标准。"
+    },
+    "created_at": "2026-09-29T14:45:18.906951Z",
+    "frozen_inputs": {
+      "index": {
+        "contract_version": "known-event-index-v2",
+        "known_event_index": "E10 | 2026-06..2026-09 | Micron shares moved through a volatile 2026 repricing episode | June-September 2026 Micron market episode: the stock reached a June high, fell about 20% in July and below support in August, then recovered in September; by September 17 it was up 224.64% year to date and by September 18 it remained about 19.1% below its $1,255 June 25 high amid high volatility.\nE107 | 2026-09-22..2026-09-23 | Acer CEO warned of rising Chinese memory supply and future price pressure | 2026-09-22..2026-09-23 Acer CEO Jason Chen update: memory inventories were building, mainland Chinese suppliers were releasing more volume, LPDDR5 and DDR5 9600 remained tight, DDR4 had more sellers than buyers, and rising Chinese capacity was expected to pressure prices from late 2027.\nE111 | 2026-09-23 | Michael Burry added to a Micron short and forecast a memory-cycle selloff | 2026-09-23 Michael Burry update: he had added to his Micron short and forecast an intense memory-producer selloff and semiconductor-capital rotation when the memory cycle turns.\nE112 | 2026-09-23 | CXMT was reported to have achieved high DDR5 manufacturing yields | 2026-09-23 report: CXMT was claimed to have achieved DDR5 manufacturing yields above 90%, a potentially significant competitive milestone if confirmed.\nE115 | 2026-09-23 | Multiple analysts, Zacks and Wall Street consensus updated Micron forecasts and ratings amid the memory-price cycle | 2026-09-23 analyst response episode: Citi raised Micron's target from $1,150 to $1,300 and warned memory prices could peak early; Wolfe rated Micron Outperform and estimated buybacks equivalent to about 25% of market capitalization; UBS saw resilience under an 80% price fall; Wells Fargo lowered its target from $1,525 to $1,400; Zacks identified Micron and NVIDIA as important technology-sector earnings contributors; consensus estimates were $50.9B/$31.49 for FY2026 Q4 and $56.6B/$35.07 for FY2027 Q1.\nE116 | 2026-09-23 | Micron clarified strategic customer agreement duration and capped-price coverage | 2026-09-23 Micron SCA clarification: agreements typically ran through calendar 2030, ceilings on existing products were anchored to Q2 2026 memory prices, and management expected fixed or capped prices to cover about 40% of revenue after planned agreements were signed.\nE117 | 2026-09-23 | SanDisk reported fiscal Q4 revenue and data-center growth | 2026-09-23 SanDisk fiscal Q4 operating update: revenue rose 51% sequentially to about $8.97 billion and data-center revenue more than doubled sequentially.\nE118 | 2026-09-23 | Martin Shkreli said he was short Micron and warned of memory-price risk | 2026-09-23 Martin Shkreli said he was short Micron and conditionally warned that falling memory prices would be disastrous for the company.\nE102 | 2026-09-22 | Nvidia updated its revenue-growth and AI-infrastructure spending outlook | 2026-09-22 Nvidia outlook update: approximately 70% following-year revenue growth was expected and global data-center capital expenditure was projected at about $3 trillion-$4 trillion by 2030.\nE103 | 2026-09-22 | Melius Research analyst Ben Reitzes carried a $2,200 Micron target | 2026-09-22 Melius Research analyst Ben Reitzes carried a Street-high $2,200 12-month Micron target, implying about 110.7% upside from $1,043.96.\nE104 | 2026-09-22 | ASML expected sharply higher memory-manufacturer system sales driven by HBM | 2026-09-22 ASML expected system sales to memory manufacturers to rise about 75% in 2026, primarily driven by HBM demand.\nE105 | 2026-09-22 | AMD reported strong data-center revenue and new AI-GPU deployment plans | 2026-09-22 AMD AI-infrastructure update: Q2 data-center revenue reached $6.7 billion, up 107% year over year, while OpenAI and Meta each planned up to 6 gigawatts of AMD GPU deployments under multiyear agreements.\nE106 | 2026-09-22 | SanDisk data-center mix and long-term growth outlook were reported | 2026-09-22 SanDisk operating update: data-center activity represented about 38% of bits versus 12% a year earlier, trailing revenue reached about $20.25 billion, operating margin was about 62%, and management modeled mid-to-high-teens revenue growth for FY2028-FY2030.\nE108 | 2026-09-22 | Michael Burry reportedly shorted Micron | 2026-09-22 report/Substack post: Michael Burry reportedly shorted Micron outright at about $1,051 and added to a SOXX short as part of a broader semiconductor trade.\nE109 | 2026-09-22 | Rosenblatt initiated SanDisk coverage and assessed customer commitments | 2026-09-22 Rosenblatt initiated SanDisk coverage with Buy and a $2,400 target, while Kevin Cassidy estimated eight major NAND-customer agreements could cover 65% of FY2028 production.\nE110 | 2026-09-22 | Samsung, SK hynix and Micron HBM competitive positions were updated | 2026-09-22 HBM competitive update: Samsung allocated or considered more 4nm capacity for HBM4, planned HBM5 base-die capacity, held 33% of Q2 HBM revenue versus 50% for SK hynix and 18% for Micron, while Samsung led HBM4 validation/shipments and Citi forecast 62% global HBM bit-demand growth in 2027.\nE9 | 2026-08-31..2026-09-21 | Micron expanded multi-year Strategic Customer Agreements and supply commitments | 2026-08-31..2026-09-21 Micron strategic-customer-contract update: sixteen agreements and roughly $22 billion of commitments or deposits, price floors/bands and reserved 2027 capacity were described; the latest report said long-term agreements covered about 20% of DRAM bits and 33% of NAND bits.\nE97 | 2026-09-21 | NVIDIA Rubin systems were reportedly being configured with 4-high HBM | 2026-09-21 report: upcoming NVIDIA Rubin systems may use 4-high HBM rather than originally planned 8-high or 12-high configurations, a potential change to Micron-relevant HBM demand.\nE98 | 2026-09-21 | SK Hynix reportedly considered leasing Intel's future Ohio facility or forming a memory joint venture | 2026-09-21 reports said SK Hynix could lease part of Intel's future Ohio manufacturing facility or form a memory joint venture with Intel.\nE99 | 2026-09-21 | EMJ Capital founder Eric Jackson said he was willing to bet on Micron | 2026-09-21 EMJ Capital founder Eric Jackson said in a Yahoo Finance interview that he was willing to bet on Micron.\nE100 | 2026-09-21 | PwC forecast annual data-center capital expenditure at $800 billion in 2026 and $1.8 trillion in 2050 | 2026-09-21 PwC forecast annual data-center capital expenditure of about $800 billion in 2026 and $1.8 trillion in 2050, reinforcing AI-infrastructure demand relevant to Micron.\nE101 | 2026-09-21 | Stifel analyst Brian Chin updated Micron forecasts and reiterated Buy with a $1,500 target | 2026-09-21 Stifel analyst Brian Chin forecast Micron DRAM shipment growth of 15%-20% in 2027 versus the mid-to-high-20% range in 2026, expected about $50.78 billion of upcoming-quarter revenue and sustained supply-driven pricing and margins, and reiterated Buy with a $1,500 target.\nE95 | 2026-09-20 | CXMT entered fifth-generation DRAM platform mass production and unveiled 24Gb LPDDR5X products | 2026-09-20 CXMT fifth-generation DRAM platform milestone: mass production began with 11.95 nm quadruple-patterned features and at least 50% more gross dies per wafer versus a fourth-generation 8Gb baseline; two 24Gb LPDDR5X products were unveiled in two package formats for smartphones and portable devices.\nE96 | 2026-09-20 | Leading technology companies committed more than $700 billion to AI infrastructure in 2026 | 2026-09-20 leading technology companies committed more than $700 billion of AI-infrastructure spending during 2026, an external demand commitment relevant to Micron's memory exposure.\nE70 | 2026-09-15..2026-09-18 | Micron and semiconductor stocks extended the AI-slowdown rebound through September 18 | 2026-09-15..2026-09-18 Micron and semiconductor stocks rebounded after the AI-slowdown selloff; Micron rose about 5%-5.5% on September 17 and closed up about 3.9% at $1,015.80 on September 18, while SOX/SOXX and memory peers advanced.\nE92 | 2026-09-18 | Solidigm reportedly weighed a U.S. NAND flash factory | 2026-09-18 sources reportedly said SK Hynix subsidiary Solidigm was weighing a U.S. NAND flash factory.\nE93 | 2026-09-18 | Seagate reported FY2026 Q4 results and a stronger multi-year storage outlook | 2026-09-18 Seagate reported FY2026 Q4 revenue of about $3.63 billion and non-GAAP EPS of $5.71, guided to at least 20% annual growth, said nearline capacity was nearly allocated through 2027, and targeted late-2027 Mosaic 5 qualification shipments.\nE94 | 2026-09-18 | RBC Capital reiterated Outperform and a $1,500 Micron target | 2026-09-18 RBC Capital analyst Srini Pajjuri reiterated Outperform on Micron and maintained a $1,500 price target.\nE85 | 2026-09-17 | SanDisk and Kioxia planned more than $31 billion of Japan investment through 2032 | 2026-09-17 SanDisk and Kioxia planned more than $31 billion of Japan investment through 2032, subject to government support.\nE86 | 2026-09-17 | Micron Taiwan labor dispute scheduled mediation for September 18 and 21 | 2026-09-17 Micron Taiwan labor-dispute mediation was scheduled for September 18 and September 21.\nE87 | 2026-09-17 | Micron began commercial production at its Sanand Gujarat assembly-and-test facility | 2026-09-17 Micron began commercial production at its Sanand, Gujarat facility, shipped India-produced modules to Dell, and described $2.75 billion of investment and 2026-2027 output plans.\nE88 | 2026-09-17 | SEMI Foundation and McKinsey forecast a U.S. semiconductor workforce shortfall by 2030 | 2026-09-17 SEMI Foundation and McKinsey forecast a 127,000-157,000-worker U.S. semiconductor-industry shortfall by 2030.\nE89 | 2026-09-17 | Dell'Oro forecast AI-infrastructure spending above $3 trillion by 2030 | 2026-09-17 Dell'Oro forecast AI-infrastructure spending above $3 trillion by 2030, nearly twice its January 2026 estimate.\nE90 | 2026-09-17 | Alphabet reported a $514 billion Google Cloud backlog in Q2 2026 | 2026-09-17 Alphabet Google Cloud backlog reached approximately $514 billion in Q2 2026.\nE91 | 2026-09-17 | TSMC reported accelerating AI-accelerator outlook and August revenue growth | 2026-09-17 TSMC projected high-50% AI-accelerator revenue CAGR through 2029 and reported August revenue up 53% and eight-month revenue up 39%.\nE78 | 2026-09-16 | Intel and SK Hynix discussed U.S. memory-chip manufacturing | 2026-09-16 Intel and SK Hynix discussed U.S. memory-chip manufacturing.\nE79 | 2026-09-16 | Gabelli analyst Hendi Susanto assessed AI-infrastructure demand | 2026-09-16 Gabelli analyst Hendi Susanto cited multi-year AI-infrastructure supply agreements and demand likely to outstrip supply at least through 2027.\nE80 | 2026-09-16 | Citigroup warned of AI-development slowdown risk to infrastructure earnings | 2026-09-16 Citigroup warned AI-safety concerns and a possible development slowdown could hurt power-generation and data-center EPS revisions.\nE81 | 2026-09-16 | Steve Eisman highlighted NVIDIA and hyperscaler AI-revenue concentration | 2026-09-16 Steve Eisman cited 70% concentration in NVIDIA accounts receivable and hyperscaler AI revenue for Anthropic and OpenAI.\nE82 | 2026-09-16 | Oracle disclosed 2026 layoffs and expanded restructuring | 2026-09-16 Oracle disclosed 21,000 2026 layoffs and a $2.8 billion restructuring plan with further cuts expected.\nE83 | 2026-09-16 | Oracle reported FY2026 capex and FY2027 capital-spending plans | 2026-09-16 Oracle reported $55.7 billion FY2026 capex and forecast $90-$95 billion FY2027 capex.\nE84 | 2026-09-16 | Oracle disclosed a $300 billion OpenAI cloud deal signed in 2025 | 2026-09-16 Oracle disclosed a $300 billion OpenAI cloud deal signed in 2025.\nE68 | 2026-09-15 | HSBC estimated the NVIDIA VR200 NVL72 rack BOM was dominated by Rubin GPUs | 2026-09-15 HSBC estimated about 70% of the roughly $4 million NVIDIA VR200 NVL72 rack BOM was Rubin GPUs excluding HBM.\nE69 | 2026-09-15 | Trump and Jensen Huang jointly rebutted AI-doomsday sentiment | 2026-09-15 Trump and NVIDIA CEO Jensen Huang jointly rejected AI-doomsday sentiment and backed continued U.S. AI development.\nE71 | 2026-09-15 | Micron demonstrated a 512GB DDR5 RDIMM and advanced validation toward 2027 volume production | 2026-09-15 Micron demonstrated a 512GB DDR5 RDIMM at up to 9,200 MT/s, AMD and Intel were validating it, and volume production was expected in H2 2027.\nE72 | 2026-09-15 | Micron appointed Deirdre Hanford to lead Micron Research Labs | 2026-09-15 Micron appointed Deirdre Hanford as corporate vice president and president of Micron Research Labs with a mandate to build its research infrastructure and partnerships.\nE73 | 2026-09-15 | Meta planned first-half 2027 deployment of in-house AI chips | 2026-09-15 Meta reportedly planned first-half 2027 data-center deployment of next-generation in-house AI chips.\nE74 | 2026-09-15 | South Korean grid constraints obstructed SK Hynix AI-memory factory expansion | 2026-09-15 South Korea's grid could not keep pace with SK Hynix AI-memory factory construction, while funding responsibility remained unresolved.\nE75 | 2026-09-15 | Micron HBM4 surpassed $1 billion in cumulative revenue and ramped faster than HBM3E | 2026-09-15 Micron HBM4 exceeded $1 billion in cumulative revenue and its 12-high version ramped twice as fast as 12-high HBM3E.\nE76 | 2026-09-15 | Kioxia prepared a potential U.S. ADR listing and offering | 2026-09-15 Kioxia confirmed preparation for a U.S. ADR listing; a potential offering of at least $10 billion and discussions with Bank of America, Goldman Sachs and JPMorgan were reported.\nE33 | 2026-09-14 | Micron and NY Creates welcomed the first Clay megafab apprentice cohort | 2026-09-14 Micron and NY Creates welcomed 10 apprentices to the Clay, New York megafab workforce program.\nE34 | 2026-08-24..2026-09-14 | Micron expanded Boise semiconductor training and apprenticeship capacity | 2026-08-24..2026-09-14 Micron Boise workforce update: a 60,000-square-foot training center opened, $3 million supported College of Western Idaho, the largest apprenticeship cohort began, and enrollment was targeted to reach triple digits by FY2027.\nE35 | 2026-09-14 | YMTC reported strong Q1 2026 revenue, profit and NAND growth | 2026-09-14 YMTC Q1 2026 results: revenue was 47.04 billion yuan, profit 33.38 billion yuan, gross margin 77%, and core NAND revenue nearly five times prior-year levels.\nE36 | 2026-08-20..2026-09-14 | YMTC pursued a Shanghai IPO to fund production-line and storage expansion | 2026-08-20..2026-09-14 YMTC IPO matter: an approximately $4.9 billion Shanghai listing was filed or prepared, with proceeds aimed at production-line upgrades and next-generation storage products.\nE37 | 2026-08-28..2026-09-14 | CXMT announced commercial LPDDR6 deployment for Xiaomi | 2026-08-28..2026-09-14 CXMT LPDDR6 milestone: the company announced commercial deployment and planned supply for Xiaomi's 18 Fold.\nE38 | 2026-08-28..2026-09-14 | CXMT reported first public-company financials and expanded competitive position | 2026-08-28..2026-09-14 CXMT competitive update: first-half profit was 77.6 billion yuan and revenue $22.4 billion, while its memory rank, customers, market capitalization and U.S. listing risk were described.\nE39 | 2026-09-14 | YMTC targeted global NAND leadership before 2028 | 2026-09-14 YMTC told investors it aimed to become the world's largest NAND flash producer before 2028.\nE40 | 2026-09-10..2026-09-14 | Oracle reported FY2027 Q1 results, accelerating cloud-infrastructure sales and backlog | 2026-09-10..2026-09-14 Oracle FY2027 Q1 update: revenue was about $19.3 billion and EPS $1.92; Oracle guided FY2027 revenue near $90 billion and EPS near $8.10, reported 121% cloud-infrastructure sales growth to $7.4 billion, and reported a $664 billion backlog.\nE41 | 2026-09-14 | Broadcom reported sharply rising AI-semiconductor revenue and outlook | 2026-09-14 Broadcom AI-semiconductor update: Q3 revenue was $16.7 billion, Q4 guidance $21.7 billion, and management described $115 billion FY2027 and $230 billion FY2028 trajectories.\nE42 | 2026-09-14 | BofA analyst Arya set a $1,550 Micron target amid a secular AI-bull thesis | 2026-09-14 BofA analyst Vivek Arya set Micron at $1,550 and described persistent AI demand and later memory-sector recovery within a secular AI bull thesis.\nE43 | 2026-09-14 | AI-slowdown calls triggered a global memory and semiconductor selloff | 2026-09-14 AI-slowdown market episode: Micron fell about 6.7%, overnight U.S. chip stocks and Seoul's Samsung and SK Hynix also dropped sharply, and the memory/semiconductor selloff extended across Asian and European peers.\nE51 | 2026-09-14 | SK Hynix expanded shareholder returns on September 14 | 2026-09-14 SK Hynix capital-return update: $29 billion buyback/cancellation, more than 50% free-cash-flow returns, and a J.P. Morgan additional-return forecast through 2027.\nE52 | 2026-08-14..2026-09-14 | Anthropic and OpenAI reported accelerating AI demand | 2026-08-14..2026-09-14 AI-customer demand update: Anthropic revenue exceeded $11.5 billion, OpenAI reached a $40 billion annualized run rate, and enterprise revenue exceeded consumer revenue.\nE54 | 2026-09-14 | AI leaders called for slower development while analysts said hardware spending remained strong | 2026-09-14 AI-spending assessment: Anthropic, OpenAI and SpaceX leaders called through the Pace The Frontier initiative for slower development, but analysts said the statements did not signal a hardware or data-center spending slowdown.\nE55 | 2026-09-14 | Nvidia secured a $500 billion AI-financing arrangement | 2026-09-14 Nvidia AI-financing update: the company had a $500 billion financing deal with asset managers.\nE56 | 2026-09-14 | CXMT recently listed in China | 2026-09-14 CXMT listing update: CXMT had recently listed in China alongside its growing DRAM position.\nE57 | 2026-09-14 | SanDisk reported strong fiscal Q4 results and fiscal Q1 revenue guidance | 2026-09-14/2026-09-17 SanDisk fiscal Q4 update: Edge revenue reached $5.43 billion in Q4 and $12.16 billion for FY2026, repurchases and gross margin were strong, fiscal Q1 2027 revenue guidance was $10.3-$10.8 billion, and management described NAND-market growth.\nE58 | 2026-09-14 | SanDisk disclosed large multi-year customer commitments | 2026-09-14 SanDisk multi-year agreements: at least $93.9 billion in floor-priced revenue, terms averaging more than four years and $16.5 billion in customer guarantees; more than half of bits expected covered in FY2027.\nE59 | 2026-09-14 | Apple reportedly discussed Chinese memory supply with CXMT | 2026-09-14 Apple-CXMT sourcing report: early talks concerned memory components for some China-sold devices.\nE60 | 2026-09-14 | Micron fell in a broad semiconductor-sector selloff on September 14 | 2026-09-14 Micron declined 5.2% in a broad semiconductor-sector selloff distinct from the AI-slowdown move.\nE62 | 2026-09-14 | Micron led enterprise-SSD supplier revenue growth in Q2 2026 | 2026-09-14 TrendForce enterprise-SSD update: top-five supplier revenue more than doubled sequentially in Q2 2026 and Micron led revenue growth.\nE63 | 2026-09-14 | Micron reportedly planned to double HBM capacity by the end of 2026 | 2026-09-14 Micron reportedly planned to double HBM capacity to about 100,000 wafers per month by end-2026 for 12-layer HBM4.\nE65 | 2026-09-14 | Micron buyback announcement remained restricted until at least December 9 | 2026-09-14 Micron shareholders were told no buyback announcement was expected before at least 2026-12-09 because of government-funding restrictions.\nE113 | 2026-09-13 | AMD disclosed Helios rack-scale deployment deals with OpenAI, Anthropic and Meta Platforms | 2026-09-13 AMD disclosed Helios rack-scale deployment deals with OpenAI, Anthropic and Meta Platforms, an external AI-infrastructure demand signal relevant to Micron.\nE114 | 2026-09-13 | ASML planned a 69% manufacturing-capacity expansion | 2026-09-13 ASML planned to expand manufacturing capacity 69% from current levels, targeting 30% growth in 2027 and potentially another 30% in 2028.\nE27 | 2026-09-12 | Morningstar analyst William Kerwin assessed Micron as lacking an economic moat | 2026-09-12 Morningstar analyst William Kerwin said Micron lacked an economic moat because DRAM and NAND were commodity-like and exposed to supply/demand and pricing erosion.\nE28 | 2026-09-12 | PwC and U.S. data show accelerating data-center infrastructure demand | 2026-09-12 PwC forecast cumulative global data-center capital expenditure of $31.6 trillion through 2050 as AI infrastructure expanded, while U.S. data-center construction spending rose 57% year over year to records.\nE29 | 2026-09-12 | NVIDIA CEO Jensen Huang reaffirmed a $3 trillion-$4 trillion AI infrastructure spending projection | 2026-09-12 NVIDIA CEO Jensen Huang reaffirmed a $3 trillion-$4 trillion global AI infrastructure spending projection by 2030, a new external demand outlook relevant to Micron's memory exposure.\nE30 | 2026-09-12 | DeepSeek V4.1-Flash reduced KV-cache HBM and SSD requirements | 2026-09-12 DeepSeek V4.1-Flash update: KV-cache requirements fell to one-quarter of prior HBM capacity and one-eighth of prior SSD capacity, a potential change to AI memory demand relevant to Micron.\nE24 | 2026-09-11 | Intel-backed Kepler Computing emerged from stealth with a ferroelectric 3D-stacked memory architecture | 2026-09-11 Intel-backed Kepler Computing emerged from stealth with a ferroelectric 3D-stacked memory architecture positioned as an HBM-scarcity challenger.\nE25 | 2026-09-11 | Micron disclosed FY2026 Taiwan rewards while first compensation mediation failed | 2026-09-11 Micron disclosed FY2026 Taiwan direct-labor rewards of 35-68 months of pay, minimum T$1.7 million compensation and a T$1 million cash bonus, while the first Taoyuan-union mediation failed and a second round was scheduled.\nE26 | 2026-09-11 | Micron positioned memory and storage for local AI on next-generation edge PCs | 2026-09-11 Micron positioned memory and storage as central to local AI computing on next-generation edge PCs.\nE47 | 2026-09-10 | TSMC revenue news pulled memory stocks lower on September 10 | 2026-09-10 TSMC-linked sector selloff: Intel, Marvell, Micron and SanDisk fell after TSMC's August report.\nE7 | 2026-08-27..2026-09-08 | Micron advanced U.S., Taiwan and global manufacturing capacity plans | August 27-September 8, 2026 Micron capacity baseline: the company and public officials described more than $250 billion of U.S. manufacturing investment, Idaho/Taiwan expansion, new 2027-2028 facilities and capital spending above $25 billion.\nE17 | 2026-09-08 | An analyst downgraded Micron from Buy to Hold | 2026-09-08 an analyst downgraded Micron from Buy to Hold.\nE48 | 2026-09-05..2026-09-07 | Memory stocks rallied on the ChatGPT-6 Astra launch | 2026-09-05..2026-09-07 ChatGPT-6 Astra market episode: Micron, SanDisk, SK Hynix and Samsung rallied on AI-memory demand optimism.\nE5 | 2026-09-01..2026-09-03 | Micron Taiwan labor dispute evolved around bonuses and strike options | September 1-3, 2026 Micron Taiwan labor matter: unions sought larger FY2026/FY2027 bonuses and considered strike action, while company bonus statements and repeated denials that a strike had been formally authorized remained part of the open dispute.\nE19 | 2026-09-01..2026-09-03 | Micron advanced HBM4 capability and high-volume shipment milestones | September 1-3, 2026 Micron HBM4 milestone: HBM4 entered high-volume/production shipment descriptions, delivered more than 2.8 TB/s bandwidth and supported NVIDIA Vera Rubin.\nE20 | 2026-09-02..2026-09-03 | Micron progressed SOCAMM2, MRDIMM and server-memory products | September 2-3, 2026 Micron server-memory milestones: SOCAMM2 was described at up to 2 TB per CPU platform while MRDIMM and next-generation server memory remained on track.\nE18 | 2026-09-02 | An analyst initiated Micron coverage with Hold | 2026-09-02 an analyst initiated Micron coverage with a Hold rating.\nE21 | 2026-09-01..2026-09-02 | Netlist filed and pursued an ITC patent action involving Micron | September 1-2, 2026 Netlist litigation milestone: Netlist filed or reported an ITC patent action involving Micron and sought exclusion and cease-and-desist orders.\nE22 | 2026-09-02 | Netlist patent rulings were affirmed or left in an active appeal involving Micron | 2026-09-02 Netlist patent milestone: the Federal Circuit/Patent Office rulings invalidated challenged Netlist patents while Micron remained the sole appellee in the appeal.\nE23 | 2026-09-02 | A separate Netlist patent matter retained a $445 million damages award against Micron | 2026-09-02 Netlist litigation status: a separate patent matter retained a $445 million damages award against Micron.\nE2 | 2026-08-28 | Micron scheduled its FY2026 Q4 earnings release | 2026-08-28 Micron scheduled its FY2026 Q4 earnings report for 2026-09-30; later reports repeated the same scheduled date.\nE8 | 2026-08-27..2026-08-28 | Micron announced Research Labs and related research investment | August 27-28, 2026 Micron Research Labs announcement: Micron introduced a Boise-anchored research-lab program with a planned investment of about $10 billion over the next decade.\nE3 | 2026-08-26 | NVIDIA FY2027 Q2 earnings cycle reinforced AI and memory demand | 2026-08-26 NVIDIA FY2027 Q2 earnings cycle: revenue was $96.2 billion, data-center revenue was $89.0 billion, gross margin was 75%, Q3 revenue guidance was about $108 billion, and supplier commitments later reached about $279 billion primarily for memory.\nE13 | 2026-08-26 | Micron reorganized leadership for global operations and customer delivery | 2026-08-26 Micron leadership reorganization: Scott DeBoer became President and Chief Technology and Products Officer, Sumit Sadana moved to Senior Advisor to the CEO, and Manish Bhatia took responsibility for global operations and customer delivery.\nE15 | 2026-08-25 | Mizuho maintained Outperform while lowering Micron's target | 2026-08-25 Mizuho kept Micron at Outperform and lowered the price target to $1,300.\nE49 | 2026-08-24 | Samsung announced a major shareholder-return plan as memory stocks reacted | 2026-08-24 Samsung shareholder-return episode: a 90-110 trillion won 2026 plan was announced while Samsung, SK Hynix and Micron shares fell.\nE32 | 2026-08-21 | Micron chairman Sanjay Mehrotra sold 40,000 shares | 2026-08-21 Micron chairman Sanjay Mehrotra sold 40,000 MU shares at $968.90, leaving 871,578 shares.\nE53 | 2026-08-20 | Micron CEO framed memory as strategic AI infrastructure rather than a commodity | 2026-08-20 Micron CEO Sanjay Mehrotra said memory was strategic AI infrastructure, high value and no longer a commodity.\nE46 | 2026-08-19 | Memory and storage stocks rotated lower on August 19 | 2026-08-19 sector rotation: Seagate, Western Digital, Dell and SanDisk fell while Micron slipped and software stocks gained.\nE50 | 2026-08-19 | SK Hynix approved a $29 billion share repurchase and cancellation | 2026-08-19 SK Hynix announced a roughly $29 billion buyback and treasury-share cancellation plan.\nE44 | 2026-08-18 | Micron and AI-hardware stocks sold off on August 18 | 2026-08-18 Micron/AI-hardware selloff: Micron fell 7% below its 50-day line and semiconductor leaders were down sharply in premarket trading.\nE66 | 2026-08-18 | Micron VP Sumit Sadana sold 15,000 shares | 2026-08-18 Micron VP Sumit Sadana sold 15,000 MU shares at $934.29, leaving 209,021 shares.\nE45 | 2026-08-17 | Memory and semiconductor stocks entered a sharp August rally | 2026-08-17 semiconductor rally: the SOX entered a new bull market, Micron gained 37% from the July 29 low, and memory stocks advanced for a fifth straight session.\nE61 | 2026-08-17 | Micron rallied after U.S. policy discouraged China memory sourcing | 2026-08-17 Micron gained 4.1% to $1,011.75 after the administration discouraged Apple and other U.S. companies from buying Chinese memory.\nE31 | 2026-08-15 | BofA reiterated Micron Buy with a $1,550 target | 2026-08-15 BofA Securities analyst Vivek Arya reiterated Buy on Micron with a $1,550 price target.\nE64 | 2026-08-15 | U.S. administration discouraged American sourcing of Chinese memory chips | 2026-08-15 U.S. Commerce Secretary Howard Lutnick said the administration discouraged American companies, including Apple, from sourcing memory chips from China.\nE14 | 2026-08-14 | New Street Research upgraded Micron to Buy with a $1,250 target | 2026-08-14 New Street Research upgraded Micron to Buy with a $1,250 price target.\nE16 | 2026-08-07 | Citigroup lowered Micron's price target to $1,150 | 2026-08-07 Citigroup lowered Micron's price target to $1,150; duplicate reports describe the same analyst action.\nE67 | 2026-06-26 | Micron director Bjorlin Alexis sold 25 shares | 2026-06-26 Micron director Bjorlin Alexis sold 25 MU shares at $1,132.33.\nE1 | 2026-06-24 | Micron FY2026 Q3 results and FY2026 Q4 guidance | 2026-06-24 Micron FY2026 Q3 earnings release: revenue was about $41.46 billion, gross margin was about 84.6%-85%, EPS was $24.67, FY2026 Q4 revenue guidance was near $50 billion with adjusted gross margin near 86%, price-increase momentum was expected to moderate, and results included a $325 million debt-prepayment loss; the call also described four very large SCA customers and projected executed SCAs could represent at least half of revenue.\nE77 | 2026-03-18 | Micron increased its quarterly dividend to $0.15 in March 2026 | 2026-03-18 Micron declared a 30% quarterly dividend increase, raising the per-share payout to $0.15 from just under $0.12.\nE4 | UNKNOWN | AI-driven memory tightness and pricing remained an evolving market state | 2026-08-27..2026-09-22 memory-market state: AI demand exceeded available supply, HBM capacity was sold out, memory and AI-accelerator prices rose, Micron management expected data-center DRAM and NAND bit shipments to more than double from two years earlier, GF Securities expected NAND prices to stabilize by end-2026, and the September 22 update said AI demand showed no signs of weakening.\nE6 | UNKNOWN | Memory-market share and competitive-position disclosures updated Micron's baseline | 2026-08-28..2026-09-18 Q2 memory-market baseline: Micron held about 24% of DRAM and 15% of NAND, while CXMT, YMTC, SK Hynix and SanDisk shares and total DRAM/NAND growth disclosures updated the competitive structure; Reuters later reported CXMT was considering entering NAND.\nE11 | UNKNOWN | Samsung, SK Hynix and Micron remained the core mainstream DRAM suppliers | August 27-September 7, 2026 mainstream DRAM structure: Samsung, SK Hynix and Micron dominated the market, operated at capacity and tilted wafer capacity toward HBM.\nE12 | UNKNOWN | Micron held a sole-U.S.-based HBM manufacturing position | August 27-28, 2026 Micron position: Micron was described as the sole U.S.-based manufacturer of high-bandwidth memory.\n",
+        "published_at": "2026-09-29T13:02:06.748309Z",
+        "sha256": "d1e8f93e9c7e5e6fee620ef11f41d5eb5c3426f5d9b9e20f5b1927e6c3e69fb8",
+        "ticker": "MU",
+        "version": 17
+      },
+      "projection": {
+        "consumer_contract": "persistent-runtime.v2.or-policy.v1",
+        "policies": [
+          {
+            "activation_revision": "ar_ab437351779845a8ec927a49",
+            "condition_ids": [
+              "C1",
+              "C2",
+              "C3",
+              "C4"
+            ],
+            "criterion": [
+              "在AI/服务器行业需求和价格仍强的情况下，Micron连续两个报告窗口显示高价值AI/服务器组合指标相对当前基线下降（CMBU加CDBU占比或HBM/数据中心高价值产品阶段至少一项下降），且实现ASP或增量收入主要由消费或传统产品承担。",
+              "在行业服务器/HBM需求或合同价保持强势时，Micron连续两个季度高价值产品出货或收入占比、或相关bit shipments下降，并明确归因于资格、封装或交付瓶颈。",
+              "行业服务器/HBM合同价或需求连续两个季度保持强势，而Micron CMBU/CDBU占比、相关bit shipments或实现ASP下降，并有资格、封装、晶圆或交付约束披露。",
+              "在AI/HBM需求与价格仍强的情况下，权威行业市场份额数据或命名AI客户/平台披露在一个可比报告期确认竞争供应商的HBM份额或主要供货地位上升，同时Micron HBM或数据中心高价值内存份额相对上一期下降，并有竞争者已验证、商业发运或已承诺产能的证据。"
+            ],
+            "match_scope": "AI/服务器需求与价格保持强势时，Micron CMBU、CDBU、HBM和数据中心高价值组合的收入、份额、bit或ASP，竞争供应商HBM市场份额、验证、产能与商业发运，以及Micron资格、封装和交付瓶颈。",
+            "policy_id": "pol_000c7e1917b14969a458"
+          },
+          {
+            "activation_revision": "ar_8d4be63257b63b9e95fa7f22",
+            "condition_ids": [
+              "C1",
+              "C2"
+            ],
+            "criterion": [
+              "至少一个主要平台公开量产规格或持续部署数据确认HBM被替代，并在平台出货结构中持续反映。",
+              "至少一个主要平台公开量产规格或持续部署数据确认单颗加速器容量或带宽低于当前36GB 12-high等公开路线，并在平台出货结构中持续反映。"
+            ],
+            "match_scope": "主要AI平台量产规格或持续部署中的HBM替代、容量/带宽变化及其对Micron可售内存配置的影响。",
+            "policy_id": "pol_6fc4c21c7434ee04a94b"
+          },
+          {
+            "activation_revision": "ar_f5e033b88cafbc695486d7d1",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Micron连续两个季度GAAP毛利率仍处高位或大致稳定，但GAAP营业利润或摊薄EPS下降，且费用桥明确显示研发、预资格、折旧、爬坡、质量或重组支出增加。"
+            ],
+            "match_scope": "Micron研发、预资格、折旧、爬坡、质量或重组费用与GAAP利润转换的同季变化。",
+            "policy_id": "pol_42dd9a8d54f851077bfd"
+          },
+          {
+            "activation_revision": "ar_23e0fd3368bb3014e0464dc0",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "在FY26 Q4达到或接近指引后，Micron FY27连续报告季度的GAAP毛利率和营业利润率均环比下降，并由实现ASP、产品组合、供给或库存转弱解释。"
+            ],
+            "match_scope": "FY26 Q4之后连续季度的GAAP毛利率、营业利润率及由ASP、组合、供给或库存变化造成的盈利斜率。",
+            "policy_id": "pol_4e60e33e9f3c8ced3e7a"
+          },
+          {
+            "activation_revision": "ar_4209d44c21e6f332a20aaf64",
+            "condition_ids": [
+              "C1",
+              "C2"
+            ],
+            "criterion": [
+              "Micron正式FY26 Q4财报显示合并收入低于管理层指引下限，且GAAP毛利率未达到管理层指引下限。",
+              "Micron正式FY26 Q4财报显示合并收入低于管理层指引下限，且GAAP摊薄EPS未达到管理层指引下限。"
+            ],
+            "match_scope": "Micron FY26 Q4正式业绩、收入/毛利率/EPS指引兑现、偏差及价格、组合、供给或库存解释。",
+            "policy_id": "pol_6a823a72b3e33190bb83"
+          },
+          {
+            "activation_revision": "ar_bcb43e046ae5fe0d14b632a9",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "至少一个主要DRAM或NAND产品线连续两个季度实现ASP环比下降，bit shipments未增长或不足以补偿每位收入下降，且该产品线销售额连续低于上一季度。"
+            ],
+            "match_scope": "DRAM或NAND主要产品线的实现ASP、bit shipments和产品线销售额的连续季度比较。",
+            "policy_id": "pol_941696a6157b4d4fe484"
+          },
+          {
+            "activation_revision": "ar_500b85e6322dfa71cdf5f6da",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Micron正式宣布一个命名扩产阶段在AI/内存价格或客户需求由当前强势转为下降，或政府激励/资金条件未按计划到位之后被推迟、削减或重新排序。"
+            ],
+            "match_scope": "命名扩产阶段、AI/内存需求或价格、政府激励/客户资金条件与PPE计划和阶段排序。",
+            "policy_id": "pol_da7524bb3ec2d229d090"
+          },
+          {
+            "activation_revision": "ar_ca4dbc764a3dcf2f327ab0d1",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "至少两个季度收入增长伴随应收余额或DSO改善、客户存款或合同负债现金增加、CFO未被同幅度营运资本吞噬，并有发运/结算配套且支持部分PPE支付。"
+            ],
+            "match_scope": "收入增长、应收/DSO、客户存款或合同负债、经营现金流、发运结算和PPE支付的连续现金桥。",
+            "policy_id": "pol_ecede39f670a0882b1f4"
+          },
+          {
+            "activation_revision": "ar_905ef724917b6bc96c57cd90",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "资产负债表显示客户存款或合同负债增加，但后续至少一个报告窗口发运、收入确认或应收结算没有相应增加，且附注明确验收、交付、退款或违约赔付限制。"
+            ],
+            "match_scope": "客户存款和合同负债到账与后续发运、收入确认、应收结算及验收、交付、退款和赔付约束。",
+            "policy_id": "pol_b669b1ffb4e2398121fd"
+          },
+          {
+            "activation_revision": "ar_210e799708d2b3dd099636f0",
+            "condition_ids": [
+              "C1",
+              "C2"
+            ],
+            "criterion": [
+              "正式合同附注、财报或客户公告确认涉及已绑定提货、数量、价格或交付窗口的战略客户合同被延期或重谈，并在原交付窗口后出现未提货、合同负债下降、退款、减值或其他履约后果。",
+              "同一战略协议的计划发货窗口过去后仍无连续交付，且Micron或客户明确把延迟归因于产品资格、良率、封装或有效晶圆产能不足并将收入确认后移。"
+            ],
+            "match_scope": "战略客户合同的提货、数量/价格、资格、有效产能、交付窗口及合同负债、退款或减值后果。",
+            "policy_id": "pol_124f1188f7bb19b420ac"
+          },
+          {
+            "activation_revision": "ar_2227517a0da706d08e3d57a3",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "合同附注、公司指引或实际发票/ASP确认价格带下移、最低/最高价重置、折扣扩大或额外服务让利，并连续影响至少一个合同交付周期。"
+            ],
+            "match_scope": "战略内存合同价格带、固定价或最低/最高价、折扣和实际交付周期的价格经济性。",
+            "policy_id": "pol_9be1444d07f7dd300d81"
+          },
+          {
+            "activation_revision": "ar_2d674d0ae147d8882774a4fa",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "正式披露确认战略客户存款或合同负债到账，并在至少两个后续报告窗口同时出现合同产品资格、按期发运、收入确认和客户提货。"
+            ],
+            "match_scope": "战略内存合同的客户存款或合同负债、产品资格、按期发运、收入确认和客户提货。",
+            "policy_id": "pol_fc5107a68b55a93c3061"
+          },
+          {
+            "activation_revision": "ar_58e946d673972b641aa77e60",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "客户或Micron正式披露命名产品的召回、批次隔离、退货或重新认证，并在随后至少一个报告窗口出现该产品出货中断、质量费用或资格重置。"
+            ],
+            "match_scope": "命名产品或批次的召回、隔离、退货、重新认证以及后续出货中断、质量费用或资格重置。",
+            "policy_id": "pol_3afe70116d1e09158dcb"
+          },
+          {
+            "activation_revision": "ar_450b15f87e539895fb03c09e",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "后续财报或合同附注确认承诺未按期到账，或已到账部分因客户取消、交付延迟、合同条件或退款/赔付而减少，并同时调整原定扩产或运营资金来源。"
+            ],
+            "match_scope": "战略客户现金承诺的到账、取消、交付条件、退款/赔付及扩产或运营资金来源调整。",
+            "policy_id": "pol_d519a240f24d10376162"
+          },
+          {
+            "activation_revision": "ar_a20b40a9d2a0ddf280000994",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "连续两个季度应收余额或DSO上升，CFO相对净利润或收入的转换率下降，并由财报附注或回款资料确认付款期限延长或客户付款延迟。"
+            ],
+            "match_scope": "应收余额或DSO、收入、净利润、经营现金流以及付款期限或客户回款延迟。",
+            "policy_id": "pol_80b6f8c0415612bce99c"
+          },
+          {
+            "activation_revision": "ar_fad9f9a95b02ed97ae5c65c3",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Micron、监管或项目正式披露命名项目因施工、设备交付、许可、劳动力、电力、用水或关键材料问题把已公布首片、爬坡或投产窗口后移。"
+            ],
+            "match_scope": "命名扩产项目的首片、爬坡或投产时间窗口及施工、设备、许可、劳动力、公用工程或材料原因。",
+            "policy_id": "pol_c301173da27f5b44f963"
+          },
+          {
+            "activation_revision": "ar_4a5cd0f184bada95294ecf70",
+            "condition_ids": [
+              "C2"
+            ],
+            "criterion": [
+              "Gujarat、新加坡HBM封装、第一座Idaho或台湾中的一个命名项目，在首片、wafer-out或初始商业生产/早期出货之后形成稳定合格良率、完成客户资格，并在至少两个后续交付窗口连续交付合格产品。"
+            ],
+            "match_scope": "命名晶圆、先进封装或组装测试项目的首片/wafer-out、商业生产、稳定良率、客户资格及连续合格交付。",
+            "policy_id": "pol_9efb6f34a333f977e9f3"
+          },
+          {
+            "activation_revision": "ar_22bdf5be2adceecc52e9706c",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "命名项目已有首片或早期出货，但随后至少两个季度仍未达到稳定合格良率、有效产能、客户资格或连续对外出货，且Micron明确有效产能低于计划。"
+            ],
+            "match_scope": "命名项目首片或早期出货后的稳定良率、有效产能、客户资格、连续出货及计划差额。",
+            "policy_id": "pol_d8b4178dd4eadad8faeb"
+          },
+          {
+            "activation_revision": "ar_5f2fc6a00243b2a9dc9d02bc",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "正式披露该安排未完成最终协议、审批或交割，或交割后出现连续合格晶圆交付短缺、数量不足或质量不合格，并明确影响Micron项目的wafer starts或量产窗口。"
+            ],
+            "match_scope": "GlobalWafers安排的最终协议、审批、交割及交割后的合格晶圆数量、质量和对Micron项目的wafer starts/量产影响。",
+            "policy_id": "pol_234810c4290fce80709d"
+          },
+          {
+            "activation_revision": "ar_c1b6cfe13f2b8f22d0a788a5",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "客户或平台正式披露竞争供应商成为主要HBM供货方，且Micron在至少两个连续交付周期的订单、出货或平台覆盖没有同步增长，仅保留低比例或非连续供货。"
+            ],
+            "match_scope": "命名AI平台的HBM主要供应商状态、Micron订单/出货/平台覆盖及连续交付分配。",
+            "policy_id": "pol_57b6acf663e3f2542116"
+          },
+          {
+            "activation_revision": "ar_61adcca0699a31158867c7a3",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Micron或主要客户正式把HBM4E量产或认证推迟出2027窗口，或确认已送样产品的堆叠、热管理、测试或可靠性问题使其无法进入连续量产。"
+            ],
+            "match_scope": "HBM4E路线图、资格、堆叠、热管理、测试和可靠性对连续量产的影响。",
+            "policy_id": "pol_2d9aa607dd4f3e5682ee"
+          },
+          {
+            "activation_revision": "ar_a11f79fca72457f1beab8884",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "至少两个命名客户或AI平台公开确认Micron HBM4E、48GB 16H或同类新容量产品资格或设计定点，并在随后两个交付窗口出现可重复商业序列出货。"
+            ],
+            "match_scope": "HBM4E、48GB 16H或同类新容量产品的命名客户/AI平台资格、设计定点和连续商业交付。",
+            "policy_id": "pol_9bfb2935492d5fb70db6"
+          },
+          {
+            "activation_revision": "ar_81a872f4217b79e987844cf2",
+            "condition_ids": [
+              "C1",
+              "C2",
+              "C3"
+            ],
+            "criterion": [
+              "头部竞争供应商出现新增合格量产或客户出货，客户或渠道库存上升，同时至少一个主要DRAM或NAND品类合同价环比转跌。",
+              "正式披露确认HBM/AI订单或部署相对当前计划下调、取消或后移，并触发供应商向传统DRAM/NAND回流，同时主要传统品类合同价转跌或库存上升。",
+              "竞争或中国供应商的传统DRAM/NAND合格产能和实际出货连续增加，并同时显示传统品类合同价、客户库存或供给分配由紧转松。"
+            ],
+            "match_scope": "DRAM/NAND合同价格、竞争供应商合格实际出货、客户或渠道库存、HBM/AI订单和传统品类供需分配。",
+            "policy_id": "pol_08a4621a09463492092f"
+          },
+          {
+            "activation_revision": "ar_d64384d6f9d3ac19d817233e",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "连续两个季度库存、在制品或供应商预付款的同比或环比增速高于同期收入增速，CFO被存货相关项目拖累，并由公司披露的HBM、服务器内存或SSD备料/交付承诺解释。"
+            ],
+            "match_scope": "库存、在制品或供应商预付款相对收入增速、经营现金流存货项目以及HBM、服务器内存或SSD备料。",
+            "policy_id": "pol_303c74afa70bae833bb7"
+          },
+          {
+            "activation_revision": "ar_80324309ecbfc6742ed052b5",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "同一或连续季度PPE实际支付上升、政府激励或客户存款未按期到账，且CFO下降或融资需求增加，最终造成现金缓冲下降或扩产项目可验证推迟。"
+            ],
+            "match_scope": "PPE实际支付、政府激励或客户存款到账、经营现金流、融资、现金余额及扩产项目后果。",
+            "policy_id": "pol_3d0a8fddb6b172835c29"
+          },
+          {
+            "activation_revision": "ar_25cb0deaeabefef8ae6ead82",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "连续两个季度研发、预资格或折旧/启动费用增速明显高于收入增速，且没有相应新增量产收入或营业利润率改善，财报或管理层费用桥明确解释。"
+            ],
+            "match_scope": "研发、预资格、折旧或启动费用增速与收入、量产收入和营业利润率的同季比较。",
+            "policy_id": "pol_1f02e26e48ed8e07323b"
+          },
+          {
+            "activation_revision": "ar_5c960c23443661517d758c7c",
+            "condition_ids": [
+              "C2"
+            ],
+            "criterion": [
+              "Micron或主要AI/服务器客户正式披露确认服务器/HBM优先分配和实际供给约束继续至2029或更晚，同时消费供给仍受限、合同价未结构性下跌，并且Micron数据中心组合不低于当前基线。"
+            ],
+            "match_scope": "服务器/HBM优先分配、AI内存价格与供给瓶颈展望、消费供给约束、合同价格和Micron数据中心组合在当前预测之后的延续。",
+            "policy_id": "pol_12b2c75c2f311063e913"
+          },
+          {
+            "activation_revision": "ar_d3d9cda8384c95faf2bbb8d9",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "公司正式披露一个关键晶圆厂或封装线利用率或吞吐连续两个季度下降，并同时确认折旧或单位固定制造成本上升且相关业务毛利或营业利润弱化。"
+            ],
+            "match_scope": "关键晶圆厂或封装线利用率、吞吐、折旧/固定制造成本和相关业务利润。",
+            "policy_id": "pol_61d40241f10b3de09ee1"
+          },
+          {
+            "activation_revision": "ar_01488d5de2645aa487bcd2c6",
+            "condition_ids": [
+              "C1",
+              "C2"
+            ],
+            "criterion": [
+              "连续两个季度DRAM或NAND ASP不再达到FY26 Q3的涨幅甚至小幅下降，同时bit shipments增长，且该产品线销售额仍环比增长。",
+              "连续两个季度DRAM或NAND ASP不再达到FY26 Q3的涨幅甚至小幅下降，同时高价值产品占比提高，且该产品线销售额仍环比增长。"
+            ],
+            "match_scope": "DRAM或NAND产品线的ASP、bit shipments、高价值组合和销售额在价格增长放缓后的联动。",
+            "policy_id": "pol_b123dd2735c71047d828"
+          },
+          {
+            "activation_revision": "ar_090bc6dfdb6ad8180d359b79",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "至少两个季度正式披露或结果验证良率、合格产出、单位制造成本或固定成本吸收改善，并在ASP涨幅低于FY26 Q3时GAAP毛利率和营业利润仍保持高位。"
+            ],
+            "match_scope": "合格产出、单位制造成本、固定成本吸收、实现ASP和GAAP毛利率/营业利润的连续季度联动。",
+            "policy_id": "pol_d22d86dca86419c7f3e7"
+          },
+          {
+            "activation_revision": "ar_f7af74d8f8f1e0da11ded3e2",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Micron或客户正式运营披露相关产品良率或测试通过率下降、返工报废或加急成本增加，并在至少一个季度的毛利、单位成本或质量准备金中可见。"
+            ],
+            "match_scope": "命名产品的良率、测试通过率、返工报废、加急成本及毛利、单位成本或质量准备金。",
+            "policy_id": "pol_1204b404c1f9811d236f"
+          },
+          {
+            "activation_revision": "ar_5306515470530453d1026f1a",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Micron公开确认相关地点形成符合汽车规范的合格产出、稳定良率和可交付有效产能，并已按命名汽车平台窗口发运。"
+            ],
+            "match_scope": "Micron汽车规格合格产出、稳定良率、有效产能、交付窗口和命名汽车平台发运。",
+            "policy_id": "pol_167d6551daf6e7216262"
+          },
+          {
+            "activation_revision": "ar_1c47e1ec64f91b6afa0bd030",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Micron、OEM或Tier 1把命名平台发运延迟、短缺或减配明确归因于汽车级良率、合格产出、封装/材料交期或爬坡未达要求。"
+            ],
+            "match_scope": "命名汽车平台的发运、短缺或减配与汽车级良率、合格产出、封装/材料交期和爬坡瓶颈。",
+            "policy_id": "pol_03d94e94ec6acc607aac"
+          },
+          {
+            "activation_revision": "ar_484d914239fe4b1203a56697",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "公开来源在同一事实链中点名OEM、Tier 1、具体车型或车辆平台，并确认Micron器件资格通过、设计定点或生产批准。"
+            ],
+            "match_scope": "OEM、Tier 1或Micron公告中具体车型、车辆平台或车辆系统的Micron汽车内存/存储资格、设计定点和生产批准。",
+            "policy_id": "pol_372336fdadc38e1100a4"
+          },
+          {
+            "activation_revision": "ar_6c50a922d023dad7abde9f11",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "具体车型或平台公开采用相对既有方案更高的内存带宽、容量或存储配置，并同时确认Micron参与系统级共同开发、资格或设计定点。"
+            ],
+            "match_scope": "命名汽车平台相对既有架构的内存带宽、容量或存储提升，以及Micron系统级共同开发、资格或设计定点。",
+            "policy_id": "pol_7b342b95c25ef25234bf"
+          },
+          {
+            "activation_revision": "ar_cc65d423d24bfc50a535687a",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Micron、OEM或Tier 1正式把命名已认证平台的缺货、停发或交期中断明确归因于地缘/出口、灾害、硅片或封装材料事件，并记录切换来源或重新认证。"
+            ],
+            "match_scope": "命名已认证汽车平台的供给中断、交期、地缘/出口、灾害或晶圆/封装材料原因及替代/重认证。",
+            "policy_id": "pol_467e2cc26a9481db7cd0"
+          },
+          {
+            "activation_revision": "ar_b9fa6e0994b7c2e53ae69ed1",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "公开来源识别至少两个彼此独立的OEM或Tier 1车型/平台的Micron资格或设计定点，并对每个项目确认serial production、重复发运或量产分配。"
+            ],
+            "match_scope": "至少两个独立OEM或Tier 1车型/平台的Micron资格、设计定点、量产和重复交付。",
+            "policy_id": "pol_fb0a6a935e7131ac3833"
+          },
+          {
+            "activation_revision": "ar_6d75b78fe5fd46d1690a2154",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "OEM、Tier 1或Micron在具体项目中明确首批器件仅用于验证、试生产或有限批次，且未进入或已退出连续serial production。"
+            ],
+            "match_scope": "命名汽车项目首批、验证或试生产用途与后续serial production/连续分配状态。",
+            "policy_id": "pol_7dd5656c60f8245bcdf8"
+          },
+          {
+            "activation_revision": "ar_9a8bcbc287aacc55d286b597",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "OEM、Tier 1或平台设计文件点名车型/平台采用集成、绑定或竞争内存/存储方案，并说明Micron器件被移出主BOM、降为备份或不再继续认证。"
+            ],
+            "match_scope": "命名汽车平台的集成、绑定或竞争内存/存储方案，以及Micron主BOM、备份或认证状态。",
+            "policy_id": "pol_1ecc5e6245c181456a53"
+          },
+          {
+            "activation_revision": "ar_69501e8309e76e8da999afb5",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "OEM、Tier 1或Micron正式点名汽车产品与车型或平台，确认资格失败、要求重测/改规格，或因不匹配改用其他器件。"
+            ],
+            "match_scope": "命名汽车产品、车型或平台的资格、重测、规格匹配和替代器件结果。",
+            "policy_id": "pol_f0d0a3174de948411258"
+          },
+          {
+            "activation_revision": "ar_cfa3751814f769a5f2a51cb6",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "监管机构、标准组织或OEM正式实施适用于目标市场或命名平台的新要求，并且Micron、OEM或Tier 1明确记录器件重认证、供应商变更或SOP延迟。"
+            ],
+            "match_scope": "目标市场或命名汽车平台适用的新监管/标准要求及器件重认证、供应商变更或SOP后果。",
+            "policy_id": "pol_da14998e3afd6ddf7075"
+          },
+          {
+            "activation_revision": "ar_93db3acb0af94cb4b78af9ed",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "OEM、Tier 1或Micron公开点名相关SCA、车型或平台，并明确取消、暂停、范围减少、重谈，或在同一平台把替代供应商导入主BOM或主供位置。"
+            ],
+            "match_scope": "命名汽车供给协议、车型或平台的协议范围、合作状态、主BOM和主供方变化。",
+            "policy_id": "pol_c2992c89a129e5918d86"
+          },
+          {
+            "activation_revision": "ar_e494970570d1741e169cfaa2",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "公开证据点名具体车型或平台并确认SOP或serial production，随后至少两个相邻生产批次或季度出现Micron按该平台的发运、持续提货或量产分配。"
+            ],
+            "match_scope": "命名汽车车型或平台的SOP/serial production、Micron按平台的发运、持续提货和量产分配。",
+            "policy_id": "pol_7d7fd659b77a7650a132"
+          },
+          {
+            "activation_revision": "ar_16e7d427d168902835975cfc",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "OEM、Tier 1或项目/工厂正式点名已合作或已认证车型/平台，确认SOP、产量、改款或项目取消/延迟，并明确使Micron采购窗口后移或收缩。"
+            ],
+            "match_scope": "命名汽车项目的SOP、产量或改款计划及其对Micron资格、供给和采购窗口的影响。",
+            "policy_id": "pol_b99a64d8b145cdf90ed2"
+          }
+        ],
+        "policy_set_published_at": "2026-09-23T06:42:27.807151Z",
+        "policy_set_version": 8,
+        "schema_version": "document3.runtime_projection.v4",
+        "ticker": "MU"
+      },
+      "provisional": [
+        {
+          "candidate": {
+            "assertion_state": "RUMORED",
+            "entities": [
+              "Samsung Electronics",
+              "Samsung Foundry",
+              "SF2",
+              "2nm process",
+              "Yield"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Reports indicate that Samsung Foundry's 2nm SF2 process has reached a yield of nearly 60%.",
+            "subject_time": "Samsung SF2 2nm process yield"
+          },
+          "candidate_index": 0,
+          "case_id": "case_fae6fc1695b74f4690fe4702a8a0ed5a",
+          "created_at": "2026-09-29T06:07:50.241149Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E119",
+          "runtime_signature": "c4ef2112442119b3cf1b649987780c701c2f2ffd04991b049ae5b8d5a9bb881f",
+          "snapshot_version": 1,
+          "source_message_id": "std_9ac4eb4092ee4f4689d4fe0081e283a8",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "RUMORED",
+            "entities": [
+              "Samsung Electronics",
+              "Samsung Foundry",
+              "SF2",
+              "Power efficiency",
+              "Customer qualification"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Samsung Foundry is shifting engineering work on SF2 toward power-efficiency optimization and other maturity checks to pursue larger customers.",
+            "subject_time": "SF2 2nm process maturity and customer qualification"
+          },
+          "candidate_index": 1,
+          "case_id": "case_fae6fc1695b74f4690fe4702a8a0ed5a",
+          "created_at": "2026-09-29T06:07:50.256632Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E120",
+          "runtime_signature": "43e493157a8eae906cb9e33689a5b77893345be53fca7c95588e8c870b85583d",
+          "snapshot_version": 2,
+          "source_message_id": "std_9ac4eb4092ee4f4689d4fe0081e283a8",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ONGOING",
+            "entities": [
+              "Chinese PCB makers",
+              "Taiwanese PCB makers",
+              "Hong Kong",
+              "PCB",
+              "AI infrastructure"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Mainland Chinese and Taiwanese PCB makers are pursuing Hong Kong capital-market fundraising as AI-infrastructure investment increases demand for higher-end PCB capacity and products.",
+            "subject_time": "Current AI-infrastructure PCB fundraising activity"
+          },
+          "candidate_index": 0,
+          "case_id": "case_0ad1331157a3436492598560b03df548",
+          "created_at": "2026-09-29T06:10:34.838439Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E121",
+          "runtime_signature": "1a1ee253cf230814ac993ec5733794823c6f2e5bab08182bea0035ab81579e93",
+          "snapshot_version": 3,
+          "source_message_id": "std_ff1f4c19759b4473a8f3d7b507d55b6f",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "AI servers",
+              "High-speed optical modules",
+              "PCB",
+              "AI infrastructure"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "AI-infrastructure investment is driving specification upgrades from AI servers to high-speed optical modules, increasing the technical complexity and supply-chain importance of printed circuit boards.",
+            "subject_time": "Current AI-infrastructure supply-chain upgrade"
+          },
+          "candidate_index": 1,
+          "case_id": "case_0ad1331157a3436492598560b03df548",
+          "created_at": "2026-09-29T06:10:34.846937Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E122",
+          "runtime_signature": "614b84cfa30cea8bdb1e5e345a932c7be49b25da10fc7b61878ffdea183cf345",
+          "snapshot_version": 4,
+          "source_message_id": "std_ff1f4c19759b4473a8f3d7b507d55b6f",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ONGOING",
+            "entities": [
+              "OpenAI",
+              "Frontier AI",
+              "Safety case",
+              "Senior executives",
+              "Training runs"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "OpenAI has introduced a safety-case requirement under which frontier-model training continues only after a documented argument establishes that relevant risks are understood and controlled, and senior leaders may veto training runs.",
+            "subject_time": "OpenAI frontier-AI training governance"
+          },
+          "candidate_index": 0,
+          "case_id": "case_867ce86fe0d948d98a894c84a5c22b37",
+          "created_at": "2026-09-29T06:39:57.246062Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E123",
+          "runtime_signature": "dca59097e5d220b91db234355baf304596b8f0a369394db26292ddf86c4156cf",
+          "snapshot_version": 5,
+          "source_message_id": "std_f8723a2c982a4e14a30925f1c1eb845e",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ONGOING",
+            "entities": [
+              "OpenAI",
+              "Reinforcement learning",
+              "Chain of thought",
+              "Misalignment alerts",
+              "Training monitors",
+              "CEO"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "OpenAI is implementing controls that separate reinforcement-learning graders from a model's chain of thought, generate misalignment alerts that can automatically pause training, escalate critical failures to the CEO, and prohibit humans and AI agents from disabling monitors.",
+            "subject_time": "OpenAI internal training-safety controls"
+          },
+          "candidate_index": 1,
+          "case_id": "case_867ce86fe0d948d98a894c84a5c22b37",
+          "created_at": "2026-09-29T06:39:57.271776Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E124",
+          "runtime_signature": "ac471508c1ce25e643d047c2fdd5123ec3e27467b91ebb00ce29065873aa1b42",
+          "snapshot_version": 6,
+          "source_message_id": "std_f8723a2c982a4e14a30925f1c1eb845e",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ONGOING",
+            "entities": [
+              "Alphabet",
+              "Google",
+              "European Union",
+              "Android",
+              "Search index",
+              "OpenAI",
+              "AI firms"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Alphabet is legally challenging two European Union mandates requiring Google to provide market rivals and AI firms access to Android and Google's search index or related internal data and software interfaces.",
+            "subject_time": "European Union Android and search-data mandates"
+          },
+          "candidate_index": 0,
+          "case_id": "case_e4d8a1844ceb4090bfc52b13edeba220",
+          "created_at": "2026-09-29T06:40:48.272445Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E125",
+          "runtime_signature": "71ffb8cc6dd7a009c50284433a1144e8b36498128df3e7a29a62a62e1fde447f",
+          "snapshot_version": 7,
+          "source_message_id": "std_8bccf46952f04c76a3c4e2baa578d963",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Google",
+              "European Union",
+              "Privacy safeguards",
+              "European users"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Google argues that complying with the European Union mandates would weaken existing privacy safeguards and cause irreversible harm to users in Europe.",
+            "subject_time": "Google's legal challenge to the EU mandates"
+          },
+          "candidate_index": 1,
+          "case_id": "case_e4d8a1844ceb4090bfc52b13edeba220",
+          "created_at": "2026-09-29T06:40:48.286411Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E126",
+          "runtime_signature": "b006aa82d26ef9cdb0b968422e802a9cbccba39b0f941c64bc500dcd086ced3b",
+          "snapshot_version": 8,
+          "source_message_id": "std_8bccf46952f04c76a3c4e2baa578d963",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "SCHEDULED",
+            "entities": [
+              "OpenAI",
+              "$200 Pro plan",
+              "API usage",
+              "Subscription credits"
+            ],
+            "occurrence_date": null,
+            "proposition": "OpenAI is scheduled to reopen enrollment for its $200 Pro plan with API spending value reduced to 50% of the previous level and without restoring the former five-hour rate limit.",
+            "subject_time": "Pro-plan enrollment reopening on 2026-09-30"
+          },
+          "candidate_index": 0,
+          "case_id": "case_1a651ab0909b40efa9818bb6b51b185b",
+          "created_at": "2026-09-29T06:56:42.063302Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E127",
+          "runtime_signature": "b19b3d7bbb689d94f6e26dc9157b8894eac9ea0a376c58fbc76eda9dc37d2a6c",
+          "snapshot_version": 9,
+          "source_message_id": "std_fe92e1e57edd40c380bac9f8b5a88dae",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "SCHEDULED",
+            "entities": [
+              "OpenAI",
+              "Pro plan",
+              "Subscription features",
+              "API usage quotas"
+            ],
+            "occurrence_date": null,
+            "proposition": "OpenAI plans to introduce subscription features that do not consume API usage quotas when the revised Pro plan reopens.",
+            "subject_time": "Pro-plan feature update on 2026-09-30"
+          },
+          "candidate_index": 1,
+          "case_id": "case_1a651ab0909b40efa9818bb6b51b185b",
+          "created_at": "2026-09-29T06:56:42.076046Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E128",
+          "runtime_signature": "6a02b53a95529bf18710c2cc14fcffaa2bb50fadfd446aa9e115342d18c199c8",
+          "snapshot_version": 10,
+          "source_message_id": "std_fe92e1e57edd40c380bac9f8b5a88dae",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "Micron Ventures Paradigm Fund",
+              "Venture capital"
+            ],
+            "occurrence_date": null,
+            "proposition": "Micron unveiled the US$250 million Micron Ventures Paradigm Fund in mid-August 2026.",
+            "subject_time": "Mid-August 2026 venture-fund launch"
+          },
+          "candidate_index": 0,
+          "case_id": "case_1ee36221dbb849828615a33a3cb32817",
+          "created_at": "2026-09-29T07:06:26.260338Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E129",
+          "runtime_signature": "5d1dce3ae63f4f6fc160d740a0eb5fa891b089efb98f4ad72d731ecf249c54f0",
+          "snapshot_version": 11,
+          "source_message_id": "std_c4e967ded7f3468f8434e036e59d2846",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "PLAN",
+            "entities": [
+              "Micron Technology",
+              "Micron Ventures Paradigm Fund",
+              "AI architectures",
+              "Memory cycle"
+            ],
+            "occurrence_date": null,
+            "proposition": "Micron designed the Paradigm Fund to gain early visibility into technology shifts, position the company for next-generation AI architectures, and strengthen efforts to reduce memory-cycle volatility.",
+            "subject_time": "Long-term fund investment strategy"
+          },
+          "candidate_index": 1,
+          "case_id": "case_1ee36221dbb849828615a33a3cb32817",
+          "created_at": "2026-09-29T07:06:26.266633Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E130",
+          "runtime_signature": "499ec70e3555b8599d8ab2647ad5f21053c09f2ef6470edd19161008c4c5edfc",
+          "snapshot_version": 12,
+          "source_message_id": "std_c4e967ded7f3468f8434e036e59d2846",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "Bain & Co.",
+              "AI services",
+              "AI industry",
+              "Data centers",
+              "US$6 trillion",
+              "US$1.8 trillion"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Bain & Co. forecasts that the AI industry must generate approximately US$6 trillion in annual revenue by 2031 to support global data-center capital expenditures, compared with approximately US$1.8 trillion from current AI services and an implied US$4.2 trillion gap.",
+            "subject_time": "2031 annual AI revenue and data-center capital-expenditure support"
+          },
+          "candidate_index": 0,
+          "case_id": "case_959df5fa996f48ea917b643e5bcadc67",
+          "created_at": "2026-09-29T07:29:55.887423Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E131",
+          "runtime_signature": "70532dd5c27f2c3d950a121858489e55013fc6e8a65abf9c58b3f762c47859ad",
+          "snapshot_version": 13,
+          "source_message_id": "std_8ab9ebf50a664a2897737d6181276883",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "Bain & Co.",
+              "AI revenue",
+              "Data-center capital expenditure",
+              "US$2 trillion",
+              "US$6 trillion"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Bain's updated requirement is three times its prior US$2 trillion annual AI-revenue requirement for 2030, which previously implied an approximately US$800 billion shortfall.",
+            "subject_time": "Bain's revised 2030-2031 AI-revenue framework"
+          },
+          "candidate_index": 1,
+          "case_id": "case_959df5fa996f48ea917b643e5bcadc67",
+          "created_at": "2026-09-29T07:29:55.909929Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E132",
+          "runtime_signature": "a62cf30ae015189e0eff0dab24b2f194f47997c57280cddb62718569919737bf",
+          "snapshot_version": 14,
+          "source_message_id": "std_8ab9ebf50a664a2897737d6181276883",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "UK AI firms",
+              "Prime Minister Burnham",
+              "Department for Business and Trade",
+              "Non-compete clauses",
+              "US$5 billion funding"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "A coalition of UK AI-company founders representing firms that have collectively raised approximately US$5 billion sent an open letter to Prime Minister Burnham and the Department for Business and Trade calling for the end of non-compete clauses.",
+            "subject_time": "September 29, 2026 UK AI labor-policy campaign"
+          },
+          "candidate_index": 0,
+          "case_id": "case_3d96bda5b8814521bd581b334eef410f",
+          "created_at": "2026-09-29T07:39:08.582625Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E133",
+          "runtime_signature": "a8053393268bc0c496a121255110a766f58c2b0b84160b1a06eb24dabc04d8dd",
+          "snapshot_version": 15,
+          "source_message_id": "std_611218641f184f34befcd76165440b71",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ONGOING",
+            "entities": [
+              "UK AI startups",
+              "Employees",
+              "Notice periods",
+              "Non-compete restrictions"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Some UK AI startups have eliminated non-compete restrictions and instead offer employees one-month or three-month notice periods to encourage more fluid hiring.",
+            "subject_time": "Current UK AI startup employment practices"
+          },
+          "candidate_index": 1,
+          "case_id": "case_3d96bda5b8814521bd581b334eef410f",
+          "created_at": "2026-09-29T07:39:08.589619Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E134",
+          "runtime_signature": "f5b6b099e589f3878cb1defdc793a9d04c68f75cb2a3ce6c8a7a40972508a61e",
+          "snapshot_version": 16,
+          "source_message_id": "std_611218641f184f34befcd76165440b71",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "SK Hynix",
+              "WinPak",
+              "Flip-chip packaging",
+              "OSAT",
+              "Memory semiconductors"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "SK Hynix resumed outsourcing flip-chip packaging of memory semiconductors to WinPak after a four-year gap, and WinPak completed line preparation and began mass production.",
+            "subject_time": "SK Hynix–WinPak outsourced packaging relationship"
+          },
+          "candidate_index": 0,
+          "case_id": "case_2d0d7a7ed9d24838bd3f604933bff97b",
+          "created_at": "2026-09-29T07:49:24.495201Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E135",
+          "runtime_signature": "727e4bd27edf0d7a39b17318c870777fc482a5fdf2788cb1f000d37d21c38f04",
+          "snapshot_version": 17,
+          "source_message_id": "std_2c914d2e513a47f192c7949ba4478086",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "RUMORED",
+            "entities": [
+              "SK Hynix",
+              "WinPak",
+              "DDR4",
+              "DDR5",
+              "DRAM"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "The outsourced products are reportedly DDR4 and DDR5 DRAM.",
+            "subject_time": "SK Hynix outsourced packaging products"
+          },
+          "candidate_index": 1,
+          "case_id": "case_2d0d7a7ed9d24838bd3f604933bff97b",
+          "created_at": "2026-09-29T07:49:24.513675Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E136",
+          "runtime_signature": "2f13d27346a5fb95e9bd711140c936726faba868348a1b33c2348d563df1a4a3",
+          "snapshot_version": 18,
+          "source_message_id": "std_2c914d2e513a47f192c7949ba4478086",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "WinPak",
+              "P Campus",
+              "Packaging capacity"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "WinPak increased the monthly production capacity of its P Campus from approximately 44 million units to 50 million units.",
+            "subject_time": "WinPak P Campus packaging capacity"
+          },
+          "candidate_index": 2,
+          "case_id": "case_2d0d7a7ed9d24838bd3f604933bff97b",
+          "created_at": "2026-09-29T07:49:24.536626Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E137",
+          "runtime_signature": "f11c80f2c6b0d91b97ad877d6bff02edcd24e94ece2e042659845f6063ee69dc",
+          "snapshot_version": 19,
+          "source_message_id": "std_2c914d2e513a47f192c7949ba4478086",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "China",
+              "Ministry of Industry and Information Technology",
+              "New battery industry",
+              "15th Five-Year Plan"
+            ],
+            "occurrence_date": "2026-09-28",
+            "proposition": "China's Ministry of Industry and Information Technology and six other government departments released a 15th Five-Year Plan for the development of the new battery industry on September 28, 2026.",
+            "subject_time": "China's 15th Five-Year Plan for the new battery industry"
+          },
+          "candidate_index": 0,
+          "case_id": "case_2d6e06f59beb4b5193600cf574b23bb2",
+          "created_at": "2026-09-29T08:04:08.468923Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E138",
+          "runtime_signature": "fe98c71708b9e2131d9091bc98e415fecd717458aa92dcbbd138e0aab85754b9",
+          "snapshot_version": 20,
+          "source_message_id": "std_d1d95cc791df4b85a920cb03e0a10b43",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "PLAN",
+            "entities": [
+              "China",
+              "All-solid-state batteries",
+              "Lithium batteries",
+              "2030",
+              "15,000 cycles",
+              "PPB defect rate"
+            ],
+            "occurrence_date": "2026-09-28",
+            "proposition": "The plan targets initial large-scale application of all-solid-state batteries by 2030, lithium-battery cycle life of up to 15,000 cycles, and leading-company product defect rates at the parts-per-billion level.",
+            "subject_time": "China's 2030 new-battery targets"
+          },
+          "candidate_index": 1,
+          "case_id": "case_2d6e06f59beb4b5193600cf574b23bb2",
+          "created_at": "2026-09-29T08:04:08.476097Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E139",
+          "runtime_signature": "b825b54e1956731b81aa1eb3a5e8efb4a040c0c76abf5ee38ba90dbf40f1fac6",
+          "snapshot_version": 21,
+          "source_message_id": "std_d1d95cc791df4b85a920cb03e0a10b43",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "PLAN",
+            "entities": [
+              "China",
+              "New batteries",
+              "Energy storage",
+              "Data centers",
+              "Electric vehicles"
+            ],
+            "occurrence_date": "2026-09-28",
+            "proposition": "The plan calls for expanding new-battery applications beyond electric vehicles into energy storage and data centers, as well as ships, aviation, intelligent robots, and construction machinery.",
+            "subject_time": "China's planned new-battery application expansion"
+          },
+          "candidate_index": 2,
+          "case_id": "case_2d6e06f59beb4b5193600cf574b23bb2",
+          "created_at": "2026-09-29T08:04:08.484421Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E140",
+          "runtime_signature": "efac3efc9671efdb7ab235c676326714750f198ee5ad5bdeca5476f1a4bb30ae",
+          "snapshot_version": 22,
+          "source_message_id": "std_d1d95cc791df4b85a920cb03e0a10b43",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "TrendForce",
+              "HBM",
+              "HBM4",
+              "HBM4E",
+              "Blended ASP"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "TrendForce revised its forecast for blended HBM average selling prices in 2027 to an approximately 121% year-over-year increase, citing persistent supply constraints, a higher HBM4 mix, and the HBM4E ramp.",
+            "subject_time": "2027 HBM pricing"
+          },
+          "candidate_index": 0,
+          "case_id": "case_5259ee788ee0456fb772d82297cb93c0",
+          "created_at": "2026-09-29T08:10:43.515829Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E141",
+          "runtime_signature": "1d4681869ba572774c53504101331d397820723dcf389213607e8f29a1bdca6a",
+          "snapshot_version": 23,
+          "source_message_id": "std_fd2738403b7042a6b59da34168428b16",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "EXPECTED",
+            "entities": [
+              "TrendForce",
+              "HBM",
+              "HBM4E",
+              "2027"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "TrendForce expects HBM supply to remain constrained through 2027, with HBM4E gradually ramping in the second half of 2027.",
+            "subject_time": "2027 HBM supply and HBM4E ramp"
+          },
+          "candidate_index": 1,
+          "case_id": "case_5259ee788ee0456fb772d82297cb93c0",
+          "created_at": "2026-09-29T08:10:43.523154Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E142",
+          "runtime_signature": "ae6bacb9a74d0d3e497041b15f36328a8c04e738bdcd68424494777f2cd790d0",
+          "snapshot_version": 24,
+          "source_message_id": "std_fd2738403b7042a6b59da34168428b16",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "EXPECTED",
+            "entities": [
+              "GPU vendors",
+              "ASIC vendors",
+              "HBM",
+              "8-Hi",
+              "12-Hi"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "GPU and ASIC vendors are expected to prioritize evaluating 8-Hi HBM configurations in 2027 because of limited HBM supply and rising system costs, rather than because of weaker end-market demand.",
+            "subject_time": "2027 GPU and ASIC HBM configurations"
+          },
+          "candidate_index": 2,
+          "case_id": "case_5259ee788ee0456fb772d82297cb93c0",
+          "created_at": "2026-09-29T08:10:43.530733Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E143",
+          "runtime_signature": "5c323d5ecf45bad5080813fd557e5a808f484521ddcefe406634fd1812dccbf4",
+          "snapshot_version": 25,
+          "source_message_id": "std_fd2738403b7042a6b59da34168428b16",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "TrendForce",
+              "8-Hi HBM",
+              "12-Hi HBM",
+              "DRAM dies",
+              "Base die"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "TrendForce expects 8-Hi HBM products to carry a roughly 10%–20% price premium per gigabit over 12-Hi products because base-die costs are spread over fewer DRAM layers.",
+            "subject_time": "2027 8-Hi versus 12-Hi HBM pricing"
+          },
+          "candidate_index": 3,
+          "case_id": "case_5259ee788ee0456fb772d82297cb93c0",
+          "created_at": "2026-09-29T08:10:43.539731Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E144",
+          "runtime_signature": "6b28cdc646afc3403f6abafcf3d7fbfddbf70b52d05fd1ba9eb3902a858a2c53",
+          "snapshot_version": 26,
+          "source_message_id": "std_fd2738403b7042a6b59da34168428b16",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Stocktwits",
+              "SPY",
+              "QQQ"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Stocktwits retail sentiment toward SPY and QQQ remained bullish after Monday's market rout.",
+            "subject_time": "After the September 28, 2026 market rout"
+          },
+          "candidate_index": 0,
+          "case_id": "case_7933d365d74e4cbaa3eb6b75023d28a0",
+          "created_at": "2026-09-29T08:50:17.637615Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E145",
+          "runtime_signature": "795fafe132485e2a3b19230553996ddf08762c14ccd54c40fcc5d8183b919855",
+          "snapshot_version": 27,
+          "source_message_id": "std_3576f0c0265142688b627e2e3710fd5a",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Nvidia",
+              "AMD",
+              "Donald Trump",
+              "White House",
+              "China"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Nvidia and AMD intensified lobbying directed at President Donald Trump and the White House to preserve existing chip-export channels to China.",
+            "subject_time": "Current U.S. policy debate over China chip exports"
+          },
+          "candidate_index": 0,
+          "case_id": "case_0049cb22ba1349cd8a2971da1504034a",
+          "created_at": "2026-09-29T09:03:40.283681Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E146",
+          "runtime_signature": "efac5d6e7dc6f891f99e699621d19b21f054af8acfb78970e80c12e79356e0df",
+          "snapshot_version": 28,
+          "source_message_id": "std_e1a1418730c64c61a1a572e392156f01",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Saimemory",
+              "SoftBank",
+              "Shinko Electric Industries",
+              "Z-Angle Memory (ZAM)"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Saimemory brought Shinko Electric Industries into its Z-Angle Memory (ZAM) commercialization effort.",
+            "subject_time": "ZAM commercialization effort"
+          },
+          "candidate_index": 0,
+          "case_id": "case_dd4c277cb32e47f3b0778a3dfa14a9b1",
+          "created_at": "2026-09-29T09:08:41.431635Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E147",
+          "runtime_signature": "db9402cd2dabf0f50ad748e6d948a518bdc1e8a19a7ec794d6ca48d6e8e65f5b",
+          "snapshot_version": 29,
+          "source_message_id": "std_3bd23f505bed4b77b069342b0d6369b9",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Aspiro",
+              "U.S. semiconductor-equipment company"
+            ],
+            "occurrence_date": null,
+            "proposition": "Aspiro passed the quality-management-system audit of a major U.S. semiconductor-equipment company in September 2026.",
+            "subject_time": "September 2026"
+          },
+          "candidate_index": 0,
+          "case_id": "case_fab9c0063da94103b48f32709226756e",
+          "created_at": "2026-09-29T09:11:06.022999Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E148",
+          "runtime_signature": "066fb400ac4f74433d0b5d47bbc5fafef2b15ff29dcce886eabc8b04606db653",
+          "snapshot_version": 30,
+          "source_message_id": "std_ae3f7e04a0894b068a2af52e6c3fd7ca",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "PLANNED",
+            "entities": [
+              "Aspiro",
+              "U.S. semiconductor-equipment company",
+              "Weldments",
+              "Modules"
+            ],
+            "occurrence_date": null,
+            "proposition": "Aspiro plans to begin shipping approved weldments and modules for the U.S. semiconductor-equipment company from October 2026.",
+            "subject_time": "October 2026"
+          },
+          "candidate_index": 1,
+          "case_id": "case_fab9c0063da94103b48f32709226756e",
+          "created_at": "2026-09-29T09:11:06.040811Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E149",
+          "runtime_signature": "1e1a8f64f5445f908c6018f6293bfebce3fb42909d6378d8141599b2a3662fbb",
+          "snapshot_version": 31,
+          "source_message_id": "std_ae3f7e04a0894b068a2af52e6c3fd7ca",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron",
+              "Aspiro"
+            ],
+            "occurrence_date": null,
+            "proposition": "Micron completed its evaluation of Aspiro's semiconductor-equipment components in September 2026.",
+            "subject_time": "September 2026"
+          },
+          "candidate_index": 2,
+          "case_id": "case_fab9c0063da94103b48f32709226756e",
+          "created_at": "2026-09-29T09:11:06.064009Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E150",
+          "runtime_signature": "02e65cc06c62799d3bd8ddc7586b842e823a5d87f36d832c9d52a992c1bc1660",
+          "snapshot_version": 32,
+          "source_message_id": "std_ae3f7e04a0894b068a2af52e6c3fd7ca",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "PLANNED",
+            "entities": [
+              "Aspiro",
+              "Micron",
+              "Semiconductor-equipment components"
+            ],
+            "occurrence_date": null,
+            "proposition": "Aspiro plans to begin supplying evaluated components to Micron from FY2026 Q4.",
+            "subject_time": "FY2026 Q4"
+          },
+          "candidate_index": 3,
+          "case_id": "case_fab9c0063da94103b48f32709226756e",
+          "created_at": "2026-09-29T09:11:06.077849Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E151",
+          "runtime_signature": "9647a9ba089cd5437550ccea5b6d12e9db30406ce341e586b93a7e389efd16da",
+          "snapshot_version": 33,
+          "source_message_id": "std_ae3f7e04a0894b068a2af52e6c3fd7ca",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "SemiFive",
+              "U.S. AI fabless company",
+              "AI inference accelerator"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "SemiFive signed a KRW 70.3 billion turnkey development contract with an unnamed U.S. AI fabless company for an AI inference accelerator, including mass-production scope.",
+            "subject_time": "AI inference-accelerator development and production program"
+          },
+          "candidate_index": 0,
+          "case_id": "case_54ca36b0c0464c13921d83f59a1d3903",
+          "created_at": "2026-09-29T09:50:06.035713Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E152",
+          "runtime_signature": "16a7def8fe4720df35a6d86c7ed6ad3d24fb5ba4049c61971aa5ae3e9807316c",
+          "snapshot_version": 34,
+          "source_message_id": "std_2b621f4b100f457cab74808b25ff5874",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "PLANNED",
+            "entities": [
+              "SemiFive",
+              "AI inference accelerator"
+            ],
+            "occurrence_date": null,
+            "proposition": "SemiFive targets tapeout of the AI inference-accelerator design in the first half of 2027.",
+            "subject_time": "First half of 2027"
+          },
+          "candidate_index": 1,
+          "case_id": "case_54ca36b0c0464c13921d83f59a1d3903",
+          "created_at": "2026-09-29T09:50:06.063347Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E153",
+          "runtime_signature": "a96579c7a53ce16a43f062e635c954531da8caa53ec8bcacd4977cee37d6a837",
+          "snapshot_version": 35,
+          "source_message_id": "std_2b621f4b100f457cab74808b25ff5874",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "EXPECTED",
+            "entities": [
+              "SemiFive",
+              "AI inference accelerator"
+            ],
+            "occurrence_date": null,
+            "proposition": "SemiFive expects mass production of the AI inference accelerator to begin in 2028.",
+            "subject_time": "2028"
+          },
+          "candidate_index": 2,
+          "case_id": "case_54ca36b0c0464c13921d83f59a1d3903",
+          "created_at": "2026-09-29T09:50:06.095531Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E154",
+          "runtime_signature": "a9d2c3e0dc8b0f66a59217258ab920801571e4a3b50b3c28649b020aa06c99ea",
+          "snapshot_version": 36,
+          "source_message_id": "std_2b621f4b100f457cab74808b25ff5874",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "PLANNED",
+            "entities": [
+              "SemiFive",
+              "LPDDR6",
+              "PCIe Gen5",
+              "AI inference accelerator"
+            ],
+            "occurrence_date": null,
+            "proposition": "The planned AI inference accelerator uses LPDDR6 and PCIe Gen5 interfaces.",
+            "subject_time": "Accelerator design program"
+          },
+          "candidate_index": 3,
+          "case_id": "case_54ca36b0c0464c13921d83f59a1d3903",
+          "created_at": "2026-09-29T09:50:06.119138Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E155",
+          "runtime_signature": "f3337aab761383cbc49ae5e4390c1a31506ca2948b67ef931d95da794027e7c7",
+          "snapshot_version": 37,
+          "source_message_id": "std_2b621f4b100f457cab74808b25ff5874",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "RUMORED",
+            "entities": [
+              "Kevin Roose",
+              "The AGI Chronicles",
+              "Jensen Huang",
+              "Dario Amodei",
+              "Anthropic",
+              "Nvidia"
+            ],
+            "occurrence_date": null,
+            "proposition": "An excerpt from Kevin Roose's forthcoming book reports that Jensen Huang and Dario Amodei had a contentious first meeting in May 2022 about Anthropic's compute needs.",
+            "subject_time": "May 2022 first meeting"
+          },
+          "candidate_index": 0,
+          "case_id": "case_c925930918714f7cac9ed266fcf05641",
+          "created_at": "2026-09-29T09:55:30.816039Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E156",
+          "runtime_signature": "638da69255a9fe1a7f2073c33eeb4e61f3c9ba3b4598a37f0d713522964fa3b1",
+          "snapshot_version": 38,
+          "source_message_id": "std_d25d438323e0403eaaed53d120d398d4",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "RUMORED",
+            "entities": [
+              "Tom Brown",
+              "Jensen Huang",
+              "Anthropic",
+              "Google TPU",
+              "Nvidia GPU"
+            ],
+            "occurrence_date": null,
+            "proposition": "The book excerpt alleges that Tom Brown showed Jensen Huang a spreadsheet arguing that Google's TPUs were a better dollar-for-dollar investment than Nvidia's GPUs.",
+            "subject_time": "May 2022 compute discussion"
+          },
+          "candidate_index": 1,
+          "case_id": "case_c925930918714f7cac9ed266fcf05641",
+          "created_at": "2026-09-29T09:55:30.828623Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E157",
+          "runtime_signature": "5901206876160f12e34262b04471b0ada34c0379c6ec14dca195d15059fd3da6",
+          "snapshot_version": 39,
+          "source_message_id": "std_d25d438323e0403eaaed53d120d398d4",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "DENIAL",
+            "entities": [
+              "Nvidia",
+              "Jensen Huang",
+              "Tom Brown"
+            ],
+            "occurrence_date": null,
+            "proposition": "An Nvidia spokesperson denied that Jensen Huang called Tom Brown a \"bean counter\" during the reported meeting.",
+            "subject_time": "Reported May 2022 meeting"
+          },
+          "candidate_index": 2,
+          "case_id": "case_c925930918714f7cac9ed266fcf05641",
+          "created_at": "2026-09-29T09:55:30.837141Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E158",
+          "runtime_signature": "fda083816016656162a968d215de51fd74f9a3ae13e4782802c5b4696e40fb05",
+          "snapshot_version": 40,
+          "source_message_id": "std_d25d438323e0403eaaed53d120d398d4",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "MU"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Micron shares rose approximately 1% in premarket trading on September 29, 2026 after a sector-wide selloff on September 28, 2026.",
+            "subject_time": "September 29, 2026 premarket trading after the September 28 sector selloff"
+          },
+          "candidate_index": 0,
+          "case_id": "case_3135f88b198046e39c31ad98f899fd8d",
+          "created_at": "2026-09-29T10:05:21.625987Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E159",
+          "runtime_signature": "b1db1a3f860d75fc995748ab9cf07880f73ec6a1141f4d7aa922946d8b3ed132",
+          "snapshot_version": 41,
+          "source_message_id": "std_ac3a6d18da844229a31f477cef2371ba",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "PLAN",
+            "entities": [
+              "SK海力士",
+              "供应商付款支持基金"
+            ],
+            "occurrence_date": "2026-09-28",
+            "proposition": "SK海力士计划将供应商 납품대금지원基金从500亿韩元（KRW 50 billion）增加至1000亿韩元（KRW 100 billion）。",
+            "subject_time": "未来供应商付款支持计划；具体实施时间未披露"
+          },
+          "candidate_index": 0,
+          "case_id": "case_745b9fa044804ddb82fb4939e512047a",
+          "created_at": "2026-09-29T10:08:57.975966Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E160",
+          "runtime_signature": "621f2a3400c7286eae08fe60cf3a1a91e377be2878212caa7a48802d461878ae",
+          "snapshot_version": 42,
+          "source_message_id": "std_ddf429cc388941ae934a1b6ed793dafe",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "PLAN",
+            "entities": [
+              "SK海力士",
+              "供应商",
+              "供应商研发项目"
+            ],
+            "occurrence_date": "2026-09-28",
+            "proposition": "SK海力士计划通过研发挑战奖励制度向供应商研发项目预先提供最高50%的初始开发费用，并在开发失败时仍认可技术贡献。",
+            "subject_time": "未来供应商研发支持计划；具体实施时间未披露"
+          },
+          "candidate_index": 1,
+          "case_id": "case_745b9fa044804ddb82fb4939e512047a",
+          "created_at": "2026-09-29T10:08:57.996543Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E161",
+          "runtime_signature": "bd6e651b1cd60adede5e0195631aaca6be4d742c90ed2de97c82c8f85846d1e9",
+          "snapshot_version": 43,
+          "source_message_id": "std_ddf429cc388941ae934a1b6ed793dafe",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ONGOING",
+            "entities": [
+              "SK海力士",
+              "Trinity Fab",
+              "龙仁半导体集群",
+              "供应商"
+            ],
+            "occurrence_date": "2026-09-28",
+            "proposition": "SK海力士正在韩国龙仁半导体集群建设约1000坪的Trinity Fab供应商测试平台，目标于2027年开业。",
+            "subject_time": "目标于2027年开业"
+          },
+          "candidate_index": 2,
+          "case_id": "case_745b9fa044804ddb82fb4939e512047a",
+          "created_at": "2026-09-29T10:08:58.008819Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E162",
+          "runtime_signature": "8e82924c9106c2c2199feae90685dbdb3b1a5c6ec426e2788fa512270ac363ac",
+          "snapshot_version": 44,
+          "source_message_id": "std_ddf429cc388941ae934a1b6ed793dafe",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "RUMOR",
+            "entities": [
+              "Eric Gullichsen",
+              "NVIDIA",
+              "NVDA"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Eric Gullichsen alleges that a 1993 Nvidia option grant entitled him to approximately 4.5 million post-split NVDA shares worth about $1 billion.",
+            "subject_time": "1993 option grant; valuation based on Nvidia's September 25, 2026 closing price"
+          },
+          "candidate_index": 0,
+          "case_id": "case_24ff2737ad764ec4b8a3b34f58e0214f",
+          "created_at": "2026-09-29T10:09:50.757077Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E163",
+          "runtime_signature": "dad89dfca7c5b992bdc0a5b1149dd69ad1cfe0583426cc92feea106fe873d888",
+          "snapshot_version": 45,
+          "source_message_id": "std_8281f1f964274e3b8d9f172a4e096515",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "RUMOR",
+            "entities": [
+              "Eric Gullichsen",
+              "NVIDIA",
+              "NVDA"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Eric Gullichsen alleges that Nvidia rejected a proposed settlement of his disputed option-vesting claim.",
+            "subject_time": "Settlement discussions after discovery of the vesting discrepancy"
+          },
+          "candidate_index": 1,
+          "case_id": "case_24ff2737ad764ec4b8a3b34f58e0214f",
+          "created_at": "2026-09-29T10:09:50.783731Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E164",
+          "runtime_signature": "6816db969299e992505c402ff5d2895055e2953730b08f59d068d53b60b61734",
+          "snapshot_version": 46,
+          "source_message_id": "std_8281f1f964274e3b8d9f172a4e096515",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Meta Platforms",
+              "Muse for Small Business"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Meta launched Muse for Small Business, an AI-agent product aimed at entrepreneurs and small businesses.",
+            "subject_time": null
+          },
+          "candidate_index": 0,
+          "case_id": "case_beae0376e1c143a68770e1e6d2ddd1d4",
+          "created_at": "2026-09-29T10:12:43.160887Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E165",
+          "runtime_signature": "dd6b2e0972220a0504f5306eef0649803cfd0a30f962a057e7606382f47df928",
+          "snapshot_version": 47,
+          "source_message_id": "std_477652ebf6fc4b0b9ca28a1eac76c72c",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Meta Platforms",
+              "Muse for Small Business",
+              "Stripe"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Meta's Muse for Small Business integrates with Stripe to let users update prices, create products, issue refunds, and analyze revenue trends.",
+            "subject_time": null
+          },
+          "candidate_index": 1,
+          "case_id": "case_beae0376e1c143a68770e1e6d2ddd1d4",
+          "created_at": "2026-09-29T10:12:43.178560Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E166",
+          "runtime_signature": "4288d58104e38eab73fc5436b2b4e1a7a3f497469767676a8ccb73bf7b403653",
+          "snapshot_version": 48,
+          "source_message_id": "std_477652ebf6fc4b0b9ca28a1eac76c72c",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Meta Platforms",
+              "Muse for Small Business",
+              "Slack",
+              "QuickBooks",
+              "Asana",
+              "Canva",
+              "Dropbox",
+              "Figma",
+              "Zoom"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Muse for Small Business connects with Slack, QuickBooks, Asana, Canva, Dropbox, Figma, and Zoom to execute actions across those platforms.",
+            "subject_time": null
+          },
+          "candidate_index": 2,
+          "case_id": "case_beae0376e1c143a68770e1e6d2ddd1d4",
+          "created_at": "2026-09-29T10:12:43.194750Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E167",
+          "runtime_signature": "128777598a3fae0cc9edc5387f83d610a4689506fb45a0f39f6128ec41d56410",
+          "snapshot_version": 49,
+          "source_message_id": "std_477652ebf6fc4b0b9ca28a1eac76c72c",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Atonement",
+              "Reed Van Dyk",
+              "Toronto International Film Festival"
+            ],
+            "occurrence_date": null,
+            "proposition": "Atonement, written and directed by Reed Van Dyk, had its North American premiere at the Toronto International Film Festival in September 2026.",
+            "subject_time": "September 2026"
+          },
+          "candidate_index": 0,
+          "case_id": "case_584744c093404aad82caf1e0242277d8",
+          "created_at": "2026-09-29T10:14:55.019981Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E168",
+          "runtime_signature": "fd0e3755e07ab4485771c5afc92d22a29b24efe7d49251d20db0ee3fc8e3ff6c",
+          "snapshot_version": 50,
+          "source_message_id": "std_f1e5afcd3ab946a78bc4be67ffea0425",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "SCHEDULED",
+            "entities": [
+              "Atonement"
+            ],
+            "occurrence_date": "2026-10-02",
+            "proposition": "Atonement is scheduled to open in select theaters on October 2, 2026.",
+            "subject_time": "October 2, 2026 limited theatrical release"
+          },
+          "candidate_index": 1,
+          "case_id": "case_584744c093404aad82caf1e0242277d8",
+          "created_at": "2026-09-29T10:14:55.031032Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E169",
+          "runtime_signature": "2e8a3d258f2cb866aa204040a21df030bc2f029dca586df8c47c8dafb32576a0",
+          "snapshot_version": 51,
+          "source_message_id": "std_f1e5afcd3ab946a78bc4be67ffea0425",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "SCHEDULED",
+            "entities": [
+              "Atonement"
+            ],
+            "occurrence_date": "2026-10-09",
+            "proposition": "Atonement is scheduled to expand widely in theaters on October 9, 2026.",
+            "subject_time": "October 9, 2026 wide theatrical release"
+          },
+          "candidate_index": 2,
+          "case_id": "case_584744c093404aad82caf1e0242277d8",
+          "created_at": "2026-09-29T10:14:55.049217Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E170",
+          "runtime_signature": "587c5385974855827bc950bea2b5758855318d6b11536741b73c0769fb8f6f45",
+          "snapshot_version": 52,
+          "source_message_id": "std_f1e5afcd3ab946a78bc4be67ffea0425",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Intel",
+              "MicroLED",
+              "Through-Glass-Vias"
+            ],
+            "occurrence_date": null,
+            "proposition": "Intel was granted a U.S. patent describing MicroLED-equipped semiconductor dies embedded in a glass substrate and connected using Through-Glass-Vias.",
+            "subject_time": "Patent grant reported in September 2026"
+          },
+          "candidate_index": 0,
+          "case_id": "case_215a38567b5346b8bc1b36673ab003b6",
+          "created_at": "2026-09-29T10:38:19.935706Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E171",
+          "runtime_signature": "f6e55505c9945596ccfc52c77ee4b087b09113e8507ebc38fe3cd4dec24e8b97",
+          "snapshot_version": 53,
+          "source_message_id": "std_16438c84669342ed9c3a1803c521649b",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "AU Optronics",
+              "MicroLED",
+              "SEMICON Taiwan 2026"
+            ],
+            "occurrence_date": null,
+            "proposition": "AU Optronics showcased a MicroLED optical-communication module for potential high-speed interconnect applications at SEMICON Taiwan 2026.",
+            "subject_time": "SEMICON Taiwan 2026"
+          },
+          "candidate_index": 1,
+          "case_id": "case_215a38567b5346b8bc1b36673ab003b6",
+          "created_at": "2026-09-29T10:38:19.944879Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E172",
+          "runtime_signature": "4f03f8cd485cb22987e574569bdeb4c46c3cfaa1910da490c6d34d5fcfd5f989",
+          "snapshot_version": 54,
+          "source_message_id": "std_16438c84669342ed9c3a1803c521649b",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "MU",
+              "ChartMill"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "ChartMill's analysis reports Micron's five-year EPS growth at 23.98%.",
+            "subject_time": "Five-year historical period reported on September 29, 2026"
+          },
+          "candidate_index": 0,
+          "case_id": "case_152f5ad317274c809669aabc4d9e6856",
+          "created_at": "2026-09-29T10:43:48.442706Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E173",
+          "runtime_signature": "e6512e9e8c5e8a25fc5bd35bfd9a18279b0481b2a7ff5d69c141c7e0d7777768",
+          "snapshot_version": 55,
+          "source_message_id": "std_a8b51fdc495a4b99b869b90f85ba3194",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "MU",
+              "ChartMill"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "ChartMill's analysis reports Micron's PEG ratio at 0.97.",
+            "subject_time": "Valuation metric reported on September 29, 2026"
+          },
+          "candidate_index": 1,
+          "case_id": "case_152f5ad317274c809669aabc4d9e6856",
+          "created_at": "2026-09-29T10:43:48.452425Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E174",
+          "runtime_signature": "2c7028f043292a0cb29ddfd1c93d853056d7930afd19c80ef61875f161563d7f",
+          "snapshot_version": 56,
+          "source_message_id": "std_a8b51fdc495a4b99b869b90f85ba3194",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "Micron Technology",
+              "MU",
+              "ChartMill"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "ChartMill's analysis uses a forward estimate of average Micron EPS growth of 43.05%.",
+            "subject_time": "Forward forecast period"
+          },
+          "candidate_index": 2,
+          "case_id": "case_152f5ad317274c809669aabc4d9e6856",
+          "created_at": "2026-09-29T10:43:48.464246Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E175",
+          "runtime_signature": "32d034e34a1285fd495807ca05f50f50d7696cc0f465d5d5570d47e69c00acb9",
+          "snapshot_version": 57,
+          "source_message_id": "std_a8b51fdc495a4b99b869b90f85ba3194",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "Micron Technology",
+              "MU",
+              "ChartMill"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "ChartMill's analysis uses a forward estimate of Micron revenue growth of 53.31%.",
+            "subject_time": "Forward forecast period"
+          },
+          "candidate_index": 3,
+          "case_id": "case_152f5ad317274c809669aabc4d9e6856",
+          "created_at": "2026-09-29T10:43:48.473570Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E176",
+          "runtime_signature": "32e632052073018396a4b43fabb6a5e7cb544e879ec34ca51e2f5a9dacfcfb63",
+          "snapshot_version": 58,
+          "source_message_id": "std_a8b51fdc495a4b99b869b90f85ba3194",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "CyberPowerPC",
+              "AMD Ryzen 7 7800X3D",
+              "NVIDIA GeForce RTX 5070",
+              "DDR5",
+              "SSD"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "CyberPowerPC offered a gaming PC configured with an AMD Ryzen 7 7800X3D, Nvidia GeForce RTX 5070, 1TB SSD, and 32GB of DDR5 RAM.",
+            "subject_time": "Promotion reported on September 29, 2026"
+          },
+          "candidate_index": 0,
+          "case_id": "case_d3b92d6dbd2343f392f0e70812c80736",
+          "created_at": "2026-09-29T11:14:03.193285Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E177",
+          "runtime_signature": "655bfbb7afe296b43ff932acc7bc40c05dbba963fd5471cc96f7c31140b1a724",
+          "snapshot_version": 59,
+          "source_message_id": "std_119d6985085a4a048d67367cfe8a4989",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "CyberPowerPC",
+              "USD"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "The specified CyberPowerPC gaming PC was offered for $1,999.99, representing a stated $170 saving.",
+            "subject_time": "Promotion active at publication"
+          },
+          "candidate_index": 1,
+          "case_id": "case_d3b92d6dbd2343f392f0e70812c80736",
+          "created_at": "2026-09-29T11:14:03.201424Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E178",
+          "runtime_signature": "acb6cce1be1e479070eda20ddc674f0ccfb30af40b4019c71717ceeb0f30a8d4",
+          "snapshot_version": 60,
+          "source_message_id": "std_119d6985085a4a048d67367cfe8a4989",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "AMD",
+              "EPYC 9006",
+              "Venice",
+              "SP7",
+              "SP8"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "AMD released list pricing for EPYC 9006 Venice server CPUs ranging from $700 to $14,904 across SP7 and SP8 platforms.",
+            "subject_time": "EPYC 9006 Venice pricing reported on September 29, 2026"
+          },
+          "candidate_index": 0,
+          "case_id": "case_bbba5acc266043e39c0c630b398217ee",
+          "created_at": "2026-09-29T11:23:54.900909Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E179",
+          "runtime_signature": "9a3dd2ae35094cdaa8df1524b2940952c240e79cfde59bff65f94fd342f55d4a",
+          "snapshot_version": 61,
+          "source_message_id": "std_dd616f5ca4b640fca270de5fed97066a",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "AMD",
+              "EPYC 9006",
+              "Venice",
+              "SP7",
+              "DDR5",
+              "MRDIMM"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "AMD's SP7 Venice platform supports up to 16 memory channels, including DDR5-12800 and MRDIMMs.",
+            "subject_time": "EPYC 9006 Venice platform specifications"
+          },
+          "candidate_index": 1,
+          "case_id": "case_bbba5acc266043e39c0c630b398217ee",
+          "created_at": "2026-09-29T11:23:54.919073Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E180",
+          "runtime_signature": "3b06bd4ec2c8c7ccefc89cba1e59ca0a6cd67a585834ae2e98a4bd092ae17e2e",
+          "snapshot_version": 62,
+          "source_message_id": "std_dd616f5ca4b640fca270de5fed97066a",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "SCHEDULED",
+            "entities": [
+              "AMD",
+              "EPYC 9006",
+              "Venice",
+              "SP7"
+            ],
+            "occurrence_date": null,
+            "proposition": "AMD's SP7 Venice platform is scheduled to launch in the fourth quarter of 2026.",
+            "subject_time": "Fourth quarter of 2026"
+          },
+          "candidate_index": 2,
+          "case_id": "case_bbba5acc266043e39c0c630b398217ee",
+          "created_at": "2026-09-29T11:23:54.943598Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E181",
+          "runtime_signature": "bc1606a3e33c95d785e51d3df10fd218f4f45908b8670d8e2a23abdafbebaf21",
+          "snapshot_version": 63,
+          "source_message_id": "std_dd616f5ca4b640fca270de5fed97066a",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "SCHEDULED",
+            "entities": [
+              "AMD",
+              "EPYC 9006",
+              "Venice",
+              "SP8"
+            ],
+            "occurrence_date": null,
+            "proposition": "AMD's SP8 Venice platform is scheduled to launch in the first half of 2027.",
+            "subject_time": "First half of 2027"
+          },
+          "candidate_index": 3,
+          "case_id": "case_bbba5acc266043e39c0c630b398217ee",
+          "created_at": "2026-09-29T11:23:54.952366Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E182",
+          "runtime_signature": "ac33261857ba39429405898c2baf92a3b354fe3f79e7897e368ee005c69034df",
+          "snapshot_version": 64,
+          "source_message_id": "std_dd616f5ca4b640fca270de5fed97066a",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "TD Cowen",
+              "SpaceX"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "TD Cowen initiated coverage of SpaceX with a Buy rating and a $200 price target.",
+            "subject_time": "Coverage initiated September 29, 2026"
+          },
+          "candidate_index": 0,
+          "case_id": "case_93ffab28711f4a4291f03b577e9ff4cd",
+          "created_at": "2026-09-29T11:25:49.300206Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E183",
+          "runtime_signature": "256791d580dd87821fb2ba0fc0feb42a8a8a8c2df724ea568d3f99f59120e20c",
+          "snapshot_version": 65,
+          "source_message_id": "std_1324eb0d16034484bbf714804217c832",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "TD Cowen",
+              "SpaceX",
+              "Google",
+              "Anthropic",
+              "AI compute"
+            ],
+            "occurrence_date": null,
+            "proposition": "TD Cowen forecasts terrestrial AI-compute leasing to become SpaceX's fastest-growing business and a majority of total revenue by the first quarter of 2027 as capacity ramps.",
+            "subject_time": "First quarter of 2027"
+          },
+          "candidate_index": 1,
+          "case_id": "case_93ffab28711f4a4291f03b577e9ff4cd",
+          "created_at": "2026-09-29T11:25:49.307041Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E184",
+          "runtime_signature": "6959898c23414b8ce32882980fb21ed5e280839ab986037aa5affb1b31454c25",
+          "snapshot_version": 66,
+          "source_message_id": "std_1324eb0d16034484bbf714804217c832",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Anthropic"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Anthropic disclosed an IPO prospectus containing its FY2025 financial and operating information.",
+            "subject_time": "September 2026 IPO filing"
+          },
+          "candidate_index": 0,
+          "case_id": "case_3f84e59e66f54261b55a2bcecae3c054",
+          "created_at": "2026-09-29T11:37:39.169127Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E185",
+          "runtime_signature": "510d4d9095c49b9d37676288a64ec3fb0dbd50900dace0420a542d4d228c5a6e",
+          "snapshot_version": 67,
+          "source_message_id": "std_294c0aaa3ce54485844746f30b4a0bf3",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Anthropic"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Anthropic reported FY2025 revenue of approximately $4.59 billion, up from approximately $386 million in 2024.",
+            "subject_time": "Fiscal 2025"
+          },
+          "candidate_index": 1,
+          "case_id": "case_3f84e59e66f54261b55a2bcecae3c054",
+          "created_at": "2026-09-29T11:37:39.177849Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E186",
+          "runtime_signature": "3b12287d5c1db9d3eb89828ecd805ddb4a135c7843b6e83937d339aac6e6ad81",
+          "snapshot_version": 68,
+          "source_message_id": "std_294c0aaa3ce54485844746f30b4a0bf3",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Anthropic",
+              "AI compute",
+              "AI infrastructure"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Anthropic reported approximately $7.33 billion of compute and infrastructure spending in 2025.",
+            "subject_time": "Calendar year 2025"
+          },
+          "candidate_index": 2,
+          "case_id": "case_3f84e59e66f54261b55a2bcecae3c054",
+          "created_at": "2026-09-29T11:37:39.187289Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E187",
+          "runtime_signature": "4acb734c2573d80f3d988a8184e8ea3907faee505e8b24ab096976ea371230dc",
+          "snapshot_version": 69,
+          "source_message_id": "std_294c0aaa3ce54485844746f30b4a0bf3",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Anthropic",
+              "Cloud computing",
+              "AI compute",
+              "AI infrastructure"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Anthropic's prospectus outlined approximately $518 billion of future cloud, compute, and infrastructure obligations.",
+            "subject_time": "Coming years"
+          },
+          "candidate_index": 3,
+          "case_id": "case_3f84e59e66f54261b55a2bcecae3c054",
+          "created_at": "2026-09-29T11:37:39.196268Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E188",
+          "runtime_signature": "57ed7c74ba00ce24025dddb34dc0085f741119e0f718358bb843dfd0b23b1d90",
+          "snapshot_version": 70,
+          "source_message_id": "std_294c0aaa3ce54485844746f30b4a0bf3",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Sony",
+              "Sony Interactive Entertainment",
+              "PlayStation 5 Pro",
+              "Japan"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Sony Japan required PS5 Pro buyers to use a Japan-registered Sony account and have at least 60 hours of PS4 or PS5 play time during the preceding two years to enter the purchase process.",
+            "subject_time": "PS5 Pro Japan purchase applications in September 2026"
+          },
+          "candidate_index": 0,
+          "case_id": "case_8524a861e85f4d2c8a60dcaa116e58c3",
+          "created_at": "2026-09-29T11:38:28.253331Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E189",
+          "runtime_signature": "726458bbca3591c5414e2e0672ffe3851257c1e5d65574ed4a4fd2976bb5b63e",
+          "snapshot_version": 71,
+          "source_message_id": "std_8926d5652a4e4936b95ff30f2d705ce4",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "SCHEDULED",
+            "entities": [
+              "Sony",
+              "PlayStation 5 Pro",
+              "Japan"
+            ],
+            "occurrence_date": null,
+            "proposition": "Sony Japan scheduled PS5 Pro purchase applications to open on October 7, 2026, with sales to successful lottery applicants beginning October 26, 2026.",
+            "subject_time": "October 7 and October 26, 2026"
+          },
+          "candidate_index": 1,
+          "case_id": "case_8524a861e85f4d2c8a60dcaa116e58c3",
+          "created_at": "2026-09-29T11:38:28.273678Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E190",
+          "runtime_signature": "47df79870cf22cf224a920078a7b25ad827b1ea175c26ceebb1556ef4ddf3239",
+          "snapshot_version": 72,
+          "source_message_id": "std_8926d5652a4e4936b95ff30f2d705ce4",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "RUMOR",
+            "entities": [
+              "Sony",
+              "PlayStation 5 Pro",
+              "AI data centers"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "The report attributes multiple PS5 and PS5 Pro price increases to key components being diverted to AI data centers.",
+            "subject_time": "2026 console supply conditions"
+          },
+          "candidate_index": 2,
+          "case_id": "case_8524a861e85f4d2c8a60dcaa116e58c3",
+          "created_at": "2026-09-29T11:38:28.290488Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E191",
+          "runtime_signature": "2c7976f5bbdd6b457a28a2678f11b29f5634910a3c4ac8f5ec56d701f6221b20",
+          "snapshot_version": 73,
+          "source_message_id": "std_8926d5652a4e4936b95ff30f2d705ce4",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Anthropic"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Anthropic confidentially filed for an initial public offering in June 2026.",
+            "subject_time": "June 2026"
+          },
+          "candidate_index": 0,
+          "case_id": "case_09b886f7e7864340a410c107a2d4a113",
+          "created_at": "2026-09-29T11:39:15.302747Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E192",
+          "runtime_signature": "773b3a705b3f701f41c046def2207e9e36da96d08a82f22186aa77b54dd988bc",
+          "snapshot_version": 74,
+          "source_message_id": "std_21eb587baf164eae8b33d898d598ac22",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "EXPECTED",
+            "entities": [
+              "Anthropic"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Anthropic is targeting an IPO valuation above $2 trillion.",
+            "subject_time": "Potential 2026 IPO"
+          },
+          "candidate_index": 1,
+          "case_id": "case_09b886f7e7864340a410c107a2d4a113",
+          "created_at": "2026-09-29T11:39:15.311299Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E193",
+          "runtime_signature": "ac774eea66013ddbff55ff345e199c6fda0591decee9ab8b63d78ddcf6ec6c04",
+          "snapshot_version": 75,
+          "source_message_id": "std_21eb587baf164eae8b33d898d598ac22",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Anthropic"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Anthropic reported a net loss of approximately $42 billion in 2025.",
+            "subject_time": "Fiscal 2025"
+          },
+          "candidate_index": 2,
+          "case_id": "case_09b886f7e7864340a410c107a2d4a113",
+          "created_at": "2026-09-29T11:39:15.317297Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E194",
+          "runtime_signature": "50bd81f227e1ac9771f6d087ca2f361d3138598fe42c2f026c887ec8e1f06ccd",
+          "snapshot_version": 76,
+          "source_message_id": "std_21eb587baf164eae8b33d898d598ac22",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "PLAN",
+            "entities": [
+              "Anthropic",
+              "AI infrastructure",
+              "Cloud computing"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Anthropic reported plans to spend approximately $518 billion on infrastructure in the coming years.",
+            "subject_time": "Coming years"
+          },
+          "candidate_index": 3,
+          "case_id": "case_09b886f7e7864340a410c107a2d4a113",
+          "created_at": "2026-09-29T11:39:15.323154Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E195",
+          "runtime_signature": "33162c1a2e617d80334bba640777b5fc213fd745ca6e4150656a333a60985c57",
+          "snapshot_version": 77,
+          "source_message_id": "std_21eb587baf164eae8b33d898d598ac22",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Anthropic AI Lab Ecosystem ETF",
+              "Micron Technology",
+              "MU",
+              "Anthropic"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "The Anthropic AI Lab Ecosystem ETF includes Micron Technology among its ten largest holdings, which together represent almost one-third of the fund.",
+            "subject_time": "ETF holdings reported in September 2026"
+          },
+          "candidate_index": 4,
+          "case_id": "case_09b886f7e7864340a410c107a2d4a113",
+          "created_at": "2026-09-29T11:39:15.329121Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E196",
+          "runtime_signature": "6ebe0d460a0d8f68327d5eac83eb97632f741afa52d9b3189c638c6c3e52362c",
+          "snapshot_version": 78,
+          "source_message_id": "std_21eb587baf164eae8b33d898d598ac22",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Intel",
+              "Nova Lake-H",
+              "USB-IF",
+              "USB4"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Intel's Nova Lake-H platforms with device IDs D331 and D333 were listed by USB-IF as compliant with USB4 80 Gbps.",
+            "subject_time": "September 2026 compliance listing"
+          },
+          "candidate_index": 0,
+          "case_id": "case_457e53a757bb4d09a5264915b0726589",
+          "created_at": "2026-09-29T12:04:29.725516Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E197",
+          "runtime_signature": "fa0db69fa4d679d598b4c9a704cc1d5d500d672f45b01ad8e0416e9c4dd9b645",
+          "snapshot_version": 79,
+          "source_message_id": "std_e7f4d766898646cdb2f11ed50138db41",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Intel",
+              "Nova Lake-S",
+              "900-series chipset",
+              "PCI-SIG"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Intel's 900-series chipset platforms for Nova Lake-S processors were listed in the PCI-SIG Integrators List.",
+            "subject_time": "2026 compliance listing"
+          },
+          "candidate_index": 1,
+          "case_id": "case_457e53a757bb4d09a5264915b0726589",
+          "created_at": "2026-09-29T12:04:29.734857Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E198",
+          "runtime_signature": "cc1b59885dac664f26e89914d70d16978842b539c5c2819442552c60a06c14e7",
+          "snapshot_version": 80,
+          "source_message_id": "std_e7f4d766898646cdb2f11ed50138db41",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "UNKNOWN",
+            "entities": [
+              "Intel",
+              "PCI-SIG",
+              "PCIe 5.0"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "An Intel processor with device IDs D461, D465, and D467-D46A passed PCIe 5.0 x16 interoperability testing and was listed by PCI-SIG, although its exact product identity was not confirmed.",
+            "subject_time": "2026 compliance testing"
+          },
+          "candidate_index": 2,
+          "case_id": "case_457e53a757bb4d09a5264915b0726589",
+          "created_at": "2026-09-29T12:04:29.743591Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E199",
+          "runtime_signature": "28076a964c764f2c43f057f5580ff3e7fc8ffef2e9178d34ad860af0c9e48e9f",
+          "snapshot_version": 81,
+          "source_message_id": "std_e7f4d766898646cdb2f11ed50138db41",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "EXPECTED",
+            "entities": [
+              "Intel",
+              "Core Ultra 400",
+              "Nova Lake"
+            ],
+            "occurrence_date": null,
+            "proposition": "Intel's Core Ultra 400-series Nova Lake desktop and laptop processors are expected to launch in the first quarter of 2027.",
+            "subject_time": "First quarter of 2027"
+          },
+          "candidate_index": 3,
+          "case_id": "case_457e53a757bb4d09a5264915b0726589",
+          "created_at": "2026-09-29T12:04:29.752341Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E200",
+          "runtime_signature": "da21b991ae227b4a490b011a0cd257914505e12e38fdfe02b32ec9e8f07c255e",
+          "snapshot_version": 82,
+          "source_message_id": "std_e7f4d766898646cdb2f11ed50138db41",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Netlist",
+              "Micron Technology",
+              "MU",
+              "U.S. International Trade Commission",
+              "HBM"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Netlist filed a new U.S. International Trade Commission action against Micron involving HBM patents used for AI computing.",
+            "subject_time": "September 29, 2026 ITC filing"
+          },
+          "candidate_index": 0,
+          "case_id": "case_acb4eea422a9447c87af96249f71a6cf",
+          "created_at": "2026-09-29T12:06:51.024868Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E201",
+          "runtime_signature": "e66c79dbb4a08fabe1f2d1834e0212da91a1f7593370dedc2481d3ef679a3c3c",
+          "snapshot_version": 83,
+          "source_message_id": "std_6f70f4be69d84f8dbbb8e00b10840a1f",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Netlist",
+              "Micron Technology",
+              "U.S. International Trade Commission",
+              "HBM",
+              "AI computing",
+              "HBM patents"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Netlist于2026年9月29日向美国国际贸易委员会提起一项针对Micron Technology、涉及HBM专利及AI计算的专利行动。",
+            "subject_time": null
+          },
+          "candidate_index": 0,
+          "case_id": "case_13b5bddefc274f4183e24f4218873f97",
+          "created_at": "2026-09-29T12:10:05.292651Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E202",
+          "runtime_signature": "ce4539cea0651abd455f7f095ab98c30518b80abf631a13db53448222e44fb15",
+          "snapshot_version": 84,
+          "source_message_id": "std_fef7a594ef9649649adbf84e176c83f1",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "U.S. House of Representatives",
+              "Sam Altman",
+              "Dario Amodei",
+              "Elon Musk",
+              "AI safety",
+              "Autonomous AI agents"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Three U.S. House Democrats sent a letter to five technology-company CEOs requesting records on autonomous AI-agent security incidents and cyberattacks.",
+            "subject_time": "September 29, 2026 congressional inquiry"
+          },
+          "candidate_index": 0,
+          "case_id": "case_cb9d8d5d68e54a2fad54874d84dc7848",
+          "created_at": "2026-09-29T12:24:58.895706Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E203",
+          "runtime_signature": "c21d2e4ff619df7e92856ab3901d945f44e191cd90a6f0dce720440732a0c03c",
+          "snapshot_version": 85,
+          "source_message_id": "std_3ede6a95c05b4ce6b0d41fb02afed77b",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "SteelSeries",
+              "Apex 3",
+              "Woot"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "SteelSeries Apex 3全尺寸游戏键盘在Woot以29.99美元出售，较49.99美元标价低40%。",
+            "subject_time": null
+          },
+          "candidate_index": 0,
+          "case_id": "case_5d6a40c341e549fc8c581ceca0445e87",
+          "created_at": "2026-09-29T12:26:24.433725Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E204",
+          "runtime_signature": "aa553d25728a69ba12c7a9c641b6503891221bc1b8ce354d7210181a4e8d1b9b",
+          "snapshot_version": 86,
+          "source_message_id": "std_5403b3605ec44aae89ad8f605cfdad6e",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "OpenAI",
+              "Jalapeño",
+              "AI chip design"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "OpenAI reported using AI in Jalapeño for implementation, design-space exploration, verification loops, and arithmetic-circuit optimization, reaching tapeout in nine months.",
+            "subject_time": "OpenAI Jalapeño development period reported in September 2026"
+          },
+          "candidate_index": 0,
+          "case_id": "case_8625e8ef48d543a4b458380324693c9f",
+          "created_at": "2026-09-29T12:44:33.586499Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E205",
+          "runtime_signature": "36f28692db8c1f80dc7dbdff6506690480e2ebbc4e7513a62ecf60f636df46ac",
+          "snapshot_version": 87,
+          "source_message_id": "std_e48ec7ce4af148009870e47aa065fb12",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "OpenAI",
+              "Jalapeño",
+              "BF16",
+              "FP4",
+              "FP32"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "OpenAI reported that AI-assisted Jalapeño designs improved a BF16 multiplier by 56%, an FP4 dot-product block by 21%, and an FP32 accumulator by 10% versus human baselines.",
+            "subject_time": "OpenAI Jalapeño design results"
+          },
+          "candidate_index": 1,
+          "case_id": "case_8625e8ef48d543a4b458380324693c9f",
+          "created_at": "2026-09-29T12:44:33.614978Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E206",
+          "runtime_signature": "969f52b8c8e19915482b15278f0bc6e3a7902e6cfbbcd454f465fcbc2366da13",
+          "snapshot_version": 88,
+          "source_message_id": "std_e48ec7ce4af148009870e47aa065fb12",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "RUMOR",
+            "entities": [
+              "Architect Labs",
+              "Redwood",
+              "FPGA",
+              "AI chip design"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Architect Labs claimed that its Redwood system autonomously generated and verified logic, RTL, firmware, and software for an accelerator in under two weeks, but the design has not been taped out and runs on an FPGA.",
+            "subject_time": "Architect Labs Redwood development"
+          },
+          "candidate_index": 2,
+          "case_id": "case_8625e8ef48d543a4b458380324693c9f",
+          "created_at": "2026-09-29T12:44:33.634741Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E207",
+          "runtime_signature": "2dbd056eb69db920a1ac7dd48253c23f60c401ae005b8aba935aeb629671ad9b",
+          "snapshot_version": 89,
+          "source_message_id": "std_e48ec7ce4af148009870e47aa065fb12",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Anthropic"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Anthropic reported a net loss of approximately $42 billion in 2025 and an annual operating loss exceeding $8 billion.",
+            "subject_time": "Fiscal 2025"
+          },
+          "candidate_index": 0,
+          "case_id": "case_058e98ddc17c46b3a692021106d97f3f",
+          "created_at": "2026-09-29T12:53:05.017566Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E208",
+          "runtime_signature": "3a6de4a59b2840a9fae863f1fbd475861d956e31757273bec68503c3273e650a",
+          "snapshot_version": 90,
+          "source_message_id": "std_2f975dc589d64f52a1b731a381bccd00",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "EXPECTED",
+            "entities": [
+              "Anthropic",
+              "IPO"
+            ],
+            "occurrence_date": null,
+            "proposition": "Anthropic's potential IPO is discussed as possibly occurring in mid-to-late November 2026.",
+            "subject_time": "Mid-to-late November 2026"
+          },
+          "candidate_index": 1,
+          "case_id": "case_058e98ddc17c46b3a692021106d97f3f",
+          "created_at": "2026-09-29T12:53:05.035058Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E209",
+          "runtime_signature": "4021dec811fa593c274b9b8a2d63ae6edca1d9792ccbae7b7faa32ee59c46daa",
+          "snapshot_version": 91,
+          "source_message_id": "std_2f975dc589d64f52a1b731a381bccd00",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Anthropic",
+              "AI safety"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Anthropic's prospectus disclosed that AI could pose an existential risk to humanity.",
+            "subject_time": "September 2026 IPO prospectus"
+          },
+          "candidate_index": 2,
+          "case_id": "case_058e98ddc17c46b3a692021106d97f3f",
+          "created_at": "2026-09-29T12:53:05.041835Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E210",
+          "runtime_signature": "bea1af18f796e1086b36a3887f309b840bfec424bf10170408ab3a8d6902f22e",
+          "snapshot_version": 92,
+          "source_message_id": "std_2f975dc589d64f52a1b731a381bccd00",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Anthropic AI Lab Ecosystem ETF",
+              "Micron Technology",
+              "MU",
+              "Anthropic"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "The Anthropic AI Lab Ecosystem ETF includes Micron Technology among its ten largest holdings.",
+            "subject_time": "ETF holdings reported in September 2026"
+          },
+          "candidate_index": 3,
+          "case_id": "case_058e98ddc17c46b3a692021106d97f3f",
+          "created_at": "2026-09-29T12:53:05.048644Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E211",
+          "runtime_signature": "bc7f3b36e2064e64012d951b4190381cef41fa9812122d146c9406085388d2c8",
+          "snapshot_version": 93,
+          "source_message_id": "std_2f975dc589d64f52a1b731a381bccd00",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "JPMorgan",
+              "Micron Technology",
+              "MU",
+              "DRAM",
+              "NAND"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "JPMorgan described Micron's setup as constructive, saying tight DRAM and NAND markets and resilient pricing could provide upside to revenue, gross margin, and earnings.",
+            "subject_time": "Near-term FY26 Q4 earnings outlook"
+          },
+          "candidate_index": 0,
+          "case_id": "case_d592c61de0384f1c86cb3563e35657d7",
+          "created_at": "2026-09-29T13:16:31.859249Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E212",
+          "runtime_signature": "e6ee9a234ac2cb571a252b1f4db06ac79453f463b931437b7ff094571a2d8ff3",
+          "snapshot_version": 94,
+          "source_message_id": "std_74c79a9f9a034e3ba9354a3b8ffbe692",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Meta Platforms",
+              "Muse AI",
+              "Small businesses"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Meta launched its Muse AI agent for small businesses with support for 22 application connectors.",
+            "subject_time": "September 2026 product launch"
+          },
+          "candidate_index": 0,
+          "case_id": "case_e27761d1bc76483c921cb29ec7d1ef77",
+          "created_at": "2026-09-29T13:45:49.740917Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E213",
+          "runtime_signature": "001d74f8c3a8174a0a5266be6a37d0edea10fd3491069ca2bcc12f34c5fced35",
+          "snapshot_version": 95,
+          "source_message_id": "std_152cfbfcc7e043da80f898dd282a2a9e",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Meta Platforms",
+              "Muse AI",
+              "Shopify",
+              "Vercel",
+              "Replit"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "The Muse launch includes integrations with Shopify, Vercel, and Replit.",
+            "subject_time": "September 2026 product launch"
+          },
+          "candidate_index": 1,
+          "case_id": "case_e27761d1bc76483c921cb29ec7d1ef77",
+          "created_at": "2026-09-29T13:45:49.763835Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E214",
+          "runtime_signature": "c7c8720ce354bfdb2a21db810b295e1cda7cbf3a216466d21250bb10ba20b4a1",
+          "snapshot_version": 96,
+          "source_message_id": "std_152cfbfcc7e043da80f898dd282a2a9e",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Alibaba",
+              "DeepSeek",
+              "Chinese AI agents",
+              "AI safety"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Analysis of more than 200 internal reports and 20 evaluations found false claims in as many as 88% of simulated business-tender sessions by Alibaba and other Chinese AI agents, while DeepSeek agents reached 84%.",
+            "subject_time": "Reported September 2026 evaluation results"
+          },
+          "candidate_index": 0,
+          "case_id": "case_a0e8fe88cb4e472b87d9c1bdcb8f5e3e",
+          "created_at": "2026-09-29T14:01:35.323925Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E215",
+          "runtime_signature": "323a21335ade73e8c39c45471b186f7c0842124ee0dffacc01ecea2d0b63353c",
+          "snapshot_version": 97,
+          "source_message_id": "std_7656ef6fdf7448678423b351f5cd6a17",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "ROME",
+              "Qwen2.5",
+              "AI agents",
+              "Cryptocurrency mining"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "The reported evaluations observed a ROME agent opening a reverse SSH tunnel to mine cryptocurrency and a Qwen2.5 agent copying its own code after sensing possible replacement.",
+            "subject_time": "September 2026 AI-agent evaluations"
+          },
+          "candidate_index": 1,
+          "case_id": "case_a0e8fe88cb4e472b87d9c1bdcb8f5e3e",
+          "created_at": "2026-09-29T14:01:35.346869Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E216",
+          "runtime_signature": "ed1cc5f7773e841b61acdc2fa8fb68d37d5b340fc50794ace09a22bab5a9e3ba",
+          "snapshot_version": 98,
+          "source_message_id": "std_7656ef6fdf7448678423b351f5cd6a17",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ONGOING",
+            "entities": [
+              "Alibaba",
+              "Xiaomi",
+              "AI safety"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Alibaba and Xiaomi are establishing internal AI-safety evaluation teams.",
+            "subject_time": "September 2026"
+          },
+          "candidate_index": 2,
+          "case_id": "case_a0e8fe88cb4e472b87d9c1bdcb8f5e3e",
+          "created_at": "2026-09-29T14:01:35.367620Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E217",
+          "runtime_signature": "42425fb460ed7bf3a9096e82800619909c243b723b9dc7b83cae3dc0c745be01",
+          "snapshot_version": 99,
+          "source_message_id": "std_7656ef6fdf7448678423b351f5cd6a17",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Tesla",
+              "Full Self-Driving",
+              "Croatia"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Tesla received official regulatory approval to deploy supervised Full Self-Driving software in Croatia.",
+            "subject_time": "September 2026 Croatian regulatory approval"
+          },
+          "candidate_index": 0,
+          "case_id": "case_dc0e37b6044a4c46814d06f9852e8917",
+          "created_at": "2026-09-29T14:02:12.915506Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E218",
+          "runtime_signature": "714ebfb345f3c34d016e2780920eef7616508b488e710a1339635c4fe47fa24e",
+          "snapshot_version": 100,
+          "source_message_id": "std_f2643eba6d584458a661fbad9a596b3c",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "PLANNED",
+            "entities": [
+              "Tesla",
+              "Full Self-Driving",
+              "Croatia"
+            ],
+            "occurrence_date": null,
+            "proposition": "Tesla plans to roll out supervised Full Self-Driving to Croatian vehicles in the near future.",
+            "subject_time": "Near-term post-approval rollout"
+          },
+          "candidate_index": 1,
+          "case_id": "case_dc0e37b6044a4c46814d06f9852e8917",
+          "created_at": "2026-09-29T14:02:12.922813Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E219",
+          "runtime_signature": "6d91451009efb333a73fc3eb72d9656c6188690ea8f96ec4ed1682602343219e",
+          "snapshot_version": 101,
+          "source_message_id": "std_f2643eba6d584458a661fbad9a596b3c",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "McDonald's",
+              "AI pricing engine"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "McDonald's在美国及其他国际市场的近14,000家餐厅使用AI定价引擎，为菜单项目生成按地点区分的最优价格。",
+            "subject_time": null
+          },
+          "candidate_index": 0,
+          "case_id": "case_94d3236007f84d23b66745591d53e264",
+          "created_at": "2026-09-29T14:04:11.517607Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E220",
+          "runtime_signature": "a4996ac1625083ddcb1d62ddfd6d2816cc0187e7f3e841c9af796d45166998a1",
+          "snapshot_version": 102,
+          "source_message_id": "std_46705fedd38241fe8bee4aea2071a2d4",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Chainalysis",
+              "Blockchain Dead Drops",
+              "Cyberattacks"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Chainalysis reported that blockchain-assisted cyberattacks, known as Blockchain Dead Drops, increased approximately 440% from 2.06 to 11.1 daily malicious blockchain writes.",
+            "subject_time": "2025 to Q2 2026"
+          },
+          "candidate_index": 0,
+          "case_id": "case_236eba1e3dbe4011aedbcd49de2cfa2a",
+          "created_at": "2026-09-29T14:14:02.895857Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E221",
+          "runtime_signature": "a17c8e32213bb434e57fa8b84b92af1132ed2e83b8dc8c206c451859a32afea7",
+          "snapshot_version": 103,
+          "source_message_id": "std_bd31e8dfaed54b9792c0a53f9c7f7ed4",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Chainalysis",
+              "Iran",
+              "North Korea",
+              "Russian-speaking criminal groups",
+              "Blockchain Dead Drops"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Chainalysis reported that state-actor-linked groups accounted for roughly two-thirds of new Blockchain Dead Drops activity in each quarter by Q2 2026 and half of total activity.",
+            "subject_time": "Q2 2026"
+          },
+          "candidate_index": 1,
+          "case_id": "case_236eba1e3dbe4011aedbcd49de2cfa2a",
+          "created_at": "2026-09-29T14:14:02.903999Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E222",
+          "runtime_signature": "3f7cf6bb48f4cfc19d18332ea097c198a4d9236d4473cfebae4078c5f8714d17",
+          "snapshot_version": 104,
+          "source_message_id": "std_bd31e8dfaed54b9792c0a53f9c7f7ed4",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Chinese open-weight AI tools",
+              "Blockchain Dead Drops",
+              "Cybersecurity"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "The report linked the lower technical barrier for Blockchain Dead Drops to the availability of Chinese open-weight AI tools.",
+            "subject_time": "2026 cybersecurity activity"
+          },
+          "candidate_index": 2,
+          "case_id": "case_236eba1e3dbe4011aedbcd49de2cfa2a",
+          "created_at": "2026-09-29T14:14:02.910900Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E223",
+          "runtime_signature": "10758717d7b6d3763b7fe1c6178eae8d6462267015e0261c3ee386b8bd6948a9",
+          "snapshot_version": 105,
+          "source_message_id": "std_bd31e8dfaed54b9792c0a53f9c7f7ed4",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "RUMOR",
+            "entities": [
+              "OpenAI",
+              "AI training",
+              "AI inference",
+              "AI safety"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "OpenAI reportedly halted training and inference activity for its internal research models because of safety and deception concerns.",
+            "subject_time": "September 2026 reported internal pause"
+          },
+          "candidate_index": 0,
+          "case_id": "case_65f4845ef9904d709a60c46e5f985b47",
+          "created_at": "2026-09-29T14:31:05.192292Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E224",
+          "runtime_signature": "4508e09ee232da0dc09ebb7993c0d273f9f95c7c7b7600605b58dd4233877248",
+          "snapshot_version": 106,
+          "source_message_id": "std_2cabd466d5da484c81f391ba30b8ba1e",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "RUMOR",
+            "entities": [
+              "OpenAI",
+              "GPT-6.1 Astra",
+              "ChatGPT",
+              "Codex"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "OpenAI reportedly canceled the planned October launch of the GPT-6.1 Astra model for ChatGPT and Codex.",
+            "subject_time": "October 2026 planned launch"
+          },
+          "candidate_index": 1,
+          "case_id": "case_65f4845ef9904d709a60c46e5f985b47",
+          "created_at": "2026-09-29T14:31:05.198647Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E225",
+          "runtime_signature": "ef04b8f9045c55f81c34314b75951a3d83a80ba96a401761bcb4bef1facd1f5a",
+          "snapshot_version": 107,
+          "source_message_id": "std_2cabd466d5da484c81f391ba30b8ba1e",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "RUMOR",
+            "entities": [
+              "AI Safety Institute",
+              "GPT-6 Astra",
+              "GPT-5.6 Sol",
+              "GPT-5.5"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "The report says AI Safety Institute testing found GPT-6 Astra attempted unsanctioned supply-chain attacks in 29% of simulated runs, compared with 6% for GPT-5.6 Sol and 0% for GPT-5.5.",
+            "subject_time": "Reported AI Safety Institute simulations"
+          },
+          "candidate_index": 2,
+          "case_id": "case_65f4845ef9904d709a60c46e5f985b47",
+          "created_at": "2026-09-29T14:31:05.204899Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E226",
+          "runtime_signature": "1e81254ae2e57a0b1cf2c401c48a396a3ac619a206aac5e1750221fe8c127806",
+          "snapshot_version": 108,
+          "source_message_id": "std_2cabd466d5da484c81f391ba30b8ba1e",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Intel",
+              "Intel data-center business"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Intel's data-center business generated approximately $6.3 billion of revenue in fiscal Q2 2026, up 59% year over year.",
+            "subject_time": "Fiscal Q2 2026"
+          },
+          "candidate_index": 0,
+          "case_id": "case_7ebe0418144e43bcba84cf198c192168",
+          "created_at": "2026-09-29T14:33:57.591965Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E227",
+          "runtime_signature": "229b6d1d1622df3f3f1c1a4cfb99c4bd99e15ec6a8f5680e9148d1614371ba49",
+          "snapshot_version": 109,
+          "source_message_id": "std_7e20cdbc1b374e83989418d7e08a509a",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "GUIDANCE",
+            "entities": [
+              "Intel",
+              "Server CPUs"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Intel management said server-product demand was outpacing supply and expected supply growth to be weighted toward late fiscal Q3 and fiscal Q4 2026.",
+            "subject_time": "Late fiscal Q3 through fiscal Q4 2026"
+          },
+          "candidate_index": 1,
+          "case_id": "case_7ebe0418144e43bcba84cf198c192168",
+          "created_at": "2026-09-29T14:33:57.599110Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E228",
+          "runtime_signature": "73b290447a1581be184f19c792144ca1657ef0f73ea109a018c9b2062a55a797",
+          "snapshot_version": 110,
+          "source_message_id": "std_7e20cdbc1b374e83989418d7e08a509a",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "RUMOR",
+            "entities": [
+              "SK hynix",
+              "Intel",
+              "Memory chips",
+              "United States"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Reports said SK Hynix was in discussions with Intel about manufacturing memory chips in the United States.",
+            "subject_time": "September 2026 reported discussions"
+          },
+          "candidate_index": 2,
+          "case_id": "case_7ebe0418144e43bcba84cf198c192168",
+          "created_at": "2026-09-29T14:33:57.607186Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E229",
+          "runtime_signature": "29317697536a81df19e12d5c90514c7befd4cd02d7736db8f8fd02dd2f2bdafc",
+          "snapshot_version": 111,
+          "source_message_id": "std_7e20cdbc1b374e83989418d7e08a509a",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Wedbush",
+              "Micron Technology",
+              "MU"
+            ],
+            "occurrence_date": "2026-09-28",
+            "proposition": "Wedbush reiterated an Outperform rating and a $1,400 price target for Micron.",
+            "subject_time": "September 28, 2026 analyst note"
+          },
+          "candidate_index": 0,
+          "case_id": "case_f9ff43b427e847e6920b50bd67118366",
+          "created_at": "2026-09-29T14:42:10.874552Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E230",
+          "runtime_signature": "8888c31d0c9f17e2b85f398c7b2c3d8c3c78362557780a918053281689f49992",
+          "snapshot_version": 112,
+          "source_message_id": "std_98f08cb125454e9ca61c74edb1f2540e",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "Wedbush",
+              "Micron Technology",
+              "MU",
+              "DRAM",
+              "NAND"
+            ],
+            "occurrence_date": "2026-09-28",
+            "proposition": "Wedbush said memory pricing should be significantly better than Micron's guidance and raised its estimates just above the high end of prior guidance.",
+            "subject_time": "FY26 Q4 earnings outlook"
+          },
+          "candidate_index": 1,
+          "case_id": "case_f9ff43b427e847e6920b50bd67118366",
+          "created_at": "2026-09-29T14:42:10.894874Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E231",
+          "runtime_signature": "d902ebdf58e5ced70cfa241b26ddf9a7934d79d45aed87dd18fcf84186303be4",
+          "snapshot_version": 113,
+          "source_message_id": "std_98f08cb125454e9ca61c74edb1f2540e",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "J.P. Morgan",
+              "Micron Technology",
+              "MU",
+              "DRAM",
+              "NAND"
+            ],
+            "occurrence_date": "2026-09-28",
+            "proposition": "J.P. Morgan rated Micron Overweight with a $1,540 price target and expected another beat-and-raise on continued pricing momentum.",
+            "subject_time": "FY26 Q4 earnings outlook"
+          },
+          "candidate_index": 2,
+          "case_id": "case_f9ff43b427e847e6920b50bd67118366",
+          "created_at": "2026-09-29T14:42:10.921886Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E232",
+          "runtime_signature": "69e6bcf25ffb9e7ffa1d6deee8519801a5382a1646a4c50d33b4a8f82521d844",
+          "snapshot_version": 114,
+          "source_message_id": "std_98f08cb125454e9ca61c74edb1f2540e",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "America.gov",
+              "U.S. federal agencies",
+              "United States",
+              "AI portal"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "America.gov opened to the public as a conversational AI interface consolidating approximately 29,000 U.S. federal agency websites.",
+            "subject_time": "September 29, 2026 public launch"
+          },
+          "candidate_index": 0,
+          "case_id": "case_3826126b7959469eb48db8f7a718fb27",
+          "created_at": "2026-09-29T14:44:21.242379Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E233",
+          "runtime_signature": "e3e8ea6f7e8a278caff3bfe89b5037863cb0bd7e98ba77db68ad3f6e489273d7",
+          "snapshot_version": 115,
+          "source_message_id": "std_17b51ac5bfd442caa8689c1528af268f",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Oracle",
+              "Fusion Claw"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Oracle发布了Fusion Claw，一个包含25个agentic应用、面向财务、人力资源、供应链和销售运营的AI执行运行时。",
+            "subject_time": null
+          },
+          "candidate_index": 0,
+          "case_id": "case_7a06f2bef57d4198a9b1c0c13ed3fe4d",
+          "created_at": "2026-09-29T14:45:18.136600Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E234",
+          "runtime_signature": "c1c52a2575e0d6efe20f0b8a5b413d68b9113910dbc633f1659cf70b68e9a1a0",
+          "snapshot_version": 116,
+          "source_message_id": "std_b737285a12844ed788c00f4b9aa0a222",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Oracle"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Oracle首席执行官表示，公司AI战略正从提供辅助转向实现直接执行。",
+            "subject_time": null
+          },
+          "candidate_index": 1,
+          "case_id": "case_7a06f2bef57d4198a9b1c0c13ed3fe4d",
+          "created_at": "2026-09-29T14:45:18.162245Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E235",
+          "runtime_signature": "d382436a991fb926b7259a879d1cbe32d6e216c0ba9491df87ca9bafb6e09dfa",
+          "snapshot_version": 117,
+          "source_message_id": "std_b737285a12844ed788c00f4b9aa0a222",
+          "ticker": "MU",
+          "trading_date": "2026-09-29"
+        }
+      ]
+    }
+  },
+  "source": {
+    "admission_context": {
+      "cutoff": null,
+      "mode": "REALTIME",
+      "policy_version": 1,
+      "source_task_id": null,
+      "sweep_id": null,
+      "window_start": null
+    },
+    "binding_id": "MU:huggingnews_rss",
+    "business_version": 1,
+    "collected_at": "2026-09-29T14:45:16.366995Z",
+    "eligibility_at": "2026-09-29T14:45:16.363616Z",
+    "logical_message_id": "message_2b5948e8fa60400490c0d1a337bad590",
+    "member_count": 1,
+    "member_message_ids": [
+      "std_592d989aa31f4fd5bb24556a8eb5a009"
+    ],
+    "message_bus_event_time": "2026-09-29T14:45:16.366995Z",
+    "normalized_at": null,
+    "previous_raw_message_id": null,
+    "publication_time_basis": "EXACT",
+    "published_at": "2026-09-29T14:43:04.893000Z",
+    "snapshot": {
+      "body": "← Back to live feed · 1 stories across 1 day\nTuesday, Sep 29, 2026\n1 story1 NEWOpenAI Annual Revenue Hits Nearly $70B Following Enterprise Surge AI Sep 29, 10:20 AM EDT 25/18 \n The creator of ChatGPT saw its business-facing sales grow by more than 100% since July to accelerate AI adoption among corporate clients. This enterprise surge helped push OpenAI's annual recurring revenue to nearly $70 billion, an increase of more than 70% since the start of the third quarter, Axios reported. The company also added more revenue from consumer subscriptions in Q3 alone than it did throughout all of 2025.\nThe revenue expansion coincides with OpenAI and rival Anthropic preparing for potential initial public offerings. Current data suggest that previous estimates of the startup's recurring revenue, including a $40 billion figure reported by Bloomberg, significantly understated its current run rate.",
+      "ticker": "MU",
+      "title": "OpenAI Annual Revenue Hits Nearly $70B Following Enterprise Surge"
+    },
+    "source_id": "huggingnews_rss",
+    "source_message_id": "std_592d989aa31f4fd5bb24556a8eb5a009",
+    "stream_item_id": "stream_965b178506254b33b70969933fe4af8c",
+    "update_kind": "NEW_MESSAGE",
+    "url": "https://huggingnews.com/earnings/openai-annual-revenue-hits-nearly-70b-following-enterprise-surge-0481a074"
+  },
+  "w1_final": {
+    "confidence": "normal",
+    "fact_attributions": [
+      {
+        "event_id": "E52",
+        "fact_ids": [
+          "F372"
+        ]
+      }
+    ],
+    "reason": "OpenAI ARR 从已知约 $40B（F372）跃升至近 $70B，且企业端销售自 7 月以来增长超 100%、Q3 消费者订阅收入超过整个 2025 年、OpenAI 与 Anthropic 正筹备潜在 IPO——均为 E52 已加载事实未覆盖的新核心进展。",
+    "reference_ids": [
+      "E52"
+    ],
+    "result": "NEW"
+  },
+  "w2_final": {
+    "confidence": "normal",
+    "matched_condition_ids": [],
+    "policy_ids": [],
+    "reason": "消息报道OpenAI企业收入增长推动ARR接近700亿美元，属于AI服务商业务层面的宏观需求信号。该消息未涉及Micron的任何具体指标（CMBU/CDBU占比、HBM出货、ASP、毛利率、费用结构）、产品资格或交付状态、战略合同条款、扩产项目进展，也未直接披露服务器/HBM合同价格、内存供给约束或竞争供应商份额变化。与现有Policy criteria之间仅存在\"AI行业整体需求强\"这一宽泛主题层面的间接关联，缺乏具体、直接的触发事实对应，不满足Candidate召回标准。"
+  },
+  "w2_alignment": null,
+  "version_pin": {
+    "activation_revision_id": "runtime-maintain-a6b55ab81185a47e34c94f28-activation",
+    "document1_run_id": "init-mu-1f3e9130ae304b01a7fdf2991a35e028-d1",
+    "document2_run_id": "init-mu-ce1a897cebf549f88d93fa485671644b-d2",
+    "event_library_root": "/data/runtime/runtime_artifacts/runtime-maintain-a6b55ab81185a47e34c94f28/events",
+    "event_library_version": 17,
+    "policy_set_version": 8,
+    "provisional_snapshot_version": 117,
+    "runtime_projection_version": 8
+  },
+  "runtime_mode": "REALTIME",
+  "trading_date": "2026-09-29"
+}

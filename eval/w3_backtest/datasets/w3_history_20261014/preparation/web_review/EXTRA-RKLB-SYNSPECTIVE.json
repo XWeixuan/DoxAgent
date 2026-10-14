@@ -1,0 +1,139 @@
+{
+  "case_key": "EXTRA-RKLB-SYNSPECTIVE",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-09-30T23:02:43.099701Z",
+  "reviewed_at": "2026-10-13T22:58:31.540094Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 6,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a13750-3f8b-7ee1-8dd1-c913899f0565",
+    "turn_id": "01a13750-3fad-7fb0-b13b-5df5c6857fbe",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 85760,
+        "inputTokens": 92416,
+        "outputTokens": 12082,
+        "reasoningOutputTokens": 10296,
+        "totalTokens": 104498
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 371200,
+        "inputTokens": 466501,
+        "outputTokens": 18258,
+        "reasoningOutputTokens": 15827,
+        "totalTokens": 484759
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "30700990347b61e697355c7ea7cc3e57eb8b1a593f96bcb64e035e8ea46367c5",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://rss.globenewswire.com/news-release/2026/09/30/3372466/0/en/rocket-lab-secures-largest-ever-electron-commercial-deal-20-launch-contract-for-synspective.html",
+      "title": "Rocket Lab Secures Largest-Ever Electron Commercial Deal: 20-Launch Contract for Synspective",
+      "published_at": "2026-09-30T23:00:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn2search1"
+      ],
+      "source_call_ids": [
+        "exec-06611040-0da5-45bd-979b-5b934b6b29f6"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://investors.rocketlabcorp.com/news-releases/news-release-details/mission-success-rocket-lab-launches-96th-electron-mission",
+      "title": "MISSION SUCCESS: Rocket Lab Launches 96th Electron Mission",
+      "published_at": "2026-09-19",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search10"
+      ],
+      "source_call_ids": [
+        "exec-afc6c1b6-e928-4f3c-9c10-841ffeec073a"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://www.space.com/space-exploration/launches-spacecraft/owlright-owlright-owlright-watch-rocket-lab-launch-private-japanese-radar-satellite-tonight",
+      "title": "'Owlright, Owlright, Owlright': Rocket Lab launches private Japanese radar satellite to orbit (video)",
+      "published_at": "2026-09-26",
+      "time_precision": "DAY",
+      "updated_at": "2026-09-26T06:45:00Z",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "BEFORE_CUTOFF",
+      "content_state": "UPDATED",
+      "decision": "KEEP",
+      "reason": "The supplied publication and revision times do not exceed the case cutoff.",
+      "source_result_refs": [
+        "turn3news30"
+      ],
+      "source_call_ids": [
+        "exec-e6f73456-5087-443c-9222-add0e71a9765"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "Rocket Lab publicly announced a signed, multi-year agreement for 20 new Electron missions for Synspective, planned annually from 2028 through 2031. The release says total Synspective Electron missions would reach 47 and Rocket Lab’s launch backlog would exceed 100 missions.",
+      "source_urls": [
+        "https://rss.globenewswire.com/news-release/2026/09/30/3372466/0/en/rocket-lab-secures-largest-ever-electron-commercial-deal-20-launch-contract-for-synspective.html"
+      ],
+      "event_time": "2026-09-30 (agreement signing date stated; time UNKNOWN)",
+      "publication_time": "2026-09-30T23:00:00Z (19:00 ET)",
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "Rocket Lab is the source for the contract and backlog claims. The release says remaining deal terms are undisclosed; the 2028–2031 missions are scheduled future work, not completed launches."
+    },
+    {
+      "observation": "The latest issuer-disclosed pre-announcement manifest baseline located was 15 additional dedicated Synspective Electron missions as of the Sept. 19 release. A subsequent independent report covered delivery of the 13th StriX satellite on Sept. 25 local time.",
+      "source_urls": [
+        "https://investors.rocketlabcorp.com/news-releases/news-release-details/mission-success-rocket-lab-launches-96th-electron-mission",
+        "https://www.space.com/space-exploration/launches-spacecraft/owlright-owlright-owlright-watch-rocket-lab-launch-private-japanese-radar-satellite-tonight"
+      ],
+      "event_time": "2026-09-19 (12th Synspective launch); 2026-09-26T00:39:00Z (13th delivery; 20:39 EDT Sept. 25)",
+      "publication_time": "2026-09-19 (issuer release time UNKNOWN); Space.com first-publication time UNKNOWN, with an update at 2026-09-26T06:45:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The manifest count is an issuer statement from before the subsequent launch; Space.com’s report confirms only the prior delivery, not the new contract terms or future execution."
+    }
+  ],
+  "gaps": [
+    "No independent, contract-specific account with a publication time demonstrably at or before the cutoff was verified; the independent coverage found is pre-announcement operational context.",
+    "The contract’s value and remaining terms were not disclosed in the primary release, so pricing, payment schedule, cancellation provisions, and other economics remain unknown.",
+    "The focused source set does not establish actual execution of the 2028–2031 launch schedule or independently validate the issuer’s backlog total.",
+    "A comprehensive screen of all separate company and industry events public immediately around the cutoff was not completed beyond the identified recent Electron/Synspective launch updates."
+  ],
+  "research_notes": "Cutoff: 2026-09-30T23:02:43.099701Z. The earliest traceable public announcement found is Rocket Lab’s GlobeNewswire release, timestamped 19:00 ET (23:00Z), about 2m43s before cutoff. The release says the agreement was signed that day; the signature time itself is unknown. Before the announcement, Rocket Lab’s Sept. 19 release reported 15 additional Synspective Electron missions on its manifest. Space.com independently reported the successful 13th StriX delivery on Sept. 25 local time, in an article updated Sept. 26—prior operational context, not independent coverage of the new contract. The issuer says the contract’s remaining terms are undisclosed and describes a future 2028–2031 schedule. Company-reported backlog figures are not independently verified here. No later coverage, market reaction, or prices are used."
+}

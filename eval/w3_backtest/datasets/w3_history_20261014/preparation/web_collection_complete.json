@@ -1,0 +1,133 @@
+{
+  "status": "complete",
+  "generated_at": "2026-10-13T23:04:00Z",
+  "dataset": "w3_history_20261014",
+  "cases": 73,
+  "completed": 73,
+  "failed": 0,
+  "model": "gpt-6-luna",
+  "effort": "max",
+  "exact_model_effort_receipts": 73,
+  "collection_prompt_versions": {
+    "w3-web-evidence-v1": 15,
+    "w3-web-evidence-v2-focused": 58
+  },
+  "collection": {
+    "web_search_mode": "live",
+    "workers": 4,
+    "total_web_search_calls": 540,
+    "calls_by_prompt_version": {
+      "w3-web-evidence-v1": 204,
+      "w3-web-evidence-v2-focused": 336
+    },
+    "max_calls_per_case_by_prompt_version": {
+      "w3-web-evidence-v1": 17,
+      "w3-web-evidence-v2-focused": 6
+    },
+    "web_search_jsonl_lines": 540,
+    "all_rows_match_case_cutoff": true,
+    "future_sources_in_evidence_rows": 0
+  },
+  "review_stats": {
+    "source_candidates": 397,
+    "sources_retained": 395,
+    "sources_dropped": 2,
+    "source_markdown_files": 395,
+    "source_decisions": {
+      "KEEP": 286,
+      "KEEP_UNKNOWN": 109,
+      "DROP": 2
+    },
+    "publication_cutoff_status": {
+      "BEFORE_CUTOFF": 328,
+      "UNKNOWN": 69
+    },
+    "updated_cutoff_status": {
+      "UNKNOWN": 359,
+      "BEFORE_CUTOFF": 36,
+      "AFTER_CUTOFF": 2
+    },
+    "time_precision": {
+      "DAY": 162,
+      "MINUTE": 130,
+      "UNKNOWN": 36,
+      "EXACT": 65,
+      "HOUR": 4
+    },
+    "same_day_DAY_or_UNKNOWN_publications_marked_UNKNOWN": 16,
+    "observation_time_status": {
+      "BEFORE_CUTOFF": 257,
+      "UNKNOWN": 61
+    },
+    "observation_status_changes_to_UNKNOWN": 52,
+    "source_linkage_methods": {
+      "RESULT_REF": 393,
+      "URL_MATCH": 1,
+      "CASE_SEED_SOURCE": 1,
+      "UNMAPPED_UNVERIFIED": 2,
+      "with_sdk_call_id": 394
+    },
+    "unverified_sources": [
+      {
+        "case_key": "EXTRA-INTC-OPENAI",
+        "source_id": "S4",
+        "url": "https://www.barrons.com/livecoverage/stock-market-news-today-100826/card/stocks-sink-after-openai-report-sours-ai-trade-BKsGL9ZiRLoaWdN2KuCG?siteid=yhoof2",
+        "retrieval_verification": "UNVERIFIED",
+        "note": "No matching URL or result ref was present in the saved Web Search results."
+      },
+      {
+        "case_key": "NOISE-25",
+        "source_id": "S2",
+        "url": "https://www.interactivebrokers.com/en/trading/providers.php",
+        "retrieval_verification": "UNVERIFIED",
+        "note": "No matching URL or result ref was present in the saved Web Search results."
+      }
+    ],
+    "case_seed_sources": [
+      {
+        "case_key": "BE-01-05",
+        "source_id": "S2",
+        "url": "https://www.reuters.com/commentary/reuters-open-interest/global-markets-trading-day-graphic-2026-09-24/",
+        "retrieval_verification": "SEED_SOURCE",
+        "note": "Matched the original case seed envelope; no Web Search call is claimed."
+      }
+    ]
+  },
+  "source_linkage_audit": {
+    "verified_web_search_call_ids": 394,
+    "case_seed_only_sources": 1,
+    "unverified_unmapped_sources": 2,
+    "first_15_case_sidecars": {
+      "cases": 15,
+      "raw_sources": 122,
+      "result_ref_mappings": 115,
+      "result_ref_and_seed_mappings": 6,
+      "seed_only_mappings": 1
+    }
+  },
+  "retry_history": {
+    "superseded_early_failure_records": 15,
+    "reason": "Initial invalid-transport failures for the first 15 cases were superseded by successful gpt-6-luna/max receipts.",
+    "final_failed_cases": 0
+  },
+  "tool_surface_audit": {
+    "persisted_full_tool_surface_audit_cases": 0,
+    "web_search_calls_recorded": 540,
+    "limitation": "The saved raw receipts retain Web Search result items but not the full SDK tool-item surface. The completed threads did not have an explicit features.apps=false setting. These receipts therefore do not prove that Web Search was the only available or invoked tool; no non-Web call count can be asserted.",
+    "isolated_runtime_note": "The collector used a temporary CODEX_HOME with a copied auth file and no configured MCP servers; this does not resolve the missing connected-app tool-surface audit."
+  },
+  "nasa_source": {
+    "source_file": "inputs/EXTRA-RKLB-NASA/evidence/sources/S1.md",
+    "url": "https://news.bloomberglaw.com/federal-contracting/nasa-eyes-bulk-rocket-buy-for-moon-base-amid-spacex-phaseout",
+    "publisher_displayed_publication_time": "2026-10-06T12:00:00Z",
+    "case_cutoff": "2026-10-06T12:05:00Z",
+    "body_availability": "PARTIAL",
+    "available": "Public headline, timestamp, byline, two opening paragraphs, and start of a quoted statement.",
+    "missing": "The remainder of the article and revision history were behind the Bloomberg Law login; no unavailable content was fabricated."
+  },
+  "postprocess": {
+    "source": "saved SDK receipts only",
+    "additional_web_search_calls": 0,
+    "summary": "Rebuilt time-precision cutoff labels, source inclusion decisions, Web Search evidence rows, and observation time labels. Evidence summaries and source body text were preserved; unverified retrieval links were explicitly annotated."
+  }
+}

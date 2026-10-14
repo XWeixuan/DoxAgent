@@ -1,0 +1,23 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-24T19:39:49.982676Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "No public original UBS note was found to verify the exact estimate basis, prior estimate changes, buyback assumptions, or valuation calculation.",
+    "The exact December 9 CHIPS Act restriction-expiration claim and projected repurchase amounts were not independently checked against a primary Micron, Commerce Department, or NIST source.",
+    "The original newswire capture supplied in the case supports the pre-cutoff article timing; live search surfaced a dated Barron's listing and syndicated copy but no dated archive of the Barron's article itself.",
+    "The September 30 fiscal Q4 results had not been published by the evidence cutoff, so the forecasts remained unverified."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

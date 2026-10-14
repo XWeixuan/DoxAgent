@@ -1,0 +1,23 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-10-02T03:42:16.305681Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "No accessible original Intel Foundry slide, paper, or calculation supporting the 89W-to-2,222W loss estimate was located.",
+    "No independent contemporaneous report located within the search limit replicated the specific package-power or I²R-loss figures.",
+    "The source does not specify the assumptions behind the Rubin Ultra-class 3,500–4,000W projection or establish that it was a measured, finalized product specification.",
+    "No Micron-specific adoption, design, customer, or financial consequence is established by the material reviewed."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

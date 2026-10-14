@@ -1,0 +1,1151 @@
+{
+  "recent_trade_intents": [
+    {
+      "message": {
+        "title": "Samsung Reportedly Ramps 4nm Capacity For Memory Chips, Stepping Up Competition With SK Hynix, Micron",
+        "body": "Samsung has allocated more than half of its existing 4nm capacity to HBM4 base-die production, according to South Korean outlet MoneyTodayThe company’s HBM revenue share climbed to 33% in Q2 from 21% in Q1, narrowing the gap with SK Hynix.Rising AI infrastructure spending could leave the HBM market undersupplied next year, creating room for Samsung to gain further share.Samsung Electronics is preparing to expand its advanced foundry capacity as surging demand for next-generation memory chips pushes its 4-nanometer production lines toward full utilization, according to South Korean business outlet MoneyToday. The move could intensify competition with SK Hynix and Micron as the three memory giants battle for share of the booming AI-chip market.  On Stocktwits, the retail sentiment for MU and SKHY was ‘neutral’ as of early Tuesday.Samsung Expands Memory CapacitySamsung is considering expanding its 4nm foundry capacity to support production of HBM4 base dies, the logic layer that sits underneath the DRAM stack and connects the memory to AI accelerators, according to the report.Unlike SK Hynix, which uses TSMC’s 12nm process for its HBM4 base die, Samsung is manufacturing the component in-house using its 4nm process.Samsung has already allocated more than half of its current 4nm capacity to HBM4 base-die production, according to MoneyToday. Demand is also coming from other customers, including Nvidia’s Groq 3 LPU, prompting Samsung to raise prices for new 4nm orders.  HBM Race Gets More CompetitiveThe capacity push comes as Samsung accelerates its HBM4 ramp. The company expects HBM4 revenue to more than triple sequentially in the third quarter and for HBM4 to account for more than 60% of its total HBM revenue in the second half.Samsung’s gains are already reshaping the competitive landscape. Counterpoint data showed Samsung’s HBM revenue share rose to 33% in the second quarter from 21% in the first, while SK hynix held 50% and Micron 18%.  The company is also considering a new 2nm production line for HBM5, whose base die is expected to use a 2nm process. That could further strengthen Samsung’s vertically integrated approach, combining memory, logic manufacturing and advanced packaging.Pressure On SK Hynix, MicronFor SK Hynix and Micron, Samsung’s faster HBM4 ramp creates another competitive challenge just as AI infrastructure spending drives unprecedented demand for high-bandwidth memory.TrendForce reported in June that Samsung was the first supplier to complete HBM4 validation and begin shipments, while SK hynix faced qualification delays and Micron remained more focused on HBM3E.  Citi expects global HBM bit demand to rise 62% next year, potentially leaving the industry undersupplied. That means Samsung’s capacity expansion could allow it to capture a larger slice of a rapidly growing market. For updates and corrections, email newsroom[at]stocktwits[dot]com.",
+        "source_name": "stocktwits.com",
+        "published_at": "2026-09-22T09:00:04Z"
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": [
+          "E6"
+        ]
+      },
+      "w2": {
+        "policy_hit": false,
+        "policy_related": false,
+        "policy_ids": [],
+        "hit_condition_ids": [],
+        "matched_condition_ids": []
+      },
+      "w3_decision": {
+        "novelty": {
+          "reason": "The reference view contains Q1 HBM shares and general Samsung, SK hynix, and Micron HBM competition, as well as Micron's HBM4 shipment milestones. This message adds Samsung's reported allocation of more than half of existing 4nm capacity to HBM4 base dies, the Q2 share shift to Samsung 33% and Micron 18%, and Samsung's further HBM4/HBM5 capacity plans.",
+          "reference_ids": [
+            "E6",
+            "E11",
+            "E19",
+            "E75"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "The message does not satisfy any existing Policy condition. It reports competitor capacity and market-share changes but not the required consecutive Micron internal combination, ASP, bit-shipment, or company-confirmed qualification and delivery deterioration."
+        },
+        "expert_trade": {
+          "direction": "SHORT",
+          "evaluated": true,
+          "expectation_delta": "New Q2 market-share data places Micron at approximately 18% while Samsung rose from 21% to 33%, and Samsung is allocating more than half of its existing 4nm capacity to HBM4 base dies with additional ramp plans. This lowers the expected share and relative pricing/mix capture available to Micron, even though aggregate HBM demand may remain undersupplied and Micron's absolute HBM revenue can still grow.",
+          "prior_expectation": "Micron's baseline was that HBM4 high-volume shipments and severe AI-memory undersupply would support continued high-value data-center mix, pricing, and HBM share capture; Micron held approximately 21% of global HBM revenue in Q1 2026.",
+          "reason": "TRADE SHORT: The competitor's capacity commitment, HBM4 commercial progress, and Micron's relative share decline create a non-trivial negative surprise in the HBM value-capture path. HBM and data-center mix are material to Micron's ASP and margin outlook, and the transmission is competitor capacity and share gain -> lower Micron HBM share/pricing power -> weaker relative revenue and mix capture. The single-quarter, third-party share data and strong market growth limit certainty but do not remove the directional edge.",
+          "trade": true
+        }
+      },
+      "direction": "SHORT",
+      "initiated_at": "2026-09-22T09:13:50.716883+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    }
+  ],
+  "history_matches": [
+    {
+      "events": [],
+      "policies": []
+    }
+  ],
+  "watches": [],
+  "pins": [],
+  "policy_consumptions": [],
+  "provisional": [
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "SanDisk",
+          "SNDK"
+        ],
+        "occurrence_date": "2026-09-18",
+        "proposition": "SanDisk shares were up more than 650% year to date in 2026 after rising approximately 11% on September 18, 2026.",
+        "subject_time": "Calendar 2026 year to date through September 23, including the September 18 session"
+      },
+      "candidate_index": 0,
+      "case_id": "case_226498c0baad45378d76458b96a226f6",
+      "created_at": "2026-09-23T11:20:48.105920Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E113",
+      "runtime_signature": "2564a4c12568c7285597a09ef381d629380789f5231c456fa529329b04947244",
+      "snapshot_version": 1,
+      "source_message_id": "std_fb964abee360466ea6ea93d3cf55b022",
+      "ticker": "MU",
+      "trading_date": "2026-09-23"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "SanDisk",
+          "SNDK",
+          "S&P 100"
+        ],
+        "occurrence_date": "2026-09-21",
+        "proposition": "SanDisk joined the S&P 100 on September 21, 2026.",
+        "subject_time": "From September 21, 2026"
+      },
+      "candidate_index": 1,
+      "case_id": "case_226498c0baad45378d76458b96a226f6",
+      "created_at": "2026-09-23T11:20:48.126500Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E114",
+      "runtime_signature": "a40028f10b1a540870f7a610ed6e248a510a0c761f9899d21dd3e87b47a8dbec",
+      "snapshot_version": 2,
+      "source_message_id": "std_fb964abee360466ea6ea93d3cf55b022",
+      "ticker": "MU",
+      "trading_date": "2026-09-23"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "SanDisk",
+          "SNDK",
+          "NAND flash"
+        ],
+        "occurrence_date": null,
+        "proposition": "SanDisk fiscal-fourth-quarter revenue rose 51% sequentially to approximately $8.97 billion.",
+        "subject_time": "SanDisk fiscal fourth quarter"
+      },
+      "candidate_index": 2,
+      "case_id": "case_226498c0baad45378d76458b96a226f6",
+      "created_at": "2026-09-23T11:20:48.140733Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E115",
+      "runtime_signature": "1ba7373381fcb59df6d549b844d7cdc1e896393515cdf18aaae1c9b30c9e9f83",
+      "snapshot_version": 3,
+      "source_message_id": "std_fb964abee360466ea6ea93d3cf55b022",
+      "ticker": "MU",
+      "trading_date": "2026-09-23"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "SanDisk",
+          "SNDK",
+          "Data centers",
+          "Enterprise storage"
+        ],
+        "occurrence_date": null,
+        "proposition": "SanDisk data-center revenue more than doubled sequentially.",
+        "subject_time": "SanDisk fiscal fourth quarter"
+      },
+      "candidate_index": 3,
+      "case_id": "case_226498c0baad45378d76458b96a226f6",
+      "created_at": "2026-09-23T11:20:48.155000Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E116",
+      "runtime_signature": "81b44af2db3ff47286025af0ed1282b95c3522a800c2862413491ebb77af69a4",
+      "snapshot_version": 4,
+      "source_message_id": "std_fb964abee360466ea6ea93d3cf55b022",
+      "ticker": "MU",
+      "trading_date": "2026-09-23"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "SanDisk",
+          "SNDK",
+          "Hedge funds",
+          "Insider Monkey"
+        ],
+        "occurrence_date": null,
+        "proposition": "Insider Monkey reported 128 hedge funds holding SanDisk in Q2 2026, compared with 114 in Q1 2026.",
+        "subject_time": "Q2 2026 versus Q1 2026"
+      },
+      "candidate_index": 4,
+      "case_id": "case_226498c0baad45378d76458b96a226f6",
+      "created_at": "2026-09-23T11:20:48.173546Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E117",
+      "runtime_signature": "11123b7e4104fb2e7227d84b99fc54cbc54d8ae3aafe192876ccfba0646786ae",
+      "snapshot_version": 5,
+      "source_message_id": "std_fb964abee360466ea6ea93d3cf55b022",
+      "ticker": "MU",
+      "trading_date": "2026-09-23"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Micron Technology",
+          "MU",
+          "Hedge funds",
+          "Insider Monkey"
+        ],
+        "occurrence_date": null,
+        "proposition": "Insider Monkey reported that 184 hedge funds held Micron in Q2 2026, compared with 154 in Q1 2026.",
+        "subject_time": "Q2 2026 versus Q1 2026"
+      },
+      "candidate_index": 5,
+      "case_id": "case_226498c0baad45378d76458b96a226f6",
+      "created_at": "2026-09-23T11:20:48.196548Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E118",
+      "runtime_signature": "0bcfbac25d3205e924fcc0705cc54b1834ce8687e73932b73ca203b8fa043302",
+      "snapshot_version": 6,
+      "source_message_id": "std_fb964abee360466ea6ea93d3cf55b022",
+      "ticker": "MU",
+      "trading_date": "2026-09-23"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Coatue Management",
+          "Micron Technology",
+          "MU"
+        ],
+        "occurrence_date": null,
+        "proposition": "Coatue Management increased its Micron position by approximately 1,794% during Q2 2026.",
+        "subject_time": "Q2 2026"
+      },
+      "candidate_index": 6,
+      "case_id": "case_226498c0baad45378d76458b96a226f6",
+      "created_at": "2026-09-23T11:20:48.206290Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E119",
+      "runtime_signature": "880d49024423a5d5c1bc66fe0eb2898141e4e0cba5562c3857b5927db5c67bda",
+      "snapshot_version": 7,
+      "source_message_id": "std_fb964abee360466ea6ea93d3cf55b022",
+      "ticker": "MU",
+      "trading_date": "2026-09-23"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "SanDisk",
+          "SNDK",
+          "Short interest"
+        ],
+        "occurrence_date": "2026-08-31",
+        "proposition": "SanDisk short interest stood near six million shares, approximately 4.1% of float, as of August 31, 2026, with about half a day to cover.",
+        "subject_time": "August 31, 2026 short-interest snapshot"
+      },
+      "candidate_index": 7,
+      "case_id": "case_226498c0baad45378d76458b96a226f6",
+      "created_at": "2026-09-23T11:20:48.224529Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E120",
+      "runtime_signature": "6f8a4a352f4004b3c91328512e4038f8f19fabea6666555c065dd90ef6fe3334",
+      "snapshot_version": 8,
+      "source_message_id": "std_fb964abee360466ea6ea93d3cf55b022",
+      "ticker": "MU",
+      "trading_date": "2026-09-23"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Micron Technology",
+          "MU"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "Micron Technology shares closed at $1,096.16 on September 22, 2026, up 5% for the session.",
+        "subject_time": "September 22, 2026 trading session at the close"
+      },
+      "candidate_index": 0,
+      "case_id": "case_835d403ac250489f8b76de7d5106b95b",
+      "created_at": "2026-09-23T11:58:15.618704Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E121",
+      "runtime_signature": "bd3a9f8d3307a2bf146d2a797653d016053d97f3e7ae169dfb79064105ea3d29",
+      "snapshot_version": 9,
+      "source_message_id": "std_cf42ab270d7d483fb9d45728c5e1492c",
+      "ticker": "MU",
+      "trading_date": "2026-09-23"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "BCC Research",
+          "AI Sentiment Index",
+          "Artificial intelligence"
+        ],
+        "occurrence_date": null,
+        "proposition": "The BCC Research AI Sentiment Index rose to 77.78 in August 2026 from 75.10 in July 2026.",
+        "subject_time": "August 2026 versus July 2026"
+      },
+      "candidate_index": 1,
+      "case_id": "case_835d403ac250489f8b76de7d5106b95b",
+      "created_at": "2026-09-23T11:58:15.630311Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E122",
+      "runtime_signature": "cc5da868028572e6668fc96a0fc607109759d945d2485a6da4873d1194c52058",
+      "snapshot_version": 10,
+      "source_message_id": "std_cf42ab270d7d483fb9d45728c5e1492c",
+      "ticker": "MU",
+      "trading_date": "2026-09-23"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Michael Burry",
+          "Nebius Group",
+          "NBIS",
+          "Palantir Technologies",
+          "PLTR"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "Michael Burry's September 22, 2026 Substack post reported added short positions in Nebius Group and Palantir Technologies.",
+        "subject_time": "September 22, 2026 Substack post"
+      },
+      "candidate_index": 0,
+      "case_id": "case_16b80563d3844fe6b49a428a1f153167",
+      "created_at": "2026-09-23T12:15:14.670495Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E123",
+      "runtime_signature": "8099ec2081b5a74941d680e533ed09bbbc6d812fb9ad4b3468848cd9bde4c8f6",
+      "snapshot_version": 11,
+      "source_message_id": "std_c3fdfaa16dd24702a803878ef11cb19e",
+      "ticker": "MU",
+      "trading_date": "2026-09-23"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Michael Burry",
+          "Nasdaq 100 Index",
+          "NDX"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "Michael Burry warned that the Nasdaq 100 Index remained heavily concentrated.",
+        "subject_time": "September 22, 2026 market warning"
+      },
+      "candidate_index": 1,
+      "case_id": "case_16b80563d3844fe6b49a428a1f153167",
+      "created_at": "2026-09-23T12:15:14.677106Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E124",
+      "runtime_signature": "e05576e15265caca16cd0e5252c28fbc6b370fb7a3a6b5d61f0eb04100dc2e6d",
+      "snapshot_version": 12,
+      "source_message_id": "std_c3fdfaa16dd24702a803878ef11cb19e",
+      "ticker": "MU",
+      "trading_date": "2026-09-23"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Micron Technology",
+          "MU"
+        ],
+        "occurrence_date": "2026-09-23",
+        "proposition": "Micron Technology shares fell in premarket trading on September 23, 2026.",
+        "subject_time": "September 23, 2026 premarket trading"
+      },
+      "candidate_index": 0,
+      "case_id": "case_1a60286b4d714c878c81b55ae283229d",
+      "created_at": "2026-09-23T12:17:26.618268Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E125",
+      "runtime_signature": "3a2fdfdd85063a500694bf7d101bb83acda445702e81570c72385654e4f6b324",
+      "snapshot_version": 13,
+      "source_message_id": "std_c66854d71f534e9fbcee90e193cc8c89",
+      "ticker": "MU",
+      "trading_date": "2026-09-23"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "SanDisk",
+          "SNDK"
+        ],
+        "occurrence_date": "2026-09-23",
+        "proposition": "SanDisk shares fell in premarket trading on September 23, 2026.",
+        "subject_time": "September 23, 2026 premarket trading"
+      },
+      "candidate_index": 1,
+      "case_id": "case_1a60286b4d714c878c81b55ae283229d",
+      "created_at": "2026-09-23T12:17:26.629606Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E126",
+      "runtime_signature": "3003c34b5da21bf6e50934caf25c14bcf971d9dd547f0c38276b4da9c80655ff",
+      "snapshot_version": 14,
+      "source_message_id": "std_c66854d71f534e9fbcee90e193cc8c89",
+      "ticker": "MU",
+      "trading_date": "2026-09-23"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Nasdaq"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "The Nasdaq set new highs on September 22, 2026.",
+        "subject_time": "September 22, 2026 trading session"
+      },
+      "candidate_index": 2,
+      "case_id": "case_1a60286b4d714c878c81b55ae283229d",
+      "created_at": "2026-09-23T12:17:26.664211Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E127",
+      "runtime_signature": "6ff2253d27aa8892aaa274f59e104c02c3f713b17e0959692c3789175f9fdab5",
+      "snapshot_version": 15,
+      "source_message_id": "std_c66854d71f534e9fbcee90e193cc8c89",
+      "ticker": "MU",
+      "trading_date": "2026-09-23"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Dow Jones Index"
+        ],
+        "occurrence_date": "2026-09-23",
+        "proposition": "The Dow Jones index fell on September 23, 2026.",
+        "subject_time": "September 23, 2026 trading session"
+      },
+      "candidate_index": 3,
+      "case_id": "case_1a60286b4d714c878c81b55ae283229d",
+      "created_at": "2026-09-23T12:17:26.701096Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E128",
+      "runtime_signature": "48b94d31835e49046fba9b20ed02e8bcfa9073cb68b9f1502a8eeacb5614e342",
+      "snapshot_version": 16,
+      "source_message_id": "std_c66854d71f534e9fbcee90e193cc8c89",
+      "ticker": "MU",
+      "trading_date": "2026-09-23"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Micron Technology",
+          "MU",
+          "Investor's Business Daily",
+          "Analysts"
+        ],
+        "occurrence_date": "2026-09-23",
+        "proposition": "A September 23, 2026 Investor's Business Daily report stated that analysts were raising profit estimates for four AI leaders, including Micron Technology.",
+        "subject_time": "Analyst estimate revisions as reported on September 23, 2026"
+      },
+      "candidate_index": 0,
+      "case_id": "case_17e43d970be9471684c6307d906b61f8",
+      "created_at": "2026-09-23T12:19:16.778897Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E129",
+      "runtime_signature": "16603a772470140253356e82b9492f4ed97215db460065fbc40723f2fd38d8df",
+      "snapshot_version": 17,
+      "source_message_id": "std_b843357cab944d3686cba1b028577733",
+      "ticker": "MU",
+      "trading_date": "2026-09-23"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Micron Technology",
+          "MU",
+          "Investor's Business Daily"
+        ],
+        "occurrence_date": "2026-09-23",
+        "proposition": "Micron Technology was reported above a trendline entry, or early buy point, on September 23, 2026.",
+        "subject_time": "Micron technical setup as of September 23, 2026"
+      },
+      "candidate_index": 1,
+      "case_id": "case_17e43d970be9471684c6307d906b61f8",
+      "created_at": "2026-09-23T12:19:16.789236Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E130",
+      "runtime_signature": "9831222e41070c3005be5473ff32c33fcbb51efc95b119e5530093352544dd32",
+      "snapshot_version": 18,
+      "source_message_id": "std_b843357cab944d3686cba1b028577733",
+      "ticker": "MU",
+      "trading_date": "2026-09-23"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Michael Burry",
+          "iShares Semiconductor ETF",
+          "SOXX"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "Michael Burry reported adding to his short position in the iShares Semiconductor ETF (SOXX) in a September 22, 2026 Substack post.",
+        "subject_time": "September 22, 2026 Substack post"
+      },
+      "candidate_index": 0,
+      "case_id": "case_159b408a482d4a3eb4798ad9b9a4aac7",
+      "created_at": "2026-09-23T12:22:42.895287Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E131",
+      "runtime_signature": "0bc9f0dfa702ebb86c7c7a86ac842e04b3d11bcda6babc8b4fefee8b7191a043",
+      "snapshot_version": 19,
+      "source_message_id": "std_0f4775b2c6dc4082b9300255d60cbead",
+      "ticker": "MU",
+      "trading_date": "2026-09-23"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Michael Burry",
+          "QXO",
+          "Build-A-Bear Workshop",
+          "Sprouts Farmers Market",
+          "Birkenstock",
+          "MercadoLibre"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "Michael Burry reported adding long positions in QXO, Build-A-Bear Workshop, Sprouts Farmers Market, Birkenstock and MercadoLibre in his September 22, 2026 Substack post.",
+        "subject_time": "September 22, 2026 Substack post"
+      },
+      "candidate_index": 1,
+      "case_id": "case_159b408a482d4a3eb4798ad9b9a4aac7",
+      "created_at": "2026-09-23T12:22:42.904067Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E132",
+      "runtime_signature": "521a7c6bcff0a8125bb41d6b79f67ef08452a6aa980b201a7ad73ad08f105824",
+      "snapshot_version": 20,
+      "source_message_id": "std_0f4775b2c6dc4082b9300255d60cbead",
+      "ticker": "MU",
+      "trading_date": "2026-09-23"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Acer",
+          "Jason Chen",
+          "LPDDR5",
+          "DDR5 9600"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "Acer chairman and CEO Jason Chen said LPDDR5 and DDR5 9600 remained tight in the current memory market.",
+        "subject_time": "Current memory market in September 2026"
+      },
+      "candidate_index": 2,
+      "case_id": "case_159b408a482d4a3eb4798ad9b9a4aac7",
+      "created_at": "2026-09-23T12:22:42.912303Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E133",
+      "runtime_signature": "0c714f347ff354706d5b45bde903d1d3316f5d0206fd4a73322e9deaa4436832",
+      "snapshot_version": 21,
+      "source_message_id": "std_0f4775b2c6dc4082b9300255d60cbead",
+      "ticker": "MU",
+      "trading_date": "2026-09-23"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Wells Fargo",
+          "Aaron Rakers",
+          "Micron Technology",
+          "MU"
+        ],
+        "occurrence_date": "2026-09-23",
+        "proposition": "Wells Fargo analyst Aaron Rakers lowered the Micron Technology price target from $1,525 to $1,400 and maintained an Overweight rating.",
+        "subject_time": "September 23, 2026 analyst note"
+      },
+      "candidate_index": 0,
+      "case_id": "case_8e6d3e65137e4aeea9d3ad2ce1b1c645",
+      "created_at": "2026-09-23T12:38:19.864770Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E134",
+      "runtime_signature": "d3e54c43ad2d2fd6d355a899d80c7a7839cdf18c00045db7e6509df3ca52ccaf",
+      "snapshot_version": 22,
+      "source_message_id": "std_9cdbc2d5f92a47f6b66298e4b5cc0ec4",
+      "ticker": "MU",
+      "trading_date": "2026-09-23"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Citi",
+          "Atif Malik",
+          "Micron Technology",
+          "MU"
+        ],
+        "occurrence_date": "2026-09-23",
+        "proposition": "Citi analyst Atif Malik raised the Micron Technology price target from $1,150 to $1,300 and maintained a Buy rating.",
+        "subject_time": "September 23, 2026 analyst note"
+      },
+      "candidate_index": 1,
+      "case_id": "case_8e6d3e65137e4aeea9d3ad2ce1b1c645",
+      "created_at": "2026-09-23T12:38:19.874255Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E135",
+      "runtime_signature": "6ea26012382b00d77a15d278ddc7290ceb2ead602924d0e2e13d92b5cc33630e",
+      "snapshot_version": 23,
+      "source_message_id": "std_9cdbc2d5f92a47f6b66298e4b5cc0ec4",
+      "ticker": "MU",
+      "trading_date": "2026-09-23"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "Citi",
+          "Atif Malik",
+          "Micron Technology",
+          "Memory-chip prices",
+          "DRAM",
+          "NAND"
+        ],
+        "occurrence_date": "2026-09-23",
+        "proposition": "Citi analyst Atif Malik warned that memory-chip prices could peak earlier than expected in the current memory-price cycle.",
+        "subject_time": "Near-term memory-price cycle"
+      },
+      "candidate_index": 0,
+      "case_id": "case_658d6744193547dfa7213cf9048a9800",
+      "created_at": "2026-09-23T13:05:55.840059Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E136",
+      "runtime_signature": "f9db4773d212ca1a61e8fd8c7498498aee90c1dee806c7db4f56071210a02339",
+      "snapshot_version": 24,
+      "source_message_id": "std_18f16a5415a442b2b4255201f0e78d51",
+      "ticker": "MU",
+      "trading_date": "2026-09-23"
+    }
+  ],
+  "limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "global_state": {
+    "watches": [],
+    "pins": []
+  },
+  "event_details": {
+    "requested_event_ids": [
+      "E9",
+      "E1"
+    ],
+    "canonical_events": [
+      {
+        "event_id": "E9",
+        "title": "Micron expanded multi-year Strategic Customer Agreements and supply commitments",
+        "event_type": "MATERIAL_CONTRACT",
+        "occurred_at": "2026-08-31..2026-09-21",
+        "occurrence_time_precision": "INTERVAL",
+        "status": "ACTIVE",
+        "canonical_summary": "Micron's multi-year Strategic Customer Agreements used take-or-pay, quantity and price-band terms, customer commitments and reserved capacity to increase forward demand and pricing visibility; reported client coverage included automotive, data-center, consumer-device and industrial customers, and Micron reported that long-term agreements covered approximately 20% of DRAM bits and 33% of NAND bits.",
+        "known_event_summary": "2026-08-31..2026-09-21 Micron strategic-customer-contract update: sixteen agreements and roughly $22 billion of commitments or deposits, price floors/bands and reserved 2027 capacity were described; the latest report said long-term agreements covered about 20% of DRAM bits and 33% of NAND bits.",
+        "related_event_ids": [
+          "E7",
+          "E1"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F238",
+            "proposition": "Customers have locked in $22 billion in supply commitments with Micron.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-08-31",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F239",
+            "proposition": "Micron completed 16 Strategic Customer Agreements (SCAs).",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-01",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F240",
+            "proposition": "Micron states that its Strategic Customer Agreements generally use take-or-pay commitments with fixed pricing or pricing bands.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-01",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F241",
+            "proposition": "Take-or-pay supply contracts secure high margins for Micron while capping upside potential.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F242",
+            "proposition": "CEO Sanjay Mehrotra stated that multi-year Strategic Customer Agreements will significantly enhance the durability and predictability of Micron's strong financial performance.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F243",
+            "proposition": "A significant portion of Micron's 2027 production capacity is reserved through long-term customer agreements.",
+            "assertion_state": "ONGOING",
+            "subject_time": "2027",
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F244",
+            "proposition": "Micron Technology is unable to fulfill its entire order book.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F245",
+            "proposition": "Micron claims that contract minimum prices should generate gross margins well above previous peak quarterly margins.",
+            "assertion_state": "EXPECTED",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-03",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F246",
+            "proposition": "A significant portion of Micron's 2027 capacity has been reserved.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "2027",
+            "fact_occurred_at": "2026-09-03",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F247",
+            "proposition": "Micron expects $22 billion of customer deposits and related financial commitments.",
+            "assertion_state": "EXPECTED",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-03",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F248",
+            "proposition": "Micron's new strategic customer agreements require customers to commit to specific purchase volumes.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-03",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F249",
+            "proposition": "Most of Micron's strategic customer contracts have fixed prices or set minimum and maximum prices.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-03",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F250",
+            "proposition": "Micron and its rivals have begun locking in long-term contracts for up to five years.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-04",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F251",
+            "proposition": "Micron CEO Sanjay Mehrotra stated that strategic customer agreements will significantly enhance the durability and predictability of the company's strong financial performance.",
+            "assertion_state": "EXPECTED",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-07",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F252",
+            "proposition": "Micron has $22 billion in commitments serving as collateral.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-08",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F253",
+            "proposition": "The composition of Micron's long-term contracts regarding DRAM/NAND versus HBM weighting is uncertain.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-08",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F254",
+            "proposition": "Sixteen strategic customer agreements carry $22 billion in commitments.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-08",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F255",
+            "proposition": "Micron holds $100B in long-term contracts.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-08",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F256",
+            "proposition": "Ceilings on existing products in Micron's new agreements could limit shortage-driven upside across contracted volumes.",
+            "assertion_state": "HYPOTHETICAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-09",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F257",
+            "proposition": "Micron's new agreements provide valuable price floors.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-09",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F306",
+            "proposition": "Following Micron's fiscal Q3 earnings call, announced SCA (strategic customer agreement) clients include Ford Motor Company, General Motors, several automotive industry suppliers, as well as data center, consumer device, and industrial customers.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-12",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F478",
+            "proposition": "Micron had secured approximately 20% of its DRAM bits and 33% of its NAND bits under long-term agreements as of its latest earnings call.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-21",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E1",
+        "title": "Micron FY2026 Q3 results and FY2026 Q4 guidance",
+        "event_type": "EARNINGS_RELEASE",
+        "occurred_at": "2026-06-24",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Micron's FY2026 third-quarter release reported record revenue, profitability, cash generation and segment results, and set the FY2026 fourth-quarter operating baseline. The release and immediate follow-up also described four very large Strategic Customer Agreement customers, projected that executed SCAs could account for at least half of revenue, indicated moderating price increases in FY2026 Q4 guidance, and reported a $325 million debt-prepayment loss.",
+        "known_event_summary": "2026-06-24 Micron FY2026 Q3 earnings release: revenue was about $41.46 billion, gross margin was about 84.6%-85%, EPS was $24.67, FY2026 Q4 revenue guidance was near $50 billion with adjusted gross margin near 86%, price-increase momentum was expected to moderate, and results included a $325 million debt-prepayment loss; the call also described four very large SCA customers and projected executed SCAs could represent at least half of revenue.",
+        "related_event_ids": [
+          "E2",
+          "E9"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F1",
+            "proposition": "Micron reported approximately $41.46-$41.5 billion of FY2026 Q3 revenue for the quarter ended May 28, 2026, up about 346% year over year.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q3",
+            "fact_occurred_at": "SAME",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F2",
+            "proposition": "Micron reported approximately $18.3 billion of adjusted free cash flow in FY2026 Q3.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q3",
+            "fact_occurred_at": "SAME",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F3",
+            "proposition": "Micron's Mobile and Client business had approximately an 87% gross margin in FY2026 Q3.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q3",
+            "fact_occurred_at": "SAME",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F4",
+            "proposition": "Micron management guided FY2026 Q4 revenue to approximately $50 billion, with a range near $49-$51 billion.",
+            "assertion_state": "GUIDANCE",
+            "subject_time": "FY2026-Q4",
+            "fact_occurred_at": "SAME",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F5",
+            "proposition": "Micron generated approximately $26.1 billion of year-to-date free cash flow.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "YTD",
+            "fact_occurred_at": "SAME",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F6",
+            "proposition": "Micron reported an approximately 84.9% gross margin in the latest quarter.",
+            "assertion_state": "ONGOING",
+            "subject_time": "FY2026-Q3",
+            "fact_occurred_at": "SAME",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F7",
+            "proposition": "Micron reported FY2026 Q3 adjusted EPS of $24.67, with year-over-year EPS growth reported above 1,200%.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q3",
+            "fact_occurred_at": "SAME",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F8",
+            "proposition": "Micron's revenue increased by more than 70% sequentially in the reported quarter.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q3",
+            "fact_occurred_at": "SAME",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F9",
+            "proposition": "Micron generated approximately $28.86 billion of net income in the previous fiscal quarter.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q2",
+            "fact_occurred_at": "SAME",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F10",
+            "proposition": "Micron management guided FY2026 Q4 adjusted gross margin to approximately 86%.",
+            "assertion_state": "GUIDANCE",
+            "subject_time": "FY2026-Q4",
+            "fact_occurred_at": "SAME",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F11",
+            "proposition": "Micron reported Mobile and Client revenue of approximately $27.2 billion.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q3",
+            "fact_occurred_at": "SAME",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F12",
+            "proposition": "Micron's Cloud Memory segment generated approximately $13.8 billion of FY2026 Q3 revenue.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q3",
+            "fact_occurred_at": "SAME",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F13",
+            "proposition": "Micron's Core Data Center segment generated approximately $11.52 billion of FY2026 Q3 revenue.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q3",
+            "fact_occurred_at": "SAME",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F14",
+            "proposition": "Micron's Mobile and Client business generated approximately $11.5 billion of FY2026 Q3 revenue.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q3",
+            "fact_occurred_at": "SAME",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F15",
+            "proposition": "Micron's DRAM revenue was approximately $31.3 billion in FY2026 Q3.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q3",
+            "fact_occurred_at": "SAME",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F16",
+            "proposition": "Micron materially revised its forward guidance higher.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q4",
+            "fact_occurred_at": "SAME",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F17",
+            "proposition": "Micron management guided FY2026 Q4 non-GAAP EPS to approximately $30-$32.",
+            "assertion_state": "GUIDANCE",
+            "subject_time": "FY2026-Q4",
+            "fact_occurred_at": "SAME",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F18",
+            "proposition": "Micron's data-center segment margin reached approximately 87% in FY2026 Q3.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q3",
+            "fact_occurred_at": "SAME",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F19",
+            "proposition": "Micron reported Core Data Center revenue of approximately $21.2 billion in the reported period.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q3",
+            "fact_occurred_at": "SAME",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F20",
+            "proposition": "Micron's Automotive and Embedded segment revenue was approximately $10.5 billion.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q3",
+            "fact_occurred_at": "SAME",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F21",
+            "proposition": "Micron reported FY2026 Q3 gross margin of approximately 84.6%-85%, versus about 38% a year earlier.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q3",
+            "fact_occurred_at": "SAME",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F22",
+            "proposition": "Micron generated approximately $25.4 billion of FY2026 Q3 operating cash flow.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q3",
+            "fact_occurred_at": "SAME",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F23",
+            "proposition": "Micron's DRAM bit shipments increased by a low single-digit percentage in FY2026 Q3.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q3",
+            "fact_occurred_at": "SAME",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F24",
+            "proposition": "Micron reported an approximately 84.9% adjusted gross margin in the latest quarterly release.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q3",
+            "fact_occurred_at": "SAME",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F25",
+            "proposition": "Micron's CEO stated that AI proliferation had structurally transformed the memory industry.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q3",
+            "fact_occurred_at": "SAME",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F26",
+            "proposition": "All four Micron business segments produced triple-digit percentage growth in FY2026 Q3.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q3",
+            "fact_occurred_at": "SAME",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F27",
+            "proposition": "Micron reported a financial metric of $25.11 versus $1.91 a year earlier for the reported period.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q3",
+            "fact_occurred_at": "SAME",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F28",
+            "proposition": "Micron reported approximately $28.2-$28.24 billion of FY2026 Q3 net income.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q3",
+            "fact_occurred_at": "SAME",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F29",
+            "proposition": "Cloud-memory and core data-center businesses represented approximately 61% of Micron's FY2026 Q3 revenue.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q3",
+            "fact_occurred_at": "SAME",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F30",
+            "proposition": "Micron reported record FY2026 Q3 financial results.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q3",
+            "fact_occurred_at": "SAME",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F31",
+            "proposition": "Micron's NAND revenue was approximately $9.9 billion in FY2026 Q3.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q3",
+            "fact_occurred_at": "SAME",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F32",
+            "proposition": "Micron reported approximately $33.3 billion of FY2026 Q3 operating income and an operating margin near 80%.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q3",
+            "fact_occurred_at": "SAME",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F33",
+            "proposition": "Micron and NVIDIA were reported to have net profit margins above 60% in their respective recent quarters.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q3",
+            "fact_occurred_at": "2026-09-09",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F303",
+            "proposition": "Micron CEO Sanjay Mehrotra stated on the fiscal Q3 earnings call that there were four very large SCA customers, including data center customers likely representing major hyperscalers.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "SAME",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F304",
+            "proposition": "Micron projects that when all SCAs are executed, they will account for at least half of the company's revenue.",
+            "assertion_state": "EXPECTED",
+            "subject_time": null,
+            "fact_occurred_at": "SAME",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F494",
+            "proposition": "Micron's FY2026 Q4 guidance indicated a meaningful moderation in the rate of memory-price increases.",
+            "assertion_state": "GUIDANCE",
+            "subject_time": "FY2026-Q4",
+            "fact_occurred_at": "2026-06-24",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F495",
+            "proposition": "Micron's FY2026 Q3 results included a $325 million loss on debt prepayments.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q3",
+            "fact_occurred_at": "2026-06-25",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      }
+    ],
+    "provisional_events": [],
+    "missing_event_ids": []
+  }
+}

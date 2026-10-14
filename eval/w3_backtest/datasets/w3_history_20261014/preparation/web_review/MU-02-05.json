@@ -1,0 +1,231 @@
+{
+  "case_key": "MU-02-05",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-09-29T19:45:05.178506Z",
+  "reviewed_at": "2026-10-13T22:58:32.039563Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 6,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a13760-0782-7a03-a86f-beff113303c0",
+    "turn_id": "01a13760-079c-70f0-aac8-dc10a62e02fa",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 81664,
+        "inputTokens": 93287,
+        "outputTokens": 27315,
+        "reasoningOutputTokens": 24242,
+        "totalTokens": 120602
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 382208,
+        "inputTokens": 468386,
+        "outputTokens": 30526,
+        "reasoningOutputTokens": 26860,
+        "totalTokens": 498912
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "20f2c9365798943850f0c07471ab49c97f4bcad48c860426a4ed852ed7841f59",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://price-target.com/2026/09/28/174222/",
+      "title": "JPMorgan Keeps Overweight on Micron, $1,540 Price Target",
+      "published_at": "2026-09-28",
+      "time_precision": "DAY",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UPDATED",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn2search0"
+      ],
+      "source_call_ids": [
+        "exec-87d4c597-23c7-4888-b58e-fd52ab59d579"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://investors.micron.com/static-files/631b1a32-5537-46ae-8f40-82e42fc79dfe",
+      "title": "Fiscal Q3 2026 Earnings Call Prepared Remarks",
+      "published_at": "UNKNOWN",
+      "time_precision": "UNKNOWN",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn2search12"
+      ],
+      "source_call_ids": [
+        "exec-87d4c597-23c7-4888-b58e-fd52ab59d579"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://www.gurufocus.com/news/9101998/jpmorgan-says-microns-rally-may-not-be-over",
+      "title": "JPMorgan Says Micron's Rally May Not Be Over",
+      "published_at": "2026-09-29 13:21 (timezone UNKNOWN)",
+      "time_precision": "MINUTE",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn0search1"
+      ],
+      "source_call_ids": [
+        "exec-cf8a7bb3-d928-4674-9699-75a943674da4"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/jpmorgan-says-microns-rally-may-192132485.html",
+      "title": "JPMorgan Says Micron's Rally May Not Be Over",
+      "published_at": "2026-09-29T19:21:32Z",
+      "time_precision": "EXACT",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn2search8"
+      ],
+      "source_call_ids": [
+        "exec-87d4c597-23c7-4888-b58e-fd52ab59d579"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S5",
+      "url": "https://247wallst.com/investing/2026/09/29/jpmorgan-sees-micron-positioned-for-beat-and-raise-ahead-of-q4-results/",
+      "title": "JPMorgan Sees Micron Positioned for Beat-and-Raise Ahead of Q4 Results",
+      "published_at": "2026-09-29T12:45:00-04:00",
+      "time_precision": "MINUTE",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search4"
+      ],
+      "source_call_ids": [
+        "exec-cf8a7bb3-d928-4674-9699-75a943674da4"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S6",
+      "url": "https://www.tipranks.com/news/citi-raises-micron-stock-mu-price-target-ahead-of-q4-earnings-heres-why",
+      "title": "Citi Raises Micron Stock (MU) Price Target Ahead of Q4 Earnings. Here’s Why",
+      "published_at": "2026-09-23 19:42 (timezone UNKNOWN)",
+      "time_precision": "MINUTE",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn4search0"
+      ],
+      "source_call_ids": [
+        "exec-1acbb392-9ea7-4197-b17c-45438fb069e6"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "Micron’s earlier Q4 guidance, as indexed in its Fiscal Q3 2026 prepared remarks, was $50.0 billion revenue ±$1.0 billion, approximately 86% gross margin and $31 EPS ±$1. The same passage said the margin outlook reflected a meaningful moderation in price-increase rates. A contemporaneous Sep. 29 report also described this as the company’s existing guide. The accessible official URL now redirects, so the official passage lacks a verified archived snapshot.",
+      "source_urls": [
+        "https://investors.micron.com/static-files/631b1a32-5537-46ae-8f40-82e42fc79dfe",
+        "https://247wallst.com/investing/2026/09/29/jpmorgan-sees-micron-positioned-for-beat-and-raise-ahead-of-q4-results/"
+      ],
+      "event_time": "Fiscal Q3 2026 guidance context; exact date UNKNOWN in the accessible official result",
+      "publication_time": "UNKNOWN (Micron result); contemporaneous secondary report published 2026-09-29T12:45:00-04:00",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The company’s moderation language does not itself explain the cause. The official page could not be verified as a pre-cutoff snapshot; the 24/7 account is secondary reporting."
+    },
+    {
+      "observation": "The Sep. 28 note reproduction reports that JPMorgan expected Micron to exceed cited Q4 Street estimates and expected robust pricing despite the company’s earlier moderation language. Sur’s stated interpretation was that moderation reflected a strategic choice to preserve customer relationships and secure long-term agreements, not weaker demand. He estimated forward bit-production coverage above 35%, with potential above 50%; these are analyst estimates and are not equivalent to company-reported realized coverage.",
+      "source_urls": [
+        "https://price-target.com/2026/09/28/174222/"
+      ],
+      "event_time": "2026-09-28 (date attached to the reproduced note)",
+      "publication_time": "2026-09-28 (day only; exact time UNKNOWN)",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The reproduction is the earliest dated copy located, not the original JPMorgan note. Its current page includes later dynamic tracker fields, which were not used."
+    },
+    {
+      "observation": "The GuruFocus article, later syndicated by Yahoo, added Sur’s expectations for a higher November-quarter outlook, HBM supply insufficiency through 2028, and a reported increase in capital returns after the Dec. 9 CHIPS-agreement anniversary. GuruFocus displays Sep. 29 at 13:21 with no timezone; the Yahoo copy states that it first appeared on GuruFocus and was published at 19:21:32Z, with a supplied capture at 19:23:45Z.",
+      "source_urls": [
+        "https://www.gurufocus.com/news/9101998/jpmorgan-says-microns-rally-may-not-be-over",
+        "https://finance.yahoo.com/markets/stocks/articles/jpmorgan-says-microns-rally-may-192132485.html"
+      ],
+      "event_time": "2026-09-29, before the scheduled Q4 report",
+      "publication_time": "2026-09-29 13:21 (GuruFocus timezone UNKNOWN); Yahoo copy 2026-09-29T19:21:32Z",
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "The HBM, SCA and outlook statements are analyst expectations; the capital-return description is article reporting, not a fresh company filing. The Yahoo capture predates cutoff, but the GuruFocus time cannot be converted to UTC."
+    },
+    {
+      "observation": "A Sep. 23 TipRanks report of Citi analyst Atif Malik’s view combined continuing AI-led tightness in DRAM and NAND with an expectation that price growth would slow over the following four quarters and peak around Q2 2027. This provides a different cycle-timing forecast from Sur’s expectation of tightness extending through 2028; it does not report realized post-cutoff pricing.",
+      "source_urls": [
+        "https://www.tipranks.com/news/citi-raises-micron-stock-mu-price-target-ahead-of-q4-earnings-heres-why"
+      ],
+      "event_time": "2026-09-23",
+      "publication_time": "2026-09-23 19:42 (timezone UNKNOWN)",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This is a secondary summary of an analyst forecast, not the Citi note or a report of actual demand deterioration; the same report described near-term tight supply."
+    },
+    {
+      "observation": "24/7 Wall St. independently covered the JPMorgan pre-report setup at 12:45 p.m. ET on Sep. 29 and reported that consensus expectations were already above Micron’s company guidance. This supports the contemporaneous expectations context without establishing any earnings result.",
+      "source_urls": [
+        "https://247wallst.com/investing/2026/09/29/jpmorgan-sees-micron-positioned-for-beat-and-raise-ahead-of-q4-results/"
+      ],
+      "event_time": "2026-09-29",
+      "publication_time": "2026-09-29T12:45:00-04:00",
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "It is independent coverage, not primary confirmation of JPMorgan’s private analysis. No Sep. 30 earnings result or subsequent market reaction is used."
+    }
+  ],
+  "gaps": [
+    "JPMorgan’s original research note was not located; the earliest located public copy is a dated verbatim reproduction, with no exact first-publication time.",
+    "The GuruFocus timestamp omits timezone, so its precise UTC publication time and ordering against other Sep. 29 coverage are unresolved.",
+    "Micron’s prepared-remarks URL redirected to the current IR landing page; no dated archived pre-cutoff snapshot of the primary document was verified.",
+    "The Citi item is a secondary summary, not the underlying Citi research note. The underlying analyst reports are not available for direct verification.",
+    "The key SCA coverage figures, HBM-supply outlook and capital-return statements reviewed here are forecasts or article reporting, not verified outcomes. The Sep. 30 report falls after the evidence cutoff and is excluded."
+  ],
+  "research_notes": "Cutoff: 2026-09-29T19:45:05.178506Z. The earliest dated public copy located is a Price Target page dated Sep. 28 that says it reproduces Harlan Sur’s JPMorgan note verbatim; the original JPMorgan note and an independently timestamped archive were not located, so this is the earliest located copy, not a proven first publication. On Sep. 29, 24/7 Wall St. published independent coverage at 12:45 p.m. ET. GuruFocus displays the article at 13:21 without a stated timezone; Yahoo’s syndicated copy says it first appeared on GuruFocus and, per the supplied message metadata, was published at 19:21:32Z and captured at 19:23:45Z, before cutoff. Thus the Yahoo dissemination is verified pre-cutoff, but the exact ordering of the 24/7 and GuruFocus publications cannot be normalized. Analyst forecasts and interpretations below are not treated as realized company facts. Dynamic page fields and all post-cutoff results or market data were excluded."
+}

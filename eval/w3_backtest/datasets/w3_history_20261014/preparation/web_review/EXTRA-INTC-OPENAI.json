@@ -1,0 +1,168 @@
+{
+  "case_key": "EXTRA-INTC-OPENAI",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-10-08T18:05:20.687777Z",
+  "reviewed_at": "2026-10-13T22:58:31.503919Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 6,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a13768-2ffe-7ad2-934c-7de0e8683b39",
+    "turn_id": "01a13768-300c-7fc0-b9c9-c31054e3431b",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 91904,
+        "inputTokens": 100506,
+        "outputTokens": 19527,
+        "reasoningOutputTokens": 17469,
+        "totalTokens": 120033
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 407040,
+        "inputTokens": 512311,
+        "outputTokens": 24831,
+        "reasoningOutputTokens": 22140,
+        "totalTokens": 537142
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "042a3ba41bd6fa8e91e6304f34491e31d3578763995ebc44a10922bcdecb2f5e",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://www.ft.com/content/b66a9858-f8fb-46cb-b506-44bfe26fca2a",
+      "title": "OpenAI annualised revenues $20bn less than previously signalled",
+      "published_at": "2026-10-08",
+      "time_precision": "DAY",
+      "updated_at": "2026-10-08 20:15 (timezone unspecified)",
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn0search0"
+      ],
+      "source_call_ids": [
+        "exec-3e81e7d7-0083-46a1-aa9f-9c7e6a61cd7e"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://www.axios.com/2026/09/29/scoop-openais-annual-recurring-revenue-nears-70b",
+      "title": "Scoop: OpenAI's annual recurring revenue nears $70B",
+      "published_at": "2026-09-29T14:15:40Z",
+      "time_precision": "EXACT",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0news30"
+      ],
+      "source_call_ids": [
+        "exec-3e81e7d7-0083-46a1-aa9f-9c7e6a61cd7e"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://bloomberg.com/news/articles/2026-10-08/openai-s-annualized-revenue-nears-50-billion-ft-says",
+      "title": "OpenAI’s Revenue Run Rate Nears $50 Billion, Less Than Reported",
+      "published_at": "2026-10-08 11:04 AM CST",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn0search6"
+      ],
+      "source_call_ids": [
+        "exec-3e81e7d7-0083-46a1-aa9f-9c7e6a61cd7e"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://www.barrons.com/livecoverage/stock-market-news-today-100826/card/stocks-sink-after-openai-report-sours-ai-trade-BKsGL9ZiRLoaWdN2KuCG?siteid=yhoof2",
+      "title": "Stocks Sink After OpenAI Report Sours AI Trade",
+      "published_at": "2026-10-08T17:35:18Z",
+      "time_precision": "EXACT",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [],
+      "source_call_ids": [],
+      "source_link_method": "UNMAPPED",
+      "retrieval_verification": "UNVERIFIED",
+      "retrieval_verification_note": "检索回执未能回连；此 URL/ref 未出现在已保存的 Web Search 结果中，未声称存在已验证的调用。"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "Before the revised figure circulated, Axios reported OpenAI's annualized revenue run rate near $70bn, with more than 70% growth since the start of Q3. The report attributed the number to unnamed people familiar with the financials.",
+      "source_urls": [
+        "https://www.axios.com/2026/09/29/scoop-openais-annual-recurring-revenue-nears-70b"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-29T14:15:40Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This was a media report, not formal or audited company guidance; Axios said it had not obtained expense details."
+    },
+    {
+      "observation": "By the Bloomberg search result's displayed 11:04 AM CST time on Oct. 8, coverage put OpenAI's annualized revenue near $50bn and below recent estimates, with the headline crediting the FT. This shows the report was circulating before cutoff, but does not verify the FT article's exact first-publication time or calculation basis.",
+      "source_urls": [
+        "https://bloomberg.com/news/articles/2026-10-08/openai-s-annualized-revenue-nears-50-billion-ft-says",
+        "https://www.ft.com/content/b66a9858-f8fb-46cb-b506-44bfe26fca2a"
+      ],
+      "event_time": null,
+      "publication_time": "2026-10-08 11:04 AM CST (timezone unspecified)",
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "The Bloomberg article body was inaccessible and the FT pre-cutoff version was not verified. The reports describe annualized run rate, not a confirmed $20bn reduction in recognized revenue."
+    },
+    {
+      "observation": "Barron’s contemporaneous item reported broad-index declines after the FT story: Nasdaq Composite −1.4%, S&P 500 −0.7%, and Dow −0.1% (56 points).",
+      "source_urls": [
+        "https://www.barrons.com/livecoverage/stock-market-news-today-100826/card/stocks-sink-after-openai-report-sours-ai-trade-BKsGL9ZiRLoaWdN2KuCG?siteid=yhoof2"
+      ],
+      "event_time": "2026-10-08, U.S. afternoon",
+      "publication_time": "2026-10-08T17:35:18Z",
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "This is an index-level report with temporal attribution, not causal isolation; the supplied passage does not identify Intel orders, customers, or production changes."
+    }
+  ],
+  "gaps": [
+    "The FT article's exact first-publication time and its wording in a pre-cutoff snapshot remain unverified; its retrieved version shows an update time of 20:15 on Oct. 8 with no timezone.",
+    "No direct OpenAI disclosure or underlying investor financial presentation was verified in the eligible material.",
+    "The eligible pre-cutoff material does not resolve whether the near-$50bn and near-$70bn run-rate figures use the same definition or accounting treatment; do not characterize the difference as an actual revenue contraction or formal guidance miss.",
+    "No verified pre-cutoff source in this collection isolates other same-session market drivers or links the OpenAI report to an Intel-specific customer, order, deployment, or supply change.",
+    "UNVERIFIED source S4: https://www.barrons.com/livecoverage/stock-market-news-today-100826/card/stocks-sink-after-openai-report-sours-ai-trade-BKsGL9ZiRLoaWdN2KuCG?siteid=yhoof2 did not match any saved Web Search result URL/ref; keep retrieval_verification=UNVERIFIED and do not treat it as a verified Web Search source."
+  ],
+  "research_notes": "Cutoff: 2026-10-08T18:05:20.687777Z. The earliest traceable report of the revised figure is the Financial Times article dated Oct. 8, but its exact initial publication time and pre-cutoff text could not be verified. A Bloomberg search-result excerpt at 11:04 AM CST on Oct. 8 attributes its near-$50bn annualized-revenue report to the FT, placing that coverage before the cutoff; the supplied Barron’s item at 17:35:18Z also reports the FT story. Before the report, Axios had publicly reported a near-$70bn annualized run rate, citing unnamed people familiar with OpenAI’s finances. These are reported run-rate figures, not confirmed full-year revenue, profit, or formal company guidance. Barron’s describes an index-level market move after the report, but does not establish sole causation or identify an Intel-specific customer, order, product, or production change. No post-cutoff market reactions or follow-up coverage are used."
+}

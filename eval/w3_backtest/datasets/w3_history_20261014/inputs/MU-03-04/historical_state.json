@@ -1,0 +1,1221 @@
+{
+  "recent_trade_intents": [
+    {
+      "message": {
+        "title": "Micron Stock Drops Amid Fears of Memory-Price Peak. The Data Tell a Different Story. -- Barrons.com",
+        "body": "By Adam Clark Micron Technology stock was flatlining early Monday. The memory-chip maker is still contending with fears of a cyclical peak in its earnings but prices tell a different story. Micron shares were down 1.2% at $1,061.81 in early trading. The stock didn't get much of a lift from blowout earnings last week, with investors seemingly still skeptical about the sustainability of soaring profits. But the numbers suggest memory prices will only keep rising. The latest set of figures from World Semiconductor Trade Statistics showed memory sales increasing 36% in August, driven by both stronger shipment volumes and pricing. The prices of DRAM and NAND rose 8% and 5%, respectively. DRAM is short-term working memory that computers and AI hardware use to manage active data and running processes. It makes up about three quarters of Micron's revenue. NAND flash memory is used for longer-term storage. Backward-looking numbers might not be much comfort for nervous investors, but analysts expect the memory-chip boom to keep going. DRAM prices are set to rise between 15% and 20% in the fourth quarter, with NAND prices poised to rise between 12% and 20%, according to Brad Gastwirth, global head of research and market intelligence at Circular Technologies. \"Memory remains the clearest quantitative signal in our October work. Pricing continues to move higher even as consumer end markets weaken, while long term supply agreements remain a major part of customer conversations,\" Gastwirth wrote in a research note Friday. As memory prices keep going up, Micron stock only looks cheaper-even if the market remains doubtful. Write to Adam Clark at adam.clark@barrons.com This content was created by Barron's, which is operated by Dow Jones & Co. Barron's is published independently from Dow Jones Newswires and The Wall Street Journal. (END) Dow Jones Newswires October 05, 2026 09:49 ET (13:49 GMT) Copyright (c) 2026 Dow Jones & Company, Inc. The statements in this document shall not be considered as an objective or independent explanation of the matters. Please note that this document (a) has not been prepared in accordance with legal requirements designed to promote the independence of investment research, and (b) is not subject to any prohibition on dealing ahead of the dissemination or publication of investment research.",
+        "source_name": "interactivebrokers.com",
+        "published_at": "2026-10-05T13:49:00Z"
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": [
+          "E217"
+        ]
+      },
+      "w2": {
+        "policy_hit": false,
+        "policy_related": false,
+        "policy_ids": [],
+        "hit_condition_ids": [],
+        "matched_condition_ids": []
+      },
+      "w3_decision": {
+        "novelty": {
+          "reason": "Reference View的E217记录了FY2026 Q4 DRAM合同价涨10%–15%、NAND涨15%–20%的预期，但未覆盖WSTS报告的2026年8月memory销售增长36%、DRAM/NAND价格分别上涨8%/5%的数据，也未覆盖Gastwirth提出的不同Q4价格区间，故为NEW。",
+          "reference_ids": [
+            "E217"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "现行Policy无适用于该行业月度数据或DRAM/NAND价格上涨预测的命中条件；消息未披露Micron特定经营变化，也未提供符合FY2027调整后EPS上修Policy要求的可比新旧数值。"
+        },
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "新增的8月价格与销售数据支持涨势仍在延续；Gastwirth对Q4 DRAM价格的预测为上涨15%–20%，相较E217的10%–15%区间整体高5个百分点。NAND预测为12%–20%，并未较原区间整体上修。由此带来的正向修订主要集中于DRAM价格预期。",
+          "prior_expectation": "截至E217（2026-09-30），行业预期FY2026 Q4 DRAM合同价上涨约10%–15%、NAND上涨约15%–20%，并已预期服务器DRAM短缺及AI驱动的持续紧张。Micron近期实现的高ASP和盈利强劲，但持续性仍待验证。",
+          "reason": "Surprise为中等：供应紧张和涨价方向已在基线中，但WSTS最新实际数据及更高的DRAM预测强化了近端价格路径。Materiality较高，因为DRAM约占Micron收入四分之三，且价格变化可经实现ASP传至收入和利润。单一分析师预测并非共识，也未量化Micron自身价格实现，限制确信度；但方向性传导清楚，足以支持LONG。",
+          "trade": true
+        }
+      },
+      "direction": "LONG",
+      "initiated_at": "2026-10-05T14:01:27.826342+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    },
+    {
+      "message": {
+        "title": "Morgan Stanley revisits Micron stock price target amid stellar growth",
+        "body": "Micron stock rides an AI memory boom, even as management warns that tight memory supply will last through 2028.",
+        "source_name": "thestreet.com",
+        "published_at": "2026-10-05T19:13:00Z"
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": []
+      },
+      "w2": {
+        "policy_hit": false,
+        "policy_related": false,
+        "policy_ids": [],
+        "hit_condition_ids": [],
+        "matched_condition_ids": []
+      },
+      "w3_decision": {
+        "novelty": {
+          "reason": "TheStreet disclosed Morgan Stanley’s FY2027 Micron estimate revision, which is not stated among E208’s existing analyst facts; E208 provides the relevant post-earnings baseline of about $160 consensus adjusted EPS. Morgan Stanley raised its estimate from $168.52 to $182.52 in an Oct. 1 note. [TheStreet article](https://www.thestreet.com/investing/stocks/mu-morgan-stanley-maintains-micron-stock-price-target-ai-memory-growth)",
+          "reference_ids": [
+            "E208"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "Following the UNCOVERED_NEW mode’s established no-Policy state, retain the empty Policy match and evaluate the newly surfaced forecast independently."
+        },
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "Morgan Stanley raised its FY2027 EPS estimate by about 8.3%, from $168.52 to $182.52—about 14% above the approximately $160 baseline. This is a single-firm estimate, not a market-wide consensus revision.",
+          "prior_expectation": "The post-FY2026 Q4 market baseline in E208 was approximately $160 in FY2027 adjusted EPS.",
+          "reason": "The estimate increase is a meaningful positive earnings-expectation revision. Micron’s tight supply and AI-memory demand support transmission from higher expected pricing and earnings to MU’s value capture. The unchanged $1,200 price target and the fact that the cited note dates to Oct. 1 temper the signal, but the size of the EPS uplift versus the existing baseline supports a LONG. [TheStreet article](https://www.thestreet.com/investing/stocks/mu-morgan-stanley-maintains-micron-stock-price-target-ai-memory-growth)",
+          "trade": true
+        }
+      },
+      "direction": "LONG",
+      "initiated_at": "2026-10-05T19:29:41.079835+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    }
+  ],
+  "history_matches": [
+    {
+      "events": [],
+      "policies": []
+    },
+    {
+      "events": [],
+      "policies": []
+    }
+  ],
+  "watches": [],
+  "pins": [],
+  "policy_consumptions": [],
+  "provisional": [
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "247WallSt",
+          "The AI Investor Podcast",
+          "Eric Bleeker",
+          "Austin Smith",
+          "Micron",
+          "Nvidia"
+        ],
+        "occurrence_date": "2026-10-06",
+        "proposition": "247WallSt于2026年10月6日发布视频内容，介绍AI Investor Podcast近期一期节目；主持人Eric Bleeker和Austin Smith在节目中讨论了内存在自动驾驶汽车和人形机器人中的作用，并将Micron与Nvidia列为潜在股票选择。",
+        "subject_time": "247WallSt内容发表于2026-10-06；播客节目日期未注明"
+      },
+      "candidate_index": 0,
+      "case_id": "case_11ebaab19e4d4b769c82ba6915945a18",
+      "created_at": "2026-10-06T06:19:21.938560Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E302",
+      "runtime_signature": "1b9f83bcea6227d7d5955e240260d83b1c107f7aa8d34b37d1e1f2ee7275b794",
+      "snapshot_version": 1,
+      "source_message_id": "std_0968120396924bca999e7a8c570c1395",
+      "ticker": "MU",
+      "trading_date": "2026-10-06"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Rewind Therapeutics"
+        ],
+        "occurrence_date": "2026-10-06",
+        "proposition": "Rewind Therapeutics宣布已获得额外融资，以推进其口服GPR17拮抗剂项目。",
+        "subject_time": "截至2026-10-06的融资公告；先导口服GPR17项目"
+      },
+      "candidate_index": 0,
+      "case_id": "case_ea0d530baeb24afdbc563c5fe14bf373",
+      "created_at": "2026-10-06T07:05:05.161480Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E303",
+      "runtime_signature": "39af28e6c3ea17721f9a2b7b82ada08f4554a506e4f66240c4934edf2ca57a5a",
+      "snapshot_version": 2,
+      "source_message_id": "std_61c3f2011b1d4ac2bf109d004ff43c82",
+      "ticker": "MU",
+      "trading_date": "2026-10-06"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLAN",
+        "entities": [
+          "AMD",
+          "Lisa Su"
+        ],
+        "occurrence_date": "2026-10-06",
+        "proposition": "AMD CEO Lisa Su表示，AMD计划在2027年大幅增加芯片供应，以满足AI需求。",
+        "subject_time": "AMD 2027年芯片供应计划"
+      },
+      "candidate_index": 0,
+      "case_id": "case_e656285665ff47a1931390a84ecca588",
+      "created_at": "2026-10-06T07:27:56.816314Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E304",
+      "runtime_signature": "69c17d74b39c6df4e5c6ff875597049ae91138400fc19f78864b3fd415623252",
+      "snapshot_version": 3,
+      "source_message_id": "std_9f681709970c48829ebd887a7813fec1",
+      "ticker": "MU",
+      "trading_date": "2026-10-06"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ONGOING",
+        "entities": [
+          "AMD",
+          "Lisa Su",
+          "memory chipmakers"
+        ],
+        "occurrence_date": "2026-10-06",
+        "proposition": "Lisa Su表示，AMD正与内存芯片厂商密切合作，以确保获得充足的内存供应。",
+        "subject_time": "AMD面向AI需求的内存供应安排"
+      },
+      "candidate_index": 1,
+      "case_id": "case_e656285665ff47a1931390a84ecca588",
+      "created_at": "2026-10-06T07:27:56.838576Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E305",
+      "runtime_signature": "5f89e229b23a62d3649c76db5cff18557a9a1f72e8689a5c6efda8c9d00182db",
+      "snapshot_version": 4,
+      "source_message_id": "std_9f681709970c48829ebd887a7813fec1",
+      "ticker": "MU",
+      "trading_date": "2026-10-06"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "AMD",
+          "Lisa Su"
+        ],
+        "occurrence_date": "2026-10-06",
+        "proposition": "Lisa Su表示，AMD预计未来数年将有很高的AI芯片需求，并需要额外的先进晶圆产能；AMD正按三至五年期进行规划。",
+        "subject_time": "未来数年；三至五年规划期"
+      },
+      "candidate_index": 2,
+      "case_id": "case_e656285665ff47a1931390a84ecca588",
+      "created_at": "2026-10-06T07:27:56.849562Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E306",
+      "runtime_signature": "40c3e7be874a627b342da7ae37ac4f91f50d91b71d9887592a7a459f1124c937",
+      "snapshot_version": 5,
+      "source_message_id": "std_9f681709970c48829ebd887a7813fec1",
+      "ticker": "MU",
+      "trading_date": "2026-10-06"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "ChartMill",
+          "Micron Technology",
+          "Navellier's Little Book"
+        ],
+        "occurrence_date": "2026-10-06",
+        "proposition": "ChartMill文章称Micron通过Navellier's Little Book的全部八项成长测试，同时提示周期性和增长放缓风险。",
+        "subject_time": "ChartMill筛选结论，发布于2026-10-06"
+      },
+      "candidate_index": 0,
+      "case_id": "case_98887d8eb8f341d2a91c5fc8759677f8",
+      "created_at": "2026-10-06T08:25:23.963376Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E307",
+      "runtime_signature": "fdb50bdb20b637a73a2d3ac7a02474484c267e0cf46ce6bb86229de5a858222a",
+      "snapshot_version": 6,
+      "source_message_id": "std_540d814638b2487eb7a295423f7a63ce",
+      "ticker": "MU",
+      "trading_date": "2026-10-06"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "ResearchAndMarkets.com",
+          "U.S. NOR Flash market"
+        ],
+        "occurrence_date": "2026-10-06",
+        "proposition": "ResearchAndMarkets报告预测美国NOR Flash市场规模将从2026年的5.2462亿美元增至2031年的6.7918亿美元，2026至2031年复合年增长率为5.3%。",
+        "subject_time": "美国NOR Flash市场，2026至2031年"
+      },
+      "candidate_index": 0,
+      "case_id": "case_8291081deeaf4b769e18bc5a0fc349f1",
+      "created_at": "2026-10-06T08:30:16.524360Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E308",
+      "runtime_signature": "e182fcac88c43fa9937eabd6242b4e7c86abbebef02106b06cc6f1eb8b16e2b7",
+      "snapshot_version": 7,
+      "source_message_id": "std_125ed9bed8d1422da26dd64dea23b86f",
+      "ticker": "MU",
+      "trading_date": "2026-10-06"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "ResearchAndMarkets.com",
+          "United States semiconductor manufacturing equipment market"
+        ],
+        "occurrence_date": "2026-10-06",
+        "proposition": "ResearchAndMarkets报告预测美国半导体制造设备市场规模将从2026年的144.4亿美元增至2031年的248.3亿美元，2026至2031年复合年增长率为11.4%。",
+        "subject_time": "美国半导体制造设备市场，2026至2031年"
+      },
+      "candidate_index": 0,
+      "case_id": "case_68c4474eb26045a3a35e74554c161feb",
+      "created_at": "2026-10-06T08:33:39.308381Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E309",
+      "runtime_signature": "525043251fc4b68f9ce3928bde5999ddd6dfba05fee00dd17c62510867fe60fd",
+      "snapshot_version": 8,
+      "source_message_id": "std_aa2b14b5e8134f36a8289b124446e6ca",
+      "ticker": "MU",
+      "trading_date": "2026-10-06"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "ResearchAndMarkets.com",
+          "Mordor Intelligence",
+          "美国HBM市场"
+        ],
+        "occurrence_date": "2026-10-06",
+        "proposition": "ResearchAndMarkets于2026年10月6日发布的新闻稿转述Mordor Intelligence估算：美国HBM市场2025年为USD 1.09 billion，预计2026年为USD 1.43 billion、2031年为USD 4.91 billion，2026至2031年CAGR为27.98%。",
+        "subject_time": "2025年估值及2026至2031年预测期"
+      },
+      "candidate_index": 0,
+      "case_id": "case_e722461b663a41ca84f5e253c0a54b63",
+      "created_at": "2026-10-06T08:35:51.038497Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E310",
+      "runtime_signature": "8eeaa348006b562587e2b8b7866dc8fd6800391fc65ee025d90914be239c31e5",
+      "snapshot_version": 9,
+      "source_message_id": "std_7c447d4c7a074b56a87e6e8a584a3ef8",
+      "ticker": "MU",
+      "trading_date": "2026-10-06"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Mordor Intelligence",
+          "美国HBM市场",
+          "HBM3E"
+        ],
+        "occurrence_date": "2026-10-06",
+        "proposition": "Mordor Intelligence报告估算HBM3E占美国HBM市场的比例在2025年为71.32%。",
+        "subject_time": "2025年"
+      },
+      "candidate_index": 1,
+      "case_id": "case_e722461b663a41ca84f5e253c0a54b63",
+      "created_at": "2026-10-06T08:35:51.126444Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E311",
+      "runtime_signature": "7b72ac3ca56f4ac48f3835df5513c486530d6f13f144daca52b0f76edd3b7b6f",
+      "snapshot_version": 10,
+      "source_message_id": "std_7c447d4c7a074b56a87e6e8a584a3ef8",
+      "ticker": "MU",
+      "trading_date": "2026-10-06"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "Mordor Intelligence",
+          "美国HBM市场",
+          "HBM4E及后续代际HBM"
+        ],
+        "occurrence_date": "2026-10-06",
+        "proposition": "Mordor Intelligence报告预测HBM4E及后续代际产品在美国HBM市场至2031年的CAGR为28.94%。",
+        "subject_time": "至2031年的预测期"
+      },
+      "candidate_index": 2,
+      "case_id": "case_e722461b663a41ca84f5e253c0a54b63",
+      "created_at": "2026-10-06T08:35:51.150321Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E312",
+      "runtime_signature": "5c5e221265da5e7064bf7477e08a1178f6c73a5b549e355a900c80ef607b0dee",
+      "snapshot_version": 11,
+      "source_message_id": "std_7c447d4c7a074b56a87e6e8a584a3ef8",
+      "ticker": "MU",
+      "trading_date": "2026-10-06"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Mordor Intelligence",
+          "美国HBM市场",
+          "先进节点（低于1Z）"
+        ],
+        "occurrence_date": "2026-10-06",
+        "proposition": "Mordor Intelligence报告估算先进节点（低于1Z）占美国HBM市场的比例在2025年为49.94%。",
+        "subject_time": "2025年"
+      },
+      "candidate_index": 3,
+      "case_id": "case_e722461b663a41ca84f5e253c0a54b63",
+      "created_at": "2026-10-06T08:35:51.172080Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E313",
+      "runtime_signature": "dcb9a7548ad3adb93c0b9e2d1c65d2c658677c2c6507cfa28e3ffac8d42ace00",
+      "snapshot_version": 12,
+      "source_message_id": "std_7c447d4c7a074b56a87e6e8a584a3ef8",
+      "ticker": "MU",
+      "trading_date": "2026-10-06"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "Mordor Intelligence",
+          "美国HBM市场",
+          "先进节点（低于1Z）"
+        ],
+        "occurrence_date": "2026-10-06",
+        "proposition": "Mordor Intelligence报告预测先进节点（低于1Z）在美国HBM市场至2031年的CAGR为28.69%。",
+        "subject_time": "至2031年的预测期"
+      },
+      "candidate_index": 4,
+      "case_id": "case_e722461b663a41ca84f5e253c0a54b63",
+      "created_at": "2026-10-06T08:35:51.189100Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E314",
+      "runtime_signature": "02762226436f310100999bb68595e3b9578ae9bfefc1fc59b0907a5f72aabd54",
+      "snapshot_version": 13,
+      "source_message_id": "std_7c447d4c7a074b56a87e6e8a584a3ef8",
+      "ticker": "MU",
+      "trading_date": "2026-10-06"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "ResearchAndMarkets.com",
+          "Saudi Arabia air purifier market"
+        ],
+        "occurrence_date": "2026-10-06",
+        "proposition": "ResearchAndMarkets报告预测沙特阿拉伯空气净化器市场将从2025年的1.9982亿美元增长至2034年的3.6922亿美元，2026至2034年复合年增长率为7.06%。",
+        "subject_time": "沙特阿拉伯空气净化器市场，2025至2034年"
+      },
+      "candidate_index": 0,
+      "case_id": "case_29920a45cd4641e8bc248685517fa92b",
+      "created_at": "2026-10-06T08:57:54.400503Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E315",
+      "runtime_signature": "d7fa8296928a832d39f6dc1e3fbc45624dafacda699efd9a420062423c97a716",
+      "snapshot_version": 14,
+      "source_message_id": "std_0dce73154ca547dd87822ac22f5a8768",
+      "ticker": "MU",
+      "trading_date": "2026-10-06"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Nokia",
+          "Justin Hotard"
+        ],
+        "occurrence_date": "2026-10-06",
+        "proposition": "Nokia CEO Justin Hotard表示，内存芯片和电力可用性是拖慢数据中心建设的瓶颈之一。",
+        "subject_time": "当前数据中心建设"
+      },
+      "candidate_index": 0,
+      "case_id": "case_c823e127d02b4b0196f4d57a37708547",
+      "created_at": "2026-10-06T09:32:51.445098Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E316",
+      "runtime_signature": "4438605a5ba5102ea415e79c71712f0140fa3168b2e2c4655cf105d0fc77783e",
+      "snapshot_version": 15,
+      "source_message_id": "std_d4c22dc50a494dc182cb5ec3527d9f81",
+      "ticker": "MU",
+      "trading_date": "2026-10-06"
+    },
+    {
+      "candidate": {
+        "assertion_state": "HYPOTHETICAL",
+        "entities": [
+          "Nokia",
+          "Justin Hotard",
+          "data center customers"
+        ],
+        "occurrence_date": "2026-10-06",
+        "proposition": "Nokia CEO Justin Hotard表示，如果供应约束解除，客户建设数据中心的速度可能达到当前约两倍。",
+        "subject_time": "供应约束解除的假设情境"
+      },
+      "candidate_index": 1,
+      "case_id": "case_c823e127d02b4b0196f4d57a37708547",
+      "created_at": "2026-10-06T09:32:51.458438Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E317",
+      "runtime_signature": "fdecae4c81ae20471976347839926e8b3ad60a6fba3fc027b510fbdacb7e7239",
+      "snapshot_version": 16,
+      "source_message_id": "std_d4c22dc50a494dc182cb5ec3527d9f81",
+      "ticker": "MU",
+      "trading_date": "2026-10-06"
+    },
+    {
+      "candidate": {
+        "assertion_state": "SCHEDULED",
+        "entities": [
+          "Portillo's",
+          "OREO",
+          "Mondelēz International"
+        ],
+        "occurrence_date": "2026-10-06",
+        "proposition": "Portillo's宣布三款OREO联名产品——OREO Shake、OREO Cake和OREO Cake Shake——将于2026年10月6日起在美国各地门店限时供应。",
+        "subject_time": "自2026-10-06起的限时供应期"
+      },
+      "candidate_index": 0,
+      "case_id": "case_7b912b8790734195a8c198ebf0a7d06e",
+      "created_at": "2026-10-06T10:04:00.947875Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E318",
+      "runtime_signature": "7ea8b2df9432b60a9156d1382ed66397553baa505efec88d454aa2f9903480ad",
+      "snapshot_version": 17,
+      "source_message_id": "std_d0ec4ce03f84492c8b07233745138a0c",
+      "ticker": "MU",
+      "trading_date": "2026-10-06"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Reuters",
+          "U.S. stock-index futures",
+          "U.S. Treasury yields",
+          "oil prices"
+        ],
+        "occurrence_date": "2026-10-06",
+        "proposition": "Reuters标题报道，2026年10月6日美国股指期货上涨，同时国债收益率和油价回落。",
+        "subject_time": "2026-10-06美国盘前市场"
+      },
+      "candidate_index": 0,
+      "case_id": "case_57891ee3aaed4d028be65c73face4e40",
+      "created_at": "2026-10-06T10:34:16.814512Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E319",
+      "runtime_signature": "2fa84ee6b58d5ae302e1063f439dd9669a06991412a71aba3581cf050c0018e9",
+      "snapshot_version": 18,
+      "source_message_id": "std_9a1a451bd97c4a6084368541b17135c1",
+      "ticker": "MU",
+      "trading_date": "2026-10-06"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "U.S. Treasury bonds"
+        ],
+        "occurrence_date": "2026-10-06",
+        "proposition": "2026年10月6日，美国30年期国债收益率降至5.626%；前一日曾触及5.702%，为2002年以来高位。",
+        "subject_time": "2026年10月6日美国国债市场"
+      },
+      "candidate_index": 0,
+      "case_id": "case_bc401be637f14c64964b3ed277cc853b",
+      "created_at": "2026-10-06T10:39:50.844379Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E320",
+      "runtime_signature": "4d4256e5ff2ccd2e1569163748891052b1b60381e85b203881ba9463aabaeb51",
+      "snapshot_version": 19,
+      "source_message_id": "std_68055e54e4964318b5f6ab6bbafd62a6",
+      "ticker": "MU",
+      "trading_date": "2026-10-06"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "Federal Reserve",
+          "CME FedWatch"
+        ],
+        "occurrence_date": "2026-10-06",
+        "proposition": "截至2026年10月6日盘前，交易员定价显示美联储本月维持利率不变的概率为78%，而12月加息仍被大体计入。",
+        "subject_time": "2026年10月及12月美联储会议"
+      },
+      "candidate_index": 1,
+      "case_id": "case_bc401be637f14c64964b3ed277cc853b",
+      "created_at": "2026-10-06T10:39:50.893406Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E321",
+      "runtime_signature": "3b609a3816a883b5cbce255eea659bf10e57effd177a33dcef32c0fbb2510786",
+      "snapshot_version": 20,
+      "source_message_id": "std_68055e54e4964318b5f6ab6bbafd62a6",
+      "ticker": "MU",
+      "trading_date": "2026-10-06"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Micron Technology",
+          "U.S. stock-index futures"
+        ],
+        "occurrence_date": "2026-10-06",
+        "proposition": "Reuters报道，2026年10月6日美国股指期货上涨时，Micron Technology在盘前交易中小幅下跌。",
+        "subject_time": "2026年10月6日美国盘前交易"
+      },
+      "candidate_index": 2,
+      "case_id": "case_bc401be637f14c64964b3ed277cc853b",
+      "created_at": "2026-10-06T10:39:50.907675Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E322",
+      "runtime_signature": "60f368be45ecbb2985f12f9db30964098252ff7c7b3963690c785e2c1013d7ba",
+      "snapshot_version": 21,
+      "source_message_id": "std_68055e54e4964318b5f6ab6bbafd62a6",
+      "ticker": "MU",
+      "trading_date": "2026-10-06"
+    },
+    {
+      "candidate": {
+        "assertion_state": "SCHEDULED",
+        "entities": [
+          "YieldMax ETFs",
+          "YRAM"
+        ],
+        "occurrence_date": "2026-10-06",
+        "proposition": "YieldMax宣布YRAM每股派息0.4214美元，除息日及登记日为2026年10月7日，支付日为2026年10月8日。",
+        "subject_time": "YRAM 2026年10月周度派息"
+      },
+      "candidate_index": 0,
+      "case_id": "case_9b43a2ba12ef4e9f931a66c02cea73b3",
+      "created_at": "2026-10-06T10:59:55.196427Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E323",
+      "runtime_signature": "6d58bfbafd960ddd9566791b4022758d09aba04e453ad6e3366ac0eb2b931974",
+      "snapshot_version": 22,
+      "source_message_id": "std_004ae79699dc4141af1d0057f94f7b69",
+      "ticker": "MU",
+      "trading_date": "2026-10-06"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "YieldMax ETFs",
+          "YRAM"
+        ],
+        "occurrence_date": "2026-10-06",
+        "proposition": "YieldMax公告列示YRAM分配率为40.16%（按2026年10月5日收盘数据计算），30日SEC收益率为0.71%（截至2026年9月30日）。",
+        "subject_time": "YRAM截至2026年10月5日的分配率及截至2026年9月30日的30日SEC收益率"
+      },
+      "candidate_index": 1,
+      "case_id": "case_9b43a2ba12ef4e9f931a66c02cea73b3",
+      "created_at": "2026-10-06T10:59:55.203699Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E324",
+      "runtime_signature": "a6f0ee8db3b1af2b705c1860d361a1688ac1586a2a36cadb29609021a422abeb",
+      "snapshot_version": 23,
+      "source_message_id": "std_004ae79699dc4141af1d0057f94f7b69",
+      "ticker": "MU",
+      "trading_date": "2026-10-06"
+    },
+    {
+      "candidate": {
+        "assertion_state": "SCHEDULED",
+        "entities": [
+          "Regeneron",
+          "ESMO 2026"
+        ],
+        "occurrence_date": "2026-10-06",
+        "proposition": "Regeneron宣布将在2026年10月23日至27日于马德里举行的ESMO大会上展示10份肿瘤学摘要。",
+        "subject_time": "ESMO 2026，2026年10月23日至27日"
+      },
+      "candidate_index": 0,
+      "case_id": "case_59115bfa02984abdb638fba8dc11b58f",
+      "created_at": "2026-10-06T11:04:43.016535Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E325",
+      "runtime_signature": "db7a999e35a64549c515ec2c3d862ce615e9e5d6ae93067741ab221ddc44a86d",
+      "snapshot_version": 24,
+      "source_message_id": "std_ffb5f3a168484b8f8239ced43e945918",
+      "ticker": "MU",
+      "trading_date": "2026-10-06"
+    },
+    {
+      "candidate": {
+        "assertion_state": "SCHEDULED",
+        "entities": [
+          "Regeneron",
+          "C-POST",
+          "cemiplimab",
+          "ESMO 2026"
+        ],
+        "occurrence_date": "2026-10-06",
+        "proposition": "Regeneron安排在ESMO 2026展示C-POST III期试验的辅助cemiplimab治疗高复发风险皮肤鳞状细胞癌患者的约3.5年随访总生存数据。",
+        "subject_time": "2026年10月25日；约3.5年随访"
+      },
+      "candidate_index": 1,
+      "case_id": "case_59115bfa02984abdb638fba8dc11b58f",
+      "created_at": "2026-10-06T11:04:43.040992Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E326",
+      "runtime_signature": "7312183ad6b8b23cb0139022d7b7c31e557a5db5a848201ee175098ca6b8b9fd",
+      "snapshot_version": 25,
+      "source_message_id": "std_ffb5f3a168484b8f8239ced43e945918",
+      "ticker": "MU",
+      "trading_date": "2026-10-06"
+    },
+    {
+      "candidate": {
+        "assertion_state": "SCHEDULED",
+        "entities": [
+          "Regeneron",
+          "cemiplimab",
+          "ESMO 2026"
+        ],
+        "occurrence_date": "2026-10-06",
+        "proposition": "Regeneron安排在ESMO 2026展示可切除II至IV期皮肤鳞状细胞癌患者术前cemiplimab治疗的II期最终分析。",
+        "subject_time": "2026年10月24日"
+      },
+      "candidate_index": 2,
+      "case_id": "case_59115bfa02984abdb638fba8dc11b58f",
+      "created_at": "2026-10-06T11:04:43.121853Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E327",
+      "runtime_signature": "d9abcfb63f2c3a7c8c68a8092f2a46ef8de3711bca6fc005c93b32e3c9f845de",
+      "snapshot_version": 26,
+      "source_message_id": "std_ffb5f3a168484b8f8239ced43e945918",
+      "ticker": "MU",
+      "trading_date": "2026-10-06"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Karl Deisseroth",
+          "Peter Hegemann",
+          "Georg Nagel",
+          "Nobel Assembly at Karolinska Institutet"
+        ],
+        "occurrence_date": "2026-10-05",
+        "proposition": "2026年诺贝尔生理学或医学奖于2026-10-05联合授予Karl Deisseroth、Peter Hegemann及Georg Nagel，以表彰其关于光控离子通道与光遗传学的发现。",
+        "subject_time": "2026年诺贝尔生理学或医学奖"
+      },
+      "candidate_index": 0,
+      "case_id": "case_39795fe5a009403baaa698da01dc8a17",
+      "created_at": "2026-10-06T11:08:18.118062Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E328",
+      "runtime_signature": "c666be535637bac0434f9a3149734816f7a9b24eff7d58c0bc14328e7d5a94fb",
+      "snapshot_version": 27,
+      "source_message_id": "std_ebf655e2e6204a86be728730c7763b91",
+      "ticker": "MU",
+      "trading_date": "2026-10-06"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "STARTRADER",
+          "MetaTrader 5"
+        ],
+        "occurrence_date": "2026-10-06",
+        "proposition": "STARTRADER于2026年10月6日在MT5服务器上线20只股票及ETF CFD产品（12只股票、8只ETF），平台交易时间为周一至周日00:00至24:00（GMT+3）。",
+        "subject_time": "自2026年10月6日起的平台产品与交易时间"
+      },
+      "candidate_index": 0,
+      "case_id": "case_d82861ced33b43dd8edee97608c6e88d",
+      "created_at": "2026-10-06T11:13:08.075224Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E329",
+      "runtime_signature": "a3f51e0f44341ccfbf3274f1ceb8a57784dbcda0b2ea7c5538714c02a0c183e4",
+      "snapshot_version": 28,
+      "source_message_id": "std_d033212778e74ffb9af49b697ef865bb",
+      "ticker": "MU",
+      "trading_date": "2026-10-06"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "STARTRADER",
+          "Samsung Electro-Mechanics",
+          "Hanmi Semiconductor",
+          "SK hynix",
+          "Samsung Electronics",
+          "DRAM sector"
+        ],
+        "occurrence_date": "2026-10-06",
+        "proposition": "STARTRADER新上线的产品中有7项提供HBM/DRAM供应链相关曝险，包括Samsung Electro-Mechanics、Hanmi Semiconductor、SK hynix、Samsung Electronics及DRAM板块相关产品。",
+        "subject_time": "2026年10月6日上线的CFD产品"
+      },
+      "candidate_index": 1,
+      "case_id": "case_d82861ced33b43dd8edee97608c6e88d",
+      "created_at": "2026-10-06T11:13:08.090657Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E330",
+      "runtime_signature": "0f3a6996ff988fb6d29be62695eb5be89e649b8cf29aadc05766b0f8dc6f49d5",
+      "snapshot_version": 29,
+      "source_message_id": "std_d033212778e74ffb9af49b697ef865bb",
+      "ticker": "MU",
+      "trading_date": "2026-10-06"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "TrendForce",
+          "SK hynix",
+          "Samsung Electronics"
+        ],
+        "occurrence_date": "2026-10-06",
+        "proposition": "TrendForce analysts expected seven new memory fabrication and packaging plants associated with SK hynix and Samsung Electronics to come online in 2028, with capacity and resulting supply relief ramping gradually.",
+        "subject_time": "2028"
+      },
+      "candidate_index": 0,
+      "case_id": "case_21aec9ae0cdd44d38ae9a60d711902d8",
+      "created_at": "2026-10-06T11:27:38.067601Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E331",
+      "runtime_signature": "3ad906f838db93b75eca618fc819e18c6e5d53c0b740b14c6ec85975417e8ce6",
+      "snapshot_version": 30,
+      "source_message_id": "std_ad9d267a362d48f5ace64e5c9202c790",
+      "ticker": "MU",
+      "trading_date": "2026-10-06"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "Wedbush",
+          "Matt Bryson",
+          "Micron"
+        ],
+        "occurrence_date": "2026-10-06",
+        "proposition": "Wedbush analyst Matt Bryson wrote that large-customer memory pricing for 2027 had been set, while ongoing or recent negotiations likely concerned smaller deals.",
+        "subject_time": "2027 pricing"
+      },
+      "candidate_index": 1,
+      "case_id": "case_21aec9ae0cdd44d38ae9a60d711902d8",
+      "created_at": "2026-10-06T11:27:38.321705Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E332",
+      "runtime_signature": "c14ca3f274a3117ca76e967880cfbfc2af27ccc79bed31c3038290f86cef0b2c",
+      "snapshot_version": 31,
+      "source_message_id": "std_ad9d267a362d48f5ace64e5c9202c790",
+      "ticker": "MU",
+      "trading_date": "2026-10-06"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Nanya Technology"
+        ],
+        "occurrence_date": "2026-10-06",
+        "proposition": "Nanya Technology reported 3Q26 revenue of NT$133.65 billion, up 61.9% quarter over quarter, and September 2026 revenue of NT$45.09 billion, up 0.9% month over month and 576.62% year over year; both were reported as records.",
+        "subject_time": "3Q26 and September 2026"
+      },
+      "candidate_index": 0,
+      "case_id": "case_09f553e2684b40ab9b2c6771f5e60cd0",
+      "created_at": "2026-10-06T11:32:22.775720Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E333",
+      "runtime_signature": "77b324ba7fd34d2e69924f73837feb291bca45d68c0572bb6060b166ff4e3b1c",
+      "snapshot_version": 32,
+      "source_message_id": "std_2d10d5b8914d4ea0b29b89937b519775",
+      "ticker": "MU",
+      "trading_date": "2026-10-06"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Winbond Electronics"
+        ],
+        "occurrence_date": "2026-10-06",
+        "proposition": "Winbond Electronics reported 3Q26 revenue of NT$82.33 billion, up 37.58% quarter over quarter, and September 2026 revenue of NT$28.25 billion, up 3.44% month over month and 256.67% year over year; both were reported as records.",
+        "subject_time": "3Q26 and September 2026"
+      },
+      "candidate_index": 1,
+      "case_id": "case_09f553e2684b40ab9b2c6771f5e60cd0",
+      "created_at": "2026-10-06T11:32:22.795846Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E334",
+      "runtime_signature": "fc872043b127045ca8434d00aaa75b74107bda0a8f3751c43f3fd058182583b2",
+      "snapshot_version": 33,
+      "source_message_id": "std_2d10d5b8914d4ea0b29b89937b519775",
+      "ticker": "MU",
+      "trading_date": "2026-10-06"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "Nanya Technology",
+          "Commercial Times"
+        ],
+        "occurrence_date": "2026-10-06",
+        "proposition": "Institutional-investor estimates cited by Commercial Times revised Nanya Technology's 3Q26 DRAM bit-shipment growth from an 8% quarter-over-quarter decline to 5% growth and DRAM ASP growth from 32% to 50%.",
+        "subject_time": "3Q26 DRAM shipments and ASP"
+      },
+      "candidate_index": 2,
+      "case_id": "case_09f553e2684b40ab9b2c6771f5e60cd0",
+      "created_at": "2026-10-06T11:32:22.806113Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E335",
+      "runtime_signature": "366d1a70a56807356dc64134b00200f48c6334a3e8c858c688b01f941e932240",
+      "snapshot_version": 34,
+      "source_message_id": "std_2d10d5b8914d4ea0b29b89937b519775",
+      "ticker": "MU",
+      "trading_date": "2026-10-06"
+    },
+    {
+      "candidate": {
+        "assertion_state": "EXPECTED",
+        "entities": [
+          "Nanya Technology"
+        ],
+        "occurrence_date": "2026-10-06",
+        "proposition": "The report estimated that Nanya Technology could meet approximately 50%-60% of customer demand, with long-term contracts covering more than 60% of its supply.",
+        "subject_time": "Current supply and customer demand as reported on 2026-10-06"
+      },
+      "candidate_index": 3,
+      "case_id": "case_09f553e2684b40ab9b2c6771f5e60cd0",
+      "created_at": "2026-10-06T11:32:22.830851Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E336",
+      "runtime_signature": "ed6641351dca377edcc2430f0658dfabea4a5f3aea638eb7c09730b286bb258b",
+      "snapshot_version": 35,
+      "source_message_id": "std_2d10d5b8914d4ea0b29b89937b519775",
+      "ticker": "MU",
+      "trading_date": "2026-10-06"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "Winbond Electronics",
+          "Commercial Times"
+        ],
+        "occurrence_date": "2026-10-06",
+        "proposition": "Institutional-investor estimates cited by Commercial Times put Winbond's 3Q26 specialty DRAM and SLC NAND price increases at 40%-50% quarter over quarter and NOR Flash price increases at approximately 30%.",
+        "subject_time": "3Q26 memory prices"
+      },
+      "candidate_index": 4,
+      "case_id": "case_09f553e2684b40ab9b2c6771f5e60cd0",
+      "created_at": "2026-10-06T11:32:22.853941Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E337",
+      "runtime_signature": "94c055787b139ce404fda883ada46a0937a15f832d8a54e01fbb4a7c562fef69",
+      "snapshot_version": 36,
+      "source_message_id": "std_2d10d5b8914d4ea0b29b89937b519775",
+      "ticker": "MU",
+      "trading_date": "2026-10-06"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Qualcomm",
+          "Apple",
+          "MediaTek",
+          "TSMC"
+        ],
+        "occurrence_date": null,
+        "proposition": "Qualcomm、Apple和MediaTek均在2026年9月发布了采用TSMC 2nm制程的旗舰手机处理器。",
+        "subject_time": "2026-09"
+      },
+      "candidate_index": 0,
+      "case_id": "case_00983c2b35b7496085c75f3f32d0c877",
+      "created_at": "2026-10-06T11:36:01.960800Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E338",
+      "runtime_signature": "5d3240cb4eb89cf1be60cf0cb08673f55ba710ed626c4c4c19c835ac76a4e71d",
+      "snapshot_version": 37,
+      "source_message_id": "std_a1c3d23686184c149fba1253656cd758",
+      "ticker": "MU",
+      "trading_date": "2026-10-06"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Apple",
+          "A20 Pro",
+          "A19 Pro"
+        ],
+        "occurrence_date": "2026-09-09",
+        "proposition": "Apple表示A20 Pro的内存带宽较A19 Pro提升50%。",
+        "subject_time": "A20 Pro相较A19 Pro"
+      },
+      "candidate_index": 1,
+      "case_id": "case_00983c2b35b7496085c75f3f32d0c877",
+      "created_at": "2026-10-06T11:36:02.005484Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E339",
+      "runtime_signature": "3d37a7ce41d222bf06c965bea72b97cad30dc8b78ed85e71cf6de5fab4e773d1",
+      "snapshot_version": 38,
+      "source_message_id": "std_a1c3d23686184c149fba1253656cd758",
+      "ticker": "MU",
+      "trading_date": "2026-10-06"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Apple",
+          "A20 Pro",
+          "iPhone 18 Pro",
+          "iPhone Duo"
+        ],
+        "occurrence_date": "2026-09-09",
+        "proposition": "Apple表示A20 Pro采用将处理器芯片与内存并排放置的定制封装设计，使内存避开芯片热路径并支持连接新一代均热板。",
+        "subject_time": "iPhone 18 Pro系列及iPhone Duo所用A20 Pro"
+      },
+      "candidate_index": 2,
+      "case_id": "case_00983c2b35b7496085c75f3f32d0c877",
+      "created_at": "2026-10-06T11:36:02.029310Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E340",
+      "runtime_signature": "de4fc8f2bd38964465de487569f7c11a10530068b5d630a1f21b17d26045bbf6",
+      "snapshot_version": 39,
+      "source_message_id": "std_a1c3d23686184c149fba1253656cd758",
+      "ticker": "MU",
+      "trading_date": "2026-10-06"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMORED",
+        "entities": [
+          "Apple",
+          "NVIDIA",
+          "AMD",
+          "Qualcomm",
+          "MediaTek",
+          "TSMC"
+        ],
+        "occurrence_date": null,
+        "proposition": "媒体援引行业消息称Apple、NVIDIA、AMD、Qualcomm和MediaTek将TSMC 2nm系列产能预订提高了10%至20%。",
+        "subject_time": "TSMC 2nm系列产能预订"
+      },
+      "candidate_index": 3,
+      "case_id": "case_00983c2b35b7496085c75f3f32d0c877",
+      "created_at": "2026-10-06T11:36:02.048239Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E341",
+      "runtime_signature": "69096267a4875bda52611655c3c804fe629a91c1b053907477e956c17d11b5e8",
+      "snapshot_version": 40,
+      "source_message_id": "std_a1c3d23686184c149fba1253656cd758",
+      "ticker": "MU",
+      "trading_date": "2026-10-06"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "TSMC"
+        ],
+        "occurrence_date": null,
+        "proposition": "行业消息预计TSMC的2nm月产能将在2026年底达到约12万片，高于此前约9万至10万片的市场估计。",
+        "subject_time": "截至2026年底"
+      },
+      "candidate_index": 4,
+      "case_id": "case_00983c2b35b7496085c75f3f32d0c877",
+      "created_at": "2026-10-06T11:36:02.070022Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E342",
+      "runtime_signature": "ef0ef8505ff5d3eaff59f61c2c335c42c5a111f9bce7968954384d0c9515cbd8",
+      "snapshot_version": 41,
+      "source_message_id": "std_a1c3d23686184c149fba1253656cd758",
+      "ticker": "MU",
+      "trading_date": "2026-10-06"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Qualcomm",
+          "Snapdragon 8 Elite Extreme Gen 6",
+          "MediaTek",
+          "Dimensity 9600 Pro"
+        ],
+        "occurrence_date": null,
+        "proposition": "Qualcomm称Snapdragon 8 Elite Extreme Gen 6支持直接在设备上运行超过300亿参数的MoE模型；MediaTek称Dimensity 9600 Pro支持最高约300亿参数的端侧模型。",
+        "subject_time": "2026年旗舰手机SoC产品规格"
+      },
+      "candidate_index": 5,
+      "case_id": "case_00983c2b35b7496085c75f3f32d0c877",
+      "created_at": "2026-10-06T11:36:02.099282Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E343",
+      "runtime_signature": "805b242b03c963053ac4e9402ce394b28b4934c3b5ac8a34f8abcd3c10d846dc",
+      "snapshot_version": 42,
+      "source_message_id": "std_a1c3d23686184c149fba1253656cd758",
+      "ticker": "MU",
+      "trading_date": "2026-10-06"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLANNED",
+        "entities": [
+          "Samsung Electronics",
+          "SK hynix",
+          "EBN"
+        ],
+        "occurrence_date": "2026-10-06",
+        "proposition": "EBN reported that Samsung and SK hynix were pursuing plans for as many as 17 new front-end memory fabs in South Korea: 10 attributed to Samsung and seven to SK hynix.",
+        "subject_time": "Long-term South Korean fab roadmaps"
+      },
+      "candidate_index": 0,
+      "case_id": "case_8d9970e005de4a8784626f9bee701b20",
+      "created_at": "2026-10-06T11:37:08.926451Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E344",
+      "runtime_signature": "8a7217c5329b53108cd92f666277dc5e96e9360ecbbd29657282141cb990fff8",
+      "snapshot_version": 43,
+      "source_message_id": "std_56a079268d6740518687266517c2de0f",
+      "ticker": "MU",
+      "trading_date": "2026-10-06"
+    },
+    {
+      "candidate": {
+        "assertion_state": "SCHEDULED",
+        "entities": [
+          "SK hynix",
+          "M17",
+          "Y2"
+        ],
+        "occurrence_date": "2026-10-06",
+        "proposition": "SK hynix was targeting first-cleanroom operations at its Cheongju M17 NAND fab in December 2028 and at Y2 in June 2029, according to the report.",
+        "subject_time": "December 2028 and June 2029"
+      },
+      "candidate_index": 1,
+      "case_id": "case_8d9970e005de4a8784626f9bee701b20",
+      "created_at": "2026-10-06T11:37:08.937821Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E345",
+      "runtime_signature": "c9a2575b98c3909f475863cd3f68933bc1347d0b3a7b73aa674efc5e8ba120c0",
+      "snapshot_version": 44,
+      "source_message_id": "std_56a079268d6740518687266517c2de0f",
+      "ticker": "MU",
+      "trading_date": "2026-10-06"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMORED",
+        "entities": [
+          "Samsung Electronics",
+          "Pyeongtaek P5",
+          "ZDNet"
+        ],
+        "occurrence_date": "2026-10-06",
+        "proposition": "ZDNet reported that Samsung was considering moving Phase 1 tool installation at Pyeongtaek P5 forward to 2Q27 from 3Q27.",
+        "subject_time": "2Q27 versus 3Q27"
+      },
+      "candidate_index": 2,
+      "case_id": "case_8d9970e005de4a8784626f9bee701b20",
+      "created_at": "2026-10-06T11:37:08.948336Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E346",
+      "runtime_signature": "d82227c8629756946615fbfd45530bc02cf5653ce15282a3d18c835feebc8423",
+      "snapshot_version": 45,
+      "source_message_id": "std_56a079268d6740518687266517c2de0f",
+      "ticker": "MU",
+      "trading_date": "2026-10-06"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "YMTC"
+        ],
+        "occurrence_date": "2026-10-06",
+        "proposition": "YMTC expected the global memory shortage to persist for at least another three years.",
+        "subject_time": "At least three years from October 2026"
+      },
+      "candidate_index": 3,
+      "case_id": "case_8d9970e005de4a8784626f9bee701b20",
+      "created_at": "2026-10-06T11:37:08.959149Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E347",
+      "runtime_signature": "27e5491fb8b34bf8898a39416a675d82be6cdedb49e566fae6713a4b9273c27e",
+      "snapshot_version": 46,
+      "source_message_id": "std_56a079268d6740518687266517c2de0f",
+      "ticker": "MU",
+      "trading_date": "2026-10-06"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Eric C. So",
+          "The Collision: What AI Does to Us",
+          "W.W. Norton"
+        ],
+        "occurrence_date": "2026-10-06",
+        "proposition": "W.W. Norton published Eric C. So’s book The Collision: What AI Does to Us on October 6, 2026.",
+        "subject_time": "Publication date: October 6, 2026"
+      },
+      "candidate_index": 0,
+      "case_id": "case_0f7bcbb034f84a9f985b43480a2dc182",
+      "created_at": "2026-10-06T11:59:04.328259Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E348",
+      "runtime_signature": "4818aa0ef4e673a03d5ed79073a63b747fb11ec631fef3892ea681b01acc5523",
+      "snapshot_version": 47,
+      "source_message_id": "std_ed20fe1282114f19a70a400ed6df92c6",
+      "ticker": "MU",
+      "trading_date": "2026-10-06"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "The King Center",
+          "When Faith Calls",
+          "Dr. Martin Luther King Jr.",
+          "Terentia",
+          "Storyline"
+        ],
+        "occurrence_date": "2026-10-06",
+        "proposition": "The King Center publicly released “When Faith Calls,” a six-part documentary series about the role of faith in Dr. Martin Luther King Jr.’s life and legacy, incorporating Terentia’s Storyline interactive archival experience.",
+        "subject_time": "2026-10-06"
+      },
+      "candidate_index": 0,
+      "case_id": "case_1d66fee3a22344ae9ec41adf8964d129",
+      "created_at": "2026-10-06T12:06:10.337655Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E349",
+      "runtime_signature": "c036d0ca30bdc8e9a4f451e2f1d11260ab9de2abb5a68fb7767a524838e44ae5",
+      "snapshot_version": 48,
+      "source_message_id": "std_16a3dc89b0bf4cb28f70d202560bb07f",
+      "ticker": "MU",
+      "trading_date": "2026-10-06"
+    }
+  ],
+  "limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "global_state": {
+    "watches": [],
+    "pins": []
+  },
+  "event_details": {
+    "requested_event_ids": [],
+    "canonical_events": [],
+    "provisional_events": [],
+    "missing_event_ids": []
+  }
+}

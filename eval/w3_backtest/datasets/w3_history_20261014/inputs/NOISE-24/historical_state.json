@@ -1,0 +1,1527 @@
+{
+  "recent_trade_intents": [
+    {
+      "message": {
+        "title": "Netlist and Micron Enter Patent License and Settlement Agreements",
+        "body": "IRVINE, Calif., Oct. 6, 2026 /PRNewswire/ -- Netlist, Inc. (OTCQB: NLST) today announced that the Company and Micron Technology, Inc. (\"Micron\") have entered into Patent License and Settlement Agreements.\n\nUnder the agreements, the parties have agreed to settle and mutually release all pending legal proceedings between the companies, and Micron will receive a 5-year term license to Netlist's patent portfolio, including patents covering server DIMMs and High Bandwidth Memory technologies. Micron will pay Netlist $30 million per quarter from the fourth quarter of 2026 through the third quarter of 2031, totaling $600 million during the term.\n\n\"The agreement with Micron further validates the value of our AI memory technologies,\" said C.K. Hong, Netlist's Chief Executive Officer. \"We remain committed to protecting our IP while continuing to invest in the development of next-generation products.\"\n\nFurther details regarding the transaction are available in Netlist's Current Report on Form 8-K filed concurrently with the issuance of this release and available on the SEC filings page of the Netlist website here.\n\nAbout NetlistNetlist is a leading innovator in advanced memory and storage solutions. With a rich portfolio of patented technologies, Netlist's inventions are foundational to the advancement of AI computing. To learn more about Netlist, please visit www.netlist.com.\n\nSafe Harbor StatementThis news release contains forward-looking statements within the meaning of the Private Securities Litigation Reform Act of 1995. Forward-looking statements contained in this news release include, without limitation, statements about anticipated benefits of the agreements, the parties' ability to perform their respective obligations under, and to realize the anticipated benefits of those agreements, future exclusion and cease and desist orders, Netlist's ability to successfully enforce its intellectual property rights, and evaluations and judgments regarding Netlist's intellectual property portfolio. Forward-looking statements are statements other than historical facts and often address future events or Netlist's future performance. They reflect management's present expectations regarding future events and are subject to known and unknown risks, uncertainties and other factors that could cause actual results to differ materially from those expressed in or implied by any forward-looking statements. These risks, uncertainties and other factors include, among others, risks: Netlist may not be able to collect the substantial amount in damages previously awarded to it in its litigations (appeals in general could cause a lengthy delay in Netlist's ability to collect damages awards, could overturn the verdicts or reduce the damages awards); Netlist will suffer adverse outcomes in its litigation with Google or in its various other active proceedings to defend the validity of its patents; related to Netlist's plans for its intellectual property, including its strategies for monetizing, licensing, expanding, and defending its patent portfolio, which efforts may not be successful; other patent infringement litigation initiated by Netlist, or by others against Netlist, may not be successful or resolve favorably for Netlist, particularly given the costs and unpredictability of any such litigation; associated with Netlist's product sales, including whether and how long the current market and demand for products sold by Netlist will persist or persist as expected and whether Netlist may successfully develop and launch new products that are attractive to the market; whether Netlist will continue to acquire components or products for resale on favorable terms; that Netlist or its counterparties may fail to perform their obligations as required pursuant to applicable license and supply agreements, associated with the competitive landscape of Netlist's industry, general economic, political and market conditions, factory slowdowns and/or shutdowns, and changes in international trade and tariff policies. All forward-looking statements reflect management's present assumptions, expectations and beliefs regarding future events and are subject to known and unknown risks, uncertainties and other factors that could cause actual results to differ materially from those expressed in or implied by any forward-looking statements. These and other risks and uncertainties are described in Netlist's Annual Report on Form 10-K for the fiscal year ended December 27, 2025 filed with the SEC on March 19, 2026, and the other filings it makes with the U.S. Securities and Exchange Commission from time to time, including any subsequently filed quarterly and current reports. In light of these risks, uncertainties and other factors, these forward-looking statements should not be relied on as predictions of future events. These forward-looking statements represent Netlist's assumptions, expectations and beliefs only as of the date they are made, and except as required by law, Netlist undertakes no obligation to revise or update any forward-looking statements for any reason.\n\nFor more information, please contact:Investors / MediaMike SmargiassiThe Plunkett GroupNLST@theplunkettgroup.com(212) 739‑6729\n\nView original content to download multimedia:https://www.prnewswire.com/news-releases/netlist-and-micron-enter-patent-license-and-settlement-agreements-302899647.html",
+        "source_name": "yahoo",
+        "published_at": "2026-10-06T12:00:00Z"
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": []
+      },
+      "w2": {
+        "policy_hit": false,
+        "policy_related": false,
+        "policy_ids": [],
+        "hit_condition_ids": [],
+        "matched_condition_ids": []
+      },
+      "w3_decision": {
+        "novelty": {
+          "reason": "Reference View记录了Micron与Netlist之间仍在进行的ITC、上诉及损害赔偿事项，但没有记录双方已达成和解或五年许可。此次协议带来的法律状态变化是新的。",
+          "reference_ids": [
+            "E21",
+            "E22",
+            "E23",
+            "E176"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "PolicySet v17没有覆盖专利和解或许可的触发条件。消息也未触发其中关于HBM商业出货、竞争地位、经营或财务结果的具体门槛。"
+        },
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "双方现已约定解决并相互解除所有未决法律程序，Micron取得覆盖服务器DIMM及HBM专利的五年许可；原先未定的法律风险转为许可期内较明确的经营保障和每季度3,000万美元的约定费用。核心变化是高价值内存产品的法律确定性提升，而非新增出货或需求。",
+          "prior_expectation": "消息前公开状态仍包括Netlist针对Micron的HBM ITC新案、服务器内存相关诉讼、上诉及单独的损害赔偿事项；尚无公开的全面和解或HBM/服务器DIMM许可。此前存在未解决的法律与潜在供货限制风险，但没有证据支持对禁令概率作精确估值。",
+          "reason": "这是相对近期公开状态的正向惊喜：9月29日刚出现新的HBM ITC行动，此次协议迅速解决双方未决程序并覆盖HBM和服务器DIMM。传导路径是法律不确定性和潜在供货限制风险下降，保护Micron面向AI/服务器市场的高价值产品经营；已知许可费用每年约1.2亿美元，不到FY26收入的0.1%，相对公司规模较小。由于此前没有证据表明禁令迫近，不将其视为新增收入，但净影响仍支持LONG。",
+          "trade": true
+        }
+      },
+      "direction": "LONG",
+      "initiated_at": "2026-10-06T12:13:16.195646+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    },
+    {
+      "message": {
+        "title": "Netlist and Micron reach $600M patent license and settlement deal",
+        "body": "© Reuters\n\nNetlist, Inc. (NLST) and Micron Technology, Inc. have entered into patent license and settlement agreements, according to a press release from Netlist.\n\nUnder the terms of the agreements, all pending legal proceedings between the two companies will be settled and mutually released. Micron will receive a five-year license to Netlist’s patent portfolio, which includes patents covering server DIMMs and High Bandwidth Memory technologies.\n\nMicron will pay Netlist $30 million per quarter beginning in the fourth quarter of 2026 through the third quarter of 2031, totaling $600 million over the term of the license.\n\n\"The agreement with Micron further validates the value of our AI memory technologies,\" said C.K. Hong, Netlist’s Chief Executive Officer. \"We remain committed to protecting our IP while continuing to invest in the development of next-generation products.\"\n\nNetlist filed a Current Report on Form 8-K with the SEC concurrently with the announcement.\n\nShould you invest $2,000 in MU right now?\n\nProPicks AI evaluates MU alongside thousands of other companies every month using 100+ financial metrics. Using powerful AI to generate exciting stock ideas, it looks beyond popularity to assess fundamentals, momentum, and valuation. The AI has no bias—it simply identifies which stocks offer the best risk-reward based on current data with notable past winners that include Super Micro Computer (+185%) and AppLovin (+157%). Want to know if MU is currently featured in any ProPicks AI strategies, or if there are better opportunities in the same space?\n\nLatest comments",
+        "source_name": "investing.com",
+        "published_at": "2026-10-06T12:10:04Z"
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": [
+          "E176",
+          "E21"
+        ]
+      },
+      "w2": {
+        "policy_hit": false,
+        "policy_related": false,
+        "policy_ids": [],
+        "hit_condition_ids": [],
+        "matched_condition_ids": []
+      },
+      "w3_decision": {
+        "novelty": {
+          "reason": "新现实是Micron与Netlist达成五年专利许可及和解，涵盖服务器DIMM与HBM，并约定每季度支付3000万美元、合计6亿美元。Reference View中的E176、E21、E22和E23只记录未决诉讼、ITC救济请求及既有赔偿判决，未记录许可或和解。 [当日消息](https://www.investing.com/news/assorted/netlist-and-micron-reach-600m-patent-license-and-settlement-deal-432SI-4934250)",
+          "reference_ids": [
+            "E176",
+            "E21",
+            "E22",
+            "E23"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "PolicySet v17没有针对Netlist诉讼、专利许可或法律风险解除的触发条件；现有经营与产品相关条件均未被该和解事实满足，因此此案仍属uncovered。"
+        },
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "法律状态从未决诉讼、赔偿与潜在排除风险，转为Micron获得覆盖服务器DIMM及HBM的五年许可、双方约定解决所有未决诉讼；相应代价是2026年Q4至2031年Q3每季度3000万美元、总计6亿美元。需要上修法律确定性及产品供货连续性预期，并将成本风险收敛为明确的许可费；这不是内存需求、销量或ASP上修。",
+          "prior_expectation": "事件前的基线是内存业务继续运营，但Netlist相关的损害赔偿与排除救济风险仍未解决，并非已有许可或和解。Reference View记录了Netlist针对HBM的ITC行动（E176）、先前ITC行动（E21）、专利上诉状态（E22）及既有4.45亿美元赔偿判决（E23）；Micron公开申报亦记载该判决及上诉。[Micron申报](https://www.sec.gov/Archives/edgar/data/723125/000072312526000006/mu-20260226.htm) Netlist于9月29日宣布新的HBM专利ITC行动并寻求排除及停止令。[Netlist公告](https://www.prnewswire.com/news-releases/netlist-files-new-itc-action-against-micron-technology-inc-involving-hbm-patents-for-ai-computing-302892194.html) 合理预期是继续出货与未决法律尾部风险并存，结果不确定，而非禁售必然。",
+          "reason": "和解及许可条款此前未公开，且Netlist在9月29日刚针对HBM寻求ITC排除救济，故相对事件前未决基线有明显惊喜。HBM和服务器内存是Micron重要业务；许可及诉讼和解降低产品销售受法律救济干扰的尾部风险，传导路径清晰。每季度3000万美元虽为新增成本，但约为FY26 Q4约500亿美元收入指引中点的0.06%；净预期变化偏正，支持LONG。[协议报道](https://www.investing.com/news/assorted/netlist-and-micron-reach-600m-patent-license-and-settlement-deal-432SI-4934250)",
+          "trade": true
+        }
+      },
+      "direction": "LONG",
+      "initiated_at": "2026-10-06T12:19:43.686860+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    },
+    {
+      "message": {
+        "title": "Morgan Stanley revisits Micron stock price target amid stellar growth",
+        "body": "Micron stock rides an AI memory boom, even as management warns that tight memory supply will last through 2028.",
+        "source_name": "thestreet.com",
+        "published_at": "2026-10-05T19:13:00Z"
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": []
+      },
+      "w2": {
+        "policy_hit": false,
+        "policy_related": false,
+        "policy_ids": [],
+        "hit_condition_ids": [],
+        "matched_condition_ids": []
+      },
+      "w3_decision": {
+        "novelty": {
+          "reason": "TheStreet disclosed Morgan Stanley’s FY2027 Micron estimate revision, which is not stated among E208’s existing analyst facts; E208 provides the relevant post-earnings baseline of about $160 consensus adjusted EPS. Morgan Stanley raised its estimate from $168.52 to $182.52 in an Oct. 1 note. [TheStreet article](https://www.thestreet.com/investing/stocks/mu-morgan-stanley-maintains-micron-stock-price-target-ai-memory-growth)",
+          "reference_ids": [
+            "E208"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "Following the UNCOVERED_NEW mode’s established no-Policy state, retain the empty Policy match and evaluate the newly surfaced forecast independently."
+        },
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "Morgan Stanley raised its FY2027 EPS estimate by about 8.3%, from $168.52 to $182.52—about 14% above the approximately $160 baseline. This is a single-firm estimate, not a market-wide consensus revision.",
+          "prior_expectation": "The post-FY2026 Q4 market baseline in E208 was approximately $160 in FY2027 adjusted EPS.",
+          "reason": "The estimate increase is a meaningful positive earnings-expectation revision. Micron’s tight supply and AI-memory demand support transmission from higher expected pricing and earnings to MU’s value capture. The unchanged $1,200 price target and the fact that the cited note dates to Oct. 1 temper the signal, but the size of the EPS uplift versus the existing baseline supports a LONG. [TheStreet article](https://www.thestreet.com/investing/stocks/mu-morgan-stanley-maintains-micron-stock-price-target-ai-memory-growth)",
+          "trade": true
+        }
+      },
+      "direction": "LONG",
+      "initiated_at": "2026-10-05T19:29:41.079835+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    }
+  ],
+  "history_matches": [
+    {
+      "events": [],
+      "policies": []
+    },
+    {
+      "events": [],
+      "policies": []
+    },
+    {
+      "events": [],
+      "policies": []
+    }
+  ],
+  "watches": [],
+  "pins": [],
+  "policy_consumptions": [],
+  "provisional": [
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "TSMC",
+          "LSEG"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "TSMC报告2026年第三季度（7月至9月）营收创纪录，达新台币1.49万亿元（约467.1亿美元），同比增长50%；该结果高于LSEG市场估计的新台币1.46万亿元及公司此前446亿至458亿美元的指引区间。",
+        "subject_time": "2026年第三季度（2026年7月至9月）"
+      },
+      "candidate_index": 0,
+      "case_id": "case_a6bedd1de7f8462cbf4f615524ae5347",
+      "created_at": "2026-10-08T06:13:17.769844Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E326",
+      "runtime_signature": "83144d7ade45e9bb18c2bc61fd31079d23fd4a13830a111337111c28b7b8f7ac",
+      "snapshot_version": 1,
+      "source_message_id": "std_6b5504e74b64491cbacb7252a8cd2044",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "West Zawtar",
+          "Israel",
+          "Lebanon"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "截至2026年10月8日，以色列于7月撤出West Zawtar后，随后两个月没有达成新的黎巴嫩南部“试点区”协议。",
+        "subject_time": "截至2026-10-08；7月撤军后的两个月"
+      },
+      "candidate_index": 0,
+      "case_id": "case_144021a076594176854bf9a43f57048d",
+      "created_at": "2026-10-08T08:07:35.875515Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E327",
+      "runtime_signature": "ee37e4b5f38df9e8c70615e2138474f9259e4f0138f8b7e22890ec98e9974473",
+      "snapshot_version": 2,
+      "source_message_id": "std_12b67c29c3064184a0841fdaba9d8e8d",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Abed Ezzedine",
+          "West Zawtar",
+          "Reuters"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "West Zawtar市长Abed Ezzedine告诉Reuters，该试点区计划未能成功，主要原因是电力和自来水等公共服务仍大多无法使用。",
+        "subject_time": "2026年10月报道时"
+      },
+      "candidate_index": 1,
+      "case_id": "case_144021a076594176854bf9a43f57048d",
+      "created_at": "2026-10-08T08:07:35.900830Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E328",
+      "runtime_signature": "e42ee9e7daf8f15f21b00742109210a9bfb4786a5404d1a806c9a71a04a12dd6",
+      "snapshot_version": 3,
+      "source_message_id": "std_12b67c29c3064184a0841fdaba9d8e8d",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Israeli military",
+          "Hezbollah",
+          "Lebanon",
+          "Reuters"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "以色列军方告诉Reuters，清除真主党武器威胁的工作尚未完成；军方称使用无人机识别威胁，并限制当地居民活动以保护部队。",
+        "subject_time": "2026年10月报道时"
+      },
+      "candidate_index": 2,
+      "case_id": "case_144021a076594176854bf9a43f57048d",
+      "created_at": "2026-10-08T08:07:35.926434Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E329",
+      "runtime_signature": "0fae9159b19fcadc45ea1e11d7fb78929aed97e662239445e0ae3643c0cba25c",
+      "snapshot_version": 4,
+      "source_message_id": "std_12b67c29c3064184a0841fdaba9d8e8d",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ONGOING",
+        "entities": [
+          "East Zawtar",
+          "Israeli military",
+          "Lebanon"
+        ],
+        "occurrence_date": null,
+        "proposition": "East Zawtar仍由以色列军队占领；报道描述该村房屋正遭系统性拆除。",
+        "subject_time": "2026年10月报道时"
+      },
+      "candidate_index": 3,
+      "case_id": "case_144021a076594176854bf9a43f57048d",
+      "created_at": "2026-10-08T08:07:35.973924Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E330",
+      "runtime_signature": "90eecc4440464ad58ad7a7219b8c6cc289630a3c9f8ea6d8e5bf6b6991790ed7",
+      "snapshot_version": 5,
+      "source_message_id": "std_12b67c29c3064184a0841fdaba9d8e8d",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "ResearchAndMarkets.com",
+          "GCC医疗半导体存储器市场"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "ResearchAndMarkets.com于2026年10月8日将《GCC Medical Semiconductor Memory Market: Prospects, Trends Analysis, Market Size and Forecasts up to 2032》加入其产品目录；公告称该报告覆盖RAM、ROM及下一代存储器，并涉及医疗成像、患者监测、诊断、植入设备和电子健康记录应用。",
+        "subject_time": "2026年10月8日上架；报告研究展望至2032年"
+      },
+      "candidate_index": 0,
+      "case_id": "case_7d2fb2d2ad8047f0bb17f6e9e1c3784f",
+      "created_at": "2026-10-08T08:15:21.692527Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E331",
+      "runtime_signature": "5f22c90463a011ec096305e9fe92c368f2d4a79cc93188df4fa7f45905297d93",
+      "snapshot_version": 6,
+      "source_message_id": "std_6b364f5d26e44f42b36ce851c4c347f1",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "ResearchAndMarkets.com",
+          "全球住宅路由器市场"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "ResearchAndMarkets.com于2026年10月8日将《Strategic Market Analysis of the Global Residential Router Industry (2026-2031)》加入其产品目录。",
+        "subject_time": "报告研究期为2026年至2031年"
+      },
+      "candidate_index": 0,
+      "case_id": "case_2042103bab24464686a2fffdb1d609a8",
+      "created_at": "2026-10-08T08:36:11.128894Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E332",
+      "runtime_signature": "4e2b56c5c0ee252dc0d2f7f2be8da7d2cc35017efba998aef8ddb42ad7d76a35",
+      "snapshot_version": 7,
+      "source_message_id": "std_10d1990958fe4e90acef751706cbbf09",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "ResearchAndMarkets.com",
+          "全球住宅路由器市场"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "该报告估计全球住宅路由器市场2026年规模约为130亿至160亿美元，并预测至2031年的复合年增长率为5%至6%。",
+        "subject_time": "2026年至2031年"
+      },
+      "candidate_index": 1,
+      "case_id": "case_2042103bab24464686a2fffdb1d609a8",
+      "created_at": "2026-10-08T08:36:11.136523Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E333",
+      "runtime_signature": "e6cddd4ad1a63f811655a8d075991a2c4933ee4e316d18c04b50f0c2c29dc065",
+      "snapshot_version": 8,
+      "source_message_id": "std_10d1990958fe4e90acef751706cbbf09",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "ResearchAndMarkets.com",
+          "Flash Memory Component Forecast - Quarterly",
+          "Micron"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "ResearchAndMarkets.com宣布将《Flash Memory Component Forecast - Quarterly》Excel数据库加入其产品目录，并在所列公司中包括Micron。",
+        "subject_time": null
+      },
+      "candidate_index": 0,
+      "case_id": "case_9819788fd50c49a59a6994fb4f5b20a0",
+      "created_at": "2026-10-08T08:37:52.877168Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E334",
+      "runtime_signature": "a3d8db36be2adfd23027a370c82f07a759e93a2790b84a6000633ef74b42a577",
+      "snapshot_version": 9,
+      "source_message_id": "std_3aecb5753906410ca86b2d2ba7bf1b23",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "The Motley Fool",
+          "Micron",
+          "Nvidia",
+          "AMD"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "The Motley Fool于2026年10月8日发布文章，标题称Micron、Nvidia和AMD属于过去十年股价涨幅超过6,000%的三只芯片股；提供的正文摘要称三家公司股票过去十年大幅上涨。",
+        "subject_time": "截至2026年10月8日的过去十年"
+      },
+      "candidate_index": 0,
+      "case_id": "case_26568219bd734b70aac1273890e51053",
+      "created_at": "2026-10-08T08:45:48.859805Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E335",
+      "runtime_signature": "2ffffd125eebcd3b450796f5a110e7adf453a47de4ec1672f97bbb49b313045f",
+      "snapshot_version": 10,
+      "source_message_id": "std_aa1d09cb80d24398bd69e615fbf7fcd9",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Stocktwits",
+          "SPY",
+          "QQQ"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "该报道称，截至2026年10月8日盘前，Stocktwits 上散户对 SPY 和 QQQ 的情绪仍为“极度看多”。",
+        "subject_time": "2026-10-08盘前"
+      },
+      "candidate_index": 0,
+      "case_id": "case_fb72a4e8a0a84c0c8e9a7f60e1799697",
+      "created_at": "2026-10-08T08:53:15.082640Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E336",
+      "runtime_signature": "b8ce63f798170b36700362674b0a0b1a4f5308fc44f36ef139ba52201e6e7f76",
+      "snapshot_version": 11,
+      "source_message_id": "std_be6866ac47de46e8a02b7e7333375108",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [],
+        "occurrence_date": "2026-10-08",
+        "proposition": "一篇投资评论称，能够持续实现强劲销售增长、利润率上升和资本回报率提高的股票，通常可能成为长期表现突出的股票。",
+        "subject_time": "一般性投资观点"
+      },
+      "candidate_index": 0,
+      "case_id": "case_3ae7aed81ff4417da898c3c35c089e16",
+      "created_at": "2026-10-08T09:20:46.424848Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E337",
+      "runtime_signature": "78532ba62ec59e031fff9e49fb12fca5f1fddf84acda32e3fe224ef3e6e1fd24",
+      "snapshot_version": 12,
+      "source_message_id": "std_c12dc38e6e0a499b9f8f393c918c0ba8",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "AI股票",
+          "收益率",
+          "油价"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "报道概括称，投资者对收益率和油价的担忧令AI股票承压。",
+        "subject_time": "报道所述的2026-10-08市场交易时段"
+      },
+      "candidate_index": 0,
+      "case_id": "case_16e2db4b69ef409c8fcfaafdf7b73d3f",
+      "created_at": "2026-10-08T09:22:33.645935Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E338",
+      "runtime_signature": "e0db0130fea9a267c8e00ca3a5d884f09111986f5f5c6c639ea2c05417a53007",
+      "snapshot_version": 13,
+      "source_message_id": "std_0bdd9255da784ab199eb83b0ef317cc0",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Wolfspeed",
+          "五角大楼"
+        ],
+        "occurrence_date": null,
+        "proposition": "报道指出，Wolfspeed已获得一项与五角大楼的融资协议。",
+        "subject_time": null
+      },
+      "candidate_index": 1,
+      "case_id": "case_16e2db4b69ef409c8fcfaafdf7b73d3f",
+      "created_at": "2026-10-08T09:22:33.666508Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E339",
+      "runtime_signature": "564cfa3c31705d0683b4631b6042a80004b20d4798ce6b6184a1487f6bcba17b",
+      "snapshot_version": 14,
+      "source_message_id": "std_0bdd9255da784ab199eb83b0ef317cc0",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Wolfspeed",
+          "五角大楼"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "报道指出，Wolfspeed股价因获得五角大楼融资协议而大幅上涨。",
+        "subject_time": "报道所述的2026-10-08市场交易时段"
+      },
+      "candidate_index": 2,
+      "case_id": "case_16e2db4b69ef409c8fcfaafdf7b73d3f",
+      "created_at": "2026-10-08T09:22:33.698484Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E340",
+      "runtime_signature": "f74c23e9111e5915dc4fa4bb404856d4351a5191c164f41ca6edd65ed424ab4c",
+      "snapshot_version": 15,
+      "source_message_id": "std_0bdd9255da784ab199eb83b0ef317cc0",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "NVIDIA",
+          "TSMC",
+          "OpenAI"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "The Motley Fool文章将一家未具名的芯片设计软件公司描述为获得NVIDIA、TSMC和OpenAI数十亿美元级别的信心背书，并称其获得“Strong Buy”评价；摘要未说明背书的具体交易形式或条款。",
+        "subject_time": null
+      },
+      "candidate_index": 0,
+      "case_id": "case_f3625717252c490cbf51671679bd5500",
+      "created_at": "2026-10-08T09:41:58.375304Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E341",
+      "runtime_signature": "c40025cea2632e1ad3a2dcfab53c02c8412fb6c5b83011be06d763ab072b76ef",
+      "snapshot_version": 16,
+      "source_message_id": "std_b69fdd78c66142ecb77697b8c06b20bc",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "沙特阿拉伯",
+          "也门"
+        ],
+        "occurrence_date": null,
+        "proposition": "Reuters播客简介称，沙特报告该国机场遭到致命袭击，同时也门战事升级。",
+        "subject_time": "报道所述的也门冲突期间"
+      },
+      "candidate_index": 0,
+      "case_id": "case_fe6dcbadc22a4e88b70c699120cdb687",
+      "created_at": "2026-10-08T10:12:16.109530Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E342",
+      "runtime_signature": "8a7edc2e3226d52912eb48bda26cd484060181b7a0523bc77035d76ef5131ee4",
+      "snapshot_version": 17,
+      "source_message_id": "std_ec2cc4d1dea848058b09dae17ffabeaa",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "民主党",
+          "共和党",
+          "美国中西部"
+        ],
+        "occurrence_date": null,
+        "proposition": "Reuters播客简介称，在竞争激烈的美国中西部选区，民主党候选人回避或转向更保守的跨性别议题立场，共和党人则将该议题作为中期选举焦点。",
+        "subject_time": "美国中期选举周期"
+      },
+      "candidate_index": 1,
+      "case_id": "case_fe6dcbadc22a4e88b70c699120cdb687",
+      "created_at": "2026-10-08T10:12:16.131065Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E343",
+      "runtime_signature": "1716abfba41b4142c8062df9cd4c205b14653a0945917e2ce33466e2a9c8b792",
+      "snapshot_version": 18,
+      "source_message_id": "std_ec2cc4d1dea848058b09dae17ffabeaa",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "田纳西州",
+          "Christa Pike"
+        ],
+        "occurrence_date": null,
+        "proposition": "Reuters播客简介称，田纳西州一名法官下令保留Christa Pike案中与一次执行失败有关的证据。",
+        "subject_time": null
+      },
+      "candidate_index": 2,
+      "case_id": "case_fe6dcbadc22a4e88b70c699120cdb687",
+      "created_at": "2026-10-08T10:12:16.156471Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E344",
+      "runtime_signature": "9c8701d3fd0fbe2186e0207892d6bbe19b3709d3bd9205c0918923e058349a2b",
+      "snapshot_version": 19,
+      "source_message_id": "std_ec2cc4d1dea848058b09dae17ffabeaa",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "法国",
+          "比利时"
+        ],
+        "occurrence_date": null,
+        "proposition": "Reuters播客简介称，围绕教育成本的抗议活动已从法国蔓延至比利时。",
+        "subject_time": "报道所述时期"
+      },
+      "candidate_index": 3,
+      "case_id": "case_fe6dcbadc22a4e88b70c699120cdb687",
+      "created_at": "2026-10-08T10:12:16.182128Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E345",
+      "runtime_signature": "331caf5431085b3db00ec75554ef264c7e522120bf73b91143f60e6e7591ee13",
+      "snapshot_version": 20,
+      "source_message_id": "std_ec2cc4d1dea848058b09dae17ffabeaa",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "ResearchAndMarkets.com",
+          "全球海泡石市场"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "ResearchAndMarkets.com于2026年10月8日宣布新增一份全球海泡石市场报告，内容涵盖至2031年的市场展望。",
+        "subject_time": "至2031年的市场展望"
+      },
+      "candidate_index": 0,
+      "case_id": "case_230f854225bc41d2867f30a5e2dbd0c7",
+      "created_at": "2026-10-08T10:37:51.380437Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E346",
+      "runtime_signature": "a86abb75b928d9e29bd79b0a9a655258e0352afa181910f5d8c7b9221ac1505e",
+      "snapshot_version": 21,
+      "source_message_id": "std_84f1b592329546758fb7c0bab6be9dc7",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "K2 Gold Corporation",
+          "Dragonfly目标区",
+          "Mojave项目"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "K2 Gold报告称，新增高品位金岩石样品将Dragonfly目标向南延伸约480米，该目标现有高品位金露头的走向长度约为1,000米。",
+        "subject_time": "2026年夏季地表采样结果"
+      },
+      "candidate_index": 0,
+      "case_id": "case_0c125ddd5053484d9f636820e4ce733a",
+      "created_at": "2026-10-08T11:03:44.616755Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E347",
+      "runtime_signature": "20760b17e54418fadb9c310ccee95b0eb4897cb952f34eb7f80683075821efc5",
+      "snapshot_version": 22,
+      "source_message_id": "std_1b810eb3e4b54b3d8206930cd700641b",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "K2 Gold Corporation",
+          "Flores目标区",
+          "Mojave项目"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "K2 Gold报告称，Flores目标约800米东西向趋势发现高品位金露头，样品品位最高达28.8克/吨金。",
+        "subject_time": "2026年夏季地表采样结果"
+      },
+      "candidate_index": 1,
+      "case_id": "case_0c125ddd5053484d9f636820e4ce733a",
+      "created_at": "2026-10-08T11:03:44.634676Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E348",
+      "runtime_signature": "e38c5c94c252c0b8b716105a899da311d667791be35734f7f145008ae10f9c39",
+      "snapshot_version": 23,
+      "source_message_id": "std_1b810eb3e4b54b3d8206930cd700641b",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "K2 Gold Corporation",
+          "Stega铜区",
+          "Mojave项目"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "K2 Gold报告称，Stega铜区一份岩石样品检测出24.8%铜。",
+        "subject_time": "2026年夏季地表采样结果"
+      },
+      "candidate_index": 2,
+      "case_id": "case_0c125ddd5053484d9f636820e4ce733a",
+      "created_at": "2026-10-08T11:03:44.652074Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E349",
+      "runtime_signature": "4ca38bdb8dd9c182ff247197c6d1fa1a6f4aa5c20d7bc411883e1c0f4d6fa33c",
+      "snapshot_version": 24,
+      "source_message_id": "std_1b810eb3e4b54b3d8206930cd700641b",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "K2 Gold Corporation",
+          "Soda Ridge",
+          "Mojave项目"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "K2 Gold报告称，Soda Ridge采样结果最高达3.04克/吨金和2.88%铜。",
+        "subject_time": "2026年夏季地表采样结果"
+      },
+      "candidate_index": 3,
+      "case_id": "case_0c125ddd5053484d9f636820e4ce733a",
+      "created_at": "2026-10-08T11:03:44.670367Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E350",
+      "runtime_signature": "f7379615a591c4d32fc14d872f2eb59a5c5961bc0df17c89421d0ce2a50fc3de",
+      "snapshot_version": 25,
+      "source_message_id": "std_1b810eb3e4b54b3d8206930cd700641b",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "MADD Canada"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "MADD Canada于2026年10月8日发布感恩节长周末安全出行呼吁，敦促饮酒、使用大麻或其他药物者提前安排安全返程且不要在受影响时驾驶。",
+        "subject_time": "2026年加拿大感恩节长周末"
+      },
+      "candidate_index": 0,
+      "case_id": "case_3cb9323190ba441abcf8d3008305887a",
+      "created_at": "2026-10-08T12:05:20.276688Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E351",
+      "runtime_signature": "f185b3cc66293640a924265408597f54d50e51915aa32adfeac1f311405538a8",
+      "snapshot_version": 26,
+      "source_message_id": "std_899f391775d24c1fb317e8614b2107b2",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Entera Bio",
+          "ENTX",
+          "EB613",
+          "ASBMR 2026"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "Entera Bio 于 2026 年 10 月 8 日宣布，其 EB613 计划中 Phase 3 注册性试验的研究设计摘要已获接纳为 ASBMR 2026 late-breaking poster（Sun-522）。",
+        "subject_time": "ASBMR 2026"
+      },
+      "candidate_index": 0,
+      "case_id": "case_e849272f69e9460c8555be84c60a11d9",
+      "created_at": "2026-10-08T12:06:38.606189Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E352",
+      "runtime_signature": "a313eb80025925825c98f9148bc2cbf9d3c0e97ae773b9f00c7a4478027b305a",
+      "snapshot_version": 27,
+      "source_message_id": "std_324a55714aa047009447287f9df2d562",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "SCHEDULED",
+        "entities": [
+          "Entera Bio",
+          "EB613",
+          "ASBMR 2026"
+        ],
+        "occurrence_date": null,
+        "proposition": "EB613 Phase 3 研究设计海报（Sun-522）安排于 2026 年 10 月 11 日 14:00–15:30 ET 在 ASBMR 2026 展示。",
+        "subject_time": "2026-10-11 14:00–15:30 ET；ASBMR 2026 Late Breaking Poster Session II"
+      },
+      "candidate_index": 1,
+      "case_id": "case_e849272f69e9460c8555be84c60a11d9",
+      "created_at": "2026-10-08T12:06:38.623107Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E353",
+      "runtime_signature": "5631f6ba0fdf0ef4b2007c5a843d760b6362387ef38d1f68fd831ceb5424251e",
+      "snapshot_version": 28,
+      "source_message_id": "std_324a55714aa047009447287f9df2d562",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Scality",
+          "Scality AI Inference Factory"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "Scality宣布其AI Inference Factory开放代码推理软件栈现已可用，可通过软件许可或全托管服务部署。",
+        "subject_time": null
+      },
+      "candidate_index": 0,
+      "case_id": "case_e864fb7689e24cb28993b0b4c2b43983",
+      "created_at": "2026-10-08T12:07:05.628856Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E354",
+      "runtime_signature": "282c2eb5c25ecd9ace6f6c9028e96532f0323075d14d292bffd45f1b4c7f66e4",
+      "snapshot_version": 29,
+      "source_message_id": "std_9a0e5ef9beb3473daa8ce85ed28205ad",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "NN, Inc.",
+          "Series D Perpetual Preferred Stock"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "NN, Inc.宣布已完成以约3,070万美元赎回其全部18,400股Series D永续优先股，且不再有该优先股流通。",
+        "subject_time": null
+      },
+      "candidate_index": 0,
+      "case_id": "case_f4f56fa237134c61bf5e2e44c71f94c1",
+      "created_at": "2026-10-08T12:10:09.224492Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E355",
+      "runtime_signature": "8da59f36f87194051bd17f89cfae14e12d5a7caed24233b3ba881d07633e8cd4",
+      "snapshot_version": 30,
+      "source_message_id": "std_ac7ef676ffaf40b1969a1ba70137a3dc",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLANNED",
+        "entities": [
+          "GlobalFoundries",
+          "TSMC"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "Reuters标题称GlobalFoundries将为TSMC制造一款关键AI芯片组件；所提供消息快照未说明组件类型、供应规模或起始时间。",
+        "subject_time": null
+      },
+      "candidate_index": 0,
+      "case_id": "case_e1b4114bc46a4388885ca82a264bfabb",
+      "created_at": "2026-10-08T12:47:28.574967Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E356",
+      "runtime_signature": "402508aca15c7d7c8a1fcaba933c97a4c3be74364b2f5c9ab536edaa86c66928",
+      "snapshot_version": 31,
+      "source_message_id": "std_98fbc07db624451eb1f236b7ba425d90",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "ASUS",
+          "Zenbook 14 UX3480QA",
+          "Best Buy"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "ASUS宣布Zenbook 14 UX3480QA搭载Snapdragon X处理器的配置已在美国Best Buy上市销售，提供8GB或16GB LPDDR5X内存，起售价为799.99美元。",
+        "subject_time": null
+      },
+      "candidate_index": 0,
+      "case_id": "case_431977064c334d92867a8979f848d8d5",
+      "created_at": "2026-10-08T13:04:17.092980Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E357",
+      "runtime_signature": "bcf6e0395d986654d8ad74a7084061e6bc6d3f25455b2d05d60f14ca9dd6f6e7",
+      "snapshot_version": 32,
+      "source_message_id": "std_1ebaf33060ec475dafd80ffcfaaf62b5",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "SCHEDULED",
+        "entities": [
+          "ASUS",
+          "Zenbook 14 UX3480AA"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "ASUS宣布Zenbook 14 UX3480AA配置搭载Intel Core Ultra 9 386H处理器及24GB LPDDR5X内存，计划于2026年第四季度初上市。",
+        "subject_time": "2026年第四季度初"
+      },
+      "candidate_index": 1,
+      "case_id": "case_431977064c334d92867a8979f848d8d5",
+      "created_at": "2026-10-08T13:04:17.115646Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E358",
+      "runtime_signature": "d80a7a15d3ce1b5aba6b416f1f3133a38fef3b98fc8d748d79541e8e9fb60f95",
+      "snapshot_version": 33,
+      "source_message_id": "std_1ebaf33060ec475dafd80ffcfaaf62b5",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Precision Neuroscience",
+          "bioRxiv"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "Precision Neuroscience宣布发布一篇描述其人类中枢神经系统图谱的论文；图谱基于12家学术医疗中心70名患者的高分辨率表面电生理记录，包含超过100,000次电极部署。",
+        "subject_time": null
+      },
+      "candidate_index": 0,
+      "case_id": "case_7e7a33679254497bb9b4067b8ec2e16e",
+      "created_at": "2026-10-08T13:06:53.556517Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E359",
+      "runtime_signature": "883eacf771bd5a67950d698ad058a987f97077099bd599b014acefd54a919e97",
+      "snapshot_version": 34,
+      "source_message_id": "std_59e64f28ffb5481fa4fe4527931d94bd",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Precision Neuroscience"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "Precision Neuroscience称，自图谱论文所述数据采集以来，植入其系统的患者总数已超过100。",
+        "subject_time": "截至2026-10-08"
+      },
+      "candidate_index": 1,
+      "case_id": "case_7e7a33679254497bb9b4067b8ec2e16e",
+      "created_at": "2026-10-08T13:06:53.593501Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E360",
+      "runtime_signature": "94051429731dbe8d9c34bbbc8bc5e41b59d265856283b2bf4f654c20579097b6",
+      "snapshot_version": 35,
+      "source_message_id": "std_59e64f28ffb5481fa4fe4527931d94bd",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Astera Labs",
+          "Aries 7",
+          "PCIe 7"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "Astera Labs 于 2026 年 10 月 8 日宣布 Aries 7 PCIe 7 信号调理产品组合，涵盖用于铜与光互连的 retimers、redrivers、cable modules、optical drivers 和 optical TIAs。",
+        "subject_time": null
+      },
+      "candidate_index": 0,
+      "case_id": "case_ab432e2e250d476da70974ebf5e7ac02",
+      "created_at": "2026-10-08T13:09:10.731534Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E361",
+      "runtime_signature": "47cd26dc4a5e17ba73e1e5a8e703c99cca9e5919782384418290f04f8688016b",
+      "snapshot_version": 36,
+      "source_message_id": "std_1b00f19af59e4bf89d59d0f7fc8a2348",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "EXPECTED",
+        "entities": [
+          "Astera Labs",
+          "Aries 7",
+          "hyperscale customers",
+          "OEMs",
+          "NPO customers"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "Astera Labs 预计 Aries 7 Smart Retimers、Smart Redrivers、Smart Cable Modules、Smart Optical Drivers 和 TIAs 将于 2026 年第四季度开始向选定的 hyperscale、OEM 和 NPO 客户送样；更广泛供应预计待平台完成资格认证后推进。",
+        "subject_time": "2026 年第四季度及后续平台资格认证期"
+      },
+      "candidate_index": 1,
+      "case_id": "case_ab432e2e250d476da70974ebf5e7ac02",
+      "created_at": "2026-10-08T13:09:10.757951Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E362",
+      "runtime_signature": "7146f0f76b775a0f69197303760e4dc010ffe474226c9b67c9fe182aba98415b",
+      "snapshot_version": 37,
+      "source_message_id": "std_1b00f19af59e4bf89d59d0f7fc8a2348",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Amazon",
+          "Alexa Tablets",
+          "Alexa+"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "Amazon宣布推出搭载Android操作系统和Alexa+的Alexa Tablets系列，产品定价约为230至550美元。",
+        "subject_time": null
+      },
+      "candidate_index": 0,
+      "case_id": "case_f942dd7580cd426b8771564f7c0b3c3c",
+      "created_at": "2026-10-08T13:11:19.492535Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E363",
+      "runtime_signature": "f456a748229fe7ecce02380fa44e88727a04b3a560d7a46f7e1b0fcf469e30b7",
+      "snapshot_version": 38,
+      "source_message_id": "std_5dff3515db7d473b95373d4464f1709b",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "IDC",
+          "平板市场"
+        ],
+        "occurrence_date": null,
+        "proposition": "Reuters援引IDC数据称，2026年第二季度全球平板销量同比下降12%至3,360万台；美国平板销量同比下降32%，报道将美国市场下滑与内存芯片短缺联系起来。",
+        "subject_time": "2026年第二季度"
+      },
+      "candidate_index": 1,
+      "case_id": "case_f942dd7580cd426b8771564f7c0b3c3c",
+      "created_at": "2026-10-08T13:11:19.503700Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E364",
+      "runtime_signature": "43d1a3f96164eaad52728b065972620d81151e13725e30c85820089bd7b1c947",
+      "snapshot_version": 39,
+      "source_message_id": "std_5dff3515db7d473b95373d4464f1709b",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "IDC",
+          "Amazon"
+        ],
+        "occurrence_date": null,
+        "proposition": "Reuters援引IDC数据称，Amazon在2026年第二季度的全球平板市场份额为1.9%，低于一年前的8%。",
+        "subject_time": "2026年第二季度与2025年第二季度"
+      },
+      "candidate_index": 2,
+      "case_id": "case_f942dd7580cd426b8771564f7c0b3c3c",
+      "created_at": "2026-10-08T13:11:19.527447Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E365",
+      "runtime_signature": "85993e124e42b349da0776a8495969b20b0b9ab3bc5539ffb30f54483a6332c1",
+      "snapshot_version": 40,
+      "source_message_id": "std_5dff3515db7d473b95373d4464f1709b",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "ResearchAndMarkets.com"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "ResearchAndMarkets.com宣布将《Shape Memory Alloys Market Insights, Competitive Landscape, and Market Forecast - 2033》报告加入其产品目录。",
+        "subject_time": null
+      },
+      "candidate_index": 0,
+      "case_id": "case_5c4fd8c0120a4b3fb01f639f88449c67",
+      "created_at": "2026-10-08T13:38:50.788532Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E366",
+      "runtime_signature": "f6e06d9de7f3393a9ab1578f1414b4929a55f4e2bd44e93fc8551db657de1fa6",
+      "snapshot_version": 41,
+      "source_message_id": "std_001fcf1c3c054e43b24a92d7c451c2f0",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "全球形状记忆合金市场"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "该报告预测全球形状记忆合金市场将从2026年的147亿美元增至2033年的311亿美元，预测期复合年增长率为11.30%。",
+        "subject_time": "2026—2033年"
+      },
+      "candidate_index": 1,
+      "case_id": "case_5c4fd8c0120a4b3fb01f639f88449c67",
+      "created_at": "2026-10-08T13:38:50.882968Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E367",
+      "runtime_signature": "77c30937b4fdc033ddc05395c67af158074fa41553874aa61ecc3ea050353277",
+      "snapshot_version": 42,
+      "source_message_id": "std_001fcf1c3c054e43b24a92d7c451c2f0",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "ResearchAndMarkets.com",
+          "波兰汽车半导体存储器市场"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "ResearchAndMarkets.com宣布将《Poland Automotive Semiconductor Memory Market: Prospects, Trends Analysis, Market Size and Forecasts up to 2032》加入其产品目录；报告涵盖DRAM、NAND、NOR、MRAM及ADAS、数字座舱等汽车应用。",
+        "subject_time": "报告展望至2032年"
+      },
+      "candidate_index": 0,
+      "case_id": "case_abf973de36ce4ef9b84d577787d6b379",
+      "created_at": "2026-10-08T13:43:57.728433Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E368",
+      "runtime_signature": "9e3149cfaa657a59d516d7d93909797e86158c06fa97fec08ea4d4db5b200150",
+      "snapshot_version": 43,
+      "source_message_id": "std_e1d7c71d44394a1c95ddf707c4663d60",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "ResearchAndMarkets.com",
+          "MENA汽车半导体存储器市场"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "ResearchAndMarkets.com宣布将《MENA Automotive Semiconductor Memory Market: Prospects, Trends Analysis, Market Size and Forecasts up to 2032》加入其产品目录；报告覆盖DRAM、NAND、NOR、MRAM及ADAS、数字座舱等汽车应用。",
+        "subject_time": "报告展望至2032年"
+      },
+      "candidate_index": 0,
+      "case_id": "case_106238774a9b44e8bbe1e1f7381926f7",
+      "created_at": "2026-10-08T13:46:06.816072Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E369",
+      "runtime_signature": "78882bac3877c7ae30d274434362e6df9e5df2c917bde137a163774942a58519",
+      "snapshot_version": 44,
+      "source_message_id": "std_edeada9dc56e491da7ac68ec9712c6b0",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "ResearchAndMarkets.com",
+          "United Arab Emirates automotive semiconductor memory market",
+          "United Arab Emirates Automotive Semiconductor Memory Market report"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "ResearchAndMarkets.com于2026年10月8日宣布将《United Arab Emirates Automotive Semiconductor Memory Market: Prospects, Trends Analysis, Market Size and Forecasts up to 2032》加入其产品目录。",
+        "subject_time": "报告展望至2032年"
+      },
+      "candidate_index": 0,
+      "case_id": "case_e354eec524934d5ab68f16c73912f3f7",
+      "created_at": "2026-10-08T13:47:09.701730Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E370",
+      "runtime_signature": "a03e3b3803e0cacd133e76b18ae5359dcc62f08d5d6f56f2fc484324467a8057",
+      "snapshot_version": 45,
+      "source_message_id": "std_e7e2a8c7a4f942b3bd241b3967249ff0",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "Lynx Equity Strategies",
+          "KC Rajkumar",
+          "Micron",
+          "Nvidia",
+          "Sandisk"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "Lynx Equity Strategies分析师KC Rajkumar预计AI半导体股（包括Micron、Nvidia和Sandisk）涨势将延续至2026年底。",
+        "subject_time": "至2026年底"
+      },
+      "candidate_index": 0,
+      "case_id": "case_afcc281390cf48f4a16df694ddd38703",
+      "created_at": "2026-10-08T13:48:47.702715Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E371",
+      "runtime_signature": "2360915fbd1cae24e50470e337c963865ed55851799720ebd88fda4746b978c5",
+      "snapshot_version": 46,
+      "source_message_id": "std_0e52b59c27a846e9b3b83d4e5fa372e9",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "ResearchAndMarkets.com",
+          "France Semiconductor Memory Market report"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "ResearchAndMarkets.com于2026年10月8日将《France Semiconductor Memory Market: Prospects, Trends Analysis, Market Size and Forecasts up to 2032》加入其产品目录。",
+        "subject_time": "报告展望至2032年"
+      },
+      "candidate_index": 0,
+      "case_id": "case_8cd8f3cb352746e3bf87442e095cfe1d",
+      "created_at": "2026-10-08T13:49:50.158443Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E372",
+      "runtime_signature": "187e3ce71d1fe56cee06800e222be1ea7f74ffe8b42a184bfd4d6f1f1686652f",
+      "snapshot_version": 47,
+      "source_message_id": "std_aacc7efb62fb4066b74f4ab830164c2d",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "ResearchAndMarkets.com",
+          "United States Automotive Semiconductor Memory Market report"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "ResearchAndMarkets.com于2026年10月8日将《United States Automotive Semiconductor Memory Market: Prospects, Trends Analysis, Market Size and Forecasts up to 2032》加入其产品目录。",
+        "subject_time": "报告展望至2032年"
+      },
+      "candidate_index": 0,
+      "case_id": "case_5af23dc7e1d7464a8a4826a004da2e04",
+      "created_at": "2026-10-08T13:51:36.533565Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E373",
+      "runtime_signature": "262e9b5cf17e36eed4743322236cb7f9f5998b39d7f8e87d803d4424447a7fa1",
+      "snapshot_version": 48,
+      "source_message_id": "std_cc592824a8f04d52b3ac7b88227a3bc3",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "ResearchAndMarkets.com",
+          "法国医疗半导体存储器市场"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "ResearchAndMarkets.com于2026年10月8日宣布将《France Medical Semiconductor Memory Market: Prospects, Trends Analysis, Market Size and Forecasts up to 2032》加入其产品目录。",
+        "subject_time": "报告展望至2032年"
+      },
+      "candidate_index": 0,
+      "case_id": "case_f56a3246686941459f5c0cb04fa13b7c",
+      "created_at": "2026-10-08T13:52:13.543191Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E374",
+      "runtime_signature": "b26a89e59eda6f971c7d694cfed990b6fca2a99f7d538036c6c56e6b316fb4ff",
+      "snapshot_version": 49,
+      "source_message_id": "std_28354ad10db24c19ab9185661bca2672",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "SCHEDULED",
+        "entities": [
+          "Sienna Senior Living Inc."
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "Sienna Senior Living宣布将于2026年11月12日收盘后发布2026年第三季度业绩。",
+        "subject_time": "2026年11月12日"
+      },
+      "candidate_index": 0,
+      "case_id": "case_44586efc270244e1abf0aaf2f0dfc2f9",
+      "created_at": "2026-10-08T13:54:27.014469Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E375",
+      "runtime_signature": "da79d2dcc45c0797013d6554f5c5664c675d0dbc55036fc0355dd671803a8eac",
+      "snapshot_version": 50,
+      "source_message_id": "std_40ac769a55f84749ade68ec624883de7",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "SCHEDULED",
+        "entities": [
+          "Sienna Senior Living Inc."
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "Sienna Senior Living宣布将于2026年11月13日美国东部时间上午9:30举行投资者电话会议。",
+        "subject_time": "2026年11月13日，美国东部时间上午9:30"
+      },
+      "candidate_index": 1,
+      "case_id": "case_44586efc270244e1abf0aaf2f0dfc2f9",
+      "created_at": "2026-10-08T13:54:27.031391Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E376",
+      "runtime_signature": "14cfb4aa60a182f30ee89dc55e591555d0f6852fb661e522f28c8795a416fec1",
+      "snapshot_version": 51,
+      "source_message_id": "std_40ac769a55f84749ade68ec624883de7",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "SCHEDULED",
+        "entities": [
+          "Sienna Senior Living Inc."
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "Sienna Senior Living宣布将于2026年11月12日收盘后发布2026年第三季度业绩。",
+        "subject_time": "2026年11月12日"
+      },
+      "candidate_index": 0,
+      "case_id": "case_4ccf37cc21bb41ee86ab464651fbcaec",
+      "created_at": "2026-10-08T13:55:45.426237Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E377",
+      "runtime_signature": "da79d2dcc45c0797013d6554f5c5664c675d0dbc55036fc0355dd671803a8eac",
+      "snapshot_version": 52,
+      "source_message_id": "std_bb8e34c62853423fadd6e7d31d6631f9",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "SCHEDULED",
+        "entities": [
+          "Sienna Senior Living Inc."
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "Sienna Senior Living宣布将于2026年11月13日美国东部时间上午9:30举行投资者电话会议。",
+        "subject_time": "2026年11月13日，美国东部时间上午9:30"
+      },
+      "candidate_index": 1,
+      "case_id": "case_4ccf37cc21bb41ee86ab464651fbcaec",
+      "created_at": "2026-10-08T13:55:45.486855Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E378",
+      "runtime_signature": "14cfb4aa60a182f30ee89dc55e591555d0f6852fb661e522f28c8795a416fec1",
+      "snapshot_version": 53,
+      "source_message_id": "std_bb8e34c62853423fadd6e7d31d6631f9",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "ResearchAndMarkets.com",
+          "South Korea medical semiconductor memory market report"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "ResearchAndMarkets.com于2026年10月8日将《South Korea Medical Semiconductor Memory Market: Prospects, Trends Analysis, Market Size and Forecasts up to 2032》加入其产品目录。",
+        "subject_time": "报告展望至2032年"
+      },
+      "candidate_index": 0,
+      "case_id": "case_84a67b85b8aa4a96b87a4dcee3c68c72",
+      "created_at": "2026-10-08T13:56:15.441503Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E379",
+      "runtime_signature": "0c88f4a6a82ae02b941f831ae8cd2bf513c1fd39bce77d40ec8cff1e4819121d",
+      "snapshot_version": 54,
+      "source_message_id": "std_aae11a266d694f5d921973fac1f4abe0",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "ResearchAndMarkets.com",
+          "NOR Flash for Consumer Electronics Market report"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "ResearchAndMarkets.com宣布将《NOR Flash for Consumer Electronics Market Size and Share - Growth Analysis Report and Forecast Trends (2026-2035)》加入其产品目录。",
+        "subject_time": "报告预测期为2026至2035年"
+      },
+      "candidate_index": 0,
+      "case_id": "case_285993f63a2f421b9ec306f6b2aa3f2f",
+      "created_at": "2026-10-08T14:00:52.693878Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E380",
+      "runtime_signature": "44265f7970ede5a2f69328139752975d563fb9ca7c50f662151fc32178d10402",
+      "snapshot_version": 55,
+      "source_message_id": "std_e63a81a3841a411db9acee5824332564",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "ResearchAndMarkets.com",
+          "全球NOR Flash消费电子市场"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "ResearchAndMarkets.com的报告估算全球NOR Flash消费电子市场2025年规模为34.2亿美元，并预测2035年达到58.5亿美元，2026至2035年复合年增长率约为6.9%。",
+        "subject_time": "2025年市场估值及2026至2035年预测"
+      },
+      "candidate_index": 1,
+      "case_id": "case_285993f63a2f421b9ec306f6b2aa3f2f",
+      "created_at": "2026-10-08T14:00:52.720647Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E381",
+      "runtime_signature": "e6a1704061a995802142596b0bdcb30321d9e5e5b372958646702a644c2185ea",
+      "snapshot_version": 56,
+      "source_message_id": "std_e63a81a3841a411db9acee5824332564",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "ResearchAndMarkets.com",
+          "Serial NOR Flash",
+          "全球NOR Flash消费电子市场"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "ResearchAndMarkets.com的报告称，Serial NOR Flash占全球NOR Flash消费电子市场2025年收入的72.4%。",
+        "subject_time": "2025年"
+      },
+      "candidate_index": 2,
+      "case_id": "case_285993f63a2f421b9ec306f6b2aa3f2f",
+      "created_at": "2026-10-08T14:00:52.748406Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E382",
+      "runtime_signature": "4a365cdc3a4c452d152b7e7dcca57be3609f1309eeca1abb75c9d1ba60426a77",
+      "snapshot_version": 57,
+      "source_message_id": "std_e63a81a3841a411db9acee5824332564",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "ResearchAndMarkets.com",
+          "亚太地区",
+          "全球NOR Flash消费电子市场"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "ResearchAndMarkets.com的报告称，亚太地区占全球NOR Flash消费电子市场2025年收入的约58.5%。",
+        "subject_time": "2025年"
+      },
+      "candidate_index": 3,
+      "case_id": "case_285993f63a2f421b9ec306f6b2aa3f2f",
+      "created_at": "2026-10-08T14:00:52.777713Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E383",
+      "runtime_signature": "6f279ccff426639dbe5d9ddc969531f70e3299d73d94d2658cf6c6400cdf6050",
+      "snapshot_version": 58,
+      "source_message_id": "std_e63a81a3841a411db9acee5824332564",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "ResearchAndMarkets.com",
+          "Argentina semiconductor memory market",
+          "Argentina Semiconductor Memory Market report"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "ResearchAndMarkets.com于2026年10月8日将《Argentina Semiconductor Memory Market: Prospects, Trends Analysis, Market Size and Forecasts up to 2032》加入其产品目录。",
+        "subject_time": "报告展望期至2032年"
+      },
+      "candidate_index": 0,
+      "case_id": "case_03ea9497ffe74dbe8dfa0cd142570e2d",
+      "created_at": "2026-10-08T14:01:28.529853Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E384",
+      "runtime_signature": "a4adfdbb061aa64c62f6a74746cdfb2b25212e3190427a013c1886b9b6c08c05",
+      "snapshot_version": 59,
+      "source_message_id": "std_c8a1b921205b47f1b15c08a0deca3b97",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "ResearchAndMarkets.com",
+          "Argentina Medical Semiconductor Memory Market report"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "ResearchAndMarkets.com于2026年10月8日将《Argentina Medical Semiconductor Memory Market: Prospects, Trends Analysis, Market Size and Forecasts up to 2032》加入其产品目录。",
+        "subject_time": "报告展望至2032年"
+      },
+      "candidate_index": 0,
+      "case_id": "case_6431ddf3772344fea59ed739aebc75c2",
+      "created_at": "2026-10-08T14:02:41.974548Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E385",
+      "runtime_signature": "8aac73789800dd6bc799034570c3c9373e7b81e43310c64de22e814be5b0775c",
+      "snapshot_version": 60,
+      "source_message_id": "std_d93d8712b7e84ddd8585e38b047753aa",
+      "ticker": "MU",
+      "trading_date": "2026-10-08"
+    }
+  ],
+  "limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "global_state": {
+    "watches": [],
+    "pins": []
+  },
+  "event_details": {
+    "requested_event_ids": [],
+    "canonical_events": [],
+    "provisional_events": [],
+    "missing_event_ids": []
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-24T17:00:50.646227Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "No pre-cutoff joint U.S.-China readout, agreement text, or official confirmation of a decision to avoid new AI limits was located in the verified sources.",
+    "The original Truth Social platform page for this specific post was not retrieved; the earliest-source record is an archive entry corroborated by contemporaneous reporting.",
+    "The source message's assertion that both governments discussed creating an incident-alert channel is not independently established here as a summit outcome; pre-event reporting documents a U.S. proposal and ongoing exploration.",
+    "The verified sources identify no direct Intel customer, product, order, manufacturing, or supply-chain impact."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

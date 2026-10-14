@@ -1,0 +1,23 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-10-05T13:57:36.482418Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "No directly accessible, dated WSTS memory/DRAM/NAND breakout or methodology table was located to independently verify the reported +36%, +8%, and +5% figures or their comparison basis.",
+    "Circular Technologies' cited research note was not located; its forecast series, definitions, and exact publication time remain unverified.",
+    "The exact first-publication time and archived pre-cutoff version of the Barron's/Dow Jones article could not be independently verified beyond the supplied original passage.",
+    "A separate verification of other potentially relevant concurrent events from the supplied case context was not completed in this focused search."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

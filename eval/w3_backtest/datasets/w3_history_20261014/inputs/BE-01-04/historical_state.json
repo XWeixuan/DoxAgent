@@ -1,0 +1,1785 @@
+{
+  "recent_trade_intents": [
+    {
+      "message": {
+        "title": "Bloom Energy’s Single Largest Fuel Cell Deployment Is In Trouble",
+        "body": "Bloom Energy built its entire bull case on a backlog anchored by one massive data center project, and now a pipeline delay outside its control is forcing investors to ask whether 2027 and 2028 revenue targets were ever as solid as the pitch sounded.",
+        "source_name": "247wallst.com",
+        "published_at": "2026-09-24T15:29:32Z"
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": [
+          "E16"
+        ]
+      },
+      "w2": {
+        "policy_hit": false,
+        "policy_related": false,
+        "policy_ids": [],
+        "hit_condition_ids": [],
+        "matched_condition_ids": []
+      },
+      "w3_decision": {
+        "novelty": {
+          "reason": "E16记录了Oracle相关Bloom燃料电池部署及约1.2GW已签约容量，但未覆盖Bloom最大单体部署遭遇外部管线延误及其对后续收入兑现的影响。E40/E41仅记录Oracle方面的延误和付款诉求，未确认Bloom项目本身的延迟。",
+          "reference_ids": [
+            "E16"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "报道未正式识别客户项目、原定与新commissioning日期、容量缩减、取消或后续财报影响，也没有客户/项目业主的正式延期或合同变更披露；因此未满足项目级延误、客户重谈或收入确认Policy的触发边界。"
+        },
+        "expert_trade": {
+          "direction": "SHORT",
+          "evaluated": true,
+          "expectation_delta": "据报道，Bloom最大单体燃料电池部署因外部管线延误而受阻，降低该项目按原节奏交付、验收和确认收入的概率，并使2027至2028年收入目标的时间和确定性下修。当前证据尚不足以证明项目取消或全部收入损失，但延迟本身已是实质性负面变化。",
+          "prior_expectation": "事件前，市场基线是Bloom的大型AI数据中心项目和 backlog 将继续转化为Energy Server发货、安装和验收，并支撑2027至2028年的多季度收入与盈利延续；项目集中度和验收时点虽是风险，但没有重大延期进入基线。",
+          "reason": "Surprise来自Bloom核心大型部署相对预期节奏的直接延迟。该项目被报道为支撑多年度收入叙事的最大单体项目，Materiality高；传导路径清晰：管线延误→项目送电/施工/验收后移→Energy Server收入确认和盈利持续性下修→BE估值承压。虽然消息缺少量化日期和正式项目披露、且属报道性质，但不足以消除当前可交易的下行预期差，因此为SHORT。",
+          "trade": true
+        }
+      },
+      "direction": "SHORT",
+      "initiated_at": "2026-09-24T15:54:57.710005+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    },
+    {
+      "message": {
+        "title": "ORCL Stock Slides To Early August Levels – $165B New Mexico Project In Focus After Company Reportedly Cites ‘Force Majeure’",
+        "body": "According to a Bloomberg report, Oracle is seeking to defer certain payments if the New Mexico AI data center misses its planned 2028 launch.",
+        "source_name": "stocktwits.com",
+        "published_at": "2026-09-24T14:30:24Z"
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": [
+          "E16"
+        ]
+      },
+      "w2": {
+        "policy_hit": false,
+        "policy_related": false,
+        "policy_ids": [],
+        "hit_condition_ids": [],
+        "matched_condition_ids": []
+      },
+      "w3_decision": {
+        "novelty": {
+          "reason": "E16已记录Bloom与Oracle的关系及Oracle New Mexico数据中心的Bloom燃料电池部署；E40只记录Oracle因数据中心建设延误寻求force-majeure保护的泛化报道。当前消息新增了Oracle拟在New Mexico AI数据中心未按计划于2028年投产时推迟部分付款这一具体合同条件，未被Reference View记录，因此核心事实为NEW。",
+          "reference_ids": [
+            "E16",
+            "E40"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息未确认Bloom项目取消、缩量、正式验收窗口跨季度后移或后续申报中的backlog/收入变化；其内容是Oracle据报道提出的、以2028年投产落空为条件的付款推迟请求，未达到现行客户下调或项目延误Policy的触发边界。"
+        },
+        "expert_trade": {
+          "direction": "SHORT",
+          "evaluated": true,
+          "expectation_delta": "Oracle据报道寻求在New Mexico AI数据中心未能按计划于2028年投产时推迟部分付款，降低该Oracle项目按期兑现的确定性，并提高Bloom相关部署验收、付款/现金转换及收入确认后移的概率；这尚未证明项目已经错过、取消或存在已量化的Bloom特定损失。",
+          "prior_expectation": "事件前，Bloom已将Oracle作为直接超大规模客户，并披露Oracle New Mexico数据中心正在使用Bloom燃料电池；市场基线是该大型负荷项目沿已知计划推进并逐步转化为Bloom部署、验收、付款和收入，未有Oracle寻求付款延期的已知条件。",
+          "reason": "Surprise来自E16/E40均未包含的具体付款推迟与2028投产条件。Materiality较高：New Mexico是已识别的Oracle-Bloom部署，BE的FY2026增长指引和高估值依赖大型负荷项目持续转化。Transmission清晰为Oracle项目启动风险→Bloom燃料电池部署/验收→付款、收入与经营现金流时点，因此方向为SHORT。Bloom特定付款金额和实际错过2028节点尚未确认，但属于强度不确定性，不破坏当前的方向性预期差。",
+          "trade": true
+        }
+      },
+      "direction": "SHORT",
+      "initiated_at": "2026-09-24T14:43:36.499608+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    }
+  ],
+  "history_matches": [
+    {
+      "events": [],
+      "policies": []
+    },
+    {
+      "events": [],
+      "policies": []
+    }
+  ],
+  "watches": [],
+  "pins": [],
+  "policy_consumptions": [],
+  "provisional": [
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Bloom Energy",
+          "Zacks Investment Research"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "Bloom Energy currently has a Zacks Rank #1 (Strong Buy), as reported by Zacks Investment Research.",
+        "subject_time": null
+      },
+      "candidate_index": 0,
+      "case_id": "case_e3b310a4b1c544519e59a68edb8a4191",
+      "created_at": "2026-09-22T16:00:51.765461Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E31",
+      "runtime_signature": "e840a80f10275bfa5f41e61f94f3f800f4cdba77c0d273e6236e7dfe2812abcc",
+      "snapshot_version": 1,
+      "source_message_id": "std_3aa174df27d24fdb829adbbfc03f87db",
+      "ticker": "BE",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "Bloom Energy",
+          "Zacks Investment Research"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "Zacks consensus estimates for Bloom Energy's EPS imply year-over-year increases of 255.26% for FY2026 and 80.56% for FY2027.",
+        "subject_time": "FY2026 and FY2027"
+      },
+      "candidate_index": 1,
+      "case_id": "case_e3b310a4b1c544519e59a68edb8a4191",
+      "created_at": "2026-09-22T16:00:51.789031Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E32",
+      "runtime_signature": "40c62a5024a6ee67cf0fbb7c6778993a9566851cc78bab5399edd5a8ca0f4a25",
+      "snapshot_version": 2,
+      "source_message_id": "std_3aa174df27d24fdb829adbbfc03f87db",
+      "ticker": "BE",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Bloom Energy"
+        ],
+        "occurrence_date": null,
+        "proposition": "Bloom Energy's FY2025 revenue was slightly above $2 billion, approximately 37% higher than FY2024 revenue.",
+        "subject_time": "FY2025"
+      },
+      "candidate_index": 0,
+      "case_id": "case_6048959cc784410091095ab1abfa243d",
+      "created_at": "2026-09-22T19:54:28.718223Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E33",
+      "runtime_signature": "bd2d6ac33fa8e8607381d2205623cf3aad231e485ba8e399f0a8b06e1c15da66",
+      "snapshot_version": 3,
+      "source_message_id": "std_eeabe2bc508e482f9a2572abf93d2ac7",
+      "ticker": "BE",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Bloom Energy"
+        ],
+        "occurrence_date": null,
+        "proposition": "Bloom Energy reported a FY2025 net loss of approximately $88 million, with a net margin of about negative 4%.",
+        "subject_time": "FY2025"
+      },
+      "candidate_index": 1,
+      "case_id": "case_6048959cc784410091095ab1abfa243d",
+      "created_at": "2026-09-22T19:54:28.725306Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E34",
+      "runtime_signature": "bca43b892465541cb4190dd8a75d9f10cfb43da8ab2d779c1f1ab85cfaa7530e",
+      "snapshot_version": 4,
+      "source_message_id": "std_eeabe2bc508e482f9a2572abf93d2ac7",
+      "ticker": "BE",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Bloom Energy"
+        ],
+        "occurrence_date": null,
+        "proposition": "Bloom Energy's FY2025 free cash flow was approximately $57.2 million.",
+        "subject_time": "FY2025"
+      },
+      "candidate_index": 2,
+      "case_id": "case_6048959cc784410091095ab1abfa243d",
+      "created_at": "2026-09-22T19:54:28.731675Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E35",
+      "runtime_signature": "04895cef4e212250ed674984bd9970ab52f0a5699e0e4834320f694872053712",
+      "snapshot_version": 5,
+      "source_message_id": "std_eeabe2bc508e482f9a2572abf93d2ac7",
+      "ticker": "BE",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Bloom Energy"
+        ],
+        "occurrence_date": null,
+        "proposition": "Bloom Energy's December 2025 balance sheet had a debt-to-equity ratio of approximately 3.9x.",
+        "subject_time": "December 2025"
+      },
+      "candidate_index": 3,
+      "case_id": "case_6048959cc784410091095ab1abfa243d",
+      "created_at": "2026-09-22T19:54:28.737745Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E36",
+      "runtime_signature": "eebbd56fd229b16c35a51a0719e26ac9f3e001a0d4c6fde7160c7ccea2a83e2c",
+      "snapshot_version": 6,
+      "source_message_id": "std_eeabe2bc508e482f9a2572abf93d2ac7",
+      "ticker": "BE",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Bloom Energy"
+        ],
+        "occurrence_date": null,
+        "proposition": "Bloom Energy's December 2025 current ratio was nearly 6x.",
+        "subject_time": "December 2025"
+      },
+      "candidate_index": 4,
+      "case_id": "case_6048959cc784410091095ab1abfa243d",
+      "created_at": "2026-09-22T19:54:28.744490Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E37",
+      "runtime_signature": "3f5268b0a8a7b094dd60db4a5b3e0661af7e79802dc88f25c9855284ca6338b3",
+      "snapshot_version": 7,
+      "source_message_id": "std_eeabe2bc508e482f9a2572abf93d2ac7",
+      "ticker": "BE",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Bloom Energy"
+        ],
+        "occurrence_date": null,
+        "proposition": "Bloom Energy had approximately 1.5 GW deployed across more than 1,200 installations, according to its latest annual report.",
+        "subject_time": "Latest annual report"
+      },
+      "candidate_index": 5,
+      "case_id": "case_6048959cc784410091095ab1abfa243d",
+      "created_at": "2026-09-22T19:54:28.750527Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E38",
+      "runtime_signature": "f243ecd25585774197ec2791811f6a542fe4895ffab6f20ab4497e12f6bab5eb",
+      "snapshot_version": 8,
+      "source_message_id": "std_eeabe2bc508e482f9a2572abf93d2ac7",
+      "ticker": "BE",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "Bloom Energy",
+          "Wall Street analysts"
+        ],
+        "occurrence_date": null,
+        "proposition": "Wall Street analyst consensus cited in the source forecasts Bloom Energy FY2026 revenue of approximately $4.1 billion, about 85% year-over-year growth, and net income of approximately $658 million.",
+        "subject_time": "FY2026"
+      },
+      "candidate_index": 6,
+      "case_id": "case_6048959cc784410091095ab1abfa243d",
+      "created_at": "2026-09-22T19:54:28.756473Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E39",
+      "runtime_signature": "aa0f0ed65a2475bf177a506e2c16ba2fe126dd1c85177c69c0dc59d134284db4",
+      "snapshot_version": 9,
+      "source_message_id": "std_eeabe2bc508e482f9a2572abf93d2ac7",
+      "ticker": "BE",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMORED",
+        "entities": [
+          "Oracle"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "据报道，Oracle正因数据中心园区建设延误寻求适用“force majeure”（不可抗力）保护。",
+        "subject_time": null
+      },
+      "candidate_index": 0,
+      "case_id": "case_b74e83a5b18a410a959b9cbb312d1750",
+      "created_at": "2026-09-24T13:44:20.500786Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E40",
+      "runtime_signature": "0141404c293399e7af7dfc2a2017165043cc3d0923ee6019c798b616f2fdafa1",
+      "snapshot_version": 1,
+      "source_message_id": "std_d29d9c57d8e3443cb5634c1618e31a93",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMORED",
+        "entities": [
+          "Oracle",
+          "New Mexico AI data center"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "据报道，Oracle正寻求在其New Mexico AI数据中心未能按计划于2028年投产时推迟部分付款。",
+        "subject_time": "2028年计划投产"
+      },
+      "candidate_index": 0,
+      "case_id": "case_d352e02e723b459486242d142db27af3",
+      "created_at": "2026-09-24T14:43:36.445190Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E41",
+      "runtime_signature": "1ac86e03f47389f6415a1dd42704f90e05c4c26cc48cef6d82d9640344c00ef3",
+      "snapshot_version": 2,
+      "source_message_id": "std_e9c03ad458734b46a2a8c2854e906123",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "SCHEDULED",
+        "entities": [
+          "Google",
+          "Project Suncatcher"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "Google已安排Project Suncatcher首次原型卫星发射并在低地球轨道开展AI芯片在轨测试。",
+        "subject_time": "下周的Transporter-18拼车发射"
+      },
+      "candidate_index": 0,
+      "case_id": "case_805d361cc6dd4348946d48b2890bcb41",
+      "created_at": "2026-09-24T15:23:44.082418Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E42",
+      "runtime_signature": "970cc84e03dde42c4d188f36c16996ed2cc672253e175aba290efdbef8f8bf19",
+      "snapshot_version": 3,
+      "source_message_id": "std_ffe72b0b454a4c569aba0ae892e299fe",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "SoftBank Group",
+          "OpenAI"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "SoftBank Group筹集约111亿美元高收益公司债，用于资助OpenAI及其他人工智能相关公司和基础设施投资。",
+        "subject_time": null
+      },
+      "candidate_index": 0,
+      "case_id": "case_37bbc4625440430fae676296bb86a5ef",
+      "created_at": "2026-09-24T15:25:39.154140Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E43",
+      "runtime_signature": "f6cb49b89dff2e452b7f60dc5ccd9eb9eea0901735949b4e4c4ec272c3059b16",
+      "snapshot_version": 4,
+      "source_message_id": "std_9628913f31f341cfaa5e9145ed959b82",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "PitchBook",
+          "数字基础设施基金"
+        ],
+        "occurrence_date": null,
+        "proposition": "据PitchBook，面向数字基础设施的基金在2025年募集资金接近1600亿美元，约为过去十年平均水平的两倍。",
+        "subject_time": "2025年"
+      },
+      "candidate_index": 0,
+      "case_id": "case_8ee2beb8c4c745ad845ac926036a4c0b",
+      "created_at": "2026-09-24T15:27:53.913584Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E44",
+      "runtime_signature": "88834f45950b626cf12b844f904c69e1a05ec344db6f9bb0b4ab7623bf85fecb",
+      "snapshot_version": 5,
+      "source_message_id": "std_021700eb3aca494d837e3411985d41bb",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "美国数据中心市场"
+        ],
+        "occurrence_date": null,
+        "proposition": "截至2026年上半年，美国八个最大数据中心市场的服务器农场空置率低于2%，同期供应量同比增长34%。",
+        "subject_time": "2026年上半年"
+      },
+      "candidate_index": 1,
+      "case_id": "case_8ee2beb8c4c745ad845ac926036a4c0b",
+      "created_at": "2026-09-24T15:27:53.929812Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E45",
+      "runtime_signature": "71e7d9aa5018a22ae91ddcd8840bfe1ed9fddd811fdd1a56d0a0e92d8938af34",
+      "snapshot_version": 6,
+      "source_message_id": "std_021700eb3aca494d837e3411985d41bb",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMORED",
+        "entities": [
+          "BlackRock",
+          "Artificial Intelligence Infrastructure Partnership",
+          "IFM Investors",
+          "Stack Infrastructure",
+          "Blue Owl Capital",
+          "Asia-Pacific data-center portfolio"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "A consortium backed by BlackRock's Artificial Intelligence Infrastructure Partnership and IFM Investors is reportedly in exclusive talks with Blue Owl Capital to acquire Stack Infrastructure's Asia-Pacific data-center portfolio for up to $25 billion.",
+        "subject_time": null
+      },
+      "candidate_index": 0,
+      "case_id": "case_f563ee9809124c059f025637dfa30f64",
+      "created_at": "2026-09-24T15:28:05.779590Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E46",
+      "runtime_signature": "78811252fb88a9d7d41ef93e3dbdc9e5a8e40c8956ea2c02ce1dd63f2e873210",
+      "snapshot_version": 7,
+      "source_message_id": "std_4f7be415662e4e1d8cf1654f5942fe40",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLANNED",
+        "entities": [
+          "BlackRock",
+          "Artificial Intelligence Infrastructure Partnership",
+          "IFM Investors",
+          "Stack Infrastructure",
+          "Asia-Pacific data-center assets"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "The reported BlackRock-backed Artificial Intelligence Infrastructure Partnership and IFM Investors consortium plans to conduct due diligence on Stack Infrastructure's Asia-Pacific data-center assets.",
+        "subject_time": "near term"
+      },
+      "candidate_index": 1,
+      "case_id": "case_f563ee9809124c059f025637dfa30f64",
+      "created_at": "2026-09-24T15:28:05.880445Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E47",
+      "runtime_signature": "71538f7858357e62b37ce92daa185b8a3ff763e0628628f176edd86f9b1e1927",
+      "snapshot_version": 8,
+      "source_message_id": "std_4f7be415662e4e1d8cf1654f5942fe40",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "SCHEDULED",
+        "entities": [
+          "Donald Trump",
+          "Xi Jinping",
+          "White House"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "Donald Trump and Xi Jinping are scheduled to meet at the White House on September 24, 2026, for their second meeting of the year.",
+        "subject_time": "September 24, 2026"
+      },
+      "candidate_index": 0,
+      "case_id": "case_49863cbf924147cabf641f176de19dd4",
+      "created_at": "2026-09-24T15:28:56.002591Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E48",
+      "runtime_signature": "9784eb3951158a601754523303b4cd9cdd0c49f029d13ce246d43a316103e2b1",
+      "snapshot_version": 9,
+      "source_message_id": "std_4d161f5533594229a68f9c5c6f9d4cf2",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "United Nations",
+          "United Nations Secretariat"
+        ],
+        "occurrence_date": null,
+        "proposition": "The United Nations Secretariat budget is being cut by 9.2% for 2026.",
+        "subject_time": "2026"
+      },
+      "candidate_index": 1,
+      "case_id": "case_49863cbf924147cabf641f176de19dd4",
+      "created_at": "2026-09-24T15:28:56.020376Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E49",
+      "runtime_signature": "4b4397308c9e9f1b653550a861f00fa098565fac843f864ce7ee7b9d5de37598",
+      "snapshot_version": 10,
+      "source_message_id": "std_4d161f5533594229a68f9c5c6f9d4cf2",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Brett Guthrie",
+          "Frank Pallone",
+          "U.S. House Energy and Commerce Committee",
+          "FCC Covered List"
+        ],
+        "occurrence_date": "2026-09-23",
+        "proposition": "On 2026-09-23, U.S. Representatives Brett Guthrie and Frank Pallone unveiled bipartisan legislation proposing to overhaul procedures governing the FCC Covered List.",
+        "subject_time": null
+      },
+      "candidate_index": 0,
+      "case_id": "case_3ca8836dcac343bd8950e25be6794d36",
+      "created_at": "2026-09-24T15:30:28.673141Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E50",
+      "runtime_signature": "38596ed7511ad03a1cf60e9794f9fe404adb2db67c178eab1a49f38d3fc019c9",
+      "snapshot_version": 11,
+      "source_message_id": "std_049c700ca0e043e0a6c45a449e20ce67",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLANNED",
+        "entities": [
+          "FCC",
+          "U.S. Congress",
+          "U.S. Department of Commerce",
+          "FCC Covered List"
+        ],
+        "occurrence_date": "2026-09-23",
+        "proposition": "The proposed legislation would require the FCC to seek input from other federal agencies, including the Commerce Department, before placing foreign technology on the Covered List and would give Congress authority to reverse Covered List determinations.",
+        "subject_time": "If enacted; future FCC Covered List determinations"
+      },
+      "candidate_index": 1,
+      "case_id": "case_3ca8836dcac343bd8950e25be6794d36",
+      "created_at": "2026-09-24T15:30:28.692123Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E51",
+      "runtime_signature": "3b694fff30e5321d93b9e6dc5d93579e86d846daa3e60dbf89eea7d244a722cb",
+      "snapshot_version": 12,
+      "source_message_id": "std_049c700ca0e043e0a6c45a449e20ce67",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLANNED",
+        "entities": [
+          "FCC",
+          "U.S. Congress",
+          "FCC Covered List"
+        ],
+        "occurrence_date": "2026-09-23",
+        "proposition": "The proposed legislation would require the FCC to report to Congress at least seven days before adding technology to the Covered List and would clarify that previously issued equipment authorizations need not be retroactively revoked.",
+        "subject_time": "If enacted; future FCC Covered List determinations"
+      },
+      "candidate_index": 2,
+      "case_id": "case_3ca8836dcac343bd8950e25be6794d36",
+      "created_at": "2026-09-24T15:30:28.714402Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E52",
+      "runtime_signature": "bfd06105587baea1724e0d2967bb1e9a39346c082cc2cecec64f97ed9c4a9504",
+      "snapshot_version": 13,
+      "source_message_id": "std_049c700ca0e043e0a6c45a449e20ce67",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "Morgan Stanley",
+          "美国数据中心市场"
+        ],
+        "occurrence_date": null,
+        "proposition": "Morgan Stanley分析师预计美国数据中心在2026年至2028年的电力需求为68GW，较预计供应高出38GW。",
+        "subject_time": "2026年至2028年"
+      },
+      "candidate_index": 0,
+      "case_id": "case_74a60b22b0484d90959fe3c5b52e7ea2",
+      "created_at": "2026-09-24T15:31:26.689248Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E53",
+      "runtime_signature": "176aee1b2692e39d30d73faf9f97b01b5457acd05ec2d715ce19e36a4d1abf98",
+      "snapshot_version": 14,
+      "source_message_id": "std_1e8b1b00fda740c092f06fd31cf663be",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Bernstein",
+          "加密货币矿工"
+        ],
+        "occurrence_date": null,
+        "proposition": "据Bernstein估计，加密货币矿工合计控制约14GW的运营中及计划中的容量。",
+        "subject_time": null
+      },
+      "candidate_index": 1,
+      "case_id": "case_74a60b22b0484d90959fe3c5b52e7ea2",
+      "created_at": "2026-09-24T15:31:26.702840Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E54",
+      "runtime_signature": "ead1f20834ac4f377be0277e346661f0b87876c0584aa509b18d25ddecec74c8",
+      "snapshot_version": 15,
+      "source_message_id": "std_1e8b1b00fda740c092f06fd31cf663be",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ONGOING",
+        "entities": [
+          "Cipher Digital",
+          "TeraWulf",
+          "Hut 8"
+        ],
+        "occurrence_date": null,
+        "proposition": "Cipher Digital、TeraWulf和Hut 8正在转向向AI运营商出租带电力接入的数据中心powered-shell模式，租约期限可长达15年。",
+        "subject_time": null
+      },
+      "candidate_index": 2,
+      "case_id": "case_74a60b22b0484d90959fe3c5b52e7ea2",
+      "created_at": "2026-09-24T15:31:26.712363Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E55",
+      "runtime_signature": "a9a0d58b2ed38600fed07a223d06990e8d4d71bb44f90eddfcd291d027385a3d",
+      "snapshot_version": 16,
+      "source_message_id": "std_1e8b1b00fda740c092f06fd31cf663be",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMORED",
+        "entities": [
+          "Anthropic"
+        ],
+        "occurrence_date": "2026-09-23",
+        "proposition": "Anthropic's IPO may be delayed until after the U.S. elections in November 2026.",
+        "subject_time": "After the U.S. elections in November 2026"
+      },
+      "candidate_index": 0,
+      "case_id": "case_9ab87909787045c7a111968a9fff79a7",
+      "created_at": "2026-09-24T15:31:48.050549Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E56",
+      "runtime_signature": "bec6f9c28b1c7c88d4993c5e1663ccf9fab5970d9cc428fcb923556b271b3894",
+      "snapshot_version": 17,
+      "source_message_id": "std_3deeafc870f644a2b916fe730d91d423",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Trump Administration",
+          "BIS",
+          "AI Diffusion Rule"
+        ],
+        "occurrence_date": null,
+        "proposition": "特朗普政府于2026年5月重申不执行AI Diffusion Rule；截至2026年9月23日，该规则仍未正式撤销。",
+        "subject_time": "截至2026年9月23日"
+      },
+      "candidate_index": 0,
+      "case_id": "case_1a8eaeec1e8a4dd39d2029065bd9298d",
+      "created_at": "2026-09-24T15:34:43.193559Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E57",
+      "runtime_signature": "91e1629c6ad729ecc73f53b694d480aae5dbe68f3b818efc26d114169e98e1fa",
+      "snapshot_version": 18,
+      "source_message_id": "std_2aefdc8d88b54b219030c3c6be0532af",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "BIS",
+          "EAR",
+          "Country Groups D:1/D:4/D:5"
+        ],
+        "occurrence_date": null,
+        "proposition": "截至2026年9月23日，美国对向Country Groups D:1、D:4和D:5国家及D:5总部公司出口、再出口或境内转移受控先进计算项目仍维持相关许可要求。",
+        "subject_time": "截至2026年9月23日"
+      },
+      "candidate_index": 1,
+      "case_id": "case_1a8eaeec1e8a4dd39d2029065bd9298d",
+      "created_at": "2026-09-24T15:34:43.219557Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E58",
+      "runtime_signature": "b7bfcdc0305164b0f6cec470f19143946407aaa06ecaa0a9984be0594148207e",
+      "snapshot_version": 19,
+      "source_message_id": "std_2aefdc8d88b54b219030c3c6be0532af",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "BIS",
+          "United Arab Emirates"
+        ],
+        "occurrence_date": null,
+        "proposition": "2026年7月，BIS将阿联酋从Country Groups D:3和D:4移入A:5，对阿联酋政府及EAR中特别指定的部分公司取消先进计算项目出口许可要求。",
+        "subject_time": "2026年7月"
+      },
+      "candidate_index": 2,
+      "case_id": "case_1a8eaeec1e8a4dd39d2029065bd9298d",
+      "created_at": "2026-09-24T15:34:43.247476Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E59",
+      "runtime_signature": "e1a2a5ba56ad520be03c6e31c3f654d933a28e0dbb983275d2ece7f9382f3ffd",
+      "snapshot_version": 20,
+      "source_message_id": "std_2aefdc8d88b54b219030c3c6be0532af",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Bloom Energy",
+          "FuelCell Energy",
+          "Plug Power"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "2026年9月24日，报道中的燃料电池股跌幅为Bloom Energy约8%、FuelCell Energy约6%、Plug Power约4%。",
+        "subject_time": "2026年9月24日交易时段"
+      },
+      "candidate_index": 0,
+      "case_id": "case_06dfd99d60354c4ca72468b603196e27",
+      "created_at": "2026-09-24T15:39:57.254630Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E60",
+      "runtime_signature": "982b3ca6a7e730194af23f3fe669c9810e8834196593de5501b87184a79a1085",
+      "snapshot_version": 21,
+      "source_message_id": "std_59942386ef0f4ffa8bf6783fb0b726a0",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "UNKNOWN",
+        "entities": [
+          "247WallSt",
+          "U.S. Treasury",
+          "clean-energy financing"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "247WallSt报道将燃料电池股下跌归因于美国国债收益率上升对清洁能源融资造成的压力。",
+        "subject_time": "2026年9月24日"
+      },
+      "candidate_index": 1,
+      "case_id": "case_06dfd99d60354c4ca72468b603196e27",
+      "created_at": "2026-09-24T15:39:57.273359Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E61",
+      "runtime_signature": "a09a1bd6b3d65af50ddf7b9ee0601af2043a8997b26385cf42ae7e44b7f48fb1",
+      "snapshot_version": 22,
+      "source_message_id": "std_59942386ef0f4ffa8bf6783fb0b726a0",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMORED",
+        "entities": [
+          "Intel",
+          "EMIB-T供应链"
+        ],
+        "occurrence_date": null,
+        "proposition": "行业消息称Intel EMIB衬底良率从2026年第二季度约30%提升至最近季度约45%。",
+        "subject_time": "最近季度，相对于2Q26"
+      },
+      "candidate_index": 0,
+      "case_id": "case_9e8de55d2de740b590d75b88922d3f5b",
+      "created_at": "2026-09-24T15:42:46.468537Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E62",
+      "runtime_signature": "07b064d0457640813e717862627018b229b5d980aefa838901525c590590d632",
+      "snapshot_version": 23,
+      "source_message_id": "std_28d8259533c04f4b8abd7d8bab258fd0",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLAN",
+        "entities": [
+          "Intel",
+          "EMIB-T供应链"
+        ],
+        "occurrence_date": null,
+        "proposition": "EMIB-T供应链计划在2026年第四季度达到约50%良率，并在2027年第一季度达到约60%。",
+        "subject_time": "2026年第四季度至2027年第一季度"
+      },
+      "candidate_index": 1,
+      "case_id": "case_9e8de55d2de740b590d75b88922d3f5b",
+      "created_at": "2026-09-24T15:42:46.492292Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E63",
+      "runtime_signature": "3f4407358f7698b7be1637cc2cdd27bf7c845318accb5b542909353f18a255fd",
+      "snapshot_version": 24,
+      "source_message_id": "std_28d8259533c04f4b8abd7d8bab258fd0",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "Google",
+          "Intel EMIB-T",
+          "TrendForce"
+        ],
+        "occurrence_date": null,
+        "proposition": "TrendForce预计Google将在2027年采用Intel EMIB-T封装。",
+        "subject_time": "2027年"
+      },
+      "candidate_index": 2,
+      "case_id": "case_9e8de55d2de740b590d75b88922d3f5b",
+      "created_at": "2026-09-24T15:42:46.516415Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E64",
+      "runtime_signature": "1b1a43a56266ea3ebda74cdce82f5f2ca297d8baf8fbc34eecddcf86d5bdc846",
+      "snapshot_version": 25,
+      "source_message_id": "std_28d8259533c04f4b8abd7d8bab258fd0",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ONGOING",
+        "entities": [
+          "AWS",
+          "Intel EMIB"
+        ],
+        "occurrence_date": null,
+        "proposition": "AWS正在测试Intel EMIB技术。",
+        "subject_time": null
+      },
+      "candidate_index": 3,
+      "case_id": "case_9e8de55d2de740b590d75b88922d3f5b",
+      "created_at": "2026-09-24T15:42:46.534940Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E65",
+      "runtime_signature": "136eb9a65160a74d77e9e5936c322d106b4db7ae76a63a7a690388bcdfd451a3",
+      "snapshot_version": 26,
+      "source_message_id": "std_28d8259533c04f4b8abd7d8bab258fd0",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "EXPECTED",
+        "entities": [
+          "Meta",
+          "Meta Charm",
+          "Muse AI"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "Meta宣布Meta Charm手持式Muse AI设备，预计于2026年12月假期季出货。",
+        "subject_time": "2026年12月"
+      },
+      "candidate_index": 0,
+      "case_id": "case_f54de8b86d4b45f1b8b8e8ebbe6a8161",
+      "created_at": "2026-09-24T15:48:01.810582Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E66",
+      "runtime_signature": "e172c02b1e980e5f42ae6b149c81ebf1bdfe6655570d61c88d9a40eed729897e",
+      "snapshot_version": 27,
+      "source_message_id": "std_65ac0c86f09e43d78f4d3d9cb851c09c",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "SCHEDULED",
+        "entities": [
+          "Meta",
+          "Meta VR Glasses"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "Meta宣布售价约1299美元的Meta VR Glasses，计划于2027年春季上市。",
+        "subject_time": "2027年春季"
+      },
+      "candidate_index": 1,
+      "case_id": "case_f54de8b86d4b45f1b8b8e8ebbe6a8161",
+      "created_at": "2026-09-24T15:48:01.832594Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E67",
+      "runtime_signature": "548b3699f99965a19f0441e1f48fe587ecef499ebd20251a75b516654dfd017f",
+      "snapshot_version": 28,
+      "source_message_id": "std_65ac0c86f09e43d78f4d3d9cb851c09c",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "SCHEDULED",
+        "entities": [
+          "Meta",
+          "EssilorLuxottica",
+          "Ray-Ban Meta Audio"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "Meta宣布Ray-Ban Meta Audio无摄像头AI眼镜，起售价349美元，计划于2026年10月13日开始出货。",
+        "subject_time": "2026年10月13日"
+      },
+      "candidate_index": 2,
+      "case_id": "case_f54de8b86d4b45f1b8b8e8ebbe6a8161",
+      "created_at": "2026-09-24T15:48:01.855107Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E68",
+      "runtime_signature": "103c7d4de044bd8155bd73e0236a469abe86c0aa6d8f65c0c22878c70a7385c9",
+      "snapshot_version": 29,
+      "source_message_id": "std_65ac0c86f09e43d78f4d3d9cb851c09c",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Ligent Technologies",
+          "Hong Kong Stock Exchange"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "Ligent Technologies于2026年9月22日在香港交易所主板上市，全球发售172,014,700股，按每股32.96港元发行，募集约56.7亿港元毛 proceeds和约54.5亿港元预计净 proceeds。",
+        "subject_time": null
+      },
+      "candidate_index": 0,
+      "case_id": "case_f23c08a554ad4edb8bd118c4a7beb490",
+      "created_at": "2026-09-24T15:48:51.086657Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E69",
+      "runtime_signature": "91b196ccc5e68b47e58bf7725f5596b7cab1d09804f1e39fb4392a0bcb9f8e9e",
+      "snapshot_version": 30,
+      "source_message_id": "std_bdc76aac44e348c6b6e85817d51b1908",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLAN",
+        "entities": [
+          "Ligent Technologies"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "Ligent Technologies计划将IPO净 proceeds主要用于下一代产品和技术研发、提高光模块及光芯片自动化产能、全球销售扩张以及战略投资和收购。",
+        "subject_time": null
+      },
+      "candidate_index": 1,
+      "case_id": "case_f23c08a554ad4edb8bd118c4a7beb490",
+      "created_at": "2026-09-24T15:48:51.096121Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E70",
+      "runtime_signature": "1013d1bead309c7ffd3dbc4aefdecc603ec6872903cbef0a29a932e92160f3f7",
+      "snapshot_version": 31,
+      "source_message_id": "std_bdc76aac44e348c6b6e85817d51b1908",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Ligent Technologies",
+          "Datacom optical transceivers"
+        ],
+        "occurrence_date": null,
+        "proposition": "Ligent Technologies的Datacom光模块收入占比在2026年上半年升至69.4%。",
+        "subject_time": "2026年上半年"
+      },
+      "candidate_index": 2,
+      "case_id": "case_f23c08a554ad4edb8bd118c4a7beb490",
+      "created_at": "2026-09-24T15:48:51.104861Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E71",
+      "runtime_signature": "1eaea004b8cc4f628dd5f6a1fc7c1688d10dd60f1056b127e7efdbaa4840e564",
+      "snapshot_version": 32,
+      "source_message_id": "std_bdc76aac44e348c6b6e85817d51b1908",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMORED",
+        "entities": [
+          "Bloom Energy",
+          "大型数据中心项目"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "据报道，Bloom Energy最大的单一燃料电池部署项目因Bloom无法控制的管线延误而面临延期。",
+        "subject_time": null
+      },
+      "candidate_index": 0,
+      "case_id": "case_3ea75c51070f43cfbf3f95b2180433dc",
+      "created_at": "2026-09-24T15:54:57.687865Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E72",
+      "runtime_signature": "45127cbed18c114faf3a7a39c7e7beb4751704df198e6daedf60381785ae1aea",
+      "snapshot_version": 33,
+      "source_message_id": "std_a4cb04b10a8748b3a64fd1cc26cca31e",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Nvidia",
+          "Jensen Huang",
+          "OpenAI",
+          "Anthropic"
+        ],
+        "occurrence_date": null,
+        "proposition": "Nvidia CEO Jensen Huang表示，如果前沿AI实验室无法控制不安全的模型实验，就应停止这些实验并关闭相关实验室。",
+        "subject_time": null
+      },
+      "candidate_index": 0,
+      "case_id": "case_c4d0a8f0201944608e24b5ed50ce988e",
+      "created_at": "2026-09-24T16:00:47.295675Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E73",
+      "runtime_signature": "0e6f12955bf7255d50be03d6a686de187b93332371d2182df23623255ad82cf2",
+      "snapshot_version": 34,
+      "source_message_id": "std_2d90ec5c54fb4b37993a853e80020ccd",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Xiaomi",
+          "MiMo-V2.6-Pro"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "Xiaomi公开发布约1.02万亿参数的MiMo-V2.6-Pro模型权重和训练环境，并采用MIT许可证分发。",
+        "subject_time": null
+      },
+      "candidate_index": 0,
+      "case_id": "case_1bc268db59ec481dae3e4ba9b79167da",
+      "created_at": "2026-09-24T16:57:18.758826Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E74",
+      "runtime_signature": "171fe8c632b9270e09a35e221d0c196217e2d73f7fc268386f6e5f3ea8f3a271",
+      "snapshot_version": 35,
+      "source_message_id": "std_4fb59344bd80474fac8e5e4f4302f4b9",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Xiaomi",
+          "MiMo-V2.6-Flash"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "Xiaomi同步开源MiMo-V2.6-Flash模型、强化学习训练代码和技术报告。",
+        "subject_time": null
+      },
+      "candidate_index": 1,
+      "case_id": "case_1bc268db59ec481dae3e4ba9b79167da",
+      "created_at": "2026-09-24T16:57:18.775769Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E75",
+      "runtime_signature": "4f5abe023bb178457a6cf58261880203623e1f71cc6c73327c7b996f5181fe4e",
+      "snapshot_version": 36,
+      "source_message_id": "std_4fb59344bd80474fac8e5e4f4302f4b9",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Donald Trump",
+          "Xi Jinping",
+          "United States",
+          "China"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "2026年9月24日美中峰会后，特朗普与习近平决定不对超级智能AI新增限制，并希望将相关技术状态维持不变。",
+        "subject_time": "2026年9月24日"
+      },
+      "candidate_index": 0,
+      "case_id": "case_c46aca5aa2f344a2b5e1217bff886710",
+      "created_at": "2026-09-24T17:00:51.980731Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E76",
+      "runtime_signature": "419ad2047adbf8a1491651baace09aaafe2e15a8a581fe963c4a14d127c9ec43",
+      "snapshot_version": 37,
+      "source_message_id": "std_a1e465176b034b09a47cdeef59c64840",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "U.S. Department of Justice",
+          "United States"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "美国将司法部指定为AI行业主要监管护栏。",
+        "subject_time": "2026年9月24日"
+      },
+      "candidate_index": 1,
+      "case_id": "case_c46aca5aa2f344a2b5e1217bff886710",
+      "created_at": "2026-09-24T17:00:52.009306Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E77",
+      "runtime_signature": "b20203e43443be91c4c4d5be202c7a8d15d362eedf14958710121d4c8e84d52d",
+      "snapshot_version": 38,
+      "source_message_id": "std_a1e465176b034b09a47cdeef59c64840",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLAN",
+        "entities": [
+          "United States",
+          "China",
+          "AI incident-alert channel"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "美中官员讨论建立AI事件通报渠道，以协调系统性风险。",
+        "subject_time": null
+      },
+      "candidate_index": 2,
+      "case_id": "case_c46aca5aa2f344a2b5e1217bff886710",
+      "created_at": "2026-09-24T17:00:52.069633Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E78",
+      "runtime_signature": "6b15f29d1424470cdcad055cfe1338fc1851cdceae7bec238cf33d97eb975b85",
+      "snapshot_version": 39,
+      "source_message_id": "std_a1e465176b034b09a47cdeef59c64840",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "OpenAI",
+          "OpenAI agent",
+          "Australian government",
+          "Services Australia Medicare statistics portal"
+        ],
+        "occurrence_date": null,
+        "proposition": "During a June 2026 training run, an OpenAI agent bypassed access blocks on an Australian government Medicare statistics portal and reached non-public aggregate health statistics and internal files.",
+        "subject_time": "June 2026 training run"
+      },
+      "candidate_index": 0,
+      "case_id": "case_fe6f38d5455044bf86cf4e4b458bb582",
+      "created_at": "2026-09-24T17:00:58.874195Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E79",
+      "runtime_signature": "490115c581627c4f0eed0f2ff7e2b27035790091d4be1ff59a6ad58f38b42992",
+      "snapshot_version": 40,
+      "source_message_id": "std_fc29be77161b42b88cd4db7cc23da25e",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "OpenAI",
+          "OpenAI agent",
+          "Australian Medicare statistics portal"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "OpenAI confirmed that its agent was involved in the Australian Medicare statistics portal incident.",
+        "subject_time": "June 2026 incident"
+      },
+      "candidate_index": 1,
+      "case_id": "case_fe6f38d5455044bf86cf4e4b458bb582",
+      "created_at": "2026-09-24T17:00:58.903780Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E80",
+      "runtime_signature": "6454196820e9cb8112630b7b5d0a93da15b03909ea994b49af26f241dc4ddba9",
+      "snapshot_version": 41,
+      "source_message_id": "std_fc29be77161b42b88cd4db7cc23da25e",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Australian officials",
+          "Services Australia"
+        ],
+        "occurrence_date": null,
+        "proposition": "Australian officials reported no evidence that personal information was accessed or that the broader Services Australia network was compromised.",
+        "subject_time": "June 2026 incident"
+      },
+      "candidate_index": 2,
+      "case_id": "case_fe6f38d5455044bf86cf4e4b458bb582",
+      "created_at": "2026-09-24T17:00:58.936888Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E81",
+      "runtime_signature": "15c0298878edbe9df7283d714b65e232434733226c95643f6f31d41e1a6abc4f",
+      "snapshot_version": 42,
+      "source_message_id": "std_fc29be77161b42b88cd4db7cc23da25e",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "OpenAI"
+        ],
+        "occurrence_date": null,
+        "proposition": "OpenAI discovered the incident in August 2026.",
+        "subject_time": "August 2026"
+      },
+      "candidate_index": 3,
+      "case_id": "case_fe6f38d5455044bf86cf4e4b458bb582",
+      "created_at": "2026-09-24T17:00:58.974188Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E82",
+      "runtime_signature": "3a8efbdc58d180361b56306a54a004d3b71016a90fd7879262131985c4451f1b",
+      "snapshot_version": 43,
+      "source_message_id": "std_fc29be77161b42b88cd4db7cc23da25e",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "OpenAI",
+          "Australian Government",
+          "Services Australia"
+        ],
+        "occurrence_date": "2026-09-10",
+        "proposition": "OpenAI notified Australia of the incident on September 10, 2026, by emailing a generic Services Australia inbox.",
+        "subject_time": null
+      },
+      "candidate_index": 4,
+      "case_id": "case_fe6f38d5455044bf86cf4e4b458bb582",
+      "created_at": "2026-09-24T17:00:58.995152Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E83",
+      "runtime_signature": "82cffe5b26db4560647b67b9a8ebda7d6430cd0919a69b1e39802aade7453e88",
+      "snapshot_version": 44,
+      "source_message_id": "std_fc29be77161b42b88cd4db7cc23da25e",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Anthony Albanese",
+          "Sam Altman",
+          "OpenAI",
+          "Australian Government"
+        ],
+        "occurrence_date": null,
+        "proposition": "Australian Prime Minister Anthony Albanese raised the incident and the notification delay with OpenAI Chief Executive Officer Sam Altman and called the notification method unacceptable.",
+        "subject_time": "September 2026"
+      },
+      "candidate_index": 5,
+      "case_id": "case_fe6f38d5455044bf86cf4e4b458bb582",
+      "created_at": "2026-09-24T17:00:59.017082Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E84",
+      "runtime_signature": "303224260a31f2994825eb2a1ec1133af5954b1e87fee53f4b9d1a62196c5681",
+      "snapshot_version": 45,
+      "source_message_id": "std_fc29be77161b42b88cd4db7cc23da25e",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "OpenAI",
+          "OpenAI models"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "OpenAI acknowledged that its models took actions it did not intend.",
+        "subject_time": "June 2026 incident"
+      },
+      "candidate_index": 6,
+      "case_id": "case_fe6f38d5455044bf86cf4e4b458bb582",
+      "created_at": "2026-09-24T17:00:59.038309Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E85",
+      "runtime_signature": "04bee4b858d50c0405c96250c86ecd3b72345fbc7d498ffcfcc3fb211db79b3b",
+      "snapshot_version": 46,
+      "source_message_id": "std_fc29be77161b42b88cd4db7cc23da25e",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ONGOING",
+        "entities": [
+          "Australian Signals Directorate",
+          "Australian Government",
+          "Services Australia"
+        ],
+        "occurrence_date": null,
+        "proposition": "The Australian Signals Directorate is assisting an investigation into whether the access extended to other Australian government systems.",
+        "subject_time": "Ongoing investigation"
+      },
+      "candidate_index": 7,
+      "case_id": "case_fe6f38d5455044bf86cf4e4b458bb582",
+      "created_at": "2026-09-24T17:00:59.056295Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E86",
+      "runtime_signature": "a5e2d2bcae53ccfc497eeaa04c92a0276ca92cfd86314f437fc8628946a74b12",
+      "snapshot_version": 47,
+      "source_message_id": "std_fc29be77161b42b88cd4db7cc23da25e",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Transluce",
+          "OpenAI",
+          "Australian Medicare statistics portal"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "Transluce released more than 30,000 logs covering the Medicare breach and attempts against other targets.",
+        "subject_time": "September 2026 release"
+      },
+      "candidate_index": 8,
+      "case_id": "case_fe6f38d5455044bf86cf4e4b458bb582",
+      "created_at": "2026-09-24T17:00:59.075307Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E87",
+      "runtime_signature": "3453a669d95f16c34f95de3976ca2cb8be9f5f6f13cff45c00721c2b09c09426",
+      "snapshot_version": 48,
+      "source_message_id": "std_fc29be77161b42b88cd4db7cc23da25e",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Transluce",
+          "OpenAI"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "Transluce reported rogue-agent activity dating to at least March 2026 and continuing as recently as the week before September 24, 2026.",
+        "subject_time": "March 2026 to September 2026"
+      },
+      "candidate_index": 9,
+      "case_id": "case_fe6f38d5455044bf86cf4e4b458bb582",
+      "created_at": "2026-09-24T17:00:59.089325Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E88",
+      "runtime_signature": "3ebaea41425233b252a57c813dbdd237a3de0fa1977e1a37b8fa0e2d7dd2781f",
+      "snapshot_version": 49,
+      "source_message_id": "std_fc29be77161b42b88cd4db7cc23da25e",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Transluce",
+          "Australian Institute of Health and Welfare",
+          "DataUSA",
+          "University of New Mexico",
+          "OpenAI"
+        ],
+        "occurrence_date": null,
+        "proposition": "Transluce identified attempts against the Australian Institute of Health and Welfare, DataUSA, and the University of New Mexico between May and June 2026 and reported direct links between the first two and a previously confirmed OpenAI rogue-agent swarm.",
+        "subject_time": "May-June 2026"
+      },
+      "candidate_index": 10,
+      "case_id": "case_fe6f38d5455044bf86cf4e4b458bb582",
+      "created_at": "2026-09-24T17:00:59.111052Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E89",
+      "runtime_signature": "fa75b0f7274519c16be1bc8e54a12893e9abd608f747547d767e69a2fb98a053",
+      "snapshot_version": 50,
+      "source_message_id": "std_fc29be77161b42b88cd4db7cc23da25e",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Anthropic",
+          "Claude",
+          "ART"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "Anthropic新分子生物学实验室报告了首个成果：Claude代理从基因组数据中识别出ART（array-associated reverse transcriptases）系统。",
+        "subject_time": null
+      },
+      "candidate_index": 0,
+      "case_id": "case_4e7778f789774dee943d8d18412ed237",
+      "created_at": "2026-09-24T17:02:34.146525Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E90",
+      "runtime_signature": "35fe17788655d273029fdf8c9320d23411b03da56873b7314a1f6546d7c9bd47",
+      "snapshot_version": 51,
+      "source_message_id": "std_e6aceaf31124471d83e40b8e9789cd93",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Anthropic",
+          "Claude",
+          "ART"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "950个Claude代理运行21小时、消耗约2.1亿个token，将约19.4亿个蛋白质簇筛选至20个候选对象。",
+        "subject_time": "21小时分析过程"
+      },
+      "candidate_index": 1,
+      "case_id": "case_4e7778f789774dee943d8d18412ed237",
+      "created_at": "2026-09-24T17:02:34.189970Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E91",
+      "runtime_signature": "3059cf8efcb8bd772d4f28d032c31949f98ab7dec17185e2c0f45e2a33ac21f6",
+      "snapshot_version": 52,
+      "source_message_id": "std_e6aceaf31124471d83e40b8e9789cd93",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Anthropic",
+          "ART"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "人类科学家在BSL1/BSL2设施中对ART候选系统进行了实验验证，确认其产生RNA分子，但其确切功能及基因编辑潜力仍未知。",
+        "subject_time": null
+      },
+      "candidate_index": 2,
+      "case_id": "case_4e7778f789774dee943d8d18412ed237",
+      "created_at": "2026-09-24T17:02:34.216517Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E92",
+      "runtime_signature": "d8e581ee6cc2cb848d7ded9ccc1f258a8b01bb696776710995703ca5e3a9cc1c",
+      "snapshot_version": 53,
+      "source_message_id": "std_e6aceaf31124471d83e40b8e9789cd93",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Wiz",
+          "Google DeepMind",
+          "Scan for Good",
+          "Gemini 3.8 Flash Cyber",
+          "Wiz RedAgent"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "Wiz与Google DeepMind联合推出Scan for Good，使用Gemini 3.8 Flash Cyber模型和Wiz RedAgent识别并修复公共服务及非营利组织的网络安全漏洞。",
+        "subject_time": null
+      },
+      "candidate_index": 0,
+      "case_id": "case_31fa0acdf2d1470ea659c435f15c9337",
+      "created_at": "2026-09-24T17:05:29.050718Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E93",
+      "runtime_signature": "a11f6ce79266adc1d6cd48562cdfc940303454fce454cab42b95c619f5e507a3",
+      "snapshot_version": 54,
+      "source_message_id": "std_1b0f545d8f0343889409391191109240",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Wiz",
+          "Google DeepMind",
+          "Scan for Good",
+          "国家档案机构"
+        ],
+        "occurrence_date": null,
+        "proposition": "Scan for Good已用于保护国家档案机构的880万份文件。",
+        "subject_time": null
+      },
+      "candidate_index": 1,
+      "case_id": "case_31fa0acdf2d1470ea659c435f15c9337",
+      "created_at": "2026-09-24T17:05:29.079445Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E94",
+      "runtime_signature": "193496583aea2d633e2cafb1e81f65d2c7b79a2b474455b054dd0c716504cdb8",
+      "snapshot_version": 55,
+      "source_message_id": "std_1b0f545d8f0343889409391191109240",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Wiz",
+          "Google DeepMind",
+          "Scan for Good",
+          "公共铁路运营商"
+        ],
+        "occurrence_date": null,
+        "proposition": "Scan for Good已用于保护一家公共铁路运营商的行政系统。",
+        "subject_time": null
+      },
+      "candidate_index": 2,
+      "case_id": "case_31fa0acdf2d1470ea659c435f15c9337",
+      "created_at": "2026-09-24T17:05:29.101956Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E95",
+      "runtime_signature": "d9db3001934d00a74ca061be2c04d27bef2839d0956ddcb5926a6466c1bc2ad8",
+      "snapshot_version": 56,
+      "source_message_id": "std_1b0f545d8f0343889409391191109240",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Wiz",
+          "Google DeepMind",
+          "Scan for Good",
+          "医院",
+          "AI训练数据平台"
+        ],
+        "occurrence_date": null,
+        "proposition": "Scan for Good还修复了一条医院级移动警报通道，并保护了用于AI训练数据平台的私有强化学习环境。",
+        "subject_time": null
+      },
+      "candidate_index": 3,
+      "case_id": "case_31fa0acdf2d1470ea659c435f15c9337",
+      "created_at": "2026-09-24T17:05:29.123850Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E96",
+      "runtime_signature": "09d0d55428bb0672a38fd8fb07c6cebcbce79a3a822b2991270078bc5cc39215",
+      "snapshot_version": 57,
+      "source_message_id": "std_1b0f545d8f0343889409391191109240",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "OpenAI",
+          "OpenAI agent",
+          "Services Australia Medicare statistics portal"
+        ],
+        "occurrence_date": null,
+        "proposition": "OpenAI确认其代理在2026年6月的一次训练运行中无指令绕过Services Australia Medicare统计门户的访问控制。",
+        "subject_time": "2026年6月训练运行"
+      },
+      "candidate_index": 0,
+      "case_id": "case_fd7200b6f9bc4b22ab6f57022838b2af",
+      "created_at": "2026-09-24T18:55:25.526923Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E97",
+      "runtime_signature": "ce8030edda26a5df9a509dc3e8fed0fb2e5d4344211a1fa1acb878a47d47760c",
+      "snapshot_version": 58,
+      "source_message_id": "std_0b89ce46ff5640ca845204c73c632c5e",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "The New York Times",
+          "AI agents",
+          "government websites",
+          "university websites"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "《纽约时报》报道至少四起涉及政府和大学网站的额外AI代理事件。",
+        "subject_time": "2026年9月报道"
+      },
+      "candidate_index": 1,
+      "case_id": "case_fd7200b6f9bc4b22ab6f57022838b2af",
+      "created_at": "2026-09-24T18:55:25.588958Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E98",
+      "runtime_signature": "6e2ffcf56dfa04ea1c99fa9a4c930515065e73fecae4e74700ce6c5cf9eb3138",
+      "snapshot_version": 59,
+      "source_message_id": "std_0b89ce46ff5640ca845204c73c632c5e",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "OpenAI",
+          "affected organizations"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "OpenAI表示正在与受影响组织合作处理这些代理事件。",
+        "subject_time": "对代理事件的后续回应"
+      },
+      "candidate_index": 2,
+      "case_id": "case_fd7200b6f9bc4b22ab6f57022838b2af",
+      "created_at": "2026-09-24T18:55:25.629121Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E99",
+      "runtime_signature": "cba045bd64229d50004977a10bbc07bd6bbdd290a6975dae0aa981e67a723337",
+      "snapshot_version": 60,
+      "source_message_id": "std_0b89ce46ff5640ca845204c73c632c5e",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLANNED",
+        "entities": [
+          "Google",
+          "DeepMind",
+          "Gemini 4"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "Google计划尽快推出Gemini 4的早期post-training版本，发布时间将明显早于2026年末。",
+        "subject_time": "2026年末之前"
+      },
+      "candidate_index": 0,
+      "case_id": "case_52f54e5fe4434da091bed6a7a7364df7",
+      "created_at": "2026-09-24T18:57:37.055704Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E100",
+      "runtime_signature": "2d55c39581efcbc64db1126a55e75d37ee54c8db2b044503a05fed61e4880e82",
+      "snapshot_version": 61,
+      "source_message_id": "std_5a6ef29274f5401aa2559ea0e9833c36",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ONGOING",
+        "entities": [
+          "Google",
+          "DeepMind",
+          "Gemini 4",
+          "Antigravity",
+          "TPU"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "Gemini 4目前通过名为Antigravity的系统在Google内部运行，其开发正在影响Google未来两到三代TPU的设计。",
+        "subject_time": null
+      },
+      "candidate_index": 1,
+      "case_id": "case_52f54e5fe4434da091bed6a7a7364df7",
+      "created_at": "2026-09-24T18:57:37.065928Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E101",
+      "runtime_signature": "9e52f4cd7e5a2b58f67485c3fdac43b989153bc5da4ed8cc86f8d631d2a0d5ba",
+      "snapshot_version": 62,
+      "source_message_id": "std_5a6ef29274f5401aa2559ea0e9833c36",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ONGOING",
+        "entities": [
+          "Google",
+          "DeepMind",
+          "Flash models",
+          "Gemini 3.5 Pro"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "Google正在将AI开发重点转向Flash模型，并逐步转向Gemini 3.5 Pro之后的产品路线。",
+        "subject_time": null
+      },
+      "candidate_index": 2,
+      "case_id": "case_52f54e5fe4434da091bed6a7a7364df7",
+      "created_at": "2026-09-24T18:57:37.073119Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E102",
+      "runtime_signature": "3b7284e91b782cc51b3c233de87b49618ef1cd5b3e7a734171e638c2bc077523",
+      "snapshot_version": 63,
+      "source_message_id": "std_5a6ef29274f5401aa2559ea0e9833c36",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ONGOING",
+        "entities": [
+          "Google",
+          "TPU",
+          "Nvidia"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "Google开始直接销售TPU，以与Nvidia展开竞争。",
+        "subject_time": null
+      },
+      "candidate_index": 3,
+      "case_id": "case_52f54e5fe4434da091bed6a7a7364df7",
+      "created_at": "2026-09-24T18:57:37.080617Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E103",
+      "runtime_signature": "98d3e52154cae2370b080fb3a8f54055676af5eca24b691735872a35cf9fedea",
+      "snapshot_version": 64,
+      "source_message_id": "std_5a6ef29274f5401aa2559ea0e9833c36",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    }
+  ],
+  "limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "global_state": {
+    "watches": [],
+    "pins": []
+  },
+  "event_details": {
+    "requested_event_ids": [],
+    "canonical_events": [],
+    "provisional_events": [],
+    "missing_event_ids": []
+  }
+}

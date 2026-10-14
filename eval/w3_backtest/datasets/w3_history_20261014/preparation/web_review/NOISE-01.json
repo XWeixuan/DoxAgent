@@ -1,0 +1,179 @@
+{
+  "case_key": "NOISE-01",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-09-29T15:18:04.762532Z",
+  "reviewed_at": "2026-10-13T22:58:32.284062Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 6,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a13768-b7dc-7d82-880d-6d41f8292340",
+    "turn_id": "01a13768-b7ea-7d62-a160-a70a0238b6d3",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 80640,
+        "inputTokens": 83302,
+        "outputTokens": 15228,
+        "reasoningOutputTokens": 13187,
+        "totalTokens": 98530
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 355584,
+        "inputTokens": 431225,
+        "outputTokens": 20121,
+        "reasoningOutputTokens": 17420,
+        "totalTokens": 451346
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "68cb08e16f9a0039d04d5d7e7e7293943770f4f6507f46ae0f44f66a520c98ad",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://huggingnews.com/us-politics/trump-orders-every-federal-agency-to-integrate-with-americagov-ai-portal-15b42d2c",
+      "title": "Trump Orders Every Federal Agency to Integrate With America.gov AI Portal",
+      "published_at": "2026-09-29T15:14:26.128Z",
+      "time_precision": "EXACT",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UPDATED",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn0search0"
+      ],
+      "source_call_ids": [
+        "exec-38d7a178-7c01-4f66-a346-2466ad684979"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://www.whitehouse.gov/presidential-actions/2026/09/streamlining-access-to-government-services-through-america-gov/",
+      "title": "Streamlining Access to Government Services Through America.gov",
+      "published_at": "2026-09-29",
+      "time_precision": "UNKNOWN",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn0search1"
+      ],
+      "source_call_ids": [
+        "exec-38d7a178-7c01-4f66-a346-2466ad684979"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://www.gsa.gov/about-gsa/newsroom/news-releases/gsa-joins-the-white-houses-national-design-studio-in-unveiling-americagov-09292026",
+      "title": "GSA Joins the White House’s National Design Studio in Unveiling “America.gov” to Transform How Government Works for the American People",
+      "published_at": "2026-09-29",
+      "time_precision": "UNKNOWN",
+      "updated_at": "2026-09-29",
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn2search2"
+      ],
+      "source_call_ids": [
+        "exec-2ddaee3e-e573-49bb-acd6-19c3d5d78075"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": null,
+      "url": "https://thepavlovictoday.com/america-gov-launch-trump-ai-portal/",
+      "title": "America.gov Launch: Trump Vows AI Order, Pushes SAVE Act",
+      "published_at": "2026-09-29T13:47:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": "2026-09-29T16:37:00Z",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "AFTER_CUTOFF",
+      "content_state": "UPDATED",
+      "decision": "DROP",
+      "reason": "The source was updated after cutoff and no dated pre-cutoff passage or snapshot was identified.",
+      "source_result_refs": [
+        "turn1search11"
+      ],
+      "source_call_ids": [
+        "exec-2909c9b8-f0a7-48ad-9033-e9da09297a40"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "The supplied feed passage says an executive order had been signed and describes an agency-wide integration mandate. It was published at 15:14:26Z, before the cutoff; this verifies that the claim was circulating by then, not that every detail was accurate.",
+      "source_urls": [
+        "https://huggingnews.com/us-politics/trump-orders-every-federal-agency-to-integrate-with-americagov-ai-portal-15b42d2c"
+      ],
+      "event_time": "2026-09-29 (specific signing time UNKNOWN)",
+      "publication_time": "2026-09-29T15:14:26.128Z",
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "The linked page identifies an earlier Sep 25 version and lists Sep 29 source posts at 10:15 and 10:50 a.m. EDT. The direct X source could not be fetched, and the evolving article has no verified archived snapshot beyond the supplied feed passage."
+    },
+    {
+      "observation": "The White House order text describes integration of defined covered services and Login.gov, while retaining agency authority and existing service channels; it does not say every federal website is replaced by America.gov. Its scope is a material qualification to the feed's broad wording.",
+      "source_urls": [
+        "https://www.whitehouse.gov/presidential-actions/2026/09/streamlining-access-to-government-services-through-america-gov/"
+      ],
+      "event_time": "2026-09-29 (signature date; exact time UNKNOWN)",
+      "publication_time": "UNKNOWN (page dated 2026-09-29 only)",
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "The order's publication time and pre-cutoff availability are unverified; these terms cannot be treated as demonstrably public by the cutoff."
+    },
+    {
+      "observation": "GSA describes the portal as combining information from more than 29,000 government websites with AI-enhanced search. This supports the narrower description of an information/search layer; the distinction from physically consolidating all websites is an inference from GSA's wording.",
+      "source_urls": [
+        "https://www.gsa.gov/about-gsa/newsroom/news-releases/gsa-joins-the-white-houses-national-design-studio-in-unveiling-americagov-09292026"
+      ],
+      "event_time": "2026-09-29 (launch date; exact time UNKNOWN)",
+      "publication_time": "UNKNOWN (page dated 2026-09-29 only)",
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "GSA's page has only a same-day date/update marker and no verified pre-cutoff snapshot, so this is not confirmed as cutoff-available information."
+    },
+    {
+      "observation": "An independent outlet's article is listed as initially published at 9:47 a.m. EDT on Sep 29 (13:47Z) and updated at 12:37 p.m. EDT (16:37Z). The first listed time is before cutoff; the update is after.",
+      "source_urls": [
+        "https://thepavlovictoday.com/america-gov-launch-trump-ai-portal/"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-29T13:47:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The page was later updated and no dated pre-cutoff text snapshot was verified; retain only the listed timing, not substantive claims from its current text."
+    }
+  ],
+  "gaps": [
+    "The direct Trump War Room post cited by the revised HuggingNews page could not be fetched, leaving the claimed original dissemination time unverified.",
+    "No dated pre-cutoff snapshot or exact public-release time was found for the White House order or GSA release; their availability by cutoff remains UNKNOWN.",
+    "The independent article's pre-cutoff text was not archived or otherwise verified; no usable independent contemporaneous report of the order's detailed terms was established.",
+    "The source feed's claims about Gemini/Grok, 40 million daily users, named criticism, Musk's role, and specific future service features remain unverified by the timestamped primary material available in this research.",
+    "The revised article's Sep 25 predecessor does not provide a verified pre-event expectation snapshot, so a precise expectation-versus-update comparison remains unavailable."
+  ],
+  "research_notes": "Focused research on the America.gov announcement, using the supplied W1/W2 context only to check for a BE-specific connection. The supplied feed copy is timestamped 2026-09-29T15:14:26.128Z, 3m38s before the cutoff, but its linked article shows a revision trail and an earlier Sep 25 version. The page lists Trump War Room posts from Sep 29 at 10:15 and 10:50 a.m. EDT; the direct X link returned 403, so those timestamps are not independently verified. The White House order and GSA release are official primary materials dated Sep 29, but their publication times and pre-cutoff snapshots could not be established. An independent article is listed as first published before cutoff and updated afterward, but no pre-cutoff text snapshot was verified. No post-cutoff reporting is used as evidence; no BE-specific fact was found in the reviewed pages."
+}

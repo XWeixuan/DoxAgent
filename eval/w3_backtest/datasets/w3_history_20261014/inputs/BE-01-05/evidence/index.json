@@ -1,0 +1,23 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-24T21:09:10.560684Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "No publicly accessible copy of Oracle’s force-majeure notice or the relevant lease/power contract was located; its precise legal trigger, terms, acceptance, and notice-delivery time remain unverified.",
+    "No pre-cutoff source establishes a missed project milestone, cancellation, revised Bloom scope, installed/accepted Bloom capacity, or project-specific firm power availability.",
+    "The FERC environmental assessment is not an authorization decision; the reviewed record does not establish final pipeline authorization or completed fuel delivery.",
+    "The supplied Reuters source uses date-level publication-time metadata. Its captured text predates cutoff, but its wider market-close and price commentary was excluded."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

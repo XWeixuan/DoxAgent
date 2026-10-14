@@ -1,0 +1,24 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-24T14:40:37.252290Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "No public copy of Oracle’s notice, lease, or relevant force-majeure clause was found; the underlying notice’s issue time, exact conditions, duration, and legal effect remain unknown.",
+    "Reuters explicitly said it could not independently verify the report. The specific conditional payment-deferral claim in the supplied Stocktwits item remains Bloomberg-attributed rather than independently documented.",
+    "Bloomberg’s current page reflects a post-cutoff update; no dated pre-cutoff snapshot was found, so updated-page details cannot be assigned to the eligible time window.",
+    "Pre-event schedule statements were from Oracle. The reviewed sources do not independently tie the pipeline delay or air-permit proceeding to a missed 2028 campus launch.",
+    "No company or developer response to the force-majeure report that was both located and verifiably public before cutoff was identified in this focused search."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

@@ -1,0 +1,168 @@
+{
+  "case_key": "INTC-02-01",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-10-01T18:57:18.010679Z",
+  "reviewed_at": "2026-10-13T22:58:31.625860Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 6,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a13756-c906-70b0-bea7-8df8b3fdee4e",
+    "turn_id": "01a13756-c915-7073-8f0f-1e9d78db32ce",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 85760,
+        "inputTokens": 94162,
+        "outputTokens": 18187,
+        "reasoningOutputTokens": 15961,
+        "totalTokens": 112349
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 394752,
+        "inputTokens": 492799,
+        "outputTokens": 24245,
+        "reasoningOutputTokens": 21428,
+        "totalTokens": 517044
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "2c1c3173ca4925fadcf987286d34dd7df5aa01327279eeb0040fe6534e0763a9",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://signal65.com/research/snapdragon-x2-elite-performance/",
+      "title": "Snapdragon X2 Elite Performance",
+      "published_at": "2026-10-01",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn4search0",
+        "turn0search0"
+      ],
+      "source_call_ids": [
+        "exec-15adef00-a735-4539-add9-dc20dddbb77a",
+        "exec-6673971c-32e8-4c6c-ad44-4b5273385427"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://www.windowscentral.com/hardware/qualcomm/qualcomms-snapdragon-x2-doesnt-need-the-extreme-badge-to-beat-intel-signal65-study",
+      "title": "Qualcomm's “non-Extreme” Snapdragon X2 just embarrassed Intel's premium laptop strategy",
+      "published_at": "2026-10-01T18:38:23Z",
+      "time_precision": "EXACT",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn0news29"
+      ],
+      "source_call_ids": [
+        "exec-6673971c-32e8-4c6c-ad44-4b5273385427"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://signal65.com/research/ai/snapdragon-x2-elite-extreme-performance/",
+      "title": "Snapdragon X2 Elite Extreme Performance",
+      "published_at": "2026-08-13",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn4search6",
+        "turn0search0"
+      ],
+      "source_call_ids": [
+        "exec-15adef00-a735-4539-add9-dc20dddbb77a",
+        "exec-6673971c-32e8-4c6c-ad44-4b5273385427"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "Signal65's October 1 report moves the comparison from the earlier Extreme-tier study to the standard 18-core X2E-88-100 in a 14-inch Lenovo Slim 7x, tested against one Intel and one AMD retail laptop. The report gives Snapdragon a 31% Geekbench 7 multicore and 24% single-core lead over the tested Intel system.",
+      "source_urls": [
+        "https://signal65.com/research/snapdragon-x2-elite-performance/",
+        "https://signal65.com/research/ai/snapdragon-x2-elite-extreme-performance/"
+      ],
+      "event_time": "2026-10-01 (report release date; exact time unknown)",
+      "publication_time": "2026-10-01 (Signal65 page date; exact time unknown)",
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "This establishes results for the tested retail systems, not a general ranking of all processors or laptops. Signal65 flags configuration differences and the AMD system has fewer CPU cores."
+    },
+    {
+      "observation": "Windows Central's same-day coverage was timestamped 18:38:23Z, before cutoff. It describes the standard-chip result as extending the earlier Extreme comparison and reports that Qualcomm commissioned the study.",
+      "source_urls": [
+        "https://www.windowscentral.com/hardware/qualcomm/qualcomms-snapdragon-x2-doesnt-need-the-extreme-badge-to-beat-intel-signal65-study",
+        "https://signal65.com/research/snapdragon-x2-elite-performance/"
+      ],
+      "event_time": "2026-10-01 (Signal65 report release; exact time unknown)",
+      "publication_time": "2026-10-01T18:38:23Z",
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "Windows Central is contemporaneous secondary coverage of Signal65's study, not a separately conducted benchmark replication. Its current headline differs from the supplied pre-cutoff capture; the retitling time is unknown."
+    },
+    {
+      "observation": "The study's reported results are mixed by workload: Intel led the cited integrated-graphics test by about 23% and won the sustained Office battery rundown, 17.4 hours to 14.3; Snapdragon led local video playback and Chrome browsing runtime. Windows Central notes different display specifications and the tested $750 laptop price difference.",
+      "source_urls": [
+        "https://signal65.com/research/snapdragon-x2-elite-performance/",
+        "https://www.windowscentral.com/hardware/qualcomm/qualcomms-snapdragon-x2-doesnt-need-the-extreme-badge-to-beat-intel-signal65-study"
+      ],
+      "event_time": "2026-10-01 (report release date; exact time unknown)",
+      "publication_time": "2026-10-01 (Signal65 page date); Windows Central coverage at 18:38:23Z",
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "These are whole-device results from three differently configured systems, not a controlled isolation of the processors. The study was commissioned by Qualcomm."
+    },
+    {
+      "observation": "Relative to the earlier Extreme-tier comparison listed by Signal65, the new report provides evidence about a standard 18-core chip in a 14-inch retail system. It does not report adoption, sales, OEM orders, or Intel component allocation.",
+      "source_urls": [
+        "https://signal65.com/research/ai/snapdragon-x2-elite-extreme-performance/",
+        "https://signal65.com/research/snapdragon-x2-elite-performance/",
+        "https://www.windowscentral.com/hardware/qualcomm/qualcomms-snapdragon-x2-doesnt-need-the-extreme-badge-to-beat-intel-signal65-study"
+      ],
+      "event_time": "2026-10-01 (new report release date; exact time unknown)",
+      "publication_time": "2026-10-01 (day only)",
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "The prior report listing is a current page without a verified historical snapshot; its date is used only as bibliographic context. Neither report establishes actual unit demand or market adoption."
+    }
+  ],
+  "gaps": [
+    "Signal65's precise online release time is unknown; the page gives October 1, while the first timestamped coverage retrieved is Windows Central at 18:38:23Z.",
+    "No independently run replication or Intel/AMD response before cutoff was established in the retrieved evidence; Windows Central discusses Signal65's results rather than reproducing them.",
+    "The comparison covers three retail systems with differing hardware, software, and displays; it cannot isolate chip-level effects or establish results across the broader laptop market.",
+    "No evidence here connects the benchmark results to PC unit sales, sell-through, OEM purchasing, production allocation, or Intel revenue.",
+    "The current Windows Central page has a different headline from the supplied pre-cutoff capture, and its revision or retitling time is unknown."
+  ],
+  "research_notes": "Cutoff: 2026-10-01T18:57:18.010679Z. Signal65 is the earliest traceable primary source for the standard-chip study; its page gives October 1 but no release time. The supplied Windows Central article records publication at 18:38:23Z and collection at 18:56:17.219Z, both before cutoff. Its contemporaneous body is usable, though the current live page shows a different headline and the retitling/revision time is unknown. The prior context was a Signal65 comparison centered on the X2 Elite Extreme; this report extends the tested tier to the standard 18-core X2E-88-100 in 14-inch retail systems. Windows Central is separate same-day coverage, not an independent re-test. The new information is benchmark evidence, not reported sales, orders, OEM allocation, or shipment volume."
+}

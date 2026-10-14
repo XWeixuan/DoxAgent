@@ -1,0 +1,25 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-24T15:52:35.640602Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "The original force-majeure notice, its exact date/time, its precise clause, any required counterparty agreement, and any later exercise of payment relief were not publicly verified in pre-cutoff source material.",
+    "No cited pre-cutoff primary source ties Bloom's exact Jupiter delivery/acceptance schedule or revenue recognition to a changed pipeline date or confirms cancellation, rescheduling, or a change to Bloom's contract.",
+    "The FERC eLibrary filing referenced by the Aug. 14 coverage was linked but not directly retrievable; its exact filing timestamp and wording remain unverified.",
+    "The 24/7 Wall St. page has no verified pre-cutoff snapshot and contains changing session fields; Bloomberg's report page shows a post-cutoff update. No post-cutoff content or market prices were used.",
+    "The primary company release reviewed establishes FY2026 guidance, not formal FY2027/2028 revenue targets. Those future-year references remain unverified as company guidance.",
+    "The Sept. 17 court action lifted stays but did not decide the air permit on its merits; no final permit approval was verified by the cutoff."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

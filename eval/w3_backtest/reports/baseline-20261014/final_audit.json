@@ -1,0 +1,62 @@
+{
+  "cases": 73,
+  "dataset_fingerprint_unchanged": true,
+  "models": {
+    "gpt-6-luna/max": 72,
+    "gpt-6-sol/medium": 1
+  },
+  "decision_count": 73,
+  "operations_receipt_count": 71,
+  "failures": [
+    {
+      "case_key": "EXTRA-INTC-OPENAI",
+      "error": {
+        "type": "W3Error",
+        "code": "w3_phase_output_invalid",
+        "message": "novelty references must be present in the pinned Reference View"
+      }
+    },
+    {
+      "case_key": "NOISE-17",
+      "error": {
+        "type": "W3Error",
+        "code": "w3_phase_output_invalid",
+        "message": "novelty references must be present in the pinned Reference View"
+      }
+    }
+  ],
+  "tool_trace_records": 2072,
+  "replay_web_tool_calls": 0,
+  "replay_subagent_tool_calls": 0,
+  "native_tool_names": {
+    "exec": 1036
+  },
+  "summary": {
+    "cases": 73,
+    "succeeded": 71,
+    "run_failures": 2,
+    "trade_decision_missing": 0,
+    "conditional_gold": 7,
+    "scored": 37,
+    "correct": 33,
+    "accuracy": 0.8918918918918919,
+    "wrong_trades": 2,
+    "missed_opportunities": 2,
+    "wrong_directions": 0,
+    "technical_errors": 0,
+    "operations_succeeded": 71,
+    "labelled_no_trade_denominator": 34,
+    "labelled_trade_denominator": 3,
+    "unlabelled": 29,
+    "unlabelled_decisions": 29,
+    "unlabelled_directions": {
+      "LONG": 3,
+      "SHORT": 0,
+      "NO_TRADE": 26
+    },
+    "unlabelled_trade_rate": 0.10344827586206896,
+    "wrong_trade_rate": 0.058823529411764705,
+    "missed_opportunity_rate": 0.6666666666666666
+  },
+  "web_audit_note": "Two search_query string matches were local PowerShell field reads from frozen web_search.jsonl, not Web tool calls; native calls were all exec."
+}

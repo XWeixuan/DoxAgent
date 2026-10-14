@@ -1,0 +1,22 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-10-06T12:14:06.424952Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "The collected 8-K summary does not include the full settlement/license agreement text; exact docket-by-docket release scope, exceptions, effective-date mechanics, and required court actions remain unverified.",
+    "No evidence available by cutoff confirms that the first license payment was received, that the share-purchase closing occurred, or that courts had entered dismissal orders.",
+    "The supplied Investing.com/Reuters item provides the pre-cutoff independent report and exact publication metadata; a separate full-page archival snapshot of that specific item was not retrieved."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

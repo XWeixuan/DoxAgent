@@ -1,0 +1,22 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-24T20:35:07.133243Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "No independent contemporaneous report with a publication time demonstrably before cutoff was verified. A Sep. 24 Light Reading item surfaced, but it is dated only to the day, labels itself “#pressrelease,” and substantially republishes the company release, so its pre-cutoff availability and independent corroboration are not established.",
+    "The exact time the stockholder vote was completed is not stated in the release; the event is therefore recorded at date precision, separately from the 16:30 ET publication time.",
+    "An SEC 8-K search result contains detailed vote counts, but its acceptance time was not verified as before cutoff; it is not used for those details."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

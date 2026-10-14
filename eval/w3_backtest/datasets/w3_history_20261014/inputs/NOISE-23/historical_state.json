@@ -1,0 +1,1139 @@
+{
+  "recent_trade_intents": [
+    {
+      "message": {
+        "title": "Intel stock slides as TSMC explores Terafab tie-up, analyst flags share losses",
+        "body": "Investing.com -- Intel shares fell over 4% in premarket trading Monday after reports emerged that TSMC is in discussions with Elon Musk's Terafab venture about a potential collaboration — a development that raises questions about Intel's position as the only previously named manufacturing partner at the Texas semiconductor project.\n\nBefore you buy NVIDIA: our AI model's stock picks are beating the market by 120%+. See the list now »\n\nIntel joined Terafab in April 2026, with its next-generation 14A node designated as the facility's sole named process technology.\n\nMeanwhile, TSMC's NYSE-listed ADR climbed 1% after Elon Musk confirmed over the weekend that discussions with the Taiwanese chipmaker about his Terafab semiconductor venture in Texas are ongoing. Taiwan-listed shares closed up 3% on Monday.\n\nMusk posted on X on Sunday, October 4, that the talks are real but early: \"Just discussions, but something may come of it.\" His confirmation followed an exclusive report published Friday, October 2 by the Culpium newsletter, which said TSMC is exploring ways to help Terafab operate its planned Texas semiconductor factories.\n\nAccording to Culpium, the most likely structure would see TSMC own and operate the new facility with Terafab serving as an anchor customer — a model similar to TSMC's JASM joint venture in Japan and its ESMC partnership in Germany.\n\nA Terafab partnership would represent an incremental addition to the $265 billion already committed to its 12-facility Arizona complex. Terafab is being developed by SpaceX and Tesla in Grimes County, Texas, roughly 100 km northwest of Houston.\n\nNot finding the right stocks? Our AI's list of investor-grade stock picks for October just dropped »\n\nAn August 6 announcement committed $16.8 billion for the first phase, with county filings indicating a potential total cost of up to $119 billion across multiple phases.\n\nOutput is intended exclusively for Tesla, SpaceX, and xAI. Reports had already flagged that TSMC was separately evaluating a potential Texas investment on top of its Arizona commitments.\n\nMoreover, Susquehanna analysts said this morning that Intel has likely continued to lose CPU model share in both laptops and desktops in the third quarter, with AMD gaining ground and Qualcomm reaching its highest laptop share yet.\n\nSusquehanna estimates Intel's model share fell 3.9% quarter over quarter to 68.1%, while AMD gained 3.1% to 29.3%. Qualcomm increased modestly to 2.2%, its highest level yet.\n\nIntel's new Panther Lake processor, based on its 18A process, reached about 1.8% of Intel-based laptop SKUs, up from 0.4% in the previous quarter. Susquehanna said the ramp was ahead of Lunar Lake's trajectory but roughly in line with Arrow Lake.\n\nOn desktops, Intel's model share fell 1.6% quarter over quarter to about 76%, its lowest level in the study since the second quarter of 2023.\n\nOriginal Article\n\nIntel stock slides as TSMC explores Terafab tie-up, analyst flags share losses\n\nFrance's CAC 40 hits 6-month low while European stocks inch up in caution\n\nU.S. shares of Brazilian companies rally after first round election result",
+        "source_name": "yahoo",
+        "published_at": "2026-10-05T11:10:04Z"
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": []
+      },
+      "w2": {
+        "policy_hit": false,
+        "policy_related": false,
+        "policy_ids": [],
+        "hit_condition_ids": [],
+        "matched_condition_ids": []
+      },
+      "w3_decision": {
+        "novelty": {
+          "reason": "The TSMC–Terafab discussions are already covered by E304, and E18/E127 cover Panther Lake’s process and launch milestones. The new information is Susquehanna’s Q3 estimates of Intel’s laptop and desktop CPU model-share declines and Panther Lake’s limited share of Intel laptop SKUs.",
+          "reference_ids": [
+            "E304",
+            "E18",
+            "E127"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "The Terafab report describes early discussions, not Intel’s exit or a binding TSMC replacement, as required by the relevant condition. The PC-share figures are analyst estimates; they do not establish the unit/sell-through recovery, inventory action, or customer order cancellation required by the PC policies."
+        },
+        "expert_trade": {
+          "direction": "SHORT",
+          "evaluated": true,
+          "expectation_delta": "Susquehanna’s estimates indicate further Q3 model-share losses in both laptops and desktops, while Panther Lake represented only 1.8% of Intel-based laptop SKUs. This lowers the likelihood that supply easing and the new-product ramp will translate into near-term client share and unit recovery.",
+          "prior_expectation": "Q2 client units were down 8% year over year while ASP was up 27%, and Intel expected PC supply constraints to ease in the second half of 2026. Panther Lake’s launch offered a path to improve client competitiveness, but the baseline had no quantified Q3 share-recovery evidence.",
+          "reason": "The estimated 3.9-point laptop and 1.6-point desktop declines are a meaningful adverse signal for Intel’s client competitive position and can transmit through OEM product allocation to CCPG units and mix. The estimates are not confirmed sell-through or revenue data, so the signal is imperfect; nevertheless, the deterioration across both segments supports a cautious SHORT rather than assuming the product ramp will restore share.",
+          "trade": true
+        }
+      },
+      "direction": "SHORT",
+      "initiated_at": "2026-10-05T11:25:29.306539+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    },
+    {
+      "message": {
+        "title": "Boosting Agentic AI Throughput with Intel® Xeon® CPUs - Intel",
+        "body": "By: Nithya Rao, System and Software Optimization Engineer, Intel Corporation\nContributors\nSaumya Buliya, System and Software Optimization Engineer, Intel Corporation\nFor years, AI infrastructure discussions have focused on model quality, accelerator performance, and inference latency. That approach made sense when most AI applications consisted of relatively simple interactions: a prompt was submitted, a model generated a response, and the transaction ended.\nThe rise of agentic AI is changing that paradigm. Modern AI systems are increasingly expected to reason, plan, retrieve information, invoke tools, execute actions, validate results, and iteratively refine their behavior. What appears to be a single user interaction may trigger dozens of independent tasks spanning multiple software components before a result is delivered.\nRather than focusing exclusively on latency, organizations are increasingly asking a more practical question: How much useful work can the system complete over time? In many agentic deployments, throughput is becoming the metric that ultimately determines productivity.\nAgentic AI Creates New Infrastructure Challenges\nTraditional AI applications typically follow a straightforward execution model: prompt to model to response. Agentic AI introduces planning, tool selection, execution, validation, and iteration.\nAs a result, modern agentic AI workloads generate significantly more activity across the system stack than traditional inference workloads. Organizations deploying coding agents, enterprise copilots, research assistants, operational automation systems, and AI-powered business workflows often discover that the limiting factor is not model generation speed. Instead, bottlenecks emerge across task orchestration, tool execution, memory access, storage operations, and runtime management.\nWhy Intel® Xeon® CPUs Are Well-Suited for Agentic AI\nA common misconception is that agentic AI performance can be measured solely by model inference speed. While strong CPU performance remains foundational for reasoning, tool execution, orchestration, and security operations, agentic workloads also place significant demands on memory, storage, and I/O resources.\nUnlike traditional AI applications, agents maintain conversation history, execution context, retrieved knowledge, intermediate outputs, and workflow state across multiple stages of execution. They continuously invoke tools, access data sources, launch subprocesses, and coordinate dependent tasks. As a result, overall performance depends not only on compute capability, but also on how efficiently the platform moves work through each stage of the workflow.\nEnterprise-scale agent deployments are characterized by high concurrency, significant memory utilization, intensive orchestration requirements, and continuous execution of heterogeneous tasks. Intel Xeon processors with built-in acceleration combine strong compute performance with large memory capacity, substantial memory bandwidth, and robust I/O capabilities, enabling efficient execution across diverse workload requirements.\nAs organizations scale from individual agents to thousands of concurrent workflows, platform efficiency increasingly determines overall productivity. The platforms that deliver the highest throughput are those that balance compute, memory, storage, and orchestration resources to minimize bottlenecks and sustain work under continuous load. This makes Intel Xeon CPUs well suited to the demands of modern agentic AI deployments.\nBuilding a Repeatable Agentic AI Benchmark\nOne of the challenges associated with benchmarking agentic AI is that real-world agent behavior is inherently dynamic. Different prompts can produce different execution paths and different tool selections.\nTo address this challenge, a record-and-replay methodology was adopted. During the recording phase, representative agent workflows were executed while capturing workflow composition and execution characteristics. During replay, each platform processes the exact same workload trace, ensuring observed differences are attributable to infrastructure behavior rather than application-level randomness.\nEvaluating Agentic AI Using a Real-World Workflow\nTo understand how platform capabilities translate into real-world agent performance, we evaluated the same deterministic Terminal-Bench workload across Intel Xeon 6 processor-based, 5th Gen AMD EPYC processor-based, and Arm v9.2A-based instances. The benchmark consisted of a representative set of agent tasks executed at 24-way concurrency over a 60-minute evaluation window, with identical code, inputs, and agent trajectories across all platforms\nTo assess performance across different real-world deployment scenarios, we evaluated three representative industry verticals: healthcare, banking and financial services industry (FSI) and manufacturing. While the specific application workflows differ, these workflows reflect common agentic AI characteristics, including reasoning, retrieval, analytics, document processing, and orchestration.\nAgentic AI for Healthcare\nThe healthcare benchmark includes representative agent workflows spanning clinical documentation, evidence retrieval, diagnostic analysis, fraud detection, risk assessment, molecular research, genomic analysis, and laboratory diagnostics.\nFigure 1. Representative of healthcare agent tasks\nAs shown in Figure 2, the Intel Xeon 6 processor-based instance achieved the highest normalized agent-task throughput, delivering 1.66 times the throughput of the 5th Gen AMD EPYC processor-based instance and 4.5 times the throughput of the Arm v9.2A-based instance during the 60-minute evaluation. Higher throughput enables organizations to support more concurrent agent workflows on the same infrastructure, improving overall productivity and accelerating completion of large-scale agent-driven workloads.\nIntel Xeon 6 CPU’s throughput advantage is not driven by a single workload type. Instead, it delivers consistently higher task completion rates across reasoning, security, and control operations, enabling faster end-to-end execution of real-world healthcare agent workflows.\nAs shown in Figure 3, the Intel Xeon 6 processor-based instance delivered the highest normalized throughput across all workload categories evaluated. Relative to the 5th Gen AMD EPYC processor-based instance, Intel Xeon 6 achieved 1.67 times higher throughput for analytical and reasoning workloads, 1.63 times higher throughput for secure data processing workloads, and 1.61 times higher throughput for control workloads. Relative to the Arm v9.2A based instance, Intel Xeon 6 achieved 4.67 times, 4 times, and 4.14 times higher throughput, respectively. This consistent performance advantage enables organizations to support more concurrent AI agent workflows, improve infrastructure utilization, and complete agent-driven work more quickly.\nAgentic AI for Banking and Financial Services\nThe banking and financial services benchmark includes representative agent workflows spanning lending, risk analysis, investment research, trading analytics, fraud detection, compliance, and regulatory reporting.\nFigure 4. Representative banking and financial services agent tasks\nAs shown in Figure 5, the Intel Xeon 6 processor-based instance delivered the highest normalized agent-task throughput, achieving 1.64 times the throughput of the 5th Gen AMD EPYC processor-based instance and 4.57 times the throughput of the Arm v9.2A-based instance. This higher throughput enables financial institutions to support more concurrent agent-driven workloads, including risk analysis, document processing, compliance operations, and customer-facing services, within the same infrastructure footprint.\nAs shown in Figure 6, the Intel Xeon 6 processor-based instance delivered the highest normalized throughput across all workload categories evaluated. Relative to the 5th Gen AMD EPYC processor-based instance, Intel Xeon 6 achieved 1.66 times higher throughput for analytical and reasoning workloads, 1.61 times higher throughput for secure data processing workloads, and 1.59 times higher throughput for control workloads. Relative to the Arm v9.2A-based instance, Intel Xeon 6 achieved 4.84 times, 3.95 times, and 3.91 times higher throughput, respectively. This consistent performance advantage helps prevent bottlenecks across key stages of AI agent workflows, enabling financial institutions to process more agent-driven work within a given infrastructure footprint.\nAgentic AI for Manufacturing\nThe manufacturing benchmark includes representative agent workflows spanning predictive maintenance, quality inspection, supply chain optimization, production planning, factory operations, industrial security, and process optimization.\nFigure 7. Representative manufacturing agent tasks\nAs shown in Figure 8, the Intel Xeon 6 processor-based instance delivered the highest normalized agent-task throughput, achieving 1.58 times the throughput of the 5th Gen AMD EPYC processor-based instance and 4.24 times the throughput of the Arm v9.2A-based instance. This throughput advantage enables manufacturers to support more concurrent agent-driven workflows per server, accelerating tasks such as predictive maintenance, quality inspection, yield analysis, supplier management, and production optimization while maintaining the same infrastructure footprint.\nAs shown in Figure 9, the Intel Xeon 6 processor-based instance delivered the highest normalized throughput across all workload categories evaluated. Relative to the 5th Gen AMD EPYC processor-based instance, Intel Xeon 6 achieved 1.59 times higher throughput for analytical and reasoning workloads, 1.55 times higher throughput for secure data processing workloads, and 1.55 times higher throughput for control workloads. Relative to the Arm v9.2A-based instance, Intel Xeon 6 achieved 4.48 times, 3.78 times, and 3.78 times higher throughput, respectively. This consistent performance advantage helps maintain throughput and responsiveness across end-to-end manufacturing agent workflows, from production analysis and quality inspection to factory operations and process control.\nWhy Throughput Matters\nAgentic AI shifts performance measurement away from isolated operations and toward complete workflow execution. What ultimately matters is how efficiently the platform can execute tasks, invoke tools, process data, manage state, validate outputs, coordinate dependent actions, and sustain productivity under continuous load.\nThe most valuable platform is the one that can continuously move the greatest amount of work through the system while maintaining efficiency, responsiveness, and scalability.\nFinal Takeaway\nAs organizations deploy larger numbers of agents and increasingly complex workflows, sustaining high throughput becomes a key determinant of operational efficiency. These results demonstrate that an Intel Xeon 6 processor-based instance provides a strong foundation for agentic AI, delivering higher throughput across real-world healthcare, manufacturing and financial services workflows and enabling organizations to process more agent-driven work on the same infrastructure.\nProduct and Performance Information:\nTerminal Bench:\nIntel Xeon 6: 1-instance m8id.12xlarge: 48 vCPU, 185 GB total memory, Ubuntu 26.04, 7.0.0-1006-aws, Terminal-Bench 2.0. Tested by Intel as of September 2026. Results may vary.\n5th Gen AMD EPYC: 1-instance m8a.12xlarge: 48 vCPU, 185 GB total memory, Ubuntu 26.04, 7.0.0-1006-aws, Terminal-Bench 2.0. Tested by Intel as of September 2026. Results may vary.\nArm v9.2A: 1-instance m9gd.12xlarge: 48 vCPU, 185 GB total memory, Ubuntu 26.04, 7.0.0-1006-aws, Terminal-Bench 2.0. Tested by Intel as of September 2026. Results may vary.\nTest-Methodology:\nBenchmark\nTerminal-Bench + Harbor 0.16.1, terminus-2 agent. Deterministic fixture replays - A recorded Claude trajectory is replayed through a local proxy, so runs do no model inference and no network (identical work on every system); one canonical terminus on all systems; verifier enabled, all three instances ran all the tasks without any failures.\nLoad\nOne sandbox per physical core, pinned 1 core/task via cpuset_slot_pinner, memory local to the socket. 24 concurrent sandboxes. 60-minute run, refill setting -k 500 (slots stay full); each task cycles many times.\nImages\nTask images pre-built and staged; runs make no network access (LLM replaced by the replay proxy on :4001). Per-container thread cap = 1.\nPrimary metric\nwhole-box system throughput calculated as tasks completed per 60 minutes (primary).\n1\nPerformance results are based on testing as of the dates shown in configurations and may not reflect all publicly available updates. See backup for configuration details. No product or component can be absolutely secure.\n Your costs and results may vary.\n1 Performance varies by use, configuration, and other factors. Learn more on the Performance Index site.",
+        "source_name": "intel.com",
+        "published_at": "2026-10-06T17:04:14Z"
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": []
+      },
+      "w2": {
+        "policy_hit": false,
+        "policy_related": false,
+        "policy_ids": [],
+        "hit_condition_ids": [],
+        "matched_condition_ids": []
+      },
+      "w3_decision": {
+        "novelty": {
+          "reason": "E388已记录Agentic AI带动服务器CPU需求的市场预测，但未覆盖Intel披露的Xeon 6跨行业代理工作负载吞吐测试及其对比结果。",
+          "reference_ids": [
+            "E388"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "此为Intel自述的性能基准测试结果，未确认客户选型、绑定订单、部署、出货或新增供给；不满足现行Policy的触发条件。"
+        },
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "Intel报告的Terminal-Bench 2.0测试显示Xeon 6在医疗、银行金融及制造代理任务中的归一化吞吐均显著领先第五代AMD EPYC和Arm v9.2A，提升了Intel在Agentic AI服务器CPU工作负载中赢得分配的预期。",
+          "prior_expectation": "Agentic AI扩大CPU需求的预期已存在（E388）；Intel服务器需求改善且Xeon 6快速爬坡，但D2指出相对性能优势和客户级分配尚未确立。",
+          "reason": "测试是在相同工作轨迹与实例资源下进行，跨三个垂直领域结果方向一致且差距显著；在Agentic AI需求扩张背景下，这改善了Xeon的竞争力预期，并可经客户工作负载分配影响DCAI需求。数据由Intel自测，且没有客户采用、价格/功耗比较或订单确认，限制了结论强度；但该测试为D2尚缺的相关性能证据，提供了足够明确的正向边际信号，故作LONG。",
+          "trade": true
+        }
+      },
+      "direction": "LONG",
+      "initiated_at": "2026-10-06T17:13:38.428968+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    },
+    {
+      "message": {
+        "title": "Intel CEO Lip-Bu Tan Has Incredible News for AMD Stock Investors",
+        "body": "Intel (INTC -3.45%) is firmly in the artificial intelligence (AI) chip race, driven by improving demand for server central processing units (CPUs), which has been fueled by growth in agentic AI and inference workloads.\n\nInference and agentic AI are multi-step tasks, unlike chatbots that gained popularity in the first wave of AI deployment. Instead of simply answering a prompt, AI agents break down a query into multiple steps to perform tasks autonomously. This brings CPUs into focus, as they can manage multi-step tasks, call applications into action, and monitor the security of autonomous tasks performed by the agent.\n\nAs a result, Intel rival Advanced Micro Devices (AMD +0.22%) expects the total addressable market (TAM) for server CPUs to increase at a compound annual growth rate of more than 50% through 2030. AMD expects this market to generate $220 billion in revenue in 2030. So, Intel CEO Lip-Bu Tan's remarks about the state of the server CPU market clearly suggest that better times lie ahead for these chipmakers.\n\nImage source: Intel\n\nIntel is finding it difficult to meet server CPU demand\n\nTan recently remarked at a conference that it can meet only 50% of customer demand for CPUs. This is good news for Intel and AMD, as both companies are dominant players in the x86 server CPU space. The shortage of CPUs should ideally lead to higher prices, lifting the margins and earnings of Intel and AMD.\n\nNASDAQ: INTC\n\nKey Data Points\n\nTom's Hardware reports that Intel is poised to implement a 10% price hike in March 2027. It is worth noting that the company has already implemented a couple of price hikes this year. Even AMD is expected to follow suit, according to the report. So, the impressive turnaround in Intel's fortunes is likely to continue.\n\nThe company's revenue in Q2 increased 25% year over year to $16.1 billion, fueled by a 59% jump in the data center and AI (DCAI) segment. What's more, Intel posted non-GAAP earnings per share of $0.42 from a loss of $0.10 in the year-ago quarter. As server CPU demand increases and supply constraints push up prices, the company should ideally be able to sustain its healthy growth momentum.\n\nTan's comments point to better times for AMD\n\nAMD could be a bigger beneficiary of the booming demand for server CPUs. That's because it has consistently taken market share from Intel in the x86 server CPU market. Mercury Research reports that AMD's server CPU market share increased to 34.5% in Q2 this year, up from 27.3% in the year-ago period.\n\nIntel, therefore, lost significant ground to AMD, primarily due to the latter's technological advantage in server CPUs. UBS analysts note that the superior core count of AMD's server CPUs and their multithreading capability make them ideal for handling agentic AI workloads. This explains why AMD is clocking significantly faster growth in the data center segment, with revenue increasing by 107% year over year in Q2.\n\nWhat's more, AMD is looking to capitalize on Intel's supply chain problems by ramping up production capacity in Taiwan in association with foundry giant TSMC. Ceo Lisa Su expects to increase CPU capacity rapidly in every quarter this year. Moreover, AMD is looking to add more capacity in 2027.\n\nIntel, on the other hand, noted on its Q2 earnings call that it is struggling to meet demand despite increasing production yields and enhancing output. AMD, meanwhile, believes that it can grow its server revenue by over 80% in the second half of 2026 compared to last year, followed by an increase of over 70% in 2027.\n\nIn simple terms, AMD believes it can grow faster than the server CPU market, indicating it is confident in taking more share away from Intel. Even consensus estimates project that AMD's server CPU gains will translate into stronger growth.\n\nAnalysts expect an 82% spike in AMD's earnings this year, followed by a 105% increase in 2027. Intel's earnings growth, meanwhile, is expected to slow down from 262% this year to 35% in 2027. With AMD trading at 36 times forward earnings compared to Intel's forward earnings multiple of 56, investors looking to buy a semiconductor stock to capitalize on the booming AI server CPU demand would do well to buy AMD over Intel, especially considering Chipzilla's diminishing market share.",
+        "source_name": "fool.com",
+        "published_at": "2026-09-27T15:23:01Z"
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": [
+          "E28"
+        ]
+      },
+      "w2": {
+        "policy_hit": false,
+        "policy_related": false,
+        "policy_ids": [],
+        "hit_condition_ids": [],
+        "matched_condition_ids": []
+      },
+      "w3_decision": {
+        "novelty": {
+          "reason": "相对于Reference View中仅覆盖2026年秋季/10月提价的E28，本消息新增了2027年3月约10%提价的具体时点，并量化披露AMD服务器CPU份额由27.3%升至34.5%，同时补充AMD与TSMC扩充CPU产能的计划。",
+          "reference_ids": [
+            "E28"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息未满足任何现行Policy的激活阈值；没有客户因提价取消或削减采购、供给缓解后的单位量验证、绑定生产订单或其他事件级触发条件。"
+        },
+        "expert_trade": {
+          "direction": "SHORT",
+          "evaluated": true,
+          "expectation_delta": "AMD服务器CPU份额同比由27.3%升至34.5%，增加7.2个百分点，将原本定性的竞争风险具体化：即使Intel只能满足约50%的需求，新增需求和价值捕获仍在流向AMD；AMD扩产使这一份额压力更可能延续。Intel 2027年3月10%提价仍只是报道，不能抵消份额损失。",
+          "prior_expectation": "事件前基线是Intel服务器需求改善但供给受限，Q2服务器单位同比增长9%、ASP增长48%，良率和周期时间改善及Q3指引支持近端增长；AMD供给在2026年同样紧张，但其相对份额尚无同口径量化证据。",
+          "reason": "形成可交易的负向预期差。AMD份额上升及扩产直接削弱Intel服务器/DCAI的单位、份额和持续定价能力，并可传导至收入、毛利和EPS持续性；服务器业务是Intel当前主要增长与盈利传导。未确认的提价计划及缺乏客户接受证据只能提供有限抵消。",
+          "trade": true
+        }
+      },
+      "direction": "SHORT",
+      "initiated_at": "2026-10-05T11:49:26.626625+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    }
+  ],
+  "history_matches": [
+    {
+      "events": [],
+      "policies": []
+    },
+    {
+      "events": [],
+      "policies": []
+    },
+    {
+      "events": [],
+      "policies": []
+    }
+  ],
+  "watches": [],
+  "pins": [],
+  "policy_consumptions": [],
+  "provisional": [
+    {
+      "candidate": {
+        "assertion_state": "PLAN",
+        "entities": [
+          "Intel",
+          "Elon Musk",
+          "Terafab",
+          "TSMC"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "Bloomberg reported that Intel would continue working on Elon Musk’s Terafab venture despite TSMC talks.",
+        "subject_time": "Continued work on Terafab, as reported October 7, 2026"
+      },
+      "candidate_index": 0,
+      "case_id": "case_c764685afb5d4604ba197840c2a3ce87",
+      "created_at": "2026-10-07T06:12:44.839657Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E346",
+      "runtime_signature": "e65c08d46600d641f65153cba909fdf2a6bc4ccbc316f613a9b39f32caec011a",
+      "snapshot_version": 1,
+      "source_message_id": "std_df1d0780c5394f28a1b443088a8fd194",
+      "ticker": "INTC",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLAN",
+        "entities": [
+          "Intel",
+          "Elon Musk",
+          "Terafab",
+          "TSMC",
+          "Bloomberg",
+          "Investing.com"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "Bloomberg reported that Intel would continue working on Elon Musk’s Terafab venture despite TSMC talks; Investing.com Nigeria republished the report.",
+        "subject_time": "Continued work on Terafab, as reported October 7, 2026"
+      },
+      "candidate_index": 0,
+      "case_id": "case_bf979e19996c4334bca8146c108245a7",
+      "created_at": "2026-10-07T06:14:16.348103Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E347",
+      "runtime_signature": "41787399a27328ee9896cef9c579a0053a8be8c668e7cd062adf336e438f833b",
+      "snapshot_version": 2,
+      "source_message_id": "std_ca4b8d8524564390ae8a2836568504ae",
+      "ticker": "INTC",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLAN",
+        "entities": [
+          "Intel",
+          "Lip-Bu Tan",
+          "Elon Musk",
+          "Terafab",
+          "Bloomberg"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "Intel CEO Lip-Bu Tan told Bloomberg that Intel would continue working with Elon Musk on Terafab and remain involved in the project.",
+        "subject_time": "Continued work on Terafab, as reported October 7, 2026"
+      },
+      "candidate_index": 0,
+      "case_id": "case_30482ef301764859aa12c9eadb80a48b",
+      "created_at": "2026-10-07T06:29:01.973902Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E348",
+      "runtime_signature": "84344c0bdad2b6c5614cfbe0c3923e953b596b3d95a88289ce8ec4b0f0294656",
+      "snapshot_version": 3,
+      "source_message_id": "std_9b3a5a0a9e7f4f59b289cf045967ba9e",
+      "ticker": "INTC",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMOR",
+        "entities": [
+          "FieldAI",
+          "Benzinga",
+          "Business Insider"
+        ],
+        "occurrence_date": "2026-10-06",
+        "proposition": "Benzinga援引Business Insider报道称，FieldAI计划筹集约7亿美元、对应约100亿美元估值；该融资尚未确认完成。",
+        "subject_time": "FieldAI拟议融资轮（2026年）"
+      },
+      "candidate_index": 0,
+      "case_id": "case_1604c0907fd449518dd6a4729fa4d011",
+      "created_at": "2026-10-07T07:28:53.554768Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E349",
+      "runtime_signature": "ca2cc6b07ba376e8f29677862af8cff9f12c2df92ae7edd611f53daf2d426784",
+      "snapshot_version": 4,
+      "source_message_id": "std_b1acf24ff2744185866e0a8a3126f13a",
+      "ticker": "INTC",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Google",
+          "Intel",
+          "Googlebooks",
+          "Google Play"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "Google称，Intel-powered Googlebooks上前1万多款常用Android应用中有96.6%可在Google Play获取并正常运行；其余应用主要因大屏兼容问题而从Play中移除，且该问题适用于各平台。",
+        "subject_time": "Googlebook首发应用生态"
+      },
+      "candidate_index": 0,
+      "case_id": "case_b7446eeff19b45d1a599127305a86a31",
+      "created_at": "2026-10-07T07:40:21.350451Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E350",
+      "runtime_signature": "4c8132e802923f14ce02af6581c1e04805f556319ac8d411a54dce54e02dc40d",
+      "snapshot_version": 5,
+      "source_message_id": "std_c06918467f6e4e2bba6e4409951de603",
+      "ticker": "INTC",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Google",
+          "Intel",
+          "Googlebooks"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "Google称Intel-powered Googlebooks使用二进制翻译层，将现代64位Arm arm64-v8a代码动态编译为原生64位Intel x86_64指令，而非采用旧式32位x86模拟。",
+        "subject_time": "当前Googlebook应用翻译架构"
+      },
+      "candidate_index": 1,
+      "case_id": "case_b7446eeff19b45d1a599127305a86a31",
+      "created_at": "2026-10-07T07:40:21.357133Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E351",
+      "runtime_signature": "610fda46b480f2d03682f05edbdab0fe885bca2f7ac230f8c4fca0329e184578",
+      "snapshot_version": 6,
+      "source_message_id": "std_c06918467f6e4e2bba6e4409951de603",
+      "ticker": "INTC",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Jim Cramer",
+          "CNBC",
+          "Intel",
+          "AMD"
+        ],
+        "occurrence_date": "2026-10-06",
+        "proposition": "CNBC主持人Jim Cramer在周二的Mad Money节目讨论AI投资时，将Intel与AMD一同列为半导体领域可关注的公司。",
+        "subject_time": "2026年10月6日周二的Mad Money节目"
+      },
+      "candidate_index": 0,
+      "case_id": "case_edcfc4ab74ad45ab81b9a952022ec9be",
+      "created_at": "2026-10-07T07:43:29.664259Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E352",
+      "runtime_signature": "5ed3e1254c4cc35ddd4f110b79254513e2ead865788290372ef026180b2d2dd0",
+      "snapshot_version": 7,
+      "source_message_id": "std_774a5a884a914cbd8712c1079334a119",
+      "ticker": "INTC",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLAN",
+        "entities": [
+          "Elon Musk",
+          "Terafab"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "Elon Musk称Terafab将建造并运营该芯片制造工厂。",
+        "subject_time": "Terafab工厂的未来建设与运营"
+      },
+      "candidate_index": 0,
+      "case_id": "case_9dd6c3ac9c8a4796adae3f93d31d93a1",
+      "created_at": "2026-10-07T07:49:53.243603Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E353",
+      "runtime_signature": "917fc90f4cb50c7ccbe0016e9b6e415c3ed86d45c03973309693bfb3df4b65bd",
+      "snapshot_version": 8,
+      "source_message_id": "std_f65dff86fefd4731af5d46177537a5cb",
+      "ticker": "INTC",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "HYPOTHETICAL",
+        "entities": [
+          "Elon Musk",
+          "TSMC",
+          "Terafab"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "Elon Musk称TSMC可能分租Terafab工厂的一部分，但不会承担超出分租的角色。",
+        "subject_time": "TSMC对Terafab设施的潜在分租"
+      },
+      "candidate_index": 1,
+      "case_id": "case_9dd6c3ac9c8a4796adae3f93d31d93a1",
+      "created_at": "2026-10-07T07:49:53.266972Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E354",
+      "runtime_signature": "3b81a4aa13b8cd1ca99cd9e774dc5f9d1fe8889a663252caa64085a5aef74828",
+      "snapshot_version": 9,
+      "source_message_id": "std_f65dff86fefd4731af5d46177537a5cb",
+      "ticker": "INTC",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ONGOING",
+        "entities": [
+          "AMD",
+          "Lisa Su",
+          "Samsung Electronics"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "AMD首席执行官Lisa Su表示，AMD仍在探索与Samsung Electronics的晶圆代工合作机会。",
+        "subject_time": "截至2026-10-07的合作探索状态"
+      },
+      "candidate_index": 0,
+      "case_id": "case_8f9027c0a94548c6ada2e638ca01ed9a",
+      "created_at": "2026-10-07T07:52:50.056476Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E355",
+      "runtime_signature": "b95ec571e4c547ea0c8a2d45ab9f98efbaa49acd31b156ac03b77912100a86d8",
+      "snapshot_version": 10,
+      "source_message_id": "std_1c429b45246f47a199b9b1c251e1b56c",
+      "ticker": "INTC",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ONGOING",
+        "entities": [
+          "AMD",
+          "Lisa Su",
+          "Samsung Electronics"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "AMD CEO Lisa Su 表示，AMD 继续探索与 Samsung Electronics 在内存和代工业务上的合作机会。",
+        "subject_time": "截至2026-10-07，持续探索中"
+      },
+      "candidate_index": 0,
+      "case_id": "case_f078405b1c8a4ee595d33a7c1426bbc2",
+      "created_at": "2026-10-07T07:53:59.473608Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E356",
+      "runtime_signature": "e331008e297aa9b43768e27441b2a2974d268451d5664268ae7338c355e3d1fe",
+      "snapshot_version": 11,
+      "source_message_id": "std_a2d6c8971fa941958af9e86b48dbc7df",
+      "ticker": "INTC",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Lisa Su",
+          "AMD",
+          "SK hynix"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "Lisa Su 表示，她在首尔访问期间已会见 SK hynix 高管。",
+        "subject_time": "2026-10-07首尔访问期间"
+      },
+      "candidate_index": 1,
+      "case_id": "case_f078405b1c8a4ee595d33a7c1426bbc2",
+      "created_at": "2026-10-07T07:53:59.509889Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E357",
+      "runtime_signature": "9955edb0efda8977dc7dc1d98b7dfb981ed68725ac0d88a9c043ca941206af45",
+      "snapshot_version": 12,
+      "source_message_id": "std_a2d6c8971fa941958af9e86b48dbc7df",
+      "ticker": "INTC",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "SCHEDULED",
+        "entities": [
+          "Lisa Su",
+          "AMD",
+          "Samsung Electronics"
+        ],
+        "occurrence_date": null,
+        "proposition": "Lisa Su 表示，她计划在首尔访问期间与 Samsung Electronics 高管会面。",
+        "subject_time": "计划于2026-10-07首尔访问期间"
+      },
+      "candidate_index": 2,
+      "case_id": "case_f078405b1c8a4ee595d33a7c1426bbc2",
+      "created_at": "2026-10-07T07:53:59.597412Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E358",
+      "runtime_signature": "3170c6465cfd7adcb4d54cceccd3e7396de921d885ef7827f3e3d3af1e4c3dbd",
+      "snapshot_version": 13,
+      "source_message_id": "std_a2d6c8971fa941958af9e86b48dbc7df",
+      "ticker": "INTC",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ONGOING",
+        "entities": [
+          "AMD",
+          "Lisa Su",
+          "Samsung Electronics"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "AMD CEO Lisa Su表示，AMD继续探索与Samsung Electronics在内存及代工业务方面的合作机会。",
+        "subject_time": "截至2026年10月7日的AMD-Samsung内存及代工合作探索"
+      },
+      "candidate_index": 0,
+      "case_id": "case_71eb227a5ec44dd08e5cfe4535472b45",
+      "created_at": "2026-10-07T07:54:13.838537Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E359",
+      "runtime_signature": "6a9cbeba83ac393e32ca514215bf64a18558dd50090029406ccb5c63a6c724a3",
+      "snapshot_version": 14,
+      "source_message_id": "std_035cb23910b3439ba9050448724986cd",
+      "ticker": "INTC",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "SCHEDULED",
+        "entities": [
+          "Lisa Su",
+          "AMD",
+          "SK Hynix",
+          "Samsung Electronics"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "Lisa Su表示，她在首尔访问期间已会见SK Hynix高管，并计划会见Samsung Electronics高管。",
+        "subject_time": "Lisa Su的2026年10月7日首尔访问"
+      },
+      "candidate_index": 1,
+      "case_id": "case_71eb227a5ec44dd08e5cfe4535472b45",
+      "created_at": "2026-10-07T07:54:13.875656Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E360",
+      "runtime_signature": "24e4da6e7069a9184ea8d2d2967fad7eddf5967eeaf2a271e159d3276f20cd10",
+      "snapshot_version": 15,
+      "source_message_id": "std_035cb23910b3439ba9050448724986cd",
+      "ticker": "INTC",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMOR",
+        "entities": [
+          "Intel",
+          "Golden Pig Upgrade",
+          "Raptor Lake Next",
+          "Core 2000HX",
+          "Core 200HX"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "Golden Pig Upgrade据称称，Intel计划将Raptor Lake Next移动HX处理器系列命名为Core 2000HX，而非此前传出的Core 200HX。",
+        "subject_time": "计划中的2027年Raptor Lake Next移动HX系列"
+      },
+      "candidate_index": 0,
+      "case_id": "case_56207c6a3ca245d1aa4e931a010c7362",
+      "created_at": "2026-10-07T08:26:48.603686Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E361",
+      "runtime_signature": "e32e107992d7d036c0232feb2658d42a8bd3cf48e29e37189fad4d35ab8a23d4",
+      "snapshot_version": 16,
+      "source_message_id": "std_20ad35937ded42cd81b458124a7fb19c",
+      "ticker": "INTC",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Donald Trump",
+          "White House",
+          "Super Intelligence Force",
+          "Jay Clayton",
+          "Andrew Ferguson",
+          "Emil Michael",
+          "Scott Kupor"
+        ],
+        "occurrence_date": "2026-10-04",
+        "proposition": "特朗普宣布成立白宫“Super Intelligence Force”，并任命美国情报总监Jay Clayton、FTC主席Andrew Ferguson、五角大楼CTO Emil Michael和OPM主任Scott Kupor共同领导该工作组。",
+        "subject_time": "当前美国联邦AI治理"
+      },
+      "candidate_index": 0,
+      "case_id": "case_87bb01a915194913a532326117d901d0",
+      "created_at": "2026-10-07T08:39:11.116700Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E362",
+      "runtime_signature": "c45bd05d15f1fd58b2bac74edd91cf006a2da93a091790056e25497106a5b54a",
+      "snapshot_version": 17,
+      "source_message_id": "std_3b724de2d9524a38a8f47386882822bf",
+      "ticker": "INTC",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "ASUS",
+          "Intel",
+          "NUC 14 Essential Fanless",
+          "Intel N100",
+          "Intel N150",
+          "Intel N250"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "ASUS推出NUC 14 Essential Fanless迷你PC；产品概览列出Intel N100、N150和N250选项，详细规格列出N150和N250配置。",
+        "subject_time": "2026年10月的产品发布"
+      },
+      "candidate_index": 0,
+      "case_id": "case_34a2181854714131a7943454049c6c7c",
+      "created_at": "2026-10-07T09:46:05.509502Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E363",
+      "runtime_signature": "b68cf22bdf9fbab0ad36134185110b4550f0fac3a518ed1b34dd2563d4c166c7",
+      "snapshot_version": 18,
+      "source_message_id": "std_72efa7bf6e9d4eb18a61bf7aeac94053",
+      "ticker": "INTC",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "ASUS",
+          "NUC 14 Essential Fanless",
+          "MIL-STD-810H"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "ASUS称NUC 14 Essential Fanless为持续24/7运行而设计，并已通过涵盖温度、湿度、振动和冲击等条件的MIL-STD-810H测试。",
+        "subject_time": "NUC 14 Essential Fanless产品规格"
+      },
+      "candidate_index": 1,
+      "case_id": "case_34a2181854714131a7943454049c6c7c",
+      "created_at": "2026-10-07T09:46:05.539432Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E364",
+      "runtime_signature": "9652ebbfc9e5a921fc4fc0259b4f48e95e9ea2a1da0649057f9972f1e727b5e5",
+      "snapshot_version": 19,
+      "source_message_id": "std_72efa7bf6e9d4eb18a61bf7aeac94053",
+      "ticker": "INTC",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLAN",
+        "entities": [
+          "Elon Musk",
+          "Terafab",
+          "Tesla",
+          "SpaceX"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "Elon Musk表示，其公司将建设并运营Terafab AI芯片园区。",
+        "subject_time": "Terafab未来建设与运营"
+      },
+      "candidate_index": 0,
+      "case_id": "case_1e0323b0080f44c4a2fa2e9c3970e50e",
+      "created_at": "2026-10-07T10:02:57.534019Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E365",
+      "runtime_signature": "239b9d158fcb4205418fc8b89d69c9abf1a318700f0acbc997c8eab91038f18c",
+      "snapshot_version": 20,
+      "source_message_id": "std_9c5ad69bfcf947f69833505a78abec47",
+      "ticker": "INTC",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "HYPOTHETICAL",
+        "entities": [
+          "Elon Musk",
+          "Terafab",
+          "TSMC"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "Elon Musk表示，TSMC可能转租Terafab的部分空间，但不会承担该项目更广泛的运营角色。",
+        "subject_time": "Terafab未来空间租赁及运营安排"
+      },
+      "candidate_index": 1,
+      "case_id": "case_1e0323b0080f44c4a2fa2e9c3970e50e",
+      "created_at": "2026-10-07T10:02:57.577433Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E366",
+      "runtime_signature": "a586ef5df5c654190e5abc152e72b6d0742b93add86be6ecec0dacfe61c7a3e7",
+      "snapshot_version": 21,
+      "source_message_id": "std_9c5ad69bfcf947f69833505a78abec47",
+      "ticker": "INTC",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLAN",
+        "entities": [
+          "Elon Musk",
+          "Tesla",
+          "SpaceX",
+          "Terafab"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "Elon Musk表示，Tesla和SpaceX将建设并运营Terafab芯片制造园区。",
+        "subject_time": "Terafab未来建设与运营"
+      },
+      "candidate_index": 0,
+      "case_id": "case_1dc531fec8074f8286a25310428b7889",
+      "created_at": "2026-10-07T10:06:28.326426Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E367",
+      "runtime_signature": "b21e7735a12a6e6a8fdf623cc7fd0f214c5dcfcdeb4864974036251c3b78811f",
+      "snapshot_version": 22,
+      "source_message_id": "std_82e540c7adb440e5bf5f5aa85ca7116d",
+      "ticker": "INTC",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "HYPOTHETICAL",
+        "entities": [
+          "Elon Musk",
+          "TSMC",
+          "Terafab"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "Elon Musk表示，TSMC可能转租Terafab部分场地，但不会拥有或运营该项目。",
+        "subject_time": "Terafab未来场地租赁及运营安排"
+      },
+      "candidate_index": 1,
+      "case_id": "case_1dc531fec8074f8286a25310428b7889",
+      "created_at": "2026-10-07T10:06:28.374445Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E368",
+      "runtime_signature": "b50012a70dc75703c60ea1d9ba7904628f115dd6982cb61a843b930785e2f39b",
+      "snapshot_version": 23,
+      "source_message_id": "std_82e540c7adb440e5bf5f5aa85ca7116d",
+      "ticker": "INTC",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "SCHEDULED",
+        "entities": [
+          "Microsoft",
+          "Nvidia",
+          "Surface Laptop Ultra",
+          "RTX Spark"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "Microsoft计划于2026-10-07在旧金山活动推出搭载Nvidia RTX Spark芯片的Surface Laptop Ultra，定位为可在本地处理部分AI agent任务的Windows笔记本。",
+        "subject_time": "计划于2026-10-07举行的旧金山活动"
+      },
+      "candidate_index": 0,
+      "case_id": "case_b81fe4fa9c3d47d5921ff056d8033def",
+      "created_at": "2026-10-07T10:13:17.480379Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E369",
+      "runtime_signature": "2e21555be53dbc9cfb3467684c9920d4ca810763ba5038be4bc93671ba550ead",
+      "snapshot_version": 24,
+      "source_message_id": "std_8dfb6626790e4d4c8f0683d8b2e4b5af",
+      "ticker": "INTC",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "ESPN",
+          "NFL"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "ESPN发布了一篇关于NFL Week 5最新资讯、动态及梦幻橄榄球建议的综合文章。",
+        "subject_time": "NFL Week 5, 2026"
+      },
+      "candidate_index": 0,
+      "case_id": "case_a559d1d3b6624a51a686f0de88acad0c",
+      "created_at": "2026-10-07T10:32:48.200493Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E370",
+      "runtime_signature": "582c9ddd6859bbeaa20bcddbc5d6c63b25d9a7e513dc955305ea1f4b8867d3c9",
+      "snapshot_version": 25,
+      "source_message_id": "std_95e9231dfc284d1292dacfc777921eae",
+      "ticker": "INTC",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "ESPN",
+          "NFL",
+          "Jeremy Fowler",
+          "Dan Graziano"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "ESPN发布了由Jeremy Fowler和Dan Graziano撰写的2026 NFL Week 5综合报道，内容包括伤情、球队动态和梦幻橄榄球建议。",
+        "subject_time": "2026 NFL Week 5"
+      },
+      "candidate_index": 0,
+      "case_id": "case_b03dd071fe9f44698e94443b5608d639",
+      "created_at": "2026-10-07T10:36:45.226556Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E371",
+      "runtime_signature": "3a49414f74c79ba46f802207408bb906cb1daaffc5befc061793a9ceb1fbf7aa",
+      "snapshot_version": 26,
+      "source_message_id": "std_95e99194e0af4150a4b80d08f34f1472",
+      "ticker": "INTC",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Intel",
+          "INTC"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "Intel股价于2026-10-07盘前上涨约1.6%。",
+        "subject_time": "2026-10-07盘前交易"
+      },
+      "candidate_index": 0,
+      "case_id": "case_6b939d0438024f35b85abef222304b7d",
+      "created_at": "2026-10-07T10:42:07.395844Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E372",
+      "runtime_signature": "6fc1741769938c4c23b9059940d97bad1e0919c46aa0f4f39ea8b281fab47909",
+      "snapshot_version": 27,
+      "source_message_id": "std_b011a0430d944f1887d31adf0f76c75d",
+      "ticker": "INTC",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "ResearchAndMarkets.com",
+          "全球计算机视觉市场"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "ResearchAndMarkets的计算机视觉市场报告估计全球市场2025年规模为192亿美元，并预测其到2032年达到768亿美元，2025至2032年复合年增长率为21.9%。",
+        "subject_time": "全球计算机视觉市场，2025-2032年"
+      },
+      "candidate_index": 0,
+      "case_id": "case_a65c4a8bd5dd4b83b4060cdc0319d054",
+      "created_at": "2026-10-07T10:58:48.941964Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E373",
+      "runtime_signature": "b9c54c0ba9af488c251a071f420398661ee2ea1164dd34613d8397351255e976",
+      "snapshot_version": 28,
+      "source_message_id": "std_83602f4ab67f404ca692cacf49bc9a25",
+      "ticker": "INTC",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Amplify ETFs",
+          "Amplify Top 10 Semiconductors ETF",
+          "Samsung Asset Management",
+          "Bloomberg Top 10 Momentum Semiconductors Index"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "Amplify ETFs宣布推出主动管理型Amplify Top 10 Semiconductors ETF（CPU），以Bloomberg Top 10 Momentum Semiconductors Index为参考指数，并由Samsung Asset Management担任副顾问。",
+        "subject_time": "ETF发布，2026年10月"
+      },
+      "candidate_index": 0,
+      "case_id": "case_a8da9e0d205c48aaa97e3ae2d12e25ee",
+      "created_at": "2026-10-07T11:06:15.517029Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E374",
+      "runtime_signature": "f2ca02eab667268d817706dd723829df1ac05b15bf36885658dfc59a6c35ee54",
+      "snapshot_version": 29,
+      "source_message_id": "std_0c075652497e4092aab72734e0d5962c",
+      "ticker": "INTC",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "ResearchAndMarkets.com",
+          "美国工程服务市场"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "ResearchAndMarkets的报告估计美国工程服务市场2025年规模为1480亿美元，并预测2035年达到2400亿美元，年复合增长率为6.2%。",
+        "subject_time": "美国工程服务市场，2025至2035年"
+      },
+      "candidate_index": 0,
+      "case_id": "case_6b303f4bbd6344b5ae3372adf99c0a46",
+      "created_at": "2026-10-07T11:18:24.635095Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E375",
+      "runtime_signature": "b99dc674cfe23fbc144249fb6d5366f0aa966108d9925ce1acc51bc2a4c322a6",
+      "snapshot_version": 30,
+      "source_message_id": "std_791678d9a0994fb6802ffaa806fcfc5b",
+      "ticker": "INTC",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "SCHEDULED",
+        "entities": [
+          "Inside Texas",
+          "Texas Longhorns",
+          "四星外接手"
+        ],
+        "occurrence_date": null,
+        "proposition": "Inside Texas的招募报道指出，一名已承诺的四星外接手安排了正式访问。",
+        "subject_time": "Texas 2027及2028届橄榄球招募"
+      },
+      "candidate_index": 0,
+      "case_id": "case_4ee50a59c747458086c2733cc7f2a8c3",
+      "created_at": "2026-10-07T11:35:15.211994Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E376",
+      "runtime_signature": "1fc4910d47194658a73c31ac768421064252320c9dc39f1de50a990fdaa258ff",
+      "snapshot_version": 31,
+      "source_message_id": "std_34ea30c64ca84bedbfd5bf0b7e919581",
+      "ticker": "INTC",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Constellation Brands"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "Constellation Brands报告FY2027第二季度调整后每股收益为3.74美元、净销售额为26.3亿美元，均高于市场预期。",
+        "subject_time": "FY2027第二季度"
+      },
+      "candidate_index": 0,
+      "case_id": "case_993abef499c34b86bd2657c401ed8186",
+      "created_at": "2026-10-07T11:50:33.309090Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E377",
+      "runtime_signature": "d4b9893b3980937a266242ee304275cde0e90ecbfd7ed7b344b52607f9308f9c",
+      "snapshot_version": 32,
+      "source_message_id": "std_9fe3b66deeda405796bdd176082435d4",
+      "ticker": "INTC",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "GUIDANCE",
+        "entities": [
+          "Constellation Brands"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "Constellation Brands重申FY2027调整后每股收益指引为11.20至11.90美元，中点11.55美元，低于约11.72美元的分析师共识。",
+        "subject_time": "FY2027"
+      },
+      "candidate_index": 1,
+      "case_id": "case_993abef499c34b86bd2657c401ed8186",
+      "created_at": "2026-10-07T11:50:33.329553Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E378",
+      "runtime_signature": "86d0dfab88206ef0959f1ac511d8755c51247a45aa3515a5fac9060c515fbc69",
+      "snapshot_version": 33,
+      "source_message_id": "std_9fe3b66deeda405796bdd176082435d4",
+      "ticker": "INTC",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Sigma Lithium",
+          "巴西联邦上诉法院",
+          "Grota do Cirilo"
+        ],
+        "occurrence_date": null,
+        "proposition": "巴西联邦上诉法院向Sigma Lithium授予紧急中止救济，维持其环境许可并允许Grota do Cirilo矿业及工业运营全面恢复。",
+        "subject_time": "Grota do Cirilo运营"
+      },
+      "candidate_index": 2,
+      "case_id": "case_993abef499c34b86bd2657c401ed8186",
+      "created_at": "2026-10-07T11:50:33.364895Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E379",
+      "runtime_signature": "74bbc57bb095fe637f0448725dad164a9c91fe09011a8005a001aa1cd8dbf9a3",
+      "snapshot_version": 34,
+      "source_message_id": "std_9fe3b66deeda405796bdd176082435d4",
+      "ticker": "INTC",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMORED",
+        "entities": [
+          "SpaceX",
+          "Nvidia"
+        ],
+        "occurrence_date": "2026-10-06",
+        "proposition": "媒体报道称SpaceX拟筹集约400亿美元债务，为Nvidia AI芯片订单融资；方案包括约100亿美元银行贷款和300亿美元投资级债券，尚未完成。",
+        "subject_time": "拟议融资，预计2027年交割"
+      },
+      "candidate_index": 3,
+      "case_id": "case_993abef499c34b86bd2657c401ed8186",
+      "created_at": "2026-10-07T11:50:33.401525Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E380",
+      "runtime_signature": "e63527bb134e155b00eee8cc11f58a2d67804af9f456819ce179c69aca2504e2",
+      "snapshot_version": 35,
+      "source_message_id": "std_9fe3b66deeda405796bdd176082435d4",
+      "ticker": "INTC",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMOR",
+        "entities": [
+          "Intel",
+          "Raptor Lake Next"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "报道称Intel计划中的Raptor Lake Next移动HX处理器将支持DDR4和DDR5内存。",
+        "subject_time": "未公布发布日期的Raptor Lake Next移动HX系列"
+      },
+      "candidate_index": 0,
+      "case_id": "case_d8de97988a4d48d3aebcc2fba0328eee",
+      "created_at": "2026-10-07T11:59:06.191307Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E381",
+      "runtime_signature": "b455e28602ccaf07db0b9cb1f8188abb7f020fbf36fd69c4e93ddfd828149e3f",
+      "snapshot_version": 36,
+      "source_message_id": "std_4936a49ce24647409781c434794419d9",
+      "ticker": "INTC",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMOR",
+        "entities": [
+          "Intel",
+          "Raptor Lake Next",
+          "Golden Pig Upgrade",
+          "@jaykihn0"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "爆料称Raptor Lake Next移动产品线将仅有HX型号，至少包含8P+16E、8P+12E和6P+8E三种核心配置。",
+        "subject_time": "Raptor Lake Next移动HX系列"
+      },
+      "candidate_index": 1,
+      "case_id": "case_d8de97988a4d48d3aebcc2fba0328eee",
+      "created_at": "2026-10-07T11:59:06.209284Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E382",
+      "runtime_signature": "fca8b9fd0d533189d77c06da410a37a308bac43876507c0e923622c85c0538b7",
+      "snapshot_version": 37,
+      "source_message_id": "std_4936a49ce24647409781c434794419d9",
+      "ticker": "INTC",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMOR",
+        "entities": [
+          "Intel",
+          "Raptor Lake Next",
+          "@jaykihn0"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "爆料称Raptor Lake Next移动HX处理器不支持vPro或SIPP。",
+        "subject_time": "Raptor Lake Next移动HX系列"
+      },
+      "candidate_index": 2,
+      "case_id": "case_d8de97988a4d48d3aebcc2fba0328eee",
+      "created_at": "2026-10-07T11:59:06.232574Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E383",
+      "runtime_signature": "8fbc5885c9a0aff16eb345330a127ff62bb191c10fe635f92f8dd680e526f79b",
+      "snapshot_version": 38,
+      "source_message_id": "std_4936a49ce24647409781c434794419d9",
+      "ticker": "INTC",
+      "trading_date": "2026-10-07"
+    }
+  ],
+  "limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "global_state": {
+    "watches": [],
+    "pins": []
+  },
+  "event_details": {
+    "requested_event_ids": [
+      "E326",
+      "E304"
+    ],
+    "canonical_events": [
+      {
+        "event_id": "E326",
+        "title": "Intel said it would continue working on the Terafab venture",
+        "event_type": "OTHER_CORPORATE_EVENT",
+        "occurred_at": "2026-10-07",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Intel said it would continue working on Elon Musk’s Terafab chipmaking venture; the report did not disclose terms, scope, timetable or project progress.",
+        "known_event_summary": "On 2026-10-07, Bloomberg’s report, republished by TradingView and cited by Reuters, said Intel would keep working on Elon Musk’s Terafab; no terms or progress were specified.",
+        "related_event_ids": [
+          "E43",
+          "E304"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F1291",
+            "proposition": "Intel said it would continue working on Elon Musk’s Terafab chipmaking venture; the statement did not disclose terms, scope, timetable or progress.",
+            "assertion_state": "PLAN",
+            "subject_time": "FUTURE",
+            "fact_occurred_at": "2026-10-07",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      },
+      {
+        "event_id": "E304",
+        "title": "Musk confirmed TSMC-Terafab talks as Culpium reported stalled Intel collaboration",
+        "event_type": "OTHER_CORPORATE_EVENT",
+        "occurred_at": "2026-10-03",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "On 2026-10-03, Culpium reported that Intel's Terafab collaboration was not making progress, a status Intel had not confirmed. Elon Musk publicly confirmed that Terafab was in discussions with TSMC, which Culpium had reported was exploring ways to work with the project.",
+        "known_event_summary": "On 2026-10-03, Culpium reported Intel-Terafab cooperation was not progressing (unconfirmed by Intel), and Musk confirmed Terafab talks with TSMC, which Culpium said was exploring a role.",
+        "related_event_ids": [
+          "E43"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F1244",
+            "proposition": "Reports said TSMC was targeting or seeking participation in the Terafab project.",
+            "assertion_state": "RUMOR",
+            "subject_time": null,
+            "fact_occurred_at": "2026-10-03",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F1245",
+            "proposition": "Elon Musk confirmed that Terafab, the chip-manufacturing project backed by SpaceX and Tesla, was in discussions with TSMC.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-10-03",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F1258",
+            "proposition": "Culpium reported that collaboration with Intel on Terafab was not making progress; Intel had not confirmed the reported status.",
+            "assertion_state": "RUMOR",
+            "subject_time": "SAME",
+            "fact_occurred_at": "2026-10-03",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      }
+    ],
+    "provisional_events": [],
+    "missing_event_ids": []
+  }
+}

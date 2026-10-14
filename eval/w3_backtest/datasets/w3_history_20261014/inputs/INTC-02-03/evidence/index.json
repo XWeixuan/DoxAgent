@@ -1,0 +1,25 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-28T15:46:31.712471Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "The official .conf26 replay page and schedule establish the event and session, but no accessible official transcript or recording passage verifying the exact 50% wording was retrieved.",
+    "The search result for a Sep. 16 repost points to a SeDaily report; the original SeDaily item was not located, so the earliest media coverage cannot be conclusively identified.",
+    "The 50% figure lacks a definition of denominator and measurement period; no customer-level order, unit, or backlog detail was found.",
+    "The reported 10% March 2027 price increase was not confirmed by Intel, and the underlying DigiTimes report is paywalled; affected products and source details remain unknown.",
+    "The original Mercury Research release was not retrieved; the 34.5% share figure is supported here through article references and coverage, with differing market denominators.",
+    "AMD production-capacity plans, Q2 data-center growth rate, and analyst claims included in the source article were not independently verified in the six-call budget."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

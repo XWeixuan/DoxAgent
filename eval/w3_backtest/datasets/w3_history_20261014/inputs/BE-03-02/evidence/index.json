@@ -1,0 +1,24 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-29T16:32:49.143492Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "Goldman’s underlying Sep. 25 client note and its company-level forecast table were not publicly located; the original note’s distribution time is unknown.",
+    "The $1.89T aggregate, +66% revision, provider-by-provider values, and start-of-2026 comparison baseline in the supplied feed were not independently verified. Definitions and whether these are consensus or Goldman estimates remain unclear.",
+    "The feed’s $183B current AI-revenue estimate and its attribution to Anthropic/OpenAI were not independently validated against a consistent, auditable market-wide revenue measure.",
+    "The incoming HuggingNews page is dynamic and its current version may contain later additions. Only the supplied timestamped pre-cutoff feed capture is used for the 1.89T claim; later page content and post-cutoff material are excluded.",
+    "The news concerns aggregate AI infrastructure investment and monetization. It contains no Bloom Energy-specific order, contract, project, capacity, delivery, or customer-acceptance evidence."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

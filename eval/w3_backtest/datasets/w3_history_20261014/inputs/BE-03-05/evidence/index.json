@@ -1,0 +1,22 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-30T18:52:42.388510Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "The exact hour the FERC order first became publicly accessible is not established; only the September 29 issuance and accession dates are traceable.",
+    "The Reuters publication timestamp and chronology relative to other outlets cannot be resolved from the date-level supplied metadata and the unzoned reprint timestamp.",
+    "The focused evidence does not establish any Project Jupiter, Bloom-specific, or other named project change in committed MW, permits, interconnection, delivery, or acceptance caused by this regional procurement order."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

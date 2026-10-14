@@ -1,0 +1,15 @@
+{
+  "ticker": "INTC",
+  "version": 1,
+  "requested_event_ids": [
+    "E77",
+    "E79",
+    "E80"
+  ],
+  "events": [],
+  "missing_event_ids": [
+    "E77",
+    "E79",
+    "E80"
+  ]
+}

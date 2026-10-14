@@ -1,0 +1,1470 @@
+{
+  "schema_version": "w3-backtest.case.v1",
+  "case_key": "RKLB-01-01",
+  "group": "reviewed",
+  "original_case_id": "case_9ac52592e7744107bd0cb7c6cd015c38",
+  "ticker": "RKLB",
+  "evidence_cutoff_at": "2026-09-22T17:06:24.143456Z",
+  "cutoff_basis": "original_worker_started_at",
+  "research_key": "3c752f5c1590d002e2d2",
+  "research_path": "research/3c752f5c1590d002e2d2",
+  "original_case": {
+    "case_id": "case_9ac52592e7744107bd0cb7c6cd015c38",
+    "trading_date": "2026-09-22",
+    "source": {
+      "admission_context": {
+        "cutoff": null,
+        "mode": "REALTIME",
+        "policy_version": 1,
+        "source_task_id": null,
+        "sweep_id": null,
+        "window_start": null
+      },
+      "binding_id": "RKLB:yahoo_finance_news",
+      "business_version": 1,
+      "collected_at": "2026-09-22T17:05:19.658598Z",
+      "eligibility_at": "2026-09-22T17:05:19.653347Z",
+      "logical_message_id": "message_6005b075207542c4b9feb24439d30611",
+      "member_count": 1,
+      "member_message_ids": [
+        "std_6d11166f7b4c4f4293affb8a37152188"
+      ],
+      "message_bus_event_time": "2026-09-22T17:05:19.658598Z",
+      "normalized_at": null,
+      "previous_raw_message_id": null,
+      "publication_time_basis": "EXACT",
+      "published_at": "2026-09-22T16:57:28Z",
+      "snapshot": {
+        "body": "Shares of Rocket Lab Corp (NASDAQ:RKLB) are up 2.2% at $71.45 today, extending a bounce off familiar support at the $60 level. Furthermore, today's price action has RKLB crossing above the 50-day moving average, which rejected the stock in July and August.\n\nPer Schaeffer's Senior Quantitative Analyst Rocky White, this \"crossover\" event has happened eight other times over the last 10 years. Rocket Lab stock was higher one month later 88% of the time after these signals, averaging a 16.8% gain. From its current perch, a move of this magnitude would put the shares at $83.45.\n\nRKLB's Schaeffer's Volatility Index (SVI) of 70% stands in the low 10th percentile of its annual range, meaning options traders are pricing in low volatility expectations. The stock has tended to exceed these expectations over the last year as well, per its Schaeffer's Volatility Scorecard (SVS) of 97 out of 100.",
+        "ticker": "RKLB",
+        "title": "Rocket Lab Stock Breaks Above Key Trendline"
+      },
+      "source_id": "yahoo_finance_news",
+      "source_message_id": "std_6d11166f7b4c4f4293affb8a37152188",
+      "stream_item_id": "stream_f4f82d6dab584f6aaf6a014bb756d980",
+      "update_kind": "NEW_MESSAGE",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/rocket-lab-stock-breaks-above-165728910.html"
+    },
+    "version_pin": {
+      "activation_revision_id": "runtime-maintain-e5b5800ef57abbf9ef47b751-activation",
+      "document1_run_id": "init-rklb-9631e4071e75470a97313eafbbdc51aa-d1",
+      "document2_run_id": "init-rklb-9631e4071e75470a97313eafbbdc51aa-d2",
+      "event_library_root": "/data/runtime/runtime_artifacts/runtime-maintain-e5b5800ef57abbf9ef47b751/events",
+      "event_library_version": 6,
+      "policy_set_version": 5,
+      "provisional_snapshot_version": 10,
+      "runtime_projection_version": 5
+    },
+    "runtime_mode": "REALTIME",
+    "closed_cycle_id": null,
+    "w1_final": {
+      "confidence": "normal",
+      "fact_attributions": [],
+      "reason": "当前消息的核心事实——9月23日RKLB上涨2.2%至$71.45、突破50日均线、自$60支撑位反弹——在E78（9/18单日下跌）、E25（8/10–9/14持续下跌/回调）及provisional E88（9/22约$71.89报价）中均未出现。已有事实全部追踪下跌或特定下跌日，无任何事实记录方向性反弹或50日均线突破事件。",
+      "reference_ids": [],
+      "result": "NEW"
+    },
+    "w1_extraction": null,
+    "w2_final": {
+      "confidence": "normal",
+      "matched_condition_ids": [],
+      "policy_ids": [],
+      "reason": "当前消息仅描述Rocket Lab股价技术面变动（+2.2%至$71.45、突破50日均线、测试$60支撑），未涉及任何合并交易进展、发射任务、合同授予或取消、Neutron/Space Systems运营、融资安排、监管事件或财务结果等具体业务事实。所有Policy的criterion均要求特定运营、交易或财务状态变化，股价技术走势与之无直接触发关系。"
+    },
+    "created_at": "2026-09-22T17:05:21.671893Z",
+    "frozen_inputs": {
+      "index": {
+        "contract_version": "known-event-index-v2",
+        "known_event_index": "E83 | 2026-09-21 | Cantor Fitzgerald forecasts Rocket Lab revenue before and after the proposed Iridium acquisition | On 2026-09-21, Cantor Fitzgerald forecast Rocket Lab revenue above $900 million in 2026 and roughly double annual revenue after the proposed Iridium acquisition closes.\nE84 | 2026-09-21 | Rocket Lab sets a plan to reuse each Neutron engine up to 20 times | On 2026-09-21, Rocket Lab planned to reuse each Neutron engine up to 20 times.\nE80 | 2026-09-20 | Rocket Lab schedules its 97th Electron Synspective mission, Owlright Owlright Owlright | On 2026-09-20, Rocket Lab scheduled Owlright Owlright Owlright for 2026-09-25 as its 97th Electron flight carrying a Synspective StriX satellite.\nE81 | 2026-09-20 | Synspective books two StriX launches on Mitsubishi Heavy Industries' H3 rocket | On 2026-09-20, Synspective signed for two additional StriX launches on Mitsubishi Heavy Industries' H3 in 2027, its first non-Electron booking.\nE82 | 2026-09-20 | Kepler Communications reserves a dedicated Neutron launch from Rocket Lab | On 2026-09-20, Kepler Communications reserved a dedicated Rocket Lab Neutron launch scheduled no earlier than 2028.\nE79 | 2026-09-19 | Rocket Lab completes its 96th Electron launch for Synspective | On 2026-09-19, Rocket Lab completed Owl By The Dozen as its 17th Electron mission of 2026 and 96th overall, deploying Synspective's 12th StriX satellite into a 572-kilometer orbit.\nE78 | 2026-09-18 | Rocket Lab shares fall in a September 18 space-sector decline | On 2026-09-18, Rocket Lab fell 5% to $64.38; AST SpaceMobile, Planet Labs, Iridium, Procure Space ETF, and SPY fell 6%, 4%, 2%, 2%, and 0.2%, respectively.\nE75 | 2026-09-17 | Rocket Lab reports new Neutron fairing and second-stage test-stand milestones | On 2026-09-17, Rocket Lab completed Neutron Hungry Hippo fairing pre-flight testing and installed a 10-meter second-stage test stand in Virginia.\nE77 | 2026-09-17 | SpaceX comments on Iridium during the Rocket Lab acquisition review | On 2026-09-17, SpaceX asked the FCC to examine Iridium's conduct while saying it did not oppose Rocket Lab's proposed Iridium acquisition.\nE71 | 2026-09-16 | FCC accepts Rocket Lab and Iridium license-transfer applications for filing | On 2026-09-16, the FCC accepted Rocket Lab and Iridium's license-transfer applications for filing; comments and petitions are due October 15, oppositions October 30, and replies November 9.\nE72 | 2026-09-16 | Rocket Lab completes financing for the proposed Iridium acquisition | On 2026-09-16, Rocket Lab raised $1.94 billion through 29.3 million shares to fully finance the Iridium acquisition, while Iridium amended its $1.775 billion term loan for the change of control.\nE73 | 2026-09-16 | Space Capital praises Rocket Lab's IMM Apex solar cell | On 2026-09-16, Space Capital praised Rocket Lab's IMM Apex solar cell as evidence that space infrastructure extends beyond launch.\nE25 | 2026-08-10..2026-09-14 | Rocket Lab shares reprice in the post-Q2 market episode | From 2026-08-10 through 2026-09-14, Rocket Lab shares remained in a post-Q2 repricing episode.\nE48 | 2026-09-03..2026-09-14 | Rocket Lab advances its Explorer-platform Mars orbiter proposal | From 2026-09-03 through 2026-09-14, Rocket Lab advanced its standalone Mars orbiter proposal.\nE68 | 2026-09-14 | Rocket Lab files a GAO protest over the NASA Mars award | On 2026-09-14, Rocket Lab filed a GAO protest over NASA's Mars award decision.\nE69 | 2026-09-14 | Rocket Lab shares react to the GAO protest | On 2026-09-14, Rocket Lab shares slipped after the GAO protest filing.\nE20 | 2026-08-10..2026-09-13 | Rocket Lab presents Neutron's economic outlook and demand signals | From 2026-08-10 through 2026-09-13, Rocket Lab reported Neutron economic and demand expectations.\nE46 | 2026-09-02..2026-09-13 | Rocket Lab updates Electron operating milestones and track record | Between 2026-09-02 and 2026-09-13, Rocket Lab described Electron's 94-launch track record and its approach to the 100th mission and annual record.\nE7 | 2026-03-31..2026-09-12 | Rocket Lab updates material bookings and launch backlog | From Q2 through early Q3 2026, Rocket Lab reported material bookings and a launch backlog above 90 missions.\nE67 | 2026-09-12 | Rocket Lab plans a Neutron mission for the Flatellite constellation | On 2026-09-12, Rocket Lab designated Neutron to launch the Flatellite constellation.\nE45 | 2026-09-02..2026-09-11 | Rocket Lab presents the forward Neutron capability and market outlook | In disclosures from 2026-09-02 to 2026-09-11, Rocket Lab described Neutron's expected medium-lift and defense-market expansion and 2027 capability expansion.\nE64 | 2026-09-11 | Raymond James initiates Rocket Lab coverage with an Outperform rating and $80 target | On 2026-09-11, Raymond James initiated Rocket Lab coverage with an Outperform rating and an $80 target.\nE65 | 2026-09-11 | Rocket Lab completes its 95th Electron launch with Happily Ever Faster | On 2026-09-11, Rocket Lab completed the Happily Ever Faster mission as its 16th Electron mission of 2026 and 95th overall.\nE19 | 2026-08-10..2026-09-10 | Rocket Lab narrows Neutron's launch window toward a possible 2027 debut | From 2026-08-10 through 2026-09-10, Rocket Lab narrowed Neutron's launch window and raised a possible 2027 debut.\nE53 | 2026-09-04..2026-09-10 | SpaceX rideshare capacity becomes unavailable for future reservations | Between 2026-09-04 and 2026-09-10, reports said SpaceX rideshare capacity was unavailable or fully booked into 2028 or 2029.\nE63 | 2026-09-10 | American Century highlights Rocket Lab in its Q2 2026 letter | On 2026-09-10, American Century highlighted Rocket Lab in its Q2 2026 investor letter.\nE32 | 2026-08-31..2026-09-09 | ARK Invest buys Rocket Lab shares in a late-August/September episode | Between 2026-08-31 and 2026-09-09, ARK Invest purchased more than 705,000 Rocket Lab shares and continued buying.\nE56 | 2026-09-08..2026-09-09 | Rocket Lab highlights durable NASA solar-technology heritage | In disclosures on 2026-09-08 and 2026-09-09, Rocket Lab highlighted its NASA solar-technology heritage.\nE58 | 2026-09-09 | Investors react to Rocket Lab's IMM Apex release | On 2026-09-09, investors reacted to the IMM Apex product release and ARK buying.\nE59 | 2026-09-09 | Rocket Lab passes preliminary design review for SDA Tracking Layer Tranche 3 | On 2026-09-09, Rocket Lab passed the preliminary design review for 18 SDA Tracking Layer Tranche 3 satellites.\nE60 | 2026-09-09 | Rocket Lab shares fall in a September 9 space-sector risk-off episode | On 2026-09-09, Rocket Lab shares fell in a space-sector risk-off episode.\nE61 | 2026-09-09 | SpaceX reaches its 90-day insider share unlock | On 2026-09-09, SpaceX reached its 90-day insider share unlock milestone.\nE62 | 2026-09-09 | U.S. Transportation Department launches the SPACE Task Force | On 2026-09-09, the U.S. Transportation Department announced the SPACE Task Force and related commercial-space policy.\nE23 | 2026-08-10..2026-09-08 | Rocket Lab reports Q2 and first-half ATM financing | From 2026-08-10 through 2026-09-08, Rocket Lab reported Q2 and first-half ATM financing and strategic earmarks.\nE39 | 2026-09-01..2026-09-08 | Rocket Lab updates component and manufacturing acquisitions | From 2026-09-01 through 2026-09-08, Rocket Lab described completed component and manufacturing acquisitions.\nE57 | 2026-09-08 | Rocket Lab releases the IMM Apex germanium-free solar cell | On 2026-09-08, Rocket Lab released IMM Apex, a germanium-free solar cell for satellite and space applications.\nE24 | 2026-08-10..2026-09-07 | Rocket Lab reports ongoing Neutron qualification progress | From 2026-08-10 through 2026-09-07, Rocket Lab reported ongoing Neutron qualification and infrastructure progress.\nE54 | 2026-09-07 | Rocket Lab plans a Photon in-orbit demonstration | On 2026-09-07, Rocket Lab planned a Photon in-orbit demonstration.\nE55 | 2026-09-07 | Rocket Lab recounts Neutron's historical launch targets | On 2026-09-07, Rocket Lab recounted successive historical Neutron launch targets.\nE10 | 2026-06-01..2026-09-04 | Rocket Lab secures additional Synspective Electron bookings | From June through September 2026, Rocket Lab reported additional Synspective Electron bookings through 2030.\nE50 | 2026-09-04 | Rocket Lab expects SDA Tracking Layer revenue conversion in 2027-2028 | On 2026-09-04, Rocket Lab-related reporting expected SDA conversions in 2027-2028.\nE51 | 2026-09-04 | Rocket Lab schedules its Q3 2026 earnings release | On 2026-09-04, Rocket Lab scheduled its Q3 2026 earnings report for 2026-11-09.\nE52 | 2026-09-04 | Rocket Lab's 2026 launch outlook reaches at least 21 missions | On 2026-09-04, Rocket Lab was projected to complete at least 21 launches in 2026.\nE36 | 2026-09-01..2026-09-03 | Rocket Lab describes its then-current sole-provider Synspective launch relationship | From 2026-09-01 through 2026-09-03, Rocket Lab described its then-current long-running sole-provider Synspective relationship.\nE47 | 2026-09-03 | Rocket Lab CFO Adam Spice reports an August share sale | On 2026-09-03, Rocket Lab disclosed Adam Spice's August sale of 56,303 shares.\nE49 | 2026-09-03 | Rocket Lab reports nine dedicated iQPS Electron bookings through 2030 | On 2026-09-03, Rocket Lab reported nine dedicated iQPS Electron launches booked through 2030.\nE26 | 2026-08-10..2026-09-02 | Rocket Lab targets Neutron pad delivery in Q4 2026 | From 2026-08-10 through 2026-09-02, Rocket Lab kept Neutron pad delivery targeted for Q4 2026.\nE40 | 2026-09-02 | Berenberg initiates Rocket Lab coverage with a Buy and $83 target | On 2026-09-02, Berenberg initiated Rocket Lab coverage with a Buy rating and an $83 target.\nE41 | 2026-09-02 | Rocket Lab CFO Adam Spice exercises options and sells shares | On 2026-09-02, CFO Adam Spice exercised options and sold 140,157 Rocket Lab shares.\nE42 | 2026-09-02 | Rocket Lab completes the 94th Electron launch for Synspective | On 2026-09-02, Rocket Lab completed the 94th Electron Owl Around the World mission for Synspective.\nE43 | 2026-09-02 | Rocket Lab director Merline Saintil transfers shares to a revocable trust | On 2026-09-02, Rocket Lab director Merline Saintil transferred 261,903 shares to her revocable living trust.\nE44 | 2026-09-02 | Rocket Lab expects the proposed Iridium acquisition to close around mid-2027 | On 2026-09-02, Rocket Lab's proposed Iridium acquisition was expected to close around mid-2027.\nE34 | 2026-09-01 | KeyBanc maintains a $135 Rocket Lab price target | On 2026-09-01, KeyBanc maintained a $135 Rocket Lab price target.\nE35 | 2026-09-01 | NASA awards the Mars Telecommunications Network to Blue Origin; Rocket Lab loses the bid | On 2026-09-01, NASA selected Blue Origin to build, launch, and operate the Mars Telecommunications Network; Rocket Lab did not win the contract.\nE37 | 2026-09-01 | Rocket Lab schedules and delays the Synspective Owl Around the World mission | On 2026-09-01, Rocket Lab scheduled the Owl Around the World mission and reported a wind delay.\nE38 | 2026-09-01 | Rocket Lab shares decline after the NASA Mars award decision | On 2026-09-01, Rocket Lab shares declined after the NASA Mars award decision.\nE33 | 2026-08-31 | Bank of America maintains Buy and lowers Rocket Lab target to $110 | On 2026-08-31, Bank of America maintained Buy and lowered its Rocket Lab target to $110.\nE31 | 2026-08-20 | Rocket Lab completes its 93rd Electron launch for iQPS | On 2026-08-20, Rocket Lab completed its 93rd successful Electron launch for iQPS.\nE30 | 2026-08-18 | Rocket Lab joins the Space Data Network Consortium and wins $12 million in orders | On 2026-08-18, Rocket Lab joined the Space Data Network Consortium and received $12 million in delivery orders.\nE29 | 2026-08-17 | Rocket Lab joins the U.S. Space Force NITE-STAR IDIQ | On 2026-08-17, Rocket Lab joined the U.S. Space Force NITE-STAR IDIQ program.\nE27 | 2026-08-11 | Cantor Fitzgerald updates its Rocket Lab view | On 2026-08-11, Cantor Fitzgerald maintained Overweight and raised Rocket Lab's target to $122; a later report described the company as a premier SpaceX alternative.\nE28 | 2026-08-11 | Citizens maintains a Market Outperform rating and $130 target | On 2026-08-11, Citizens maintained Market Outperform and a $130 target.\nE21 | 2026-08-10 | Rocket Lab reports Neutron Q2 qualification progress | On 2026-08-10, Rocket Lab reported Neutron qualification and first-flight hardware progress.\nE22 | 2026-08-10 | Rocket Lab reports Q2 2026 results and Q3 guidance | On 2026-08-10, Rocket Lab reported Q2 2026 results and Q3 guidance.\nE18 | 2026-08-04 | Rocket Lab wins the $397 million Space Force Flatellite contract | On 2026-08-04, Rocket Lab received a $397 million U.S. Space Force SB-AMTI Flatellite contract.\nE17 | 2026-07-27 | Rocket Lab receives a Space Force RSLP award for up to 18 missions | On 2026-07-27, Rocket Lab received a $266 million Space Force RSLP award for up to 18 suborbital missions.\nE15 | 2026-06-30 | ARK Investment Management reduces its Q2 Rocket Lab position | On 2026-06-30, ARK Investment Management held 1.63 million Rocket Lab shares versus 2.24 million three months earlier, a roughly 27% Q2 reduction.\nE16 | 2026-06-30 | Rocket Lab surpasses 250 spacecraft delivered | On 2026-06-30, Rocket Lab reported more than 250 spacecraft delivered.\nE70 | 2026-06 | Rocket Lab builds the Pioneer spacecraft in June 2026 | In June 2026, Rocket Lab built the Pioneer spacecraft.\nE14 | 2026-06-19 | Rocket Lab launches Pioneer for the U.S. Space Force | On 2026-06-19, Rocket Lab launched Pioneer for the U.S. Space Force.\nE12 | 2026-06-12 | SpaceX IPO-linked pullback affects space-sector stocks | On 2026-06-12, the SpaceX IPO was followed by a space-sector pullback.\nE13 | 2026-06-12 | SpaceX conducts a June 2026 initial public offering | On 2026-06-12, SpaceX conducted an initial public offering.\nE11 | 2026-06-07 | Rocket Lab proposes an approximately $8 billion Iridium acquisition | On 2026-06-07, Rocket Lab proposed an approximately $8 billion half-stock, half-cash acquisition of Iridium.\nE9 | 2026-05-07 | Rocket Lab and Raytheon selected for Golden Dome interceptor work | On 2026-05-07, Rocket Lab was selected with Raytheon for Golden Dome work.\nE76 | 2026-05-07 | Rocket Lab signs a confidential five-Neutron launch contract | On 2026-05-07, a confidential customer booked five dedicated Neutron missions through 2029.\nE8 | 2026-04-14 | Rocket Lab completes the Mynaric acquisition | In Q2 2026, Rocket Lab completed the Mynaric acquisition.\nE6 | 2026-03-18 | Rocket Lab signs the $190 million HASTE MACH-TB 2.0 contract | On 2026-03-18, Rocket Lab announced a roughly $190 million HASTE contract for 20 MACH-TB 2.0 hypersonic test flights.\nE5 | 2026-02-26 | Rocket Lab updates Neutron's debut after the Stage 1 tank failure | On 2026-02-26, Rocket Lab updated Neutron's debut after the Stage 1 tank failure.\nE4 | 2026-02-23 | NASA Goddard awards Rocket Lab a Mars communications architecture study | On 2026-02-23, NASA Goddard awarded Rocket Lab a $390,936 Mars communications architecture study.\nE3 | 2026-01-21 | Rocket Lab's Neutron Stage 1 tank fails a pressure test | On 2026-01-21, a Neutron first-stage tank ruptured during a hydrostatic pressure test.\nE2 | 2025-12-19 | Rocket Lab receives the $816 million SDA Tracking Layer Tranche 3 award | On 2025-12-19, Rocket Lab received the $816 million SDA Tracking Layer Tranche 3 award.\nE74 | 2025-12-02 | Rocket Lab is selected for the MDA SHIELD program | On 2025-12-02, Rocket Lab was selected for the MDA SHIELD program.\nE1 | 2021-08-25 | Rocket Lab goes public through a SPAC merger | On 2021-08-25, Rocket Lab went public through a SPAC merger and began trading.\n",
+        "published_at": "2026-09-22T06:25:13.217145Z",
+        "sha256": "e4437b3874a665bec1a686515285288832cdc481b068d033883657a5c66d858d",
+        "ticker": "RKLB",
+        "version": 6
+      },
+      "projection": {
+        "consumer_contract": "persistent-runtime.v2.or-policy.v1",
+        "policies": [
+          {
+            "activation_revision": "ar_0be0623488c1b8646b3b21e2",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Iridium股东未批准交易，或交易双方正式终止当前合并协议且交易不再按现有协议交割。"
+            ],
+            "match_scope": "Iridium合并协议、股东表决、终止公告及交割状态。",
+            "policy_id": "pol_7e1d611efd993fb053ba"
+          },
+          {
+            "activation_revision": "ar_18577c0630ab71997f103b27",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "监管或注册进度使预计交割时间越过既有时间框架并逼近或超过bridge可用期限。"
+            ],
+            "match_scope": "合并审批、S-4生效时间、预计交割日与364日bridge可用期限。",
+            "policy_id": "pol_daead2c5e8f6bb9afade"
+          },
+          {
+            "activation_revision": "ar_a58ae95926580103e2cb52a7",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "交割时bridge无法提款或可提款额低于资金需求，且没有等额、已落实的替代资金。"
+            ],
+            "match_scope": "最终融资承诺、提款条件、可提款额、交割资金需求及替代资金。",
+            "policy_id": "pol_f019ea5a2876618f11a6"
+          },
+          {
+            "activation_revision": "ar_f716296a21f3a1128011fa5f",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "交割前ATM实际净筹资低于交易资金计划，并因此必须新增其他融资。"
+            ],
+            "match_scope": "交割前ATM发行所得、剩余额度及替代融资安排。",
+            "policy_id": "pol_f90e474d92d68b6e9ec8"
+          },
+          {
+            "activation_revision": "ar_1b57d5da6a061c7670a03b6f",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "最终交割资金用途高于当前披露区间上沿，并需要增加融资来源。"
+            ],
+            "match_scope": "最终sources-and-uses、目标债务偿还、费用与资金来源。",
+            "policy_id": "pol_02f0143e06b3f9b081d6"
+          },
+          {
+            "activation_revision": "ar_c4ac2441c7a676a0d77e90ec",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "最终交易结构提高现金对价占比，或以更高成本短期债务替代原有资金结构。"
+            ],
+            "match_scope": "最终现金与股票对价比例及为现金对价配置的资金工具。",
+            "policy_id": "pol_8ed74d2639f5e718ec4f"
+          },
+          {
+            "activation_revision": "ar_ae20583b2a5c521e8fdcec24",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Iridium董事会正式要求提高价格或改变经济条款，或接受竞争性替代交易。"
+            ],
+            "match_scope": "Iridium董事会行动、修订协议与竞争性收购方案。",
+            "policy_id": "pol_c451d2cc9b8b9764a22c"
+          },
+          {
+            "activation_revision": "ar_df1850c07281073d87c113c5",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "融资市场变化迫使公司以更高成本或更严契约重签交易融资，或因此推迟交割。"
+            ],
+            "match_scope": "bridge或替代再融资的利率、费用、契约、期限与交割时间。",
+            "policy_id": "pol_9b2510287b29e2d1914b"
+          },
+          {
+            "activation_revision": "ar_896ccbc9a259a7500878a1aa",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "交易早于当前时间框架交割并立即占用公司现金或bridge资金。"
+            ],
+            "match_scope": "实际交割日以及交割时公司现金和bridge提款。",
+            "policy_id": "pol_cf8683cef9c85fbadabc"
+          },
+          {
+            "activation_revision": "ar_17c062269d1facf9368549d3",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "整合切换造成重大服务中断，并出现可归因的客户取消、订户流失或合同损失。"
+            ],
+            "match_scope": "交割后的网络、计费、运营切换事件及客户或订户反应。",
+            "policy_id": "pol_3dd271d1688f969ba370"
+          },
+          {
+            "activation_revision": "ar_035ddfb0ca703e6e6cebaa22",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "监管批准要求业务或数据隔离，或禁止计划中的联合网络服务。"
+            ],
+            "match_scope": "FCC、国家安全或其他交割批准附加条件及联合运营范围。",
+            "policy_id": "pol_9883c3943258c6fd9e47"
+          },
+          {
+            "activation_revision": "ar_d754968dac4bc6f0b5175991",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Iridium将重大舰队更新工作正式授予非Rocket Lab供应商。"
+            ],
+            "match_scope": "Iridium重大卫星、载荷、发射或空间系统采购授标。",
+            "policy_id": "pol_d3189b212721059f6cfa"
+          },
+          {
+            "activation_revision": "ar_bebc40d6642ae7769110ff57",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "首个联合订单失败、严重延期或未获验收，且客户正式取消或明确不采购第二批。"
+            ],
+            "match_scope": "首个联合项目的交付、验收、取消与后续批次决策。",
+            "policy_id": "pol_4611cf2fec38482afa83"
+          },
+          {
+            "activation_revision": "ar_03a0f76879b3b6ec3a6b99f3",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "重要客户因整合或所有权变化拒绝组合服务，并取消或不续约现有业务。"
+            ],
+            "match_scope": "重要客户对组合服务、续约及所有权变化的正式决定。",
+            "policy_id": "pol_5e754dbe6468f13114f9"
+          },
+          {
+            "activation_revision": "ar_cb01fce2f801f1a88fe9d463",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "整合接口或网络安全故障迫使暂停联合运营，并产生专项修复或架构重构支出。"
+            ],
+            "match_scope": "联合网络接口、网络安全事件、运营暂停及修复支出。",
+            "policy_id": "pol_5a1a7060302f9d045ade"
+          },
+          {
+            "activation_revision": "ar_63dc3011884a434f3789e95a",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "重大卫星或空间环境事件造成网络降级，并触发非计划卫星替换或应急发射。"
+            ],
+            "match_scope": "卫星故障、空间环境事件、网络容量与应急替换计划。",
+            "policy_id": "pol_25fa4440ee2f95469bf2"
+          },
+          {
+            "activation_revision": "ar_8453abf235173e1fa56ae2ba",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "合并业务赢得交易前不存在的政府或企业联合网络服务合同。"
+            ],
+            "match_scope": "交割后的政府或企业组合服务合同及交易前客户范围。",
+            "policy_id": "pol_51602242ae702c4a4b1d"
+          },
+          {
+            "activation_revision": "ar_cbc05c41814eeda6e9002eb7",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "最终债务本金或融资成本高于交易框架，且重大到期早于预期协同兑现。"
+            ],
+            "match_scope": "最终债务本金、利率、到期日、偿债安排与协同实现时间。",
+            "policy_id": "pol_5aed3b10ed453b01a004"
+          },
+          {
+            "activation_revision": "ar_70b675c36bcef2ecb9e95881",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "交易相关实际稀释股数明显高于约半数股票对价所隐含的基线。"
+            ],
+            "match_scope": "最终股票对价、融资发行及实际稀释股数。",
+            "policy_id": "pol_e7c92d65451c1d4519a5"
+          },
+          {
+            "activation_revision": "ar_5f4bf6794b340d4c752fb84d",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "交易会计摊销、SBC或整合费用使GAAP稀释每股结果显著低于交易前口径。"
+            ],
+            "match_scope": "购买价会计、无形资产摊销、SBC、整合费用与GAAP稀释EPS。",
+            "policy_id": "pol_52bd422b89159f05d665"
+          },
+          {
+            "activation_revision": "ar_1f0a97d35e93ab52dc3cdac0",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "再融资或契约压力迫使公司发行额外股权、出售资产、重组债务或削减计划投入。"
+            ],
+            "match_scope": "bridge、债务契约、流动性措施及资本支出调整。",
+            "policy_id": "pol_9c2e28680f7c00a7c29d"
+          },
+          {
+            "activation_revision": "ar_c4808540c38386ae8de303b2",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Iridium现金被额外维护、舰队替换或受限用途吸收，无法按交易论据上行用于偿债。"
+            ],
+            "match_scope": "Iridium维护、替换投资、受限现金及向母公司上行偿债能力。",
+            "policy_id": "pol_607eeeacba00b71b9d5b"
+          },
+          {
+            "activation_revision": "ar_12a84a2115455a9c3f70a6c1",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "管理层正式将Iridium现金优先投入扩张或新增并购，并推迟原定去杠杆。"
+            ],
+            "match_scope": "交割后的资本配置、扩张投资、并购与债务偿还计划。",
+            "policy_id": "pol_e3b356736f1241051361"
+          },
+          {
+            "activation_revision": "ar_795325a582903e00411ac17d",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "交割后确认此前未披露的重大Iridium或有负债，并增加现金或资本需求。"
+            ],
+            "match_scope": "交割后识别的诉讼、税务、合同、监管或其他或有负债。",
+            "policy_id": "pol_7616b4ee642e15b8d32d"
+          },
+          {
+            "activation_revision": "ar_9cfac872558cc5a70a4fb047",
+            "condition_ids": [
+              "C2"
+            ],
+            "criterion": [
+              "重要客户的一批此前未锁定Launch Services任务取得正式option行权、具有约束力的任务合同或任务级工作授权，并排入明确发射窗口。"
+            ],
+            "match_scope": "发射合同、Neutron专属任务预订、option行权、task order、工作授权及明确发射窗口。",
+            "policy_id": "pol_6db9f073b136875b7be9"
+          },
+          {
+            "activation_revision": "ar_c8049109465b70e72455d3df",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "重要客户正式不行权一批options或终止、减量，导致原计划任务从Rocket Lab manifest实质移除。"
+            ],
+            "match_scope": "客户options、终止权、任务减量、终止费和manifest删除。",
+            "policy_id": "pol_3f3d90d4056b17646b5e"
+          },
+          {
+            "activation_revision": "ar_2adf0ec9abf5d31d94322167",
+            "condition_ids": [
+              "C1",
+              "C2"
+            ],
+            "criterion": [
+              "一项重要已签Launch Services任务因许可、工作授权、载荷准备或最终验收未满足而正式撤回原季度窗口。",
+              "同一运营期至少两项公开Electron/HASTE任务因共同的许可、靶场、载荷准备或天气约束而改期。"
+            ],
+            "match_scope": "已签Electron/HASTE任务的许可、靶场、载荷、工作授权、原窗口和新窗口。",
+            "policy_id": "pol_04d56b34c690b1313848"
+          },
+          {
+            "activation_revision": "ar_e223b5520af990cb95b65e03",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Rocket Lab车辆、关键部件、人员或发射场容量不足，使至少两项已授权Electron/HASTE任务错过公开窗口。"
+            ],
+            "match_scope": "Electron/HASTE车辆、部件、人员、发射场容量和多任务窗口。",
+            "policy_id": "pol_de8300c67bf6f995c01f"
+          },
+          {
+            "activation_revision": "ar_46cc525b1cc07fc6ab266d8a",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "政府正式去义务化、撤回、预算顺延或重新竞争一批原拟给Rocket Lab的任务级工作授权。"
+            ],
+            "match_scope": "RSLP、VADR等政府任务的拨款、去义务化、撤回、顺延与重新竞争。",
+            "policy_id": "pol_b75de5aa0dcad5e2b82d"
+          },
+          {
+            "activation_revision": "ar_688c622cafb366933f84180d",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "客户或政府将已列入Rocket Lab计划的发射任务正式改分给其他供应商或rideshare，并从Rocket Lab履约范围移除。"
+            ],
+            "match_scope": "已列入Rocket Lab计划的专属任务、rideshare替代、竞争供应商授标和manifest移除。",
+            "policy_id": "pol_4b012c0a3b95c402de27"
+          },
+          {
+            "activation_revision": "ar_3c3d869f1566087cedf833e7",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Electron或HASTE飞行失败或重大异常后，官方启动调查、暂停相关飞行或重排多项后续任务。"
+            ],
+            "match_scope": "Electron/HASTE飞行结果、事故调查、停飞、复飞整改和后续任务重排。",
+            "policy_id": "pol_9792f4a4d0f388374643"
+          },
+          {
+            "activation_revision": "ar_92d128d5794bce11ac1b7e31",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "一项后续HASTE任务取得授权、完成飞行并由Kratos、政府或客户正式验收。"
+            ],
+            "match_scope": "MACH-TB 2.0等HASTE任务授权、飞行结果和Kratos/政府客户验收。",
+            "policy_id": "pol_d956d69b10e1287bf700"
+          },
+          {
+            "activation_revision": "ar_d4b9e0dd7eb9dad3d9d0706a",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "客户确认HASTE测试未达目标或未验收，并暂停、减量、重做或重排后续批次。"
+            ],
+            "match_scope": "HASTE测试目标、客户验收、暂停、减量、重做和改期。",
+            "policy_id": "pol_6093ebca6053ffde90a8"
+          },
+          {
+            "activation_revision": "ar_e7fde12aaac99ac09305c296",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "正式许可的新发射走廊或设施启用，并由一项Electron/HASTE任务首次按期实际使用。"
+            ],
+            "match_scope": "FAA、靶场或空间港新走廊/设施许可、启用和Electron/HASTE实际使用。",
+            "policy_id": "pol_8e64ed4fed4090985fc9"
+          },
+          {
+            "activation_revision": "ar_3d24b1fb8af6c3fc1a3e52dc",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "同一外部安全或极端天气事件限制发射窗口，并使至少两项已安排Electron/HASTE任务取消或改期。"
+            ],
+            "match_scope": "天气、靶场安全、地缘或轨道环境事件及多项任务取消、改期。",
+            "policy_id": "pol_b81af29bace770509b7e"
+          },
+          {
+            "activation_revision": "ar_8af66c55ce294e98c618aedc",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "GHOST在Kodiak LC4完成首次运营性阿拉斯加次轨道发射并达到任务目标。"
+            ],
+            "match_scope": "GHOST、Kodiak LC4、首次运营性阿拉斯加次轨道任务和任务结果。",
+            "policy_id": "pol_5fbaf3a2a744a10b6c0d"
+          },
+          {
+            "activation_revision": "ar_f906e666cdc9bfb4221cbe1e",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "建设、许可、资格或安全条件使GHOST/Kodiak首次运营发射从2027年正式后移、取消或改址。"
+            ],
+            "match_scope": "LC4建设、许可、资格、安全审查及2027年首发窗口。",
+            "policy_id": "pol_eee35dd13fba93bf24b9"
+          },
+          {
+            "activation_revision": "ar_521ecabc7c671759e57d5a51",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "GHOST首次运营任务未完成关键目标并触发调查、设计修改、复测或停飞。"
+            ],
+            "match_scope": "GHOST首个运营任务、关键目标、调查、设计修改、复测和停飞。",
+            "policy_id": "pol_bc1deb510ba7f66da7b4"
+          },
+          {
+            "activation_revision": "ar_84cb2ade7033b8b4a471a12a",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Space Force task order或合同修改把具体RSLP任务正式分配给GHOST/Kodiak并给出任务窗口。"
+            ],
+            "match_scope": "Space Force RSLP task order、GHOST/Kodiak系统地点和任务窗口。",
+            "policy_id": "pol_a62085b928b576651a6e"
+          },
+          {
+            "activation_revision": "ar_1d8cabdceb61401845a69d4c",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "政府正式确认GHOST/Kodiak option到期不行权，或把已规划任务改由其他系统或供应商执行。"
+            ],
+            "match_scope": "RSLP options到期、不行权、任务转移和替代系统分配。",
+            "policy_id": "pol_80a2bf0a6dcb54d40d45"
+          },
+          {
+            "activation_revision": "ar_4db9cac8873855b9a0d95e36",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "同一运营期至少两个Kodiak计划窗口因物流、天气、测控、靶场或驻场条件不可用。"
+            ],
+            "match_scope": "LC4物流、天气、测控、靶场、驻场条件和计划窗口。",
+            "policy_id": "pol_e15cfcd0dae26407002f"
+          },
+          {
+            "activation_revision": "ar_e4aef294aead17371564d370",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "至少两项新增或行权快速响应任务形成正式排队，并因GHOST合格车辆、设施或窗口不足而延期。"
+            ],
+            "match_scope": "快速响应task order、任务队列、合格车辆、设施窗口和延期。",
+            "policy_id": "pol_760973333cf7b8821151"
+          },
+          {
+            "activation_revision": "ar_4026ff45eb56cf1201bffd90",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "一批Electron/HASTE任务的材料、质量、返工或异常处置导致Launch Services履约成本或完工成本估计显著增加。"
+            ],
+            "match_scope": "Electron/HASTE材料、质量、返工、异常处置、履约成本和完工成本估计。",
+            "policy_id": "pol_8d06dfc2f17ff446be19"
+          },
+          {
+            "activation_revision": "ar_b70c1a392ccdb5c5bd3e9f90",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "替代供应商开放可订rideshare容量后，Rocket Lab新签或续签专属Electron任务出现明确降价或转为低价值任务组合。"
+            ],
+            "match_scope": "rideshare可订容量、商业客户选择和Rocket Lab新签/续签专属任务价格。",
+            "policy_id": "pol_5593c6b3158429199d87"
+          },
+          {
+            "activation_revision": "ar_50d32e394000545fb5eb211c",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "合同修改增加Rocket Lab发射任务风险、验收责任或履约工作，而其可收金额未同步增加或被下调。"
+            ],
+            "match_scope": "主承包/客户合同修改、Rocket Lab工作范围、验收风险、单价和可收金额。",
+            "policy_id": "pol_0e348f41a425bb4559c5"
+          },
+          {
+            "activation_revision": "ar_ff2c87dfac504b8b9876a959",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "已完成Electron/HASTE任务因客户验收或开票争议形成明确逾期应收、合同资产增加或现金短收。"
+            ],
+            "match_scope": "Launch Services任务验收、开票争议、逾期应收、合同资产和现金短收。",
+            "policy_id": "pol_f1867745e4997b38b0f5"
+          },
+          {
+            "activation_revision": "ar_634ada49f93c96ed293ae367",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Electron或HASTE任务异常后，Rocket Lab确认客户索赔、退款抵扣、重飞义务或异常保险成本并归入Launch Services。"
+            ],
+            "match_scope": "Electron/HASTE异常、客户索赔、退款抵扣、重飞义务、保险和分部经济。",
+            "policy_id": "pol_8345c9b083883b7043e2"
+          },
+          {
+            "activation_revision": "ar_eee1108f10fecbdcbcdb4425",
+            "condition_ids": [
+              "C1",
+              "C2",
+              "C3",
+              "C4",
+              "C5",
+              "C6"
+            ],
+            "criterion": [
+              "2026年第四季度结束仍未确认首飞用Stage 1 tank在Virginia接收，或该tank因结构/压力问题进入返工重测。",
+              "Archimedes或Neutron飞行关键结构正式资格未通过或发生重大超限，并触发设计变更、资格冻结或重复测试。",
+              "主要首飞硬件就绪后，Virginia发射台验收、FAA/靶场许可或任务整合未完成，使首飞移出晚2026至初2027窗口。",
+              "Neutron飞行关键供应商、材料或工艺被替换为未资格来源，并要求首飞硬件重测、换件或暂停交付。",
+              "Rocket Lab正式改变Neutron飞行关键架构或任务剖面，并为新构型重新开启资格测试或首飞准备。",
+              "管理层正式把Neutron关键资本、工程、测试或发射资源转给其他项目，并暂停当前窗口内的资格、硬件或首飞里程碑。"
+            ],
+            "match_scope": "Stage 1 tank、Archimedes与结构资格、Virginia发射台许可、飞行关键供应配置、基线构型、项目资源和晚2026至初2027首飞窗口。",
+            "policy_id": "pol_81b4fe3dbd2dba00f9f6"
+          },
+          {
+            "activation_revision": "ar_fc3c6de2f50c7fd2d8b41e84",
+            "condition_ids": [
+              "C1",
+              "C2"
+            ],
+            "criterion": [
+              "Neutron首次全尺寸试飞升空后车辆丢失、未进入预定轨道或未完成主要飞行目标，并进入事故调查或停飞。",
+              "Neutron首飞完成部分里程碑或入轨，但至少一项关键推进、分离、制导或轨道精度目标未达，或关键数据缺失并需纠正性测试。"
+            ],
+            "match_scope": "Neutron首次全尺寸飞行的入轨、推进、分离、制导、轨道精度、关键遥测、事故调查与纠正性测试。",
+            "policy_id": "pol_114a7e82bfa85d7c3b6a"
+          },
+          {
+            "activation_revision": "ar_8e3ba6eba7c3ae40bfb41284",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Neutron在2026年末至2027年初窗口完成全尺寸首飞主要目标，关键遥测可用且未触发重大设计返工或停飞。"
+            ],
+            "match_scope": "Neutron关键资格、全车地面测试、Virginia发射台整合、晚2026至初2027全尺寸首飞、主要飞行目标、关键遥测和整改状态。",
+            "policy_id": "pol_a50029e1c7f80d162a34"
+          },
+          {
+            "activation_revision": "ar_8d383e4f1ee731328e1d7b85",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "首个Neutron客户载荷正式未通过接口、环境或任务验收，并因此延期、取消或转用替代运力。"
+            ],
+            "match_scope": "Kepler或其他首个Neutron客户载荷的接口、环境、任务验收和任务分配。",
+            "policy_id": "pol_219a5c2a7c61fe4cd6ff"
+          },
+          {
+            "activation_revision": "ar_25f941279e63c5129a2cb175",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "首个Neutron客户任务未完成载荷入轨、部署或关键任务目标，或客户在约定窗口正式拒收并要求重飞。"
+            ],
+            "match_scope": "首个客户载荷的入轨、部署、通信、任务目标、正式验收、重飞与索赔。",
+            "policy_id": "pol_461fb57ef5c2c689f450"
+          },
+          {
+            "activation_revision": "ar_4399de82cb760ddd2ca8a54f",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "第二枚或后续Neutron因返工、低良率、材料或设备约束未按客户窗口完成制造验收。"
+            ],
+            "match_scope": "第二枚及后续Neutron机体、Archimedes发动机的返工、良率、材料设备约束、制造验收和客户窗口。",
+            "policy_id": "pol_4bfbd70dbbc0c2891a6a"
+          },
+          {
+            "activation_revision": "ar_a8a13175bfb415fa5be8e04e",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "首飞后Neutron任务发生重大飞行异常或失败，并触发全队停飞、根因调查、设计修订或重新认证。"
+            ],
+            "match_scope": "首飞后Neutron验证或商业任务、重大飞行异常、事故调查、设计修订、停飞和重新认证。",
+            "policy_id": "pol_66baa0944fe39eb26b78"
+          },
+          {
+            "activation_revision": "ar_af8eb61ac0c7b02839a10324",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "实际回收的Neutron一级或关键部件经检查无法按计划翻修，正式改为一次性使用或重大重建并延后后续任务。"
+            ],
+            "match_scope": "实际回收Neutron一级或关键部件的检查、翻修、重建、一次性改用和后续任务窗口。",
+            "policy_id": "pol_ca64b70d4c0525df3197"
+          },
+          {
+            "activation_revision": "ar_a40eced5ec2a6b04064bf75a",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "目标客户将已规划Neutron任务正式转给竞争发射器或拼车，或Rocket Lab因竞争正式大幅降低Neutron价格或让利。"
+            ],
+            "match_scope": "已规划Neutron目标任务的客户分配、竞争发射器或拼车替代，以及Neutron合同价格和条款。",
+            "policy_id": "pol_3bd362a0dad4f9bce8c5"
+          },
+          {
+            "activation_revision": "ar_c0458d52c8c9089d796db7ce",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "首个客户任务验收后，客户正式取消、无限期推迟或转移一项已识别的后续Neutron任务。"
+            ],
+            "match_scope": "首个Neutron客户任务验收、已识别后续任务、取消、无限期推迟和替代供应商转移。",
+            "policy_id": "pol_55fe78e13e122d18d2fe"
+          },
+          {
+            "activation_revision": "ar_cae294423d443849a2974c81",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Neutron首飞后，监管、政府任务方或保险方正式提高认证、许可或承保要求，并导致客户任务延期、条件变化或单次成本上升。"
+            ],
+            "match_scope": "Neutron首飞后FAA/靶场、政府任务方或保险市场的新增认证、许可、承保条件和客户任务后果。",
+            "policy_id": "pol_c2f56605c7eb9770b85f"
+          },
+          {
+            "activation_revision": "ar_96d9d23219cd3971a8315dd9",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Rocket Lab对一项重大固定价合同确认重大成本至完工上调、预计亏损或显著返工保修损失。"
+            ],
+            "match_scope": "重大固定价卫星、Space Systems或Launch Services合同的成本至完工、亏损准备、返工保修及合并毛利影响。",
+            "policy_id": "pol_0fee70a50bff9c7405be"
+          },
+          {
+            "activation_revision": "ar_ace96d699166dde16f95a137",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "重大backlog合同被正式终止、实质缩减或延期至少一个报告季度，或重要option明确不行权。"
+            ],
+            "match_scope": "Space Systems与Launch Services重大backlog合同、options、原履约窗口、终止缩减和收入释放。",
+            "policy_id": "pol_e8eb39d8bc843db74ce5"
+          },
+          {
+            "activation_revision": "ar_09ab184fb40c57ab2aa36bdc",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "既有客户将一项重大可比后续任务正式授予竞争者或改为内制，使Rocket Lab失去原计划份额。"
+            ],
+            "match_scope": "既有客户后续卫星、发射或任务集成采购的正式授予、内制决定和Rocket Lab份额。",
+            "policy_id": "pol_59b4e92aac8d93554ba1"
+          },
+          {
+            "activation_revision": "ar_0e2d7ceb013bc5391d0ea71f",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "同一正式政策、拨款或采购决定使至少两个Rocket Lab相关政府项目延迟、缩减、重新竞争或取消。"
+            ],
+            "match_scope": "美国政府拨款、采购政策和至少两个Rocket Lab相关项目的预算、范围与时间表。",
+            "policy_id": "pol_66273448741a7253b532"
+          },
+          {
+            "activation_revision": "ar_12aaa0ba90ab56c8c950f85d",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "报告季度Electron/HASTE完成任务数增加，但Launch Services收入或毛利下降或显著波动，并由HASTE履约进度或确认时点解释。"
+            ],
+            "match_scope": "季度Electron/HASTE任务数、HASTE履约进度、Launch Services收入和分部毛利。",
+            "policy_id": "pol_abfb3b667130265c3e49"
+          },
+          {
+            "activation_revision": "ar_94fb15fb143df8c48c2ab766",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "关键部件短缺、资格失败或制造质量问题迫使重大返工、报废或加急采购，并在季度毛利桥形成可识别冲击。"
+            ],
+            "match_scope": "关键部件短缺、资格失败、返工报废、加急采购、交付和季度毛利桥。",
+            "policy_id": "pol_392420506930e1913ba4"
+          },
+          {
+            "activation_revision": "ar_d0c2fbb5a6f57f03a07e5012",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "可比后续采购中Rocket Lab正式接受低于现有合同的单价或更不利风险条款，而任务范围未相应减少。"
+            ],
+            "match_scope": "可比后续发射或航天器合同的任务范围、原新单价、风险条款和正式授标。",
+            "policy_id": "pol_15a3b2b9f159de37ee24"
+          },
+          {
+            "activation_revision": "ar_aba43265827d2c1f7ff51e16",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Rocket Lab正式重述或重大重分类前期合同收入、成本至完工或GAAP毛利，并归因于会计控制或估计错误。"
+            ],
+            "match_scope": "前期合同收入、成本至完工、GAAP毛利、会计控制错误和正式重述。",
+            "policy_id": "pol_aac54a8e5b53bf511a48"
+          },
+          {
+            "activation_revision": "ar_61138649015660efb7c4355c",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "正式规则或许可条件要求Rocket Lab新增测试、设施、保险或合规投入，并使可比项目单位成本上升或确认周期延长。"
+            ],
+            "match_scope": "FAA、FCC、出口等规则和许可条件，以及新增测试、设施、保险、合规成本与确认周期。",
+            "policy_id": "pol_583b853692d7b67ba250"
+          },
+          {
+            "activation_revision": "ar_051b53ccb14cdc67221218de",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "重大合同取消或缩减使Rocket Lab退还客户预付款，并对同一项目存货、合同资产或在制品确认减值或处置。"
+            ],
+            "match_scope": "重大客户合同取消缩减、预付款退款、合同负债、项目存货、合同资产和在制品减值。",
+            "policy_id": "pol_a163109a4dbcb4580cb7"
+          },
+          {
+            "activation_revision": "ar_fd0bcbd6fdf4d6773c2f5e6a",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Rocket Lab正式上调Neutron工业化或产能扩张的研发或capex计划，同时维持或下调经营现金流或客户回款预期。"
+            ],
+            "match_scope": "Neutron工业化或产能扩张的研发、capex计划、经营现金流和客户回款指引。",
+            "policy_id": "pol_94c25c69b0a35ce18021"
+          },
+          {
+            "activation_revision": "ar_c271d4ccf2110a87a9fac813",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Rocket Lab确认ATM暂停或经济性不可接受，并在同一融资周期新增高成本债务或正式削减研发、设施扩张。"
+            ],
+            "match_scope": "ATM可用性、发行经济性、替代债务成本及研发设施计划削减。",
+            "policy_id": "pol_cccd69ee150fa533b52a"
+          },
+          {
+            "activation_revision": "ar_7ed759801a4d6b2a332c8e32",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "报告期现金流改善主要来自研发、人员或capex正式削减，并造成Neutron、设施或交付里程碑延期。"
+            ],
+            "match_scope": "经营现金流/FCF、研发人员或capex削减，以及Neutron、设施或交付里程碑。",
+            "policy_id": "pol_e5b1ac12eb9172b812dd"
+          },
+          {
+            "activation_revision": "ar_9ee633a1e3870637cc3ba6f1",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "经营现金流改善主要来自合同负债或客户预付款增加，而应收、存货或合同资产没有下降。"
+            ],
+            "match_scope": "合同负债或客户预付款、经营现金流、应收、存货、合同资产和营运资金桥。",
+            "policy_id": "pol_acd1e9e7c6c5e66a0288"
+          },
+          {
+            "activation_revision": "ar_5bce2d3dc6b5294ef82aa2ac",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "同一重大Space Systems项目的正式验收或最终交付窗口较原计划至少后移一个报告季度。"
+            ],
+            "match_scope": "重大Space Systems项目的制造、验收、交付时间表及原窗口和新窗口。",
+            "policy_id": "pol_6df780146cf34613c23b"
+          },
+          {
+            "activation_revision": "ar_51334b1bff90fd21756e60c3",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Space Systems交付密集报告期的合并经营现金流转正，且主要改善明确来自Space Systems里程碑收款或合同资产、存货释放。"
+            ],
+            "match_scope": "季度经营现金流、Space Systems里程碑收款、合同资产和存货释放及营运资金桥。",
+            "policy_id": "pol_5a71ab2f696676d0794e"
+          },
+          {
+            "activation_revision": "ar_4e93e97ab2d883234225f532",
+            "condition_ids": [
+              "C1",
+              "C2"
+            ],
+            "criterion": [
+              "Mynaric或Motiv整合造成重大返工、质量事件或Space Systems交付延期。",
+              "Mynaric或Motiv的关键人员或工艺质量数据流失，直接导致资格重做、生产停顿、相关减值或客户复评。"
+            ],
+            "match_scope": "Mynaric或Motiv整合后的人员、工艺、质量、资格、生产、交付与减值。",
+            "policy_id": "pol_62771c207ad7fce271a9"
+          },
+          {
+            "activation_revision": "ar_9a82201a44bac9ed1ef2e4f9",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "重大Space Systems客户索赔、液化损害或合同重谈形成Rocket Lab确认的赔偿义务、和解、准备金或实质降价。"
+            ],
+            "match_scope": "重大客户液化损害、延迟索赔、合同重谈、和解、准备金与合同修改。",
+            "policy_id": "pol_f18d4fc16daa95621a1e"
+          },
+          {
+            "activation_revision": "ar_30b4461b7fe6733c1a9f9020",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Space Systems因内部合格产能不足启用高成本外包、加急采购、临时设施或额外班次，并出现单位成本上升或交付周期延长。"
+            ],
+            "match_scope": "Space Systems合格产能、外包、加急采购、临时设施、单位成本与交付周期。",
+            "policy_id": "pol_38b1a288aa3594b48211"
+          },
+          {
+            "activation_revision": "ar_490974df951fd467b98b8b8b",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "同一Space Systems平台或关键组件的多个单元出现共同设计制造缺陷，并触发批量补救、保修准备或暂停后续交付。"
+            ],
+            "match_scope": "已交付平台或组件的多单元共同故障、舰队级返修、换件、升级、保修与暂停交付。",
+            "policy_id": "pol_ab9d5d2128c8a6ba183e"
+          },
+          {
+            "activation_revision": "ar_379f0691b1af738a33d379ce",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "重大Space Systems项目早于当前正式窗口完成硬件交付与客户验收，并实质确认对应backlog收入。"
+            ],
+            "match_scope": "重大项目的硬件交付、客户验收、收入确认和backlog余额变化。",
+            "policy_id": "pol_c7f54ca111287cffc9b7"
+          },
+          {
+            "activation_revision": "ar_a1629f318afc10a346223973",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "一项已确认收入的重大Space Systems合同在约定付款日后仍未收回，且客户正式拒付、提出实质验收争议或公司确认对应应收或合同资产减值。"
+            ],
+            "match_scope": "已确认收入的重大Space Systems合同之付款日、客户验收争议、应收与合同资产回收及减值。",
+            "policy_id": "pol_99321ee05d6387b5ec4c"
+          },
+          {
+            "activation_revision": "ar_0ab57c28ab6b76ae39c68dcf",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "客户或政府正式改变后续任务架构或接口，使Rocket Lab现有平台退出设计基线、需要重大重设计或丧失重大工作份额。"
+            ],
+            "match_scope": "客户后续任务架构、接口、设计基线、主承包分工与Rocket Lab工作份额。",
+            "policy_id": "pol_3990c137e2010acc209d"
+          },
+          {
+            "activation_revision": "ar_27defe3dfc1eecdd94a67528",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Rocket Lab因未批准拨款、可取消条件或非强制选项，将既有Space Systems backlog余额明确移出可执行订单口径。"
+            ],
+            "match_scope": "backlog与RPO口径、拨款条件、取消权、非强制选项及重分类。",
+            "policy_id": "pol_122bb609dbe8adef08bc"
+          },
+          {
+            "activation_revision": "ar_9c2ac72cde54d01a5e3a7414",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Mynaric或Motiv带入的客户项目因客户流失或整合失败被冲销、实质削减或显著延期。"
+            ],
+            "match_scope": "Mynaric或Motiv带入项目、backlog、客户流失、范围削减、冲销与整合延期。",
+            "policy_id": "pol_42ffc8bcd034ba71b635"
+          },
+          {
+            "activation_revision": "ar_bc388ab1fd9eb524f14424aa",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Lightning-GEO或Flatellite在关键环境、集成或客户验收中正式不通过，并发生重大返工或首批交付窗口重排。"
+            ],
+            "match_scope": "Lightning-GEO与Flatellite的环境、集成、客户验收、返工和首批交付窗口。",
+            "policy_id": "pol_d1cd58dfbef400a5a0fd"
+          },
+          {
+            "activation_revision": "ar_ca3ed5c2dea2f9e490ca3a86",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "新Space Systems平台首批在轨调试确认关键任务目标未达，并触发客户不接受或重大补救。"
+            ],
+            "match_scope": "新平台在轨调试、关键载荷可用性、任务目标、客户接受与重大补救。",
+            "policy_id": "pol_3c2876456eebfbb2176e"
+          },
+          {
+            "activation_revision": "ar_2f770a5cea39759942821783",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "客户正式确认首批Space Systems平台在轨表现达到要求，并签署追加批次、行使明确选项或在另一项目采用同一平台。"
+            ],
+            "match_scope": "平台首批在轨验收、客户选项、追加批次、续单与跨项目复用。",
+            "policy_id": "pol_b9534de3933546eb4b0b"
+          },
+          {
+            "activation_revision": "ar_1308ae4130d8b56553bef0d1",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Photon LOXSAT未入轨、Photon或关键载荷未运行，或正式结果确认关键低温流体管理演示目标未达到。"
+            ],
+            "match_scope": "Photon LOXSAT的发射、在轨运行、低温流体管理目标和正式任务结果。",
+            "policy_id": "pol_b26b426a29bf7c97f3b3"
+          },
+          {
+            "activation_revision": "ar_224e3aaab1ff7133ccd3c363",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "正式合同重谈将Rocket Lab从平台或在轨方案提供方降为单一组件或低价值子系统供应商，并实质缩减合同责任或价值。"
+            ],
+            "match_scope": "平台合同工作范围、在轨责任、组件分工、合同价值与合同修改。",
+            "policy_id": "pol_12730dbdedc7ee1afcce"
+          },
+          {
+            "activation_revision": "ar_5becbec7013636bc2dc24c84",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "具体Space Systems平台发生重大地面兼容性、数据完整性或网络安全事件，导致客户暂停验收、限制运行或复评后续订单。"
+            ],
+            "match_scope": "平台地面系统、数据链、兼容性、数据完整性、网络安全与客户运营限制。",
+            "policy_id": "pol_7ca9c474e52b25f6a62f"
+          },
+          {
+            "activation_revision": "ar_13b5465cf8157ada5708b67f",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Mynaric光学终端或Motiv SADA、精密机构正式资格失败，被目标任务设计基线拒绝或改用外部替代件。"
+            ],
+            "match_scope": "Mynaric光学终端、Motiv机构的客户资格、批准供应商状态、设计基线与替代。",
+            "policy_id": "pol_546b475983a277f4431e"
+          },
+          {
+            "activation_revision": "ar_02a68f4e771cfb1b2e65b2e0",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "已资格Mynaric或Motiv组件至少两个连续批次出现低良率、返工报废或周期恶化，并影响具体平台交付。"
+            ],
+            "match_scope": "已资格组件连续批次的良率、报废、返工、周期、按期交付和平台影响。",
+            "policy_id": "pol_0ba7e27c66e56f099a44"
+          },
+          {
+            "activation_revision": "ar_9ac352090bd8b2ed80a7b6ab",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Space Systems关键单一来源组件停供、质量隔离或受出口限制，且无已批准替代并造成具体平台延期。"
+            ],
+            "match_scope": "关键少数供应商的停供、质量隔离、出口限制、替代资格和项目窗口。",
+            "policy_id": "pol_6d549ca71da89c7814b0"
+          },
+          {
+            "activation_revision": "ar_e86cd41650a2110714041941",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Rocket Lab内部组件通过客户或任务资格，并在至少两个连续批次稳定按期供货、替代外部瓶颈且导入具体平台。"
+            ],
+            "match_scope": "内部组件资格、连续批次良率和周期、按期供货、外部替代与平台导入。",
+            "policy_id": "pol_94e6612a81898ccc27cf"
+          },
+          {
+            "activation_revision": "ar_5fe5c99fdffc1e05ff7da777",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "正式出口、投资审查、安全许可或客户国别限制，阻断Mynaric飞行件转移、认证或交付并延后具体任务。"
+            ],
+            "match_scope": "Rocket Lab Germany与Mynaric飞行件的出口、审查、安全许可、国别限制和任务交付。",
+            "policy_id": "pol_2f924f1e289b5ec98bf0"
+          },
+          {
+            "activation_revision": "ar_1f004d73ee459de479c86428",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "同一内部关键组件的多个飞行单元出现共同在轨故障，并触发设计修订、批量替换或暂停后续交付。"
+            ],
+            "match_scope": "内部关键组件的多飞行单元寿命、热辐射、驱动或通信故障与批量整改。",
+            "policy_id": "pol_86fab545b052e3cf961d"
+          },
+          {
+            "activation_revision": "ar_9b15fd9267bec9970bed6df1",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "客户正式采用替代架构，并将Mynaric或Motiv目标组件移出后续任务设计基线。"
+            ],
+            "match_scope": "客户后续任务的光学通信、机构或材料架构及Mynaric、Motiv设计基线。",
+            "policy_id": "pol_bd845896ff1af2d44738"
+          },
+          {
+            "activation_revision": "ar_bfd2d22eb2da18497fa85260",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "客户认证同一组件的竞争第二来源，并在正式后续订单或批次中把实质份额从Rocket Lab转给该供应商。"
+            ],
+            "match_scope": "已资格组件的双来源认证、后续订单、批次分配与竞争供应商份额。",
+            "policy_id": "pol_897d6790e26dc63f1eb5"
+          },
+          {
+            "activation_revision": "ar_6f4f3f9108f079ad2e1dca23",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Rocket Lab正式完成Neutron全车综合测试、湿排演练和一级静态点火，主要结果支持保留当前首飞窗口，且未触发重大设计返工或停飞。"
+            ],
+            "match_scope": "Neutron全车综合测试、湿排演练、一级静态点火、首飞准备状态、主要返工与首飞窗口。",
+            "policy_id": "pol_33288d9e3c26f5517bba"
+          }
+        ],
+        "policy_set_published_at": "2026-09-22T06:30:30.182671Z",
+        "policy_set_version": 5,
+        "schema_version": "document3.runtime_projection.v4",
+        "ticker": "RKLB"
+      },
+      "provisional": [
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "SPDR S&P 500 ETF Trust",
+              "SPY"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "The SPDR S&P 500 ETF Trust (SPY) was up approximately 0.1% in pre-bell trading on September 22, 2026.",
+            "subject_time": "pre-bell trading"
+          },
+          "candidate_index": 0,
+          "case_id": "case_c58a295fde584813b4053c3baa7d9b2b",
+          "created_at": "2026-09-22T13:21:48.319416Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E85",
+          "runtime_signature": "c0593bf28673d5899dda751dea9333613eab2e5bf7478d74ec2c79487eae8824",
+          "snapshot_version": 1,
+          "source_message_id": "std_893c743c2614494fa8929c43f1e1ab91",
+          "ticker": "RKLB",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "U.S. equity futures"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "U.S. equity futures were higher before the market opened on September 22, 2026.",
+            "subject_time": "pre-bell trading"
+          },
+          "candidate_index": 1,
+          "case_id": "case_c58a295fde584813b4053c3baa7d9b2b",
+          "created_at": "2026-09-22T13:21:48.335968Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E86",
+          "runtime_signature": "008b3cb4f808ce19e3c889fc92861488464749ebac427ed885aac76cab461703",
+          "snapshot_version": 2,
+          "source_message_id": "std_893c743c2614494fa8929c43f1e1ab91",
+          "ticker": "RKLB",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "oil market"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Oil prices declined in pre-bell trading on September 22, 2026.",
+            "subject_time": "pre-bell trading"
+          },
+          "candidate_index": 2,
+          "case_id": "case_c58a295fde584813b4053c3baa7d9b2b",
+          "created_at": "2026-09-22T13:21:48.361085Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E87",
+          "runtime_signature": "d4c3e42273a572487722fb83fcb2dd5beb31e9762de20e859bb913d16617b7fa",
+          "snapshot_version": 3,
+          "source_message_id": "std_893c743c2614494fa8929c43f1e1ab91",
+          "ticker": "RKLB",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Rocket Lab",
+              "RKLB"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Rocket Lab shares were trading at approximately $71.89 on September 22, 2026.",
+            "subject_time": "at article publication"
+          },
+          "candidate_index": 0,
+          "case_id": "case_ae098ed621264f05bc944f61b42cc9fb",
+          "created_at": "2026-09-22T16:28:19.044513Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E88",
+          "runtime_signature": "b23aca4fc093951a6e45accca9ac7a0542096b9cbc88291ce0dfb7c23c4d1df0",
+          "snapshot_version": 4,
+          "source_message_id": "std_d440a09298eb453ba379b25994f0f540",
+          "ticker": "RKLB",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Rocket Lab",
+              "RKLB",
+              "S&P 500"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Rocket Lab shares had gained approximately 5.7% over the prior six months, versus an approximately 16.2% gain for the S&P 500.",
+            "subject_time": "six-month period ending September 22, 2026"
+          },
+          "candidate_index": 1,
+          "case_id": "case_ae098ed621264f05bc944f61b42cc9fb",
+          "created_at": "2026-09-22T16:28:19.051238Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E89",
+          "runtime_signature": "55f97e3549770babb220e8ec8ad605aea4ce64be7fe46c179b9497991a496758",
+          "snapshot_version": 5,
+          "source_message_id": "std_d440a09298eb453ba379b25994f0f540",
+          "ticker": "RKLB",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Rocket Lab",
+              "RKLB"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Rocket Lab's revenue had grown at an approximately 68.9% compounded annual rate over the prior five years.",
+            "subject_time": "prior five years"
+          },
+          "candidate_index": 2,
+          "case_id": "case_ae098ed621264f05bc944f61b42cc9fb",
+          "created_at": "2026-09-22T16:28:19.060657Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E90",
+          "runtime_signature": "56213ed9f6c14fc21b8654b37a7a37d0a08bdaa240946ea88edb4cd149d66edd",
+          "snapshot_version": 6,
+          "source_message_id": "std_d440a09298eb453ba379b25994f0f540",
+          "ticker": "RKLB",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Rocket Lab",
+              "RKLB"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Rocket Lab's free-cash-flow margin had expanded by approximately 59.4 percentage points over the prior five years.",
+            "subject_time": "prior five years"
+          },
+          "candidate_index": 3,
+          "case_id": "case_ae098ed621264f05bc944f61b42cc9fb",
+          "created_at": "2026-09-22T16:28:19.070573Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E91",
+          "runtime_signature": "085ac51bb6c3be25223d4bed24be78e41ffa02b44d75374fe2042559635dffa7",
+          "snapshot_version": 7,
+          "source_message_id": "std_d440a09298eb453ba379b25994f0f540",
+          "ticker": "RKLB",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Rocket Lab",
+              "RKLB"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Rocket Lab's trailing-twelve-month free-cash-flow margin was approximately negative 48.3%.",
+            "subject_time": "trailing twelve months"
+          },
+          "candidate_index": 4,
+          "case_id": "case_ae098ed621264f05bc944f61b42cc9fb",
+          "created_at": "2026-09-22T16:28:19.079757Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E92",
+          "runtime_signature": "25d809870f3600afae844784ed9a71900494393419ad9f8ff1e531bc5186b938",
+          "snapshot_version": 8,
+          "source_message_id": "std_d440a09298eb453ba379b25994f0f540",
+          "ticker": "RKLB",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Rocket Lab",
+              "RKLB"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Rocket Lab's return on invested capital had increased over the prior few years.",
+            "subject_time": "prior few years"
+          },
+          "candidate_index": 5,
+          "case_id": "case_ae098ed621264f05bc944f61b42cc9fb",
+          "created_at": "2026-09-22T16:28:19.087269Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E93",
+          "runtime_signature": "f291e8249a57ae1a3d4445bc7fd7fa8a459a5f0cd3ee07fb72208bbc8b5b4021",
+          "snapshot_version": 9,
+          "source_message_id": "std_d440a09298eb453ba379b25994f0f540",
+          "ticker": "RKLB",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Rocket Lab",
+              "RKLB"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Rocket Lab was reported to trade at approximately 2,869.8 times forward earnings.",
+            "subject_time": "forward earnings period"
+          },
+          "candidate_index": 6,
+          "case_id": "case_ae098ed621264f05bc944f61b42cc9fb",
+          "created_at": "2026-09-22T16:28:19.095883Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E94",
+          "runtime_signature": "2373b93c8a58f9fd9f0e9f482074a4b5db5022dac8c4d777c1f30af8f8908293",
+          "snapshot_version": 10,
+          "source_message_id": "std_d440a09298eb453ba379b25994f0f540",
+          "ticker": "RKLB",
+          "trading_date": "2026-09-22"
+        }
+      ]
+    }
+  },
+  "source": {
+    "admission_context": {
+      "cutoff": null,
+      "mode": "REALTIME",
+      "policy_version": 1,
+      "source_task_id": null,
+      "sweep_id": null,
+      "window_start": null
+    },
+    "binding_id": "RKLB:yahoo_finance_news",
+    "business_version": 1,
+    "collected_at": "2026-09-22T17:05:19.658598Z",
+    "eligibility_at": "2026-09-22T17:05:19.653347Z",
+    "logical_message_id": "message_6005b075207542c4b9feb24439d30611",
+    "member_count": 1,
+    "member_message_ids": [
+      "std_6d11166f7b4c4f4293affb8a37152188"
+    ],
+    "message_bus_event_time": "2026-09-22T17:05:19.658598Z",
+    "normalized_at": null,
+    "previous_raw_message_id": null,
+    "publication_time_basis": "EXACT",
+    "published_at": "2026-09-22T16:57:28Z",
+    "snapshot": {
+      "body": "Shares of Rocket Lab Corp (NASDAQ:RKLB) are up 2.2% at $71.45 today, extending a bounce off familiar support at the $60 level. Furthermore, today's price action has RKLB crossing above the 50-day moving average, which rejected the stock in July and August.\n\nPer Schaeffer's Senior Quantitative Analyst Rocky White, this \"crossover\" event has happened eight other times over the last 10 years. Rocket Lab stock was higher one month later 88% of the time after these signals, averaging a 16.8% gain. From its current perch, a move of this magnitude would put the shares at $83.45.\n\nRKLB's Schaeffer's Volatility Index (SVI) of 70% stands in the low 10th percentile of its annual range, meaning options traders are pricing in low volatility expectations. The stock has tended to exceed these expectations over the last year as well, per its Schaeffer's Volatility Scorecard (SVS) of 97 out of 100.",
+      "ticker": "RKLB",
+      "title": "Rocket Lab Stock Breaks Above Key Trendline"
+    },
+    "source_id": "yahoo_finance_news",
+    "source_message_id": "std_6d11166f7b4c4f4293affb8a37152188",
+    "stream_item_id": "stream_f4f82d6dab584f6aaf6a014bb756d980",
+    "update_kind": "NEW_MESSAGE",
+    "url": "https://finance.yahoo.com/markets/stocks/articles/rocket-lab-stock-breaks-above-165728910.html"
+  },
+  "w1_final": {
+    "confidence": "normal",
+    "fact_attributions": [],
+    "reason": "当前消息的核心事实——9月23日RKLB上涨2.2%至$71.45、突破50日均线、自$60支撑位反弹——在E78（9/18单日下跌）、E25（8/10–9/14持续下跌/回调）及provisional E88（9/22约$71.89报价）中均未出现。已有事实全部追踪下跌或特定下跌日，无任何事实记录方向性反弹或50日均线突破事件。",
+    "reference_ids": [],
+    "result": "NEW"
+  },
+  "w2_final": {
+    "confidence": "normal",
+    "matched_condition_ids": [],
+    "policy_ids": [],
+    "reason": "当前消息仅描述Rocket Lab股价技术面变动（+2.2%至$71.45、突破50日均线、测试$60支撑），未涉及任何合并交易进展、发射任务、合同授予或取消、Neutron/Space Systems运营、融资安排、监管事件或财务结果等具体业务事实。所有Policy的criterion均要求特定运营、交易或财务状态变化，股价技术走势与之无直接触发关系。"
+  },
+  "w2_alignment": null,
+  "version_pin": {
+    "activation_revision_id": "runtime-maintain-e5b5800ef57abbf9ef47b751-activation",
+    "document1_run_id": "init-rklb-9631e4071e75470a97313eafbbdc51aa-d1",
+    "document2_run_id": "init-rklb-9631e4071e75470a97313eafbbdc51aa-d2",
+    "event_library_root": "/data/runtime/runtime_artifacts/runtime-maintain-e5b5800ef57abbf9ef47b751/events",
+    "event_library_version": 6,
+    "policy_set_version": 5,
+    "provisional_snapshot_version": 10,
+    "runtime_projection_version": 5
+  },
+  "runtime_mode": "REALTIME",
+  "trading_date": "2026-09-22"
+}

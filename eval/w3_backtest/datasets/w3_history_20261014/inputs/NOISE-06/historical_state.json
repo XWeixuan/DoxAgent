@@ -1,0 +1,832 @@
+{
+  "recent_trade_intents": [
+    {
+      "message": {
+        "title": "Netlist and Micron Enter Patent License and Settlement Agreements",
+        "body": "IRVINE, Calif., Oct. 6, 2026 /PRNewswire/ -- Netlist, Inc. (OTCQB: NLST) today announced that the Company and Micron Technology, Inc. (\"Micron\") have entered into Patent License and Settlement Agreements.\n\nUnder the agreements, the parties have agreed to settle and mutually release all pending legal proceedings between the companies, and Micron will receive a 5-year term license to Netlist's patent portfolio, including patents covering server DIMMs and High Bandwidth Memory technologies. Micron will pay Netlist $30 million per quarter from the fourth quarter of 2026 through the third quarter of 2031, totaling $600 million during the term.\n\n\"The agreement with Micron further validates the value of our AI memory technologies,\" said C.K. Hong, Netlist's Chief Executive Officer. \"We remain committed to protecting our IP while continuing to invest in the development of next-generation products.\"\n\nFurther details regarding the transaction are available in Netlist's Current Report on Form 8-K filed concurrently with the issuance of this release and available on the SEC filings page of the Netlist website here.\n\nAbout NetlistNetlist is a leading innovator in advanced memory and storage solutions. With a rich portfolio of patented technologies, Netlist's inventions are foundational to the advancement of AI computing. To learn more about Netlist, please visit www.netlist.com.\n\nSafe Harbor StatementThis news release contains forward-looking statements within the meaning of the Private Securities Litigation Reform Act of 1995. Forward-looking statements contained in this news release include, without limitation, statements about anticipated benefits of the agreements, the parties' ability to perform their respective obligations under, and to realize the anticipated benefits of those agreements, future exclusion and cease and desist orders, Netlist's ability to successfully enforce its intellectual property rights, and evaluations and judgments regarding Netlist's intellectual property portfolio. Forward-looking statements are statements other than historical facts and often address future events or Netlist's future performance. They reflect management's present expectations regarding future events and are subject to known and unknown risks, uncertainties and other factors that could cause actual results to differ materially from those expressed in or implied by any forward-looking statements. These risks, uncertainties and other factors include, among others, risks: Netlist may not be able to collect the substantial amount in damages previously awarded to it in its litigations (appeals in general could cause a lengthy delay in Netlist's ability to collect damages awards, could overturn the verdicts or reduce the damages awards); Netlist will suffer adverse outcomes in its litigation with Google or in its various other active proceedings to defend the validity of its patents; related to Netlist's plans for its intellectual property, including its strategies for monetizing, licensing, expanding, and defending its patent portfolio, which efforts may not be successful; other patent infringement litigation initiated by Netlist, or by others against Netlist, may not be successful or resolve favorably for Netlist, particularly given the costs and unpredictability of any such litigation; associated with Netlist's product sales, including whether and how long the current market and demand for products sold by Netlist will persist or persist as expected and whether Netlist may successfully develop and launch new products that are attractive to the market; whether Netlist will continue to acquire components or products for resale on favorable terms; that Netlist or its counterparties may fail to perform their obligations as required pursuant to applicable license and supply agreements, associated with the competitive landscape of Netlist's industry, general economic, political and market conditions, factory slowdowns and/or shutdowns, and changes in international trade and tariff policies. All forward-looking statements reflect management's present assumptions, expectations and beliefs regarding future events and are subject to known and unknown risks, uncertainties and other factors that could cause actual results to differ materially from those expressed in or implied by any forward-looking statements. These and other risks and uncertainties are described in Netlist's Annual Report on Form 10-K for the fiscal year ended December 27, 2025 filed with the SEC on March 19, 2026, and the other filings it makes with the U.S. Securities and Exchange Commission from time to time, including any subsequently filed quarterly and current reports. In light of these risks, uncertainties and other factors, these forward-looking statements should not be relied on as predictions of future events. These forward-looking statements represent Netlist's assumptions, expectations and beliefs only as of the date they are made, and except as required by law, Netlist undertakes no obligation to revise or update any forward-looking statements for any reason.\n\nFor more information, please contact:Investors / MediaMike SmargiassiThe Plunkett GroupNLST@theplunkettgroup.com(212) 739‑6729\n\nView original content to download multimedia:https://www.prnewswire.com/news-releases/netlist-and-micron-enter-patent-license-and-settlement-agreements-302899647.html",
+        "source_name": "yahoo",
+        "published_at": "2026-10-06T12:00:00Z"
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": []
+      },
+      "w2": {
+        "policy_hit": false,
+        "policy_related": false,
+        "policy_ids": [],
+        "hit_condition_ids": [],
+        "matched_condition_ids": []
+      },
+      "w3_decision": {
+        "novelty": {
+          "reason": "Reference View记录了Micron与Netlist之间仍在进行的ITC、上诉及损害赔偿事项，但没有记录双方已达成和解或五年许可。此次协议带来的法律状态变化是新的。",
+          "reference_ids": [
+            "E21",
+            "E22",
+            "E23",
+            "E176"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "PolicySet v17没有覆盖专利和解或许可的触发条件。消息也未触发其中关于HBM商业出货、竞争地位、经营或财务结果的具体门槛。"
+        },
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "双方现已约定解决并相互解除所有未决法律程序，Micron取得覆盖服务器DIMM及HBM专利的五年许可；原先未定的法律风险转为许可期内较明确的经营保障和每季度3,000万美元的约定费用。核心变化是高价值内存产品的法律确定性提升，而非新增出货或需求。",
+          "prior_expectation": "消息前公开状态仍包括Netlist针对Micron的HBM ITC新案、服务器内存相关诉讼、上诉及单独的损害赔偿事项；尚无公开的全面和解或HBM/服务器DIMM许可。此前存在未解决的法律与潜在供货限制风险，但没有证据支持对禁令概率作精确估值。",
+          "reason": "这是相对近期公开状态的正向惊喜：9月29日刚出现新的HBM ITC行动，此次协议迅速解决双方未决程序并覆盖HBM和服务器DIMM。传导路径是法律不确定性和潜在供货限制风险下降，保护Micron面向AI/服务器市场的高价值产品经营；已知许可费用每年约1.2亿美元，不到FY26收入的0.1%，相对公司规模较小。由于此前没有证据表明禁令迫近，不将其视为新增收入，但净影响仍支持LONG。",
+          "trade": true
+        }
+      },
+      "direction": "LONG",
+      "initiated_at": "2026-10-06T12:13:16.195646+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    },
+    {
+      "message": {
+        "title": "Micron Stock Drops Amid Fears of Memory-Price Peak. The Data Tell a Different Story. -- Barrons.com",
+        "body": "By Adam Clark Micron Technology stock was flatlining early Monday. The memory-chip maker is still contending with fears of a cyclical peak in its earnings but prices tell a different story. Micron shares were down 1.2% at $1,061.81 in early trading. The stock didn't get much of a lift from blowout earnings last week, with investors seemingly still skeptical about the sustainability of soaring profits. But the numbers suggest memory prices will only keep rising. The latest set of figures from World Semiconductor Trade Statistics showed memory sales increasing 36% in August, driven by both stronger shipment volumes and pricing. The prices of DRAM and NAND rose 8% and 5%, respectively. DRAM is short-term working memory that computers and AI hardware use to manage active data and running processes. It makes up about three quarters of Micron's revenue. NAND flash memory is used for longer-term storage. Backward-looking numbers might not be much comfort for nervous investors, but analysts expect the memory-chip boom to keep going. DRAM prices are set to rise between 15% and 20% in the fourth quarter, with NAND prices poised to rise between 12% and 20%, according to Brad Gastwirth, global head of research and market intelligence at Circular Technologies. \"Memory remains the clearest quantitative signal in our October work. Pricing continues to move higher even as consumer end markets weaken, while long term supply agreements remain a major part of customer conversations,\" Gastwirth wrote in a research note Friday. As memory prices keep going up, Micron stock only looks cheaper-even if the market remains doubtful. Write to Adam Clark at adam.clark@barrons.com This content was created by Barron's, which is operated by Dow Jones & Co. Barron's is published independently from Dow Jones Newswires and The Wall Street Journal. (END) Dow Jones Newswires October 05, 2026 09:49 ET (13:49 GMT) Copyright (c) 2026 Dow Jones & Company, Inc. The statements in this document shall not be considered as an objective or independent explanation of the matters. Please note that this document (a) has not been prepared in accordance with legal requirements designed to promote the independence of investment research, and (b) is not subject to any prohibition on dealing ahead of the dissemination or publication of investment research.",
+        "source_name": "interactivebrokers.com",
+        "published_at": "2026-10-05T13:49:00Z"
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": [
+          "E217"
+        ]
+      },
+      "w2": {
+        "policy_hit": false,
+        "policy_related": false,
+        "policy_ids": [],
+        "hit_condition_ids": [],
+        "matched_condition_ids": []
+      },
+      "w3_decision": {
+        "novelty": {
+          "reason": "Reference View的E217记录了FY2026 Q4 DRAM合同价涨10%–15%、NAND涨15%–20%的预期，但未覆盖WSTS报告的2026年8月memory销售增长36%、DRAM/NAND价格分别上涨8%/5%的数据，也未覆盖Gastwirth提出的不同Q4价格区间，故为NEW。",
+          "reference_ids": [
+            "E217"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "现行Policy无适用于该行业月度数据或DRAM/NAND价格上涨预测的命中条件；消息未披露Micron特定经营变化，也未提供符合FY2027调整后EPS上修Policy要求的可比新旧数值。"
+        },
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "新增的8月价格与销售数据支持涨势仍在延续；Gastwirth对Q4 DRAM价格的预测为上涨15%–20%，相较E217的10%–15%区间整体高5个百分点。NAND预测为12%–20%，并未较原区间整体上修。由此带来的正向修订主要集中于DRAM价格预期。",
+          "prior_expectation": "截至E217（2026-09-30），行业预期FY2026 Q4 DRAM合同价上涨约10%–15%、NAND上涨约15%–20%，并已预期服务器DRAM短缺及AI驱动的持续紧张。Micron近期实现的高ASP和盈利强劲，但持续性仍待验证。",
+          "reason": "Surprise为中等：供应紧张和涨价方向已在基线中，但WSTS最新实际数据及更高的DRAM预测强化了近端价格路径。Materiality较高，因为DRAM约占Micron收入四分之三，且价格变化可经实现ASP传至收入和利润。单一分析师预测并非共识，也未量化Micron自身价格实现，限制确信度；但方向性传导清楚，足以支持LONG。",
+          "trade": true
+        }
+      },
+      "direction": "LONG",
+      "initiated_at": "2026-10-05T14:01:27.826342+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    },
+    {
+      "message": {
+        "title": "Netlist and Micron reach $600M patent license and settlement deal",
+        "body": "© Reuters\n\nNetlist, Inc. (NLST) and Micron Technology, Inc. have entered into patent license and settlement agreements, according to a press release from Netlist.\n\nUnder the terms of the agreements, all pending legal proceedings between the two companies will be settled and mutually released. Micron will receive a five-year license to Netlist’s patent portfolio, which includes patents covering server DIMMs and High Bandwidth Memory technologies.\n\nMicron will pay Netlist $30 million per quarter beginning in the fourth quarter of 2026 through the third quarter of 2031, totaling $600 million over the term of the license.\n\n\"The agreement with Micron further validates the value of our AI memory technologies,\" said C.K. Hong, Netlist’s Chief Executive Officer. \"We remain committed to protecting our IP while continuing to invest in the development of next-generation products.\"\n\nNetlist filed a Current Report on Form 8-K with the SEC concurrently with the announcement.\n\nShould you invest $2,000 in MU right now?\n\nProPicks AI evaluates MU alongside thousands of other companies every month using 100+ financial metrics. Using powerful AI to generate exciting stock ideas, it looks beyond popularity to assess fundamentals, momentum, and valuation. The AI has no bias—it simply identifies which stocks offer the best risk-reward based on current data with notable past winners that include Super Micro Computer (+185%) and AppLovin (+157%). Want to know if MU is currently featured in any ProPicks AI strategies, or if there are better opportunities in the same space?\n\nLatest comments",
+        "source_name": "investing.com",
+        "published_at": "2026-10-06T12:10:04Z"
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": [
+          "E176",
+          "E21"
+        ]
+      },
+      "w2": {
+        "policy_hit": false,
+        "policy_related": false,
+        "policy_ids": [],
+        "hit_condition_ids": [],
+        "matched_condition_ids": []
+      },
+      "w3_decision": {
+        "novelty": {
+          "reason": "新现实是Micron与Netlist达成五年专利许可及和解，涵盖服务器DIMM与HBM，并约定每季度支付3000万美元、合计6亿美元。Reference View中的E176、E21、E22和E23只记录未决诉讼、ITC救济请求及既有赔偿判决，未记录许可或和解。 [当日消息](https://www.investing.com/news/assorted/netlist-and-micron-reach-600m-patent-license-and-settlement-deal-432SI-4934250)",
+          "reference_ids": [
+            "E176",
+            "E21",
+            "E22",
+            "E23"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "PolicySet v17没有针对Netlist诉讼、专利许可或法律风险解除的触发条件；现有经营与产品相关条件均未被该和解事实满足，因此此案仍属uncovered。"
+        },
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "法律状态从未决诉讼、赔偿与潜在排除风险，转为Micron获得覆盖服务器DIMM及HBM的五年许可、双方约定解决所有未决诉讼；相应代价是2026年Q4至2031年Q3每季度3000万美元、总计6亿美元。需要上修法律确定性及产品供货连续性预期，并将成本风险收敛为明确的许可费；这不是内存需求、销量或ASP上修。",
+          "prior_expectation": "事件前的基线是内存业务继续运营，但Netlist相关的损害赔偿与排除救济风险仍未解决，并非已有许可或和解。Reference View记录了Netlist针对HBM的ITC行动（E176）、先前ITC行动（E21）、专利上诉状态（E22）及既有4.45亿美元赔偿判决（E23）；Micron公开申报亦记载该判决及上诉。[Micron申报](https://www.sec.gov/Archives/edgar/data/723125/000072312526000006/mu-20260226.htm) Netlist于9月29日宣布新的HBM专利ITC行动并寻求排除及停止令。[Netlist公告](https://www.prnewswire.com/news-releases/netlist-files-new-itc-action-against-micron-technology-inc-involving-hbm-patents-for-ai-computing-302892194.html) 合理预期是继续出货与未决法律尾部风险并存，结果不确定，而非禁售必然。",
+          "reason": "和解及许可条款此前未公开，且Netlist在9月29日刚针对HBM寻求ITC排除救济，故相对事件前未决基线有明显惊喜。HBM和服务器内存是Micron重要业务；许可及诉讼和解降低产品销售受法律救济干扰的尾部风险，传导路径清晰。每季度3000万美元虽为新增成本，但约为FY26 Q4约500亿美元收入指引中点的0.06%；净预期变化偏正，支持LONG。[协议报道](https://www.investing.com/news/assorted/netlist-and-micron-reach-600m-patent-license-and-settlement-deal-432SI-4934250)",
+          "trade": true
+        }
+      },
+      "direction": "LONG",
+      "initiated_at": "2026-10-06T12:19:43.686860+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    },
+    {
+      "message": {
+        "title": "Morgan Stanley revisits Micron stock price target amid stellar growth",
+        "body": "Micron stock rides an AI memory boom, even as management warns that tight memory supply will last through 2028.",
+        "source_name": "thestreet.com",
+        "published_at": "2026-10-05T19:13:00Z"
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": []
+      },
+      "w2": {
+        "policy_hit": false,
+        "policy_related": false,
+        "policy_ids": [],
+        "hit_condition_ids": [],
+        "matched_condition_ids": []
+      },
+      "w3_decision": {
+        "novelty": {
+          "reason": "TheStreet disclosed Morgan Stanley’s FY2027 Micron estimate revision, which is not stated among E208’s existing analyst facts; E208 provides the relevant post-earnings baseline of about $160 consensus adjusted EPS. Morgan Stanley raised its estimate from $168.52 to $182.52 in an Oct. 1 note. [TheStreet article](https://www.thestreet.com/investing/stocks/mu-morgan-stanley-maintains-micron-stock-price-target-ai-memory-growth)",
+          "reference_ids": [
+            "E208"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "Following the UNCOVERED_NEW mode’s established no-Policy state, retain the empty Policy match and evaluate the newly surfaced forecast independently."
+        },
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "Morgan Stanley raised its FY2027 EPS estimate by about 8.3%, from $168.52 to $182.52—about 14% above the approximately $160 baseline. This is a single-firm estimate, not a market-wide consensus revision.",
+          "prior_expectation": "The post-FY2026 Q4 market baseline in E208 was approximately $160 in FY2027 adjusted EPS.",
+          "reason": "The estimate increase is a meaningful positive earnings-expectation revision. Micron’s tight supply and AI-memory demand support transmission from higher expected pricing and earnings to MU’s value capture. The unchanged $1,200 price target and the fact that the cited note dates to Oct. 1 temper the signal, but the size of the EPS uplift versus the existing baseline supports a LONG. [TheStreet article](https://www.thestreet.com/investing/stocks/mu-morgan-stanley-maintains-micron-stock-price-target-ai-memory-growth)",
+          "trade": true
+        }
+      },
+      "direction": "LONG",
+      "initiated_at": "2026-10-05T19:29:41.079835+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    }
+  ],
+  "history_matches": [
+    {
+      "events": [],
+      "policies": []
+    },
+    {
+      "events": [],
+      "policies": []
+    },
+    {
+      "events": [],
+      "policies": []
+    },
+    {
+      "events": [],
+      "policies": []
+    }
+  ],
+  "watches": [],
+  "pins": [],
+  "policy_consumptions": [],
+  "provisional": [
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Percona",
+          "Valkey",
+          "Valkey-proxy"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "Percona announced Valkey-proxy as an open-source project accepted as an official project under Valkey.",
+        "subject_time": "2026-10-07 announcement"
+      },
+      "candidate_index": 0,
+      "case_id": "case_8ac88d666d044bad9f5225ebae4038e6",
+      "created_at": "2026-10-07T07:04:36.903086Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E312",
+      "runtime_signature": "de1c05f91c43434b39b8e472811f173fb9fbcde0da88e7f55132f9c235c68db2",
+      "snapshot_version": 1,
+      "source_message_id": "std_2ec41ff668b44a888d2f829170b41680",
+      "ticker": "MU",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLAN",
+        "entities": [
+          "Percona",
+          "Valkey-proxy",
+          "Valkey"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "Percona says Valkey-proxy is designed to let applications built for standalone Valkey operate across a horizontally scaled cluster through a proxy layer.",
+        "subject_time": "Valkey-proxy development; functionality described at announcement"
+      },
+      "candidate_index": 1,
+      "case_id": "case_8ac88d666d044bad9f5225ebae4038e6",
+      "created_at": "2026-10-07T07:04:36.923242Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E313",
+      "runtime_signature": "023309e3a52f36a92178f18c8e41ffbb74be09c1331a326a7c272da5bf09d10e",
+      "snapshot_version": 2,
+      "source_message_id": "std_2ec41ff668b44a888d2f829170b41680",
+      "ticker": "MU",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLANNED",
+        "entities": [
+          "Percona",
+          "Valkey-proxy"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "Percona plans to publish Valkey-proxy code in mid-October 2026 under the BSD-3-Clause license.",
+        "subject_time": "Mid-October 2026"
+      },
+      "candidate_index": 2,
+      "case_id": "case_8ac88d666d044bad9f5225ebae4038e6",
+      "created_at": "2026-10-07T07:04:36.945375Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E314",
+      "runtime_signature": "2331f717b6e9b769efb74b92d4c51adc6bfd24e60e2cf5e3302ed765e850be34",
+      "snapshot_version": 3,
+      "source_message_id": "std_2ec41ff668b44a888d2f829170b41680",
+      "ticker": "MU",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "EXPECTED",
+        "entities": [
+          "Percona",
+          "Valkey-proxy"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "Percona targets general availability of Valkey-proxy for early 2027.",
+        "subject_time": "Early 2027"
+      },
+      "candidate_index": 3,
+      "case_id": "case_8ac88d666d044bad9f5225ebae4038e6",
+      "created_at": "2026-10-07T07:04:36.958738Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E315",
+      "runtime_signature": "71c31daf4f10c0bb6cd4b965fd1667189bed85dacaa9282a074a695be278b5a6",
+      "snapshot_version": 4,
+      "source_message_id": "std_2ec41ff668b44a888d2f829170b41680",
+      "ticker": "MU",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "S&P 500",
+          "The Kobeissi Letter",
+          "Citadel Securities",
+          "Micron Technology"
+        ],
+        "occurrence_date": "2026-10-06",
+        "proposition": "Data shared by The Kobeissi Letter, citing Citadel Securities, put the ten largest S&P 500 stocks at approximately 41% of index weight, compared with approximately 23% for the index's 402 smallest companies; Micron was among the top ten.",
+        "subject_time": "S&P 500 weights reported October 6, 2026"
+      },
+      "candidate_index": 0,
+      "case_id": "case_6dca44b208ce4dd590b2a70837fb988c",
+      "created_at": "2026-10-07T07:05:28.351591Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E316",
+      "runtime_signature": "841bc7507c76260702caa77a7fd296750f10ad279e172568344bffe2908add9f",
+      "snapshot_version": 5,
+      "source_message_id": "std_b06245ef96bf46228be78f8bf0baa933",
+      "ticker": "MU",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ONGOING",
+        "entities": [
+          "AMD",
+          "Lisa Su",
+          "Samsung Electronics"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "AMD CEO Lisa Su said AMD continues to explore partnership opportunities with Samsung Electronics in memory and foundry businesses.",
+        "subject_time": "As of October 7, 2026"
+      },
+      "candidate_index": 0,
+      "case_id": "case_07b996586dbc441bb6f46d569e2171f0",
+      "created_at": "2026-10-07T07:52:55.105370Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E317",
+      "runtime_signature": "2149040c6b709f34bcf6ca07c4776993dafcb663d56f1f9875a957cbbba72d9e",
+      "snapshot_version": 6,
+      "source_message_id": "std_91cc20083751491a97ded625a13a2a27",
+      "ticker": "MU",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ONGOING",
+        "entities": [
+          "AMD",
+          "Lisa Su",
+          "AMD customers"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "Lisa Su said AMD is working with customers to optimize their memory footprint amid tight memory supply so it can satisfy more computing demand.",
+        "subject_time": "As of October 7, 2026"
+      },
+      "candidate_index": 1,
+      "case_id": "case_07b996586dbc441bb6f46d569e2171f0",
+      "created_at": "2026-10-07T07:52:55.127483Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E318",
+      "runtime_signature": "5528d57baca3bae119e3520df2a6f918b4f666c8bfa7784a4267524b6b350041",
+      "snapshot_version": 7,
+      "source_message_id": "std_91cc20083751491a97ded625a13a2a27",
+      "ticker": "MU",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "AMD",
+          "Lisa Su",
+          "Samsung Electronics",
+          "SK hynix"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "Lisa Su said AMD relies heavily on the Korean supply chain and identified Samsung Electronics and SK hynix as key to AMD's data-center ambitions.",
+        "subject_time": "As of October 7, 2026"
+      },
+      "candidate_index": 2,
+      "case_id": "case_07b996586dbc441bb6f46d569e2171f0",
+      "created_at": "2026-10-07T07:52:55.173060Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E319",
+      "runtime_signature": "bb74267b9d7d41948200e3ee1b85ba8c0712d98567ca879b5b6e943c74cc9316",
+      "snapshot_version": 8,
+      "source_message_id": "std_91cc20083751491a97ded625a13a2a27",
+      "ticker": "MU",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Micron Technology",
+          "Taiwan labor union",
+          "Micron workers"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "A union said hundreds of workers at a Micron plant in Taiwan voted in favor of a strike after bonus-reform talks collapsed.",
+        "subject_time": "Micron Taiwan labor dispute, October 2026"
+      },
+      "candidate_index": 0,
+      "case_id": "case_56d3a3b3cc3049f183ee38fcc9cf3011",
+      "created_at": "2026-10-07T07:56:04.942103Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E320",
+      "runtime_signature": "cba7487a756dde1a41739e96b576caa765a0369325575cf57101ea7cde8b9231",
+      "snapshot_version": 9,
+      "source_message_id": "std_22ce9717cf234592a71396a7b8f8fdf8",
+      "ticker": "MU",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Micron Technology",
+          "Taoyuan",
+          "Taichung",
+          "Taiwan labor unions"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "The report said two labor unions representing nearly 12,000 of Micron's 15,000 workers at its Taoyuan and Taichung plants were in remuneration talks with the company.",
+        "subject_time": "Micron Taiwan labor negotiations, October 2026"
+      },
+      "candidate_index": 1,
+      "case_id": "case_56d3a3b3cc3049f183ee38fcc9cf3011",
+      "created_at": "2026-10-07T07:56:04.974839Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E321",
+      "runtime_signature": "705578ad5c93c760a79e97f718c5b22e86caf8d717a121d09debabe909cc88d0",
+      "snapshot_version": 10,
+      "source_message_id": "std_22ce9717cf234592a71396a7b8f8fdf8",
+      "ticker": "MU",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Micron Technology",
+          "Taiwan"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "The report said Micron manufactures around 50% to 60% of its chips in Taiwan.",
+        "subject_time": "Micron manufacturing footprint as reported October 2026"
+      },
+      "candidate_index": 2,
+      "case_id": "case_56d3a3b3cc3049f183ee38fcc9cf3011",
+      "created_at": "2026-10-07T07:56:04.993101Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E322",
+      "runtime_signature": "b888c61912145235c72b83704bc876b7adbab015c0ce4b2464dec1f4f4fc1ceb",
+      "snapshot_version": 11,
+      "source_message_id": "std_22ce9717cf234592a71396a7b8f8fdf8",
+      "ticker": "MU",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Micron Technology",
+          "Micron桃园工会",
+          "桃园工会成员"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "Micron桃园工会称，1,994名成员（占投票者99%）投票赞成对奖金方案争议发起罢工。",
+        "subject_time": "2026年10月桃园罢工授权投票"
+      },
+      "candidate_index": 0,
+      "case_id": "case_af43ed9aba4a4ab8be26f1f038552d48",
+      "created_at": "2026-10-07T07:58:57.915477Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E323",
+      "runtime_signature": "4be26a87e78eece41a0ef4eaf296537ae284a9898a3972ca3d04d9782a1a4eb7",
+      "snapshot_version": 12,
+      "source_message_id": "std_99f8f1c4b7974353842bafa0d5ed8273",
+      "ticker": "MU",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ONGOING",
+        "entities": [
+          "Micron Technology",
+          "Micron桃园工会"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "Micron桃园工会称，任何罢工的具体安排（包括时间）仍在讨论中。",
+        "subject_time": "截至2026-10-07的潜在罢工安排"
+      },
+      "candidate_index": 1,
+      "case_id": "case_af43ed9aba4a4ab8be26f1f038552d48",
+      "created_at": "2026-10-07T07:58:57.979895Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E324",
+      "runtime_signature": "0987becdfdd09d8a8d04cf3243aadd0c88062f921aac9762f86d778dcb55f7a7",
+      "snapshot_version": 13,
+      "source_message_id": "std_99f8f1c4b7974353842bafa0d5ed8273",
+      "ticker": "MU",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Eclipse Foundation",
+          "Eclipse Qrisp",
+          "Fraunhofer FOKUS",
+          "Quantum Effects Award"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "The Eclipse Foundation announced that Eclipse Qrisp, an open-source quantum-programming framework initiated by Fraunhofer FOKUS, won the 2026 Quantum Effects Award in the Quantum Computing Software & Algorithms category.",
+        "subject_time": "2026 Quantum Effects Award"
+      },
+      "candidate_index": 0,
+      "case_id": "case_c0d8ec1b43b44d908b58d031c7eedd63",
+      "created_at": "2026-10-07T10:03:42.424580Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E325",
+      "runtime_signature": "7c4d9cbc71b0666aa2d6347bc68dfefe1cce62aa9f685f62563d29b40138bcb6",
+      "snapshot_version": 14,
+      "source_message_id": "std_ab6d77fc1aba4989ba16fbe8f762b2d2",
+      "ticker": "MU",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Titan Mining Corporation",
+          "Empire State Mines",
+          "U.S. Department of the Army",
+          "Anniston Army Depot"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "Titan Mining subsidiary Empire State Mines and the U.S. Army executed a term sheet establishing principal commercial terms for a proposed Enhanced Use Lease at Anniston Army Depot; a definitive lease remains subject to conditions and approvals.",
+        "subject_time": "Proposed Anniston Army Depot facility; definitive lease pending"
+      },
+      "candidate_index": 0,
+      "case_id": "case_c5813da331db45a7a647b36d478db9c5",
+      "created_at": "2026-10-07T10:06:09.237411Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E326",
+      "runtime_signature": "ca6c325d7365ce7ca5008e30195e0826d1a1f3a2213bf84cd65b82d473119fef",
+      "snapshot_version": 15,
+      "source_message_id": "std_4154800b444c42b094424b5a72988430",
+      "ticker": "MU",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLAN",
+        "entities": [
+          "Empire State Mines",
+          "Anniston Army Depot",
+          "Purified Micronized Graphite",
+          "Coated Spherical Purified Graphite"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "The term sheet contemplates a commercial-scale graphite-processing facility on approximately 97 acres at Anniston Army Depot, with phase-I purified micronized graphite and coated spherical purified graphite following customer qualifications.",
+        "subject_time": "Proposed facility development and product phases"
+      },
+      "candidate_index": 1,
+      "case_id": "case_c5813da331db45a7a647b36d478db9c5",
+      "created_at": "2026-10-07T10:06:09.276766Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E327",
+      "runtime_signature": "d027da2c80a68afe9d6dc23a8f8da2ff17bff3272f00e9671b1fb816179b273d",
+      "snapshot_version": 16,
+      "source_message_id": "std_4154800b444c42b094424b5a72988430",
+      "ticker": "MU",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "SCHEDULED",
+        "entities": [
+          "Microsoft",
+          "Nvidia",
+          "Surface Laptop Ultra",
+          "RTX Spark"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "Reuters reported that Microsoft and Nvidia CEOs were scheduled to unveil the Surface Laptop Ultra, powered by Nvidia chips, at a San Francisco event on October 7, 2026, for local AI-agent workloads.",
+        "subject_time": "October 7, 2026 San Francisco event"
+      },
+      "candidate_index": 0,
+      "case_id": "case_cc364f1494db463299fcab21d2cf3a1f",
+      "created_at": "2026-10-07T10:11:02.338333Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E328",
+      "runtime_signature": "067e1c189abc970013ff1bd33530b8f6e34928f1fc586fe71f3e6249a6aa978d",
+      "snapshot_version": 17,
+      "source_message_id": "std_9c7d2cec494040e5905b7311a0ce824f",
+      "ticker": "MU",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Nvidia",
+          "DGX Spark"
+        ],
+        "occurrence_date": null,
+        "proposition": "Reuters reported that Nvidia had raised the DGX Spark price by about 75% to $6,950 in recent weeks, citing increased costs for its 128GB of memory.",
+        "subject_time": "Recent weeks before October 7, 2026"
+      },
+      "candidate_index": 1,
+      "case_id": "case_cc364f1494db463299fcab21d2cf3a1f",
+      "created_at": "2026-10-07T10:11:02.378448Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E329",
+      "runtime_signature": "35f6d680f4a6cd99540d99d44bf986ce0269111ad029d7ef87b221395fd53842",
+      "snapshot_version": 18,
+      "source_message_id": "std_9c7d2cec494040e5905b7311a0ce824f",
+      "ticker": "MU",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Micron Technology"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "Micron Technology shares were down 2.2% in premarket trading on October 7, 2026.",
+        "subject_time": "October 7, 2026 U.S. premarket"
+      },
+      "candidate_index": 0,
+      "case_id": "case_dc43bc639f16424a8e861e3cf67ddf06",
+      "created_at": "2026-10-07T10:44:36.715838Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E330",
+      "runtime_signature": "141db3b0dfea48e9f69b949ebd19e7895dc325b5dd30dcd8704a79a6cea5424d",
+      "snapshot_version": 19,
+      "source_message_id": "std_99ef2061ae074815ad882446d7344502",
+      "ticker": "MU",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "U.S. Treasury 30-year bond"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "The U.S. 30-year Treasury yield reached 5.70%, its highest level since 2002.",
+        "subject_time": "October 7, 2026"
+      },
+      "candidate_index": 1,
+      "case_id": "case_dc43bc639f16424a8e861e3cf67ddf06",
+      "created_at": "2026-10-07T10:44:36.732215Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E331",
+      "runtime_signature": "23bdbfdcfc6a7d048375cd0530a6eadf3c78ee83ced6eee43072d4166e8fa410",
+      "snapshot_version": 20,
+      "source_message_id": "std_99ef2061ae074815ad882446d7344502",
+      "ticker": "MU",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Brent crude oil"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "Brent crude oil traded above $100 per barrel.",
+        "subject_time": "October 7, 2026"
+      },
+      "candidate_index": 2,
+      "case_id": "case_dc43bc639f16424a8e861e3cf67ddf06",
+      "created_at": "2026-10-07T10:44:36.761230Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E332",
+      "runtime_signature": "cbb880feff410c723b3d483205c3d5a5dd8a6d650362cf0677b2670e46d2c298",
+      "snapshot_version": 21,
+      "source_message_id": "std_99ef2061ae074815ad882446d7344502",
+      "ticker": "MU",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Amplify ETFs",
+          "Amplify Top 10 Semiconductors ETF (CPU)",
+          "Samsung Asset Management"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "Amplify ETFs announced the launch of the actively managed Amplify Top 10 Semiconductors ETF (CPU), sub-advised by Samsung Asset Management.",
+        "subject_time": "October 7, 2026 fund launch announcement"
+      },
+      "candidate_index": 0,
+      "case_id": "case_c65083993e1146a88edaf48a2bfc9e3e",
+      "created_at": "2026-10-07T11:05:11.879377Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E333",
+      "runtime_signature": "85b26b881d3253115ca8c5f5ce13df63822224f0dd2df8931d9f227e0e5bde92",
+      "snapshot_version": 22,
+      "source_message_id": "std_a0f6848cc74d4124bb21551dcfc0566e",
+      "ticker": "MU",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Q2 Metals Corp.",
+          "Cisco Lithium Project",
+          "CS26-096"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "2026-10-07，Q2 Metals报告Cisco项目钻孔CS26-096的两段化验结果：134.5米、Li2O品位1.20%（自地表起），以及101.6米、Li2O品位1.02%；后一段全部位于2026年4月MRE概念坑壳之外。",
+        "subject_time": "2026 Summer Drill Program"
+      },
+      "candidate_index": 0,
+      "case_id": "case_d0fecbaf425b40bebdf640f3404ba443",
+      "created_at": "2026-10-07T11:10:37.192320Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E334",
+      "runtime_signature": "835c111eb08fbdca660b4c22856daa6a6d85a956bae3ae6ff78755fa57fe58b7",
+      "snapshot_version": 23,
+      "source_message_id": "std_858aead8cd894f12811e0273108c6305",
+      "ticker": "MU",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Q2 Metals Corp.",
+          "Cisco Lithium Project",
+          "CS26-095"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "2026-10-07，Q2 Metals报告Cisco项目钻孔CS26-095包含10段矿化区间，其中包括70米、Li2O品位1.28%，31.3米、品位1.00%，以及25.7米、品位1.33%。",
+        "subject_time": "2026 Summer Drill Program"
+      },
+      "candidate_index": 1,
+      "case_id": "case_d0fecbaf425b40bebdf640f3404ba443",
+      "created_at": "2026-10-07T11:10:37.213994Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E335",
+      "runtime_signature": "0320b7c944158a75494bcfe3f6a23521c46b58be850507effde42bd1121ffdce",
+      "snapshot_version": 24,
+      "source_message_id": "std_858aead8cd894f12811e0273108c6305",
+      "ticker": "MU",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Q2 Metals Corp.",
+          "Cisco Lithium Project",
+          "CS26-094"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "2026-10-07，Q2 Metals报告Cisco项目钻孔CS26-094的两段化验结果：29.2米、Li2O品位1.53%，以及19.3米、品位1.84%。",
+        "subject_time": "2026 Summer Drill Program"
+      },
+      "candidate_index": 2,
+      "case_id": "case_d0fecbaf425b40bebdf640f3404ba443",
+      "created_at": "2026-10-07T11:10:37.240993Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E336",
+      "runtime_signature": "c1e598cfdeb8da8fb3bd3dd7e6a7e48f991362eaaec329d07e8023e44ef3e670",
+      "snapshot_version": 25,
+      "source_message_id": "std_858aead8cd894f12811e0273108c6305",
+      "ticker": "MU",
+      "trading_date": "2026-10-07"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "ResearchAndMarkets.com",
+          "GCC semiconductor memory market"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "ResearchAndMarkets.com announced that its GCC semiconductor memory market report, with forecast coverage through 2032, had been added to its offering.",
+        "subject_time": "Report announcement on October 7, 2026; forecast coverage through 2032"
+      },
+      "candidate_index": 0,
+      "case_id": "case_62de8f5186bc43c097f4b74f27d3726c",
+      "created_at": "2026-10-07T11:14:28.397088Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E337",
+      "runtime_signature": "d92dfe4fb82f26621d045277751bbaac8deae5bf66e5b6ccf6fa3a17f7fa9563",
+      "snapshot_version": 26,
+      "source_message_id": "std_0da28d00729f481990d81cef2d231c6a",
+      "ticker": "MU",
+      "trading_date": "2026-10-07"
+    }
+  ],
+  "limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "global_state": {
+    "watches": [],
+    "pins": []
+  },
+  "event_details": {
+    "requested_event_ids": [],
+    "canonical_events": [],
+    "provisional_events": [],
+    "missing_event_ids": []
+  }
+}

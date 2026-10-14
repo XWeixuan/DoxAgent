@@ -1,0 +1,932 @@
+{
+  "recent_trade_intents": [
+    {
+      "message": {
+        "title": "ORCL Stock Slides To Early August Levels – $165B New Mexico Project In Focus After Company Reportedly Cites ‘Force Majeure’",
+        "body": "According to a Bloomberg report, Oracle is seeking to defer certain payments if the New Mexico AI data center misses its planned 2028 launch.",
+        "source_name": "stocktwits.com",
+        "published_at": "2026-09-24T14:30:24Z"
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": [
+          "E16"
+        ]
+      },
+      "w2": {
+        "policy_hit": false,
+        "policy_related": false,
+        "policy_ids": [],
+        "hit_condition_ids": [],
+        "matched_condition_ids": []
+      },
+      "w3_decision": {
+        "novelty": {
+          "reason": "E16已记录Bloom与Oracle的关系及Oracle New Mexico数据中心的Bloom燃料电池部署；E40只记录Oracle因数据中心建设延误寻求force-majeure保护的泛化报道。当前消息新增了Oracle拟在New Mexico AI数据中心未按计划于2028年投产时推迟部分付款这一具体合同条件，未被Reference View记录，因此核心事实为NEW。",
+          "reference_ids": [
+            "E16",
+            "E40"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息未确认Bloom项目取消、缩量、正式验收窗口跨季度后移或后续申报中的backlog/收入变化；其内容是Oracle据报道提出的、以2028年投产落空为条件的付款推迟请求，未达到现行客户下调或项目延误Policy的触发边界。"
+        },
+        "expert_trade": {
+          "direction": "SHORT",
+          "evaluated": true,
+          "expectation_delta": "Oracle据报道寻求在New Mexico AI数据中心未能按计划于2028年投产时推迟部分付款，降低该Oracle项目按期兑现的确定性，并提高Bloom相关部署验收、付款/现金转换及收入确认后移的概率；这尚未证明项目已经错过、取消或存在已量化的Bloom特定损失。",
+          "prior_expectation": "事件前，Bloom已将Oracle作为直接超大规模客户，并披露Oracle New Mexico数据中心正在使用Bloom燃料电池；市场基线是该大型负荷项目沿已知计划推进并逐步转化为Bloom部署、验收、付款和收入，未有Oracle寻求付款延期的已知条件。",
+          "reason": "Surprise来自E16/E40均未包含的具体付款推迟与2028投产条件。Materiality较高：New Mexico是已识别的Oracle-Bloom部署，BE的FY2026增长指引和高估值依赖大型负荷项目持续转化。Transmission清晰为Oracle项目启动风险→Bloom燃料电池部署/验收→付款、收入与经营现金流时点，因此方向为SHORT。Bloom特定付款金额和实际错过2028节点尚未确认，但属于强度不确定性，不破坏当前的方向性预期差。",
+          "trade": true
+        }
+      },
+      "direction": "SHORT",
+      "initiated_at": "2026-09-24T14:43:36.499608+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    }
+  ],
+  "history_matches": [
+    {
+      "events": [],
+      "policies": []
+    }
+  ],
+  "watches": [],
+  "pins": [],
+  "policy_consumptions": [],
+  "provisional": [
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Bloom Energy",
+          "Zacks Investment Research"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "Bloom Energy currently has a Zacks Rank #1 (Strong Buy), as reported by Zacks Investment Research.",
+        "subject_time": null
+      },
+      "candidate_index": 0,
+      "case_id": "case_e3b310a4b1c544519e59a68edb8a4191",
+      "created_at": "2026-09-22T16:00:51.765461Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E31",
+      "runtime_signature": "e840a80f10275bfa5f41e61f94f3f800f4cdba77c0d273e6236e7dfe2812abcc",
+      "snapshot_version": 1,
+      "source_message_id": "std_3aa174df27d24fdb829adbbfc03f87db",
+      "ticker": "BE",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "Bloom Energy",
+          "Zacks Investment Research"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "Zacks consensus estimates for Bloom Energy's EPS imply year-over-year increases of 255.26% for FY2026 and 80.56% for FY2027.",
+        "subject_time": "FY2026 and FY2027"
+      },
+      "candidate_index": 1,
+      "case_id": "case_e3b310a4b1c544519e59a68edb8a4191",
+      "created_at": "2026-09-22T16:00:51.789031Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E32",
+      "runtime_signature": "40c62a5024a6ee67cf0fbb7c6778993a9566851cc78bab5399edd5a8ca0f4a25",
+      "snapshot_version": 2,
+      "source_message_id": "std_3aa174df27d24fdb829adbbfc03f87db",
+      "ticker": "BE",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Bloom Energy"
+        ],
+        "occurrence_date": null,
+        "proposition": "Bloom Energy's FY2025 revenue was slightly above $2 billion, approximately 37% higher than FY2024 revenue.",
+        "subject_time": "FY2025"
+      },
+      "candidate_index": 0,
+      "case_id": "case_6048959cc784410091095ab1abfa243d",
+      "created_at": "2026-09-22T19:54:28.718223Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E33",
+      "runtime_signature": "bd2d6ac33fa8e8607381d2205623cf3aad231e485ba8e399f0a8b06e1c15da66",
+      "snapshot_version": 3,
+      "source_message_id": "std_eeabe2bc508e482f9a2572abf93d2ac7",
+      "ticker": "BE",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Bloom Energy"
+        ],
+        "occurrence_date": null,
+        "proposition": "Bloom Energy reported a FY2025 net loss of approximately $88 million, with a net margin of about negative 4%.",
+        "subject_time": "FY2025"
+      },
+      "candidate_index": 1,
+      "case_id": "case_6048959cc784410091095ab1abfa243d",
+      "created_at": "2026-09-22T19:54:28.725306Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E34",
+      "runtime_signature": "bca43b892465541cb4190dd8a75d9f10cfb43da8ab2d779c1f1ab85cfaa7530e",
+      "snapshot_version": 4,
+      "source_message_id": "std_eeabe2bc508e482f9a2572abf93d2ac7",
+      "ticker": "BE",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Bloom Energy"
+        ],
+        "occurrence_date": null,
+        "proposition": "Bloom Energy's FY2025 free cash flow was approximately $57.2 million.",
+        "subject_time": "FY2025"
+      },
+      "candidate_index": 2,
+      "case_id": "case_6048959cc784410091095ab1abfa243d",
+      "created_at": "2026-09-22T19:54:28.731675Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E35",
+      "runtime_signature": "04895cef4e212250ed674984bd9970ab52f0a5699e0e4834320f694872053712",
+      "snapshot_version": 5,
+      "source_message_id": "std_eeabe2bc508e482f9a2572abf93d2ac7",
+      "ticker": "BE",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Bloom Energy"
+        ],
+        "occurrence_date": null,
+        "proposition": "Bloom Energy's December 2025 balance sheet had a debt-to-equity ratio of approximately 3.9x.",
+        "subject_time": "December 2025"
+      },
+      "candidate_index": 3,
+      "case_id": "case_6048959cc784410091095ab1abfa243d",
+      "created_at": "2026-09-22T19:54:28.737745Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E36",
+      "runtime_signature": "eebbd56fd229b16c35a51a0719e26ac9f3e001a0d4c6fde7160c7ccea2a83e2c",
+      "snapshot_version": 6,
+      "source_message_id": "std_eeabe2bc508e482f9a2572abf93d2ac7",
+      "ticker": "BE",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Bloom Energy"
+        ],
+        "occurrence_date": null,
+        "proposition": "Bloom Energy's December 2025 current ratio was nearly 6x.",
+        "subject_time": "December 2025"
+      },
+      "candidate_index": 4,
+      "case_id": "case_6048959cc784410091095ab1abfa243d",
+      "created_at": "2026-09-22T19:54:28.744490Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E37",
+      "runtime_signature": "3f5268b0a8a7b094dd60db4a5b3e0661af7e79802dc88f25c9855284ca6338b3",
+      "snapshot_version": 7,
+      "source_message_id": "std_eeabe2bc508e482f9a2572abf93d2ac7",
+      "ticker": "BE",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Bloom Energy"
+        ],
+        "occurrence_date": null,
+        "proposition": "Bloom Energy had approximately 1.5 GW deployed across more than 1,200 installations, according to its latest annual report.",
+        "subject_time": "Latest annual report"
+      },
+      "candidate_index": 5,
+      "case_id": "case_6048959cc784410091095ab1abfa243d",
+      "created_at": "2026-09-22T19:54:28.750527Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E38",
+      "runtime_signature": "f243ecd25585774197ec2791811f6a542fe4895ffab6f20ab4497e12f6bab5eb",
+      "snapshot_version": 8,
+      "source_message_id": "std_eeabe2bc508e482f9a2572abf93d2ac7",
+      "ticker": "BE",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "Bloom Energy",
+          "Wall Street analysts"
+        ],
+        "occurrence_date": null,
+        "proposition": "Wall Street analyst consensus cited in the source forecasts Bloom Energy FY2026 revenue of approximately $4.1 billion, about 85% year-over-year growth, and net income of approximately $658 million.",
+        "subject_time": "FY2026"
+      },
+      "candidate_index": 6,
+      "case_id": "case_6048959cc784410091095ab1abfa243d",
+      "created_at": "2026-09-22T19:54:28.756473Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E39",
+      "runtime_signature": "aa0f0ed65a2475bf177a506e2c16ba2fe126dd1c85177c69c0dc59d134284db4",
+      "snapshot_version": 9,
+      "source_message_id": "std_eeabe2bc508e482f9a2572abf93d2ac7",
+      "ticker": "BE",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMORED",
+        "entities": [
+          "Oracle"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "据报道，Oracle正因数据中心园区建设延误寻求适用“force majeure”（不可抗力）保护。",
+        "subject_time": null
+      },
+      "candidate_index": 0,
+      "case_id": "case_b74e83a5b18a410a959b9cbb312d1750",
+      "created_at": "2026-09-24T13:44:20.500786Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E40",
+      "runtime_signature": "0141404c293399e7af7dfc2a2017165043cc3d0923ee6019c798b616f2fdafa1",
+      "snapshot_version": 1,
+      "source_message_id": "std_d29d9c57d8e3443cb5634c1618e31a93",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMORED",
+        "entities": [
+          "Oracle",
+          "New Mexico AI data center"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "据报道，Oracle正寻求在其New Mexico AI数据中心未能按计划于2028年投产时推迟部分付款。",
+        "subject_time": "2028年计划投产"
+      },
+      "candidate_index": 0,
+      "case_id": "case_d352e02e723b459486242d142db27af3",
+      "created_at": "2026-09-24T14:43:36.445190Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E41",
+      "runtime_signature": "1ac86e03f47389f6415a1dd42704f90e05c4c26cc48cef6d82d9640344c00ef3",
+      "snapshot_version": 2,
+      "source_message_id": "std_e9c03ad458734b46a2a8c2854e906123",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "SCHEDULED",
+        "entities": [
+          "Google",
+          "Project Suncatcher"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "Google已安排Project Suncatcher首次原型卫星发射并在低地球轨道开展AI芯片在轨测试。",
+        "subject_time": "下周的Transporter-18拼车发射"
+      },
+      "candidate_index": 0,
+      "case_id": "case_805d361cc6dd4348946d48b2890bcb41",
+      "created_at": "2026-09-24T15:23:44.082418Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E42",
+      "runtime_signature": "970cc84e03dde42c4d188f36c16996ed2cc672253e175aba290efdbef8f8bf19",
+      "snapshot_version": 3,
+      "source_message_id": "std_ffe72b0b454a4c569aba0ae892e299fe",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "SoftBank Group",
+          "OpenAI"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "SoftBank Group筹集约111亿美元高收益公司债，用于资助OpenAI及其他人工智能相关公司和基础设施投资。",
+        "subject_time": null
+      },
+      "candidate_index": 0,
+      "case_id": "case_37bbc4625440430fae676296bb86a5ef",
+      "created_at": "2026-09-24T15:25:39.154140Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E43",
+      "runtime_signature": "f6cb49b89dff2e452b7f60dc5ccd9eb9eea0901735949b4e4c4ec272c3059b16",
+      "snapshot_version": 4,
+      "source_message_id": "std_9628913f31f341cfaa5e9145ed959b82",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "PitchBook",
+          "数字基础设施基金"
+        ],
+        "occurrence_date": null,
+        "proposition": "据PitchBook，面向数字基础设施的基金在2025年募集资金接近1600亿美元，约为过去十年平均水平的两倍。",
+        "subject_time": "2025年"
+      },
+      "candidate_index": 0,
+      "case_id": "case_8ee2beb8c4c745ad845ac926036a4c0b",
+      "created_at": "2026-09-24T15:27:53.913584Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E44",
+      "runtime_signature": "88834f45950b626cf12b844f904c69e1a05ec344db6f9bb0b4ab7623bf85fecb",
+      "snapshot_version": 5,
+      "source_message_id": "std_021700eb3aca494d837e3411985d41bb",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "美国数据中心市场"
+        ],
+        "occurrence_date": null,
+        "proposition": "截至2026年上半年，美国八个最大数据中心市场的服务器农场空置率低于2%，同期供应量同比增长34%。",
+        "subject_time": "2026年上半年"
+      },
+      "candidate_index": 1,
+      "case_id": "case_8ee2beb8c4c745ad845ac926036a4c0b",
+      "created_at": "2026-09-24T15:27:53.929812Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E45",
+      "runtime_signature": "71e7d9aa5018a22ae91ddcd8840bfe1ed9fddd811fdd1a56d0a0e92d8938af34",
+      "snapshot_version": 6,
+      "source_message_id": "std_021700eb3aca494d837e3411985d41bb",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMORED",
+        "entities": [
+          "BlackRock",
+          "Artificial Intelligence Infrastructure Partnership",
+          "IFM Investors",
+          "Stack Infrastructure",
+          "Blue Owl Capital",
+          "Asia-Pacific data-center portfolio"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "A consortium backed by BlackRock's Artificial Intelligence Infrastructure Partnership and IFM Investors is reportedly in exclusive talks with Blue Owl Capital to acquire Stack Infrastructure's Asia-Pacific data-center portfolio for up to $25 billion.",
+        "subject_time": null
+      },
+      "candidate_index": 0,
+      "case_id": "case_f563ee9809124c059f025637dfa30f64",
+      "created_at": "2026-09-24T15:28:05.779590Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E46",
+      "runtime_signature": "78811252fb88a9d7d41ef93e3dbdc9e5a8e40c8956ea2c02ce1dd63f2e873210",
+      "snapshot_version": 7,
+      "source_message_id": "std_4f7be415662e4e1d8cf1654f5942fe40",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLANNED",
+        "entities": [
+          "BlackRock",
+          "Artificial Intelligence Infrastructure Partnership",
+          "IFM Investors",
+          "Stack Infrastructure",
+          "Asia-Pacific data-center assets"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "The reported BlackRock-backed Artificial Intelligence Infrastructure Partnership and IFM Investors consortium plans to conduct due diligence on Stack Infrastructure's Asia-Pacific data-center assets.",
+        "subject_time": "near term"
+      },
+      "candidate_index": 1,
+      "case_id": "case_f563ee9809124c059f025637dfa30f64",
+      "created_at": "2026-09-24T15:28:05.880445Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E47",
+      "runtime_signature": "71538f7858357e62b37ce92daa185b8a3ff763e0628628f176edd86f9b1e1927",
+      "snapshot_version": 8,
+      "source_message_id": "std_4f7be415662e4e1d8cf1654f5942fe40",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "SCHEDULED",
+        "entities": [
+          "Donald Trump",
+          "Xi Jinping",
+          "White House"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "Donald Trump and Xi Jinping are scheduled to meet at the White House on September 24, 2026, for their second meeting of the year.",
+        "subject_time": "September 24, 2026"
+      },
+      "candidate_index": 0,
+      "case_id": "case_49863cbf924147cabf641f176de19dd4",
+      "created_at": "2026-09-24T15:28:56.002591Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E48",
+      "runtime_signature": "9784eb3951158a601754523303b4cd9cdd0c49f029d13ce246d43a316103e2b1",
+      "snapshot_version": 9,
+      "source_message_id": "std_4d161f5533594229a68f9c5c6f9d4cf2",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "United Nations",
+          "United Nations Secretariat"
+        ],
+        "occurrence_date": null,
+        "proposition": "The United Nations Secretariat budget is being cut by 9.2% for 2026.",
+        "subject_time": "2026"
+      },
+      "candidate_index": 1,
+      "case_id": "case_49863cbf924147cabf641f176de19dd4",
+      "created_at": "2026-09-24T15:28:56.020376Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E49",
+      "runtime_signature": "4b4397308c9e9f1b653550a861f00fa098565fac843f864ce7ee7b9d5de37598",
+      "snapshot_version": 10,
+      "source_message_id": "std_4d161f5533594229a68f9c5c6f9d4cf2",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Brett Guthrie",
+          "Frank Pallone",
+          "U.S. House Energy and Commerce Committee",
+          "FCC Covered List"
+        ],
+        "occurrence_date": "2026-09-23",
+        "proposition": "On 2026-09-23, U.S. Representatives Brett Guthrie and Frank Pallone unveiled bipartisan legislation proposing to overhaul procedures governing the FCC Covered List.",
+        "subject_time": null
+      },
+      "candidate_index": 0,
+      "case_id": "case_3ca8836dcac343bd8950e25be6794d36",
+      "created_at": "2026-09-24T15:30:28.673141Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E50",
+      "runtime_signature": "38596ed7511ad03a1cf60e9794f9fe404adb2db67c178eab1a49f38d3fc019c9",
+      "snapshot_version": 11,
+      "source_message_id": "std_049c700ca0e043e0a6c45a449e20ce67",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLANNED",
+        "entities": [
+          "FCC",
+          "U.S. Congress",
+          "U.S. Department of Commerce",
+          "FCC Covered List"
+        ],
+        "occurrence_date": "2026-09-23",
+        "proposition": "The proposed legislation would require the FCC to seek input from other federal agencies, including the Commerce Department, before placing foreign technology on the Covered List and would give Congress authority to reverse Covered List determinations.",
+        "subject_time": "If enacted; future FCC Covered List determinations"
+      },
+      "candidate_index": 1,
+      "case_id": "case_3ca8836dcac343bd8950e25be6794d36",
+      "created_at": "2026-09-24T15:30:28.692123Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E51",
+      "runtime_signature": "3b694fff30e5321d93b9e6dc5d93579e86d846daa3e60dbf89eea7d244a722cb",
+      "snapshot_version": 12,
+      "source_message_id": "std_049c700ca0e043e0a6c45a449e20ce67",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLANNED",
+        "entities": [
+          "FCC",
+          "U.S. Congress",
+          "FCC Covered List"
+        ],
+        "occurrence_date": "2026-09-23",
+        "proposition": "The proposed legislation would require the FCC to report to Congress at least seven days before adding technology to the Covered List and would clarify that previously issued equipment authorizations need not be retroactively revoked.",
+        "subject_time": "If enacted; future FCC Covered List determinations"
+      },
+      "candidate_index": 2,
+      "case_id": "case_3ca8836dcac343bd8950e25be6794d36",
+      "created_at": "2026-09-24T15:30:28.714402Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E52",
+      "runtime_signature": "bfd06105587baea1724e0d2967bb1e9a39346c082cc2cecec64f97ed9c4a9504",
+      "snapshot_version": 13,
+      "source_message_id": "std_049c700ca0e043e0a6c45a449e20ce67",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "Morgan Stanley",
+          "美国数据中心市场"
+        ],
+        "occurrence_date": null,
+        "proposition": "Morgan Stanley分析师预计美国数据中心在2026年至2028年的电力需求为68GW，较预计供应高出38GW。",
+        "subject_time": "2026年至2028年"
+      },
+      "candidate_index": 0,
+      "case_id": "case_74a60b22b0484d90959fe3c5b52e7ea2",
+      "created_at": "2026-09-24T15:31:26.689248Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E53",
+      "runtime_signature": "176aee1b2692e39d30d73faf9f97b01b5457acd05ec2d715ce19e36a4d1abf98",
+      "snapshot_version": 14,
+      "source_message_id": "std_1e8b1b00fda740c092f06fd31cf663be",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Bernstein",
+          "加密货币矿工"
+        ],
+        "occurrence_date": null,
+        "proposition": "据Bernstein估计，加密货币矿工合计控制约14GW的运营中及计划中的容量。",
+        "subject_time": null
+      },
+      "candidate_index": 1,
+      "case_id": "case_74a60b22b0484d90959fe3c5b52e7ea2",
+      "created_at": "2026-09-24T15:31:26.702840Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E54",
+      "runtime_signature": "ead1f20834ac4f377be0277e346661f0b87876c0584aa509b18d25ddecec74c8",
+      "snapshot_version": 15,
+      "source_message_id": "std_1e8b1b00fda740c092f06fd31cf663be",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ONGOING",
+        "entities": [
+          "Cipher Digital",
+          "TeraWulf",
+          "Hut 8"
+        ],
+        "occurrence_date": null,
+        "proposition": "Cipher Digital、TeraWulf和Hut 8正在转向向AI运营商出租带电力接入的数据中心powered-shell模式，租约期限可长达15年。",
+        "subject_time": null
+      },
+      "candidate_index": 2,
+      "case_id": "case_74a60b22b0484d90959fe3c5b52e7ea2",
+      "created_at": "2026-09-24T15:31:26.712363Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E55",
+      "runtime_signature": "a9a0d58b2ed38600fed07a223d06990e8d4d71bb44f90eddfcd291d027385a3d",
+      "snapshot_version": 16,
+      "source_message_id": "std_1e8b1b00fda740c092f06fd31cf663be",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMORED",
+        "entities": [
+          "Anthropic"
+        ],
+        "occurrence_date": "2026-09-23",
+        "proposition": "Anthropic's IPO may be delayed until after the U.S. elections in November 2026.",
+        "subject_time": "After the U.S. elections in November 2026"
+      },
+      "candidate_index": 0,
+      "case_id": "case_9ab87909787045c7a111968a9fff79a7",
+      "created_at": "2026-09-24T15:31:48.050549Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E56",
+      "runtime_signature": "bec6f9c28b1c7c88d4993c5e1663ccf9fab5970d9cc428fcb923556b271b3894",
+      "snapshot_version": 17,
+      "source_message_id": "std_3deeafc870f644a2b916fe730d91d423",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Trump Administration",
+          "BIS",
+          "AI Diffusion Rule"
+        ],
+        "occurrence_date": null,
+        "proposition": "特朗普政府于2026年5月重申不执行AI Diffusion Rule；截至2026年9月23日，该规则仍未正式撤销。",
+        "subject_time": "截至2026年9月23日"
+      },
+      "candidate_index": 0,
+      "case_id": "case_1a8eaeec1e8a4dd39d2029065bd9298d",
+      "created_at": "2026-09-24T15:34:43.193559Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E57",
+      "runtime_signature": "91e1629c6ad729ecc73f53b694d480aae5dbe68f3b818efc26d114169e98e1fa",
+      "snapshot_version": 18,
+      "source_message_id": "std_2aefdc8d88b54b219030c3c6be0532af",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "BIS",
+          "EAR",
+          "Country Groups D:1/D:4/D:5"
+        ],
+        "occurrence_date": null,
+        "proposition": "截至2026年9月23日，美国对向Country Groups D:1、D:4和D:5国家及D:5总部公司出口、再出口或境内转移受控先进计算项目仍维持相关许可要求。",
+        "subject_time": "截至2026年9月23日"
+      },
+      "candidate_index": 1,
+      "case_id": "case_1a8eaeec1e8a4dd39d2029065bd9298d",
+      "created_at": "2026-09-24T15:34:43.219557Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E58",
+      "runtime_signature": "b7bfcdc0305164b0f6cec470f19143946407aaa06ecaa0a9984be0594148207e",
+      "snapshot_version": 19,
+      "source_message_id": "std_2aefdc8d88b54b219030c3c6be0532af",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "BIS",
+          "United Arab Emirates"
+        ],
+        "occurrence_date": null,
+        "proposition": "2026年7月，BIS将阿联酋从Country Groups D:3和D:4移入A:5，对阿联酋政府及EAR中特别指定的部分公司取消先进计算项目出口许可要求。",
+        "subject_time": "2026年7月"
+      },
+      "candidate_index": 2,
+      "case_id": "case_1a8eaeec1e8a4dd39d2029065bd9298d",
+      "created_at": "2026-09-24T15:34:43.247476Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E59",
+      "runtime_signature": "e1a2a5ba56ad520be03c6e31c3f654d933a28e0dbb983275d2ece7f9382f3ffd",
+      "snapshot_version": 20,
+      "source_message_id": "std_2aefdc8d88b54b219030c3c6be0532af",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Bloom Energy",
+          "FuelCell Energy",
+          "Plug Power"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "2026年9月24日，报道中的燃料电池股跌幅为Bloom Energy约8%、FuelCell Energy约6%、Plug Power约4%。",
+        "subject_time": "2026年9月24日交易时段"
+      },
+      "candidate_index": 0,
+      "case_id": "case_06dfd99d60354c4ca72468b603196e27",
+      "created_at": "2026-09-24T15:39:57.254630Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E60",
+      "runtime_signature": "982b3ca6a7e730194af23f3fe669c9810e8834196593de5501b87184a79a1085",
+      "snapshot_version": 21,
+      "source_message_id": "std_59942386ef0f4ffa8bf6783fb0b726a0",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "UNKNOWN",
+        "entities": [
+          "247WallSt",
+          "U.S. Treasury",
+          "clean-energy financing"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "247WallSt报道将燃料电池股下跌归因于美国国债收益率上升对清洁能源融资造成的压力。",
+        "subject_time": "2026年9月24日"
+      },
+      "candidate_index": 1,
+      "case_id": "case_06dfd99d60354c4ca72468b603196e27",
+      "created_at": "2026-09-24T15:39:57.273359Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E61",
+      "runtime_signature": "a09a1bd6b3d65af50ddf7b9ee0601af2043a8997b26385cf42ae7e44b7f48fb1",
+      "snapshot_version": 22,
+      "source_message_id": "std_59942386ef0f4ffa8bf6783fb0b726a0",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMORED",
+        "entities": [
+          "Intel",
+          "EMIB-T供应链"
+        ],
+        "occurrence_date": null,
+        "proposition": "行业消息称Intel EMIB衬底良率从2026年第二季度约30%提升至最近季度约45%。",
+        "subject_time": "最近季度，相对于2Q26"
+      },
+      "candidate_index": 0,
+      "case_id": "case_9e8de55d2de740b590d75b88922d3f5b",
+      "created_at": "2026-09-24T15:42:46.468537Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E62",
+      "runtime_signature": "07b064d0457640813e717862627018b229b5d980aefa838901525c590590d632",
+      "snapshot_version": 23,
+      "source_message_id": "std_28d8259533c04f4b8abd7d8bab258fd0",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLAN",
+        "entities": [
+          "Intel",
+          "EMIB-T供应链"
+        ],
+        "occurrence_date": null,
+        "proposition": "EMIB-T供应链计划在2026年第四季度达到约50%良率，并在2027年第一季度达到约60%。",
+        "subject_time": "2026年第四季度至2027年第一季度"
+      },
+      "candidate_index": 1,
+      "case_id": "case_9e8de55d2de740b590d75b88922d3f5b",
+      "created_at": "2026-09-24T15:42:46.492292Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E63",
+      "runtime_signature": "3f4407358f7698b7be1637cc2cdd27bf7c845318accb5b542909353f18a255fd",
+      "snapshot_version": 24,
+      "source_message_id": "std_28d8259533c04f4b8abd7d8bab258fd0",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "Google",
+          "Intel EMIB-T",
+          "TrendForce"
+        ],
+        "occurrence_date": null,
+        "proposition": "TrendForce预计Google将在2027年采用Intel EMIB-T封装。",
+        "subject_time": "2027年"
+      },
+      "candidate_index": 2,
+      "case_id": "case_9e8de55d2de740b590d75b88922d3f5b",
+      "created_at": "2026-09-24T15:42:46.516415Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E64",
+      "runtime_signature": "1b1a43a56266ea3ebda74cdce82f5f2ca297d8baf8fbc34eecddcf86d5bdc846",
+      "snapshot_version": 25,
+      "source_message_id": "std_28d8259533c04f4b8abd7d8bab258fd0",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ONGOING",
+        "entities": [
+          "AWS",
+          "Intel EMIB"
+        ],
+        "occurrence_date": null,
+        "proposition": "AWS正在测试Intel EMIB技术。",
+        "subject_time": null
+      },
+      "candidate_index": 3,
+      "case_id": "case_9e8de55d2de740b590d75b88922d3f5b",
+      "created_at": "2026-09-24T15:42:46.534940Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E65",
+      "runtime_signature": "136eb9a65160a74d77e9e5936c322d106b4db7ae76a63a7a690388bcdfd451a3",
+      "snapshot_version": 26,
+      "source_message_id": "std_28d8259533c04f4b8abd7d8bab258fd0",
+      "ticker": "BE",
+      "trading_date": "2026-09-24"
+    }
+  ],
+  "limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "global_state": {
+    "watches": [],
+    "pins": []
+  },
+  "event_details": {
+    "requested_event_ids": [
+      "E16"
+    ],
+    "canonical_events": [
+      {
+        "event_id": "E16",
+        "title": "Bloom Energy disclosed Oracle and Nebius data-center deployment and contracted-capacity updates",
+        "event_type": "MATERIAL_CONTRACT",
+        "occurred_at": "2026-09-09..2026-09-15",
+        "occurrence_time_precision": "INTERVAL",
+        "status": "ACTIVE",
+        "canonical_summary": "Between 2026-09-09 and 2026-09-15, Bloom Energy disclosed Oracle and Nebius commercial relationships, Oracle data-center fuel-cell deployment, and approximately 1.2 GW of contracted capacity being deployed across U.S. projects.",
+        "known_event_summary": "During 2026-09-09–09-15, Bloom described major Oracle/Nebius deals, Oracle data-center fuel-cell deployment, and 1.2 GW of contracted capacity being deployed across U.S. projects.",
+        "related_event_ids": [],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F41",
+            "proposition": "Bloom Energy has major deals with Oracle and Nebius.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-09",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F42",
+            "proposition": "Bloom Energy named Oracle as its first direct hyperscaler customer.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-09",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F43",
+            "proposition": "Bloom Energy committed to providing power at Oracle's first data center within 90 days.",
+            "assertion_state": "PLAN",
+            "subject_time": "within 90 days",
+            "fact_occurred_at": "2026-09-09",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F44",
+            "proposition": "Bloom Energy will deliver power-generation solutions to some of Oracle's data centers.",
+            "assertion_state": "EXPECTED",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-09",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F45",
+            "proposition": "Clay Magouyrk stated that using Bloom Energy fuel cells is the most environmentally friendly way to generate power.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-11",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F46",
+            "proposition": "Oracle is using Bloom Energy fuel cells for on-site power at its New Mexico data center.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-11",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F47",
+            "proposition": "An initial 1.2 GW of capacity is contracted and being deployed across U.S. projects.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-15",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      }
+    ],
+    "provisional_events": [],
+    "missing_event_ids": []
+  }
+}

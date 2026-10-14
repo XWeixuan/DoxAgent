@@ -1,0 +1,24 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-10-01T18:57:18.010679Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "Signal65's precise online release time is unknown; the page gives October 1, while the first timestamped coverage retrieved is Windows Central at 18:38:23Z.",
+    "No independently run replication or Intel/AMD response before cutoff was established in the retrieved evidence; Windows Central discusses Signal65's results rather than reproducing them.",
+    "The comparison covers three retail systems with differing hardware, software, and displays; it cannot isolate chip-level effects or establish results across the broader laptop market.",
+    "No evidence here connects the benchmark results to PC unit sales, sell-through, OEM purchasing, production allocation, or Intel revenue.",
+    "The current Windows Central page has a different headline from the supplied pre-cutoff capture, and its revision or retitling time is unknown."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

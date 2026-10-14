@@ -1,0 +1,23 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-25T20:25:19.427762Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "No primary announcement from Google, OpenAI, or Anthropic confirming the proposed body's formation, charter, membership, funding, governance, scope, auditor independence, or enforcement authority was located.",
+    "No public record in the reviewed sources establishes what Trump and Xi agreed, if anything, during their private AI discussion; the pre-summit post and later public remarks are not a transcript.",
+    "The Los Angeles Times result's later revision history was not verified, and the PYMNTS page lacked a separate archived pre-cutoff snapshot.",
+    "The reviewed coverage does not establish a BE-specific operational, customer, permitting, or financial consequence."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

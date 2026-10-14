@@ -1,0 +1,170 @@
+{
+  "case_key": "INTC-02-04",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-10-06T17:10:11.647887Z",
+  "reviewed_at": "2026-10-13T22:58:31.700346Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 6,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a13759-bb27-78a3-8477-5e69ae502653",
+    "turn_id": "01a13759-bb41-7853-8528-114fb93fb19e",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 90880,
+        "inputTokens": 101540,
+        "outputTokens": 9861,
+        "reasoningOutputTokens": 7910,
+        "totalTokens": 111401
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 420096,
+        "inputTokens": 516607,
+        "outputTokens": 17390,
+        "reasoningOutputTokens": 14802,
+        "totalTokens": 533997
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "9aa55e44769d23a9dac7fcf2bdca253bcda35157d180674be46b0b3ee1bbd08c",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://www.intel.com/content/www/us/en/newsroom/news/data-center/boosting-agentic-ai-throughput-with-intel-xeon-cpus.html",
+      "title": "Boosting Agentic AI Throughput with Intel® Xeon® CPUs",
+      "published_at": "2026-10-06T17:04:14Z",
+      "time_precision": "EXACT",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search0"
+      ],
+      "source_call_ids": [
+        "exec-bef25836-1239-4017-8da6-c8f95a73f933"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://www.publicnow.com/view/F10E89B20EFE9FDEA5CEF72C48AF7C0CEB23F50F",
+      "title": "Intel Corporation (via Public) / Boosting Agentic AI Throughput with Intel Xeon CPUs",
+      "published_at": "2026-10-06T17:05Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search3"
+      ],
+      "source_call_ids": [
+        "exec-bef25836-1239-4017-8da6-c8f95a73f933"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://newsroom.intel.com/data-center/intel-puts-agentic-ai-xeon-6-networking-ai-systems",
+      "title": "Intel Puts Agentic AI to Work with Xeon 6+, Networking, and AI Systems",
+      "published_at": "2026-05-31",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn3search0"
+      ],
+      "source_call_ids": [
+        "exec-2b8d8fae-ef7e-40fc-8730-564dc5f4cf72"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://www.intel.com/content/www/us/en/newsroom/home.html?videoId=6342904322112",
+      "title": "Intel Newsroom | News and Information",
+      "published_at": null,
+      "time_precision": "UNKNOWN",
+      "updated_at": null,
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn0search1"
+      ],
+      "source_call_ids": [
+        "exec-bef25836-1239-4017-8da6-c8f95a73f933"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "Intel reports that, in its September 2026 tests, Xeon 6 instances achieved 1.66x, 1.64x, and 1.58x the normalized task throughput of the tested 5th Gen AMD EPYC instance in healthcare, banking/financial services, and manufacturing, respectively; the corresponding reported ratios versus Arm v9.2A were 4.5x, 4.57x, and 4.24x. The article says the tests used Terminal-Bench 2.0 with a recorded Claude trajectory replayed through a local proxy, with no model inference or network access.",
+      "source_urls": [
+        "https://www.intel.com/content/www/us/en/newsroom/news/data-center/boosting-agentic-ai-throughput-with-intel-xeon-cpus.html",
+        "https://www.publicnow.com/view/F10E89B20EFE9FDEA5CEF72C48AF7C0CEB23F50F"
+      ],
+      "event_time": "September 2026 testing; exact dates not stated",
+      "publication_time": "2026-10-06T17:04:14Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The figures are Intel’s own benchmark results for the stated AWS configurations and replay setup, not an independent reproduction. Because the replay performs no model inference or network access, the result is not evidence by itself of customer adoption, production deployment, full-stack inference performance, or comparative cost."
+    },
+    {
+      "observation": "Before this benchmark disclosure, Intel had publicly positioned Xeon 6+ for agentic-AI infrastructure, with emphasis on orchestration, concurrency, and data movement. The October article adds comparative test results to that company framing; it does not identify a customer purchase, production commitment, or deployment.",
+      "source_urls": [
+        "https://newsroom.intel.com/data-center/intel-puts-agentic-ai-xeon-6-networking-ai-systems",
+        "https://www.intel.com/content/www/us/en/newsroom/news/data-center/boosting-agentic-ai-throughput-with-intel-xeon-cpus.html"
+      ],
+      "event_time": "2026-06-01 Intel article dateline",
+      "publication_time": "2026-05-31 page label; Intel archive lists June 1",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This is a comparison of Intel’s own earlier positioning with its later disclosure, not evidence of independent pre-event expectations. The earlier page’s publication label and archive date differ by one day."
+    },
+    {
+      "observation": "A timestamped copy of the Intel disclosure was distributed through Public Technologies at 17:05 UTC on October 6, before cutoff; its record describes the copy as unedited and unaltered.",
+      "source_urls": [
+        "https://www.publicnow.com/view/F10E89B20EFE9FDEA5CEF72C48AF7C0CEB23F50F"
+      ],
+      "event_time": "2026-10-06T17:05Z syndication",
+      "publication_time": "2026-10-06T17:05Z",
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "This establishes a dated dissemination record, not that it was the earliest third-party copy; it republishes Intel’s claims and is not independent coverage."
+    }
+  ],
+  "gaps": [
+    "No independent editorial report or independent reproduction with a verifiable publication time before the cutoff was located in the focused search.",
+    "The Intel article page has no visible revision history. Its pre-cutoff captured body is supported by the supplied capture metadata and the 17:05 UTC syndication copy, but any later edits to the current live page cannot be dated.",
+    "The Intel newsroom index shows additional October 6 posts but gives no clock times, so their ordering relative to the 17:10:11.647887Z cutoff is unverified.",
+    "The benchmark disclosure does not provide named customer production deployments, order commitments, or comparative instance-cost/TCO results."
+  ],
+  "research_notes": "Cutoff: 2026-10-06T17:10:11.647887Z. The supplied capture metadata timestamps Intel’s article at 17:04:14Z and its capture at 17:08:26Z; Intel’s archive lists it on October 6, and a timestamped syndication copy appeared at 17:05 UTC. Both precede cutoff. Intel says the tests were conducted in September, but does not give exact test dates. Relative to Intel’s earlier agentic-AI positioning for Xeon 6+, the new disclosure adds comparative benchmark results; it does not report customer commitments or production adoption. The results are Intel-run fixed-trace tests, so their scope should not be generalized beyond the stated setups and methodology. No post-cutoff market reactions or coverage are used."
+}

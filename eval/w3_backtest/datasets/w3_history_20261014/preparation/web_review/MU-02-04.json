@@ -1,0 +1,191 @@
+{
+  "case_key": "MU-02-04",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-09-29T18:36:54.140876Z",
+  "reviewed_at": "2026-10-13T22:58:31.999960Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 6,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a1375e-f843-73b2-9451-d983478e1709",
+    "turn_id": "01a1375e-f85d-7f93-a5fd-ad8281be15c2",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 79616,
+        "inputTokens": 86067,
+        "outputTokens": 17823,
+        "reasoningOutputTokens": 15538,
+        "totalTokens": 103890
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 366848,
+        "inputTokens": 448610,
+        "outputTokens": 22244,
+        "reasoningOutputTokens": 19458,
+        "totalTokens": 470854
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "6ffd84313b0341a4e6d436c23799d43efa4fbad5159dc74826142c1440071046",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://techcrunch.com/2026/09/28/anthropics-prospectus-details-losses-growth-and-yes-a-warning-that-its-ai-could-end-humanity/",
+      "title": "Anthropic’s prospectus details losses, growth, and, yes, a warning that its AI could end humanity",
+      "published_at": "2026-09-29T05:13:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search9"
+      ],
+      "source_call_ids": [
+        "exec-a8e7652b-50c4-41bf-ad5f-e8554737ec5f"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://www.theinformation.com/articles/anthropic-clinched-517-billion-compute-deals-11-months",
+      "title": "How Anthropic Clinched $517 Billion in Compute Deals in 11 Months",
+      "published_at": "2026-09-06T15:00:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn3search3"
+      ],
+      "source_call_ids": [
+        "exec-d11e5991-ee09-43d4-bba6-6be2399e7887"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://www.theinformation.com/briefings/anthropic-spacex-detail-compute-deal-worth-40-billion",
+      "title": "SpaceX’s Anthropic Compute Deal Worth Up to $40 Billion",
+      "published_at": "2026-05-20T23:31:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn0search2"
+      ],
+      "source_call_ids": [
+        "exec-a8e7652b-50c4-41bf-ad5f-e8554737ec5f"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://www.fidelity.com/news/article/company-news/202609290607RTRSNEWSCOMBINED_KBN3VF0YX-OUSBS_1",
+      "title": "Anthropic says it expects to spend at least $518 billion over a decade on AI infrastructure",
+      "published_at": "2026-09-29",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn0search5",
+        "turn3search1"
+      ],
+      "source_call_ids": [
+        "exec-a8e7652b-50c4-41bf-ad5f-e8554737ec5f",
+        "exec-d11e5991-ee09-43d4-bba6-6be2399e7887"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S5",
+      "url": "https://www.theinformation.com/briefings/anthropic-discloses-84-5-billion-spacex-compute-agreements",
+      "title": "Anthropic Discloses up to $84.5 Billion in SpaceX Compute Agreements",
+      "published_at": null,
+      "time_precision": "UNKNOWN",
+      "updated_at": null,
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn0search0"
+      ],
+      "source_call_ids": [
+        "exec-a8e7652b-50c4-41bf-ad5f-e8554737ec5f"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "By Sep. 6, The Information had already reported roughly $517 billion in Anthropic compute deals. The May SpaceX report separately described up to $40 billion in payments and a 90-day cancellation right. Thus the later $518 billion headline alone was not wholly new public context; reported enforceability and payment terms were a more material information increment.",
+      "source_urls": [
+        "https://www.theinformation.com/articles/anthropic-clinched-517-billion-compute-deals-11-months",
+        "https://www.theinformation.com/briefings/anthropic-spacex-detail-compute-deal-worth-40-billion"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-06T15:00:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "These are media reports, not a retrieved contract ledger or public filing. Aggregates and terms may differ by agreement and reporting date."
+    },
+    {
+      "observation": "TechCrunch’s Sep. 28 coverage says Reuters had first reported prospectus financial details on Monday and reports the $518 billion cloud, computing, and infrastructure plan. The underlying prospectus was described as confidential; the exact Reuters first-publication time was not established by the live pages reviewed.",
+      "source_urls": [
+        "https://techcrunch.com/2026/09/28/anthropics-prospectus-details-losses-growth-and-yes-a-warning-that-its-ai-could-end-humanity/"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-29T05:13:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The report concerns Anthropic’s aggregate future infrastructure plans and does not identify Micron as a supplier or quantify any Micron-related order, product, or shipment."
+    },
+    {
+      "observation": "The same pre-cutoff TechCrunch article relays Financial Times reporting of $11.5 billion in Anthropic Q2 2026 revenue and a second consecutive quarter of operating profit on an adjusted basis, alongside Reuters-reported 2025 operating losses above $8 billion.",
+      "source_urls": [
+        "https://techcrunch.com/2026/09/28/anthropics-prospectus-details-losses-growth-and-yes-a-warning-that-its-ai-could-end-humanity/"
+      ],
+      "event_time": "2026-Q2",
+      "publication_time": "2026-09-29T05:13:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The profitability figure is adjusted and reported second-hand; it does not establish capacity utilization, cash coverage of long-term commitments, or any Micron-specific demand."
+    }
+  ],
+  "gaps": [
+    "The confidential prospectus itself was not retrieved. The full filing passages, contract table, total calculation, and exact obligations remain independently unverified.",
+    "The Reuters syndicated result is dated Sep. 29 without a verifiable publication time, and the Sep. 29 Information SpaceX result lacks a visible date/time. The approximately 80% non-cancelable/pay-regardless detail and $84.5 billion SpaceX figure therefore cannot be placed with confidence before the cutoff from these pages.",
+    "No evidence found identifies Micron as an Anthropic supplier or connects the commitments to Micron HBM, DRAM, NAND, qualification, bit shipments, revenue, or capacity.",
+    "The retrieved material does not establish actual usage, delivery timing, capacity energization, cancellation or breach outcomes, or the amount of future cash paid in any particular period."
+  ],
+  "research_notes": "Cutoff: 2026-09-29T18:36:54.140876Z. The case feed records the story at 2026-09-28 7:16 PM EDT; live search independently found TechCrunch’s Sep. 28, 10:13 PM PDT coverage saying Reuters had first reported the prospectus details on Monday. The exact timestamp and text of Reuters’s initial report were not independently verified. The total commitment figure was already in pre-event coverage by Sep. 6; the more decision-relevant reported change was detail about cancellation/payment obligations. However, search results for the Sep. 29 Reuters and Information reports containing the ~80% figure and SpaceX amount do not establish publication before cutoff, so those details are not treated as cutoff-verified observations. The confidential prospectus itself was not retrieved. No source found links these Anthropic commitments to Micron purchases, products, qualifications, shipments, or financial results."
+}

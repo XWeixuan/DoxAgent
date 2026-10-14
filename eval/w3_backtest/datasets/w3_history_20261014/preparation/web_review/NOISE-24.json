@@ -1,0 +1,160 @@
+{
+  "case_key": "NOISE-24",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-10-08T14:04:40.055895Z",
+  "reviewed_at": "2026-10-13T22:58:33.244188Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 5,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a13779-2726-7193-99f5-b497903f0f15",
+    "turn_id": "01a13779-273e-7ed3-9787-4b1ab48a2e36",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 79616,
+        "inputTokens": 86088,
+        "outputTokens": 15630,
+        "reasoningOutputTokens": 13670,
+        "totalTokens": 101718
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 321024,
+        "inputTokens": 398023,
+        "outputTokens": 19672,
+        "reasoningOutputTokens": 17261,
+        "totalTokens": 417695
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "195ecc1ba5ca36e09af675c24a2796e51cdf959d51c2f996b9da21fb718d11c3",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://www.globenewswire.com/de/news-release/2026/10/08/3377444/0/en/beyond-our-walls-illinois-holocaust-museum-makes-holocaust-survivor-stories-available-in-home-vr-for-the-first-time.html",
+      "title": "Beyond Our Walls: Illinois Holocaust Museum Makes Holocaust Survivor Stories Available in Home VR for the First Time",
+      "published_at": "2026-10-08T14:00:00Z",
+      "time_precision": "EXACT",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search4"
+      ],
+      "source_call_ids": [
+        "exec-1ec0856f-5278-46a8-a810-9ea60f09e6cb"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://xrmust.com/xr-magazine/east-city-films-illinois-holocaust-museum-meta-quest/",
+      "title": "East City Films and Illinois Holocaust Museum Bring Survivor Stories to Consumer VR",
+      "published_at": "2026-10-08",
+      "time_precision": "DAY",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn0search5",
+        "turn4search0"
+      ],
+      "source_call_ids": [
+        "exec-1ec0856f-5278-46a8-a810-9ea60f09e6cb",
+        "exec-d87d97f2-291a-4d55-886a-498cd226c558"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://shareprices.com/rns/3q-2026-pre-earnings-guidance-nj6r9piypyiannk/",
+      "title": "3Q 2026 Pre-Earnings Guidance",
+      "published_at": "2026-10-08 07:00 BST (RNS displayed time; timezone label not shown)",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn2search6"
+      ],
+      "source_call_ids": [
+        "exec-d155ab69-dfe2-4a64-b181-ffbffb85d0fc"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://en.yna.co.kr/view/AEN20261008000951320",
+      "title": "(LEAD) Samsung's Q3 operating profit reaches new high of 107.4 tln won",
+      "published_at": "UNKNOWN",
+      "time_precision": "UNKNOWN",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn2search4"
+      ],
+      "source_call_ids": [
+        "exec-d155ab69-dfe2-4a64-b181-ffbffb85d0fc"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "IHMEC's release said the three named VR films were available free on Quest 3/3S as of October 8, while Pico 4 Ultra and Samsung Galaxy AndroidXR versions were planned for later in the fall. It described the prior access channels as museum venues and a traveling Mobile VR Trunk.",
+      "source_urls": [
+        "https://www.globenewswire.com/de/news-release/2026/10/08/3377444/0/en/beyond-our-walls-illinois-holocaust-museum-makes-holocaust-survivor-stories-available-in-home-vr-for-the-first-time.html"
+      ],
+      "event_time": "2026-10-08 (release says available that day; exact app-live time not specified)",
+      "publication_time": "2026-10-08T14:00:00Z",
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "The source is the issuer's announcement and independently verifies neither the exact store-live time nor actual downloads. The rollout to other named platforms was prospective."
+    },
+    {
+      "observation": "Samsung's preliminary Q3 guidance was publicly timestamped at 07:00 BST on October 8, before the cutoff. It estimated KRW 195 trillion in sales and KRW 107.4 trillion in operating profit.",
+      "source_urls": [
+        "https://shareprices.com/rns/3q-2026-pre-earnings-guidance-nj6r9piypyiannk/"
+      ],
+      "event_time": "2026-10-08 (preliminary Q3 guidance)",
+      "publication_time": "2026-10-08 07:00 BST (RNS displayed time; treated as 06:00Z)",
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "The figures were preliminary, before external audit; the guidance did not provide a business-division breakdown and does not connect the museum announcement to Micron."
+    }
+  ],
+  "gaps": [
+    "No independent, time-verified report of the museum release before the cutoff was established. The same-day XRMust article has only a date and largely repeats the announcement.",
+    "The release's statement of current Quest availability was not independently confirmed by a store listing or other timestamped source available by the cutoff.",
+    "No separate pre-launch expectation or dated pre-cutoff snapshot was verified; the prior-access baseline comes from the release's own description.",
+    "The Yonhap page surfaced as a recast with an 08:14 timestamp, but no pre-cutoff archived version or initial dispatch time was verified; its added context was therefore not used."
+  ],
+  "research_notes": "Research-only; cutoff is 2026-10-08T14:04:40.055895Z. The earliest traceable public source found for the subject announcement is the IHMEC release on GlobeNewswire at 10:00 ET (14:00Z), about 4 minutes 40 seconds before cutoff. Its stated prior context is that access had been limited to museum venues and the traveling Mobile VR Trunk; the new information is free Quest 3/3S access, with Pico and Samsung Galaxy AndroidXR compatibility deferred to later in the fall. This is a staged distribution expansion, not evidence of a new film or a Micron business development. The release itself contains no MU-specific facts; that is an inference from its text, not proof against any indirect connection. Supplied W2 likewise lists no matched conditions or policies. A contemporaneous Samsung preliminary earnings guidance is included as separate memory-sector context, not as a link to the museum announcement or Micron. No post-cutoff market reaction or later outcome is used."
+}

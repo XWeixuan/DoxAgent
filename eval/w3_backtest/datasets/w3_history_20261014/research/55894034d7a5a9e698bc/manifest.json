@@ -1,0 +1,14 @@
+{
+  "research_key": "55894034d7a5a9e698bc",
+  "ticker": "INTC",
+  "version_pin": {
+    "activation_revision_id": "runtime-maintain-6a37ce08c0b679702b932ce8-activation",
+    "document1_run_id": "init-intc-738849dbdbb04ae1a39efa0aec69c071-d1",
+    "document2_run_id": "init-intc-738849dbdbb04ae1a39efa0aec69c071-d2",
+    "event_library_root": "/data/runtime/runtime_artifacts/runtime-maintain-6a37ce08c0b679702b932ce8/events",
+    "event_library_version": 14,
+    "policy_set_version": 6,
+    "provisional_snapshot_version": 26,
+    "runtime_projection_version": 6
+  }
+}

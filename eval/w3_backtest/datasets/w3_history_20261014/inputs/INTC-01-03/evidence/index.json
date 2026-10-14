@@ -1,0 +1,23 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-30T09:35:04.587315Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "No Q3 realized Foundry/System LSI loss result is established by these pre-cutoff sources; the KRW 777 billion figure is attributed to a securities analyst estimate.",
+    "No pre-cutoff archived snapshot of Digital Today’s original page was verified. Its original publication time is traceable, but current-page wording should not be treated as a dated pre-cutoff snapshot; relevant claims are included only where reproduced in the TrendForce copy captured before cutoff.",
+    "The 10–15% advanced-process price increase and Qualcomm negotiation status are media reports, not an official price schedule or disclosed completed order.",
+    "The reviewed material concerns Samsung Foundry and does not establish an Intel-specific customer commitment, cancellation, allocation shift, shipment change, or cost impact."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

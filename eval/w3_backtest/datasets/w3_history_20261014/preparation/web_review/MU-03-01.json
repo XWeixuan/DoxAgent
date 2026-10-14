@@ -1,0 +1,179 @@
+{
+  "case_key": "MU-03-01",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-09-30T07:58:39.990377Z",
+  "reviewed_at": "2026-10-13T22:58:32.071799Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 6,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a13760-38db-7033-8647-680b09af9479",
+    "turn_id": "01a13760-38ec-7650-a075-0bd5fcee5c8d",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 79616,
+        "inputTokens": 85321,
+        "outputTokens": 8433,
+        "reasoningOutputTokens": 6106,
+        "totalTokens": 93754
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 374016,
+        "inputTokens": 451756,
+        "outputTokens": 12518,
+        "reasoningOutputTokens": 9553,
+        "totalTokens": 464274
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "56b58237af9a87df02d3c170fe325b9d0105d549b5760d0734cb00db9a9345e5",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://www.trendforce.com/research/download/RP260923EN",
+      "title": "DRAM Market Bulletin - Sep. 23, 2026",
+      "published_at": "2026-09-23",
+      "time_precision": "DAY",
+      "updated_at": "2026-09-23",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "BEFORE_CUTOFF",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "The supplied publication and revision times do not exceed the case cutoff.",
+      "source_result_refs": [
+        "turn4search10"
+      ],
+      "source_call_ids": [
+        "exec-bf5d0309-206b-430c-93a9-8e5b4f4f8f72"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://www.trendforce.com/research/download/RP260924PL",
+      "title": "4Q26 Memory Price Forecast",
+      "published_at": "2026-09-24",
+      "time_precision": "DAY",
+      "updated_at": "2026-09-24",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "BEFORE_CUTOFF",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "The supplied publication and revision times do not exceed the case cutoff.",
+      "source_result_refs": [
+        "turn4search3"
+      ],
+      "source_call_ids": [
+        "exec-bf5d0309-206b-430c-93a9-8e5b4f4f8f72"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://www.trendforce.com/presscenter/news/20260930-13258.html",
+      "title": "AI Server Demand Sustains Memory Contract Price Increases in 4Q26, While Consumer-Side Pressure Persists, Says TrendForce",
+      "published_at": "2026-09-30T04:00:00Z",
+      "time_precision": "EXACT",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search0"
+      ],
+      "source_call_ids": [
+        "exec-1c431191-ecbb-4a84-98f1-68f9073ab15b"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://www.trendforce.com/presscenter/news/20260703-13134.html",
+      "title": "AI Server Demand Continues to Support Memory Prices in 3Q26, but Gains Moderate as Consumer Demand Weakens and High Base Effects Take Hold, Says TrendForce",
+      "published_at": "2026-07-03",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search4"
+      ],
+      "source_call_ids": [
+        "exec-1c431191-ecbb-4a84-98f1-68f9073ab15b"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "On Sep. 30, TrendForce publicly forecast 4Q26 conventional DRAM contract prices +10–15% QoQ and NAND Flash +15–20% QoQ. It said enterprise SSDs were the only category expected to accelerate price growth, citing AI/CSP demand and constrained server-oriented supply.",
+      "source_urls": [
+        "https://www.trendforce.com/presscenter/news/20260930-13258.html"
+      ],
+      "event_time": "2026-09-30T04:00:00Z (forecast release)",
+      "publication_time": "2026-09-30T04:00:00Z",
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "These are forecasts, not realized contract prices or Micron-specific results. The release also reports weak consumer demand, limited client SSD buying, and LTA pricing mechanisms that may cause some supplier increases to lag."
+    },
+    {
+      "observation": "TrendForce’s July 3 prior 3Q26 forecast was +13–18% QoQ for conventional DRAM and +10–15% for NAND. Compared with those forecast bands, the Sep. 30 4Q forecast has conventional DRAM endpoints 3 percentage points lower and NAND endpoints 5 points higher; this is a comparison of forecasts, not actual price changes.",
+      "source_urls": [
+        "https://www.trendforce.com/presscenter/news/20260703-13134.html",
+        "https://www.trendforce.com/presscenter/news/20260930-13258.html"
+      ],
+      "event_time": "2026-09-30T04:00:00Z (4Q forecast release; prior forecast published 2026-07-03)",
+      "publication_time": "2026-09-30T04:00:00Z",
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "Quarterly ranges are not directly comparable to realized prices, company-level ASPs, volumes, or margins."
+    },
+    {
+      "observation": "TrendForce’s Sep. 23 DRAM bulletin is the earliest traceable public signal found that the 4Q26 DRAM contract-price outlook had been raised. The Sep. 24 forecast page then described AI/CSP-led demand and weak consumer demand, and gave an enterprise SSD forecast of +23–28% QoQ with overall NAND +15–20%.",
+      "source_urls": [
+        "https://www.trendforce.com/research/download/RP260923EN",
+        "https://www.trendforce.com/research/download/RP260924PL"
+      ],
+      "event_time": "2026-09-23 (DRAM bulletin); 2026-09-24 (memory forecast page)",
+      "publication_time": "2026-09-23; 2026-09-24",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The Sep. 23 public abstract does not expose the revised DRAM range, and the Sep. 24 displayed abstract does not state the conventional DRAM range; the detailed report is gated."
+    },
+    {
+      "observation": "The primary release’s counterevidence is concentrated in consumer-facing segments: notebook costs weigh on sales, PC brands reduce mainstream SSD capacities, client SSD procurement is limited, and NAND wafer buyers are cautious. TrendForce also says LTA pricing terms can limit some server DRAM suppliers’ increases.",
+      "source_urls": [
+        "https://www.trendforce.com/presscenter/news/20260930-13258.html"
+      ],
+      "event_time": "2026-09-30T04:00:00Z (forecast release)",
+      "publication_time": "2026-09-30T04:00:00Z",
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "This is counterevidence within the same TrendForce release, not independent corroboration. No company-specific Micron impact is established."
+    }
+  ],
+  "gaps": [
+    "Independent contemporaneous coverage before cutoff was not verified. The search result for an IT之家 item dated Sep. 30 could not be fetched, and its publication time relative to the cutoff is unknown; it is excluded.",
+    "TrendForce’s public pages provide industry forecasts, not Micron-specific realized prices, quantities, revenue, share, or margin effects.",
+    "The Sep. 23 and Sep. 24 TrendForce research pages expose summaries rather than all underlying tables; the precise timing of their initial public release is not shown."
+  ],
+  "research_notes": "Cutoff: 2026-09-30T07:58:39.990377Z. The earliest traceable public signal found is TrendForce’s Sep. 23 DRAM bulletin, whose abstract says it raised its 4Q26 contract-price outlook; the Sep. 24 forecast page provides more detail, and TrendForce’s Sep. 30 press release disseminates the explicit conventional DRAM and overall NAND ranges. The press-release page itself gives only the date; the supplied source record gives 04:00 UTC publication time and a 07:53 UTC capture of the original text, both before cutoff. TrendForce’s July 3 3Q26 forecast is prior context. Comparing forecast ranges—not realized prices—the 4Q conventional DRAM range is 3 percentage points lower at both ends than the 3Q range, while NAND is 5 points higher at both ends. These are industry forecasts, not Micron-specific results. A contemporaneous independent report could not be verified within the cutoff: an IT之家 search result dated Sep. 30 was not fetchable, and its time of publication could not be established. No post-cutoff material or market reaction is used."
+}

@@ -1,0 +1,1840 @@
+{
+  "schema_version": "w3-backtest.case.v1",
+  "case_key": "INTC-01-01",
+  "group": "reviewed",
+  "original_case_id": "case_be54a8b3078048dba6f49560cf9d9629",
+  "ticker": "INTC",
+  "evidence_cutoff_at": "2026-09-22T15:38:58.981441Z",
+  "cutoff_basis": "original_worker_started_at",
+  "research_key": "28d3f9d763ea2d71ec69",
+  "research_path": "research/28d3f9d763ea2d71ec69",
+  "original_case": {
+    "case_id": "case_be54a8b3078048dba6f49560cf9d9629",
+    "trading_date": "2026-09-22",
+    "source": {
+      "admission_context": {
+        "cutoff": null,
+        "mode": "REALTIME",
+        "policy_version": 1,
+        "source_task_id": null,
+        "sweep_id": null,
+        "window_start": null
+      },
+      "binding_id": "INTC:yahoo_finance_news",
+      "business_version": 1,
+      "collected_at": "2026-09-22T15:34:51.138387Z",
+      "eligibility_at": "2026-09-22T15:34:51.135041Z",
+      "logical_message_id": "message_6f7f249033854257b38c22ef0d0410c6",
+      "member_count": 1,
+      "member_message_ids": [
+        "std_bb71cd8f1eae4683ae9e817d67b78d9f"
+      ],
+      "message_bus_event_time": "2026-09-22T15:34:51.138387Z",
+      "normalized_at": null,
+      "previous_raw_message_id": null,
+      "publication_time_basis": "EXACT",
+      "published_at": "2026-09-22T15:22:00Z",
+      "snapshot": {
+        "body": "Intel Corporation INTC has extended its Core Ultra platform to new Googlebook laptops from Alphabet Inc. GOOGL powered by Intel Core Ultra Series 3 processors. Developed with Google, the new laptops are being brought to market by PC makers Acer, ASUS and Lenovo, combining Intel processing and connectivity technologies with Google's computing experience.Intel's latest processors deliver responsive performance and power efficiency for modern computing. Built on its advanced 18A process technology, the Core Ultra Series 3 integrates CPU, GPU and NPU architectures to support demanding workloads and artificial intelligence (AI)-enabled experiences. The platform is designed to help users multitask across applications while maintaining efficient power consumption for longer battery life.The company also brings enhanced connectivity features to the new Googlebook laptops, including Intel Wi-Fi 7, Dual Intel Bluetooth 6.0 and Intel Thunderbolt. These technologies deliver fast and reliable connections across different environments while supporting seamless device experiences.Building on more than a decade of collaboration between Intel and Google, the launch introduces premium laptops with modern designs, vibrant displays and next-generation features. The initiative supports Intel's efforts to deliver high-performance, efficient and AI-capable technologies across a broader range of devices.\n\nHow Are Competitors Performing in the PC Market?\n\nIntel faces competition from Qualcomm Incorporated QCOM and Advanced Micro Devices AMD. Qualcomm is strengthening its presence in the PC market with its Snapdragon X2 processors, which offer AI capabilities, performance and power efficiency. The company launched the Snapdragon C platform for affordable laptops targeting students, families and small businesses. Qualcomm is further expanding its PC portfolio through laptops from major PC manufacturers such as ASUS, HP, Lenovo and Acer.AMD is advancing in the PC market with Ryzen AI processors, which combine strong computing performance with built-in AI capabilities. The company offers Ryzen AI chips across consumer and business PCs, including laptops, desktops and workstations. AMD is working with major PC manufacturers to expand the availability of its Ryzen-powered AI PCs.\n\nINTC's Price Performance, Valuation & Estimates\n\nShares of Intel have skyrocketed 323.4% over the past year compared with the industry's growth of 31.7%.\n\nImage Source: Zacks Investment Research\n\nGoing by the price/book ratio, the company's shares currently trade at 5.96 times book value, lower than the industry average of 23.92.\n\nINTC's earnings estimates for 2026 have increased 27.1% to $1.50 per share, while those for 2027 have increased 18.8% to $1.96 over the past 60 days.\n\nIntel currently carries a Zacks Rank #3 (Hold). You can see the complete list of today's Zacks #1 Rank (Strong Buy) stocks here.\n\nWant the latest recommendations from Zacks Investment Research? Today, you can download 7 Best Stocks for the Next 30 Days. Click to get this free report\n\nIntel Corporation (INTC) : Free Stock Analysis Report\n\nQUALCOMM Incorporated (QCOM) : Free Stock Analysis Report\n\nAdvanced Micro Devices, Inc. (AMD) : Free Stock Analysis Report\n\nAlphabet Inc. (GOOGL) : Free Stock Analysis Report\n\nThis article originally published on Zacks Investment Research (zacks.com).\n\nZacks Investment Research",
+        "ticker": "INTC",
+        "title": "Can Intel's Core Ultra Expansion With Googlebook Benefit the Stock?"
+      },
+      "source_id": "yahoo_finance_news",
+      "source_message_id": "std_bb71cd8f1eae4683ae9e817d67b78d9f",
+      "stream_item_id": "stream_7f08259ae70f49958b8857bb9c5b8c73",
+      "update_kind": "NEW_MESSAGE",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/intels-core-ultra-expansion-googlebook-152200497.html"
+    },
+    "version_pin": {
+      "activation_revision_id": "init-intc-738849dbdbb04ae1a39efa0aec69c071-activation",
+      "document1_run_id": "init-intc-738849dbdbb04ae1a39efa0aec69c071-d1",
+      "document2_run_id": "init-intc-738849dbdbb04ae1a39efa0aec69c071-d2",
+      "event_library_root": null,
+      "event_library_version": 1,
+      "policy_set_version": 1,
+      "provisional_snapshot_version": 26,
+      "runtime_projection_version": 1
+    },
+    "runtime_mode": "REALTIME",
+    "closed_cycle_id": null,
+    "w1_final": {
+      "confidence": "normal",
+      "fact_attributions": [
+        {
+          "event_id": "E80",
+          "fact_ids": []
+        }
+      ],
+      "reason": "E80 only records a PLANNED state that Googlebook laptops 'will use Intel or Qualcomm processors.' The current message is Intel's own ACTUAL announcement that Core Ultra Series 3 (18A process) specifically powers new Googlebook laptops, with confirmed partners Acer, ASUS, Lenovo. The transition from planned/generic processor attribution to Intel's confirmed, specific product launch is a new core fact not covered by existing facts.",
+      "reference_ids": [
+        "E77",
+        "E79",
+        "E80"
+      ],
+      "result": "NEW"
+    },
+    "w1_extraction": null,
+    "w2_final": {
+      "confidence": "normal",
+      "matched_condition_ids": [],
+      "policy_ids": [],
+      "reason": "当前消息为Intel Core Ultra Series 3在Googlebook新形态上的产品发布/上市公告，涉及Acer、ASUS、Lenovo三家OEM将搭载18A工艺的Core Ultra Series 3笔记本推向市场。该消息未包含任何政策criterion所要求的具体触发事实：无确认的终端销售数据及据此产生的补单（pol_849bf577d74f6b102e74），无供给约束缓解或单位出货数据（pol_00aedd21578697ff89d7），无库存、延期、取消或削减信息，也非边缘AI/机器人客户量产设计承诺。消息仅为产品市场导入公告，与任何Policy的触发条件不存在具体、实质性的事实对应关系。"
+    },
+    "created_at": "2026-09-22T15:34:52.565372Z",
+    "frozen_inputs": {
+      "index": {
+        "contract_version": "known-event-index-v2",
+        "known_event_index": "E2 | 2026-09-21 | Qualcomm updated non-handset diversification and Apple offset guidance | On 2026-09-21, Qualcomm updated non-handset diversification and Apple offset guidance.\nE3 | 2026-09-12..2026-09-21 | Frontier-AI leaders debated development pace, safety coordination, and spending | Between 2026-09-12 and 2026-09-21, Frontier-AI leaders debated development pace, safety coordination, and spending.\nE8 | 2026-09-18..2026-09-21 | Intel FY2025 annual-report supplemental disclosures | Between 2026-09-18 and 2026-09-21, Intel FY2025 annual-report supplemental disclosures.\nE11 | 2026-09-21 | Meta Muse reached the top of Apple's US App Store | On 2026-09-21, Meta Muse reached the top of Apple's US App Store.\nE20 | 2026-09-10..2026-09-21 | AMD projected a $220 billion server CPU addressable market by 2030 | Between 2026-09-10 and 2026-09-21, AMD projected a $220 billion server CPU addressable market by 2030.\nE23 | 2026-09-21 | AMD and Meta disclosed a February 2026 six-gigawatt AI-infrastructure agreement | On 2026-09-21, AMD and Meta disclosed a February 2026 six-gigawatt AI-infrastructure agreement.\nE24 | 2026-09-21 | AMD reported Q2 results with $6.7 billion of data-center revenue | On 2026-09-21, AMD reported Q2 results with $6.7 billion of data-center revenue.\nE25 | 2026-09-21 | AMD warned of Q4 2026 price increases and excluded Ryzen desktop processors | On 2026-09-21, AMD warned of Q4 2026 price increases and excluded Ryzen desktop processors.\nE32 | 2026-09-08..2026-09-21 | Qualcomm expanded non-handset diversification and updated operating guidance | Between 2026-09-08 and 2026-09-21, Qualcomm expanded non-handset diversification and updated operating guidance.\nE33 | 2026-09-18..2026-09-21 | Qualcomm advanced custom-silicon and automotive customer milestones | Between 2026-09-18 and 2026-09-21, Qualcomm advanced custom-silicon and automotive customer milestones.\nE45 | 2026-09-16..2026-09-21 | Intel and SK Hynix explored U.S. memory-manufacturing arrangements | Between 2026-09-16 and 2026-09-21, Intel and SK Hynix explored U.S. memory-manufacturing arrangements.\nE48 | 2026-09-21 | Intel CEO described a CPU demand squeeze at the Splunk conference | On 2026-09-21, Intel CEO described a CPU demand squeeze at the Splunk conference.\nE54 | 2026-09-21 | HP disclosed a 2027 PC-volume decline planning assumption | On 2026-09-21, HP disclosed a 2027 PC-volume decline planning assumption.\nE55 | 2026-09-04..2026-09-21 | Intel analyst coverage and price-target actions formed a response episode | Between 2026-09-04 and 2026-09-21, Intel analyst coverage and price-target actions formed a response episode.\nE31 | 2026-09-20 | Intel announced a Xeon-powered AI platform | On 2026-09-20, Intel announced a Xeon-powered AI platform.\nE7 | 2026-09-19 | Altera confidentially filed for a U.S. IPO | On 2026-09-19, Altera confidentially filed for a U.S. IPO.\nE18 | 2026-09-08..2026-09-19 | Intel and ASML advanced High-NA EUV readiness and Panther Lake manufacturing | Between 2026-09-08 and 2026-09-19, Intel and ASML advanced High-NA EUV readiness and Panther Lake manufacturing.\nE22 | 2026-09-09..2026-09-19 | Intel disclosed a continuing server-CPU supply constraint | Between 2026-09-09 and 2026-09-19, Intel disclosed a continuing server-CPU supply constraint.\nE46 | 2026-09-19 | Intel confirmed pending data-center workforce reductions | On 2026-09-19, Intel confirmed pending data-center workforce reductions.\nE47 | 2026-09-19 | Applied Materials launched hardware for advanced-memory scaling | On 2026-09-19, Applied Materials launched hardware for advanced-memory scaling.\nE52 | 2026-09-19 | Intel disclosed Lip-Bu Tan’s 2025 appointment as chief executive | On 2026-09-19, Intel disclosed Lip-Bu Tan’s 2025 appointment as chief executive.\nE5 | 2026-09-15..2026-09-18 | Intel CEO addressed CPU fulfillment and memory shortages at the AI Infrastructure Summit | Between 2026-09-15 and 2026-09-18, Intel CEO addressed CPU fulfillment and memory shortages at the AI Infrastructure Summit.\nE10 | 2026-09-18 | Micron broke ground on a New York memory facility | On 2026-09-18, Micron broke ground on a New York memory facility.\nE14 | 2026-09-09..2026-09-18 | Memory supply tightened as Micron disclosed strategic contracts and HBM4 progress | Between 2026-09-09 and 2026-09-18, Memory supply tightened as Micron disclosed strategic contracts and HBM4 progress.\nE28 | 2026-09-08..2026-09-18 | Intel planned a roughly 10% PC-processor price increase for fall 2026 | Between 2026-09-08 and 2026-09-18, Intel planned a roughly 10% PC-processor price increase for fall 2026.\nE35 | 2026-09-18 | Qualcomm expanded its BMW ADAS and digital-cockpit agreement | On 2026-09-18, Qualcomm expanded its BMW ADAS and digital-cockpit agreement.\nE36 | 2026-09-16..2026-09-18 | Intel disclosed an Ohio fab investment and schedule delay | Between 2026-09-16 and 2026-09-18, Intel disclosed an Ohio fab investment and schedule delay.\nE38 | 2026-09-09..2026-09-18 | AMD updated Helios and MI450 growth, customer and launch expectations | Between 2026-09-09 and 2026-09-18, AMD updated Helios and MI450 growth, customer and launch expectations.\nE50 | 2026-09-18 | Intel faced shareholder litigation over its U.S. government equity stake | On 2026-09-18, Intel faced shareholder litigation over its U.S. government equity stake.\nE51 | 2026-09-08..2026-09-18 | The U.S. government acquired and retained a material Intel equity stake | Between 2026-09-08 and 2026-09-18, The U.S. government acquired and retained a material Intel equity stake.\nE56 | 2026-09-18 | Arm entered the server market | On 2026-09-18, Arm entered the server market.\nE1 | 2026-09-17 | Huawei advanced Ascend AI chip roadmap and supply update | On 2026-09-17, Huawei advanced Ascend AI chip roadmap and supply update.\nE42 | 2026-09-17 | Intel committed scholarships near its Ohio fab | On 2026-09-17, Intel committed scholarships near its Ohio fab.\nE43 | 2026-09-08..2026-09-17 | Intel joined the Terafab partnership as Tesla and 14A customer terms remained incomplete | Between 2026-09-08 and 2026-09-17, Intel joined the Terafab partnership as Tesla and 14A customer terms remained incomplete.\nE53 | 2026-09-17 | Intel considered selling off its Foundry business | On 2026-09-17, Intel considered selling off its Foundry business.\nE58 | 2026-09-17 | NVIDIA supplied limited batches of H200 AI chips to China | On 2026-09-17, NVIDIA supplied limited batches of H200 AI chips to China.\nE59 | 2026-08-27..2026-09-17 | Marvell reported fiscal Q2 2027 results and updated its infrastructure outlook | Between 2026-08-27 and 2026-09-17, Marvell reported fiscal Q2 2027 results and updated its infrastructure outlook.\nE60 | 2026-09-17 | Intel appointed an executive to oversee advanced packaging and back-end manufacturing | On 2026-09-17, Intel appointed an executive to oversee advanced packaging and back-end manufacturing.\nE15 | 2026-09-16 | Micron scheduled its fiscal Q4 2026 earnings release | On 2026-09-16, Micron scheduled its fiscal Q4 2026 earnings release.\nE17 | 2026-09-08..2026-09-16 | Intel advanced a multiyear turnaround and Foundry customer strategy | Between 2026-09-08 and 2026-09-16, Intel advanced a multiyear turnaround and Foundry customer strategy.\nE37 | 2026-09-16 | Intel signed a Fortinet security-chip manufacturing deal | On 2026-09-16, Intel signed a Fortinet security-chip manufacturing deal.\nE39 | 2026-09-11..2026-09-16 | NVIDIA launched an infrastructure-financing and capacity-guarantee program | Between 2026-09-11 and 2026-09-16, NVIDIA launched an infrastructure-financing and capacity-guarantee program.\nE40 | 2026-09-15..2026-09-16 | NVIDIA entered Vera CPU production and planned Vera Rubin sales | Between 2026-09-15 and 2026-09-16, NVIDIA entered Vera CPU production and planned Vera Rubin sales.\nE41 | 2026-09-10..2026-09-16 | AMD reported EPYC server-processor supply sold out for 2026 | Between 2026-09-10 and 2026-09-16, AMD reported EPYC server-processor supply sold out for 2026.\nE44 | 2026-09-15 | AMD and Intel validated Micron memory technology for servers | On 2026-09-15, AMD and Intel validated Micron memory technology for servers.\nE4 | 2026-09-14 | AI and chip stocks came under pressure after frontier-AI slowdown calls | On 2026-09-14, AI and chip stocks came under pressure after frontier-AI slowdown calls.\nE13 | 2026-08-10..2026-09-14 | Intel completed its August 2026 stock sale | Between 2026-08-10 and 2026-09-14, Intel completed its August 2026 stock sale.\nE27 | 2026-09-11 | NVIDIA disclosed its fiscal Q3 2027 earnings date and revenue guide | On 2026-09-11, NVIDIA disclosed its fiscal Q3 2027 earnings date and revenue guide.\nE12 | 2026-09-09 | NVIDIA fiscal Q2 2027 earnings release | On 2026-09-09, NVIDIA fiscal Q2 2027 earnings release.\nE29 | 2026-09-09 | UBS positioned Intel EMIB-T as a potential alternative amid CoWoS constraints | On 2026-09-09, UBS positioned Intel EMIB-T as a potential alternative amid CoWoS constraints.\nE34 | 2026-09-09 | Apple announced the iPhone 18 Pro and iPhone 18 Pro Max | On 2026-09-09, Apple announced the iPhone 18 Pro and iPhone 18 Pro Max.\nE6 | 2026-09-08 | Amkor announced Phase 2 expansion of its Arizona advanced-packaging site | On 2026-09-08, Amkor announced Phase 2 expansion of its Arizona advanced-packaging site.\nE9 | 2026-09-08 | Qualcomm signed an AI-chip deal with Amazon | On 2026-09-08, Qualcomm signed an AI-chip deal with Amazon.\nE19 | 2026-09-08 | ASML and industry partners advanced 12-inch High-NA EUV masks and adoption | On 2026-09-08, ASML and industry partners advanced 12-inch High-NA EUV masks and adoption.\nE21 | 2026-09-08 | Intel repositioned its factories as an open global foundry | On 2026-09-08, Intel repositioned its factories as an open global foundry.\nE26 | 2026-09-08 | Intel scheduled its Q3 FY2026 results for late October | On 2026-09-08, Intel scheduled its Q3 FY2026 results for late October.\nE49 | 2026-09-08 | NVIDIA’s Hugging Face investment or ownership affected model distribution strategy | On 2026-09-08, NVIDIA’s Hugging Face investment or ownership affected model distribution strategy.\nE30 | 2026-08-24 | Intel expanded its AI processor and graphics lineup | On 2026-08-24, Intel expanded its AI processor and graphics lineup.\nE57 | 2026-08-11 | Intel CEO Lip-Bu Tan increased his personal Intel shareholding | On 2026-08-11, Intel CEO Lip-Bu Tan increased his personal Intel shareholding.\nE16 | 2026-07-23 | Intel reported Q2 FY2026 results and issued Q3 guidance | On 2026-07-23, Intel reported Q2 FY2026 results and issued Q3 guidance.\n",
+        "published_at": "2026-09-22T03:21:27.497514Z",
+        "sha256": "aee8a30f087d370684205e9c14c055f109b3d03ef8305677c5bea549420f2aa5",
+        "ticker": "INTC",
+        "version": 1
+      },
+      "projection": {
+        "consumer_contract": "persistent-runtime.v2.or-policy.v1",
+        "policies": [
+          {
+            "activation_revision": "ar_77d705eee8bfed31ec745bb8",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "单一重大超大规模客户将Intel Xeon、IPU或定制ASIC从协作/验证推进为有约束力的生产采购或下一代生产平台续约。"
+            ],
+            "match_scope": "召回重大云客户、Intel、Xeon、IPU、定制ASIC的采购、生产部署、续约、backlog、设计合作及其取消或否定消息。",
+            "policy_id": "pol_f9d55c6095cfa8fd36ae"
+          },
+          {
+            "activation_revision": "ar_3034c240e7e6036f64e8e0bb",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "SambaNova、Foxconn或同等规模集成商的含Intel内容推理机架，在首个付费生产部署后获得同一方案的补充生产批次或扩容订单。"
+            ],
+            "match_scope": "召回Intel CPU/IPU推理机架、SambaNova、Foxconn、系统集成商、终端客户的生产部署、付费交付、补单、扩容与取消消息。",
+            "policy_id": "pol_c32af189879ad11c2282"
+          },
+          {
+            "activation_revision": "ar_3c8c2ad74f0bb01e5381b0cd",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "已完成重大Intel AI部署的客户明确不续下一代Intel采购、暂停项目或取消已计划的后续生产批次。"
+            ],
+            "match_scope": "召回重大AI客户、Intel DCAI项目的续约、下一代采购、后续批次、项目暂停、取消及继续执行消息。",
+            "policy_id": "pol_7b0d45eb839444d2cc81"
+          },
+          {
+            "activation_revision": "ar_da408597240faeffbb163408",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "单一重大云客户、OEM或系统集成商取消或不续Intel AI生产平台，或把原由Intel CPU、加速器、IPU或定制ASIC承担的主要生产采购明确转给GPU、AMD、ARM/RISC-V或自研芯片。"
+            ],
+            "match_scope": "召回重大云客户、OEM或系统集成商对Intel CPU、加速器、IPU或定制ASIC生产平台的取消、不续、采购削减及向GPU、AMD、ARM/RISC-V或自研芯片的正式分配转移。",
+            "policy_id": "pol_348a4139f082e3b438a6"
+          },
+          {
+            "activation_revision": "ar_423cb283295710c26203cfe6",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "重大AI生产平台的新一代配置相对前代明确减少Intel CPU、IPU或ASIC数量、移除Intel组件或降低Intel承载的工作负载份额。"
+            ],
+            "match_scope": "召回AI机架、BOM、平台规格、工作负载、CPU/IPU/ASIC内容份额和前后代配置变化，包括维持或增加Intel内容的否定消息。",
+            "policy_id": "pol_d0d3d1ed0ed156a78879"
+          },
+          {
+            "activation_revision": "ar_e102c3d90b8f76dc87cc32d1",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel确认服务器供给约束实质缓解，并在同一季度报告服务器单位同比增速高于9%，且单位而非ASP或高端mix构成主要增量。"
+            ],
+            "match_scope": "召回Intel服务器/DCAI供需、客户履约、单位出货、ASP、产品组合、良率和周期时间的财报与供给更新。",
+            "policy_id": "pol_5bec792481239b053555"
+          },
+          {
+            "activation_revision": "ar_0fafb62ed6813adf0bb1e192",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel、客户或后端伙伴确认一项可识别的重大DCAI生产订单因基板、封装或系统集成合格吞吐不足而延期、降配或无法履约。"
+            ],
+            "match_scope": "召回DCAI订单、基板、封装、系统集成、合格吞吐、交付周期、填充率、延期与取消消息。",
+            "policy_id": "pol_0e6e07f1179015adf38f"
+          },
+          {
+            "activation_revision": "ar_5320b4afe595b82555f2a48f",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "已有Intel暴露的重大超大规模客户因电力/并网、许可、融资或投资回报重估，取消或实质后移已计划AI生产部署及关联Intel采购。"
+            ],
+            "match_scope": "召回超大规模AI数据中心的电力、并网、许可、融资、资本开支、ROI、部署时点和Intel订单调整消息。",
+            "policy_id": "pol_a8b9a583ffee2af7c40c"
+          },
+          {
+            "activation_revision": "ar_f0c16b70264f398a0bbec0e2",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel客户端供给约束缓解后，季度客户端单位同比达到不下降，且头部OEM或覆盖性渠道确认终端sell-through带来补单而库存未增加。"
+            ],
+            "match_scope": "召回Intel客户端单位、PC供给、OEM/渠道sell-through、补单、库存、ASP和产品组合的财报与行业数据。",
+            "policy_id": "pol_00aedd21578697ff89d7"
+          },
+          {
+            "activation_revision": "ar_83e22ee6128dacb5b62328c0",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "头部PC OEM、覆盖性分销商或Intel明确披露Intel PC库存高于目标，并因此退货、折价清库或削减/暂停补单。"
+            ],
+            "match_scope": "召回Intel PC库存天数、渠道库存、sell-in/sell-through、促销折价、退货、补单与订单削减消息。",
+            "policy_id": "pol_05f90f9ed723b58b6b52"
+          },
+          {
+            "activation_revision": "ar_d0de104b9c72dbe63cd7f0d2",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel或头部OEM将Core Ultra Series 3/Panther Lake已披露的批量生产上市/供货窗口后移或取消，或将原批量范围降为少量SKU小批供货。"
+            ],
+            "match_scope": "召回Core Ultra Series 3、Panther Lake的量产、认证、OEM上市、SKU供货、批次、延期、取消和按期交付消息。",
+            "policy_id": "pol_b17369ee9edd8f6441e8"
+          },
+          {
+            "activation_revision": "ar_76c0b5494b0b13856e4257b7",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Acer、ASUS、Dell、HP、Lenovo或Samsung中的单一头部OEM确认Core Ultra Series 3量产机型已产生终端销售，并据此补单或扩大生产组合。"
+            ],
+            "match_scope": "召回头部OEM的Core Series 3机型、量产上市、终端销售、渠道库存、补单、组合扩张及取消消息。",
+            "policy_id": "pol_849bf577d74f6b102e74"
+          },
+          {
+            "activation_revision": "ar_aa6b2bef625d85f8dea6e654",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "具有物质生产规模的边缘AI或机器人客户将Intel Core Ultra/Core Series 3测试平台正式选为量产设计，并承诺可识别的生产批次或多站点部署。"
+            ],
+            "match_scope": "召回边缘AI、机器人、Core Ultra/Core Series 3的测试、量产design win、采购批次、现场部署、扩展与终止消息。",
+            "policy_id": "pol_e337770b3592d3dfedb4"
+          },
+          {
+            "activation_revision": "ar_406917588f26a8ff1284b35d",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "重要边缘AI或机器人测试客户明确终止Intel项目，或在量产版本中选择替代芯片并移除或减少Intel内容。"
+            ],
+            "match_scope": "召回边缘AI/机器人客户的Intel测试、量产设计选择、BOM、替代芯片、项目终止和Intel内容变化消息。",
+            "policy_id": "pol_ef09af3800480d3f7990"
+          },
+          {
+            "activation_revision": "ar_da6f4f58af6b2d7a18b8a49c",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel季度报告客户端总单位同比仍下降，同时明确客户端收入改善主要来自约10%提价或高端SKU mix，而非单位增长。"
+            ],
+            "match_scope": "召回Intel客户端收入、单位、ASP、约10%提价、高端/主流SKU mix和sell-through的财报与渠道消息。",
+            "policy_id": "pol_c7694b94c019d57167e6"
+          },
+          {
+            "activation_revision": "ar_09dc8aff158067e6b4c19ea8",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel或头部OEM确认客户端生产批次因晶圆、封装或基板优先分配给服务器、AI或高端SKU而被延期、缩量或取消。"
+            ],
+            "match_scope": "召回Intel客户端晶圆/封装/基板分配、服务器/AI优先级、OEM短缺、交付延期、缩量和取消消息。",
+            "policy_id": "pol_ceed32171fb792064499"
+          },
+          {
+            "activation_revision": "ar_a91a504af9a3c7a350571115",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "有管辖权的政府发布最终且已生效或确定生效日的跨境限制，直接禁止Intel客户端产品或关键投入进入重大市场，或迫使头部OEM取消/重配生产机型。"
+            ],
+            "match_scope": "召回出口管制、关税、地区限制、海关实施、Intel PC/边缘产品、关键投入和OEM区域配置调整消息。",
+            "policy_id": "pol_5cf6d3db0e3072752601"
+          },
+          {
+            "activation_revision": "ar_8ac00400e87265e95730ac34",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "单一重大云或企业客户将Xeon 6或18A基础Xeon 6+从验证推进为有约束力的非AI生产采购/部署或下一代生产续约。"
+            ],
+            "match_scope": "召回Xeon 6/6+的企业与云非AI生产平台、客户采购、部署、续约、验证、设计胜负及取消消息。",
+            "policy_id": "pol_fd5d451753406d1f1e39"
+          },
+          {
+            "activation_revision": "ar_fcee77dda0cbe6c894207794",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel或重大客户确认Xeon 6/6+量产良率、软件验证或客户认证失败，使已计划的重大生产发布或交付从原窗口后移或取消。"
+            ],
+            "match_scope": "召回Xeon 6/6+的良率、周期时间、软件验证、客户认证、量产、上市、交付窗口和取消消息。",
+            "policy_id": "pol_1be63995a6b80d6d319f"
+          },
+          {
+            "activation_revision": "ar_21943c1ec1bad38fb41d4163",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel、后端伙伴或客户确认可识别的重大非AI Xeon生产订单因封装、基板、测试或系统集成不足而延期、降配或无法履约。"
+            ],
+            "match_scope": "召回非AI Xeon订单、封装、基板、测试、系统集成、填充率、交付周期、延期和取消消息。",
+            "policy_id": "pol_06449353fd235546944e"
+          },
+          {
+            "activation_revision": "ar_33738b470a41a01eed2dc93f",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "AMD或其他替代CPU供给经供应商或客户确认已经改善后，单一重大企业或云客户仍续签或扩大Xeon非AI生产采购。"
+            ],
+            "match_scope": "召回AMD EPYC/Arm等服务器CPU供给、重大企业/云客户的Xeon非AI采购、续约、扩量、平台分配与取消消息。",
+            "policy_id": "pol_0ca519ae7d747ee59566"
+          },
+          {
+            "activation_revision": "ar_e1435da20c71e07f6466883e",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "替代CPU供给恢复后，单一重大企业或云客户在下一轮非AI生产平台中取消或削减Xeon，并转向AMD、Arm/RISC-V或自研CPU。"
+            ],
+            "match_scope": "召回替代服务器CPU供给、重大客户非AI平台、Xeon设计输单、采购转移、订单取消和平台更新消息。",
+            "policy_id": "pol_cb0d78e86758f395bb4f"
+          },
+          {
+            "activation_revision": "ar_5d76e9d26f6136410139bbb4",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "重大数据中心生产平台的新一代架构相对前代明确减少每系统Xeon数量、移除Xeon工作负载或迁移至加速器/自研芯片。"
+            ],
+            "match_scope": "召回数据中心平台BOM、每系统CPU数量、工作负载迁移、Xeon内容、加速器和自研芯片的前后代配置变化。",
+            "policy_id": "pol_f05baeebb239d6c1d215"
+          },
+          {
+            "activation_revision": "ar_db6dc8fb24285bfb37cff06a",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel确认覆盖物质需求的企业/云客户群因预算、TCO、虚拟化效率或库存把已计划非AI Xeon刷新后移，并削减或暂停对应近期订单。"
+            ],
+            "match_scope": "召回企业/云服务器刷新、Xeon订单、backlog、预算、TCO、虚拟化效率、库存、延期和恢复消息。",
+            "policy_id": "pol_636fc43e6f51dd327cd8"
+          },
+          {
+            "activation_revision": "ar_b605fcd7aa766f812db0bb55",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "单一主要云客户将下一代非AI生产平台中原由Xeon承载的工作负载迁至自研CPU或单一替代供应商，并减少或停止Intel部署。"
+            ],
+            "match_scope": "召回主要云客户的自研CPU、非AI实例、生产平台迁移、Xeon内容、采购集中、部署停止及维持Intel平台的消息。",
+            "policy_id": "pol_931256fe8b321ca63afd"
+          },
+          {
+            "activation_revision": "ar_19ddc765a8cc2aca0fa4505d",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel确认服务器供给约束实质缓解后，同一季度服务器单位同比增速不高于9%，且ASP同比增速从48%基线显著回落或转负。"
+            ],
+            "match_scope": "召回Intel服务器供给缓解、季度单位同比、ASP同比、高端mix、毛利桥及供需正常化后的价格变化。",
+            "policy_id": "pol_3649edb583eb0d94c9cf"
+          },
+          {
+            "activation_revision": "ar_38391160e5abbc2aedaa5b35",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel在Q3及Q4 FY2026两个连续季度同时披露良率或周期时间改善、合格单位/利用率改善，且毛利或营业利润桥主要由经营变量而非重组费用下降驱动。"
+            ],
+            "match_scope": "召回Intel连续季度良率、周期时间、合格单位、利用率、毛利桥、营业利润和重组费用贡献的财报及制造更新。",
+            "policy_id": "pol_a6a5390f8b4b604150da"
+          },
+          {
+            "activation_revision": "ar_07bbf20efd0f51ddec213d86",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel确认18A-P、High-NA或后续先进节点量产良率下降、缺陷/返工/报废上升或周期时间拉长，并识别合格产出下降或毛利桥中的爬坡成本。"
+            ],
+            "match_scope": "召回18A-P、High-NA及后续节点的良率、缺陷、返工、报废、周期时间、good wafers、客户资格和爬坡成本消息。",
+            "policy_id": "pol_6345eef29e604900f1c7"
+          },
+          {
+            "activation_revision": "ar_d3e7080d899baacf7cdb9837",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel或关键伙伴确认前端good wafers/良率改善，但内存、基板、封装或测试吞吐不足导致重大产品成品出货受限、在制品增加或单位成本上升。"
+            ],
+            "match_scope": "召回Intel内存、基板、封装、测试、前端good wafers、成品出货、在制品、单位成本和交付周期消息。",
+            "policy_id": "pol_0b23933d3577508efa04"
+          },
+          {
+            "activation_revision": "ar_60daa30c0bdb4350a206b863",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel后续季度Foundry报告收入上升，但外部客户收入不高于2.93亿美元，且经营亏损不低于20.89亿美元或公司确认利用率未改善。"
+            ],
+            "match_scope": "召回Intel Foundry报告收入、外部客户收入、内部交易、利用率、经营亏损、分部抵销和合并毛利桥。",
+            "policy_id": "pol_3af29d91f015dd6ae6fd"
+          },
+          {
+            "activation_revision": "ar_310f0e5c161bfa1f3ce5d8ec",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "单一重大外部云、系统或定制芯片客户完成Intel节点资格，并作出绑定生产采购/产能预订，或直接确认首批付费合格晶圆/封装进入生产交付。"
+            ],
+            "match_scope": "召回Intel外部Foundry客户、节点资格、tape-out、正式订单、产能预订、付费晶圆/封装和合格生产消息。",
+            "policy_id": "pol_ea664e97480072e5bf83"
+          },
+          {
+            "activation_revision": "ar_bb9cb4f6df98201e84266653",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel明确将人员或产品削减直接联系到一项重大产品/节点的验证、工艺支持、良率改善、客户认证、质量或交付延期。"
+            ],
+            "match_scope": "召回Intel裁员、R&D/MG&A、产品精简、验证、工艺支持、良率、客户认证、质量与交付延期消息。",
+            "policy_id": "pol_a0acf8f5fb398aea4381"
+          },
+          {
+            "activation_revision": "ar_44c71a913953384ab28d2dc9",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel后续单季重组及其他费用或新减值超过10亿美元，并在GAAP营业利润或EPS桥中形成可识别拖累。"
+            ],
+            "match_scope": "召回Intel重组及其他费用、减值、股权薪酬、GAAP/非GAAP对账、营业利润和EPS影响。",
+            "policy_id": "pol_05fe8d54fb3f72681720"
+          },
+          {
+            "activation_revision": "ar_d16d42245021068db3573b87",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel正式提价或重订合同后，单一重大客户明确延迟、取消或降配采购，且Intel确认价格收益被销量、mix或利用率损失抵消。"
+            ],
+            "match_scope": "召回Intel PC、服务器和定制产品提价、合同重订、OEM/云客户订单、降配、取消、库存、单位与利用率消息。",
+            "policy_id": "pol_7c937940aa72cd379f3e"
+          },
+          {
+            "activation_revision": "ar_ec3db66a54f090ead8044b82",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel或覆盖物质订单池的主要云/企业客户群或PC OEM群明确取消或实质后移部署/采购，并削减近期Intel订单。"
+            ],
+            "match_scope": "召回云/企业AI资本开支、PC OEM采购、部署取消或延期、Intel订单池、库存、单位出货和利用率消息。",
+            "policy_id": "pol_29f1f34890fecf43270b"
+          },
+          {
+            "activation_revision": "ar_acd28ff9dc92356e220a3390",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "有管辖权的政府发布最终且已生效或确定生效日的规则，直接禁止/限制Intel物质产品向重大市场交付，或对关键制造投入施加不可规避的物质成本。"
+            ],
+            "match_scope": "召回出口管制、关税、国家安全审查、公共采购、海关实施、Intel CPU/AI产品、关键投入及订单/成本影响。",
+            "policy_id": "pol_1f3648dbef3a5fd08d85"
+          },
+          {
+            "activation_revision": "ar_54fa9ac966220026f1d4701f",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel或单一重大客户确认重大可靠性、安全或质量问题已导致重要产品资格暂停、召回、返工或shipment hold。"
+            ],
+            "match_scope": "召回Intel服务器、PC和先进节点产品的可靠性、安全、erratum、资格暂停、召回、返工、退货和shipment hold。",
+            "policy_id": "pol_0bc59e379437f5229b23"
+          },
+          {
+            "activation_revision": "ar_52e46314656ac086da44e80d",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel报告Q3 FY2026同口径合并收入低于158亿美元。"
+            ],
+            "match_scope": "召回Intel Q3 FY2026合并收入、158亿美元指引下限、供给/制造缺口、客户延迟取消、库存去化和替代架构归因。",
+            "policy_id": "pol_1e66f06f7dc8de4c2357"
+          },
+          {
+            "activation_revision": "ar_a499cfccd669c773822b369e",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel报告Q3 FY2026同口径合并收入高于168亿美元。"
+            ],
+            "match_scope": "召回Intel Q3 FY2026合并收入、168亿美元指引上限、DCAI/CCPG单位、客户采购、良率和周期时间对超额的解释。",
+            "policy_id": "pol_7c31880742cdd4ee5875"
+          },
+          {
+            "activation_revision": "ar_dcf2bfd419e4aa7f356c0239",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel报告Q3收入在158亿至168亿美元内，但服务器单位同比不高于9%或客户端单位下降，且ASP、稀缺分配、mix或提价解释主要增量。"
+            ],
+            "match_scope": "召回Intel Q3收入、服务器/客户端单位、ASP、稀缺分配、产品组合、提价与客户复购。",
+            "policy_id": "pol_cb77c73f04ceca6eb1f3"
+          },
+          {
+            "activation_revision": "ar_5b275d4473c783ada51bf6ce",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel报告Q3收入不低于158亿美元，但GAAP毛利率低于40%或非GAAP毛利率低于41%，并将偏差归因于组合、利用率、良率、节点或封装/基板成本。"
+            ],
+            "match_scope": "召回Intel Q3收入、GAAP/non-GAAP毛利率、组合、利用率、良率、节点及封装/基板成本桥。",
+            "policy_id": "pol_7039b4239d00387b1656"
+          },
+          {
+            "activation_revision": "ar_604d06018858ff196e21d692",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel报告Q3 GAAP毛利率高于41%且非GAAP毛利率高于42%，并将超额主要归因于良率、周期时间、合格单位、利用率或产品组合改善。"
+            ],
+            "match_scope": "召回Intel Q3 GAAP/non-GAAP毛利率、良率、周期时间、合格单位、利用率、组合和一次性项目桥。",
+            "policy_id": "pol_a68d7b2f1835d7f34932"
+          },
+          {
+            "activation_revision": "ar_ca5b2167490dae624945b1d9",
+            "condition_ids": [
+              "C1",
+              "C2"
+            ],
+            "criterion": [
+              "Intel Q3收入不低于158亿美元且毛利接近指引，但GAAP EPS低于0.31美元，差异主要来自费用、税率、稀释股数或托管股份公允价值。",
+              "Intel Q3收入不低于158亿美元且毛利接近指引，但非GAAP EPS低于0.38美元，差异主要来自费用、税率、稀释股数或调整项目。"
+            ],
+            "match_scope": "召回Intel Q3收入、毛利率、GAAP/non-GAAP EPS、R&D/MG&A、税率、股数、公允价值和调整项目。",
+            "policy_id": "pol_719b7b06ff2bb8aa2c8e"
+          },
+          {
+            "activation_revision": "ar_82f22acd4446475f3b8c2cf9",
+            "condition_ids": [
+              "C1",
+              "C2"
+            ],
+            "criterion": [
+              "Intel Q3 GAAP EPS高于0.31美元，但对账显示超额主要来自一次性逆转、税率/股数异常或公允价值，且收入和毛利未超指引。",
+              "Intel Q3非GAAP EPS高于0.38美元，但对账显示超额主要来自非GAAP调整或其他一次性收益，且收入和毛利未超指引。"
+            ],
+            "match_scope": "召回Intel Q3 GAAP/non-GAAP EPS、收入、毛利、一次性逆转、税率、股数、公允价值及调整项目。",
+            "policy_id": "pol_615af065442bb67a9aea"
+          },
+          {
+            "activation_revision": "ar_0c7482a4b895534476f8be3a",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel确认Q3内存、基板或封装价格/配额恶化是重大出货缺口、单位成本上升、GAAP毛利率低于41%或非GAAP毛利率低于42%的主要原因。"
+            ],
+            "match_scope": "召回Q3内存、基板、封装价格/配额、Intel出货、单位成本、产品组合和41%/42%毛利率指引。",
+            "policy_id": "pol_727e1e5dcb817a55c3b5"
+          },
+          {
+            "activation_revision": "ar_3e549ede8ec1907ba7c1b45b",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel Q3收入不低于158亿美元，但主要由客户提前拉货或渠道库存补充构成，终端sell-through未改善且后续订单已放缓。"
+            ],
+            "match_scope": "召回Intel Q3收入、提前拉货、sell-in/sell-through、渠道库存、重复订单和后续订单承接。",
+            "policy_id": "pol_f56b9ef38fd6113ab6c6"
+          },
+          {
+            "activation_revision": "ar_4a9c7b2e81e652b112e94d89",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel在Q3业绩报告前正式将Q3收入指引下调至158亿美元以下，或撤回Q3收入指引。"
+            ],
+            "match_scope": "召回Intel Q3收入指引、158亿至168亿美元原区间、8-K、预告、撤回和正式更新。",
+            "policy_id": "pol_739aea62fd8f4c321330"
+          },
+          {
+            "activation_revision": "ar_29eb5af41ad5ab2740e0ee0c",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel在Q3业绩报告前正式将GAAP毛利率指引下调至41%以下、将非GAAP毛利率指引下调至42%以下，或撤回任一毛利率指引。"
+            ],
+            "match_scope": "召回Intel Q3 GAAP/non-GAAP毛利率41%/42%原指引、8-K、预告、撤回和正式更新。",
+            "policy_id": "pol_0c25b4c07141defa393f"
+          },
+          {
+            "activation_revision": "ar_7acd641c181fe7052af25468",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel在Q3业绩报告前正式将GAAP EPS指引下调至0.31美元以下、将非GAAP EPS指引下调至0.38美元以下，或撤回任一EPS指引。"
+            ],
+            "match_scope": "召回Intel Q3 GAAP/non-GAAP EPS 0.31/0.38美元原指引、8-K、预告、撤回和正式更新。",
+            "policy_id": "pol_eef2e0260bf6a471e3ec"
+          },
+          {
+            "activation_revision": "ar_100be5262f39929bbb7e6bfd",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "单一重大外部商业客户完成14A tape-out或硅后验证，并签署包含交付窗口或数量范围的有约束力节点级订单/产能预订。"
+            ],
+            "match_scope": "召回14A外部客户、PDK、tape-out、硅后验证、节点订单、capacity booking、交付窗口及取消消息。",
+            "policy_id": "pol_790bbf20fa2ad9398a3a"
+          },
+          {
+            "activation_revision": "ar_166be45c8c4afe4c5d6e1a22",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "单一重大外部客户的18A或18A-P产品完成性能、功耗和可靠性资格，并形成绑定生产订单/产能预订或首批付费合格晶圆生产。"
+            ],
+            "match_scope": "召回18A/18A-P外部客户、性能功耗可靠性资格、生产订单、产能预订、付费合格晶圆和内部/外部归属。",
+            "policy_id": "pol_5ce626bd3e3aec6f2a87"
+          },
+          {
+            "activation_revision": "ar_b095e8b4b634c9e128a1d58d",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel、重大客户或关键供应商确认18A-P、14A或High-NA良率、周期、掩模或设备吞吐未达标，使已披露外部qualification/HVM窗口后移，或限制/取消客户starts。"
+            ],
+            "match_scope": "召回18A-P、14A、High-NA的良率、周期时间、掩模/设备吞吐、客户starts、资格和HVM窗口变化。",
+            "policy_id": "pol_55602b2ef908f69678f0"
+          },
+          {
+            "activation_revision": "ar_1ada1eae61d37cc2414594dd",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "已完成Intel先进节点资格或预订的单一重大客户取消或实质削减Intel节点级booking，并将对应量产明确转向竞争代工或内部工厂。"
+            ],
+            "match_scope": "召回已资格/预订客户的Intel节点booking、生产份额、取消、缩量、TSMC/Samsung/内部制造转移和双源状态。",
+            "policy_id": "pol_29d2800563ebf8f98baa"
+          },
+          {
+            "activation_revision": "ar_032b232c28ef66ad23bd21e1",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Terafab相关方或另一家超大客户与Intel签署指名14A、包含产能/数量或预付款并设交付/量产窗口的不可取消商业制造协议。"
+            ],
+            "match_scope": "召回Terafab及超大规模客户的14A制造协议、不可取消预订、预付款、产能数量、交付窗口和量产承诺。",
+            "policy_id": "pol_c7ddf4618265d1f7a95e"
+          },
+          {
+            "activation_revision": "ar_2cc88d8374ad7db09aff8e1f",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "具体供应中断或最终生效规则迫使Intel取消、配给或迁移一个重大外部客户的18A/14A starts或交付至少一个完整生产周期。"
+            ],
+            "match_scope": "召回先进节点设备、掩模、材料、供应中断、出口/安全/贸易规则、外部客户starts、产能配给和生产地点迁移。",
+            "policy_id": "pol_14a785820b388310737f"
+          },
+          {
+            "activation_revision": "ar_546737e70cda6cbbc6e38371",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "单一重大客户将目标量产产品从原拟Intel 18A/14A单片方案改为成熟节点或其他代工芯粒组合，使Intel先进节点仅保留试产、小批或验证用途。"
+            ],
+            "match_scope": "召回外部Foundry客户的单片/芯粒架构、18A/14A晶圆内容、成熟节点、替代代工、封装和量产BOM变化。",
+            "policy_id": "pol_63587fb5036e90cf9232"
+          },
+          {
+            "activation_revision": "ar_564df626017cf2dfa3c8ecf7",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "单一重大AI或Foundry客户的具体产品完成EMIB/EMIB-T/Foveros电气、热和可靠性资格，并形成绑定量产订单/产能预订或首批付费good-package生产。"
+            ],
+            "match_scope": "召回EMIB、EMIB-T、Foveros、CoWoS替代、系统资格、量产订单、capacity booking、付费good-package和取消消息。",
+            "policy_id": "pol_2c175c35a579529f28d8"
+          },
+          {
+            "activation_revision": "ar_acc37c8c62f18582282a90f9",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel马来西亚或新墨西哥指定扩建设施完成设备安装和产线/产品资格，并确认一个重大客户或产品的绑定量产启动及初始合格吞吐。"
+            ],
+            "match_scope": "召回Intel马来西亚/新墨西哥设施建设、设备安装、线体/产品资格、量产启动、合格吞吐、客户和利用率。",
+            "policy_id": "pol_6bd8fed7903cce708602"
+          },
+          {
+            "activation_revision": "ar_afb66ed25e1759a54a069bb8",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel或重大客户确认后端站点建设/转移里程碑较原计划后移至少一个季度，或重新认证/停线导致重大已排产批次延期或取消。"
+            ],
+            "match_scope": "召回Costa Rica、马来西亚、新墨西哥站点建设/整合、跨站点转移、重新认证、停线、交付窗口和批次取消。",
+            "policy_id": "pol_73ba3b20a1cbaefa2f58"
+          },
+          {
+            "activation_revision": "ar_e2c6120a7c6b0e5d5c38a5e2",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel、材料供应商或后端伙伴确认具体材料配给、交期显著拉长或良率下降，并导致重大AI/Foundry封装starts、good packages或出货被配给或延期。"
+            ],
+            "match_scope": "召回基板、HBM、玻璃等材料的配给、交期、良率、封装starts、good packages、客户交付和延期。",
+            "policy_id": "pol_8545aa6aaf791b367a25"
+          },
+          {
+            "activation_revision": "ar_e5fc47ded3e94728a20541f3",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "已完成Intel封装协作或资格的单一重大客户取消或实质削减Intel封装排产/合同，并把主要量产封装转给外部OSAT、其他平台或自有后端。"
+            ],
+            "match_scope": "召回已资格客户的Intel后端排产、封装合同、Amkor/OSAT/TSMC/自有后端转移、双源和量产份额。",
+            "policy_id": "pol_df2e632017cca20e1d9d"
+          },
+          {
+            "activation_revision": "ar_cdee96ec1901b18cb3c29d91",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "玻璃基板、Foveros Direct混合键合或另一新互连方案完成可靠性和重大客户系统资格，并形成绑定量产订单/产品启动或首批付费生产。"
+            ],
+            "match_scope": "召回玻璃基板、Foveros Direct、混合键合和新互连方案的可靠性、系统资格、客户产品、量产订单和付费批次。",
+            "policy_id": "pol_c770cc55feb9ff30e6c6"
+          },
+          {
+            "activation_revision": "ar_aa1036cda46dceb683ae5b2f",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "重大产品的EMIB或Foveros量产出现热/电可靠性、测试或良率问题，并导致客户资格暂停、重大返工/召回或production hold。"
+            ],
+            "match_scope": "召回EMIB/Foveros良率、热电可靠性、测试通过率、返工、召回、客户资格暂停和production hold。",
+            "policy_id": "pol_ec66d3c1274228e9ff69"
+          },
+          {
+            "activation_revision": "ar_55a90e792e061935b8022432",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel披露新增封装线已完成资格，但连续两个报告期外部客户排产/starts未增加、利用率保持低位，且新增能力主要闲置或服务内部产品。"
+            ],
+            "match_scope": "召回已资格新增封装线、外部客户排产、starts、利用率、闲置能力、内部产品用途和连续报告期。",
+            "policy_id": "pol_c1d9b13082ff0e9dd624"
+          },
+          {
+            "activation_revision": "ar_8f0cb4fef973d5b8b96ffb62",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "单一重大客户确认下一代量产系统取消或实质缩减原拟EMIB/Foveros封装，并转向替代芯粒/光互连标准或全外部平台。"
+            ],
+            "match_scope": "召回AI/Foundry客户下一代平台、EMIB/Foveros、芯粒/光互连标准、外部封装平台、BOM和量产设计决定。",
+            "policy_id": "pol_2bb8b9bdbbc8c907bb9b"
+          },
+          {
+            "activation_revision": "ar_17389090ad1285bc34d2496a",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "指定Secure Enclave设施或产品同时取得有权政府机构的生产适用安全授权和单一重大DIB项目的设计验收。"
+            ],
+            "match_scope": "召回Secure Enclave设施或产品的政府生产安全授权、DIB项目设计验收、资格限制、暂停和否定消息。",
+            "policy_id": "pol_5a0ccbabf9d57015791c"
+          },
+          {
+            "activation_revision": "ar_c3268ba606bacacfa4e4c971",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "政府或重大DIB采购方授予具名项目一份已获资金且有约束力的Secure Enclave生产合同或订单，并明确产能预约或生产排程。"
+            ],
+            "match_scope": "召回政府或DIB的Secure Enclave采购授标、已拨资金、生产义务、订单、产能预订、排程及取消消息。",
+            "policy_id": "pol_04df46d9d968a1657ba0"
+          },
+          {
+            "activation_revision": "ar_1c1e64cc9855d67f5b291501",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "单一重大DIB项目的首批Secure Enclave生产级合格晶圆或封装批次完成客户验收并交付。"
+            ],
+            "match_scope": "召回具名DIB项目的Secure Enclave生产级晶圆或封装批次、good units、客户验收、接收、拒收及交付状态。",
+            "policy_id": "pol_c013756b0d024657cfe8"
+          },
+          {
+            "activation_revision": "ar_f6c2059eb70a3ca746577d32",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "后续披露确认至少两个相隔生产期间均有客户关联的Secure Enclave生产批次完成验收交付，并给出持续数量、吞吐或利用率。"
+            ],
+            "match_scope": "召回Secure Enclave客户批次、连续生产期间、验收交付、数量、吞吐、利用率及生产中断消息。",
+            "policy_id": "pol_02b0439dacbc3e7e27a8"
+          },
+          {
+            "activation_revision": "ar_ec25e7487772215fe3bed62f",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "与首个已确认项目法律和经济上独立的第二个DIB客户完成Secure Enclave项目资格或设计导入，并取得有约束力生产合同、订单或量产排程。"
+            ],
+            "match_scope": "召回Secure Enclave新增DIB客户、独立项目、项目资格、设计导入、生产合同、订单及量产排程。",
+            "policy_id": "pol_3652c8d70cedb2a026d2"
+          },
+          {
+            "activation_revision": "ar_4037fb4fccd595f16956e673",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "政府、Intel或重大DIB客户将Secure Enclave客户资格、采购合同或量产部署从已披露计划窗口正式后移，或把该阶段重新排期为待定。"
+            ],
+            "match_scope": "召回RAMP-C后客户资格、采购合同、量产部署的原计划窗口、新窗口、待定状态及排期恢复。",
+            "policy_id": "pol_d25aa94363c7187f0e5c"
+          },
+          {
+            "activation_revision": "ar_39d08748514cd35cd4d911d5",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "有权机构正式拒绝、暂停或撤销指定Secure Enclave设施或产品的DIB生产授权，或要求停产后重新认证。"
+            ],
+            "match_scope": "召回Secure Enclave生产安全授权的拒绝、暂停、撤销、停产整改、重新认证及恢复决定。",
+            "policy_id": "pol_15a8018e4b92cfa10cb7"
+          },
+          {
+            "activation_revision": "ar_1bcbcbb18a051522a3849498",
+            "condition_ids": [
+              "C1",
+              "C2",
+              "C3"
+            ],
+            "criterion": [
+              "已资格或接近资格的重大DIB项目被正式取消、未续签或削减，使已计划的Secure Enclave批次或产能预约不再执行。",
+              "重大DIB项目把量产晶圆、封装或安全制造正式授予替代供应商或内部设施，并将Intel Secure Enclave降为非量产或移出生产角色。",
+              "重大DIB项目正式采用不同节点、成熟工艺、芯粒/封装架构或COTS供应链，并取消或实质缩小原Secure Enclave高量生产范围。"
+            ],
+            "match_scope": "召回重大DIB项目的取消、未续签、预算或任务变更、替代可信制造授标、内部化、架构改版及Intel生产范围削减。",
+            "policy_id": "pol_d92e0e1491ba63465924"
+          },
+          {
+            "activation_revision": "ar_a99d330641bb99595b585eec",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "已资格或签约的重大Secure Enclave项目因良率、设备、吞吐、封装测试或客户验收不达标，正式从高量生产退回LRIP/试产、重置量产排程或发生重大批次拒收。"
+            ],
+            "match_scope": "召回Secure Enclave项目良率、设备、吞吐、封装测试、客户验收、HVM降级、LRIP、试产、拒收和排程重置。",
+            "policy_id": "pol_4a9ae9c0af17e23d6f3d"
+          },
+          {
+            "activation_revision": "ar_f50952596faa4f9d0add272b",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "经安全批准的设备、材料、基板、封装测试、运输或后端伙伴发生容量不足，并使单一重大Secure Enclave项目正式延期、减量或启动替代认证。"
+            ],
+            "match_scope": "召回安全批准的设备、材料、基板、封装测试、运输、后端伙伴容量、项目延期减量及替代认证。",
+            "policy_id": "pol_32a72f2a752665d86428"
+          },
+          {
+            "activation_revision": "ar_9c712e81da5c46f84e5e6e9e",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "主管方确认影响Secure Enclave机密性、隔离、追溯或完整性的重大事件，并对DIB生产采取停产、暂停交付、隔离/召回或强制重新认证。"
+            ],
+            "match_scope": "召回Secure Enclave机密性、隔离、追溯、完整性事件、停产、暂停交付、隔离召回、重新认证及复产。",
+            "policy_id": "pol_2679129249ee0590022d"
+          },
+          {
+            "activation_revision": "ar_9c53639ae5e000652b79bb81",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "最终生效的政府安全或采购规则使现有Secure Enclave生产资格失效或必须重新认证、限制可用节点/设施，或向新增替代供应商开放重大项目并削减Intel保留范围。"
+            ],
+            "match_scope": "召回可信制造安全标准、采购规则、最终法规、生效日、重新认证、节点设施限制、新增供应商和Intel保留范围。",
+            "policy_id": "pol_216a6a15e3db4f5d8c8a"
+          },
+          {
+            "activation_revision": "ar_8be8a9b30f71b57dae2fef7b",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "已资格重大DIB项目的正式合同或排程把Secure Enclave限定为pilot、LRIP、单次验证、少量敏感批次或备用供应，且不包含持续高量产能义务。"
+            ],
+            "match_scope": "召回已资格Secure Enclave项目的pilot、LRIP、单次验证、少量敏感批次、备用供应、合同数量和高量义务。",
+            "policy_id": "pol_e14d434ed0ebcf00deca"
+          },
+          {
+            "activation_revision": "ar_cdb4fc93bb05da914754e2f9",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel或重大客户确认商业Foundry或Intel内部产品优先占用同一关键可信制造资源，并使重大Secure Enclave项目排产延期、减量或改配。"
+            ],
+            "match_scope": "召回可信设施共享资源、商业Foundry或Intel内部产品优先级、DIB排产延期减量、产能改配及恢复。",
+            "policy_id": "pol_d976971fd68a08855b4d"
+          },
+          {
+            "activation_revision": "ar_ae584738574b028887f8c6f0",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "官方后续披露确认政府资助或扩建的可信设施已启用，并在同一披露明确的完整采购或部署窗口结束后仍无具名DIB生产合同、设计验收、产能预约或批次。"
+            ],
+            "match_scope": "召回政府资助可信设施的启用、扩建完成、官方采购或部署窗口、DIB合同、设计验收、产能预约和无订单状态。",
+            "policy_id": "pol_a0719bcc321980901b05"
+          },
+          {
+            "activation_revision": "ar_72bdd60013f9983ebb68e9ac",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "正式法案、拨款或采购指令以已拨资金明确多个DIB项目，并对Intel Secure Enclave规定最低采购、产能保留或可执行生产排程。"
+            ],
+            "match_scope": "召回国防法案、已拨资金、采购指令、多个DIB项目、Intel Secure Enclave最低采购、产能保留和可执行排程。",
+            "policy_id": "pol_e8325fa903355b9d23a4"
+          },
+          {
+            "activation_revision": "ar_7d53525b5b32aaefb8353ba4",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel在一份后续财报中提供连续两个报告期的同口径序列，显示剔除已量化的一次性政府、伙伴、融资租赁和营运资金项目后，调整后自由现金流均为正，且增长性资本开支未靠新增股权或债务覆盖。"
+            ],
+            "match_scope": "召回Intel经营现金流、现金资本开支、调整后自由现金流、政府或伙伴一次性现金、营运资金与新增融资的跨期对账。",
+            "policy_id": "pol_cd15f512755927e80242"
+          },
+          {
+            "activation_revision": "ar_2f5ed9913d661426102acea7",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel量化确认一项此前正向的营运资金、政府激励或伙伴现金贡献由正转负或终止，并使同一报告期经营现金流较Q2 FY2026的70.06亿美元回落且调整后自由现金流仍为负。"
+            ],
+            "match_scope": "召回Intel营运资金、政府激励、伙伴净贡献的现金流对账、反转或终止，以及经营现金流和调整后自由现金流变化。",
+            "policy_id": "pol_743016c47608f0e1ab04"
+          },
+          {
+            "activation_revision": "ar_8da00962dcc3e79f6c648743",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel在单份季度披露中确认相关供给约束已缓解，同时客户端或服务器单位出货未增长或下降、ASP/高端组合回落，并把产品现金利润和经营现金流下降归因于该量价变化。"
+            ],
+            "match_scope": "召回Intel客户端或服务器供给状态、单位出货、ASP、高端组合、产品现金利润与经营现金流的同季变化。",
+            "policy_id": "pol_a92eb03875d216dac479"
+          },
+          {
+            "activation_revision": "ar_704f7791539c038a85130dc8",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel正式确认一项重大新增设备、洁净室、基板或厂区资产已投入，却因良率、合格吞吐、瓶颈或利用率不足而推迟商业爬坡、进入正式闲置/停用，或确认与该资产直接相关的减值。"
+            ],
+            "match_scope": "召回Intel新增设备、洁净室、基板或厂区的投入状态、良率、合格吞吐、利用率、商业爬坡、闲置停用和减值。",
+            "policy_id": "pol_940ae5bdf77c93f29482"
+          },
+          {
+            "activation_revision": "ar_ebd95c9bb846cc963c54f6f0",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel在同一正式披露中上调具名资本项目的预算或建设周期，提供原计划与新计划，并明确新增投入超过同期经营现金回收、需要新增外部资金或推迟回收期。"
+            ],
+            "match_scope": "召回Intel资本开支、设备洁净室基板项目预算、建设周期、经营现金覆盖、回收期和新增外部融资需求。",
+            "policy_id": "pol_f1c35928de4ef728409a"
+          },
+          {
+            "activation_revision": "ar_a9e18ad97be691df34c43256",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "重大客户、伙伴或政府项目的正式协议确认已支付首笔产能/产品现金，并承担后续至少一个期间的绑定预付款、最低采购或共同投资付款，且金额、履约义务与Intel可用资金范围明确。"
+            ],
+            "match_scope": "召回重大客户、伙伴或政府项目对Intel产能/产品的预付款、最低采购、持续付款、首笔到账、后续义务和履约现金。",
+            "policy_id": "pol_8b52b9c92287eaa36e7c"
+          },
+          {
+            "activation_revision": "ar_80c8388f43e25fc175fc2457",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "一名对Intel已有重大采购暴露的客户正式把下一平台周期的主要计算预算转向GPU、定制ASIC、AMD、ARM/RISC-V或延期建设，并取消或实质削减已计划Intel订单/部署，而相关Intel资本承诺仍执行。"
+            ],
+            "match_scope": "召回已有Intel采购暴露的云或企业客户在GPU、定制ASIC、AMD、ARM/RISC-V和数据中心预算上的迁移、订单削减及Intel资本承诺。",
+            "policy_id": "pol_510d435bceecbd5cf9e4"
+          },
+          {
+            "activation_revision": "ar_20efd558e8ae9d7f60acb4bd",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel、审计机构或监管机构正式量化确认此前列入经营现金或调整后自由现金流的项目应移出或延后，使Q2 FY2026经营现金流低于70.06亿美元或调整后自由现金流低于负84.19亿美元。"
+            ],
+            "match_scope": "召回Intel现金流重述、前期重列、政府激励、伙伴贡献、融资租赁或非现金项目分类、审计监管意见及历史数值修订。",
+            "policy_id": "pol_4f85402fb186dfe297af"
+          },
+          {
+            "activation_revision": "ar_1c59cdb17af38325416ce8f3",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel完成2026年8月已定价普通股发行的基础交割，按每股95美元发行210,526,315股，披露实际净募集并确认现金到账；超额配售按最终行使情况另行计入。"
+            ],
+            "match_scope": "召回Intel 2026年8月普通股发行的交割日、实际净募集、最终股数、超额配售、现金到账及结算失败。",
+            "policy_id": "pol_e01e85c26b3941995263"
+          },
+          {
+            "activation_revision": "ar_cf3f4bd3391a7ce4d58c8637",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel正式取消2026年8月已定价发行、把交割推迟至原结算窗口之外，或正式重新定价/缩减基础发行并确认实际净募集低于约197亿美元计划。"
+            ],
+            "match_scope": "召回Intel已定价普通股发行的取消、延期、重新定价、缩量、实际净募集和资金缺口。",
+            "policy_id": "pol_ed0a6510609c007ea8a8"
+          },
+          {
+            "activation_revision": "ar_99d50d43252cfaa3fe358f89",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "首轮发行交割后、融资资产尚未形成重复正现金回收前，Intel正式启动新的普通股发行、净新增债务或重大资产变现，并明确资金用于弥补流动性、资本开支或营运资金缺口。"
+            ],
+            "match_scope": "召回Intel首轮发行后的新增股权、净新增债务、重大资产出售、流动性和资本开支资金用途及现金回收状态。",
+            "policy_id": "pol_dead4892da482a491c35"
+          },
+          {
+            "activation_revision": "ar_ccefa498f3bf1b14055e90d9",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel一份后续披露确认2026年融资支持资产已形成合格产出，并给出连续两个报告期的利用率/出货、非Altera口径外部收入与调整后自由现金流，其中两个期间自由现金流均为正且无新增股权融资。"
+            ],
+            "match_scope": "召回2026年融资支持资产的合格产出、利用率、出货、非Altera外部Foundry收入、调整后自由现金流和后续增发。",
+            "policy_id": "pol_9600d3c4f1b6b8053603"
+          },
+          {
+            "activation_revision": "ar_a0ec1009c4ea69ae8dbe98cb",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "发行后的完整报告期确认稀释股数较发行前增加至少2.105亿股，并在同一披露给出同口径可比值，显示每股经营现金流或每股经营利润未改善或恶化。"
+            ],
+            "match_scope": "召回Intel发行后稀释股数、股权薪酬、每股经营现金流、每股经营利润及同口径可比值。",
+            "policy_id": "pol_4d3c102787544f4251fb"
+          },
+          {
+            "activation_revision": "ar_5f7344aebac129276418ed30",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "最终生效的政府决定削减、取消或推迟Intel相关激励，要求返还资金或新增现金/股权交付义务，并使Intel正式修改资本项目资金来源、确认相关负债或启动替代融资。"
+            ],
+            "match_scope": "召回Intel相关补助、激励或CHIPS安排的最终金额、付款时间、返还、资格、现金或股权义务及生效日。",
+            "policy_id": "pol_e7853e08084b9aabfed5"
+          },
+          {
+            "activation_revision": "ar_c57970917d3610f3fcf95d88",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel或债权文件确认重大到期债务无法按原规模常规续作，或新条款提高现金利息/担保并加入资本开支限制，导致公司正式削减或延期资本计划、或启动替代股权融资。"
+            ],
+            "match_scope": "召回Intel重大债务到期、续作失败、现金利息、担保、契约、资本开支限制、项目削减延期和替代股权融资。",
+            "policy_id": "pol_9c7167d6be1b2b29041d"
+          },
+          {
+            "activation_revision": "ar_c62e4a5c744d7565401bf6d5",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "重大客户、伙伴或政府项目与Intel签署具名资本项目的共同投资、租赁或预付款协议，量化资金和最低采购/产能义务，并确认首笔资金到账或Intel原定资本份额已按合同减少。"
+            ],
+            "match_scope": "召回重大客户、伙伴或政府项目对具名Intel资本项目的共同投资、租赁、预付款、最低采购、首笔到账和Intel资本份额变化。",
+            "policy_id": "pol_d18f516ae89e026e6316"
+          }
+        ],
+        "policy_set_published_at": "2026-09-22T05:58:37.408919Z",
+        "policy_set_version": 1,
+        "schema_version": "document3.runtime_projection.v4",
+        "ticker": "INTC"
+      },
+      "provisional": [
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Intel",
+              "INTC"
+            ],
+            "occurrence_date": "2026-09-21",
+            "proposition": "Intel shares gained approximately 12% during the 2026-09-21 trading session.",
+            "subject_time": "2026-09-21 trading session"
+          },
+          "candidate_index": 0,
+          "case_id": "case_53970cd7172a432a8a0c88b6bd1b36da",
+          "created_at": "2026-09-22T09:34:19.655969Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E61",
+          "runtime_signature": "fb94aca070925c8858f35b92daa595bae9b28b0650e17c8fb1ee45d2370d532e",
+          "snapshot_version": 1,
+          "source_message_id": "std_e6fc2355b6ff48c4bf9ecec82e51867e",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Nasdaq Composite"
+            ],
+            "occurrence_date": "2026-09-21",
+            "proposition": "The Nasdaq Composite gained approximately 2.26% and closed at 27,122.09 on 2026-09-21, a record high.",
+            "subject_time": "2026-09-21 trading session"
+          },
+          "candidate_index": 1,
+          "case_id": "case_53970cd7172a432a8a0c88b6bd1b36da",
+          "created_at": "2026-09-22T09:34:19.670631Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E62",
+          "runtime_signature": "7b2d66e810417b0b68aa22c2e1a0b45d76766f530de34e7b6bba208de207d49a",
+          "snapshot_version": 2,
+          "source_message_id": "std_e6fc2355b6ff48c4bf9ecec82e51867e",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "CNN Money Fear & Greed Index"
+            ],
+            "occurrence_date": "2026-09-21",
+            "proposition": "The CNN Money Fear & Greed Index rose from 30 to 34 on 2026-09-21 and remained in the Fear zone.",
+            "subject_time": "2026-09-21"
+          },
+          "candidate_index": 2,
+          "case_id": "case_53970cd7172a432a8a0c88b6bd1b36da",
+          "created_at": "2026-09-22T09:34:19.689924Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E63",
+          "runtime_signature": "c5d6a840d13dd28dd98c912ff7b35d36240e418fc75265a45d9ea46ca022bad5",
+          "snapshot_version": 3,
+          "source_message_id": "std_e6fc2355b6ff48c4bf9ecec82e51867e",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Intel",
+              "INTC"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Intel shares were falling ahead of the U.S. market open on 2026-09-22.",
+            "subject_time": "2026-09-22 premarket"
+          },
+          "candidate_index": 0,
+          "case_id": "case_f6b6ef3022534b48bf2255c73d404a2f",
+          "created_at": "2026-09-22T10:09:13.760420Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E64",
+          "runtime_signature": "0ad9cbab462a05c32e4c11137bd31b0b74022ace87f77c3ee94a5c0474956e4c",
+          "snapshot_version": 4,
+          "source_message_id": "std_376a61e2689d407da82da5a77ea6a9cc",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Advanced Micro Devices",
+              "AMD"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "AMD shares declined 1.1% in premarket trading on 2026-09-22.",
+            "subject_time": "2026-09-22 premarket"
+          },
+          "candidate_index": 1,
+          "case_id": "case_f6b6ef3022534b48bf2255c73d404a2f",
+          "created_at": "2026-09-22T10:09:13.774403Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E65",
+          "runtime_signature": "d7fe60c9a8554c943e7dc6dc4428e392f55171ab71beaad8624f4e23601e335d",
+          "snapshot_version": 5,
+          "source_message_id": "std_376a61e2689d407da82da5a77ea6a9cc",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Advanced Micro Devices",
+              "AMD"
+            ],
+            "occurrence_date": "2026-09-21",
+            "proposition": "Advanced Micro Devices' market capitalization exceeded $1 trillion for the first time on 2026-09-21.",
+            "subject_time": "2026-09-21"
+          },
+          "candidate_index": 2,
+          "case_id": "case_f6b6ef3022534b48bf2255c73d404a2f",
+          "created_at": "2026-09-22T10:09:13.782987Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E66",
+          "runtime_signature": "45efded3bd7d67534ec383d82c26501263c7ef6e550d3f6ff84379ee07b206fd",
+          "snapshot_version": 6,
+          "source_message_id": "std_376a61e2689d407da82da5a77ea6a9cc",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Ryan Cohen",
+              "GameStop",
+              "GME"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Ryan Cohen bought 1.15 million additional GameStop shares, as reported by a Form 4 filing on 2026-09-22.",
+            "subject_time": "2026-09-22 Form 4 filing"
+          },
+          "candidate_index": 3,
+          "case_id": "case_f6b6ef3022534b48bf2255c73d404a2f",
+          "created_at": "2026-09-22T10:09:13.790514Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E67",
+          "runtime_signature": "e3bf5cd381f20f40546a5213f3c8d41e64f05e1fe417cb42b18206c333b9eb5c",
+          "snapshot_version": 7,
+          "source_message_id": "std_376a61e2689d407da82da5a77ea6a9cc",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "GameStop",
+              "GME"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "GameStop shares advanced 3.3% on 2026-09-22.",
+            "subject_time": "2026-09-22 trading session"
+          },
+          "candidate_index": 4,
+          "case_id": "case_f6b6ef3022534b48bf2255c73d404a2f",
+          "created_at": "2026-09-22T10:09:13.796810Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E68",
+          "runtime_signature": "684dffd17e732e20b2d88159d30a14703774727f489a0a6f33c9468f21052f42",
+          "snapshot_version": 8,
+          "source_message_id": "std_376a61e2689d407da82da5a77ea6a9cc",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "U.S. stock futures",
+              "U.S. technology stocks"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "U.S. stock futures were sliding on 2026-09-22 after the previous session's record-breaking technology rally.",
+            "subject_time": "2026-09-22 premarket"
+          },
+          "candidate_index": 0,
+          "case_id": "case_38a831b5d9ee469489943c503fab12fe",
+          "created_at": "2026-09-22T10:31:46.000801Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E69",
+          "runtime_signature": "491323a72ffcdbaab0df97861a87dec9213f82ae8d4b5f1a1f331565e5c33020",
+          "snapshot_version": 9,
+          "source_message_id": "std_cd8fee6f1ee84972a76c7ca785a3c5f7",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Artificial-intelligence stocks"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Artificial-intelligence stocks were slipping on 2026-09-22 after surging on 2026-09-21.",
+            "subject_time": "2026-09-22 premarket"
+          },
+          "candidate_index": 1,
+          "case_id": "case_38a831b5d9ee469489943c503fab12fe",
+          "created_at": "2026-09-22T10:31:46.014027Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E70",
+          "runtime_signature": "86208cf5fd09aa7caf2e20f477e3a8e207c62189a5e013a3c46c9155c1dbf9b0",
+          "snapshot_version": 10,
+          "source_message_id": "std_cd8fee6f1ee84972a76c7ca785a3c5f7",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "ResearchAndMarkets.com",
+              "U.S. integrated-circuits market"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "ResearchAndMarkets.com added a U.S. integrated-circuits market size and share report covering 2026-2035 to its offering on 2026-09-22.",
+            "subject_time": "2026-2035 report period"
+          },
+          "candidate_index": 0,
+          "case_id": "case_2932cae76a464d02b1af7ef3e04567df",
+          "created_at": "2026-09-22T12:19:36.237132Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E71",
+          "runtime_signature": "83e74a1b34c1098a0ab17b33f22f83c3a46825edf7f5ff2bbfe94e212e5271d4",
+          "snapshot_version": 11,
+          "source_message_id": "std_a1624b68629e46e08e9ab4f2b11fa668",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "U.S. integrated-circuits market",
+              "ResearchAndMarkets.com"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "The report forecasts the U.S. integrated-circuits market to grow from USD 172 billion in 2025 to USD 330 billion by 2035 at an 8.5% CAGR.",
+            "subject_time": "2025-2035"
+          },
+          "candidate_index": 1,
+          "case_id": "case_2932cae76a464d02b1af7ef3e04567df",
+          "created_at": "2026-09-22T12:19:36.246723Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E72",
+          "runtime_signature": "419c056b2ee36a6533f9381b5ba40dd669f4f784579299c954a1d7ed220f7b27",
+          "snapshot_version": 12,
+          "source_message_id": "std_a1624b68629e46e08e9ab4f2b11fa668",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "AI integrated circuits",
+              "High-performance-computing integrated circuits",
+              "ResearchAndMarkets.com"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "The report forecasts AI and high-performance-computing integrated circuits to be the fastest-growing product category at approximately 25% annual growth.",
+            "subject_time": "Forecast period through 2035"
+          },
+          "candidate_index": 2,
+          "case_id": "case_2932cae76a464d02b1af7ef3e04567df",
+          "created_at": "2026-09-22T12:19:36.255345Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E73",
+          "runtime_signature": "2cc0c9be74ab14fe533aae0818084aaa97f20dfacdbcde960190080c31db5bde",
+          "snapshot_version": 13,
+          "source_message_id": "std_a1624b68629e46e08e9ab4f2b11fa668",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Oil prices",
+              "Iran",
+              "Strait of Hormuz"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "油价对涉及伊朗与霍尔木兹的报告作出了市场反应。",
+            "subject_time": "2026-09-22早盘市场反应"
+          },
+          "candidate_index": 0,
+          "case_id": "case_ae82c706bcba4922adab227a515446fb",
+          "created_at": "2026-09-22T12:25:07.061968Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E74",
+          "runtime_signature": "2a41bc3096b00cd6307d8f3f65b257e4c0d6c4e6803941969a98b101486671da",
+          "snapshot_version": 14,
+          "source_message_id": "std_e84ab31f31b0421a9ada8cfbcea6c898",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "quantum computing stocks"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "量子计算股票在一场即将举行的重大量子计算行业会议前承压。",
+            "subject_time": "截至2026-09-22的会议前市场状态"
+          },
+          "candidate_index": 0,
+          "case_id": "case_cf26f61e70484e6e996561a208fdee03",
+          "created_at": "2026-09-22T12:25:38.556051Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E75",
+          "runtime_signature": "163056c27dc3e98441bae7e7de7133090dd636afcc77c38dc20f9f686515b7ba",
+          "snapshot_version": 15,
+          "source_message_id": "std_f4879a41448949c9b4898563d21650b3",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "SCHEDULED",
+            "entities": [
+              "quantum computing industry",
+              "quantum computing conference"
+            ],
+            "occurrence_date": null,
+            "proposition": "一场重大量子计算行业会议已安排在近期举行。",
+            "subject_time": "2026-09-22之后的近期会议"
+          },
+          "candidate_index": 1,
+          "case_id": "case_cf26f61e70484e6e996561a208fdee03",
+          "created_at": "2026-09-22T12:25:38.573478Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E76",
+          "runtime_signature": "7222c4aa226de2537d2d72a4165edc005341c78e4bc9354754ded193124d50b6",
+          "snapshot_version": 16,
+          "source_message_id": "std_f4879a41448949c9b4898563d21650b3",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Alphabet",
+              "Googlebook"
+            ],
+            "occurrence_date": "2026-09-21",
+            "proposition": "Alphabet opened pre-orders for Googlebook laptops on 2026-09-21.",
+            "subject_time": "Googlebook launch and pre-order period"
+          },
+          "candidate_index": 0,
+          "case_id": "case_8c969b922a90462eaa7d45a79022b6f1",
+          "created_at": "2026-09-22T12:38:23.611046Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E77",
+          "runtime_signature": "14ce35a29964870bd25e57cbd4089e0d4b140944e9b561bd8a611bcd9838cfff",
+          "snapshot_version": 17,
+          "source_message_id": "std_3e2dae2eeaec4ef595d6ccc283e19206",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Googlebook",
+              "Alphabet"
+            ],
+            "occurrence_date": "2026-09-21",
+            "proposition": "Googlebook laptops have a starting price of $899.",
+            "subject_time": "Googlebook launch"
+          },
+          "candidate_index": 1,
+          "case_id": "case_8c969b922a90462eaa7d45a79022b6f1",
+          "created_at": "2026-09-22T12:38:23.617094Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E78",
+          "runtime_signature": "6863636929b58467943b8046c3f8f6d541f740447a075fc113030634fc4abf99",
+          "snapshot_version": 18,
+          "source_message_id": "std_3e2dae2eeaec4ef595d6ccc283e19206",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "PLANNED",
+            "entities": [
+              "Googlebook",
+              "Acer",
+              "Asus",
+              "Dell",
+              "HP",
+              "Lenovo"
+            ],
+            "occurrence_date": "2026-09-21",
+            "proposition": "Googlebook laptops are planned to be offered by Acer, Asus, Dell, HP, and Lenovo.",
+            "subject_time": "Googlebook initial availability"
+          },
+          "candidate_index": 2,
+          "case_id": "case_8c969b922a90462eaa7d45a79022b6f1",
+          "created_at": "2026-09-22T12:38:23.623079Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E79",
+          "runtime_signature": "8664c97ef972cd1d207107c4ec7dfcaa03624806567dbaa9743ed4fc7acc4590",
+          "snapshot_version": 19,
+          "source_message_id": "std_3e2dae2eeaec4ef595d6ccc283e19206",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "PLANNED",
+            "entities": [
+              "Googlebook",
+              "Intel",
+              "Qualcomm"
+            ],
+            "occurrence_date": "2026-09-21",
+            "proposition": "The planned Googlebook laptops will use Intel or Qualcomm processors.",
+            "subject_time": "Googlebook initial availability"
+          },
+          "candidate_index": 3,
+          "case_id": "case_8c969b922a90462eaa7d45a79022b6f1",
+          "created_at": "2026-09-22T12:38:23.631000Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E80",
+          "runtime_signature": "7ce008ce50064132fc4f81200e4e4f9c808441acd0263dee8c35e8a665df50f1",
+          "snapshot_version": 20,
+          "source_message_id": "std_3e2dae2eeaec4ef595d6ccc283e19206",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Google",
+              "Alphabet",
+              "Googlebook",
+              "Gemini",
+              "Android"
+            ],
+            "occurrence_date": "2026-09-21",
+            "proposition": "Google positioned Googlebook around Gemini AI tools and tighter connections with Android.",
+            "subject_time": "Googlebook launch"
+          },
+          "candidate_index": 4,
+          "case_id": "case_8c969b922a90462eaa7d45a79022b6f1",
+          "created_at": "2026-09-22T12:38:23.637135Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E81",
+          "runtime_signature": "afb0044c4c51aedccb3848f50f9938428fa595a656125a5aa7c2fe8d8a99829a",
+          "snapshot_version": 21,
+          "source_message_id": "std_3e2dae2eeaec4ef595d6ccc283e19206",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Coretura",
+              "BlackBerry",
+              "QNX",
+              "Alloy Kore",
+              "Vector",
+              "Daimler Truck",
+              "Volvo Group"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Coretura selected BlackBerry QNX's Alloy Kore as the safety-certified foundation inside its software-defined vehicle platform for commercial vehicles.",
+            "subject_time": "Commercial-vehicle software-defined vehicle platform"
+          },
+          "candidate_index": 0,
+          "case_id": "case_bf120d3a07c44037a9283202c473e2c3",
+          "created_at": "2026-09-22T13:02:10.107109Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E82",
+          "runtime_signature": "5d0661839426ce0b4e12dc13b05874d1250b0f0a7268b9891180d6332b53d5ec",
+          "snapshot_version": 22,
+          "source_message_id": "std_131e2de5b7b046f4b6a88f58340d0351",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "BlackBerry",
+              "QNX",
+              "Alloy Kore",
+              "Coretura"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "The Coretura selection is BlackBerry's first named design win for the Alloy Kore product.",
+            "subject_time": "Alloy Kore commercial-vehicle platform"
+          },
+          "candidate_index": 1,
+          "case_id": "case_bf120d3a07c44037a9283202c473e2c3",
+          "created_at": "2026-09-22T13:02:10.114121Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E83",
+          "runtime_signature": "e41616826ce411f5917cf65001cd8ff74c4cb3eac01e04bb0782047aa87e2f5b",
+          "snapshot_version": 23,
+          "source_message_id": "std_131e2de5b7b046f4b6a88f58340d0351",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "BlackBerry",
+              "QNX",
+              "Alloy Kore",
+              "Coretura"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "The Alloy Kore announcement disclosed no contract value, revenue split, or revenue-recognition timetable.",
+            "subject_time": "Alloy Kore announcement"
+          },
+          "candidate_index": 2,
+          "case_id": "case_bf120d3a07c44037a9283202c473e2c3",
+          "created_at": "2026-09-22T13:02:10.120333Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E84",
+          "runtime_signature": "d71a30a934db53855cd1ef52bace7279b7139f4b669dfafd76d4c6e1acbe75cf",
+          "snapshot_version": 24,
+          "source_message_id": "std_131e2de5b7b046f4b6a88f58340d0351",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Mobileye",
+              "MBLY"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Mobileye shares were up approximately 0.3% in Tuesday morning trading.",
+            "subject_time": "2026-09-22 morning trading"
+          },
+          "candidate_index": 3,
+          "case_id": "case_bf120d3a07c44037a9283202c473e2c3",
+          "created_at": "2026-09-22T13:02:10.126678Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E85",
+          "runtime_signature": "6c1bf88307f9a909fa9db4618693a83282b3043298b21a425ad6f2e8cb0deba5",
+          "snapshot_version": 25,
+          "source_message_id": "std_131e2de5b7b046f4b6a88f58340d0351",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Intel",
+              "INTC",
+              "Mobileye",
+              "MBLY"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Intel retains majority ownership of Mobileye.",
+            "subject_time": "Current ownership"
+          },
+          "candidate_index": 4,
+          "case_id": "case_bf120d3a07c44037a9283202c473e2c3",
+          "created_at": "2026-09-22T13:02:10.134282Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E86",
+          "runtime_signature": "be67cea5413e4cf86bac7f179bc3139c77610f5c089ab6309426069e407cd688",
+          "snapshot_version": 26,
+          "source_message_id": "std_131e2de5b7b046f4b6a88f58340d0351",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        }
+      ]
+    }
+  },
+  "source": {
+    "admission_context": {
+      "cutoff": null,
+      "mode": "REALTIME",
+      "policy_version": 1,
+      "source_task_id": null,
+      "sweep_id": null,
+      "window_start": null
+    },
+    "binding_id": "INTC:yahoo_finance_news",
+    "business_version": 1,
+    "collected_at": "2026-09-22T15:34:51.138387Z",
+    "eligibility_at": "2026-09-22T15:34:51.135041Z",
+    "logical_message_id": "message_6f7f249033854257b38c22ef0d0410c6",
+    "member_count": 1,
+    "member_message_ids": [
+      "std_bb71cd8f1eae4683ae9e817d67b78d9f"
+    ],
+    "message_bus_event_time": "2026-09-22T15:34:51.138387Z",
+    "normalized_at": null,
+    "previous_raw_message_id": null,
+    "publication_time_basis": "EXACT",
+    "published_at": "2026-09-22T15:22:00Z",
+    "snapshot": {
+      "body": "Intel Corporation INTC has extended its Core Ultra platform to new Googlebook laptops from Alphabet Inc. GOOGL powered by Intel Core Ultra Series 3 processors. Developed with Google, the new laptops are being brought to market by PC makers Acer, ASUS and Lenovo, combining Intel processing and connectivity technologies with Google's computing experience.Intel's latest processors deliver responsive performance and power efficiency for modern computing. Built on its advanced 18A process technology, the Core Ultra Series 3 integrates CPU, GPU and NPU architectures to support demanding workloads and artificial intelligence (AI)-enabled experiences. The platform is designed to help users multitask across applications while maintaining efficient power consumption for longer battery life.The company also brings enhanced connectivity features to the new Googlebook laptops, including Intel Wi-Fi 7, Dual Intel Bluetooth 6.0 and Intel Thunderbolt. These technologies deliver fast and reliable connections across different environments while supporting seamless device experiences.Building on more than a decade of collaboration between Intel and Google, the launch introduces premium laptops with modern designs, vibrant displays and next-generation features. The initiative supports Intel's efforts to deliver high-performance, efficient and AI-capable technologies across a broader range of devices.\n\nHow Are Competitors Performing in the PC Market?\n\nIntel faces competition from Qualcomm Incorporated QCOM and Advanced Micro Devices AMD. Qualcomm is strengthening its presence in the PC market with its Snapdragon X2 processors, which offer AI capabilities, performance and power efficiency. The company launched the Snapdragon C platform for affordable laptops targeting students, families and small businesses. Qualcomm is further expanding its PC portfolio through laptops from major PC manufacturers such as ASUS, HP, Lenovo and Acer.AMD is advancing in the PC market with Ryzen AI processors, which combine strong computing performance with built-in AI capabilities. The company offers Ryzen AI chips across consumer and business PCs, including laptops, desktops and workstations. AMD is working with major PC manufacturers to expand the availability of its Ryzen-powered AI PCs.\n\nINTC's Price Performance, Valuation & Estimates\n\nShares of Intel have skyrocketed 323.4% over the past year compared with the industry's growth of 31.7%.\n\nImage Source: Zacks Investment Research\n\nGoing by the price/book ratio, the company's shares currently trade at 5.96 times book value, lower than the industry average of 23.92.\n\nINTC's earnings estimates for 2026 have increased 27.1% to $1.50 per share, while those for 2027 have increased 18.8% to $1.96 over the past 60 days.\n\nIntel currently carries a Zacks Rank #3 (Hold). You can see the complete list of today's Zacks #1 Rank (Strong Buy) stocks here.\n\nWant the latest recommendations from Zacks Investment Research? Today, you can download 7 Best Stocks for the Next 30 Days. Click to get this free report\n\nIntel Corporation (INTC) : Free Stock Analysis Report\n\nQUALCOMM Incorporated (QCOM) : Free Stock Analysis Report\n\nAdvanced Micro Devices, Inc. (AMD) : Free Stock Analysis Report\n\nAlphabet Inc. (GOOGL) : Free Stock Analysis Report\n\nThis article originally published on Zacks Investment Research (zacks.com).\n\nZacks Investment Research",
+      "ticker": "INTC",
+      "title": "Can Intel's Core Ultra Expansion With Googlebook Benefit the Stock?"
+    },
+    "source_id": "yahoo_finance_news",
+    "source_message_id": "std_bb71cd8f1eae4683ae9e817d67b78d9f",
+    "stream_item_id": "stream_7f08259ae70f49958b8857bb9c5b8c73",
+    "update_kind": "NEW_MESSAGE",
+    "url": "https://finance.yahoo.com/markets/stocks/articles/intels-core-ultra-expansion-googlebook-152200497.html"
+  },
+  "w1_final": {
+    "confidence": "normal",
+    "fact_attributions": [
+      {
+        "event_id": "E80",
+        "fact_ids": []
+      }
+    ],
+    "reason": "E80 only records a PLANNED state that Googlebook laptops 'will use Intel or Qualcomm processors.' The current message is Intel's own ACTUAL announcement that Core Ultra Series 3 (18A process) specifically powers new Googlebook laptops, with confirmed partners Acer, ASUS, Lenovo. The transition from planned/generic processor attribution to Intel's confirmed, specific product launch is a new core fact not covered by existing facts.",
+    "reference_ids": [
+      "E77",
+      "E79",
+      "E80"
+    ],
+    "result": "NEW"
+  },
+  "w2_final": {
+    "confidence": "normal",
+    "matched_condition_ids": [],
+    "policy_ids": [],
+    "reason": "当前消息为Intel Core Ultra Series 3在Googlebook新形态上的产品发布/上市公告，涉及Acer、ASUS、Lenovo三家OEM将搭载18A工艺的Core Ultra Series 3笔记本推向市场。该消息未包含任何政策criterion所要求的具体触发事实：无确认的终端销售数据及据此产生的补单（pol_849bf577d74f6b102e74），无供给约束缓解或单位出货数据（pol_00aedd21578697ff89d7），无库存、延期、取消或削减信息，也非边缘AI/机器人客户量产设计承诺。消息仅为产品市场导入公告，与任何Policy的触发条件不存在具体、实质性的事实对应关系。"
+  },
+  "w2_alignment": null,
+  "version_pin": {
+    "activation_revision_id": "init-intc-738849dbdbb04ae1a39efa0aec69c071-activation",
+    "document1_run_id": "init-intc-738849dbdbb04ae1a39efa0aec69c071-d1",
+    "document2_run_id": "init-intc-738849dbdbb04ae1a39efa0aec69c071-d2",
+    "event_library_root": null,
+    "event_library_version": 1,
+    "policy_set_version": 1,
+    "provisional_snapshot_version": 26,
+    "runtime_projection_version": 1
+  },
+  "runtime_mode": "REALTIME",
+  "trading_date": "2026-09-22"
+}

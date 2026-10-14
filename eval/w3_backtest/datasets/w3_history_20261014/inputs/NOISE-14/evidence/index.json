@@ -1,0 +1,22 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-10-02T02:03:51.978970Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "The full Jiji Press and DigiTimes articles are paywalled, limiting verification of sourcing, the precise missed milestone, and the detailed causes or state of negotiations.",
+    "The public timelines differ in wording and apparent milestone: Jiji refers to a summer target, while the July CEO report refers to announcing a JV plan by September. The March MoU itself set no deadline.",
+    "No company-issued confirmation of the slippage or revised timetable was located in the sources verifiably available by cutoff."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

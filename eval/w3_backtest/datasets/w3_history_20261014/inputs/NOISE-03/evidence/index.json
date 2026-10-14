@@ -1,0 +1,24 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-23T00:08:00.174647Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "No archived or otherwise dated pre-cutoff snapshot verifies the exact Motley Fool article body at the cutoff; the live page’s update timestamp is timezone-ambiguous.",
+    "The article’s stated Intel FY2025 free cash flow and stock-based-compensation share of operating cash flow were not independently checked against the filing passages retrieved.",
+    "The article’s explanation of Intel’s Q2 GAAP loss as a non-cash accounting effect related to government-held shares was not independently verified in the retrieved primary passages.",
+    "No independent contemporaneous Intel Q2 report was retrieved in the selected results; Intel’s release and next-day Form 10-Q were verified.",
+    "The article’s valuation multiples, price performance, current quote widgets, and other price-based statements were excluded; exact consensus expectations preceding ASML’s revisions were not collected."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

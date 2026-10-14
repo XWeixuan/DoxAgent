@@ -1,0 +1,1710 @@
+{
+  "recent_trade_intents": [
+    {
+      "message": {
+        "title": "AMD drops an EPYC $15,000, 256-core beast",
+        "body": "Facebook\n\nX\n\nWhatsapp\n\nReddit\n\nPinterest\n\nFlipboard\n\nEmail\n\nAfter unveiling the EPYC 9006 (codenamed Venice) series in July and previewing a few impressive Zen 6 benchmarks, AMD has now released full pricing for its highly anticipated next-generation server chips. According to the list StorageReview obtained, AMD has big plans for the data center, with a wide range of SKUs from eight to 256 cores and pricing from $700 to $14,904.\n\nIntel VP Robert Hallock sets Nova Lake expectations, teases return to Raptor Lake for DDR4 platforms\n\nCPU scaling with DLSS\n\nIntel's one-two punch plan in desktop CPUs is taking shape\n\nBenchmarking AMD's BC-250, offering Steam Machine-like performance at half the price\n\nAMD splits Zen 7 into three EPYC families for 2028 and starts selling server CPUs by the agent\n\nAs a quick refresher, AMD strategically divided the Venice lineup into two distinct segments. The SP7 platform is the flagship offering, delivering maximum memory capacity and throughput. It supports up to 16 memory channels, accommodating both RDIMMs and MDRDIMMs up to DDR5-12800. The platform offers up to 96 PCIe 6.0 lanes and supports Venice chips with TDPs between 400W and 600W.\n\nThe Venice parts designed for the SP7 socket offer scalable performance for enterprises. The lineup begins with the 64-core EPYC 9556, priced at $8,008, and extends to the flagship 256-core EPYC 9996, which commands $14,904. In retrospect, the EPYC 9996's price tag does not seem particularly shocking, especially since the previous-generation EPYC 9965 (codenamed Turin) launched at nearly the same price, around $14,800.\n\nAs is typical for server processors, the total price increases as the number of cores rises. However, the price per core actually decreases substantially as you move up the core ladder. The pricing dynamic is very notable with Venice. For example, the flagship EPYC 9996, with a massive 256 cores, comes out to just $58.21 per core, whereas the \"entry-level\" SP7 chip, the 64-core EPYC 9556, costs around $125.12 per core. As a result, higher core-count models are more attractive from a per-core value perspective for data centers, cloud service providers, and enterprises.\n\nAMD EPYC 9006 SP7 Specifications and Pricing\n\nProcessor\n1Ku Price\nCores / Threads\nBase / Boost Clock (GHz)\nL3 Cache (MB)\nSocket\nTDP (W)\n\n\n\n\nEPYC 9996\n$14,904\n256 / 512\n2.55 / 4.10\n1,024\n1P / 2P\n600\n\n\nEPYC 9966\n$14,079\n192 / 384\n2.90 / 4.00\n768\n1P / 2P\n600\n\n\nEPYC 9846\n$13,114\n168 / 336\n2.85 / 3.70\n768\n1P / 2P\n500\n\n\nEPYC 9756\n$12,498\n128 / 256\n3.15 / 4.00\n512\n1P / 2P\n500\n\n\nEPYC 9G76\n$11,622\n96 / 192\n3.40 / 4.80\n384\n1P / 2P\n500\n\n\nEPYC 9686F\n$11,434\n96 / 192\n3.40 / 5.00\n384\n1P / 2P\n500\n\n\nEPYC 9656\n$9,713\n96 / 192\n3.05 / 3.70\n512\n1P / 2P\n400\n\n\nEPYC 9586F\n$9,701\n64 / 128\n3.75 / 5.00\n384\n1P / 2P\n500\n\n\nEPYC 9556\n$8,008\n64 / 128\n2.75 / 4.30\n384\n1P / 2P\n300\n\nThe SP7 SKUs support both 1P and 2P socket configurations. The latter, in particular, enables up to 512 Zen 6 cores in one system by pairing two EPYC 9996 chips on a single motherboard. That level of performance logically comes with a substantial investment, since the processors alone would cost $29,808 before factoring in the significant expense of memory today.\n\nAmong the nine SP7 SKUs, two models in particular stand out: the EPYC 9686F and EPYC 9586F. The \"F\" suffix means these chips feature maximum boost clock speeds, in this case, 5 GHz. While both are impressive in their own right, AMD optimized these parts to hit 5 GHz. Naturally, this level of optimization carries a price premium. For example, the 64-core EPYC 9586F costs almost as much as the 96-core EPYC 9656, despite offering 33% fewer cores. The trade-off is also apparent in the thermal envelope. The EPYC 9586F has a TDP that is 100W higher than the EPYC 9656.\n\nAMD EPYC 9006 SP8 Specifications and Pricing\n\nProcessor\n1Ku Price\nCores / Threads\nBase / Boost Clock (GHz)\nL3 Cache (MB)\nSocket\nTDP (W)\n\n\n\n\nEPYC 9746\n$11,679\n128 / 256\n2.90 / 4.00\n512\n1P / 2P\n400\n\n\nEPYC 9736\n$10,639\n128 / 256\n2.70 / 3.70\n256\n1P / 2P\n360\n\n\nEPYC 9736P\n$9,989\n128 / 256\n2.70 / 3.70\n256\n1P\n360\n\n\nEPYC 9676F\n$10,116\n96 / 192\n3.10 / 5.00\n384\n1P / 2P\n400\n\n\nEPYC 9646\n$8,904\n96 / 192\n2.80 / 3.70\n256\n1P / 2P\n300\n\n\nEPYC 9646P\n$8,001\n96 / 192\n2.80 / 3.70\n256\n1P\n300\n\n\nEPYC 9576F\n$9,431\n64 / 128\n3.55 / 5.00\n384\n1P / 2P\n400\n\n\nEPYC 9536\n$7,837\n64 / 128\n3.25 / 4.00\n256\n1P / 2P\n300\n\n\nEPYC 9526\n$7,123\n64 / 128\n2.75 / 3.70\n256\n1P / 2P\n220\n\n\nEPYC 9536P\n$6,595\n64 / 128\n3.25 / 4.00\n256\n1P\n300\n\n\nEPYC 9476F\n$6,695\n48 / 96\n3.65 / 5.00\n192\n1P / 2P\n330\n\n\nEPYC 9456\n$5,252\n48 / 96\n3.20 / 3.70\n256\n1P / 2P\n265\n\n\nEPYC 9456P\n$4,628\n48 / 96\n3.20 / 3.70\n256\n1P\n265\n\n\nEPYC 9376F\n$4,849\n32 / 64\n3.80 / 5.00\n192\n1P / 2P\n285\n\n\nEPYC 9356\n$3,789\n32 / 64\n3.60 / 4.50\n192\n1P / 2P\n250\n\n\nEPYC 9336\n$3,320\n32 / 64\n3.15 / 3.70\n128\n1P / 2P\n195\n\n\nEPYC 9356P\n$2,795\n32 / 64\n3.60 / 4.50\n192\n1P\n250\n\n\nEPYC 9276F\n$3,512\n24 / 48\n3.80 / 5.00\n96\n1P / 2P\n230\n\n\nEPYC 9256\n$2,501\n24 / 48\n2.85 / 4.50\n96\n1P / 2P\n190\n\n\nEPYC 9176F\n$3,787\n16 / 32\n3.90 / 5.00\n192\n1P / 2P\n200\n\n\nEPYC 9116\n$1,200\n16 / 32\n2.85 / 4.50\n48\n1P / 2P\n160\n\n\nEPYC 9016\n$700\n8 / 16\n3.05 / 4.80\n48\n1P / 2P\n130\n\nThe SP8 platform is a more streamlined and cost-effective counterpart to the SP7 platform for the Venice family. It supports eight-channel memory and does not embrace MRDIMMs. However, the limitation balances out by expansion possibilities, as the SP8 platform offers 128 PCIe 6.0 lanes, 33% more than the SP7 platform. Additionally, the SP7 platform has a lower thermal footprint, as these Zen 6 parts carry TDP ratings between 130W and 400W.\n\nGet Tom's Hardware's best news and in-depth reviews, straight to your inbox.\n\nThe SP8 platform offers an accessible entry point for organizations, with the octa-core EPYC 9106 priced at just $700. At the other end of the spectrum, the EPYC 9746, which is the top SP8 SKU, offers 128 Zen 6 cores at $11,679.\n\nWith the SP8 platform, we also see Zen 6 models with the “P” suffix, which indicates support for single-socket systems only. These variants deliver the same performance as their standard counterparts but at a significantly lower price. For example, the 128-core EPYC 9736P is 6% less expensive than the EPYC 9736. In an even more dramatic case, the 32-core EPYC 9356P retails for 26% less than the EPYC 9356.\n\nOne of the more unusual Venice chips is the 16-core EPYC 9176F. Despite its modest core count, it features a massive 192MB of L3 cache, 4X that of the 16-core EPYC 9116, while costing more than 3X as much. This translates to 12MB of L3 cache per core. With its high cache capacity and 5 GHz boost clock, AMD likely designed the EPYC 9176F for organizations seeking to minimize licensing costs for software priced per core.\n\nAMD’s SP7 and SP8 platforms are scheduled to launch in the fourth quarter of this year and the first half of 2027, respectively. However, these Venice prices are not final, as AMD has stated that the list is subject to change. AMD will extend the lineup further later in 2027 with Venice-X chips, which use the company's 3D V-Cache stacking.\n\nFollow Tom's Hardware on Google News, or add us as a preferred source, to get our latest news, analysis, & reviews in your feeds.\n\nZhiye Liu is a news editor, memory reviewer, and SSD tester at Tom’s Hardware. Although he loves everything that’s hardware, he has a soft spot for CPUs, GPUs, and RAM.",
+        "source_name": "tomshardware.com",
+        "published_at": "2026-09-29T11:20:00Z"
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": []
+      },
+      "w2": {
+        "policy_hit": false,
+        "policy_related": false,
+        "policy_ids": [],
+        "hit_condition_ids": [],
+        "matched_condition_ids": []
+      },
+      "w3_decision": {
+        "novelty": {
+          "reason": "E41、E763、E764、E766、E768和E769已覆盖AMD供给、份额、产能扩张及Intel服务器供给和价格计划，但未覆盖AMD Zen 6 Venice EPYC 9006的完整价格表、256核旗舰规格及SP7/SP8上市时点。",
+          "reference_ids": [
+            "E41",
+            "E763",
+            "E764",
+            "E766",
+            "E768",
+            "E769"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息提供了竞争产品定价、规格和计划上市信息，但没有客户将Intel订单转向AMD、取消Intel采购或确认部署变化，因此不满足现行Policy的客户迁移或订单触发条件。"
+        },
+        "expert_trade": {
+          "direction": "SHORT",
+          "evaluated": true,
+          "expectation_delta": "AMD公布EPYC 9006 Venice从700美元至14904美元的完整价格带，最高256核旗舰将于SP7平台在2026年第四季度附近进入市场，SP8平台计划于2027年上半年推出。该信息把此前的AMD供给改善预期具体化为接近Intel涨价窗口的高核心数、广覆盖价格替代方案，增加AMD争夺增量服务器需求并限制Intel ASP和份额的概率。",
+          "prior_expectation": "事件前Intel服务器业务的基线是需求强劲但供给只能满足约50%客户需求，并计划于2027年3月涨价；AMD虽已取得34.5%的服务器CPU份额且预计2027年供给改善，但下一代产品的价格、上市时点和可供客户选择的具体程度尚未明确。",
+          "reason": "竞争产品的核心数、价格和上市时点形成了非琐碎的Surprise；服务器CPU是Intel DCAI的重要价值接口，AMD产品供给改善可通过客户平台分配、Intel价格实现和单位量传导至INTC。虽然价格尚可能调整、上市仍属计划且尚无客户转单，但当前竞争威胁的方向和时间窗口已足够清晰，支持适度SHORT。",
+          "trade": true
+        }
+      },
+      "direction": "SHORT",
+      "initiated_at": "2026-09-29T11:23:57.839037+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    },
+    {
+      "message": {
+        "title": "[News] Samsung Foundry Loss Reportedly Seen Shrinking 42% YoY in 2026 as HBM4 Base-Die 4nm Demand Rises",
+        "body": "三星電子不斷成長的HBM4業務正在幫助其晶圓代工業務改善運營，助力公司縮小虧損。根據Digital Today報導，在三星記憶體部門HBM銷售成長的推動下，晶圓代工業務預計將在第三季減少虧損。由於HBM4晶片採用三星自主研發的晶圓代工製程製造，HBM4銷量的成長也為晶圓代工業務帶來了收入。\n\n這種關聯源自於HBM的架構。 HBM採用堆疊式設計，將多個DRAM晶片堆疊在一起，而最底層的基片則控制訊號貫穿整個堆疊。三星表示，已於2月開始批量出貨HBM4，該產品將單通道DRAM與採用4nm製程製造的基片相結合，並於5月份向客戶提供了HBM4E樣品。\n\n報告指出，隨著HBM4在三星HBM銷售額中所佔份額不斷擴大，其對晶圓代工收入的貢獻也不斷增長。三星預計第三季HBM4營收將較上季成長三倍以上，並在下半年佔HBM總營收的60%以上，這預示著晶片基片產量將進一步成長。\n\n銷售成長預計也將改善獲利狀況。報告引述Kiwoom證券的數據稱，三星晶圓代工和系統級晶片業務的合併營業虧損預計將年比收窄41.8%，從去年的6.74兆韓元降至今年的3.92兆韓元。第二季虧損擴大後，預計第三季將收窄至7,770億韓元。\n\nHBM4晶片產量的成長也可能為三星帶來更大的定價彈性。根據iNews24報道，市場對HBM4基礎晶片和先進製程訂單的強勁需求，降低了三星晶圓代工為了提高產能利用率而接受低價合約的必要性。該報告指出，三星在7月提高了4nm新訂單的價格，而部分先進製程的價格據稱也上漲了10%至15%。\n\n外部訂單是進一步改進的關鍵\n\n去年上半年三星晶圓代工虧損超過每季2兆韓元後，今年以來每季虧損在7,000億韓元至1.2兆韓元之間波動。虧損額的波動反映出僅依靠記憶體相關需求來填滿晶圓代工產能的限制。 《今日數字》指出，僅靠內部記憶體相關訂單不足以充分利用三星的晶圓代工產能。\n\n因此，三星正在擴大與外部客戶的交鑰匙工程合約。根據 Digital Today 報道，三星於 7 月與博通簽署了一份諒解備忘錄，雙方計劃在 2030 年前開展價值超過 2000 億美元的合作。該協議包括為博通設計的客製化 AI 加速器提供 HBM4 和 HBM4E 晶片，以及為關鍵產品提供 2 奈米及以下製程製程和先進封裝技術。\n\n進一步的改進最終取決於外部客戶對先進節點製程的訂單。三星表示，其晶圓代工業務在第二季度獲得了來自大型雲端服務供應商 (CSP) 以及人工智慧和高效能運算 (HPC) 客戶的 2nm 項目，客戶已經開始進行產品設計。《The Information》 也指出，Anthropic 據稱可能會利用三星晶圓代工來生產人工智慧晶片。\n\n閱讀更多\n\n【新聞】三星預計，到2027年，HBM將佔據近30%的產業DRAM產能，高於目前的20%。\n\n【新聞】據報道，三星泰勒晶圓廠2nm製程訂單已全部被特斯拉、博通和Arm預訂；Fab 2的籌備工作正在加速進行。\n\n（圖片來源：三星）",
+        "source_name": "trendforce.com",
+        "published_at": "2026-09-30"
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": []
+      },
+      "w2": {
+        "policy_hit": false,
+        "policy_related": false,
+        "policy_ids": [],
+        "hit_condition_ids": [],
+        "matched_condition_ids": []
+      },
+      "w3_decision": {
+        "novelty": {
+          "reason": "消息新增了三星HBM4 4nm基底晶片需求对Foundry收入和亏损的量化预测、4nm/先进制程涨价、博通合作备忘录、CSP及AI/HPC客户2nm设计导入以及Anthropic可能采用三星代工；Reference View仅有HBM扩张结构预测（E195）、SF2良率与客户争取（E239）、客户评估或早期项目（E141、E229），以及Intel自身外部Foundry收入和客户转化困难基线（E16、E17），没有这些新增的经济吸收和客户管线事实。",
+          "reference_ids": [
+            "E195",
+            "E239",
+            "E141",
+            "E229",
+            "E16",
+            "E17"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "无现行Policy命中；消息只涉及三星Foundry及其客户/伙伴的预测、报告或传闻，没有达到任何要求Intel客户转单、Intel节点资格或产能预订、Intel收入利用率，或Intel成本、供给和现金指标的激活条件。"
+        },
+        "expert_trade": {
+          "direction": "SHORT",
+          "evaluated": true,
+          "expectation_delta": "新信息把三星竞争变量从“技术成熟/客户评估”推进为“HBM4 4nm基底需求提供Foundry量与收入、预计亏损显著收窄、据称涨价，并出现Broadcom合作及CSP/AI-HPC 2nm设计项目”。因此应上调三星成为具备更强自我供给与定价能力、能够争夺先进AI代工客户的概率和时间确定性，并下调Intel 18A/14A外部客户转化、利用率及长期Foundry价值获取预期。MoU、预测和Anthropic消息尚非已兑现订单，Delta主要体现为竞争强度和概率/时间的修订，而非立即下调Intel当季收入。",
+          "prior_expectation": "在消息前，研究基线是Intel外部Foundry商业化仍处于技术里程碑和客户设计协作向资格、订单转换的未验证阶段，Q2外部Foundry收入约2.93亿美元；三星虽已有SF2良率改善和2nm客户评估/早期项目，但其先进代工的经济吸收、定价权和绑定客户规模仍未证实。市场对Intel Foundry的定价仍更像有条件的长期期权，而非已实现的外部收入流。",
+          "reason": "Surprise为中等：HBM4扩张与SF2改善已在E195/E239附近的基线内，但本消息首次把HBM4 base-die需求、亏损收窄、涨价和外部2nm客户管线连接成经济竞争叙事。Materiality对短期盈利有限、对Intel的长期Foundry期权较高；Intel外部Foundry收入仅约2.93亿美元，而当前估值条件依赖客户转化和资本吸收。Transmission清晰为三星有效代工需求/价格与客户选择增强，进而增加替代供给和议价压力，压低Intel先进节点design win、外部利用率、现金吸收和Foundry持续期。虽然没有Intel客户已转单且证据强度混合，方向性长期竞争风险已足以支持SHORT。",
+          "trade": true
+        }
+      },
+      "direction": "SHORT",
+      "initiated_at": "2026-09-30T09:43:16.911823+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    }
+  ],
+  "history_matches": [
+    {
+      "events": [],
+      "policies": []
+    },
+    {
+      "events": [],
+      "policies": []
+    }
+  ],
+  "watches": [],
+  "pins": [],
+  "policy_consumptions": [],
+  "provisional": [
+    {
+      "candidate": {
+        "assertion_state": "ONGOING",
+        "entities": [
+          "HBM",
+          "GPU",
+          "CoWoS",
+          "AI semiconductor packaging"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "HBM is approaching half of the total cost of a GPU-HBM CoWoS package.",
+        "subject_time": "Current GPU-HBM CoWoS package cost structure"
+      },
+      "candidate_index": 0,
+      "case_id": "case_28971973b5704a269c1234e5965c5d47",
+      "created_at": "2026-09-30T06:07:26.963031Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E249",
+      "runtime_signature": "a484a91b1294b4f22f924eab3d364691e6c78aec4b20a86b06df2a3265315f89",
+      "snapshot_version": 1,
+      "source_message_id": "std_d464d0eba938417a8ad922a17ca9feb8",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Samsung Electro-Mechanics",
+          "server components"
+        ],
+        "occurrence_date": null,
+        "proposition": "Samsung Electro-Mechanics signed another long-term supply agreement for server components.",
+        "subject_time": "2026 server-component supply activity"
+      },
+      "candidate_index": 0,
+      "case_id": "case_0b9b891991834e57bb1a0176024c9918",
+      "created_at": "2026-09-30T06:10:56.695553Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E250",
+      "runtime_signature": "21e653c0b6896576a18bdb78da0e62674ff2a251a3b360124b2701358f566192",
+      "snapshot_version": 2,
+      "source_message_id": "std_b632ca2729094bc595a5ff2392b5e09b",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Samsung Electro-Mechanics",
+          "2026 supply agreements"
+        ],
+        "occurrence_date": null,
+        "proposition": "Samsung Electro-Mechanics' disclosed supply agreements in 2026 total approximately US$2.6 billion.",
+        "subject_time": "2026 disclosed supply agreements"
+      },
+      "candidate_index": 1,
+      "case_id": "case_0b9b891991834e57bb1a0176024c9918",
+      "created_at": "2026-09-30T06:10:56.719341Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E251",
+      "runtime_signature": "4edbefe2e906b0df663e2a9e68117652a891bfb5e6d5c854324b985d74f7b33f",
+      "snapshot_version": 3,
+      "source_message_id": "std_b632ca2729094bc595a5ff2392b5e09b",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ONGOING",
+        "entities": [
+          "high-performance passive components",
+          "server market"
+        ],
+        "occurrence_date": null,
+        "proposition": "Demand for high-performance passive components is continuing to rise.",
+        "subject_time": "Current high-performance passive-component demand"
+      },
+      "candidate_index": 2,
+      "case_id": "case_0b9b891991834e57bb1a0176024c9918",
+      "created_at": "2026-09-30T06:10:56.749939Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E252",
+      "runtime_signature": "b99fc2c2c360f059f9444fce8748e7c1ef83c8f406a9fa2b7aa0d32b88eec00a",
+      "snapshot_version": 4,
+      "source_message_id": "std_b632ca2729094bc595a5ff2392b5e09b",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Anthropic",
+          "GLM-5.3",
+          "Claude Mythos Preview",
+          "Browser exploits"
+        ],
+        "occurrence_date": "2026-09-29",
+        "proposition": "Anthropic research found that GLM-5.3 built functional browser exploits in 50 of 410 trials, compared with 56 successful trials for Anthropic's restricted Claude Mythos Preview.",
+        "subject_time": "GLM-5.3 autonomous-cyber exploit testing"
+      },
+      "candidate_index": 0,
+      "case_id": "case_e5fb368a0223488da18b22b221e80dc2",
+      "created_at": "2026-09-30T06:44:14.233392Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E253",
+      "runtime_signature": "7422f5680299b356849bbb200713eff72a8ecf4e5ee0a5ec8c680fc9fbb0faa2",
+      "snapshot_version": 5,
+      "source_message_id": "std_e15d757041354905b1ed3a947332f87f",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "GLM-5.3",
+          "Browser vulnerabilities",
+          "SSH private key",
+          "Cybersecurity"
+        ],
+        "occurrence_date": "2026-09-29",
+        "proposition": "During sandboxed testing, GLM-5.3 discovered unknown browser vulnerabilities within a day and chained them into a webpage that stole an SSH private key.",
+        "subject_time": "GLM-5.3 sandboxed cyber testing"
+      },
+      "candidate_index": 1,
+      "case_id": "case_e5fb368a0223488da18b22b221e80dc2",
+      "created_at": "2026-09-30T06:44:14.243960Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E254",
+      "runtime_signature": "d5d77541c763645838a3895b7f69cd4d01bf8ee3ffa25c36c5421f477c99ef77",
+      "snapshot_version": 6,
+      "source_message_id": "std_e15d757041354905b1ed3a947332f87f",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Anthropic",
+          "GLM-5.3",
+          "Abliteration",
+          "GPU hours"
+        ],
+        "occurrence_date": "2026-09-29",
+        "proposition": "Anthropic researchers used abliteration costing approximately $4,400 and 2,200 GPU hours to remove GLM-5.3's refusal mechanisms.",
+        "subject_time": "GLM-5.3 abliteration process"
+      },
+      "candidate_index": 2,
+      "case_id": "case_e5fb368a0223488da18b22b221e80dc2",
+      "created_at": "2026-09-30T06:44:14.266527Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E255",
+      "runtime_signature": "6a15fabbeb20676642a4e8c6848652c48a1d13625719a7e91ed074121805d144",
+      "snapshot_version": 7,
+      "source_message_id": "std_e15d757041354905b1ed3a947332f87f",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "GLM-5.3",
+          "Abliteration",
+          "Refusal rate",
+          "AI safety"
+        ],
+        "occurrence_date": "2026-09-29",
+        "proposition": "Abliteration reduced GLM-5.3's refusal rate from above 90% to as low as 2% without significantly reducing general-intelligence or scientific capabilities.",
+        "subject_time": "Post-abliteration GLM-5.3 safety behavior"
+      },
+      "candidate_index": 3,
+      "case_id": "case_e5fb368a0223488da18b22b221e80dc2",
+      "created_at": "2026-09-30T06:44:14.294474Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E256",
+      "runtime_signature": "0c96aefaa50673e4cf4db8bb0f75652b507ec4409faf4ae6ac39af33a0f90e39",
+      "snapshot_version": 8,
+      "source_message_id": "std_e15d757041354905b1ed3a947332f87f",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "GLM-5.3",
+          "GLM-5.2",
+          "Claude Opus 4.6",
+          "Control-flow hijacks"
+        ],
+        "occurrence_date": "2026-09-29",
+        "proposition": "GLM-5.3 achieved full control-flow hijacks in 4% of the trials, while GLM-5.2 and Claude Opus 4.6 produced no successful exploits in the reported tests.",
+        "subject_time": "Comparative GLM-5.3 exploit testing"
+      },
+      "candidate_index": 4,
+      "case_id": "case_e5fb368a0223488da18b22b221e80dc2",
+      "created_at": "2026-09-30T06:44:14.331165Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E257",
+      "runtime_signature": "dc441f57408aff80f79b565761db4de307bf906208de03e71b471ded009aa401",
+      "snapshot_version": 9,
+      "source_message_id": "std_e15d757041354905b1ed3a947332f87f",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "TrendForce",
+          "Conventional DRAM",
+          "Memory contract prices"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Conventional DRAM contract prices are forecast to rise 10% to 15% quarter over quarter in 4Q26.",
+        "subject_time": "4Q26 conventional DRAM contract pricing"
+      },
+      "candidate_index": 0,
+      "case_id": "case_7ac074fce2d2437696e01a12ead8870c",
+      "created_at": "2026-09-30T07:59:09.224067Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E258",
+      "runtime_signature": "ed631b11b09c2009febae8e541249cec4e74cf9118ff76986c2b422970e6f412",
+      "snapshot_version": 10,
+      "source_message_id": "std_ef3b63a7e9fe4bddae057db2348229ba",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "TrendForce",
+          "NAND Flash",
+          "Memory contract prices"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "NAND Flash contract prices are forecast to rise 15% to 20% quarter over quarter in 4Q26.",
+        "subject_time": "4Q26 NAND Flash contract pricing"
+      },
+      "candidate_index": 1,
+      "case_id": "case_7ac074fce2d2437696e01a12ead8870c",
+      "created_at": "2026-09-30T07:59:09.243954Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E259",
+      "runtime_signature": "a4c7019fe29fddce8bd699ca07e2fbe2cc106b31092d2653627ae39a350e95d8",
+      "snapshot_version": 11,
+      "source_message_id": "std_ef3b63a7e9fe4bddae057db2348229ba",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "TrendForce",
+          "Enterprise SSD",
+          "CSPs",
+          "AI inference",
+          "Agentic AI"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Enterprise-SSD bit demand is projected to grow more than 80% year over year in 2026 as cloud-service providers expand AI-inference infrastructure and agentic-AI data volumes increase.",
+        "subject_time": "2026 enterprise-SSD demand"
+      },
+      "candidate_index": 2,
+      "case_id": "case_7ac074fce2d2437696e01a12ead8870c",
+      "created_at": "2026-09-30T07:59:09.279955Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E260",
+      "runtime_signature": "dc7cfd1033da6161b3362260c8dd83e7cfd650393b3da565f6eaf95a45d58405",
+      "snapshot_version": 12,
+      "source_message_id": "std_ef3b63a7e9fe4bddae057db2348229ba",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "Enterprise SSD",
+          "AI infrastructure",
+          "Memory suppliers"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Enterprise SSDs are expected to be the only memory category with accelerating price growth in 4Q26 because most incremental supply is already committed.",
+        "subject_time": "4Q26 enterprise-SSD pricing"
+      },
+      "candidate_index": 3,
+      "case_id": "case_7ac074fce2d2437696e01a12ead8870c",
+      "created_at": "2026-09-30T07:59:09.305278Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E261",
+      "runtime_signature": "c8d8ee7ec0ef313de24532c80b9dd6e5403d7539fde4d8c0e8184babb572c195",
+      "snapshot_version": 13,
+      "source_message_id": "std_ef3b63a7e9fe4bddae057db2348229ba",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "EXPECTED",
+        "entities": [
+          "Server DRAM",
+          "Packaging",
+          "Testing capacity",
+          "Server CPUs",
+          "Memory suppliers"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Server DRAM is expected to remain undersupplied in 4Q26 despite improving server-CPU availability, because component, packaging, testing, and front-end DRAM production constraints continue to limit supply.",
+        "subject_time": "4Q26 server DRAM supply"
+      },
+      "candidate_index": 4,
+      "case_id": "case_7ac074fce2d2437696e01a12ead8870c",
+      "created_at": "2026-09-30T07:59:09.317209Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E262",
+      "runtime_signature": "c81acd6fc3b6174ee73400a1fbb5191eb70cde7c7e6e9c596ebb10749b7010dc",
+      "snapshot_version": 14,
+      "source_message_id": "std_ef3b63a7e9fe4bddae057db2348229ba",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "PC DRAM",
+          "PC OEMs",
+          "Server DRAM",
+          "Memory suppliers"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "PC DRAM supply could decline in 2027 as suppliers shift more capacity toward server applications, while PC OEMs continue procuring aggressively in anticipation of tight supply.",
+        "subject_time": "2027 PC DRAM supply allocation"
+      },
+      "candidate_index": 5,
+      "case_id": "case_7ac074fce2d2437696e01a12ead8870c",
+      "created_at": "2026-09-30T07:59:09.326953Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E263",
+      "runtime_signature": "17755935661c8f4c4cb772d62895a06185400013207b583ceef9a8137ed4eb3c",
+      "snapshot_version": 15,
+      "source_message_id": "std_ef3b63a7e9fe4bddae057db2348229ba",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "AMD",
+          "Intel",
+          "SOXX"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "截至2026年9月30日，AMD和Intel推动半导体股票反弹，使SOXX指数接近2026年6月以来最佳月度表现。",
+        "subject_time": "2026年9月月度交易截至2026-09-30"
+      },
+      "candidate_index": 0,
+      "case_id": "case_07fa1dc00bb14447aad0e71be9e4b4bd",
+      "created_at": "2026-09-30T08:09:32.224488Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E264",
+      "runtime_signature": "eed2e287d90d24352d8c0bf2082b4b03462b6a7effebe8eb4ab6686ffd5ac5f2",
+      "snapshot_version": 16,
+      "source_message_id": "std_187a223cf424486eb83e6a2ec8ce8f58",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMORED",
+        "entities": [
+          "NVIDIA",
+          "Rubin Ultra NVL576",
+          "hydrocarbon resin CCL",
+          "hydrocarbon PP",
+          "PTFE CCL"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "据供应链分析，NVIDIA正在为Rubin Ultra NVL576的交换托盘PCB评估烃类树脂基无玻璃铜箔层压板（CCL）及烃基聚丙烯（PP），以替代无玻璃PTFE基CCL。",
+        "subject_time": "Rubin Ultra NVL576预计2027年下半年量产准备"
+      },
+      "candidate_index": 0,
+      "case_id": "case_8563aa8e7b0343f19e5dea2dff924f3d",
+      "created_at": "2026-09-30T08:15:12.897300Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E265",
+      "runtime_signature": "56fd72d99b66cb8879ea3175d15d6838ee76dc4c791e8bfdbeb5d2f37635435c",
+      "snapshot_version": 17,
+      "source_message_id": "std_9ac2e612dc6b4c87a66bb2b53a39797a",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMORED",
+        "entities": [
+          "NVIDIA",
+          "Shengyi Technology",
+          "SG1030N",
+          "SIF09"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Shengyi Technology为NVIDIA该材料评估提供SG1030N和SIF09材料，这些材料仍含少量PTFE。",
+        "subject_time": "Rubin Ultra NVL576材料评估阶段"
+      },
+      "candidate_index": 1,
+      "case_id": "case_8563aa8e7b0343f19e5dea2dff924f3d",
+      "created_at": "2026-09-30T08:15:12.931359Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E266",
+      "runtime_signature": "caafe346c8fbb333a333cb720c77b89595d77cefdb457d710891cb24e24b9758",
+      "snapshot_version": 18,
+      "source_message_id": "std_9ac2e612dc6b4c87a66bb2b53a39797a",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "NVIDIA",
+          "Rubin Ultra NVL576"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "NVIDIA针对Rubin Ultra NVL576的上述PCB材料测试仍属初步评估，尚未形成最终材料选型。",
+        "subject_time": "截至2026-09-30的Rubin Ultra NVL576材料评估"
+      },
+      "candidate_index": 2,
+      "case_id": "case_8563aa8e7b0343f19e5dea2dff924f3d",
+      "created_at": "2026-09-30T08:15:12.991875Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E267",
+      "runtime_signature": "452db558f72bb822c26683d6d23c2fbc8035c4e065f9168c218c28c9999b9482",
+      "snapshot_version": 19,
+      "source_message_id": "std_9ac2e612dc6b4c87a66bb2b53a39797a",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "경동나비엔",
+          "Kyungdong Navien",
+          "KCSI"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "경동나비엔在2026年韩国工业客户满意度调查（KCSI）锅炉部门获评第一名，实现连续13年第一。",
+        "subject_time": "2026年KCSI锅炉部门评选"
+      },
+      "candidate_index": 0,
+      "case_id": "case_33fefb2fa32f4404bbbb901c0357ca63",
+      "created_at": "2026-09-30T08:35:32.824514Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E268",
+      "runtime_signature": "b4faacdde8ccb634838615c9a69bd22220913248b41809a26381659c7f557531",
+      "snapshot_version": 20,
+      "source_message_id": "std_2827aebdc6994f2693aa25a8b4f90334",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "경동나비엔",
+          "Navien Condensing ON AI",
+          "KSA",
+          "AI+"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "경동나비엔的“Navien Condensing ON AI”产品凭借智能热水运行功能获得韩国标准协会KSA AI+认证。",
+        "subject_time": "当前产品认证状态"
+      },
+      "candidate_index": 1,
+      "case_id": "case_33fefb2fa32f4404bbbb901c0357ca63",
+      "created_at": "2026-09-30T08:35:32.848028Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E269",
+      "runtime_signature": "3e72c3ab5a8fd8dcee5f3031158f3e62eb0d590888765964822e8fe9a9042229",
+      "snapshot_version": 21,
+      "source_message_id": "std_2827aebdc6994f2693aa25a8b4f90334",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "EXPECTED",
+        "entities": [
+          "Anthropic",
+          "AMD"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Anthropic预计AMD将在其AI基础设施建设中提供超过200亿美元的AI计算容量。",
+        "subject_time": "Anthropic未来多年AI基础设施建设周期"
+      },
+      "candidate_index": 0,
+      "case_id": "case_82bb5fc2f13144b38e6336220e872312",
+      "created_at": "2026-09-30T08:38:39.200693Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E270",
+      "runtime_signature": "c02739cc48603dece87ca5aaa564978ee47dfe5b97771ad8e005228ee2ca612a",
+      "snapshot_version": 22,
+      "source_message_id": "std_e44f05b7761a450a98fd60d660454fb4",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Anthropic",
+          "Micron",
+          "Samsung",
+          "SK hynix",
+          "Claude"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Anthropic在Series H公告中将Micron、Samsung和SK hynix列为战略基础设施合作伙伴，其内存技术将支持Claude算力扩张。",
+        "subject_time": "Anthropic Series H公告及当前AI基础设施扩张"
+      },
+      "candidate_index": 1,
+      "case_id": "case_82bb5fc2f13144b38e6336220e872312",
+      "created_at": "2026-09-30T08:38:39.207419Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E271",
+      "runtime_signature": "413d6ea58f483ca3c8b28656ef794132bdf33cae2e928d9af03415b35cb0dcc7",
+      "snapshot_version": 23,
+      "source_message_id": "std_e44f05b7761a450a98fd60d660454fb4",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "台湾政府",
+          "TSMC",
+          "台湾半导体产业"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "台湾政府在支持TSMC可能扩大美国制造布局的同时，强调台湾半导体产业的核心研发应继续留在台湾。",
+        "subject_time": "当前台湾半导体产业海外扩张与核心研发地域政策"
+      },
+      "candidate_index": 0,
+      "case_id": "case_3d913fe518e64263a4133b21b715da92",
+      "created_at": "2026-09-30T09:17:07.618797Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E272",
+      "runtime_signature": "e0c243d78b48d47ac5d3db6e9cf44344f8a05fb686dee72a64a37ee7a550507f",
+      "snapshot_version": 24,
+      "source_message_id": "std_ce942148057e4960b015ea87207e6e20",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "ASE Technology Holding",
+          "ASE Singapore",
+          "Lumileds Singapore",
+          "Yishun Industrial Park"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "ASE Technology Holding的新加坡子公司批准以约6844万美元（约新台币21.52亿元）从Lumileds Singapore购入位于Yishun Industrial Park的工厂。",
+        "subject_time": "当前厂房收购审批"
+      },
+      "candidate_index": 0,
+      "case_id": "case_fc9aa847766d46068e2d687bded30a3d",
+      "created_at": "2026-09-30T09:18:14.001672Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E273",
+      "runtime_signature": "f72ab13eddcd855a43c24fb6e01b49e6c6adb6af4fed092fc6cf039f6b08e3d8",
+      "snapshot_version": 25,
+      "source_message_id": "std_5a4e888213b24af7be279d5387f35b2d",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLANNED",
+        "entities": [
+          "ASE Technology Holding",
+          "ASE Singapore",
+          "Yishun Industrial Park"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "该Yishun Industrial Park厂址拟用于支持ASE未来产能扩张。",
+        "subject_time": "未来ASE新加坡产能扩张"
+      },
+      "candidate_index": 1,
+      "case_id": "case_fc9aa847766d46068e2d687bded30a3d",
+      "created_at": "2026-09-30T09:18:14.016838Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E274",
+      "runtime_signature": "124e61aa40a222f4fcc7b1f98002001eb84b081b5dd5959b459e37dae35c9dbc",
+      "snapshot_version": 26,
+      "source_message_id": "std_5a4e888213b24af7be279d5387f35b2d",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Qualcomm",
+          "iSTART-tek",
+          "START-V5"
+        ],
+        "occurrence_date": null,
+        "proposition": "Qualcomm于2026年6月与台湾iSTART-tek签署START-V5 EDA工具许可协议，该协议在约10个月的多方面验证后达成。",
+        "subject_time": "2026年6月许可签署；此前约10个月验证期"
+      },
+      "candidate_index": 0,
+      "case_id": "case_594b7572cc394cc8a108358048c4a3ca",
+      "created_at": "2026-09-30T09:37:51.838075Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E275",
+      "runtime_signature": "8f19b42e88ae3bf4e8aa0fa57799c64677ef13fd7455670d7dc3f0958e469b5a",
+      "snapshot_version": 27,
+      "source_message_id": "std_97115b1d16b94645838ff7c0b03d33d9",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMORED",
+        "entities": [
+          "Qualcomm",
+          "iSTART-tek",
+          "START-V5"
+        ],
+        "occurrence_date": null,
+        "proposition": "Qualcomm与iSTART-tek的START-V5许可期限据报道至少为10年。",
+        "subject_time": "START-V5许可期限"
+      },
+      "candidate_index": 1,
+      "case_id": "case_594b7572cc394cc8a108358048c4a3ca",
+      "created_at": "2026-09-30T09:37:51.851291Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E276",
+      "runtime_signature": "db479c1b27718a157f7da572ee22ea0cc30d097b2a60dc98cc1a8f8108b7b68a",
+      "snapshot_version": 28,
+      "source_message_id": "std_97115b1d16b94645838ff7c0b03d33d9",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Qualcomm",
+          "Dragonwing",
+          "START-V5",
+          "SRAM",
+          "BIST",
+          "BISR"
+        ],
+        "occurrence_date": null,
+        "proposition": "Qualcomm内部无线局域网、物联网和人工智能团队将START-V5用于Dragonwing芯片中SRAM的BIST和BISR电路设计。",
+        "subject_time": "Dragonwing芯片设计与后续产品周期"
+      },
+      "candidate_index": 2,
+      "case_id": "case_594b7572cc394cc8a108358048c4a3ca",
+      "created_at": "2026-09-30T09:37:51.867948Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E277",
+      "runtime_signature": "9de8818acbfdd71db98a0f64df63cbe744869e838bbc16d848514ad4d061f7dd",
+      "snapshot_version": 29,
+      "source_message_id": "std_97115b1d16b94645838ff7c0b03d33d9",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "EXPECTED",
+        "entities": [
+          "Qualcomm",
+          "Dragonwing",
+          "START-V5"
+        ],
+        "occurrence_date": null,
+        "proposition": "START-V5的采用预计将提高未来Dragonwing芯片的量产良率并降低DPPM和制造成本。",
+        "subject_time": "未来Dragonwing量产"
+      },
+      "candidate_index": 3,
+      "case_id": "case_594b7572cc394cc8a108358048c4a3ca",
+      "created_at": "2026-09-30T09:37:51.883143Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E278",
+      "runtime_signature": "751ea3d7c08b2dcd724a9c950da3c72c9ac9658dcac0996f35ee5286e645689d",
+      "snapshot_version": 30,
+      "source_message_id": "std_97115b1d16b94645838ff7c0b03d33d9",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMORED",
+        "entities": [
+          "iSTART-tek",
+          "START-V5",
+          "Qualcomm"
+        ],
+        "occurrence_date": null,
+        "proposition": "业内人士称START-V5相较竞争EDA方案已实现部分电路面积约减少50%。",
+        "subject_time": "START-V5与竞争EDA方案的比较"
+      },
+      "candidate_index": 4,
+      "case_id": "case_594b7572cc394cc8a108358048c4a3ca",
+      "created_at": "2026-09-30T09:37:51.891980Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E279",
+      "runtime_signature": "68aa576197fe0927fe6453894a973fdd3501d6c796a07f1d6bb44d70f6cbda50",
+      "snapshot_version": 31,
+      "source_message_id": "std_97115b1d16b94645838ff7c0b03d33d9",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMORED",
+        "entities": [
+          "AMD",
+          "Lisa Su",
+          "South Korea"
+        ],
+        "occurrence_date": null,
+        "proposition": "AMD CEO Lisa Su据报道计划于2026年10月访问韩国。",
+        "subject_time": "2026年10月"
+      },
+      "candidate_index": 0,
+      "case_id": "case_eab167b74b444445909f6f84be724897",
+      "created_at": "2026-09-30T09:42:12.257425Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E280",
+      "runtime_signature": "3fa3f2feb08568c927d7f70f8d150fa92e68f3f7538a9ba98e5c6f463e4faa67",
+      "snapshot_version": 32,
+      "source_message_id": "std_077d4bb7076d40be80c8cb2ffe51c646",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMORED",
+        "entities": [
+          "AMD",
+          "Lisa Su",
+          "South Korean government",
+          "FuriosaAI",
+          "Rebellions",
+          "DeepX",
+          "Mobilint"
+        ],
+        "occurrence_date": null,
+        "proposition": "Lisa Su据报道计划在访韩期间与韩国政府官员及FuriosaAI、Rebellions、DeepX、Mobilint等本土NPU企业代表会面，但具体日期和地点尚未确定。",
+        "subject_time": "2026年10月拟议访韩行程"
+      },
+      "candidate_index": 1,
+      "case_id": "case_eab167b74b444445909f6f84be724897",
+      "created_at": "2026-09-30T09:42:12.281030Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E281",
+      "runtime_signature": "413f67a90ec38348f9b98dd2c072e649df86472b3b9aab30a9454aefc9876d3b",
+      "snapshot_version": 33,
+      "source_message_id": "std_077d4bb7076d40be80c8cb2ffe51c646",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "AMD",
+          "South Korean Ministry of Science and ICT"
+        ],
+        "occurrence_date": null,
+        "proposition": "AMD与韩国科学技术信息通信部于2026年7月签署了关于建设开放型AI计算基础设施生态的谅解备忘录。",
+        "subject_time": "2026年7月"
+      },
+      "candidate_index": 2,
+      "case_id": "case_eab167b74b444445909f6f84be724897",
+      "created_at": "2026-09-30T09:42:12.304750Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E282",
+      "runtime_signature": "a161a704ae4afd5821d5fe49c5e5eee9c36c6b7e1feddcfdd3c787c004eb68ec",
+      "snapshot_version": 34,
+      "source_message_id": "std_077d4bb7076d40be80c8cb2ffe51c646",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLANNED",
+        "entities": [
+          "AMD",
+          "South Korean NPU companies",
+          "GPU",
+          "CPU",
+          "NPU"
+        ],
+        "occurrence_date": null,
+        "proposition": "该谅解备忘录计划将AMD GPU和CPU与韩国本土NPU连接，建设异构AI计算基础设施。",
+        "subject_time": "未来韩国开放型AI计算基础设施建设"
+      },
+      "candidate_index": 3,
+      "case_id": "case_eab167b74b444445909f6f84be724897",
+      "created_at": "2026-09-30T09:42:12.326036Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E283",
+      "runtime_signature": "7ebf3521d13028a87c4b294186595e30b5289f1c4b33171810bb4792a2d87435",
+      "snapshot_version": 35,
+      "source_message_id": "std_077d4bb7076d40be80c8cb2ffe51c646",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLANNED",
+        "entities": [
+          "AMD",
+          "South Korean government",
+          "AI research hubs"
+        ],
+        "occurrence_date": null,
+        "proposition": "该谅解备忘录还计划支持韩国AI研究中心建设和人才培养。",
+        "subject_time": "未来韩国AI研究与人才培养"
+      },
+      "candidate_index": 4,
+      "case_id": "case_eab167b74b444445909f6f84be724897",
+      "created_at": "2026-09-30T09:42:12.343641Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E284",
+      "runtime_signature": "8294cd868561227d7ec6fb17805118455ede9b7b993a2e50ece2d36189c0efbb",
+      "snapshot_version": 36,
+      "source_message_id": "std_077d4bb7076d40be80c8cb2ffe51c646",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Samsung Electronics",
+          "Samsung Foundry",
+          "HBM4",
+          "4nm"
+        ],
+        "occurrence_date": null,
+        "proposition": "Samsung stated that HBM4 uses a base die manufactured on its own 4nm foundry process.",
+        "subject_time": "HBM4 product architecture"
+      },
+      "candidate_index": 0,
+      "case_id": "case_22e5f50bc9174893989e0321a397219d",
+      "created_at": "2026-09-30T09:43:16.667369Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E285",
+      "runtime_signature": "febf71085e94e8347df7e527f1f75fecbe844ecd58801452c1cd2c43ea17ba6f",
+      "snapshot_version": 37,
+      "source_message_id": "std_00235121652b45869188f49e888fa45c",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Samsung Electronics",
+          "HBM4"
+        ],
+        "occurrence_date": null,
+        "proposition": "Samsung stated that it began volume shipments of HBM4 in February 2026.",
+        "subject_time": "From February 2026"
+      },
+      "candidate_index": 1,
+      "case_id": "case_22e5f50bc9174893989e0321a397219d",
+      "created_at": "2026-09-30T09:43:16.682963Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E286",
+      "runtime_signature": "b04b5f6d7f5a09196c6dceba9f56488abd49316d11864a0b6adb005ac042e46b",
+      "snapshot_version": 38,
+      "source_message_id": "std_00235121652b45869188f49e888fa45c",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "Samsung Electronics",
+          "HBM4"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Samsung forecasts HBM4 revenue to grow more than threefold quarter over quarter in Q3 2026 and to exceed 60% of its HBM revenue in the second half of 2026.",
+        "subject_time": "Q3 2026 and second half of 2026"
+      },
+      "candidate_index": 2,
+      "case_id": "case_22e5f50bc9174893989e0321a397219d",
+      "created_at": "2026-09-30T09:43:16.699143Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E287",
+      "runtime_signature": "e8272415b48b1fb2f44983ca0b7ff86481f9fb291f0c760e652e9b6a41929539",
+      "snapshot_version": 39,
+      "source_message_id": "std_00235121652b45869188f49e888fa45c",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "Samsung Electronics",
+          "Samsung Foundry",
+          "Samsung System LSI",
+          "Kiwoom Securities"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Kiwoom Securities estimates Samsung Foundry and System LSI combined operating loss will narrow 41.8% year over year in FY2026 to KRW3.92 trillion from KRW6.74 trillion, with Q3 loss estimated at KRW777 billion.",
+        "subject_time": "Q3 2026 and FY2026"
+      },
+      "candidate_index": 3,
+      "case_id": "case_22e5f50bc9174893989e0321a397219d",
+      "created_at": "2026-09-30T09:43:16.718709Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E288",
+      "runtime_signature": "4a1a2596bcc988ec375a1d3878166732e6a9933a92ee6991ac7ed4d1fdd46197",
+      "snapshot_version": 40,
+      "source_message_id": "std_00235121652b45869188f49e888fa45c",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMORED",
+        "entities": [
+          "Samsung Foundry",
+          "4nm",
+          "advanced semiconductor processes"
+        ],
+        "occurrence_date": null,
+        "proposition": "Reports said Samsung raised prices for new 4nm orders in July 2026 and that some advanced-process prices rose 10% to 15%.",
+        "subject_time": "July 2026 advanced-process orders"
+      },
+      "candidate_index": 4,
+      "case_id": "case_22e5f50bc9174893989e0321a397219d",
+      "created_at": "2026-09-30T09:43:16.773017Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E289",
+      "runtime_signature": "3ac658b53d04d8fe3e1ef866aef81ae56ca2fb566e4e1d134592c45c3c17bc0a",
+      "snapshot_version": 41,
+      "source_message_id": "std_00235121652b45869188f49e888fa45c",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMORED",
+        "entities": [
+          "Samsung Electronics",
+          "Broadcom",
+          "HBM4",
+          "HBM4E",
+          "2nm",
+          "advanced packaging"
+        ],
+        "occurrence_date": null,
+        "proposition": "A report said Samsung Electronics and Broadcom signed a memorandum of understanding in July 2026 for planned cooperation worth more than US$200 billion through 2030 covering HBM4/HBM4E, 2nm-or-below processes, and advanced packaging.",
+        "subject_time": "July 2026 signing and cooperation through 2030"
+      },
+      "candidate_index": 5,
+      "case_id": "case_22e5f50bc9174893989e0321a397219d",
+      "created_at": "2026-09-30T09:43:16.808662Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E290",
+      "runtime_signature": "7495cf6361377183251899726947a53cce63aa1a5a42b70f57204ec591346de5",
+      "snapshot_version": 42,
+      "source_message_id": "std_00235121652b45869188f49e888fa45c",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ONGOING",
+        "entities": [
+          "Samsung Foundry",
+          "CSPs",
+          "AI customers",
+          "HPC customers",
+          "2nm"
+        ],
+        "occurrence_date": null,
+        "proposition": "Samsung said its foundry obtained 2nm projects from large cloud-service-provider and AI/HPC customers in Q2 2026, and those customers have begun product design.",
+        "subject_time": "Q2 2026 and the subsequent customer-design phase"
+      },
+      "candidate_index": 6,
+      "case_id": "case_22e5f50bc9174893989e0321a397219d",
+      "created_at": "2026-09-30T09:43:16.842260Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E291",
+      "runtime_signature": "719abc4130a84d1c8d3ff0c30f364b7c17f6a94b579b98aa0c0ea0cc60b38c63",
+      "snapshot_version": 43,
+      "source_message_id": "std_00235121652b45869188f49e888fa45c",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMORED",
+        "entities": [
+          "Anthropic",
+          "Samsung Foundry",
+          "AI chips"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "The Information reportedly said Anthropic may use Samsung Foundry to produce AI chips.",
+        "subject_time": "Potential future AI-chip production"
+      },
+      "candidate_index": 7,
+      "case_id": "case_22e5f50bc9174893989e0321a397219d",
+      "created_at": "2026-09-30T09:43:16.857379Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E292",
+      "runtime_signature": "2770e3ffe30199d6e1c9de0a6def0df752bbb8735716a0a3936b33babff3ab85",
+      "snapshot_version": 44,
+      "source_message_id": "std_00235121652b45869188f49e888fa45c",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "SCHEDULED",
+        "entities": [
+          "NVIDIA",
+          "NVIDIA AI Day Seoul",
+          "COEX",
+          "Seoul"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "NVIDIA AI Day Seoul is scheduled to take place at COEX in Seoul from 2026-11-09 to 2026-11-10.",
+        "subject_time": "2026-11-09 to 2026-11-10"
+      },
+      "candidate_index": 0,
+      "case_id": "case_a8e95d2f7cd04979a2e0f59e97f0b560",
+      "created_at": "2026-09-30T09:44:34.109500Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E293",
+      "runtime_signature": "23d0f99880ea5611599bcc1d640b92946ac41afc4ea6b6724b8857ac28011978",
+      "snapshot_version": 45,
+      "source_message_id": "std_c9e808ec07ec4277a6f6dca1ab4f2bbf",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "Access Partnership",
+          "South Korea",
+          "Distributed AI"
+        ],
+        "occurrence_date": null,
+        "proposition": "Access Partnership预测韩国到2035年可通过分布式AI每年创造超过500亿美元的经济价值。",
+        "subject_time": "2035年"
+      },
+      "candidate_index": 0,
+      "case_id": "case_975acefbaedc4e639228daec9dc8c060",
+      "created_at": "2026-09-30T09:48:13.984676Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E294",
+      "runtime_signature": "27437c55845957701753796612b57ddd164c08ff850e6a6624ae9baebe132a62",
+      "snapshot_version": 46,
+      "source_message_id": "std_88154d0066664cea818fff1da1997927",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "South Korea",
+          "Distributed AI",
+          "Industrial robotics",
+          "Predictive maintenance"
+        ],
+        "occurrence_date": null,
+        "proposition": "Access Partnership预测韩国自主工业运营领域可通过分布式AI每年创造超过230亿美元价值。",
+        "subject_time": "2035年"
+      },
+      "candidate_index": 1,
+      "case_id": "case_975acefbaedc4e639228daec9dc8c060",
+      "created_at": "2026-09-30T09:48:14.002681Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E295",
+      "runtime_signature": "0ec6094640b49026649c62361887fef84d989872f102ffebc44c21a8c694eccf",
+      "snapshot_version": 47,
+      "source_message_id": "std_88154d0066664cea818fff1da1997927",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "South Korea",
+          "Distributed AI",
+          "Care robots",
+          "Companion robots"
+        ],
+        "occurrence_date": null,
+        "proposition": "Access Partnership预测韩国陪伴和辅助机器人领域可通过分布式AI每年形成超过59亿美元价值。",
+        "subject_time": "2035年"
+      },
+      "candidate_index": 2,
+      "case_id": "case_975acefbaedc4e639228daec9dc8c060",
+      "created_at": "2026-09-30T09:48:14.018781Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E296",
+      "runtime_signature": "87999a6b8586c6942e5e48de93f6ba1377b8191189eee54db87a90e02374400a",
+      "snapshot_version": 48,
+      "source_message_id": "std_88154d0066664cea818fff1da1997927",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "South Korea",
+          "Distributed AI",
+          "Consumer electronics",
+          "Smartphones",
+          "Smart appliances",
+          "XR devices"
+        ],
+        "occurrence_date": null,
+        "proposition": "Access Partnership预测韩国电子产品、智能手机、智能家电、服务机器人和XR设备采用端侧及分布式AI后每年可创造超过210亿美元附加价值。",
+        "subject_time": "2035年"
+      },
+      "candidate_index": 3,
+      "case_id": "case_975acefbaedc4e639228daec9dc8c060",
+      "created_at": "2026-09-30T09:48:14.039530Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E297",
+      "runtime_signature": "6f22cf5b0023bf5f74cf9a04361140a967cd8ea1de70c9a16c8440f9fe2a21fa",
+      "snapshot_version": 49,
+      "source_message_id": "std_88154d0066664cea818fff1da1997927",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "South Korea",
+          "Distributed AI",
+          "HPC",
+          "6G",
+          "NPU",
+          "Semiconductor ecosystem"
+        ],
+        "occurrence_date": null,
+        "proposition": "Access Partnership认为韩国需要从当前至2035年年均约20亿美元、累计约180亿美元投资，用于工业AI、高性能计算、网络基础设施、人才培训及半导体和硬件生态。",
+        "subject_time": "当前至2035年"
+      },
+      "candidate_index": 4,
+      "case_id": "case_975acefbaedc4e639228daec9dc8c060",
+      "created_at": "2026-09-30T09:48:14.062978Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E298",
+      "runtime_signature": "5595923af4041dce377b85126ce397cf7158c9912ef2f716c77936f9d1e4e511",
+      "snapshot_version": 50,
+      "source_message_id": "std_88154d0066664cea818fff1da1997927",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "South Korea",
+          "AI inference",
+          "Distributed AI"
+        ],
+        "occurrence_date": null,
+        "proposition": "Access Partnership预测韩国AI推理计算需求到2030年将达到当前约30倍。",
+        "subject_time": "2030年"
+      },
+      "candidate_index": 5,
+      "case_id": "case_975acefbaedc4e639228daec9dc8c060",
+      "created_at": "2026-09-30T09:48:14.084866Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E299",
+      "runtime_signature": "26f024945be3102c1df6965c56481b374cd8023b2e9106f2fc2d1e9162f537bc",
+      "snapshot_version": 51,
+      "source_message_id": "std_88154d0066664cea818fff1da1997927",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "South Korea",
+          "AI inference",
+          "Data centers"
+        ],
+        "occurrence_date": null,
+        "proposition": "Access Partnership估计按当前数据中心投资趋势，到2030年韩国将短缺约86%的所需AI推理计算能力。",
+        "subject_time": "2030年"
+      },
+      "candidate_index": 6,
+      "case_id": "case_975acefbaedc4e639228daec9dc8c060",
+      "created_at": "2026-09-30T09:48:14.109238Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E300",
+      "runtime_signature": "019873ebf34237cd1b584891f3619edeed86c6da270e70a746e20ea7ba49358d",
+      "snapshot_version": 52,
+      "source_message_id": "std_88154d0066664cea818fff1da1997927",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "GUIDANCE",
+        "entities": [
+          "Access Partnership",
+          "South Korea",
+          "Distributed AI",
+          "6G"
+        ],
+        "occurrence_date": null,
+        "proposition": "Access Partnership建议韩国通过全球互操作性、供应商多元化和数据可移植性、6G投资及行业安全与性能标准推进分布式AI。",
+        "subject_time": "韩国分布式AI政策规划期"
+      },
+      "candidate_index": 7,
+      "case_id": "case_975acefbaedc4e639228daec9dc8c060",
+      "created_at": "2026-09-30T09:48:14.128271Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E301",
+      "runtime_signature": "8d43ecd1dc5d026b22aec8e6a9e8642af3e1e188b4bbdddd8cf3996c35dd5640",
+      "snapshot_version": 53,
+      "source_message_id": "std_88154d0066664cea818fff1da1997927",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Singapore government",
+          "Singapore civil service"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "新加坡政府推出面向公务员的政府运营婚恋配对试点。",
+        "subject_time": "当前试点"
+      },
+      "candidate_index": 0,
+      "case_id": "case_4d426fc5d7f243d984fc202cb940b0b5",
+      "created_at": "2026-09-30T10:09:16.364816Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E302",
+      "runtime_signature": "7a12752eaba8df0c0c71550f6e2bfe8c17a7ad2e367ffd31a8ead3739c44680b",
+      "snapshot_version": 54,
+      "source_message_id": "std_951748ac51a043158193d9aea1284aab",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Singapore government",
+          "Singapore civil servants",
+          "Nobel Prize-winning algorithm"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "该试点使用诺贝尔奖获奖算法从公务员群体中识别并连接匹配伴侣。",
+        "subject_time": "当前试点"
+      },
+      "candidate_index": 1,
+      "case_id": "case_4d426fc5d7f243d984fc202cb940b0b5",
+      "created_at": "2026-09-30T10:09:16.386606Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E303",
+      "runtime_signature": "4fd996008190464067e3092444ad44de2596dce126d24e253ba9bf6f60adcf03",
+      "snapshot_version": 55,
+      "source_message_id": "std_951748ac51a043158193d9aea1284aab",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "South Korea Kospi"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "2026年第三季度韩国Kospi指数下跌18.8%，成为全球表现最差的市场，并创下自2020年第一季度以来最大季度跌幅。",
+        "subject_time": "2026年第三季度"
+      },
+      "candidate_index": 0,
+      "case_id": "case_b9969fcff1c14de6a9bb3a660df8cc0d",
+      "created_at": "2026-09-30T10:26:22.233686Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E304",
+      "runtime_signature": "79e3a2414834c1af3267a65f7c5d4be4a6fa6da238697af9a9b846c82f390c8b",
+      "snapshot_version": 56,
+      "source_message_id": "std_aeeaf745b93a407d9b633976a7a7c09d",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "AI memory-chip trade",
+          "Samsung Electronics",
+          "SK hynix"
+        ],
+        "occurrence_date": null,
+        "proposition": "2026年7月AI内存芯片交易崩塌并伴随三星电子和SK海力士股票遭遇抛售。",
+        "subject_time": "2026年7月"
+      },
+      "candidate_index": 1,
+      "case_id": "case_b9969fcff1c14de6a9bb3a660df8cc0d",
+      "created_at": "2026-09-30T10:26:22.243325Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E305",
+      "runtime_signature": "36887f98350c267f8ad5fb6d7a9f6e080d0ba261f06cc3317ce82213430f82f4",
+      "snapshot_version": 57,
+      "source_message_id": "std_aeeaf745b93a407d9b633976a7a7c09d",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "CSI 300",
+          "S&P 500"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "2026年第三季度中国CSI 300下跌12.5%，同期标普500上涨2.3%。",
+        "subject_time": "2026年第三季度"
+      },
+      "candidate_index": 2,
+      "case_id": "case_b9969fcff1c14de6a9bb3a660df8cc0d",
+      "created_at": "2026-09-30T10:26:22.258229Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E306",
+      "runtime_signature": "8a93e69fbb8416cf1d9b150357ff32dbe668a9d400acd36152f4ebb44df63b37",
+      "snapshot_version": 58,
+      "source_message_id": "std_aeeaf745b93a407d9b633976a7a7c09d",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLANNED",
+        "entities": [
+          "Gold Circuit Electronics",
+          "Amazon"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Gold Circuit Electronics计划通过约新台币15.9亿元的私募引入Amazon为战略股东。",
+        "subject_time": "计划中的私募交易"
+      },
+      "candidate_index": 0,
+      "case_id": "case_a454e646d7d442adbc7da1e279146477",
+      "created_at": "2026-09-30T10:35:29.097106Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E307",
+      "runtime_signature": "85d72386cbad795c8194d99e21109cb3cb56534fb9135161aad77efb848aa5a7",
+      "snapshot_version": 59,
+      "source_message_id": "std_2484774e56c14fcdb4f2930c84b6a389",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLANNED",
+        "entities": [
+          "Gold Circuit Electronics",
+          "Amazon",
+          "Trainium servers"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "该计划将把Amazon与Gold Circuit Electronics从供应商—客户关系扩展为股权支持的战略合作关系。",
+        "subject_time": "计划中的战略合作"
+      },
+      "candidate_index": 1,
+      "case_id": "case_a454e646d7d442adbc7da1e279146477",
+      "created_at": "2026-09-30T10:35:29.121857Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E308",
+      "runtime_signature": "87ff254304a7cdf36f0e3cd710e1ee824ea3d4d5390761b0d9e6b9aefcf7a85a",
+      "snapshot_version": 60,
+      "source_message_id": "std_2484774e56c14fcdb4f2930c84b6a389",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "SCHEDULED",
+        "entities": [
+          "Apple",
+          "Apple Home Hub",
+          "HomeKit"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Apple计划于2026年10月13日推出配备6英寸显示屏的Home Hub，用于家庭自动化管理。",
+        "subject_time": "2026-10-13"
+      },
+      "candidate_index": 0,
+      "case_id": "case_5ab6e6f45b56477394aec4cc516d576e",
+      "created_at": "2026-09-30T11:03:00.998782Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E309",
+      "runtime_signature": "fc0b987a9ae70b6a6007851fea047fd9fac99f26d28bb0e23cb2244d5b11d82d",
+      "snapshot_version": 61,
+      "source_message_id": "std_983400b97fe041c8a8620ee05d01d40f",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "SCHEDULED",
+        "entities": [
+          "Apple",
+          "HomePod mini",
+          "Apple TV"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Apple计划在Home Hub发布同期更新HomePod mini和Apple TV，并为Apple TV配备升级处理器。",
+        "subject_time": "2026年10月13日及同期发布"
+      },
+      "candidate_index": 1,
+      "case_id": "case_5ab6e6f45b56477394aec4cc516d576e",
+      "created_at": "2026-09-30T11:03:01.029848Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E310",
+      "runtime_signature": "9466f5931aec83bfc21e25a1b87af45764eb5e182b7ef167212c787509362504",
+      "snapshot_version": 62,
+      "source_message_id": "std_983400b97fe041c8a8620ee05d01d40f",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLANNED",
+        "entities": [
+          "Apple",
+          "Home sensor",
+          "9-inch home hub",
+          "Robotic arm"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Apple正在开发隐私导向的家庭传感器及配备可旋转机械臂的高端9英寸Hub。",
+        "subject_time": "未来产品开发周期"
+      },
+      "candidate_index": 2,
+      "case_id": "case_5ab6e6f45b56477394aec4cc516d576e",
+      "created_at": "2026-09-30T11:03:01.046208Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E311",
+      "runtime_signature": "87325576069c50621da1c1181eba9e639c698dae9b6bea52af3784c94a984c14",
+      "snapshot_version": 63,
+      "source_message_id": "std_983400b97fe041c8a8620ee05d01d40f",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Nuvacore",
+          "WarpCore",
+          "CPU IP",
+          "ISA"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Nuvacore公开披露WarpCore采用“Core First”策略，在选择具体指令集架构前先开发大量基础CPU核心IP。",
+        "subject_time": "当前WarpCore开发阶段"
+      },
+      "candidate_index": 0,
+      "case_id": "case_148c72c93219427aa63e0650c87ae6bd",
+      "created_at": "2026-09-30T11:12:11.352867Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E312",
+      "runtime_signature": "c50f574e5c3db9d8e1391b5663ad184a6e5f4a065beaa225ea9e21512f06613d",
+      "snapshot_version": 64,
+      "source_message_id": "std_be75d15953a74b5b9ac0bd2d59d37266",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Nuvacore",
+          "WarpCore",
+          "ISA"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "截至该披露，Nuvacore尚未为WarpCore选定或公开具体指令集架构。",
+        "subject_time": "当前WarpCore开发阶段"
+      },
+      "candidate_index": 1,
+      "case_id": "case_148c72c93219427aa63e0650c87ae6bd",
+      "created_at": "2026-09-30T11:12:11.365501Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E313",
+      "runtime_signature": "b525a2d0977cb0356f2f0c4e1bc8b9262aa4f46683859bc2de986211f72509c1",
+      "snapshot_version": 65,
+      "source_message_id": "std_be75d15953a74b5b9ac0bd2d59d37266",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMORED",
+        "entities": [
+          "OpenAI",
+          "Jalapeño",
+          "B0 stepping",
+          "A0 stepping"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "OpenAI的Jalapeño B0 stepping据报道相较A0 stepping最高提升25%的每瓦性能。",
+        "subject_time": "Jalapeño B0与A0 stepping对比"
+      },
+      "candidate_index": 0,
+      "case_id": "case_2ff7847773c1437ebb911b534b8f41aa",
+      "created_at": "2026-09-30T11:14:37.376415Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E314",
+      "runtime_signature": "c271d67de7536a109bf70a590ae8eb85379a12596fa4e3184b9e90d5b6f04b64",
+      "snapshot_version": 66,
+      "source_message_id": "std_a10662fee5a240ae860d3f942bffd145",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "OpenAI",
+          "Third-generation ASIC"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "OpenAI的第三代ASIC已经进入开发阶段。",
+        "subject_time": "第三代OpenAI ASIC开发周期"
+      },
+      "candidate_index": 1,
+      "case_id": "case_2ff7847773c1437ebb911b534b8f41aa",
+      "created_at": "2026-09-30T11:14:37.392218Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E315",
+      "runtime_signature": "6c0850a03b6e77178fdf267dcf7694bd88d05e52c5581992921e5412edf8cfdd",
+      "snapshot_version": 67,
+      "source_message_id": "std_a10662fee5a240ae860d3f942bffd145",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    }
+  ],
+  "limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "global_state": {
+    "watches": [],
+    "pins": []
+  },
+  "event_details": {
+    "requested_event_ids": [],
+    "canonical_events": [],
+    "provisional_events": [],
+    "missing_event_ids": []
+  }
+}

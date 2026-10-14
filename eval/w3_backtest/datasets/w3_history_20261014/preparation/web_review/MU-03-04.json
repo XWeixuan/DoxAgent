@@ -1,0 +1,210 @@
+{
+  "case_key": "MU-03-04",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-10-06T12:08:03.238262Z",
+  "reviewed_at": "2026-10-13T22:58:32.180880Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 5,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a13762-5029-7c72-a563-10be9c0ce747",
+    "turn_id": "01a13762-5037-7723-9beb-d654b0dd2c17",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 75520,
+        "inputTokens": 84063,
+        "outputTokens": 11002,
+        "reasoningOutputTokens": 8699,
+        "totalTokens": 95065
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 294656,
+        "inputTokens": 381780,
+        "outputTokens": 18406,
+        "reasoningOutputTokens": 15657,
+        "totalTokens": 400186
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "5eddaf2379258950af489e38c21beca01b20014929ef395e2f77ef23c614e6e8",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://www.sec.gov/Archives/edgar/data/1282631/000110465926113897/tm2626949d1_ex99-1.htm",
+      "title": "Netlist and Micron Enter Patent License and Settlement Agreements",
+      "published_at": "2026-10-06T12:00:00Z",
+      "time_precision": "EXACT",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search0",
+        "turn1view1"
+      ],
+      "source_call_ids": [
+        "exec-7ebb6880-7e9d-4d4a-9d88-4b1a10d2812e",
+        "exec-8c01fc9f-a536-4572-a3ce-6e0a2305bab0"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://www.sec.gov/Archives/edgar/data/1282631/000110465926113897/tm2626949d1_8k.htm",
+      "title": "Netlist, Inc. Form 8-K",
+      "published_at": null,
+      "time_precision": "UNKNOWN",
+      "updated_at": null,
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn0search1",
+        "turn1view0"
+      ],
+      "source_call_ids": [
+        "exec-7ebb6880-7e9d-4d4a-9d88-4b1a10d2812e",
+        "exec-8c01fc9f-a536-4572-a3ce-6e0a2305bab0"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://www.usitc.gov/press_room/news_release/2026/er0923_69264.htm",
+      "title": "USITC Institutes Section 337 Investigation of Certain Dynamic Random Access Memory (DRAM) Devices, Products Containing the Same, and Components Thereof (III)",
+      "published_at": "2026-09-23",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search2",
+        "turn3view1"
+      ],
+      "source_call_ids": [
+        "exec-8c01fc9f-a536-4572-a3ce-6e0a2305bab0",
+        "exec-9fc41e28-3009-4224-9ad1-1228fb10149a"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://investors.netlist.com/news/netlist-files-new-itc-action-against-micron-technology-inc-involving-hbm-patents-for-ai-computing/99e0cc78-aea5-4eeb-83ad-46950311f14a",
+      "title": "Netlist Files New ITC Action Against Micron Technology, Inc. Involving HBM Patents for AI Computing",
+      "published_at": "2026-09-29",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn1view2",
+        "turn4view0"
+      ],
+      "source_call_ids": [
+        "exec-57b813fa-01d9-4c6b-b5b1-126b135b3fcc",
+        "exec-7ebb6880-7e9d-4d4a-9d88-4b1a10d2812e"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S5",
+      "url": "https://law.justia.com/cases/federal/appellate-courts/cafc/24-1707/24-1707-2026-09-02.html",
+      "title": "NETLIST, INC. v. MICRON TECHNOLOGY, INC., No. 24-1707 (Fed. Cir. 2026)",
+      "published_at": "2026-09-02",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search3",
+        "turn3view2"
+      ],
+      "source_call_ids": [
+        "exec-8c01fc9f-a536-4572-a3ce-6e0a2305bab0",
+        "exec-9fc41e28-3009-4224-9ad1-1228fb10149a"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "Netlist publicly announced that it and Micron had agreed to a five-year patent license and mutual release of pending proceedings between them. The stated fee schedule was $30 million per quarter from Q4 2026 through Q3 2031, totaling $600 million.",
+      "source_urls": [
+        "https://www.sec.gov/Archives/edgar/data/1282631/000110465926113897/tm2626949d1_ex99-1.htm"
+      ],
+      "event_time": "2026-10-06",
+      "publication_time": "2026-10-06T12:00:00Z",
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "The release is the issuer’s announcement; the fees were prospective, not reported as received. It does not enumerate the proceedings or establish that docket-level dismissals had already been entered."
+    },
+    {
+      "observation": "Before the settlement announcement, the USITC had instituted a DRAM investigation, 337-TA-1523, involving Micron; the Commission said it had not decided the merits. Netlist later announced a separate HBM-related complaint seeking an investigation and remedies against Micron and downstream customers.",
+      "source_urls": [
+        "https://www.usitc.gov/press_room/news_release/2026/er0923_69264.htm",
+        "https://investors.netlist.com/news/netlist-files-new-itc-action-against-micron-technology-inc-involving-hbm-patents-for-ai-computing/99e0cc78-aea5-4eeb-83ad-46950311f14a"
+      ],
+      "event_time": "2026-09-23 to 2026-09-29",
+      "publication_time": "2026-09-23 to 2026-09-29",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The USITC’s statement concerns the instituted DRAM investigation; the separate HBM complaint was described by Netlist as a request for investigation, not a Commission finding or merits determination."
+    },
+    {
+      "observation": "A September 2 Federal Circuit opinion affirmed the PTAB’s conclusion that all challenged claims of Netlist’s ’339 patent were unpatentable as obvious in the Micron appeal.",
+      "source_urls": [
+        "https://law.justia.com/cases/federal/appellate-courts/cafc/24-1707/24-1707-2026-09-02.html"
+      ],
+      "event_time": "2026-09-02",
+      "publication_time": "2026-09-02",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This was an adverse ruling in a specific patent matter; it does not establish the status or merits of every proceeding covered by the later settlement announcement."
+    },
+    {
+      "observation": "The settlement release’s own safe-harbor section described risks around anticipated benefits, collection of previously awarded damages, appeals, and other litigation, including Netlist matters involving Google and other parties.",
+      "source_urls": [
+        "https://www.sec.gov/Archives/edgar/data/1282631/000110465926113897/tm2626949d1_ex99-1.htm"
+      ],
+      "event_time": "2026-10-06",
+      "publication_time": "2026-10-06T12:00:00Z",
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "These are issuer risk disclosures, not evidence of payment default or that the announced license and settlement would fail."
+    }
+  ],
+  "gaps": [
+    "No independent report with a publication timestamp at or before the cutoff was verified; the evidence record therefore relies on the issuer’s release and pre-event official records.",
+    "The SEC 8-K page’s precise acceptance time and complete availability before 12:08:03Z were not verified; no pre-cutoff snapshot was recovered for its additional terms.",
+    "The full settlement/license agreements, the exact case list referenced by the parties, and docket-level dismissal or termination filings were not verified by the cutoff.",
+    "The selected pre-event sources establish active disputes, but do not provide an explicit public expectation or probability of settlement before the announcement.",
+    "No evidence available by the cutoff establishes receipt of the future quarterly fees or subsequent performance of the agreements."
+  ],
+  "research_notes": "Cutoff: 2026-10-06T12:08:03.238262Z. The supplied source-message record timestamps the Netlist/PRNewswire release at 12:00:00Z and collection at 12:06:27Z; the SEC exhibit reproduces the release, which says the 8-K was filed concurrently. The verified pre-event public record included an instituted DRAM ITC investigation, a separate newly announced HBM ITC complaint, and an adverse Federal Circuit ruling on one patent matter. The new information was the parties’ announcement of a patent license and mutual release of proceedings, not a court or ITC merits decision. No independent report with a publication time at or before the cutoff was verified. The SEC 8-K page’s exact acceptance time and full pre-cutoff availability are not independently verified, so its additional detail is not treated as cutoff-established evidence."
+}

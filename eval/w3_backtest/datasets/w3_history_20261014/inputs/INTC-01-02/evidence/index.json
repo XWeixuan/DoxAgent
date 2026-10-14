@@ -1,0 +1,23 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-29T11:22:09.224153Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "No direct, dated AMD announcement or archived snapshot establishing the exact time the full SKU list first became public was located.",
+    "StorageReview’s page is dated September 26, but its content at cutoff and revision history could not be verified; its report should be treated as the earliest located account, not definitive proof of first publication.",
+    "The claimed July disclosure of the $14,904 flagship figure was not independently verified against the original AMD presentation.",
+    "The reviewed sources do not establish actual negotiated prices, volumes, purchase commitments, customer deployments, Intel customer/order changes, or an Intel response."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

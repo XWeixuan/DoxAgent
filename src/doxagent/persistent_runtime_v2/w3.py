@@ -8,6 +8,8 @@ import json
 import re
 import threading
 from collections import OrderedDict
+from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Literal, Protocol
 
@@ -52,6 +54,28 @@ from .schema import (
 from .w3_models import execution_profile
 
 _EVENT_ID = re.compile(r"\bE[1-9][0-9]*\b")
+
+
+@dataclass(frozen=True)
+class W3ExecutionEnvironment:
+    """Explicit execution capabilities; production callers retain their defaults."""
+
+    mode: str = "PRODUCTION"
+    web_search_mode: str = "live"
+    data_mcp_enabled: bool = True
+
+    def compatibility(self):
+        return dict(
+            mode=self.mode,
+            web_search_mode=self.web_search_mode,
+            read_only=True,
+            data_mcp_enabled=self.data_mcp_enabled,
+            allow_subagents=False,
+        )
+
+    @classmethod
+    def offline(cls):
+        return cls(mode="OFFLINE_REPLAY", web_search_mode="disabled", data_mcp_enabled=False)
 
 
 class W3Error(RuntimeError):
@@ -348,8 +372,10 @@ class CodexW3AgentRunner:
         timeout_seconds: int = 600,
         workspace_namespace: str = "persistent-runtime-w3",
         journal: Any = None,
+        environment: W3ExecutionEnvironment | None = None,
     ) -> None:
         self._worker = worker
+        self.environment = environment or W3ExecutionEnvironment()
         self._journal = journal
         self._workspace = workspace
         self._context = context_provider
@@ -479,16 +505,46 @@ class CodexW3AgentRunner:
             )
             template = assets["w3/task.md"] if not single_skill else ""
         task = dict(phase=phase, input=payload)
+        if self.environment.mode == "OFFLINE_REPLAY":
+            task["execution_environment"] = self.environment.compatibility()
+            task["instruction"] = (
+                "This is an offline historical replay. Web Search, MCP, IBKR API and "
+                "subagents are disabled. Use the supplied local precollected search and "
+                "price files instead of making network or IBKR calls. They replace only "
+                "evidence delivery; retain the skill's decision and operations rules. "
+                "Do not open URLs or use shell/Python network requests."
+            )
+            if phase != "w3_template":
+                replay = case.frozen_inputs.get("w3_replay", {})
+                evidence_root = f"{case_root}/evidence"
+                if phase != OPERATIONS_PHASE:
+                    for name, content in replay.get("evidence_files", {}).items():
+                        await self._workspace.write_text(run_id, f"{evidence_root}/{name}", content)
+                else:
+                    evidence_root = f"attempts/{case.case_id[-24:]}-trade_decision/evidence"
+                task["evidence"] = dict(root=evidence_root, index=f"{evidence_root}/index.json")
+                if replay.get("policy_execution_view"):
+                    view_path = f"{case_root}/policy_execution_view.json"
+                    await self._workspace.write_text(
+                        run_id,
+                        view_path,
+                        json.dumps(replay["policy_execution_view"], ensure_ascii=False, indent=2),
+                    )
+                    task["policy_execution_view"] = view_path
         paths = dict(
             task_path=f"{case_root}/task.json",
             output_schema=f"{case_root}/output_schema.json",
             skill_path=skill_path,
             reference_path=(
                 f"attempts/{case.case_id[-24:]}-trade_decision/reference_view.md"
-                if phase == OPERATIONS_PHASE else f"{case_root}/reference_view.md"
-            ) if phase != "w3_template" else None,
+                if phase == OPERATIONS_PHASE
+                else f"{case_root}/reference_view.md"
+            )
+            if phase != "w3_template"
+            else None,
             research_path=f"context/research/{research[0]}"
-            if research else payload.get("research_path", ""),
+            if research
+            else payload.get("research_path", ""),
         )
         if single_skill:
             task.update(paths)
@@ -554,14 +610,16 @@ class CodexW3AgentRunner:
                 node=CodexPersistentRuntimeNode.W3,
                 agent_role=CodexPersistentRuntimeAgentRole.W3,
                 attempt_id=attempt_id,
-                cutoff_at=case.source.message_bus_event_time,
+                cutoff_at=datetime.fromisoformat(case.frozen_inputs["w3_replay"]["cutoff_at"])
+                if self.environment.mode == "OFFLINE_REPLAY"
+                else case.source.message_bus_event_time,
                 prompt=prompt,
                 output_schema=schema,
                 thread_id=record.get("thread_id"),
                 task_phase=phase,
-                web_search_mode="live",
+                web_search_mode=self.environment.web_search_mode,
                 read_only=True,
-                data_mcp_enabled=True,
+                data_mcp_enabled=self.environment.data_mcp_enabled,
                 allow_subagents=False,
                 max_subagents=0,
                 timeout_seconds=self._timeout_seconds,

@@ -1,0 +1,22 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-29T01:11:31.653741Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "No independently reported non-Reuters contemporaneous coverage before the cutoff was verified.",
+    "No public copy of the prospectus or SEC filing passage containing the $518B figure was located in this focused search; exact duration, contractual composition, payment timing, and supplier-level allocations remain unverified.",
+    "The same-evening Reuters copies differ between singular- and plural-year wording; without a dated correction notice or original document passage, a formal correction cannot be confirmed."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

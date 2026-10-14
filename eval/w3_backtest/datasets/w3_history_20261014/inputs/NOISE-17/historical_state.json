@@ -1,0 +1,1056 @@
+{
+  "recent_trade_intents": [
+    {
+      "message": {
+        "title": "FERC asks grid operator PJM to revise plan to shield homes from data center costs",
+        "body": "NEW YORK, Sept 30 (Reuters) - The Federal Energy Regulatory Commission directed the largest US grid operator, PJM Interconnection, to postpone and revise its \"backstop\" procurement proposal to ensure ​that large energy users like data centers cover the costs associated with the ‌process, according to a filing by the regulator.\n\nEnergy-intensive data centers have rapidly expanded in the 13-state Mid-Atlantic and Midwest region covered by PJM, causing electricity demand to rise much faster than new supplies ​are connected, leaving the region with a more than 6,800 megawatt power ​supply shortfall.\n\nThe backstop process, a one-time electricity procurement designed to bring new ⁠power supplies onto the grid, is aimed at closing that supply gap.\n\nFERC partially ​approved PJM's proposal, but ultimately delayed its start time, which was expected to begin on ​Wednesday.\n\n\"We are prepared to promptly act on a subsequent proposal that addresses the concerns raised ... the region’s reliability hangs in the balance,\" FERC Chairman Laura Swett said in a statement included with the ​order.\n\nThe regulator accepted core elements of the proposal but suspended it for five ​months while opening further proceedings on cost allocation and certain other provisions.\n\nFERC said PJM's proposal needs to ‌do ⁠more to make sure that large energy users like data centers pay for costs associated with securing power through the program.\n\n\"Existing customers should not be left paying costs attributable to new demand,\" Commissioner Lindsay S. See wrote in a concurring statement.\n\nPJM is working ​on incorporating FERC's ​directives, spokesman Jeff Shields ⁠said.\n\n\"We remain focused on advancing solutions that maintain reliability, appropriately allocate costs to the customers driving those costs, and protect consumers ​as the region navigates significant demand growth,\" Shields said in an ​email.\n\nAs part ⁠of its order, the energy regulator also asked PJM to improve its forecasting of data center energy demand, saying it should rely on more up-to-date load forecasts when determining ⁠how costs ​are allocated.\n\nData center electricity requests have overwhelmed US ​grids, but many of those requests are considered speculative, making it harder for grids and utilities to plan ​for the costly infrastructure needed.",
+        "source_name": "reuters",
+        "published_at": "2026-09-30"
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": []
+      },
+      "w2": {
+        "policy_hit": false,
+        "policy_related": false,
+        "policy_ids": [],
+        "hit_condition_ids": [],
+        "matched_condition_ids": []
+      },
+      "w3_decision": {
+        "novelty": {
+          "reason": "FERC's order delaying and revising PJM's backstop procurement process, including its five-month suspension and cost-allocation directives, is not covered by the pinned Reference View.",
+          "reference_ids": [],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "The action is a regional regulatory and procurement change, not a final project-specific rule producing Bloom firm-MW commitments or a named Bloom project delay; no policy condition is satisfied."
+        },
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "The five-month suspension of PJM's backstop procurement, amid a reported 6.8 GW shortfall, extends the near-term grid-delivery gap. Requiring large energy users to bear associated costs may further improve the relative attractiveness of fast onsite firm power, modestly raising BE's accessible opportunity and share potential.",
+          "prior_expectation": "BE's opportunity is supported by data-center load growth and grid/interconnection constraints, but the baseline assumed the PJM backstop process could begin addressing the region's supply gap while Bloom's share still required customer selection.",
+          "reason": "TRADE LONG: the regulatory action directly worsens the timing and cost certainty of a competing grid-supply route in a major data-center region, while BE's value proposition is time-to-power onsite generation. The signal is indirect and offset by possible data-center demand destruction and the lack of named Bloom awards, but the surprise, materiality, and transmission are sufficient for a directional uncovered edge.",
+          "trade": true
+        }
+      },
+      "direction": "LONG",
+      "initiated_at": "2026-09-30T18:54:46.077417+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    },
+    {
+      "message": {
+        "title": "온세미, 2030년 매출 110억달러 목표…자동차 넘어 AI 데이터센터로",
+        "body": "미국 반도체 기업 온세미가 자동차를 넘어 인공지능(AI) 데이터센터와 피지컬 AI로 사업 영역을 확장해 2030년 매출 110억달러에 도전한다.\n\n자동차용 전력반도체와 센서에서 쌓은 기술을 AI 데이터센터와 로봇 등에 적용해 큰 폭의 성장세를 달성하겠다고 밝혔다.\n\n온세미는 지난 16일(현지시간) 미국 뉴욕에서 열린 '인베스터 데이 2026'에서 이 같은 중장기 성장 전략을 공개했다. 회사는 올해 예상 매출 65억달러를 기준으로 2030년까지 연평균 12~14% 성장을 목표로 제시했다. 이를 적용하면 2030년 매출은 102억~110억달러가 된다.\n\n수익성도 끌어올린다. 2030년 영업이익률 목표는 38%로 제시했다. 올해 예상치는 21.9%다.\n\nAI 데이터센터 사업이 성장을 견인할 것으로 내다봤다. 온세미는 이 분야 매출이 올해 5억달러를 넘고 2030년 25억달러 이상으로 늘어날 것으로 예상했다. AI 가속기 성능이 높아지면서 서버 랙 하나의 전력 소비는 현재 100~120kW 수준에서 메가와트(MW)급으로 커질 것으로 전망했다. 이에 따라 랙 하나에 들어가는 온세미 전력반도체는 금액 기준 약 1만5000달러에서 11만5000달러 이상으로 늘어날 것으로 봤다. 온세미는 실리콘(Si)과 실리콘카바이드(SiC), 질화갈륨(GaN) 전력반도체로 이 시장을 공략한다.\n\n자동차 사업은 2030년까지 연평균 9% 성장을 전망했다. 전동화와 자율주행, 소프트웨어중심차량(SDV) 확산으로 차량 한 대당 온세미 반도체 탑재 금액이 최대 2000달러까지 늘어날 수 있다고 내다봤다. SiC 전력반도체는 세대마다 성능을 약 25%씩 높일 계획이라고 했다. 1000V급 전기차 배터리에 대응해 1400V 제품까지 라인업을 늘린다.\n\n패키징 기술도 강화한다. 임베디드 파워 플랫폼(EPP)은 전력반도체 칩 여러 개를 하나의 구조 안에 묻어 넣는 패키징 기술이다. 온세미는 기존 인버터보다 전력밀도를 최대 4배 높일 수 있다고 설명했다. 일본 스바루가 차세대 전기차 적용을 위해 이 기술을 평가하고 있다.\n\n센서 제품군의 경우 기존 이미지센서와 초음파센서, 유도식 센서에 간접 비행시간측정(iToF) 센서와 단파장적외선(SWIR) 센서를 더한다. 자율주행차에 들어가는 센서의 종류와 수가 늘어나는 데 대응한다.\n\n산업 분야는 2030년까지 연평균 10% 성장을 목표로 제시했다. 로봇과 드론 등 피지컬 AI를 새 성장 분야로 꼽았다. 온세미는 자동차를 제외한 피지컬 AI 시장에서 2030년 60억달러의 사업 기회를 예상했다. 휴머노이드 로봇 한 대에 들어가는 온세미 반도체는 약 900달러 규모로 추산했다. 온세미는 지난 6월 터치 컨트롤러와 엣지 AI 반도체 업체 시냅틱스를 약 70억달러 규모에 인수하기로 합의했다. 시냅틱스 기술을 더해 피지컬 AI 시장을 공략할 계획이다. 거래는 2027년 중반 완료될 예정이다.\n\n수디르 고팔스와미(Sudhir Gopalswamy) 온세미 아날로그 혼합신호 및 지능형 센싱 그룹 사장은 \"피지컬 AI는 여러 측면에서 자율주행차의 자연스러운 확장이라고 볼 수 있다\"며 \"기계의 자율성이 높아질수록 더 많은 센싱과 전력 관리, 구동 기술이 요구된다\"고 말했다.\n\n하산 엘 쿠리(Hassane El-Khoury) 온세미 최고경영자(CEO)는 \"전력은 이들 시장 전반의 공통분모가 됐다\"고 말했다.",
+        "source_name": "thelec.kr",
+        "published_at": "2026-09-30T04:36:13Z"
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": []
+      },
+      "w2": {
+        "policy_hit": false,
+        "policy_related": false,
+        "policy_ids": [],
+        "hit_condition_ids": [],
+        "matched_condition_ids": []
+      },
+      "w3_decision": {
+        "novelty": {
+          "reason": "No loaded Event or Fact covers onsemi's newly disclosed 2030 revenue and margin targets, AI-data-center growth forecast, rack-level power-consumption outlook, or physical-AI expansion strategy.",
+          "reference_ids": [],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "No Policy applies: the message concerns onsemi's semiconductor strategy and industry forecasts, without a Bloom Energy project, customer commitment, permit, interconnection, delivery, acceptance, manufacturing, service, or financial event."
+        },
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "Onsemi expects AI-data-center revenue to rise from more than $500 million in 2026 to at least $2.5 billion by 2030 and projects server-rack power consumption to rise from roughly 100–120 kW to megawatt scale. This increases confidence in the scale and persistence of physical AI power demand and the addressable need for onsite firm power, although it does not assign share or orders to Bloom.",
+          "prior_expectation": "AI-data-center demand was already a BE growth driver, but the pre-event baseline lacked a new independent supplier forecast quantifying both the rise in rack-level power intensity and the associated value of power components. BE still required customer deployments and accepted MW to convert that market into revenue.",
+          "reason": "TRADE LONG: the forecast is a quantified, physically grounded upgrade to the AI-power demand variable, with a clear path from higher rack loads to data-center electricity constraints and potential Bloom Energy Server deployments. The long horizon, onsemi-specific source, competing power routes, and absence of a BE award limit conviction, but the positive market-size and intensity delta is material.",
+          "trade": true
+        }
+      },
+      "direction": "LONG",
+      "initiated_at": "2026-09-30T04:48:39.613547+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    }
+  ],
+  "history_matches": [
+    {
+      "events": [],
+      "policies": []
+    },
+    {
+      "events": [],
+      "policies": []
+    }
+  ],
+  "watches": [],
+  "pins": [],
+  "policy_consumptions": [],
+  "provisional": [
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "华东理工大学",
+          "BB (3:1)-s磺化聚酰亚胺复合膜",
+          "磷钨酸"
+        ],
+        "occurrence_date": null,
+        "proposition": "华东理工大学团队报告称，含10%磷钨酸填料的BB (3:1)-s磺化聚酰亚胺复合膜在实验室测试中实现0.161 S/cm质子电导率、15 MPa拉伸强度及超过1,600小时的水解稳定性。",
+        "subject_time": "2026年研究报告中的实验室测试"
+      },
+      "candidate_index": 0,
+      "case_id": "case_e99e847af064421296df9a1890aa9f34",
+      "created_at": "2026-10-02T07:24:57.403504Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E63",
+      "runtime_signature": "56575b52901740a0577d678e6aa4ae54c91a78bed1e60e8a85a45eb7c19ba10c",
+      "snapshot_version": 1,
+      "source_message_id": "std_70faf0567ff942b09c6a109b628c7af6",
+      "ticker": "BE",
+      "trading_date": "2026-10-02"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Bloom Energy"
+        ],
+        "occurrence_date": "2026-10-01",
+        "proposition": "Bloom Energy 股价于2026年10月1日收于277.58美元，当日上涨0.22%。",
+        "subject_time": "2026年10月1日交易时段"
+      },
+      "candidate_index": 0,
+      "case_id": "case_91a2ec61779f4fbdbd44ac2dcfbd9830",
+      "created_at": "2026-10-02T09:00:13.402852Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E64",
+      "runtime_signature": "34530392eec537b4fedf8bf4529a83a4e8bca4590ae368dd93ebfb9a213ac0ca",
+      "snapshot_version": 2,
+      "source_message_id": "std_b64b3c57e5f54a95985f396f4596c6e2",
+      "ticker": "BE",
+      "trading_date": "2026-10-02"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Oklo",
+          "Barron’s"
+        ],
+        "occurrence_date": null,
+        "proposition": "Barron’s reported that Oklo’s wider loss did not weigh on its stock and framed progress toward building its first nuclear plant as the key investor focus.",
+        "subject_time": "Oklo’s losses and first-plant progress as characterized in the Barron’s report"
+      },
+      "candidate_index": 0,
+      "case_id": "case_08bd5bc7d9fa4a7995f5e168f1bc064f",
+      "created_at": "2026-10-02T09:04:53.889270Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E65",
+      "runtime_signature": "9f981429e53791f4c6bfa0d8798c6cf90123617320d7e2669784d75f0e6ff777",
+      "snapshot_version": 3,
+      "source_message_id": "std_6d99265558794baca97fa4d2f6efd774",
+      "ticker": "BE",
+      "trading_date": "2026-10-02"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Barron's",
+          "Bloom Energy",
+          "BE"
+        ],
+        "occurrence_date": null,
+        "proposition": "Barron's 发布了题为《6 Stocks to Sell in a Hot Market》的文章，其中讨论并将 Bloom Energy 列为卖出对象。",
+        "subject_time": null
+      },
+      "candidate_index": 0,
+      "case_id": "case_fa9d8d69c84b4dc990c5eaa60ef1d72c",
+      "created_at": "2026-10-02T09:06:56.520957Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E66",
+      "runtime_signature": "ac20424406a9f2a0035d0524f89a98fb83f9cacddf0eb34eec778a8cb7ae08ae",
+      "snapshot_version": 4,
+      "source_message_id": "std_0324555e90d24791845a1e895512a097",
+      "ticker": "BE",
+      "trading_date": "2026-10-02"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Barron's",
+          "AI/data-center power sector"
+        ],
+        "occurrence_date": null,
+        "proposition": "Barron's刊载了题为《The AI Power Trade Is Getting Tricky. Stocks to Consider in 2026.》、讨论2026年AI电力主题选股的文章。",
+        "subject_time": "2026年AI电力主题投资展望"
+      },
+      "candidate_index": 0,
+      "case_id": "case_10b4d6e683834762a9da69761ef72c22",
+      "created_at": "2026-10-02T09:07:38.985245Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E67",
+      "runtime_signature": "aa0ebf5f6ad938f486c4469c23b2b687d97cf73715519452b9f05f226b14c9c8",
+      "snapshot_version": 5,
+      "source_message_id": "std_0d5de60621c04adfb903700e84226063",
+      "ticker": "BE",
+      "trading_date": "2026-10-02"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Bloom Energy",
+          "BE",
+          "Barron's"
+        ],
+        "occurrence_date": "2025-10-28",
+        "proposition": "Barron's报道Bloom Energy在2025年10月28日公布Q3 2025财报后，股价在收盘后上涨约10%。",
+        "subject_time": "Q3 2025财报后的市场反应"
+      },
+      "candidate_index": 0,
+      "case_id": "case_96fd0b8b58f0455db7afff5da2142d0f",
+      "created_at": "2026-10-02T09:08:17.901752Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E68",
+      "runtime_signature": "3b8bd32bc30c432443102195baf2ef5ed1cbe60660c81d597827f1c88242aceb",
+      "snapshot_version": 6,
+      "source_message_id": "std_0e029e5e73b44c4e94f0689d07938e39",
+      "ticker": "BE",
+      "trading_date": "2026-10-02"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "California Public Employees' Retirement System (CalPERS)",
+          "Bloom Energy (BE)"
+        ],
+        "occurrence_date": "2025-09-30",
+        "proposition": "CalPERS 的 2025Q3 Form 13F 报告截至 2025-09-30 持有 Bloom Energy Class A 361,883 股。",
+        "subject_time": "2025Q3 持仓，截至 2025-09-30"
+      },
+      "candidate_index": 0,
+      "case_id": "case_2fe96f76ec984ea3a944915c957677f2",
+      "created_at": "2026-10-02T09:08:49.075976Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E69",
+      "runtime_signature": "8f5a047896634a584e618fe67b69a93e6e26c40a81927579749806ff5c4762bc",
+      "snapshot_version": 7,
+      "source_message_id": "std_61571c43dba1469bac80e9620ce4f022",
+      "ticker": "BE",
+      "trading_date": "2026-10-02"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Michael Stuart Klein",
+          "Oklo"
+        ],
+        "occurrence_date": "2025-09-22",
+        "proposition": "Oklo director and 10% owner Michael Stuart Klein disposed of 50,000 Oklo shares in two transactions on 2025-09-22.",
+        "subject_time": null
+      },
+      "candidate_index": 0,
+      "case_id": "case_a5e824d1809a4e12b60e8ecdac8d0a6b",
+      "created_at": "2026-10-02T09:09:23.937996Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E70",
+      "runtime_signature": "795f42bfc63ac4cf17434918212a04da7c7350d66363bdbbab4ea9ccafa5cbf4",
+      "snapshot_version": 8,
+      "source_message_id": "std_275c8f5b3d564f4eae832516d5d786db",
+      "ticker": "BE",
+      "trading_date": "2026-10-02"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Paul Wick",
+          "Bloom Energy",
+          "Barron's",
+          "Columbia Threadneedle Investments"
+        ],
+        "occurrence_date": "2025-12-15",
+        "proposition": "Paul Wick在2025年12月15日接受Barron's采访时表示，他和团队看好Bloom Energy。",
+        "subject_time": "2025年12月15日采访中对Bloom Energy的投资观点"
+      },
+      "candidate_index": 0,
+      "case_id": "case_6abfb94759f3478f876fb0e6b2d38867",
+      "created_at": "2026-10-02T09:11:00.146885Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E71",
+      "runtime_signature": "675e0aa4efd226e4f08bb995d39e8ed2aad3482d201ede43c19eb288bd548eab",
+      "snapshot_version": 9,
+      "source_message_id": "std_7000266d23da4b0f8e76970bddca571f",
+      "ticker": "BE",
+      "trading_date": "2026-10-02"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Barron’s",
+          "Bloom Energy",
+          "BE"
+        ],
+        "occurrence_date": "2026-10-02",
+        "proposition": "Barron’s于2026-10-02发布的股票异动榜标题将Bloom Energy列为当日异动股票之一。",
+        "subject_time": "2026-10-02当日异动股榜单"
+      },
+      "candidate_index": 0,
+      "case_id": "case_7a1310a28ca5444089c35d9704dbd240",
+      "created_at": "2026-10-02T09:13:08.653523Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E72",
+      "runtime_signature": "df8b58688483ce4ada63b27b42dcca2a08c06a2c4078c85d6be4c23a3649b7c3",
+      "snapshot_version": 10,
+      "source_message_id": "std_39038f704bb247f4b5fba1747a879ced",
+      "ticker": "BE",
+      "trading_date": "2026-10-02"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLAN",
+        "entities": [
+          "U.S. Senate",
+          "Section 45V clean hydrogen production credit"
+        ],
+        "occurrence_date": "2025-06-30",
+        "proposition": "The 2025 Senate bill text set the §45V clean-hydrogen credit construction-start eligibility cutoff at January 1, 2028.",
+        "subject_time": "§45V eligibility under the Senate bill version"
+      },
+      "candidate_index": 0,
+      "case_id": "case_e998b63b6c3444c9bb3862caa2b32040",
+      "created_at": "2026-10-02T09:13:58.429760Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E73",
+      "runtime_signature": "6fb1c5b992f51d4f77118144d165e009f86f3e5c59d99a455968101c24344d08",
+      "snapshot_version": 11,
+      "source_message_id": "std_bf1ec160915c4556b8be4e9f0515455b",
+      "ticker": "BE",
+      "trading_date": "2026-10-02"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Barron's",
+          "Bloom Energy"
+        ],
+        "occurrence_date": null,
+        "proposition": "Barron's 发布了一篇将 Bloom Energy 描述为 AI darling、并主张投资者卖出其股票的文章。",
+        "subject_time": null
+      },
+      "candidate_index": 0,
+      "case_id": "case_ad83a4405c504802bd5c582e26359bce",
+      "created_at": "2026-10-02T09:14:00.673774Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E74",
+      "runtime_signature": "cce7ade1efe5a2797cd34a9381ce6ba5363bab11aac3ea39a874b0f906faa42b",
+      "snapshot_version": 12,
+      "source_message_id": "std_c9a488f2dd024b3ea0b9498864c5e941",
+      "ticker": "BE",
+      "trading_date": "2026-10-02"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "SK ecoplant",
+          "Bloom Energy"
+        ],
+        "occurrence_date": "2025-07-10",
+        "proposition": "SK ecoplant 于 2025-07-10 以每股 27.60 美元的价格通过大宗交易出售 10,000,000 股 Bloom Energy Class A 普通股，交易总额为 276,000,000 美元。",
+        "subject_time": "2025-07-10 大宗出售交易"
+      },
+      "candidate_index": 0,
+      "case_id": "case_3fc69e05944c4109a02ad7764ded5f97",
+      "created_at": "2026-10-02T09:14:41.112708Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E75",
+      "runtime_signature": "416b074acf66701aa0164f9bfad7a7843a4f68408fffbc7df968c93ffd7cfdc8",
+      "snapshot_version": 13,
+      "source_message_id": "std_06e5694db02c4b7b916d868527ab0a95",
+      "ticker": "BE",
+      "trading_date": "2026-10-02"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLAN",
+        "entities": [
+          "Virginia Department of Energy",
+          "2026 Virginia Energy Plan",
+          "燃料电池",
+          "非燃烧资源"
+        ],
+        "occurrence_date": "2026-10-01",
+        "proposition": "弗吉尼亚2026能源计划建议：当近端可靠性需求无法由可行的更低排放方案满足时，优先考虑非燃烧或零碳桥接资源，包括在可用时使用低碳燃料的燃料电池。",
+        "subject_time": "数据中心近端可靠性需求"
+      },
+      "candidate_index": 0,
+      "case_id": "case_0dbb061801894feeabc69f31cf87ffc4",
+      "created_at": "2026-10-02T10:16:01.981085Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E76",
+      "runtime_signature": "c034ad92c88194bacfe5cc744f226a0b2ac659a8e90d32c958d54d2ec0a0efd0",
+      "snapshot_version": 14,
+      "source_message_id": "std_018d2edb77ea4119bec5a6cbdc8cbdf4",
+      "ticker": "BE",
+      "trading_date": "2026-10-02"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLAN",
+        "entities": [
+          "Virginia Department of Energy",
+          "2026 Virginia Energy Plan",
+          "非燃烧气体资源"
+        ],
+        "occurrence_date": "2026-10-01",
+        "proposition": "弗吉尼亚2026能源计划的Distributed Flexibility情景将最多5GW可选非燃烧气体容量纳入模型；资源自2029年起供模型选择，情景并非实际采购或部署承诺。",
+        "subject_time": "2029年起至2050年的模型情景；表列情景容量至2035年"
+      },
+      "candidate_index": 1,
+      "case_id": "case_0dbb061801894feeabc69f31cf87ffc4",
+      "created_at": "2026-10-02T10:16:02.046997Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E77",
+      "runtime_signature": "6c6d8eac99678334318bd650bc251542c52de081d76149d2c965b28aaa82bc41",
+      "snapshot_version": 15,
+      "source_message_id": "std_018d2edb77ea4119bec5a6cbdc8cbdf4",
+      "ticker": "BE",
+      "trading_date": "2026-10-02"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Morgan Stanley",
+          "Nvidia",
+          "Jensen Huang"
+        ],
+        "occurrence_date": "2026-10-02",
+        "proposition": "Morgan Stanley在与Nvidia CEO Jensen Huang进行路演后，将Nvidia恢复为其半导体行业首选。",
+        "subject_time": "Morgan Stanley的半导体行业股票首选"
+      },
+      "candidate_index": 0,
+      "case_id": "case_44e61dc740b943489ebad2efc908bda4",
+      "created_at": "2026-10-02T10:27:33.104565Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E78",
+      "runtime_signature": "57d17d6f14a968dd9179dfd0281686ac5fce84ed9c33752348016fb7ba368b89",
+      "snapshot_version": 16,
+      "source_message_id": "std_318e85cf3de34de29ecc56baea22a900",
+      "ticker": "BE",
+      "trading_date": "2026-10-02"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Morgan Stanley",
+          "Nvidia"
+        ],
+        "occurrence_date": "2026-10-02",
+        "proposition": "Morgan Stanley称Nvidia每GW算力效率在当前电力和数据中心约束下构成竞争优势。",
+        "subject_time": "Morgan Stanley对Nvidia竞争优势的评估"
+      },
+      "candidate_index": 1,
+      "case_id": "case_44e61dc740b943489ebad2efc908bda4",
+      "created_at": "2026-10-02T10:27:33.126543Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E79",
+      "runtime_signature": "8bb8e0f197276cc6a8c790c9a7a619a04750175c7da03d4744199972c3d8aecd",
+      "snapshot_version": 17,
+      "source_message_id": "std_318e85cf3de34de29ecc56baea22a900",
+      "ticker": "BE",
+      "trading_date": "2026-10-02"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "Morgan Stanley",
+          "Nvidia",
+          "Agentic AI"
+        ],
+        "occurrence_date": "2026-10-02",
+        "proposition": "Morgan Stanley分析师将agentic AI列为未来GPU需求的主要驱动因素。",
+        "subject_time": "未来GPU需求"
+      },
+      "candidate_index": 2,
+      "case_id": "case_44e61dc740b943489ebad2efc908bda4",
+      "created_at": "2026-10-02T10:27:33.142559Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E80",
+      "runtime_signature": "f8118e335c7df2560e480bb5ce42d315f3e398fbd45cf3bffbd3dbe3d334880a",
+      "snapshot_version": 18,
+      "source_message_id": "std_318e85cf3de34de29ecc56baea22a900",
+      "ticker": "BE",
+      "trading_date": "2026-10-02"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Kurt Olsen",
+          "波多黎各投票设备调查",
+          "2020年美国大选"
+        ],
+        "occurrence_date": null,
+        "proposition": "Reuters报道称，Kurt Olsen推动波多黎各投票设备检查转向寻找外国势力操纵2020年美国大选的证据。",
+        "subject_time": "2025年波多黎各投票设备调查"
+      },
+      "candidate_index": 0,
+      "case_id": "case_3c499ea73ffc4e2db6cb1a09086e8f86",
+      "created_at": "2026-10-02T11:59:32.147503Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E81",
+      "runtime_signature": "5d890657af548cfa9fd8b04b8868347a2b59cfec19b87a6d727599a6b6867508",
+      "snapshot_version": 19,
+      "source_message_id": "std_a1a4303659bf47cfbba345b79274e169",
+      "ticker": "BE",
+      "trading_date": "2026-10-02"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Kurt Olsen",
+          "美国投票系统",
+          "2020年美国大选"
+        ],
+        "occurrence_date": null,
+        "proposition": "Reuters报道称，Olsen主导的调查最终未发现外国行为者渗透美国投票系统、操纵投票机或影响2020年大选结果的证据。",
+        "subject_time": "Olsen主导的2020年美国大选相关调查"
+      },
+      "candidate_index": 1,
+      "case_id": "case_3c499ea73ffc4e2db6cb1a09086e8f86",
+      "created_at": "2026-10-02T11:59:32.176913Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E82",
+      "runtime_signature": "c11777e7075c669852c544789da41c5d00547a070d3e349a270a15bff50773c9",
+      "snapshot_version": 20,
+      "source_message_id": "std_a1a4303659bf47cfbba345b79274e169",
+      "ticker": "BE",
+      "trading_date": "2026-10-02"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLAN",
+        "entities": [
+          "Amazon Web Services",
+          "Amazon",
+          "美国数据中心社区"
+        ],
+        "occurrence_date": "2026-10-02",
+        "proposition": "Amazon Web Services宣布计划在未来五年向其美国数据中心所在社区投资超过10亿美元，涵盖教育、就业培训、能源可负担性以及水和能源保护等事项。",
+        "subject_time": "未来五年（起止日期未具体说明）"
+      },
+      "candidate_index": 0,
+      "case_id": "case_3bba74bb5c1641bba72e5f8e5082cf53",
+      "created_at": "2026-10-02T12:01:35.026595Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E83",
+      "runtime_signature": "5bddbd5e489d871ae3dbdf1f6e429b4a7de345dc8a6cc28beec2f7cd9dec0402",
+      "snapshot_version": 21,
+      "source_message_id": "std_31697ebec7514cc1b309b6ba2b73569d",
+      "ticker": "BE",
+      "trading_date": "2026-10-02"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Amazon"
+        ],
+        "occurrence_date": null,
+        "proposition": "Amazon表示，其自2011年至2025年已在数据中心投资2760亿美元。",
+        "subject_time": "2011–2025年"
+      },
+      "candidate_index": 1,
+      "case_id": "case_3bba74bb5c1641bba72e5f8e5082cf53",
+      "created_at": "2026-10-02T12:01:35.042496Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E84",
+      "runtime_signature": "c17217829cbacb61e8fede21c0dd8d2ddb0dec28a771eb787215a0538d28d3ff",
+      "snapshot_version": 22,
+      "source_message_id": "std_31697ebec7514cc1b309b6ba2b73569d",
+      "ticker": "BE",
+      "trading_date": "2026-10-02"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLAN",
+        "entities": [
+          "Amazon Web Services",
+          "Amazon"
+        ],
+        "occurrence_date": "2026-10-02",
+        "proposition": "Amazon Web Services承诺到2030年在其数据中心实现用水正效应，即向社区返还的水量超过其使用量。",
+        "subject_time": "2030年目标"
+      },
+      "candidate_index": 2,
+      "case_id": "case_3bba74bb5c1641bba72e5f8e5082cf53",
+      "created_at": "2026-10-02T12:01:35.058385Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E85",
+      "runtime_signature": "8c07e7c7d21390e2f0ae82b76a530b071b1f888f5fe8fb527afb610259fd1f07",
+      "snapshot_version": 23,
+      "source_message_id": "std_31697ebec7514cc1b309b6ba2b73569d",
+      "ticker": "BE",
+      "trading_date": "2026-10-02"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Amazon Web Services",
+          "Amazon"
+        ],
+        "occurrence_date": null,
+        "proposition": "Amazon Web Services表示，其数据中心已完成用水正效应目标所需进展的75%。",
+        "subject_time": "截至2026-10-02的目标进展"
+      },
+      "candidate_index": 3,
+      "case_id": "case_3bba74bb5c1641bba72e5f8e5082cf53",
+      "created_at": "2026-10-02T12:01:35.077426Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E86",
+      "runtime_signature": "5165329df967ca3c8e44aac3c6d9b2e001297851ca840f4f96513bee0afca2b1",
+      "snapshot_version": 24,
+      "source_message_id": "std_31697ebec7514cc1b309b6ba2b73569d",
+      "ticker": "BE",
+      "trading_date": "2026-10-02"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ONGOING",
+        "entities": [
+          "Amazon Web Services",
+          "美国",
+          "数据中心辖区"
+        ],
+        "occurrence_date": null,
+        "proposition": "Amazon Web Services称，全美有超过100项数据中心暂停令正在被考虑。",
+        "subject_time": "截至2026-10-02"
+      },
+      "candidate_index": 4,
+      "case_id": "case_3bba74bb5c1641bba72e5f8e5082cf53",
+      "created_at": "2026-10-02T12:01:35.092085Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E87",
+      "runtime_signature": "b4c42ee4c1745a56ce994fc0c6bfe2e377d2f1e1cd2fef3185a0fdc7c97c9306",
+      "snapshot_version": 25,
+      "source_message_id": "std_31697ebec7514cc1b309b6ba2b73569d",
+      "ticker": "BE",
+      "trading_date": "2026-10-02"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Center for the Future of Arizona",
+          "亚利桑那州选民",
+          "长期水资源"
+        ],
+        "occurrence_date": null,
+        "proposition": "Center for the Future of Arizona九月发布的调查发现，长期水资源首次成为亚利桑那州选民最关切的问题，此前在该调查中排名第二或第三。",
+        "subject_time": "2026年9月发布的亚利桑那州选民调查"
+      },
+      "candidate_index": 0,
+      "case_id": "case_1467f197c73149eb93be6404725c3e7d",
+      "created_at": "2026-10-02T13:38:48.930518Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E88",
+      "runtime_signature": "bdbdb239f6de53115548177c44cdd906cf6f63ebb793e8db0b0088a9c6ffc7eb",
+      "snapshot_version": 26,
+      "source_message_id": "std_9fb8c83bee45459b8d80ce91f983d23a",
+      "ticker": "BE",
+      "trading_date": "2026-10-02"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Benzinga Pro",
+          "Bloom Energy",
+          "BE"
+        ],
+        "occurrence_date": null,
+        "proposition": "Benzinga Pro的2026年9月最受搜索股票榜将Bloom Energy列为第10名；该公司此前未进入2026年或2025年的前12名。",
+        "subject_time": "2026年9月Benzinga Pro搜索排名"
+      },
+      "candidate_index": 0,
+      "case_id": "case_7fff6ab33eac41ad9a2ec7a6c13e1b0f",
+      "created_at": "2026-10-02T15:07:40.776975Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E89",
+      "runtime_signature": "23356ebb0be54a915d080026688535b54622d1b465b277c984e348b980cba1d5",
+      "snapshot_version": 27,
+      "source_message_id": "std_a356103cb63f409ea400579716d15bb6",
+      "ticker": "BE",
+      "trading_date": "2026-10-02"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Bloom Energy",
+          "BE"
+        ],
+        "occurrence_date": "2026-10-02",
+        "proposition": "Bloom Energy Class A股票于2026年10月2日交易时段上涨5.57%，报293.03美元。",
+        "subject_time": "2026年10月2日交易时段"
+      },
+      "candidate_index": 0,
+      "case_id": "case_33c5a423a1194dd6a8bedb73bc084f2c",
+      "created_at": "2026-10-02T17:06:28.859435Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E90",
+      "runtime_signature": "bc079b2a1b16b8b5d21f28969c9427f960c56016df98d18cfc82b62c7a4e02b0",
+      "snapshot_version": 28,
+      "source_message_id": "std_f0e559f960544fbebb886af0b0cd0bb0",
+      "ticker": "BE",
+      "trading_date": "2026-10-02"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Bloom Energy",
+          "BE",
+          "Benzinga"
+        ],
+        "occurrence_date": "2026-10-02",
+        "proposition": "Benzinga的自动期权扫描器报告，BE一笔10月9日到期、287.50美元执行价的call交易涉及50张合约、权利金4.87万美元，并被标记为bearish；报告称该执行价此前未平仓量为206张，当日成交量为312张。",
+        "subject_time": "2026年10月2日交易时段；期权到期日为2026年10月9日"
+      },
+      "candidate_index": 0,
+      "case_id": "case_ef8b056ed2004e88ab2adf9c6d7c4ee3",
+      "created_at": "2026-10-02T17:38:32.772244Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E91",
+      "runtime_signature": "f180392f7bf0cabb138f8a57dd3c82b2b79be087489342a5ed38297cd4c692d1",
+      "snapshot_version": 29,
+      "source_message_id": "std_6626c72dda894647a207a4cb1566b8cc",
+      "ticker": "BE",
+      "trading_date": "2026-10-02"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Bloom Energy",
+          "BE"
+        ],
+        "occurrence_date": "2026-10-02",
+        "proposition": "一篇24/7 Wall St.报道指出，Bloom Energy股票在2026年10月2日交易时段上涨约3%至286.80美元。",
+        "subject_time": "2026年10月2日交易时段"
+      },
+      "candidate_index": 0,
+      "case_id": "case_4923c21cba034af8a396561c8bf62c24",
+      "created_at": "2026-10-02T18:00:59.858970Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E92",
+      "runtime_signature": "e7c3abfd661e8b16606cf16b510019815c45e99b1c5479157a22b202394a6e54",
+      "snapshot_version": 30,
+      "source_message_id": "std_6bc1071e6ebc4f7a829069691cffd89e",
+      "ticker": "BE",
+      "trading_date": "2026-10-02"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Bloom Energy",
+          "BE",
+          "Investor’s Business Daily",
+          "MarketSurge"
+        ],
+        "occurrence_date": "2026-10-02",
+        "proposition": "Investor’s Business Daily称，Bloom Energy股价当周上涨4.2%至289.15美元，并守在其所列288美元杯柄形态买点上方。",
+        "subject_time": "截至2026年10月2日的交易周"
+      },
+      "candidate_index": 0,
+      "case_id": "case_2988fc55e1294b64ad9edbbf5b77020d",
+      "created_at": "2026-10-02T20:38:37.576396Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E93",
+      "runtime_signature": "1aa698b12b99ca9972e006d2afaba29ed1b8f2cc1fcf86868eae6d5e9871ed2c",
+      "snapshot_version": 31,
+      "source_message_id": "std_e2b656ccde3e478e979c5a2058f5ce2d",
+      "ticker": "BE",
+      "trading_date": "2026-10-02"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Investor's Business Daily",
+          "Bloom Energy",
+          "BE"
+        ],
+        "occurrence_date": "2026-10-02",
+        "proposition": "Investor's Business Daily 于 2026-10-02 的标题将 Bloom Energy 标记为闪现技术买入信号的股票。",
+        "subject_time": "2026-10-02 市场交易时段的技术信号报道"
+      },
+      "candidate_index": 0,
+      "case_id": "case_057bf24be79e4b67ba34dc2bffdbad01",
+      "created_at": "2026-10-02T20:40:35.589591Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E94",
+      "runtime_signature": "492c31252b4d253a985bab1d960e9f0181542872bac391b556ee08ac983b5c00",
+      "snapshot_version": 32,
+      "source_message_id": "std_21536b393a004f9cabf4ac74ee01ca43",
+      "ticker": "BE",
+      "trading_date": "2026-10-02"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Investor's Business Daily",
+          "Nasdaq"
+        ],
+        "occurrence_date": "2026-10-02",
+        "proposition": "Investor's Business Daily 于 2026-10-02 的标题称 Nasdaq hits high。",
+        "subject_time": "2026-10-02 Nasdaq 交易时段"
+      },
+      "candidate_index": 1,
+      "case_id": "case_057bf24be79e4b67ba34dc2bffdbad01",
+      "created_at": "2026-10-02T20:40:35.597408Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E95",
+      "runtime_signature": "d924d5784937ebff1fe0a01329959c5e4856e7e636f40c603208e489bbfc98a7",
+      "snapshot_version": 33,
+      "source_message_id": "std_21536b393a004f9cabf4ac74ee01ca43",
+      "ticker": "BE",
+      "trading_date": "2026-10-02"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "PJM Interconnection",
+          "Federal Energy Regulatory Commission",
+          "Frank Pallone Jr.",
+          "Data Center Coalition",
+          "Google"
+        ],
+        "occurrence_date": null,
+        "proposition": "在PJM向FERC审议的IRAS及Large Load Registry提案评论中，众议员Frank Pallone支持部分内容并要求调整成本分配；Data Center Coalition反对并建议拒绝或将实施推迟至2028年6月1日；Google称该方案可能抑制大型客户自建新增容量并倡议可中断服务；PJM为提案辩护。",
+        "subject_time": "PJM/FERC对IRAS及Large Load Registry提案的审议"
+      },
+      "candidate_index": 0,
+      "case_id": "case_6da8eb48039446dd836d8b47314cb29b",
+      "created_at": "2026-10-02T20:50:00.073527Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E96",
+      "runtime_signature": "a84b44289df6693b434ebfbec79a8dcb1cec5dcb9fb9bad23787a376479fe0f1",
+      "snapshot_version": 34,
+      "source_message_id": "std_afa954dfbd7d4c208d0b0b20e9649b57",
+      "ticker": "BE",
+      "trading_date": "2026-10-02"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Jeffrey Immelt",
+          "Bloom Energy",
+          "BE"
+        ],
+        "occurrence_date": null,
+        "proposition": "Bloom Energy董事Jeffrey Immelt的一项Form 4披露报告其取得81个stock units，取得后报告持有量为201,324股；所提供摘要未说明取得方式、现金对价或交易日期。",
+        "subject_time": "Form 4所报告的持股变动"
+      },
+      "candidate_index": 0,
+      "case_id": "case_b804694fd42047cd918dbf68e7039fb0",
+      "created_at": "2026-10-02T21:12:42.181069Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E97",
+      "runtime_signature": "ff96a981e7f821c450ef997ebdb575e48b52dfa9dbbd61f4912579957471019d",
+      "snapshot_version": 35,
+      "source_message_id": "std_cdc769591f684e07a24a37f32c770497",
+      "ticker": "BE",
+      "trading_date": "2026-10-02"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Aman Joshi",
+          "Bloom Energy Corporation",
+          "BE"
+        ],
+        "occurrence_date": "2026-10-01",
+        "proposition": "Bloom Energy首席商务官Aman Joshi于2026-10-01在交易计划下实际出售8,437股Bloom Energy普通股，加权平均售价为每股277.17美元。",
+        "subject_time": null
+      },
+      "candidate_index": 0,
+      "case_id": "case_bd5bae8bf35541f4b5912ea33c8b33a2",
+      "created_at": "2026-10-02T21:18:25.715761Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E98",
+      "runtime_signature": "45a9900316742b7dc00705d2205fa7d7d66f581e794ce421903e0394fa17e70a",
+      "snapshot_version": 36,
+      "source_message_id": "std_c580115013984855a311e22f3f2e98cd",
+      "ticker": "BE",
+      "trading_date": "2026-10-02"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Simply Wall St",
+          "Bloom Energy",
+          "BE",
+          "AI数据中心"
+        ],
+        "occurrence_date": "2026-10-02",
+        "proposition": "Simply Wall St于2026-10-02发布电网股票筛选文章，将Bloom Energy的现场固体氧化物燃料电池描述为面向AI数据中心和关键设施、可绕开电网压力的供电方案。",
+        "subject_time": "2026-10-02发布的电网股票筛选文章"
+      },
+      "candidate_index": 0,
+      "case_id": "case_8cc3441a56b94890acd34ba2d960e89c",
+      "created_at": "2026-10-02T22:17:10.762629Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E99",
+      "runtime_signature": "d76178b176e371a27b5c1be5bf340dcbaf0f73db4bdbde104426c4f1920d7f38",
+      "snapshot_version": 37,
+      "source_message_id": "std_7e9075c4fde048eca758fd426acb3ea0",
+      "ticker": "BE",
+      "trading_date": "2026-10-02"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMOR",
+        "entities": [
+          "Alibaba Group Holding Ltd.",
+          "Solaria Energía y Medio Ambiente SA",
+          "Puertollano",
+          "Spain"
+        ],
+        "occurrence_date": null,
+        "proposition": "Anonymous sources reported that Alibaba and Solaria discussed a possible renewable-power supply arrangement for a Spanish data center, potentially using Solaria's Puertollano facility; the companies declined to comment and the concept was described as less advanced than Alibaba's announced European data-center plans.",
+        "subject_time": "Early-stage discussions; exact discussion date not disclosed"
+      },
+      "candidate_index": 0,
+      "case_id": "case_67b46361a30641b097600e5841ee5d20",
+      "created_at": "2026-10-02T22:54:04.548360Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E100",
+      "runtime_signature": "244be92a661eb711b89463b310a6ca896d476bdc4129bf39d55dde195e105167",
+      "snapshot_version": 38,
+      "source_message_id": "std_6cf2ce74557549cfaf6dffa629443002",
+      "ticker": "BE",
+      "trading_date": "2026-10-02"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "Goldman Sachs",
+          "Global data centers"
+        ],
+        "occurrence_date": "2026-09-23",
+        "proposition": "Goldman Sachs raised its forecast for global data-center behind-the-meter generation capacity by 2030 from 40 GW to 67 GW, estimating that it could meet about 25% of global data-center power demand.",
+        "subject_time": "2030"
+      },
+      "candidate_index": 0,
+      "case_id": "case_32f8666410374f408b72a02c02161dd8",
+      "created_at": "2026-10-03T00:13:23.924859Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E101",
+      "runtime_signature": "4c8896b5558bdd90ad6323278bb2339a4821c1f332a93d0ee6aa6fba702da25c",
+      "snapshot_version": 39,
+      "source_message_id": "std_27571c5c52944ad3b30380ebfa02498c",
+      "ticker": "BE",
+      "trading_date": "2026-10-02"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "U.S. Bureau of Labor Statistics",
+          "United States"
+        ],
+        "occurrence_date": "2026-10-02",
+        "proposition": "The U.S. Bureau of Labor Statistics reported September 2026 nonfarm payroll employment increased by 29,000, the unemployment rate was 4.2%, and July and August payroll estimates were revised down by a combined 60,000.",
+        "subject_time": "September 2026 employment; revisions to July and August 2026"
+      },
+      "candidate_index": 0,
+      "case_id": "case_d72721b1c1294a1482597bdbdeb2f945",
+      "created_at": "2026-10-03T01:16:38.347910Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E102",
+      "runtime_signature": "172da25043af66d67f97264c8cccfa4f9a977bdcb61bc23220d2439a870d1ecb",
+      "snapshot_version": 40,
+      "source_message_id": "std_f791518c840c48f48171201da2fd3142",
+      "ticker": "BE",
+      "trading_date": "2026-10-02"
+    }
+  ],
+  "limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "global_state": {
+    "watches": [],
+    "pins": []
+  },
+  "event_details": {
+    "requested_event_ids": [
+      "E1"
+    ],
+    "canonical_events": [
+      {
+        "event_id": "E1",
+        "title": "Bloom Energy reported its 2025 year-end $20 billion order backlog",
+        "event_type": "SUPPLY_DEMAND_UPDATE",
+        "occurred_at": "2025-12-31",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "At 2025 year-end, Bloom Energy reported a $20 billion order backlog, including $14 billion of future services revenue.",
+        "known_event_summary": "On 2025-12-31, Bloom Energy reported a $20 billion backlog, including $14 billion from future services revenue.",
+        "related_event_ids": [],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F1",
+            "proposition": "Bloom Energy's order backlog at the end of 2025 was $20 billion, including $14 billion from future services revenue.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2025",
+            "fact_occurred_at": "SAME",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      }
+    ],
+    "provisional_events": [],
+    "missing_event_ids": []
+  }
+}

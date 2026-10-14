@@ -1,0 +1,23 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-25T15:06:01.639279Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "No dated primary copy of Oracle's force-majeure notice or underlying lease was located; the public report's delivery timing and legal consequences remain attributed reporting.",
+    "The exact date, settlement terms, and replacement arrangement for BorderPlex were not independently established in the verified pre-cutoff passages.",
+    "No pre-cutoff evidence located here establishes a project-specific revised operating date, a change in Bloom's contracted capacity, or Bloom shipment, commissioning, acceptance, or revenue consequences.",
+    "The supplied digest's bond-yield, credit-spread, and loan-quote assertions are omitted because they are market-price information; no post-cutoff coverage or market reaction is used."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

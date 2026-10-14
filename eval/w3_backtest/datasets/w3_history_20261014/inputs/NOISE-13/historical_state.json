@@ -1,0 +1,2815 @@
+{
+  "recent_trade_intents": [],
+  "history_matches": [],
+  "watches": [],
+  "pins": [],
+  "policy_consumptions": [],
+  "provisional": [
+    {
+      "candidate": {
+        "assertion_state": "ONGOING",
+        "entities": [
+          "Rocket Lab"
+        ],
+        "occurrence_date": null,
+        "proposition": "RKLB shares rose approximately 1% for the week, on track to end a streak of five consecutive weekly declines.",
+        "subject_time": null
+      },
+      "candidate_index": 4,
+      "case_id": "case_eeb07eead9cb45f9ad212921441e8b8f",
+      "created_at": "2026-09-17T03:46:00.281298Z",
+      "originating_node": "W1_R3",
+      "provisional_event_id": "E89",
+      "runtime_signature": "0d0321c03246b1077cb957d13da50b64c5bcc9c3262a69ccefaf43a10f92aad3",
+      "snapshot_version": 5,
+      "source_message_id": "std_3ccfc05f5e78440ea66a02713783a0ff",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-16"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ONGOING",
+        "entities": [
+          "Drugmakers",
+          "space pharmaceuticals",
+          "International Space Station"
+        ],
+        "occurrence_date": "2026-09-17",
+        "proposition": "Drugmakers are preparing for the next phase of space pharmaceuticals as the International Space Station approaches retirement.",
+        "subject_time": "The next phase of space pharmaceuticals following ISS retirement"
+      },
+      "candidate_index": 0,
+      "case_id": "case_f28d1c02e04b43baa136143577949c3a",
+      "created_at": "2026-09-17T10:08:44.424463Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E90",
+      "runtime_signature": "12393f7c5727cd3648383d4784ecd0c44e4c913c86ab06a8aaae066ac62da4f3",
+      "snapshot_version": 1,
+      "source_message_id": "std_fc2365518553473b8cfbac5771a58f56",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-17"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Rocket Lab",
+          "RKLB"
+        ],
+        "occurrence_date": "2026-09-17",
+        "proposition": "Rocket Lab's average daily high-low range over the 22 trading sessions preceding the report was 4.52% of its closing price.",
+        "subject_time": "The 22 trading sessions preceding 2026-09-17"
+      },
+      "candidate_index": 0,
+      "case_id": "case_86ec9e025efe4f7081dfd998150b610c",
+      "created_at": "2026-09-17T14:07:07.179607Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E91",
+      "runtime_signature": "31e2928bf6327b22bf23a1e4ef35d5c04a2e36aa2121e04bdec69b0a13180cbd",
+      "snapshot_version": 2,
+      "source_message_id": "std_f3e3fed68a6349ec8cbe5f88d6f7beb9",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-17"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "SpaceX",
+          "SPCX"
+        ],
+        "occurrence_date": "2026-09-17",
+        "proposition": "SpaceX's average daily high-low range over the same 22 trading sessions was 4.53% of its closing price.",
+        "subject_time": "The 22 trading sessions preceding 2026-09-17"
+      },
+      "candidate_index": 1,
+      "case_id": "case_86ec9e025efe4f7081dfd998150b610c",
+      "created_at": "2026-09-17T14:07:07.205106Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E92",
+      "runtime_signature": "6c1f15ee87341738df3e057bcd35f404a4880668e785783b96641290e5fbbdce",
+      "snapshot_version": 3,
+      "source_message_id": "std_f3e3fed68a6349ec8cbe5f88d6f7beb9",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-17"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLANNED",
+        "entities": [
+          "SpaceX",
+          "Starship Flight 14",
+          "Starlink V3"
+        ],
+        "occurrence_date": "2026-09-17",
+        "proposition": "SpaceX planned Starship Flight 14 for September 22, 2026, pending regulatory approval, with deployment of 26 Starlink V3 satellites.",
+        "subject_time": "2026-09-22"
+      },
+      "candidate_index": 2,
+      "case_id": "case_86ec9e025efe4f7081dfd998150b610c",
+      "created_at": "2026-09-17T14:07:07.227019Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E93",
+      "runtime_signature": "3d4004d8408fdc3ec3af274fc34e8655da454609397e438edca1a72661f38a91",
+      "snapshot_version": 4,
+      "source_message_id": "std_f3e3fed68a6349ec8cbe5f88d6f7beb9",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-17"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Rocket Lab",
+          "RKLB"
+        ],
+        "occurrence_date": "2026-09-17",
+        "proposition": "Rocket Lab's average daily high-low range over the 22 trading sessions preceding the report was 4.52% of its closing price.",
+        "subject_time": "The 22 trading sessions preceding 2026-09-17"
+      },
+      "candidate_index": 0,
+      "case_id": "case_2e4651ba760c449094f4605e22f8fb79",
+      "created_at": "2026-09-17T14:15:26.834886Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E94",
+      "runtime_signature": "31e2928bf6327b22bf23a1e4ef35d5c04a2e36aa2121e04bdec69b0a13180cbd",
+      "snapshot_version": 5,
+      "source_message_id": "std_7df3c13dfde04ff49f9e7b36e60a3c4a",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-17"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "SpaceX",
+          "SPCX"
+        ],
+        "occurrence_date": "2026-09-17",
+        "proposition": "SpaceX's average daily high-low range over the same 22 trading sessions was 4.53% of its closing price.",
+        "subject_time": "The 22 trading sessions preceding 2026-09-17"
+      },
+      "candidate_index": 1,
+      "case_id": "case_2e4651ba760c449094f4605e22f8fb79",
+      "created_at": "2026-09-17T14:15:26.848065Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E95",
+      "runtime_signature": "6c1f15ee87341738df3e057bcd35f404a4880668e785783b96641290e5fbbdce",
+      "snapshot_version": 6,
+      "source_message_id": "std_7df3c13dfde04ff49f9e7b36e60a3c4a",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-17"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLANNED",
+        "entities": [
+          "SpaceX",
+          "Starship Flight 14",
+          "Starlink V3"
+        ],
+        "occurrence_date": "2026-09-17",
+        "proposition": "SpaceX planned Starship Flight 14 for September 22, 2026, pending regulatory approval, with deployment of 26 Starlink V3 satellites.",
+        "subject_time": "2026-09-22"
+      },
+      "candidate_index": 2,
+      "case_id": "case_2e4651ba760c449094f4605e22f8fb79",
+      "created_at": "2026-09-17T14:15:26.860399Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E96",
+      "runtime_signature": "3d4004d8408fdc3ec3af274fc34e8655da454609397e438edca1a72661f38a91",
+      "snapshot_version": 7,
+      "source_message_id": "std_7df3c13dfde04ff49f9e7b36e60a3c4a",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-17"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Rocket Lab",
+          "RKLB",
+          "Roundtable 100"
+        ],
+        "occurrence_date": "2026-09-17",
+        "proposition": "Rocket Lab rose 34 places in the Roundtable 100 ranking during the week of 2026-09-17.",
+        "subject_time": "The week of 2026-09-17"
+      },
+      "candidate_index": 0,
+      "case_id": "case_7ec8647bc8c14e5ead7c11c67f413cd1",
+      "created_at": "2026-09-17T22:25:14.985131Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E97",
+      "runtime_signature": "0fb73e101f7b641d303d7709ee9bd4de2b246f91225a68c27d74c806b79be7e7",
+      "snapshot_version": 20,
+      "source_message_id": "std_fff8b9285b5740b3bcb798f7fcec0e9f",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-17"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Rocket Lab",
+          "RKLB"
+        ],
+        "occurrence_date": null,
+        "proposition": "The article reports that Rocket Lab's annual revenue growth was 53.4% over the preceding two years.",
+        "subject_time": "The two years preceding the 2026-09-18 article"
+      },
+      "candidate_index": 0,
+      "case_id": "case_da642befaade4259b75f5640b0d536f8",
+      "created_at": "2026-09-18T10:30:34.212260Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E98",
+      "runtime_signature": "3fce841343b5b4e0da269e724a90619b290da1029eb427509c24813eccaf6b47",
+      "snapshot_version": 1,
+      "source_message_id": "std_b57983d61f2a4f60b9d9920644b77563",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-18"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Rocket Lab",
+          "RKLB"
+        ],
+        "occurrence_date": null,
+        "proposition": "The article reports that Rocket Lab stock gained 359% over the preceding five years.",
+        "subject_time": "The five years preceding the 2026-09-18 article"
+      },
+      "candidate_index": 1,
+      "case_id": "case_da642befaade4259b75f5640b0d536f8",
+      "created_at": "2026-09-18T10:30:34.218741Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E99",
+      "runtime_signature": "a5952340c9ac53bbf72c5775a95c1079a8f4bfd86e985737808406398a7cdde7",
+      "snapshot_version": 2,
+      "source_message_id": "std_b57983d61f2a4f60b9d9920644b77563",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-18"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Rocket Lab",
+          "RKLB"
+        ],
+        "occurrence_date": null,
+        "proposition": "The article reports RKLB at $68.00 per share with a 2,831.1x forward P/E.",
+        "subject_time": "At the time of the 2026-09-18 article"
+      },
+      "candidate_index": 2,
+      "case_id": "case_da642befaade4259b75f5640b0d536f8",
+      "created_at": "2026-09-18T10:30:34.224785Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E100",
+      "runtime_signature": "d78fa8b19a7355b7ab9572ca18a5a18ac271be979d39bba5f0db34f67fe1dae7",
+      "snapshot_version": 3,
+      "source_message_id": "std_b57983d61f2a4f60b9d9920644b77563",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-18"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "NASA",
+          "SpaceX",
+          "StarBurst"
+        ],
+        "occurrence_date": "2026-09-18",
+        "proposition": "NASA awarded SpaceX a launch manifest slot for the StarBurst satellite.",
+        "subject_time": null
+      },
+      "candidate_index": 0,
+      "case_id": "case_498de9ed10184a46a5fa20272e31e328",
+      "created_at": "2026-09-18T15:51:51.444418Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E101",
+      "runtime_signature": "7c5526f55490c322cdd287614456271bfab6dd2faddf5aabd3fcbf84d554ef48",
+      "snapshot_version": 7,
+      "source_message_id": "std_2d15acd1b74e4acda91a17db524e4d2f",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-18"
+    },
+    {
+      "candidate": {
+        "assertion_state": "SCHEDULED",
+        "entities": [
+          "NASA",
+          "SpaceX",
+          "StarBurst",
+          "Falcon 9"
+        ],
+        "occurrence_date": null,
+        "proposition": "The StarBurst satellite is scheduled to fly on a Falcon 9 rideshare mission no earlier than 2028.",
+        "subject_time": "No earlier than 2028"
+      },
+      "candidate_index": 1,
+      "case_id": "case_498de9ed10184a46a5fa20272e31e328",
+      "created_at": "2026-09-18T15:51:51.461180Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E102",
+      "runtime_signature": "6a60f813f72895eee34ff8247e430a00c01ceba0e5a7c812eacbf98c181ec3df",
+      "snapshot_version": 8,
+      "source_message_id": "std_2d15acd1b74e4acda91a17db524e4d2f",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-18"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Rocket Lab",
+          "RKLB",
+          "S&P 500",
+          "SPY"
+        ],
+        "occurrence_date": "2026-09-18",
+        "proposition": "Rocket Lab gained 9.5% over the five trading days preceding 2026-09-18, while the S&P 500 gained 0.6%.",
+        "subject_time": "The five trading days preceding 2026-09-18"
+      },
+      "candidate_index": 0,
+      "case_id": "case_67e5117e36ec4152ae247dc217024d75",
+      "created_at": "2026-09-18T21:11:16.273859Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E103",
+      "runtime_signature": "e62c807281cd7487bdcbafc0fdb97bf28295b89367341d3396b367b4c48c8350",
+      "snapshot_version": 9,
+      "source_message_id": "std_d2ae652d8efb46bda46b63bd0555a2ee",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-18"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Rocket Lab",
+          "RKLB",
+          "S&P 500",
+          "SPY"
+        ],
+        "occurrence_date": null,
+        "proposition": "Rocket Lab had 79.2% annualized volatility versus 17.2% for the S&P 500 over the preceding five years, with a 0.46 daily return correlation.",
+        "subject_time": "The five years preceding the 2026-09-18 article"
+      },
+      "candidate_index": 1,
+      "case_id": "case_67e5117e36ec4152ae247dc217024d75",
+      "created_at": "2026-09-18T21:11:16.281254Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E104",
+      "runtime_signature": "6b858904a316b1ea3d06acdf08bf394191ce8f7d10805bf18224732f3999ae45",
+      "snapshot_version": 10,
+      "source_message_id": "std_d2ae652d8efb46bda46b63bd0555a2ee",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-18"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Rocket Lab",
+          "RKLB",
+          "S&P 500",
+          "SPY"
+        ],
+        "occurrence_date": null,
+        "proposition": "Over the preceding year, Rocket Lab captured approximately 381% of S&P 500 gains on rising days and absorbed approximately 403% of S&P 500 losses on falling days.",
+        "subject_time": "The year preceding the 2026-09-18 article"
+      },
+      "candidate_index": 2,
+      "case_id": "case_67e5117e36ec4152ae247dc217024d75",
+      "created_at": "2026-09-18T21:11:16.287142Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E105",
+      "runtime_signature": "1135d1096287d14743bc388f21624b0f65ca63709e75886ce7aa120164cce5b3",
+      "snapshot_version": 11,
+      "source_message_id": "std_d2ae652d8efb46bda46b63bd0555a2ee",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-18"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "China",
+          "Long March 10B"
+        ],
+        "occurrence_date": null,
+        "proposition": "China successfully recovered the first-stage booster from a Long March 10B rocket for the first time, a milestone toward reusable rocket development.",
+        "subject_time": null
+      },
+      "candidate_index": 0,
+      "case_id": "case_01ab07874f774c4a9049a0a74c6da306",
+      "created_at": "2026-09-21T06:02:52.211369Z",
+      "originating_node": "W1_R3",
+      "provisional_event_id": "E106",
+      "runtime_signature": "3152f47bdcb8652de775f608832a135104cb88078871c19caee33792483cc662",
+      "snapshot_version": 1,
+      "source_message_id": "std_4753b091388e48e7ac25fdf9f17c3da2",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "China",
+          "LandSpace",
+          "China Aerospace Science and Technology Corporation"
+        ],
+        "occurrence_date": null,
+        "proposition": "China carried out four rocket launches within 48 hours using multiple providers including LandSpace and China Aerospace Science and Technology Corporation.",
+        "subject_time": null
+      },
+      "candidate_index": 1,
+      "case_id": "case_01ab07874f774c4a9049a0a74c6da306",
+      "created_at": "2026-09-21T06:02:52.226927Z",
+      "originating_node": "W1_R3",
+      "provisional_event_id": "E107",
+      "runtime_signature": "385323217befd55eac3f952f6e2dd588a5ddae377c951d4874fb7e5004401544",
+      "snapshot_version": 2,
+      "source_message_id": "std_4753b091388e48e7ac25fdf9f17c3da2",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Guowang"
+        ],
+        "occurrence_date": null,
+        "proposition": "The Guowang megaconstellation, China's satellite-internet constellation, has more than 200 satellites active in orbit.",
+        "subject_time": null
+      },
+      "candidate_index": 2,
+      "case_id": "case_01ab07874f774c4a9049a0a74c6da306",
+      "created_at": "2026-09-21T06:02:52.249684Z",
+      "originating_node": "W1_R3",
+      "provisional_event_id": "E108",
+      "runtime_signature": "344623fdcbeff6011f466628b923ee8c64100137e8a33a73fae76283f90b8344",
+      "snapshot_version": 3,
+      "source_message_id": "std_4753b091388e48e7ac25fdf9f17c3da2",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "U.K."
+        ],
+        "occurrence_date": null,
+        "proposition": "The U.K. outlined a national space strategy backed by $10.4 billion in funding through 2030.",
+        "subject_time": "through 2030"
+      },
+      "candidate_index": 3,
+      "case_id": "case_01ab07874f774c4a9049a0a74c6da306",
+      "created_at": "2026-09-21T06:02:52.265325Z",
+      "originating_node": "W1_R3",
+      "provisional_event_id": "E109",
+      "runtime_signature": "67ec89c61b4f957d200efd6826970637eaf5092788f7848b07160010a983323e",
+      "snapshot_version": 4,
+      "source_message_id": "std_4753b091388e48e7ac25fdf9f17c3da2",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLAN",
+        "entities": [
+          "Isar Aerospace"
+        ],
+        "occurrence_date": null,
+        "proposition": "Isar Aerospace announced plans to more than double its launch capacity in 2028 to meet high demand.",
+        "subject_time": "2028"
+      },
+      "candidate_index": 4,
+      "case_id": "case_01ab07874f774c4a9049a0a74c6da306",
+      "created_at": "2026-09-21T06:02:52.283376Z",
+      "originating_node": "W1_R3",
+      "provisional_event_id": "E110",
+      "runtime_signature": "da1b1ad0ae73d33f7ec87a59021e433301e6a5f26e27363362ceb1bf8e0e67b1",
+      "snapshot_version": 5,
+      "source_message_id": "std_4753b091388e48e7ac25fdf9f17c3da2",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ONGOING",
+        "entities": [
+          "Avio",
+          "SpaceX"
+        ],
+        "occurrence_date": null,
+        "proposition": "Avio CEO stated that multiple customers are approaching the company for launch services as SpaceX focuses resources on Starship.",
+        "subject_time": null
+      },
+      "candidate_index": 5,
+      "case_id": "case_01ab07874f774c4a9049a0a74c6da306",
+      "created_at": "2026-09-21T06:02:52.302963Z",
+      "originating_node": "W1_R3",
+      "provisional_event_id": "E111",
+      "runtime_signature": "7c3c039b3981b67b23e34b731a6aa3ba987a7773ca47b64416820af67b07fc59",
+      "snapshot_version": 6,
+      "source_message_id": "std_4753b091388e48e7ac25fdf9f17c3da2",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "China",
+          "Long March 10B"
+        ],
+        "occurrence_date": null,
+        "proposition": "China successfully recovered the first-stage booster from a Long March 10B rocket for the first time, marking a milestone in its development of reusable rockets and coming six months ahead of analysts' expectations.",
+        "subject_time": null
+      },
+      "candidate_index": 0,
+      "case_id": "case_d26612d416e04f27a538612a2c4b0713",
+      "created_at": "2026-09-21T06:08:27.048464Z",
+      "originating_node": "W1_R3",
+      "provisional_event_id": "E112",
+      "runtime_signature": "6c041f3dd52e9fd5ff187a5d4c46c63fcd7fab52b2fe217994cd362680bfc119",
+      "snapshot_version": 12,
+      "source_message_id": "std_3a6a42cd4c604b32b5220fa069e6488a",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "China",
+          "LandSpace",
+          "China Aerospace Science and Technology Corp"
+        ],
+        "occurrence_date": null,
+        "proposition": "China carried out four rocket launches within 48 hours using multiple providers, including LandSpace and the state-owned China Aerospace Science and Technology Corp, highlighting the growing diversification of its launch industry.",
+        "subject_time": null
+      },
+      "candidate_index": 1,
+      "case_id": "case_d26612d416e04f27a538612a2c4b0713",
+      "created_at": "2026-09-21T06:08:27.055047Z",
+      "originating_node": "W1_R3",
+      "provisional_event_id": "E113",
+      "runtime_signature": "92ccb14c7b71da52e293d6b0fbcc68425a0ea5ed11f02aad4ded088212b24010",
+      "snapshot_version": 13,
+      "source_message_id": "std_3a6a42cd4c604b32b5220fa069e6488a",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "China",
+          "Guowang"
+        ],
+        "occurrence_date": null,
+        "proposition": "China's Guowang megaconstellation, positioned as the country's satellite-internet rival to SpaceX's Starlink, now has more than 200 active satellites.",
+        "subject_time": null
+      },
+      "candidate_index": 2,
+      "case_id": "case_d26612d416e04f27a538612a2c4b0713",
+      "created_at": "2026-09-21T06:08:27.061292Z",
+      "originating_node": "W1_R3",
+      "provisional_event_id": "E114",
+      "runtime_signature": "db51337ab230100aeddf5fe1441a6fe77f261879ca384f0229de9e7bed471ebb",
+      "snapshot_version": 14,
+      "source_message_id": "std_3a6a42cd4c604b32b5220fa069e6488a",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "China",
+          "Guowang"
+        ],
+        "occurrence_date": null,
+        "proposition": "More than 200 satellites were active in the Guowang megaconstellation.",
+        "subject_time": "As of the report published on 2026-09-21"
+      },
+      "candidate_index": 3,
+      "case_id": "case_d26612d416e04f27a538612a2c4b0713",
+      "created_at": "2026-09-21T06:17:13.092993Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E115",
+      "runtime_signature": "811cdab2a6e1cf7b0c35ff214083ad6f93356843a0269edbece7dd5b4606bb42",
+      "snapshot_version": 15,
+      "source_message_id": "std_3a6a42cd4c604b32b5220fa069e6488a",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Rocket Lab",
+          "RKLB"
+        ],
+        "occurrence_date": "2026-09-21",
+        "proposition": "Rocket Lab shares traded at approximately $69.03, up 7% in Monday morning trading on September 21, 2026.",
+        "subject_time": "Monday morning trading"
+      },
+      "candidate_index": 0,
+      "case_id": "case_7a876b401c574e218c64c17f9ee93a6a",
+      "created_at": "2026-09-21T15:50:36.335012Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E116",
+      "runtime_signature": "c24ceae3a2a4cf55fffacc60b143c9c06c69ad917d5f63ca6f6d918ad0c73b38",
+      "snapshot_version": 17,
+      "source_message_id": "std_57dd311899604ba084369b7b43aff494",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Intuitive Machines",
+          "LUNR"
+        ],
+        "occurrence_date": "2026-09-21",
+        "proposition": "Intuitive Machines shares traded at approximately $15.28, up 10% in Monday morning trading on September 21, 2026.",
+        "subject_time": "Monday morning trading"
+      },
+      "candidate_index": 1,
+      "case_id": "case_7a876b401c574e218c64c17f9ee93a6a",
+      "created_at": "2026-09-21T15:50:36.346507Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E117",
+      "runtime_signature": "b58152667e5a775694e336a7555541e221ed4d3812d39fd067a62ba3d2e1e812",
+      "snapshot_version": 18,
+      "source_message_id": "std_57dd311899604ba084369b7b43aff494",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "AST SpaceMobile",
+          "ASTS"
+        ],
+        "occurrence_date": "2026-09-21",
+        "proposition": "AST SpaceMobile shares traded at approximately $61.81, up 6% in Monday morning trading on September 21, 2026.",
+        "subject_time": "Monday morning trading"
+      },
+      "candidate_index": 2,
+      "case_id": "case_7a876b401c574e218c64c17f9ee93a6a",
+      "created_at": "2026-09-21T15:50:36.352963Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E118",
+      "runtime_signature": "2c6b09c2191806946bf87d0eb995d786705f2d241108dd0bc82082af3c85675a",
+      "snapshot_version": 19,
+      "source_message_id": "std_57dd311899604ba084369b7b43aff494",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Procure Space ETF",
+          "UFO"
+        ],
+        "occurrence_date": "2026-09-21",
+        "proposition": "The Procure Space ETF traded at approximately $44.19, up 2% on September 21, 2026.",
+        "subject_time": "September 21, 2026 trading session"
+      },
+      "candidate_index": 3,
+      "case_id": "case_7a876b401c574e218c64c17f9ee93a6a",
+      "created_at": "2026-09-21T15:50:36.360133Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E119",
+      "runtime_signature": "c9e09cbd7157084f1906a0995d86f7fbe99aa34a3151ff84438598ed8f48162e",
+      "snapshot_version": 20,
+      "source_message_id": "std_57dd311899604ba084369b7b43aff494",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "SPDR S&P 500 ETF Trust",
+          "SPY"
+        ],
+        "occurrence_date": "2026-09-21",
+        "proposition": "The SPDR S&P 500 ETF Trust traded at approximately $770.32, up 1.13% on September 21, 2026.",
+        "subject_time": "September 21, 2026 trading session"
+      },
+      "candidate_index": 4,
+      "case_id": "case_7a876b401c574e218c64c17f9ee93a6a",
+      "created_at": "2026-09-21T15:50:36.369577Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E120",
+      "runtime_signature": "bf9611a32bf9c72335638a61d9339bb4499b9d5c81f687f1abf1a6d7a933eae2",
+      "snapshot_version": 21,
+      "source_message_id": "std_57dd311899604ba084369b7b43aff494",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "AST SpaceMobile",
+          "ASTS"
+        ],
+        "occurrence_date": null,
+        "proposition": "AST SpaceMobile has 13 spacecraft in orbit.",
+        "subject_time": null
+      },
+      "candidate_index": 0,
+      "case_id": "case_49740a92656e496782a24032b8029fcc",
+      "created_at": "2026-09-21T17:07:20.358966Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E121",
+      "runtime_signature": "994ae9da001d50459d8f62501f938d639906eed8f0571fd693ffbe15a35a536f",
+      "snapshot_version": 22,
+      "source_message_id": "std_444e2d7370ab4e8089a256876c1ec732",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLAN",
+        "entities": [
+          "AST SpaceMobile",
+          "ASTS"
+        ],
+        "occurrence_date": null,
+        "proposition": "AST SpaceMobile targets approximately 45 satellites by early 2027.",
+        "subject_time": "early 2027"
+      },
+      "candidate_index": 1,
+      "case_id": "case_49740a92656e496782a24032b8029fcc",
+      "created_at": "2026-09-21T17:07:20.379130Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E122",
+      "runtime_signature": "e37e8b1190a3c96c1d9c36f4e0fe185c868060ccfbfa70ef803551af8ff9577b",
+      "snapshot_version": 23,
+      "source_message_id": "std_444e2d7370ab4e8089a256876c1ec732",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "AST SpaceMobile",
+          "ASTS"
+        ],
+        "occurrence_date": null,
+        "proposition": "AST SpaceMobile reported Q2 2026 revenue of $31.52 million, below a $34.4 million estimate.",
+        "subject_time": "FY2026-Q2"
+      },
+      "candidate_index": 2,
+      "case_id": "case_49740a92656e496782a24032b8029fcc",
+      "created_at": "2026-09-21T17:07:20.392897Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E123",
+      "runtime_signature": "43c4f2c3602c5b474bb6f79506afdb2acd474969d37cb7cc989d59b3f39d3231",
+      "snapshot_version": 24,
+      "source_message_id": "std_444e2d7370ab4e8089a256876c1ec732",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "AST SpaceMobile",
+          "ASTS",
+          "BB7"
+        ],
+        "occurrence_date": null,
+        "proposition": "AST SpaceMobile's Q2 2026 GAAP results included a $125.9 million loss related to the BB7 launch incident.",
+        "subject_time": "FY2026-Q2"
+      },
+      "candidate_index": 3,
+      "case_id": "case_49740a92656e496782a24032b8029fcc",
+      "created_at": "2026-09-21T17:07:20.408549Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E124",
+      "runtime_signature": "c30de1873c3a98767b7e57139b94f8b95b8db349a317b9d254bcdaede575a2a0",
+      "snapshot_version": 25,
+      "source_message_id": "std_444e2d7370ab4e8089a256876c1ec732",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "GUIDANCE",
+        "entities": [
+          "AST SpaceMobile",
+          "ASTS"
+        ],
+        "occurrence_date": null,
+        "proposition": "AST SpaceMobile reaffirmed FY2026 revenue guidance of $150 million to $200 million.",
+        "subject_time": "FY2026"
+      },
+      "candidate_index": 4,
+      "case_id": "case_49740a92656e496782a24032b8029fcc",
+      "created_at": "2026-09-21T17:07:20.415123Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E125",
+      "runtime_signature": "bd7f8ef079c22c077042785f81ca9ac81d7ba1cc1d6b4e6a18e83db70c6c0f7c",
+      "snapshot_version": 26,
+      "source_message_id": "std_444e2d7370ab4e8089a256876c1ec732",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "AST SpaceMobile",
+          "ASTS"
+        ],
+        "occurrence_date": null,
+        "proposition": "AST SpaceMobile reported pro forma liquidity above $3.7 billion after a July convertible offering.",
+        "subject_time": "after the July 2026 convertible offering"
+      },
+      "candidate_index": 5,
+      "case_id": "case_49740a92656e496782a24032b8029fcc",
+      "created_at": "2026-09-21T17:07:20.422119Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E126",
+      "runtime_signature": "d452e81de6e0e1ce61e2dedbce91ef20a37f59c407eb3e8dc5962325293c7739",
+      "snapshot_version": 27,
+      "source_message_id": "std_444e2d7370ab4e8089a256876c1ec732",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "GUIDANCE",
+        "entities": [
+          "AST SpaceMobile",
+          "ASTS"
+        ],
+        "occurrence_date": null,
+        "proposition": "AST SpaceMobile targets approaching $1 billion of revenue in its first full year of commercial service, expected in 2027.",
+        "subject_time": "FY2027"
+      },
+      "candidate_index": 6,
+      "case_id": "case_49740a92656e496782a24032b8029fcc",
+      "created_at": "2026-09-21T17:07:20.430294Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E127",
+      "runtime_signature": "0bbff58c834b3e4570c88568ed9504bbe17c91121d35f0cc42a701f23e998719",
+      "snapshot_version": 28,
+      "source_message_id": "std_444e2d7370ab4e8089a256876c1ec732",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "AST SpaceMobile",
+          "ASTS"
+        ],
+        "occurrence_date": null,
+        "proposition": "AST SpaceMobile has approximately $1.3 billion of backlog and more than 60 mobile-network-operator partners representing over 3 billion subscribers.",
+        "subject_time": null
+      },
+      "candidate_index": 7,
+      "case_id": "case_49740a92656e496782a24032b8029fcc",
+      "created_at": "2026-09-21T17:07:20.436606Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E128",
+      "runtime_signature": "75608394d332d26d4d99b05c4d55ea8a035ffd5ba49058eff9c57aed69bd42c2",
+      "snapshot_version": 29,
+      "source_message_id": "std_444e2d7370ab4e8089a256876c1ec732",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLANNED",
+        "entities": [
+          "Globalstar",
+          "GSAT",
+          "Amazon"
+        ],
+        "occurrence_date": null,
+        "proposition": "Globalstar is pending a merger with Amazon.",
+        "subject_time": null
+      },
+      "candidate_index": 8,
+      "case_id": "case_49740a92656e496782a24032b8029fcc",
+      "created_at": "2026-09-21T17:07:20.442948Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E129",
+      "runtime_signature": "b99f115e4ddab8393d4fc005debdbc21514b1372267e928b5e65626509964b24",
+      "snapshot_version": 30,
+      "source_message_id": "std_444e2d7370ab4e8089a256876c1ec732",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "SpaceX",
+          "SPCX"
+        ],
+        "occurrence_date": null,
+        "proposition": "SpaceX priced its June 2026 IPO near a $2 trillion valuation and subsequently fell by roughly one-third.",
+        "subject_time": "since the June 2026 IPO"
+      },
+      "candidate_index": 0,
+      "case_id": "case_f3e194e6ac5443e3b1021a88c0fbbf78",
+      "created_at": "2026-09-21T19:09:55.746092Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E130",
+      "runtime_signature": "dc90063539129af43fbb38ef4db0c52aa6ea0036f5f56e2af17ac89406347c3e",
+      "snapshot_version": 31,
+      "source_message_id": "std_da707e3b050442dba5e15ba9c87d3d50",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "SpaceX",
+          "SPCX"
+        ],
+        "occurrence_date": "2026-08-04",
+        "proposition": "SpaceX's August 4, 2026 earnings report showed revenue of approximately $7.8 billion, up 92% year over year, and adjusted EBITDA up 191% year over year.",
+        "subject_time": "FY2026-Q2"
+      },
+      "candidate_index": 1,
+      "case_id": "case_f3e194e6ac5443e3b1021a88c0fbbf78",
+      "created_at": "2026-09-21T19:09:55.759675Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E131",
+      "runtime_signature": "74f6f06bf3e54524e5f6305545cdd28cc79d0dddf7a9bd9740a8f02b247c3886",
+      "snapshot_version": 32,
+      "source_message_id": "std_da707e3b050442dba5e15ba9c87d3d50",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "SpaceX",
+          "SPCX"
+        ],
+        "occurrence_date": "2026-08-04",
+        "proposition": "SpaceX spent approximately $18.37 billion on capex in the reported quarter, including $15.83 billion for AI compute.",
+        "subject_time": "FY2026-Q2"
+      },
+      "candidate_index": 2,
+      "case_id": "case_f3e194e6ac5443e3b1021a88c0fbbf78",
+      "created_at": "2026-09-21T19:09:55.775805Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E132",
+      "runtime_signature": "a32eeb935a913d6790b08a6598946856f5fd43bddcea1bfb3af4c16266c53cef",
+      "snapshot_version": 33,
+      "source_message_id": "std_da707e3b050442dba5e15ba9c87d3d50",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "GUIDANCE",
+        "entities": [
+          "SpaceX",
+          "SPCX"
+        ],
+        "occurrence_date": null,
+        "proposition": "SpaceX management guided to a $100 billion annualized revenue run rate by December 2026.",
+        "subject_time": "December 2026"
+      },
+      "candidate_index": 3,
+      "case_id": "case_f3e194e6ac5443e3b1021a88c0fbbf78",
+      "created_at": "2026-09-21T19:09:55.786739Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E133",
+      "runtime_signature": "02623d687aa45d9c0fd19704e50e8b6a37a0e2b103f26b7e3cc1a0e192312e7e",
+      "snapshot_version": 34,
+      "source_message_id": "std_da707e3b050442dba5e15ba9c87d3d50",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "SpaceX",
+          "SPCX"
+        ],
+        "occurrence_date": null,
+        "proposition": "SpaceX's AI segment generated approximately $2.6 billion of quarterly revenue, up 247% year over year.",
+        "subject_time": "reported quarter"
+      },
+      "candidate_index": 4,
+      "case_id": "case_f3e194e6ac5443e3b1021a88c0fbbf78",
+      "created_at": "2026-09-21T19:09:55.796555Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E134",
+      "runtime_signature": "2aa9862ee2bc1fa0b3ac6e57db84225ff52336b66e04dea70f48cdd82ce67876",
+      "snapshot_version": 35,
+      "source_message_id": "std_da707e3b050442dba5e15ba9c87d3d50",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "SpaceX",
+          "SPCX"
+        ],
+        "occurrence_date": null,
+        "proposition": "SpaceX added approximately $6.7 billion of cloud-services contracts in early Q3 2026.",
+        "subject_time": "early Q3 2026"
+      },
+      "candidate_index": 5,
+      "case_id": "case_f3e194e6ac5443e3b1021a88c0fbbf78",
+      "created_at": "2026-09-21T19:09:55.807276Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E135",
+      "runtime_signature": "dca66d9f2dfebd11d07620edd2db119a12da92e81b225db12956144d9f1e9e8b",
+      "snapshot_version": 36,
+      "source_message_id": "std_da707e3b050442dba5e15ba9c87d3d50",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLAN",
+        "entities": [
+          "SpaceX",
+          "SPCX"
+        ],
+        "occurrence_date": null,
+        "proposition": "SpaceX reached approximately 1.4 gigawatts of compute capacity and targets more than 2 gigawatts by year-end 2026.",
+        "subject_time": "year-end 2026"
+      },
+      "candidate_index": 6,
+      "case_id": "case_f3e194e6ac5443e3b1021a88c0fbbf78",
+      "created_at": "2026-09-21T19:09:55.825948Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E136",
+      "runtime_signature": "06311bb5bdfc7aac3f30255d102b3675876b99eef14437031622362853447637",
+      "snapshot_version": 37,
+      "source_message_id": "std_da707e3b050442dba5e15ba9c87d3d50",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Starlink",
+          "SpaceX",
+          "SPCX"
+        ],
+        "occurrence_date": null,
+        "proposition": "Starlink added approximately 1.7 million net subscribers and reached 167 markets.",
+        "subject_time": null
+      },
+      "candidate_index": 7,
+      "case_id": "case_f3e194e6ac5443e3b1021a88c0fbbf78",
+      "created_at": "2026-09-21T19:09:55.850742Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E137",
+      "runtime_signature": "4e70935207fe41e981b76559963608ef22889efa6c2f767c7dc7a8859f12f713",
+      "snapshot_version": 38,
+      "source_message_id": "std_da707e3b050442dba5e15ba9c87d3d50",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "SpaceX",
+          "SPCX",
+          "Wall Street analysts"
+        ],
+        "occurrence_date": null,
+        "proposition": "SpaceX analyst coverage was reported as 6 Strong Buy, 22 Buy, 5 Hold, 2 Sell, and 0 Strong Sell among 35 analysts.",
+        "subject_time": null
+      },
+      "candidate_index": 8,
+      "case_id": "case_f3e194e6ac5443e3b1021a88c0fbbf78",
+      "created_at": "2026-09-21T19:09:55.878364Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E138",
+      "runtime_signature": "77d4e2e91c6ce67c6be013918bc52dc68fa5b5c505ed95393ee3c4f6d1e1a344",
+      "snapshot_version": 39,
+      "source_message_id": "std_da707e3b050442dba5e15ba9c87d3d50",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Rocket Lab",
+          "RKLB"
+        ],
+        "occurrence_date": "2026-09-21",
+        "proposition": "Rocket Lab shares traded at approximately $64.57, down 14.86% over the past month, down 7.44% year to date, and up 36.86% over one year.",
+        "subject_time": "September 21, 2026 market snapshot"
+      },
+      "candidate_index": 9,
+      "case_id": "case_f3e194e6ac5443e3b1021a88c0fbbf78",
+      "created_at": "2026-09-21T19:09:55.899362Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E139",
+      "runtime_signature": "900e3d605f4dc829d0a73c7117280128bd1ad49a5d746a54c188fcedf81f25a5",
+      "snapshot_version": 40,
+      "source_message_id": "std_da707e3b050442dba5e15ba9c87d3d50",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Redwire",
+          "RDW"
+        ],
+        "occurrence_date": "2026-09-21",
+        "proposition": "Redwire shares traded at approximately $11.66, up 9% in Monday midday trading on September 21, 2026.",
+        "subject_time": "Monday midday trading"
+      },
+      "candidate_index": 0,
+      "case_id": "case_f774db7b9c004b008df633874c1c8d74",
+      "created_at": "2026-09-21T19:10:50.886154Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E140",
+      "runtime_signature": "4f242d0c543426ea774f9a23ac96bd567f182d957c00862b7f4b77bb7dc096dd",
+      "snapshot_version": 41,
+      "source_message_id": "std_00a04b7f053c4c9f92ad4025b757ba71",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Redwire",
+          "RDW"
+        ],
+        "occurrence_date": null,
+        "proposition": "Redwire shares were down approximately 3% over the past month.",
+        "subject_time": "past month"
+      },
+      "candidate_index": 1,
+      "case_id": "case_f774db7b9c004b008df633874c1c8d74",
+      "created_at": "2026-09-21T19:10:50.894060Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E141",
+      "runtime_signature": "db2c1a00fca2f62fff37a355a61f2277394f62febb5b630c917bf8823a4033ce",
+      "snapshot_version": 42,
+      "source_message_id": "std_00a04b7f053c4c9f92ad4025b757ba71",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "SPDR S&P 500 ETF Trust",
+          "SPY"
+        ],
+        "occurrence_date": null,
+        "proposition": "The SPDR S&P 500 ETF Trust traded at approximately $774.39, up 1% over the past month.",
+        "subject_time": "past month"
+      },
+      "candidate_index": 2,
+      "case_id": "case_f774db7b9c004b008df633874c1c8d74",
+      "created_at": "2026-09-21T19:10:50.900651Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E142",
+      "runtime_signature": "dde17cc24fde78b6a86706be0596ad1c76575c3d9eea98f02eaca20f9ef2181a",
+      "snapshot_version": 43,
+      "source_message_id": "std_00a04b7f053c4c9f92ad4025b757ba71",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Procure Space ETF",
+          "UFO"
+        ],
+        "occurrence_date": null,
+        "proposition": "The Procure Space ETF traded at approximately $44.24, down 5% over the past month.",
+        "subject_time": "past month"
+      },
+      "candidate_index": 3,
+      "case_id": "case_f774db7b9c004b008df633874c1c8d74",
+      "created_at": "2026-09-21T19:10:50.906686Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E143",
+      "runtime_signature": "65e2d5ad47f1a32d831c81b42861675d5455bc2b3ef1c62026aa4b4cae7d2514",
+      "snapshot_version": 44,
+      "source_message_id": "std_00a04b7f053c4c9f92ad4025b757ba71",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Rocket Lab",
+          "RKLB"
+        ],
+        "occurrence_date": null,
+        "proposition": "Rocket Lab shares traded at approximately $69.81, down 8% over the past month.",
+        "subject_time": "past month"
+      },
+      "candidate_index": 4,
+      "case_id": "case_f774db7b9c004b008df633874c1c8d74",
+      "created_at": "2026-09-21T19:10:50.913452Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E144",
+      "runtime_signature": "b9469c5a1ef73f346124a30ab1d566b836189dd6472e92a3bf1087dff6dc6f9b",
+      "snapshot_version": 45,
+      "source_message_id": "std_00a04b7f053c4c9f92ad4025b757ba71",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Intuitive Machines",
+          "LUNR"
+        ],
+        "occurrence_date": null,
+        "proposition": "Intuitive Machines shares traded at approximately $15.64, down 16% over the past month.",
+        "subject_time": "past month"
+      },
+      "candidate_index": 5,
+      "case_id": "case_f774db7b9c004b008df633874c1c8d74",
+      "created_at": "2026-09-21T19:10:50.919953Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E145",
+      "runtime_signature": "2f13d41eafc61fa29c40f4862b4ec88be8f293811bd0ca73f601661d2c654477",
+      "snapshot_version": 46,
+      "source_message_id": "std_00a04b7f053c4c9f92ad4025b757ba71",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Archer Aviation",
+          "ACHR",
+          "Rocket Lab",
+          "RKLB"
+        ],
+        "occurrence_date": "2026-09-21",
+        "proposition": "Archer Aviation shares traded approximately 3.23% higher and Rocket Lab shares approximately 6.91% higher in the reported September 21, 2026 session.",
+        "subject_time": "September 21, 2026 trading session"
+      },
+      "candidate_index": 0,
+      "case_id": "case_bcca55b767684fd2a418cace3bf18e3d",
+      "created_at": "2026-09-21T19:37:28.721237Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E146",
+      "runtime_signature": "a8baa67d69d6a65e330de83ab135945130e2bf637f275e58e1b5273033ff19fd",
+      "snapshot_version": 47,
+      "source_message_id": "std_a02c2a0159ee4bd7b9fb65a5c51073c8",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Archer Aviation",
+          "ACHR",
+          "United Airlines"
+        ],
+        "occurrence_date": null,
+        "proposition": "Archer Aviation has a conditional purchase agreement with United Airlines for up to $1.5 billion of aircraft, contingent on regulatory milestones.",
+        "subject_time": null
+      },
+      "candidate_index": 1,
+      "case_id": "case_bcca55b767684fd2a418cace3bf18e3d",
+      "created_at": "2026-09-21T19:37:28.729783Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E147",
+      "runtime_signature": "ba476511bbe5315fbc89b00d806eb175ad376c42c050d4accaaeddaefe94ec9a",
+      "snapshot_version": 48,
+      "source_message_id": "std_a02c2a0159ee4bd7b9fb65a5c51073c8",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Archer Aviation",
+          "ACHR"
+        ],
+        "occurrence_date": null,
+        "proposition": "Archer Aviation reported FY2025 revenue of approximately $300,000.",
+        "subject_time": "FY2025"
+      },
+      "candidate_index": 2,
+      "case_id": "case_bcca55b767684fd2a418cace3bf18e3d",
+      "created_at": "2026-09-21T19:37:28.738819Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E148",
+      "runtime_signature": "9a9d501611127b9974cf5af04946be066168e6439d8a7736d9a2972eca3e0138",
+      "snapshot_version": 49,
+      "source_message_id": "std_a02c2a0159ee4bd7b9fb65a5c51073c8",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Archer Aviation",
+          "ACHR"
+        ],
+        "occurrence_date": null,
+        "proposition": "Archer Aviation reported a FY2025 net loss of approximately $618.2 million.",
+        "subject_time": "FY2025"
+      },
+      "candidate_index": 3,
+      "case_id": "case_bcca55b767684fd2a418cace3bf18e3d",
+      "created_at": "2026-09-21T19:37:28.747433Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E149",
+      "runtime_signature": "5e16f1f3e342ffcb6f2a22528f52ea6525f60742e366a89fd779ae74be3fdd2c",
+      "snapshot_version": 50,
+      "source_message_id": "std_a02c2a0159ee4bd7b9fb65a5c51073c8",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Archer Aviation",
+          "ACHR"
+        ],
+        "occurrence_date": null,
+        "proposition": "Archer Aviation reported free cash flow of approximately negative $511.7 million for FY2025.",
+        "subject_time": "FY2025"
+      },
+      "candidate_index": 4,
+      "case_id": "case_bcca55b767684fd2a418cace3bf18e3d",
+      "created_at": "2026-09-21T19:37:28.756321Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E150",
+      "runtime_signature": "4f8054d60cea265f2610e6898ebd6b237cd8619074dbe8fc5967df417a623f18",
+      "snapshot_version": 51,
+      "source_message_id": "std_a02c2a0159ee4bd7b9fb65a5c51073c8",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Rocket Lab",
+          "RKLB"
+        ],
+        "occurrence_date": null,
+        "proposition": "Rocket Lab reported FY2025 revenue of approximately $601.8 million, up 38% year over year.",
+        "subject_time": "FY2025"
+      },
+      "candidate_index": 5,
+      "case_id": "case_bcca55b767684fd2a418cace3bf18e3d",
+      "created_at": "2026-09-21T19:37:28.765133Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E151",
+      "runtime_signature": "d5e1c3d8b745cc42b1c10ae1181e73c872d3f9c536749ad6f11fd5ddf2cd194d",
+      "snapshot_version": 52,
+      "source_message_id": "std_a02c2a0159ee4bd7b9fb65a5c51073c8",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Rocket Lab",
+          "RKLB"
+        ],
+        "occurrence_date": null,
+        "proposition": "Rocket Lab reported a FY2025 net loss of approximately $198.2 million.",
+        "subject_time": "FY2025"
+      },
+      "candidate_index": 6,
+      "case_id": "case_bcca55b767684fd2a418cace3bf18e3d",
+      "created_at": "2026-09-21T19:37:28.775360Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E152",
+      "runtime_signature": "3b41d5523bd0b4abb7195843db8666049782479537a3508b69012c06050ec84b",
+      "snapshot_version": 53,
+      "source_message_id": "std_a02c2a0159ee4bd7b9fb65a5c51073c8",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Rocket Lab",
+          "RKLB"
+        ],
+        "occurrence_date": null,
+        "proposition": "Rocket Lab reported FY2025 free cash flow of approximately negative $321.8 million.",
+        "subject_time": "FY2025"
+      },
+      "candidate_index": 7,
+      "case_id": "case_bcca55b767684fd2a418cace3bf18e3d",
+      "created_at": "2026-09-21T19:37:28.784000Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E153",
+      "runtime_signature": "667debb545d8602ba2fa895524702df19ef972df1b647f43d690b6ca3424d151",
+      "snapshot_version": 54,
+      "source_message_id": "std_a02c2a0159ee4bd7b9fb65a5c51073c8",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Rocket Lab",
+          "RKLB"
+        ],
+        "occurrence_date": "2026-09-21",
+        "proposition": "Rocket Lab shares advanced approximately 8.2% to $69.89 in the September 21, 2026 trading session.",
+        "subject_time": "September 21, 2026 trading session"
+      },
+      "candidate_index": 0,
+      "case_id": "case_3bc7823740944850b6c005247404a2e0",
+      "created_at": "2026-09-21T20:19:25.089473Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E154",
+      "runtime_signature": "faf4995348cafeeea026bc422e771ea7f6dfb38ffc8b2ab47f882eb170183a22",
+      "snapshot_version": 55,
+      "source_message_id": "std_b7b4ee5281694c8f9e3edc1ead10870c",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "SpaceX",
+          "SPCX",
+          "AST SpaceMobile",
+          "ASTS",
+          "Planet Labs",
+          "PL"
+        ],
+        "occurrence_date": "2026-09-21",
+        "proposition": "SpaceX shares fell approximately 0.9% while AST SpaceMobile shares gained approximately 5.8% and Planet Labs shares gained approximately 3.9% in the reported session.",
+        "subject_time": "September 21, 2026 trading session"
+      },
+      "candidate_index": 1,
+      "case_id": "case_3bc7823740944850b6c005247404a2e0",
+      "created_at": "2026-09-21T20:19:25.095823Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E155",
+      "runtime_signature": "2dcd62a6364ef572493701045635036fd099b310428913fb367d402f65fb1339",
+      "snapshot_version": 56,
+      "source_message_id": "std_b7b4ee5281694c8f9e3edc1ead10870c",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-21"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "SPDR S&P 500 ETF Trust",
+          "SPY"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "The SPDR S&P 500 ETF Trust (SPY) was up approximately 0.1% in pre-bell trading on September 22, 2026.",
+        "subject_time": "pre-bell trading"
+      },
+      "candidate_index": 0,
+      "case_id": "case_c58a295fde584813b4053c3baa7d9b2b",
+      "created_at": "2026-09-22T13:21:48.319416Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E156",
+      "runtime_signature": "c0593bf28673d5899dda751dea9333613eab2e5bf7478d74ec2c79487eae8824",
+      "snapshot_version": 1,
+      "source_message_id": "std_893c743c2614494fa8929c43f1e1ab91",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "U.S. equity futures"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "U.S. equity futures were higher before the market opened on September 22, 2026.",
+        "subject_time": "pre-bell trading"
+      },
+      "candidate_index": 1,
+      "case_id": "case_c58a295fde584813b4053c3baa7d9b2b",
+      "created_at": "2026-09-22T13:21:48.335968Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E157",
+      "runtime_signature": "008b3cb4f808ce19e3c889fc92861488464749ebac427ed885aac76cab461703",
+      "snapshot_version": 2,
+      "source_message_id": "std_893c743c2614494fa8929c43f1e1ab91",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "oil market"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "Oil prices declined in pre-bell trading on September 22, 2026.",
+        "subject_time": "pre-bell trading"
+      },
+      "candidate_index": 2,
+      "case_id": "case_c58a295fde584813b4053c3baa7d9b2b",
+      "created_at": "2026-09-22T13:21:48.361085Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E158",
+      "runtime_signature": "d4c3e42273a572487722fb83fcb2dd5beb31e9762de20e859bb913d16617b7fa",
+      "snapshot_version": 3,
+      "source_message_id": "std_893c743c2614494fa8929c43f1e1ab91",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Rocket Lab",
+          "RKLB"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "Rocket Lab shares were trading at approximately $71.89 on September 22, 2026.",
+        "subject_time": "at article publication"
+      },
+      "candidate_index": 0,
+      "case_id": "case_ae098ed621264f05bc944f61b42cc9fb",
+      "created_at": "2026-09-22T16:28:19.044513Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E159",
+      "runtime_signature": "b23aca4fc093951a6e45accca9ac7a0542096b9cbc88291ce0dfb7c23c4d1df0",
+      "snapshot_version": 4,
+      "source_message_id": "std_d440a09298eb453ba379b25994f0f540",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Rocket Lab",
+          "RKLB",
+          "S&P 500"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "Rocket Lab shares had gained approximately 5.7% over the prior six months, versus an approximately 16.2% gain for the S&P 500.",
+        "subject_time": "six-month period ending September 22, 2026"
+      },
+      "candidate_index": 1,
+      "case_id": "case_ae098ed621264f05bc944f61b42cc9fb",
+      "created_at": "2026-09-22T16:28:19.051238Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E160",
+      "runtime_signature": "55f97e3549770babb220e8ec8ad605aea4ce64be7fe46c179b9497991a496758",
+      "snapshot_version": 5,
+      "source_message_id": "std_d440a09298eb453ba379b25994f0f540",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Rocket Lab",
+          "RKLB"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "Rocket Lab's revenue had grown at an approximately 68.9% compounded annual rate over the prior five years.",
+        "subject_time": "prior five years"
+      },
+      "candidate_index": 2,
+      "case_id": "case_ae098ed621264f05bc944f61b42cc9fb",
+      "created_at": "2026-09-22T16:28:19.060657Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E161",
+      "runtime_signature": "56213ed9f6c14fc21b8654b37a7a37d0a08bdaa240946ea88edb4cd149d66edd",
+      "snapshot_version": 6,
+      "source_message_id": "std_d440a09298eb453ba379b25994f0f540",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Rocket Lab",
+          "RKLB"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "Rocket Lab's free-cash-flow margin had expanded by approximately 59.4 percentage points over the prior five years.",
+        "subject_time": "prior five years"
+      },
+      "candidate_index": 3,
+      "case_id": "case_ae098ed621264f05bc944f61b42cc9fb",
+      "created_at": "2026-09-22T16:28:19.070573Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E162",
+      "runtime_signature": "085ac51bb6c3be25223d4bed24be78e41ffa02b44d75374fe2042559635dffa7",
+      "snapshot_version": 7,
+      "source_message_id": "std_d440a09298eb453ba379b25994f0f540",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Rocket Lab",
+          "RKLB"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "Rocket Lab's trailing-twelve-month free-cash-flow margin was approximately negative 48.3%.",
+        "subject_time": "trailing twelve months"
+      },
+      "candidate_index": 4,
+      "case_id": "case_ae098ed621264f05bc944f61b42cc9fb",
+      "created_at": "2026-09-22T16:28:19.079757Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E163",
+      "runtime_signature": "25d809870f3600afae844784ed9a71900494393419ad9f8ff1e531bc5186b938",
+      "snapshot_version": 8,
+      "source_message_id": "std_d440a09298eb453ba379b25994f0f540",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Rocket Lab",
+          "RKLB"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "Rocket Lab's return on invested capital had increased over the prior few years.",
+        "subject_time": "prior few years"
+      },
+      "candidate_index": 5,
+      "case_id": "case_ae098ed621264f05bc944f61b42cc9fb",
+      "created_at": "2026-09-22T16:28:19.087269Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E164",
+      "runtime_signature": "f291e8249a57ae1a3d4445bc7fd7fa8a459a5f0cd3ee07fb72208bbc8b5b4021",
+      "snapshot_version": 9,
+      "source_message_id": "std_d440a09298eb453ba379b25994f0f540",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Rocket Lab",
+          "RKLB"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "Rocket Lab was reported to trade at approximately 2,869.8 times forward earnings.",
+        "subject_time": "forward earnings period"
+      },
+      "candidate_index": 6,
+      "case_id": "case_ae098ed621264f05bc944f61b42cc9fb",
+      "created_at": "2026-09-22T16:28:19.095883Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E165",
+      "runtime_signature": "2373b93c8a58f9fd9f0e9f482074a4b5db5022dac8c4d777c1f30af8f8908293",
+      "snapshot_version": 10,
+      "source_message_id": "std_d440a09298eb453ba379b25994f0f540",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Rocket Lab",
+          "RKLB"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "Rocket Lab shares rose approximately 2.2% to $71.45 on September 22, 2026.",
+        "subject_time": "current trading session"
+      },
+      "candidate_index": 0,
+      "case_id": "case_9ac52592e7744107bd0cb7c6cd015c38",
+      "created_at": "2026-09-22T17:09:54.313530Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E166",
+      "runtime_signature": "18505fbe95740a9bc6f51a621c2b6230cb5d5967ad8bce638b6e24739fcf4366",
+      "snapshot_version": 11,
+      "source_message_id": "std_6d11166f7b4c4f4293affb8a37152188",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Rocket Lab",
+          "RKLB"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "Rocket Lab shares bounced from technical support near $60 during the September 22, 2026 trading session.",
+        "subject_time": "current trading session"
+      },
+      "candidate_index": 1,
+      "case_id": "case_9ac52592e7744107bd0cb7c6cd015c38",
+      "created_at": "2026-09-22T17:09:54.322695Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E167",
+      "runtime_signature": "0d18a608e04d1e899d49761c16fe78ab67889012ad6c90acd0aa9dc6030e6ab4",
+      "snapshot_version": 12,
+      "source_message_id": "std_6d11166f7b4c4f4293affb8a37152188",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Rocket Lab",
+          "RKLB",
+          "50-day moving average"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "Rocket Lab shares crossed above their 50-day moving average on September 22, 2026.",
+        "subject_time": "current trading session"
+      },
+      "candidate_index": 2,
+      "case_id": "case_9ac52592e7744107bd0cb7c6cd015c38",
+      "created_at": "2026-09-22T17:09:54.333291Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E168",
+      "runtime_signature": "6f0d7d3d32fdd30159f7cff505416af923b69eea56a1b60ab1b5f8a23b0150a7",
+      "snapshot_version": 13,
+      "source_message_id": "std_6d11166f7b4c4f4293affb8a37152188",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Rocket Lab",
+          "RKLB",
+          "Schaeffer's"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "Over the prior 10 years, the same crossover signal occurred eight other times; Rocket Lab shares were higher one month later in 88% of those cases, with an average gain of 16.8%.",
+        "subject_time": "historical 10-year crossover sample"
+      },
+      "candidate_index": 3,
+      "case_id": "case_9ac52592e7744107bd0cb7c6cd015c38",
+      "created_at": "2026-09-22T17:09:54.339398Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E169",
+      "runtime_signature": "9a5726cbc6e262375c51bf98750e7eb72a1bf607bf793ed96333b64f8e350788",
+      "snapshot_version": 14,
+      "source_message_id": "std_6d11166f7b4c4f4293affb8a37152188",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Rocket Lab",
+          "RKLB",
+          "Schaeffer's Volatility Index"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "Rocket Lab's Schaeffer's Volatility Index was 70%, in the low 10th percentile of its annual range.",
+        "subject_time": "annual volatility range as of September 22, 2026"
+      },
+      "candidate_index": 4,
+      "case_id": "case_9ac52592e7744107bd0cb7c6cd015c38",
+      "created_at": "2026-09-22T17:09:54.345786Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E170",
+      "runtime_signature": "d138ee6cc44a03a2066acb1f426d2df476204fc7c3f21a10760c80f27311b82f",
+      "snapshot_version": 15,
+      "source_message_id": "std_6d11166f7b4c4f4293affb8a37152188",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Rocket Lab",
+          "RKLB",
+          "Schaeffer's Volatility Scorecard"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "Rocket Lab's Schaeffer's Volatility Scorecard was 97 out of 100.",
+        "subject_time": "preceding year"
+      },
+      "candidate_index": 5,
+      "case_id": "case_9ac52592e7744107bd0cb7c6cd015c38",
+      "created_at": "2026-09-22T17:09:54.351703Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E171",
+      "runtime_signature": "6daa717927ce0efc0a4b1a7eaed6c0fa83b673f82f45a465ff416400cd669cbd",
+      "snapshot_version": 16,
+      "source_message_id": "std_6d11166f7b4c4f4293affb8a37152188",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Rocket Lab",
+          "RKLB"
+        ],
+        "occurrence_date": null,
+        "proposition": "Rocket Lab的backlog已超过20亿美元。",
+        "subject_time": "截至文章发布时"
+      },
+      "candidate_index": 0,
+      "case_id": "case_d94215465b5e4d089de993ff80161ba3",
+      "created_at": "2026-09-22T17:43:22.349519Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E172",
+      "runtime_signature": "4d2c960b2a90ae3a43c2ecad9ef4df139bfb2fc354ac1c30fab92fe57a646d25",
+      "snapshot_version": 17,
+      "source_message_id": "std_9303f23db0cc4e129c2bb682c9c9deba",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Rocket Lab",
+          "RKLB"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "Rocket Lab股价于2026年9月22日收于71.98美元，较前一交易日上涨约2.99%。",
+        "subject_time": "2026-09-22 trading session"
+      },
+      "candidate_index": 0,
+      "case_id": "case_b727485edf4d40e4a6b1857c624363ed",
+      "created_at": "2026-09-22T22:29:45.408220Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E173",
+      "runtime_signature": "1f08f5ae3fe11bd001daba2902c9eb417f376a0cc7f3932356514b0c57a0bec3",
+      "snapshot_version": 22,
+      "source_message_id": "std_729dcaa832034fc4b6506d26e0e166ef",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "Rocket Lab",
+          "RKLB",
+          "Zacks Investment Research"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "Zacks对Rocket Lab即将公布季度的共识每股收益预测为亏损0.02美元。",
+        "subject_time": "forthcoming quarterly earnings report"
+      },
+      "candidate_index": 1,
+      "case_id": "case_b727485edf4d40e4a6b1857c624363ed",
+      "created_at": "2026-09-22T22:29:45.421405Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E174",
+      "runtime_signature": "cbe043aa85097764a37108a43a54a52eebd544adde0015d563c4a35fa9bddbae",
+      "snapshot_version": 23,
+      "source_message_id": "std_729dcaa832034fc4b6506d26e0e166ef",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "Rocket Lab",
+          "RKLB",
+          "Zacks Investment Research"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "Zacks对Rocket Lab即将公布季度的共识收入预测为2.5589亿美元。",
+        "subject_time": "forthcoming quarterly earnings report"
+      },
+      "candidate_index": 2,
+      "case_id": "case_b727485edf4d40e4a6b1857c624363ed",
+      "created_at": "2026-09-22T22:29:45.435264Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E175",
+      "runtime_signature": "05d3ea909417b1049c3293b388f3cd715655e88a07720304ea7cca13f7ef84ba",
+      "snapshot_version": 24,
+      "source_message_id": "std_729dcaa832034fc4b6506d26e0e166ef",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "Rocket Lab",
+          "RKLB",
+          "Zacks Investment Research"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "Zacks预计Rocket Lab全年每股收益为亏损0.05美元。",
+        "subject_time": "current full fiscal year"
+      },
+      "candidate_index": 3,
+      "case_id": "case_b727485edf4d40e4a6b1857c624363ed",
+      "created_at": "2026-09-22T22:29:45.447709Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E176",
+      "runtime_signature": "ae93415c25876f60ebe407694019b9e4f254d2df828cd4a8ce3cecfc0bf472b5",
+      "snapshot_version": 25,
+      "source_message_id": "std_729dcaa832034fc4b6506d26e0e166ef",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "Rocket Lab",
+          "RKLB",
+          "Zacks Investment Research"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "Zacks预计Rocket Lab全年收入为9.4503亿美元。",
+        "subject_time": "current full fiscal year"
+      },
+      "candidate_index": 4,
+      "case_id": "case_b727485edf4d40e4a6b1857c624363ed",
+      "created_at": "2026-09-22T22:29:45.453576Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E177",
+      "runtime_signature": "5056041e3c726f2c5c913d274195ad6ad613dc04afa079420a37c0b9c9dea8d6",
+      "snapshot_version": 26,
+      "source_message_id": "std_729dcaa832034fc4b6506d26e0e166ef",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Rocket Lab",
+          "RKLB",
+          "Zacks Investment Research"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "Rocket Lab的Zacks共识每股收益预测在截至2026年9月22日的过去30天内保持不变。",
+        "subject_time": "30-day period ending 2026-09-22"
+      },
+      "candidate_index": 5,
+      "case_id": "case_b727485edf4d40e4a6b1857c624363ed",
+      "created_at": "2026-09-22T22:29:45.461951Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E178",
+      "runtime_signature": "61dfbbdb0966079c2a0728918d3deaf08dc2c9c760fe6690d370e2d12eeebc3f",
+      "snapshot_version": 27,
+      "source_message_id": "std_729dcaa832034fc4b6506d26e0e166ef",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "StockStory",
+          "Rocket Lab",
+          "RKLB"
+        ],
+        "occurrence_date": "2026-09-23",
+        "proposition": "StockStory published an investment recommendation placing Rocket Lab on its buy list.",
+        "subject_time": "2026-09-23 investment recommendation"
+      },
+      "candidate_index": 0,
+      "case_id": "case_0bb833a4bec44727a2980c0293ab397d",
+      "created_at": "2026-09-23T08:07:27.753253Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E179",
+      "runtime_signature": "6b3debef860fffc26cb3c3e99616ed1284bc4c7546ef5e3d2b457a0b16cfc403",
+      "snapshot_version": 1,
+      "source_message_id": "std_b2e8c4f4a3424718bb26505180794639",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-23"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "ARK Invest",
+          "ARKK",
+          "ARKQ",
+          "ARKX",
+          "Rocket Lab",
+          "RKLB"
+        ],
+        "occurrence_date": "2026-09-23",
+        "proposition": "ARK Invest purchased 359,612 Rocket Lab shares worth approximately $25.7 million across the ARKK, ARKQ, and ARKX ETFs, described as its largest transaction of the day.",
+        "subject_time": "2026-09-23 trading session"
+      },
+      "candidate_index": 0,
+      "case_id": "case_f0d5b03f04be44c9b4217cc954beddf0",
+      "created_at": "2026-09-23T11:43:16.644943Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E180",
+      "runtime_signature": "25702d8fce9167d400fdbe13bdc492d381e0c7c05065b7d094b9dafad5b6cd93",
+      "snapshot_version": 2,
+      "source_message_id": "std_dad696d161544a67845ad0d5e2ed1a01",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-23"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "ARK Invest",
+          "Alphabet",
+          "GOOGL"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "ARK Invest sold 16,422 Alphabet (GOOGL) shares worth approximately $5.8 million through two ARK ETFs.",
+        "subject_time": "Tuesday trading session disclosed in the article"
+      },
+      "candidate_index": 0,
+      "case_id": "case_2ef43ac464484743b5440ffd5298fca0",
+      "created_at": "2026-09-23T12:31:08.014846Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E181",
+      "runtime_signature": "e0cde59d7588c4f5e6425bf64bf19e61568971b97d8b4dc6ec61b9ac848abeac",
+      "snapshot_version": 3,
+      "source_message_id": "std_30e5f47fac9140d7b9fe61a035627eaa",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-23"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "ARK Invest",
+          "Rocket Lab",
+          "RKLB"
+        ],
+        "occurrence_date": "2026-09-23",
+        "proposition": "ARK Invest purchased approximately $25 million of Rocket Lab stock on the reported 2026-09-23 trading session.",
+        "subject_time": "2026-09-23 trading session"
+      },
+      "candidate_index": 0,
+      "case_id": "case_9ec4acc3f3804dc4b37a8a50ff0c3250",
+      "created_at": "2026-09-23T12:46:27.218496Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E182",
+      "runtime_signature": "f7c48a0ad1452ce2bbd2c6dac0db8b5757ce0b80ee9af0a8008612879c0282f8",
+      "snapshot_version": 4,
+      "source_message_id": "std_c276f85c027f4ce9b32f662102508ff2",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-23"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Chartmill",
+          "space industry stocks"
+        ],
+        "occurrence_date": "2026-09-23",
+        "proposition": "Chartmill reported that the market-cap-weighted space-stock group returned 14.0% over one month versus 1.4% on an equal-weighted basis, while one-week returns were 8.0% weighted versus 10.3% equal-weighted.",
+        "subject_time": "reported one-week and one-month space-stock performance windows"
+      },
+      "candidate_index": 0,
+      "case_id": "case_c6700ac748c34ce6a0f63fec53e618ae",
+      "created_at": "2026-09-23T12:55:37.802740Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E183",
+      "runtime_signature": "ac30148e22f9a0b91d6471e89381c43e99bea6fbaa8c1339a0e3fcc9ed97e945",
+      "snapshot_version": 5,
+      "source_message_id": "std_b59a4ec9fd874d46a36204cb4edc0dfd",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-23"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Chartmill",
+          "Rocket Lab",
+          "RKLB"
+        ],
+        "occurrence_date": "2026-09-23",
+        "proposition": "Chartmill reported Rocket Lab shares up 13.3% over one week and 5.4% over one month, with a relative-strength reading of 85.45.",
+        "subject_time": "reported one-week and one-month RKLB performance windows"
+      },
+      "candidate_index": 1,
+      "case_id": "case_c6700ac748c34ce6a0f63fec53e618ae",
+      "created_at": "2026-09-23T12:55:37.808837Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E184",
+      "runtime_signature": "3294c515effa1518b4f68f25797ac4647cf3df25ca0846c70745320d069b51c1",
+      "snapshot_version": 6,
+      "source_message_id": "std_b59a4ec9fd874d46a36204cb4edc0dfd",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-23"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "BlackSky Technology",
+          "BKSY",
+          "Gen-3 satellite"
+        ],
+        "occurrence_date": "2026-09-14",
+        "proposition": "BlackSky announced that its fifth Gen-3 satellite produced and processed its first imagery less than 20 hours after launch, adding 35-centimeter imaging capacity to its constellation.",
+        "subject_time": "less than 20 hours after the satellite's launch"
+      },
+      "candidate_index": 0,
+      "case_id": "case_69db6537121347df92fb5c6c9bf798e7",
+      "created_at": "2026-09-23T14:31:16.599813Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E185",
+      "runtime_signature": "6cd889403fe50b698de215f73d9fd11507fad7a14b20612e551f9561e470d039",
+      "snapshot_version": 7,
+      "source_message_id": "std_4c08e430bb4043b99bcb68f0060cb9bc",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-23"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLANNED",
+        "entities": [
+          "BlackSky Technology",
+          "BKSY",
+          "Gen-3 satellites"
+        ],
+        "occurrence_date": "2026-09-14",
+        "proposition": "BlackSky said additional Gen-3 satellites were planned for orbit by the end of 2026.",
+        "subject_time": "by 2026-12-31"
+      },
+      "candidate_index": 1,
+      "case_id": "case_69db6537121347df92fb5c6c9bf798e7",
+      "created_at": "2026-09-23T14:31:16.612513Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E186",
+      "runtime_signature": "528cd1204b27490026e757035a28f9ff96e8ac44fc26c938192e0719be0e9089",
+      "snapshot_version": 8,
+      "source_message_id": "std_4c08e430bb4043b99bcb68f0060cb9bc",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-23"
+    },
+    {
+      "candidate": {
+        "assertion_state": "GUIDANCE",
+        "entities": [
+          "Rocket Lab",
+          "RKLB",
+          "Neutron"
+        ],
+        "occurrence_date": "2026-08-10",
+        "proposition": "Rocket Lab management stated that early Neutron launch manifests had seen no significant discounting at a planned price of approximately $50 million to $55 million per launch.",
+        "subject_time": "early Neutron launch manifests"
+      },
+      "candidate_index": 0,
+      "case_id": "case_f9f295628d684ce0bdf781e3ae9a5b55",
+      "created_at": "2026-09-23T14:56:32.781901Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E187",
+      "runtime_signature": "36e7f03fdc983b84cc705f7966073405590c8433589caba4c78f5555692913b6",
+      "snapshot_version": 9,
+      "source_message_id": "std_dc912c752f504468bf8b8f1b08778fa5",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-23"
+    },
+    {
+      "candidate": {
+        "assertion_state": "EXPECTED",
+        "entities": [
+          "Rocket Lab",
+          "RKLB",
+          "Neutron"
+        ],
+        "occurrence_date": "2026-08-10",
+        "proposition": "Rocket Lab management stated that demand for Neutron was already very high before its first flight.",
+        "subject_time": "pre-first-flight Neutron demand"
+      },
+      "candidate_index": 1,
+      "case_id": "case_f9f295628d684ce0bdf781e3ae9a5b55",
+      "created_at": "2026-09-23T14:56:32.805395Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E188",
+      "runtime_signature": "927785fbd546913c2bb0570b91564f8fcb90a96410c0c5d91963c5b8aa066a80",
+      "snapshot_version": 10,
+      "source_message_id": "std_dc912c752f504468bf8b8f1b08778fa5",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-23"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "Rocket Lab",
+          "RKLB"
+        ],
+        "occurrence_date": "2026-08-10",
+        "proposition": "Management expected approximately 45.5% of Rocket Lab's Q2 backlog to convert into revenue within twelve months.",
+        "subject_time": "twelve months following Q2 2026"
+      },
+      "candidate_index": 2,
+      "case_id": "case_f9f295628d684ce0bdf781e3ae9a5b55",
+      "created_at": "2026-09-23T14:56:32.827875Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E189",
+      "runtime_signature": "9ff0e29feba54e4cef73e976f400d4414ee495047c542bfeab31535dff183cf6",
+      "snapshot_version": 11,
+      "source_message_id": "std_dc912c752f504468bf8b8f1b08778fa5",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-23"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLANNED",
+        "entities": [
+          "Rocket Lab",
+          "RKLB",
+          "Neutron"
+        ],
+        "occurrence_date": "2026-08-10",
+        "proposition": "Rocket Lab targeted delivery of Neutron Stage 1 to its launch pad in the fourth quarter of 2026.",
+        "subject_time": "FY2026 Q4"
+      },
+      "candidate_index": 3,
+      "case_id": "case_f9f295628d684ce0bdf781e3ae9a5b55",
+      "created_at": "2026-09-23T14:56:32.849212Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E190",
+      "runtime_signature": "658ac9136faa93afc17fad403d1f00cfda6608806181fd74749ab62a22cbb958",
+      "snapshot_version": 12,
+      "source_message_id": "std_dc912c752f504468bf8b8f1b08778fa5",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-23"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "Rocket Lab",
+          "RKLB",
+          "Neutron"
+        ],
+        "occurrence_date": "2026-08-10",
+        "proposition": "Management targeted adjusted EBITDA turning positive in the quarter after Neutron's first successful flight.",
+        "subject_time": "quarter after first successful Neutron flight"
+      },
+      "candidate_index": 4,
+      "case_id": "case_f9f295628d684ce0bdf781e3ae9a5b55",
+      "created_at": "2026-09-23T14:56:32.875717Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E191",
+      "runtime_signature": "b8ed3ce5d4a2810030976f11b346ca7de81a1e089b4b96c0ef64d77f7df76c8c",
+      "snapshot_version": 13,
+      "source_message_id": "std_dc912c752f504468bf8b8f1b08778fa5",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-23"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "Rocket Lab",
+          "RKLB",
+          "Neutron"
+        ],
+        "occurrence_date": "2026-08-10",
+        "proposition": "Management targeted positive cash flow approximately 18 to 24 months after adjusted EBITDA turns positive following Neutron's first successful flight.",
+        "subject_time": "18 to 24 months after the post-flight adjusted EBITDA inflection"
+      },
+      "candidate_index": 5,
+      "case_id": "case_f9f295628d684ce0bdf781e3ae9a5b55",
+      "created_at": "2026-09-23T14:56:32.898430Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E192",
+      "runtime_signature": "5570d04eeaf6f1d98d63b6da3d47b4e9539ed63b8d81f286c2b26ceff1f00b0b",
+      "snapshot_version": 14,
+      "source_message_id": "std_dc912c752f504468bf8b8f1b08778fa5",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-23"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Seraphim Space Index",
+          "space technology sector"
+        ],
+        "occurrence_date": "2026-09-23",
+        "proposition": "The Q2 2026 Seraphim Space Index reported a record $23 billion of space-sector investment in the twelve months through Q2 2026, more than double the $9.7 billion comparison figure.",
+        "subject_time": "twelve months ending Q2 2026"
+      },
+      "candidate_index": 0,
+      "case_id": "case_ed10211761504bf9bb0e1d71b72b7588",
+      "created_at": "2026-09-23T17:34:23.178961Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E193",
+      "runtime_signature": "d8bdbbd46a9bda0516213d4b8861acfb5bfa3753dfc633849d8af19d224fb4df",
+      "snapshot_version": 15,
+      "source_message_id": "std_d3876f8ac0964d5e97d16100591cd63c",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-23"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Seraphim Space Index",
+          "space technology companies"
+        ],
+        "occurrence_date": "2026-09-23",
+        "proposition": "The Seraphim Space Index reported $7.5 billion of quarterly venture deployment across 141 space-technology deals in Q2 2026.",
+        "subject_time": "Q2 2026"
+      },
+      "candidate_index": 1,
+      "case_id": "case_ed10211761504bf9bb0e1d71b72b7588",
+      "created_at": "2026-09-23T17:34:23.217785Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E194",
+      "runtime_signature": "d4947ea2dde12529b4c7b53f57a67d90275baffdb74bf28a9906a539e9306b57",
+      "snapshot_version": 16,
+      "source_message_id": "std_d3876f8ac0964d5e97d16100591cd63c",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-23"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Seraphim Space Index",
+          "late-stage space technology financing"
+        ],
+        "occurrence_date": "2026-09-23",
+        "proposition": "Late-stage Series D and later space-technology funding increased 123% year over year to $7.2 billion, representing 47% of total capital.",
+        "subject_time": "2026 year-to-date through Q2 2026"
+      },
+      "candidate_index": 2,
+      "case_id": "case_ed10211761504bf9bb0e1d71b72b7588",
+      "created_at": "2026-09-23T17:34:23.241592Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E195",
+      "runtime_signature": "b7eac035c3e88cdfe75b2fd773537a60cacce5c1a4ecea6cd2adea1245d663a2",
+      "snapshot_version": 17,
+      "source_message_id": "std_d3876f8ac0964d5e97d16100591cd63c",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-23"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Seraphim Space Index",
+          "space technology companies"
+        ],
+        "occurrence_date": "2026-09-23",
+        "proposition": "Space-technology mergers and acquisitions increased approximately fourfold versus the prior trailing twelve-month period.",
+        "subject_time": "trailing twelve months through Q2 2026"
+      },
+      "candidate_index": 3,
+      "case_id": "case_ed10211761504bf9bb0e1d71b72b7588",
+      "created_at": "2026-09-23T17:34:23.266686Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E196",
+      "runtime_signature": "7523b8e2e37946e43a720c63acf0d5820aad32bf2e4a53c6aea660687cbdd3ef",
+      "snapshot_version": 18,
+      "source_message_id": "std_d3876f8ac0964d5e97d16100591cd63c",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-23"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Amazon",
+          "Globalstar",
+          "satellite communications"
+        ],
+        "occurrence_date": "2026-09-23",
+        "proposition": "Amazon agreed to acquire Globalstar for approximately $11.6 billion to advance its direct-to-device satellite service.",
+        "subject_time": "proposed Globalstar acquisition"
+      },
+      "candidate_index": 4,
+      "case_id": "case_ed10211761504bf9bb0e1d71b72b7588",
+      "created_at": "2026-09-23T17:34:23.287459Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E197",
+      "runtime_signature": "aab5690e4b670b3a1a92ab74612fd0ab5812661e3aac2eab6c34bf5af70ab126",
+      "snapshot_version": 19,
+      "source_message_id": "std_d3876f8ac0964d5e97d16100591cd63c",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-23"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Donald Trump",
+          "SpaceX",
+          "SPCX",
+          "U.S. federal financial disclosure"
+        ],
+        "occurrence_date": "2026-06-23",
+        "proposition": "美国总统唐纳德·特朗普于2026年6月23日买入价值15,001至50,000美元区间的 SpaceX 股票，相关联邦财务披露显示该交易。",
+        "subject_time": "SpaceX IPO 后约两周的买入；联邦披露于2026年8月公开"
+      },
+      "candidate_index": 0,
+      "case_id": "case_1c8cb3996de64d3786213f27c4e4e340",
+      "created_at": "2026-09-24T13:41:48.384934Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E198",
+      "runtime_signature": "7295e4ec3f3bfe2f0bac8122350d95ff78af115888a6a105a31126a21ed5beb9",
+      "snapshot_version": 1,
+      "source_message_id": "std_c9f07629034d42baa3e95de1d4608dab",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Rocket Lab",
+          "RKLB"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "2026年9月24日周四下午交易中，Rocket Lab（RKLB）股价为74.52美元，上涨约6%。",
+        "subject_time": "2026-09-24 周四下午交易"
+      },
+      "candidate_index": 0,
+      "case_id": "case_813b0fb18e334b67ae105271ea1decf3",
+      "created_at": "2026-09-24T18:01:32.894678Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E199",
+      "runtime_signature": "33ab69ad984e91ea0bb2ccf697fab0c9a7922a6094b8b5033fb9c221887214f9",
+      "snapshot_version": 2,
+      "source_message_id": "std_5a92023a598f4fbba47b41c769cb8086",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Planet Labs",
+          "PL"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "2026年9月24日周四交易中，Planet Labs（PL）股价上涨约6%。",
+        "subject_time": "2026-09-24 周四交易"
+      },
+      "candidate_index": 1,
+      "case_id": "case_813b0fb18e334b67ae105271ea1decf3",
+      "created_at": "2026-09-24T18:01:32.935352Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E200",
+      "runtime_signature": "947bad4bf111cab27926806e90eed7890eab67012ada8c3b73c1aebf1f030dc1",
+      "snapshot_version": 3,
+      "source_message_id": "std_5a92023a598f4fbba47b41c769cb8086",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "AST SpaceMobile",
+          "ASTS"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "2026年9月24日周四交易中，AST SpaceMobile（ASTS）股价上涨约4%。",
+        "subject_time": "2026-09-24 周四交易"
+      },
+      "candidate_index": 2,
+      "case_id": "case_813b0fb18e334b67ae105271ea1decf3",
+      "created_at": "2026-09-24T18:01:32.950790Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E201",
+      "runtime_signature": "aad29e6f99db0c13fdf545824f24e738456c1e2fc7f6bd002bec72d3ef963ea5",
+      "snapshot_version": 4,
+      "source_message_id": "std_5a92023a598f4fbba47b41c769cb8086",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Iridium Communications Inc.",
+          "IRDM",
+          "Rocket Lab Corporation",
+          "RKLB"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "Iridium stockholders adopted the merger agreement with Rocket Lab at the special meeting held on 2026-09-24; approximately 99.6% of votes cast favored the transaction, representing approximately 81.0% of outstanding shares entitled to vote.",
+        "subject_time": "Iridium special stockholder meeting on 2026-09-24"
+      },
+      "candidate_index": 0,
+      "case_id": "case_193e9c52c1204471aac4e1b597a9bd3c",
+      "created_at": "2026-09-24T20:35:51.465444Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E202",
+      "runtime_signature": "571921d1dbddcb2fe9708cdd234a1dfa3d31c2cd103c682779de70cd670fe501",
+      "snapshot_version": 5,
+      "source_message_id": "std_dead2a788bd44fe88a625c4712e13060",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Iridium Communications Inc.",
+          "Rocket Lab Corporation",
+          "RKLB"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "Iridium股东已通过Rocket Lab收购Iridium的此前已宣布的合并协议。",
+        "subject_time": null
+      },
+      "candidate_index": 0,
+      "case_id": "case_9744e03a09144618bfce2812cee66804",
+      "created_at": "2026-09-24T20:37:09.725647Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E203",
+      "runtime_signature": "f694b8c97a821fe3902a4d8edd5885eac351d186601b9656a966c6698b9b961c",
+      "snapshot_version": 6,
+      "source_message_id": "std_eb6d4e91b67b431683473bb0c0471b6f",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Iridium Communications Inc.",
+          "Rocket Lab Corporation",
+          "RKLB"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "Iridium股东特别会议中，约99.6%的已投票数赞成该交易，约占Iridium有权投票的流通在外股份81.0%。",
+        "subject_time": "2026-09-24 Iridium股东特别会议"
+      },
+      "candidate_index": 1,
+      "case_id": "case_9744e03a09144618bfce2812cee66804",
+      "created_at": "2026-09-24T20:37:09.744295Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E204",
+      "runtime_signature": "7b23b69321a3b6b90bd0eda4032978a014f1f6724a5a27d8f345bf70a07ab0be",
+      "snapshot_version": 7,
+      "source_message_id": "std_eb6d4e91b67b431683473bb0c0471b6f",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Iridium Communications",
+          "Rocket Lab",
+          "RKLB"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "Iridium股东于2026年9月24日投票批准了Rocket Lab拟议的收购交易。",
+        "subject_time": null
+      },
+      "candidate_index": 0,
+      "case_id": "case_a62010dd77c5428486b77e527ecbadf6",
+      "created_at": "2026-09-24T20:37:56.951660Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E205",
+      "runtime_signature": "90620eba69c832a082cad0d6b9314db1d4bfb720d87f98f20ea5baf4dc67cbb3",
+      "snapshot_version": 8,
+      "source_message_id": "std_80c533595db34189a069c89f173a1708",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Iridium",
+          "Rocket Lab"
+        ],
+        "occurrence_date": "2026-09-24",
+        "proposition": "Iridium 股东已批准 Rocket Lab 拟议收购 Iridium 的交易。",
+        "subject_time": null
+      },
+      "candidate_index": 0,
+      "case_id": "case_91adbdf5ecaa4827b0ca5262574fb9dc",
+      "created_at": "2026-09-24T20:38:48.398194Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E206",
+      "runtime_signature": "77e16711906321804156e282000fa3dd55701be311bdcfaef2f9ff20dd34b348",
+      "snapshot_version": 9,
+      "source_message_id": "std_70ae4c3626e642b88516597a202ef299",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-24"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Rocket Lab Corporation",
+          "RKLB",
+          "Electron",
+          "Synspective",
+          "StriX"
+        ],
+        "occurrence_date": "2026-09-26",
+        "proposition": "Rocket Lab completed its 97th Electron launch and 18th launch of 2026 on 2026-09-26, deploying Synspective's 13th StriX synthetic-aperture-radar satellite into a 559-kilometer low-Earth orbit from Launch Complex 1 in New Zealand.",
+        "subject_time": "2026-09-26 at 12:39 p.m. NZST"
+      },
+      "candidate_index": 0,
+      "case_id": "case_11d5a14f916446cda1382dc9c4a73ddf",
+      "created_at": "2026-09-26T01:47:05.659680Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E207",
+      "runtime_signature": "9df8e629160c0daabfcc508524dc5629213c90a7c22567a5a425208f5fc6044c",
+      "snapshot_version": 1,
+      "source_message_id": "std_e299a5d31921474db83137a272d46e57",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-25"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Rocket Lab Corporation",
+          "RKLB",
+          "Electron",
+          "Synspective",
+          "StriX"
+        ],
+        "occurrence_date": "2026-09-26",
+        "proposition": "Rocket Lab reported 100% mission success across all 13 Synspective StriX satellites deployed by Electron.",
+        "subject_time": "Multi-year Synspective StriX deployment program"
+      },
+      "candidate_index": 1,
+      "case_id": "case_11d5a14f916446cda1382dc9c4a73ddf",
+      "created_at": "2026-09-26T01:47:05.666103Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E208",
+      "runtime_signature": "279f10279ecaa6cee426284f857e18c21de2ed1ec1b7729f885facb3dfdbc5af",
+      "snapshot_version": 2,
+      "source_message_id": "std_e299a5d31921474db83137a272d46e57",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-25"
+    },
+    {
+      "candidate": {
+        "assertion_state": "SCHEDULED",
+        "entities": [
+          "Rocket Lab Corporation",
+          "RKLB",
+          "Electron",
+          "Synspective",
+          "StriX"
+        ],
+        "occurrence_date": "2026-09-26",
+        "proposition": "A further 14 Synspective constellation launches remain on schedule through the end of the decade.",
+        "subject_time": "Through the end of the decade"
+      },
+      "candidate_index": 2,
+      "case_id": "case_11d5a14f916446cda1382dc9c4a73ddf",
+      "created_at": "2026-09-26T01:47:05.672451Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E209",
+      "runtime_signature": "84687f7bcbe333ac97f989a11f0187906065a4a76b2818c239172ca4f09bee10",
+      "snapshot_version": 3,
+      "source_message_id": "std_e299a5d31921474db83137a272d46e57",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-25"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Benzinga",
+          "Costco",
+          "KB Home",
+          "McDonald's"
+        ],
+        "occurrence_date": null,
+        "proposition": "Benzinga发布'牛熊'（Bulls and Bears）栏目，回顾过去一周对Costco、KB Home、McDonald's等股票前景的分析。",
+        "subject_time": "过去一周"
+      },
+      "candidate_index": 0,
+      "case_id": "case_71bf875b13d146dd90c93c914aa77004",
+      "created_at": "2026-09-27T06:02:53.769637Z",
+      "originating_node": "W1_R3",
+      "provisional_event_id": "E210",
+      "runtime_signature": "627cb7b5e6bc7a458e260f9817b7a01438b49d4ba559f3e602d1725a8db7292b",
+      "snapshot_version": 1,
+      "source_message_id": "std_f5e25053b37244718bf2b6910f021a86",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-27"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Rocket Lab Corporation",
+          "RKLB"
+        ],
+        "occurrence_date": "2026-09-28",
+        "proposition": "Rocket Lab shares traded at approximately $72.91 in premarket trading on 2026-09-28, down approximately 1.41%.",
+        "subject_time": "Monday premarket trading on 2026-09-28"
+      },
+      "candidate_index": 0,
+      "case_id": "case_2849f33ae73a4c2abe523ee50e3421a5",
+      "created_at": "2026-09-28T13:38:32.709223Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E211",
+      "runtime_signature": "78f0a91b90ed6d44a0814725e485154e53ac69a8efc28847c3c5eb37c3cc3368",
+      "snapshot_version": 1,
+      "source_message_id": "std_54957b66621141ae8ca75b85af5995a1",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-28"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "Rocket Lab Corporation",
+          "RKLB",
+          "Wall Street analysts"
+        ],
+        "occurrence_date": "2026-09-28",
+        "proposition": "Wall Street estimates Rocket Lab's next earnings report at a loss of approximately $0.06 per share and revenue of approximately $238.53 million.",
+        "subject_time": "Q3 2026 earnings report scheduled for 2026-11-09"
+      },
+      "candidate_index": 1,
+      "case_id": "case_2849f33ae73a4c2abe523ee50e3421a5",
+      "created_at": "2026-09-28T13:38:32.718040Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E212",
+      "runtime_signature": "ae7712ed18ee1f6da8511995293d64f0e3b2b376f3fce3261e98ec800c2003db",
+      "snapshot_version": 2,
+      "source_message_id": "std_54957b66621141ae8ca75b85af5995a1",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-28"
+    }
+  ],
+  "limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "global_state": {
+    "watches": [],
+    "pins": []
+  },
+  "event_details": {
+    "requested_event_ids": [],
+    "canonical_events": [],
+    "provisional_events": [],
+    "missing_event_ids": []
+  }
+}

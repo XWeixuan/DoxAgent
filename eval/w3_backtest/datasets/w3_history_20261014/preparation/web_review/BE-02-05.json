@@ -1,0 +1,198 @@
+{
+  "case_key": "BE-02-05",
+  "evidence_cutoff_at": "2026-09-29T13:07:39.544424Z",
+  "reviewed_at": "2026-10-13T22:58:31.428442Z",
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a13745-a3cb-7f71-956a-8b84ebb10d1d",
+    "turn_id": "01a13745-a3d9-7803-984a-c4096cee5b44",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 161536,
+        "inputTokens": 177267,
+        "outputTokens": 14010,
+        "reasoningOutputTokens": 11010,
+        "totalTokens": 191277
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 1437184,
+        "inputTokens": 1622078,
+        "outputTokens": 32135,
+        "reasoningOutputTokens": 27620,
+        "totalTokens": 1654213
+      }
+    },
+    "prompt_version": "w3-web-evidence-v1",
+    "input_fingerprint": "fda44b3b08d7c15756f7089384c6e16cc2f983cc0ef6c8b04e11928b289d76d4",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://www.boursorama.com/bourse/actualites/roi-les-failles-de-credit-liees-a-l-ia-constituent-elles-un-signal-d-alerte-ou-un-signal-d-achat-mcgeever-d2e038c21ecb6ffa68bdc82eedbcf03c",
+      "title": "Are AI credit cracks a warning, or a 'buy' signal? (Reuters Open Interest; Boursorama syndication)",
+      "published_at": "2026-09-29T13:00:58Z",
+      "time_precision": "EXACT",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn1search0",
+        "turn3search2"
+      ],
+      "source_call_ids": [
+        "exec-74fbf8da-dfd4-4830-8249-fd606a2a8f9a",
+        "exec-89313998-ef2f-479f-99b2-268b36316f0a"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://www.spglobal.com/ratings/en/regulatory/article/-/view/type/HTML/id/3459943",
+      "title": "Beignet Investor LLC’s $27.3 Billion Senior Secured Debt Assigned Preliminary ‘A+’ Rating; Outlook Stable",
+      "published_at": "2025-10-16T21:32:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn10search0"
+      ],
+      "source_call_ids": [
+        "exec-2b27c218-2dca-4dba-b693-3951083aab84"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://www.bloomberg.com/news/articles/2026-09-24/oracle-cites-force-majeure-to-shield-itself-on-controversial-data-center",
+      "title": "Oracle Cites ‘Force Majeure’ to Shield Itself on Controversial Data Center",
+      "published_at": "2026-09-24T12:25:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": "2026-09-24T16:50:00Z",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "BEFORE_CUTOFF",
+      "content_state": "UPDATED",
+      "decision": "KEEP",
+      "reason": "The supplied publication and revision times do not exceed the case cutoff.",
+      "source_result_refs": [
+        "turn7search0"
+      ],
+      "source_call_ids": [
+        "exec-c4ea307d-e5d3-4a63-9abd-35b7d9b3b7e3"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://www.axios.com/2026/09/24/oracle-force-majeure-blue-owl-openai",
+      "title": "Oracle moves to shield itself from AI buildout risks",
+      "published_at": "2026-09-24T21:03:12Z",
+      "time_precision": "EXACT",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0news21"
+      ],
+      "source_call_ids": [
+        "exec-fa86b9bc-cc78-4085-a10f-f19b79c0ac0f"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S5",
+      "url": "https://www.marketscreener.com/news/oracle-blue-owl-project-delay-sends-ripples-through-ai-financing-sources-say-ce785adfd881f521",
+      "title": "Oracle, Blue Owl project delay sends ripples through AI financing, sources say",
+      "published_at": "2026-09-24T22:51:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": "2026-09-24T23:00:00Z",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "BEFORE_CUTOFF",
+      "content_state": "UPDATED",
+      "decision": "KEEP",
+      "reason": "The supplied publication and revision times do not exceed the case cutoff.",
+      "source_result_refs": [
+        "turn0search3"
+      ],
+      "source_call_ids": [
+        "exec-fa86b9bc-cc78-4085-a10f-f19b79c0ac0f"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "Reuters’ Sept. 29 column reported Sept. 28 Beignet bond marks of 91 cents per dollar, yield up to 7.55%, and an approximately 230-basis-point Treasury spread. It reported Meta CDS above the July peak and near 100 basis points, with most Big Tech CDS at record levels. The article framed these as signs of financing strain, not a reported default.",
+      "source_urls": [
+        "https://www.boursorama.com/bourse/actualites/roi-les-failles-de-credit-liees-a-l-ia-constituent-elles-un-signal-d-alerte-ou-un-signal-d-achat-mcgeever-d2e038c21ecb6ffa68bdc82eedbcf03c",
+        "https://www.spglobal.com/ratings/en/regulatory/article/-/view/type/HTML/id/3459943"
+      ],
+      "event_time": "2026-09-28 (Monday trading; exact quote times not stated)",
+      "publication_time": "2026-09-29T13:00:58Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "Reuters said the 230-basis-point spread was below the July 255-basis-point high and described default as unlikely given the companies’ underlying businesses. S&P had assigned a preliminary A+ rating while identifying risk transfer to Meta. The bond and CDS marks are secondary reporting with no vendor, trade tape, or observation time identified."
+    },
+    {
+      "observation": "Before the reported September marks, S&P’s October 2025 assessment assigned the Beignet notes a preliminary A+ rating with stable outlook. It also identified substantial contractual credit risk for Meta during construction and operation, alongside protections that informed the stable outlook.",
+      "source_urls": [
+        "https://www.spglobal.com/ratings/en/regulatory/article/-/view/type/HTML/id/3459943"
+      ],
+      "event_time": "2025-10-16",
+      "publication_time": "2025-10-16T21:32:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This is a rating opinion, not a guarantee of performance. S&P described a 2.064-GW project scope; the Reuters column later described Hyperion as 5-GW compute capacity and over $50 billion of investment. Those scope measures were not reconciled."
+    },
+    {
+      "observation": "Bloomberg’s September 24 report was the earliest located coverage of Oracle’s Project Jupiter force-majeure notice. It reported, from people familiar with the matter, a potential payment deferral if the campus missed its planned 2028 opening; the September 29 Reuters column repeated the possible one-year delay as a risk context.",
+      "source_urls": [
+        "https://www.bloomberg.com/news/articles/2026-09-24/oracle-cites-force-majeure-to-shield-itself-on-controversial-data-center",
+        "https://www.boursorama.com/bourse/actualites/roi-les-failles-de-credit-liees-a-l-ia-constituent-elles-un-signal-d-alerte-ou-un-signal-d-achat-mcgeever-d2e038c21ecb6ffa68bdc82eedbcf03c"
+      ],
+      "event_time": "2026-09-24 (notice; exact dispatch time not stated)",
+      "publication_time": "2026-09-24T12:25:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The notice and possible delay were reported from people familiar with the matter; neither source establishes that the project was actually delayed or that a Bloom-specific delivery or acceptance milestone changed."
+    },
+    {
+      "observation": "By September 24, Oracle had said Project Jupiter remained on schedule and that the notice did not itself change delivery expectations; Blue Owl said the notice did not change financial commitments. Reuters’ later September 24 follow-up reported both this response and an unnamed source’s one-year-delay account, while quoting a consultant who said underlying demand remained strong.",
+      "source_urls": [
+        "https://www.axios.com/2026/09/24/oracle-force-majeure-blue-owl-openai",
+        "https://www.marketscreener.com/news/oracle-blue-owl-project-delay-sends-ripples-through-ai-financing-sources-say-ce785adfd881f521"
+      ],
+      "event_time": "2026-09-24",
+      "publication_time": "2026-09-24T21:03:12Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The on-schedule and unchanged-commitment statements are party positions; the reported one-year delay is attributed to an unnamed source. The reviewed sources provide no revised project milestone or Bloom-specific capacity impact."
+    }
+  ],
+  "gaps": [
+    "No independent pre-cutoff bond-trade or CDS data source was located for the 91-cent mark, 7.55% yield, 230-basis-point spread, or CDS levels; the Reuters column does not identify its data provider or quote time.",
+    "The supplied message metadata gives a date-precision 16:00Z value, while Boursorama’s timestamped Reuters syndication copy shows 15:00:58 Paris time. The Reuters-native page was inaccessible; the original-wire timestamp is therefore not independently verified.",
+    "The 2025 S&P rating report’s 2.064-GW project scope and the Reuters column’s 5-GW compute/$50-billion description were not reconciled.",
+    "The reported one-year Jupiter delay remained attributed to an unnamed source, while Oracle and Blue Owl publicly stated that the project remained on schedule and commitments were unchanged. No project-specific revised Bloom scope, commissioning, or acceptance evidence was found."
+  ],
+  "research_notes": "Cutoff: 2026-09-29T13:07:39.544424Z. The earliest timestamped public copy located for the Sept. 29 Reuters column is Boursorama’s Reuters syndication, stamped 15:00:58 Paris time (13:00:58Z), before cutoff. The supplied message’s date-precision 16:00Z field conflicts with that stamp; the Reuters-native page could not be opened, so the original wire timestamp is not independently verified. The column’s bond and CDS marks concern Monday, Sept.  28; its underlying market-data sources are not identified. The Oracle/Project Jupiter force-majeure notice was already reported on Sept. 24, with responses from Oracle and Blue Owl also public before cutoff. No post-cutoff coverage, later market reactions, or hindsight is used.",
+  "collection_prompt_version": "w3-web-evidence-v1"
+}

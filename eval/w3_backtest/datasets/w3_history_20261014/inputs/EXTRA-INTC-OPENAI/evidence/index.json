@@ -1,0 +1,24 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-10-08T18:05:20.687777Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "The FT article's exact first-publication time and its wording in a pre-cutoff snapshot remain unverified; its retrieved version shows an update time of 20:15 on Oct. 8 with no timezone.",
+    "No direct OpenAI disclosure or underlying investor financial presentation was verified in the eligible material.",
+    "The eligible pre-cutoff material does not resolve whether the near-$50bn and near-$70bn run-rate figures use the same definition or accounting treatment; do not characterize the difference as an actual revenue contraction or formal guidance miss.",
+    "No verified pre-cutoff source in this collection isolates other same-session market drivers or links the OpenAI report to an Intel-specific customer, order, deployment, or supply change.",
+    "UNVERIFIED source S4: https://www.barrons.com/livecoverage/stock-market-news-today-100826/card/stocks-sink-after-openai-report-sours-ai-trade-BKsGL9ZiRLoaWdN2KuCG?siteid=yhoof2 did not match any saved Web Search result URL/ref; keep retrieval_verification=UNVERIFIED and do not treat it as a verified Web Search source."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

@@ -1,0 +1,23 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-10-07T12:06:34.089039Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "The original Culpium newsletter cited in the October 3 coverage was not retrieved, so its exact publication time and original wording are unverified.",
+    "The Bloomberg original page was inaccessible; the Yahoo result’s displayed 00:32 time has no timezone, so exact publication order and cutoff placement cannot be confirmed from it.",
+    "A Reuters page reporting Musk’s later build/run and possible sublease remarks displays publication/update times without a timezone; the direct X post was not accessible, and no dated pre-cutoff snapshot was verified.",
+    "No inspected pre-cutoff passage specifies a binding Intel production scope, volume, funding, ownership, or delivery schedule for Terafab."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

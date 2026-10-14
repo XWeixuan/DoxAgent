@@ -51,6 +51,8 @@ eval/brief_state_exports/*.json
 # Local recovery and smoke outputs
 recovery/
 exports/document1_document2_smoke/
+# Generated W3 SDK workspaces contain deep Windows paths and local job state.
+/eval/w3_backtest/runs/
 # Publisher login profiles contain credentials; never commit them.
 /.publisher-identities/
 
@@ -63,3 +65,10 @@ exports/document1_document2_smoke/
 /outputs/
 /init-issue.md
 /.initialization-repair/
+
+# Local-only preparation transport/cache; frozen replay inputs are versioned.
+/eval/w3_backtest/datasets/*/preparation/remote_export.jsonl
+/eval/w3_backtest/datasets/*/preparation/original_outcomes/
+/eval/w3_backtest/datasets/*/preparation/web_raw/
+/eval/w3_backtest/datasets/*/preparation/price_raw/
+/eval/w3_backtest/datasets/*/preparation/nasa_w1_w2/

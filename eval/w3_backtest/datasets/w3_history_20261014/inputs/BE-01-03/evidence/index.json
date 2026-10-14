@@ -1,0 +1,23 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-24T20:50:27.782652Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "No public copy of the notice or lease provisions was located; exact service/receipt time, force-majeure trigger, payment scope, and whether the parties agreed to the asserted terms remain unknown.",
+    "The supplied W1 refers to an earlier rumor, but it does not include a public source URL or publication time, and this focused search did not locate an independently timestamped pre-Bloomberg rumor.",
+    "No reviewed pre-cutoff source establishes that the notice changed Bloom’s order, capacity, shipment, project schedule, or revenue terms. No Bloom-specific response was located.",
+    "The Bloomberg updated page is timestamped before cutoff, but the reported legal mechanics remain source-attributed and were not independently checked against a public contract."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

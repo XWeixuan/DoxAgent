@@ -1,0 +1,23 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-10-07T04:49:00.607167Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "The direct Bloomberg page was not retrievable, and no dated archive of its full October 7 article body was verified before the cutoff. The feed-captured title and publication time are available; the interview time and full-body revision history remain unknown.",
+    "No independently authored report of Tan’s October 7 statement was verified as published by 04:49 UTC. Later coverage was excluded.",
+    "The original October 2 Culpium report is identified by contemporaneous coverage, but a dated original copy suitable for verifying its complete pre-cutoff text was not retrieved; the October 3 independent report is used for the prior-context claim.",
+    "The original Intel and Musk X posts could not be opened during research; coverage quoting or describing them is used instead."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

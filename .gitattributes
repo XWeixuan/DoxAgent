@@ -1,0 +1,2 @@
+# Frozen replay identity hashes file bytes; preserve them on every platform.
+eval/w3_backtest/datasets/** -text

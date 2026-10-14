@@ -1,0 +1,22 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-30T07:58:39.990377Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "Independent contemporaneous coverage before cutoff was not verified. The search result for an IT之家 item dated Sep. 30 could not be fetched, and its publication time relative to the cutoff is unknown; it is excluded.",
+    "TrendForce’s public pages provide industry forecasts, not Micron-specific realized prices, quantities, revenue, share, or margin effects.",
+    "The Sep. 23 and Sep. 24 TrendForce research pages expose summaries rather than all underlying tables; the precise timing of their initial public release is not shown."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

@@ -1,0 +1,56 @@
+{
+  "ticker": "INTC",
+  "version": 28,
+  "requested_event_ids": [
+    "E214"
+  ],
+  "events": [
+    {
+      "event_id": "E214",
+      "ticker": "INTC",
+      "title": "OpenAI reported a private-financing and revenue update",
+      "event_type": "FINANCING",
+      "occurred_at": "2026-09-29",
+      "occurrence_time_precision": "DAY",
+      "status": "ACTIVE",
+      "canonical_summary": "OpenAI reported a private-financing and revenue update.",
+      "known_event_summary": "On 2026-09-29, OpenAI reported a private-financing and revenue update.",
+      "is_important": true,
+      "include_in_reference_view": false,
+      "related_event_ids": [
+        "E98",
+        "E161"
+      ],
+      "supersedes_event_id": null,
+      "derived_from_event_ids": [],
+      "facts": [
+        {
+          "fact_id": "F958",
+          "proposition": "Sam Altman ruled out an OpenAI public listing in 2026, citing AI-safety concerns.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "2026 public-listing plan",
+          "fact_occurred_at": "2026-09-29",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F959",
+          "proposition": "OpenAI is reportedly seeking at least $30 billion in private capital at a pre-money valuation of approximately $1.4 trillion.",
+          "assertion_state": "RUMOR",
+          "subject_time": "Proposed 2026 private financing round",
+          "fact_occurred_at": "2026-09-29",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F960",
+          "proposition": "OpenAI's annualized revenue is reported to be near $70 billion, more than 70% above the start of the current quarter.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "Current annualized revenue",
+          "fact_occurred_at": "2026-09-29",
+          "fact_occurrence_time_precision": "DAY"
+        }
+      ],
+      "price_analysis": null
+    }
+  ],
+  "missing_event_ids": []
+}

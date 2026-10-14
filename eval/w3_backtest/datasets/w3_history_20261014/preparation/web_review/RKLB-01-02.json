@@ -1,0 +1,158 @@
+{
+  "case_key": "RKLB-01-02",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-09-24T20:31:55.762263Z",
+  "reviewed_at": "2026-10-13T22:58:33.347235Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 6,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a13765-421b-7dc3-b4cb-9f9ab22f96dc",
+    "turn_id": "01a13765-4229-72b2-986d-ea048868efcb",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 93952,
+        "inputTokens": 97910,
+        "outputTokens": 11763,
+        "reasoningOutputTokens": 10057,
+        "totalTokens": 109673
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 420096,
+        "inputTokens": 512236,
+        "outputTokens": 20162,
+        "reasoningOutputTokens": 17953,
+        "totalTokens": 532398
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "a5574a815d33e2007f58b3089956c26a1f9bd6a43b55cb148403a948b2d4ee9c",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://www.sec.gov/Archives/edgar/data/1418819/000095010326014197/dp253526_8k.htm",
+      "title": "Iridium Communications Inc. Form 8-K regarding definitive proxy and special meeting",
+      "published_at": "2026-08-26",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search5",
+        "turn1view2"
+      ],
+      "source_call_ids": [
+        "exec-48c2c789-af8e-43fe-a252-1f96ccd6e86b",
+        "exec-877e2918-b778-400d-bb7e-86874c37adc1"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://www.prnewswire.com/news-releases/iridium-stockholders-approve-acquisition-by-rocket-lab-302889586.html",
+      "title": "Iridium Stockholders Approve Acquisition by Rocket Lab",
+      "published_at": "2026-09-24T16:30:00-04:00",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search2",
+        "turn2view0",
+        "turn3search1"
+      ],
+      "source_call_ids": [
+        "exec-40550d9b-e467-48c8-bbfd-1bee111bada5",
+        "exec-48c2c789-af8e-43fe-a252-1f96ccd6e86b",
+        "exec-72fb6603-a30e-486e-9e3c-efbde833c550"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://investors.rocketlabcorp.com/news-releases/news-release-details/iridium-stockholders-approve-acquisition-rocket-lab",
+      "title": "Iridium Stockholders Approve Acquisition by Rocket Lab",
+      "published_at": "2026-09-24T16:30:00-04:00",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search0",
+        "turn3search0"
+      ],
+      "source_call_ids": [
+        "exec-48c2c789-af8e-43fe-a252-1f96ccd6e86b",
+        "exec-72fb6603-a30e-486e-9e3c-efbde833c550"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "Before the vote, Iridium's official filing scheduled the special meeting for September 24 at 8:30 a.m. ET. The vote was therefore a pending milestone in the prior public record; the scheduled start time does not establish the actual time the vote occurred.",
+      "source_urls": [
+        "https://www.sec.gov/Archives/edgar/data/1418819/000095010326014197/dp253526_8k.htm"
+      ],
+      "event_time": "2026-09-24T08:30:00-04:00 (scheduled meeting start only)",
+      "publication_time": "2026-08-26",
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "The filing gives the scheduled meeting time, not the actual time of the vote or its result."
+    },
+    {
+      "observation": "The September 24 announcement reports that Iridium stockholders adopted the merger agreement. It gives rounded results: approximately 99.6% of votes cast in favor, representing approximately 81.0% of outstanding shares entitled to vote.",
+      "source_urls": [
+        "https://www.prnewswire.com/news-releases/iridium-stockholders-approve-acquisition-by-rocket-lab-302889586.html",
+        "https://investors.rocketlabcorp.com/news-releases/news-release-details/iridium-stockholders-approve-acquisition-rocket-lab"
+      ],
+      "event_time": "2026-09-24; exact vote time UNKNOWN",
+      "publication_time": "2026-09-24T16:30:00-04:00",
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "The release says complete voting results would be reported in a later Form 8-K; this evidence set does not include detailed vote totals."
+    },
+    {
+      "observation": "The announcement described a mid-2027 expected closing, subject to remaining required regulatory approvals and customary closing conditions. Thus, the reported shareholder approval was a milestone, not a report that the transaction had closed.",
+      "source_urls": [
+        "https://www.prnewswire.com/news-releases/iridium-stockholders-approve-acquisition-by-rocket-lab-302889586.html",
+        "https://investors.rocketlabcorp.com/news-releases/news-release-details/iridium-stockholders-approve-acquisition-rocket-lab"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-24T16:30:00-04:00",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The stated closing timing is forward-looking; the release does not establish approval by regulators or satisfaction of other closing conditions."
+    }
+  ],
+  "gaps": [
+    "The actual time the September 24 vote was taken is not stated in the release; 8:30 a.m. ET was only the scheduled meeting start.",
+    "Detailed vote totals were not included in the verified pre-cutoff release; it said complete results would be reported later.",
+    "No independent editorial coverage with a publication timestamp verified at or before the cutoff was found. Same-day pages located without a verified time were not used as evidence.",
+    "The release does not detail the status of individual regulatory reviews or other remaining closing conditions."
+  ],
+  "research_notes": "Cutoff: 2026-09-24T20:31:55.762263Z (16:31:55.762 ET). The issuer release is timestamped 16:30 ET (20:30Z), about 1 minute 56 seconds before cutoff. The supplied Dow Jones Newswires message carries the same minute; PRNewswire and Rocket Lab IR also show 16:30 ET. This verifies the release minute, but not the order of dissemination among channels. The prior official filing described a meeting scheduled for September 24; the release changed that status to an adopted agreement. The release also makes clear approval was not closing: required regulatory approvals and other customary conditions remained. No independent editorial report with a verified pre-cutoff publication time was found; same-day third-party pages located were press-release republications or lacked a time."
+}

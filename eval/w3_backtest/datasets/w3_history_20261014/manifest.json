@@ -1,0 +1,393 @@
+{
+  "schema_version": "w3-backtest.dataset.v1",
+  "dataset_id": "w3_history_20261014",
+  "seed": 20261014,
+  "case_count": 73,
+  "cases": [
+    {
+      "case_key": "BE-01-01",
+      "path": "inputs/BE-01-01/case.json",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "BE-01-02",
+      "path": "inputs/BE-01-02/case.json",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "BE-01-03",
+      "path": "inputs/BE-01-03/case.json",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "BE-01-04",
+      "path": "inputs/BE-01-04/case.json",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "BE-01-05",
+      "path": "inputs/BE-01-05/case.json",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "BE-02-01",
+      "path": "inputs/BE-02-01/case.json",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "BE-02-02",
+      "path": "inputs/BE-02-02/case.json",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "BE-02-03",
+      "path": "inputs/BE-02-03/case.json",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "BE-02-04",
+      "path": "inputs/BE-02-04/case.json",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "BE-02-05",
+      "path": "inputs/BE-02-05/case.json",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "BE-03-01",
+      "path": "inputs/BE-03-01/case.json",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "BE-03-02",
+      "path": "inputs/BE-03-02/case.json",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "BE-03-03",
+      "path": "inputs/BE-03-03/case.json",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "BE-03-04",
+      "path": "inputs/BE-03-04/case.json",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "BE-03-05",
+      "path": "inputs/BE-03-05/case.json",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "INTC-01-01",
+      "path": "inputs/INTC-01-01/case.json",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "INTC-01-02",
+      "path": "inputs/INTC-01-02/case.json",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "INTC-01-03",
+      "path": "inputs/INTC-01-03/case.json",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "INTC-01-04",
+      "path": "inputs/INTC-01-04/case.json",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "INTC-01-05",
+      "path": "inputs/INTC-01-05/case.json",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "INTC-02-01",
+      "path": "inputs/INTC-02-01/case.json",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "INTC-02-02",
+      "path": "inputs/INTC-02-02/case.json",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "INTC-02-03",
+      "path": "inputs/INTC-02-03/case.json",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "INTC-02-04",
+      "path": "inputs/INTC-02-04/case.json",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "MU-01-01",
+      "path": "inputs/MU-01-01/case.json",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "MU-01-02",
+      "path": "inputs/MU-01-02/case.json",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "MU-01-03",
+      "path": "inputs/MU-01-03/case.json",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "MU-01-04",
+      "path": "inputs/MU-01-04/case.json",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "MU-01-05",
+      "path": "inputs/MU-01-05/case.json",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "MU-02-01",
+      "path": "inputs/MU-02-01/case.json",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "MU-02-02",
+      "path": "inputs/MU-02-02/case.json",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "MU-02-03",
+      "path": "inputs/MU-02-03/case.json",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "MU-02-04",
+      "path": "inputs/MU-02-04/case.json",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "MU-02-05",
+      "path": "inputs/MU-02-05/case.json",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "MU-03-01",
+      "path": "inputs/MU-03-01/case.json",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "MU-03-02",
+      "path": "inputs/MU-03-02/case.json",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "MU-03-03",
+      "path": "inputs/MU-03-03/case.json",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "MU-03-04",
+      "path": "inputs/MU-03-04/case.json",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "MU-03-05",
+      "path": "inputs/MU-03-05/case.json",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "MU-04-01",
+      "path": "inputs/MU-04-01/case.json",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "RKLB-01-01",
+      "path": "inputs/RKLB-01-01/case.json",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "RKLB-01-02",
+      "path": "inputs/RKLB-01-02/case.json",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "RKLB-01-03",
+      "path": "inputs/RKLB-01-03/case.json",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "RKLB-01-04",
+      "path": "inputs/RKLB-01-04/case.json",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "EXTRA-INTC-OPENAI",
+      "path": "inputs/EXTRA-INTC-OPENAI/case.json",
+      "group": "extra"
+    },
+    {
+      "case_key": "EXTRA-INTC-TERAFAB",
+      "path": "inputs/EXTRA-INTC-TERAFAB/case.json",
+      "group": "extra"
+    },
+    {
+      "case_key": "EXTRA-RKLB-SYNSPECTIVE",
+      "path": "inputs/EXTRA-RKLB-SYNSPECTIVE/case.json",
+      "group": "extra"
+    },
+    {
+      "case_key": "EXTRA-RKLB-NASA",
+      "path": "inputs/EXTRA-RKLB-NASA/case.json",
+      "group": "extra"
+    },
+    {
+      "case_key": "NOISE-01",
+      "path": "inputs/NOISE-01/case.json",
+      "group": "noise"
+    },
+    {
+      "case_key": "NOISE-02",
+      "path": "inputs/NOISE-02/case.json",
+      "group": "noise"
+    },
+    {
+      "case_key": "NOISE-03",
+      "path": "inputs/NOISE-03/case.json",
+      "group": "noise"
+    },
+    {
+      "case_key": "NOISE-04",
+      "path": "inputs/NOISE-04/case.json",
+      "group": "noise"
+    },
+    {
+      "case_key": "NOISE-05",
+      "path": "inputs/NOISE-05/case.json",
+      "group": "noise"
+    },
+    {
+      "case_key": "NOISE-06",
+      "path": "inputs/NOISE-06/case.json",
+      "group": "noise"
+    },
+    {
+      "case_key": "NOISE-07",
+      "path": "inputs/NOISE-07/case.json",
+      "group": "noise"
+    },
+    {
+      "case_key": "NOISE-08",
+      "path": "inputs/NOISE-08/case.json",
+      "group": "noise"
+    },
+    {
+      "case_key": "NOISE-09",
+      "path": "inputs/NOISE-09/case.json",
+      "group": "noise"
+    },
+    {
+      "case_key": "NOISE-10",
+      "path": "inputs/NOISE-10/case.json",
+      "group": "noise"
+    },
+    {
+      "case_key": "NOISE-11",
+      "path": "inputs/NOISE-11/case.json",
+      "group": "noise"
+    },
+    {
+      "case_key": "NOISE-12",
+      "path": "inputs/NOISE-12/case.json",
+      "group": "noise"
+    },
+    {
+      "case_key": "NOISE-13",
+      "path": "inputs/NOISE-13/case.json",
+      "group": "noise"
+    },
+    {
+      "case_key": "NOISE-14",
+      "path": "inputs/NOISE-14/case.json",
+      "group": "noise"
+    },
+    {
+      "case_key": "NOISE-15",
+      "path": "inputs/NOISE-15/case.json",
+      "group": "noise"
+    },
+    {
+      "case_key": "NOISE-16",
+      "path": "inputs/NOISE-16/case.json",
+      "group": "noise"
+    },
+    {
+      "case_key": "NOISE-17",
+      "path": "inputs/NOISE-17/case.json",
+      "group": "noise"
+    },
+    {
+      "case_key": "NOISE-18",
+      "path": "inputs/NOISE-18/case.json",
+      "group": "noise"
+    },
+    {
+      "case_key": "NOISE-19",
+      "path": "inputs/NOISE-19/case.json",
+      "group": "noise"
+    },
+    {
+      "case_key": "NOISE-20",
+      "path": "inputs/NOISE-20/case.json",
+      "group": "noise"
+    },
+    {
+      "case_key": "NOISE-21",
+      "path": "inputs/NOISE-21/case.json",
+      "group": "noise"
+    },
+    {
+      "case_key": "NOISE-22",
+      "path": "inputs/NOISE-22/case.json",
+      "group": "noise"
+    },
+    {
+      "case_key": "NOISE-23",
+      "path": "inputs/NOISE-23/case.json",
+      "group": "noise"
+    },
+    {
+      "case_key": "NOISE-24",
+      "path": "inputs/NOISE-24/case.json",
+      "group": "noise"
+    },
+    {
+      "case_key": "NOISE-25",
+      "path": "inputs/NOISE-25/case.json",
+      "group": "noise"
+    }
+  ],
+  "groups": {
+    "reviewed": 44,
+    "extra": 4,
+    "noise": 25
+  },
+  "preparation_status": "READY",
+  "time_basis": "original W3 start, W3 route entry fallback; NASA synthetic publication+5m",
+  "preparation_summary": {
+    "cases": 73,
+    "web_available": 73,
+    "prices_available": 73,
+    "incomplete": [],
+    "gold": {
+      "cases": 73,
+      "reviewed": 44,
+      "scorable": 37,
+      "unreviewed": 29
+    }
+  },
+  "input_fingerprint": "84c93cd621df911193c96a8129bd27185475f2e44db22d2e184f3b4c30af159c"
+}

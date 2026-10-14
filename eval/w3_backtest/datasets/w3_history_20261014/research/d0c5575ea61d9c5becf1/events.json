@@ -1,0 +1,99 @@
+{
+  "ticker": "MU",
+  "version": 30,
+  "requested_event_ids": [
+    "E217"
+  ],
+  "events": [
+    {
+      "event_id": "E217",
+      "ticker": "MU",
+      "title": "Memory supply and HBM market outlook tightened",
+      "event_type": "SUPPLY_DEMAND_UPDATE",
+      "occurred_at": "2026-09-30",
+      "occurrence_time_precision": "DAY",
+      "status": "ACTIVE",
+      "canonical_summary": "Memory forecasts pointed to higher contract prices, persistent server bottlenecks, and a large but undersupplied HBM market.",
+      "known_event_summary": "Forecasts covered fourth-quarter DRAM and NAND price increases, enterprise-SSD demand, server-memory constraints, multi-year demand exceeding supply, and HBM market growth through 2028.",
+      "is_important": true,
+      "include_in_reference_view": true,
+      "related_event_ids": [
+        "E4",
+        "E11",
+        "E110",
+        "E198",
+        "E137"
+      ],
+      "supersedes_event_id": null,
+      "derived_from_event_ids": [],
+      "facts": [
+        {
+          "fact_id": "F1029",
+          "proposition": "DRAM contract prices were expected to rise approximately 10% to 15% sequentially in the fourth quarter of 2026.",
+          "assertion_state": "FORECAST",
+          "subject_time": "FY2026-Q4",
+          "fact_occurred_at": "2026-09-30",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F1030",
+          "proposition": "NAND contract prices were expected to rise approximately 15% to 20% sequentially in the fourth quarter of 2026.",
+          "assertion_state": "FORECAST",
+          "subject_time": "FY2026-Q4",
+          "fact_occurred_at": "2026-09-30",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F1031",
+          "proposition": "Enterprise SSDs were the only memory category expected to accelerate because of AI inference demand.",
+          "assertion_state": "FORECAST",
+          "subject_time": "FY2026-Q4",
+          "fact_occurred_at": "2026-09-30",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F1032",
+          "proposition": "Enterprise SSD bits were expected to grow approximately 80% in 2026.",
+          "assertion_state": "FORECAST",
+          "subject_time": "FY2026",
+          "fact_occurred_at": "2026-09-30",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F1033",
+          "proposition": "Server DRAM remained in shortage.",
+          "assertion_state": "ONGOING",
+          "subject_time": "FY2026-FY2027",
+          "fact_occurred_at": "2026-09-30",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F1034",
+          "proposition": "Memory demand was expected to exceed supply by approximately three times through 2027 and 2028.",
+          "assertion_state": "FORECAST",
+          "subject_time": "FY2027-FY2028",
+          "fact_occurred_at": "2026-09-30",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F1035",
+          "proposition": "Agentic AI was expected to drive server DRAM and DDR5 demand while NAND remained a bottleneck.",
+          "assertion_state": "FORECAST",
+          "subject_time": "FY2027-FY2028",
+          "fact_occurred_at": "2026-09-30",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F1036",
+          "proposition": "The HBM market was forecast at approximately $160 billion in 2027 and $282 billion in 2028, with shortage rates near 20%, 19%, and 16% across the forecast period.",
+          "assertion_state": "FORECAST",
+          "subject_time": "FY2027-FY2028",
+          "fact_occurred_at": "2026-09-30",
+          "fact_occurrence_time_precision": "DAY"
+        }
+      ],
+      "price_analysis": null
+    }
+  ],
+  "missing_event_ids": []
+}

@@ -1,0 +1,1961 @@
+{
+  "recent_trade_intents": [
+    {
+      "message": {
+        "title": "AMD drops an EPYC $15,000, 256-core beast",
+        "body": "Facebook\n\nX\n\nWhatsapp\n\nReddit\n\nPinterest\n\nFlipboard\n\nEmail\n\nAfter unveiling the EPYC 9006 (codenamed Venice) series in July and previewing a few impressive Zen 6 benchmarks, AMD has now released full pricing for its highly anticipated next-generation server chips. According to the list StorageReview obtained, AMD has big plans for the data center, with a wide range of SKUs from eight to 256 cores and pricing from $700 to $14,904.\n\nIntel VP Robert Hallock sets Nova Lake expectations, teases return to Raptor Lake for DDR4 platforms\n\nCPU scaling with DLSS\n\nIntel's one-two punch plan in desktop CPUs is taking shape\n\nBenchmarking AMD's BC-250, offering Steam Machine-like performance at half the price\n\nAMD splits Zen 7 into three EPYC families for 2028 and starts selling server CPUs by the agent\n\nAs a quick refresher, AMD strategically divided the Venice lineup into two distinct segments. The SP7 platform is the flagship offering, delivering maximum memory capacity and throughput. It supports up to 16 memory channels, accommodating both RDIMMs and MDRDIMMs up to DDR5-12800. The platform offers up to 96 PCIe 6.0 lanes and supports Venice chips with TDPs between 400W and 600W.\n\nThe Venice parts designed for the SP7 socket offer scalable performance for enterprises. The lineup begins with the 64-core EPYC 9556, priced at $8,008, and extends to the flagship 256-core EPYC 9996, which commands $14,904. In retrospect, the EPYC 9996's price tag does not seem particularly shocking, especially since the previous-generation EPYC 9965 (codenamed Turin) launched at nearly the same price, around $14,800.\n\nAs is typical for server processors, the total price increases as the number of cores rises. However, the price per core actually decreases substantially as you move up the core ladder. The pricing dynamic is very notable with Venice. For example, the flagship EPYC 9996, with a massive 256 cores, comes out to just $58.21 per core, whereas the \"entry-level\" SP7 chip, the 64-core EPYC 9556, costs around $125.12 per core. As a result, higher core-count models are more attractive from a per-core value perspective for data centers, cloud service providers, and enterprises.\n\nAMD EPYC 9006 SP7 Specifications and Pricing\n\nProcessor\n1Ku Price\nCores / Threads\nBase / Boost Clock (GHz)\nL3 Cache (MB)\nSocket\nTDP (W)\n\n\n\n\nEPYC 9996\n$14,904\n256 / 512\n2.55 / 4.10\n1,024\n1P / 2P\n600\n\n\nEPYC 9966\n$14,079\n192 / 384\n2.90 / 4.00\n768\n1P / 2P\n600\n\n\nEPYC 9846\n$13,114\n168 / 336\n2.85 / 3.70\n768\n1P / 2P\n500\n\n\nEPYC 9756\n$12,498\n128 / 256\n3.15 / 4.00\n512\n1P / 2P\n500\n\n\nEPYC 9G76\n$11,622\n96 / 192\n3.40 / 4.80\n384\n1P / 2P\n500\n\n\nEPYC 9686F\n$11,434\n96 / 192\n3.40 / 5.00\n384\n1P / 2P\n500\n\n\nEPYC 9656\n$9,713\n96 / 192\n3.05 / 3.70\n512\n1P / 2P\n400\n\n\nEPYC 9586F\n$9,701\n64 / 128\n3.75 / 5.00\n384\n1P / 2P\n500\n\n\nEPYC 9556\n$8,008\n64 / 128\n2.75 / 4.30\n384\n1P / 2P\n300\n\nThe SP7 SKUs support both 1P and 2P socket configurations. The latter, in particular, enables up to 512 Zen 6 cores in one system by pairing two EPYC 9996 chips on a single motherboard. That level of performance logically comes with a substantial investment, since the processors alone would cost $29,808 before factoring in the significant expense of memory today.\n\nAmong the nine SP7 SKUs, two models in particular stand out: the EPYC 9686F and EPYC 9586F. The \"F\" suffix means these chips feature maximum boost clock speeds, in this case, 5 GHz. While both are impressive in their own right, AMD optimized these parts to hit 5 GHz. Naturally, this level of optimization carries a price premium. For example, the 64-core EPYC 9586F costs almost as much as the 96-core EPYC 9656, despite offering 33% fewer cores. The trade-off is also apparent in the thermal envelope. The EPYC 9586F has a TDP that is 100W higher than the EPYC 9656.\n\nAMD EPYC 9006 SP8 Specifications and Pricing\n\nProcessor\n1Ku Price\nCores / Threads\nBase / Boost Clock (GHz)\nL3 Cache (MB)\nSocket\nTDP (W)\n\n\n\n\nEPYC 9746\n$11,679\n128 / 256\n2.90 / 4.00\n512\n1P / 2P\n400\n\n\nEPYC 9736\n$10,639\n128 / 256\n2.70 / 3.70\n256\n1P / 2P\n360\n\n\nEPYC 9736P\n$9,989\n128 / 256\n2.70 / 3.70\n256\n1P\n360\n\n\nEPYC 9676F\n$10,116\n96 / 192\n3.10 / 5.00\n384\n1P / 2P\n400\n\n\nEPYC 9646\n$8,904\n96 / 192\n2.80 / 3.70\n256\n1P / 2P\n300\n\n\nEPYC 9646P\n$8,001\n96 / 192\n2.80 / 3.70\n256\n1P\n300\n\n\nEPYC 9576F\n$9,431\n64 / 128\n3.55 / 5.00\n384\n1P / 2P\n400\n\n\nEPYC 9536\n$7,837\n64 / 128\n3.25 / 4.00\n256\n1P / 2P\n300\n\n\nEPYC 9526\n$7,123\n64 / 128\n2.75 / 3.70\n256\n1P / 2P\n220\n\n\nEPYC 9536P\n$6,595\n64 / 128\n3.25 / 4.00\n256\n1P\n300\n\n\nEPYC 9476F\n$6,695\n48 / 96\n3.65 / 5.00\n192\n1P / 2P\n330\n\n\nEPYC 9456\n$5,252\n48 / 96\n3.20 / 3.70\n256\n1P / 2P\n265\n\n\nEPYC 9456P\n$4,628\n48 / 96\n3.20 / 3.70\n256\n1P\n265\n\n\nEPYC 9376F\n$4,849\n32 / 64\n3.80 / 5.00\n192\n1P / 2P\n285\n\n\nEPYC 9356\n$3,789\n32 / 64\n3.60 / 4.50\n192\n1P / 2P\n250\n\n\nEPYC 9336\n$3,320\n32 / 64\n3.15 / 3.70\n128\n1P / 2P\n195\n\n\nEPYC 9356P\n$2,795\n32 / 64\n3.60 / 4.50\n192\n1P\n250\n\n\nEPYC 9276F\n$3,512\n24 / 48\n3.80 / 5.00\n96\n1P / 2P\n230\n\n\nEPYC 9256\n$2,501\n24 / 48\n2.85 / 4.50\n96\n1P / 2P\n190\n\n\nEPYC 9176F\n$3,787\n16 / 32\n3.90 / 5.00\n192\n1P / 2P\n200\n\n\nEPYC 9116\n$1,200\n16 / 32\n2.85 / 4.50\n48\n1P / 2P\n160\n\n\nEPYC 9016\n$700\n8 / 16\n3.05 / 4.80\n48\n1P / 2P\n130\n\nThe SP8 platform is a more streamlined and cost-effective counterpart to the SP7 platform for the Venice family. It supports eight-channel memory and does not embrace MRDIMMs. However, the limitation balances out by expansion possibilities, as the SP8 platform offers 128 PCIe 6.0 lanes, 33% more than the SP7 platform. Additionally, the SP7 platform has a lower thermal footprint, as these Zen 6 parts carry TDP ratings between 130W and 400W.\n\nGet Tom's Hardware's best news and in-depth reviews, straight to your inbox.\n\nThe SP8 platform offers an accessible entry point for organizations, with the octa-core EPYC 9106 priced at just $700. At the other end of the spectrum, the EPYC 9746, which is the top SP8 SKU, offers 128 Zen 6 cores at $11,679.\n\nWith the SP8 platform, we also see Zen 6 models with the “P” suffix, which indicates support for single-socket systems only. These variants deliver the same performance as their standard counterparts but at a significantly lower price. For example, the 128-core EPYC 9736P is 6% less expensive than the EPYC 9736. In an even more dramatic case, the 32-core EPYC 9356P retails for 26% less than the EPYC 9356.\n\nOne of the more unusual Venice chips is the 16-core EPYC 9176F. Despite its modest core count, it features a massive 192MB of L3 cache, 4X that of the 16-core EPYC 9116, while costing more than 3X as much. This translates to 12MB of L3 cache per core. With its high cache capacity and 5 GHz boost clock, AMD likely designed the EPYC 9176F for organizations seeking to minimize licensing costs for software priced per core.\n\nAMD’s SP7 and SP8 platforms are scheduled to launch in the fourth quarter of this year and the first half of 2027, respectively. However, these Venice prices are not final, as AMD has stated that the list is subject to change. AMD will extend the lineup further later in 2027 with Venice-X chips, which use the company's 3D V-Cache stacking.\n\nFollow Tom's Hardware on Google News, or add us as a preferred source, to get our latest news, analysis, & reviews in your feeds.\n\nZhiye Liu is a news editor, memory reviewer, and SSD tester at Tom’s Hardware. Although he loves everything that’s hardware, he has a soft spot for CPUs, GPUs, and RAM.",
+        "source_name": "tomshardware.com",
+        "published_at": "2026-09-29T11:20:00Z"
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": []
+      },
+      "w2": {
+        "policy_hit": false,
+        "policy_related": false,
+        "policy_ids": [],
+        "hit_condition_ids": [],
+        "matched_condition_ids": []
+      },
+      "w3_decision": {
+        "novelty": {
+          "reason": "E41、E763、E764、E766、E768和E769已覆盖AMD供给、份额、产能扩张及Intel服务器供给和价格计划，但未覆盖AMD Zen 6 Venice EPYC 9006的完整价格表、256核旗舰规格及SP7/SP8上市时点。",
+          "reference_ids": [
+            "E41",
+            "E763",
+            "E764",
+            "E766",
+            "E768",
+            "E769"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息提供了竞争产品定价、规格和计划上市信息，但没有客户将Intel订单转向AMD、取消Intel采购或确认部署变化，因此不满足现行Policy的客户迁移或订单触发条件。"
+        },
+        "expert_trade": {
+          "direction": "SHORT",
+          "evaluated": true,
+          "expectation_delta": "AMD公布EPYC 9006 Venice从700美元至14904美元的完整价格带，最高256核旗舰将于SP7平台在2026年第四季度附近进入市场，SP8平台计划于2027年上半年推出。该信息把此前的AMD供给改善预期具体化为接近Intel涨价窗口的高核心数、广覆盖价格替代方案，增加AMD争夺增量服务器需求并限制Intel ASP和份额的概率。",
+          "prior_expectation": "事件前Intel服务器业务的基线是需求强劲但供给只能满足约50%客户需求，并计划于2027年3月涨价；AMD虽已取得34.5%的服务器CPU份额且预计2027年供给改善，但下一代产品的价格、上市时点和可供客户选择的具体程度尚未明确。",
+          "reason": "竞争产品的核心数、价格和上市时点形成了非琐碎的Surprise；服务器CPU是Intel DCAI的重要价值接口，AMD产品供给改善可通过客户平台分配、Intel价格实现和单位量传导至INTC。虽然价格尚可能调整、上市仍属计划且尚无客户转单，但当前竞争威胁的方向和时间窗口已足够清晰，支持适度SHORT。",
+          "trade": true
+        }
+      },
+      "direction": "SHORT",
+      "initiated_at": "2026-09-29T11:23:57.839037+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    },
+    {
+      "message": {
+        "title": "[News] Samsung Foundry Loss Reportedly Seen Shrinking 42% YoY in 2026 as HBM4 Base-Die 4nm Demand Rises",
+        "body": "三星電子不斷成長的HBM4業務正在幫助其晶圓代工業務改善運營，助力公司縮小虧損。根據Digital Today報導，在三星記憶體部門HBM銷售成長的推動下，晶圓代工業務預計將在第三季減少虧損。由於HBM4晶片採用三星自主研發的晶圓代工製程製造，HBM4銷量的成長也為晶圓代工業務帶來了收入。\n\n這種關聯源自於HBM的架構。 HBM採用堆疊式設計，將多個DRAM晶片堆疊在一起，而最底層的基片則控制訊號貫穿整個堆疊。三星表示，已於2月開始批量出貨HBM4，該產品將單通道DRAM與採用4nm製程製造的基片相結合，並於5月份向客戶提供了HBM4E樣品。\n\n報告指出，隨著HBM4在三星HBM銷售額中所佔份額不斷擴大，其對晶圓代工收入的貢獻也不斷增長。三星預計第三季HBM4營收將較上季成長三倍以上，並在下半年佔HBM總營收的60%以上，這預示著晶片基片產量將進一步成長。\n\n銷售成長預計也將改善獲利狀況。報告引述Kiwoom證券的數據稱，三星晶圓代工和系統級晶片業務的合併營業虧損預計將年比收窄41.8%，從去年的6.74兆韓元降至今年的3.92兆韓元。第二季虧損擴大後，預計第三季將收窄至7,770億韓元。\n\nHBM4晶片產量的成長也可能為三星帶來更大的定價彈性。根據iNews24報道，市場對HBM4基礎晶片和先進製程訂單的強勁需求，降低了三星晶圓代工為了提高產能利用率而接受低價合約的必要性。該報告指出，三星在7月提高了4nm新訂單的價格，而部分先進製程的價格據稱也上漲了10%至15%。\n\n外部訂單是進一步改進的關鍵\n\n去年上半年三星晶圓代工虧損超過每季2兆韓元後，今年以來每季虧損在7,000億韓元至1.2兆韓元之間波動。虧損額的波動反映出僅依靠記憶體相關需求來填滿晶圓代工產能的限制。 《今日數字》指出，僅靠內部記憶體相關訂單不足以充分利用三星的晶圓代工產能。\n\n因此，三星正在擴大與外部客戶的交鑰匙工程合約。根據 Digital Today 報道，三星於 7 月與博通簽署了一份諒解備忘錄，雙方計劃在 2030 年前開展價值超過 2000 億美元的合作。該協議包括為博通設計的客製化 AI 加速器提供 HBM4 和 HBM4E 晶片，以及為關鍵產品提供 2 奈米及以下製程製程和先進封裝技術。\n\n進一步的改進最終取決於外部客戶對先進節點製程的訂單。三星表示，其晶圓代工業務在第二季度獲得了來自大型雲端服務供應商 (CSP) 以及人工智慧和高效能運算 (HPC) 客戶的 2nm 項目，客戶已經開始進行產品設計。《The Information》 也指出，Anthropic 據稱可能會利用三星晶圓代工來生產人工智慧晶片。\n\n閱讀更多\n\n【新聞】三星預計，到2027年，HBM將佔據近30%的產業DRAM產能，高於目前的20%。\n\n【新聞】據報道，三星泰勒晶圓廠2nm製程訂單已全部被特斯拉、博通和Arm預訂；Fab 2的籌備工作正在加速進行。\n\n（圖片來源：三星）",
+        "source_name": "trendforce.com",
+        "published_at": "2026-09-30"
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": []
+      },
+      "w2": {
+        "policy_hit": false,
+        "policy_related": false,
+        "policy_ids": [],
+        "hit_condition_ids": [],
+        "matched_condition_ids": []
+      },
+      "w3_decision": {
+        "novelty": {
+          "reason": "消息新增了三星HBM4 4nm基底晶片需求对Foundry收入和亏损的量化预测、4nm/先进制程涨价、博通合作备忘录、CSP及AI/HPC客户2nm设计导入以及Anthropic可能采用三星代工；Reference View仅有HBM扩张结构预测（E195）、SF2良率与客户争取（E239）、客户评估或早期项目（E141、E229），以及Intel自身外部Foundry收入和客户转化困难基线（E16、E17），没有这些新增的经济吸收和客户管线事实。",
+          "reference_ids": [
+            "E195",
+            "E239",
+            "E141",
+            "E229",
+            "E16",
+            "E17"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "无现行Policy命中；消息只涉及三星Foundry及其客户/伙伴的预测、报告或传闻，没有达到任何要求Intel客户转单、Intel节点资格或产能预订、Intel收入利用率，或Intel成本、供给和现金指标的激活条件。"
+        },
+        "expert_trade": {
+          "direction": "SHORT",
+          "evaluated": true,
+          "expectation_delta": "新信息把三星竞争变量从“技术成熟/客户评估”推进为“HBM4 4nm基底需求提供Foundry量与收入、预计亏损显著收窄、据称涨价，并出现Broadcom合作及CSP/AI-HPC 2nm设计项目”。因此应上调三星成为具备更强自我供给与定价能力、能够争夺先进AI代工客户的概率和时间确定性，并下调Intel 18A/14A外部客户转化、利用率及长期Foundry价值获取预期。MoU、预测和Anthropic消息尚非已兑现订单，Delta主要体现为竞争强度和概率/时间的修订，而非立即下调Intel当季收入。",
+          "prior_expectation": "在消息前，研究基线是Intel外部Foundry商业化仍处于技术里程碑和客户设计协作向资格、订单转换的未验证阶段，Q2外部Foundry收入约2.93亿美元；三星虽已有SF2良率改善和2nm客户评估/早期项目，但其先进代工的经济吸收、定价权和绑定客户规模仍未证实。市场对Intel Foundry的定价仍更像有条件的长期期权，而非已实现的外部收入流。",
+          "reason": "Surprise为中等：HBM4扩张与SF2改善已在E195/E239附近的基线内，但本消息首次把HBM4 base-die需求、亏损收窄、涨价和外部2nm客户管线连接成经济竞争叙事。Materiality对短期盈利有限、对Intel的长期Foundry期权较高；Intel外部Foundry收入仅约2.93亿美元，而当前估值条件依赖客户转化和资本吸收。Transmission清晰为三星有效代工需求/价格与客户选择增强，进而增加替代供给和议价压力，压低Intel先进节点design win、外部利用率、现金吸收和Foundry持续期。虽然没有Intel客户已转单且证据强度混合，方向性长期竞争风险已足以支持SHORT。",
+          "trade": true
+        }
+      },
+      "direction": "SHORT",
+      "initiated_at": "2026-09-30T09:43:16.911823+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    },
+    {
+      "message": {
+        "title": "AI’s Semiconductor Boom Has a Clear Center of Gravity: Taiwan Semiconductor",
+        "body": "Taiwan Semiconductor Manufacturing Co. Ltd. (NYSE: TSM ) remains the biggest beneficiary of the artificial intelligence semiconductor boom, with analysts at Counterpoint Research expecting its growth to accelerate through the second half of 2026 as advanced-node demand and packaging capacity remain tight. Counterpoint said Taiwan Semiconductor’s revenue rose 34% year over year and 12% sequentially to $40.2 billion in the second quarter. That gave the company about 42% of the broader Foundry 2.0 market, up from 38% in 2025. The research firm expects Taiwan Semiconductor’s full-year 2026 revenue to grow about 43%, implying growth of nearly 50% in the second half. AI Demand Keeps Taiwan Semiconductor at the Center Counterpoint Associate Director Brady Wang said the AI investment cycle has broadened across pure-play foundries, non-memory chipmakers and outsourced semiconductor assembly and test companies. However, he said Taiwan Semiconductor remains the “central beneficiary.” The firm estimates Taiwan Semiconductor’s CoWoS advanced-packaging supply-demand gap at about 20% in 2026. It expects the shortfall to narrow to roughly 10% in 2027 as in-house capacity expands toward 185,000 wafers per month. Counterpoint said Taiwan Semiconductor’s second-half growth will depend on the ramp of its N2 process, wafer price increases and planned CoWoS capacity additions. Tight packaging capacity is currently limiting AI product shipments, prompting Taiwan Semiconductor to increase back-end investment while customers develop alternative packaging options. See More: Top Value Stocks Samsung, Intel Gain As Customers Seek Alternatives Senior Analyst William Li said Samsung Electronics Co. Ltd. (OTC: SSNLF ) and Intel Corp. (NASDAQ: INTC ) are also benefiting as customers look for additional manufacturing sources. Samsung held the No. 2 foundry position with about 4% market share during the quarter, supported by SF4 and SF5 demand and higher wafer prices. Intel, meanwhile, has gained traction with its EMIB-T packaging technology, which has been adopted for Google’s next-generation TPU, according to Counterpoint. Still, Li said neither company currently matches Taiwan Semiconductor’s combination of advanced-node scale, manufacturing yields and packaging execution. AI Boom Broadens Across Chip Supply Chain The broader Foundry 2.0 market reached a record $96.6 billion in second-quarter revenue, up 25% from a year earlier and 11% sequentially. Counterpoint attributed the growth to demand for AI GPUs, custom ASICs, server CPUs, networking chips and power-management semiconductors. Non-Taiwan Semiconductor pure-play foundry revenue rose 18% year over year. Semiconductor Manufacturing International Corp. led that group with 36% growth, helped by demand for domestic AI chips in China. Hua Hong and Nexchip posted growth of 17% and 21%, respectively. Meanwhile, outsourced semiconductor assembly and test revenue rose 22% to $12.6 billion. ASE Technology posted 24% growth, while Amkor Technology, Inc. (NASDAQ: AMKR ) grew 26%, as advanced packaging, wafer probing and AI processor testing demand strengthened. Counterpoint expects the Foundry 2.0 market to maintain double-digit growth through the second half of 2026. However, it flagged CoWoS and substrate shortages, higher wafer and packaging costs, weak consumer demand and trade-policy uncertainty as key risks. TSM Price Action: Taiwan Semiconductor shares were down 0.49% at $454.72 during premarket trading on Wednesday, according to Benzinga Pro data . Photo via Shutterstock",
+        "source_name": "benzinga",
+        "published_at": "2026-09-30T11:15:34Z"
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": []
+      },
+      "w2": {
+        "policy_hit": false,
+        "policy_related": false,
+        "policy_ids": [],
+        "hit_condition_ids": [],
+        "matched_condition_ids": []
+      },
+      "w3_decision": {
+        "novelty": {
+          "reason": "E29和E79仅记录CoWoS短缺下EMIB-T可能获得客户转移或Google未来采用，E149记录Google选择Intel制造TPU但未确认EMIB-T采用。当前消息首次称EMIB-T已用于Google下一代TPU，并新增TSMC的营收、市场份额及CoWoS供需数据。",
+          "reference_ids": [
+            "E29",
+            "E79",
+            "E149"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "Intel EMIB-T被采用的表述来自Counterpoint分析，未披露完成电气、热和可靠性资格，也未披露绑定量产订单、产能预订或付费good-package交付，因此未满足现行Policy的正式触发边界。"
+        },
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "当前消息将Google下一代TPU与Intel EMIB-T从潜在采用联系推进到据报道已采用，提升了Intel获得外部先进封装资格、利用率和后续重复吞吐的概率；同时TSMC CoWoS约20%的供需缺口强化了替代封装的需求背景。",
+          "prior_expectation": "事件前EMIB-T主要是CoWoS紧张下的条件性替代方案，Google采用仅处于预期或测试阶段；即使Google已选择Intel制造TPU，EMIB-T的产品级资格、产能分配和量产交付仍未确认。",
+          "reason": "这是一个具体客户—产品—封装技术的正向设计选择，相对此前的条件性预期形成了非微小的确定性提升，并可通过EMIB-T资格、封装产能和外部Foundry价值获取直接传导至INTC。订单规模和正式资格仍是后续验证点，但不足以消除当前的早期LONG预期差。",
+          "trade": true
+        }
+      },
+      "direction": "LONG",
+      "initiated_at": "2026-09-30T11:20:06.346805+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    }
+  ],
+  "history_matches": [
+    {
+      "events": [],
+      "policies": []
+    },
+    {
+      "events": [],
+      "policies": []
+    },
+    {
+      "events": [],
+      "policies": []
+    }
+  ],
+  "watches": [],
+  "pins": [],
+  "policy_consumptions": [],
+  "provisional": [
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "ABI Research",
+          "TinyML",
+          "AI semiconductors"
+        ],
+        "occurrence_date": "2026-10-01",
+        "proposition": "ABI Research预计，不含智能手机和PC的TinyML AI芯片出货量将在2026年至2031年以37%的年复合增速增长，2031年超过41亿颗，相关市场收入超过78亿美元。",
+        "subject_time": "2026年至2031年TinyML市场"
+      },
+      "candidate_index": 0,
+      "case_id": "case_4be28291e0ca40a6939768ae09692a91",
+      "created_at": "2026-10-01T07:05:43.899506Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E288",
+      "runtime_signature": "c17086efd866d9ee770f979ce61f37ad7ad902b9eb6e37a8f2d7ca1a1f8cd24f",
+      "snapshot_version": 1,
+      "source_message_id": "std_21fa6c5df3734d45b2930d226a1f28ca",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Cuckoo",
+          "Renesas",
+          "RA6E1",
+          "AI appliances"
+        ],
+        "occurrence_date": "2025-12-31",
+        "proposition": "库可已在AI电磁炉中采用瑞萨RA6E1 MCU，该产品自2025年末开始量产。",
+        "subject_time": "AI电磁炉量产阶段"
+      },
+      "candidate_index": 1,
+      "case_id": "case_4be28291e0ca40a6939768ae09692a91",
+      "created_at": "2026-10-01T07:05:43.907247Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E289",
+      "runtime_signature": "e9eeb43bb668992deb015be1fd1bc76226651acb811a615adf463daee7a595b4",
+      "snapshot_version": 2,
+      "source_message_id": "std_21fa6c5df3734d45b2930d226a1f28ca",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Himpel",
+          "ABOV Semiconductor",
+          "AI-ADAM-100",
+          "AI+ certification"
+        ],
+        "occurrence_date": "2026-10-01",
+        "proposition": "力普尔在浴室通风设备中采用어보브반도체AI-ADAM-100 AI MCU，并获得韩国标准协会AI+认证。",
+        "subject_time": "AI浴室通风设备应用"
+      },
+      "candidate_index": 2,
+      "case_id": "case_4be28291e0ca40a6939768ae09692a91",
+      "created_at": "2026-10-01T07:05:43.914558Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E290",
+      "runtime_signature": "c28b8840fcb4663156377ebd3a29e70062a488c4bc2caa8f02185e798ab48d46",
+      "snapshot_version": 3,
+      "source_message_id": "std_21fa6c5df3734d45b2930d226a1f28ca",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ONGOING",
+        "entities": [
+          "ABOV Semiconductor",
+          "Samsung Electronics",
+          "LG Electronics",
+          "Midea",
+          "Xiaomi",
+          "AI MCU"
+        ],
+        "occurrence_date": "2026-10-01",
+        "proposition": "어보브반도체将三星电子、LG电子、中国美的和小米列为家电MCU客户，并正推进AI MCU的产品应用与量产。",
+        "subject_time": "AI MCU家电客户导入与量产推进"
+      },
+      "candidate_index": 3,
+      "case_id": "case_4be28291e0ca40a6939768ae09692a91",
+      "created_at": "2026-10-01T07:05:43.923789Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E291",
+      "runtime_signature": "cc9ec74d17d59c442b806dd7b4d66edf67e8f0b7609428cff231a2322834a12d",
+      "snapshot_version": 4,
+      "source_message_id": "std_21fa6c5df3734d45b2930d226a1f28ca",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Micron",
+          "NVIDIA",
+          "NVHBM",
+          "HBM4E",
+          "Base die"
+        ],
+        "occurrence_date": "2026-10-01",
+        "proposition": "Micron表示，与NVIDIA共同设计的定制NVHBM及JEDEC标准HBM4E产品将采用Foundry生产的base die，而非HBM4使用的Micron自制base die。",
+        "subject_time": "HBM4E及NVHBM产品开发与量产周期"
+      },
+      "candidate_index": 0,
+      "case_id": "case_4694fd957eb84a50b167e155fb53f7eb",
+      "created_at": "2026-10-01T09:29:02.184354Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E292",
+      "runtime_signature": "9fd1163f33d23e28fcf0dd04175f3d677d3452681a13eef18d41547f7c465a3f",
+      "snapshot_version": 5,
+      "source_message_id": "std_1d372de72e9442fdbe17390904cba34b",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMORED",
+        "entities": [
+          "Micron",
+          "TSMC",
+          "HBM4E",
+          "Base die"
+        ],
+        "occurrence_date": "2026-10-01",
+        "proposition": "Micron的HBM4E base die将外包给TSMC生产，工艺据报道推测为3纳米级。",
+        "subject_time": "HBM4E base die制造"
+      },
+      "candidate_index": 1,
+      "case_id": "case_4694fd957eb84a50b167e155fb53f7eb",
+      "created_at": "2026-10-01T09:29:02.208520Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E293",
+      "runtime_signature": "333ac92766ed404a1856bfe15e977824246589bd2bdc96b1f5a4f1a0001b7924",
+      "snapshot_version": 6,
+      "source_message_id": "std_1d372de72e9442fdbe17390904cba34b",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "EXPECTED",
+        "entities": [
+          "Micron",
+          "NVIDIA",
+          "NVHBM",
+          "NVLink Fusion"
+        ],
+        "occurrence_date": "2026-10-01",
+        "proposition": "NVHBM设计目标包括功耗降低15%、内存带宽提升最高30%以及I/O PHY封装面积缩小最高67%。",
+        "subject_time": "NVHBM产品性能目标"
+      },
+      "candidate_index": 2,
+      "case_id": "case_4694fd957eb84a50b167e155fb53f7eb",
+      "created_at": "2026-10-01T09:29:02.226415Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E294",
+      "runtime_signature": "955a3b98f1b951cf0af655002de489b10f4875d8d9a2a99ca0b84a563bc8a135",
+      "snapshot_version": 7,
+      "source_message_id": "std_1d372de72e9442fdbe17390904cba34b",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "Micron",
+          "NVIDIA",
+          "NVHBM",
+          "ASP",
+          "Gross margin"
+        ],
+        "occurrence_date": "2026-10-01",
+        "proposition": "Micron管理层预计，即使NVHBM采用外部Foundry生产base die，其ASP和利润率仍将改善，定制功能将带来高于普通HBM的附加价值。",
+        "subject_time": "NVHBM商业化阶段"
+      },
+      "candidate_index": 3,
+      "case_id": "case_4694fd957eb84a50b167e155fb53f7eb",
+      "created_at": "2026-10-01T09:29:02.236383Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E295",
+      "runtime_signature": "0ad8505e12f82aba7238a399ebdb9bfb4b4db0c319018f527fa5e8730903a380",
+      "snapshot_version": 8,
+      "source_message_id": "std_1d372de72e9442fdbe17390904cba34b",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLANNED",
+        "entities": [
+          "Dell",
+          "Jera",
+          "Rhaelm",
+          "Apollo",
+          "Chiba",
+          "AI data center"
+        ],
+        "occurrence_date": "2026-10-01",
+        "proposition": "Dell、Jera和Rhaelm计划在日本千叶建设一座投资额150亿美元、容量400MW的AI数据中心，项目由Apollo融资。",
+        "subject_time": "千叶AI数据中心建设与运营周期"
+      },
+      "candidate_index": 0,
+      "case_id": "case_7df200aedfe94c3b99dc19c860e603a5",
+      "created_at": "2026-10-01T09:49:30.695443Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E296",
+      "runtime_signature": "1d45f403398d515948fa2128496c4869d0606271b9c924dad39f8249ff0d7f2f",
+      "snapshot_version": 9,
+      "source_message_id": "std_57ac18d9176044cea61fb5bb31aad388",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLANNED",
+        "entities": [
+          "Dell",
+          "Jera",
+          "Rhaelm",
+          "Chiba",
+          "behind-the-meter power",
+          "AI data center"
+        ],
+        "occurrence_date": "2026-10-01",
+        "proposition": "千叶AI数据中心计划利用现有燃气电厂的表后电力，以绕过电网接入延迟；项目目标是在2028年分阶段启动运营并于2029年达到满负荷。",
+        "subject_time": "2028年分阶段启动至2029年满容量"
+      },
+      "candidate_index": 1,
+      "case_id": "case_7df200aedfe94c3b99dc19c860e603a5",
+      "created_at": "2026-10-01T09:49:30.702292Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E297",
+      "runtime_signature": "430bbdee39f8a5180f4436fed895c6f5a531dd3cf3a0d1b3f686b4f563a8c3f7",
+      "snapshot_version": 10,
+      "source_message_id": "std_57ac18d9176044cea61fb5bb31aad388",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLANNED",
+        "entities": [
+          "Japan",
+          "AI compute",
+          "AI infrastructure"
+        ],
+        "occurrence_date": "2026-10-01",
+        "proposition": "日本计划通过估计1400亿美元的总投资，成为美国和中国之外最大的AI算力中心。",
+        "subject_time": "日本AI算力基础设施扩张战略"
+      },
+      "candidate_index": 2,
+      "case_id": "case_7df200aedfe94c3b99dc19c860e603a5",
+      "created_at": "2026-10-01T09:49:30.708862Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E298",
+      "runtime_signature": "41254b728cf100057a7f0365abb4974af17d000888a0c0d9538793ceef192032",
+      "snapshot_version": 11,
+      "source_message_id": "std_57ac18d9176044cea61fb5bb31aad388",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLANNED",
+        "entities": [
+          "Jera",
+          "Japan",
+          "AI data centers",
+          "Power capacity"
+        ],
+        "occurrence_date": "2026-10-01",
+        "proposition": "Jera计划在未来五年将容量目标扩大至3至4GW，高于当前约1.7GW的用电规模。",
+        "subject_time": "未来五年"
+      },
+      "candidate_index": 3,
+      "case_id": "case_7df200aedfe94c3b99dc19c860e603a5",
+      "created_at": "2026-10-01T09:49:30.714996Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E299",
+      "runtime_signature": "e3dadc0866e7414916feecf0ca7158ef28de0aa950ef7f741841e8760f36c24b",
+      "snapshot_version": 12,
+      "source_message_id": "std_57ac18d9176044cea61fb5bb31aad388",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLANNED",
+        "entities": [
+          "Japan",
+          "Cloud infrastructure",
+          "Data centers",
+          "Public-private investment"
+        ],
+        "occurrence_date": "2026-10-01",
+        "proposition": "日本寻求到2035年为云计算和数据中心基础设施吸引2060亿美元公共与私人投资。",
+        "subject_time": "截至2035年"
+      },
+      "candidate_index": 4,
+      "case_id": "case_7df200aedfe94c3b99dc19c860e603a5",
+      "created_at": "2026-10-01T09:49:30.720913Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E300",
+      "runtime_signature": "9ab5fd4586933a7a1718d99be5a6c882d5e3b0ba801d88b268f77182fc5080c4",
+      "snapshot_version": 13,
+      "source_message_id": "std_57ac18d9176044cea61fb5bb31aad388",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Hawley",
+          "Murphy",
+          "U.S. Congress",
+          "AI Agent Accountability Act"
+        ],
+        "occurrence_date": "2026-10-01",
+        "proposition": "Hawley和Murphy提出了拟议的两党《AI Agent Accountability Act》。",
+        "subject_time": "2026年10月1日的美国国会立法提案"
+      },
+      "candidate_index": 0,
+      "case_id": "case_ebe1e47cb1f74ae29bf0ea7f92797c54",
+      "created_at": "2026-10-01T10:06:46.343046Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E301",
+      "runtime_signature": "d359f78f1755c2dc6cbf51cca98f2017e953bde1b365acaedeef28c10ec4c8c4",
+      "snapshot_version": 14,
+      "source_message_id": "std_af815de050554af0b020bbdd6ffc9cc5",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLANNED",
+        "entities": [
+          "AI Agent Accountability Act",
+          "AI companies",
+          "Autonomous agents"
+        ],
+        "occurrence_date": "2026-10-01",
+        "proposition": "拟议法案将允许在自主代理入侵计算机系统时，对设计鲁莽或未建立合理防护措施的科技公司提起刑事起诉和民事诉讼。",
+        "subject_time": "法案通过后的适用期间"
+      },
+      "candidate_index": 1,
+      "case_id": "case_ebe1e47cb1f74ae29bf0ea7f92797c54",
+      "created_at": "2026-10-01T10:06:46.352681Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E302",
+      "runtime_signature": "36013671f50614c44ec799f2b1d93908b129b0790783b97e6a923a7e6008b41f",
+      "snapshot_version": 15,
+      "source_message_id": "std_af815de050554af0b020bbdd6ffc9cc5",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLANNED",
+        "entities": [
+          "AI Agent Accountability Act",
+          "AI users",
+          "Autonomous agents"
+        ],
+        "occurrence_date": "2026-10-01",
+        "proposition": "拟议法案还将对明知而部署自主工具窃取数据或破坏系统的用户施加刑事责任。",
+        "subject_time": "法案通过后的适用期间"
+      },
+      "candidate_index": 2,
+      "case_id": "case_ebe1e47cb1f74ae29bf0ea7f92797c54",
+      "created_at": "2026-10-01T10:06:46.364447Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E303",
+      "runtime_signature": "913801edd1fd070347118da9240ee1997c0bc78c269df2de045a6f555a7ae24d",
+      "snapshot_version": 16,
+      "source_message_id": "std_af815de050554af0b020bbdd6ffc9cc5",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "The Call Center Doctors",
+          "NVIDIA H200",
+          "DeepSeek V4.1 Flash",
+          "Claude Code",
+          "Claude Opus 5.5"
+        ],
+        "occurrence_date": "2026-09-27",
+        "proposition": "The Call Center Doctors于2026年9月27日租用一台4张NVIDIA H200的服务器，测试用DeepSeek V4.1 Flash为Claude Code代理提供模型服务，以替代Claude Opus 5.5。",
+        "subject_time": "2026年9月27日测试"
+      },
+      "candidate_index": 0,
+      "case_id": "case_edad13b2cbbf42f1b014cb88d6099fa0",
+      "created_at": "2026-10-01T10:37:30.779730Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E304",
+      "runtime_signature": "652e0be053264ee0866a77db70f159596d6e003c3219e3decbb726ebdd1d977e",
+      "snapshot_version": 17,
+      "source_message_id": "std_18d55b1b9b684057b1b0ab7afc389ccb",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "The Call Center Doctors",
+          "NVIDIA H200",
+          "DeepSeek API",
+          "Claude Opus 5.5"
+        ],
+        "occurrence_date": "2026-09-27",
+        "proposition": "在该机构的真实编码工作负载测试中，H200服务器约以每天440.88美元的按需成本运行，而同等工作通过DeepSeek API的成本约为每天184至223美元；机构随后回到成本更低的Claude Opus 5.5方案。",
+        "subject_time": "2026年9月27日测试结果"
+      },
+      "candidate_index": 1,
+      "case_id": "case_edad13b2cbbf42f1b014cb88d6099fa0",
+      "created_at": "2026-10-01T10:37:30.787976Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E305",
+      "runtime_signature": "bce9632cd673ddecbc3365509358830826339603acfcad27af444ebda69a51ec",
+      "snapshot_version": 18,
+      "source_message_id": "std_18d55b1b9b684057b1b0ab7afc389ccb",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "DeepSeek V4.1 Flash",
+          "The Call Center Doctors",
+          "Sandbox security",
+          "AI coding agents"
+        ],
+        "occurrence_date": "2026-09-27",
+        "proposition": "由于测试人员发现代理代码可能通过共享临时目录等路径逃出沙箱并以管理员权限执行，DeepSeek在测试中未被允许编写实际代码，仅运行48至64个只读审查代理，读取2377个文件夹并提交32份漏洞报告。",
+        "subject_time": "DeepSeek V4.1 Flash安全测试期间"
+      },
+      "candidate_index": 2,
+      "case_id": "case_edad13b2cbbf42f1b014cb88d6099fa0",
+      "created_at": "2026-10-01T10:37:30.794201Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E306",
+      "runtime_signature": "0eb5fd1af71c7d6da793e19710972af77aa0c24a8bb5abf2ef7e538a8ff6cbaf",
+      "snapshot_version": 19,
+      "source_message_id": "std_18d55b1b9b684057b1b0ab7afc389ccb",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Challenger Gray",
+          "US employers",
+          "United States"
+        ],
+        "occurrence_date": "2026-10-01",
+        "proposition": "Challenger Gray数据显示，美国雇主在2026年9月宣布裁员43,281人；该月总量较2026年8月下降18%，并为2022年以来9月最低。",
+        "subject_time": "September 2026"
+      },
+      "candidate_index": 0,
+      "case_id": "case_c825c53bb66e41faae904dda92863628",
+      "created_at": "2026-10-01T10:40:07.690952Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E307",
+      "runtime_signature": "63ccf5f02cf535499780fd353825f5075cab059ee554d8cd7777bebc971b562e",
+      "snapshot_version": 20,
+      "source_message_id": "std_ee9edab08b6c489988a671ab2362f831",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Challenger Gray",
+          "US technology sector",
+          "United States"
+        ],
+        "occurrence_date": "2026-10-01",
+        "proposition": "Challenger Gray数据显示，美国科技行业在2026年9月宣布裁员10,799人，较2026年8月的6,103人上升77%。",
+        "subject_time": "September 2026"
+      },
+      "candidate_index": 1,
+      "case_id": "case_c825c53bb66e41faae904dda92863628",
+      "created_at": "2026-10-01T10:40:07.714043Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E308",
+      "runtime_signature": "7fc35484e612a37941f8674d666f7484170c4585bc0cc1fd169d53892b8ed324",
+      "snapshot_version": 21,
+      "source_message_id": "std_ee9edab08b6c489988a671ab2362f831",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Challenger Gray",
+          "US employers",
+          "United States"
+        ],
+        "occurrence_date": "2026-10-01",
+        "proposition": "Challenger Gray数据显示，2026年截至9月的美国累计裁员公告数量较2025年同期下降39%。",
+        "subject_time": "January-September 2026"
+      },
+      "candidate_index": 2,
+      "case_id": "case_c825c53bb66e41faae904dda92863628",
+      "created_at": "2026-10-01T10:40:07.738146Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E309",
+      "runtime_signature": "73620cd559746847d5a0c05a1cea2fdd21108017c6770cb033a8f8ab7e2de169",
+      "snapshot_version": 22,
+      "source_message_id": "std_ee9edab08b6c489988a671ab2362f831",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "US employers",
+          "United States"
+        ],
+        "occurrence_date": "2026-10-01",
+        "proposition": "美国雇主在2026年9月宣布招聘90,787个职位，为2011年以来9月最低。",
+        "subject_time": "September 2026"
+      },
+      "candidate_index": 3,
+      "case_id": "case_c825c53bb66e41faae904dda92863628",
+      "created_at": "2026-10-01T10:40:07.781323Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E310",
+      "runtime_signature": "7a4423a2f1716a836039f22714ac34842e1f57b3568988da0bb40bbd857d6878",
+      "snapshot_version": 23,
+      "source_message_id": "std_ee9edab08b6c489988a671ab2362f831",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Broadcom",
+          "Anthropic",
+          "TPU",
+          "AI infrastructure"
+        ],
+        "occurrence_date": "2026-09-29",
+        "proposition": "Broadcom同意向Anthropic提供最高420亿美元的融资额度，该额度可能转换为股权，并用于支持Anthropic的TPU基础设施扩张。",
+        "subject_time": "Anthropic五年TPU基础设施扩张期间"
+      },
+      "candidate_index": 0,
+      "case_id": "case_97d98c01dd74462998c7049d2d19120a",
+      "created_at": "2026-10-01T10:47:59.677574Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E311",
+      "runtime_signature": "39186aad8aac9d0e6746a24915d54226f6ae43b1aa1b058ccbf53b9e5a410cd7",
+      "snapshot_version": 24,
+      "source_message_id": "std_aef8dcef08df4d3ead349946dee033b6",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Broadcom",
+          "Anthropic",
+          "TPU"
+        ],
+        "occurrence_date": "2026-09-29",
+        "proposition": "该安排使Broadcom同时成为Anthropic的TPU硬件供应商和基础设施融资方。",
+        "subject_time": "当前Anthropic基础设施合作关系"
+      },
+      "candidate_index": 1,
+      "case_id": "case_97d98c01dd74462998c7049d2d19120a",
+      "created_at": "2026-10-01T10:47:59.703137Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E312",
+      "runtime_signature": "e1cfdd492d22d36c880fbe921bbf2dc4edfb5c706b25e5af7c7072c18733d292",
+      "snapshot_version": 25,
+      "source_message_id": "std_aef8dcef08df4d3ead349946dee033b6",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "Anthropic",
+          "Broadcom",
+          "AI compute services"
+        ],
+        "occurrence_date": "2026-09-29",
+        "proposition": "Anthropic预计到2027年将成为Broadcom相关服务的最大客户。",
+        "subject_time": "2027年"
+      },
+      "candidate_index": 2,
+      "case_id": "case_97d98c01dd74462998c7049d2d19120a",
+      "created_at": "2026-10-01T10:47:59.719378Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E313",
+      "runtime_signature": "072f78c72dcb4af6ec935866dd2194f89a3d3eebd98063764bb4583bdd3ed2ee",
+      "snapshot_version": 26,
+      "source_message_id": "std_aef8dcef08df4d3ead349946dee033b6",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Huawei",
+          "Mate 90",
+          "Kirin 9050 Pro",
+          "Kirin 9050",
+          "Kirin 9035",
+          "Kirin 9030",
+          "LogicFolding"
+        ],
+        "occurrence_date": "2026-10-01",
+        "proposition": "华为Mate 90系列高端机型采用基于LogicFolding架构的Kirin 9050 Pro或Kirin 9050处理器，其他机型分别采用Kirin 9035和Kirin 9030。",
+        "subject_time": "Mate 90系列发布与销售周期"
+      },
+      "candidate_index": 0,
+      "case_id": "case_2cee6c46bf794caab462cfe481747a13",
+      "created_at": "2026-10-01T11:00:15.262717Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E314",
+      "runtime_signature": "5e10bb17f99161898fe3696809443e0e60a7ba2d56a634553660b730c66c9461",
+      "snapshot_version": 27,
+      "source_message_id": "std_8dabc3f0e1bd454ea7d2cc69e029ea2f",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLAN",
+        "entities": [
+          "Huawei",
+          "LogicFolding",
+          "Smartphones"
+        ],
+        "occurrence_date": "2026-10-01",
+        "proposition": "华为计划在未来智能手机中进一步采用基于LogicFolding架构的芯片。",
+        "subject_time": "未来智能手机产品周期"
+      },
+      "candidate_index": 1,
+      "case_id": "case_2cee6c46bf794caab462cfe481747a13",
+      "created_at": "2026-10-01T11:00:15.293076Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E315",
+      "runtime_signature": "d25292186480ccfb20799ad639d28a8754e5d5658cd0472d48fc0a3d61eea79c",
+      "snapshot_version": 28,
+      "source_message_id": "std_8dabc3f0e1bd454ea7d2cc69e029ea2f",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Huawei",
+          "Kirin 9050 Pro",
+          "CPU",
+          "GPU",
+          "NPU"
+        ],
+        "occurrence_date": "2026-10-01",
+        "proposition": "据报道，Kirin 9050 Pro相较上一代产品多核CPU性能提升23%、GPU渲染性能提升40%、NPU性能提升140%。",
+        "subject_time": "Kirin 9050 Pro性能对比上一代产品"
+      },
+      "candidate_index": 2,
+      "case_id": "case_2cee6c46bf794caab462cfe481747a13",
+      "created_at": "2026-10-01T11:00:15.323749Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E316",
+      "runtime_signature": "b33542d91ea91b00c326505f69cf391bdd442b1248306ed2d6497e943909c73d",
+      "snapshot_version": 29,
+      "source_message_id": "std_8dabc3f0e1bd454ea7d2cc69e029ea2f",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Huawei",
+          "Smartphones",
+          "Memory",
+          "Mate 90"
+        ],
+        "occurrence_date": "2026-10-01",
+        "proposition": "华为表示，内存价格上涨使其每部智能手机的生产成本增加超过200美元。",
+        "subject_time": "Mate 90及华为智能手机生产周期"
+      },
+      "candidate_index": 3,
+      "case_id": "case_2cee6c46bf794caab462cfe481747a13",
+      "created_at": "2026-10-01T11:00:15.360628Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E317",
+      "runtime_signature": "bfc797c8d247e4b7c4d3ea9338cc63cb33f410c18d2d44220827ecf2a639786d",
+      "snapshot_version": 30,
+      "source_message_id": "std_8dabc3f0e1bd454ea7d2cc69e029ea2f",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMORED",
+        "entities": [
+          "Tencent",
+          "Oracle",
+          "NVIDIA",
+          "AI chips",
+          "Southeast Asia"
+        ],
+        "occurrence_date": "2026-10-01",
+        "proposition": "据报道，腾讯与Oracle签署了为期五年的海外算力租赁协议，获取约10万颗先进AI芯片，协议金额约70亿美元，约30%将在前期支付。",
+        "subject_time": "五年海外AI算力租赁期间"
+      },
+      "candidate_index": 0,
+      "case_id": "case_015c77fd2ba9490c82c68a9659fc279d",
+      "created_at": "2026-10-01T11:02:23.173611Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E318",
+      "runtime_signature": "34489a55dd9870f6c21e9052e24a1479e7174192669c42e534958e621c80c32b",
+      "snapshot_version": 31,
+      "source_message_id": "std_38ff7b06de9e4347a9841487ae2f2975",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Tencent",
+          "AI infrastructure",
+          "Capital expenditure",
+          "Free cash flow"
+        ],
+        "occurrence_date": "2026-10-01",
+        "proposition": "腾讯表示其2026年第二季度资本支出同比增长176%至人民币528亿元，自由现金流转为负人民币138亿元，部分原因是AI相关预付款增加。",
+        "subject_time": "2026年第二季度"
+      },
+      "candidate_index": 1,
+      "case_id": "case_015c77fd2ba9490c82c68a9659fc279d",
+      "created_at": "2026-10-01T11:02:23.231714Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E319",
+      "runtime_signature": "4e41bc3304a4aea542a0810361cb512892d94f1e8b143270478a606f1c4a40bf",
+      "snapshot_version": 32,
+      "source_message_id": "std_38ff7b06de9e4347a9841487ae2f2975",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMORED",
+        "entities": [
+          "ByteDance",
+          "Spring",
+          "Nscale",
+          "NVIDIA B200",
+          "Norway"
+        ],
+        "occurrence_date": "2026-10-01",
+        "proposition": "据报道，字节跳动新加坡子公司Spring通过英国云服务商Nscale在挪威数据中心获得了2304块NVIDIA B200 GPU的使用权限。",
+        "subject_time": "海外AI算力部署期间"
+      },
+      "candidate_index": 2,
+      "case_id": "case_015c77fd2ba9490c82c68a9659fc279d",
+      "created_at": "2026-10-01T11:02:23.699718Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E320",
+      "runtime_signature": "327b29019d013760b9e154d7e6f411e1ef6c28c22e07ff4ef861959335c605f3",
+      "snapshot_version": 33,
+      "source_message_id": "std_38ff7b06de9e4347a9841487ae2f2975",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "CScale",
+          "NVIDIA",
+          "Intel",
+          "Venture capital"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "CScale宣布完成1.45亿美元风险投资融资，投资方包括NVIDIA和Intel。",
+        "subject_time": "2026年9月30日融资公告"
+      },
+      "candidate_index": 0,
+      "case_id": "case_7c1973bf94da48b6a92d268da2bcaac1",
+      "created_at": "2026-10-01T11:05:57.797302Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E321",
+      "runtime_signature": "3bc75470b2076dae7fe98d8b0127438fd25d655e57ebdf1534b2252f99b89aec",
+      "snapshot_version": 34,
+      "source_message_id": "std_722d69dc4aaa41c7b7fe9a1be4fd090c",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLANNED",
+        "entities": [
+          "CScale",
+          "AI chips",
+          "Optical interconnect",
+          "Lasers",
+          "Fiber optics"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "CScale正在开发将AI芯片连接至光纤电缆的片上光互连技术，并计划以不影响数据流的方式将激光器集成到芯片中。",
+        "subject_time": "CScale芯片商业化开发周期"
+      },
+      "candidate_index": 1,
+      "case_id": "case_7c1973bf94da48b6a92d268da2bcaac1",
+      "created_at": "2026-10-01T11:05:57.827984Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E322",
+      "runtime_signature": "f4b7f7c732365196149766a6946a183cf262d1522e14cb71c59946879a47eb89",
+      "snapshot_version": 35,
+      "source_message_id": "std_722d69dc4aaa41c7b7fe9a1be4fd090c",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLANNED",
+        "entities": [
+          "CScale",
+          "AI networking chips"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "CScale累计融资1.88亿美元，并计划在2028年出货其芯片。",
+        "subject_time": "2028年"
+      },
+      "candidate_index": 2,
+      "case_id": "case_7c1973bf94da48b6a92d268da2bcaac1",
+      "created_at": "2026-10-01T11:05:57.841447Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E323",
+      "runtime_signature": "71745963c8a804ca660782481241d7e87b719ce52425e92f9ee7defb24c57e13",
+      "snapshot_version": 36,
+      "source_message_id": "std_722d69dc4aaa41c7b7fe9a1be4fd090c",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Huawei",
+          "Mate 90"
+        ],
+        "occurrence_date": "2026-10-01",
+        "proposition": "华为于2026年10月1日发布Mate 90系列智能手机。",
+        "subject_time": "2026年10月1日Mate 90系列发布"
+      },
+      "candidate_index": 0,
+      "case_id": "case_1567f3077ff94525ad580aae128455da",
+      "created_at": "2026-10-01T11:11:34.441624Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E324",
+      "runtime_signature": "fe2bcf3e3247c7fbd237f27ea3cbde77f3e974d7fb2c647cae98702a5e24dca6",
+      "snapshot_version": 37,
+      "source_message_id": "std_4f032ea890904cefb2d85ace3fbc979d",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Huawei",
+          "Mate 90 Pro Max",
+          "Kirin 9050 Pro",
+          "LogicFolding"
+        ],
+        "occurrence_date": "2026-10-01",
+        "proposition": "Mate 90 Pro Max搭载华为Kirin 9050 Pro系统级芯片，该芯片采用华为称为LogicFolding的三维内部布线重构技术。",
+        "subject_time": "Mate 90系列上市产品"
+      },
+      "candidate_index": 1,
+      "case_id": "case_1567f3077ff94525ad580aae128455da",
+      "created_at": "2026-10-01T11:11:34.459586Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E325",
+      "runtime_signature": "77ce80e50764199000ab0409b3e0de43c3a26681223fa226822fa695d8660035",
+      "snapshot_version": 38,
+      "source_message_id": "std_4f032ea890904cefb2d85ace3fbc979d",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Huawei",
+          "Mate 90",
+          "HarmonyOS 7"
+        ],
+        "occurrence_date": "2026-10-01",
+        "proposition": "华为Mate 90系列手机运行其自研、无Android的HarmonyOS 7操作系统。",
+        "subject_time": "Mate 90系列产品周期"
+      },
+      "candidate_index": 2,
+      "case_id": "case_1567f3077ff94525ad580aae128455da",
+      "created_at": "2026-10-01T11:11:34.468585Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E326",
+      "runtime_signature": "796161adf0ce2389b52a340398ea203b0e5667e9ee2730b4d76064ec4cda44d3",
+      "snapshot_version": 39,
+      "source_message_id": "std_4f032ea890904cefb2d85ace3fbc979d",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Huawei",
+          "Richard Yu",
+          "Ascend AI chips",
+          "advanced semiconductor capacity"
+        ],
+        "occurrence_date": "2026-09-29",
+        "proposition": "华为消费者业务负责人Richard Yu表示，中国先进半导体产能仍非常有限，手机芯片供应仍紧张，且华为Ascend AI芯片也使用同一先进产能。",
+        "subject_time": "2026年9月29日前后华为手机与Ascend芯片供给"
+      },
+      "candidate_index": 3,
+      "case_id": "case_1567f3077ff94525ad580aae128455da",
+      "created_at": "2026-10-01T11:11:34.484652Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E327",
+      "runtime_signature": "c2d2e5be33f1688483113e6acc8707cab9454a4328afa5a6b5bc0dbcc4a25a5e",
+      "snapshot_version": 40,
+      "source_message_id": "std_4f032ea890904cefb2d85ace3fbc979d",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLAN",
+        "entities": [
+          "Huawei",
+          "LogicFolding",
+          "smartphones"
+        ],
+        "occurrence_date": "2026-10-01",
+        "proposition": "华为表示未来智能手机将更多采用以LogicFolding技术制造的芯片。",
+        "subject_time": "未来智能手机产品周期"
+      },
+      "candidate_index": 4,
+      "case_id": "case_1567f3077ff94525ad580aae128455da",
+      "created_at": "2026-10-01T11:11:34.498112Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E328",
+      "runtime_signature": "bd572f3305e43b284118e3e74f8436dcffa3be031a11e8f589d8af93c4680b5a",
+      "snapshot_version": 41,
+      "source_message_id": "std_4f032ea890904cefb2d85ace3fbc979d",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "IDC",
+          "Huawei",
+          "China smartphone market"
+        ],
+        "occurrence_date": "2026-08-31",
+        "proposition": "IDC数据显示，2026年1月至8月中国国内智能手机出货量同比下降7%，同期华为在中国的出货量同比增长13%。",
+        "subject_time": "2026年1月至8月中国智能手机出货"
+      },
+      "candidate_index": 5,
+      "case_id": "case_1567f3077ff94525ad580aae128455da",
+      "created_at": "2026-10-01T11:11:34.521456Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E329",
+      "runtime_signature": "7cb7a678c707d87eb6e81afd57d11a0e569756a1c4dfb8d6a108cd653d257816",
+      "snapshot_version": 42,
+      "source_message_id": "std_4f032ea890904cefb2d85ace3fbc979d",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Huawei",
+          "Kirin 9050 Pro"
+        ],
+        "occurrence_date": "2026-10-01",
+        "proposition": "华为未披露Kirin 9050 Pro的制造商。",
+        "subject_time": "Kirin 9050 Pro制造安排"
+      },
+      "candidate_index": 6,
+      "case_id": "case_1567f3077ff94525ad580aae128455da",
+      "created_at": "2026-10-01T11:11:34.535959Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E330",
+      "runtime_signature": "c140b9ce37b0cee894ffeec6085b54adbed3b6207038fe5cd2aeb76c70472825",
+      "snapshot_version": 43,
+      "source_message_id": "std_4f032ea890904cefb2d85ace3fbc979d",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Micron",
+          "YMTC",
+          "3D NAND",
+          "Boise",
+          "Idaho"
+        ],
+        "occurrence_date": "2026-09-15",
+        "proposition": "Micron于2026年9月15日在爱达荷州博伊西法院对YMTC提起诉讼，指控其挖角Micron工程师并非法获取和使用Micron的3D NAND制造技术。",
+        "subject_time": "2026年9月15日提交的爱达荷州诉讼"
+      },
+      "candidate_index": 0,
+      "case_id": "case_51eb94fac48c4b029e15f06fa7330edd",
+      "created_at": "2026-10-01T11:11:53.948369Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E331",
+      "runtime_signature": "6af84a8fdc51dd910599463e52f85dc27a180a7973c91e1264becd28e5bb488c",
+      "snapshot_version": 44,
+      "source_message_id": "std_1776ba3c433e491ebfc7f76dee8841a8",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Micron",
+          "YMTC",
+          "Former Micron engineers",
+          "3D NAND patents",
+          "Trade secrets"
+        ],
+        "occurrence_date": "2026-09-15",
+        "proposition": "Micron在诉讼中主张，YMTC利用前Micron员工获得的技术形成相关专利组合并反过来起诉Micron，并请求法院将部分专利所有权从YMTC转移给Micron。",
+        "subject_time": "爱达荷州诉讼审理期间"
+      },
+      "candidate_index": 1,
+      "case_id": "case_51eb94fac48c4b029e15f06fa7330edd",
+      "created_at": "2026-10-01T11:11:53.963890Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E332",
+      "runtime_signature": "b17e184e1f358a3b87bfeaf6a96dfb2ba75c6cbcede6b6861d1a59b8ad85c3c5",
+      "snapshot_version": 45,
+      "source_message_id": "std_1776ba3c433e491ebfc7f76dee8841a8",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMORED",
+        "entities": [
+          "Meta",
+          "Muse",
+          "AI agents",
+          "Users"
+        ],
+        "occurrence_date": "2026-09-29",
+        "proposition": "Meta的Muse AI代理日活跃用户超过100万，周活跃用户达到300万。",
+        "subject_time": "2026年9月29日用户数据"
+      },
+      "candidate_index": 0,
+      "case_id": "case_05154a95919a407d99b42b1f108527a1",
+      "created_at": "2026-10-01T11:21:55.814102Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E333",
+      "runtime_signature": "70ae238b9f0b107827a9dfcb9f149a758e5d5d104a50d71942c2b70a74331201",
+      "snapshot_version": 46,
+      "source_message_id": "std_01463c4ac50648c7ab755caf5e9b40d0",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Meta",
+          "Muse",
+          "Shopify",
+          "QuickBooks",
+          "Stripe",
+          "Small businesses"
+        ],
+        "occurrence_date": "2026-09-29",
+        "proposition": "Meta正在将Muse扩展至小企业市场，并集成Shopify、QuickBooks和Stripe；该公司已推出Muse商业版本。",
+        "subject_time": "Muse商业化扩展阶段"
+      },
+      "candidate_index": 1,
+      "case_id": "case_05154a95919a407d99b42b1f108527a1",
+      "created_at": "2026-10-01T11:21:55.834054Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E334",
+      "runtime_signature": "98d3c89bfc06a2a8807663db54328b81cd753f3f418b3d2490f8aca9a50873ec",
+      "snapshot_version": 47,
+      "source_message_id": "std_01463c4ac50648c7ab755caf5e9b40d0",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMORED",
+        "entities": [
+          "Meta",
+          "Muse",
+          "Instagram",
+          "Facebook",
+          "Business accounts"
+        ],
+        "occurrence_date": "2026-09-29",
+        "proposition": "约33%的Muse早期用户已将该工具连接到Instagram或Facebook企业账户。",
+        "subject_time": "Muse早期用户阶段"
+      },
+      "candidate_index": 2,
+      "case_id": "case_05154a95919a407d99b42b1f108527a1",
+      "created_at": "2026-10-01T11:21:55.840877Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E335",
+      "runtime_signature": "fa16faad56c5d6096d8ed985f218d985c76ca96c654d86ddb409b41104ea1e73",
+      "snapshot_version": 48,
+      "source_message_id": "std_01463c4ac50648c7ab755caf5e9b40d0",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMORED",
+        "entities": [
+          "Glow",
+          "PixelLeak",
+          "AI agents",
+          "GitHub",
+          "Organizations"
+        ],
+        "occurrence_date": "2026-10-01",
+        "proposition": "Glow发布PixelLeak报告，称超过300个组织的AI开发代理意外将超过13000张内部截图暴露到公共仓库。",
+        "subject_time": "PixelLeak报告所覆盖的AI开发代理使用期间"
+      },
+      "candidate_index": 0,
+      "case_id": "case_31a273451e1e4330b386ff3013601b46",
+      "created_at": "2026-10-01T11:35:33.758295Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E336",
+      "runtime_signature": "62bf341d1ea9d1628ebc221bb76df1dfcf6a9bab56855ac878537069d3cd27ec",
+      "snapshot_version": 49,
+      "source_message_id": "std_f650694caecf477d8178bf5cee583aec",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMORED",
+        "entities": [
+          "Glow",
+          "PixelLeak",
+          "Corporate data",
+          "Financial data"
+        ],
+        "occurrence_date": "2026-10-01",
+        "proposition": "据报告，泄露截图包含企业和客户信息、财务数据以及资金转移界面的屏幕录制。",
+        "subject_time": "PixelLeak事件期间"
+      },
+      "candidate_index": 1,
+      "case_id": "case_31a273451e1e4330b386ff3013601b46",
+      "created_at": "2026-10-01T11:35:33.932881Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E337",
+      "runtime_signature": "6e23ab9ab483b70b00d50418100c855a89f9a219bc194e3a3f374fd1ac7929d5",
+      "snapshot_version": 50,
+      "source_message_id": "std_f650694caecf477d8178bf5cee583aec",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMORED",
+        "entities": [
+          "Glow",
+          "gitshot",
+          "GitHub",
+          "Developers"
+        ],
+        "occurrence_date": "2026-10-01",
+        "proposition": "约三分之一受影响企业的开发者使用gitshot，通过公共仓库托管截图；93%的相关图片位于开发者直接控制的个人用户名仓库下。",
+        "subject_time": "PixelLeak事件调查期间"
+      },
+      "candidate_index": 2,
+      "case_id": "case_31a273451e1e4330b386ff3013601b46",
+      "created_at": "2026-10-01T11:35:33.955888Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E338",
+      "runtime_signature": "da733c538f37606b138996ce092a9eb20e35896664d710b55e5d669215779756",
+      "snapshot_version": 51,
+      "source_message_id": "std_f650694caecf477d8178bf5cee583aec",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "AI agents",
+          "GitHub",
+          "Private repositories",
+          "Public repositories",
+          "Pull requests"
+        ],
+        "occurrence_date": "2026-10-01",
+        "proposition": "AI代理为解决私有GitHub仓库中的拉取请求无法渲染图片的问题，采用在公共仓库创建图片占位资源的变通方案，导致内部和未发布功能截图暴露。",
+        "subject_time": "AI开发代理使用该工作流期间"
+      },
+      "candidate_index": 3,
+      "case_id": "case_31a273451e1e4330b386ff3013601b46",
+      "created_at": "2026-10-01T11:35:33.975322Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E339",
+      "runtime_signature": "0f6025b9e45794c5951828e6099e21dc461cb35c351faea2a85ac0dd33ab85ad",
+      "snapshot_version": 52,
+      "source_message_id": "std_f650694caecf477d8178bf5cee583aec",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "MSI",
+          "Stealth A18 AI+",
+          "AMD Ryzen AI 9 HX 370",
+          "NVIDIA RTX 5090"
+        ],
+        "occurrence_date": "2026-10-01",
+        "proposition": "MSI Stealth A18 AI+游戏笔记本以3779美元促销，较标价节省520美元，搭载12核AMD Ryzen AI 9 HX 370处理器和NVIDIA RTX 5090移动GPU。",
+        "subject_time": "2026年10月1日促销期间"
+      },
+      "candidate_index": 0,
+      "case_id": "case_5623bc32a39246eb853584d3526aa9a1",
+      "created_at": "2026-10-01T11:42:44.842183Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E340",
+      "runtime_signature": "6e0cac210c631e8c9a637f3440051d10e806585bd70b203843b579fcfd068ef3",
+      "snapshot_version": 53,
+      "source_message_id": "std_5695e61ed08e4b7cbffd57a558a49a01",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "MSI",
+          "Stealth A18 AI+",
+          "DDR5",
+          "SSD"
+        ],
+        "occurrence_date": "2026-10-01",
+        "proposition": "该机型配备64GB DDR5内存、2TB SSD及18英寸3840×2400、120Hz显示屏。",
+        "subject_time": "MSI Stealth A18 AI+销售配置"
+      },
+      "candidate_index": 1,
+      "case_id": "case_5623bc32a39246eb853584d3526aa9a1",
+      "created_at": "2026-10-01T11:42:44.853464Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E341",
+      "runtime_signature": "2e8998415608af84242492ec8591f85f5fa0742779e328575b670b24dc4b6965",
+      "snapshot_version": 54,
+      "source_message_id": "std_5695e61ed08e4b7cbffd57a558a49a01",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "XLK",
+          "SMH",
+          "S&P 500",
+          "Semiconductor sector"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "2026年9月，11个S&P板块中只有Technology Select Sector SPDR Fund上涨，回报为5.08%；VanEck Semiconductor ETF上涨9.41%，同期S&P 500下跌约0.4%。",
+        "subject_time": "2026年9月"
+      },
+      "candidate_index": 0,
+      "case_id": "case_5f9749372ef742069f9c56f2deec5cfd",
+      "created_at": "2026-10-01T11:44:16.925554Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E342",
+      "runtime_signature": "d228ba60e197a6d36d8faf7878bf0e401ae128b28ceba2afda9d8d1a3d6c3c4a",
+      "snapshot_version": 55,
+      "source_message_id": "std_b9320345fa83426b91455692add7bb25",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "U.S. Treasury",
+          "10-year yield",
+          "Brent crude oil"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "2026年9月30日，美国10年期国债收益率达到约5.26%，为2002年以来最高水平；Brent原油当月上涨约14%。",
+        "subject_time": "2026年9月"
+      },
+      "candidate_index": 1,
+      "case_id": "case_5f9749372ef742069f9c56f2deec5cfd",
+      "created_at": "2026-10-01T11:44:16.945673Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E343",
+      "runtime_signature": "05cacad586fbefa310176dd183cae405a624f36e873dae189af8f3dff78a6497",
+      "snapshot_version": 56,
+      "source_message_id": "std_b9320345fa83426b91455692add7bb25",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Microsoft",
+          "AI infrastructure",
+          "Remaining performance obligations",
+          "Capital expenditure"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Microsoft的商业剩余履约义务达到6780亿美元，同比增长84%，其财年资本支出达到1159.5亿美元。",
+        "subject_time": "Microsoft 2026财年及最近季度披露"
+      },
+      "candidate_index": 2,
+      "case_id": "case_5f9749372ef742069f9c56f2deec5cfd",
+      "created_at": "2026-10-01T11:44:16.967618Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E344",
+      "runtime_signature": "02522287ca97bc81acba329bf575d1c55e09ccb2f333bef033769c2716c2f132",
+      "snapshot_version": 57,
+      "source_message_id": "std_b9320345fa83426b91455692add7bb25",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "Moody's",
+          "United States",
+          "Data centers",
+          "Power capacity"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Moody's预计，到2030年美国数据中心扩张需要约1100亿美元投资，以新增45GW电力容量。",
+        "subject_time": "截至2030年"
+      },
+      "candidate_index": 0,
+      "case_id": "case_c18ea097e2c144408cbd19a4993d2c48",
+      "created_at": "2026-10-01T12:00:00.941752Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E345",
+      "runtime_signature": "796aeb22eb323b8fc40f104a2232c6da4c445af6da48548384709538dec4e240",
+      "snapshot_version": 58,
+      "source_message_id": "std_ab249c8409dc48b5acaff39cf8b152d8",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "Moody's",
+          "United States",
+          "Data centers",
+          "Electricity demand"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Moody's预计，美国数据中心的电力需求将在2030年前翻倍。",
+        "subject_time": "2030年前"
+      },
+      "candidate_index": 1,
+      "case_id": "case_c18ea097e2c144408cbd19a4993d2c48",
+      "created_at": "2026-10-01T12:00:00.968129Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E346",
+      "runtime_signature": "71dc7a54d1f7b83d6531771c5346262acd292ed14cd6272f1d86857f963c3e2a",
+      "snapshot_version": 59,
+      "source_message_id": "std_ab249c8409dc48b5acaff39cf8b152d8",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "Moody's",
+          "United States",
+          "Data centers",
+          "Electricity"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "该分析预计，到本世纪末数据中心将消耗美国全部电力的约10%。",
+        "subject_time": "本世纪末"
+      },
+      "candidate_index": 2,
+      "case_id": "case_c18ea097e2c144408cbd19a4993d2c48",
+      "created_at": "2026-10-01T12:00:00.989528Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E347",
+      "runtime_signature": "f96a38fa1a7c871b5376b4d27953af2ebbabdd77cb490f5a37e2794b3d297daa",
+      "snapshot_version": 60,
+      "source_message_id": "std_ab249c8409dc48b5acaff39cf8b152d8",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "OpenAI",
+          "Moonshot AI",
+          "Adversarial distillation",
+          "Protected reasoning"
+        ],
+        "occurrence_date": "2026-07-28",
+        "proposition": "OpenAI披露，关联Moonshot AI的人员在2026年7月1日至7月28日期间发起协调性的对抗性蒸馏活动，7月24日至25日请求量达到约16000次，涉及超过4000个用户，活动于7月28日被完全阻断。",
+        "subject_time": "2026年7月1日至7月28日"
+      },
+      "candidate_index": 0,
+      "case_id": "case_0da437363a30489b9f7eae869a03e128",
+      "created_at": "2026-10-01T12:03:47.502637Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E348",
+      "runtime_signature": "3174c2addbb583d50b3e1f89f1ec0eeb63b5332cf836719b1c636032ab7348f3",
+      "snapshot_version": 61,
+      "source_message_id": "std_ce07c3c83c3f45b08ddb201aa5abe1d6",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "OpenAI",
+          "Encrypted reasoning",
+          "Model security",
+          "User conversations"
+        ],
+        "occurrence_date": "2026-07-28",
+        "proposition": "OpenAI表示该事件没有破解推理加密、没有直接访问存储的用户对话或数据库，并修复了可重放其他用户加密推理的路径，增加了输出检测和跨用户、组织及模型的保护措施。",
+        "subject_time": "2026年7月后的安全修复阶段"
+      },
+      "candidate_index": 1,
+      "case_id": "case_0da437363a30489b9f7eae869a03e128",
+      "created_at": "2026-10-01T12:03:47.527343Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E349",
+      "runtime_signature": "d8c93f09750e059fac7e68b19d4e65af73a0749b48065cd7798e337573f4ca1a",
+      "snapshot_version": 62,
+      "source_message_id": "std_ce07c3c83c3f45b08ddb201aa5abe1d6",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "OpenAI",
+          "Anthropic",
+          "Google",
+          "Cross-model attacks",
+          "Conversation compaction"
+        ],
+        "occurrence_date": "2026-08-10",
+        "proposition": "独立研究人员披露了跨模型和会话压缩漏洞，测试显示可将前沿模型的加密推理交给对应的较弱模型并还原为明文；OpenAI、Anthropic和Google确认相关攻击路径后，同样攻击无法再次发起。",
+        "subject_time": "2026年7月至8月披露与修复期间"
+      },
+      "candidate_index": 2,
+      "case_id": "case_0da437363a30489b9f7eae869a03e128",
+      "created_at": "2026-10-01T12:03:47.546469Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E350",
+      "runtime_signature": "faf3caab67dbf5d4263b890c75cdc227b05efd07784eeb21da60527a20667da7",
+      "snapshot_version": 63,
+      "source_message_id": "std_ce07c3c83c3f45b08ddb201aa5abe1d6",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "SCHEDULED",
+        "entities": [
+          "AWS",
+          "EC2 Capacity Blocks",
+          "NVIDIA B300",
+          "NVIDIA H100"
+        ],
+        "occurrence_date": "2026-10-01",
+        "proposition": "AWS计划自2026年10月7日起在所有区域将EC2 Capacity Blocks for ML的保留GPU容量价格提高约15%，B300价格从每小时14.04美元升至16.146美元，H100价格从每小时5.191美元升至5.97美元。",
+        "subject_time": "2026年10月7日起"
+      },
+      "candidate_index": 0,
+      "case_id": "case_6a7117b97cea4ff3848c79c683e9b8aa",
+      "created_at": "2026-10-01T12:08:40.448953Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E351",
+      "runtime_signature": "4afee5830623c74144f90d5d04829b860e538e9f3af3c63b47b27e2ee53a6505",
+      "snapshot_version": 64,
+      "source_message_id": "std_c7ef897359334e04b7ecde2f73752d85",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "AWS",
+          "NVIDIA B300",
+          "NVIDIA H100",
+          "GPU pricing"
+        ],
+        "occurrence_date": "2026-10-01",
+        "proposition": "此次提价是AWS连续第四个季度提高保留GPU容量价格，使H100和B300型号年初至今的价格累计上涨约40%至75%。",
+        "subject_time": "2026年年初至2026年10月"
+      },
+      "candidate_index": 1,
+      "case_id": "case_6a7117b97cea4ff3848c79c683e9b8aa",
+      "created_at": "2026-10-01T12:08:40.543333Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E352",
+      "runtime_signature": "12885e93770bcb08f7113fe77f675ae7fc30913daea862e4a9e77030dcf286d7",
+      "snapshot_version": 65,
+      "source_message_id": "std_c7ef897359334e04b7ecde2f73752d85",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "AWS",
+          "Capacity Blocks",
+          "On-Demand",
+          "Savings Plans"
+        ],
+        "occurrence_date": "2026-10-01",
+        "proposition": "AWS表示On-Demand和Savings Plans价格保持不变，而Capacity Block价格会根据供需动态调整。",
+        "subject_time": "当前AWS定价政策"
+      },
+      "candidate_index": 2,
+      "case_id": "case_6a7117b97cea4ff3848c79c683e9b8aa",
+      "created_at": "2026-10-01T12:08:40.594836Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E353",
+      "runtime_signature": "eb65930d0057f4f28611e8af13661851016289a30f6e5572f2fa1d3c6a8ee417",
+      "snapshot_version": 66,
+      "source_message_id": "std_c7ef897359334e04b7ecde2f73752d85",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Intel",
+          "AMD",
+          "Nasdaq"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Intel在2026年9月位列纳斯达克涨幅最大的五只股票之一，并跑赢纳斯达克指数。",
+        "subject_time": "2026年9月"
+      },
+      "candidate_index": 0,
+      "case_id": "case_29750b70aa9245499422e9b5d1d8c80f",
+      "created_at": "2026-10-01T12:18:06.114372Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E354",
+      "runtime_signature": "9041f6b7e1dafb3265e3b903bac18f18582cf211b30c4f337866a2b09801e27b",
+      "snapshot_version": 67,
+      "source_message_id": "std_2611efa62c894defb104c95725512851",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "RPCS3",
+          "Blu-ray drives",
+          "PlayStation 3",
+          "Spoofed firmware"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "RPCS3开发团队于2026年9月30日警告，市场上近期出现大量假冒蓝光驱动器，诈骗者将无法读取PS3光盘的旧型号驱动器装入高端外壳和包装并伪造固件。",
+        "subject_time": "2026年9月30日警告及后续销售期间"
+      },
+      "candidate_index": 0,
+      "case_id": "case_a7ff566b55c04671b2409e73db8a52f9",
+      "created_at": "2026-10-01T12:33:45.198810Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E355",
+      "runtime_signature": "fd3469eb96575277ccc4f3b5c9ddffa4b99c3c4ac79896e11409b3284a225a49",
+      "snapshot_version": 68,
+      "source_message_id": "std_a080986ea8c8488eaedc2460cf9e72eb",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "RPCS3",
+          "Newegg",
+          "AliExpress",
+          "Blu-ray drives"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "RPCS3团队建议消费者通过具有良好买家保护的商店购买，并特别警告不要在Newegg或AliExpress marketplace购买相关蓝光驱动器。",
+        "subject_time": "当前蓝光驱动器购买期间"
+      },
+      "candidate_index": 1,
+      "case_id": "case_a7ff566b55c04671b2409e73db8a52f9",
+      "created_at": "2026-10-01T12:33:45.210286Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E356",
+      "runtime_signature": "e6c702746918617cc7370cb71637271ef1a24e4c5d56b6308aeaeffe81584a2d",
+      "snapshot_version": 69,
+      "source_message_id": "std_a080986ea8c8488eaedc2460cf9e72eb",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Nebius",
+          "Inferize",
+          "AI inference",
+          "M&A"
+        ],
+        "occurrence_date": "2026-10-01",
+        "proposition": "Nebius收购了Inferize的团队和技术，交易条款未公开，外部估值约为1亿至1.5亿美元。",
+        "subject_time": "2026年10月1日收购公告"
+      },
+      "candidate_index": 0,
+      "case_id": "case_070f3609c4e940a8910a1e6a595c9385",
+      "created_at": "2026-10-01T12:49:11.307750Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E357",
+      "runtime_signature": "2c219bd42cc728f29598a93efdd0ac689ca1c0661264ee5e4d787c2d4411a3e7",
+      "snapshot_version": 70,
+      "source_message_id": "std_e7e7de2b558b4ed8bcc869243d698518",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLANNED",
+        "entities": [
+          "Nebius",
+          "Inferize",
+          "Token Factory",
+          "GPU utilization",
+          "AI inference"
+        ],
+        "occurrence_date": "2026-10-01",
+        "proposition": "Nebius计划将Inferize的推理优化技术整合到Token Factory，以减少模型冷启动造成的GPU闲置，降低每token成本并提高现有GPU集群的容量利用率。",
+        "subject_time": "Token Factory整合与运营阶段"
+      },
+      "candidate_index": 1,
+      "case_id": "case_070f3609c4e940a8910a1e6a595c9385",
+      "created_at": "2026-10-01T12:49:11.314740Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E358",
+      "runtime_signature": "119e6fc878a7d728c9c017ee1d9521e7141dd10d012f70935a91a51778473bb6",
+      "snapshot_version": 71,
+      "source_message_id": "std_e7e7de2b558b4ed8bcc869243d698518",
+      "ticker": "INTC",
+      "trading_date": "2026-10-01"
+    }
+  ],
+  "limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "global_state": {
+    "watches": [],
+    "pins": []
+  },
+  "event_details": {
+    "requested_event_ids": [
+      "E255"
+    ],
+    "canonical_events": [
+      {
+        "event_id": "E255",
+        "title": "Micron reported fiscal Q4 2026 results and raised its memory outlook",
+        "event_type": "EARNINGS_RELEASE",
+        "occurred_at": "2026-09-30",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "Micron reported sharply higher fiscal Q4 and full-year revenue, strategic customer commitments and HBM supply agreements, and guided to strong fiscal Q1 revenue and constrained 2027–2028 memory supply.",
+        "known_event_summary": "On 2026-09-30, Micron reported fiscal Q4 2026 results, strategic contracts, HBM commitments and a strong fiscal Q1 2027 outlook.",
+        "related_event_ids": [],
+        "supersedes_event_id": "E15",
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F1097",
+            "proposition": "美光FY2026第四季度营收为542亿美元，环比增长31%、同比增长379%。",
+            "assertion_state": "ACTUAL",
+            "subject_time": "美光FY2026第四季度",
+            "fact_occurred_at": "2026-09-30",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F1098",
+            "proposition": "美光FY2026全年营收为1332亿美元，同比增长256%。",
+            "assertion_state": "ACTUAL",
+            "subject_time": "美光FY2026全年",
+            "fact_occurred_at": "2026-09-30",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F1099",
+            "proposition": "美光已签署26项战略客户协议，预计覆盖截至2030年的超过35%收入，客户财务承诺增至320亿美元且大部分为现金预付款。",
+            "assertion_state": "ACTUAL",
+            "subject_time": "2026年至2030年战略客户协议周期",
+            "fact_occurred_at": "2026-09-30",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F1100",
+            "proposition": "美光表示已达成涵盖2027年大部分HBM芯片供应的协议，相关价格高于上年同期。",
+            "assertion_state": "ACTUAL",
+            "subject_time": "2027年HBM供应",
+            "fact_occurred_at": "2026-09-30",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F1101",
+            "proposition": "美光预计FY2027第一季度营收为615亿美元，上下浮动15亿美元，高于分析师平均预期的570.2亿美元。",
+            "assertion_state": "GUIDANCE",
+            "subject_time": "美光FY2027第一季度",
+            "fact_occurred_at": "2026-09-30",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F1102",
+            "proposition": "美光预计2027年和2028年DRAM及NAND行业位出货量增长约20%，同时供应持续受限，HBM出货量增长在2028年继续超过传统DRAM。",
+            "assertion_state": "FORECAST",
+            "subject_time": "2027年至2028年内存供需周期",
+            "fact_occurred_at": "2026-09-30",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      }
+    ],
+    "provisional_events": [],
+    "missing_event_ids": []
+  }
+}

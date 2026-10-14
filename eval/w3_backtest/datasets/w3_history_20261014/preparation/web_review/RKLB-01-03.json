@@ -1,0 +1,120 @@
+{
+  "case_key": "RKLB-01-03",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-09-24T20:34:11.715953Z",
+  "reviewed_at": "2026-10-13T22:58:33.370256Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 6,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a13765-87b8-7061-8bbf-e5cb30f5dd42",
+    "turn_id": "01a13765-87c5-7073-9196-b9e10ccc58e7",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 84736,
+        "inputTokens": 94032,
+        "outputTokens": 5978,
+        "reasoningOutputTokens": 4796,
+        "totalTokens": 100010
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 393472,
+        "inputTokens": 480213,
+        "outputTokens": 9253,
+        "reasoningOutputTokens": 7533,
+        "totalTokens": 489466
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "e0bf75de70d80a3124fab06a215917f41ca539119f48dee99e16c6f82c97d184",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://www.prnewswire.com/news-releases/iridium-stockholders-approve-acquisition-by-rocket-lab-302889586.html",
+      "title": "Iridium Stockholders Approve Acquisition by Rocket Lab",
+      "published_at": "2026-09-24T20:30:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search2",
+        "turn2search2"
+      ],
+      "source_call_ids": [
+        "exec-55b0a182-93a7-4398-9617-f7357d758834",
+        "exec-e4c27748-b438-4bc2-aab4-e1f4e501786b"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://www.sec.gov/Archives/edgar/data/1819994/000175392626001639/g085904_424b3.htm",
+      "title": "Form 424B3: definitive proxy statement/prospectus",
+      "published_at": "2026-08-26",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search8"
+      ],
+      "source_call_ids": [
+        "exec-55b0a182-93a7-4398-9617-f7357d758834"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "At the September 24 special meeting, Iridium stockholders adopted the previously announced merger agreement. The joint release reported approximately 99.6% of votes cast in favor, representing approximately 81.0% of outstanding shares entitled to vote. The exact time the vote result was determined is not stated in the release.",
+      "source_urls": [
+        "https://www.prnewswire.com/news-releases/iridium-stockholders-approve-acquisition-by-rocket-lab-302889586.html",
+        "https://www.sec.gov/Archives/edgar/data/1819994/000175392626001639/g085904_424b3.htm"
+      ],
+      "event_time": "2026-09-24",
+      "publication_time": "2026-09-24T20:30:00Z",
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "The prior proxy made shareholder adoption a required condition and documented the board’s recommendation in favor. The announcement is a vote result, not a report that the transaction had closed."
+    },
+    {
+      "observation": "The approval removed the shareholder-vote condition identified in the proxy, but the contemporaneous release still made completion contingent on remaining required regulatory approvals and other customary closing conditions; it stated a mid-2027 expected completion.",
+      "source_urls": [
+        "https://www.prnewswire.com/news-releases/iridium-stockholders-approve-acquisition-by-rocket-lab-302889586.html",
+        "https://www.sec.gov/Archives/edgar/data/1819994/000175392626001639/g085904_424b3.htm"
+      ],
+      "event_time": "2026-09-24",
+      "publication_time": "2026-09-24T20:30:00Z",
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "The materials identify regulatory approval, including FCC approval in the proxy, as outstanding; the announced expected timing is forward-looking, not a completed outcome."
+    }
+  ],
+  "gaps": [
+    "No independently authored contemporaneous report with a publication time verified at or before the cutoff was located. Same-day coverage lacking a verifiable time was not treated as pre-cutoff evidence.",
+    "The release stated that complete voting results would be reported in a Form 8-K. Exact per-proposal counts and the filing’s publication time were not verified as available before the cutoff."
+  ],
+  "research_notes": "Cutoff: 2026-09-24T20:34:11.715953Z. The earliest traceable disclosure located is the companies’ joint press release distributed by PR Newswire at 16:30 ET (20:30Z), before the cutoff. The meeting and vote occurred on September 24, but the release does not give the vote’s exact time. The pre-event proxy said the vote was scheduled for that date and shareholder adoption was required; the new fact was that the agreement was adopted. The release said remaining regulatory approvals and other customary closing conditions were still outstanding. No independently authored coverage with a publication time verifiable at or before cutoff was identified; same-day items without a verifiable time and later coverage were not used. The release said complete voting results would be filed on Form 8-K; exact filing-time results are not established here as pre-cutoff evidence."
+}

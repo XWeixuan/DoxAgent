@@ -1,0 +1,24 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-23T13:29:45.637581Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "The Trefis article’s valuation, return, and cash-flow calculations were not independently recomputed; the direct page open timed out, so the supplied pre-cutoff capture and matching live search result were used.",
+    "Micron’s approximately 40% fixed/ceiling revenue figure was conditional on completing planned SCAs; no pre-cutoff evidence here establishes that all planned agreements were executed or that the expected mix had been realized.",
+    "No evidence in this collection establishes actual SCA cash receipts, shipments, revenue recognition, or the September 30 Q4 results by the cutoff.",
+    "The DigiTimes material underlying the Acer report is not fully accessible in the open page; the usable counterpoint is the accessible secondary report and its attributed description.",
+    "No post-cutoff market reaction, later price data, or later coverage was used."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

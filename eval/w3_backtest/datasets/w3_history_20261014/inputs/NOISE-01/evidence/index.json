@@ -1,0 +1,24 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-29T15:18:04.762532Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "The direct Trump War Room post cited by the revised HuggingNews page could not be fetched, leaving the claimed original dissemination time unverified.",
+    "No dated pre-cutoff snapshot or exact public-release time was found for the White House order or GSA release; their availability by cutoff remains UNKNOWN.",
+    "The independent article's pre-cutoff text was not archived or otherwise verified; no usable independent contemporaneous report of the order's detailed terms was established.",
+    "The source feed's claims about Gemini/Grok, 40 million daily users, named criticism, Musk's role, and specific future service features remain unverified by the timestamped primary material available in this research.",
+    "The revised article's Sep 25 predecessor does not provide a verified pre-event expectation snapshot, so a precise expectation-versus-update comparison remains unavailable."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

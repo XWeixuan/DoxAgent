@@ -1,0 +1,244 @@
+{
+  "case_key": "INTC-01-04",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-09-30T11:17:22.645750Z",
+  "reviewed_at": "2026-10-13T22:58:31.591332Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 6,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a13754-1d22-7690-9e72-e4c6a37db1b1",
+    "turn_id": "01a13754-1db5-7991-aa72-db5c3c871375",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 82688,
+        "inputTokens": 96092,
+        "outputTokens": 11966,
+        "reasoningOutputTokens": 8804,
+        "totalTokens": 108058
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 380416,
+        "inputTokens": 481145,
+        "outputTokens": 16645,
+        "reasoningOutputTokens": 12910,
+        "totalTokens": 497790
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "911f276ccd90eb19332811a79e42871ec7e7813e6b2ac0eef3e7352231be0887",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://counterpointresearch.com/en/insights/MediaTek-to-Contribute-1-in-4-AI-ASIC-Server-Compute-Shipments-in-2028",
+      "title": "MediaTek to Contribute 1 in 4 AI ASIC Server Compute Shipments in 2028",
+      "published_at": "2026-04-29",
+      "time_precision": "DAY",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn4search6"
+      ],
+      "source_call_ids": [
+        "exec-675bd797-67ca-4b77-b74d-61eb2599c74c"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://www.tomshardware.com/tech-industry/semiconductors/intels-emib-packaging-gains-traction-as-chip-designers-look-to-skirt-tsmcs-cowos-constraints-googles-reported-decision-for-9th-gen-tpus-highlights-intels-attractive-alternative",
+      "title": "Intel’s EMIB packaging gains traction as chip designers look to skirt TSMC’s CoWoS constraints — Google’s reported decision for 9th-gen TPUs highlights Intel’s attractive alternative",
+      "published_at": "2026-07-15",
+      "time_precision": "DAY",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search8"
+      ],
+      "source_call_ids": [
+        "exec-774e5837-4fbc-48ef-a195-037dbf95a22e"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://www.trendforce.com/presscenter/news/20260918-13241.html",
+      "title": "AI Chip Packaging Pushes Beyond Reticle Limits, with CoWoS-L Set to Remain the Mainstream Advanced Packaging Solution Through 2028, Says TrendForce",
+      "published_at": "2026-09-18",
+      "time_precision": "DAY",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search4"
+      ],
+      "source_call_ids": [
+        "exec-774e5837-4fbc-48ef-a195-037dbf95a22e"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://counterpointresearch.com/en/insights/global-foundry-20-revenue-rises-25-yoy-to-a-record-966-billion-in-as-advanced",
+      "title": "Global Foundry 2.0 Revenue Rises 25% YoY to a Record $96.6 Billion in Q2 2026 as Advanced Packaging Takes Center Stage",
+      "published_at": "2026-09-29",
+      "time_precision": "DAY",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn1search0",
+        "turn4search1"
+      ],
+      "source_call_ids": [
+        "exec-675bd797-67ca-4b77-b74d-61eb2599c74c",
+        "exec-feaa741c-0dad-40ab-adb0-43d7d2d0e042"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S5",
+      "url": "https://en.edaily.co.kr/news/eda202609305710/",
+      "title": "AI Boom Extends to Packaging and Testing… ‘Foundry 2.0’ Revenue Up 25%",
+      "published_at": "2026-09-30 19:07:59 KST (2026-09-30T10:07:59Z)",
+      "time_precision": "EXACT",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn1search1",
+        "turn4search0"
+      ],
+      "source_call_ids": [
+        "exec-675bd797-67ca-4b77-b74d-61eb2599c74c",
+        "exec-feaa741c-0dad-40ab-adb0-43d7d2d0e042"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S6",
+      "url": "https://www.benzinga.com/markets/tech/26/09/62074203/ais-semiconductor-boom-has-a-clear-center-of-gravity-taiwan-semiconductor",
+      "title": "AI’s Semiconductor Boom Has a Clear Center of Gravity: Taiwan Semiconductor",
+      "published_at": "2026-09-30T11:15:34Z",
+      "time_precision": "EXACT",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search0"
+      ],
+      "source_call_ids": [
+        "exec-774e5837-4fbc-48ef-a195-037dbf95a22e"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "The earliest located secondary report on the Google/EMIB-T link is Tom’s Hardware on July 15, citing SemiAnalysis for a plan to use EMIB-T on a next-generation TPU called Humufish. This is reported intent, not a disclosed production commitment.",
+      "source_urls": [
+        "https://www.tomshardware.com/tech-industry/semiconductors/intels-emib-packaging-gains-traction-as-chip-designers-look-to-skirt-tsmcs-cowos-constraints-googles-reported-decision-for-9th-gen-tpus-highlights-intels-attractive-alternative"
+      ],
+      "event_time": null,
+      "publication_time": "2026-07-15",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The article attributes the report to SemiAnalysis and does not establish an actual selection date, binding order, qualification completion, or company confirmation."
+    },
+    {
+      "observation": "Counterpoint’s April 29 public research described EMIB-T for TPU v8e/Humufish as proposed and still in design-in/qualification; it said mass production was not targeted until late 2027. The model specificity is useful, but the September 30 wording “next-generation TPU” does not identify whether it is the same product.",
+      "source_urls": [
+        "https://counterpointresearch.com/en/insights/MediaTek-to-Contribute-1-in-4-AI-ASIC-Server-Compute-Shipments-in-2028",
+        "https://www.benzinga.com/markets/tech/26/09/62074203/ais-semiconductor-boom-has-a-clear-center-of-gravity-taiwan-semiconductor"
+      ],
+      "event_time": null,
+      "publication_time": "2026-04-29; comparison report published 2026-09-30T11:15:34Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The April statement is a prior research assessment, not an official Google/Intel status report; the later statement lacks generation-level detail, so a change in status for the same product cannot be established."
+    },
+    {
+      "observation": "TrendForce’s September 18 pre-cutoff outlook expected Google to adopt EMIB-T in 2027 and noted AWS testing, while forecasting CoWoS-L to remain the mainstream solution through 2028 because of maturity and yield.",
+      "source_urls": [
+        "https://www.trendforce.com/presscenter/news/20260918-13241.html"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-18",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This is an industry forecast and technical assessment; it does not confirm a completed Google adoption or quantify a package order."
+    },
+    {
+      "observation": "Counterpoint’s September 29 Q2 market release reports the Foundry 2.0 and TSMC figures and packaging-capacity outlook. Its current indexed page includes an Intel/Google adoption statement, but the historical presence of that passage by cutoff could not be verified.",
+      "source_urls": [
+        "https://counterpointresearch.com/en/insights/global-foundry-20-revenue-rises-25-yoy-to-a-record-966-billion-in-as-advanced"
+      ],
+      "event_time": "Q2 2026 reporting period for the cited market figures",
+      "publication_time": "2026-09-29 (page-displayed date; exact time UNKNOWN)",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "Do not use the current-page adoption sentence as pre-cutoff primary evidence without a dated original snapshot; contemporaneous EDaily separately reports the analyst statement on September 30."
+    },
+    {
+      "observation": "EDaily reported at 19:07:59 KST (10:07:59Z) on September 30 that Counterpoint analyst William Li said EMIB-T had been adopted for Google’s next-generation TPU. It also reported his caveat on Intel’s relative process scale, yields and packaging execution.",
+      "source_urls": [
+        "https://en.edaily.co.kr/news/eda202609305710/"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-30 19:07:59 KST (2026-09-30T10:07:59Z)",
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "The report is an analyst-attributed statement, not direct disclosure from Google or Intel; it provides no TPU model, qualification, binding order, volume or production timing. The English page is machine-translated."
+    },
+    {
+      "observation": "Benzinga published the supplied story at 11:15:34Z, repeating the adoption statement attributed to Counterpoint, 1 minute 48 seconds before the evidence cutoff.",
+      "source_urls": [
+        "https://www.benzinga.com/markets/tech/26/09/62074203/ais-semiconductor-boom-has-a-clear-center-of-gravity-taiwan-semiconductor"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-30T11:15:34Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This is later than the located EDaily report and does not add direct company confirmation, commercial terms, order quantity or production status."
+    }
+  ],
+  "gaps": [
+    "No direct pre-cutoff Google or Intel disclosure confirming the reported adoption, naming the TPU generation/model, stating qualification completion, or documenting a binding order, reserved capacity, paid production packages, volume or shipment schedule was located in this bounded search.",
+    "The actual date and stage of any customer decision are unknown; the reports provide publication times, not the event time.",
+    "The Counterpoint September 29 page’s current indexed EMIB-T sentence lacks a verified pre-cutoff snapshot or revision history, so its presence in the original dated release cannot be established.",
+    "The phrase “next-generation TPU” in the September 30 reports is not model-specific; it cannot be confidently reconciled with Counterpoint’s earlier TPU v8e/Humufish status description.",
+    "The bounded search identifies the earliest located report and earliest time-stamped coverage, but cannot establish absolute first circulation or recover the original SemiAnalysis publication timestamp."
+  ],
+  "research_notes": "Cutoff: 2026-09-30T11:17:22.645750Z. The earliest traceable public report located on Google using EMIB-T is Tom’s Hardware’s July 15 article, which attributes the report to SemiAnalysis; it describes a plan, not a confirmed production order. Counterpoint’s April report characterized EMIB-T for TPU v8e/Humufish as proposed and in design-in/qualification, with mass production not targeted until late 2027. TrendForce on September 18 likewise said adoption was expected in 2027 and identified CoWoS-L’s maturity and yield as continuing advantages. For the later “adopted” wording attributed to Counterpoint analyst William Li, the earliest time-stamped coverage found in this search was EDaily at 19:07:59 KST (10:07:59Z), before the Benzinga item at 11:15:34Z. The Benzinga item was published 1 minute 48 seconds before cutoff. Neither contemporaneous report supplies the TPU model, actual selection date, qualification status, binding order, production quantity, or customer/company confirmation. Counterpoint’s live September 29 page currently returns an EMIB-T adoption sentence, but no pre-cutoff snapshot or revision history was found to establish when that sentence appeared; it is not treated here as verified pre-cutoff primary evidence. No post-cutoff material or market reaction is used."
+}

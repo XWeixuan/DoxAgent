@@ -1,0 +1,22 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-10-07T09:04:00.845088Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "The original Musk X post and exact post time were not directly retrieved. Newsquawk establishes that the statement was in its feed by 06:38 UTC, but not the original post’s exact time.",
+    "The original Bloomberg Tan-interview report was not directly verified. The cutoff-safe source in this record is Benzinga’s pre-cutoff snapshot, which attributes Tan’s statement to Bloomberg.",
+    "The reviewed sources do not establish whether TSMC actually subleased space, the precise Intel role, a node-level agreement, a binding production booking, or associated volumes and timing; no direct TSMC statement was found in this focused search."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

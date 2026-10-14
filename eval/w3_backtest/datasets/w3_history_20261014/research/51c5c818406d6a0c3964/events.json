@@ -1,0 +1,43 @@
+{
+  "ticker": "RKLB",
+  "version": 7,
+  "requested_event_ids": [
+    "E86"
+  ],
+  "events": [
+    {
+      "event_id": "E86",
+      "ticker": "RKLB",
+      "title": "Iridium shareholders are scheduled to vote on Rocket Lab's proposed acquisition",
+      "event_type": "M_AND_A",
+      "occurred_at": "2026-09-23",
+      "occurrence_time_precision": "DAY",
+      "status": "ACTIVE",
+      "canonical_summary": "On 2026-09-23, Rocket Lab's proposed Iridium acquisition had a shareholder vote scheduled for 2026-09-24.",
+      "known_event_summary": "On 2026-09-23, Iridium shareholders were scheduled to vote on Rocket Lab's proposed acquisition on 2026-09-24.",
+      "is_important": true,
+      "include_in_reference_view": true,
+      "related_event_ids": [
+        "E11",
+        "E44",
+        "E71",
+        "E72",
+        "E77"
+      ],
+      "supersedes_event_id": null,
+      "derived_from_event_ids": [],
+      "facts": [
+        {
+          "fact_id": "F275",
+          "proposition": "Iridium shareholders are scheduled to vote on Rocket Lab's proposed acquisition on 2026-09-24.",
+          "assertion_state": "SCHEDULED",
+          "subject_time": "2026-09-24",
+          "fact_occurred_at": "2026-09-23",
+          "fact_occurrence_time_precision": "DAY"
+        }
+      ],
+      "price_analysis": null
+    }
+  ],
+  "missing_event_ids": []
+}

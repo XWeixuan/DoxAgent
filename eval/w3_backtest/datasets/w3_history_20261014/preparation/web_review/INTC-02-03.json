@@ -1,0 +1,286 @@
+{
+  "case_key": "INTC-02-03",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-09-28T15:46:31.712471Z",
+  "reviewed_at": "2026-10-13T22:58:31.667870Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 6,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a13757-3371-72b2-aa4b-f65ffcd332dc",
+    "turn_id": "01a13757-337e-7411-b180-4168a39ac70f",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 85760,
+        "inputTokens": 89555,
+        "outputTokens": 17188,
+        "reasoningOutputTokens": 13391,
+        "totalTokens": 106743
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 402688,
+        "inputTokens": 487706,
+        "outputTokens": 23103,
+        "reasoningOutputTokens": 18716,
+        "totalTokens": 510809
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "b16490b44c6d2e1776234bbc26b804a095a2fee53bbc31bed446812e1c41714e",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://newsroom.cisco.com/c/r/newsroom/en/us/a/y2026/m09/welcome-keynote-replay-powering-the-rise-of-the-agentic-enterprise.html",
+      "title": "Welcome Keynote Replay: Powering the Rise of the Agentic Enterprise",
+      "published_at": "2026-09-14",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn3search9"
+      ],
+      "source_call_ids": [
+        "exec-84adb3c5-e827-4497-9232-32bf20aa8714"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://conf.splunk.com/keynote-speakers.html",
+      "title": "Speakers at .conf26",
+      "published_at": "2026-09-14",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn3search2"
+      ],
+      "source_call_ids": [
+        "exec-84adb3c5-e827-4497-9232-32bf20aa8714"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://www.intc.com/filings-reports/all-sec-filings/content/0000050863-26-000155/0000050863-26-000155.pdf",
+      "title": "8-K - 07/23/2026 - Intel Corporation",
+      "published_at": "2026-07-23",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search12"
+      ],
+      "source_call_ids": [
+        "exec-8e0b6740-a2ac-4e7a-b260-771457274299"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://www.sec.gov/Archives/edgar/data/50863/000005086326000157/intc-20260627.htm",
+      "title": "intc-20260627",
+      "published_at": null,
+      "time_precision": "UNKNOWN",
+      "updated_at": null,
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn1search8"
+      ],
+      "source_call_ids": [
+        "exec-585dc5ec-610e-41d7-be8c-d4b501e1833b"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S5",
+      "url": "https://www.fool.com/investing/2026/09/27/intel-ceo-lip-bu-tan-has-incredible-news-for-amd-stock-investors/",
+      "title": "Intel CEO Lip-Bu Tan Has Incredible News for AMD Stock Investors",
+      "published_at": "2026-09-27",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn3search0"
+      ],
+      "source_call_ids": [
+        "exec-84adb3c5-e827-4497-9232-32bf20aa8714"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S6",
+      "url": "https://www.calcalistech.com/ctechnews/article/6bjuvbxxf",
+      "title": "Intel CEO says CPU demand is so strong the company can serve only 50% of customers",
+      "published_at": null,
+      "time_precision": "UNKNOWN",
+      "updated_at": null,
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn1search2"
+      ],
+      "source_call_ids": [
+        "exec-585dc5ec-610e-41d7-be8c-d4b501e1833b"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S7",
+      "url": "https://www.tomshardware.com/pc-components/cpus/intel-reportedly-set-to-hike-cpu-prices-by-10-percent-ahead-of-major-annual-product-launch-in-march-2027-report-says-amd-will-follow-up-between-june-and-july",
+      "title": "Intel reportedly set to hike CPU prices by 10% ahead of 'major annual product' launch in March 2027 — report says AMD will follow up between June and July",
+      "published_at": null,
+      "time_precision": "UNKNOWN",
+      "updated_at": null,
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn0news30"
+      ],
+      "source_call_ids": [
+        "exec-8e0b6740-a2ac-4e7a-b260-771457274299"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S8",
+      "url": "https://www.theregister.com/systems/2026/08/21/amd-grabs-more-cpu-share-while-pricier-pcs-punish-desktop-demand/5291053",
+      "title": "AMD grabs more CPU share while pricier PCs punish desktop demand",
+      "published_at": null,
+      "time_precision": "UNKNOWN",
+      "updated_at": null,
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn0search5"
+      ],
+      "source_call_ids": [
+        "exec-8e0b6740-a2ac-4e7a-b260-771457274299"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S9",
+      "url": "https://www.reddit.com/r/SKHynix/comments/1whud96/intel_ceo_flags_ai_supply_squeeze_memory_prices/",
+      "title": "Intel CEO Flags AI Supply Squeeze: Memory Prices Up 5–7x, Its CPUs Meet Just 50% of Demand",
+      "published_at": null,
+      "time_precision": "UNKNOWN",
+      "updated_at": null,
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn3reddit13"
+      ],
+      "source_call_ids": [
+        "exec-84adb3c5-e827-4497-9232-32bf20aa8714"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "Intel’s pre-event Q2 baseline was strong demand against constrained supply: its official results reported $16.1 billion revenue, up 25% year over year, and $0.42 non-GAAP EPS; its Q2 filing said server volume rose 9%, demand exceeded supply, and industry constraints were expected to persist into the following year.",
+      "source_urls": [
+        "https://www.intc.com/filings-reports/all-sec-filings/content/0000050863-26-000155/0000050863-26-000155.pdf",
+        "https://www.sec.gov/Archives/edgar/data/50863/000005086326000157/intc-20260627.htm"
+      ],
+      "event_time": "Q2 2026; filing identifier refers to quarter ended 2026-06-27",
+      "publication_time": "2026-07-23 for the 8-K; exact 10-Q filing date not established",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "Company-level disclosures do not identify a customer-level commitment or quantify the later “50%” statement’s denominator."
+    },
+    {
+      "observation": "The relevant .conf26 welcome keynote was scheduled for Sep. 14, 2026, 5–6:20 p.m. Mountain Time. A Sep. 27 Motley Fool article captured before cutoff paraphrased Tan as saying Intel could meet only 50% of customer CPU demand; CTech’s live page attributes a similar remark to his conversation with Jeetu Patel, but the official replay page has no searchable transcript.",
+      "source_urls": [
+        "https://newsroom.cisco.com/c/r/newsroom/en/us/a/y2026/m09/welcome-keynote-replay-powering-the-rise-of-the-agentic-enterprise.html",
+        "https://conf.splunk.com/keynote-speakers.html",
+        "https://www.fool.com/investing/2026/09/27/intel-ceo-lip-bu-tan-has-incredible-news-for-amd-stock-investors/",
+        "https://www.calcalistech.com/ctechnews/article/6bjuvbxxf"
+      ],
+      "event_time": "2026-09-14, 17:00–18:20 Mountain Time (scheduled session)",
+      "publication_time": "2026-09-27 for the supplied Motley Fool capture; the live CTech page displays 2026-09-20 but has no verified pre-cutoff snapshot",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The 50% figure is not defined as customer count, requested units, or a measured backlog; no official transcript was retrieved. Search surfaced a Sep. 16 repost citing SeDaily, but the original report was not found."
+    },
+    {
+      "observation": "By Sep. 27, the supplied Motley Fool capture reported Tom’s Hardware’s account of a possible 10% Intel CPU price increase in March 2027. Tom’s Hardware described the underlying DigiTimes report as based on supply-chain sources and said the affected Intel products were unspecified.",
+      "source_urls": [
+        "https://www.fool.com/investing/2026/09/27/intel-ceo-lip-bu-tan-has-incredible-news-for-amd-stock-investors/",
+        "https://www.tomshardware.com/pc-components/cpus/intel-reportedly-set-to-hike-cpu-prices-by-10-percent-ahead-of-major-annual-product-launch-in-march-2027-report-says-amd-will-follow-up-between-june-and-july"
+      ],
+      "event_time": "2027-03 was a reported prospective timing; no price change had occurred by cutoff",
+      "publication_time": "2026-09-27 for the supplied Motley Fool capture; Tom’s Hardware’s live page displays 2026-09-08",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This was an attributed report, not an Intel announcement; product scope and source details were not established, and the underlying DigiTimes article is paywalled."
+    },
+    {
+      "observation": "The supplied pre-cutoff Motley Fool capture reported Mercury Research’s Q2 2026 estimate of AMD at 34.5% of server CPU share, versus 27.3% in Q2 2025. The Register’s live page reports the same estimate and notes that the narrower Xeon SP-versus-EPYC comparison uses a different denominator.",
+      "source_urls": [
+        "https://www.fool.com/investing/2026/09/27/intel-ceo-lip-bu-tan-has-incredible-news-for-amd-stock-investors/",
+        "https://www.theregister.com/systems/2026/08/21/amd-grabs-more-cpu-share-while-pricier-pcs-punish-desktop-demand/5291053"
+      ],
+      "event_time": "Q2 2026 estimate, compared with Q2 2025",
+      "publication_time": "2026-09-27 for the supplied Motley Fool capture; The Register’s live page displays 2026-08-21",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This is a research estimate whose share denominator matters; the original Mercury Research report was not retrieved. The separate AMD capacity-expansion and revenue-growth claims in the article were not independently verified here."
+    }
+  ],
+  "gaps": [
+    "The official .conf26 replay page and schedule establish the event and session, but no accessible official transcript or recording passage verifying the exact 50% wording was retrieved.",
+    "The search result for a Sep. 16 repost points to a SeDaily report; the original SeDaily item was not located, so the earliest media coverage cannot be conclusively identified.",
+    "The 50% figure lacks a definition of denominator and measurement period; no customer-level order, unit, or backlog detail was found.",
+    "The reported 10% March 2027 price increase was not confirmed by Intel, and the underlying DigiTimes report is paywalled; affected products and source details remain unknown.",
+    "The original Mercury Research release was not retrieved; the 34.5% share figure is supported here through article references and coverage, with differing market denominators.",
+    "AMD production-capacity plans, Q2 data-center growth rate, and analyst claims included in the source article were not independently verified in the six-call budget."
+  ],
+  "research_notes": "Cutoff: 2026-09-28T15:46:31.712471Z. Intel’s July disclosures provide the prior context: demand exceeded available supply, while the later conference remark gave a more specific but undefined “50%” figure. Cisco’s official replay and Splunk’s schedule place the conference session on Sep. 14; the replay page has no searchable transcript. The earliest conventional-media report found was a CTech page displaying Sep. 20, while a Sep. 16 Reddit repost points to an unretrieved SeDaily report, so the first media dissemination is not established. The supplied Motley Fool capture was collected before cutoff on Sep. 28 and preserves the Sep. 27 article’s claims. Its supplied exact publication timestamp conflicts with the live page’s displayed time; use Sep. 27 only. Current CTech, Tom’s Hardware, The Register, and Reddit pages lack verified pre-cutoff snapshots, so their content/revision state is marked UNKNOWN and they are not sole support for cutoff-timed observations."
+}

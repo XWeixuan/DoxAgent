@@ -1,0 +1,24 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-29T19:45:05.178506Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "JPMorgan’s original research note was not located; the earliest located public copy is a dated verbatim reproduction, with no exact first-publication time.",
+    "The GuruFocus timestamp omits timezone, so its precise UTC publication time and ordering against other Sep. 29 coverage are unresolved.",
+    "Micron’s prepared-remarks URL redirected to the current IR landing page; no dated archived pre-cutoff snapshot of the primary document was verified.",
+    "The Citi item is a secondary summary, not the underlying Citi research note. The underlying analyst reports are not available for direct verification.",
+    "The key SCA coverage figures, HBM-supply outlook and capital-return statements reviewed here are forecasts or article reporting, not verified outcomes. The Sep. 30 report falls after the evidence cutoff and is excluded."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

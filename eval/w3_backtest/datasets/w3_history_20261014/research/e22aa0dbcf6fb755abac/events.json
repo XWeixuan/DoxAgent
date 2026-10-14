@@ -1,0 +1,40 @@
+{
+  "ticker": "BE",
+  "version": 4,
+  "requested_event_ids": [
+    "E21"
+  ],
+  "events": [
+    {
+      "event_id": "E21",
+      "ticker": "BE",
+      "title": "Bloom Energy planned to double factory capacity by year-end 2026",
+      "event_type": "CAPACITY_OR_CAPEX",
+      "occurred_at": "2026-09-09",
+      "occurrence_time_precision": "DAY",
+      "status": "ACTIVE",
+      "canonical_summary": "On 2026-09-09, Bloom Energy planned to double factory capacity by the end of 2026 with approximately $100 million of investment.",
+      "known_event_summary": "On 2026-09-09, Bloom Energy planned to double factory capacity by year-end 2026 through approximately $100 million of investment.",
+      "is_important": true,
+      "include_in_reference_view": true,
+      "related_event_ids": [
+        "E19",
+        "E16"
+      ],
+      "supersedes_event_id": null,
+      "derived_from_event_ids": [],
+      "facts": [
+        {
+          "fact_id": "F52",
+          "proposition": "Bloom Energy plans to double factory capacity by the end of 2026 with an investment of approximately $100 million.",
+          "assertion_state": "PLAN",
+          "subject_time": "2026-12-31",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY"
+        }
+      ],
+      "price_analysis": null
+    }
+  ],
+  "missing_event_ids": []
+}

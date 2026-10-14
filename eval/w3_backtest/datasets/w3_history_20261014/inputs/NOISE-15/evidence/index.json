@@ -1,0 +1,24 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-10-04T09:38:16.266637Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "No pre-cutoff source found in this search names a 14A external production customer or gives a binding order, booked capacity, or quantity.",
+    "The July call described PDK 0.9 as on track for October; this collection found no pre-cutoff confirmation that it had been delivered by Oct. 4.",
+    "The transcript provider’s initial publication/revision time is unknown; the transcript is treated as a rendering of the July public call, not an independently time-stamped contemporaneous publication.",
+    "The Motley Fool article page has an ambiguous EST label for an October timestamp, and its own revision history or pre-cutoff snapshot was not verified. The AOL copy has a specific pre-cutoff timestamp.",
+    "No additional independently time-verified July report was established here; the independent prior-context report is dated Jan. 23, while the primary July call and filing provide the contemporaneous update."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

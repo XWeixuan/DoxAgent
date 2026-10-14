@@ -1,0 +1,23 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-10-09T14:23:08.207529Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "The supplier-order signing date, monetary terms, delivery acceptance terms, and financial contribution to Ballard are not disclosed in the cited release.",
+    "No cutoff-verified evidence establishes that the modules were delivered, the trains commissioned, or project-specific hydrogen refuelling and route readiness were secured; the stated dates are future forecasts as of cutoff.",
+    "TVR’s currently accessible April 19 page raises pre-award infrastructure, refuelling, and funding issues, but no verified pre-cutoff snapshot or post-April 28 disposition was found; whether those constraints remained unresolved at cutoff is unknown.",
+    "ChemAnalyst’s currently accessible page displays an October 7 date, but no dated pre-cutoff snapshot or revision history was verified; its text is not relied upon as independent historical confirmation."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

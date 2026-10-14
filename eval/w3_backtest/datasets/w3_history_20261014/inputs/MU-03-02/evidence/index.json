@@ -1,0 +1,22 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-30T19:42:56.394271Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "The full BofA research note and its distribution timestamp were not independently retrieved; the exact time of the forecast change itself remains unknown.",
+    "The Yahoo article does not translate the sector-level market estimate into Micron-specific demand, revenue, product mix, or financial outcomes.",
+    "No additional independent pre-cutoff report directly covering the same BofA note was verified."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

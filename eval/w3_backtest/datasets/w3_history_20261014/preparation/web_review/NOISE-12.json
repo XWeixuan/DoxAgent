@@ -1,0 +1,169 @@
+{
+  "case_key": "NOISE-12",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-09-24T17:00:50.646227Z",
+  "reviewed_at": "2026-10-13T22:58:32.761130Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 6,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a13771-b740-70f3-91b9-4f8da9f11c60",
+    "turn_id": "01a13771-b74e-7061-a3df-7f5870a993e9",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 90880,
+        "inputTokens": 99928,
+        "outputTokens": 12814,
+        "reasoningOutputTokens": 10776,
+        "totalTokens": 112742
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 406784,
+        "inputTokens": 499720,
+        "outputTokens": 18380,
+        "reasoningOutputTokens": 15715,
+        "totalTokens": 518100
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "054fa47b3b6b57bc52b15f7c740c52f7c6e31a0c109c77522a25295ac93dcdf3",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://www.presidency.ucsb.edu/documents/truth-social-posts-september-24-2026",
+      "title": "Truth Social Posts of September 24, 2026",
+      "published_at": "2026-09-24T11:24:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn5search0"
+      ],
+      "source_call_ids": [
+        "exec-52ea9591-20d2-4aaa-af7a-3db753524232"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://www.newsquawk.com/headlines/us-president-trump-says-it-is-a-big-day-with-china-president-xi-super-intelligence-will-be-a-big-topic-of-discussion-but-he-wants-to-leave-it-exactly-where-it-is-and-that-is-also-chinas-position-also-our-guardrail-is-the-doj",
+      "title": "US President Trump says it is a big day with China President Xi; Super Intelligence will be a big topic of discussion",
+      "published_at": "2026-09-24T11:46:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn5search11"
+      ],
+      "source_call_ids": [
+        "exec-52ea9591-20d2-4aaa-af7a-3db753524232"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://www.presidency.ucsb.edu/documents/pool-reports-september-24-2026",
+      "title": "Pool Reports of September 24, 2026",
+      "published_at": "2026-09-24T15:40:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn2search0"
+      ],
+      "source_call_ids": [
+        "exec-4b541928-1015-4b67-ad57-331db693974d"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://www.axios.com/2026/09/22/trump-china-ai-hotline-xi-summit",
+      "title": "U.S.-China “red telephone” could bring a Cold War guardrail to AI",
+      "published_at": "2026-09-22",
+      "time_precision": "DAY",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn1search6"
+      ],
+      "source_call_ids": [
+        "exec-5869479f-1481-48d6-9982-44026b95cc6c"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "Trump's 7:24 a.m. ET post preceded the summit meetings. Its text said he wanted to leave “Super Intelligence” as it was and asserted that this was China's position; it did not announce a jointly issued decision. The source story's description of DOJ as the “primary regulatory guardrail” is more specific than Trump's wording, “Our guardrail is the DOJ.”",
+      "source_urls": [
+        "https://www.presidency.ucsb.edu/documents/truth-social-posts-september-24-2026",
+        "https://www.newsquawk.com/headlines/us-president-trump-says-it-is-a-big-day-with-china-president-xi-super-intelligence-will-be-a-big-topic-of-discussion-but-he-wants-to-leave-it-exactly-where-it-is-and-that-is-also-chinas-position-also-our-guardrail-is-the-doj"
+      ],
+      "event_time": "2026-09-24T11:24:00Z",
+      "publication_time": "2026-09-24T11:24:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The post states Trump's view of China's position; by itself it does not verify China's assent, specify a rule, or establish a formal DOJ regulatory role."
+    },
+    {
+      "observation": "In public opening remarks, Xi called for AI development to remain under human control. The press pool reported this by 11:40 a.m. ET, before the supplied story's publication time. This qualifies a broad claim of shared opposition to AI constraints, but is not itself evidence of an agreed regulation or slowdown.",
+      "source_urls": [
+        "https://www.presidency.ucsb.edu/documents/pool-reports-september-24-2026"
+      ],
+      "event_time": "2026-09-24T14:32:00Z",
+      "publication_time": "2026-09-24T15:40:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The dispatch covers public opening remarks, not the outcome of the closed bilateral meetings."
+    },
+    {
+      "observation": "Before the summit, contemporaneous reporting described a proposed AI-incident notification channel and exploration of a formal dialogue. That prior public context concerned crisis communication; it did not establish a development pause or a jointly adopted safeguard.",
+      "source_urls": [
+        "https://www.axios.com/2026/09/22/trump-china-ai-hotline-xi-summit"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-22",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "Axios described a proposal and negotiations, not an agreed mechanism or summit result."
+    }
+  ],
+  "gaps": [
+    "No pre-cutoff joint U.S.-China readout, agreement text, or official confirmation of a decision to avoid new AI limits was located in the verified sources.",
+    "The original Truth Social platform page for this specific post was not retrieved; the earliest-source record is an archive entry corroborated by contemporaneous reporting.",
+    "The source message's assertion that both governments discussed creating an incident-alert channel is not independently established here as a summit outcome; pre-event reporting documents a U.S. proposal and ongoing exploration.",
+    "The verified sources identify no direct Intel customer, product, order, manufacturing, or supply-chain impact."
+  ],
+  "research_notes": "Cutoff: 2026-09-24T17:00:50.646227Z. The earliest traceable public statement found is Trump's Truth Social post at 11:24Z; Newsquawk reported its text shortly after. The supplied story was timestamped 16:40:30Z, after Xi's public opening remarks had been reported by the White House press pool. The verified pre-cutoff material supports Trump's statement and Xi's separate call for human control, but does not establish a joint agreement to reject new AI limits or a formal policy assigning DOJ a regulatory role. No later coverage or market reaction is used."
+}

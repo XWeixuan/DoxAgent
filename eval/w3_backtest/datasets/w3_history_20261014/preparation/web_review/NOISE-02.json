@@ -1,0 +1,182 @@
+{
+  "case_key": "NOISE-02",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-09-27T06:45:47.252849Z",
+  "reviewed_at": "2026-10-13T22:58:32.316120Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 6,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a13769-7fab-72b0-a2fc-6d39e1b2796b",
+    "turn_id": "01a13769-7fb8-7b51-9241-842d7b9e4ba6",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 82688,
+        "inputTokens": 94249,
+        "outputTokens": 16127,
+        "reasoningOutputTokens": 14043,
+        "totalTokens": 110376
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 401664,
+        "inputTokens": 487382,
+        "outputTokens": 23393,
+        "reasoningOutputTokens": 20749,
+        "totalTokens": 510775
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "ea089d34c5e150a14c2ed5b9c894cea5c01a8ad47a32d51eb94d781d91f17369",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://www.investing.com/news/stock-market-news/exclusivesk-hynixs-solidigm-weighs-ipo-that-could-value-theunit-at-up-to-150-billion-sources-say-4917883",
+      "title": "Exclusive—SK Hynix’s Solidigm weighs IPO that could value the unit at up to $150 billion, sources say",
+      "published_at": "2026-09-25 12:47 PM (page timezone not stated)",
+      "time_precision": "MINUTE",
+      "updated_at": "2026-09-25 08:42 PM (page timezone not stated)",
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UPDATED",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn3search1",
+        "turn5search3"
+      ],
+      "source_call_ids": [
+        "exec-213657a3-1b4e-41d8-b93a-d1a474c5b7e6",
+        "exec-35afc26f-ed60-45cd-9828-2b25fb7106a5"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://www.sec.gov/Archives/edgar/data/2120882/000119312526382688/d111778d6k.htm",
+      "title": "SK hynix Form 6-K: Clarification Regarding Rumors or Media Reports",
+      "published_at": "2026-09-04",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn2search0"
+      ],
+      "source_call_ids": [
+        "exec-10c02e1b-0d74-41a2-b837-9fd72342ed22"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://www.businesstimes.com.sg/companies-markets/telcos-media-tech/sk-hynixs-solidigm-weighs-ipo-could-value-unit-us150-billion-sources",
+      "title": "SK Hynix’s Solidigm weighs IPO that could value the unit at up to US$150 billion: sources",
+      "published_at": "2026-09-26 09:06 AM (page timezone not stated)",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn0search0",
+        "turn5search0"
+      ],
+      "source_call_ids": [
+        "exec-213657a3-1b4e-41d8-b93a-d1a474c5b7e6",
+        "exec-3271070d-63b5-44db-b2ac-12250d8007b9"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://www.benzinga.com/markets/ipos/26/09/62010641/solidigm-ipo-sk-hynix-150-billion-valuation",
+      "title": "SK Hynix’s Solidigm Explores IPO at Up to $150B Valuation",
+      "published_at": "UNKNOWN",
+      "time_precision": "UNKNOWN",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn0search3"
+      ],
+      "source_call_ids": [
+        "exec-3271070d-63b5-44db-b2ac-12250d8007b9"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "Reuters reported that Solidigm held meetings with investment banks competing for IPO roles during the week of Sep. 21–25. Anonymous sources described a possible IPO as early as the following year, up to $150 billion valuation and $15 billion proceeds; Reuters said timing and size remained early-stage and subject to change.",
+      "source_urls": [
+        "https://www.investing.com/news/stock-market-news/exclusivesk-hynixs-solidigm-weighs-ipo-that-could-value-theunit-at-up-to-150-billion-sources-say-4917883"
+      ],
+      "event_time": "Week of 2026-09-21; exact meeting dates not reported",
+      "publication_time": "2026-09-25 12:47 PM (Reuters page display; timezone not stated)",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The estimates and meetings were attributed to unnamed sources; neither an IPO filing nor firm terms were reported. The article says the company had not confirmed specific plans."
+    },
+    {
+      "observation": "The Sep. 4 SK hynix 6-K said Solidigm was reviewing competitiveness measures but had made no determinations, following an Aug. 5 report about a possible pre-IPO raise. Reuters’ Sep. 25 account included a contemporaneous SK hynix statement that no specific plans had been confirmed. Comparing these statements, the reported bank pitches and tentative figures were new claims, not issuer confirmation.",
+      "source_urls": [
+        "https://www.sec.gov/Archives/edgar/data/2120882/000119312526382688/d111778d6k.htm",
+        "https://www.investing.com/news/stock-market-news/exclusivesk-hynixs-solidigm-weighs-ipo-that-could-value-theunit-at-up-to-150-billion-sources-say-4917883"
+      ],
+      "event_time": "2026-09-04 prior filing; Sep. 25 contemporaneous response",
+      "publication_time": "2026-09-04 (filing date); 2026-09-25 (Reuters report; displayed 12:47 PM, timezone not stated)",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The 6-K predates the reported pitch meetings. The new account remained an anonymous-source report and the company’s quoted position remained non-confirmation."
+    },
+    {
+      "observation": "Reuters’ Sep. 25 story also referred to its earlier-this-month reporting that Solidigm was considering a U.S. NAND factory, with upstate New York a leading candidate. This is separate manufacturing context, not confirmation of an IPO.",
+      "source_urls": [
+        "https://www.investing.com/news/stock-market-news/exclusivesk-hynixs-solidigm-weighs-ipo-that-could-value-theunit-at-up-to-150-billion-sources-say-4917883"
+      ],
+      "event_time": "Earlier in September 2026; exact date not stated",
+      "publication_time": "2026-09-25 (Reuters report; displayed 12:47 PM, timezone not stated)",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The article summarizes earlier Reuters coverage; this search did not verify a separate primary approval or a direct link between the factory consideration and any IPO."
+    },
+    {
+      "observation": "The Business Times published a Reuters-attributed account on Sep. 26 at 09:06 AM, before the cutoff. It repeats the Reuters report rather than supplying an independently sourced account.",
+      "source_urls": [
+        "https://www.businesstimes.com.sg/companies-markets/telcos-media-tech/sk-hynixs-solidigm-weighs-ipo-could-value-unit-us150-billion-sources"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-26 09:06 AM (page display; timezone not stated)",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This is dissemination evidence only; it does not independently corroborate the anonymous-source claims."
+    }
+  ],
+  "gaps": [
+    "No independently sourced contemporaneous report confirming the bank pitch meetings, valuation estimate or proceeds estimate was identified; the located early coverage was Reuters syndication or attribution.",
+    "Exact meeting dates, IPO venue, ownership/sale structure, valuation basis, financing terms and any binding underwriting or transaction decision were not established in the reviewed pre-cutoff sources.",
+    "The supplied Benzinga URL’s available page is marked updated after cutoff, and no dated pre-cutoff snapshot was verified; its article body therefore cannot be used to confirm the supplied source-message version."
+  ],
+  "research_notes": "Cutoff: 2026-09-27T06:45:47.252849Z. The earliest traceable substantive account found is Reuters’ Sep. 25 exclusive, followed by same-dispatch republications; the Business Times copy is dissemination evidence, not independent confirmation. Relative to SK hynix’s Sep. 4 filing, Reuters adds an anonymous-source account of bank pitch meetings and tentative deal estimates, while also reporting that SK hynix had not confirmed specific plans. The supplied Benzinga page now appears with a Sep. 29 “UPDATED” marker; without a dated pre-cutoff snapshot, its article text was not used. No later market reaction or prices are included."
+}

@@ -1,0 +1,310 @@
+{
+  "case_key": "BE-02-01",
+  "evidence_cutoff_at": "2026-09-24T23:05:42.989261Z",
+  "reviewed_at": "2026-10-13T22:58:31.392833Z",
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a13740-92d8-7e80-ba57-c4647ad6c139",
+    "turn_id": "01a13740-92eb-77b1-8312-1b9e1ffca5d8",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 167680,
+        "inputTokens": 178143,
+        "outputTokens": 7464,
+        "reasoningOutputTokens": 3321,
+        "totalTokens": 185607
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 1775616,
+        "inputTokens": 1963631,
+        "outputTokens": 35160,
+        "reasoningOutputTokens": 29420,
+        "totalTokens": 1998791
+      }
+    },
+    "prompt_version": "w3-web-evidence-v1",
+    "input_fingerprint": "488bd73ad336f435404924a8ba4e54bdeb3ea3d80f9346352b809da0f64c3a18",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://bloomberg.com/news/articles/2026-09-24/oracle-cites-force-majeure-to-shield-itself-on-controversial-data-center",
+      "title": "Oracle Cites ‘Force Majeure’ to Shield Itself on Controversial Data Center",
+      "published_at": "2026-09-24T12:25:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": "2026-09-24T16:50:00Z",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "BEFORE_CUTOFF",
+      "content_state": "UPDATED",
+      "decision": "KEEP",
+      "reason": "The supplied publication and revision times do not exceed the case cutoff.",
+      "source_result_refs": [
+        "turn2search0"
+      ],
+      "source_call_ids": [
+        "exec-ef50abff-d208-447b-bd19-9bcd95312073"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://techcrunch.com/2026/09/24/oracle-sends-force-majeure-notice-on-its-new-mexico-stargate-data-center/",
+      "title": "Oracle sends force majeure notice on its New Mexico Stargate data center",
+      "published_at": "2026-09-24T18:11:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn2search1"
+      ],
+      "source_call_ids": [
+        "exec-ef50abff-d208-447b-bd19-9bcd95312073"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://www.marketscreener.com/news/oracle-blue-owl-project-delay-sends-ripples-through-ai-financing-sources-say-ce785adfd881f521",
+      "title": "Oracle, Blue Owl project delay sends ripples through AI financing, sources say",
+      "published_at": "2026-09-24T22:51:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": "2026-09-24T23:00:00Z",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "BEFORE_CUTOFF",
+      "content_state": "UPDATED",
+      "decision": "KEEP",
+      "reason": "The supplied publication and revision times do not exceed the case cutoff.",
+      "source_result_refs": [
+        "turn2search2",
+        "turn3search10"
+      ],
+      "source_call_ids": [
+        "exec-ed3b0b9d-63c5-460f-8cf3-a10408bc3742",
+        "exec-ef50abff-d208-447b-bd19-9bcd95312073"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://www.axios.com/2026/09/24/oracle-force-majeure-blue-owl-openai",
+      "title": "Oracle moves to shield itself from AI buildout risks",
+      "published_at": "2026-09-24T21:03:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn12news27"
+      ],
+      "source_call_ids": [
+        "exec-9e25d79d-f5d9-4312-84ee-b8ef5a0b2dc2"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S5",
+      "url": "https://www.axios.com/newsletters/axios-pro-rata-dc37cb7d-13c4-4aff-9679-e82a79b5700b",
+      "title": "Axios Pro Rata: IPOs on hold",
+      "published_at": "2026-09-23",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn3news29"
+      ],
+      "source_call_ids": [
+        "exec-ed3b0b9d-63c5-460f-8cf3-a10408bc3742"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S6",
+      "url": "https://oilprice.com/Latest-Energy-News/World-News/Oracles-165-Billion-Data-Center-Plan-Hits-a-Gas-Pipeline-Delay.html",
+      "title": "Oracle’s $165 Billion Data Center Plan Hits a Gas Pipeline Delay",
+      "published_at": "2026-08-14T19:39:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn7search11"
+      ],
+      "source_call_ids": [
+        "exec-43507190-5627-45ad-82ef-6c1deec68bad"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S7",
+      "url": "https://www.govinfo.gov/content/pkg/FR-2026-09-10/pdf/2026-18455.pdf",
+      "title": "Transwestern Pipeline Company, LLC; Notice of Availability of the Environmental Assessment for the Proposed Green Chile Project",
+      "published_at": "2026-09-10",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn8search12"
+      ],
+      "source_call_ids": [
+        "exec-fbf58695-2faf-48da-91a4-b47c52494868"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S8",
+      "url": "https://www.abqjournal.com/business/new-mexico-supreme-court-lifts-stays-on-project-jupiter-dealing-setback-to-opponents/3124024",
+      "title": "New Mexico Supreme Court lifts stays on Project Jupiter, dealing setback to opponents",
+      "published_at": "2026-09-17 17:16 local",
+      "time_precision": "MINUTE",
+      "updated_at": "2026-09-17 21:27 local",
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UPDATED",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn5search10"
+      ],
+      "source_call_ids": [
+        "exec-ad18d5e9-8184-43dd-82a7-17d7cbd420c5"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S9",
+      "url": "https://www.oracle.com/news/announcement/project-jupiter-statement-on-construction-permitting-2026-09-14/",
+      "title": "Project Jupiter Statement on Construction Permitting",
+      "published_at": "2026-09-14",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn4search0"
+      ],
+      "source_call_ids": [
+        "exec-96055c31-666f-4e6a-8bf7-ce636a165785"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "Bloomberg is the earliest traceable public report found here of Oracle’s force-majeure notice, published Sept. 24 at 12:25Z. It described a potential payment-deferral right if Jupiter missed its 2028 target; it did not report a one-year delay.",
+      "source_urls": [
+        "https://bloomberg.com/news/articles/2026-09-24/oracle-cites-force-majeure-to-shield-itself-on-controversial-data-center",
+        "https://techcrunch.com/2026/09/24/oracle-sends-force-majeure-notice-on-its-new-mexico-stargate-data-center/"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-24T12:25:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The notice itself and its exact delivery time were not located; Bloomberg attributed the report to people familiar with the matter."
+    },
+    {
+      "observation": "Reuters’ later Sept. 24 coverage added a claim that the program was delayed by a year because of power-securing delays. The claim was attributed to one person familiar with the notice and deal; no official revised schedule or specific Bloom deployment scope was reported.",
+      "source_urls": [
+        "https://www.marketscreener.com/news/oracle-blue-owl-project-delay-sends-ripples-through-ai-financing-sources-say-ce785adfd881f521"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-24T22:51:00Z (syndicated page time)",
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "The syndicated page shows a 7:00 p.m. EDT update, before cutoff, but the direct Reuters page was not retrieved. Oracle said the project remained on schedule; Blue Owl said commitments were unchanged."
+    },
+    {
+      "observation": "Reuters described financing scrutiny spreading to other proposed data-center financings and reported that SB Energy had delayed its IPO that week. Axios had already publicly listed an SB Energy IPO delay on Sept. 23, before the Jupiter notice was first reported.",
+      "source_urls": [
+        "https://www.marketscreener.com/news/oracle-blue-owl-project-delay-sends-ripples-through-ai-financing-sources-say-ce785adfd881f521",
+        "https://www.axios.com/newsletters/axios-pro-rata-dc37cb7d-13c4-4aff-9679-e82a79b5700b"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-24T22:51:00Z (Reuters syndicated page)",
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "Reuters attributes the financing discussion and IPO timing to sources; the prior Axios item means the IPO delay itself was already public, and the sources do not establish that Jupiter caused it."
+    },
+    {
+      "observation": "A power-supply schedule risk was public before Sept. 24: OilPrice reported on Aug. 14 that the Green Chile pipeline’s expected in-service date had shifted to Feb. 1, 2027 from Aug. 15, 2026.",
+      "source_urls": [
+        "https://oilprice.com/Latest-Energy-News/World-News/Oracles-165-Billion-Data-Center-Plan-Hits-a-Gas-Pipeline-Delay.html"
+      ],
+      "event_time": "2026-08-14",
+      "publication_time": "2026-08-14T19:39:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "OilPrice attributes the date to a regulatory filing; the pipeline date does not by itself establish a revised Jupiter completion date or Bloom delivery schedule."
+    },
+    {
+      "observation": "Before cutoff, FERC had published an environmental assessment for the proposed Green Chile pipeline with comments due Oct. 5. The notice says the assessment is not a decision document, so it did not establish final authorization.",
+      "source_urls": [
+        "https://www.govinfo.gov/content/pkg/FR-2026-09-10/pdf/2026-18455.pdf"
+      ],
+      "event_time": "2026-09-04 (notice dated)",
+      "publication_time": "2026-09-10",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The assessment’s stated environmental finding was not a final authorization or confirmation of the pipeline’s in-service timing."
+    },
+    {
+      "observation": "On Sept. 17, local coverage reported that the New Mexico Supreme Court denied petitions and lifted procedural stays affecting the air-permit proceeding and water well. It also reported that a new hearing examiner remained necessary.",
+      "source_urls": [
+        "https://www.abqjournal.com/business/new-mexico-supreme-court-lifts-stays-on-project-jupiter-dealing-setback-to-opponents/3124024"
+      ],
+      "event_time": "2026-09-17",
+      "publication_time": "2026-09-17 17:16 local",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The ruling reopened procedural paths but did not grant the air permit or establish a new hearing date."
+    },
+    {
+      "observation": "Oracle’s Sept. 14 statement distinguished the data-center buildings from the proposed microgrid and said construction to that date was on the campus. On Sept. 24, contemporaneous coverage quoted Oracle maintaining the planned schedule and Blue Owl saying financial commitments were unchanged.",
+      "source_urls": [
+        "https://www.oracle.com/news/announcement/project-jupiter-statement-on-construction-permitting-2026-09-14/",
+        "https://www.techcrunch.com/2026/09/24/oracle-sends-force-majeure-notice-on-its-new-mexico-stargate-data-center/",
+        "https://www.axios.com/2026/09/24/oracle-force-majeure-blue-owl-openai"
+      ],
+      "event_time": "2026-09-14 and 2026-09-24",
+      "publication_time": "2026-09-14; 2026-09-24T18:11:00Z and 2026-09-24T21:03:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "These are issuer and developer positions reported publicly, not independent confirmation of schedule or power readiness; Oracle’s Sept. 14 statement predates the Sept. 17 court action."
+    }
+  ],
+  "gaps": [
+    "No notice text, underlying force-majeure clause, or exact notice transmission time was located.",
+    "The one-year delay is a source-attributed report; no primary sponsor, developer, Oracle, customer, or Bloom disclosure of revised dates, accepted capacity, or affected Bloom delivery scope was located by cutoff.",
+    "The reported financing spillover is based on interviews. The SB Energy IPO delay was already publicly mentioned on Sept. 23, and the sources do not demonstrate a causal connection to Jupiter.",
+    "The Reuters direct page was not retrieved. The date-only supplied publication metadata and the Reuters-labelled syndication page’s 6:51 p.m. EDT publication / 7:00 p.m. EDT modification are distinct timing evidence.",
+    "The precise Green Chile in-service date is reported by OilPrice from a regulatory filing; the official FERC notice retrieved here confirms an open environmental review, not that revised date."
+  ],
+  "research_notes": "Cutoff: 2026-09-24T23:05:42.989261Z. The earliest traceable public report of Oracle’s force-majeure notice found here is Bloomberg’s Sept. 24 article, first published at 12:25Z and updated at 16:50Z. TechCrunch followed at 18:11Z; Axios reported company responses at 21:03Z; a Reuters-labelled MarketScreener copy reports publication at 22:51Z and an update at 23:00Z, all before cutoff. The supplied Reuters message records publication precision as DATE; the minute-level times here come from the syndication page, not a retrieved Reuters page. The reported one-year delay is attributed to an unnamed source, not a formal revised schedule. No post-cutoff coverage, prices, or later market reactions are used.",
+  "collection_prompt_version": "w3-web-evidence-v1"
+}

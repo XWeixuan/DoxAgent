@@ -1,0 +1,235 @@
+{
+  "case_key": "BE-02-02",
+  "evidence_cutoff_at": "2026-09-25T12:51:20.141491Z",
+  "reviewed_at": "2026-10-13T22:58:31.400869Z",
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a13740-da3c-7432-a69b-1b70bb85f837",
+    "turn_id": "01a13740-da4b-79c1-a86e-c4f6f446b811",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 113408,
+        "inputTokens": 125623,
+        "outputTokens": 14761,
+        "reasoningOutputTokens": 11780,
+        "totalTokens": 140384
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 751104,
+        "inputTokens": 870927,
+        "outputTokens": 29635,
+        "reasoningOutputTokens": 25601,
+        "totalTokens": 900562
+      }
+    },
+    "prompt_version": "w3-web-evidence-v1",
+    "input_fingerprint": "d965cd05395fa3cf1e933c8298b48df902ba1761a23b48baeea72028e47d425c",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://www.rbcgam.com/en/ca/article/macromemo-september-1-14-2026/detail",
+      "title": "#MacroMemo - September 1 - 14, 2026",
+      "published_at": "2026-09-01",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn3search4"
+      ],
+      "source_call_ids": [
+        "exec-7c4941d1-02af-4285-8716-3d50813cb778"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://www.morganstanley.com/insights/articles/ai-infrastructure-stocks-opportunity",
+      "title": "Buying the AI Infrastructure Dip",
+      "published_at": "2026-07-28",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn3search1"
+      ],
+      "source_call_ids": [
+        "exec-7c4941d1-02af-4285-8716-3d50813cb778"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://www.goldmansachs.com/insights/articles/can-ai-investment-drive-s-and-p-500-earnings-even-higher",
+      "title": "Can AI Investment Drive S&P 500 Earnings Even Higher?",
+      "published_at": "2026-09-23",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search3"
+      ],
+      "source_call_ids": [
+        "exec-ae3a3460-641b-4bef-a250-1d5e3ada718c"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://news.bloomberglaw.com/banking-law/goldmans-moe-says-hes-in-stronger-for-longer-camp-on-ai",
+      "title": "Goldman’s Moe Says He’s in ‘Stronger-for-Longer Camp’ on AI",
+      "published_at": "2026-09-25T01:47:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn2search2"
+      ],
+      "source_call_ids": [
+        "exec-5a38f41d-7aab-4b72-a7dd-30a9a37bd802"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S5",
+      "url": "https://bloomberg.com/news/articles/2026-09-25/goldman-sees-hyperscaler-ai-capex-rising-50-to-1-2-trillion",
+      "title": "Goldman Sees Hyperscaler AI Capex Rising 50% to $1.2 Trillion",
+      "published_at": "2026-09-25T12:10:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn5search0"
+      ],
+      "source_call_ids": [
+        "exec-db2e35f5-b8b1-4df2-8568-1df438262f2e"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S6",
+      "url": "https://huggingnews.com/ai/goldman-forecasts-12t-ai-spend-for-us-hyperscalers-to-beat-consensus-83bb05dd",
+      "title": "Goldman Forecasts $1.2T AI Spend for US Hyperscalers to Beat Consensus",
+      "published_at": null,
+      "time_precision": "UNKNOWN",
+      "updated_at": null,
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn5search1"
+      ],
+      "source_call_ids": [
+        "exec-db2e35f5-b8b1-4df2-8568-1df438262f2e"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "Pre-event context: RBC GAM reported that consensus 2027 hyperscaler capex was nearing $1.1T, up from about $600B at the start of 2026. It also flagged funding/circularity and end-user revenue sufficiency as risks.",
+      "source_urls": [
+        "https://www.rbcgam.com/en/ca/article/macromemo-september-1-14-2026/detail"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-01",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This is RBC's approximate summary of consensus, not a live sell-side consensus dataset, and it does not establish demand for any particular power supplier."
+    },
+    {
+      "observation": "A similar $1.2T 2027 hyperscaler-capex estimate was publicly stated by Morgan Stanley in July, showing that the level was already within the range of public analyst forecasts before the Sep 25 item.",
+      "source_urls": [
+        "https://www.morganstanley.com/insights/articles/ai-infrastructure-stocks-opportunity"
+      ],
+      "event_time": null,
+      "publication_time": "2026-07-28",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This was Morgan Stanley's estimate, not consensus or actual spending; its published view also identified power, labor, and permitting as possible constraints."
+    },
+    {
+      "observation": "Goldman's own public article dated Sep 23 stated its equity analysts expected $1.2T in 2027. It also anticipated slower capex growth and rising depreciation, so the Sep 25 coverage's headline figure itself was not clearly a newly disclosed number.",
+      "source_urls": [
+        "https://www.goldmansachs.com/insights/articles/can-ai-investment-drive-s-and-p-500-earnings-even-higher"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-23",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The article is broad public research commentary and does not establish when the separate Hammond note was distributed or whether its full contents were already public."
+    },
+    {
+      "observation": "Bloomberg's Sep 25, 1:47 AM UTC report on Timothy Moe's interview repeated the $1.2T 2027 figure. Its later detailed report, at 12:10 UTC, attributed the $1.2T forecast to a Goldman note, compared it with $1.1T consensus, and reported the $300B annual AI-revenue estimate.",
+      "source_urls": [
+        "https://news.bloomberglaw.com/banking-law/goldmans-moe-says-hes-in-stronger-for-longer-camp-on-ai",
+        "https://bloomberg.com/news/articles/2026-09-25/goldman-sees-hyperscaler-ai-capex-rising-50-to-1-2-trillion"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-25T01:47:00Z; 2026-09-25T12:10:00Z",
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "The original Hammond note was not accessible in the retrieved sources. The revenue threshold is a Goldman estimate, not a verified operating result or a Bloom-specific fact."
+    },
+    {
+      "observation": "The reported forecast covers five hyperscalers in aggregate. The retrieved coverage contains no Bloom-specific procurement, site selection, project award, or allocated power capacity; its relevance to Bloom is therefore only indirect industry context.",
+      "source_urls": [
+        "https://bloomberg.com/news/articles/2026-09-25/goldman-sees-hyperscaler-ai-capex-rising-50-to-1-2-trillion",
+        "https://www.goldmansachs.com/insights/articles/can-ai-investment-drive-s-and-p-500-earnings-even-higher"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-23; 2026-09-25T12:10:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "Absence from these articles does not rule out private customer activity; no project-level evidence was found in this search."
+    },
+    {
+      "observation": "The supplied HuggingNews item is timestamp-ambiguous: its metadata gives 12:40:42.454Z, while its displayed feed time is 8:18 AM EDT. The live page search listing showed the story title and feed time, but the page fetch did not expose its full text.",
+      "source_urls": [
+        "https://huggingnews.com/ai/goldman-forecasts-12t-ai-spend-for-us-hyperscalers-to-beat-consensus-83bb05dd"
+      ],
+      "event_time": null,
+      "publication_time": null,
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "Both candidate times precede the cutoff, but the discrepancy prevents using the item to establish exact first-dissemination ordering."
+    }
+  ],
+  "gaps": [
+    "The underlying Goldman Hammond research note was not publicly accessible in the retrieved sources; its exact publication time, methodology, company scope, and definitions of the $300B revenue threshold remain unverified.",
+    "The $1.1T consensus comparator is reported by Bloomberg and approximated by RBC GAM, but no contemporaneous consensus dataset or methodology was retrieved.",
+    "The news concerns aggregate hyperscaler capex; no evidence links the forecast to Bloom-specific orders, procurement, project allocation, or power-source choice.",
+    "The supplied HuggingNews item's metadata and displayed feed time conflict, and its full page text was not retrievable."
+  ],
+  "research_notes": "Cutoff: 2026-09-25T12:51:20.141491Z. The reported $1.2T 2027 capex figure was not clearly new on Sep 25: Morgan Stanley had published a similar estimate in July, and a Goldman Sachs public article dated Sep 23 also stated $1.2T. The Sep 25 detailed coverage added attribution to a Goldman note, comparison with roughly $1.1T consensus, and an estimated $300B annual AI revenue requirement. The original Hammond note and its distribution time were not publicly verified here. This is an aggregate hyperscaler spending forecast, not evidence of Bloom Energy orders, customer choices, or allocated projects. Post-cutoff material and later market reactions were excluded.",
+  "collection_prompt_version": "w3-web-evidence-v1"
+}

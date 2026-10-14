@@ -1,0 +1,23 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-28T11:59:51.905006Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "The precise hour when NVIDIA’s roadshow presentation first appeared publicly is not stated; the investor-relations listing dates it September 27, and Trade The News provides a verified third-party timestamp on September 28.",
+    "No separate independent newsroom report of the $180 billion figure with a verifiable pre-cutoff publication time was established. Same-day coverage without a usable timestamp or dated pre-cutoff snapshot was not relied on.",
+    "The cited presentation does not break down the $180 billion aggregate, its payment or cancellation terms, or its provider-by-provider composition.",
+    "The sources do not establish a direct link from Anthropic’s agreements or NVIDIA’s memory procurement commitments to Micron orders, revenue, or supplier share."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

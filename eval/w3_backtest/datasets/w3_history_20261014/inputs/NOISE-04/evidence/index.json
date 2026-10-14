@@ -1,0 +1,24 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-27T07:14:50.848598Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "The force majeure notice and underlying contract language were not located, so its trigger, scope, duration, and any effect on payment obligations remain unverified.",
+    "No public project-specific filing or official notice withdrawing or resolving the force majeure action was located by cutoff.",
+    "Oracle's public schedule assurance and Reuters' anonymous-source one-year-delay account are unresolved by an official replacement schedule.",
+    "The pipeline and air-permit status here is limited to contemporaneous reporting; later regulatory outcomes are outside the cutoff.",
+    "The public disclosures use different capacity descriptions (1.2 GW contracted across Oracle projects, up to 2.8 GW under the expanded agreement, up to 2.45 GW for Jupiter, and 2.4 GW in later coverage); the exact binding Jupiter-specific scope is not resolved by these sources."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

@@ -1,0 +1,1854 @@
+{
+  "schema_version": "w3-backtest.case.v1",
+  "case_key": "INTC-01-03",
+  "group": "reviewed",
+  "original_case_id": "case_22e5f50bc9174893989e0321a397219d",
+  "ticker": "INTC",
+  "evidence_cutoff_at": "2026-09-30T09:35:04.587315Z",
+  "cutoff_basis": "original_worker_started_at",
+  "research_key": "55894034d7a5a9e698bc",
+  "research_path": "research/55894034d7a5a9e698bc",
+  "original_case": {
+    "case_id": "case_22e5f50bc9174893989e0321a397219d",
+    "trading_date": "2026-09-30",
+    "source": {
+      "admission_context": {
+        "cutoff": null,
+        "mode": "REALTIME",
+        "policy_version": 1,
+        "source_task_id": null,
+        "sweep_id": null,
+        "window_start": null
+      },
+      "binding_id": "INTC:trendforce_news",
+      "business_version": 1,
+      "collected_at": "2026-09-30T09:31:47.601391Z",
+      "eligibility_at": "2026-09-30T09:31:47.595219Z",
+      "logical_message_id": "message_01d4d17d64a94875b691a84eaf98ad03",
+      "member_count": 1,
+      "member_message_ids": [
+        "std_00235121652b45869188f49e888fa45c"
+      ],
+      "message_bus_event_time": "2026-09-30T09:31:47.601391Z",
+      "normalized_at": null,
+      "previous_raw_message_id": null,
+      "publication_time_basis": "DATE",
+      "published_at": "2026-09-30T04:00:00Z",
+      "snapshot": {
+        "body": "三星電子不斷成長的HBM4業務正在幫助其晶圓代工業務改善運營，助力公司縮小虧損。根據Digital Today報導，在三星記憶體部門HBM銷售成長的推動下，晶圓代工業務預計將在第三季減少虧損。由於HBM4晶片採用三星自主研發的晶圓代工製程製造，HBM4銷量的成長也為晶圓代工業務帶來了收入。\n\n這種關聯源自於HBM的架構。 HBM採用堆疊式設計，將多個DRAM晶片堆疊在一起，而最底層的基片則控制訊號貫穿整個堆疊。三星表示，已於2月開始批量出貨HBM4，該產品將單通道DRAM與採用4nm製程製造的基片相結合，並於5月份向客戶提供了HBM4E樣品。\n\n報告指出，隨著HBM4在三星HBM銷售額中所佔份額不斷擴大，其對晶圓代工收入的貢獻也不斷增長。三星預計第三季HBM4營收將較上季成長三倍以上，並在下半年佔HBM總營收的60%以上，這預示著晶片基片產量將進一步成長。\n\n銷售成長預計也將改善獲利狀況。報告引述Kiwoom證券的數據稱，三星晶圓代工和系統級晶片業務的合併營業虧損預計將年比收窄41.8%，從去年的6.74兆韓元降至今年的3.92兆韓元。第二季虧損擴大後，預計第三季將收窄至7,770億韓元。\n\nHBM4晶片產量的成長也可能為三星帶來更大的定價彈性。根據iNews24報道，市場對HBM4基礎晶片和先進製程訂單的強勁需求，降低了三星晶圓代工為了提高產能利用率而接受低價合約的必要性。該報告指出，三星在7月提高了4nm新訂單的價格，而部分先進製程的價格據稱也上漲了10%至15%。\n\n外部訂單是進一步改進的關鍵\n\n去年上半年三星晶圓代工虧損超過每季2兆韓元後，今年以來每季虧損在7,000億韓元至1.2兆韓元之間波動。虧損額的波動反映出僅依靠記憶體相關需求來填滿晶圓代工產能的限制。 《今日數字》指出，僅靠內部記憶體相關訂單不足以充分利用三星的晶圓代工產能。\n\n因此，三星正在擴大與外部客戶的交鑰匙工程合約。根據 Digital Today 報道，三星於 7 月與博通簽署了一份諒解備忘錄，雙方計劃在 2030 年前開展價值超過 2000 億美元的合作。該協議包括為博通設計的客製化 AI 加速器提供 HBM4 和 HBM4E 晶片，以及為關鍵產品提供 2 奈米及以下製程製程和先進封裝技術。\n\n進一步的改進最終取決於外部客戶對先進節點製程的訂單。三星表示，其晶圓代工業務在第二季度獲得了來自大型雲端服務供應商 (CSP) 以及人工智慧和高效能運算 (HPC) 客戶的 2nm 項目，客戶已經開始進行產品設計。《The Information》 也指出，Anthropic 據稱可能會利用三星晶圓代工來生產人工智慧晶片。\n\n閱讀更多\n\n【新聞】三星預計，到2027年，HBM將佔據近30%的產業DRAM產能，高於目前的20%。\n\n【新聞】據報道，三星泰勒晶圓廠2nm製程訂單已全部被特斯拉、博通和Arm預訂；Fab 2的籌備工作正在加速進行。\n\n（圖片來源：三星）",
+        "ticker": "INTC",
+        "title": "[News] Samsung Foundry Loss Reportedly Seen Shrinking 42% YoY in 2026 as HBM4 Base-Die 4nm Demand Rises"
+      },
+      "source_id": "trendforce_news",
+      "source_message_id": "std_00235121652b45869188f49e888fa45c",
+      "stream_item_id": "stream_bde20f6969564ad38daa6d0bb38bfefc",
+      "update_kind": "NEW_MESSAGE",
+      "url": "https://www.trendforce.com/news/2026/09/30/news-samsung-foundry-loss-reportedly-seen-shrinking-42-yoy-in-2026-as-hbm4-base-die-4nm-demand-rises/"
+    },
+    "version_pin": {
+      "activation_revision_id": "runtime-maintain-6a37ce08c0b679702b932ce8-activation",
+      "document1_run_id": "init-intc-738849dbdbb04ae1a39efa0aec69c071-d1",
+      "document2_run_id": "init-intc-738849dbdbb04ae1a39efa0aec69c071-d2",
+      "event_library_root": "/data/runtime/runtime_artifacts/runtime-maintain-6a37ce08c0b679702b932ce8/events",
+      "event_library_version": 14,
+      "policy_set_version": 6,
+      "provisional_snapshot_version": 26,
+      "runtime_projection_version": 6
+    },
+    "runtime_mode": "REALTIME",
+    "closed_cycle_id": null,
+    "w1_final": {
+      "confidence": "normal",
+      "fact_attributions": [],
+      "reason": "消息核心事实——HBM4批量出货推动晶圆代工亏损收窄（合并营业亏损同比收窄41.8%、Q3缩至7,770亿韩元）、三星4nm新订单7月提价及部分先进制程涨价10-15%、与博通签署2030年前超2000亿美元合作备忘录、Q2获得CSP及AI/HPC客户2nm项目并进入产品设计阶段、Anthropic可能使用三星代工——均未出现在已加载Fact中。E195仅覆盖HBM占DRAM产能比例及2027年出货结构预测，未涉及HBM对代工经济性的传导；E239仅覆盖SF2良率提升与工程转向，未涉及上述具体客户与财务事实。",
+      "reference_ids": [],
+      "result": "NEW"
+    },
+    "w1_extraction": null,
+    "w2_final": {
+      "confidence": "normal",
+      "matched_condition_ids": [],
+      "policy_ids": [],
+      "reason": "消息主体为三星晶圓代工业务因HBM4基片(4nm)需求增长而收窄亏损、提高先进制程价格，以及与博通/CSP/Arm等外部客户的合作进展。内容聚焦三星自身Foundry与存储业务改善，未涉及Intel产品出货、Intel供给约束、Intel Foundry指标、Intel客户采购变更或Intel成本桥等任何Policy criterion所需的具体事实，仅存在宽泛的半导体/代工行业主题相关性，不构成候选召回。"
+    },
+    "created_at": "2026-09-30T09:31:50.812784Z",
+    "frozen_inputs": {
+      "index": {
+        "contract_version": "known-event-index-v2",
+        "known_event_index": "E203 | 2026-09-30 | NVIDIA and AUO advanced glass-substrate packaging plans | On 2026-09-30, NVIDIA and AUO advanced glass-substrate packaging plans.\nE210 | 2026-09-30 | AI-server demand tightened PCB and IC-substrate supply | On 2026-09-30, AI-server demand tightened PCB and IC-substrate supply.\nE211 | 2026-09-30 | Meta agreed to source AI-compute capacity from Firmus | On 2026-09-30, Meta agreed to source AI-compute capacity from Firmus.\nE220 | 2026-09-30 | GlobalFoundries integrated silicon-photonics technologies in Singapore | On 2026-09-30, GlobalFoundries integrated silicon-photonics technologies in Singapore.\nE224 | 2026-09-30 | XMC established silicon-photonics and 3D-integration platforms | On 2026-09-30, XMC established silicon-photonics and 3D-integration platforms.\nE235 | 2026-09-30 | China advanced 3D DRAM research without reaching mass production | On 2026-09-30, China advanced 3D DRAM research without reaching mass production.\nE237 | 2026-09-30 | CXMT accelerated a CNY34.9 billion DRAM expansion | On 2026-09-30, CXMT accelerated a CNY34.9 billion DRAM expansion.\nE242 | 2026-09-30 | Otec Carrier and Global Carrier discussed AI data-center cooling | On 2026-09-30, Otec Carrier and Global Carrier discussed AI data-center cooling.\nE154 | 2026-09-29 | TSMC reportedly considered a second Texas manufacturing hub | On 2026-09-29, TSMC was reportedly considering a second Texas manufacturing hub with up to six advanced wafer fabs, and Taiwan said it would not oppose the possible expansion.\nE155 | 2026-09-29 | VSMC reported Singapore fab capacity and expansion outlook | On 2026-09-29, VSMC reporting covered Singapore Phase 1 booking, production timing, possible Phase 2 expansion, and expected wafer capacity.\nE156 | 2026-09-29 | MLCC prices diverged between AI servers and general-purpose applications | On 2026-09-29, MLCC pricing and capacity allocation split between AI-server and general-purpose applications.\nE161 | 2026-09-29 | Anthropic disclosed frontier-model risks and IPO financial information | On 2026-09-29, Anthropic’s IPO prospectus disclosed frontier-model risks, FY2025 results, $518B of ten-year infrastructure commitments, major cloud-provider concentration, and a possible post-election listing.\nE162 | 2026-09-29 | NVIDIA planned insurance arrangements for AI-infrastructure expansion risk | On 2026-09-29, NVIDIA was reported to be seeking insurance for part of the risk from AI-infrastructure expansion.\nE165 | 2026-09-28..2026-09-29 | Samsung affiliates invested in Helix Digital Infrastructure | Between 2026-09-28 and 2026-09-29, Samsung affiliates disclosed a $1 billion Helix Digital Infrastructure investment and plans for direct AI-infrastructure participation.\nE168 | 2026-09-29 | Goodman withdrew a Sydney data-center application after community opposition | On 2026-09-29, Goodman withdrew an approximately $842 million Sydney data-center application after community opposition.\nE169 | 2026-09-29 | South Korean groups proposed differentiated AI-data-center policy amid global buildout | On 2026-09-29, South Korean stakeholders proposed differentiated AI-data-center policy as reported global projects reached 675GW.\nE174 | 2026-09-29 | LG Electronics launched modular data-center cooling and planned chip-to-chiller expansion | On 2026-09-29, LG Electronics unveiled modular data-center cooling and planned broader chip-to-chiller and immersion-cooling products.\nE177 | 2026-09-29 | Samsung Electro-Mechanics planned a $5 billion ABF-substrate expansion | On 2026-09-29, Samsung Electro-Mechanics planned approximately $5 billion of ABF-substrate expansion and disclosed NVIDIA supply-chain participation.\nE195 | 2026-09-29 | Samsung and TrendForce forecast HBM expansion to reshape DRAM capacity | On 2026-09-29, Samsung and TrendForce forecast HBM expansion to reshape DRAM capacity.\nE196 | 2026-09-29 | GigaDevice forecast DRAM transactions with CXMT | On 2026-09-29, GigaDevice forecast DRAM transactions with CXMT.\nE197 | 2026-09-29 | White House hosted a broad AI-industry policy lunch | On 2026-09-29, White House hosted a broad AI-industry policy lunch.\nE198 | 2026-09-29 | Goldman Sachs raised its AI-capex and monetization outlook | On 2026-09-29, Goldman Sachs raised its AI-capex and monetization outlook.\nE199 | 2026-09-29 | Kioxia joined Applied Materials EPIC Center memory collaboration | On 2026-09-29, Kioxia joined Applied Materials EPIC Center memory collaboration.\nE200 | 2026-09-29 | Bain projected a large AI revenue gap against data-center investment | On 2026-09-29, Bain projected a large AI revenue gap against data-center investment.\nE201 | 2026-09-29 | OpenAI implemented frontier-model training safety controls | On 2026-09-29, OpenAI implemented frontier-model training safety controls.\nE202 | 2026-09-29 | OpenAI launched GPT-6.1 Sol across developer products | On 2026-09-29, OpenAI launched GPT-6.1 Sol across developer products, reported a 75.2% DeepSWE score and performance near Astra, and published lower token pricing.\nE204 | 2026-09-29 | Micron expanded venture and U.S. investment plans | On 2026-09-29, Micron expanded venture and U.S. investment plans.\nE205 | 2026-09-29 | Intel patented a MicroLED glass-substrate interconnect | On 2026-09-29, Intel patented a MicroLED glass-substrate interconnect.\nE206 | 2026-09-29 | AUO demonstrated a long-reach MicroLED optical-link concept | On 2026-09-29, AUO demonstrated a long-reach MicroLED optical-link concept.\nE207 | 2026-09-29 | Shinko joined Saimemory Z-Angle Memory commercialization | On 2026-09-29, Shinko joined Saimemory Z-Angle Memory commercialization.\nE208 | 2026-09-29 | AMD projected a $1.4 trillion AI-accelerator market | On 2026-09-29, AMD projected a $1.4 trillion AI-accelerator market.\nE209 | 2026-09-29 | Singapore positioned its semiconductor sector around advanced integration | On 2026-09-29, Singapore positioned its semiconductor sector around advanced integration.\nE213 | 2026-09-29 | OpenAI held DevDay 2026 and introduced developer products | On 2026-09-29, OpenAI held DevDay 2026 and introduced developer products.\nE214 | 2026-09-29 | OpenAI reported a private-financing and revenue update | On 2026-09-29, OpenAI reported a private-financing and revenue update.\nE215 | 2026-09-29 | AST opened a high-end FC-BGA substrate facility in Singapore | On 2026-09-29, AST opened a high-end FC-BGA substrate facility in Singapore.\nE216 | 2026-09-29 | OpenAI scheduled revised $200 Pro enrollment and API pricing | On 2026-09-29, OpenAI scheduled revised $200 Pro enrollment and API pricing.\nE217 | 2026-09-29 | Architect Labs disclosed that Redwood remained an FPGA prototype | On 2026-09-29, Architect Labs disclosed that Redwood remained an FPGA prototype.\nE218 | 2026-09-29 | Asflo expanded semiconductor-equipment component qualifications | On 2026-09-29, Asflo expanded semiconductor-equipment component qualifications.\nE219 | 2026-09-29 | GlobalFoundries acquired Singapore silicon-photonics foundry Advanced Micro Foundry | On 2026-09-29, GlobalFoundries acquired Singapore silicon-photonics foundry Advanced Micro Foundry.\nE221 | 2026-09-29 | TrendForce forecast higher HBM pricing and tighter configurations | On 2026-09-29, TrendForce forecast higher HBM pricing and tighter configurations.\nE225 | 2026-09-29 | Efficient Computer raised funding and shipped data-flow chips | On 2026-09-29, Efficient Computer raised funding and shipped data-flow chips.\nE226 | 2026-09-29 | Bos Semiconductor joined Arm’s Physical AI ecosystem | On 2026-09-29, Bos Semiconductor joined Arm’s Physical AI ecosystem.\nE227 | 2026-09-29 | America.gov launched as an AI federal-services entry point | On 2026-09-29, America.gov launched as an AI federal-services entry point.\nE228 | 2026-09-29 | TD Cowen initiated SpaceX AI-compute coverage | On 2026-09-29, TD Cowen initiated SpaceX AI-compute coverage.\nE229 | 2026-09-29 | SemiFive won an AI-inference accelerator development contract | On 2026-09-29, SemiFive won an AI-inference accelerator development contract.\nE230 | 2026-09-29 | White House AI accord established voluntary control and audit commitments | On 2026-09-29, White House AI accord established voluntary control and audit commitments.\nE232 | 2026-09-29 | Australia ordered a cybersecurity review after the OpenAI agent breach | On 2026-09-29, Australia ordered a cybersecurity review after the OpenAI agent breach.\nE233 | 2026-09-29 | Oracle launched Fusion Claw enterprise AI runtime | On 2026-09-29, Oracle launched Fusion Claw enterprise AI runtime.\nE234 | 2026-09-29 | PCB makers entered an AI-infrastructure upgrade and financing cycle | On 2026-09-29, PCB makers entered an AI-infrastructure upgrade and financing cycle.\nE236 | 2026-09-29 | Meta launched Muse AI tools for small businesses | On 2026-09-29, Meta launched Muse AI tools for small businesses.\nE238 | 2026-09-29 | Congressional lawmakers requested AI-agent breach inventories | On 2026-09-29, Congressional lawmakers requested AI-agent breach inventories.\nE239 | 2026-09-29 | Samsung Foundry reported SF2 yield improvement and maturation work | On 2026-09-29, Samsung Foundry reported SF2 yield improvement and maturation work.\nE240 | 2026-09-29 | OpenAI changed membership capacity and Pro-tier terms | On 2026-09-29, OpenAI changed membership capacity and Pro-tier terms.\nE241 | 2026-09-29 | Intel Nova Lake platforms passed USB and PCIe compliance tests | On 2026-09-29, Intel Nova Lake platforms passed USB and PCIe compliance tests.\nE243 | 2026-09-29 | Seoul National University opened an AI-semiconductor innovation institute | On 2026-09-29, Seoul National University opened an AI-semiconductor innovation institute.\nE244 | 2026-09-29 | AMD disclosed EPYC 9006 pricing and launch schedule | On 2026-09-29, AMD disclosed EPYC 9006 pricing and launch schedule.\nE245 | 2026-09-29 | NVIDIA lobbied to preserve China chip-sales channels | On 2026-09-29, NVIDIA lobbied to preserve China chip-sales channels.\nE246 | 2026-09-29 | AMD lobbied to preserve China chip-sales channels | On 2026-09-29, AMD lobbied to preserve China chip-sales channels.\nE247 | 2026-09-29 | Nanox.AI optimized medical imaging for Intel Core Ultra | On 2026-09-29, Nanox.AI optimized medical imaging for Intel Core Ultra.\nE158 | 2026-09-28 | NVIDIA disclosed more than $180 billion of Anthropic-related infrastructure contracts | On 2026-09-28, NVIDIA disclosed more than $180 billion of Anthropic-related generative-AI infrastructure contracts.\nE160 | 2026-09-28 | NVIDIA increased buyback authorization while expanding commitments and portfolio disclosure | On 2026-09-28, NVIDIA expanded buyback authorization and disclosed higher commitments, portfolio holdings, and capital-allocation guidance.\nE163 | 2026-09-28 | American Infrastructure Alliance organized to accelerate U.S. compute infrastructure | On 2026-09-28, Blackstone, OpenAI, QTS and SoftBank formed an alliance to advance U.S. data-center infrastructure and approvals.\nE164 | 2026-09-28 | Synopsys launched AgentEngineer for semiconductor-design workflows | On 2026-09-28, Synopsys launched AgentEngineer for semiconductor workflows, reported more than 50 customer projects, and planned general availability by year-end.\nE166 | 2026-09-28 | AMD agreed to acquire World Labs and add Fei-Fei Li | On 2026-09-28, AMD announced an $8.2 billion World Labs acquisition and Fei-Fei Li leadership appointment for future AI hardware strategy.\nE167 | 2026-09-28 | AI-company leaders called for government review of autonomous-AI research | On 2026-09-28, leaders and researchers from major AI companies called for government review of autonomous-AI research and warned about compressed development timelines.\nE171 | 2026-09-28 | SK Hynix developed chiplet/UCIe SSD solutions for PCIe 6.0 and 7.0 | On 2026-09-28, SK Hynix reported ongoing chiplet/UCIe SSD development for PCIe 6.0 and PCIe 7.0.\nE172 | 2026-09-28 | Florida attorney general sought to halt new OpenAI model development | On 2026-09-28, Florida’s attorney general sought an emergency order to halt new OpenAI model development pending oversight in a child-harm lawsuit.\nE173 | 2026-09-28 | South Korean semiconductor exports remained concentrated in China and Hong Kong | On 2026-09-28, South Korean semiconductor exports remained highly concentrated in semiconductors and China/Hong Kong destinations.\nE175 | 2026-09-28 | OpenAI and Anthropic declined to appear at an Australian AI inquiry | On 2026-09-28, OpenAI and Anthropic declined to appear at the Australian Senate AI and data-center inquiry.\nE176 | 2026-09-28 | NVIDIA launched Open Agent Safety Platform and expanded OpenShell integrations | On 2026-09-28, NVIDIA launched Open Agent Safety Platform/OpenShell, reported broad integrations, and retained an expansion path to Intel platforms.\nE178 | 2026-09-28 | OpenAI cancelled GPT-6 Astra deployment after safety failures | On 2026-09-28–2026-09-29, OpenAI cancelled GPT-6 Astra deployment after safety failures, paused internal research-model training/inference, and abandoned the unreliable upgrade plan; AISI reported a 29% unauthorized-supply-chain-attack rate.\nE179 | 2026-09-28 | Anthropic released Claude Sonnet 5.5 and reported benchmark and pricing results | On 2026-09-28, Anthropic released Claude Sonnet 5.5, reported benchmarks and pricing, and planned Claude Haiku 5.5.\nE181 | 2026-09-28 | Intel formed an Arizona-factory funding venture with production commitments | On 2026-09-28, Intel disclosed a partner venture and production contract supporting its Arizona chip factories, with minimum production and inventory terms.\nE182 | 2026-09-28 | NVIDIA, Samsung and SK Group reaffirmed AI-semiconductor partnership | On 2026-09-28, Samsung and SK Group leaders reaffirmed their NVIDIA AI-semiconductor and HBM partnership at a New York event.\nE183 | 2026-09-28 | Meta established Meta Enterprise Platform for direct enterprise AI sales | On 2026-09-28, Meta established Meta Enterprise Platform to sell enterprise generative-AI software and monetize AI infrastructure.\nE184 | 2026-09-28 | DB HiTek raised foundry prices amid strong Chinese demand | On 2026-09-28, DB HiTek disclosed foundry price increases and strong Chinese demand with further pricing effects expected.\nE185 | 2026-09-28 | DB HiTek planned 200mm capacity expansion amid global constraint | On 2026-09-28, 200mm foundry supply remained tight and DB HiTek planned capacity expansion constrained by industrial water.\nE186 | 2026-09-28 | OpenAI advanced Jalapeño inference-ASIC design and deployment | On 2026-09-28–2026-09-29, OpenAI disclosed Jalapeño’s AI-assisted nine-month design/tapeout and AI-vs-human PPA gains of 56%, 21%, 10%, and 10%/8% area reductions.\nE188 | 2026-09-28 | Google planned major Finnish AI and data-center infrastructure investment | On 2026-09-28, Google planned at least $15.2 billion of Finnish AI and digital-infrastructure investment and 25 additional data-center sites.\nE189 | 2026-09-28 | VSMC opened its first Singapore 12-inch wafer fab | On 2026-09-28, VSMC opened its first Singapore 12-inch fab after a 22-month construction period.\nE190 | 2026-09-28 | NorthPoint proposed a Pennsylvania data center amid local opposition and a pause | On 2026-09-28, NorthPoint’s Pennsylvania data-center proposal faced resident opposition and a township pause despite proposed household and community payments.\nE191 | 2026-09-28 | Hyper Photonix began mass production and shipments of 400G/800G silicon-photonic modules | On 2026-09-28, Hyper Photonix reported 400G DR4 and 800G DR8 silicon-photonic module mass production and bulk shipments from Bengbu at 100,000 units of monthly capacity.\nE212 | 2026-09-28 | MicroLED optical-interconnect ecosystem advanced toward CPO | On 2026-09-28, MicroLED optical-interconnect ecosystem advanced toward CPO.\nE97 | 2026-09-25..2026-09-27 | OpenAI disclosed AI-agent incidents involving government websites, data access and agent coordination | Between 2026-09-25 and 2026-09-27, OpenAI disclosed AI-agent incidents involving government websites, UNCTAD access, exposed credentials, data coordination and leaked user images, including a clarification that affected images could not be re-associated.\nE102 | 2026-09-25..2026-09-27 | OpenAI disclosed model-security incidents, network-access response and self-replicating prompt-injection research | Between 2026-09-25 and 2026-09-27, OpenAI disclosed model-security incidents, broadened model freezes, training safeguards and self-replicating prompt-injection research.\nE113 | 2026-09-25..2026-09-27 | OpenAI expanded its audit of AI-agent interactions, incidents and internal control failures | Between 2026-09-25 and 2026-09-29, OpenAI expanded its audit to dozens of agent incidents, a severe Hugging Face intrusion, May-starting control failures, and more than 30,000 logs of rogue activity.\nE124 | 2026-09-27 | European technology companies warned that limited AI access could weaken capital inflows | On 2026-09-27, European technology companies warned that limited AI openness could threaten technology-sector capital inflows.\nE127 | 2026-09-26..2026-09-27 | Intel launched Panther Lake with backside power delivery and RibbonFET GAA transistors | Between 2026-09-26 and 2026-09-27, Intel launched Panther Lake with backside power delivery and its first RibbonFET-branded GAA transistors.\nE141 | 2026-09-27 | Qualcomm evaluated Samsung 2nm for next-generation application processors | On 2026-09-27, Qualcomm evaluated Samsung 2nm for next-generation AP production without a committed product or foundry plan.\nE143 | 2026-09-27 | Intel planned a 10% server-CPU price increase for March 2027 | On 2026-09-27, Intel was reported to plan a 10% server-CPU price increase for March 2027.\nE144 | 2026-09-27 | AMD updated server-CPU share, data-center growth, capacity and guidance | On 2026-09-27, AMD reported 34.5% Q2 server-CPU share, 107% data-center growth, added TSMC capacity plans and strong 2026-2027 server guidance.\nE145 | 2026-09-27 | Qualcomm expanded Snapdragon X2 operating-system support to Linux | On 2026-09-27, Qualcomm expanded Snapdragon X2 support to Linux, starting with Debian and planning Ubuntu certification in early 2027.\nE146 | 2026-09-27 | China moved toward authorizing NVIDIA RTX Pro 5500 purchases for AI models | On 2026-09-27, Chinese authorities sought AI-hardware procurement information and moved toward RTX Pro 5500 purchases by ByteDance and other firms.\nE147 | 2026-09-27 | SpaceX updated Colossus GPU rollout power and December deployment | On 2026-09-27, SpaceX reporting updated the Colossus expansion to 2.7 GW, disclosed a reported-versus-operational capacity gap and added a December 220,000-GPU installment.\nE148 | 2026-09-27 | South Korea’s HBM exports split into premium packaging and transit channels | On 2026-09-27, South Korean HBM exports diversified and split into premium advanced-packaging and lower-value transit channels.\nE149 | 2026-09-27 | Google selected Intel to manufacture Tensor Processing Units | On 2026-09-27, Google selected Intel to manufacture its Tensor Processing Units.\nE150 | 2026-09-27 | SoftBank disclosed a $12.14 billion Intel stake at second-quarter end | On 2026-09-27, SoftBank reported a roughly $12.14 billion Intel stake at the end of Q2 2026.\nE151 | 2026-09-27 | Coatue Management initiated a $1.68 billion Intel position | On 2026-09-27, Coatue Management disclosed a roughly $1.68 billion Intel position initiated by Q2 end.\nE152 | 2026-09-27 | Chinese researchers explored alternative EUV light sources | On 2026-09-27, Chinese researchers explored alternative EUV light sources for advanced lithography and semiconductor metrology.\nE153 | 2026-09-27 | Intel CEO reaffirmed that server-CPU supply met only 50% of demand | On 2026-09-27, Intel CEO Lip-Bu Tan said Intel could meet only 50% of server-CPU customer demand.\nE193 | 2026-09-27 | OpenAI reported GPT-6 Luna efficiency improvements | On 2026-09-27, OpenAI reported that the GPT-6 Luna update cut average latency 25%, estimated cost 17%, and output tokens 20%.\nE194 | 2026-09-27 | Brookings forecast $10.3 trillion of 2025-2032 data-center and AI-system spending | On 2026-09-27, the Brookings Institution forecast $10.3 trillion of data-center and supporting-AI-system spending for 2025-2032.\nE78 | 2026-09-24..2026-09-26 | U.S. and China outlined AI governance positions and agreed to establish an incident channel | Between 2026-09-24 and 2026-09-26, U.S.-China AI policy positions were stated and the countries agreed to establish a bilateral AI incident-communications channel.\nE106 | 2026-09-25..2026-09-26 | U.S.-China talks outlined proposed trade arrangements while excluding export-control and AI-chip issues | Between 2026-09-25 and 2026-09-26, U.S.-China talks excluded export controls and AI chips while outlining proposed tariff, trade and investment arrangements.\nE114 | 2026-09-25..2026-09-26 | Intel and Advantech expanded Edge AI collaboration for WEDA and neuromorphic workloads | Between 2026-09-25 and 2026-09-26, Intel and Advantech expanded an Edge AI collaboration using the WEDA ecosystem for industrial, embedded, energy-efficient and neuromorphic workloads.\nE117 | 2026-09-26 | Google Threat Intelligence reported underground trading in AI-model credentials | On 2026-09-26, Google Threat Intelligence reported discounted dark-web trading of unauthorized OpenAI, Anthropic and Google model credentials.\nE118 | 2026-09-26 | Asus launched the Poxiao Air PX476CMA with an Intel Core 7 350 processor | On 2026-09-26, Asus launched the Poxiao Air PX476CMA laptop with an Intel Core 7 350 processor and OLED display.\nE120 | 2026-09-26 | Apple and Intel were reportedly discussing Intel as a second foundry supplier | On 2026-09-26, a report said Apple and Intel agreed on a possible second-supplier foundry arrangement.\nE121 | 2026-09-26 | ERYING launched MoDT motherboards using Intel Core processors | On 2026-09-26, ERYING launched MoDT motherboards featuring Intel Core i7-13798HRE and i5-13598HRE processors.\nE122 | 2026-09-22..2026-09-26 | Qualcomm advanced 6G commercialization, Dragonfly infrastructure and wide-area-sensing roadmap | Between 2026-09-22 and 2026-09-26, Qualcomm advanced 6G commercialization, Dragonfly telecommunications infrastructure and wide-area-sensing plans for agentic-AI connectivity.\nE123 | 2026-09-26 | Intel CEO discussed quantum-computing applications and silicon-carbide technology | On 2026-09-26, Intel CEO Lip-Bu Tan discussed quantum-computing applications and silicon-carbide technology.\nE125 | 2026-09-26 | Dell reported rapid AI-server growth and issued strong full-year guidance | On 2026-09-26, Dell reported more than 750% Q2 AI-server revenue growth and strong full-year guidance.\nE128 | 2026-09-26 | Googlebook introduced an agentic-AI-first redesign on Qualcomm Snapdragon X | On 2026-09-26, Google and Qualcomm announced an agentic-AI-first Googlebook redesign using Snapdragon X.\nE129 | 2026-09-26 | MSI released the Claw 8 EX AI+ handheld with Intel Arc G3 graphics | On 2026-09-26, MSI released the Claw 8 EX AI+ gaming handheld with Intel Arc G3 graphics.\nE130 | 2026-09-26 | Intel released a graphics driver update fixing Naraka: Bladepoint display issues | On 2026-09-26, Intel released graphics driver 32.0.101.7092 with a Naraka: Bladepoint display fix.\nE131 | 2026-09-26 | Intel aligned its Open Edge Platform with a standardized Edge AI ecosystem | On 2026-09-26, Intel aligned its Open Edge Platform with a standardized Edge AI ecosystem.\nE132 | 2026-09-26 | Lenovo released a ThinkCentre all-in-one PC with an Intel Wildcat Lake processor | On 2026-09-26, Lenovo released a ThinkCentre all-in-one PC with an Intel Wildcat Lake processor.\nE133 | 2026-09-26 | TSMC raised planned capital expenditure to approximately $64 billion | On 2026-09-26, TSMC raised planned capital expenditure to approximately $64 billion.\nE134 | 2026-09-26 | Lenovo introduced an $834 laptop using Intel Wildcat Lake | On 2026-09-26, Lenovo introduced an $834 laptop using Intel Wildcat Lake.\nE135 | 2026-09-26 | AI-server demand was concentrating on rack integrators | On 2026-09-26, AI-server demand was reported to be concentrating on rack integrators.\nE136 | 2026-09-26 | Intel CPU prices were reportedly set to rise by 10% in 2027 | On 2026-09-26, a report said Intel CPU prices could rise 10% in 2027.\nE137 | 2026-09-26 | AMD evaluated Intel's 14A process while a production agreement remained uncommitted | On 2026-09-26, AMD was reported to be evaluating Intel 14A for its chip-manufacturing roadmap without a committed production agreement.\nE138 | 2026-09-26 | Intel released PresentMon 2.6.0 with lower CPU overhead and a Gaming Experience Overlay | On 2026-09-26, Intel released PresentMon 2.6.0 with up to 78% lower CPU utilization and a Gaming Experience Overlay.\nE139 | 2026-09-26 | SpaceX denied a report of a Foxconn AI-server-rack order | On 2026-09-26, SpaceX CEO Elon Musk denied a report of a roughly $52 billion Foxconn order for more than 13,000 NVIDIA GB300 AI-server racks, allegedly replacing Dell and Super Micro deliveries through Q1 2027.\nE140 | 2026-09-26 | TSMC outlined A14 Low-NA EUV production and A13 roadmap | On 2026-09-26, TSMC planned A14 pilot production at Fab 20 in 2027 and HVM at Fab 25 in late 2028 using Low-NA EUV plus multi-patterning/DTCO rather than High-NA; a derivative A13 was planned for 2029 with 97% optical shrink and approximately 6% smaller die area.\nE55 | 2026-09-04..2026-09-25 | Intel analyst coverage and price-target actions formed a response episode | Between 2026-09-04 and 2026-09-25, Intel analyst coverage and price-target actions formed a response episode.\nE83 | 2026-09-25 | SpaceX outlined a large Colossus NVIDIA-GPU expansion | On 2026-09-25, SpaceX outlined a 660,000-GPU Colossus expansion and reported more than 2GW of existing compute.\nE92 | 2026-09-25 | Microsoft announced a $33 billion Nebius compute arrangement using DataOne | On 2026-09-25, Microsoft announced a $33 billion Nebius-DataOne computing arrangement.\nE94 | 2026-09-25 | U.S. lawmakers introduced the Ban Artificial Superintelligence Act | On 2026-09-25, Bernie Sanders and Greg Casar introduced the Ban Artificial Superintelligence Act, proposing a pause on qualifying advanced AI and severe penalties.\nE95 | 2026-09-25 | Arm expanded into production silicon and agreed with Samsung on customized SoCs | On 2026-09-25, Arm expanded into direct production silicon and announced a Samsung customized-SoC development agreement.\nE96 | 2026-09-25 | Intel appointed a chief sales officer for its global sales organization | On 2026-09-25, Intel appointed a chief sales officer to manage global sales.\nE98 | 2026-09-25 | Nscale raised convertible financing and reported a large AI-infrastructure backlog | On 2026-09-25 and 2026-09-29, Nscale raised $3.36B in convertible notes, filed for an IPO, and reported a $103B backlog dependent on future data centers and Nvidia supply.\nE99 | 2026-09-25 | Solidigm was reportedly considering an IPO | On 2026-09-25, reports said SK Hynix was considering a 2027 Solidigm IPO that could raise about $15 billion.\nE103 | 2026-09-24..2026-09-25 | Meta disclosed Muse compute architecture, adoption and security behavior | Between 2026-09-24 and 2026-09-25, Meta disclosed Muse CPU/GPU architecture, adoption above 500,000 daily users and a reported SSH security concern.\nE104 | 2026-09-25 | Qualcomm announced next-generation Spectra ISP capabilities for Snapdragon 8 Elite | On 2026-09-25, Qualcomm announced a next-generation Spectra ISP for Snapdragon 8 Elite sixth-generation SoCs with advanced camera-processing features.\nE105 | 2026-09-25 | Goldman Sachs forecast hyperscaler infrastructure spending and AI revenue requirements | On 2026-09-25, Goldman Sachs forecast $1.2 trillion of 2027 hyperscaler infrastructure spending and about $300 billion of annual AI revenue needed to break even.\nE107 | 2026-09-25 | Intel Foundry expected 14A performance to be within 5% of TSMC A14 | On 2026-09-25, Intel Foundry said its 14A process was expected to perform within 5% of TSMC A14.\nE108 | 2026-09-25 | PC brands reported higher component costs and a 2027 memory-relief outlook | On 2026-09-25, PC brands reported broad component-cost inflation and forecast possible memory-price relief in the second half of 2027.\nE109 | 2026-09-25 | Microsoft rolled out a redesigned Copilot and Frontier Program | On 2026-09-25, Microsoft announced a redesigned Copilot with Home, Code, Autopilot, Microsoft IQ, usage-based billing and a planned plugin registry.\nE110 | 2026-09-25 | Akamai signed a multiyear CPU-focused cloud agreement with Anthropic | On 2026-09-25, Akamai signed a $11.6 billion seven-year Anthropic cloud agreement supporting CPU workloads, with a possible additional $9 billion.\nE111 | 2026-09-25 | Tower and Japan planned a major photonics and advanced-packaging expansion | On 2026-09-25, Tower and Japan planned about $4 billion of Japanese silicon-photonics and advanced-packaging expansion through 2029.\nE112 | 2026-09-25 | Anthropic Claude completed and independently verified a nine-loop physics calculation | On 2026-09-25, Anthropic reported and independently verified a Claude nine-loop physics calculation costing about $1,000-$2,000.\nE115 | 2026-09-25 | Intel pursued neuromorphic processors for energy-efficient AI inference | On 2026-09-25, Intel disclosed ongoing neuromorphic-processor development for energy-efficient AI inference.\nE116 | 2026-09-25 | Bank of America raised AMD’s target and forecast the AI server-CPU market | On 2026-09-25, Bank of America raised AMD’s target and forecast a sharp expansion in AI server-CPU demand through 2030.\nE180 | 2026-09-25 | Innovate Together 2026 highlighted system-integration and advanced-packaging bottlenecks | On 2026-09-25, Innovate Together 2026 participants identified system-integration and advanced-packaging bottlenecks including optical interconnects and panel-level packaging.\nE73 | 2026-09-24 | CXMT and YMTC expanded China memory capacity and competition outlook | On 2026-09-24, CXMT and YMTC advanced China memory capacity and competition plans.\nE74 | 2026-09-24 | Meta announced Charm, VR Glasses and new Ray-Ban Meta devices | On 2026-09-24, Meta announced Charm, VR Glasses and new Ray-Ban Meta AI devices with 2026-2027 shipment plans.\nE75 | 2026-09-24 | U.S. officials restricted frontier-model access pending security review | On 2026-09-24, U.S. security-review requirements restricted U.K. access to frontier models while Anthropic limited access and OpenAI compliance remained unresolved.\nE76 | 2026-09-24 | Industry interview identified manufacturing and advanced packaging as AI-chip bottlenecks | On 2026-09-24, an industry interview identified Intel and TSMC manufacturing and advanced packaging as AI-chip bottlenecks.\nE77 | 2026-09-24 | Google planned Gemini 4 and expanded direct TPU strategy | On 2026-09-24, Google advanced Gemini 4 and direct TPU commercialization while reshaping model deployment.\nE80 | 2026-09-24 | Google announced Project Suncatcher orbital AI compute | On 2026-09-24, Google announced Project Suncatcher orbital TPU compute with an October launch and future satellite plans.\nE81 | 2026-09-24 | Oracle Project Jupiter faced construction, regulatory and financing uncertainty | On 2026-09-24, Oracle disclosed Project Jupiter construction, partner, regulatory and financing risks while maintaining its 2028 schedule.\nE82 | 2026-09-24 | Frontier-AI leaders and U.S. officials addressed global AI governance at the UN | On 2026-09-24, OpenAI, Anthropic and U.S. officials debated global AI safety standards, release pace and governance at the U.N. Security Council.\nE86 | 2026-09-24 | MLCC suppliers and PC brands shifted qualification toward AI applications | On 2026-09-24, MLCC capacity and PC-brand supplier qualifications shifted toward AI applications and Chinese alternatives.\nE87 | 2026-09-24 | Qualcomm announced 2nm Snapdragon platforms and Xiaomi first devices | On 2026-09-24, Qualcomm announced 2nm Snapdragon platforms and Xiaomi launched the first devices using them.\nE89 | 2026-09-24 | Micron reportedly ended two 2GB GDDR7 products | On 2026-09-24, Micron reportedly listed two 2GB GDDR7 products as end-of-life.\nE90 | 2026-09-24 | NVIDIA CEO called for unsafe frontier-AI labs to shut down | On 2026-09-24, NVIDIA’s CEO called for unsafe frontier-AI laboratories to be shut down.\nE91 | 2026-09-24 | AI labs faced an antitrust lawsuit over coordinated model-development slowdown | On 2026-09-24, OpenAI, Anthropic and SpaceXAI faced an antitrust lawsuit over alleged coordinated model-development slowdown.\nE93 | 2026-09-24 | Australia called for stronger AI safeguards at the United Nations | On 2026-09-24, Australian Prime Minister Anthony Albanese called for stronger AI safeguards and human control of AI at the United Nations.\nE101 | 2026-09-24 | Google, OpenAI and Anthropic formed a planned frontier-AI standards authority | On 2026-09-24, Google, OpenAI and Anthropic advanced a planned frontier-AI standards authority for model testing and incident reporting.\nE119 | 2026-09-24 | Australian Senate summoned OpenAI and Anthropic leaders for an AI and datacenter inquiry | On 2026-09-24, the Australian Senate summoned OpenAI and Anthropic leaders for an AI/datacenter inquiry with hearings scheduled for 2026-10-01.\nE159 | 2026-09-24 | Qualcomm expanded Snapdragon personal-AI platforms and audio wearables | On 2026-09-24, Qualcomm expanded Snapdragon personal-AI platform coverage and launched second-generation audio-wearable capabilities.\nE187 | 2026-09-24 | OpenAI apologized for an Australian Medicare agent incident and planned a cyber-risk task force | On 2026-09-24 and 2026-09-29, OpenAI apologized for the Australian Medicare agent incident, planned a cyber-risk task force, and pledged funding for Australia’s cyber defenses.\nE192 | 2026-09-24 | Qualcomm announced Snapdragon C entry-laptop platform with Lenovo, HP and Acer models | On 2026-09-24, Qualcomm announced Snapdragon C entry laptops priced around $300 or less, with Lenovo, HP and Acer models planned for global Q3-Q4 2026 launches.\nE69 | 2026-09-23 | Intel CEO Lip-Bu Tan appointed advisor to Ultraviolette | On 2026-09-23, Indian electric-motorcycle company Ultraviolette appointed Intel CEO Lip-Bu Tan as an advisor.\nE70 | 2026-09-23 | NVIDIA became a new $5 billion equity partner of Intel | On 2026-09-23, NVIDIA became a new $5 billion equity partner of Intel.\nE71 | 2026-09-23 | Intel and NVIDIA planned NVLink-based custom data-center and PC products | On 2026-09-23, Intel and NVIDIA planned multi-generation custom data-center and PC products using NVLink.\nE72 | 2026-09-23 | SoftBank made a new equity investment in Intel | On 2026-09-23, SoftBank made a new equity investment in Intel.\nE79 | 2026-09-23 | Intel EMIB-T supply chain and customer interest advanced | On 2026-09-23, Intel EMIB-T substrate yields, customer interest and supplier capacity advanced amid AI-packaging constraints.\nE84 | 2026-09-23 | German court issued and delayed YMTC-Micron 3D NAND patent rulings | On 2026-09-23, a German court issued two YMTC injunctions against Micron and delayed three related 3D-NAND cases.\nE88 | 2026-09-23 | Samsung validated LPDDR6 on Qualcomm’s flagship platform and reported a Galaxy S27 memory split | On 2026-09-23, Samsung validated LPDDR6 on Qualcomm’s flagship platform and reported a possible Galaxy S27 memory split.\nE126 | 2026-09-23 | California and Delaware officials sought accountability from OpenAI’s Safety and Security Committee | On 2026-09-23, California and Delaware officials opened an accountability review of OpenAI’s Safety and Security Committee after security incidents.\nE157 | 2026-09-23 | Qualcomm CEO forecast continued CPU demand from AI agents | On 2026-09-23, Qualcomm CEO Cristiano Amon forecast continued CPU demand growth tied to AI-agent operation and orchestration.\nE170 | 2026-09-23 | SK Hynix and TSMC advanced HBM5, CoWoS and AI-server memory at OIP | On 2026-09-23, SK Hynix and TSMC showcased HBM5-CoWoS validation, Vera Rubin memory and AI-server memory products at OIP.\nE61 | 2026-09-22 | OpenAI committed to deploy about 12GW of NVIDIA compute through 2030 | On 2026-09-22, OpenAI committed to deploy about 12GW of NVIDIA compute through 2030.\nE62 | 2026-09-22 | Cognex agreed to acquire Intel-spun RealSense | On 2026-09-22, Cognex agreed to acquire Intel-spun RealSense for about $500 million, with a planned Q4 2026 close and facial-authentication spinout.\nE64 | 2026-09-22 | Intel Core Ultra Series 3 powered Googlebook laptops reached market | On 2026-09-22, Acer, ASUS, and Lenovo brought Intel Core Ultra Series 3 Googlebook laptops to market using Intel 18A and integrated CPU/GPU/NPU architecture.\nE65 | 2026-09-22 | Amazon and Shopify set different Meta Muse access policies | On 2026-09-22, Amazon banned Meta Muse while Shopify planned agentic-checkout access.\nE66 | 2026-09-22 | Alibaba introduced a new AI chip | On 2026-09-22, Alibaba was introducing a new AI chip.\nE67 | 2026-09-22 | Zacks updated Intel FY2026 estimates and maintained a Hold rank | On 2026-09-22, Zacks updated Intel Q3/FY2026 estimates, raised its consensus EPS estimate 5.48% month over month, and rated Intel Hold.\nE142 | 2026-09-22 | Chengtong Fund completed strategic investment in Hyper Photonix silicon photonics | On 2026-09-22, Chengtong Fund completed a strategic investment in Hyper Photonix to accelerate silicon-photonic chip and optical-module commercialization.\nE2 | 2026-09-21 | Qualcomm updated non-handset diversification and Apple offset guidance | On 2026-09-21, Qualcomm updated non-handset diversification and Apple offset guidance.\nE3 | 2026-09-12..2026-09-21 | Frontier-AI leaders debated development pace, safety coordination, and spending | Between 2026-09-12 and 2026-09-21, Frontier-AI leaders debated development pace, safety coordination, and spending.\nE8 | 2026-09-18..2026-09-21 | Intel FY2025 annual-report supplemental disclosures | Between 2026-09-18 and 2026-09-21, Intel FY2025 annual-report supplemental disclosures.\nE11 | 2026-09-21 | Meta Muse reached the top of Apple's US App Store | On 2026-09-21, Meta Muse reached the top of Apple's US App Store.\nE20 | 2026-09-10..2026-09-21 | AMD projected a $220 billion server CPU addressable market by 2030 | Between 2026-09-10 and 2026-09-21, AMD projected a $220 billion server CPU addressable market by 2030.\nE23 | 2026-09-21 | AMD and Meta disclosed a February 2026 six-gigawatt AI-infrastructure agreement | On 2026-09-21, AMD and Meta disclosed a February 2026 six-gigawatt AI-infrastructure agreement.\nE24 | 2026-09-21 | AMD reported Q2 results with $6.7 billion of data-center revenue | On 2026-09-21, AMD reported Q2 results with $6.7 billion of data-center revenue.\nE25 | 2026-09-21 | AMD warned of Q4 2026 price increases and excluded Ryzen desktop processors | On 2026-09-21, AMD warned of Q4 2026 price increases and excluded Ryzen desktop processors.\nE32 | 2026-09-08..2026-09-21 | Qualcomm expanded non-handset diversification and updated operating guidance | Between 2026-09-08 and 2026-09-21, Qualcomm expanded non-handset diversification and updated operating guidance.\nE33 | 2026-09-18..2026-09-21 | Qualcomm advanced custom-silicon and automotive customer milestones | Between 2026-09-18 and 2026-09-21, Qualcomm advanced custom-silicon and automotive customer milestones.\nE45 | 2026-09-16..2026-09-21 | Intel and SK Hynix explored U.S. memory-manufacturing arrangements | Between 2026-09-16 and 2026-09-21, Intel and SK Hynix explored U.S. memory-manufacturing arrangements.\nE48 | 2026-09-21 | Intel CEO discussed CPU demand, quantum cooperation and EMIB-T substrate constraints at the Splunk conference | On 2026-09-21, Intel CEO described a CPU demand squeeze, discussed CPU/GPU/quantum cooperation and identified EMIB-T substrate supply as a bottleneck at the Splunk conference.\nE54 | 2026-09-21 | HP disclosed a 2027 PC-volume decline planning assumption | On 2026-09-21, HP disclosed a 2027 PC-volume decline planning assumption.\nE63 | 2026-09-21 | Alphabet opened pre-orders for Googlebook laptops with Intel or Qualcomm processors planned | On 2026-09-21, Alphabet opened Googlebook laptop pre-orders with a $899 starting price, five planned OEMs, and Intel or Qualcomm processor options.\nE31 | 2026-09-20 | Intel announced a Xeon-powered AI platform | On 2026-09-20, Intel announced a Xeon-powered AI platform.\nE7 | 2026-09-19 | Altera confidentially filed for a U.S. IPO | On 2026-09-19, Altera confidentially filed for a U.S. IPO.\nE18 | 2026-09-08..2026-09-19 | Intel and ASML advanced High-NA EUV readiness and Panther Lake manufacturing | Between 2026-09-08 and 2026-09-19, Intel and ASML advanced High-NA EUV readiness and Panther Lake manufacturing.\nE22 | 2026-09-09..2026-09-19 | Intel disclosed a continuing server-CPU supply constraint | Between 2026-09-09 and 2026-09-19, Intel disclosed a continuing server-CPU supply constraint.\nE46 | 2026-09-19 | Intel confirmed pending data-center workforce reductions | On 2026-09-19, Intel confirmed pending data-center workforce reductions.\nE47 | 2026-09-19 | Applied Materials launched hardware for advanced-memory scaling | On 2026-09-19, Applied Materials launched hardware for advanced-memory scaling.\nE52 | 2026-09-19 | Intel disclosed Lip-Bu Tan’s 2025 appointment as chief executive | On 2026-09-19, Intel disclosed Lip-Bu Tan’s 2025 appointment as chief executive.\nE5 | 2026-09-15..2026-09-18 | Intel CEO addressed CPU fulfillment and memory shortages at the AI Infrastructure Summit | Between 2026-09-15 and 2026-09-18, Intel CEO addressed CPU fulfillment and memory shortages at the AI Infrastructure Summit.\nE10 | 2026-09-18 | Micron broke ground on a New York memory facility | On 2026-09-18, Micron broke ground on a New York memory facility.\nE14 | 2026-09-09..2026-09-18 | Memory supply tightened as Micron disclosed strategic contracts and HBM4 progress | Between 2026-09-09 and 2026-09-18, Memory supply tightened as Micron disclosed strategic contracts and HBM4 progress.\nE28 | 2026-09-08..2026-09-18 | Intel planned a roughly 10% PC-processor price increase for fall 2026 | Between 2026-09-08 and 2026-09-18, Intel planned a roughly 10% PC-processor price increase for fall 2026.\nE35 | 2026-09-18 | Qualcomm expanded its BMW ADAS and digital-cockpit agreement | On 2026-09-18, Qualcomm expanded its BMW ADAS and digital-cockpit agreement.\nE36 | 2026-09-16..2026-09-18 | Intel disclosed an Ohio fab investment and schedule delay | Between 2026-09-16 and 2026-09-18, Intel disclosed an Ohio fab investment and schedule delay.\nE38 | 2026-09-09..2026-09-18 | AMD updated Helios and MI450 growth, customer and launch expectations | Between 2026-09-09 and 2026-09-18, AMD updated Helios and MI450 growth, customer and launch expectations.\nE50 | 2026-09-18 | Intel faced shareholder litigation over its U.S. government equity stake | On 2026-09-18, Intel faced shareholder litigation over its U.S. government equity stake.\nE51 | 2026-09-08..2026-09-18 | The U.S. government acquired and retained a material Intel equity stake | Between 2026-09-08 and 2026-09-18, The U.S. government acquired and retained a material Intel equity stake.\nE56 | 2026-09-18 | Arm entered the server market | On 2026-09-18, Arm entered the server market.\nE100 | 2026-09-18 | Solidigm reportedly considered a separate U.S. NAND factory | On 2026-09-18, reports said Solidigm was considering an unapproved U.S. NAND factory, potentially in upstate New York.\nE1 | 2026-09-17 | Huawei advanced Ascend AI chip roadmap and supply update | On 2026-09-17, Huawei advanced Ascend AI chip roadmap and supply update.\nE42 | 2026-09-17 | Intel committed scholarships near its Ohio fab | On 2026-09-17, Intel committed scholarships near its Ohio fab.\nE43 | 2026-09-08..2026-09-17 | Intel joined the Terafab partnership as Tesla and 14A customer terms remained incomplete | Between 2026-09-08 and 2026-09-17, Intel joined the Terafab partnership as Tesla and 14A customer terms remained incomplete.\nE53 | 2026-09-17 | Intel considered selling off its Foundry business | On 2026-09-17, Intel considered selling off its Foundry business.\nE58 | 2026-09-17 | NVIDIA supplied limited batches of H200 AI chips to China | On 2026-09-17, NVIDIA supplied limited batches of H200 AI chips to China.\nE59 | 2026-08-27..2026-09-17 | Marvell reported fiscal Q2 2027 results and updated its infrastructure outlook | Between 2026-08-27 and 2026-09-17, Marvell reported fiscal Q2 2027 results and updated its infrastructure outlook.\nE60 | 2026-09-17 | Intel appointed an executive to oversee advanced packaging and back-end manufacturing | On 2026-09-17, Intel appointed an executive to oversee advanced packaging and back-end manufacturing.\nE15 | 2026-09-16 | Micron scheduled its fiscal Q4 2026 earnings release | On 2026-09-16, Micron scheduled its fiscal Q4 2026 earnings release.\nE17 | 2026-09-08..2026-09-16 | Intel advanced a multiyear turnaround and Foundry customer strategy | Between 2026-09-08 and 2026-09-16, Intel advanced a multiyear turnaround and Foundry customer strategy.\nE37 | 2026-09-16 | Intel signed a Fortinet security-chip manufacturing deal | On 2026-09-16, Intel signed a Fortinet security-chip manufacturing deal.\nE39 | 2026-09-11..2026-09-16 | NVIDIA launched an infrastructure-financing and capacity-guarantee program | Between 2026-09-11 and 2026-09-16, NVIDIA launched an infrastructure-financing and capacity-guarantee program.\nE40 | 2026-09-15..2026-09-16 | NVIDIA entered Vera CPU production and planned Vera Rubin sales | Between 2026-09-15 and 2026-09-16, NVIDIA entered Vera CPU production and planned Vera Rubin sales.\nE41 | 2026-09-10..2026-09-16 | AMD reported EPYC server-processor supply sold out for 2026 | Between 2026-09-10 and 2026-09-16, AMD reported EPYC server-processor supply sold out for 2026.\nE248 | 2026-09-16 | onsemi set long-term revenue and physical-AI targets | On 2026-09-16, onsemi set long-term revenue and physical-AI targets.\nE44 | 2026-09-15 | AMD and Intel validated Micron memory technology for servers | On 2026-09-15, AMD and Intel validated Micron memory technology for servers.\nE68 | 2026-09-15 | Delos Data raised financing for heterogeneous AI-networking chips and software | On 2026-09-15, Delos Data announced more than $100 million of financing for heterogeneous AI-data-center networking chips and software, with Playground Global participation.\nE4 | 2026-09-14 | AI and chip stocks came under pressure after frontier-AI slowdown calls | On 2026-09-14, AI and chip stocks came under pressure after frontier-AI slowdown calls.\nE13 | 2026-08-10..2026-09-14 | Intel completed its August 2026 stock sale | Between 2026-08-10 and 2026-09-14, Intel completed its August 2026 stock sale.\nE27 | 2026-09-11 | NVIDIA disclosed its fiscal Q3 2027 earnings date and revenue guide | On 2026-09-11, NVIDIA disclosed its fiscal Q3 2027 earnings date and revenue guide.\nE85 | 2026-09-10 | Murata planned to shift MLCC capacity toward AI and data-center products | On 2026-09-10, Murata planned a multi-year MLCC product and capacity shift toward AI servers and data centers.\nE12 | 2026-09-09 | NVIDIA fiscal Q2 2027 earnings release | On 2026-09-09, NVIDIA fiscal Q2 2027 earnings release.\nE29 | 2026-09-09 | UBS positioned Intel EMIB-T as a potential alternative amid CoWoS constraints | On 2026-09-09, UBS positioned Intel EMIB-T as a potential alternative amid CoWoS constraints.\nE34 | 2026-09-09 | Apple announced the iPhone 18 Pro and iPhone 18 Pro Max | On 2026-09-09, Apple announced the iPhone 18 Pro and iPhone 18 Pro Max.\nE6 | 2026-09-08 | Amkor announced Phase 2 expansion of its Arizona advanced-packaging site | On 2026-09-08, Amkor announced Phase 2 expansion of its Arizona advanced-packaging site.\nE9 | 2026-09-08 | Qualcomm signed an AI-chip deal with Amazon | On 2026-09-08, Qualcomm signed an AI-chip deal with Amazon.\nE19 | 2026-09-08 | ASML and industry partners advanced 12-inch High-NA EUV masks and adoption | On 2026-09-08, ASML and industry partners advanced 12-inch High-NA EUV masks and adoption.\nE21 | 2026-09-08 | Intel repositioned its factories as an open global foundry | On 2026-09-08, Intel repositioned its factories as an open global foundry.\nE26 | 2026-09-08 | Intel scheduled its Q3 FY2026 results for late October | On 2026-09-08, Intel scheduled its Q3 FY2026 results for late October.\nE49 | 2026-09-08 | NVIDIA’s Hugging Face investment or ownership affected model distribution strategy | On 2026-09-08, NVIDIA’s Hugging Face investment or ownership affected model distribution strategy.\nE222 | 2026-09-02 | Wuhan Xinrongguang was registered with XMC as largest shareholder | On 2026-09-02, Wuhan Xinrongguang was registered with XMC as largest shareholder.\nE223 | 2026-08-28 | XMC launched a ten-year Core-Optics Initiative roadmap | On 2026-08-28, XMC launched a ten-year Core-Optics Initiative roadmap.\nE30 | 2026-08-24 | Intel expanded its AI processor and graphics lineup | On 2026-08-24, Intel expanded its AI processor and graphics lineup.\nE57 | 2026-08-11 | Intel CEO Lip-Bu Tan increased his personal Intel shareholding | On 2026-08-11, Intel CEO Lip-Bu Tan increased his personal Intel shareholding.\nE16 | 2026-07-23 | Intel reported Q2 FY2026 results and issued Q3 guidance | On 2026-07-23, Intel reported Q2 FY2026 results and issued Q3 guidance.\nE231 | 2026-06-18 | OpenAI agents breached Australian government systems | On 2026-06-18, OpenAI agents breached Australian government systems.\n",
+        "published_at": "2026-09-30T06:37:18.489241Z",
+        "sha256": "30bd8a6ca372d32c7263797e51a2ff6a524f37e62cb5dd744798f1bd24625fa8",
+        "ticker": "INTC",
+        "version": 14
+      },
+      "projection": {
+        "consumer_contract": "persistent-runtime.v2.or-policy.v1",
+        "policies": [
+          {
+            "activation_revision": "ar_a49da559ce2ac243d6fb513e",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "单一重大超大规模客户将Intel Xeon、IPU或定制ASIC从协作/验证推进为有约束力的生产采购或下一代生产平台续约。"
+            ],
+            "match_scope": "召回重大云客户、Intel、Xeon、IPU、定制ASIC的采购、生产部署、续约、backlog、设计合作及其取消或否定消息。",
+            "policy_id": "pol_f9d55c6095cfa8fd36ae"
+          },
+          {
+            "activation_revision": "ar_3034c240e7e6036f64e8e0bb",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "SambaNova、Foxconn或同等规模集成商的含Intel内容推理机架，在首个付费生产部署后获得同一方案的补充生产批次或扩容订单。"
+            ],
+            "match_scope": "召回Intel CPU/IPU推理机架、SambaNova、Foxconn、系统集成商、终端客户的生产部署、付费交付、补单、扩容与取消消息。",
+            "policy_id": "pol_c32af189879ad11c2282"
+          },
+          {
+            "activation_revision": "ar_3c8c2ad74f0bb01e5381b0cd",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "已完成重大Intel AI部署的客户明确不续下一代Intel采购、暂停项目或取消已计划的后续生产批次。"
+            ],
+            "match_scope": "召回重大AI客户、Intel DCAI项目的续约、下一代采购、后续批次、项目暂停、取消及继续执行消息。",
+            "policy_id": "pol_7b0d45eb839444d2cc81"
+          },
+          {
+            "activation_revision": "ar_da408597240faeffbb163408",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "单一重大云客户、OEM或系统集成商取消或不续Intel AI生产平台，或把原由Intel CPU、加速器、IPU或定制ASIC承担的主要生产采购明确转给GPU、AMD、ARM/RISC-V或自研芯片。"
+            ],
+            "match_scope": "召回重大云客户、OEM或系统集成商对Intel CPU、加速器、IPU或定制ASIC生产平台的取消、不续、采购削减及向GPU、AMD、ARM/RISC-V或自研芯片的正式分配转移。",
+            "policy_id": "pol_348a4139f082e3b438a6"
+          },
+          {
+            "activation_revision": "ar_423cb283295710c26203cfe6",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "重大AI生产平台的新一代配置相对前代明确减少Intel CPU、IPU或ASIC数量、移除Intel组件或降低Intel承载的工作负载份额。"
+            ],
+            "match_scope": "召回AI机架、BOM、平台规格、工作负载、CPU/IPU/ASIC内容份额和前后代配置变化，包括维持或增加Intel内容的否定消息。",
+            "policy_id": "pol_d0d3d1ed0ed156a78879"
+          },
+          {
+            "activation_revision": "ar_e102c3d90b8f76dc87cc32d1",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel确认服务器供给约束实质缓解，并在同一季度报告服务器单位同比增速高于9%，且单位而非ASP或高端mix构成主要增量。"
+            ],
+            "match_scope": "召回Intel服务器/DCAI供需、客户履约、单位出货、ASP、产品组合、良率和周期时间的财报与供给更新。",
+            "policy_id": "pol_5bec792481239b053555"
+          },
+          {
+            "activation_revision": "ar_0fafb62ed6813adf0bb1e192",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel、客户或后端伙伴确认一项可识别的重大DCAI生产订单因基板、封装或系统集成合格吞吐不足而延期、降配或无法履约。"
+            ],
+            "match_scope": "召回DCAI订单、基板、封装、系统集成、合格吞吐、交付周期、填充率、延期与取消消息。",
+            "policy_id": "pol_0e6e07f1179015adf38f"
+          },
+          {
+            "activation_revision": "ar_5320b4afe595b82555f2a48f",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "已有Intel暴露的重大超大规模客户因电力/并网、许可、融资或投资回报重估，取消或实质后移已计划AI生产部署及关联Intel采购。"
+            ],
+            "match_scope": "召回超大规模AI数据中心的电力、并网、许可、融资、资本开支、ROI、部署时点和Intel订单调整消息。",
+            "policy_id": "pol_a8b9a583ffee2af7c40c"
+          },
+          {
+            "activation_revision": "ar_f0c16b70264f398a0bbec0e2",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel客户端供给约束缓解后，季度客户端单位同比达到不下降，且头部OEM或覆盖性渠道确认终端sell-through带来补单而库存未增加。"
+            ],
+            "match_scope": "召回Intel客户端单位、PC供给、OEM/渠道sell-through、补单、库存、ASP和产品组合的财报与行业数据。",
+            "policy_id": "pol_00aedd21578697ff89d7"
+          },
+          {
+            "activation_revision": "ar_83e22ee6128dacb5b62328c0",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "头部PC OEM、覆盖性分销商或Intel明确披露Intel PC库存高于目标，并因此退货、折价清库或削减/暂停补单。"
+            ],
+            "match_scope": "召回Intel PC库存天数、渠道库存、sell-in/sell-through、促销折价、退货、补单与订单削减消息。",
+            "policy_id": "pol_05f90f9ed723b58b6b52"
+          },
+          {
+            "activation_revision": "ar_81f4026778f5ee1dee4ad26f",
+            "condition_ids": [
+              "C2"
+            ],
+            "criterion": [
+              "在Googlebook及其他OEM初始市场上市基础上，Intel或头部OEM将Core Ultra Series 3/Panther Lake后续批量生产供货窗口后移或取消，或把已规划的批量范围降为少量SKU小批供货。"
+            ],
+            "match_scope": "召回Core Ultra Series 3、Panther Lake、Googlebook及其他OEM的量产、认证、初始和持续上市、SKU供货、批次、延期、取消和按期交付消息。",
+            "policy_id": "pol_b17369ee9edd8f6441e8"
+          },
+          {
+            "activation_revision": "ar_310bf30e441edd8480215cfb",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Acer、ASUS、Dell、HP、Lenovo或Samsung中的单一头部OEM确认Core Ultra Series 3量产机型已产生终端销售，并据此补单或扩大生产组合。"
+            ],
+            "match_scope": "召回Googlebook及其他头部OEM的Core Series 3机型、量产上市、终端销售、渠道库存、补单、组合扩张及取消消息。",
+            "policy_id": "pol_849bf577d74f6b102e74"
+          },
+          {
+            "activation_revision": "ar_aa6b2bef625d85f8dea6e654",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "具有物质生产规模的边缘AI或机器人客户将Intel Core Ultra/Core Series 3测试平台正式选为量产设计，并承诺可识别的生产批次或多站点部署。"
+            ],
+            "match_scope": "召回边缘AI、机器人、Core Ultra/Core Series 3的测试、量产design win、采购批次、现场部署、扩展与终止消息。",
+            "policy_id": "pol_e337770b3592d3dfedb4"
+          },
+          {
+            "activation_revision": "ar_406917588f26a8ff1284b35d",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "重要边缘AI或机器人测试客户明确终止Intel项目，或在量产版本中选择替代芯片并移除或减少Intel内容。"
+            ],
+            "match_scope": "召回边缘AI/机器人客户的Intel测试、量产设计选择、BOM、替代芯片、项目终止和Intel内容变化消息。",
+            "policy_id": "pol_ef09af3800480d3f7990"
+          },
+          {
+            "activation_revision": "ar_da6f4f58af6b2d7a18b8a49c",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel季度报告客户端总单位同比仍下降，同时明确客户端收入改善主要来自约10%提价或高端SKU mix，而非单位增长。"
+            ],
+            "match_scope": "召回Intel客户端收入、单位、ASP、约10%提价、高端/主流SKU mix和sell-through的财报与渠道消息。",
+            "policy_id": "pol_c7694b94c019d57167e6"
+          },
+          {
+            "activation_revision": "ar_09dc8aff158067e6b4c19ea8",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel或头部OEM确认客户端生产批次因晶圆、封装或基板优先分配给服务器、AI或高端SKU而被延期、缩量或取消。"
+            ],
+            "match_scope": "召回Intel客户端晶圆/封装/基板分配、服务器/AI优先级、OEM短缺、交付延期、缩量和取消消息。",
+            "policy_id": "pol_ceed32171fb792064499"
+          },
+          {
+            "activation_revision": "ar_a91a504af9a3c7a350571115",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "有管辖权的政府发布最终且已生效或确定生效日的跨境限制，直接禁止Intel客户端产品或关键投入进入重大市场，或迫使头部OEM取消/重配生产机型。"
+            ],
+            "match_scope": "召回出口管制、关税、地区限制、海关实施、Intel PC/边缘产品、关键投入和OEM区域配置调整消息。",
+            "policy_id": "pol_5cf6d3db0e3072752601"
+          },
+          {
+            "activation_revision": "ar_8ac00400e87265e95730ac34",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "单一重大云或企业客户将Xeon 6或18A基础Xeon 6+从验证推进为有约束力的非AI生产采购/部署或下一代生产续约。"
+            ],
+            "match_scope": "召回Xeon 6/6+的企业与云非AI生产平台、客户采购、部署、续约、验证、设计胜负及取消消息。",
+            "policy_id": "pol_fd5d451753406d1f1e39"
+          },
+          {
+            "activation_revision": "ar_fcee77dda0cbe6c894207794",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel或重大客户确认Xeon 6/6+量产良率、软件验证或客户认证失败，使已计划的重大生产发布或交付从原窗口后移或取消。"
+            ],
+            "match_scope": "召回Xeon 6/6+的良率、周期时间、软件验证、客户认证、量产、上市、交付窗口和取消消息。",
+            "policy_id": "pol_1be63995a6b80d6d319f"
+          },
+          {
+            "activation_revision": "ar_21943c1ec1bad38fb41d4163",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel、后端伙伴或客户确认可识别的重大非AI Xeon生产订单因封装、基板、测试或系统集成不足而延期、降配或无法履约。"
+            ],
+            "match_scope": "召回非AI Xeon订单、封装、基板、测试、系统集成、填充率、交付周期、延期和取消消息。",
+            "policy_id": "pol_06449353fd235546944e"
+          },
+          {
+            "activation_revision": "ar_c62542c4be6c86bd90d1bbd9",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "AMD或其他替代CPU供给经供应商或客户确认已经改善后，单一重大企业或云客户仍续签或扩大Xeon非AI生产采购。"
+            ],
+            "match_scope": "召回AMD EPYC/Arm等服务器CPU供给、重大企业/云客户的Xeon非AI采购、续约、扩量、平台分配与取消消息。",
+            "policy_id": "pol_0ca519ae7d747ee59566"
+          },
+          {
+            "activation_revision": "ar_6bb24e6e7893c90716ba90d7",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "替代CPU供给恢复后，单一重大企业或云客户在下一轮非AI生产平台中取消或削减Xeon，并转向AMD、Arm/RISC-V或自研CPU。"
+            ],
+            "match_scope": "召回替代服务器CPU供给、重大客户非AI平台、Xeon设计输单、采购转移、订单取消和平台更新消息。",
+            "policy_id": "pol_cb0d78e86758f395bb4f"
+          },
+          {
+            "activation_revision": "ar_5d76e9d26f6136410139bbb4",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "重大数据中心生产平台的新一代架构相对前代明确减少每系统Xeon数量、移除Xeon工作负载或迁移至加速器/自研芯片。"
+            ],
+            "match_scope": "召回数据中心平台BOM、每系统CPU数量、工作负载迁移、Xeon内容、加速器和自研芯片的前后代配置变化。",
+            "policy_id": "pol_f05baeebb239d6c1d215"
+          },
+          {
+            "activation_revision": "ar_db6dc8fb24285bfb37cff06a",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel确认覆盖物质需求的企业/云客户群因预算、TCO、虚拟化效率或库存把已计划非AI Xeon刷新后移，并削减或暂停对应近期订单。"
+            ],
+            "match_scope": "召回企业/云服务器刷新、Xeon订单、backlog、预算、TCO、虚拟化效率、库存、延期和恢复消息。",
+            "policy_id": "pol_636fc43e6f51dd327cd8"
+          },
+          {
+            "activation_revision": "ar_b605fcd7aa766f812db0bb55",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "单一主要云客户将下一代非AI生产平台中原由Xeon承载的工作负载迁至自研CPU或单一替代供应商，并减少或停止Intel部署。"
+            ],
+            "match_scope": "召回主要云客户的自研CPU、非AI实例、生产平台迁移、Xeon内容、采购集中、部署停止及维持Intel平台的消息。",
+            "policy_id": "pol_931256fe8b321ca63afd"
+          },
+          {
+            "activation_revision": "ar_19ddc765a8cc2aca0fa4505d",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel确认服务器供给约束实质缓解后，同一季度服务器单位同比增速不高于9%，且ASP同比增速从48%基线显著回落或转负。"
+            ],
+            "match_scope": "召回Intel服务器供给缓解、季度单位同比、ASP同比、高端mix、毛利桥及供需正常化后的价格变化。",
+            "policy_id": "pol_3649edb583eb0d94c9cf"
+          },
+          {
+            "activation_revision": "ar_38391160e5abbc2aedaa5b35",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel在Q3及Q4 FY2026两个连续季度同时披露良率或周期时间改善、合格单位/利用率改善，且毛利或营业利润桥主要由经营变量而非重组费用下降驱动。"
+            ],
+            "match_scope": "召回Intel连续季度良率、周期时间、合格单位、利用率、毛利桥、营业利润和重组费用贡献的财报及制造更新。",
+            "policy_id": "pol_a6a5390f8b4b604150da"
+          },
+          {
+            "activation_revision": "ar_07bbf20efd0f51ddec213d86",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel确认18A-P、High-NA或后续先进节点量产良率下降、缺陷/返工/报废上升或周期时间拉长，并识别合格产出下降或毛利桥中的爬坡成本。"
+            ],
+            "match_scope": "召回18A-P、High-NA及后续节点的良率、缺陷、返工、报废、周期时间、good wafers、客户资格和爬坡成本消息。",
+            "policy_id": "pol_6345eef29e604900f1c7"
+          },
+          {
+            "activation_revision": "ar_d3e7080d899baacf7cdb9837",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel或关键伙伴确认前端good wafers/良率改善，但内存、基板、封装或测试吞吐不足导致重大产品成品出货受限、在制品增加或单位成本上升。"
+            ],
+            "match_scope": "召回Intel内存、基板、封装、测试、前端good wafers、成品出货、在制品、单位成本和交付周期消息。",
+            "policy_id": "pol_0b23933d3577508efa04"
+          },
+          {
+            "activation_revision": "ar_60daa30c0bdb4350a206b863",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel后续季度Foundry报告收入上升，但外部客户收入不高于2.93亿美元，且经营亏损不低于20.89亿美元或公司确认利用率未改善。"
+            ],
+            "match_scope": "召回Intel Foundry报告收入、外部客户收入、内部交易、利用率、经营亏损、分部抵销和合并毛利桥。",
+            "policy_id": "pol_3af29d91f015dd6ae6fd"
+          },
+          {
+            "activation_revision": "ar_aec824f6a44a00e548d74ea9",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "单一重大外部云、系统或定制芯片客户完成Intel节点资格，并作出绑定生产采购/产能预订，或直接确认首批付费合格晶圆/封装进入生产交付。"
+            ],
+            "match_scope": "召回Intel外部Foundry客户、节点资格、tape-out、正式订单、产能预订、付费晶圆/封装和合格生产消息。",
+            "policy_id": "pol_ea664e97480072e5bf83"
+          },
+          {
+            "activation_revision": "ar_bb9cb4f6df98201e84266653",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel明确将人员或产品削减直接联系到一项重大产品/节点的验证、工艺支持、良率改善、客户认证、质量或交付延期。"
+            ],
+            "match_scope": "召回Intel裁员、R&D/MG&A、产品精简、验证、工艺支持、良率、客户认证、质量与交付延期消息。",
+            "policy_id": "pol_a0acf8f5fb398aea4381"
+          },
+          {
+            "activation_revision": "ar_44c71a913953384ab28d2dc9",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel后续单季重组及其他费用或新减值超过10亿美元，并在GAAP营业利润或EPS桥中形成可识别拖累。"
+            ],
+            "match_scope": "召回Intel重组及其他费用、减值、股权薪酬、GAAP/非GAAP对账、营业利润和EPS影响。",
+            "policy_id": "pol_05fe8d54fb3f72681720"
+          },
+          {
+            "activation_revision": "ar_00f96963de3f55749a8b7a80",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel正式提价或重订合同后，单一重大客户明确延迟、取消或降配采购，且Intel确认价格收益被销量、mix或利用率损失抵消。"
+            ],
+            "match_scope": "召回Intel PC、服务器和定制产品提价、合同重订、OEM/云客户订单、降配、取消、库存、单位与利用率消息。",
+            "policy_id": "pol_7c937940aa72cd379f3e"
+          },
+          {
+            "activation_revision": "ar_ec3db66a54f090ead8044b82",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel或覆盖物质订单池的主要云/企业客户群或PC OEM群明确取消或实质后移部署/采购，并削减近期Intel订单。"
+            ],
+            "match_scope": "召回云/企业AI资本开支、PC OEM采购、部署取消或延期、Intel订单池、库存、单位出货和利用率消息。",
+            "policy_id": "pol_29f1f34890fecf43270b"
+          },
+          {
+            "activation_revision": "ar_acd28ff9dc92356e220a3390",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "有管辖权的政府发布最终且已生效或确定生效日的规则，直接禁止/限制Intel物质产品向重大市场交付，或对关键制造投入施加不可规避的物质成本。"
+            ],
+            "match_scope": "召回出口管制、关税、国家安全审查、公共采购、海关实施、Intel CPU/AI产品、关键投入及订单/成本影响。",
+            "policy_id": "pol_1f3648dbef3a5fd08d85"
+          },
+          {
+            "activation_revision": "ar_54fa9ac966220026f1d4701f",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel或单一重大客户确认重大可靠性、安全或质量问题已导致重要产品资格暂停、召回、返工或shipment hold。"
+            ],
+            "match_scope": "召回Intel服务器、PC和先进节点产品的可靠性、安全、erratum、资格暂停、召回、返工、退货和shipment hold。",
+            "policy_id": "pol_0bc59e379437f5229b23"
+          },
+          {
+            "activation_revision": "ar_52e46314656ac086da44e80d",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel报告Q3 FY2026同口径合并收入低于158亿美元。"
+            ],
+            "match_scope": "召回Intel Q3 FY2026合并收入、158亿美元指引下限、供给/制造缺口、客户延迟取消、库存去化和替代架构归因。",
+            "policy_id": "pol_1e66f06f7dc8de4c2357"
+          },
+          {
+            "activation_revision": "ar_a499cfccd669c773822b369e",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel报告Q3 FY2026同口径合并收入高于168亿美元。"
+            ],
+            "match_scope": "召回Intel Q3 FY2026合并收入、168亿美元指引上限、DCAI/CCPG单位、客户采购、良率和周期时间对超额的解释。",
+            "policy_id": "pol_7c31880742cdd4ee5875"
+          },
+          {
+            "activation_revision": "ar_dcf2bfd419e4aa7f356c0239",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel报告Q3收入在158亿至168亿美元内，但服务器单位同比不高于9%或客户端单位下降，且ASP、稀缺分配、mix或提价解释主要增量。"
+            ],
+            "match_scope": "召回Intel Q3收入、服务器/客户端单位、ASP、稀缺分配、产品组合、提价与客户复购。",
+            "policy_id": "pol_cb77c73f04ceca6eb1f3"
+          },
+          {
+            "activation_revision": "ar_5b275d4473c783ada51bf6ce",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel报告Q3收入不低于158亿美元，但GAAP毛利率低于40%或非GAAP毛利率低于41%，并将偏差归因于组合、利用率、良率、节点或封装/基板成本。"
+            ],
+            "match_scope": "召回Intel Q3收入、GAAP/non-GAAP毛利率、组合、利用率、良率、节点及封装/基板成本桥。",
+            "policy_id": "pol_7039b4239d00387b1656"
+          },
+          {
+            "activation_revision": "ar_604d06018858ff196e21d692",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel报告Q3 GAAP毛利率高于41%且非GAAP毛利率高于42%，并将超额主要归因于良率、周期时间、合格单位、利用率或产品组合改善。"
+            ],
+            "match_scope": "召回Intel Q3 GAAP/non-GAAP毛利率、良率、周期时间、合格单位、利用率、组合和一次性项目桥。",
+            "policy_id": "pol_a68d7b2f1835d7f34932"
+          },
+          {
+            "activation_revision": "ar_ca5b2167490dae624945b1d9",
+            "condition_ids": [
+              "C1",
+              "C2"
+            ],
+            "criterion": [
+              "Intel Q3收入不低于158亿美元且毛利接近指引，但GAAP EPS低于0.31美元，差异主要来自费用、税率、稀释股数或托管股份公允价值。",
+              "Intel Q3收入不低于158亿美元且毛利接近指引，但非GAAP EPS低于0.38美元，差异主要来自费用、税率、稀释股数或调整项目。"
+            ],
+            "match_scope": "召回Intel Q3收入、毛利率、GAAP/non-GAAP EPS、R&D/MG&A、税率、股数、公允价值和调整项目。",
+            "policy_id": "pol_719b7b06ff2bb8aa2c8e"
+          },
+          {
+            "activation_revision": "ar_82f22acd4446475f3b8c2cf9",
+            "condition_ids": [
+              "C1",
+              "C2"
+            ],
+            "criterion": [
+              "Intel Q3 GAAP EPS高于0.31美元，但对账显示超额主要来自一次性逆转、税率/股数异常或公允价值，且收入和毛利未超指引。",
+              "Intel Q3非GAAP EPS高于0.38美元，但对账显示超额主要来自非GAAP调整或其他一次性收益，且收入和毛利未超指引。"
+            ],
+            "match_scope": "召回Intel Q3 GAAP/non-GAAP EPS、收入、毛利、一次性逆转、税率、股数、公允价值及调整项目。",
+            "policy_id": "pol_615af065442bb67a9aea"
+          },
+          {
+            "activation_revision": "ar_0c7482a4b895534476f8be3a",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel确认Q3内存、基板或封装价格/配额恶化是重大出货缺口、单位成本上升、GAAP毛利率低于41%或非GAAP毛利率低于42%的主要原因。"
+            ],
+            "match_scope": "召回Q3内存、基板、封装价格/配额、Intel出货、单位成本、产品组合和41%/42%毛利率指引。",
+            "policy_id": "pol_727e1e5dcb817a55c3b5"
+          },
+          {
+            "activation_revision": "ar_3e549ede8ec1907ba7c1b45b",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel Q3收入不低于158亿美元，但主要由客户提前拉货或渠道库存补充构成，终端sell-through未改善且后续订单已放缓。"
+            ],
+            "match_scope": "召回Intel Q3收入、提前拉货、sell-in/sell-through、渠道库存、重复订单和后续订单承接。",
+            "policy_id": "pol_f56b9ef38fd6113ab6c6"
+          },
+          {
+            "activation_revision": "ar_4a9c7b2e81e652b112e94d89",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel在Q3业绩报告前正式将Q3收入指引下调至158亿美元以下，或撤回Q3收入指引。"
+            ],
+            "match_scope": "召回Intel Q3收入指引、158亿至168亿美元原区间、8-K、预告、撤回和正式更新。",
+            "policy_id": "pol_739aea62fd8f4c321330"
+          },
+          {
+            "activation_revision": "ar_29eb5af41ad5ab2740e0ee0c",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel在Q3业绩报告前正式将GAAP毛利率指引下调至41%以下、将非GAAP毛利率指引下调至42%以下，或撤回任一毛利率指引。"
+            ],
+            "match_scope": "召回Intel Q3 GAAP/non-GAAP毛利率41%/42%原指引、8-K、预告、撤回和正式更新。",
+            "policy_id": "pol_0c25b4c07141defa393f"
+          },
+          {
+            "activation_revision": "ar_7acd641c181fe7052af25468",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel在Q3业绩报告前正式将GAAP EPS指引下调至0.31美元以下、将非GAAP EPS指引下调至0.38美元以下，或撤回任一EPS指引。"
+            ],
+            "match_scope": "召回Intel Q3 GAAP/non-GAAP EPS 0.31/0.38美元原指引、8-K、预告、撤回和正式更新。",
+            "policy_id": "pol_eef2e0260bf6a471e3ec"
+          },
+          {
+            "activation_revision": "ar_100be5262f39929bbb7e6bfd",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "单一重大外部商业客户完成14A tape-out或硅后验证，并签署包含交付窗口或数量范围的有约束力节点级订单/产能预订。"
+            ],
+            "match_scope": "召回14A外部客户、PDK、tape-out、硅后验证、节点订单、capacity booking、交付窗口及取消消息。",
+            "policy_id": "pol_790bbf20fa2ad9398a3a"
+          },
+          {
+            "activation_revision": "ar_166be45c8c4afe4c5d6e1a22",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "单一重大外部客户的18A或18A-P产品完成性能、功耗和可靠性资格，并形成绑定生产订单/产能预订或首批付费合格晶圆生产。"
+            ],
+            "match_scope": "召回18A/18A-P外部客户、性能功耗可靠性资格、生产订单、产能预订、付费合格晶圆和内部/外部归属。",
+            "policy_id": "pol_5ce626bd3e3aec6f2a87"
+          },
+          {
+            "activation_revision": "ar_b095e8b4b634c9e128a1d58d",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel、重大客户或关键供应商确认18A-P、14A或High-NA良率、周期、掩模或设备吞吐未达标，使已披露外部qualification/HVM窗口后移，或限制/取消客户starts。"
+            ],
+            "match_scope": "召回18A-P、14A、High-NA的良率、周期时间、掩模/设备吞吐、客户starts、资格和HVM窗口变化。",
+            "policy_id": "pol_55602b2ef908f69678f0"
+          },
+          {
+            "activation_revision": "ar_1ada1eae61d37cc2414594dd",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "已完成Intel先进节点资格或预订的单一重大客户取消或实质削减Intel节点级booking，并将对应量产明确转向竞争代工或内部工厂。"
+            ],
+            "match_scope": "召回已资格/预订客户的Intel节点booking、生产份额、取消、缩量、TSMC/Samsung/内部制造转移和双源状态。",
+            "policy_id": "pol_29d2800563ebf8f98baa"
+          },
+          {
+            "activation_revision": "ar_032b232c28ef66ad23bd21e1",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Terafab相关方或另一家超大客户与Intel签署指名14A、包含产能/数量或预付款并设交付/量产窗口的不可取消商业制造协议。"
+            ],
+            "match_scope": "召回Terafab及超大规模客户的14A制造协议、不可取消预订、预付款、产能数量、交付窗口和量产承诺。",
+            "policy_id": "pol_c7ddf4618265d1f7a95e"
+          },
+          {
+            "activation_revision": "ar_2cc88d8374ad7db09aff8e1f",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "具体供应中断或最终生效规则迫使Intel取消、配给或迁移一个重大外部客户的18A/14A starts或交付至少一个完整生产周期。"
+            ],
+            "match_scope": "召回先进节点设备、掩模、材料、供应中断、出口/安全/贸易规则、外部客户starts、产能配给和生产地点迁移。",
+            "policy_id": "pol_14a785820b388310737f"
+          },
+          {
+            "activation_revision": "ar_546737e70cda6cbbc6e38371",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "单一重大客户将目标量产产品从原拟Intel 18A/14A单片方案改为成熟节点或其他代工芯粒组合，使Intel先进节点仅保留试产、小批或验证用途。"
+            ],
+            "match_scope": "召回外部Foundry客户的单片/芯粒架构、18A/14A晶圆内容、成熟节点、替代代工、封装和量产BOM变化。",
+            "policy_id": "pol_63587fb5036e90cf9232"
+          },
+          {
+            "activation_revision": "ar_3bb800d89cb51eda7bb8b9f1",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "单一重大AI或Foundry客户的具体产品完成EMIB/EMIB-T/Foveros电气、热和可靠性资格，并形成绑定量产订单/产能预订或首批付费good-package生产。"
+            ],
+            "match_scope": "召回EMIB、EMIB-T、Foveros、CoWoS替代、系统资格、量产订单、capacity booking、付费good-package和取消消息。",
+            "policy_id": "pol_2c175c35a579529f28d8"
+          },
+          {
+            "activation_revision": "ar_acc37c8c62f18582282a90f9",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel马来西亚或新墨西哥指定扩建设施完成设备安装和产线/产品资格，并确认一个重大客户或产品的绑定量产启动及初始合格吞吐。"
+            ],
+            "match_scope": "召回Intel马来西亚/新墨西哥设施建设、设备安装、线体/产品资格、量产启动、合格吞吐、客户和利用率。",
+            "policy_id": "pol_6bd8fed7903cce708602"
+          },
+          {
+            "activation_revision": "ar_afb66ed25e1759a54a069bb8",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel或重大客户确认后端站点建设/转移里程碑较原计划后移至少一个季度，或重新认证/停线导致重大已排产批次延期或取消。"
+            ],
+            "match_scope": "召回Costa Rica、马来西亚、新墨西哥站点建设/整合、跨站点转移、重新认证、停线、交付窗口和批次取消。",
+            "policy_id": "pol_73ba3b20a1cbaefa2f58"
+          },
+          {
+            "activation_revision": "ar_d01826b74d56dbaab1b84794",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel、材料供应商或后端伙伴确认具体材料配给、交期显著拉长或良率下降，并导致重大AI/Foundry封装starts、good packages或出货被配给或延期。"
+            ],
+            "match_scope": "召回基板、HBM、玻璃等材料的配给、交期、良率、封装starts、good packages、客户交付和延期。",
+            "policy_id": "pol_8545aa6aaf791b367a25"
+          },
+          {
+            "activation_revision": "ar_e5fc47ded3e94728a20541f3",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "已完成Intel封装协作或资格的单一重大客户取消或实质削减Intel封装排产/合同，并把主要量产封装转给外部OSAT、其他平台或自有后端。"
+            ],
+            "match_scope": "召回已资格客户的Intel后端排产、封装合同、Amkor/OSAT/TSMC/自有后端转移、双源和量产份额。",
+            "policy_id": "pol_df2e632017cca20e1d9d"
+          },
+          {
+            "activation_revision": "ar_cdee96ec1901b18cb3c29d91",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "玻璃基板、Foveros Direct混合键合或另一新互连方案完成可靠性和重大客户系统资格，并形成绑定量产订单/产品启动或首批付费生产。"
+            ],
+            "match_scope": "召回玻璃基板、Foveros Direct、混合键合和新互连方案的可靠性、系统资格、客户产品、量产订单和付费批次。",
+            "policy_id": "pol_c770cc55feb9ff30e6c6"
+          },
+          {
+            "activation_revision": "ar_aa1036cda46dceb683ae5b2f",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "重大产品的EMIB或Foveros量产出现热/电可靠性、测试或良率问题，并导致客户资格暂停、重大返工/召回或production hold。"
+            ],
+            "match_scope": "召回EMIB/Foveros良率、热电可靠性、测试通过率、返工、召回、客户资格暂停和production hold。",
+            "policy_id": "pol_ec66d3c1274228e9ff69"
+          },
+          {
+            "activation_revision": "ar_55a90e792e061935b8022432",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel披露新增封装线已完成资格，但连续两个报告期外部客户排产/starts未增加、利用率保持低位，且新增能力主要闲置或服务内部产品。"
+            ],
+            "match_scope": "召回已资格新增封装线、外部客户排产、starts、利用率、闲置能力、内部产品用途和连续报告期。",
+            "policy_id": "pol_c1d9b13082ff0e9dd624"
+          },
+          {
+            "activation_revision": "ar_8f0cb4fef973d5b8b96ffb62",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "单一重大客户确认下一代量产系统取消或实质缩减原拟EMIB/Foveros封装，并转向替代芯粒/光互连标准或全外部平台。"
+            ],
+            "match_scope": "召回AI/Foundry客户下一代平台、EMIB/Foveros、芯粒/光互连标准、外部封装平台、BOM和量产设计决定。",
+            "policy_id": "pol_2bb8b9bdbbc8c907bb9b"
+          },
+          {
+            "activation_revision": "ar_17389090ad1285bc34d2496a",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "指定Secure Enclave设施或产品同时取得有权政府机构的生产适用安全授权和单一重大DIB项目的设计验收。"
+            ],
+            "match_scope": "召回Secure Enclave设施或产品的政府生产安全授权、DIB项目设计验收、资格限制、暂停和否定消息。",
+            "policy_id": "pol_5a0ccbabf9d57015791c"
+          },
+          {
+            "activation_revision": "ar_c3268ba606bacacfa4e4c971",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "政府或重大DIB采购方授予具名项目一份已获资金且有约束力的Secure Enclave生产合同或订单，并明确产能预约或生产排程。"
+            ],
+            "match_scope": "召回政府或DIB的Secure Enclave采购授标、已拨资金、生产义务、订单、产能预订、排程及取消消息。",
+            "policy_id": "pol_04df46d9d968a1657ba0"
+          },
+          {
+            "activation_revision": "ar_1c1e64cc9855d67f5b291501",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "单一重大DIB项目的首批Secure Enclave生产级合格晶圆或封装批次完成客户验收并交付。"
+            ],
+            "match_scope": "召回具名DIB项目的Secure Enclave生产级晶圆或封装批次、good units、客户验收、接收、拒收及交付状态。",
+            "policy_id": "pol_c013756b0d024657cfe8"
+          },
+          {
+            "activation_revision": "ar_f6c2059eb70a3ca746577d32",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "后续披露确认至少两个相隔生产期间均有客户关联的Secure Enclave生产批次完成验收交付，并给出持续数量、吞吐或利用率。"
+            ],
+            "match_scope": "召回Secure Enclave客户批次、连续生产期间、验收交付、数量、吞吐、利用率及生产中断消息。",
+            "policy_id": "pol_02b0439dacbc3e7e27a8"
+          },
+          {
+            "activation_revision": "ar_ec25e7487772215fe3bed62f",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "与首个已确认项目法律和经济上独立的第二个DIB客户完成Secure Enclave项目资格或设计导入，并取得有约束力生产合同、订单或量产排程。"
+            ],
+            "match_scope": "召回Secure Enclave新增DIB客户、独立项目、项目资格、设计导入、生产合同、订单及量产排程。",
+            "policy_id": "pol_3652c8d70cedb2a026d2"
+          },
+          {
+            "activation_revision": "ar_4037fb4fccd595f16956e673",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "政府、Intel或重大DIB客户将Secure Enclave客户资格、采购合同或量产部署从已披露计划窗口正式后移，或把该阶段重新排期为待定。"
+            ],
+            "match_scope": "召回RAMP-C后客户资格、采购合同、量产部署的原计划窗口、新窗口、待定状态及排期恢复。",
+            "policy_id": "pol_d25aa94363c7187f0e5c"
+          },
+          {
+            "activation_revision": "ar_39d08748514cd35cd4d911d5",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "有权机构正式拒绝、暂停或撤销指定Secure Enclave设施或产品的DIB生产授权，或要求停产后重新认证。"
+            ],
+            "match_scope": "召回Secure Enclave生产安全授权的拒绝、暂停、撤销、停产整改、重新认证及恢复决定。",
+            "policy_id": "pol_15a8018e4b92cfa10cb7"
+          },
+          {
+            "activation_revision": "ar_1bcbcbb18a051522a3849498",
+            "condition_ids": [
+              "C1",
+              "C2",
+              "C3"
+            ],
+            "criterion": [
+              "已资格或接近资格的重大DIB项目被正式取消、未续签或削减，使已计划的Secure Enclave批次或产能预约不再执行。",
+              "重大DIB项目把量产晶圆、封装或安全制造正式授予替代供应商或内部设施，并将Intel Secure Enclave降为非量产或移出生产角色。",
+              "重大DIB项目正式采用不同节点、成熟工艺、芯粒/封装架构或COTS供应链，并取消或实质缩小原Secure Enclave高量生产范围。"
+            ],
+            "match_scope": "召回重大DIB项目的取消、未续签、预算或任务变更、替代可信制造授标、内部化、架构改版及Intel生产范围削减。",
+            "policy_id": "pol_d92e0e1491ba63465924"
+          },
+          {
+            "activation_revision": "ar_a99d330641bb99595b585eec",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "已资格或签约的重大Secure Enclave项目因良率、设备、吞吐、封装测试或客户验收不达标，正式从高量生产退回LRIP/试产、重置量产排程或发生重大批次拒收。"
+            ],
+            "match_scope": "召回Secure Enclave项目良率、设备、吞吐、封装测试、客户验收、HVM降级、LRIP、试产、拒收和排程重置。",
+            "policy_id": "pol_4a9ae9c0af17e23d6f3d"
+          },
+          {
+            "activation_revision": "ar_f50952596faa4f9d0add272b",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "经安全批准的设备、材料、基板、封装测试、运输或后端伙伴发生容量不足，并使单一重大Secure Enclave项目正式延期、减量或启动替代认证。"
+            ],
+            "match_scope": "召回安全批准的设备、材料、基板、封装测试、运输、后端伙伴容量、项目延期减量及替代认证。",
+            "policy_id": "pol_32a72f2a752665d86428"
+          },
+          {
+            "activation_revision": "ar_9c712e81da5c46f84e5e6e9e",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "主管方确认影响Secure Enclave机密性、隔离、追溯或完整性的重大事件，并对DIB生产采取停产、暂停交付、隔离/召回或强制重新认证。"
+            ],
+            "match_scope": "召回Secure Enclave机密性、隔离、追溯、完整性事件、停产、暂停交付、隔离召回、重新认证及复产。",
+            "policy_id": "pol_2679129249ee0590022d"
+          },
+          {
+            "activation_revision": "ar_9c53639ae5e000652b79bb81",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "最终生效的政府安全或采购规则使现有Secure Enclave生产资格失效或必须重新认证、限制可用节点/设施，或向新增替代供应商开放重大项目并削减Intel保留范围。"
+            ],
+            "match_scope": "召回可信制造安全标准、采购规则、最终法规、生效日、重新认证、节点设施限制、新增供应商和Intel保留范围。",
+            "policy_id": "pol_216a6a15e3db4f5d8c8a"
+          },
+          {
+            "activation_revision": "ar_8be8a9b30f71b57dae2fef7b",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "已资格重大DIB项目的正式合同或排程把Secure Enclave限定为pilot、LRIP、单次验证、少量敏感批次或备用供应，且不包含持续高量产能义务。"
+            ],
+            "match_scope": "召回已资格Secure Enclave项目的pilot、LRIP、单次验证、少量敏感批次、备用供应、合同数量和高量义务。",
+            "policy_id": "pol_e14d434ed0ebcf00deca"
+          },
+          {
+            "activation_revision": "ar_cdb4fc93bb05da914754e2f9",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel或重大客户确认商业Foundry或Intel内部产品优先占用同一关键可信制造资源，并使重大Secure Enclave项目排产延期、减量或改配。"
+            ],
+            "match_scope": "召回可信设施共享资源、商业Foundry或Intel内部产品优先级、DIB排产延期减量、产能改配及恢复。",
+            "policy_id": "pol_d976971fd68a08855b4d"
+          },
+          {
+            "activation_revision": "ar_ae584738574b028887f8c6f0",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "官方后续披露确认政府资助或扩建的可信设施已启用，并在同一披露明确的完整采购或部署窗口结束后仍无具名DIB生产合同、设计验收、产能预约或批次。"
+            ],
+            "match_scope": "召回政府资助可信设施的启用、扩建完成、官方采购或部署窗口、DIB合同、设计验收、产能预约和无订单状态。",
+            "policy_id": "pol_a0719bcc321980901b05"
+          },
+          {
+            "activation_revision": "ar_72bdd60013f9983ebb68e9ac",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "正式法案、拨款或采购指令以已拨资金明确多个DIB项目，并对Intel Secure Enclave规定最低采购、产能保留或可执行生产排程。"
+            ],
+            "match_scope": "召回国防法案、已拨资金、采购指令、多个DIB项目、Intel Secure Enclave最低采购、产能保留和可执行排程。",
+            "policy_id": "pol_e8325fa903355b9d23a4"
+          },
+          {
+            "activation_revision": "ar_7d53525b5b32aaefb8353ba4",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel在一份后续财报中提供连续两个报告期的同口径序列，显示剔除已量化的一次性政府、伙伴、融资租赁和营运资金项目后，调整后自由现金流均为正，且增长性资本开支未靠新增股权或债务覆盖。"
+            ],
+            "match_scope": "召回Intel经营现金流、现金资本开支、调整后自由现金流、政府或伙伴一次性现金、营运资金与新增融资的跨期对账。",
+            "policy_id": "pol_cd15f512755927e80242"
+          },
+          {
+            "activation_revision": "ar_2f5ed9913d661426102acea7",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel量化确认一项此前正向的营运资金、政府激励或伙伴现金贡献由正转负或终止，并使同一报告期经营现金流较Q2 FY2026的70.06亿美元回落且调整后自由现金流仍为负。"
+            ],
+            "match_scope": "召回Intel营运资金、政府激励、伙伴净贡献的现金流对账、反转或终止，以及经营现金流和调整后自由现金流变化。",
+            "policy_id": "pol_743016c47608f0e1ab04"
+          },
+          {
+            "activation_revision": "ar_8da00962dcc3e79f6c648743",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel在单份季度披露中确认相关供给约束已缓解，同时客户端或服务器单位出货未增长或下降、ASP/高端组合回落，并把产品现金利润和经营现金流下降归因于该量价变化。"
+            ],
+            "match_scope": "召回Intel客户端或服务器供给状态、单位出货、ASP、高端组合、产品现金利润与经营现金流的同季变化。",
+            "policy_id": "pol_a92eb03875d216dac479"
+          },
+          {
+            "activation_revision": "ar_704f7791539c038a85130dc8",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel正式确认一项重大新增设备、洁净室、基板或厂区资产已投入，却因良率、合格吞吐、瓶颈或利用率不足而推迟商业爬坡、进入正式闲置/停用，或确认与该资产直接相关的减值。"
+            ],
+            "match_scope": "召回Intel新增设备、洁净室、基板或厂区的投入状态、良率、合格吞吐、利用率、商业爬坡、闲置停用和减值。",
+            "policy_id": "pol_940ae5bdf77c93f29482"
+          },
+          {
+            "activation_revision": "ar_ebd95c9bb846cc963c54f6f0",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel在同一正式披露中上调具名资本项目的预算或建设周期，提供原计划与新计划，并明确新增投入超过同期经营现金回收、需要新增外部资金或推迟回收期。"
+            ],
+            "match_scope": "召回Intel资本开支、设备洁净室基板项目预算、建设周期、经营现金覆盖、回收期和新增外部融资需求。",
+            "policy_id": "pol_f1c35928de4ef728409a"
+          },
+          {
+            "activation_revision": "ar_a9e18ad97be691df34c43256",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "重大客户、伙伴或政府项目的正式协议确认已支付首笔产能/产品现金，并承担后续至少一个期间的绑定预付款、最低采购或共同投资付款，且金额、履约义务与Intel可用资金范围明确。"
+            ],
+            "match_scope": "召回重大客户、伙伴或政府项目对Intel产能/产品的预付款、最低采购、持续付款、首笔到账、后续义务和履约现金。",
+            "policy_id": "pol_8b52b9c92287eaa36e7c"
+          },
+          {
+            "activation_revision": "ar_80c8388f43e25fc175fc2457",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "一名对Intel已有重大采购暴露的客户正式把下一平台周期的主要计算预算转向GPU、定制ASIC、AMD、ARM/RISC-V或延期建设，并取消或实质削减已计划Intel订单/部署，而相关Intel资本承诺仍执行。"
+            ],
+            "match_scope": "召回已有Intel采购暴露的云或企业客户在GPU、定制ASIC、AMD、ARM/RISC-V和数据中心预算上的迁移、订单削减及Intel资本承诺。",
+            "policy_id": "pol_510d435bceecbd5cf9e4"
+          },
+          {
+            "activation_revision": "ar_20efd558e8ae9d7f60acb4bd",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel、审计机构或监管机构正式量化确认此前列入经营现金或调整后自由现金流的项目应移出或延后，使Q2 FY2026经营现金流低于70.06亿美元或调整后自由现金流低于负84.19亿美元。"
+            ],
+            "match_scope": "召回Intel现金流重述、前期重列、政府激励、伙伴贡献、融资租赁或非现金项目分类、审计监管意见及历史数值修订。",
+            "policy_id": "pol_4f85402fb186dfe297af"
+          },
+          {
+            "activation_revision": "ar_1c59cdb17af38325416ce8f3",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel完成2026年8月已定价普通股发行的基础交割，按每股95美元发行210,526,315股，披露实际净募集并确认现金到账；超额配售按最终行使情况另行计入。"
+            ],
+            "match_scope": "召回Intel 2026年8月普通股发行的交割日、实际净募集、最终股数、超额配售、现金到账及结算失败。",
+            "policy_id": "pol_e01e85c26b3941995263"
+          },
+          {
+            "activation_revision": "ar_cf3f4bd3391a7ce4d58c8637",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel正式取消2026年8月已定价发行、把交割推迟至原结算窗口之外，或正式重新定价/缩减基础发行并确认实际净募集低于约197亿美元计划。"
+            ],
+            "match_scope": "召回Intel已定价普通股发行的取消、延期、重新定价、缩量、实际净募集和资金缺口。",
+            "policy_id": "pol_ed0a6510609c007ea8a8"
+          },
+          {
+            "activation_revision": "ar_99d50d43252cfaa3fe358f89",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "首轮发行交割后、融资资产尚未形成重复正现金回收前，Intel正式启动新的普通股发行、净新增债务或重大资产变现，并明确资金用于弥补流动性、资本开支或营运资金缺口。"
+            ],
+            "match_scope": "召回Intel首轮发行后的新增股权、净新增债务、重大资产出售、流动性和资本开支资金用途及现金回收状态。",
+            "policy_id": "pol_dead4892da482a491c35"
+          },
+          {
+            "activation_revision": "ar_ccefa498f3bf1b14055e90d9",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel一份后续披露确认2026年融资支持资产已形成合格产出，并给出连续两个报告期的利用率/出货、非Altera口径外部收入与调整后自由现金流，其中两个期间自由现金流均为正且无新增股权融资。"
+            ],
+            "match_scope": "召回2026年融资支持资产的合格产出、利用率、出货、非Altera外部Foundry收入、调整后自由现金流和后续增发。",
+            "policy_id": "pol_9600d3c4f1b6b8053603"
+          },
+          {
+            "activation_revision": "ar_a0ec1009c4ea69ae8dbe98cb",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "发行后的完整报告期确认稀释股数较发行前增加至少2.105亿股，并在同一披露给出同口径可比值，显示每股经营现金流或每股经营利润未改善或恶化。"
+            ],
+            "match_scope": "召回Intel发行后稀释股数、股权薪酬、每股经营现金流、每股经营利润及同口径可比值。",
+            "policy_id": "pol_4d3c102787544f4251fb"
+          },
+          {
+            "activation_revision": "ar_5f7344aebac129276418ed30",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "最终生效的政府决定削减、取消或推迟Intel相关激励，要求返还资金或新增现金/股权交付义务，并使Intel正式修改资本项目资金来源、确认相关负债或启动替代融资。"
+            ],
+            "match_scope": "召回Intel相关补助、激励或CHIPS安排的最终金额、付款时间、返还、资格、现金或股权义务及生效日。",
+            "policy_id": "pol_e7853e08084b9aabfed5"
+          },
+          {
+            "activation_revision": "ar_c57970917d3610f3fcf95d88",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel或债权文件确认重大到期债务无法按原规模常规续作，或新条款提高现金利息/担保并加入资本开支限制，导致公司正式削减或延期资本计划、或启动替代股权融资。"
+            ],
+            "match_scope": "召回Intel重大债务到期、续作失败、现金利息、担保、契约、资本开支限制、项目削减延期和替代股权融资。",
+            "policy_id": "pol_9c7167d6be1b2b29041d"
+          },
+          {
+            "activation_revision": "ar_4a4537d2a9db75206138f89a",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "重大客户、伙伴或政府项目与Intel签署具名资本项目的共同投资、租赁或预付款协议，量化资金和最低采购/产能义务，并确认首笔资金到账或Intel原定资本份额已按合同减少。"
+            ],
+            "match_scope": "召回重大客户、伙伴或政府项目对具名Intel资本项目的共同投资、租赁、预付款、最低采购、首笔到账和Intel资本份额变化。",
+            "policy_id": "pol_d18f516ae89e026e6316"
+          },
+          {
+            "activation_revision": "ar_491f487b8211f90d99f1d478",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "AMD或其他替代服务器CPU供应商将具备公开价格与规格、覆盖主流或高核心数服务器配置的下一代CPU推进至商业上市，并形成可供主要云或企业客户采购的量产供给。"
+            ],
+            "match_scope": "召回AMD EPYC、Arm及其他替代服务器CPU的产品上市、量产、渠道供货、价格、核心数、平台部署和可采购性，以及其对Xeon ASP、份额和客户选择的影响消息。",
+            "policy_id": "pol_88df38e2ce1802582e4c"
+          }
+        ],
+        "policy_set_published_at": "2026-09-30T06:47:58.132065Z",
+        "policy_set_version": 6,
+        "schema_version": "document3.runtime_projection.v4",
+        "ticker": "INTC"
+      },
+      "provisional": [
+        {
+          "candidate": {
+            "assertion_state": "ONGOING",
+            "entities": [
+              "HBM",
+              "GPU",
+              "CoWoS",
+              "AI semiconductor packaging"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "HBM is approaching half of the total cost of a GPU-HBM CoWoS package.",
+            "subject_time": "Current GPU-HBM CoWoS package cost structure"
+          },
+          "candidate_index": 0,
+          "case_id": "case_28971973b5704a269c1234e5965c5d47",
+          "created_at": "2026-09-30T06:07:26.963031Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E249",
+          "runtime_signature": "a484a91b1294b4f22f924eab3d364691e6c78aec4b20a86b06df2a3265315f89",
+          "snapshot_version": 1,
+          "source_message_id": "std_d464d0eba938417a8ad922a17ca9feb8",
+          "ticker": "INTC",
+          "trading_date": "2026-09-30"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Samsung Electro-Mechanics",
+              "server components"
+            ],
+            "occurrence_date": null,
+            "proposition": "Samsung Electro-Mechanics signed another long-term supply agreement for server components.",
+            "subject_time": "2026 server-component supply activity"
+          },
+          "candidate_index": 0,
+          "case_id": "case_0b9b891991834e57bb1a0176024c9918",
+          "created_at": "2026-09-30T06:10:56.695553Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E250",
+          "runtime_signature": "21e653c0b6896576a18bdb78da0e62674ff2a251a3b360124b2701358f566192",
+          "snapshot_version": 2,
+          "source_message_id": "std_b632ca2729094bc595a5ff2392b5e09b",
+          "ticker": "INTC",
+          "trading_date": "2026-09-30"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Samsung Electro-Mechanics",
+              "2026 supply agreements"
+            ],
+            "occurrence_date": null,
+            "proposition": "Samsung Electro-Mechanics' disclosed supply agreements in 2026 total approximately US$2.6 billion.",
+            "subject_time": "2026 disclosed supply agreements"
+          },
+          "candidate_index": 1,
+          "case_id": "case_0b9b891991834e57bb1a0176024c9918",
+          "created_at": "2026-09-30T06:10:56.719341Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E251",
+          "runtime_signature": "4edbefe2e906b0df663e2a9e68117652a891bfb5e6d5c854324b985d74f7b33f",
+          "snapshot_version": 3,
+          "source_message_id": "std_b632ca2729094bc595a5ff2392b5e09b",
+          "ticker": "INTC",
+          "trading_date": "2026-09-30"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ONGOING",
+            "entities": [
+              "high-performance passive components",
+              "server market"
+            ],
+            "occurrence_date": null,
+            "proposition": "Demand for high-performance passive components is continuing to rise.",
+            "subject_time": "Current high-performance passive-component demand"
+          },
+          "candidate_index": 2,
+          "case_id": "case_0b9b891991834e57bb1a0176024c9918",
+          "created_at": "2026-09-30T06:10:56.749939Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E252",
+          "runtime_signature": "b99fc2c2c360f059f9444fce8748e7c1ef83c8f406a9fa2b7aa0d32b88eec00a",
+          "snapshot_version": 4,
+          "source_message_id": "std_b632ca2729094bc595a5ff2392b5e09b",
+          "ticker": "INTC",
+          "trading_date": "2026-09-30"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Anthropic",
+              "GLM-5.3",
+              "Claude Mythos Preview",
+              "Browser exploits"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Anthropic research found that GLM-5.3 built functional browser exploits in 50 of 410 trials, compared with 56 successful trials for Anthropic's restricted Claude Mythos Preview.",
+            "subject_time": "GLM-5.3 autonomous-cyber exploit testing"
+          },
+          "candidate_index": 0,
+          "case_id": "case_e5fb368a0223488da18b22b221e80dc2",
+          "created_at": "2026-09-30T06:44:14.233392Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E253",
+          "runtime_signature": "7422f5680299b356849bbb200713eff72a8ecf4e5ee0a5ec8c680fc9fbb0faa2",
+          "snapshot_version": 5,
+          "source_message_id": "std_e15d757041354905b1ed3a947332f87f",
+          "ticker": "INTC",
+          "trading_date": "2026-09-30"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "GLM-5.3",
+              "Browser vulnerabilities",
+              "SSH private key",
+              "Cybersecurity"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "During sandboxed testing, GLM-5.3 discovered unknown browser vulnerabilities within a day and chained them into a webpage that stole an SSH private key.",
+            "subject_time": "GLM-5.3 sandboxed cyber testing"
+          },
+          "candidate_index": 1,
+          "case_id": "case_e5fb368a0223488da18b22b221e80dc2",
+          "created_at": "2026-09-30T06:44:14.243960Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E254",
+          "runtime_signature": "d5d77541c763645838a3895b7f69cd4d01bf8ee3ffa25c36c5421f477c99ef77",
+          "snapshot_version": 6,
+          "source_message_id": "std_e15d757041354905b1ed3a947332f87f",
+          "ticker": "INTC",
+          "trading_date": "2026-09-30"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Anthropic",
+              "GLM-5.3",
+              "Abliteration",
+              "GPU hours"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Anthropic researchers used abliteration costing approximately $4,400 and 2,200 GPU hours to remove GLM-5.3's refusal mechanisms.",
+            "subject_time": "GLM-5.3 abliteration process"
+          },
+          "candidate_index": 2,
+          "case_id": "case_e5fb368a0223488da18b22b221e80dc2",
+          "created_at": "2026-09-30T06:44:14.266527Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E255",
+          "runtime_signature": "6a15fabbeb20676642a4e8c6848652c48a1d13625719a7e91ed074121805d144",
+          "snapshot_version": 7,
+          "source_message_id": "std_e15d757041354905b1ed3a947332f87f",
+          "ticker": "INTC",
+          "trading_date": "2026-09-30"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "GLM-5.3",
+              "Abliteration",
+              "Refusal rate",
+              "AI safety"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "Abliteration reduced GLM-5.3's refusal rate from above 90% to as low as 2% without significantly reducing general-intelligence or scientific capabilities.",
+            "subject_time": "Post-abliteration GLM-5.3 safety behavior"
+          },
+          "candidate_index": 3,
+          "case_id": "case_e5fb368a0223488da18b22b221e80dc2",
+          "created_at": "2026-09-30T06:44:14.294474Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E256",
+          "runtime_signature": "0c96aefaa50673e4cf4db8bb0f75652b507ec4409faf4ae6ac39af33a0f90e39",
+          "snapshot_version": 8,
+          "source_message_id": "std_e15d757041354905b1ed3a947332f87f",
+          "ticker": "INTC",
+          "trading_date": "2026-09-30"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "GLM-5.3",
+              "GLM-5.2",
+              "Claude Opus 4.6",
+              "Control-flow hijacks"
+            ],
+            "occurrence_date": "2026-09-29",
+            "proposition": "GLM-5.3 achieved full control-flow hijacks in 4% of the trials, while GLM-5.2 and Claude Opus 4.6 produced no successful exploits in the reported tests.",
+            "subject_time": "Comparative GLM-5.3 exploit testing"
+          },
+          "candidate_index": 4,
+          "case_id": "case_e5fb368a0223488da18b22b221e80dc2",
+          "created_at": "2026-09-30T06:44:14.331165Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E257",
+          "runtime_signature": "dc441f57408aff80f79b565761db4de307bf906208de03e71b471ded009aa401",
+          "snapshot_version": 9,
+          "source_message_id": "std_e15d757041354905b1ed3a947332f87f",
+          "ticker": "INTC",
+          "trading_date": "2026-09-30"
+        },
+        {
+          "candidate": {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "TrendForce",
+              "Conventional DRAM",
+              "Memory contract prices"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Conventional DRAM contract prices are forecast to rise 10% to 15% quarter over quarter in 4Q26.",
+            "subject_time": "4Q26 conventional DRAM contract pricing"
+          },
+          "candidate_index": 0,
+          "case_id": "case_7ac074fce2d2437696e01a12ead8870c",
+          "created_at": "2026-09-30T07:59:09.224067Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E258",
+          "runtime_signature": "ed631b11b09c2009febae8e541249cec4e74cf9118ff76986c2b422970e6f412",
+          "snapshot_version": 10,
+          "source_message_id": "std_ef3b63a7e9fe4bddae057db2348229ba",
+          "ticker": "INTC",
+          "trading_date": "2026-09-30"
+        },
+        {
+          "candidate": {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "TrendForce",
+              "NAND Flash",
+              "Memory contract prices"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "NAND Flash contract prices are forecast to rise 15% to 20% quarter over quarter in 4Q26.",
+            "subject_time": "4Q26 NAND Flash contract pricing"
+          },
+          "candidate_index": 1,
+          "case_id": "case_7ac074fce2d2437696e01a12ead8870c",
+          "created_at": "2026-09-30T07:59:09.243954Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E259",
+          "runtime_signature": "a4c7019fe29fddce8bd699ca07e2fbe2cc106b31092d2653627ae39a350e95d8",
+          "snapshot_version": 11,
+          "source_message_id": "std_ef3b63a7e9fe4bddae057db2348229ba",
+          "ticker": "INTC",
+          "trading_date": "2026-09-30"
+        },
+        {
+          "candidate": {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "TrendForce",
+              "Enterprise SSD",
+              "CSPs",
+              "AI inference",
+              "Agentic AI"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Enterprise-SSD bit demand is projected to grow more than 80% year over year in 2026 as cloud-service providers expand AI-inference infrastructure and agentic-AI data volumes increase.",
+            "subject_time": "2026 enterprise-SSD demand"
+          },
+          "candidate_index": 2,
+          "case_id": "case_7ac074fce2d2437696e01a12ead8870c",
+          "created_at": "2026-09-30T07:59:09.279955Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E260",
+          "runtime_signature": "dc7cfd1033da6161b3362260c8dd83e7cfd650393b3da565f6eaf95a45d58405",
+          "snapshot_version": 12,
+          "source_message_id": "std_ef3b63a7e9fe4bddae057db2348229ba",
+          "ticker": "INTC",
+          "trading_date": "2026-09-30"
+        },
+        {
+          "candidate": {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "Enterprise SSD",
+              "AI infrastructure",
+              "Memory suppliers"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Enterprise SSDs are expected to be the only memory category with accelerating price growth in 4Q26 because most incremental supply is already committed.",
+            "subject_time": "4Q26 enterprise-SSD pricing"
+          },
+          "candidate_index": 3,
+          "case_id": "case_7ac074fce2d2437696e01a12ead8870c",
+          "created_at": "2026-09-30T07:59:09.305278Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E261",
+          "runtime_signature": "c8d8ee7ec0ef313de24532c80b9dd6e5403d7539fde4d8c0e8184babb572c195",
+          "snapshot_version": 13,
+          "source_message_id": "std_ef3b63a7e9fe4bddae057db2348229ba",
+          "ticker": "INTC",
+          "trading_date": "2026-09-30"
+        },
+        {
+          "candidate": {
+            "assertion_state": "EXPECTED",
+            "entities": [
+              "Server DRAM",
+              "Packaging",
+              "Testing capacity",
+              "Server CPUs",
+              "Memory suppliers"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Server DRAM is expected to remain undersupplied in 4Q26 despite improving server-CPU availability, because component, packaging, testing, and front-end DRAM production constraints continue to limit supply.",
+            "subject_time": "4Q26 server DRAM supply"
+          },
+          "candidate_index": 4,
+          "case_id": "case_7ac074fce2d2437696e01a12ead8870c",
+          "created_at": "2026-09-30T07:59:09.317209Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E262",
+          "runtime_signature": "c81acd6fc3b6174ee73400a1fbb5191eb70cde7c7e6e9c596ebb10749b7010dc",
+          "snapshot_version": 14,
+          "source_message_id": "std_ef3b63a7e9fe4bddae057db2348229ba",
+          "ticker": "INTC",
+          "trading_date": "2026-09-30"
+        },
+        {
+          "candidate": {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "PC DRAM",
+              "PC OEMs",
+              "Server DRAM",
+              "Memory suppliers"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "PC DRAM supply could decline in 2027 as suppliers shift more capacity toward server applications, while PC OEMs continue procuring aggressively in anticipation of tight supply.",
+            "subject_time": "2027 PC DRAM supply allocation"
+          },
+          "candidate_index": 5,
+          "case_id": "case_7ac074fce2d2437696e01a12ead8870c",
+          "created_at": "2026-09-30T07:59:09.326953Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E263",
+          "runtime_signature": "17755935661c8f4c4cb772d62895a06185400013207b583ceef9a8137ed4eb3c",
+          "snapshot_version": 15,
+          "source_message_id": "std_ef3b63a7e9fe4bddae057db2348229ba",
+          "ticker": "INTC",
+          "trading_date": "2026-09-30"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "AMD",
+              "Intel",
+              "SOXX"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "截至2026年9月30日，AMD和Intel推动半导体股票反弹，使SOXX指数接近2026年6月以来最佳月度表现。",
+            "subject_time": "2026年9月月度交易截至2026-09-30"
+          },
+          "candidate_index": 0,
+          "case_id": "case_07fa1dc00bb14447aad0e71be9e4b4bd",
+          "created_at": "2026-09-30T08:09:32.224488Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E264",
+          "runtime_signature": "eed2e287d90d24352d8c0bf2082b4b03462b6a7effebe8eb4ab6686ffd5ac5f2",
+          "snapshot_version": 16,
+          "source_message_id": "std_187a223cf424486eb83e6a2ec8ce8f58",
+          "ticker": "INTC",
+          "trading_date": "2026-09-30"
+        },
+        {
+          "candidate": {
+            "assertion_state": "RUMORED",
+            "entities": [
+              "NVIDIA",
+              "Rubin Ultra NVL576",
+              "hydrocarbon resin CCL",
+              "hydrocarbon PP",
+              "PTFE CCL"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "据供应链分析，NVIDIA正在为Rubin Ultra NVL576的交换托盘PCB评估烃类树脂基无玻璃铜箔层压板（CCL）及烃基聚丙烯（PP），以替代无玻璃PTFE基CCL。",
+            "subject_time": "Rubin Ultra NVL576预计2027年下半年量产准备"
+          },
+          "candidate_index": 0,
+          "case_id": "case_8563aa8e7b0343f19e5dea2dff924f3d",
+          "created_at": "2026-09-30T08:15:12.897300Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E265",
+          "runtime_signature": "56fd72d99b66cb8879ea3175d15d6838ee76dc4c791e8bfdbeb5d2f37635435c",
+          "snapshot_version": 17,
+          "source_message_id": "std_9ac2e612dc6b4c87a66bb2b53a39797a",
+          "ticker": "INTC",
+          "trading_date": "2026-09-30"
+        },
+        {
+          "candidate": {
+            "assertion_state": "RUMORED",
+            "entities": [
+              "NVIDIA",
+              "Shengyi Technology",
+              "SG1030N",
+              "SIF09"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Shengyi Technology为NVIDIA该材料评估提供SG1030N和SIF09材料，这些材料仍含少量PTFE。",
+            "subject_time": "Rubin Ultra NVL576材料评估阶段"
+          },
+          "candidate_index": 1,
+          "case_id": "case_8563aa8e7b0343f19e5dea2dff924f3d",
+          "created_at": "2026-09-30T08:15:12.931359Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E266",
+          "runtime_signature": "caafe346c8fbb333a333cb720c77b89595d77cefdb457d710891cb24e24b9758",
+          "snapshot_version": 18,
+          "source_message_id": "std_9ac2e612dc6b4c87a66bb2b53a39797a",
+          "ticker": "INTC",
+          "trading_date": "2026-09-30"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "NVIDIA",
+              "Rubin Ultra NVL576"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "NVIDIA针对Rubin Ultra NVL576的上述PCB材料测试仍属初步评估，尚未形成最终材料选型。",
+            "subject_time": "截至2026-09-30的Rubin Ultra NVL576材料评估"
+          },
+          "candidate_index": 2,
+          "case_id": "case_8563aa8e7b0343f19e5dea2dff924f3d",
+          "created_at": "2026-09-30T08:15:12.991875Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E267",
+          "runtime_signature": "452db558f72bb822c26683d6d23c2fbc8035c4e065f9168c218c28c9999b9482",
+          "snapshot_version": 19,
+          "source_message_id": "std_9ac2e612dc6b4c87a66bb2b53a39797a",
+          "ticker": "INTC",
+          "trading_date": "2026-09-30"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "경동나비엔",
+              "Kyungdong Navien",
+              "KCSI"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "경동나비엔在2026年韩国工业客户满意度调查（KCSI）锅炉部门获评第一名，实现连续13年第一。",
+            "subject_time": "2026年KCSI锅炉部门评选"
+          },
+          "candidate_index": 0,
+          "case_id": "case_33fefb2fa32f4404bbbb901c0357ca63",
+          "created_at": "2026-09-30T08:35:32.824514Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E268",
+          "runtime_signature": "b4faacdde8ccb634838615c9a69bd22220913248b41809a26381659c7f557531",
+          "snapshot_version": 20,
+          "source_message_id": "std_2827aebdc6994f2693aa25a8b4f90334",
+          "ticker": "INTC",
+          "trading_date": "2026-09-30"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "경동나비엔",
+              "Navien Condensing ON AI",
+              "KSA",
+              "AI+"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "경동나비엔的“Navien Condensing ON AI”产品凭借智能热水运行功能获得韩国标准协会KSA AI+认证。",
+            "subject_time": "当前产品认证状态"
+          },
+          "candidate_index": 1,
+          "case_id": "case_33fefb2fa32f4404bbbb901c0357ca63",
+          "created_at": "2026-09-30T08:35:32.848028Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E269",
+          "runtime_signature": "3e72c3ab5a8fd8dcee5f3031158f3e62eb0d590888765964822e8fe9a9042229",
+          "snapshot_version": 21,
+          "source_message_id": "std_2827aebdc6994f2693aa25a8b4f90334",
+          "ticker": "INTC",
+          "trading_date": "2026-09-30"
+        },
+        {
+          "candidate": {
+            "assertion_state": "EXPECTED",
+            "entities": [
+              "Anthropic",
+              "AMD"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Anthropic预计AMD将在其AI基础设施建设中提供超过200亿美元的AI计算容量。",
+            "subject_time": "Anthropic未来多年AI基础设施建设周期"
+          },
+          "candidate_index": 0,
+          "case_id": "case_82bb5fc2f13144b38e6336220e872312",
+          "created_at": "2026-09-30T08:38:39.200693Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E270",
+          "runtime_signature": "c02739cc48603dece87ca5aaa564978ee47dfe5b97771ad8e005228ee2ca612a",
+          "snapshot_version": 22,
+          "source_message_id": "std_e44f05b7761a450a98fd60d660454fb4",
+          "ticker": "INTC",
+          "trading_date": "2026-09-30"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Anthropic",
+              "Micron",
+              "Samsung",
+              "SK hynix",
+              "Claude"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "Anthropic在Series H公告中将Micron、Samsung和SK hynix列为战略基础设施合作伙伴，其内存技术将支持Claude算力扩张。",
+            "subject_time": "Anthropic Series H公告及当前AI基础设施扩张"
+          },
+          "candidate_index": 1,
+          "case_id": "case_82bb5fc2f13144b38e6336220e872312",
+          "created_at": "2026-09-30T08:38:39.207419Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E271",
+          "runtime_signature": "413d6ea58f483ca3c8b28656ef794132bdf33cae2e928d9af03415b35cb0dcc7",
+          "snapshot_version": 23,
+          "source_message_id": "std_e44f05b7761a450a98fd60d660454fb4",
+          "ticker": "INTC",
+          "trading_date": "2026-09-30"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "台湾政府",
+              "TSMC",
+              "台湾半导体产业"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "台湾政府在支持TSMC可能扩大美国制造布局的同时，强调台湾半导体产业的核心研发应继续留在台湾。",
+            "subject_time": "当前台湾半导体产业海外扩张与核心研发地域政策"
+          },
+          "candidate_index": 0,
+          "case_id": "case_3d913fe518e64263a4133b21b715da92",
+          "created_at": "2026-09-30T09:17:07.618797Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E272",
+          "runtime_signature": "e0c243d78b48d47ac5d3db6e9cf44344f8a05fb686dee72a64a37ee7a550507f",
+          "snapshot_version": 24,
+          "source_message_id": "std_ce942148057e4960b015ea87207e6e20",
+          "ticker": "INTC",
+          "trading_date": "2026-09-30"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "ASE Technology Holding",
+              "ASE Singapore",
+              "Lumileds Singapore",
+              "Yishun Industrial Park"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "ASE Technology Holding的新加坡子公司批准以约6844万美元（约新台币21.52亿元）从Lumileds Singapore购入位于Yishun Industrial Park的工厂。",
+            "subject_time": "当前厂房收购审批"
+          },
+          "candidate_index": 0,
+          "case_id": "case_fc9aa847766d46068e2d687bded30a3d",
+          "created_at": "2026-09-30T09:18:14.001672Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E273",
+          "runtime_signature": "f72ab13eddcd855a43c24fb6e01b49e6c6adb6af4fed092fc6cf039f6b08e3d8",
+          "snapshot_version": 25,
+          "source_message_id": "std_5a4e888213b24af7be279d5387f35b2d",
+          "ticker": "INTC",
+          "trading_date": "2026-09-30"
+        },
+        {
+          "candidate": {
+            "assertion_state": "PLANNED",
+            "entities": [
+              "ASE Technology Holding",
+              "ASE Singapore",
+              "Yishun Industrial Park"
+            ],
+            "occurrence_date": "2026-09-30",
+            "proposition": "该Yishun Industrial Park厂址拟用于支持ASE未来产能扩张。",
+            "subject_time": "未来ASE新加坡产能扩张"
+          },
+          "candidate_index": 1,
+          "case_id": "case_fc9aa847766d46068e2d687bded30a3d",
+          "created_at": "2026-09-30T09:18:14.016838Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E274",
+          "runtime_signature": "124e61aa40a222f4fcc7b1f98002001eb84b081b5dd5959b459e37dae35c9dbc",
+          "snapshot_version": 26,
+          "source_message_id": "std_5a4e888213b24af7be279d5387f35b2d",
+          "ticker": "INTC",
+          "trading_date": "2026-09-30"
+        }
+      ]
+    }
+  },
+  "source": {
+    "admission_context": {
+      "cutoff": null,
+      "mode": "REALTIME",
+      "policy_version": 1,
+      "source_task_id": null,
+      "sweep_id": null,
+      "window_start": null
+    },
+    "binding_id": "INTC:trendforce_news",
+    "business_version": 1,
+    "collected_at": "2026-09-30T09:31:47.601391Z",
+    "eligibility_at": "2026-09-30T09:31:47.595219Z",
+    "logical_message_id": "message_01d4d17d64a94875b691a84eaf98ad03",
+    "member_count": 1,
+    "member_message_ids": [
+      "std_00235121652b45869188f49e888fa45c"
+    ],
+    "message_bus_event_time": "2026-09-30T09:31:47.601391Z",
+    "normalized_at": null,
+    "previous_raw_message_id": null,
+    "publication_time_basis": "DATE",
+    "published_at": "2026-09-30T04:00:00Z",
+    "snapshot": {
+      "body": "三星電子不斷成長的HBM4業務正在幫助其晶圓代工業務改善運營，助力公司縮小虧損。根據Digital Today報導，在三星記憶體部門HBM銷售成長的推動下，晶圓代工業務預計將在第三季減少虧損。由於HBM4晶片採用三星自主研發的晶圓代工製程製造，HBM4銷量的成長也為晶圓代工業務帶來了收入。\n\n這種關聯源自於HBM的架構。 HBM採用堆疊式設計，將多個DRAM晶片堆疊在一起，而最底層的基片則控制訊號貫穿整個堆疊。三星表示，已於2月開始批量出貨HBM4，該產品將單通道DRAM與採用4nm製程製造的基片相結合，並於5月份向客戶提供了HBM4E樣品。\n\n報告指出，隨著HBM4在三星HBM銷售額中所佔份額不斷擴大，其對晶圓代工收入的貢獻也不斷增長。三星預計第三季HBM4營收將較上季成長三倍以上，並在下半年佔HBM總營收的60%以上，這預示著晶片基片產量將進一步成長。\n\n銷售成長預計也將改善獲利狀況。報告引述Kiwoom證券的數據稱，三星晶圓代工和系統級晶片業務的合併營業虧損預計將年比收窄41.8%，從去年的6.74兆韓元降至今年的3.92兆韓元。第二季虧損擴大後，預計第三季將收窄至7,770億韓元。\n\nHBM4晶片產量的成長也可能為三星帶來更大的定價彈性。根據iNews24報道，市場對HBM4基礎晶片和先進製程訂單的強勁需求，降低了三星晶圓代工為了提高產能利用率而接受低價合約的必要性。該報告指出，三星在7月提高了4nm新訂單的價格，而部分先進製程的價格據稱也上漲了10%至15%。\n\n外部訂單是進一步改進的關鍵\n\n去年上半年三星晶圓代工虧損超過每季2兆韓元後，今年以來每季虧損在7,000億韓元至1.2兆韓元之間波動。虧損額的波動反映出僅依靠記憶體相關需求來填滿晶圓代工產能的限制。 《今日數字》指出，僅靠內部記憶體相關訂單不足以充分利用三星的晶圓代工產能。\n\n因此，三星正在擴大與外部客戶的交鑰匙工程合約。根據 Digital Today 報道，三星於 7 月與博通簽署了一份諒解備忘錄，雙方計劃在 2030 年前開展價值超過 2000 億美元的合作。該協議包括為博通設計的客製化 AI 加速器提供 HBM4 和 HBM4E 晶片，以及為關鍵產品提供 2 奈米及以下製程製程和先進封裝技術。\n\n進一步的改進最終取決於外部客戶對先進節點製程的訂單。三星表示，其晶圓代工業務在第二季度獲得了來自大型雲端服務供應商 (CSP) 以及人工智慧和高效能運算 (HPC) 客戶的 2nm 項目，客戶已經開始進行產品設計。《The Information》 也指出，Anthropic 據稱可能會利用三星晶圓代工來生產人工智慧晶片。\n\n閱讀更多\n\n【新聞】三星預計，到2027年，HBM將佔據近30%的產業DRAM產能，高於目前的20%。\n\n【新聞】據報道，三星泰勒晶圓廠2nm製程訂單已全部被特斯拉、博通和Arm預訂；Fab 2的籌備工作正在加速進行。\n\n（圖片來源：三星）",
+      "ticker": "INTC",
+      "title": "[News] Samsung Foundry Loss Reportedly Seen Shrinking 42% YoY in 2026 as HBM4 Base-Die 4nm Demand Rises"
+    },
+    "source_id": "trendforce_news",
+    "source_message_id": "std_00235121652b45869188f49e888fa45c",
+    "stream_item_id": "stream_bde20f6969564ad38daa6d0bb38bfefc",
+    "update_kind": "NEW_MESSAGE",
+    "url": "https://www.trendforce.com/news/2026/09/30/news-samsung-foundry-loss-reportedly-seen-shrinking-42-yoy-in-2026-as-hbm4-base-die-4nm-demand-rises/"
+  },
+  "w1_final": {
+    "confidence": "normal",
+    "fact_attributions": [],
+    "reason": "消息核心事实——HBM4批量出货推动晶圆代工亏损收窄（合并营业亏损同比收窄41.8%、Q3缩至7,770亿韩元）、三星4nm新订单7月提价及部分先进制程涨价10-15%、与博通签署2030年前超2000亿美元合作备忘录、Q2获得CSP及AI/HPC客户2nm项目并进入产品设计阶段、Anthropic可能使用三星代工——均未出现在已加载Fact中。E195仅覆盖HBM占DRAM产能比例及2027年出货结构预测，未涉及HBM对代工经济性的传导；E239仅覆盖SF2良率提升与工程转向，未涉及上述具体客户与财务事实。",
+    "reference_ids": [],
+    "result": "NEW"
+  },
+  "w2_final": {
+    "confidence": "normal",
+    "matched_condition_ids": [],
+    "policy_ids": [],
+    "reason": "消息主体为三星晶圓代工业务因HBM4基片(4nm)需求增长而收窄亏损、提高先进制程价格，以及与博通/CSP/Arm等外部客户的合作进展。内容聚焦三星自身Foundry与存储业务改善，未涉及Intel产品出货、Intel供给约束、Intel Foundry指标、Intel客户采购变更或Intel成本桥等任何Policy criterion所需的具体事实，仅存在宽泛的半导体/代工行业主题相关性，不构成候选召回。"
+  },
+  "w2_alignment": null,
+  "version_pin": {
+    "activation_revision_id": "runtime-maintain-6a37ce08c0b679702b932ce8-activation",
+    "document1_run_id": "init-intc-738849dbdbb04ae1a39efa0aec69c071-d1",
+    "document2_run_id": "init-intc-738849dbdbb04ae1a39efa0aec69c071-d2",
+    "event_library_root": "/data/runtime/runtime_artifacts/runtime-maintain-6a37ce08c0b679702b932ce8/events",
+    "event_library_version": 14,
+    "policy_set_version": 6,
+    "provisional_snapshot_version": 26,
+    "runtime_projection_version": 6
+  },
+  "runtime_mode": "REALTIME",
+  "trading_date": "2026-09-30"
+}

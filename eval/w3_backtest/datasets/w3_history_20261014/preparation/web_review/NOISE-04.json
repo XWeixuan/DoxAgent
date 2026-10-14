@@ -1,0 +1,252 @@
+{
+  "case_key": "NOISE-04",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-09-27T07:14:50.848598Z",
+  "reviewed_at": "2026-10-13T22:58:32.414744Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 6,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a1376b-adbf-7b73-ad4e-f4c42dbf053a",
+    "turn_id": "01a1376b-adcc-7692-9497-e82c189fd414",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 78592,
+        "inputTokens": 90382,
+        "outputTokens": 18395,
+        "reasoningOutputTokens": 14944,
+        "totalTokens": 108777
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 351488,
+        "inputTokens": 432895,
+        "outputTokens": 22701,
+        "reasoningOutputTokens": 18553,
+        "totalTokens": 455596
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "bde5c677634e49ab87a283a396c007f7a0f5fe6921ad6d92e0b21f68d99e6b7a",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://bloomberg.com/news/articles/2026-09-24/oracle-cites-force-majeure-to-shield-itself-on-controversial-data-center",
+      "title": "Oracle Cites ‘Force Majeure’ to Shield Itself on Controversial Data Center",
+      "published_at": "2026-09-24T12:25:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": "2026-09-24T16:50:00Z",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "BEFORE_CUTOFF",
+      "content_state": "UPDATED",
+      "decision": "KEEP",
+      "reason": "The supplied publication and revision times do not exceed the case cutoff.",
+      "source_result_refs": [
+        "turn2search0"
+      ],
+      "source_call_ids": [
+        "exec-f9e65f7d-5638-4fc5-9c89-06b3b72e1af6"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://news.bloomberglaw.com/environment-and-energy/oracle-cites-force-majeure-to-shield-itself-on-big-data-center",
+      "title": "Oracle Cites Force Majeure to Shield Itself on Data Center (2)",
+      "published_at": "2026-09-24T16:50:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UPDATED",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn3search10"
+      ],
+      "source_call_ids": [
+        "exec-9cda689b-49e5-47b4-a7a2-0dde94aab5c0"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://www.marketscreener.com/news/oracle-blue-owl-project-delay-sends-ripples-through-ai-financing-sources-say-ce785adfd881f521",
+      "title": "Oracle, Blue Owl project delay sends ripples through AI financing, sources say",
+      "published_at": "2026-09-24T22:51:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": "2026-09-24T23:00:00Z",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "BEFORE_CUTOFF",
+      "content_state": "UPDATED",
+      "decision": "KEEP",
+      "reason": "The supplied publication and revision times do not exceed the case cutoff.",
+      "source_result_refs": [
+        "turn4search0"
+      ],
+      "source_call_ids": [
+        "exec-464ec2e2-9324-469d-a639-dd5f8b0d8bf1"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://techcrunch.com/2026/09/24/oracle-sends-force-majeure-notice-on-its-new-mexico-stargate-data-center/",
+      "title": "Oracle sends force majeure notice on its New Mexico Stargate data center",
+      "published_at": "2026-09-24T18:11:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn1search0"
+      ],
+      "source_call_ids": [
+        "exec-f0990239-0182-4add-84f1-537e26e11aec"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S5",
+      "url": "https://www.oracle.com/news/announcement/oracle-borderplex-and-bloom-energy-to-power-project-jupiter-with-fuel-cell-technology-2026-04-27/",
+      "title": "Oracle, BorderPlex, and Bloom Energy to Power Project Jupiter with Cleaner, Water-Efficient Fuel Cell Technology",
+      "published_at": "2026-04-27",
+      "time_precision": "DAY",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn2search8"
+      ],
+      "source_call_ids": [
+        "exec-f9e65f7d-5638-4fc5-9c89-06b3b72e1af6"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S6",
+      "url": "https://investor.bloomenergy.com/press-releases/press-release-details/2026/Bloom-Energy-and-Oracle-Expand-Strategic-Partnership-to-Deploy-up-to-2-8-GW-to-Accelerate-AI-Infrastructure-Build-Out/default.aspx",
+      "title": "Bloom Energy and Oracle Expand Strategic Partnership to Deploy up to 2.8 GW to Accelerate AI Infrastructure Build-Out",
+      "published_at": "2026-04-13",
+      "time_precision": "DAY",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn2search1"
+      ],
+      "source_call_ids": [
+        "exec-f9e65f7d-5638-4fc5-9c89-06b3b72e1af6"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S7",
+      "url": "https://www.ad-hoc-news.de/boerse/news/unternehmensnachrichten/bloom-energy-s-force-majeure-false-alarm-clears-the-way-for-a-2-4-gigawatt/70186943",
+      "title": "Bloom Energy's Force Majeure False Alarm Clears the Way for a 2.4-Gigawatt Oracle Buildout",
+      "published_at": "2026-09-26T16:50:20Z",
+      "time_precision": "EXACT",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn0search10"
+      ],
+      "source_call_ids": [
+        "exec-3507bc4a-a216-4024-8837-0da4f12ba739"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "Before the notice, Oracle's project-specific public design called for up to 2.45 GW of Bloom fuel cells and said construction was on schedule as of Apr 27. Bloom's Apr 13 partnership release described 1.2 GW initially contracted across Oracle U.S. projects and an agreement supporting up to 2.8 GW, without naming Jupiter for the initial 1.2 GW.",
+      "source_urls": [
+        "https://www.oracle.com/news/announcement/oracle-borderplex-and-bloom-energy-to-power-project-jupiter-with-fuel-cell-technology-2026-04-27/",
+        "https://investor.bloomenergy.com/press-releases/press-release-details/2026/Bloom-Energy-and-Oracle-Expand-Strategic-Partnership-to-Deploy-up-to-2-8-GW-to-Accelerate-AI-Infrastructure-Build-Out/default.aspx"
+      ],
+      "event_time": "2026-04-27; time UNKNOWN",
+      "publication_time": "2026-04-27",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The public figures describe different scopes; these releases alone do not establish that 2.4 GW was a project-specific contracted amount."
+    },
+    {
+      "observation": "Bloomberg first reported on Sep 24 that Oracle sent a force majeure notice to the Project Jupiter developer, reportedly to preserve the possibility of deferring payments if the campus missed its 2028 target; Bloomberg said Oracle was not trying to exit as tenant.",
+      "source_urls": [
+        "https://bloomberg.com/news/articles/2026-09-24/oracle-cites-force-majeure-to-shield-itself-on-controversial-data-center"
+      ],
+      "event_time": "2026-09-24; exact time UNKNOWN",
+      "publication_time": "2026-09-24T12:25:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The notice itself was not reproduced; Bloomberg attributed the facts to people familiar with the matter."
+    },
+    {
+      "observation": "In the same day's updated coverage, Oracle said a force-majeure notice did not by itself establish a delay or change delivery expectations; Blue Owl said financial commitments were unchanged. This is a response to the reported notice, not evidence the notice was rescinded.",
+      "source_urls": [
+        "https://news.bloomberglaw.com/environment-and-energy/oracle-cites-force-majeure-to-shield-itself-on-big-data-center",
+        "https://techcrunch.com/2026/09/24/oracle-sends-force-majeure-notice-on-its-new-mexico-stargate-data-center/"
+      ],
+      "event_time": "2026-09-24; exact statement times UNKNOWN",
+      "publication_time": "2026-09-24T16:50:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The statements affirm the parties' public position and commitments, but do not disclose the notice terms or establish that the schedule risk had disappeared."
+    },
+    {
+      "observation": "Same-day coverage described unresolved energy-related gates: a pipeline projected to enter service Feb 1, 2027, and a pending air-quality permit with a reported Nov 23 decision deadline. Reuters later reported, citing an unnamed person familiar with the deal, that the program was delayed by a year because of power delays.",
+      "source_urls": [
+        "https://techcrunch.com/2026/09/24/oracle-sends-force-majeure-notice-on-its-new-mexico-stargate-data-center/",
+        "https://www.marketscreener.com/news/oracle-blue-owl-project-delay-sends-ripples-through-ai-financing-sources-say-ce785adfd881f521"
+      ],
+      "event_time": "Underlying gate/status dates vary; exact event times UNKNOWN",
+      "publication_time": "2026-09-24T22:51:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "Reuters' one-year-delay account is attributed to an unnamed source and was not accompanied by a public replacement schedule; it conflicts with Oracle's public on-schedule statement."
+    },
+    {
+      "observation": "The Sep 26 AD HOC NEWS item labels the episode a false alarm and reiterates Oracle's commitment to the 2.4-GW capacity. It adds no surfaced evidence of withdrawal of the force majeure notice, a permit decision, or a newly confirmed project milestone.",
+      "source_urls": [
+        "https://www.ad-hoc-news.de/boerse/news/unternehmensnachrichten/bloom-energy-s-force-majeure-false-alarm-clears-the-way-for-a-2-4-gigawatt/70186943"
+      ],
+      "event_time": "2026-09-26",
+      "publication_time": "2026-09-26T16:50:20Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This is a downstream secondary characterization, not a primary disclosure of the notice's legal status or a formal schedule update."
+    }
+  ],
+  "gaps": [
+    "The force majeure notice and underlying contract language were not located, so its trigger, scope, duration, and any effect on payment obligations remain unverified.",
+    "No public project-specific filing or official notice withdrawing or resolving the force majeure action was located by cutoff.",
+    "Oracle's public schedule assurance and Reuters' anonymous-source one-year-delay account are unresolved by an official replacement schedule.",
+    "The pipeline and air-permit status here is limited to contemporaneous reporting; later regulatory outcomes are outside the cutoff.",
+    "The public disclosures use different capacity descriptions (1.2 GW contracted across Oracle projects, up to 2.8 GW under the expanded agreement, up to 2.45 GW for Jupiter, and 2.4 GW in later coverage); the exact binding Jupiter-specific scope is not resolved by these sources."
+  ],
+  "research_notes": "Cutoff: 2026-09-27T07:14:50.848598Z. The earliest traceable report found is Bloomberg's Sep 24 report; its reported notice is a contractual action, not confirmation that the project was canceled or its public schedule changed. Oracle and Blue Owl publicly disputed an inference of delay, while Reuters later reported a one-year delay based on an unnamed source. These statements do not resolve the schedule discrepancy. Pre-event context includes Oracle's project-specific plan for up to 2.45 GW of Bloom fuel cells; Bloom's earlier Oracle agreement described 1.2 GW initially contracted across U.S. Oracle projects and an umbrella capacity of up to 2.8 GW, without identifying Jupiter. No post-cutoff coverage or market prices are used."
+}

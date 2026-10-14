@@ -1,0 +1,24 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-24T23:05:42.989261Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "No notice text, underlying force-majeure clause, or exact notice transmission time was located.",
+    "The one-year delay is a source-attributed report; no primary sponsor, developer, Oracle, customer, or Bloom disclosure of revised dates, accepted capacity, or affected Bloom delivery scope was located by cutoff.",
+    "The reported financing spillover is based on interviews. The SB Energy IPO delay was already publicly mentioned on Sept. 23, and the sources do not demonstrate a causal connection to Jupiter.",
+    "The Reuters direct page was not retrieved. The date-only supplied publication metadata and the Reuters-labelled syndication page’s 6:51 p.m. EDT publication / 7:00 p.m. EDT modification are distinct timing evidence.",
+    "The precise Green Chile in-service date is reported by OilPrice from a regulatory filing; the official FERC notice retrieved here confirms an open environmental review, not that revised date."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

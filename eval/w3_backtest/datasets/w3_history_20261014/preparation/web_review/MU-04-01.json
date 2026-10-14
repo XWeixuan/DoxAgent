@@ -1,0 +1,231 @@
+{
+  "case_key": "MU-04-01",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-10-09T12:09:12.092187Z",
+  "reviewed_at": "2026-10-13T22:58:32.255051Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 6,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a13764-7990-70b0-aeba-5fade9ac8805",
+    "turn_id": "01a13764-799e-7fb1-b248-6c5a9e82403f",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 88832,
+        "inputTokens": 102421,
+        "outputTokens": 19474,
+        "reasoningOutputTokens": 16365,
+        "totalTokens": 121895
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 406784,
+        "inputTokens": 501760,
+        "outputTokens": 28097,
+        "reasoningOutputTokens": 24268,
+        "totalTokens": 529857
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "8319bf162c0afbf0da43780c56e8836032c369587001b5181c36814adb6f8c22",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://aiweekly.co/alerts/apple-cuts-iphone-18-pro-orders-15-20-as-memory-costs-bite",
+      "title": "Apple Cuts iPhone 18 Pro Orders 15-20% as Memory Costs Bite",
+      "published_at": "2026-10-09T08:07:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": "2026-10-09T08:30:00Z",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "BEFORE_CUTOFF",
+      "content_state": "UPDATED",
+      "decision": "KEEP",
+      "reason": "The supplied publication and revision times do not exceed the case cutoff.",
+      "source_result_refs": [
+        "turn4search2"
+      ],
+      "source_call_ids": [
+        "exec-c6abb96a-bc2a-4ab7-858c-138e0ea90039"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://live.euronext.com/en/financial-news/apple-cuts-iphone-18-pro-orders-due-soft-demand-nikkei-asia-reports",
+      "title": "Apple cuts iPhone 18 Pro orders due to soft demand, Nikkei Asia reports",
+      "published_at": "2026-10-09 09:32 (timezone not stated)",
+      "time_precision": "UNKNOWN",
+      "updated_at": null,
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn0search6"
+      ],
+      "source_call_ids": [
+        "exec-faed23a1-4a39-4ee8-9247-5c31963dc6ef"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://archive.vn/2026.10.10-104919/https%3A/www.ft.com/content/b66a9858-f8fb-46cb-b506-44bfe26fca2a",
+      "title": "OpenAI annualised revenues $20bn less than previously signalled",
+      "published_at": "2026-10-08",
+      "time_precision": "DAY",
+      "updated_at": "2026-10-08 20:15 (timezone not stated)",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn4search0"
+      ],
+      "source_call_ids": [
+        "exec-c6abb96a-bc2a-4ab7-858c-138e0ea90039"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://www.axios.com/2026/10/08/openai-50-billion-arr-anthropic-revenue-accounting",
+      "title": "OpenAI annualized revenue $20 billion less than previously reported",
+      "published_at": "2026-10-08T19:50:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn2search0"
+      ],
+      "source_call_ids": [
+        "exec-6c5908a7-a5b6-4506-b027-41da1e5bed4e"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S5",
+      "url": "https://www.axios.com/2026/09/29/scoop-openais-annual-recurring-revenue-nears-70b",
+      "title": "Scoop: OpenAI's annual recurring revenue nears $70B",
+      "published_at": "2026-09-29T14:15:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn2news27"
+      ],
+      "source_call_ids": [
+        "exec-6c5908a7-a5b6-4506-b027-41da1e5bed4e"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S6",
+      "url": "https://news.samsung.com/kr/%EC%82%BC%EC%84%B1%EC%A0%84%EC%9E%90-2026%EB%85%84-3%EB%B6%84%EA%B8%B0-%EC%9E%A0%EC%A0%95%EC%8B%A4%EC%A0%81-%EB%B0%9C%ED%91%9C",
+      "title": "삼성전자, 2026년 3분기 잠정실적 발표",
+      "published_at": "2026-10-08",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn3search0"
+      ],
+      "source_call_ids": [
+        "exec-0954656b-c395-47d1-b3bd-7fb494c5ff9e"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S7",
+      "url": "https://pr.tsmc.com/schinese/news/3343",
+      "title": "TSMC September 2026 Revenue Report",
+      "published_at": "2026-10-08",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn3search1"
+      ],
+      "source_call_ids": [
+        "exec-0954656b-c395-47d1-b3bd-7fb494c5ff9e"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "A pre-cutoff AI Weekly relay citing Nikkei Asia reported that Apple asked some suppliers to reduce October component orders for iPhone 18 Pro and Pro Max by at least 15% versus initial requests, linking the report to higher memory costs, higher handset prices, and softer demand. The reported action concerns selected suppliers and Pro models, not a verified reduction across all iPhones.",
+      "source_urls": [
+        "https://aiweekly.co/alerts/apple-cuts-iphone-18-pro-orders-15-20-as-memory-costs-bite"
+      ],
+      "event_time": "October 2026 orders; exact instruction date unknown, but reported as already issued by the October 9 08:07 UTC relay",
+      "publication_time": "2026-10-09T08:07:00Z; direct Nikkei Asia publication time unknown",
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "The same relay says the changed launch schedule could also explain softer late-August-to-October demand. The account rests on supplier reporting, not an Apple confirmation; it names no affected suppliers or specific memory components and does not identify Micron or establish any Micron shipment, ASP, or customer impact."
+    },
+    {
+      "observation": "Axios's October 8 coverage reported approximately $50 billion in September-end OpenAI annualized revenue, compared with the approximately $70 billion figure reported in September. Axios described the gap as largely reflecting different treatment of cloud-partner sales and investor attempts to make the figures comparable with Anthropic's accounting approach.",
+      "source_urls": [
+        "https://www.axios.com/2026/10/08/openai-50-billion-arr-anthropic-revenue-accounting",
+        "https://www.axios.com/2026/09/29/scoop-openais-annual-recurring-revenue-nears-70b"
+      ],
+      "event_time": "September 2026 period-end run-rate estimate; exact measurement day unknown",
+      "publication_time": "2026-10-08T19:50:00Z; earlier comparison report published 2026-09-29",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The reported $20 billion difference is between annualized metrics on differing comparison bases, not evidence that $20 billion of recognized revenue disappeared. The retrieved material did not include an official OpenAI financial release or underlying investor documents."
+    },
+    {
+      "observation": "Samsung's October 8 preliminary FY2026 Q3 estimate and TSMC's October 8 September revenue report supplied concurrent semiconductor-industry context: Samsung estimated KRW 195 trillion revenue and KRW 107.4 trillion operating profit; TSMC reported September revenue up 54.6% year over year but down 0.6% month over month.",
+      "source_urls": [
+        "https://news.samsung.com/kr/%EC%82%BC%EC%84%B1%EC%A0%84%EC%9E%90-2026%EB%85%84-3%EB%B6%84%EA%B8%B0-%EC%9E%A0%EC%A0%95%EC%8B%A4%EC%A0%81-%EB%B0%9C%ED%91%9C",
+        "https://pr.tsmc.com/schinese/news/3343"
+      ],
+      "event_time": "2026-10-08 disclosures; Samsung FY2026 Q3 estimate and TSMC September 2026 revenue period",
+      "publication_time": "2026-10-08 (publication time not stated)",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "Samsung's figures were preliminary, and TSMC's release covered one month rather than its full quarter. Neither release directly establishes Micron-specific demand, prices, products, or results."
+    }
+  ],
+  "gaps": [
+    "Nikkei Asia was identified by contemporaneous relays as the original Apple report, but its page was blocked in search; the original text and exact first-publication time remain unverified.",
+    "The Reuters Apple relay on Euronext displayed 09:32 on October 9 without specifying a time zone; it was not counted as confirmed pre-cutoff evidence.",
+    "The FT page located for the OpenAI report was available only through an October 10 archive capture. Its article body was not used as pre-cutoff evidence; Axios provides the usable contemporaneous detail.",
+    "Search surfaced a Bloomberg report about a possible $70 billion year-end annualized-revenue expectation, but page access failed, so its contents were not relied on.",
+    "No primary Apple or supplier document confirming order changes, named supplier exposure, or a Micron connection was found; no primary OpenAI revenue filing or underlying investor materials were verified."
+  ],
+  "research_notes": "Cutoff: 2026-10-09T12:09:12.092187Z. The supplied Reuters message lists publication at 2026-10-09T16:00:00Z, after the cutoff, so it was excluded. For Apple, the earliest original report identified is Nikkei Asia; its page was not accessible in search, so its exact publication time and text could not be checked directly. The earliest accessible, timestamped pre-cutoff relay found was AI Weekly at 08:07Z, updated at 08:30Z. A Reuters relay displayed 09:32 on October 9 without a stated time zone and is not treated as confirmed pre-cutoff evidence. For OpenAI, the FT is identified as the first report by contemporaneous coverage, but the available FT archive capture is dated October 10; its article text is not used. Pre-cutoff Axios coverage supports the reported revenue figures and explains the accounting-basis distinction. No later market reactions, security prices, or post-cutoff reporting are used."
+}

@@ -1,0 +1,4072 @@
+{
+  "schema_version": "w3-backtest.case.v1",
+  "case_key": "NOISE-12",
+  "group": "noise",
+  "original_case_id": "case_a4a674ec764443f897e8fc09aa1e86a2",
+  "ticker": "INTC",
+  "evidence_cutoff_at": "2026-09-24T17:00:50.646227Z",
+  "cutoff_basis": "original_worker_started_at",
+  "research_key": "f3adcaba25d6e2226694",
+  "research_path": "research/f3adcaba25d6e2226694",
+  "original_case": {
+    "case_id": "case_a4a674ec764443f897e8fc09aa1e86a2",
+    "trading_date": "2026-09-24",
+    "source": {
+      "admission_context": {
+        "cutoff": null,
+        "mode": "REALTIME",
+        "policy_version": 1,
+        "source_task_id": null,
+        "sweep_id": null,
+        "window_start": null
+      },
+      "binding_id": "INTC:huggingnews_rss",
+      "business_version": 1,
+      "collected_at": "2026-09-24T16:56:01.122349Z",
+      "eligibility_at": "2026-09-24T16:56:01.116492Z",
+      "logical_message_id": "message_4a598cf895eb45ee933468f330d26c58",
+      "member_count": 1,
+      "member_message_ids": [
+        "std_83026e437db5407aa3d745ab6fd3f5fd"
+      ],
+      "message_bus_event_time": "2026-09-24T16:56:01.122349Z",
+      "normalized_at": null,
+      "previous_raw_message_id": null,
+      "publication_time_basis": "EXACT",
+      "published_at": "2026-09-24T16:40:30.813000Z",
+      "snapshot": {
+        "body": "← Back to live feed · 1 stories across 1 day\nThursday, Sep 24, 2026\n1 story1 Trump and Xi Reject AI Slowdowns to Preserve Development Pace AI Sep 24, 7:26 AM EDT 58/32 \n The U.S. and China have decided to avoid new limits on super intelligence after a summit between Donald Trump and Xi Jinping in Washington on Sept 24. Trump stated on Truth Social that he and Xi wish to leave the technology's status \"exactly where it is,\" effectively ending active debate regarding a potential slowdown in progress. Trump designated the U.S. Department of Justice as the primary regulatory guardrail for the industry, while officials from both nations discussed the creation of an AI incident-alert channel to coordinate on systemic risks.\nPresident Xi characterized both countries as AI powers with the shared capability and responsibility to ensure the technology remains under human control. This bilateral alignment contrasts with pleas for international coordination from OpenAI CEO Sam Altman and Anthropic CEO Dario Amodei at a UN Security Council meeting on Sept 23. At that event, White House Science and Technology Policy Director Michael Kratsios rejected any \"globalist scheme\" of control, asserting that rapid advancement should not lead to new global governance structures.",
+        "ticker": "INTC",
+        "title": "Trump and Xi Reject AI Slowdowns to Preserve Development Pace"
+      },
+      "source_id": "huggingnews_rss",
+      "source_message_id": "std_83026e437db5407aa3d745ab6fd3f5fd",
+      "stream_item_id": "stream_b25b98b0d5854128a5219e994c3ade13",
+      "update_kind": "NEW_MESSAGE",
+      "url": "https://huggingnews.com/ai/trump-and-xi-reject-ai-slowdowns-to-preserve-development-pace-c7dbb134"
+    },
+    "version_pin": {
+      "activation_revision_id": "runtime-maintain-1a4c4e7cc2a92ac218aeed4e-activation",
+      "document1_run_id": "init-intc-738849dbdbb04ae1a39efa0aec69c071-d1",
+      "document2_run_id": "init-intc-738849dbdbb04ae1a39efa0aec69c071-d2",
+      "event_library_root": "/data/runtime/runtime_artifacts/runtime-maintain-1a4c4e7cc2a92ac218aeed4e/events",
+      "event_library_version": 2,
+      "policy_set_version": 2,
+      "provisional_snapshot_version": 51,
+      "runtime_projection_version": 2
+    },
+    "runtime_mode": "REALTIME",
+    "closed_cycle_id": null,
+    "w1_final": {
+      "confidence": "normal",
+      "fact_attributions": [],
+      "reason": "当前消息的核心事实是9月24日Trump-Xi华盛顿峰会及双方决定不对超级智能施加新限制、指定DOJ为AI行业主要监管护栏、讨论建立AI事件警报通道。这些政府间双边政策决定及峰会本身在E3（企业AI领袖讨论放慢开发）和E4（股市反应）的已知Facts中均无任何覆盖。",
+      "reference_ids": [],
+      "result": "NEW"
+    },
+    "w1_extraction": null,
+    "w2_final": {
+      "confidence": "normal",
+      "matched_condition_ids": [],
+      "policy_ids": [],
+      "reason": "该消息报道美中西方峰会后拒绝对新AI限制，属于宏观AI治理政策层面的双边表态，未涉及任何具体Intel客户采购、生产部署、供应链、产品资格、财务数据或监管规则对Intel产品的实际限制/禁止。消息的核心事实是'不施加新限制'，与所有Policy criterion所要求的Intel具体运营变化（订单、交付、良率、客户迁移、政府禁令生效等）无直接、实质性的触发关系。"
+    },
+    "created_at": "2026-09-24T16:56:02.361334Z",
+    "frozen_inputs": {
+      "index": {
+        "contract_version": "known-event-index-v2",
+        "known_event_index": "E61 | 2026-09-22 | OpenAI committed to deploy about 12GW of NVIDIA compute through 2030 | On 2026-09-22, OpenAI committed to deploy about 12GW of NVIDIA compute through 2030.\nE62 | 2026-09-22 | Cognex agreed to acquire Intel-spun RealSense | On 2026-09-22, Cognex agreed to acquire Intel-spun RealSense for about $500 million, with a planned Q4 2026 close and facial-authentication spinout.\nE64 | 2026-09-22 | Intel Core Ultra Series 3 powered Googlebook laptops reached market | On 2026-09-22, Acer, ASUS, and Lenovo brought Intel Core Ultra Series 3 Googlebook laptops to market using Intel 18A and integrated CPU/GPU/NPU architecture.\nE65 | 2026-09-22 | Amazon and Shopify set different Meta Muse access policies | On 2026-09-22, Amazon banned Meta Muse while Shopify planned agentic-checkout access.\nE66 | 2026-09-22 | Alibaba introduced a new AI chip | On 2026-09-22, Alibaba was introducing a new AI chip.\nE67 | 2026-09-22 | Zacks updated Intel FY2026 estimates and maintained a Hold rank | On 2026-09-22, Zacks updated Intel Q3/FY2026 estimates, raised its consensus EPS estimate 5.48% month over month, and rated Intel Hold.\nE2 | 2026-09-21 | Qualcomm updated non-handset diversification and Apple offset guidance | On 2026-09-21, Qualcomm updated non-handset diversification and Apple offset guidance.\nE3 | 2026-09-12..2026-09-21 | Frontier-AI leaders debated development pace, safety coordination, and spending | Between 2026-09-12 and 2026-09-21, Frontier-AI leaders debated development pace, safety coordination, and spending.\nE8 | 2026-09-18..2026-09-21 | Intel FY2025 annual-report supplemental disclosures | Between 2026-09-18 and 2026-09-21, Intel FY2025 annual-report supplemental disclosures.\nE11 | 2026-09-21 | Meta Muse reached the top of Apple's US App Store | On 2026-09-21, Meta Muse reached the top of Apple's US App Store.\nE20 | 2026-09-10..2026-09-21 | AMD projected a $220 billion server CPU addressable market by 2030 | Between 2026-09-10 and 2026-09-21, AMD projected a $220 billion server CPU addressable market by 2030.\nE23 | 2026-09-21 | AMD and Meta disclosed a February 2026 six-gigawatt AI-infrastructure agreement | On 2026-09-21, AMD and Meta disclosed a February 2026 six-gigawatt AI-infrastructure agreement.\nE24 | 2026-09-21 | AMD reported Q2 results with $6.7 billion of data-center revenue | On 2026-09-21, AMD reported Q2 results with $6.7 billion of data-center revenue.\nE25 | 2026-09-21 | AMD warned of Q4 2026 price increases and excluded Ryzen desktop processors | On 2026-09-21, AMD warned of Q4 2026 price increases and excluded Ryzen desktop processors.\nE32 | 2026-09-08..2026-09-21 | Qualcomm expanded non-handset diversification and updated operating guidance | Between 2026-09-08 and 2026-09-21, Qualcomm expanded non-handset diversification and updated operating guidance.\nE33 | 2026-09-18..2026-09-21 | Qualcomm advanced custom-silicon and automotive customer milestones | Between 2026-09-18 and 2026-09-21, Qualcomm advanced custom-silicon and automotive customer milestones.\nE45 | 2026-09-16..2026-09-21 | Intel and SK Hynix explored U.S. memory-manufacturing arrangements | Between 2026-09-16 and 2026-09-21, Intel and SK Hynix explored U.S. memory-manufacturing arrangements.\nE48 | 2026-09-21 | Intel CEO described a CPU demand squeeze at the Splunk conference | On 2026-09-21, Intel CEO described a CPU demand squeeze at the Splunk conference.\nE54 | 2026-09-21 | HP disclosed a 2027 PC-volume decline planning assumption | On 2026-09-21, HP disclosed a 2027 PC-volume decline planning assumption.\nE55 | 2026-09-04..2026-09-21 | Intel analyst coverage and price-target actions formed a response episode | Between 2026-09-04 and 2026-09-21, Intel analyst coverage and price-target actions formed a response episode.\nE63 | 2026-09-21 | Alphabet opened pre-orders for Googlebook laptops with Intel or Qualcomm processors planned | On 2026-09-21, Alphabet opened Googlebook laptop pre-orders with a $899 starting price, five planned OEMs, and Intel or Qualcomm processor options.\nE31 | 2026-09-20 | Intel announced a Xeon-powered AI platform | On 2026-09-20, Intel announced a Xeon-powered AI platform.\nE7 | 2026-09-19 | Altera confidentially filed for a U.S. IPO | On 2026-09-19, Altera confidentially filed for a U.S. IPO.\nE18 | 2026-09-08..2026-09-19 | Intel and ASML advanced High-NA EUV readiness and Panther Lake manufacturing | Between 2026-09-08 and 2026-09-19, Intel and ASML advanced High-NA EUV readiness and Panther Lake manufacturing.\nE22 | 2026-09-09..2026-09-19 | Intel disclosed a continuing server-CPU supply constraint | Between 2026-09-09 and 2026-09-19, Intel disclosed a continuing server-CPU supply constraint.\nE46 | 2026-09-19 | Intel confirmed pending data-center workforce reductions | On 2026-09-19, Intel confirmed pending data-center workforce reductions.\nE47 | 2026-09-19 | Applied Materials launched hardware for advanced-memory scaling | On 2026-09-19, Applied Materials launched hardware for advanced-memory scaling.\nE52 | 2026-09-19 | Intel disclosed Lip-Bu Tan’s 2025 appointment as chief executive | On 2026-09-19, Intel disclosed Lip-Bu Tan’s 2025 appointment as chief executive.\nE5 | 2026-09-15..2026-09-18 | Intel CEO addressed CPU fulfillment and memory shortages at the AI Infrastructure Summit | Between 2026-09-15 and 2026-09-18, Intel CEO addressed CPU fulfillment and memory shortages at the AI Infrastructure Summit.\nE10 | 2026-09-18 | Micron broke ground on a New York memory facility | On 2026-09-18, Micron broke ground on a New York memory facility.\nE14 | 2026-09-09..2026-09-18 | Memory supply tightened as Micron disclosed strategic contracts and HBM4 progress | Between 2026-09-09 and 2026-09-18, Memory supply tightened as Micron disclosed strategic contracts and HBM4 progress.\nE28 | 2026-09-08..2026-09-18 | Intel planned a roughly 10% PC-processor price increase for fall 2026 | Between 2026-09-08 and 2026-09-18, Intel planned a roughly 10% PC-processor price increase for fall 2026.\nE35 | 2026-09-18 | Qualcomm expanded its BMW ADAS and digital-cockpit agreement | On 2026-09-18, Qualcomm expanded its BMW ADAS and digital-cockpit agreement.\nE36 | 2026-09-16..2026-09-18 | Intel disclosed an Ohio fab investment and schedule delay | Between 2026-09-16 and 2026-09-18, Intel disclosed an Ohio fab investment and schedule delay.\nE38 | 2026-09-09..2026-09-18 | AMD updated Helios and MI450 growth, customer and launch expectations | Between 2026-09-09 and 2026-09-18, AMD updated Helios and MI450 growth, customer and launch expectations.\nE50 | 2026-09-18 | Intel faced shareholder litigation over its U.S. government equity stake | On 2026-09-18, Intel faced shareholder litigation over its U.S. government equity stake.\nE51 | 2026-09-08..2026-09-18 | The U.S. government acquired and retained a material Intel equity stake | Between 2026-09-08 and 2026-09-18, The U.S. government acquired and retained a material Intel equity stake.\nE56 | 2026-09-18 | Arm entered the server market | On 2026-09-18, Arm entered the server market.\nE1 | 2026-09-17 | Huawei advanced Ascend AI chip roadmap and supply update | On 2026-09-17, Huawei advanced Ascend AI chip roadmap and supply update.\nE42 | 2026-09-17 | Intel committed scholarships near its Ohio fab | On 2026-09-17, Intel committed scholarships near its Ohio fab.\nE43 | 2026-09-08..2026-09-17 | Intel joined the Terafab partnership as Tesla and 14A customer terms remained incomplete | Between 2026-09-08 and 2026-09-17, Intel joined the Terafab partnership as Tesla and 14A customer terms remained incomplete.\nE53 | 2026-09-17 | Intel considered selling off its Foundry business | On 2026-09-17, Intel considered selling off its Foundry business.\nE58 | 2026-09-17 | NVIDIA supplied limited batches of H200 AI chips to China | On 2026-09-17, NVIDIA supplied limited batches of H200 AI chips to China.\nE59 | 2026-08-27..2026-09-17 | Marvell reported fiscal Q2 2027 results and updated its infrastructure outlook | Between 2026-08-27 and 2026-09-17, Marvell reported fiscal Q2 2027 results and updated its infrastructure outlook.\nE60 | 2026-09-17 | Intel appointed an executive to oversee advanced packaging and back-end manufacturing | On 2026-09-17, Intel appointed an executive to oversee advanced packaging and back-end manufacturing.\nE15 | 2026-09-16 | Micron scheduled its fiscal Q4 2026 earnings release | On 2026-09-16, Micron scheduled its fiscal Q4 2026 earnings release.\nE17 | 2026-09-08..2026-09-16 | Intel advanced a multiyear turnaround and Foundry customer strategy | Between 2026-09-08 and 2026-09-16, Intel advanced a multiyear turnaround and Foundry customer strategy.\nE37 | 2026-09-16 | Intel signed a Fortinet security-chip manufacturing deal | On 2026-09-16, Intel signed a Fortinet security-chip manufacturing deal.\nE39 | 2026-09-11..2026-09-16 | NVIDIA launched an infrastructure-financing and capacity-guarantee program | Between 2026-09-11 and 2026-09-16, NVIDIA launched an infrastructure-financing and capacity-guarantee program.\nE40 | 2026-09-15..2026-09-16 | NVIDIA entered Vera CPU production and planned Vera Rubin sales | Between 2026-09-15 and 2026-09-16, NVIDIA entered Vera CPU production and planned Vera Rubin sales.\nE41 | 2026-09-10..2026-09-16 | AMD reported EPYC server-processor supply sold out for 2026 | Between 2026-09-10 and 2026-09-16, AMD reported EPYC server-processor supply sold out for 2026.\nE44 | 2026-09-15 | AMD and Intel validated Micron memory technology for servers | On 2026-09-15, AMD and Intel validated Micron memory technology for servers.\nE68 | 2026-09-15 | Delos Data raised financing for heterogeneous AI-networking chips and software | On 2026-09-15, Delos Data announced more than $100 million of financing for heterogeneous AI-data-center networking chips and software, with Playground Global participation.\nE4 | 2026-09-14 | AI and chip stocks came under pressure after frontier-AI slowdown calls | On 2026-09-14, AI and chip stocks came under pressure after frontier-AI slowdown calls.\nE13 | 2026-08-10..2026-09-14 | Intel completed its August 2026 stock sale | Between 2026-08-10 and 2026-09-14, Intel completed its August 2026 stock sale.\nE27 | 2026-09-11 | NVIDIA disclosed its fiscal Q3 2027 earnings date and revenue guide | On 2026-09-11, NVIDIA disclosed its fiscal Q3 2027 earnings date and revenue guide.\nE12 | 2026-09-09 | NVIDIA fiscal Q2 2027 earnings release | On 2026-09-09, NVIDIA fiscal Q2 2027 earnings release.\nE29 | 2026-09-09 | UBS positioned Intel EMIB-T as a potential alternative amid CoWoS constraints | On 2026-09-09, UBS positioned Intel EMIB-T as a potential alternative amid CoWoS constraints.\nE34 | 2026-09-09 | Apple announced the iPhone 18 Pro and iPhone 18 Pro Max | On 2026-09-09, Apple announced the iPhone 18 Pro and iPhone 18 Pro Max.\nE6 | 2026-09-08 | Amkor announced Phase 2 expansion of its Arizona advanced-packaging site | On 2026-09-08, Amkor announced Phase 2 expansion of its Arizona advanced-packaging site.\nE9 | 2026-09-08 | Qualcomm signed an AI-chip deal with Amazon | On 2026-09-08, Qualcomm signed an AI-chip deal with Amazon.\nE19 | 2026-09-08 | ASML and industry partners advanced 12-inch High-NA EUV masks and adoption | On 2026-09-08, ASML and industry partners advanced 12-inch High-NA EUV masks and adoption.\nE21 | 2026-09-08 | Intel repositioned its factories as an open global foundry | On 2026-09-08, Intel repositioned its factories as an open global foundry.\nE26 | 2026-09-08 | Intel scheduled its Q3 FY2026 results for late October | On 2026-09-08, Intel scheduled its Q3 FY2026 results for late October.\nE49 | 2026-09-08 | NVIDIA’s Hugging Face investment or ownership affected model distribution strategy | On 2026-09-08, NVIDIA’s Hugging Face investment or ownership affected model distribution strategy.\nE30 | 2026-08-24 | Intel expanded its AI processor and graphics lineup | On 2026-08-24, Intel expanded its AI processor and graphics lineup.\nE57 | 2026-08-11 | Intel CEO Lip-Bu Tan increased his personal Intel shareholding | On 2026-08-11, Intel CEO Lip-Bu Tan increased his personal Intel shareholding.\nE16 | 2026-07-23 | Intel reported Q2 FY2026 results and issued Q3 guidance | On 2026-07-23, Intel reported Q2 FY2026 results and issued Q3 guidance.\n",
+        "published_at": "2026-09-23T06:27:55.197078Z",
+        "sha256": "819a369486da6553a56d750ea7329c10b4c19a53a7ba04714aa3af25cac9a123",
+        "ticker": "INTC",
+        "version": 2
+      },
+      "projection": {
+        "consumer_contract": "persistent-runtime.v2.or-policy.v1",
+        "policies": [
+          {
+            "activation_revision": "ar_77d705eee8bfed31ec745bb8",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "单一重大超大规模客户将Intel Xeon、IPU或定制ASIC从协作/验证推进为有约束力的生产采购或下一代生产平台续约。"
+            ],
+            "match_scope": "召回重大云客户、Intel、Xeon、IPU、定制ASIC的采购、生产部署、续约、backlog、设计合作及其取消或否定消息。",
+            "policy_id": "pol_f9d55c6095cfa8fd36ae"
+          },
+          {
+            "activation_revision": "ar_3034c240e7e6036f64e8e0bb",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "SambaNova、Foxconn或同等规模集成商的含Intel内容推理机架，在首个付费生产部署后获得同一方案的补充生产批次或扩容订单。"
+            ],
+            "match_scope": "召回Intel CPU/IPU推理机架、SambaNova、Foxconn、系统集成商、终端客户的生产部署、付费交付、补单、扩容与取消消息。",
+            "policy_id": "pol_c32af189879ad11c2282"
+          },
+          {
+            "activation_revision": "ar_3c8c2ad74f0bb01e5381b0cd",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "已完成重大Intel AI部署的客户明确不续下一代Intel采购、暂停项目或取消已计划的后续生产批次。"
+            ],
+            "match_scope": "召回重大AI客户、Intel DCAI项目的续约、下一代采购、后续批次、项目暂停、取消及继续执行消息。",
+            "policy_id": "pol_7b0d45eb839444d2cc81"
+          },
+          {
+            "activation_revision": "ar_da408597240faeffbb163408",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "单一重大云客户、OEM或系统集成商取消或不续Intel AI生产平台，或把原由Intel CPU、加速器、IPU或定制ASIC承担的主要生产采购明确转给GPU、AMD、ARM/RISC-V或自研芯片。"
+            ],
+            "match_scope": "召回重大云客户、OEM或系统集成商对Intel CPU、加速器、IPU或定制ASIC生产平台的取消、不续、采购削减及向GPU、AMD、ARM/RISC-V或自研芯片的正式分配转移。",
+            "policy_id": "pol_348a4139f082e3b438a6"
+          },
+          {
+            "activation_revision": "ar_423cb283295710c26203cfe6",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "重大AI生产平台的新一代配置相对前代明确减少Intel CPU、IPU或ASIC数量、移除Intel组件或降低Intel承载的工作负载份额。"
+            ],
+            "match_scope": "召回AI机架、BOM、平台规格、工作负载、CPU/IPU/ASIC内容份额和前后代配置变化，包括维持或增加Intel内容的否定消息。",
+            "policy_id": "pol_d0d3d1ed0ed156a78879"
+          },
+          {
+            "activation_revision": "ar_e102c3d90b8f76dc87cc32d1",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel确认服务器供给约束实质缓解，并在同一季度报告服务器单位同比增速高于9%，且单位而非ASP或高端mix构成主要增量。"
+            ],
+            "match_scope": "召回Intel服务器/DCAI供需、客户履约、单位出货、ASP、产品组合、良率和周期时间的财报与供给更新。",
+            "policy_id": "pol_5bec792481239b053555"
+          },
+          {
+            "activation_revision": "ar_0fafb62ed6813adf0bb1e192",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel、客户或后端伙伴确认一项可识别的重大DCAI生产订单因基板、封装或系统集成合格吞吐不足而延期、降配或无法履约。"
+            ],
+            "match_scope": "召回DCAI订单、基板、封装、系统集成、合格吞吐、交付周期、填充率、延期与取消消息。",
+            "policy_id": "pol_0e6e07f1179015adf38f"
+          },
+          {
+            "activation_revision": "ar_5320b4afe595b82555f2a48f",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "已有Intel暴露的重大超大规模客户因电力/并网、许可、融资或投资回报重估，取消或实质后移已计划AI生产部署及关联Intel采购。"
+            ],
+            "match_scope": "召回超大规模AI数据中心的电力、并网、许可、融资、资本开支、ROI、部署时点和Intel订单调整消息。",
+            "policy_id": "pol_a8b9a583ffee2af7c40c"
+          },
+          {
+            "activation_revision": "ar_f0c16b70264f398a0bbec0e2",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel客户端供给约束缓解后，季度客户端单位同比达到不下降，且头部OEM或覆盖性渠道确认终端sell-through带来补单而库存未增加。"
+            ],
+            "match_scope": "召回Intel客户端单位、PC供给、OEM/渠道sell-through、补单、库存、ASP和产品组合的财报与行业数据。",
+            "policy_id": "pol_00aedd21578697ff89d7"
+          },
+          {
+            "activation_revision": "ar_83e22ee6128dacb5b62328c0",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "头部PC OEM、覆盖性分销商或Intel明确披露Intel PC库存高于目标，并因此退货、折价清库或削减/暂停补单。"
+            ],
+            "match_scope": "召回Intel PC库存天数、渠道库存、sell-in/sell-through、促销折价、退货、补单与订单削减消息。",
+            "policy_id": "pol_05f90f9ed723b58b6b52"
+          },
+          {
+            "activation_revision": "ar_81f4026778f5ee1dee4ad26f",
+            "condition_ids": [
+              "C2"
+            ],
+            "criterion": [
+              "在Googlebook及其他OEM初始市场上市基础上，Intel或头部OEM将Core Ultra Series 3/Panther Lake后续批量生产供货窗口后移或取消，或把已规划的批量范围降为少量SKU小批供货。"
+            ],
+            "match_scope": "召回Core Ultra Series 3、Panther Lake、Googlebook及其他OEM的量产、认证、初始和持续上市、SKU供货、批次、延期、取消和按期交付消息。",
+            "policy_id": "pol_b17369ee9edd8f6441e8"
+          },
+          {
+            "activation_revision": "ar_310bf30e441edd8480215cfb",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Acer、ASUS、Dell、HP、Lenovo或Samsung中的单一头部OEM确认Core Ultra Series 3量产机型已产生终端销售，并据此补单或扩大生产组合。"
+            ],
+            "match_scope": "召回Googlebook及其他头部OEM的Core Series 3机型、量产上市、终端销售、渠道库存、补单、组合扩张及取消消息。",
+            "policy_id": "pol_849bf577d74f6b102e74"
+          },
+          {
+            "activation_revision": "ar_aa6b2bef625d85f8dea6e654",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "具有物质生产规模的边缘AI或机器人客户将Intel Core Ultra/Core Series 3测试平台正式选为量产设计，并承诺可识别的生产批次或多站点部署。"
+            ],
+            "match_scope": "召回边缘AI、机器人、Core Ultra/Core Series 3的测试、量产design win、采购批次、现场部署、扩展与终止消息。",
+            "policy_id": "pol_e337770b3592d3dfedb4"
+          },
+          {
+            "activation_revision": "ar_406917588f26a8ff1284b35d",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "重要边缘AI或机器人测试客户明确终止Intel项目，或在量产版本中选择替代芯片并移除或减少Intel内容。"
+            ],
+            "match_scope": "召回边缘AI/机器人客户的Intel测试、量产设计选择、BOM、替代芯片、项目终止和Intel内容变化消息。",
+            "policy_id": "pol_ef09af3800480d3f7990"
+          },
+          {
+            "activation_revision": "ar_da6f4f58af6b2d7a18b8a49c",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel季度报告客户端总单位同比仍下降，同时明确客户端收入改善主要来自约10%提价或高端SKU mix，而非单位增长。"
+            ],
+            "match_scope": "召回Intel客户端收入、单位、ASP、约10%提价、高端/主流SKU mix和sell-through的财报与渠道消息。",
+            "policy_id": "pol_c7694b94c019d57167e6"
+          },
+          {
+            "activation_revision": "ar_09dc8aff158067e6b4c19ea8",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel或头部OEM确认客户端生产批次因晶圆、封装或基板优先分配给服务器、AI或高端SKU而被延期、缩量或取消。"
+            ],
+            "match_scope": "召回Intel客户端晶圆/封装/基板分配、服务器/AI优先级、OEM短缺、交付延期、缩量和取消消息。",
+            "policy_id": "pol_ceed32171fb792064499"
+          },
+          {
+            "activation_revision": "ar_a91a504af9a3c7a350571115",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "有管辖权的政府发布最终且已生效或确定生效日的跨境限制，直接禁止Intel客户端产品或关键投入进入重大市场，或迫使头部OEM取消/重配生产机型。"
+            ],
+            "match_scope": "召回出口管制、关税、地区限制、海关实施、Intel PC/边缘产品、关键投入和OEM区域配置调整消息。",
+            "policy_id": "pol_5cf6d3db0e3072752601"
+          },
+          {
+            "activation_revision": "ar_8ac00400e87265e95730ac34",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "单一重大云或企业客户将Xeon 6或18A基础Xeon 6+从验证推进为有约束力的非AI生产采购/部署或下一代生产续约。"
+            ],
+            "match_scope": "召回Xeon 6/6+的企业与云非AI生产平台、客户采购、部署、续约、验证、设计胜负及取消消息。",
+            "policy_id": "pol_fd5d451753406d1f1e39"
+          },
+          {
+            "activation_revision": "ar_fcee77dda0cbe6c894207794",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel或重大客户确认Xeon 6/6+量产良率、软件验证或客户认证失败，使已计划的重大生产发布或交付从原窗口后移或取消。"
+            ],
+            "match_scope": "召回Xeon 6/6+的良率、周期时间、软件验证、客户认证、量产、上市、交付窗口和取消消息。",
+            "policy_id": "pol_1be63995a6b80d6d319f"
+          },
+          {
+            "activation_revision": "ar_21943c1ec1bad38fb41d4163",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel、后端伙伴或客户确认可识别的重大非AI Xeon生产订单因封装、基板、测试或系统集成不足而延期、降配或无法履约。"
+            ],
+            "match_scope": "召回非AI Xeon订单、封装、基板、测试、系统集成、填充率、交付周期、延期和取消消息。",
+            "policy_id": "pol_06449353fd235546944e"
+          },
+          {
+            "activation_revision": "ar_33738b470a41a01eed2dc93f",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "AMD或其他替代CPU供给经供应商或客户确认已经改善后，单一重大企业或云客户仍续签或扩大Xeon非AI生产采购。"
+            ],
+            "match_scope": "召回AMD EPYC/Arm等服务器CPU供给、重大企业/云客户的Xeon非AI采购、续约、扩量、平台分配与取消消息。",
+            "policy_id": "pol_0ca519ae7d747ee59566"
+          },
+          {
+            "activation_revision": "ar_e1435da20c71e07f6466883e",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "替代CPU供给恢复后，单一重大企业或云客户在下一轮非AI生产平台中取消或削减Xeon，并转向AMD、Arm/RISC-V或自研CPU。"
+            ],
+            "match_scope": "召回替代服务器CPU供给、重大客户非AI平台、Xeon设计输单、采购转移、订单取消和平台更新消息。",
+            "policy_id": "pol_cb0d78e86758f395bb4f"
+          },
+          {
+            "activation_revision": "ar_5d76e9d26f6136410139bbb4",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "重大数据中心生产平台的新一代架构相对前代明确减少每系统Xeon数量、移除Xeon工作负载或迁移至加速器/自研芯片。"
+            ],
+            "match_scope": "召回数据中心平台BOM、每系统CPU数量、工作负载迁移、Xeon内容、加速器和自研芯片的前后代配置变化。",
+            "policy_id": "pol_f05baeebb239d6c1d215"
+          },
+          {
+            "activation_revision": "ar_db6dc8fb24285bfb37cff06a",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel确认覆盖物质需求的企业/云客户群因预算、TCO、虚拟化效率或库存把已计划非AI Xeon刷新后移，并削减或暂停对应近期订单。"
+            ],
+            "match_scope": "召回企业/云服务器刷新、Xeon订单、backlog、预算、TCO、虚拟化效率、库存、延期和恢复消息。",
+            "policy_id": "pol_636fc43e6f51dd327cd8"
+          },
+          {
+            "activation_revision": "ar_b605fcd7aa766f812db0bb55",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "单一主要云客户将下一代非AI生产平台中原由Xeon承载的工作负载迁至自研CPU或单一替代供应商，并减少或停止Intel部署。"
+            ],
+            "match_scope": "召回主要云客户的自研CPU、非AI实例、生产平台迁移、Xeon内容、采购集中、部署停止及维持Intel平台的消息。",
+            "policy_id": "pol_931256fe8b321ca63afd"
+          },
+          {
+            "activation_revision": "ar_19ddc765a8cc2aca0fa4505d",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel确认服务器供给约束实质缓解后，同一季度服务器单位同比增速不高于9%，且ASP同比增速从48%基线显著回落或转负。"
+            ],
+            "match_scope": "召回Intel服务器供给缓解、季度单位同比、ASP同比、高端mix、毛利桥及供需正常化后的价格变化。",
+            "policy_id": "pol_3649edb583eb0d94c9cf"
+          },
+          {
+            "activation_revision": "ar_38391160e5abbc2aedaa5b35",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel在Q3及Q4 FY2026两个连续季度同时披露良率或周期时间改善、合格单位/利用率改善，且毛利或营业利润桥主要由经营变量而非重组费用下降驱动。"
+            ],
+            "match_scope": "召回Intel连续季度良率、周期时间、合格单位、利用率、毛利桥、营业利润和重组费用贡献的财报及制造更新。",
+            "policy_id": "pol_a6a5390f8b4b604150da"
+          },
+          {
+            "activation_revision": "ar_07bbf20efd0f51ddec213d86",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel确认18A-P、High-NA或后续先进节点量产良率下降、缺陷/返工/报废上升或周期时间拉长，并识别合格产出下降或毛利桥中的爬坡成本。"
+            ],
+            "match_scope": "召回18A-P、High-NA及后续节点的良率、缺陷、返工、报废、周期时间、good wafers、客户资格和爬坡成本消息。",
+            "policy_id": "pol_6345eef29e604900f1c7"
+          },
+          {
+            "activation_revision": "ar_d3e7080d899baacf7cdb9837",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel或关键伙伴确认前端good wafers/良率改善，但内存、基板、封装或测试吞吐不足导致重大产品成品出货受限、在制品增加或单位成本上升。"
+            ],
+            "match_scope": "召回Intel内存、基板、封装、测试、前端good wafers、成品出货、在制品、单位成本和交付周期消息。",
+            "policy_id": "pol_0b23933d3577508efa04"
+          },
+          {
+            "activation_revision": "ar_60daa30c0bdb4350a206b863",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel后续季度Foundry报告收入上升，但外部客户收入不高于2.93亿美元，且经营亏损不低于20.89亿美元或公司确认利用率未改善。"
+            ],
+            "match_scope": "召回Intel Foundry报告收入、外部客户收入、内部交易、利用率、经营亏损、分部抵销和合并毛利桥。",
+            "policy_id": "pol_3af29d91f015dd6ae6fd"
+          },
+          {
+            "activation_revision": "ar_310f0e5c161bfa1f3ce5d8ec",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "单一重大外部云、系统或定制芯片客户完成Intel节点资格，并作出绑定生产采购/产能预订，或直接确认首批付费合格晶圆/封装进入生产交付。"
+            ],
+            "match_scope": "召回Intel外部Foundry客户、节点资格、tape-out、正式订单、产能预订、付费晶圆/封装和合格生产消息。",
+            "policy_id": "pol_ea664e97480072e5bf83"
+          },
+          {
+            "activation_revision": "ar_bb9cb4f6df98201e84266653",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel明确将人员或产品削减直接联系到一项重大产品/节点的验证、工艺支持、良率改善、客户认证、质量或交付延期。"
+            ],
+            "match_scope": "召回Intel裁员、R&D/MG&A、产品精简、验证、工艺支持、良率、客户认证、质量与交付延期消息。",
+            "policy_id": "pol_a0acf8f5fb398aea4381"
+          },
+          {
+            "activation_revision": "ar_44c71a913953384ab28d2dc9",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel后续单季重组及其他费用或新减值超过10亿美元，并在GAAP营业利润或EPS桥中形成可识别拖累。"
+            ],
+            "match_scope": "召回Intel重组及其他费用、减值、股权薪酬、GAAP/非GAAP对账、营业利润和EPS影响。",
+            "policy_id": "pol_05fe8d54fb3f72681720"
+          },
+          {
+            "activation_revision": "ar_d16d42245021068db3573b87",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel正式提价或重订合同后，单一重大客户明确延迟、取消或降配采购，且Intel确认价格收益被销量、mix或利用率损失抵消。"
+            ],
+            "match_scope": "召回Intel PC、服务器和定制产品提价、合同重订、OEM/云客户订单、降配、取消、库存、单位与利用率消息。",
+            "policy_id": "pol_7c937940aa72cd379f3e"
+          },
+          {
+            "activation_revision": "ar_ec3db66a54f090ead8044b82",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel或覆盖物质订单池的主要云/企业客户群或PC OEM群明确取消或实质后移部署/采购，并削减近期Intel订单。"
+            ],
+            "match_scope": "召回云/企业AI资本开支、PC OEM采购、部署取消或延期、Intel订单池、库存、单位出货和利用率消息。",
+            "policy_id": "pol_29f1f34890fecf43270b"
+          },
+          {
+            "activation_revision": "ar_acd28ff9dc92356e220a3390",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "有管辖权的政府发布最终且已生效或确定生效日的规则，直接禁止/限制Intel物质产品向重大市场交付，或对关键制造投入施加不可规避的物质成本。"
+            ],
+            "match_scope": "召回出口管制、关税、国家安全审查、公共采购、海关实施、Intel CPU/AI产品、关键投入及订单/成本影响。",
+            "policy_id": "pol_1f3648dbef3a5fd08d85"
+          },
+          {
+            "activation_revision": "ar_54fa9ac966220026f1d4701f",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel或单一重大客户确认重大可靠性、安全或质量问题已导致重要产品资格暂停、召回、返工或shipment hold。"
+            ],
+            "match_scope": "召回Intel服务器、PC和先进节点产品的可靠性、安全、erratum、资格暂停、召回、返工、退货和shipment hold。",
+            "policy_id": "pol_0bc59e379437f5229b23"
+          },
+          {
+            "activation_revision": "ar_52e46314656ac086da44e80d",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel报告Q3 FY2026同口径合并收入低于158亿美元。"
+            ],
+            "match_scope": "召回Intel Q3 FY2026合并收入、158亿美元指引下限、供给/制造缺口、客户延迟取消、库存去化和替代架构归因。",
+            "policy_id": "pol_1e66f06f7dc8de4c2357"
+          },
+          {
+            "activation_revision": "ar_a499cfccd669c773822b369e",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel报告Q3 FY2026同口径合并收入高于168亿美元。"
+            ],
+            "match_scope": "召回Intel Q3 FY2026合并收入、168亿美元指引上限、DCAI/CCPG单位、客户采购、良率和周期时间对超额的解释。",
+            "policy_id": "pol_7c31880742cdd4ee5875"
+          },
+          {
+            "activation_revision": "ar_dcf2bfd419e4aa7f356c0239",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel报告Q3收入在158亿至168亿美元内，但服务器单位同比不高于9%或客户端单位下降，且ASP、稀缺分配、mix或提价解释主要增量。"
+            ],
+            "match_scope": "召回Intel Q3收入、服务器/客户端单位、ASP、稀缺分配、产品组合、提价与客户复购。",
+            "policy_id": "pol_cb77c73f04ceca6eb1f3"
+          },
+          {
+            "activation_revision": "ar_5b275d4473c783ada51bf6ce",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel报告Q3收入不低于158亿美元，但GAAP毛利率低于40%或非GAAP毛利率低于41%，并将偏差归因于组合、利用率、良率、节点或封装/基板成本。"
+            ],
+            "match_scope": "召回Intel Q3收入、GAAP/non-GAAP毛利率、组合、利用率、良率、节点及封装/基板成本桥。",
+            "policy_id": "pol_7039b4239d00387b1656"
+          },
+          {
+            "activation_revision": "ar_604d06018858ff196e21d692",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel报告Q3 GAAP毛利率高于41%且非GAAP毛利率高于42%，并将超额主要归因于良率、周期时间、合格单位、利用率或产品组合改善。"
+            ],
+            "match_scope": "召回Intel Q3 GAAP/non-GAAP毛利率、良率、周期时间、合格单位、利用率、组合和一次性项目桥。",
+            "policy_id": "pol_a68d7b2f1835d7f34932"
+          },
+          {
+            "activation_revision": "ar_ca5b2167490dae624945b1d9",
+            "condition_ids": [
+              "C1",
+              "C2"
+            ],
+            "criterion": [
+              "Intel Q3收入不低于158亿美元且毛利接近指引，但GAAP EPS低于0.31美元，差异主要来自费用、税率、稀释股数或托管股份公允价值。",
+              "Intel Q3收入不低于158亿美元且毛利接近指引，但非GAAP EPS低于0.38美元，差异主要来自费用、税率、稀释股数或调整项目。"
+            ],
+            "match_scope": "召回Intel Q3收入、毛利率、GAAP/non-GAAP EPS、R&D/MG&A、税率、股数、公允价值和调整项目。",
+            "policy_id": "pol_719b7b06ff2bb8aa2c8e"
+          },
+          {
+            "activation_revision": "ar_82f22acd4446475f3b8c2cf9",
+            "condition_ids": [
+              "C1",
+              "C2"
+            ],
+            "criterion": [
+              "Intel Q3 GAAP EPS高于0.31美元，但对账显示超额主要来自一次性逆转、税率/股数异常或公允价值，且收入和毛利未超指引。",
+              "Intel Q3非GAAP EPS高于0.38美元，但对账显示超额主要来自非GAAP调整或其他一次性收益，且收入和毛利未超指引。"
+            ],
+            "match_scope": "召回Intel Q3 GAAP/non-GAAP EPS、收入、毛利、一次性逆转、税率、股数、公允价值及调整项目。",
+            "policy_id": "pol_615af065442bb67a9aea"
+          },
+          {
+            "activation_revision": "ar_0c7482a4b895534476f8be3a",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel确认Q3内存、基板或封装价格/配额恶化是重大出货缺口、单位成本上升、GAAP毛利率低于41%或非GAAP毛利率低于42%的主要原因。"
+            ],
+            "match_scope": "召回Q3内存、基板、封装价格/配额、Intel出货、单位成本、产品组合和41%/42%毛利率指引。",
+            "policy_id": "pol_727e1e5dcb817a55c3b5"
+          },
+          {
+            "activation_revision": "ar_3e549ede8ec1907ba7c1b45b",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel Q3收入不低于158亿美元，但主要由客户提前拉货或渠道库存补充构成，终端sell-through未改善且后续订单已放缓。"
+            ],
+            "match_scope": "召回Intel Q3收入、提前拉货、sell-in/sell-through、渠道库存、重复订单和后续订单承接。",
+            "policy_id": "pol_f56b9ef38fd6113ab6c6"
+          },
+          {
+            "activation_revision": "ar_4a9c7b2e81e652b112e94d89",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel在Q3业绩报告前正式将Q3收入指引下调至158亿美元以下，或撤回Q3收入指引。"
+            ],
+            "match_scope": "召回Intel Q3收入指引、158亿至168亿美元原区间、8-K、预告、撤回和正式更新。",
+            "policy_id": "pol_739aea62fd8f4c321330"
+          },
+          {
+            "activation_revision": "ar_29eb5af41ad5ab2740e0ee0c",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel在Q3业绩报告前正式将GAAP毛利率指引下调至41%以下、将非GAAP毛利率指引下调至42%以下，或撤回任一毛利率指引。"
+            ],
+            "match_scope": "召回Intel Q3 GAAP/non-GAAP毛利率41%/42%原指引、8-K、预告、撤回和正式更新。",
+            "policy_id": "pol_0c25b4c07141defa393f"
+          },
+          {
+            "activation_revision": "ar_7acd641c181fe7052af25468",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel在Q3业绩报告前正式将GAAP EPS指引下调至0.31美元以下、将非GAAP EPS指引下调至0.38美元以下，或撤回任一EPS指引。"
+            ],
+            "match_scope": "召回Intel Q3 GAAP/non-GAAP EPS 0.31/0.38美元原指引、8-K、预告、撤回和正式更新。",
+            "policy_id": "pol_eef2e0260bf6a471e3ec"
+          },
+          {
+            "activation_revision": "ar_100be5262f39929bbb7e6bfd",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "单一重大外部商业客户完成14A tape-out或硅后验证，并签署包含交付窗口或数量范围的有约束力节点级订单/产能预订。"
+            ],
+            "match_scope": "召回14A外部客户、PDK、tape-out、硅后验证、节点订单、capacity booking、交付窗口及取消消息。",
+            "policy_id": "pol_790bbf20fa2ad9398a3a"
+          },
+          {
+            "activation_revision": "ar_166be45c8c4afe4c5d6e1a22",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "单一重大外部客户的18A或18A-P产品完成性能、功耗和可靠性资格，并形成绑定生产订单/产能预订或首批付费合格晶圆生产。"
+            ],
+            "match_scope": "召回18A/18A-P外部客户、性能功耗可靠性资格、生产订单、产能预订、付费合格晶圆和内部/外部归属。",
+            "policy_id": "pol_5ce626bd3e3aec6f2a87"
+          },
+          {
+            "activation_revision": "ar_b095e8b4b634c9e128a1d58d",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel、重大客户或关键供应商确认18A-P、14A或High-NA良率、周期、掩模或设备吞吐未达标，使已披露外部qualification/HVM窗口后移，或限制/取消客户starts。"
+            ],
+            "match_scope": "召回18A-P、14A、High-NA的良率、周期时间、掩模/设备吞吐、客户starts、资格和HVM窗口变化。",
+            "policy_id": "pol_55602b2ef908f69678f0"
+          },
+          {
+            "activation_revision": "ar_1ada1eae61d37cc2414594dd",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "已完成Intel先进节点资格或预订的单一重大客户取消或实质削减Intel节点级booking，并将对应量产明确转向竞争代工或内部工厂。"
+            ],
+            "match_scope": "召回已资格/预订客户的Intel节点booking、生产份额、取消、缩量、TSMC/Samsung/内部制造转移和双源状态。",
+            "policy_id": "pol_29d2800563ebf8f98baa"
+          },
+          {
+            "activation_revision": "ar_032b232c28ef66ad23bd21e1",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Terafab相关方或另一家超大客户与Intel签署指名14A、包含产能/数量或预付款并设交付/量产窗口的不可取消商业制造协议。"
+            ],
+            "match_scope": "召回Terafab及超大规模客户的14A制造协议、不可取消预订、预付款、产能数量、交付窗口和量产承诺。",
+            "policy_id": "pol_c7ddf4618265d1f7a95e"
+          },
+          {
+            "activation_revision": "ar_2cc88d8374ad7db09aff8e1f",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "具体供应中断或最终生效规则迫使Intel取消、配给或迁移一个重大外部客户的18A/14A starts或交付至少一个完整生产周期。"
+            ],
+            "match_scope": "召回先进节点设备、掩模、材料、供应中断、出口/安全/贸易规则、外部客户starts、产能配给和生产地点迁移。",
+            "policy_id": "pol_14a785820b388310737f"
+          },
+          {
+            "activation_revision": "ar_546737e70cda6cbbc6e38371",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "单一重大客户将目标量产产品从原拟Intel 18A/14A单片方案改为成熟节点或其他代工芯粒组合，使Intel先进节点仅保留试产、小批或验证用途。"
+            ],
+            "match_scope": "召回外部Foundry客户的单片/芯粒架构、18A/14A晶圆内容、成熟节点、替代代工、封装和量产BOM变化。",
+            "policy_id": "pol_63587fb5036e90cf9232"
+          },
+          {
+            "activation_revision": "ar_564df626017cf2dfa3c8ecf7",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "单一重大AI或Foundry客户的具体产品完成EMIB/EMIB-T/Foveros电气、热和可靠性资格，并形成绑定量产订单/产能预订或首批付费good-package生产。"
+            ],
+            "match_scope": "召回EMIB、EMIB-T、Foveros、CoWoS替代、系统资格、量产订单、capacity booking、付费good-package和取消消息。",
+            "policy_id": "pol_2c175c35a579529f28d8"
+          },
+          {
+            "activation_revision": "ar_acc37c8c62f18582282a90f9",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel马来西亚或新墨西哥指定扩建设施完成设备安装和产线/产品资格，并确认一个重大客户或产品的绑定量产启动及初始合格吞吐。"
+            ],
+            "match_scope": "召回Intel马来西亚/新墨西哥设施建设、设备安装、线体/产品资格、量产启动、合格吞吐、客户和利用率。",
+            "policy_id": "pol_6bd8fed7903cce708602"
+          },
+          {
+            "activation_revision": "ar_afb66ed25e1759a54a069bb8",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel或重大客户确认后端站点建设/转移里程碑较原计划后移至少一个季度，或重新认证/停线导致重大已排产批次延期或取消。"
+            ],
+            "match_scope": "召回Costa Rica、马来西亚、新墨西哥站点建设/整合、跨站点转移、重新认证、停线、交付窗口和批次取消。",
+            "policy_id": "pol_73ba3b20a1cbaefa2f58"
+          },
+          {
+            "activation_revision": "ar_e2c6120a7c6b0e5d5c38a5e2",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel、材料供应商或后端伙伴确认具体材料配给、交期显著拉长或良率下降，并导致重大AI/Foundry封装starts、good packages或出货被配给或延期。"
+            ],
+            "match_scope": "召回基板、HBM、玻璃等材料的配给、交期、良率、封装starts、good packages、客户交付和延期。",
+            "policy_id": "pol_8545aa6aaf791b367a25"
+          },
+          {
+            "activation_revision": "ar_e5fc47ded3e94728a20541f3",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "已完成Intel封装协作或资格的单一重大客户取消或实质削减Intel封装排产/合同，并把主要量产封装转给外部OSAT、其他平台或自有后端。"
+            ],
+            "match_scope": "召回已资格客户的Intel后端排产、封装合同、Amkor/OSAT/TSMC/自有后端转移、双源和量产份额。",
+            "policy_id": "pol_df2e632017cca20e1d9d"
+          },
+          {
+            "activation_revision": "ar_cdee96ec1901b18cb3c29d91",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "玻璃基板、Foveros Direct混合键合或另一新互连方案完成可靠性和重大客户系统资格，并形成绑定量产订单/产品启动或首批付费生产。"
+            ],
+            "match_scope": "召回玻璃基板、Foveros Direct、混合键合和新互连方案的可靠性、系统资格、客户产品、量产订单和付费批次。",
+            "policy_id": "pol_c770cc55feb9ff30e6c6"
+          },
+          {
+            "activation_revision": "ar_aa1036cda46dceb683ae5b2f",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "重大产品的EMIB或Foveros量产出现热/电可靠性、测试或良率问题，并导致客户资格暂停、重大返工/召回或production hold。"
+            ],
+            "match_scope": "召回EMIB/Foveros良率、热电可靠性、测试通过率、返工、召回、客户资格暂停和production hold。",
+            "policy_id": "pol_ec66d3c1274228e9ff69"
+          },
+          {
+            "activation_revision": "ar_55a90e792e061935b8022432",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel披露新增封装线已完成资格，但连续两个报告期外部客户排产/starts未增加、利用率保持低位，且新增能力主要闲置或服务内部产品。"
+            ],
+            "match_scope": "召回已资格新增封装线、外部客户排产、starts、利用率、闲置能力、内部产品用途和连续报告期。",
+            "policy_id": "pol_c1d9b13082ff0e9dd624"
+          },
+          {
+            "activation_revision": "ar_8f0cb4fef973d5b8b96ffb62",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "单一重大客户确认下一代量产系统取消或实质缩减原拟EMIB/Foveros封装，并转向替代芯粒/光互连标准或全外部平台。"
+            ],
+            "match_scope": "召回AI/Foundry客户下一代平台、EMIB/Foveros、芯粒/光互连标准、外部封装平台、BOM和量产设计决定。",
+            "policy_id": "pol_2bb8b9bdbbc8c907bb9b"
+          },
+          {
+            "activation_revision": "ar_17389090ad1285bc34d2496a",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "指定Secure Enclave设施或产品同时取得有权政府机构的生产适用安全授权和单一重大DIB项目的设计验收。"
+            ],
+            "match_scope": "召回Secure Enclave设施或产品的政府生产安全授权、DIB项目设计验收、资格限制、暂停和否定消息。",
+            "policy_id": "pol_5a0ccbabf9d57015791c"
+          },
+          {
+            "activation_revision": "ar_c3268ba606bacacfa4e4c971",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "政府或重大DIB采购方授予具名项目一份已获资金且有约束力的Secure Enclave生产合同或订单，并明确产能预约或生产排程。"
+            ],
+            "match_scope": "召回政府或DIB的Secure Enclave采购授标、已拨资金、生产义务、订单、产能预订、排程及取消消息。",
+            "policy_id": "pol_04df46d9d968a1657ba0"
+          },
+          {
+            "activation_revision": "ar_1c1e64cc9855d67f5b291501",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "单一重大DIB项目的首批Secure Enclave生产级合格晶圆或封装批次完成客户验收并交付。"
+            ],
+            "match_scope": "召回具名DIB项目的Secure Enclave生产级晶圆或封装批次、good units、客户验收、接收、拒收及交付状态。",
+            "policy_id": "pol_c013756b0d024657cfe8"
+          },
+          {
+            "activation_revision": "ar_f6c2059eb70a3ca746577d32",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "后续披露确认至少两个相隔生产期间均有客户关联的Secure Enclave生产批次完成验收交付，并给出持续数量、吞吐或利用率。"
+            ],
+            "match_scope": "召回Secure Enclave客户批次、连续生产期间、验收交付、数量、吞吐、利用率及生产中断消息。",
+            "policy_id": "pol_02b0439dacbc3e7e27a8"
+          },
+          {
+            "activation_revision": "ar_ec25e7487772215fe3bed62f",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "与首个已确认项目法律和经济上独立的第二个DIB客户完成Secure Enclave项目资格或设计导入，并取得有约束力生产合同、订单或量产排程。"
+            ],
+            "match_scope": "召回Secure Enclave新增DIB客户、独立项目、项目资格、设计导入、生产合同、订单及量产排程。",
+            "policy_id": "pol_3652c8d70cedb2a026d2"
+          },
+          {
+            "activation_revision": "ar_4037fb4fccd595f16956e673",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "政府、Intel或重大DIB客户将Secure Enclave客户资格、采购合同或量产部署从已披露计划窗口正式后移，或把该阶段重新排期为待定。"
+            ],
+            "match_scope": "召回RAMP-C后客户资格、采购合同、量产部署的原计划窗口、新窗口、待定状态及排期恢复。",
+            "policy_id": "pol_d25aa94363c7187f0e5c"
+          },
+          {
+            "activation_revision": "ar_39d08748514cd35cd4d911d5",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "有权机构正式拒绝、暂停或撤销指定Secure Enclave设施或产品的DIB生产授权，或要求停产后重新认证。"
+            ],
+            "match_scope": "召回Secure Enclave生产安全授权的拒绝、暂停、撤销、停产整改、重新认证及恢复决定。",
+            "policy_id": "pol_15a8018e4b92cfa10cb7"
+          },
+          {
+            "activation_revision": "ar_1bcbcbb18a051522a3849498",
+            "condition_ids": [
+              "C1",
+              "C2",
+              "C3"
+            ],
+            "criterion": [
+              "已资格或接近资格的重大DIB项目被正式取消、未续签或削减，使已计划的Secure Enclave批次或产能预约不再执行。",
+              "重大DIB项目把量产晶圆、封装或安全制造正式授予替代供应商或内部设施，并将Intel Secure Enclave降为非量产或移出生产角色。",
+              "重大DIB项目正式采用不同节点、成熟工艺、芯粒/封装架构或COTS供应链，并取消或实质缩小原Secure Enclave高量生产范围。"
+            ],
+            "match_scope": "召回重大DIB项目的取消、未续签、预算或任务变更、替代可信制造授标、内部化、架构改版及Intel生产范围削减。",
+            "policy_id": "pol_d92e0e1491ba63465924"
+          },
+          {
+            "activation_revision": "ar_a99d330641bb99595b585eec",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "已资格或签约的重大Secure Enclave项目因良率、设备、吞吐、封装测试或客户验收不达标，正式从高量生产退回LRIP/试产、重置量产排程或发生重大批次拒收。"
+            ],
+            "match_scope": "召回Secure Enclave项目良率、设备、吞吐、封装测试、客户验收、HVM降级、LRIP、试产、拒收和排程重置。",
+            "policy_id": "pol_4a9ae9c0af17e23d6f3d"
+          },
+          {
+            "activation_revision": "ar_f50952596faa4f9d0add272b",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "经安全批准的设备、材料、基板、封装测试、运输或后端伙伴发生容量不足，并使单一重大Secure Enclave项目正式延期、减量或启动替代认证。"
+            ],
+            "match_scope": "召回安全批准的设备、材料、基板、封装测试、运输、后端伙伴容量、项目延期减量及替代认证。",
+            "policy_id": "pol_32a72f2a752665d86428"
+          },
+          {
+            "activation_revision": "ar_9c712e81da5c46f84e5e6e9e",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "主管方确认影响Secure Enclave机密性、隔离、追溯或完整性的重大事件，并对DIB生产采取停产、暂停交付、隔离/召回或强制重新认证。"
+            ],
+            "match_scope": "召回Secure Enclave机密性、隔离、追溯、完整性事件、停产、暂停交付、隔离召回、重新认证及复产。",
+            "policy_id": "pol_2679129249ee0590022d"
+          },
+          {
+            "activation_revision": "ar_9c53639ae5e000652b79bb81",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "最终生效的政府安全或采购规则使现有Secure Enclave生产资格失效或必须重新认证、限制可用节点/设施，或向新增替代供应商开放重大项目并削减Intel保留范围。"
+            ],
+            "match_scope": "召回可信制造安全标准、采购规则、最终法规、生效日、重新认证、节点设施限制、新增供应商和Intel保留范围。",
+            "policy_id": "pol_216a6a15e3db4f5d8c8a"
+          },
+          {
+            "activation_revision": "ar_8be8a9b30f71b57dae2fef7b",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "已资格重大DIB项目的正式合同或排程把Secure Enclave限定为pilot、LRIP、单次验证、少量敏感批次或备用供应，且不包含持续高量产能义务。"
+            ],
+            "match_scope": "召回已资格Secure Enclave项目的pilot、LRIP、单次验证、少量敏感批次、备用供应、合同数量和高量义务。",
+            "policy_id": "pol_e14d434ed0ebcf00deca"
+          },
+          {
+            "activation_revision": "ar_cdb4fc93bb05da914754e2f9",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel或重大客户确认商业Foundry或Intel内部产品优先占用同一关键可信制造资源，并使重大Secure Enclave项目排产延期、减量或改配。"
+            ],
+            "match_scope": "召回可信设施共享资源、商业Foundry或Intel内部产品优先级、DIB排产延期减量、产能改配及恢复。",
+            "policy_id": "pol_d976971fd68a08855b4d"
+          },
+          {
+            "activation_revision": "ar_ae584738574b028887f8c6f0",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "官方后续披露确认政府资助或扩建的可信设施已启用，并在同一披露明确的完整采购或部署窗口结束后仍无具名DIB生产合同、设计验收、产能预约或批次。"
+            ],
+            "match_scope": "召回政府资助可信设施的启用、扩建完成、官方采购或部署窗口、DIB合同、设计验收、产能预约和无订单状态。",
+            "policy_id": "pol_a0719bcc321980901b05"
+          },
+          {
+            "activation_revision": "ar_72bdd60013f9983ebb68e9ac",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "正式法案、拨款或采购指令以已拨资金明确多个DIB项目，并对Intel Secure Enclave规定最低采购、产能保留或可执行生产排程。"
+            ],
+            "match_scope": "召回国防法案、已拨资金、采购指令、多个DIB项目、Intel Secure Enclave最低采购、产能保留和可执行排程。",
+            "policy_id": "pol_e8325fa903355b9d23a4"
+          },
+          {
+            "activation_revision": "ar_7d53525b5b32aaefb8353ba4",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel在一份后续财报中提供连续两个报告期的同口径序列，显示剔除已量化的一次性政府、伙伴、融资租赁和营运资金项目后，调整后自由现金流均为正，且增长性资本开支未靠新增股权或债务覆盖。"
+            ],
+            "match_scope": "召回Intel经营现金流、现金资本开支、调整后自由现金流、政府或伙伴一次性现金、营运资金与新增融资的跨期对账。",
+            "policy_id": "pol_cd15f512755927e80242"
+          },
+          {
+            "activation_revision": "ar_2f5ed9913d661426102acea7",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel量化确认一项此前正向的营运资金、政府激励或伙伴现金贡献由正转负或终止，并使同一报告期经营现金流较Q2 FY2026的70.06亿美元回落且调整后自由现金流仍为负。"
+            ],
+            "match_scope": "召回Intel营运资金、政府激励、伙伴净贡献的现金流对账、反转或终止，以及经营现金流和调整后自由现金流变化。",
+            "policy_id": "pol_743016c47608f0e1ab04"
+          },
+          {
+            "activation_revision": "ar_8da00962dcc3e79f6c648743",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel在单份季度披露中确认相关供给约束已缓解，同时客户端或服务器单位出货未增长或下降、ASP/高端组合回落，并把产品现金利润和经营现金流下降归因于该量价变化。"
+            ],
+            "match_scope": "召回Intel客户端或服务器供给状态、单位出货、ASP、高端组合、产品现金利润与经营现金流的同季变化。",
+            "policy_id": "pol_a92eb03875d216dac479"
+          },
+          {
+            "activation_revision": "ar_704f7791539c038a85130dc8",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel正式确认一项重大新增设备、洁净室、基板或厂区资产已投入，却因良率、合格吞吐、瓶颈或利用率不足而推迟商业爬坡、进入正式闲置/停用，或确认与该资产直接相关的减值。"
+            ],
+            "match_scope": "召回Intel新增设备、洁净室、基板或厂区的投入状态、良率、合格吞吐、利用率、商业爬坡、闲置停用和减值。",
+            "policy_id": "pol_940ae5bdf77c93f29482"
+          },
+          {
+            "activation_revision": "ar_ebd95c9bb846cc963c54f6f0",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel在同一正式披露中上调具名资本项目的预算或建设周期，提供原计划与新计划，并明确新增投入超过同期经营现金回收、需要新增外部资金或推迟回收期。"
+            ],
+            "match_scope": "召回Intel资本开支、设备洁净室基板项目预算、建设周期、经营现金覆盖、回收期和新增外部融资需求。",
+            "policy_id": "pol_f1c35928de4ef728409a"
+          },
+          {
+            "activation_revision": "ar_a9e18ad97be691df34c43256",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "重大客户、伙伴或政府项目的正式协议确认已支付首笔产能/产品现金，并承担后续至少一个期间的绑定预付款、最低采购或共同投资付款，且金额、履约义务与Intel可用资金范围明确。"
+            ],
+            "match_scope": "召回重大客户、伙伴或政府项目对Intel产能/产品的预付款、最低采购、持续付款、首笔到账、后续义务和履约现金。",
+            "policy_id": "pol_8b52b9c92287eaa36e7c"
+          },
+          {
+            "activation_revision": "ar_80c8388f43e25fc175fc2457",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "一名对Intel已有重大采购暴露的客户正式把下一平台周期的主要计算预算转向GPU、定制ASIC、AMD、ARM/RISC-V或延期建设，并取消或实质削减已计划Intel订单/部署，而相关Intel资本承诺仍执行。"
+            ],
+            "match_scope": "召回已有Intel采购暴露的云或企业客户在GPU、定制ASIC、AMD、ARM/RISC-V和数据中心预算上的迁移、订单削减及Intel资本承诺。",
+            "policy_id": "pol_510d435bceecbd5cf9e4"
+          },
+          {
+            "activation_revision": "ar_20efd558e8ae9d7f60acb4bd",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel、审计机构或监管机构正式量化确认此前列入经营现金或调整后自由现金流的项目应移出或延后，使Q2 FY2026经营现金流低于70.06亿美元或调整后自由现金流低于负84.19亿美元。"
+            ],
+            "match_scope": "召回Intel现金流重述、前期重列、政府激励、伙伴贡献、融资租赁或非现金项目分类、审计监管意见及历史数值修订。",
+            "policy_id": "pol_4f85402fb186dfe297af"
+          },
+          {
+            "activation_revision": "ar_1c59cdb17af38325416ce8f3",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel完成2026年8月已定价普通股发行的基础交割，按每股95美元发行210,526,315股，披露实际净募集并确认现金到账；超额配售按最终行使情况另行计入。"
+            ],
+            "match_scope": "召回Intel 2026年8月普通股发行的交割日、实际净募集、最终股数、超额配售、现金到账及结算失败。",
+            "policy_id": "pol_e01e85c26b3941995263"
+          },
+          {
+            "activation_revision": "ar_cf3f4bd3391a7ce4d58c8637",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel正式取消2026年8月已定价发行、把交割推迟至原结算窗口之外，或正式重新定价/缩减基础发行并确认实际净募集低于约197亿美元计划。"
+            ],
+            "match_scope": "召回Intel已定价普通股发行的取消、延期、重新定价、缩量、实际净募集和资金缺口。",
+            "policy_id": "pol_ed0a6510609c007ea8a8"
+          },
+          {
+            "activation_revision": "ar_99d50d43252cfaa3fe358f89",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "首轮发行交割后、融资资产尚未形成重复正现金回收前，Intel正式启动新的普通股发行、净新增债务或重大资产变现，并明确资金用于弥补流动性、资本开支或营运资金缺口。"
+            ],
+            "match_scope": "召回Intel首轮发行后的新增股权、净新增债务、重大资产出售、流动性和资本开支资金用途及现金回收状态。",
+            "policy_id": "pol_dead4892da482a491c35"
+          },
+          {
+            "activation_revision": "ar_ccefa498f3bf1b14055e90d9",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel一份后续披露确认2026年融资支持资产已形成合格产出，并给出连续两个报告期的利用率/出货、非Altera口径外部收入与调整后自由现金流，其中两个期间自由现金流均为正且无新增股权融资。"
+            ],
+            "match_scope": "召回2026年融资支持资产的合格产出、利用率、出货、非Altera外部Foundry收入、调整后自由现金流和后续增发。",
+            "policy_id": "pol_9600d3c4f1b6b8053603"
+          },
+          {
+            "activation_revision": "ar_a0ec1009c4ea69ae8dbe98cb",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "发行后的完整报告期确认稀释股数较发行前增加至少2.105亿股，并在同一披露给出同口径可比值，显示每股经营现金流或每股经营利润未改善或恶化。"
+            ],
+            "match_scope": "召回Intel发行后稀释股数、股权薪酬、每股经营现金流、每股经营利润及同口径可比值。",
+            "policy_id": "pol_4d3c102787544f4251fb"
+          },
+          {
+            "activation_revision": "ar_5f7344aebac129276418ed30",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "最终生效的政府决定削减、取消或推迟Intel相关激励，要求返还资金或新增现金/股权交付义务，并使Intel正式修改资本项目资金来源、确认相关负债或启动替代融资。"
+            ],
+            "match_scope": "召回Intel相关补助、激励或CHIPS安排的最终金额、付款时间、返还、资格、现金或股权义务及生效日。",
+            "policy_id": "pol_e7853e08084b9aabfed5"
+          },
+          {
+            "activation_revision": "ar_c57970917d3610f3fcf95d88",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Intel或债权文件确认重大到期债务无法按原规模常规续作，或新条款提高现金利息/担保并加入资本开支限制，导致公司正式削减或延期资本计划、或启动替代股权融资。"
+            ],
+            "match_scope": "召回Intel重大债务到期、续作失败、现金利息、担保、契约、资本开支限制、项目削减延期和替代股权融资。",
+            "policy_id": "pol_9c7167d6be1b2b29041d"
+          },
+          {
+            "activation_revision": "ar_c62e4a5c744d7565401bf6d5",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "重大客户、伙伴或政府项目与Intel签署具名资本项目的共同投资、租赁或预付款协议，量化资金和最低采购/产能义务，并确认首笔资金到账或Intel原定资本份额已按合同减少。"
+            ],
+            "match_scope": "召回重大客户、伙伴或政府项目对具名Intel资本项目的共同投资、租赁、预付款、最低采购、首笔到账和Intel资本份额变化。",
+            "policy_id": "pol_d18f516ae89e026e6316"
+          }
+        ],
+        "policy_set_published_at": "2026-09-23T06:34:23.716861Z",
+        "policy_set_version": 2,
+        "schema_version": "document3.runtime_projection.v4",
+        "ticker": "INTC"
+      },
+      "provisional": [
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Intel",
+              "INTC"
+            ],
+            "occurrence_date": "2026-09-21",
+            "proposition": "Intel shares gained approximately 12% during the 2026-09-21 trading session.",
+            "subject_time": "2026-09-21 trading session"
+          },
+          "candidate_index": 0,
+          "case_id": "case_53970cd7172a432a8a0c88b6bd1b36da",
+          "created_at": "2026-09-22T09:34:19.655969Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E69",
+          "runtime_signature": "fb94aca070925c8858f35b92daa595bae9b28b0650e17c8fb1ee45d2370d532e",
+          "snapshot_version": 1,
+          "source_message_id": "std_e6fc2355b6ff48c4bf9ecec82e51867e",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Nasdaq Composite"
+            ],
+            "occurrence_date": "2026-09-21",
+            "proposition": "The Nasdaq Composite gained approximately 2.26% and closed at 27,122.09 on 2026-09-21, a record high.",
+            "subject_time": "2026-09-21 trading session"
+          },
+          "candidate_index": 1,
+          "case_id": "case_53970cd7172a432a8a0c88b6bd1b36da",
+          "created_at": "2026-09-22T09:34:19.670631Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E70",
+          "runtime_signature": "7b2d66e810417b0b68aa22c2e1a0b45d76766f530de34e7b6bba208de207d49a",
+          "snapshot_version": 2,
+          "source_message_id": "std_e6fc2355b6ff48c4bf9ecec82e51867e",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "CNN Money Fear & Greed Index"
+            ],
+            "occurrence_date": "2026-09-21",
+            "proposition": "The CNN Money Fear & Greed Index rose from 30 to 34 on 2026-09-21 and remained in the Fear zone.",
+            "subject_time": "2026-09-21"
+          },
+          "candidate_index": 2,
+          "case_id": "case_53970cd7172a432a8a0c88b6bd1b36da",
+          "created_at": "2026-09-22T09:34:19.689924Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E71",
+          "runtime_signature": "c5d6a840d13dd28dd98c912ff7b35d36240e418fc75265a45d9ea46ca022bad5",
+          "snapshot_version": 3,
+          "source_message_id": "std_e6fc2355b6ff48c4bf9ecec82e51867e",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Intel",
+              "INTC"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Intel shares were falling ahead of the U.S. market open on 2026-09-22.",
+            "subject_time": "2026-09-22 premarket"
+          },
+          "candidate_index": 0,
+          "case_id": "case_f6b6ef3022534b48bf2255c73d404a2f",
+          "created_at": "2026-09-22T10:09:13.760420Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E72",
+          "runtime_signature": "0ad9cbab462a05c32e4c11137bd31b0b74022ace87f77c3ee94a5c0474956e4c",
+          "snapshot_version": 4,
+          "source_message_id": "std_376a61e2689d407da82da5a77ea6a9cc",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Advanced Micro Devices",
+              "AMD"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "AMD shares declined 1.1% in premarket trading on 2026-09-22.",
+            "subject_time": "2026-09-22 premarket"
+          },
+          "candidate_index": 1,
+          "case_id": "case_f6b6ef3022534b48bf2255c73d404a2f",
+          "created_at": "2026-09-22T10:09:13.774403Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E73",
+          "runtime_signature": "d7fe60c9a8554c943e7dc6dc4428e392f55171ab71beaad8624f4e23601e335d",
+          "snapshot_version": 5,
+          "source_message_id": "std_376a61e2689d407da82da5a77ea6a9cc",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Advanced Micro Devices",
+              "AMD"
+            ],
+            "occurrence_date": "2026-09-21",
+            "proposition": "Advanced Micro Devices' market capitalization exceeded $1 trillion for the first time on 2026-09-21.",
+            "subject_time": "2026-09-21"
+          },
+          "candidate_index": 2,
+          "case_id": "case_f6b6ef3022534b48bf2255c73d404a2f",
+          "created_at": "2026-09-22T10:09:13.782987Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E74",
+          "runtime_signature": "45efded3bd7d67534ec383d82c26501263c7ef6e550d3f6ff84379ee07b206fd",
+          "snapshot_version": 6,
+          "source_message_id": "std_376a61e2689d407da82da5a77ea6a9cc",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Ryan Cohen",
+              "GameStop",
+              "GME"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Ryan Cohen bought 1.15 million additional GameStop shares, as reported by a Form 4 filing on 2026-09-22.",
+            "subject_time": "2026-09-22 Form 4 filing"
+          },
+          "candidate_index": 3,
+          "case_id": "case_f6b6ef3022534b48bf2255c73d404a2f",
+          "created_at": "2026-09-22T10:09:13.790514Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E75",
+          "runtime_signature": "e3bf5cd381f20f40546a5213f3c8d41e64f05e1fe417cb42b18206c333b9eb5c",
+          "snapshot_version": 7,
+          "source_message_id": "std_376a61e2689d407da82da5a77ea6a9cc",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "GameStop",
+              "GME"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "GameStop shares advanced 3.3% on 2026-09-22.",
+            "subject_time": "2026-09-22 trading session"
+          },
+          "candidate_index": 4,
+          "case_id": "case_f6b6ef3022534b48bf2255c73d404a2f",
+          "created_at": "2026-09-22T10:09:13.796810Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E76",
+          "runtime_signature": "684dffd17e732e20b2d88159d30a14703774727f489a0a6f33c9468f21052f42",
+          "snapshot_version": 8,
+          "source_message_id": "std_376a61e2689d407da82da5a77ea6a9cc",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "U.S. stock futures",
+              "U.S. technology stocks"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "U.S. stock futures were sliding on 2026-09-22 after the previous session's record-breaking technology rally.",
+            "subject_time": "2026-09-22 premarket"
+          },
+          "candidate_index": 0,
+          "case_id": "case_38a831b5d9ee469489943c503fab12fe",
+          "created_at": "2026-09-22T10:31:46.000801Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E77",
+          "runtime_signature": "491323a72ffcdbaab0df97861a87dec9213f82ae8d4b5f1a1f331565e5c33020",
+          "snapshot_version": 9,
+          "source_message_id": "std_cd8fee6f1ee84972a76c7ca785a3c5f7",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Artificial-intelligence stocks"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Artificial-intelligence stocks were slipping on 2026-09-22 after surging on 2026-09-21.",
+            "subject_time": "2026-09-22 premarket"
+          },
+          "candidate_index": 1,
+          "case_id": "case_38a831b5d9ee469489943c503fab12fe",
+          "created_at": "2026-09-22T10:31:46.014027Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E78",
+          "runtime_signature": "86208cf5fd09aa7caf2e20f477e3a8e207c62189a5e013a3c46c9155c1dbf9b0",
+          "snapshot_version": 10,
+          "source_message_id": "std_cd8fee6f1ee84972a76c7ca785a3c5f7",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "ResearchAndMarkets.com",
+              "U.S. integrated-circuits market"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "ResearchAndMarkets.com added a U.S. integrated-circuits market size and share report covering 2026-2035 to its offering on 2026-09-22.",
+            "subject_time": "2026-2035 report period"
+          },
+          "candidate_index": 0,
+          "case_id": "case_2932cae76a464d02b1af7ef3e04567df",
+          "created_at": "2026-09-22T12:19:36.237132Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E79",
+          "runtime_signature": "83e74a1b34c1098a0ab17b33f22f83c3a46825edf7f5ff2bbfe94e212e5271d4",
+          "snapshot_version": 11,
+          "source_message_id": "std_a1624b68629e46e08e9ab4f2b11fa668",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "U.S. integrated-circuits market",
+              "ResearchAndMarkets.com"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "The report forecasts the U.S. integrated-circuits market to grow from USD 172 billion in 2025 to USD 330 billion by 2035 at an 8.5% CAGR.",
+            "subject_time": "2025-2035"
+          },
+          "candidate_index": 1,
+          "case_id": "case_2932cae76a464d02b1af7ef3e04567df",
+          "created_at": "2026-09-22T12:19:36.246723Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E80",
+          "runtime_signature": "419c056b2ee36a6533f9381b5ba40dd669f4f784579299c954a1d7ed220f7b27",
+          "snapshot_version": 12,
+          "source_message_id": "std_a1624b68629e46e08e9ab4f2b11fa668",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "AI integrated circuits",
+              "High-performance-computing integrated circuits",
+              "ResearchAndMarkets.com"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "The report forecasts AI and high-performance-computing integrated circuits to be the fastest-growing product category at approximately 25% annual growth.",
+            "subject_time": "Forecast period through 2035"
+          },
+          "candidate_index": 2,
+          "case_id": "case_2932cae76a464d02b1af7ef3e04567df",
+          "created_at": "2026-09-22T12:19:36.255345Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E81",
+          "runtime_signature": "2cc0c9be74ab14fe533aae0818084aaa97f20dfacdbcde960190080c31db5bde",
+          "snapshot_version": 13,
+          "source_message_id": "std_a1624b68629e46e08e9ab4f2b11fa668",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Oil prices",
+              "Iran",
+              "Strait of Hormuz"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "油价对涉及伊朗与霍尔木兹的报告作出了市场反应。",
+            "subject_time": "2026-09-22早盘市场反应"
+          },
+          "candidate_index": 0,
+          "case_id": "case_ae82c706bcba4922adab227a515446fb",
+          "created_at": "2026-09-22T12:25:07.061968Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E82",
+          "runtime_signature": "2a41bc3096b00cd6307d8f3f65b257e4c0d6c4e6803941969a98b101486671da",
+          "snapshot_version": 14,
+          "source_message_id": "std_e84ab31f31b0421a9ada8cfbcea6c898",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "quantum computing stocks"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "量子计算股票在一场即将举行的重大量子计算行业会议前承压。",
+            "subject_time": "截至2026-09-22的会议前市场状态"
+          },
+          "candidate_index": 0,
+          "case_id": "case_cf26f61e70484e6e996561a208fdee03",
+          "created_at": "2026-09-22T12:25:38.556051Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E83",
+          "runtime_signature": "163056c27dc3e98441bae7e7de7133090dd636afcc77c38dc20f9f686515b7ba",
+          "snapshot_version": 15,
+          "source_message_id": "std_f4879a41448949c9b4898563d21650b3",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "SCHEDULED",
+            "entities": [
+              "quantum computing industry",
+              "quantum computing conference"
+            ],
+            "occurrence_date": null,
+            "proposition": "一场重大量子计算行业会议已安排在近期举行。",
+            "subject_time": "2026-09-22之后的近期会议"
+          },
+          "candidate_index": 1,
+          "case_id": "case_cf26f61e70484e6e996561a208fdee03",
+          "created_at": "2026-09-22T12:25:38.573478Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E84",
+          "runtime_signature": "7222c4aa226de2537d2d72a4165edc005341c78e4bc9354754ded193124d50b6",
+          "snapshot_version": 16,
+          "source_message_id": "std_f4879a41448949c9b4898563d21650b3",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Coretura",
+              "BlackBerry",
+              "QNX",
+              "Alloy Kore",
+              "Vector",
+              "Daimler Truck",
+              "Volvo Group"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Coretura selected BlackBerry QNX's Alloy Kore as the safety-certified foundation inside its software-defined vehicle platform for commercial vehicles.",
+            "subject_time": "Commercial-vehicle software-defined vehicle platform"
+          },
+          "candidate_index": 0,
+          "case_id": "case_bf120d3a07c44037a9283202c473e2c3",
+          "created_at": "2026-09-22T13:02:10.107109Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E85",
+          "runtime_signature": "5d0661839426ce0b4e12dc13b05874d1250b0f0a7268b9891180d6332b53d5ec",
+          "snapshot_version": 22,
+          "source_message_id": "std_131e2de5b7b046f4b6a88f58340d0351",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "BlackBerry",
+              "QNX",
+              "Alloy Kore",
+              "Coretura"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "The Coretura selection is BlackBerry's first named design win for the Alloy Kore product.",
+            "subject_time": "Alloy Kore commercial-vehicle platform"
+          },
+          "candidate_index": 1,
+          "case_id": "case_bf120d3a07c44037a9283202c473e2c3",
+          "created_at": "2026-09-22T13:02:10.114121Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E86",
+          "runtime_signature": "e41616826ce411f5917cf65001cd8ff74c4cb3eac01e04bb0782047aa87e2f5b",
+          "snapshot_version": 23,
+          "source_message_id": "std_131e2de5b7b046f4b6a88f58340d0351",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "BlackBerry",
+              "QNX",
+              "Alloy Kore",
+              "Coretura"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "The Alloy Kore announcement disclosed no contract value, revenue split, or revenue-recognition timetable.",
+            "subject_time": "Alloy Kore announcement"
+          },
+          "candidate_index": 2,
+          "case_id": "case_bf120d3a07c44037a9283202c473e2c3",
+          "created_at": "2026-09-22T13:02:10.120333Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E87",
+          "runtime_signature": "d71a30a934db53855cd1ef52bace7279b7139f4b669dfafd76d4c6e1acbe75cf",
+          "snapshot_version": 24,
+          "source_message_id": "std_131e2de5b7b046f4b6a88f58340d0351",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Mobileye",
+              "MBLY"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Mobileye shares were up approximately 0.3% in Tuesday morning trading.",
+            "subject_time": "2026-09-22 morning trading"
+          },
+          "candidate_index": 3,
+          "case_id": "case_bf120d3a07c44037a9283202c473e2c3",
+          "created_at": "2026-09-22T13:02:10.126678Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E88",
+          "runtime_signature": "6c1bf88307f9a909fa9db4618693a83282b3043298b21a425ad6f2e8cb0deba5",
+          "snapshot_version": 25,
+          "source_message_id": "std_131e2de5b7b046f4b6a88f58340d0351",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Intel",
+              "INTC",
+              "Mobileye",
+              "MBLY"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Intel retains majority ownership of Mobileye.",
+            "subject_time": "Current ownership"
+          },
+          "candidate_index": 4,
+          "case_id": "case_bf120d3a07c44037a9283202c473e2c3",
+          "created_at": "2026-09-22T13:02:10.134282Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E89",
+          "runtime_signature": "be67cea5413e4cf86bac7f179bc3139c77610f5c089ab6309426069e407cd688",
+          "snapshot_version": 26,
+          "source_message_id": "std_131e2de5b7b046f4b6a88f58340d0351",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ONGOING",
+            "entities": [
+              "SoftBank",
+              "SoftBank datacenter unit"
+            ],
+            "occurrence_date": null,
+            "proposition": "SoftBank is delaying the IPO of its datacenter unit.",
+            "subject_time": "Current datacenter-unit IPO timing"
+          },
+          "candidate_index": 2,
+          "case_id": "case_6451bf15cae9485ea17dbf5c849f34f6",
+          "created_at": "2026-09-22T17:08:16.003717Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E90",
+          "runtime_signature": "18342c36048ef8ad9d8d8836e6aefd605e7d0d8238e83ad5a8502ad59b29a5f9",
+          "snapshot_version": 33,
+          "source_message_id": "std_db67e9b06cf0457b8ad783a256bc8e38",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Saudi Arabia",
+              "East-West Pipeline"
+            ],
+            "occurrence_date": null,
+            "proposition": "Saudi Arabia restarted the East-West Pipeline.",
+            "subject_time": "Current East-West Pipeline operations"
+          },
+          "candidate_index": 4,
+          "case_id": "case_6451bf15cae9485ea17dbf5c849f34f6",
+          "created_at": "2026-09-22T17:08:16.042274Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E91",
+          "runtime_signature": "cd12be85c9962176c43d27d9cfa3851e16aaa3783b77078c0a27fc449ea17144",
+          "snapshot_version": 35,
+          "source_message_id": "std_db67e9b06cf0457b8ad783a256bc8e38",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "NVIDIA"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "NVIDIA 的整体股权投资组合已达到约 990 亿美元。",
+            "subject_time": "截至 2026-09-22 的当前状态"
+          },
+          "candidate_index": 0,
+          "case_id": "case_dc49803270a64801add9bcd62fafd58b",
+          "created_at": "2026-09-22T17:48:17.763539Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E92",
+          "runtime_signature": "c4abf414a9af67f325c2720d30afdafc41f0383147827a0665aa4a2a03a9f74f",
+          "snapshot_version": 40,
+          "source_message_id": "std_37944dd145a042129a0f0b9a67579b0a",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "NVIDIA"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "NVIDIA 的应收账款周转天数（DSO）已升至 60 天；管理层将其归因于部分投资级客户获得延长付款期限。",
+            "subject_time": "当前报告期"
+          },
+          "candidate_index": 1,
+          "case_id": "case_dc49803270a64801add9bcd62fafd58b",
+          "created_at": "2026-09-22T17:48:17.791095Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E93",
+          "runtime_signature": "1ce0ac0bf7ca2fef5f23f9f2d83f71fd626de52f83ea78330cb2c6d89e7c544a",
+          "snapshot_version": 41,
+          "source_message_id": "std_37944dd145a042129a0f0b9a67579b0a",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Intel",
+              "INTC"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Intel股价在2026-09-22常规交易时段截至18:05 UTC上涨约0.05%。",
+            "subject_time": "2026-09-22常规交易时段截至18:05 UTC"
+          },
+          "candidate_index": 0,
+          "case_id": "case_be55c1e6f4944962a1f667e1a4ba990a",
+          "created_at": "2026-09-22T18:37:02.973605Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E94",
+          "runtime_signature": "6f029ff92b7fe415e38864df124e7526285a812ceee8dd347233b5d4e7dc2c89",
+          "snapshot_version": 43,
+          "source_message_id": "std_651afe3fd90647ffa3a7b731d631f623",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Intel",
+              "INTC"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "截至2026-09-22 18:05 UTC，约有 56.36 百万股 Intel 股票在该日常规交易时段成交。",
+            "subject_time": "2026-09-22常规交易时段截至18:05 UTC"
+          },
+          "candidate_index": 1,
+          "case_id": "case_be55c1e6f4944962a1f667e1a4ba990a",
+          "created_at": "2026-09-22T18:37:02.982645Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E95",
+          "runtime_signature": "7d96d3b345251283d38c22910d0fdf342803e61994288b96ccf43bf14fda5e57",
+          "snapshot_version": 44,
+          "source_message_id": "std_651afe3fd90647ffa3a7b731d631f623",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Nasdaq 100",
+              "Invesco QQQ Trust, Series 1",
+              "QQQ"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Nasdaq 100自2023年初以来累计上涨180.1%。",
+            "subject_time": "2023年初至2026年9月22日"
+          },
+          "candidate_index": 0,
+          "case_id": "case_494da2fe273f43ddac626ea7bdecaa0b",
+          "created_at": "2026-09-22T18:40:46.868594Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E96",
+          "runtime_signature": "88f352710d1cb3c9151ce14d70401e3735a54d757ee20fc5f77dc4b8b3002365",
+          "snapshot_version": 45,
+          "source_message_id": "std_285b8b2fcc174f719ee0b0eda5f014e1",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Nasdaq 100"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Nasdaq 100在2023年上涨53.8%、2024年上涨24.9%、2025年上涨20.2%，2026年年初至今上涨21.3%。",
+            "subject_time": "2023年至2026年年初至今"
+          },
+          "candidate_index": 1,
+          "case_id": "case_494da2fe273f43ddac626ea7bdecaa0b",
+          "created_at": "2026-09-22T18:40:46.888393Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E97",
+          "runtime_signature": "0d4f86f790cf7c12a9968a44dba23b8806fcbd1cfcfe6a4191db4a0a895b39b4",
+          "snapshot_version": 46,
+          "source_message_id": "std_285b8b2fcc174f719ee0b0eda5f014e1",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Intel",
+              "INTC"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Intel股票在2026年年初至今上涨229.6%。",
+            "subject_time": "2026年年初至今"
+          },
+          "candidate_index": 2,
+          "case_id": "case_494da2fe273f43ddac626ea7bdecaa0b",
+          "created_at": "2026-09-22T18:40:46.910266Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E98",
+          "runtime_signature": "d286cb77a6008e11b50e7aea6de2066a64f49e1c9bdc3a572e2a27a6fa91e0cb",
+          "snapshot_version": 47,
+          "source_message_id": "std_285b8b2fcc174f719ee0b0eda5f014e1",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "SanDisk",
+              "SNDK"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "SanDisk股票在2026年年初至今上涨695.8%。",
+            "subject_time": "2026年年初至今"
+          },
+          "candidate_index": 3,
+          "case_id": "case_494da2fe273f43ddac626ea7bdecaa0b",
+          "created_at": "2026-09-22T18:40:46.933238Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E99",
+          "runtime_signature": "7f0b6d75f4bfac1d70048d2281c3781303fed8b23eb4a2a5283fc10ae2af551c",
+          "snapshot_version": 48,
+          "source_message_id": "std_285b8b2fcc174f719ee0b0eda5f014e1",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "MU"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Micron Technology股票在2026年年初至今上涨278.9%。",
+            "subject_time": "2026年年初至今"
+          },
+          "candidate_index": 4,
+          "case_id": "case_494da2fe273f43ddac626ea7bdecaa0b",
+          "created_at": "2026-09-22T18:40:46.950788Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E100",
+          "runtime_signature": "c6107a73539ebeee0f8e901a441a32c7b8d002b65a8a8fbe507e002369b0cbb5",
+          "snapshot_version": 49,
+          "source_message_id": "std_285b8b2fcc174f719ee0b0eda5f014e1",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Seagate Technology",
+              "STX",
+              "Marvell Technology",
+              "MRVL",
+              "Arm Holdings",
+              "ARM"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Seagate Technology、Marvell Technology和Arm Holdings股票在2026年年初至今均上涨超过200%。",
+            "subject_time": "2026年年初至今"
+          },
+          "candidate_index": 5,
+          "case_id": "case_494da2fe273f43ddac626ea7bdecaa0b",
+          "created_at": "2026-09-22T18:40:46.966470Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E101",
+          "runtime_signature": "3e66edaa120accab0be6035c54f2451c551e809af915faf5858d5d4b76811bdc",
+          "snapshot_version": 50,
+          "source_message_id": "std_285b8b2fcc174f719ee0b0eda5f014e1",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Intuit",
+              "INTU"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Intuit股票在2026年年初至今下跌56.2%。",
+            "subject_time": "2026年年初至今"
+          },
+          "candidate_index": 6,
+          "case_id": "case_494da2fe273f43ddac626ea7bdecaa0b",
+          "created_at": "2026-09-22T18:40:46.985868Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E102",
+          "runtime_signature": "05df362189df17685865623a72df5a953e4db565e96267dd79bfaddedb628af3",
+          "snapshot_version": 51,
+          "source_message_id": "std_285b8b2fcc174f719ee0b0eda5f014e1",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "AppLovin",
+              "APP"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "AppLovin股票在2026年年初至今下跌51.8%。",
+            "subject_time": "2026年年初至今"
+          },
+          "candidate_index": 7,
+          "case_id": "case_494da2fe273f43ddac626ea7bdecaa0b",
+          "created_at": "2026-09-22T18:40:47.006456Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E103",
+          "runtime_signature": "0c186d6c4686e0e352f111854fb89e6962bf03111952dd2fea474788c86ea7cb",
+          "snapshot_version": 52,
+          "source_message_id": "std_285b8b2fcc174f719ee0b0eda5f014e1",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Bitcoin"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "比特币在2026-09-22交易于约86559美元，并突破了约86500美元的阻力位。",
+            "subject_time": "2026-09-22交易时段"
+          },
+          "candidate_index": 0,
+          "case_id": "case_79e439cd092943cab057173d768fdaa4",
+          "created_at": "2026-09-22T19:07:23.457982Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E104",
+          "runtime_signature": "f65d0708be43800bec2b276420ba4f9ae61b7cc20ea60b526b2547f77fd684a1",
+          "snapshot_version": 53,
+          "source_message_id": "std_d212bd44a0574390b16ee955dc6ca7b7",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Cryptocurrency market"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "截至2026-09-22报道时，加密货币市场总市值超过3万亿美元。",
+            "subject_time": "2026-09-22当前市场状态"
+          },
+          "candidate_index": 1,
+          "case_id": "case_79e439cd092943cab057173d768fdaa4",
+          "created_at": "2026-09-22T19:07:23.478748Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E105",
+          "runtime_signature": "dbf78b4b8f2c07d70baec4e25d814311654299c5972aeb62b42bd68d56049531",
+          "snapshot_version": 54,
+          "source_message_id": "std_d212bd44a0574390b16ee955dc6ca7b7",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Crypto Fear & Greed Index"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Crypto Fear & Greed Index在2026-09-22为79，处于Greed区间。",
+            "subject_time": "2026-09-22当前市场状态"
+          },
+          "candidate_index": 2,
+          "case_id": "case_79e439cd092943cab057173d768fdaa4",
+          "created_at": "2026-09-22T19:07:23.489717Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E106",
+          "runtime_signature": "2e302e3ad097abc9a7ff8f04c4c5eec4461006212ac932380f5597873c7f339c",
+          "snapshot_version": 55,
+          "source_message_id": "std_d212bd44a0574390b16ee955dc6ca7b7",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ONGOING",
+            "entities": [
+              "Nasdaq Composite"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Nasdaq Composite在2026-09-22常规交易时段上涨约0.4%，并触及新的盘中高点。",
+            "subject_time": "2026-09-22常规交易时段截至报道时"
+          },
+          "candidate_index": 3,
+          "case_id": "case_79e439cd092943cab057173d768fdaa4",
+          "created_at": "2026-09-22T19:07:23.499561Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E107",
+          "runtime_signature": "feb61dc1fa0fbea39f4282925634e69b0fd320db0b58608a5c57db46532c6893",
+          "snapshot_version": 56,
+          "source_message_id": "std_d212bd44a0574390b16ee955dc6ca7b7",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Brent crude",
+              "WTI"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "2026-09-22 Brent原油价格一度跌破每桶98美元，WTI一度跌破每桶93美元。",
+            "subject_time": "2026-09-22交易时段"
+          },
+          "candidate_index": 4,
+          "case_id": "case_79e439cd092943cab057173d768fdaa4",
+          "created_at": "2026-09-22T19:07:23.515969Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E108",
+          "runtime_signature": "43f56318d609e1e088bfe061cdd5910388dc36cf728f73579af2cfc10efba8df",
+          "snapshot_version": 57,
+          "source_message_id": "std_d212bd44a0574390b16ee955dc6ca7b7",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "MU"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Micron Technology 股价在 2026-09-22 上涨 5.0%至 1096.16 美元，并连续第四个交易日上涨。",
+            "subject_time": "2026-09-22交易时段"
+          },
+          "candidate_index": 0,
+          "case_id": "case_ef0ca5bc013f4ec4850363b5b3c43674",
+          "created_at": "2026-09-22T20:38:37.791928Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E109",
+          "runtime_signature": "1bdcfdc251fc0d01484b91876234d021e9708c9780e12a8f1a1e181ce6fce197",
+          "snapshot_version": 58,
+          "source_message_id": "std_7021a72fd3774d67af11038215dd8e0b",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Intel",
+              "INTC"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Intel 股价在 2026-09-22 上涨 1.7%至 123.86 美元。",
+            "subject_time": "2026-09-22交易时段"
+          },
+          "candidate_index": 1,
+          "case_id": "case_ef0ca5bc013f4ec4850363b5b3c43674",
+          "created_at": "2026-09-22T20:38:37.799139Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E110",
+          "runtime_signature": "399ba6b7259ab6da304a5cdad95717c3146dfd0e38cc4d3ab430ba7c340a10fb",
+          "snapshot_version": 59,
+          "source_message_id": "std_7021a72fd3774d67af11038215dd8e0b",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "MU"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Micron Technology 在 2026-09-22 的成交量为 2860 万股，低于 50 日平均成交量 3440 万股。",
+            "subject_time": "2026-09-22交易时段"
+          },
+          "candidate_index": 2,
+          "case_id": "case_ef0ca5bc013f4ec4850363b5b3c43674",
+          "created_at": "2026-09-22T20:38:37.805583Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E111",
+          "runtime_signature": "5029cb933548f6320da89a7ee86bafea9dcfe985e7b5cd7c1086c1901619d2dd",
+          "snapshot_version": 60,
+          "source_message_id": "std_7021a72fd3774d67af11038215dd8e0b",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Intel",
+              "INTC",
+              "Zacks Investment Research",
+              "Semiconductor - General industry"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "截至 2026-09-22，Intel 前瞻市盈率为 81.22，PEG 比率为 9.02；对应行业平均值分别为 36.54 和 1.76。",
+            "subject_time": "截至2026-09-22的估值快照"
+          },
+          "candidate_index": 4,
+          "case_id": "case_c5c0f2c65dd5497c9bfff816729a43f7",
+          "created_at": "2026-09-22T22:06:57.222191Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E112",
+          "runtime_signature": "3361b3381513946b0d1845c243a3e85e2e89359a5cddebbcce737b12c9ad7568",
+          "snapshot_version": 65,
+          "source_message_id": "std_e64e38a35c62436f9324b28e95869835",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Intel",
+              "INTC",
+              "Computer and Technology sector",
+              "S&P 500"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "截至 2026-09-22，Intel 股价过去一个月上涨 39.56%，同期 Computer and Technology 板块上涨 6.18%，标普500上涨 1.27%。",
+            "subject_time": "截至2026-09-22的过去一个月"
+          },
+          "candidate_index": 5,
+          "case_id": "case_c5c0f2c65dd5497c9bfff816729a43f7",
+          "created_at": "2026-09-22T22:06:57.228372Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E113",
+          "runtime_signature": "44592eaabc810de9fc6f6224e5ed75fbed3ef48e551f6034f02614e1ba65877e",
+          "snapshot_version": 66,
+          "source_message_id": "std_e64e38a35c62436f9324b28e95869835",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "ASML Holding",
+              "ASML"
+            ],
+            "occurrence_date": null,
+            "proposition": "ASML FY2025营收约为375亿美元，同比约增长15.6%。",
+            "subject_time": "FY2025"
+          },
+          "candidate_index": 0,
+          "case_id": "case_2cf8a180f0154009bc5a853167298090",
+          "created_at": "2026-09-23T00:11:30.605940Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E114",
+          "runtime_signature": "5b75765140c9eb775ab2886cd211b6d6fe06c064e5f29e5160683750c75b08d6",
+          "snapshot_version": 67,
+          "source_message_id": "std_dd1ac1658b724c9cabf1b75815db40f9",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "ASML Holding",
+              "ASML"
+            ],
+            "occurrence_date": null,
+            "proposition": "ASML FY2025净利润约为110亿美元，净利率约为29.4%。",
+            "subject_time": "FY2025"
+          },
+          "candidate_index": 1,
+          "case_id": "case_2cf8a180f0154009bc5a853167298090",
+          "created_at": "2026-09-23T00:11:30.612495Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E115",
+          "runtime_signature": "0e258203a171d1aa2061c5d40bce33c4ca482e86ac0426a42360c17ff3360f24",
+          "snapshot_version": 68,
+          "source_message_id": "std_dd1ac1658b724c9cabf1b75815db40f9",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "ASML Holding",
+              "ASML"
+            ],
+            "occurrence_date": null,
+            "proposition": "ASML FY2025自由现金流约为122亿美元。",
+            "subject_time": "FY2025"
+          },
+          "candidate_index": 2,
+          "case_id": "case_2cf8a180f0154009bc5a853167298090",
+          "created_at": "2026-09-23T00:11:30.619373Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E116",
+          "runtime_signature": "4687775063cf2120a62fd70b3be77839134cffda5b26eadd6a1342845f11a231",
+          "snapshot_version": 69,
+          "source_message_id": "std_dd1ac1658b724c9cabf1b75815db40f9",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "ASML Holding",
+              "ASML"
+            ],
+            "occurrence_date": null,
+            "proposition": "截至2025年12月，ASML债务权益比约为0.1倍，流动比率约为1.3倍。",
+            "subject_time": "December 2025 balance sheet"
+          },
+          "candidate_index": 3,
+          "case_id": "case_2cf8a180f0154009bc5a853167298090",
+          "created_at": "2026-09-23T00:11:30.628975Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E117",
+          "runtime_signature": "2ea854a41483598749ccbe7cb455eab8af1f716a8a27da0c520d341b2ba93fb5",
+          "snapshot_version": 70,
+          "source_message_id": "std_dd1ac1658b724c9cabf1b75815db40f9",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "ASML Holding",
+              "ASML"
+            ],
+            "occurrence_date": null,
+            "proposition": "ASML 2026年第二季度销售额约为93亿欧元，毛利率约为54%。",
+            "subject_time": "Q2 FY2026"
+          },
+          "candidate_index": 4,
+          "case_id": "case_2cf8a180f0154009bc5a853167298090",
+          "created_at": "2026-09-23T00:11:30.636157Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E118",
+          "runtime_signature": "b23afd72592ae38d3b6d70d1dafa8b808864ae562e12e9641341438267ceb4fa",
+          "snapshot_version": 71,
+          "source_message_id": "std_dd1ac1658b724c9cabf1b75815db40f9",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "GUIDANCE",
+            "entities": [
+              "ASML Holding",
+              "ASML"
+            ],
+            "occurrence_date": null,
+            "proposition": "ASML将2026年销售指引从1月的340亿至390亿欧元上调至7月的430亿至450亿欧元。",
+            "subject_time": "FY2026"
+          },
+          "candidate_index": 5,
+          "case_id": "case_2cf8a180f0154009bc5a853167298090",
+          "created_at": "2026-09-23T00:11:30.642971Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E119",
+          "runtime_signature": "41dab9308fd7c48794c1f9f445e0558367fefb75e01caf2e3ed24d99ce301a90",
+          "snapshot_version": 72,
+          "source_message_id": "std_dd1ac1658b724c9cabf1b75815db40f9",
+          "ticker": "INTC",
+          "trading_date": "2026-09-22"
+        },
+        {
+          "candidate": {
+            "assertion_state": "RUMORED",
+            "entities": [
+              "SASAC",
+              "中国",
+              "Broadcom",
+              "Broadcom交换机",
+              "国有数据中心"
+            ],
+            "occurrence_date": "2026-09-23",
+            "proposition": "据报道，中国国家市场监督管理相关机构SASAC正在评估Broadcom交换机在中国国有数据中心中的使用情况，调查属于“国产芯片用于国产场景”行动的一部分。",
+            "subject_time": "2026年9月调查"
+          },
+          "candidate_index": 0,
+          "case_id": "case_e2daef3e57594c8e98a1a8442093689b",
+          "created_at": "2026-09-23T08:01:11.627720Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E120",
+          "runtime_signature": "0ef95655b3477a18bdcc103b1a94492d4fbd64a772d331c8760317d8d2265167",
+          "snapshot_version": 1,
+          "source_message_id": "std_09b0dc4e35c24abea17f083a88185fb1",
+          "ticker": "INTC",
+          "trading_date": "2026-09-23"
+        },
+        {
+          "candidate": {
+            "assertion_state": "RUMORED",
+            "entities": [
+              "SASAC",
+              "中国国有企业",
+              "Broadcom",
+              "Broadcom交换机"
+            ],
+            "occurrence_date": "2026-09-23",
+            "proposition": "据报道，初步调查结果显示Broadcom交换机可能存在于多达90%的中国国有企业中。",
+            "subject_time": "2026年9月初步调查"
+          },
+          "candidate_index": 1,
+          "case_id": "case_e2daef3e57594c8e98a1a8442093689b",
+          "created_at": "2026-09-23T08:01:11.648520Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E121",
+          "runtime_signature": "1828aa33024260877e4beadc34e5e9bbb57d682648d4406c7137295269c885bb",
+          "snapshot_version": 2,
+          "source_message_id": "std_09b0dc4e35c24abea17f083a88185fb1",
+          "ticker": "INTC",
+          "trading_date": "2026-09-23"
+        },
+        {
+          "candidate": {
+            "assertion_state": "RUMORED",
+            "entities": [
+              "SASAC",
+              "Broadcom",
+              "H3C Technologies",
+              "Ruijie Networks",
+              "Huawei"
+            ],
+            "occurrence_date": "2026-09-23",
+            "proposition": "据报道，SASAC正在调查Broadcom是否通过捆绑其他产品或施加大额采购要求，限制H3C Technologies和Ruijie Networks等中国企业从其他供应商采购交换机。",
+            "subject_time": "2026年9月调查"
+          },
+          "candidate_index": 2,
+          "case_id": "case_e2daef3e57594c8e98a1a8442093689b",
+          "created_at": "2026-09-23T08:01:11.657744Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E122",
+          "runtime_signature": "6d70b0dad9b6a1abb37e8d6ff1dee6ec114d60868f79facb461520007b320ff1",
+          "snapshot_version": 3,
+          "source_message_id": "std_09b0dc4e35c24abea17f083a88185fb1",
+          "ticker": "INTC",
+          "trading_date": "2026-09-23"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ONGOING",
+            "entities": [
+              "中国",
+              "SASAC",
+              "国产半导体",
+              "人工智能产品"
+            ],
+            "occurrence_date": "2026-09-23",
+            "proposition": "中国“国产芯片用于国产场景”行动旨在提高公共部门对国产半导体和人工智能产品的使用。",
+            "subject_time": "当前政策行动"
+          },
+          "candidate_index": 3,
+          "case_id": "case_e2daef3e57594c8e98a1a8442093689b",
+          "created_at": "2026-09-23T08:01:11.669458Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E123",
+          "runtime_signature": "b8007af1b5bb8364e5ee21eae7a8ea45df2c49ea0874a9c40ab5f7f58383383c",
+          "snapshot_version": 4,
+          "source_message_id": "std_09b0dc4e35c24abea17f083a88185fb1",
+          "ticker": "INTC",
+          "trading_date": "2026-09-23"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Intel",
+              "INTC"
+            ],
+            "occurrence_date": "2026-09-23",
+            "proposition": "截至该文章发布时，Intel股价过去三个交易日累计上涨超过14%。",
+            "subject_time": "文章发布前的过去三个交易日"
+          },
+          "candidate_index": 0,
+          "case_id": "case_dc8ea838657f403eba13a0d2bd486582",
+          "created_at": "2026-09-23T12:33:43.621526Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E124",
+          "runtime_signature": "6251d40209ba76d6f3510c253495c48b96f98f88b4b2df373ea3e8a61730f2ae",
+          "snapshot_version": 5,
+          "source_message_id": "std_88b0b01fb0e2495eae013637dc5f987c",
+          "ticker": "INTC",
+          "trading_date": "2026-09-23"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Intel",
+              "INTC",
+              "Bollinger Bands",
+              "RSI"
+            ],
+            "occurrence_date": "2026-09-23",
+            "proposition": "Benzinga技术分析将Intel股票描述为处于超买状态，依据包括股价高于20日均线两个标准差的布林带上轨以及RSI处于超买区域。",
+            "subject_time": "2026-09-23技术分析"
+          },
+          "candidate_index": 1,
+          "case_id": "case_dc8ea838657f403eba13a0d2bd486582",
+          "created_at": "2026-09-23T12:33:43.639148Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E125",
+          "runtime_signature": "1253d12c81ecb565a3284e6bc0b4c709c985e690332a684d0d8bbce2698aba91",
+          "snapshot_version": 6,
+          "source_message_id": "std_88b0b01fb0e2495eae013637dc5f987c",
+          "ticker": "INTC",
+          "trading_date": "2026-09-23"
+        },
+        {
+          "candidate": {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "Intel",
+              "INTC"
+            ],
+            "occurrence_date": "2026-09-23",
+            "proposition": "该技术分析预期Intel股价存在短期均值回归或反转风险，卖压可能推动股价下行。",
+            "subject_time": "短期"
+          },
+          "candidate_index": 2,
+          "case_id": "case_dc8ea838657f403eba13a0d2bd486582",
+          "created_at": "2026-09-23T12:33:43.656251Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E126",
+          "runtime_signature": "c8cd48c6abd53fa453b68ef0bb63b0df56e1918ff58d4214d54703ee93cf1f40",
+          "snapshot_version": 7,
+          "source_message_id": "std_88b0b01fb0e2495eae013637dc5f987c",
+          "ticker": "INTC",
+          "trading_date": "2026-09-23"
+        },
+        {
+          "candidate": {
+            "assertion_state": "EXPECTED",
+            "entities": [
+              "Intel",
+              "Lip-Bu Tan",
+              "CPU",
+              "GPU",
+              "量子处理器"
+            ],
+            "occurrence_date": "2026-09-21",
+            "proposition": "Intel CEO Lip-Bu Tan在Splunk .conf26表示，CPU、GPU和量子处理器可能在不同应用中协同工作，并指出量子纠错技术仍需发展。",
+            "subject_time": "未来量子计算应用"
+          },
+          "candidate_index": 0,
+          "case_id": "case_0367b8597f0e450da481b507b42a38aa",
+          "created_at": "2026-09-23T12:46:10.172466Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E127",
+          "runtime_signature": "af401ab4943555e8f4b8e46388c85835dd92d5c48192f97a9f727a9ae5a06d22",
+          "snapshot_version": 8,
+          "source_message_id": "std_0f28ccb2729a4b8d9ff2ef680fb2e716",
+          "ticker": "INTC",
+          "trading_date": "2026-09-23"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "IonQ",
+              "标准CPU",
+              "量子纠错解码器"
+            ],
+            "occurrence_date": null,
+            "proposition": "IonQ在单个标准CPU上测试了实时量子纠错解码器，测试使用了最多代表408个逻辑量子比特和超过3150万次操作的模拟工作负载。",
+            "subject_time": "模拟量子工作负载测试"
+          },
+          "candidate_index": 1,
+          "case_id": "case_0367b8597f0e450da481b507b42a38aa",
+          "created_at": "2026-09-23T12:46:10.184086Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E128",
+          "runtime_signature": "4acc75677fe2b8e7e279ef43c7340f7ae1ce31c7fdc4e63803f330eeaa7fe412",
+          "snapshot_version": 9,
+          "source_message_id": "std_0f28ccb2729a4b8d9ff2ef680fb2e716",
+          "ticker": "INTC",
+          "trading_date": "2026-09-23"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "IonQ",
+              "标准CPU",
+              "量子纠错解码器"
+            ],
+            "occurrence_date": null,
+            "proposition": "IonQ表示，在标准运行噪声假设下，该量子纠错解码器使执行时间增加至少低至0.02%。",
+            "subject_time": "模拟量子工作负载测试"
+          },
+          "candidate_index": 2,
+          "case_id": "case_0367b8597f0e450da481b507b42a38aa",
+          "created_at": "2026-09-23T12:46:10.199983Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E129",
+          "runtime_signature": "8bc1deeb111230a584f22aeb1e76b010d8b0cbba9e64963645834d853b02bd60",
+          "snapshot_version": 10,
+          "source_message_id": "std_0f28ccb2729a4b8d9ff2ef680fb2e716",
+          "ticker": "INTC",
+          "trading_date": "2026-09-23"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Ultraviolette",
+              "Intel",
+              "Lip-Bu Tan"
+            ],
+            "occurrence_date": "2026-09-23",
+            "proposition": "印度电动摩托车公司Ultraviolette聘请Intel CEO Lip-Bu Tan担任顾问。",
+            "subject_time": "2026年9月任命"
+          },
+          "candidate_index": 0,
+          "case_id": "case_163a3cf8f4164ad6b4014bd7c31335dc",
+          "created_at": "2026-09-23T12:56:54.703384Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E130",
+          "runtime_signature": "be7aa33f2d1e8cbf98465900ed5d4632a85c1e5e1484b0b034932adb54c5965d",
+          "snapshot_version": 11,
+          "source_message_id": "std_2409000bdd4e43e98c7a2b32fdc5b571",
+          "ticker": "INTC",
+          "trading_date": "2026-09-23"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Ultraviolette"
+            ],
+            "occurrence_date": "2026-09-23",
+            "proposition": "Ultraviolette筹集了8500万美元。",
+            "subject_time": "2026年9月融资"
+          },
+          "candidate_index": 1,
+          "case_id": "case_163a3cf8f4164ad6b4014bd7c31335dc",
+          "created_at": "2026-09-23T12:56:54.713736Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E131",
+          "runtime_signature": "c4c796a98106e0f7f19c066ad8aca0af7d2c371c1e199400d082aa235581c713",
+          "snapshot_version": 12,
+          "source_message_id": "std_2409000bdd4e43e98c7a2b32fdc5b571",
+          "ticker": "INTC",
+          "trading_date": "2026-09-23"
+        },
+        {
+          "candidate": {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "Intel",
+              "INTC",
+              "24/7 Wall St."
+            ],
+            "occurrence_date": "2026-09-23",
+            "proposition": "24/7 Wall St.对Intel给出96.79美元价格目标，评级为HOLD，模型置信度为90%。",
+            "subject_time": "当前价格目标"
+          },
+          "candidate_index": 0,
+          "case_id": "case_7b7e6c67f4514cddbe6318ddc086884b",
+          "created_at": "2026-09-23T14:15:16.964032Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E132",
+          "runtime_signature": "b863c75268477e26d5ef185e07c67bf1eab675187936de6ca41911d3caae443e",
+          "snapshot_version": 13,
+          "source_message_id": "std_8ccfd62e007c4296a8955eae4e7f0763",
+          "ticker": "INTC",
+          "trading_date": "2026-09-23"
+        },
+        {
+          "candidate": {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "Intel",
+              "INTC",
+              "24/7 Wall St."
+            ],
+            "occurrence_date": "2026-09-23",
+            "proposition": "24/7 Wall St.列出的Intel年度价格目标为2026年104美元、2027年97美元、2028年89美元、2029年96美元和2030年97美元。",
+            "subject_time": "2026年至2030年"
+          },
+          "candidate_index": 1,
+          "case_id": "case_7b7e6c67f4514cddbe6318ddc086884b",
+          "created_at": "2026-09-23T14:15:16.970372Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E133",
+          "runtime_signature": "e396a5997ee20c4bbbfcf506121748cbccec3401d1fa86b18bf3f9a0a5830793",
+          "snapshot_version": 14,
+          "source_message_id": "std_8ccfd62e007c4296a8955eae4e7f0763",
+          "ticker": "INTC",
+          "trading_date": "2026-09-23"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Intel",
+              "INTC"
+            ],
+            "occurrence_date": "2026-09-23",
+            "proposition": "该文章报告Intel股价过去一周上涨19.81%、过去一个月上涨32.9%、年初至今上涨234.23%，过去一年上涨303.43%。",
+            "subject_time": "截至2026-09-23的市场表现区间"
+          },
+          "candidate_index": 2,
+          "case_id": "case_7b7e6c67f4514cddbe6318ddc086884b",
+          "created_at": "2026-09-23T14:15:16.978411Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E134",
+          "runtime_signature": "ad81c5e82cd0547ce7e1b52b1943617c568e317b013b0b5a90ba98efacde0213",
+          "snapshot_version": 15,
+          "source_message_id": "std_8ccfd62e007c4296a8955eae4e7f0763",
+          "ticker": "INTC",
+          "trading_date": "2026-09-23"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Intel",
+              "INTC",
+              "NVIDIA",
+              "NVDA"
+            ],
+            "occurrence_date": "2026-09-23",
+            "proposition": "该文章称NVIDIA是Intel新的50亿美元股权合作伙伴。",
+            "subject_time": "当前资本合作关系"
+          },
+          "candidate_index": 3,
+          "case_id": "case_7b7e6c67f4514cddbe6318ddc086884b",
+          "created_at": "2026-09-23T14:15:16.986537Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E135",
+          "runtime_signature": "e966272cb10c00e1c5b8b04f7ad4e306dff9f79d79ba1a847ddc6a05fab288ba",
+          "snapshot_version": 16,
+          "source_message_id": "std_8ccfd62e007c4296a8955eae4e7f0763",
+          "ticker": "INTC",
+          "trading_date": "2026-09-23"
+        },
+        {
+          "candidate": {
+            "assertion_state": "PLANNED",
+            "entities": [
+              "Intel",
+              "INTC",
+              "NVIDIA",
+              "NVDA",
+              "NVLink"
+            ],
+            "occurrence_date": "2026-09-23",
+            "proposition": "Intel与NVIDIA计划开展采用NVLink的定制产品合作。",
+            "subject_time": "未来多代数据中心及PC产品周期"
+          },
+          "candidate_index": 4,
+          "case_id": "case_7b7e6c67f4514cddbe6318ddc086884b",
+          "created_at": "2026-09-23T14:15:16.992829Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E136",
+          "runtime_signature": "886bb342ffd09614a7c72d52379176b05a589e5327cd706682ac802d2c3aa58f",
+          "snapshot_version": 17,
+          "source_message_id": "std_8ccfd62e007c4296a8955eae4e7f0763",
+          "ticker": "INTC",
+          "trading_date": "2026-09-23"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Intel",
+              "INTC",
+              "SoftBank"
+            ],
+            "occurrence_date": "2026-09-23",
+            "proposition": "该文章称SoftBank持有Intel的新股权投资。",
+            "subject_time": "当前股权投资关系"
+          },
+          "candidate_index": 5,
+          "case_id": "case_7b7e6c67f4514cddbe6318ddc086884b",
+          "created_at": "2026-09-23T14:15:16.999187Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E137",
+          "runtime_signature": "8db80fdc88d8beb1b68e7b76dc56088c3a2e126de942e31c4394cf5b69721c9b",
+          "snapshot_version": 18,
+          "source_message_id": "std_8ccfd62e007c4296a8955eae4e7f0763",
+          "ticker": "INTC",
+          "trading_date": "2026-09-23"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Intel",
+              "INTC",
+              "AMD",
+              "NVIDIA",
+              "费城半导体指数"
+            ],
+            "occurrence_date": "2026-09-23",
+            "proposition": "2026年9月23日早盘，Intel股价与AMD、NVIDIA等芯片股一同承压，费城半导体指数下跌1.5%。",
+            "subject_time": "2026年9月23日早盘"
+          },
+          "candidate_index": 0,
+          "case_id": "case_b543b3f834e743dca8c0724ad68c3960",
+          "created_at": "2026-09-23T14:26:38.120501Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E138",
+          "runtime_signature": "24bacf92b331043c5343d6e68eb527bf7a7e48cdd924b9b78a83553e3f3cefa0",
+          "snapshot_version": 19,
+          "source_message_id": "std_0a414e9aaeef4516802dd4093edff6b5",
+          "ticker": "INTC",
+          "trading_date": "2026-09-23"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "道琼斯工业平均指数",
+              "标普500指数",
+              "纳斯达克综合指数"
+            ],
+            "occurrence_date": "2026-09-23",
+            "proposition": "截至2026年9月23日美东时间09:46，道琼斯工业平均指数下跌0.27%，标普500指数下跌0.27%，纳斯达克综合指数下跌0.41%。",
+            "subject_time": "2026年9月23日09:46 ET"
+          },
+          "candidate_index": 1,
+          "case_id": "case_b543b3f834e743dca8c0724ad68c3960",
+          "created_at": "2026-09-23T14:26:38.126827Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E139",
+          "runtime_signature": "8676d347dda1ac77b27dddf815e5ee72f4721bc340475b7b7711feb36c76a4c4",
+          "snapshot_version": 20,
+          "source_message_id": "std_0a414e9aaeef4516802dd4093edff6b5",
+          "ticker": "INTC",
+          "trading_date": "2026-09-23"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "布伦特原油",
+              "美国两年期国债收益率",
+              "美国十年期国债收益率"
+            ],
+            "occurrence_date": "2026-09-23",
+            "proposition": "2026年9月23日，布伦特原油价格在连续五个交易日下跌后上涨超过1%，美国两年期和十年期国债收益率走高。",
+            "subject_time": "2026年9月23日盘中"
+          },
+          "candidate_index": 2,
+          "case_id": "case_b543b3f834e743dca8c0724ad68c3960",
+          "created_at": "2026-09-23T14:26:38.132668Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E140",
+          "runtime_signature": "d9ccba3d9622e5f245241b934591febef8d77184e4f2db26fc97302ba3725bf6",
+          "snapshot_version": 21,
+          "source_message_id": "std_0a414e9aaeef4516802dd4093edff6b5",
+          "ticker": "INTC",
+          "trading_date": "2026-09-23"
+        },
+        {
+          "candidate": {
+            "assertion_state": "RUMORED",
+            "entities": [
+              "SpaceX",
+              "消费级AI智能体"
+            ],
+            "occurrence_date": "2026-09-23",
+            "proposition": "据报道，SpaceX拥有一款面向消费者的AI智能体。",
+            "subject_time": "当前（2026年9月）"
+          },
+          "candidate_index": 0,
+          "case_id": "case_d2f975b2ec3e48b187c6eb220f60136e",
+          "created_at": "2026-09-23T14:43:02.591538Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E141",
+          "runtime_signature": "e484019242fc887c179f8f9b669f82f68b82ad162da1b8f99c06af14432cd196",
+          "snapshot_version": 22,
+          "source_message_id": "std_c4c82fa72c184b39a7ee6434666ac937",
+          "ticker": "INTC",
+          "trading_date": "2026-09-23"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Intel",
+              "INTC"
+            ],
+            "occurrence_date": "2026-09-23",
+            "proposition": "截至2026年9月23日该文章发布时，Intel股价下跌3.21%，报119.88美元。",
+            "subject_time": "2026年9月23日文章发布时"
+          },
+          "candidate_index": 0,
+          "case_id": "case_81102894a059461888607ce8cf7eb739",
+          "created_at": "2026-09-23T16:23:13.784081Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E142",
+          "runtime_signature": "960e3a46601a9c8e2a5cc51f2c847729241633ddb8753553951d88869576cf2e",
+          "snapshot_version": 23,
+          "source_message_id": "std_f7f38a9048694f4682e6987ff60faed3",
+          "ticker": "INTC",
+          "trading_date": "2026-09-23"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "TD Cowen",
+              "Joshua Buchalter",
+              "Intel",
+              "INTC"
+            ],
+            "occurrence_date": "2026-09-24",
+            "proposition": "TD Cowen分析师Joshua Buchalter重申对Intel（NASDAQ: INTC）的Hold评级，并维持115美元目标价。",
+            "subject_time": null
+          },
+          "candidate_index": 0,
+          "case_id": "case_8f1570df8fcd4a33806b5eeef3ce437a",
+          "created_at": "2026-09-24T13:22:48.435710Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E143",
+          "runtime_signature": "70c22f7a5ec18ebecef35685777af582528d05706ad0b137faf19c224829d20d",
+          "snapshot_version": 1,
+          "source_message_id": "std_bbbb9b46c49b451997525e7b7b904f33",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "SoftBank Group",
+              "OpenAI",
+              "人工智能相关公司",
+              "人工智能基础设施"
+            ],
+            "occurrence_date": "2026-09-24",
+            "proposition": "SoftBank Group筹集了110亿美元高收益企业债券，据报道为全球有记录以来规模最大的高收益公司债发行，用于资助OpenAI及其他人工智能相关公司和基础设施投资。",
+            "subject_time": "当前融资及AI投资计划"
+          },
+          "candidate_index": 0,
+          "case_id": "case_d6c0aed52fc64549acc697efd3d22434",
+          "created_at": "2026-09-24T13:50:10.205600Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E144",
+          "runtime_signature": "c31ec5382bd711e3df1a9025c7952613097d071fbf8d76b4a744e5d97ab76a76",
+          "snapshot_version": 2,
+          "source_message_id": "std_3cf05e69aa4f45a5ba07a2e5c0554003",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "MU"
+            ],
+            "occurrence_date": "2026-09-24",
+            "proposition": "Micron Technology（MU）股票过去12个月上涨552%。",
+            "subject_time": "过去12个月，截至2026-09-24"
+          },
+          "candidate_index": 0,
+          "case_id": "case_9c9e48c7a042455894080b05586517b7",
+          "created_at": "2026-09-24T14:19:52.467641Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E145",
+          "runtime_signature": "2e78865e685dbc68f88fd883f08440851927fa10f697b0caca3b30f666962389",
+          "snapshot_version": 3,
+          "source_message_id": "std_b0d7e9c288044f88915fbe31923b48cb",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "MU"
+            ],
+            "occurrence_date": "2026-09-24",
+            "proposition": "Micron Technology股价接近1070美元时，按加回股票薪酬后的过去12个月调整后盈利计算，市盈率约为23.5倍。",
+            "subject_time": "2026-09-24当前估值快照"
+          },
+          "candidate_index": 1,
+          "case_id": "case_9c9e48c7a042455894080b05586517b7",
+          "created_at": "2026-09-24T14:19:52.494383Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E146",
+          "runtime_signature": "4cbbd72d01b657359d28124409b5c818333b29a8c98a3e52afb83323b2fae54b",
+          "snapshot_version": 4,
+          "source_message_id": "std_b0d7e9c288044f88915fbe31923b48cb",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Munich I Regional Court",
+              "Micron Technology",
+              "YMTC",
+              "3D NAND"
+            ],
+            "occurrence_date": "2026-09-23",
+            "proposition": "慕尼黑第一地区法院一审认定Micron侵犯YMTC涉及3D NAND技术的两项德国实用新型，并对Micron颁发两项禁令。",
+            "subject_time": "德国3D NAND专利诉讼当前一审程序"
+          },
+          "candidate_index": 0,
+          "case_id": "case_bd5b4c604e5e43099fd6e2e4d9679816",
+          "created_at": "2026-09-24T15:44:53.534469Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E147",
+          "runtime_signature": "32d4c2109de040ea11724b75253b33d2cdf29271c7325e645c92240f322f1750",
+          "snapshot_version": 5,
+          "source_message_id": "std_ece1bb50c6ac4563944ab8537380eb25",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Munich I Regional Court",
+              "Micron Technology",
+              "YMTC"
+            ],
+            "occurrence_date": "2026-09-23",
+            "proposition": "慕尼黑第一地区法院延期审理另外三宗涉及YMTC专利的Micron案件。",
+            "subject_time": "德国YMTC-Micron专利诉讼当前程序"
+          },
+          "candidate_index": 1,
+          "case_id": "case_bd5b4c604e5e43099fd6e2e4d9679816",
+          "created_at": "2026-09-24T15:44:53.546065Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E148",
+          "runtime_signature": "25f27778b8854662bc89775aa97f7c91e0ab3761f24fa7c325f80235c68cca5f",
+          "snapshot_version": 6,
+          "source_message_id": "std_ece1bb50c6ac4563944ab8537380eb25",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Samsung Electronics",
+              "Qualcomm",
+              "Snapdragon 8 Elite Extreme Gen 6",
+              "LPDDR6"
+            ],
+            "occurrence_date": "2026-09-23",
+            "proposition": "Samsung报告其16GB LPDDR6首次在Qualcomm Snapdragon 8 Elite Extreme Gen 6平台上完成验证，速度最高达10.7Gbps，并较LPDDR5X提升最高约21%的功耗效率。",
+            "subject_time": "当前LPDDR6平台验证"
+          },
+          "candidate_index": 0,
+          "case_id": "case_29c5156f48be431ba74e71517fc70d16",
+          "created_at": "2026-09-24T15:46:40.765658Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E149",
+          "runtime_signature": "76884c2f41eeb656a87ced2278dcdbd6d3113c9f5808c66d1852f21ef82d79e8",
+          "snapshot_version": 7,
+          "source_message_id": "std_96aa9704b00e47619cdcd03dd95da640",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "RUMORED",
+            "entities": [
+              "Samsung Electronics",
+              "Galaxy S27",
+              "Micron Technology",
+              "LPDDR5X",
+              "LPDDR6"
+            ],
+            "occurrence_date": "2026-09-23",
+            "proposition": "报道称Galaxy S27可能在部分机型采用LPDDR5X、在更高端的Pro和Ultra机型采用LPDDR6，从而形成分层内存配置。",
+            "subject_time": "Galaxy S27产品周期"
+          },
+          "candidate_index": 1,
+          "case_id": "case_29c5156f48be431ba74e71517fc70d16",
+          "created_at": "2026-09-24T15:46:40.775247Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E150",
+          "runtime_signature": "42c5cf30a1e43e60bb1bdd9d7c53df45e0c3e64c6e71133110e1cb4de18e1b2a",
+          "snapshot_version": 8,
+          "source_message_id": "std_96aa9704b00e47619cdcd03dd95da640",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "CXMT"
+            ],
+            "occurrence_date": null,
+            "proposition": "CXMT预计到2027年月度DRAM产能达到约42万片，当前约为32万片。",
+            "subject_time": "截至2027年"
+          },
+          "candidate_index": 0,
+          "case_id": "case_42116dc9f43449e0bcd380256d0bb9c0",
+          "created_at": "2026-09-24T15:52:14.045100Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E151",
+          "runtime_signature": "1e12f3645ccc5665839771bc1605eedf54a783b44966d75ce28a39b847da9302",
+          "snapshot_version": 9,
+          "source_message_id": "std_46b02a8c43ac42bcb098df7800c5afea",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "SCHEDULED",
+            "entities": [
+              "YMTC"
+            ],
+            "occurrence_date": null,
+            "proposition": "YMTC第三座武汉晶圆厂计划于2026年底开始运营，并在2027年逐步爬坡。",
+            "subject_time": "2026年底至2027年"
+          },
+          "candidate_index": 1,
+          "case_id": "case_42116dc9f43449e0bcd380256d0bb9c0",
+          "created_at": "2026-09-24T15:52:14.059881Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E152",
+          "runtime_signature": "9834d6a7c646a19de252d12980d7a459e4a5d89292fdf8907bef579530d1c445",
+          "snapshot_version": 10,
+          "source_message_id": "std_46b02a8c43ac42bcb098df7800c5afea",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "CXMT"
+            ],
+            "occurrence_date": null,
+            "proposition": "CXMT全球DRAM收入份额从2026年第一季度的7.6%升至第二季度的9.5%。",
+            "subject_time": "2026年第一季度至第二季度"
+          },
+          "candidate_index": 2,
+          "case_id": "case_42116dc9f43449e0bcd380256d0bb9c0",
+          "created_at": "2026-09-24T15:52:14.086097Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E153",
+          "runtime_signature": "ead9ce93ce32322c340bb7de79179abdb2188b1462fed025c0746bb8e15758d2",
+          "snapshot_version": 11,
+          "source_message_id": "std_46b02a8c43ac42bcb098df7800c5afea",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "RUMORED",
+            "entities": [
+              "CXMT"
+            ],
+            "occurrence_date": null,
+            "proposition": "据报道，CXMT计划在其北京新厂建设NAND闪存研发和生产线。",
+            "subject_time": null
+          },
+          "candidate_index": 3,
+          "case_id": "case_42116dc9f43449e0bcd380256d0bb9c0",
+          "created_at": "2026-09-24T15:52:14.122365Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E154",
+          "runtime_signature": "8d3b17f41b7df67c23039cf69d7dfa9ada8e31b7809b9f0f9cb58382e625e1ed",
+          "snapshot_version": 12,
+          "source_message_id": "std_46b02a8c43ac42bcb098df7800c5afea",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "EXPECTED",
+            "entities": [
+              "YMTC"
+            ],
+            "occurrence_date": null,
+            "proposition": "YMTC最早可能于2026年底开始试产LPDDR5 DRAM。",
+            "subject_time": "2026年底"
+          },
+          "candidate_index": 4,
+          "case_id": "case_42116dc9f43449e0bcd380256d0bb9c0",
+          "created_at": "2026-09-24T15:52:14.151455Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E155",
+          "runtime_signature": "c6b65f3709b8cae2f4e415af546a55d1441ac68388358cd77fea4278a3c5fdfe",
+          "snapshot_version": 13,
+          "source_message_id": "std_46b02a8c43ac42bcb098df7800c5afea",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "CXMT"
+            ],
+            "occurrence_date": null,
+            "proposition": "CXMT G5 DRAM已进入量产。",
+            "subject_time": null
+          },
+          "candidate_index": 5,
+          "case_id": "case_42116dc9f43449e0bcd380256d0bb9c0",
+          "created_at": "2026-09-24T15:52:14.178491Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E156",
+          "runtime_signature": "e6229a3cfb60a9d45fa699efc7d8f501a355432595d1867144718c2434b38e09",
+          "snapshot_version": 14,
+          "source_message_id": "std_46b02a8c43ac42bcb098df7800c5afea",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "EXPECTED",
+            "entities": [
+              "CXMT",
+              "YMTC"
+            ],
+            "occurrence_date": null,
+            "proposition": "行业观察人士预计CXMT与YMTC最早可能在2028年形成直接竞争。",
+            "subject_time": "2028年"
+          },
+          "candidate_index": 6,
+          "case_id": "case_42116dc9f43449e0bcd380256d0bb9c0",
+          "created_at": "2026-09-24T15:52:14.198523Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E157",
+          "runtime_signature": "ffec85cd00002d324daa0dfc9a975033a302275122fd3c9f81bf63174602a28f",
+          "snapshot_version": 15,
+          "source_message_id": "std_46b02a8c43ac42bcb098df7800c5afea",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "RUMORED",
+            "entities": [
+              "Intel",
+              "EMIB-T",
+              "EMIB-T substrate supply chain"
+            ],
+            "occurrence_date": "2026-09-23",
+            "proposition": "行业消息称，EMIB-T基板供应链的基板良率从2Q26约30%提高至过去一个季度约45%。",
+            "subject_time": "2Q26至最近一个季度"
+          },
+          "candidate_index": 0,
+          "case_id": "case_64e86ede03e44f0cb49db232dec0e843",
+          "created_at": "2026-09-24T15:53:25.480570Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E158",
+          "runtime_signature": "7b526d38dff1a05e6027163a2e4642e859c393942316e22ca55958129d207dd3",
+          "snapshot_version": 16,
+          "source_message_id": "std_9fba2f2272824cddbad589110415010e",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "RUMORED",
+            "entities": [
+              "Intel",
+              "EMIB-T",
+              "EMIB-T substrate supply chain"
+            ],
+            "occurrence_date": "2026-09-23",
+            "proposition": "行业消息称，EMIB-T基板供应链将目标设为4Q26良率约50%、1Q27良率约60%。",
+            "subject_time": "4Q26至1Q27"
+          },
+          "candidate_index": 1,
+          "case_id": "case_64e86ede03e44f0cb49db232dec0e843",
+          "created_at": "2026-09-24T15:53:25.506456Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E159",
+          "runtime_signature": "347c2b93603325e63023391f707b6a7a5ed760e7462045e50766caffb4a598d4",
+          "snapshot_version": 17,
+          "source_message_id": "std_9fba2f2272824cddbad589110415010e",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "TrendForce",
+              "Google",
+              "Intel",
+              "EMIB-T"
+            ],
+            "occurrence_date": "2026-09-23",
+            "proposition": "TrendForce预计Google将在2027年采用EMIB-T。",
+            "subject_time": "2027"
+          },
+          "candidate_index": 2,
+          "case_id": "case_64e86ede03e44f0cb49db232dec0e843",
+          "created_at": "2026-09-24T15:53:25.538455Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E160",
+          "runtime_signature": "fb7e513654467ab64c828f76f9de8593a471bbe9cb6bb104fba24e3e9719c212",
+          "snapshot_version": 18,
+          "source_message_id": "std_9fba2f2272824cddbad589110415010e",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "RUMORED",
+            "entities": [
+              "AWS",
+              "Intel",
+              "EMIB"
+            ],
+            "occurrence_date": "2026-09-23",
+            "proposition": "行业报道指AWS正在测试Intel的EMIB技术。",
+            "subject_time": "截至2026-09-23的当前测试"
+          },
+          "candidate_index": 3,
+          "case_id": "case_64e86ede03e44f0cb49db232dec0e843",
+          "created_at": "2026-09-24T15:53:25.564008Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E161",
+          "runtime_signature": "250f76b70cfc8697e5a2751180415c45098e5d7c81e0fba933043710fe332b7e",
+          "snapshot_version": 19,
+          "source_message_id": "std_9fba2f2272824cddbad589110415010e",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Intel",
+              "Lip-Bu Tan",
+              "EMIB-T",
+              "substrates"
+            ],
+            "occurrence_date": null,
+            "proposition": "Intel CEO Lip-Bu Tan在Splunk .conf26将基板描述为EMIB-T供应的瓶颈。",
+            "subject_time": "2026年9月Splunk .conf26"
+          },
+          "candidate_index": 4,
+          "case_id": "case_64e86ede03e44f0cb49db232dec0e843",
+          "created_at": "2026-09-24T15:53:25.582627Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E162",
+          "runtime_signature": "d983b0c62a4dddfd1465be6787ddd6b33ab70f2daf403679be058e3afd856d17",
+          "snapshot_version": 20,
+          "source_message_id": "std_9fba2f2272824cddbad589110415010e",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Intel",
+              "Lip-Bu Tan",
+              "EMIB-T substrate suppliers"
+            ],
+            "occurrence_date": null,
+            "proposition": "Intel CEO Lip-Bu Tan表示，Intel需要预付供应商以获得基板供应商的关注和供货。",
+            "subject_time": "2026年9月Splunk .conf26"
+          },
+          "candidate_index": 5,
+          "case_id": "case_64e86ede03e44f0cb49db232dec0e843",
+          "created_at": "2026-09-24T15:53:25.594809Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E163",
+          "runtime_signature": "79c26fd6d44db5edcca34a42edd798295878fb73653c3ba644853970cc199795",
+          "snapshot_version": 21,
+          "source_message_id": "std_9fba2f2272824cddbad589110415010e",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "TrendForce",
+              "CoWoS-L",
+              "AI packaging"
+            ],
+            "occurrence_date": "2026-09-23",
+            "proposition": "TrendForce预计CoWoS-L在2028年前仍将是主流AI封装技术。",
+            "subject_time": "截至2028年"
+          },
+          "candidate_index": 6,
+          "case_id": "case_64e86ede03e44f0cb49db232dec0e843",
+          "created_at": "2026-09-24T15:53:25.613456Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E164",
+          "runtime_signature": "a9cb9f94af6937cf607e508df18803cdba6d588c2acf652ce6e06c6521c7d88c",
+          "snapshot_version": 22,
+          "source_message_id": "std_9fba2f2272824cddbad589110415010e",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "RUMORED",
+            "entities": [
+              "Samsung Electro-Mechanics",
+              "LG Innotek",
+              "Intel",
+              "EMIB-T"
+            ],
+            "occurrence_date": "2026-09-23",
+            "proposition": "行业报道指Samsung Electro-Mechanics和LG Innotek正瞄准进入Intel EMIB-T供应链。",
+            "subject_time": "未来EMIB-T供应链进入"
+          },
+          "candidate_index": 7,
+          "case_id": "case_64e86ede03e44f0cb49db232dec0e843",
+          "created_at": "2026-09-24T15:53:25.625651Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E165",
+          "runtime_signature": "22c7de2eae75d494bd703b6c53d7c944d123e52f8032eb13772d04785509d92c",
+          "snapshot_version": 23,
+          "source_message_id": "std_9fba2f2272824cddbad589110415010e",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "RUMORED",
+            "entities": [
+              "Ibiden",
+              "Google",
+              "Amazon",
+              "Intel",
+              "EMIB-T"
+            ],
+            "occurrence_date": "2026-09-23",
+            "proposition": "ZDNet报道称，Ibiden据报已从Google、Amazon和Intel获得EMIB-T基板预付款。",
+            "subject_time": "当前EMIB-T基板供应安排"
+          },
+          "candidate_index": 8,
+          "case_id": "case_64e86ede03e44f0cb49db232dec0e843",
+          "created_at": "2026-09-24T15:53:25.636037Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E166",
+          "runtime_signature": "ca272bc42b17189963579c5c63080a71e7bc240bdc3349c7395f49565b663df5",
+          "snapshot_version": 24,
+          "source_message_id": "std_9fba2f2272824cddbad589110415010e",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Meta Platforms",
+              "Meta Charm",
+              "Muse AI"
+            ],
+            "occurrence_date": "2026-09-24",
+            "proposition": "Meta公布了面向Muse AI助手的Charm手持设备，设备约为AirPods充电盒大小，配备约2英寸触摸屏和内置5G连接。",
+            "subject_time": null
+          },
+          "candidate_index": 0,
+          "case_id": "case_60c15d9684554034aff58d5075f082c5",
+          "created_at": "2026-09-24T15:54:54.229277Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E167",
+          "runtime_signature": "1722f5bc4e9b84d7b976c63a99e98b2a77ff7ea4fbe07a0c24912dabe4d268a5",
+          "snapshot_version": 25,
+          "source_message_id": "std_551674f9186849c492121dd331344d81",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "EXPECTED",
+            "entities": [
+              "Meta Platforms",
+              "Meta Charm",
+              "Muse AI"
+            ],
+            "occurrence_date": "2026-09-24",
+            "proposition": "Meta预计Charm将在2026年12月假日季前后出货。",
+            "subject_time": "2026年12月假日季"
+          },
+          "candidate_index": 1,
+          "case_id": "case_60c15d9684554034aff58d5075f082c5",
+          "created_at": "2026-09-24T15:54:54.251438Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E168",
+          "runtime_signature": "876624ac39a29346f002f01adb2d238d94305a3d3881e1358ee4e5ce79487700",
+          "snapshot_version": 26,
+          "source_message_id": "std_551674f9186849c492121dd331344d81",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Meta Platforms",
+              "Meta VR Glasses",
+              "Qualcomm"
+            ],
+            "occurrence_date": "2026-09-24",
+            "proposition": "Meta公布了售价1299美元的Meta VR Glasses；其独立计算盒包含Qualcomm处理器和电池。",
+            "subject_time": null
+          },
+          "candidate_index": 2,
+          "case_id": "case_60c15d9684554034aff58d5075f082c5",
+          "created_at": "2026-09-24T15:54:54.269392Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E169",
+          "runtime_signature": "b07fb9943fe48bf606726bc505df2f90c9d9310afff1abf7680a6c6b6adcf779",
+          "snapshot_version": 27,
+          "source_message_id": "std_551674f9186849c492121dd331344d81",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "SCHEDULED",
+            "entities": [
+              "Meta Platforms",
+              "Meta VR Glasses"
+            ],
+            "occurrence_date": "2026-09-24",
+            "proposition": "Meta VR Glasses计划于2027年春季上市。",
+            "subject_time": "2027年春季"
+          },
+          "candidate_index": 3,
+          "case_id": "case_60c15d9684554034aff58d5075f082c5",
+          "created_at": "2026-09-24T15:54:54.280781Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E170",
+          "runtime_signature": "99de690a145c815cadf222aee919bf62f679a6917fd4311f3c681ae406a8e780",
+          "snapshot_version": 28,
+          "source_message_id": "std_551674f9186849c492121dd331344d81",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Meta Platforms",
+              "EssilorLuxottica",
+              "Ray-Ban Meta Audio"
+            ],
+            "occurrence_date": "2026-09-24",
+            "proposition": "Meta推出了无摄像头、侧重音频和AI功能的Ray-Ban Meta Audio智能眼镜，起售价为349美元。",
+            "subject_time": null
+          },
+          "candidate_index": 4,
+          "case_id": "case_60c15d9684554034aff58d5075f082c5",
+          "created_at": "2026-09-24T15:54:54.297592Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E171",
+          "runtime_signature": "bb865094de616f8d93f3eb42632e48cb64f17878bbd099c8adfca98e59114d0b",
+          "snapshot_version": 29,
+          "source_message_id": "std_551674f9186849c492121dd331344d81",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "SCHEDULED",
+            "entities": [
+              "Meta Platforms",
+              "EssilorLuxottica",
+              "Ray-Ban Meta Audio"
+            ],
+            "occurrence_date": "2026-09-24",
+            "proposition": "Ray-Ban Meta Audio计划于2026年10月13日开始出货。",
+            "subject_time": "2026年10月13日"
+          },
+          "candidate_index": 5,
+          "case_id": "case_60c15d9684554034aff58d5075f082c5",
+          "created_at": "2026-09-24T15:54:54.307863Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E172",
+          "runtime_signature": "4f1a6d91a72ba5f2d04f2665ab3c75bb3bf960437ca6a84285dbd03ef91c3080",
+          "snapshot_version": 30,
+          "source_message_id": "std_551674f9186849c492121dd331344d81",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Meta Platforms",
+              "Ray-Ban Meta",
+              "EssilorLuxottica"
+            ],
+            "occurrence_date": "2026-09-24",
+            "proposition": "Meta推出了保留摄像头的第三代Ray-Ban Meta眼镜，起售价为449美元。",
+            "subject_time": null
+          },
+          "candidate_index": 6,
+          "case_id": "case_60c15d9684554034aff58d5075f082c5",
+          "created_at": "2026-09-24T15:54:54.341085Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E173",
+          "runtime_signature": "25f7187e15ef21d4d24eb23952996229380623910eaeed93a5f7d1c84d8010d8",
+          "snapshot_version": 31,
+          "source_message_id": "std_551674f9186849c492121dd331344d81",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "RUMORED",
+            "entities": [
+              "Micron Technology",
+              "MT68A512M32DF-28",
+              "GDDR7"
+            ],
+            "occurrence_date": "2026-09-24",
+            "proposition": "据报道，Micron产品目录将28 Gbps D8FHL 2GB GDDR7芯片（MT68A512M32DF-28）列为EOL。",
+            "subject_time": "截至2026-09-24的产品目录状态"
+          },
+          "candidate_index": 0,
+          "case_id": "case_45177c3cd63d4e2ea2138e5826a218ed",
+          "created_at": "2026-09-24T15:58:07.852782Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E174",
+          "runtime_signature": "68dd8a14cfb1fd880d8e32558d843433b9f0be654d74d5a9141010320629c2a3",
+          "snapshot_version": 32,
+          "source_message_id": "std_a7b79470417e4a3ba64214150b138fe9",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "RUMORED",
+            "entities": [
+              "Micron Technology",
+              "GDDR7"
+            ],
+            "occurrence_date": "2026-09-24",
+            "proposition": "据报道，Micron的32 Gbps 2GB GDDR7版本也被列为EOL，3GB模块成为其唯一剩余的GDDR7产品。",
+            "subject_time": "截至2026-09-24的GDDR7产品组合状态"
+          },
+          "candidate_index": 1,
+          "case_id": "case_45177c3cd63d4e2ea2138e5826a218ed",
+          "created_at": "2026-09-24T15:58:07.864155Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E175",
+          "runtime_signature": "3fa9792c5043f9ba461a887b586a8f6d07aed6af2273daac9a39360948e598d5",
+          "snapshot_version": 33,
+          "source_message_id": "std_a7b79470417e4a3ba64214150b138fe9",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "PLANNED",
+            "entities": [
+              "Qualcomm",
+              "TSMC"
+            ],
+            "occurrence_date": "2026-09-24",
+            "proposition": "Qualcomm已确认其已宣布的全部2nm产品计划由TSMC制造。",
+            "subject_time": "Qualcomm已宣布的2nm产品"
+          },
+          "candidate_index": 0,
+          "case_id": "case_d0b72be1b1d447189e02ac468adff9ea",
+          "created_at": "2026-09-24T15:59:19.976468Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E176",
+          "runtime_signature": "0fe0be27ca06f829cc6a10bb9323a73134b138313555805244a5fc14c4de2185",
+          "snapshot_version": 34,
+          "source_message_id": "std_18fb4f84976c47978aa9bfa2bdcf1153",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Qualcomm",
+              "Snapdragon 8 Elite Gen 6",
+              "Snapdragon 8 Elite Extreme Gen 6"
+            ],
+            "occurrence_date": "2026-09-24",
+            "proposition": "Qualcomm发布了Snapdragon 8 Elite Gen 6和Snapdragon 8 Elite Extreme Gen 6两款2nm旗舰移动应用处理器。",
+            "subject_time": "新一代旗舰移动平台"
+          },
+          "candidate_index": 1,
+          "case_id": "case_d0b72be1b1d447189e02ac468adff9ea",
+          "created_at": "2026-09-24T15:59:19.987390Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E177",
+          "runtime_signature": "7a5716e77aff1d8992e156afc61116363d0f767b93ff926dd772955f72aaa470",
+          "snapshot_version": 35,
+          "source_message_id": "std_18fb4f84976c47978aa9bfa2bdcf1153",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Xiaomi",
+              "Xiaomi 18 Pro",
+              "Qualcomm",
+              "Snapdragon 8 Elite Gen 6",
+              "Snapdragon 8 Elite Extreme Gen 6"
+            ],
+            "occurrence_date": "2026-09-24",
+            "proposition": "小米推出了首批搭载上述Qualcomm 2nm移动平台的Xiaomi 18 Pro系列设备。",
+            "subject_time": "新Qualcomm 2nm平台的首批终端"
+          },
+          "candidate_index": 2,
+          "case_id": "case_d0b72be1b1d447189e02ac468adff9ea",
+          "created_at": "2026-09-24T15:59:19.996696Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E178",
+          "runtime_signature": "49a7e2a0b060feb7e934edbd0dfed10bdffac8994867ef12ab6a418ceaa0834e",
+          "snapshot_version": 36,
+          "source_message_id": "std_18fb4f84976c47978aa9bfa2bdcf1153",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Ligent Technologies",
+              "Hong Kong Stock Exchange"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Ligent Technologies于2026年9月22日在香港交易所主板正式挂牌上市。",
+            "subject_time": null
+          },
+          "candidate_index": 0,
+          "case_id": "case_83a542ab306a474a86e85d696fe6671d",
+          "created_at": "2026-09-24T15:59:24.240084Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E179",
+          "runtime_signature": "ea66086e20bfcc1d9bd9f9f2b9637ddd6cd3a95f84de6c2e89ea7e337804a383",
+          "snapshot_version": 37,
+          "source_message_id": "std_e48630543a154b74921478163071b01b",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Ligent Technologies",
+              "Citigroup",
+              "CITIC Securities"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Ligent Technologies此次全球发售172,014,700股，发行价为每股HK$32.96，募得约HK$5.67 billion总募资。",
+            "subject_time": null
+          },
+          "candidate_index": 1,
+          "case_id": "case_83a542ab306a474a86e85d696fe6671d",
+          "created_at": "2026-09-24T15:59:24.246345Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E180",
+          "runtime_signature": "710bdffe812586e553d65383357522b5b60572d0c4209fa47f0858aec3224f3f",
+          "snapshot_version": 38,
+          "source_message_id": "std_e48630543a154b74921478163071b01b",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "Ligent Technologies"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Ligent Technologies的IPO招股书预计净募资约HK$5.45 billion。",
+            "subject_time": "IPO proceeds"
+          },
+          "candidate_index": 2,
+          "case_id": "case_83a542ab306a474a86e85d696fe6671d",
+          "created_at": "2026-09-24T15:59:24.254502Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E181",
+          "runtime_signature": "5958a52c81e6f368d5b0642cff7386166d2c1ca57c4406ba7c14c6d11a4e4ba8",
+          "snapshot_version": 39,
+          "source_message_id": "std_e48630543a154b74921478163071b01b",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "PLAN",
+            "entities": [
+              "Ligent Technologies"
+            ],
+            "occurrence_date": "2026-09-22",
+            "proposition": "Ligent Technologies的IPO净募资计划主要用于下一代产品与技术研发、扩充光模块和光芯片产能、销售及全球扩张，以及战略投资和收购。",
+            "subject_time": "IPO proceeds deployment"
+          },
+          "candidate_index": 3,
+          "case_id": "case_83a542ab306a474a86e85d696fe6671d",
+          "created_at": "2026-09-24T15:59:24.261124Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E182",
+          "runtime_signature": "ffb65f8993483fbc88318376a6a9e54c12ff7501dc66009443afc305bd87796b",
+          "snapshot_version": 40,
+          "source_message_id": "std_e48630543a154b74921478163071b01b",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Ligent Technologies"
+            ],
+            "occurrence_date": null,
+            "proposition": "Ligent Technologies在2026年上半年实现收入CNY5.393 billion，同比增长27.91%。",
+            "subject_time": "H1 2026"
+          },
+          "candidate_index": 4,
+          "case_id": "case_83a542ab306a474a86e85d696fe6671d",
+          "created_at": "2026-09-24T15:59:24.267138Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E183",
+          "runtime_signature": "1e635cc7e3da9cef848e9f0a2890474b7fcbda60d5fd2fb5a9c35963045d95f3",
+          "snapshot_version": 41,
+          "source_message_id": "std_e48630543a154b74921478163071b01b",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Ligent Technologies"
+            ],
+            "occurrence_date": null,
+            "proposition": "Ligent Technologies在2026年上半年实现净利润CNY656 million，同比增长28.76%。",
+            "subject_time": "H1 2026"
+          },
+          "candidate_index": 5,
+          "case_id": "case_83a542ab306a474a86e85d696fe6671d",
+          "created_at": "2026-09-24T15:59:24.273462Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E184",
+          "runtime_signature": "b9822b1a274892b40a5631a4967bfa640d40fc6515e888f84e18e1d42c5166b7",
+          "snapshot_version": 42,
+          "source_message_id": "std_e48630543a154b74921478163071b01b",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Ligent Technologies"
+            ],
+            "occurrence_date": null,
+            "proposition": "Datacom光模块业务在Ligent Technologies 2026年上半年总收入中占69.4%。",
+            "subject_time": "H1 2026"
+          },
+          "candidate_index": 6,
+          "case_id": "case_83a542ab306a474a86e85d696fe6671d",
+          "created_at": "2026-09-24T15:59:24.281641Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E185",
+          "runtime_signature": "629214abce23cacf475eea326e3bfbe7d16337b6ebd3839ca6b9d887a6fc2364",
+          "snapshot_version": 43,
+          "source_message_id": "std_e48630543a154b74921478163071b01b",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Ligent Technologies"
+            ],
+            "occurrence_date": null,
+            "proposition": "Ligent Technologies在2026年已实现800G和1.6T光模块量产。",
+            "subject_time": "2026"
+          },
+          "candidate_index": 7,
+          "case_id": "case_83a542ab306a474a86e85d696fe6671d",
+          "created_at": "2026-09-24T15:59:24.289249Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E186",
+          "runtime_signature": "077d84433119a1c454156da3d1051536e9ed93282006a6ff1087020c570a8e58",
+          "snapshot_version": 44,
+          "source_message_id": "std_e48630543a154b74921478163071b01b",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ONGOING",
+            "entities": [
+              "Japanese MLCC suppliers",
+              "Korean MLCC suppliers",
+              "MLCC",
+              "AI applications",
+              "Consumer electronics"
+            ],
+            "occurrence_date": null,
+            "proposition": "日韩主要MLCC供应商正在减少面向消费电子的供给，并将产能重新分配至AI相关应用。",
+            "subject_time": "当前MLCC产能分配"
+          },
+          "candidate_index": 0,
+          "case_id": "case_47c34ed4edf8484a9c346fe2a3539dda",
+          "created_at": "2026-09-24T16:01:29.601110Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E187",
+          "runtime_signature": "42ac834baa18ff546ba5619249ef011bfbbe40c7a6e43ce3e189cf4a5645cf51",
+          "snapshot_version": 45,
+          "source_message_id": "std_f577c25046134d56a9b17bf6e9c6ac1d",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "PLAN",
+            "entities": [
+              "Murata",
+              "GRM",
+              "MLCC",
+              "AI servers",
+              "Data centers"
+            ],
+            "occurrence_date": "2026-09-10",
+            "proposition": "Murata宣布计划停产部分消费级通用GRM产品及部分车规级产品，并将重点转向面向AI服务器、数据中心和汽车电子的先进高容产品。",
+            "subject_time": "2026-09-10宣布的产品转换计划"
+          },
+          "candidate_index": 1,
+          "case_id": "case_47c34ed4edf8484a9c346fe2a3539dda",
+          "created_at": "2026-09-24T16:01:29.612649Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E188",
+          "runtime_signature": "485d4060aa0c50fa7fbe8ce494e62c3ea71d1cbdab8113da8d09d7a6df575f94",
+          "snapshot_version": 46,
+          "source_message_id": "std_f577c25046134d56a9b17bf6e9c6ac1d",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "SCHEDULED",
+            "entities": [
+              "Murata",
+              "MLCC"
+            ],
+            "occurrence_date": "2026-09-10",
+            "proposition": "Murata相关产品订单将接受至2028年，最终出货计划于2029年完成。",
+            "subject_time": "2028年订单截止及2029年最终出货"
+          },
+          "candidate_index": 2,
+          "case_id": "case_47c34ed4edf8484a9c346fe2a3539dda",
+          "created_at": "2026-09-24T16:01:29.641946Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E189",
+          "runtime_signature": "ff308a141e8124f0b07bdd9498e53523febb84c9018b7b59d72646c6bcb45877",
+          "snapshot_version": 47,
+          "source_message_id": "std_f577c25046134d56a9b17bf6e9c6ac1d",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "RUMORED",
+            "entities": [
+              "Dell",
+              "HP",
+              "ASUS",
+              "Acer",
+              "Chinese suppliers"
+            ],
+            "occurrence_date": null,
+            "proposition": "Dell、HP、ASUS和Acer据报已完成对中国供应商的相关资格认证。",
+            "subject_time": "当前全球品牌供应商资格状态"
+          },
+          "candidate_index": 3,
+          "case_id": "case_47c34ed4edf8484a9c346fe2a3539dda",
+          "created_at": "2026-09-24T16:01:29.662951Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E190",
+          "runtime_signature": "ed4667ed0d8f88eb82dce496dfc61706bda6b65e7e1715f9096ed972e63db7d7",
+          "snapshot_version": 48,
+          "source_message_id": "std_f577c25046134d56a9b17bf6e9c6ac1d",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ONGOING",
+            "entities": [
+              "Dell",
+              "HP",
+              "ASUS",
+              "Acer",
+              "Huaqin",
+              "LCFC",
+              "Luxshare",
+              "Quanta",
+              "Pegatron",
+              "Viiyong",
+              "Chaozhou Three-Circle",
+              "MLCC"
+            ],
+            "occurrence_date": null,
+            "proposition": "Dell、HP和ASUS等品牌在ODM引荐下开始认证Viiyong和潮州三环等中国供应商的MLCC产品，Quanta和Pegatron也已启动相关认证程序。",
+            "subject_time": "当前MLCC替代供应商资格推进"
+          },
+          "candidate_index": 4,
+          "case_id": "case_47c34ed4edf8484a9c346fe2a3539dda",
+          "created_at": "2026-09-24T16:01:29.673203Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E191",
+          "runtime_signature": "86ae0d68d54aa2b4a756a16d69e1748d6413a9fdd75c7a21e9d22b74b449c686",
+          "snapshot_version": 49,
+          "source_message_id": "std_f577c25046134d56a9b17bf6e9c6ac1d",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "NVIDIA",
+              "Jensen Huang",
+              "OpenAI",
+              "Anthropic"
+            ],
+            "occurrence_date": null,
+            "proposition": "NVIDIA CEO Jensen Huang表示，如果前沿AI实验室无法控制不安全的实验，就应当关停这些实验室。",
+            "subject_time": "当前前沿AI安全与监管讨论"
+          },
+          "candidate_index": 0,
+          "case_id": "case_6b80576f917c453e8c69e88f90e73950",
+          "created_at": "2026-09-24T16:03:54.523008Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E192",
+          "runtime_signature": "0e72c95280acd6d1de5ea516ae7028d0ac090294b06e9ab8325acfe8db5b002a",
+          "snapshot_version": 50,
+          "source_message_id": "std_b3d0228e8c5d422dac66b64f82fabd74",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "OpenAI",
+              "Anthropic",
+              "SpaceXAI"
+            ],
+            "occurrence_date": null,
+            "proposition": "OpenAI、Anthropic和SpaceXAI面临一项反垄断诉讼，诉讼指称其共同放缓模型开发的计划具有自利性。",
+            "subject_time": "当前反垄断诉讼状态"
+          },
+          "candidate_index": 1,
+          "case_id": "case_6b80576f917c453e8c69e88f90e73950",
+          "created_at": "2026-09-24T16:03:54.553381Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E193",
+          "runtime_signature": "e4a60cb38e630d7d0a5905f1479e41c598c6739ee8059c60f078e17c4133185f",
+          "snapshot_version": 51,
+          "source_message_id": "std_b3d0228e8c5d422dac66b64f82fabd74",
+          "ticker": "INTC",
+          "trading_date": "2026-09-24"
+        }
+      ]
+    }
+  },
+  "source": {
+    "admission_context": {
+      "cutoff": null,
+      "mode": "REALTIME",
+      "policy_version": 1,
+      "source_task_id": null,
+      "sweep_id": null,
+      "window_start": null
+    },
+    "binding_id": "INTC:huggingnews_rss",
+    "business_version": 1,
+    "collected_at": "2026-09-24T16:56:01.122349Z",
+    "eligibility_at": "2026-09-24T16:56:01.116492Z",
+    "logical_message_id": "message_4a598cf895eb45ee933468f330d26c58",
+    "member_count": 1,
+    "member_message_ids": [
+      "std_83026e437db5407aa3d745ab6fd3f5fd"
+    ],
+    "message_bus_event_time": "2026-09-24T16:56:01.122349Z",
+    "normalized_at": null,
+    "previous_raw_message_id": null,
+    "publication_time_basis": "EXACT",
+    "published_at": "2026-09-24T16:40:30.813000Z",
+    "snapshot": {
+      "body": "← Back to live feed · 1 stories across 1 day\nThursday, Sep 24, 2026\n1 story1 Trump and Xi Reject AI Slowdowns to Preserve Development Pace AI Sep 24, 7:26 AM EDT 58/32 \n The U.S. and China have decided to avoid new limits on super intelligence after a summit between Donald Trump and Xi Jinping in Washington on Sept 24. Trump stated on Truth Social that he and Xi wish to leave the technology's status \"exactly where it is,\" effectively ending active debate regarding a potential slowdown in progress. Trump designated the U.S. Department of Justice as the primary regulatory guardrail for the industry, while officials from both nations discussed the creation of an AI incident-alert channel to coordinate on systemic risks.\nPresident Xi characterized both countries as AI powers with the shared capability and responsibility to ensure the technology remains under human control. This bilateral alignment contrasts with pleas for international coordination from OpenAI CEO Sam Altman and Anthropic CEO Dario Amodei at a UN Security Council meeting on Sept 23. At that event, White House Science and Technology Policy Director Michael Kratsios rejected any \"globalist scheme\" of control, asserting that rapid advancement should not lead to new global governance structures.",
+      "ticker": "INTC",
+      "title": "Trump and Xi Reject AI Slowdowns to Preserve Development Pace"
+    },
+    "source_id": "huggingnews_rss",
+    "source_message_id": "std_83026e437db5407aa3d745ab6fd3f5fd",
+    "stream_item_id": "stream_b25b98b0d5854128a5219e994c3ade13",
+    "update_kind": "NEW_MESSAGE",
+    "url": "https://huggingnews.com/ai/trump-and-xi-reject-ai-slowdowns-to-preserve-development-pace-c7dbb134"
+  },
+  "w1_final": {
+    "confidence": "normal",
+    "fact_attributions": [],
+    "reason": "当前消息的核心事实是9月24日Trump-Xi华盛顿峰会及双方决定不对超级智能施加新限制、指定DOJ为AI行业主要监管护栏、讨论建立AI事件警报通道。这些政府间双边政策决定及峰会本身在E3（企业AI领袖讨论放慢开发）和E4（股市反应）的已知Facts中均无任何覆盖。",
+    "reference_ids": [],
+    "result": "NEW"
+  },
+  "w2_final": {
+    "confidence": "normal",
+    "matched_condition_ids": [],
+    "policy_ids": [],
+    "reason": "该消息报道美中西方峰会后拒绝对新AI限制，属于宏观AI治理政策层面的双边表态，未涉及任何具体Intel客户采购、生产部署、供应链、产品资格、财务数据或监管规则对Intel产品的实际限制/禁止。消息的核心事实是'不施加新限制'，与所有Policy criterion所要求的Intel具体运营变化（订单、交付、良率、客户迁移、政府禁令生效等）无直接、实质性的触发关系。"
+  },
+  "w2_alignment": null,
+  "version_pin": {
+    "activation_revision_id": "runtime-maintain-1a4c4e7cc2a92ac218aeed4e-activation",
+    "document1_run_id": "init-intc-738849dbdbb04ae1a39efa0aec69c071-d1",
+    "document2_run_id": "init-intc-738849dbdbb04ae1a39efa0aec69c071-d2",
+    "event_library_root": "/data/runtime/runtime_artifacts/runtime-maintain-1a4c4e7cc2a92ac218aeed4e/events",
+    "event_library_version": 2,
+    "policy_set_version": 2,
+    "provisional_snapshot_version": 51,
+    "runtime_projection_version": 2
+  },
+  "runtime_mode": "REALTIME",
+  "trading_date": "2026-09-24"
+}

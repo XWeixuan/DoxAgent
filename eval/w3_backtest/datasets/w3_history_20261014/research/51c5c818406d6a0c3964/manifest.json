@@ -1,0 +1,14 @@
+{
+  "research_key": "51c5c818406d6a0c3964",
+  "ticker": "RKLB",
+  "version_pin": {
+    "activation_revision_id": "runtime-maintain-d1faf8ea5ce7f624a956f64b-activation",
+    "document1_run_id": "init-rklb-9631e4071e75470a97313eafbbdc51aa-d1",
+    "document2_run_id": "init-rklb-9631e4071e75470a97313eafbbdc51aa-d2",
+    "event_library_root": "/data/runtime/runtime_artifacts/runtime-maintain-d1faf8ea5ce7f624a956f64b/events",
+    "event_library_version": 7,
+    "policy_set_version": 6,
+    "provisional_snapshot_version": 4,
+    "runtime_projection_version": 6
+  }
+}

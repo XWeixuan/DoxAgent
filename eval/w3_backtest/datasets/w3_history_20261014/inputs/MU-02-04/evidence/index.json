@@ -1,0 +1,23 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-29T18:36:54.140876Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "The confidential prospectus itself was not retrieved. The full filing passages, contract table, total calculation, and exact obligations remain independently unverified.",
+    "The Reuters syndicated result is dated Sep. 29 without a verifiable publication time, and the Sep. 29 Information SpaceX result lacks a visible date/time. The approximately 80% non-cancelable/pay-regardless detail and $84.5 billion SpaceX figure therefore cannot be placed with confidence before the cutoff from these pages.",
+    "No evidence found identifies Micron as an Anthropic supplier or connects the commitments to Micron HBM, DRAM, NAND, qualification, bit shipments, revenue, or capacity.",
+    "The retrieved material does not establish actual usage, delivery timing, capacity energization, cancellation or breach outcomes, or the amount of future cash paid in any particular period."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

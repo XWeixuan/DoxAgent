@@ -1,0 +1,23 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-10-06T17:10:11.647887Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "No independent editorial report or independent reproduction with a verifiable publication time before the cutoff was located in the focused search.",
+    "The Intel article page has no visible revision history. Its pre-cutoff captured body is supported by the supplied capture metadata and the 17:05 UTC syndication copy, but any later edits to the current live page cannot be dated.",
+    "The Intel newsroom index shows additional October 6 posts but gives no clock times, so their ordering relative to the 17:10:11.647887Z cutoff is unverified.",
+    "The benchmark disclosure does not provide named customer production deployments, order commitments, or comparative instance-cost/TCO results."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

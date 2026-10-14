@@ -1,0 +1,202 @@
+{
+  "case_key": "EXTRA-RKLB-NASA",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-10-06T12:05:00Z",
+  "reviewed_at": "2026-10-13T22:58:31.535075Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 6,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a13750-3f96-7260-83c9-1cf74e828969",
+    "turn_id": "01a13750-3fb0-7cf3-84ff-16e559b6fc8e",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 88832,
+        "inputTokens": 100163,
+        "outputTokens": 16964,
+        "reasoningOutputTokens": 14916,
+        "totalTokens": 117127
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 385536,
+        "inputTokens": 490073,
+        "outputTokens": 24046,
+        "reasoningOutputTokens": 21422,
+        "totalTokens": 514119
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "caa97ad419f99d7ac1dec10aade00830c944f3324e05eb8e81fee36d1b9787d7",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://news.bloomberglaw.com/federal-contracting/nasa-eyes-bulk-rocket-buy-for-moon-base-amid-spacex-phaseout",
+      "title": "NASA Eyes Bulk Rocket Buy for Moon Base Amid SpaceX Phaseout",
+      "published_at": "2026-10-06T12:00:00Z",
+      "time_precision": "EXACT",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn3search0"
+      ],
+      "source_call_ids": [
+        "exec-6d076053-3ae5-4ab5-8fbd-9328129d1503"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://www.nasa.gov/wp-content/uploads/2026/03/building-the-moon-base-1.pdf",
+      "title": "NASA Unveils Plan to Establish America’s First Moon Base",
+      "published_at": "2026-03-24",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn3search14",
+        "turn3search2"
+      ],
+      "source_call_ids": [
+        "exec-6d076053-3ae5-4ab5-8fbd-9328129d1503"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://www.nasa.gov/news-release/nasa-adds-blue-origin-new-glenn-9x4-to-launch-services-contract/",
+      "title": "NASA Adds Blue Origin New Glenn 9x4 to Launch Services Contract",
+      "published_at": "2026-09-29",
+      "time_precision": "DAY",
+      "updated_at": "2026-09-29",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "BEFORE_CUTOFF",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "The supplied publication and revision times do not exceed the case cutoff.",
+      "source_result_refs": [
+        "turn5search0"
+      ],
+      "source_call_ids": [
+        "exec-dced84b2-aeed-44fe-8ac9-8f423273a464"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://oig.nasa.gov/news/examining-the-commercial-lander-services-powering-nasas-return-to-the-moon/",
+      "title": "Examining the Commercial Lander Services Powering NASA’s Return to the Moon",
+      "published_at": "2026-05-18",
+      "time_precision": "DAY",
+      "updated_at": "2026-08-13",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "BEFORE_CUTOFF",
+      "content_state": "UPDATED",
+      "decision": "KEEP",
+      "reason": "The supplied publication and revision times do not exceed the case cutoff.",
+      "source_result_refs": [
+        "turn3search4"
+      ],
+      "source_call_ids": [
+        "exec-6d076053-3ae5-4ab5-8fbd-9328129d1503"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S5",
+      "url": "https://www.nasa.gov/wp-content/uploads/2026/04/moon-base-architecture-users-guide.pdf",
+      "title": "Moon Base Architecture User’s Guide",
+      "published_at": null,
+      "time_precision": "UNKNOWN",
+      "updated_at": null,
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn0search14",
+        "turn3search16"
+      ],
+      "source_call_ids": [
+        "exec-6d076053-3ae5-4ab5-8fbd-9328129d1503",
+        "exec-f33f7093-81fd-4e23-bd74-c8fb113d9adc"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "NASA’s March 2026 plan already contemplated dozens of commercial launches annually for Moon Base missions, up to 25 Phase 1 missions through 2029, and up to 60 tons of cargo during 2029–2032. Inference from comparing the plan with the later report: the new information is a possible near-term bulk-purchase mechanism/timing, not the first public indication of large launch demand.",
+      "source_urls": [
+        "https://www.nasa.gov/wp-content/uploads/2026/03/building-the-moon-base-1.pdf",
+        "https://www.nasa.gov/ignition/"
+      ],
+      "event_time": "2026-03-24",
+      "publication_time": "2026-03-24",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The NASA plan describes program scale and intent, not a binding launch order, provider selection, or specific Rocket Lab work."
+    },
+    {
+      "observation": "At 12:00 UTC on Oct. 6, Bloomberg reported NASA was close to announcing bulk rocket launches for its Moon Base program and cited launch-supply constraints amid high demand. The publicly visible passage begins with García-Galán describing evaluation of bulk buys; the source excerpt does not show a final procurement.",
+      "source_urls": [
+        "https://news.bloomberglaw.com/federal-contracting/nasa-eyes-bulk-rocket-buy-for-moon-base-amid-spacex-phaseout"
+      ],
+      "event_time": null,
+      "publication_time": "2026-10-06T12:00:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The available article opening is truncated. It does not specify providers, number or value of launches, task orders, windows, or an executed purchase; the article title’s “SpaceX Phaseout” framing is not explained in the visible passage."
+    },
+    {
+      "observation": "On Sep. 29 NASA added Blue Origin’s New Glenn 9x4 launch service to the NLS II contract, making it available for future NASA missions. This was a recent expansion of the eligible launch-services framework before the Bloomberg report.",
+      "source_urls": [
+        "https://www.nasa.gov/news-release/nasa-adds-blue-origin-new-glenn-9x4-to-launch-services-contract/"
+      ],
+      "event_time": "2026-09-29",
+      "publication_time": "2026-09-29",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The release does not award a Moon Base mission or connect the added service to the reported bulk purchase."
+    },
+    {
+      "observation": "NASA OIG’s May 2026 article, last updated Aug. 13, summarized earlier CLPS schedule delays, launch-time overruns, cost increases, and vendor financial strain. This is a contemporaneous execution-risk caveat for lunar-delivery plans, not a report on the Oct. 6 purchase possibility.",
+      "source_urls": [
+        "https://oig.nasa.gov/news/examining-the-commercial-lander-services-powering-nasas-return-to-the-moon/"
+      ],
+      "event_time": "2024-06",
+      "publication_time": "2026-05-18",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The cited findings concern CLPS lunar lander task orders and do not establish a constraint or outcome for any specific launch-services bulk buy."
+    }
+  ],
+  "gaps": [
+    "No independent same-event report with a demonstrable publication time at or before 2026-10-06T12:05:00Z was identified.",
+    "The accessible Bloomberg opening does not verify the order’s formal status, number of launches, provider mix, award value, schedule, or any Rocket Lab-specific assignment.",
+    "The report title refers to a SpaceX phaseout, but the available pre-cutoff text does not establish what is being phased out or its operational implications.",
+    "A NASA April architecture-guide search excerpt suggested earlier mixed-fleet/block-buy language, but the oversized PDF could not be opened and its exact publication/revision time and pre-cutoff snapshot could not be verified; it is excluded from the observations."
+  ],
+  "research_notes": "Cutoff: 2026-10-06T12:05:00Z. The Bloomberg item is timestamped 12:00 UTC; only its available opening is used, not unavailable later passages or subsequent coverage. NASA’s earlier public plan establishes substantial launch demand before the report. The contrast between that broad plan and Bloomberg’s tentative near-term bulk-buy report is an inference, not evidence of a completed procurement. No independent same-event report with a verifiable publication time before cutoff was found."
+}

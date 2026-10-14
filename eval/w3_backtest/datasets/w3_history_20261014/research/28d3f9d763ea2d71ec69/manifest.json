@@ -1,0 +1,14 @@
+{
+  "research_key": "28d3f9d763ea2d71ec69",
+  "ticker": "INTC",
+  "version_pin": {
+    "activation_revision_id": "init-intc-738849dbdbb04ae1a39efa0aec69c071-activation",
+    "document1_run_id": "init-intc-738849dbdbb04ae1a39efa0aec69c071-d1",
+    "document2_run_id": "init-intc-738849dbdbb04ae1a39efa0aec69c071-d2",
+    "event_library_root": null,
+    "event_library_version": 1,
+    "policy_set_version": 1,
+    "provisional_snapshot_version": 26,
+    "runtime_projection_version": 1
+  }
+}

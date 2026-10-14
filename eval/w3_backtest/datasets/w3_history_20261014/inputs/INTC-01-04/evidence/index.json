@@ -1,0 +1,24 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-30T11:17:22.645750Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "No direct pre-cutoff Google or Intel disclosure confirming the reported adoption, naming the TPU generation/model, stating qualification completion, or documenting a binding order, reserved capacity, paid production packages, volume or shipment schedule was located in this bounded search.",
+    "The actual date and stage of any customer decision are unknown; the reports provide publication times, not the event time.",
+    "The Counterpoint September 29 page’s current indexed EMIB-T sentence lacks a verified pre-cutoff snapshot or revision history, so its presence in the original dated release cannot be established.",
+    "The phrase “next-generation TPU” in the September 30 reports is not model-specific; it cannot be confidently reconciled with Counterpoint’s earlier TPU v8e/Humufish status description.",
+    "The bounded search identifies the earliest located report and earliest time-stamped coverage, but cannot establish absolute first circulation or recover the original SemiAnalysis publication timestamp."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

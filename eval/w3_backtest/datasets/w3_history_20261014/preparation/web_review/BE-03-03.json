@@ -1,0 +1,314 @@
+{
+  "case_key": "BE-03-03",
+  "evidence_cutoff_at": "2026-09-29T18:17:35.980228Z",
+  "reviewed_at": "2026-10-13T22:58:31.455607Z",
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a13748-f63e-70f0-9300-c458b2b1afdf",
+    "turn_id": "01a13748-f64e-78b3-a761-df0770c5bef9",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 127744,
+        "inputTokens": 137524,
+        "outputTokens": 15311,
+        "reasoningOutputTokens": 10833,
+        "totalTokens": 152835
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 1004800,
+        "inputTokens": 1148774,
+        "outputTokens": 29694,
+        "reasoningOutputTokens": 24117,
+        "totalTokens": 1178468
+      }
+    },
+    "prompt_version": "w3-web-evidence-v1",
+    "input_fingerprint": "55af645d0537f3380670d6fb07f246feacd66ece12c69850d93b53383d209a6f",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://www.theinformation.com/articles/anthropic-clinched-517-billion-compute-deals-11-months",
+      "title": "How Anthropic Clinched $517 Billion in Compute Deals in 11 Months",
+      "published_at": "2026-09-06T15:00:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn0search1"
+      ],
+      "source_call_ids": [
+        "exec-14aba957-2e8c-4dfe-a2b1-c03ab411000a"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://www.theinformation.com/articles/anthropic-strikes-13-7-billion-compute-deal-trump-linked-rum-group",
+      "title": "Anthropic Strikes $13.7 Billion Compute Deal With Trump-Linked Rum Group",
+      "published_at": "2026-09-14T01:07:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn4search1"
+      ],
+      "source_call_ids": [
+        "exec-5bc71889-f7f6-46f8-bee3-877638144b2c"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://www.anthropic.com/news/series-h",
+      "title": "Anthropic raises $65B in Series H funding at $965B post-money valuation",
+      "published_at": "2026-05-28",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn4search0"
+      ],
+      "source_call_ids": [
+        "exec-5bc71889-f7f6-46f8-bee3-877638144b2c"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://www.investing.com/news/stock-market-news/exclusiveanthropics-ipo-prospectus-shows-sweeping-ai-vision-surging-costs-4921382",
+      "title": "Exclusive-Anthropic’s IPO prospectus shows sweeping AI vision, surging costs",
+      "published_at": "2026-09-28",
+      "time_precision": "DAY",
+      "updated_at": "2026-09-28",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "BEFORE_CUTOFF",
+      "content_state": "UPDATED",
+      "decision": "KEEP",
+      "reason": "The supplied publication and revision times do not exceed the case cutoff.",
+      "source_result_refs": [
+        "turn1search2"
+      ],
+      "source_call_ids": [
+        "exec-abd425e6-54b0-4d70-ad6d-ed7a9471baf6"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S5",
+      "url": "https://www.investing.com/news/stock-market-news/anthropics-518-billion-ai-buildout-hinges-largely-on-deals-that-cannot-be-canceled-filing-shows-4922031",
+      "title": "Anthropic’s $518 billion AI buildout hinges largely on deals that cannot be canceled, filing shows",
+      "published_at": "2026-09-29",
+      "time_precision": "DAY",
+      "updated_at": "2026-09-29",
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UPDATED",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn1search1"
+      ],
+      "source_call_ids": [
+        "exec-abd425e6-54b0-4d70-ad6d-ed7a9471baf6"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S6",
+      "url": "https://www.theinformation.com/briefings/anthropic-discloses-84-5-billion-spacex-compute-agreements",
+      "title": "Anthropic Discloses up to $84.5 Billion in SpaceX Compute Agreements",
+      "published_at": "2026-09-29T15:24:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn3search0",
+        "turn6search0"
+      ],
+      "source_call_ids": [
+        "exec-a628611b-ab2a-44cc-9113-b3a0a64a33d4",
+        "exec-aef07210-30a0-47db-9ab9-4a10aaffd5db"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S7",
+      "url": "https://www.theinformation.com/briefings/anthropic-spacex-detail-compute-deal-worth-40-billion",
+      "title": "SpaceX’s Anthropic Compute Deal Worth Up to $40 Billion",
+      "published_at": "2026-05-20T23:31:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn8search1"
+      ],
+      "source_call_ids": [
+        "exec-a0de0a0d-e43f-4e92-bd3f-492a5e6ee9b4"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S8",
+      "url": "https://www.axios.com/2026/05/29/ceos-ai-cheaper-tokens",
+      "title": "CEOs go bargain hunting for AI",
+      "published_at": "2026-05-29",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn4news29"
+      ],
+      "source_call_ids": [
+        "exec-5bc71889-f7f6-46f8-bee3-877638144b2c"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S9",
+      "url": "https://www.axios.com/2026/09/29/scoop-openais-annual-recurring-revenue-nears-70b",
+      "title": "Scoop: OpenAI's annual recurring revenue nears $70B",
+      "published_at": "2026-09-29T14:15:40Z",
+      "time_precision": "EXACT",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn10news28",
+        "turn10search1"
+      ],
+      "source_call_ids": [
+        "exec-f4b31127-f2f5-49c5-bf25-2d0053e12e98"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "The headline scale was not wholly new: The Information had put aggregate Anthropic compute deals at about $517B in a Sep. 6 headline and, by Sep. 13, described them as up to $517B over a decade. The prospectus-based reporting’s incremental information was greater specificity about obligations and cancellation terms, not a novel discovery that the total was roughly half a trillion dollars.",
+      "source_urls": [
+        "https://www.theinformation.com/articles/anthropic-clinched-517-billion-compute-deals-11-months",
+        "https://www.theinformation.com/articles/anthropic-strikes-13-7-billion-compute-deal-trump-linked-rum-group"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-06T15:00:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The earlier aggregate was media reporting of potential deal totals; it was not an issuer filing or proof that all amounts were binding or payable."
+    },
+    {
+      "observation": "Before the prospectus reports, Anthropic publicly said its run-rate revenue had crossed $47B and that it was expanding compute to meet demand, including multi-gigawatt capacity agreements. This was company-stated demand and capacity context, not audited revenue or proof of future utilization.",
+      "source_urls": [
+        "https://www.anthropic.com/news/series-h"
+      ],
+      "event_time": "2026-05-28",
+      "publication_time": "2026-05-28",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "Run-rate revenue is not the same as recognized revenue or cash generation, and company statements do not establish that contracted compute will be fully used."
+    },
+    {
+      "observation": "Reuters’ Sep. 28 report was the earliest located public coverage based on Anthropic’s confidential prospectus. It reported rapid 2025 revenue growth alongside large losses and the $518B obligation figure, but its initial time-horizon wording was ambiguous; the Sep. 29 Reuters follow-up specified the figure as spanning a decade.",
+      "source_urls": [
+        "https://www.investing.com/news/stock-market-news/exclusiveanthropics-ipo-prospectus-shows-sweeping-ai-vision-surging-costs-4921382",
+        "https://www.investing.com/news/stock-market-news/anthropics-518-billion-ai-buildout-hinges-largely-on-deals-that-cannot-be-canceled-filing-shows-4922031"
+      ],
+      "event_time": "2026-06",
+      "publication_time": "2026-09-28 (initial report); 2026-09-29 (follow-up)",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The underlying filing was confidential and not publicly inspectable in this source set. The first report’s wording should not be read as $518B due within one year."
+    },
+    {
+      "observation": "The Sep. 29 Reuters follow-up said approximately 80% of at least $518B in decade-long infrastructure obligations was non-cancelable or payable regardless of usage, and itemized major cloud and Broadcom-related commitments. This is a more material change in disclosed contractual rigidity than the roughly $1B difference between the earlier $517B media estimate and $518B prospectus figure.",
+      "source_urls": [
+        "https://www.investing.com/news/stock-market-news/anthropics-518-billion-ai-buildout-hinges-largely-on-deals-that-cannot-be-canceled-filing-shows-4922031"
+      ],
+      "event_time": "2026-06",
+      "publication_time": "2026-09-29",
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "The 80% figure is aggregate, not a statement that every partner arrangement is non-cancelable. The prospectus itself was not public, and reported amounts are long-dated commitments rather than all immediately due."
+    },
+    {
+      "observation": "The Information’s Sep. 29 coverage reported a SpaceX maximum of up to $84.5B through 2029, mostly terminable with 90 days’ notice, versus the earlier public monthly-payment arrangement described as roughly $45B. This expands the disclosed capacity ceiling but does not imply the full maximum is an unavoidable payment.",
+      "source_urls": [
+        "https://www.theinformation.com/briefings/anthropic-discloses-84-5-billion-spacex-compute-agreements",
+        "https://www.theinformation.com/briefings/anthropic-spacex-detail-compute-deal-worth-40-billion",
+        "https://www.investing.com/news/stock-market-news/anthropics-518-billion-ai-buildout-hinges-largely-on-deals-that-cannot-be-canceled-filing-shows-4922031"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-29T15:24:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The $84.5B is an upper bound, mostly cancellable on 90 days’ notice, and The Information attributes the new figure to Reuters’ prospectus reporting rather than independently reviewing the confidential filing."
+    },
+    {
+      "observation": "Demand growth and spending risk coexisted in public information: Reuters’ prospectus coverage reported large 2025 losses, customer concentration, and warnings that major clients could reduce spending; Axios had earlier described enterprise efforts to control AI costs. On Sep. 29, Axios also reported rapid OpenAI revenue growth, a peer signal supporting continued AI adoption but not verifying Anthropic’s contracted demand.",
+      "source_urls": [
+        "https://www.investing.com/news/stock-market-news/exclusiveanthropics-ipo-prospectus-shows-sweeping-ai-vision-surging-costs-4921382",
+        "https://www.axios.com/2026/05/29/ceos-ai-cheaper-tokens",
+        "https://www.axios.com/2026/09/29/scoop-openais-annual-recurring-revenue-nears-70b"
+      ],
+      "event_time": null,
+      "publication_time": "2026-05-29 (prior); 2026-09-29 (concurrent)",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The reported losses include a large accounting charge, the enterprise-cost evidence is qualitative, and run-rate figures are not audited results. These sources do not establish that Anthropic’s customers will cancel or maintain usage."
+    },
+    {
+      "observation": "The located coverage concerns Anthropic, its cloud/compute suppliers, and AI-industry demand; it does not identify Bloom Energy, an Energy Server order, or a named Bloom project. It therefore supplies no direct Bloom-specific execution or customer evidence.",
+      "source_urls": [
+        "https://www.investing.com/news/stock-market-news/anthropics-518-billion-ai-buildout-hinges-largely-on-deals-that-cannot-be-canceled-filing-shows-4922031",
+        "https://www.theinformation.com/briefings/anthropic-discloses-84-5-billion-spacex-compute-agreements"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-29",
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "Broad AI compute demand can be a sector-level context, but these articles give no Bloom allocation, contract, capacity, or delivery facts."
+    }
+  ],
+  "gaps": [
+    "Anthropic’s confidential IPO prospectus was not publicly available in the source set. Its contractual schedules, cancellation language, and full counterparty table could not be independently checked against a public primary document.",
+    "Reuters’ Sep. 28 initial article used a time-horizon phrase inconsistent with its Sep. 29 decade framing. The follow-up is used for the horizon while the initial wording is preserved as a source limitation.",
+    "The Information’s Sep. 6 and Sep. 13 articles were subscriber-gated in this retrieval; only dated headline/search excerpts support the prior aggregate baseline, not detailed contract terms.",
+    "The reported $84.5B SpaceX figure is a maximum and mostly cancellable; public sources reviewed do not establish actual utilization, amounts ultimately payable, or how the figure reconciles with the decade aggregate.",
+    "No source located by cutoff ties the Anthropic disclosure to Bloom Energy or to a specific Bloom customer, project, order, or delivery."
+  ],
+  "research_notes": "Cutoff: 2026-09-29T18:17:35.980228Z. The earliest relevant public trace found for the aggregate scale is The Information’s Sep. 6 report with “$517 Billion” in its headline; Sep. 13 coverage also described up to $517B over a decade. Reuters’ Sep. 28 report was the earliest located coverage based on Anthropic’s confidential IPO prospectus. Its initial time-horizon wording is ambiguous; Reuters’ Sep. 29 follow-up specifies a decade and reports that about 80% is non-cancelable or payable regardless of usage. The Information’s Sep. 29, 08:24 PDT report added the SpaceX maximum and its cancellation flexibility. The original Anthropic prospectus was not publicly available in the sources reviewed. Reuters page times are displayed without a stated timezone, so only publication dates are recorded for those sources. No later coverage, market reaction, or prices are used.",
+  "collection_prompt_version": "w3-web-evidence-v1"
+}

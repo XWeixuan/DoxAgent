@@ -1,0 +1,235 @@
+{
+  "case_key": "NOISE-19",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-09-25T20:25:19.427762Z",
+  "reviewed_at": "2026-10-13T22:58:33.067973Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 6,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a13776-3aec-7c61-87b4-c4c444d383d0",
+    "turn_id": "01a13776-3b04-77c3-b716-98056f3c568d",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 76544,
+        "inputTokens": 88550,
+        "outputTokens": 16275,
+        "reasoningOutputTokens": 13354,
+        "totalTokens": 104825
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 349440,
+        "inputTokens": 430278,
+        "outputTokens": 19396,
+        "reasoningOutputTokens": 15828,
+        "totalTokens": 449674
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "c8851515a2ede463f7f93270541e52c7acd3c6c3db8465929e63578ad86348c7",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://www.theinformation.com/articles/inside-ai-industrys-behind-scenes-push-police",
+      "title": "Anthropic, OpenAI, Google Quietly Discussed an AI Safety Standards Body",
+      "published_at": "2026-09-13T19:16:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn4search0",
+        "turn5view0"
+      ],
+      "source_call_ids": [
+        "exec-c97ba59c-dfde-457b-9183-a314e324f280",
+        "exec-d13d10b5-717f-440b-9bd8-a22d920c38b3"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://www.theinformation.com/articles/google-openai-anthropic-ai-safety-group-takes-shape",
+      "title": "Google, OpenAI and Anthropic AI Safety Group Takes Shape",
+      "published_at": "2026-09-24T13:00:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search0",
+        "turn1view0"
+      ],
+      "source_call_ids": [
+        "exec-a6452c9a-6773-476a-8496-dd85f8dbb042",
+        "exec-d6de9d45-4099-46ec-84c1-f3ad7596ff22"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://www.techmeme.com/260924/p26",
+      "title": "Sources: Google, OpenAI, and Anthropic plan to launch an AI safety standards body",
+      "published_at": "2026-09-24 09:40 (timezone unspecified)",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn3search0"
+      ],
+      "source_call_ids": [
+        "exec-c700dc5c-8cac-4418-b41b-a4a6f14f5739"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://www.presidency.ucsb.edu/documents/truth-social-posts-september-24-2026",
+      "title": "Truth Social Posts of September 24, 2026",
+      "published_at": "2026-09-24T11:24:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn5view1"
+      ],
+      "source_call_ids": [
+        "exec-d13d10b5-717f-440b-9bd8-a22d920c38b3"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S5",
+      "url": "https://www.latimes.com/politics/story/2026-09-24/xi-in-lavish-trump-summit-urges-human-control-over-ai",
+      "title": "Xi, in lavish Trump summit, urges 'human control' over AI",
+      "published_at": "2026-09-24T21:42:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn3search3"
+      ],
+      "source_call_ids": [
+        "exec-c700dc5c-8cac-4418-b41b-a4a6f14f5739"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S6",
+      "url": "https://www.pymnts.com/news/artificial-intelligence/2026/ai-companies-world-leaders-race-write-safety-rules/",
+      "title": "AI Companies and World Leaders Race to Write Safety Rules",
+      "published_at": "2026-09-24",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn5view3"
+      ],
+      "source_call_ids": [
+        "exec-d13d10b5-717f-440b-9bd8-a22d920c38b3"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "Before the September 24 summit, The Information had already reported discussions among the three AI companies about an industry standards body. Its September 24 report added a tentative name and launch horizon; the information change was greater specificity about a proposed plan, not verified formation.",
+      "source_urls": [
+        "https://www.theinformation.com/articles/inside-ai-industrys-behind-scenes-push-police",
+        "https://www.theinformation.com/articles/google-openai-anthropic-ai-safety-group-takes-shape",
+        "https://www.techmeme.com/260924/p26"
+      ],
+      "event_time": "Discussions were reported as underway by 2026-09-13; no precise start date was given.",
+      "publication_time": "2026-09-13T19:16:00Z and 2026-09-24T13:00:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The reports cite people familiar with the matter. The proposed name was tentative, and the reports do not establish that a body had been incorporated, announced by the companies, or given authority."
+    },
+    {
+      "observation": "Techmeme listed The Information's September 24 report at 9:40 a.m. (timezone unspecified), documenting early dissemination of the proposed body's name and timing.",
+      "source_urls": [
+        "https://www.techmeme.com/260924/p26",
+        "https://www.theinformation.com/articles/google-openai-anthropic-ai-safety-group-takes-shape"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-24 09:40 (timezone unspecified)",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "Techmeme attributes the report to The Information; it is not a second independent confirmation."
+    },
+    {
+      "observation": "Trump's public post appeared at 7:24 a.m. ET on September 24, before the summit, and presented the DOJ as the U.S. guardrail while characterizing China's position as aligned with his preference to leave AI's status unchanged.",
+      "source_urls": [
+        "https://www.presidency.ucsb.edu/documents/truth-social-posts-september-24-2026"
+      ],
+      "event_time": "2026-09-24T11:24:00Z",
+      "publication_time": "2026-09-24T11:24:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This records Trump's statement before the meeting; it is not evidence that Xi privately agreed with that characterization or that bilateral policy changed."
+    },
+    {
+      "observation": "Same-day coverage reported Xi's public remarks emphasizing human control of AI, while also describing internal disagreement in the Trump administration about regulation and voluntary guardrails.",
+      "source_urls": [
+        "https://www.latimes.com/politics/story/2026-09-24/xi-in-lavish-trump-summit-urges-human-control-over-ai"
+      ],
+      "event_time": "2026-09-24, during the public White House summit remarks; exact time not verified here.",
+      "publication_time": "2026-09-24T21:42:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "Public remarks do not disclose the substance of the private bilateral conversation or prove agreement on a binding international governance mechanism. The article's later revision history was not verified."
+    },
+    {
+      "observation": "Before the cutoff, a parallel governance track was public: international leaders had called for exploring a UN role, while OpenAI representatives publicly discussed safety coordination and government involvement. The contemporaneous PYMNTS account said the proposal did not itself create an institution and that the private body's authority and membership were not public.",
+      "source_urls": [
+        "https://www.pymnts.com/news/artificial-intelligence/2026/ai-companies-world-leaders-race-write-safety-rules/"
+      ],
+      "event_time": "2026-09-22 and 2026-09-23, as described in the report.",
+      "publication_time": "2026-09-24",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "These were proposals and public positions, not adopted international rules or a confirmed charter for the proposed private body. The opened page had no update history or pre-cutoff archived snapshot."
+    }
+  ],
+  "gaps": [
+    "No primary announcement from Google, OpenAI, or Anthropic confirming the proposed body's formation, charter, membership, funding, governance, scope, auditor independence, or enforcement authority was located.",
+    "No public record in the reviewed sources establishes what Trump and Xi agreed, if anything, during their private AI discussion; the pre-summit post and later public remarks are not a transcript.",
+    "The Los Angeles Times result's later revision history was not verified, and the PYMNTS page lacked a separate archived pre-cutoff snapshot.",
+    "The reviewed coverage does not establish a BE-specific operational, customer, permitting, or financial consequence."
+  ],
+  "research_notes": "Evidence cutoff: 2026-09-25T20:25:19.427762Z. The earliest traceable report located about talks among Google, OpenAI, and Anthropic is The Information's September 13 report. Its September 24 follow-up added a tentative name and prospective launch window, but described a plan based on people familiar with the matter—not a formed or publicly confirmed organization. Techmeme shows early dissemination of that report. Trump's September 24 social post preceded the summit; Xi's public remarks later emphasized human control. These public statements do not establish agreement on a shared regulatory position. Concurrently, international leaders and OpenAI representatives were publicly discussing other oversight paths. The reviewed evidence does not establish a BE-specific operating or financial fact."
+}

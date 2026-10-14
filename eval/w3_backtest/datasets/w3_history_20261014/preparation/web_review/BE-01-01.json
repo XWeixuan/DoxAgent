@@ -1,0 +1,344 @@
+{
+  "case_key": "BE-01-01",
+  "evidence_cutoff_at": "2026-09-24T14:40:37.252290Z",
+  "reviewed_at": "2026-10-13T22:58:31.345124Z",
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a1373b-3877-7d90-a5f4-328c96086724",
+    "turn_id": "01a1373b-38ab-7b70-8b40-6885aeef766c",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 178944,
+        "inputTokens": 179402,
+        "outputTokens": 21810,
+        "reasoningOutputTokens": 16972,
+        "totalTokens": 201212
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 1915648,
+        "inputTokens": 2106195,
+        "outputTokens": 37641,
+        "reasoningOutputTokens": 30954,
+        "totalTokens": 2143836
+      }
+    },
+    "prompt_version": "w3-web-evidence-v1",
+    "input_fingerprint": "1d83b005d501a07f085348582c65bfc0ee433d5c60942203a7be2e2253c4c14e",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://oracle.com/news/announcement/oracle-borderplex-and-bloom-energy-to-power-project-jupiter-with-fuel-cell-technology-2026-04-27/",
+      "title": "Oracle, BorderPlex, and Bloom Energy to Power Project Jupiter with Cleaner, Water-Efficient Fuel Cell Technology",
+      "published_at": "2026-04-27",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn1search1"
+      ],
+      "source_call_ids": [
+        "exec-5ed391f1-dd27-40f7-b8ac-17fc796f4501"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://www.kanw.org/new-mexico-news/2026-08-18/proposed-gas-pipeline-for-project-jupiter-data-center-delayed-to-2027-filings-show?_amp=true",
+      "title": "Proposed gas pipeline for Project Jupiter data center delayed to 2027, filings show",
+      "published_at": "2026-08-18T16:34:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn11search4"
+      ],
+      "source_call_ids": [
+        "exec-e3c5089b-c083-4b3d-8eae-4684ff33a582"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://www.govinfo.gov/content/pkg/FR-2026-09-10/pdf/2026-18455.pdf",
+      "title": "Transwestern Pipeline Company, LLC; Notice of Availability of the Environmental Assessment for the Proposed Green Chile Project",
+      "published_at": "2026-09-10",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn14search12",
+        "turn14search15"
+      ],
+      "source_call_ids": [
+        "exec-8c6b0ac9-2f23-4903-bdf0-95e4b67de4c6"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://nmdoj.gov/press-release/attorney-general-raul-torrez-files-responses-backing-emergency-petitions-challenging-project-jupiter-permitting-decisions/",
+      "title": "Attorney General Raúl Torrez Files Responses Backing Emergency Petitions Challenging Project Jupiter Permitting Decisions",
+      "published_at": "2026-09-03",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn1search11"
+      ],
+      "source_call_ids": [
+        "exec-5ed391f1-dd27-40f7-b8ac-17fc796f4501"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S5",
+      "url": "https://earningscalls.dev/transcripts/oracle-corporation_orcl_earnings_call_transcript_2026-09-10",
+      "title": "Oracle Corporation (ORCL) September 10, 2026 Earnings Call Transcript & Summary",
+      "published_at": "2026-09-10",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn2search6",
+        "turn2search3"
+      ],
+      "source_call_ids": [
+        "exec-17db317e-121e-42f3-a998-e9284555b4ee"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S6",
+      "url": "https://www.oracle.com/news/announcement/project-jupiter-statement-on-construction-permitting-2026-09-14/",
+      "title": "Project Jupiter Statement on Construction Permitting",
+      "published_at": "2026-09-14",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn2search10"
+      ],
+      "source_call_ids": [
+        "exec-17db317e-121e-42f3-a998-e9284555b4ee"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S7",
+      "url": "https://nmcourts.gov/wp-content/uploads/2026/09/Orders-in-Project-Jupiter-air-quality-permit-and-water-cases.pdf",
+      "title": "Orders in Project Jupiter Air-Quality Permit and Water Cases",
+      "published_at": "2026-09-17",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn9search12"
+      ],
+      "source_call_ids": [
+        "exec-8e68347c-ab27-4202-a0be-a8c8b3bcb914"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S8",
+      "url": "https://sourcenm.com/2026/09/17/new-mexico-supreme-court-rejects-2-project-jupiter-challenges-allows-permitting-process-to-resume/",
+      "title": "New Mexico Supreme Court rejects 2 Project Jupiter challenges, allows permitting process to resume",
+      "published_at": "2026-09-17T22:13:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn9search1"
+      ],
+      "source_call_ids": [
+        "exec-8e68347c-ab27-4202-a0be-a8c8b3bcb914"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S9",
+      "url": "https://bloomberg.com/news/articles/2026-09-24/oracle-cites-force-majeure-to-shield-itself-on-controversial-data-center",
+      "title": "Oracle Cites ‘Force Majeure’ to Shield Itself on Controversial Data Center",
+      "published_at": "2026-09-24",
+      "time_precision": "UNKNOWN",
+      "updated_at": null,
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn15search0",
+        "turn5search0"
+      ],
+      "source_call_ids": [
+        "exec-0b11192b-8680-4013-a94c-3028d9285755",
+        "exec-6409dfa1-b2cd-452d-8515-4e20701fb36c"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S10",
+      "url": "https://www.investing.com/news/stock-market-news/oracle-cites-force-majeure-to-shield-itself-on-controversial-data-center-bloomberg-news-reports-4915393",
+      "title": "Oracle cites ‘force majeure’ to shield itself on controversial data center, Bloomberg News reports",
+      "published_at": "2026-09-24T12:48:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": "2026-09-24T12:56:00Z",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "BEFORE_CUTOFF",
+      "content_state": "UPDATED",
+      "decision": "KEEP",
+      "reason": "The supplied publication and revision times do not exceed the case cutoff.",
+      "source_result_refs": [
+        "turn15search1"
+      ],
+      "source_call_ids": [
+        "exec-0b11192b-8680-4013-a94c-3028d9285755"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S11",
+      "url": "https://stocktwits.com/news-articles/markets/equity/orcl-stock-slides-165b-new-mexico-project-cites-force-majeure/cZMJ5bARB91",
+      "title": "ORCL Stock Slides To Early August Levels – $165B New Mexico Project In Focus After Company Reportedly Cites ‘Force Majeure’",
+      "published_at": "2026-09-24T14:30:24Z",
+      "time_precision": "EXACT",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search1"
+      ],
+      "source_call_ids": [
+        "exec-53b90437-ca78-404f-8404-93bed654d609"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "Earliest traceable coverage is Bloomberg, whose live page displays an initial 08:25 EDT publication; Reuters followed at 08:48 EDT and attributed the notice claim to Bloomberg, while the supplied Stocktwits item at 14:30:24Z repeated the conditional payment-deferral/2028 claim. These pre-cutoff sources establish a reported allegation, not a publicly documented contract event or an already-missed launch.",
+      "source_urls": [
+        "https://bloomberg.com/news/articles/2026-09-24/oracle-cites-force-majeure-to-shield-itself-on-controversial-data-center",
+        "https://www.investing.com/news/stock-market-news/oracle-cites-force-majeure-to-shield-itself-on-controversial-data-center-bloomberg-news-reports-4915393",
+        "https://stocktwits.com/news-articles/markets/equity/orcl-stock-slides-165b-new-mexico-project-cites-force-majeure/cZMJ5bARB91"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-24T12:25:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "Reuters said it could not independently verify the report. The notice’s event time and legal effect remain unknown; Bloomberg’s live page shows a later update and no pre-cutoff archived text was found."
+    },
+    {
+      "observation": "On September 10, Oracle management described the New Mexico site as on track while pursuing an air permit and said the site would not affect FY2027 revenue or earnings guidance. This was the pre-report company expectation, not independent confirmation.",
+      "source_urls": [
+        "https://earningscalls.dev/transcripts/oracle-corporation_orcl_earnings_call_transcript_2026-09-10",
+        "https://www.sec.gov/Archives/edgar/data/1341439/000119312526387905/orcl-ex99_1.htm"
+      ],
+      "event_time": "2026-09-10",
+      "publication_time": "2026-09-10",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This was a management forecast; the call transcript page provides a date but not an exact transcript posting time."
+    },
+    {
+      "observation": "Oracle and BorderPlex announced on April 27 that Jupiter planned to use up to 2.45 GW of Bloom fuel cells instead of the previously planned turbines and diesel generators; Oracle then said construction was on schedule.",
+      "source_urls": [
+        "https://oracle.com/news/announcement/oracle-borderplex-and-bloom-energy-to-power-project-jupiter-with-fuel-cell-technology-2026-04-27/"
+      ],
+      "event_time": "2026-04-27",
+      "publication_time": "2026-04-27",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This announcement described a planned configuration and schedule, not installed, delivered, or accepted Bloom capacity."
+    },
+    {
+      "observation": "Before the force-majeure report, coverage of Transwestern filings said the Green Chile pipeline’s anticipated service date had shifted to February 2027; FERC’s September 10 notice showed its environmental-assessment comment period still open through October 5.",
+      "source_urls": [
+        "https://www.kanw.org/new-mexico-news/2026-08-18/proposed-gas-pipeline-for-project-jupiter-data-center-delayed-to-2027-filings-show?_amp=true",
+        "https://www.govinfo.gov/content/pkg/FR-2026-09-10/pdf/2026-18455.pdf"
+      ],
+      "event_time": "2026-08-14",
+      "publication_time": "2026-08-18T16:34:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "A pipeline schedule and pending review identify a power-supply dependency; they do not establish that it caused the notice or determine the campus’s 2028 schedule."
+    },
+    {
+      "observation": "Oracle’s September 14 statement said data-center buildings and the microgrid were separate facilities and that construction to date was on the campus; the microgrid’s air-permit proceeding was separately stayed at that time.",
+      "source_urls": [
+        "https://www.oracle.com/news/announcement/project-jupiter-statement-on-construction-permitting-2026-09-14/"
+      ],
+      "event_time": "2026-09-14",
+      "publication_time": "2026-09-14",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This is Oracle’s characterization, not independent verification that the fuel-cell power path was permitted or ready."
+    },
+    {
+      "observation": "New Mexico’s Attorney General announced September 3 that the office supported emergency challenges concerning the project’s air-permit process and construction-water authorization. On September 17, the Supreme Court denied the emergency petitions and lifted stays, allowing proceedings to resume.",
+      "source_urls": [
+        "https://nmdoj.gov/press-release/attorney-general-raul-torrez-files-responses-backing-emergency-petitions-challenging-project-jupiter-permitting-decisions/",
+        "https://nmcourts.gov/wp-content/uploads/2026/09/Orders-in-Project-Jupiter-air-quality-permit-and-water-cases.pdf",
+        "https://sourcenm.com/2026/09/17/new-mexico-supreme-court-rejects-2-project-jupiter-challenges-allows-permitting-process-to-resume/"
+      ],
+      "event_time": "2026-09-17",
+      "publication_time": "2026-09-17T22:13:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The Attorney General’s claims were advocacy positions; the court’s procedural ruling did not grant the air permit, and Source New Mexico reported no replacement hearing officer or hearing date at publication."
+    }
+  ],
+  "gaps": [
+    "No public copy of Oracle’s notice, lease, or relevant force-majeure clause was found; the underlying notice’s issue time, exact conditions, duration, and legal effect remain unknown.",
+    "Reuters explicitly said it could not independently verify the report. The specific conditional payment-deferral claim in the supplied Stocktwits item remains Bloomberg-attributed rather than independently documented.",
+    "Bloomberg’s current page reflects a post-cutoff update; no dated pre-cutoff snapshot was found, so updated-page details cannot be assigned to the eligible time window.",
+    "Pre-event schedule statements were from Oracle. The reviewed sources do not independently tie the pipeline delay or air-permit proceeding to a missed 2028 campus launch.",
+    "No company or developer response to the force-majeure report that was both located and verifiably public before cutoff was identified in this focused search."
+  ],
+  "research_notes": "Cutoff: 2026-09-24T14:40:37.252290Z (10:40:37 EDT). The earliest traceable report is Bloomberg: its live page metadata displays an initial publication at 08:25 EDT (12:25Z). Reuters followed at 08:48 EDT, with a listed update at 08:56 EDT; it attributed the notice claim to Bloomberg and said it could not independently verify it. The supplied Stocktwits item repeated the conditional payment-deferral claim at 14:30:24Z and was collected at 14:39:39.651865Z, before cutoff.\n\nTemporal limitation: Bloomberg’s live page now displays a 12:50 EDT (16:50Z) update, after cutoff. No dated pre-cutoff snapshot of the Bloomberg text was found, so its current article content is not treated as cutoff evidence; its displayed initial time is used only as a chronology locator. The notice’s exact event time is unknown. At cutoff, the reported fact was an alleged force-majeure notice and an attributed claim about conditional payment deferral—not proof that the 2028 target had been missed or that the notice changed the project schedule. No public copy of the notice or contract was found.\n\nPrior context and competing evidence: Oracle management said on its September 10 public call that the New Mexico site was on track while an air permit was still being pursued, and said it expected no FY2027 revenue or earnings impact. Oracle’s September 14 statement distinguished the data-center buildings from the separately permitted microgrid and said construction to date was on the data-center campus. These are company statements, not independent schedule verification. Before the report, Transwestern’s Green Chile pipeline schedule had already shifted to February 2027, and FERC’s September 10 notice showed its environmental-assessment comment period remained open through October 5. New Mexico’s Attorney General had also publicly challenged air- and water-permitting procedures. On September 17, the state Supreme Court rejected emergency petitions and lifted stays; that procedural ruling did not grant the microgrid air permit. Taken together, the pre-event record contained both company schedule assurances and unresolved power-supply/permitting dependencies. The reported notice was new contract-risk information, but the reviewed pre-cutoff evidence does not establish its legal effect or a project delay. No prices or market reactions are used.",
+  "collection_prompt_version": "w3-web-evidence-v1"
+}

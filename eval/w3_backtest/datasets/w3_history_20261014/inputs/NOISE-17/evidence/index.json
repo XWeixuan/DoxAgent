@@ -1,0 +1,23 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-10-03T02:26:30.921846Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "No official post-February backlog update was verified. The target article's suggestion that backlog likely continued to grow in 2026 remains author speculation in the sources reviewed.",
+    "The target article's 380x P/E and valuation arithmetic were not independently reconstructed from point-in-time market data; current live-page quote widgets were excluded.",
+    "The article page has no verified update-history or archive record in this research. The pre-cutoff supplied copy is used; the live page's Oct. 2 10:15 PM EST dateline is not reconciled to the supplied RSS timestamp.",
+    "The original Bloomberg Project Jupiter report and primary force-majeure notice or relevant state permit docket were not retrieved; TechCrunch provides contemporaneous reporting and quotes Oracle and Blue Owl."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

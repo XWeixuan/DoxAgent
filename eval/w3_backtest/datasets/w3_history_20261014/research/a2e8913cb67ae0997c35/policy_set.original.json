@@ -1,0 +1,2392 @@
+{
+  "schema_version": "document3.v2.2",
+  "ticker": "INTC",
+  "policy_set_version": 12,
+  "publication_state": "COMPLETE",
+  "document2_ref": {
+    "run_id": "init-intc-738849dbdbb04ae1a39efa0aec69c071-d2",
+    "artifact_id": "90ebb7e65c874d42b9bbc75bcdb4becf",
+    "sha256": "9a3c9991f72c8d0d0e0dbc6269cf3f5bd9f15cf06a3e3e60d8d0883b814c669c",
+    "published_at": "2026-09-22T04:41:07.041613Z",
+    "publication_state": "COMPLETE"
+  },
+  "event_library_ref": {
+    "contract_version": "reference-view-md-v4",
+    "ticker": "INTC",
+    "version": 21,
+    "sha256": "034ee6363503618ba2e1810a7966d74c2c4214c6f455afde9af8f01e97f538cc",
+    "published_at": "2026-10-04T17:00:49.861596Z"
+  },
+  "policies": [
+    {
+      "policy_id": "pol_f9d55c6095cfa8fd36ae",
+      "title": "超大规模客户形成Intel DCAI生产承诺",
+      "source_refs": [
+        {
+          "shell_id": "Intel计算产品需求与供给转化",
+          "expectation_id": "Intel AI基础设施客户采用与DCAI出货",
+          "gap_id": "超大规模客户多代绑定采购与重复部署"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "召回重大云客户、Intel、Xeon、IPU、定制ASIC的采购、生产部署、续约、backlog、设计合作及其取消或否定消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "单一重大超大规模客户将Intel Xeon、IPU或定制ASIC从协作/验证推进为有约束力的生产采购或下一代生产平台续约。",
+          "calibration": {
+            "reference_state": "截至cutoff，Google已选择Intel制造其Tensor Processing Units，较既有协作更进一步；但没有公开的客户级有约束订单、backlog或生产部署量。",
+            "trigger_boundary": "必须跨过“协作/路线图”到binding production commitment或next-generation production renewal；供应商选择、试用、联合开发和无约束路线图不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_c32af189879ad11c2282",
+      "title": "Intel推理机架进入重复付费部署",
+      "source_refs": [
+        {
+          "shell_id": "Intel计算产品需求与供给转化",
+          "expectation_id": "Intel AI基础设施客户采用与DCAI出货",
+          "gap_id": "系统集成商CPU密集型推理机架转入重复交付"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "召回Intel CPU/IPU推理机架、SambaNova、Foxconn、系统集成商、终端客户的生产部署、付费交付、补单、扩容与取消消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "SambaNova、Foxconn或同等规模集成商的含Intel内容推理机架，在首个付费生产部署后获得同一方案的补充生产批次或扩容订单。",
+          "calibration": {
+            "reference_state": "当前仅确认机架级方案协作和系统集成，未确认付费生产部署或可重复交付。",
+            "trigger_boundary": "消息须同时确认生产而非样机状态、可识别Intel内容，以及同一方案在首批之后的新增批次或扩容；演示与首个孤立项目不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_7b0d45eb839444d2cc81",
+      "title": "重大AI客户停止Intel后续采购",
+      "source_refs": [
+        {
+          "shell_id": "Intel计算产品需求与供给转化",
+          "expectation_id": "Intel AI基础设施客户采用与DCAI出货",
+          "gap_id": "AI项目形成一次性批量而未形成多代复购"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回重大AI客户、Intel DCAI项目的续约、下一代采购、后续批次、项目暂停、取消及继续执行消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "已完成重大Intel AI部署的客户明确不续下一代Intel采购、暂停项目或取消已计划的后续生产批次。",
+          "calibration": {
+            "reference_state": "当前客户合作与部署没有公开重复订单序列，单批出货仍可能由供给稀缺放大。",
+            "trigger_boundary": "需出现客户或Intel的明确non-renewal、pause或cancelled follow-on batch；仅未见新订单、需求传闻或单季单位波动不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_348a4139f082e3b438a6",
+      "title": "重大AI客户将Intel生产平台转向替代架构",
+      "source_refs": [
+        {
+          "shell_id": "Intel计算产品需求与供给转化",
+          "expectation_id": "Intel AI基础设施客户采用与DCAI出货",
+          "gap_id": "超大规模客户将DCAI平台转向替代架构"
+        },
+        {
+          "shell_id": "Intel经营盈利与指引持续性",
+          "expectation_id": "Intel多季度经营盈利改善持续性",
+          "gap_id": "AI需求被替代架构截留"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回重大云客户、OEM或系统集成商对Intel CPU、加速器、IPU或定制ASIC生产平台的取消、不续、采购削减及向GPU、AMD、ARM/RISC-V或自研芯片的正式分配转移。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "单一重大云客户、OEM或系统集成商取消或不续Intel AI生产平台，或把原由Intel CPU、加速器、IPU或定制ASIC承担的主要生产采购明确转给GPU、AMD、ARM/RISC-V或自研芯片。",
+          "calibration": {
+            "reference_state": "Intel已有超大规模多代协作，但客户级持续内容分配未公开，替代架构仍是现实选择。",
+            "trigger_boundary": "最低边界是已决定的production allocation转移，并识别原Intel生产范围与承接架构；竞品测试、研发或一般竞争宣传不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_d0d3d1ed0ed156a78879",
+      "title": "AI平台每系统Intel内容下降",
+      "source_refs": [
+        {
+          "shell_id": "Intel计算产品需求与供给转化",
+          "expectation_id": "Intel AI基础设施客户采用与DCAI出货",
+          "gap_id": "AI系统扩张但Intel每系统内容下降"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回AI机架、BOM、平台规格、工作负载、CPU/IPU/ASIC内容份额和前后代配置变化，包括维持或增加Intel内容的否定消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "重大AI生产平台的新一代配置相对前代明确减少Intel CPU、IPU或ASIC数量、移除Intel组件或降低Intel承载的工作负载份额。",
+          "calibration": {
+            "reference_state": "AI部署扩张和Intel方案合作已知，但同一平台前后代的Intel内容可比序列尚未公开。",
+            "trigger_boundary": "未来消息须在同一平台、同一计量或状态维度给出old-to-new内容下降；仅加入竞品而Intel内容不减不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_5bec792481239b053555",
+      "title": "DCAI约束缓解后单位增长加速",
+      "source_refs": [
+        {
+          "shell_id": "Intel计算产品需求与供给转化",
+          "expectation_id": "Intel AI基础设施客户采用与DCAI出货",
+          "gap_id": "供给正常化后DCAI良品和单位连续增长"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "召回Intel服务器/DCAI供需、客户履约、单位出货、ASP、产品组合、良率和周期时间的财报与供给更新。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Intel确认服务器供给约束实质缓解，并在同一季度报告服务器单位同比增速高于9%，且单位而非ASP或高端mix构成主要增量。",
+          "calibration": {
+            "reference_state": "Q2 FY2026服务器单位同比增长9%、ASP同比增长48%；cutoff时服务器需求仍显著高于供给且约只满足一半客户需求。",
+            "trigger_boundary": "必须同时跨过供给约束已实质缓解、服务器单位同比>9%、主要增量来自单位三项边界；仅收入或ASP增长不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_0e6e07f1179015adf38f",
+      "title": "DCAI后端瓶颈阻断订单交付",
+      "source_refs": [
+        {
+          "shell_id": "Intel计算产品需求与供给转化",
+          "expectation_id": "Intel AI基础设施客户采用与DCAI出货",
+          "gap_id": "DCAI前端供给改善但后端交付瓶颈迁移"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回DCAI订单、基板、封装、系统集成、合格吞吐、交付周期、填充率、延期与取消消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Intel、客户或后端伙伴确认一项可识别的重大DCAI生产订单因基板、封装或系统集成合格吞吐不足而延期、降配或无法履约。",
+          "calibration": {
+            "reference_state": "服务器整体严重供给受限，Intel计划增加基板、设备和洁净室，但DCAI后端合格吞吐与订单影响未量化。",
+            "trigger_boundary": "需将明确后端瓶颈归因连接到重大DCAI生产订单/批次和延期、降配或未履约结果；一般材料紧张不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_a8b9a583ffee2af7c40c",
+      "title": "重大AI部署外部暂停削减Intel需求",
+      "source_refs": [
+        {
+          "shell_id": "Intel计算产品需求与供给转化",
+          "expectation_id": "Intel AI基础设施客户采用与DCAI出货",
+          "gap_id": "超大规模AI基础设施部署出现外部暂停"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回超大规模AI数据中心的电力、并网、许可、融资、资本开支、ROI、部署时点和Intel订单调整消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "已有Intel暴露的重大超大规模客户因电力/并网、许可、融资或投资回报重估，取消或实质后移已计划AI生产部署及关联Intel采购。",
+          "calibration": {
+            "reference_state": "现有合作与部署计划提供Intel需求接口，尚未确认上述外部约束已取消相关生产部署。",
+            "trigger_boundary": "须识别重大客户、既有生产部署、取消或old-to-new实质延期，以及与Intel采购的直接连接；探索项目或抽象行业担忧不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_00aedd21578697ff89d7",
+      "title": "PC供给缓解后Intel客户端单位恢复",
+      "source_refs": [
+        {
+          "shell_id": "Intel计算产品需求与供给转化",
+          "expectation_id": "Intel PC与边缘计算需求及供给转化",
+          "gap_id": "PC供给缓解后客户端单位与sell-through恢复"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "召回Intel客户端单位、PC供给、OEM/渠道sell-through、补单、库存、ASP和产品组合的财报与行业数据。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Intel客户端供给约束缓解后，季度客户端单位同比达到不下降，且头部OEM或覆盖性渠道确认终端sell-through带来补单而库存未增加。",
+          "calibration": {
+            "reference_state": "截至当前，Intel Q2 FY2026 客户端单位同比下降8%、ASP同比上升27%；Intel预计2026年PC消费低双位数下降，HP以2027年行业PC单位下降作计划假设，约10%处理器提价本身不保证单位恢复。Micron在FY2026 Q4预计2027–2028年DRAM和NAND需求超过供应、供需较2026年更紧且暂看不到恢复平衡时间，并称2027年大部分产能已售出、客户价格将高于2026年。Signal65受Qualcomm委托的14英寸高端笔记本比较显示，标准18核Snapdragon X2在CPU、AI、生产力及多数续航项目领先Intel Core Ultra X7 358H，比较机售价约1,999美元对2,749美元；这是一项委托研究，未确认OEM分配、批量销售或Intel订单变化。",
+            "trigger_boundary": "最低反转边界为客户端单位同比>=0，并由sell-through补单且无库存积累确认；仅ASP、收入或sell-in增长不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_05f90f9ed723b58b6b52",
+      "title": "Intel PC渠道进入库存修正",
+      "source_refs": [
+        {
+          "shell_id": "Intel计算产品需求与供给转化",
+          "expectation_id": "Intel PC与边缘计算需求及供给转化",
+          "gap_id": "PC供给释放后渠道库存修正"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回Intel PC库存天数、渠道库存、sell-in/sell-through、促销折价、退货、补单与订单削减消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "头部PC OEM、覆盖性分销商或Intel明确披露Intel PC库存高于目标，并因此退货、折价清库或削减/暂停补单。",
+          "calibration": {
+            "reference_state": "终端PC单位需求预计下降，供给释放后的sell-in可能先于sell-through，但尚无确认的Intel渠道库存修正。",
+            "trigger_boundary": "同一消息须说明库存高于目标/需求和实际退货、折价或补单削减动作；小幅库存波动而无采购行动不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_b17369ee9edd8f6441e8",
+      "title": "Core Ultra Series 3批量上市延迟",
+      "source_refs": [
+        {
+          "shell_id": "Intel计算产品需求与供给转化",
+          "expectation_id": "Intel PC与边缘计算需求及供给转化",
+          "gap_id": "Core Series 3上市或量产延迟"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回Core Ultra Series 3、Panther Lake、Googlebook及其他OEM的量产、认证、初始和持续上市、SKU供货、批次、延期、取消和按期交付消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C2",
+          "criterion": "在Googlebook及其他OEM初始市场上市基础上，Intel或头部OEM将Core Ultra Series 3/Panther Lake后续批量生产供货窗口后移或取消，或把已规划的批量范围降为少量SKU小批供货。",
+          "calibration": {
+            "reference_state": "Core Ultra Series 3已通过Acer、ASUS和Lenovo的Googlebook进入初始市场供应，并采用Intel 18A；截至cutoff尚未确认更广泛SKU/批量范围的持续供货是否按计划推进，也未见延期或缩量。",
+            "trigger_boundary": "消息须同时给出已启动的后续批量生产/供货原窗口或范围、后移/取消/缩量的新状态，并明确影响实际生产供货；Googlebook初始上市、营销发布日期微调或未改变供货的SKU调整不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_849bf577d74f6b102e74",
+      "title": "Core Ultra Series 3获得头部OEM补单",
+      "source_refs": [
+        {
+          "shell_id": "Intel计算产品需求与供给转化",
+          "expectation_id": "Intel PC与边缘计算需求及供给转化",
+          "gap_id": "Core Series 3形成多OEM重复sell-through"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "召回Googlebook及其他头部OEM的Core Series 3机型、量产上市、终端销售、渠道库存、补单、组合扩张及取消消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Acer、ASUS、Dell、HP、Lenovo或Samsung中的单一头部OEM确认Core Ultra Series 3量产机型已产生终端销售，并据此补单或扩大生产组合。",
+          "calibration": {
+            "reference_state": "Core Ultra Series 3已通过Acer、ASUS和Lenovo的Googlebook进入初始市场上市；截至cutoff尚未确认可归因于终端sell-through的生产补单、量产组合扩大或渠道库存变化。",
+            "trigger_boundary": "最低边界是头部OEM在该初始上市基础上确认终端sell-through驱动的生产补单或明确扩大量产组合；初始上市、预购、首发库存或无销售驱动的首批出货不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_e337770b3592d3dfedb4",
+      "title": "边缘AI测试转为Intel量产设计",
+      "source_refs": [
+        {
+          "shell_id": "Intel计算产品需求与供给转化",
+          "expectation_id": "Intel PC与边缘计算需求及供给转化",
+          "gap_id": "边缘AI测试转为量产设计与重复部署"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "召回边缘AI、机器人、Core Ultra/Core Series 3的测试、量产design win、采购批次、现场部署、扩展与终止消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "具有物质生产规模的边缘AI或机器人客户将Intel Core Ultra/Core Series 3测试平台正式选为量产设计，并承诺可识别的生产批次或多站点部署。",
+          "calibration": {
+            "reference_state": "截至cutoff，既有边缘AI活动仍主要处于测试、评估和合作阶段。2026年10月2日，ConnX选定Intel Core Ultra Series 3集成至MaestroIQ Shared Intelligence Layer，并计划在90天内启动联合proof-of-value演示；这使机会进入具名集成与验证阶段，但未给出终端生产客户、量产设计承诺、生产批次或多站点部署范围，尚未证明物质出货或收入。Intel与Atsign另发布安全智能交通edge-AI方案并将Atsign列入Industrial Builders，但同样未披露具名量产客户或生产部署。",
+            "trigger_boundary": "必须跨过evaluation到正式production design commitment，并给出可识别的首批或部署范围；测试、评估套件、合作或方案简报、proof-of-value演示及无范围design intent均不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_ef09af3800480d3f7990",
+      "title": "边缘AI量产设计转离Intel",
+      "source_refs": [
+        {
+          "shell_id": "Intel计算产品需求与供给转化",
+          "expectation_id": "Intel PC与边缘计算需求及供给转化",
+          "gap_id": "边缘AI测试终止或转向替代架构"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回边缘AI/机器人客户的Intel测试、量产设计选择、BOM、替代芯片、项目终止和Intel内容变化消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "重要边缘AI或机器人测试客户明确终止Intel项目，或在量产版本中选择替代芯片并移除或减少Intel内容。",
+          "calibration": {
+            "reference_state": "Intel测试客户仍是潜在需求池而非量产订单，AMD、Qualcomm、ARM/RISC-V和专用芯片均可承接量产设计。",
+            "trigger_boundary": "最低边界是物质规模客户的最终量产选择或明确项目终止；竞品并行测试、研发或产品发布不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_c7694b94c019d57167e6",
+      "title": "客户端收入改善仍由价格和高端组合驱动",
+      "source_refs": [
+        {
+          "shell_id": "Intel计算产品需求与供给转化",
+          "expectation_id": "Intel PC与边缘计算需求及供给转化",
+          "gap_id": "高端ASP与mix继续上升但主流单位不恢复"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回Intel客户端收入、单位、ASP、约10%提价、高端/主流SKU mix和sell-through的财报与渠道消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Intel季度报告客户端总单位同比仍下降，同时明确客户端收入改善主要来自约10%提价或高端SKU mix，而非单位增长。",
+          "calibration": {
+            "reference_state": "Intel已计划约10%的PC处理器提价，管理层预计PC消费下降；Q2 FY2026客户端单位同比下降8%、ASP同比上升27%，价格/高端组合可能掩盖单位疲弱。Micron在FY2026 Q4预计2027–2028年DRAM和NAND需求超过供应、供需较2026年更紧且暂看不到恢复平衡时间，并称2027年大部分产能已售出、客户价格将高于2026年。Signal65受Qualcomm委托的14英寸高端笔记本比较显示，标准18核Snapdragon X2在CPU、AI、生产力及多数续航项目领先Intel Core Ultra X7 358H，比较机售价约1,999美元对2,749美元；该单项委托研究尚未证明OEM分配转移、终端sell-through变化或Intel单位/收入结果。",
+            "trigger_boundary": "同一季度须给出客户端单位同比<0，并明确价格或高端mix为收入改善主要来源；仅ASP上涨而无负单位信息不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_ceed32171fb792064499",
+      "title": "产能优先级挤压客户端交付",
+      "source_refs": [
+        {
+          "shell_id": "Intel计算产品需求与供给转化",
+          "expectation_id": "Intel PC与边缘计算需求及供给转化",
+          "gap_id": "受限供给被重新分配至AI服务器或高端产品"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回Intel客户端晶圆/封装/基板分配、服务器/AI优先级、OEM短缺、交付延期、缩量和取消消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Intel或头部OEM确认客户端生产批次因晶圆、封装或基板优先分配给服务器、AI或高端SKU而被延期、缩量或取消。",
+          "calibration": {
+            "reference_state": "Intel服务器供给严重受限且正在增加制造投入，但客户端与服务器/高端产品之间的具体产能分配未公开。",
+            "trigger_boundary": "需识别客户端重大批次、获优先产品类别、正式分配决定及延期/缩量/取消结果；一般服务器紧张或内部传闻不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_5cf6d3db0e3072752601",
+      "title": "跨境限制切断Intel客户端可服务市场",
+      "source_refs": [
+        {
+          "shell_id": "Intel计算产品需求与供给转化",
+          "expectation_id": "Intel PC与边缘计算需求及供给转化",
+          "gap_id": "跨境政策或地缘供应事件造成PC与边缘结构性断点"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回出口管制、关税、地区限制、海关实施、Intel PC/边缘产品、关键投入和OEM区域配置调整消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "有管辖权的政府发布最终且已生效或确定生效日的跨境限制，直接禁止Intel客户端产品或关键投入进入重大市场，或迫使头部OEM取消/重配生产机型。",
+          "calibration": {
+            "reference_state": "截至cutoff，未确认有新生效且直接改变Intel PC/边缘可服务范围的限制；一般地缘风险只是背景。",
+            "trigger_boundary": "必须是最终法律状态，包含生效日、明确产品/投入与物质地域范围，并直接覆盖Intel客户端暴露；提案、传闻或小范围可替代限制不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_fd5d451753406d1f1e39",
+      "title": "Xeon 6/6+获得重大非AI生产承诺",
+      "source_refs": [
+        {
+          "shell_id": "Intel计算产品需求与供给转化",
+          "expectation_id": "Intel非AI服务器需求与供给兑现",
+          "gap_id": "Xeon 6与18A平台转为多代非AI重复部署"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "召回Xeon 6/6+的企业与云非AI生产平台、客户采购、部署、续约、验证、设计胜负及取消消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "单一重大云或企业客户将Xeon 6或18A基础Xeon 6+从验证推进为有约束力的非AI生产采购/部署或下一代生产续约。",
+          "calibration": {
+            "reference_state": "Xeon 6快速爬坡和Xeon 6+产品定位已进入基线，但客户级非AI绑定订单与生产部署未公开。",
+            "trigger_boundary": "须跨过产品爬坡/验证到binding non-AI production commitment或next-generation renewal；测试、认证和产品定位不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_1be63995a6b80d6d319f",
+      "title": "Xeon 6/6+关键量产门槛延期",
+      "source_refs": [
+        {
+          "shell_id": "Intel计算产品需求与供给转化",
+          "expectation_id": "Intel非AI服务器需求与供给兑现",
+          "gap_id": "Xeon 6或18A爬坡出现认证与良率延迟"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回Xeon 6/6+的良率、周期时间、软件验证、客户认证、量产、上市、交付窗口和取消消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Intel或重大客户确认Xeon 6/6+量产良率、软件验证或客户认证失败，使已计划的重大生产发布或交付从原窗口后移或取消。",
+          "calibration": {
+            "reference_state": "Xeon 6快速爬坡和18A平台定位已知，但服务器供给仍严重受限，路线图尚不等于按期客户交付。",
+            "trigger_boundary": "消息须识别失败门槛、受影响生产平台、原计划和新时点/取消状态；不影响客户交付的样片问题不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_06449353fd235546944e",
+      "title": "非AI Xeon后端瓶颈阻断履约",
+      "source_refs": [
+        {
+          "shell_id": "Intel计算产品需求与供给转化",
+          "expectation_id": "Intel非AI服务器需求与供给兑现",
+          "gap_id": "非AI服务器后端或交付分配成为瓶颈"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回非AI Xeon订单、封装、基板、测试、系统集成、填充率、交付周期、延期和取消消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Intel、后端伙伴或客户确认可识别的重大非AI Xeon生产订单因封装、基板、测试或系统集成不足而延期、降配或无法履约。",
+          "calibration": {
+            "reference_state": "服务器需求显著超过供给且约半数需求获满足，但非AI订单的后端归因和吞吐尚未公开。",
+            "trigger_boundary": "需将具体后端瓶颈连接到非AI Xeon重大订单/批次和延期、降配或未履约结果；泛化供应紧张或AI订单影响不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_0ca519ae7d747ee59566",
+      "title": "竞争供给恢复后Xeon仍获重大续单",
+      "source_refs": [
+        {
+          "shell_id": "Intel计算产品需求与供给转化",
+          "expectation_id": "Intel非AI服务器需求与供给兑现",
+          "gap_id": "竞争供给正常化后Intel仍保持非AI单位"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "召回AMD EPYC/Arm等服务器CPU供给、重大企业/云客户的Xeon非AI采购、续约、扩量、平台分配与取消消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "AMD或其他替代CPU供给经供应商或客户确认已经改善后，单一重大企业或云客户仍续签或扩大Xeon非AI生产采购。",
+          "calibration": {
+            "reference_state": "AMD EPYC在2026年基本售罄；其Q2服务器CPU份额升至34.5%（上年同期27.3%），并计划通过TSMC在2026—2027年扩充产能，竞争供给改善预期增强，但尚未确认替代CPU已向客户普遍可得，当前Intel单位仍可能部分受竞争短缺支撑。",
+            "trigger_boundary": "必须同时确认替代CPU供给已可得和重大客户Xeon非AI生产采购续签/扩大；替代供给仍紧时的普通续约不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_cb0d78e86758f395bb4f",
+      "title": "竞争供给恢复后重大客户转离Xeon",
+      "source_refs": [
+        {
+          "shell_id": "Intel计算产品需求与供给转化",
+          "expectation_id": "Intel非AI服务器需求与供给兑现",
+          "gap_id": "竞争供给恢复后非AI客户转离Xeon"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回替代服务器CPU供给、重大客户非AI平台、Xeon设计输单、采购转移、订单取消和平台更新消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "替代CPU供给恢复后，单一重大企业或云客户在下一轮非AI生产平台中取消或削减Xeon，并转向AMD、Arm/RISC-V或自研CPU。",
+          "calibration": {
+            "reference_state": "截至本轮cutoff，AMD EPYC 9006（Venice/Zen 6）已公开约700至14,904美元、8至256核的完整价格与规格，SP7计划于2026年第四季度、SP8计划于2027年上半年上市；这已把此前的供给改善预期具体化，但正式上市后的普遍可得性、重大客户的Xeon分配及实际转单仍未公开。",
+            "trigger_boundary": "须同时确认替代CPU已进入可向客户采购的商业供给、重大客户原Xeon范围及已决定的production allocation转移；完整价格表、计划上市窗口、竞品测试或研发本身不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_f05baeebb239d6c1d215",
+      "title": "数据中心新架构降低每系统Xeon内容",
+      "source_refs": [
+        {
+          "shell_id": "Intel计算产品需求与供给转化",
+          "expectation_id": "Intel非AI服务器需求与供给兑现",
+          "gap_id": "数据中心扩张但通用CPU被加速器和自研芯片替代"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回数据中心平台BOM、每系统CPU数量、工作负载迁移、Xeon内容、加速器和自研芯片的前后代配置变化。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "重大数据中心生产平台的新一代架构相对前代明确减少每系统Xeon数量、移除Xeon工作负载或迁移至加速器/自研芯片。",
+          "calibration": {
+            "reference_state": "数据中心算力增长与自研/加速器路径并存，同一平台前后代通用Xeon内容尚未建立公开可比序列。",
+            "trigger_boundary": "未来消息须在同一平台和单位口径确认old-to-new Xeon内容下降；仅增加加速器而Xeon内容不变不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_636fc43e6f51dd327cd8",
+      "title": "非AI服务器刷新与订单广泛后移",
+      "source_refs": [
+        {
+          "shell_id": "Intel计算产品需求与供给转化",
+          "expectation_id": "Intel非AI服务器需求与供给兑现",
+          "gap_id": "企业与云服务器刷新周期普遍延后"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回企业/云服务器刷新、Xeon订单、backlog、预算、TCO、虚拟化效率、库存、延期和恢复消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Intel确认覆盖物质需求的企业/云客户群因预算、TCO、虚拟化效率或库存把已计划非AI Xeon刷新后移，并削减或暂停对应近期订单。",
+          "calibration": {
+            "reference_state": "Intel服务器需求改善和产品爬坡已知，但客户级非AI backlog与刷新时点未公开，也未确认广泛主动延期。",
+            "trigger_boundary": "消息须给出覆盖物质订单池的客户范围、延期原因、原到新刷新时点或明确后移，以及相应订单削减/暂停；单一季节性不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_931256fe8b321ca63afd",
+      "title": "主要云客户内部化非AI CPU平台",
+      "source_refs": [
+        {
+          "shell_id": "Intel计算产品需求与供给转化",
+          "expectation_id": "Intel非AI服务器需求与供给兑现",
+          "gap_id": "主要云客户内部化非AI CPU平台"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回主要云客户的自研CPU、非AI实例、生产平台迁移、Xeon内容、采购集中、部署停止及维持Intel平台的消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "单一主要云客户将下一代非AI生产平台中原由Xeon承载的工作负载迁至自研CPU或单一替代供应商，并减少或停止Intel部署。",
+          "calibration": {
+            "reference_state": "Intel与主要云客户存在多代关系，但这些客户具备自研和替代架构能力；研发项目尚不等于生产迁移。",
+            "trigger_boundary": "最低边界是已决定的production migration，须识别原Xeon范围及迁移后Intel内容减少；研发、试验和小型并行实例不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_3649edb583eb0d94c9cf",
+      "title": "服务器供给正常化后量价同步转弱",
+      "source_refs": [
+        {
+          "shell_id": "Intel计算产品需求与供给转化",
+          "expectation_id": "Intel非AI服务器需求与供给兑现",
+          "gap_id": "服务器供给正常化后ASP与mix回落而单位不增"
+        },
+        {
+          "shell_id": "Intel经营盈利与指引持续性",
+          "expectation_id": "Intel多季度经营盈利改善持续性",
+          "gap_id": "供给约束缓解后稀缺溢价消退"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回Intel服务器供给缓解、季度单位同比、ASP同比、高端mix、毛利桥及供需正常化后的价格变化。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Intel确认服务器供给约束实质缓解后，同一季度服务器单位同比增速不高于9%，且ASP同比增速从48%基线显著回落或转负。",
+          "calibration": {
+            "reference_state": "服务器需求曾显著超过供给，单位同比约9%、ASP同比约48%；稀缺分配可能暂时支撑量价和毛利。",
+            "trigger_boundary": "供给缓解必须与同季单位同比不高于9%及ASP同比明显低于48%或转负共同披露；供给仍紧或仅mix变化不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_a6a5390f8b4b604150da",
+      "title": "制造改善形成连续季度经营杠杆",
+      "source_refs": [
+        {
+          "shell_id": "Intel经营盈利与指引持续性",
+          "expectation_id": "Intel多季度经营盈利改善持续性",
+          "gap_id": "连续季度良率与周期时间改善"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "召回Intel连续季度良率、周期时间、合格单位、利用率、毛利桥、营业利润和重组费用贡献的财报及制造更新。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Intel在Q3及Q4 FY2026两个连续季度同时披露良率或周期时间改善、合格单位/利用率改善，且毛利或营业利润桥主要由经营变量而非重组费用下降驱动。",
+          "calibration": {
+            "reference_state": "Q2仅有中等强度的良率/周期时间改善说明；非GAAP毛利率41.8%，重组及其他费用从Q1的40.7亿美元降至1.70亿美元。",
+            "trigger_boundary": "后续披露必须自身提供Q3和Q4同口径序列，并同时确认制造改善、合格产出/利用率及经营毛利桥；只有一个季度或只有利润数字不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_6345eef29e604900f1c7",
+      "title": "先进节点量产良率反转",
+      "source_refs": [
+        {
+          "shell_id": "Intel经营盈利与指引持续性",
+          "expectation_id": "Intel多季度经营盈利改善持续性",
+          "gap_id": "先进节点爬坡造成良率反转"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回18A-P、High-NA及后续节点的良率、缺陷、返工、报废、周期时间、good wafers、客户资格和爬坡成本消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Intel确认18A-P、High-NA或后续先进节点量产良率下降、缺陷/返工/报废上升或周期时间拉长，并识别合格产出下降或毛利桥中的爬坡成本。",
+          "calibration": {
+            "reference_state": "Q2制造指标改善且Panther Lake/High-NA制造已推进，但先进节点量产经济尚未被证明稳定。",
+            "trigger_boundary": "最低边界是已影响合格产出或单位成本的量产异常；实验性缺陷或不影响生产的调试不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_0b23933d3577508efa04",
+      "title": "后端投入瓶颈阻断成品产出",
+      "source_refs": [
+        {
+          "shell_id": "Intel经营盈利与指引持续性",
+          "expectation_id": "Intel多季度经营盈利改善持续性",
+          "gap_id": "基板内存封装成为新瓶颈"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回Intel内存、基板、封装、测试、前端good wafers、成品出货、在制品、单位成本和交付周期消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Intel或关键伙伴确认前端good wafers/良率改善，但内存、基板、封装或测试吞吐不足导致重大产品成品出货受限、在制品增加或单位成本上升。",
+          "calibration": {
+            "reference_state": "服务器供给仍严重受限，Intel计划增加基板、设备和洁净室投入，但前后端对成品缺口的具体归因尚未量化。",
+            "trigger_boundary": "同一消息须同时识别前端改善、具体后端限制和成品/在制品/成本结果；一般材料紧张不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_3af29d91f015dd6ae6fd",
+      "title": "Foundry报告增长未改善经济吸收",
+      "source_refs": [
+        {
+          "shell_id": "Intel经营盈利与指引持续性",
+          "expectation_id": "Intel多季度经营盈利改善持续性",
+          "gap_id": "Foundry分部增长未转化为经济吸收"
+        },
+        {
+          "shell_id": "Intel经营盈利与指引持续性",
+          "expectation_id": "Intel近端经营指引兑现",
+          "gap_id": "Q3 Foundry报告增长但经济组合恶化"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回Intel Foundry报告收入、外部客户收入、内部交易、利用率、经营亏损、分部抵销和合并毛利桥。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Intel后续季度Foundry报告收入上升，但外部客户收入不高于2.93亿美元，且经营亏损不低于20.89亿美元或公司确认利用率未改善。",
+          "calibration": {
+            "reference_state": "Q2 Foundry报告收入为57.65亿美元，其中外部客户收入仅2.93亿美元，经营亏损约20.89亿美元，内部交易占主导。2026年8月26日，Intel CFO表示Foundry原定2027年底盈亏平衡目标可能因客户导入和启动成本增加而推迟至2028年、甚至2028年末；该提示移动了前瞻盈利时间基线，但未改变Q2实际比较值。",
+            "trigger_boundary": "报告收入增长必须与外部收入<=2.93亿美元以及亏损>=20.89亿美元/利用率未改善同时出现；单独的分部增长不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_ea664e97480072e5bf83",
+      "title": "重大外部Foundry客户进入绑定生产",
+      "source_refs": [
+        {
+          "shell_id": "Intel经营盈利与指引持续性",
+          "expectation_id": "Intel多季度经营盈利改善持续性",
+          "gap_id": "外部客户量产带来提前利用率改善"
+        },
+        {
+          "shell_id": "Intel经营盈利与指引持续性",
+          "expectation_id": "Intel近端经营指引兑现",
+          "gap_id": "Q3出现外部客户合格交付"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "召回Intel外部Foundry客户、节点资格、tape-out、正式订单、产能预订、付费晶圆/封装和合格生产消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "单一重大外部云、系统或定制芯片客户完成Intel节点资格，并作出绑定生产采购/产能预订，或直接确认首批付费合格晶圆/封装进入生产交付。",
+          "calibration": {
+            "reference_state": "Q2外部Foundry收入仅2.93亿美元；Google已选择Intel制造其Tensor Processing Units，但该选择尚未公开确认Intel节点资格、绑定生产订单/产能预订或首批付费合格晶圆/封装。",
+            "trigger_boundary": "须跨过合作/测试到binding production：资格完成必须伴随正式订单或预订，或直接有付费合格生产批次；仅供应商选择、PDK、原型或意向不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_a0acf8f5fb398aea4381",
+      "title": "费用削减直接损害产品或制造执行",
+      "source_refs": [
+        {
+          "shell_id": "Intel经营盈利与指引持续性",
+          "expectation_id": "Intel多季度经营盈利改善持续性",
+          "gap_id": "费用削减反噬产品与制造执行"
+        },
+        {
+          "shell_id": "Intel经营盈利与指引持续性",
+          "expectation_id": "Intel近端经营指引兑现",
+          "gap_id": "Q3费用节省伴随执行扰动"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回Intel裁员、R&D/MG&A、产品精简、验证、工艺支持、良率、客户认证、质量与交付延期消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Intel明确将人员或产品削减直接联系到一项重大产品/节点的验证、工艺支持、良率改善、客户认证、质量或交付延期。",
+          "calibration": {
+            "reference_state": "Q2重组及其他费用降至1.70亿美元，费用控制是利润改善的重要部分；尚未确认削减已造成重大执行扰动。",
+            "trigger_boundary": "影响重大产品或节点的明确因果确认即触发；无需等待收入/毛利恶化，但一般组织调整或无交付影响的效率项目不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_05fe8d54fb3f72681720",
+      "title": "重组与减值费用重新抬头",
+      "source_refs": [
+        {
+          "shell_id": "Intel经营盈利与指引持续性",
+          "expectation_id": "Intel多季度经营盈利改善持续性",
+          "gap_id": "重组及其他费用低基数重新出现"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回Intel重组及其他费用、减值、股权薪酬、GAAP/非GAAP对账、营业利润和EPS影响。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Intel后续单季重组及其他费用或新减值超过10亿美元，并在GAAP营业利润或EPS桥中形成可识别拖累。",
+          "calibration": {
+            "reference_state": "Q2 FY2026重组及其他费用仅1.70亿美元，较Q1的40.7亿美元显著下降。",
+            "trigger_boundary": "费用须超过10亿美元并明确影响GAAP利润/EPS；相对1.70亿美元基数的较小波动不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_7c937940aa72cd379f3e",
+      "title": "Intel提价引发客户采购收缩",
+      "source_refs": [
+        {
+          "shell_id": "Intel经营盈利与指引持续性",
+          "expectation_id": "Intel多季度经营盈利改善持续性",
+          "gap_id": "提价回收成本反而损失单位量"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回Intel PC、服务器和定制产品提价、合同重订、OEM/云客户订单、降配、取消、库存、单位与利用率消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Intel正式提价或重订合同后，单一重大客户明确延迟、取消或降配采购，且Intel确认价格收益被销量、mix或利用率损失抵消。",
+          "calibration": {
+            "reference_state": "约10%的PC处理器提价计划和2027年3月约10%的服务器CPU提价报道已知；截至cutoff尚未确认正式价格动作导致重大客户削减Intel采购或由Intel确认量价/利用率抵消。",
+            "trigger_boundary": "须同时出现正式价格动作、重大客户采购收缩和公司量价/利用率抵消桥；仅提价或仅需求下降不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_29f1f34890fecf43270b",
+      "title": "物质客户需求断点削弱产能吸收",
+      "source_refs": [
+        {
+          "shell_id": "Intel经营盈利与指引持续性",
+          "expectation_id": "Intel多季度经营盈利改善持续性",
+          "gap_id": "云与PC需求出现外部断点"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回云/企业AI资本开支、PC OEM采购、部署取消或延期、Intel订单池、库存、单位出货和利用率消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Intel或覆盖物质订单池的主要云/企业客户群或PC OEM群明确取消或实质后移部署/采购，并削减近期Intel订单。",
+          "calibration": {
+            "reference_state": "服务器需求强但供给受限，PC消费预计下降；尚未确认覆盖物质Intel需求的客户群发生新断点。",
+            "trigger_boundary": "须由Intel或覆盖性客户披露给出物质范围、原到新部署时点/取消状态和对应Intel订单削减；单一低暴露客户或宏观担忧不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_1f3648dbef3a5fd08d85",
+      "title": "制度规则直接限制Intel出货或成本",
+      "source_refs": [
+        {
+          "shell_id": "Intel经营盈利与指引持续性",
+          "expectation_id": "Intel多季度经营盈利改善持续性",
+          "gap_id": "政策或地缘规则切断出货传导"
+        },
+        {
+          "shell_id": "Intel经营盈利与指引持续性",
+          "expectation_id": "Intel近端经营指引兑现",
+          "gap_id": "Q3政策或地缘限制造成非计划缺口"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回出口管制、关税、国家安全审查、公共采购、海关实施、Intel CPU/AI产品、关键投入及订单/成本影响。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "有管辖权的政府发布最终且已生效或确定生效日的规则，直接禁止/限制Intel物质产品向重大市场交付，或对关键制造投入施加不可规避的物质成本。",
+          "calibration": {
+            "reference_state": "截至cutoff，未确认新制度规则已直接造成Intel物质产品/地区的出货或毛利断裂。",
+            "trigger_boundary": "须有最终法律状态、生效日、明确产品/投入和物质地域范围并直接覆盖Intel；提案、传闻或一般地缘风险不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_0bc59e379437f5229b23",
+      "title": "重大质量事件重置产品资格",
+      "source_refs": [
+        {
+          "shell_id": "Intel经营盈利与指引持续性",
+          "expectation_id": "Intel多季度经营盈利改善持续性",
+          "gap_id": "新产品质量事件重置客户资格"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回Intel服务器、PC和先进节点产品的可靠性、安全、erratum、资格暂停、召回、返工、退货和shipment hold。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Intel或单一重大客户确认重大可靠性、安全或质量问题已导致重要产品资格暂停、召回、返工或shipment hold。",
+          "calibration": {
+            "reference_state": "新产品正处于制造和客户导入阶段，尚未确认存在触发重大资格重置的质量事件。",
+            "trigger_boundary": "最低边界是影响重大产品/客户的正式资格暂停、召回或出货暂停；普通erratum且不影响交付不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_1e66f06f7dc8de4c2357",
+      "title": "Q3收入跌破指引下限",
+      "source_refs": [
+        {
+          "shell_id": "Intel经营盈利与指引持续性",
+          "expectation_id": "Intel近端经营指引兑现",
+          "gap_id": "Q3供给约束导致收入跌破下限"
+        },
+        {
+          "shell_id": "Intel经营盈利与指引持续性",
+          "expectation_id": "Intel近端经营指引兑现",
+          "gap_id": "Q3需求延迟或替代导致收入跌破下限"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回Intel Q3 FY2026合并收入、158亿美元指引下限、供给/制造缺口、客户延迟取消、库存去化和替代架构归因。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Intel报告Q3 FY2026同口径合并收入低于158亿美元。",
+          "calibration": {
+            "reference_state": "Intel对Q3 FY2026的同口径合并收入指引区间为158亿至168亿美元。",
+            "trigger_boundary": "低于158亿美元即跨过指引下限并触发；供给或需求归因用于解释和召回，不是收入失守后的额外激活条件。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_7c31880742cdd4ee5875",
+      "title": "Q3收入突破指引上限",
+      "source_refs": [
+        {
+          "shell_id": "Intel经营盈利与指引持续性",
+          "expectation_id": "Intel近端经营指引兑现",
+          "gap_id": "Q3供给释放与需求共振带来收入超上限"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "召回Intel Q3 FY2026合并收入、168亿美元指引上限、DCAI/CCPG单位、客户采购、良率和周期时间对超额的解释。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Intel报告Q3 FY2026同口径合并收入高于168亿美元。",
+          "calibration": {
+            "reference_state": "Intel对Q3 FY2026的同口径合并收入指引区间为158亿至168亿美元。",
+            "trigger_boundary": "高于168亿美元即跨过指引上限并触发；单位、需求或制造归因用于解释和召回，不是收入超额后的额外激活条件。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_cb77c73f04ceca6eb1f3",
+      "title": "Q3收入达标但依赖ASP与组合",
+      "source_refs": [
+        {
+          "shell_id": "Intel经营盈利与指引持续性",
+          "expectation_id": "Intel近端经营指引兑现",
+          "gap_id": "Q3达成收入区间但依赖ASP与组合"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回Intel Q3收入、服务器/客户端单位、ASP、稀缺分配、产品组合、提价与客户复购。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Intel报告Q3收入在158亿至168亿美元内，但服务器单位同比不高于9%或客户端单位下降，且ASP、稀缺分配、mix或提价解释主要增量。",
+          "calibration": {
+            "reference_state": "Q3收入指引158亿至168亿美元；Q2服务器单位同比+9%、ASP同比+48%，稀缺价格可能掩盖单位。",
+            "trigger_boundary": "同一财报须同时给出收入区间、单位未越过对应边界和ASP/mix主因；仅数值达标不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_7039b4239d00387b1656",
+      "title": "Q3收入兑现但毛利指引失守",
+      "source_refs": [
+        {
+          "shell_id": "Intel经营盈利与指引持续性",
+          "expectation_id": "Intel近端经营指引兑现",
+          "gap_id": "Q3收入兑现但毛利率低于指引"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回Intel Q3收入、GAAP/non-GAAP毛利率、组合、利用率、良率、节点及封装/基板成本桥。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Intel报告Q3收入不低于158亿美元，但GAAP毛利率低于40%或非GAAP毛利率低于41%，并将偏差归因于组合、利用率、良率、节点或封装/基板成本。",
+          "calibration": {
+            "reference_state": "Q3收入指引158亿至168亿美元；GAAP/non-GAAP毛利率指引为41%/42%。",
+            "trigger_boundary": "收入须>=158亿美元，任一毛利口径低相应指引至少1个百分点，并有明确运营成本归因。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_a68d7b2f1835d7f34932",
+      "title": "Q3制造机制推动毛利超指引",
+      "source_refs": [
+        {
+          "shell_id": "Intel经营盈利与指引持续性",
+          "expectation_id": "Intel近端经营指引兑现",
+          "gap_id": "Q3毛利率超指引并由制造机制解释"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "召回Intel Q3 GAAP/non-GAAP毛利率、良率、周期时间、合格单位、利用率、组合和一次性项目桥。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Intel报告Q3 GAAP毛利率高于41%且非GAAP毛利率高于42%，并将超额主要归因于良率、周期时间、合格单位、利用率或产品组合改善。",
+          "calibration": {
+            "reference_state": "Q3 GAAP/non-GAAP毛利率指引为41%/42%，Q2实际为40.4%/41.8%。",
+            "trigger_boundary": "两种口径均须越过对应指引，且制造/运营桥排除重组、税务和其他一次性项目主导。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_719b7b06ff2bb8aa2c8e",
+      "title": "Q3经营达标但EPS低于指引",
+      "source_refs": [
+        {
+          "shell_id": "Intel经营盈利与指引持续性",
+          "expectation_id": "Intel近端经营指引兑现",
+          "gap_id": "Q3经营目标达成但EPS被非经营项目拖累"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回Intel Q3收入、毛利率、GAAP/non-GAAP EPS、R&D/MG&A、税率、股数、公允价值和调整项目。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Intel Q3收入不低于158亿美元且毛利接近指引，但GAAP EPS低于0.31美元，差异主要来自费用、税率、稀释股数或托管股份公允价值。",
+          "calibration": {
+            "reference_state": "Q3 GAAP EPS指引为0.31美元，收入和毛利另有正式边界。",
+            "trigger_boundary": "经营指标接近/达到指引且GAAP EPS<0.31美元，并由对账明确非产品经营差异。"
+          }
+        },
+        {
+          "condition_id": "C2",
+          "criterion": "Intel Q3收入不低于158亿美元且毛利接近指引，但非GAAP EPS低于0.38美元，差异主要来自费用、税率、稀释股数或调整项目。",
+          "calibration": {
+            "reference_state": "Q3 non-GAAP EPS指引为0.38美元，收入和毛利另有正式边界。",
+            "trigger_boundary": "经营指标接近/达到指引且non-GAAP EPS<0.38美元，并由对账明确费用/非经营差异。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_615af065442bb67a9aea",
+      "title": "Q3 EPS超额由一次性项目驱动",
+      "source_refs": [
+        {
+          "shell_id": "Intel经营盈利与指引持续性",
+          "expectation_id": "Intel近端经营指引兑现",
+          "gap_id": "Q3 EPS超指引但由一次性项目驱动"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回Intel Q3 GAAP/non-GAAP EPS、收入、毛利、一次性逆转、税率、股数、公允价值及调整项目。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Intel Q3 GAAP EPS高于0.31美元，但对账显示超额主要来自一次性逆转、税率/股数异常或公允价值，且收入和毛利未超指引。",
+          "calibration": {
+            "reference_state": "Q3 GAAP EPS指引为0.31美元，普通运营超额将被市场视为正面。",
+            "trigger_boundary": "GAAP EPS须>0.31美元、一次性/非经营项目为主要超额来源，且收入/毛利未同步超额。"
+          }
+        },
+        {
+          "condition_id": "C2",
+          "criterion": "Intel Q3非GAAP EPS高于0.38美元，但对账显示超额主要来自非GAAP调整或其他一次性收益，且收入和毛利未超指引。",
+          "calibration": {
+            "reference_state": "Q3 non-GAAP EPS指引为0.38美元，普通运营超额将被市场视为正面。",
+            "trigger_boundary": "non-GAAP EPS须>0.38美元、调整/一次性项目为主要超额来源，且收入/毛利未同步超额。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_727e1e5dcb817a55c3b5",
+      "title": "Q3投入品冲击穿透出货或毛利",
+      "source_refs": [
+        {
+          "shell_id": "Intel经营盈利与指引持续性",
+          "expectation_id": "Intel近端经营指引兑现",
+          "gap_id": "Q3内存或基板价格冲击穿透毛利"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回Q3内存、基板、封装价格/配额、Intel出货、单位成本、产品组合和41%/42%毛利率指引。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Intel确认Q3内存、基板或封装价格/配额恶化是重大出货缺口、单位成本上升、GAAP毛利率低于41%或非GAAP毛利率低于42%的主要原因。",
+          "calibration": {
+            "reference_state": "Q3毛利率指引为GAAP 41%/non-GAAP 42%；投入品是已知约束但价格敏感性未单独量化。",
+            "trigger_boundary": "公司须明确投入冲击为主要原因，并出现重大出货/成本影响或任一毛利口径低于指引。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_f56b9ef38fd6113ab6c6",
+      "title": "Q3收入达标但由库存拉货驱动",
+      "source_refs": [
+        {
+          "shell_id": "Intel经营盈利与指引持续性",
+          "expectation_id": "Intel近端经营指引兑现",
+          "gap_id": "Q3收入由拉货进入库存而非终端消化"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回Intel Q3收入、提前拉货、sell-in/sell-through、渠道库存、重复订单和后续订单承接。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Intel Q3收入不低于158亿美元，但主要由客户提前拉货或渠道库存补充构成，终端sell-through未改善且后续订单已放缓。",
+          "calibration": {
+            "reference_state": "Q3收入指引为158亿至168亿美元，当前缺少OEM/渠道库存和终端sell-through桥。",
+            "trigger_boundary": "同一披露须给出收入>=158亿美元、拉货/库存主因、sell-through未改善和后续订单放缓。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_739aea62fd8f4c321330",
+      "title": "Intel正式下调或撤回Q3收入指引",
+      "source_refs": [
+        {
+          "shell_id": "Intel经营盈利与指引持续性",
+          "expectation_id": "Intel近端经营指引兑现",
+          "gap_id": "Q3披露前正式下调或撤回指引"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回Intel Q3收入指引、158亿至168亿美元原区间、8-K、预告、撤回和正式更新。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Intel在Q3业绩报告前正式将Q3收入指引下调至158亿美元以下，或撤回Q3收入指引。",
+          "calibration": {
+            "reference_state": "现行Q3合并收入指引为158亿至168亿美元。",
+            "trigger_boundary": "必须是Intel正式8-K、新闻稿或投资者材料给出的新下限/上限低于158亿美元或明确撤回；卖方估计不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_0c25b4c07141defa393f",
+      "title": "Intel正式下调或撤回Q3毛利率指引",
+      "source_refs": [
+        {
+          "shell_id": "Intel经营盈利与指引持续性",
+          "expectation_id": "Intel近端经营指引兑现",
+          "gap_id": "Q3披露前正式下调或撤回指引"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回Intel Q3 GAAP/non-GAAP毛利率41%/42%原指引、8-K、预告、撤回和正式更新。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Intel在Q3业绩报告前正式将GAAP毛利率指引下调至41%以下、将非GAAP毛利率指引下调至42%以下，或撤回任一毛利率指引。",
+          "calibration": {
+            "reference_state": "现行Q3 GAAP/non-GAAP毛利率指引分别为41%/42%。",
+            "trigger_boundary": "任一对应口径正式低于原值或明确撤回即触发；卖方/媒体猜测不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_eef2e0260bf6a471e3ec",
+      "title": "Intel正式下调或撤回Q3 EPS指引",
+      "source_refs": [
+        {
+          "shell_id": "Intel经营盈利与指引持续性",
+          "expectation_id": "Intel近端经营指引兑现",
+          "gap_id": "Q3披露前正式下调或撤回指引"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回Intel Q3 GAAP/non-GAAP EPS 0.31/0.38美元原指引、8-K、预告、撤回和正式更新。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Intel在Q3业绩报告前正式将GAAP EPS指引下调至0.31美元以下、将非GAAP EPS指引下调至0.38美元以下，或撤回任一EPS指引。",
+          "calibration": {
+            "reference_state": "现行Q3 GAAP/non-GAAP EPS指引分别为0.31/0.38美元。",
+            "trigger_boundary": "任一对应口径正式低于原值或明确撤回即触发；卖方/媒体猜测不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_790bbf20fa2ad9398a3a",
+      "title": "14A客户完成Tape-out并锁定生产产能",
+      "source_refs": [
+        {
+          "shell_id": "Intel商业Foundry客户与先进封装转化",
+          "expectation_id": "Intel商业先进制程Foundry客户转化",
+          "gap_id": "14A外部客户完成Tape-out并进入量产预订"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "召回14A外部客户、PDK、tape-out、硅后验证、节点订单、capacity booking、交付窗口及取消消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "单一重大外部商业客户完成14A tape-out或硅后验证，并签署包含交付窗口或数量范围的有约束力节点级订单/产能预订。",
+          "calibration": {
+            "reference_state": "截至本轮可用披露，14A仍处于开发及客户评估阶段。2026年8月26日，Intel CFO称部分外部14A客户讨论已越过技术评估并进入潜在容量规模讨论；Intel管理层此前预计2026年下半年至2027年上半年出现早期设计承诺、2028年HVM。本次材料未确认客户级14A tape-out/硅后验证及绑定订单或产能预订。",
+            "trigger_boundary": "必须同时确认单一重大外部商业客户完成14A tape-out或硅后验证，并签署包含交付窗口或数量范围的有约束力节点级订单/产能预订。潜在容量规模讨论、PDK、设计协作、意向、未限定范围的预订或单独完成tape-out均不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_5ce626bd3e3aec6f2a87",
+      "title": "18A外部客户通过资格并进入生产",
+      "source_refs": [
+        {
+          "shell_id": "Intel商业Foundry客户与先进封装转化",
+          "expectation_id": "Intel商业先进制程Foundry客户转化",
+          "gap_id": "18A或18A-P外部客户资格通过并重复出货"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "召回18A/18A-P外部客户、性能功耗可靠性资格、生产订单、产能预订、付费合格晶圆和内部/外部归属。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "单一重大外部客户的18A或18A-P产品完成性能、功耗和可靠性资格，并形成绑定生产订单/产能预订或首批付费合格晶圆生产。",
+          "calibration": {
+            "reference_state": "18A内部产品已进入HVM、18A-P进入风险生产，但外部客户资格、订单与量产尚未证实；内部生产已进入市场基线。",
+            "trigger_boundary": "须为明确外部客户跨过qualification sign-off到binding production；测试硅、内部产品和无约束合作不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_55602b2ef908f69678f0",
+      "title": "先进节点制造门槛推迟外部量产",
+      "source_refs": [
+        {
+          "shell_id": "Intel商业Foundry客户与先进封装转化",
+          "expectation_id": "Intel商业先进制程Foundry客户转化",
+          "gap_id": "18A-P或14A良率与吞吐延迟外部量产"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回18A-P、14A、High-NA的良率、周期时间、掩模/设备吞吐、客户starts、资格和HVM窗口变化。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Intel、重大客户或关键供应商确认18A-P、14A或High-NA良率、周期、掩模或设备吞吐未达标，使已披露外部qualification/HVM窗口后移，或限制/取消客户starts。",
+          "calibration": {
+            "reference_state": "18A-P风险生产、14A开发及2028 HVM计划已知，High-NA生态推进，但外部可用starts与稳定良率未公开。",
+            "trigger_boundary": "消息须识别节点、失败门槛以及原到新窗口或明确starts限制；一般研发挑战和无客户影响的调试不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_29d2800563ebf8f98baa",
+      "title": "已导入客户将先进节点量产转离Intel",
+      "source_refs": [
+        {
+          "shell_id": "Intel商业Foundry客户与先进封装转化",
+          "expectation_id": "Intel商业先进制程Foundry客户转化",
+          "gap_id": "已导入客户将先进节点量产转向替代代工"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回已资格/预订客户的Intel节点booking、生产份额、取消、缩量、TSMC/Samsung/内部制造转移和双源状态。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "已完成Intel先进节点资格或预订的单一重大客户取消或实质削减Intel节点级booking，并将对应量产明确转向竞争代工或内部工厂。",
+          "calibration": {
+            "reference_state": "外部客户级资格和生产规模仍弱，TSMC、Samsung及客户内部制造均为现实替代路径。",
+            "trigger_boundary": "最低阶段是已决定的binding production reallocation；短期交期调整、备份代工资格或双源测试不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_c7ddf4618265d1f7a95e",
+      "title": "超大客户锁定14A商业产能",
+      "source_refs": [
+        {
+          "shell_id": "Intel商业Foundry客户与先进封装转化",
+          "expectation_id": "Intel商业先进制程Foundry客户转化",
+          "gap_id": "Terafab或其他超大客户锁定14A产能"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "召回Terafab及超大规模客户的14A制造协议、不可取消预订、预付款、产能数量、交付窗口和量产承诺。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Terafab相关方或另一家超大客户与Intel签署指名14A、包含产能/数量或预付款并设交付/量产窗口的不可取消商业制造协议。",
+          "calibration": {
+            "reference_state": "截至本轮可用披露，Intel此前被描述为Terafab的潜在主要Foundry提供方，但条款、客户义务和产能数量未披露或确认。2026年8月26日，Intel CFO称部分外部14A客户讨论已从技术评估推进至潜在容量规模讨论；本次披露未给出客户级tape-out、订单或产能预订。2026年10月3日，Elon Musk确认Terafab正与TSMC讨论潜在合作，报道将TSMC描述为潜在参与方；这只确认讨论，不确认TSMC被选定、取得排他角色或接替Intel，也未披露具约束力的产能安排。",
+            "trigger_boundary": "只有Terafab相关方或另一家超大客户与Intel签署指名14A、包含具约束力的产能/数量或预付款并设定交付/量产窗口的不可取消商业制造协议才触发。潜在容量规模讨论、客户探索、TSMC与Terafab的讨论或潜在参与报道本身，即使讨论已获确认，只要没有上述Intel绑定协议，均不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_14a785820b388310737f",
+      "title": "供应或规则冲击重排外部节点产能",
+      "source_refs": [
+        {
+          "shell_id": "Intel商业Foundry客户与先进封装转化",
+          "expectation_id": "Intel商业先进制程Foundry客户转化",
+          "gap_id": "供应或地缘规则迫使先进节点交付重排"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回先进节点设备、掩模、材料、供应中断、出口/安全/贸易规则、外部客户starts、产能配给和生产地点迁移。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "具体供应中断或最终生效规则迫使Intel取消、配给或迁移一个重大外部客户的18A/14A starts或交付至少一个完整生产周期。",
+          "calibration": {
+            "reference_state": "先进节点依赖设备、掩模、材料和跨境客户，但尚未确认新限制已迫使外部starts重排。",
+            "trigger_boundary": "须给出中断/最终规则、受影响节点与客户、具体产能分配动作及至少一周期影响；一般采购波动或政策提案不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_63587fb5036e90cf9232",
+      "title": "客户芯粒化降低Intel先进节点晶圆内容",
+      "source_refs": [
+        {
+          "shell_id": "Intel商业Foundry客户与先进封装转化",
+          "expectation_id": "Intel商业先进制程Foundry客户转化",
+          "gap_id": "客户转向芯粒与成熟节点组合而降低先进晶圆含量"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回外部Foundry客户的单片/芯粒架构、18A/14A晶圆内容、成熟节点、替代代工、封装和量产BOM变化。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "单一重大客户将目标量产产品从原拟Intel 18A/14A单片方案改为成熟节点或其他代工芯粒组合，使Intel先进节点仅保留试产、小批或验证用途。",
+          "calibration": {
+            "reference_state": "芯粒与外部封装路线存在，但尚未确认已导入客户的量产设计把Intel先进节点降为非主要制造。",
+            "trigger_boundary": "消息须在同一产品上给出原先进节点方案、新量产制造组合和Intel内容降至小批/验证；概念路线图或多方案评估不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_2c175c35a579529f28d8",
+      "title": "重大客户完成EMIB/Foveros资格并锁定产能",
+      "source_refs": [
+        {
+          "shell_id": "Intel商业Foundry客户与先进封装转化",
+          "expectation_id": "Intel先进封装与后端产能兑现",
+          "gap_id": "EMIB或Foveros封装完成客户资格并进入重复高量制造"
+        },
+        {
+          "shell_id": "Intel商业Foundry客户与先进封装转化",
+          "expectation_id": "Intel先进封装与后端产能兑现",
+          "gap_id": "CoWoS瓶颈推动客户锁定EMIB-T产能"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "召回EMIB、EMIB-T、Foveros、CoWoS替代、系统资格、量产订单、capacity booking、付费good-package和取消消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "单一重大AI或Foundry客户的具体产品完成EMIB/EMIB-T/Foveros电气、热和可靠性资格，并形成绑定量产订单/产能预订或首批付费good-package生产。",
+          "calibration": {
+            "reference_state": "截至cutoff，EMIB/Foveros能力和路线图已建立；EMIB-T基板供应链良率据报已从2Q26约30%升至最近季度约45%，并设定4Q26约50%、1Q27约60%的目标；AWS正在测试Intel EMIB，Counterpoint于2026年9月30日称Intel EMIB-T已用于Google下一代TPU开发与量产周期；但该报道尚未确认重大外部客户完成系统级电气、热和可靠性资格，也未确认绑定量产订单、产能预订或首批付费good-package生产。",
+            "trigger_boundary": "仍须跨过system qualification到binding production：具体产品完成EMIB/EMIB-T/Foveros电气、热和可靠性资格，并形成绑定量产订单/产能预订或首批付费good-package；仅据分析师称已采用、Google采用预期、良率改善/目标、供应商预付、AWS测试、探索、样品、演示或无约束工程批不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_6bd8fed7903cce708602",
+      "title": "扩建后端设施形成已资格有效吞吐",
+      "source_refs": [
+        {
+          "shell_id": "Intel商业Foundry客户与先进封装转化",
+          "expectation_id": "Intel先进封装与后端产能兑现",
+          "gap_id": "马来西亚与新墨西哥扩建形成已资格有效吞吐"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "召回Intel马来西亚/新墨西哥设施建设、设备安装、线体/产品资格、量产启动、合格吞吐、客户和利用率。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Intel马来西亚或新墨西哥指定扩建设施完成设备安装和产线/产品资格，并确认一个重大客户或产品的绑定量产启动及初始合格吞吐。",
+          "calibration": {
+            "reference_state": "设施投资和2027-2028路线图已知，但已安装、已资格且有客户/产品负荷的有效吞吐未确认。",
+            "trigger_boundary": "设施资格和binding product start必须同时成立；建筑完工、设备到厂或资本开支单独不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_73ba3b20a1cbaefa2f58",
+      "title": "后端站点延期中断既定交付",
+      "source_refs": [
+        {
+          "shell_id": "Intel商业Foundry客户与先进封装转化",
+          "expectation_id": "Intel先进封装与后端产能兑现",
+          "gap_id": "多地整合或扩建延期造成后端交付中断"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回Costa Rica、马来西亚、新墨西哥站点建设/整合、跨站点转移、重新认证、停线、交付窗口和批次取消。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Intel或重大客户确认后端站点建设/转移里程碑较原计划后移至少一个季度，或重新认证/停线导致重大已排产批次延期或取消。",
+          "calibration": {
+            "reference_state": "多地建设和整合仍按路线图推进，尚未确认重大延期或排产中断。",
+            "trigger_boundary": "消息须给出站点、原窗口与新窗口，或明确受影响生产批次和重新认证/停线结果；不影响生产的施工调整不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_8545aa6aaf791b367a25",
+      "title": "关键材料短缺限制合格封装",
+      "source_refs": [
+        {
+          "shell_id": "Intel商业Foundry客户与先进封装转化",
+          "expectation_id": "Intel先进封装与后端产能兑现",
+          "gap_id": "基板或HBM等关键材料短缺限制合格封装"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回基板、HBM、玻璃等材料的配给、交期、良率、封装starts、good packages、客户交付和延期。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Intel、材料供应商或后端伙伴确认具体材料配给、交期显著拉长或良率下降，并导致重大AI/Foundry封装starts、good packages或出货被配给或延期。",
+          "calibration": {
+            "reference_state": "截至cutoff，基板与内存供给约束仍是中等强度限制；Intel CEO已明确将EMIB-T基板列为瓶颈并称需预付供应商，行业报告的EMIB-T基板良率由2Q26约30%升至最近季度约45%且设有后续目标，但尚未确认具体材料配给、交期显著拉长或良率下降已使重大AI/Foundry封装starts、good packages或出货被配给或延期。",
+            "trigger_boundary": "须在当前已知基板/内存约束与EMIB-T良率/供给报道基础上，将具体材料配给、交期显著拉长或良率下降直接连接到重大封装批次的配给/延期；Intel确认存在瓶颈、供应商预付、行业良率改善/目标或一般材料紧张而无生产影响不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_df2e632017cca20e1d9d",
+      "title": "重大客户把量产封装转离Intel后端",
+      "source_refs": [
+        {
+          "shell_id": "Intel商业Foundry客户与先进封装转化",
+          "expectation_id": "Intel先进封装与后端产能兑现",
+          "gap_id": "大客户把封装量转给外部OSAT或替代平台"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回已资格客户的Intel后端排产、封装合同、Amkor/OSAT/TSMC/自有后端转移、双源和量产份额。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "已完成Intel封装协作或资格的单一重大客户取消或实质削减Intel封装排产/合同，并把主要量产封装转给外部OSAT、其他平台或自有后端。",
+          "calibration": {
+            "reference_state": "外部伙伴接口存在，但客户级Intel后端量产份额和排产未公开；替代OSAT可承接生产。",
+            "trigger_boundary": "最低阶段是重大客户已决定的binding reallocation；备份OSAT资格、小批双源或仅合作公告不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_c770cc55feb9ff30e6c6",
+      "title": "新材料或混合键合进入客户生产",
+      "source_refs": [
+        {
+          "shell_id": "Intel商业Foundry客户与先进封装转化",
+          "expectation_id": "Intel先进封装与后端产能兑现",
+          "gap_id": "玻璃基板或混合键合方案完成生产资格"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "召回玻璃基板、Foveros Direct、混合键合和新互连方案的可靠性、系统资格、客户产品、量产订单和付费批次。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "玻璃基板、Foveros Direct混合键合或另一新互连方案完成可靠性和重大客户系统资格，并形成绑定量产订单/产品启动或首批付费生产。",
+          "calibration": {
+            "reference_state": "玻璃基板与混合键合仍处探索/路线图，Foveros Direct目标2028支持18A-PT，未确认生产资格。",
+            "trigger_boundary": "须同时跨过可靠性/系统资格和binding production；实验室样品、专利、探索合作或无订单资格不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_ec66d3c1274228e9ff69",
+      "title": "先进封装质量事件暂停客户资格",
+      "source_refs": [
+        {
+          "shell_id": "Intel商业Foundry客户与先进封装转化",
+          "expectation_id": "Intel先进封装与后端产能兑现",
+          "gap_id": "封装良率或可靠性失控导致返工与资格暂停"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回EMIB/Foveros良率、热电可靠性、测试通过率、返工、召回、客户资格暂停和production hold。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "重大产品的EMIB或Foveros量产出现热/电可靠性、测试或良率问题，并导致客户资格暂停、重大返工/召回或production hold。",
+          "calibration": {
+            "reference_state": "当前合格吞吐证据弱，但未确认重大产品因封装质量进入资格暂停。",
+            "trigger_boundary": "影响重大产品的qualification pause、recall或production hold即触发；轻微良率波动且不影响生产不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_c1d9b13082ff0e9dd624",
+      "title": "新增封装产能连续低利用",
+      "source_refs": [
+        {
+          "shell_id": "Intel商业Foundry客户与先进封装转化",
+          "expectation_id": "Intel先进封装与后端产能兑现",
+          "gap_id": "封装扩建完成但AI与Foundry需求未吸收"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回已资格新增封装线、外部客户排产、starts、利用率、闲置能力、内部产品用途和连续报告期。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Intel披露新增封装线已完成资格，但连续两个报告期外部客户排产/starts未增加、利用率保持低位，且新增能力主要闲置或服务内部产品。",
+          "calibration": {
+            "reference_state": "扩建仍主要处路线图/建设阶段，尚未形成可检验的已资格闲置产能；外部封装需求证据弱。",
+            "trigger_boundary": "未来消息必须自身提供线体资格及两个报告期同口径外部starts/利用率；单期爬坡低利用不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_2bb8b9bdbbc8c907bb9b",
+      "title": "客户下一代架构转离EMIB/Foveros",
+      "source_refs": [
+        {
+          "shell_id": "Intel商业Foundry客户与先进封装转化",
+          "expectation_id": "Intel先进封装与后端产能兑现",
+          "gap_id": "客户架构转向替代互连而削弱EMIB与Foveros需求"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回AI/Foundry客户下一代平台、EMIB/Foveros、芯粒/光互连标准、外部封装平台、BOM和量产设计决定。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "单一重大客户确认下一代量产系统取消或实质缩减原拟EMIB/Foveros封装，并转向替代芯粒/光互连标准或全外部平台。",
+          "calibration": {
+            "reference_state": "EMIB/Foveros路线图继续推进，但客户级下一代量产平台选择未公开。",
+            "trigger_boundary": "须为重大产品的production design decision，并明确原Intel方案、新量产方案和取消/削减范围；研发路线图或并行测试不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_5a0ccbabf9d57015791c",
+      "title": "Secure Enclave取得客户生产准入",
+      "source_refs": [
+        {
+          "shell_id": "Intel可信国防制造客户转化",
+          "expectation_id": "Intel可信国防制造与Secure Enclave转化",
+          "gap_id": "Secure Enclave获得生产级政府与DIB安全授权及客户验收"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "召回Secure Enclave设施或产品的政府生产安全授权、DIB项目设计验收、资格限制、暂停和否定消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "指定Secure Enclave设施或产品同时取得有权政府机构的生产适用安全授权和单一重大DIB项目的设计验收。",
+          "calibration": {
+            "reference_state": "RAMP-C已完成并形成生产就绪路径，但截至cutoff尚无公开的DIB客户级生产授权或设计验收。",
+            "trigger_boundary": "必须同时跨过生产适用授权与重大客户设计验收；实验室评估、原型或一般设施认证不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_04df46d9d968a1657ba0",
+      "title": "Secure Enclave形成有资金生产订单",
+      "source_refs": [
+        {
+          "shell_id": "Intel可信国防制造客户转化",
+          "expectation_id": "Intel可信国防制造与Secure Enclave转化",
+          "gap_id": "Secure Enclave出现有资金采购合同与产能预约"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "召回政府或DIB的Secure Enclave采购授标、已拨资金、生产义务、订单、产能预订、排程及取消消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "政府或重大DIB采购方授予具名项目一份已获资金且有约束力的Secure Enclave生产合同或订单，并明确产能预约或生产排程。",
+          "calibration": {
+            "reference_state": "已有生产就绪路径和部署计划，但截至cutoff未公开客户级采购合同、订单或量产排程。",
+            "trigger_boundary": "最低边界是已拨资金、可执行生产义务和明确产能/排程同时成立；MOU、试验协议或无资金意向不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_c013756b0d024657cfe8",
+      "title": "首批客户Secure Enclave生产批次获验收",
+      "source_refs": [
+        {
+          "shell_id": "Intel可信国防制造客户转化",
+          "expectation_id": "Intel可信国防制造与Secure Enclave转化",
+          "gap_id": "首批客户关联的Secure Enclave合格批次完成验收交付"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "召回具名DIB项目的Secure Enclave生产级晶圆或封装批次、good units、客户验收、接收、拒收及交付状态。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "单一重大DIB项目的首批Secure Enclave生产级合格晶圆或封装批次完成客户验收并交付。",
+          "calibration": {
+            "reference_state": "截至cutoff只有生产就绪路径，尚未公开客户关联的生产级合格批次或验收交付。",
+            "trigger_boundary": "具名客户项目、生产级批次和客户验收/接收必须同时明确；演示晶圆、内部生产或无客户归属批次不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_02b0439dacbc3e7e27a8",
+      "title": "Secure Enclave形成跨期重复生产",
+      "source_refs": [
+        {
+          "shell_id": "Intel可信国防制造客户转化",
+          "expectation_id": "Intel可信国防制造与Secure Enclave转化",
+          "gap_id": "Secure Enclave形成跨期间重复的客户高量生产与交付"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "召回Secure Enclave客户批次、连续生产期间、验收交付、数量、吞吐、利用率及生产中断消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "后续披露确认至少两个相隔生产期间均有客户关联的Secure Enclave生产批次完成验收交付，并给出持续数量、吞吐或利用率。",
+          "calibration": {
+            "reference_state": "截至cutoff尚无客户关联生产批次，更未形成跨期间重复生产证据。",
+            "trigger_boundary": "同一披露必须提供至少两个期间、客户归属、生产阶段、验收交付和持续规模指标；单一LRIP批次不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_3652c8d70cedb2a026d2",
+      "title": "第二个DIB项目复制Secure Enclave量产导入",
+      "source_refs": [
+        {
+          "shell_id": "Intel可信国防制造客户转化",
+          "expectation_id": "Intel可信国防制造与Secure Enclave转化",
+          "gap_id": "第二个独立DIB项目复制采用Secure Enclave"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "召回Secure Enclave新增DIB客户、独立项目、项目资格、设计导入、生产合同、订单及量产排程。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "与首个已确认项目法律和经济上独立的第二个DIB客户完成Secure Enclave项目资格或设计导入，并取得有约束力生产合同、订单或量产排程。",
+          "calibration": {
+            "reference_state": "截至cutoff尚无首个公开生产项目，因此也没有第二个独立客户的复制证据。",
+            "trigger_boundary": "消息必须区分两个独立客户项目，且第二个项目跨到binding production；同客户不同设施或合作公告不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_d25aa94363c7187f0e5c",
+      "title": "Secure Enclave客户部署窗口正式后移",
+      "source_refs": [
+        {
+          "shell_id": "Intel可信国防制造客户转化",
+          "expectation_id": "Intel可信国防制造与Secure Enclave转化",
+          "gap_id": "RAMP-C完成后资格与采购持续停滞并推迟部署"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回RAMP-C后客户资格、采购合同、量产部署的原计划窗口、新窗口、待定状态及排期恢复。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "政府、Intel或重大DIB客户将Secure Enclave客户资格、采购合同或量产部署从已披露计划窗口正式后移，或把该阶段重新排期为待定。",
+          "calibration": {
+            "reference_state": "RAMP-C已完成但客户级转化尚未公开；停滞本身不能从消息缺失推断。",
+            "trigger_boundary": "须由事实所有者给出受影响阶段及原窗口与新窗口或待定状态；单纯没有公告不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_15a8018e4b92cfa10cb7",
+      "title": "Secure Enclave生产安全授权受阻",
+      "source_refs": [
+        {
+          "shell_id": "Intel可信国防制造客户转化",
+          "expectation_id": "Intel可信国防制造与Secure Enclave转化",
+          "gap_id": "Secure Enclave安全授权被拒绝、暂停或撤销"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回Secure Enclave生产安全授权的拒绝、暂停、撤销、停产整改、重新认证及恢复决定。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "有权机构正式拒绝、暂停或撤销指定Secure Enclave设施或产品的DIB生产授权，或要求停产后重新认证。",
+          "calibration": {
+            "reference_state": "现有路径已达到生产就绪，但未确认新的负面授权决定影响DIB生产范围。",
+            "trigger_boundary": "影响DIB生产适用范围的正式决定即触发；传闻、普通整改或非生产设施事件不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_d92e0e1491ba63465924",
+      "title": "重大DIB项目削减Intel可信制造量产范围",
+      "source_refs": [
+        {
+          "shell_id": "Intel可信国防制造客户转化",
+          "expectation_id": "Intel可信国防制造与Secure Enclave转化",
+          "gap_id": "已获资格的DIB项目因预算采购或任务变更取消量产"
+        },
+        {
+          "shell_id": "Intel可信国防制造客户转化",
+          "expectation_id": "Intel可信国防制造与Secure Enclave转化",
+          "gap_id": "DIB客户转向另一条可信制造或内部化路线"
+        },
+        {
+          "shell_id": "Intel可信国防制造客户转化",
+          "expectation_id": "Intel可信国防制造与Secure Enclave转化",
+          "gap_id": "防务架构或任务变化使Secure Enclave高量需求转为低量或不同制造路线"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回重大DIB项目的取消、未续签、预算或任务变更、替代可信制造授标、内部化、架构改版及Intel生产范围削减。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "已资格或接近资格的重大DIB项目被正式取消、未续签或削减，使已计划的Secure Enclave批次或产能预约不再执行。",
+          "calibration": {
+            "reference_state": "客户级资格和合同尚未公开，未来技术资格仍取决于预算、采购和任务持续。",
+            "trigger_boundary": "须为重大项目正式终止或削减并明确原生产义务不再执行；一般预算不确定性不触发。"
+          }
+        },
+        {
+          "condition_id": "C2",
+          "criterion": "重大DIB项目把量产晶圆、封装或安全制造正式授予替代供应商或内部设施，并将Intel Secure Enclave降为非量产或移出生产角色。",
+          "calibration": {
+            "reference_state": "政府可信制造需求存在且替代设施可承接，但截至cutoff没有客户级生产授标。",
+            "trigger_boundary": "须为已决定的production award及Intel角色取消或降级；供应商能力宣传、多源评估或备份资格不触发。"
+          }
+        },
+        {
+          "condition_id": "C3",
+          "criterion": "重大DIB项目正式采用不同节点、成熟工艺、芯粒/封装架构或COTS供应链，并取消或实质缩小原Secure Enclave高量生产范围。",
+          "calibration": {
+            "reference_state": "高量Secure Enclave仍是计划方向，但尚无客户级量产承诺，任务与架构选择仍可改变需求。",
+            "trigger_boundary": "须为正式production architecture或mission decision，并明确原计划、新路线及Intel数量或生产范围的取消/缩减；备选讨论不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_4a9ae9c0af17e23d6f3d",
+      "title": "Secure Enclave生产退回低率试产",
+      "source_refs": [
+        {
+          "shell_id": "Intel可信国防制造客户转化",
+          "expectation_id": "Intel可信国防制造与Secure Enclave转化",
+          "gap_id": "客户关联生产因良率吞吐或封装测试失败退回低率试产"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回Secure Enclave项目良率、设备、吞吐、封装测试、客户验收、HVM降级、LRIP、试产、拒收和排程重置。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "已资格或签约的重大Secure Enclave项目因良率、设备、吞吐、封装测试或客户验收不达标，正式从高量生产退回LRIP/试产、重置量产排程或发生重大批次拒收。",
+          "calibration": {
+            "reference_state": "截至cutoff尚未公开客户生产启动；未来资格或合同并不能保证稳定生产经济。",
+            "trigger_boundary": "正式HVM至LRIP/试产降级、量产排程重置或重大拒收任一成立即触发；单一偶发波动不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_32a72f2a752665d86428",
+      "title": "可信制造供应链瓶颈推迟DIB项目",
+      "source_refs": [
+        {
+          "shell_id": "Intel可信国防制造客户转化",
+          "expectation_id": "Intel可信国防制造与Secure Enclave转化",
+          "gap_id": "可信制造供应链或受安全审查的后端伙伴成为独立瓶颈"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回安全批准的设备、材料、基板、封装测试、运输、后端伙伴容量、项目延期减量及替代认证。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "经安全批准的设备、材料、基板、封装测试、运输或后端伙伴发生容量不足，并使单一重大Secure Enclave项目正式延期、减量或启动替代认证。",
+          "calibration": {
+            "reference_state": "生产就绪路径已建立，但尚无已确认的可信供应链瓶颈影响客户级量产排程。",
+            "trigger_boundary": "必须识别受批准资源、重大项目及具体延期、减量或替代认证动作；一般行业紧张不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_2679129249ee0590022d",
+      "title": "安全事件中断Secure Enclave量产",
+      "source_refs": [
+        {
+          "shell_id": "Intel可信国防制造客户转化",
+          "expectation_id": "Intel可信国防制造与Secure Enclave转化",
+          "gap_id": "量产后安全事件导致Secure Enclave停产与重新认证"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回Secure Enclave机密性、隔离、追溯、完整性事件、停产、暂停交付、隔离召回、重新认证及复产。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "主管方确认影响Secure Enclave机密性、隔离、追溯或完整性的重大事件，并对DIB生产采取停产、暂停交付、隔离/召回或强制重新认证。",
+          "calibration": {
+            "reference_state": "截至cutoff尚无公开量产；未来开始生产后，持续授权与供应链完整性将是重复交付前提。",
+            "trigger_boundary": "影响DIB生产授权或交付的正式控制措施即触发；不影响生产的普通IT事件不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_216a6a15e3db4f5d8c8a",
+      "title": "新规则重置Secure Enclave资格或竞争范围",
+      "source_refs": [
+        {
+          "shell_id": "Intel可信国防制造客户转化",
+          "expectation_id": "Intel可信国防制造与Secure Enclave转化",
+          "gap_id": "政府安全标准或采购规则改变并使既有资格失效"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回可信制造安全标准、采购规则、最终法规、生效日、重新认证、节点设施限制、新增供应商和Intel保留范围。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "最终生效的政府安全或采购规则使现有Secure Enclave生产资格失效或必须重新认证、限制可用节点/设施，或向新增替代供应商开放重大项目并削减Intel保留范围。",
+          "calibration": {
+            "reference_state": "Secure Enclave路径基于当前可信制造框架，尚未确认新规则改变资格持续性或竞争范围。",
+            "trigger_boundary": "须为最终规则并明确生效日及对现有Secure Enclave项目资格、设施或供应商范围的直接负面影响；讨论稿不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_e14d434ed0ebcf00deca",
+      "title": "DIB合同把Secure Enclave限定为低率生产",
+      "source_refs": [
+        {
+          "shell_id": "Intel可信国防制造客户转化",
+          "expectation_id": "Intel可信国防制造与Secure Enclave转化",
+          "gap_id": "取得资格但客户只采用受限低率初始生产"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回已资格Secure Enclave项目的pilot、LRIP、单次验证、少量敏感批次、备用供应、合同数量和高量义务。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "已资格重大DIB项目的正式合同或排程把Secure Enclave限定为pilot、LRIP、单次验证、少量敏感批次或备用供应，且不包含持续高量产能义务。",
+          "calibration": {
+            "reference_state": "高量制造仍是管理层目标，但截至cutoff没有客户合同，资格本身不等于高量范围。",
+            "trigger_boundary": "正式文件须明确已资格项目的低率/少量上限和不存在持续高量义务；未披露数量或正常初期爬坡不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_d976971fd68a08855b4d",
+      "title": "共享资源挤出Secure Enclave排产",
+      "source_refs": [
+        {
+          "shell_id": "Intel可信国防制造客户转化",
+          "expectation_id": "Intel可信国防制造与Secure Enclave转化",
+          "gap_id": "商业Foundry或内部产品占用可信设施并挤出DIB排产"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回可信设施共享资源、商业Foundry或Intel内部产品优先级、DIB排产延期减量、产能改配及恢复。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Intel或重大客户确认商业Foundry或Intel内部产品优先占用同一关键可信制造资源，并使重大Secure Enclave项目排产延期、减量或改配。",
+          "calibration": {
+            "reference_state": "可信制造可能与商业或内部生产共享资源，但截至cutoff尚未确认DIB排产被挤出。",
+            "trigger_boundary": "必须识别共享资源、优先项目和重大DIB排产的具体延期、减量或改配；仅共享工艺不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_a0719bcc321980901b05",
+      "title": "可信设施启用后未转化DIB订单",
+      "source_refs": [
+        {
+          "shell_id": "Intel可信国防制造客户转化",
+          "expectation_id": "Intel可信国防制造与Secure Enclave转化",
+          "gap_id": "政府资助或设施扩建完成但未形成DIB生产订单"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回政府资助可信设施的启用、扩建完成、官方采购或部署窗口、DIB合同、设计验收、产能预约和无订单状态。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "官方后续披露确认政府资助或扩建的可信设施已启用，并在同一披露明确的完整采购或部署窗口结束后仍无具名DIB生产合同、设计验收、产能预约或批次。",
+          "calibration": {
+            "reference_state": "政府支持与生产就绪路径存在，但设施能力尚未转为客户合同或生产批次。",
+            "trigger_boundary": "消息自身必须给出设施启用、正式采购窗口届满及无合同/验收/预约/批次状态；一般沉默或未定义等待期不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_e8325fa903355b9d23a4",
+      "title": "国防拨款形成多项目Secure Enclave需求",
+      "source_refs": [
+        {
+          "shell_id": "Intel可信国防制造客户转化",
+          "expectation_id": "Intel可信国防制造与Secure Enclave转化",
+          "gap_id": "新的国防政策或拨款把可信制造需求快速扩展至多个项目"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "召回国防法案、已拨资金、采购指令、多个DIB项目、Intel Secure Enclave最低采购、产能保留和可执行排程。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "正式法案、拨款或采购指令以已拨资金明确多个DIB项目，并对Intel Secure Enclave规定最低采购、产能保留或可执行生产排程。",
+          "calibration": {
+            "reference_state": "RAMP-C完成且部署计划存在，但截至cutoff没有多项目可执行资金或Intel产能义务。",
+            "trigger_boundary": "须同时具备已拨资金、多个具名或可识别项目及Intel可执行采购/产能要求；演讲、愿景或未拨款提案不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_cd15f512755927e80242",
+      "title": "跨期现金转换覆盖增长资本开支",
+      "source_refs": [
+        {
+          "shell_id": "Intel现金转换与资本融资",
+          "expectation_id": "Intel经营现金转换支撑资本投资",
+          "gap_id": "连续报告期现金转换覆盖增长性资本开支"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "召回Intel经营现金流、现金资本开支、调整后自由现金流、政府或伙伴一次性现金、营运资金与新增融资的跨期对账。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Intel在一份后续财报中提供连续两个报告期的同口径序列，显示剔除已量化的一次性政府、伙伴、融资租赁和营运资金项目后，调整后自由现金流均为正，且增长性资本开支未靠新增股权或债务覆盖。",
+          "calibration": {
+            "reference_state": "Q2 FY2026经营现金流为70.06亿美元，但公司定义调整后自由现金流为负84.19亿美元，单季改善尚未证明正常化。",
+            "trigger_boundary": "新披露须自身列示两个期间的经营现金流、现金资本开支、调整后自由现金流、一次性调整及融资状态；单季正现金不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_743016c47608f0e1ab04",
+      "title": "一次性现金反转削弱经营现金流",
+      "source_refs": [
+        {
+          "shell_id": "Intel现金转换与资本融资",
+          "expectation_id": "Intel经营现金转换支撑资本投资",
+          "gap_id": "一次性营运资金与伙伴现金反转"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回Intel营运资金、政府激励、伙伴净贡献的现金流对账、反转或终止，以及经营现金流和调整后自由现金流变化。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Intel量化确认一项此前正向的营运资金、政府激励或伙伴现金贡献由正转负或终止，并使同一报告期经营现金流较Q2 FY2026的70.06亿美元回落且调整后自由现金流仍为负。",
+          "calibration": {
+            "reference_state": "Q2 FY2026经营现金流改善与负84.19亿美元调整后自由现金流并存，现有对账包含政府、伙伴和营运资金时点项目。",
+            "trigger_boundary": "必须识别反转项目及金额，并同时给出当期经营现金流和调整后自由现金流；无项目归因的季节波动不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_a92eb03875d216dac479",
+      "title": "供给缓解后量价与现金贡献反转",
+      "source_refs": [
+        {
+          "shell_id": "Intel现金转换与资本融资",
+          "expectation_id": "Intel经营现金转换支撑资本投资",
+          "gap_id": "供给约束缓解后的量价现金反转"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回Intel客户端或服务器供给状态、单位出货、ASP、高端组合、产品现金利润与经营现金流的同季变化。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Intel在单份季度披露中确认相关供给约束已缓解，同时客户端或服务器单位出货未增长或下降、ASP/高端组合回落，并把产品现金利润和经营现金流下降归因于该量价变化。",
+          "calibration": {
+            "reference_state": "Q2现金改善已发生，但供给正常化后单位量、ASP/组合和产品现金利润能否持续尚未验证。",
+            "trigger_boundary": "消息须同时给出供给已缓解、当期与可比期单位/组合变化以及现金利润或经营现金流影响；产业链推测不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_940ae5bdf77c93f29482",
+      "title": "新增制造资产无法形成有效产能",
+      "source_refs": [
+        {
+          "shell_id": "Intel现金转换与资本融资",
+          "expectation_id": "Intel经营现金转换支撑资本投资",
+          "gap_id": "新增设施建成但有效产能不足"
+        },
+        {
+          "shell_id": "Intel现金转换与资本融资",
+          "expectation_id": "Intel股权融资与资本计划充足性",
+          "gap_id": "融资后新增资产长期低利用或减值"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回Intel新增设备、洁净室、基板或厂区的投入状态、良率、合格吞吐、利用率、商业爬坡、闲置停用和减值。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Intel正式确认一项重大新增设备、洁净室、基板或厂区资产已投入，却因良率、合格吞吐、瓶颈或利用率不足而推迟商业爬坡、进入正式闲置/停用，或确认与该资产直接相关的减值。",
+          "calibration": {
+            "reference_state": "Intel已宣布增加设备、洁净室和基板投入，但节点/厂区合格产出、利用率和客户吸收尚未公开量化。",
+            "trigger_boundary": "须识别已投入重大资产、生产经济问题及正式爬坡延期、闲置/停用或减值结果；建设期正常爬坡波动不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_f1c35928de4ef728409a",
+      "title": "资本计划上调超过内部现金覆盖",
+      "source_refs": [
+        {
+          "shell_id": "Intel现金转换与资本融资",
+          "expectation_id": "Intel经营现金转换支撑资本投资",
+          "gap_id": "资本强度扩张超过现金回收"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回Intel资本开支、设备洁净室基板项目预算、建设周期、经营现金覆盖、回收期和新增外部融资需求。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Intel在同一正式披露中上调具名资本项目的预算或建设周期，提供原计划与新计划，并明确新增投入超过同期经营现金回收、需要新增外部资金或推迟回收期。",
+          "calibration": {
+            "reference_state": "2026—2027年增加资本投入的方向已宣布，但金额与节奏未量化；Q2调整后自由现金流为负84.19亿美元。",
+            "trigger_boundary": "old-to-new预算或周期和资金缺口必须同时明确；报告期付款时点重分类不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_8b52b9c92287eaa36e7c",
+      "title": "客户或伙伴形成可重复经营现金",
+      "source_refs": [
+        {
+          "shell_id": "Intel现金转换与资本融资",
+          "expectation_id": "Intel经营现金转换支撑资本投资",
+          "gap_id": "客户预付款或伙伴共担形成可重复现金"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "召回重大客户、伙伴或政府项目对Intel产能/产品的预付款、最低采购、持续付款、首笔到账、后续义务和履约现金。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "重大客户、伙伴或政府项目的正式协议确认已支付首笔产能/产品现金，并承担后续至少一个期间的绑定预付款、最低采购或共同投资付款，且金额、履约义务与Intel可用资金范围明确。",
+          "calibration": {
+            "reference_state": "Intel存在客户和生态合作入口，但截至cutoff未确认可重复且可勾稽的外部经营现金来源。",
+            "trigger_boundary": "首笔到账和至少一个后续绑定付款必须同时成立；一次性补助、合作意向或无约束路线图不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_510d435bceecbd5cf9e4",
+      "title": "重大客户迁移削弱Intel现金回收",
+      "source_refs": [
+        {
+          "shell_id": "Intel现金转换与资本融资",
+          "expectation_id": "Intel经营现金转换支撑资本投资",
+          "gap_id": "AI与CPU需求迁移冲击现金回收"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回已有Intel采购暴露的云或企业客户在GPU、定制ASIC、AMD、ARM/RISC-V和数据中心预算上的迁移、订单削减及Intel资本承诺。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "一名对Intel已有重大采购暴露的客户正式把下一平台周期的主要计算预算转向GPU、定制ASIC、AMD、ARM/RISC-V或延期建设，并取消或实质削减已计划Intel订单/部署，而相关Intel资本承诺仍执行。",
+          "calibration": {
+            "reference_state": "替代计算架构迁移风险存在，但一般行业AI增长或试点不能说明Intel自身现金回收。",
+            "trigger_boundary": "须识别客户既有Intel暴露、新采购路线、被取消或削减的Intel范围及仍在执行的资本承诺；架构评估不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_4f85402fb186dfe297af",
+      "title": "现金流重述下修当前基线",
+      "source_refs": [
+        {
+          "shell_id": "Intel现金转换与资本融资",
+          "expectation_id": "Intel经营现金转换支撑资本投资",
+          "gap_id": "现金流口径或会计分类被重述"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回Intel现金流重述、前期重列、政府激励、伙伴贡献、融资租赁或非现金项目分类、审计监管意见及历史数值修订。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Intel、审计机构或监管机构正式量化确认此前列入经营现金或调整后自由现金流的项目应移出或延后，使Q2 FY2026经营现金流低于70.06亿美元或调整后自由现金流低于负84.19亿美元。",
+          "calibration": {
+            "reference_state": "当前现金转换基线为Q2 FY2026经营现金流70.06亿美元和调整后自由现金流负84.19亿美元。",
+            "trigger_boundary": "消息须给出受影响期间、原值、重述值和分类原因；不改变历史数值的定义澄清或普通季度更新不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_dead4892da482a491c35",
+      "title": "首轮融资后再次筹集重大外部资金",
+      "source_refs": [
+        {
+          "shell_id": "Intel现金转换与资本融资",
+          "expectation_id": "Intel股权融资与资本计划充足性",
+          "gap_id": "融资到账后跑道仍不足触发追加融资"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回Intel首轮发行后的新增股权、净新增债务、重大资产出售、流动性和资本开支资金用途及现金回收状态。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "首轮发行交割后、融资资产尚未形成重复正现金回收前，Intel正式启动新的普通股发行、净新增债务或重大资产变现，并明确资金用于弥补流动性、资本开支或营运资金缺口。",
+          "calibration": {
+            "reference_state": "截至2026年10月4日，Intel已完成2026年8月按每股95美元定价的普通股发行；承销商于8月11日全额行使31,578,947股超额配售，连同基础210,526,315股合计发行242,105,262股，最终招股书估计扣除折让、佣金和费用后净募集约226.2亿美元。该融资延长现金跑道，但Q2 FY2026调整后自由现金流为负84.19亿美元、债务为505.37亿美元，尚未证明覆盖完整回收期。",
+            "trigger_boundary": "新融资必须由Intel明确连接到既有资本计划或流动性缺口；日常债务滚续、员工股权发行或不增加净资金的交易不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_9600d3c4f1b6b8053603",
+      "title": "融资资产形成跨期正现金回报",
+      "source_refs": [
+        {
+          "shell_id": "Intel现金转换与资本融资",
+          "expectation_id": "Intel股权融资与资本计划充足性",
+          "gap_id": "融资后有效产能与重复现金回报兑现"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "召回2026年融资支持资产的合格产出、利用率、出货、非Altera外部Foundry收入、调整后自由现金流和后续增发。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Intel一份后续披露确认2026年融资支持资产已形成合格产出，并给出连续两个报告期的利用率/出货、非Altera口径外部收入与调整后自由现金流，其中两个期间自由现金流均为正且无新增股权融资。",
+          "calibration": {
+            "reference_state": "18A已量产、18A-P风险生产，但客户级吸收有限；Q2外部Foundry收入2.93亿美元且调整后自由现金流为负84.19亿美元。",
+            "trigger_boundary": "消息须自身提供融资资产归属及两个期间的产出/利用率、外部收入、调整后自由现金流和新增融资状态；单批出货或单季正现金不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_4d3c102787544f4251fb",
+      "title": "每股经营回报未抵消新增股份",
+      "source_refs": [
+        {
+          "shell_id": "Intel现金转换与资本融资",
+          "expectation_id": "Intel股权融资与资本计划充足性",
+          "gap_id": "新增股份回报不超过摊薄"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回Intel发行后稀释股数、股权薪酬、每股经营现金流、每股经营利润及同口径可比值。",
+      "activation_conditions": [
+        {
+          "condition_id": "C2",
+          "criterion": "发行完成后的完整报告期确认稀释股数较发行前增加至少2.421亿股，并在同一披露给出同口径可比值，显示每股经营现金流或每股经营利润未改善或恶化。",
+          "calibration": {
+            "reference_state": "2026年8月普通股发行的基础210,526,315股及全额超额配售31,578,947股均已完成交割，合计发行242,105,262股；当前完整报告期每股经营回报尚未验证。",
+            "trigger_boundary": "须同时给出发行前后稀释股数及当前与可比期同口径每股经营指标，且稀释股数增幅至少2.421亿股；仅总收入或利润增长不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_e7853e08084b9aabfed5",
+      "title": "政府激励变化扩大Intel资金缺口",
+      "source_refs": [
+        {
+          "shell_id": "Intel现金转换与资本融资",
+          "expectation_id": "Intel股权融资与资本计划充足性",
+          "gap_id": "政府激励条件变化增加融资负担"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回Intel相关补助、激励或CHIPS安排的最终金额、付款时间、返还、资格、现金或股权义务及生效日。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "最终生效的政府决定削减、取消或推迟Intel相关激励，要求返还资金或新增现金/股权交付义务，并使Intel正式修改资本项目资金来源、确认相关负债或启动替代融资。",
+          "calibration": {
+            "reference_state": "政府激励已影响Intel现金流和股权会计，但截至cutoff尚无新最终决定改变本轮资本计划覆盖。",
+            "trigger_boundary": "最终决定必须同时改变激励金额、时点或义务，并在Intel资本资金计划、负债或替代融资中形成可识别影响；政策讨论或草案不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_9c7167d6be1b2b29041d",
+      "title": "债务再融资条款挤压资本计划",
+      "source_refs": [
+        {
+          "shell_id": "Intel现金转换与资本融资",
+          "expectation_id": "Intel股权融资与资本计划充足性",
+          "gap_id": "债务再融资条件恶化挤压资本计划"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回Intel重大债务到期、续作失败、现金利息、担保、契约、资本开支限制、项目削减延期和替代股权融资。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Intel或债权文件确认重大到期债务无法按原规模常规续作，或新条款提高现金利息/担保并加入资本开支限制，导致公司正式削减或延期资本计划、或启动替代股权融资。",
+          "calibration": {
+            "reference_state": "Q2期末债务505.37亿美元、现金及短期投资297.27亿美元，完整期限梯队未在冻结材料中重建且自由现金流为负。",
+            "trigger_boundary": "债务规模/条款必须与已决定的资本开支削减、延期或股权融资直接连接；一般评级展望或利率上升不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_d18f516ae89e026e6316",
+      "title": "客户或伙伴直接分担资本项目资金",
+      "source_refs": [
+        {
+          "shell_id": "Intel现金转换与资本融资",
+          "expectation_id": "Intel股权融资与资本计划充足性",
+          "gap_id": "客户或伙伴共投降低股权融资负担"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "召回重大客户、伙伴或政府项目对具名Intel资本项目的共同投资、租赁、预付款、最低采购、首笔到账和Intel资本份额变化。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "重大客户、伙伴或政府项目与Intel签署具名资本项目的共同投资、租赁或预付款协议，量化资金和最低采购/产能义务，并确认首笔资金到账或Intel原定资本份额已按合同减少。",
+          "calibration": {
+            "reference_state": "截至cutoff，Intel已披露与伙伴设立为亚利桑那芯片工厂提供资金的venture，相关生产合同自FY2026 Q1生效并含最低生产要求及现场库存上限；但尚未披露伙伴出资金额、Intel资本份额变化或首笔资金到账。",
+            "trigger_boundary": "消息必须量化伙伴义务及Intel原与新资本份额，并确认到账或合同减负；仅未来履约收入或合作公告不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_88df38e2ce1802582e4c",
+      "title": "替代服务器CPU进入可比商业供给",
+      "source_refs": [
+        {
+          "shell_id": "Intel计算产品需求与供给转化",
+          "expectation_id": "Intel非AI服务器需求与供给兑现",
+          "gap_id": "竞争供给恢复后非AI客户转离Xeon"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回AMD EPYC、Arm及其他替代服务器CPU的产品上市、量产、渠道供货、价格、核心数、平台部署和可采购性，以及其对Xeon ASP、份额和客户选择的影响消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "AMD或其他替代服务器CPU供应商将具备公开价格与规格、覆盖主流或高核心数服务器配置的下一代CPU推进至商业上市，并形成可供主要云或企业客户采购的量产供给。",
+          "calibration": {
+            "reference_state": "截至本轮cutoff，AMD EPYC 9006（Venice/Zen 6）已公开约700至14,904美元、8至256核的价格与规格，SP7计划于2026年第四季度、SP8计划于2027年上半年上市；此前AMD EPYC供给紧张，当前仍未确认这些型号的实际量产出货、渠道可得性或主要客户部署。Intel服务器需求仍强，供给约只能满足一半客户需求，并已有2027年3月提价计划。",
+            "trigger_boundary": "消息须同时确认具体替代CPU已完成量产或商业出货、面向主要云或企业客户可采购，并给出可比价格或核心/平台覆盖；仅完整价格表、路线图、计划上市、样片、测试或单一客户验证不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_0fdfc05afe8f154c1dde",
+      "title": "重大客户选定Intel先进封装形成早期价值兑现",
+      "source_refs": [
+        {
+          "shell_id": "Intel商业Foundry客户与先进封装转化",
+          "expectation_id": "Intel先进封装与后端产能兑现",
+          "gap_id": "EMIB或Foveros封装完成客户资格并进入重复高量制造"
+        },
+        {
+          "shell_id": "Intel商业Foundry客户与先进封装转化",
+          "expectation_id": "Intel先进封装与后端产能兑现",
+          "gap_id": "CoWoS瓶颈推动客户锁定EMIB-T产能"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "召回Google等重大AI/Foundry客户、Intel EMIB/EMIB-T/Foveros、TPU及其他AI产品的设计选型、采用、开发导入、资格、量产订单、产能预订、付费封装及取消消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "单一重大AI或Foundry客户在具名下一代产品中正式确认选用Intel EMIB/EMIB-T/Foveros，并进入该产品的设计或生产导入。",
+          "calibration": {
+            "reference_state": "截至cutoff，Counterpoint报道称Intel EMIB-T已用于Google下一代TPU开发与量产周期；此前AWS仍在测试Intel EMIB，Google采用主要是市场预期。该报道尚未确认客户直接或Intel正式披露的设计导入，也未确认系统级资格、绑定量产订单、产能预订或付费good-package。",
+            "trigger_boundary": "须由客户、Intel或具有明确产品/生产证据的可靠披露确认具名客户产品正式采用Intel EMIB/EMIB-T/Foveros并进入设计或生产导入，且超出当前仅由分析师转述的采用信息；供应商选择预期、一般路线图、测试、样品、无约束工程批及仅有CoWoS短缺背景不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_cd973ce13b6e9e265e57",
+      "title": "竞争先进代工客户推进削弱Intel外部Foundry转化",
+      "source_refs": [
+        {
+          "shell_id": "Intel商业Foundry客户与先进封装转化",
+          "expectation_id": "Intel商业先进制程Foundry客户转化",
+          "gap_id": "已导入客户将先进节点量产转向替代代工"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回Samsung Foundry及其自有2nm/SF2P产品（包括Exynos 2700）、HBM4基底、4nm/2nm及更先进节点、CSP/AI/HPC客户的设计、资格、产能预订、量产订单、价格、收入和向替代代工转移消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Samsung Foundry为具名重大CSP、AI或HPC客户的2nm或更先进产品完成客户资格，并进入有约束力的量产采购、产能预订或付费生产交付。",
+          "calibration": {
+            "reference_state": "截至cutoff，Samsung已披露HBM4基底采用自有4nm并开始量产，且在2026年第二季度取得大型CSP及AI/HPC客户2nm项目并进入产品设计。2026年10月2日报道称Samsung已启动自有Exynos 2700在SF2P上的前端晶圆量产，并称Galaxy S27相关生产量较前代计划增加逾10%；这推进了Samsung自有移动芯片的2nm节点执行，但不是外部Foundry客户资格或采购。Anthropic的2026年9月29日招股书披露约1,612亿美元Broadcom TPU租赁承诺（大多不可取消），以及跨Microsoft、Google和Amazon约2,520亿美元不可取消计算承诺；这使Anthropic的计算需求承诺更明确，但没有确认Samsung制造这些TPU、获得Samsung 2nm产能或出现具名外部客户的绑定量产订单。仍无Samsung具名外部2nm客户完成资格并进入绑定采购/产能预订或付费生产，也无Intel客户转单或Intel Foundry生产份额变化。",
+            "trigger_boundary": "消息须同时明确Samsung Foundry的2nm或更先进节点、具名外部CSP/AI/HPC客户、完成客户资格，以及绑定量产采购/产能预订或付费生产交付；Samsung自有HBM4基底或Exynos 2700/SF2P生产、客户设计启动、MoU、分析师预测，以及未指明Samsung 2nm制造或订单的Broadcom/Anthropic TPU与云计算承诺均不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_e470f8c5662393d8253f",
+      "title": "Terafab先进制程制造机会确认转离Intel",
+      "source_refs": [
+        {
+          "shell_id": "Intel商业Foundry客户与先进封装转化",
+          "expectation_id": "Intel商业先进制程Foundry客户转化",
+          "gap_id": "Terafab或其他超大客户锁定14A产能"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "召回Terafab项目及其先进节点制造安排、Intel的14A候选或参与状态、TSMC或其他代工方的供应商选择、绑定产能和Intel退出或被排除的确认消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Terafab相关方或Intel确认Intel已退出或不再承担该项目的先进节点芯片制造，或确认TSMC/其他代工方已获Terafab主要芯片生产范围的绑定制造安排且Intel被排除。",
+          "calibration": {
+            "reference_state": "截至2026-10-03，Elon Musk公开确认Terafab与TSMC正在讨论潜在合作；Culpium报道称Intel合作未有进展，但Intel未确认。此前Intel被视为潜在主要Foundry提供方；目前没有确认TSMC被选定、取得排他角色或取代Intel，也没有Terafab绑定产能、订单或交付安排。",
+            "trigger_boundary": "须有Terafab相关方、Intel或具名制造安排的正式确认，明确Intel已退出/被排除，或竞争代工方获得覆盖该项目主要生产范围的绑定安排且Intel不参与。已知的TSMC讨论、尚未证实的Intel停滞报道、非排他探索或没有绑定生产安排的合作消息均不触发。"
+          }
+        }
+      ]
+    }
+  ],
+  "published_at": "2026-10-04T17:16:41.858397Z"
+}

@@ -1,0 +1,148 @@
+{
+  "case_key": "NOISE-09",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-10-07T04:49:00.607167Z",
+  "reviewed_at": "2026-10-13T22:58:32.658552Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 6,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a1376f-1650-7213-820c-ec0adb29919e",
+    "turn_id": "01a1376f-1660-7442-886b-29c51479f67f",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 82688,
+        "inputTokens": 93746,
+        "outputTokens": 12596,
+        "reasoningOutputTokens": 10876,
+        "totalTokens": 106342
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 400640,
+        "inputTokens": 487446,
+        "outputTokens": 19110,
+        "reasoningOutputTokens": 16715,
+        "totalTokens": 506556
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "39f74e7170dc1685fe448e33b147b79af1dad4cd18444a350466773929e5693d",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://ca.finance.yahoo.com/news/intel-keep-working-elon-musk-043229831.html",
+      "title": "Intel to Keep Working on Elon Musk’s Terafab Chipmaking Venture",
+      "published_at": "2026-10-07T04:32:00Z",
+      "time_precision": "EXACT",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn0search1"
+      ],
+      "source_call_ids": [
+        "exec-b9e506db-861c-4e61-a19a-7c375e47a4c9"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://www.bloomberg.com/news/articles/2026-04-07/intel-rises-after-announcing-role-in-musk-s-terafab-project",
+      "title": "Intel to Join Musk’s Terafab in Surprise Move, Lifting Stock",
+      "published_at": "2026-04-07T13:59:00Z",
+      "time_precision": "EXACT",
+      "updated_at": "2026-04-07T20:23:00Z",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "BEFORE_CUTOFF",
+      "content_state": "UPDATED",
+      "decision": "KEEP",
+      "reason": "The supplied publication and revision times do not exceed the case cutoff.",
+      "source_result_refs": [
+        "turn0search7"
+      ],
+      "source_call_ids": [
+        "exec-b9e506db-861c-4e61-a19a-7c375e47a4c9"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://www.tomshardware.com/tech-industry/semiconductors/elon-musk-confirms-discussions-with-tsmc-about-terafab-chipmaking-collaboration-intel-is-the-only-other-named-partner-terafab-to-exclusively-supply-tesla-spacex-and-xai",
+      "title": "Elon Musk confirms discussions with TSMC about Terafab chipmaking collaboration",
+      "published_at": "2026-10-03T14:50:50Z",
+      "time_precision": "EXACT",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn2search0"
+      ],
+      "source_call_ids": [
+        "exec-1d4ec8df-e18e-4ba6-b843-d6fc738f38cc"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "At 04:48:04Z on October 7, the feed carried Bloomberg’s 04:32Z headline that Intel would keep working on Terafab. The interview or statement time is not specified in the pre-cutoff feed record. The retrieved article copy attributes the statement to Lip-Bu Tan, but the full-body pre-cutoff snapshot was not verified.",
+      "source_urls": [
+        "https://ca.finance.yahoo.com/news/intel-keep-working-elon-musk-043229831.html"
+      ],
+      "event_time": null,
+      "publication_time": "2026-10-07T04:32:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The verified pre-cutoff record establishes continuity wording, not the scope, timing, quantity, or binding status of any production commitment. TSMC discussions had been publicly reported earlier."
+    },
+    {
+      "observation": "On April 7, Intel publicly joined the Terafab project; contemporaneous coverage described the announced contribution as helping refactor chip-factory technology.",
+      "source_urls": [
+        "https://www.bloomberg.com/news/articles/2026-04-07/intel-rises-after-announcing-role-in-musk-s-terafab-project"
+      ],
+      "event_time": "2026-04-07",
+      "publication_time": "2026-04-07T13:59:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The cited announcement did not give production quantities or a binding production order."
+    },
+    {
+      "observation": "On October 3, an independent report said Musk confirmed TSMC–Terafab discussions, while describing them as discussions rather than an announced agreement.",
+      "source_urls": [
+        "https://www.tomshardware.com/tech-industry/semiconductors/elon-musk-confirms-discussions-with-tsmc-about-terafab-chipmaking-collaboration-intel-is-the-only-other-named-partner-terafab-to-exclusively-supply-tesla-spacex-and-xai"
+      ],
+      "event_time": "2026-10-03",
+      "publication_time": "2026-10-03T14:50:50Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This raised a possible alternative or additional relationship but did not establish an agreed TSMC role or Intel’s removal."
+    }
+  ],
+  "gaps": [
+    "The direct Bloomberg page was not retrievable, and no dated archive of its full October 7 article body was verified before the cutoff. The feed-captured title and publication time are available; the interview time and full-body revision history remain unknown.",
+    "No independently authored report of Tan’s October 7 statement was verified as published by 04:49 UTC. Later coverage was excluded.",
+    "The original October 2 Culpium report is identified by contemporaneous coverage, but a dated original copy suitable for verifying its complete pre-cutoff text was not retrieved; the October 3 independent report is used for the prior-context claim.",
+    "The original Intel and Musk X posts could not be opened during research; coverage quoting or describing them is used instead."
+  ],
+  "research_notes": "The pre-cutoff feed record places Bloomberg’s “keep working” headline at 2026-10-07 04:32 UTC, about 17 minutes before the 04:49 UTC cutoff. The direct Bloomberg page was not retrievable; its Yahoo Finance syndication shows the article text but no revision history, so the feed verifies the headline and publication time, not a pre-cutoff snapshot of the full article body. Earlier context includes Intel’s April announcement that it joined Terafab and Musk’s October 3 confirmation of TSMC discussions. No independent report of Tan’s statement was verified as published by the cutoff."
+}

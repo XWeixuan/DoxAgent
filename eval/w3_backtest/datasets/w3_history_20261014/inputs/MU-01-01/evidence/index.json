@@ -1,0 +1,24 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-22T09:11:21.068320Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "The possible MoneyToday English-edition page with a URL path dated 2026/09/21 was not opened; the earliest verified report of the 4nm expansion review, as distinct from the allocation claim, is therefore unresolved.",
+    "DIGITIMES’s Sep. 8 article is paywalled; its underlying sources and complete text could not be checked.",
+    "No opened official Samsung source confirmed the >50% 4nm allocation, an approved expansion, or exact added capacity.",
+    "The Counterpoint source page’s data table was not captured directly; Q2 share figures here are verified through contemporaneous Seoul Economic Daily coverage attributing them to Counterpoint.",
+    "The supplied leads about NVIDIA Rubin memory configuration and potential competitor capacity were not independently verified in this six-call search and are not used as established counterevidence."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

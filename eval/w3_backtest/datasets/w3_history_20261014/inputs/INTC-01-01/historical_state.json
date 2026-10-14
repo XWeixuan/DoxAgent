@@ -1,0 +1,667 @@
+{
+  "recent_trade_intents": [],
+  "history_matches": [],
+  "watches": [],
+  "pins": [],
+  "policy_consumptions": [],
+  "provisional": [
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Intel",
+          "INTC"
+        ],
+        "occurrence_date": "2026-09-21",
+        "proposition": "Intel shares gained approximately 12% during the 2026-09-21 trading session.",
+        "subject_time": "2026-09-21 trading session"
+      },
+      "candidate_index": 0,
+      "case_id": "case_53970cd7172a432a8a0c88b6bd1b36da",
+      "created_at": "2026-09-22T09:34:19.655969Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E61",
+      "runtime_signature": "fb94aca070925c8858f35b92daa595bae9b28b0650e17c8fb1ee45d2370d532e",
+      "snapshot_version": 1,
+      "source_message_id": "std_e6fc2355b6ff48c4bf9ecec82e51867e",
+      "ticker": "INTC",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Nasdaq Composite"
+        ],
+        "occurrence_date": "2026-09-21",
+        "proposition": "The Nasdaq Composite gained approximately 2.26% and closed at 27,122.09 on 2026-09-21, a record high.",
+        "subject_time": "2026-09-21 trading session"
+      },
+      "candidate_index": 1,
+      "case_id": "case_53970cd7172a432a8a0c88b6bd1b36da",
+      "created_at": "2026-09-22T09:34:19.670631Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E62",
+      "runtime_signature": "7b2d66e810417b0b68aa22c2e1a0b45d76766f530de34e7b6bba208de207d49a",
+      "snapshot_version": 2,
+      "source_message_id": "std_e6fc2355b6ff48c4bf9ecec82e51867e",
+      "ticker": "INTC",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "CNN Money Fear & Greed Index"
+        ],
+        "occurrence_date": "2026-09-21",
+        "proposition": "The CNN Money Fear & Greed Index rose from 30 to 34 on 2026-09-21 and remained in the Fear zone.",
+        "subject_time": "2026-09-21"
+      },
+      "candidate_index": 2,
+      "case_id": "case_53970cd7172a432a8a0c88b6bd1b36da",
+      "created_at": "2026-09-22T09:34:19.689924Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E63",
+      "runtime_signature": "c5d6a840d13dd28dd98c912ff7b35d36240e418fc75265a45d9ea46ca022bad5",
+      "snapshot_version": 3,
+      "source_message_id": "std_e6fc2355b6ff48c4bf9ecec82e51867e",
+      "ticker": "INTC",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Intel",
+          "INTC"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "Intel shares were falling ahead of the U.S. market open on 2026-09-22.",
+        "subject_time": "2026-09-22 premarket"
+      },
+      "candidate_index": 0,
+      "case_id": "case_f6b6ef3022534b48bf2255c73d404a2f",
+      "created_at": "2026-09-22T10:09:13.760420Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E64",
+      "runtime_signature": "0ad9cbab462a05c32e4c11137bd31b0b74022ace87f77c3ee94a5c0474956e4c",
+      "snapshot_version": 4,
+      "source_message_id": "std_376a61e2689d407da82da5a77ea6a9cc",
+      "ticker": "INTC",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Advanced Micro Devices",
+          "AMD"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "AMD shares declined 1.1% in premarket trading on 2026-09-22.",
+        "subject_time": "2026-09-22 premarket"
+      },
+      "candidate_index": 1,
+      "case_id": "case_f6b6ef3022534b48bf2255c73d404a2f",
+      "created_at": "2026-09-22T10:09:13.774403Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E65",
+      "runtime_signature": "d7fe60c9a8554c943e7dc6dc4428e392f55171ab71beaad8624f4e23601e335d",
+      "snapshot_version": 5,
+      "source_message_id": "std_376a61e2689d407da82da5a77ea6a9cc",
+      "ticker": "INTC",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Advanced Micro Devices",
+          "AMD"
+        ],
+        "occurrence_date": "2026-09-21",
+        "proposition": "Advanced Micro Devices' market capitalization exceeded $1 trillion for the first time on 2026-09-21.",
+        "subject_time": "2026-09-21"
+      },
+      "candidate_index": 2,
+      "case_id": "case_f6b6ef3022534b48bf2255c73d404a2f",
+      "created_at": "2026-09-22T10:09:13.782987Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E66",
+      "runtime_signature": "45efded3bd7d67534ec383d82c26501263c7ef6e550d3f6ff84379ee07b206fd",
+      "snapshot_version": 6,
+      "source_message_id": "std_376a61e2689d407da82da5a77ea6a9cc",
+      "ticker": "INTC",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Ryan Cohen",
+          "GameStop",
+          "GME"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "Ryan Cohen bought 1.15 million additional GameStop shares, as reported by a Form 4 filing on 2026-09-22.",
+        "subject_time": "2026-09-22 Form 4 filing"
+      },
+      "candidate_index": 3,
+      "case_id": "case_f6b6ef3022534b48bf2255c73d404a2f",
+      "created_at": "2026-09-22T10:09:13.790514Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E67",
+      "runtime_signature": "e3bf5cd381f20f40546a5213f3c8d41e64f05e1fe417cb42b18206c333b9eb5c",
+      "snapshot_version": 7,
+      "source_message_id": "std_376a61e2689d407da82da5a77ea6a9cc",
+      "ticker": "INTC",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "GameStop",
+          "GME"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "GameStop shares advanced 3.3% on 2026-09-22.",
+        "subject_time": "2026-09-22 trading session"
+      },
+      "candidate_index": 4,
+      "case_id": "case_f6b6ef3022534b48bf2255c73d404a2f",
+      "created_at": "2026-09-22T10:09:13.796810Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E68",
+      "runtime_signature": "684dffd17e732e20b2d88159d30a14703774727f489a0a6f33c9468f21052f42",
+      "snapshot_version": 8,
+      "source_message_id": "std_376a61e2689d407da82da5a77ea6a9cc",
+      "ticker": "INTC",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "U.S. stock futures",
+          "U.S. technology stocks"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "U.S. stock futures were sliding on 2026-09-22 after the previous session's record-breaking technology rally.",
+        "subject_time": "2026-09-22 premarket"
+      },
+      "candidate_index": 0,
+      "case_id": "case_38a831b5d9ee469489943c503fab12fe",
+      "created_at": "2026-09-22T10:31:46.000801Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E69",
+      "runtime_signature": "491323a72ffcdbaab0df97861a87dec9213f82ae8d4b5f1a1f331565e5c33020",
+      "snapshot_version": 9,
+      "source_message_id": "std_cd8fee6f1ee84972a76c7ca785a3c5f7",
+      "ticker": "INTC",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Artificial-intelligence stocks"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "Artificial-intelligence stocks were slipping on 2026-09-22 after surging on 2026-09-21.",
+        "subject_time": "2026-09-22 premarket"
+      },
+      "candidate_index": 1,
+      "case_id": "case_38a831b5d9ee469489943c503fab12fe",
+      "created_at": "2026-09-22T10:31:46.014027Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E70",
+      "runtime_signature": "86208cf5fd09aa7caf2e20f477e3a8e207c62189a5e013a3c46c9155c1dbf9b0",
+      "snapshot_version": 10,
+      "source_message_id": "std_cd8fee6f1ee84972a76c7ca785a3c5f7",
+      "ticker": "INTC",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "ResearchAndMarkets.com",
+          "U.S. integrated-circuits market"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "ResearchAndMarkets.com added a U.S. integrated-circuits market size and share report covering 2026-2035 to its offering on 2026-09-22.",
+        "subject_time": "2026-2035 report period"
+      },
+      "candidate_index": 0,
+      "case_id": "case_2932cae76a464d02b1af7ef3e04567df",
+      "created_at": "2026-09-22T12:19:36.237132Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E71",
+      "runtime_signature": "83e74a1b34c1098a0ab17b33f22f83c3a46825edf7f5ff2bbfe94e212e5271d4",
+      "snapshot_version": 11,
+      "source_message_id": "std_a1624b68629e46e08e9ab4f2b11fa668",
+      "ticker": "INTC",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "U.S. integrated-circuits market",
+          "ResearchAndMarkets.com"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "The report forecasts the U.S. integrated-circuits market to grow from USD 172 billion in 2025 to USD 330 billion by 2035 at an 8.5% CAGR.",
+        "subject_time": "2025-2035"
+      },
+      "candidate_index": 1,
+      "case_id": "case_2932cae76a464d02b1af7ef3e04567df",
+      "created_at": "2026-09-22T12:19:36.246723Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E72",
+      "runtime_signature": "419c056b2ee36a6533f9381b5ba40dd669f4f784579299c954a1d7ed220f7b27",
+      "snapshot_version": 12,
+      "source_message_id": "std_a1624b68629e46e08e9ab4f2b11fa668",
+      "ticker": "INTC",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "AI integrated circuits",
+          "High-performance-computing integrated circuits",
+          "ResearchAndMarkets.com"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "The report forecasts AI and high-performance-computing integrated circuits to be the fastest-growing product category at approximately 25% annual growth.",
+        "subject_time": "Forecast period through 2035"
+      },
+      "candidate_index": 2,
+      "case_id": "case_2932cae76a464d02b1af7ef3e04567df",
+      "created_at": "2026-09-22T12:19:36.255345Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E73",
+      "runtime_signature": "2cc0c9be74ab14fe533aae0818084aaa97f20dfacdbcde960190080c31db5bde",
+      "snapshot_version": 13,
+      "source_message_id": "std_a1624b68629e46e08e9ab4f2b11fa668",
+      "ticker": "INTC",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Oil prices",
+          "Iran",
+          "Strait of Hormuz"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "油价对涉及伊朗与霍尔木兹的报告作出了市场反应。",
+        "subject_time": "2026-09-22早盘市场反应"
+      },
+      "candidate_index": 0,
+      "case_id": "case_ae82c706bcba4922adab227a515446fb",
+      "created_at": "2026-09-22T12:25:07.061968Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E74",
+      "runtime_signature": "2a41bc3096b00cd6307d8f3f65b257e4c0d6c4e6803941969a98b101486671da",
+      "snapshot_version": 14,
+      "source_message_id": "std_e84ab31f31b0421a9ada8cfbcea6c898",
+      "ticker": "INTC",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "quantum computing stocks"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "量子计算股票在一场即将举行的重大量子计算行业会议前承压。",
+        "subject_time": "截至2026-09-22的会议前市场状态"
+      },
+      "candidate_index": 0,
+      "case_id": "case_cf26f61e70484e6e996561a208fdee03",
+      "created_at": "2026-09-22T12:25:38.556051Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E75",
+      "runtime_signature": "163056c27dc3e98441bae7e7de7133090dd636afcc77c38dc20f9f686515b7ba",
+      "snapshot_version": 15,
+      "source_message_id": "std_f4879a41448949c9b4898563d21650b3",
+      "ticker": "INTC",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "SCHEDULED",
+        "entities": [
+          "quantum computing industry",
+          "quantum computing conference"
+        ],
+        "occurrence_date": null,
+        "proposition": "一场重大量子计算行业会议已安排在近期举行。",
+        "subject_time": "2026-09-22之后的近期会议"
+      },
+      "candidate_index": 1,
+      "case_id": "case_cf26f61e70484e6e996561a208fdee03",
+      "created_at": "2026-09-22T12:25:38.573478Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E76",
+      "runtime_signature": "7222c4aa226de2537d2d72a4165edc005341c78e4bc9354754ded193124d50b6",
+      "snapshot_version": 16,
+      "source_message_id": "std_f4879a41448949c9b4898563d21650b3",
+      "ticker": "INTC",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Alphabet",
+          "Googlebook"
+        ],
+        "occurrence_date": "2026-09-21",
+        "proposition": "Alphabet opened pre-orders for Googlebook laptops on 2026-09-21.",
+        "subject_time": "Googlebook launch and pre-order period"
+      },
+      "candidate_index": 0,
+      "case_id": "case_8c969b922a90462eaa7d45a79022b6f1",
+      "created_at": "2026-09-22T12:38:23.611046Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E77",
+      "runtime_signature": "14ce35a29964870bd25e57cbd4089e0d4b140944e9b561bd8a611bcd9838cfff",
+      "snapshot_version": 17,
+      "source_message_id": "std_3e2dae2eeaec4ef595d6ccc283e19206",
+      "ticker": "INTC",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Googlebook",
+          "Alphabet"
+        ],
+        "occurrence_date": "2026-09-21",
+        "proposition": "Googlebook laptops have a starting price of $899.",
+        "subject_time": "Googlebook launch"
+      },
+      "candidate_index": 1,
+      "case_id": "case_8c969b922a90462eaa7d45a79022b6f1",
+      "created_at": "2026-09-22T12:38:23.617094Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E78",
+      "runtime_signature": "6863636929b58467943b8046c3f8f6d541f740447a075fc113030634fc4abf99",
+      "snapshot_version": 18,
+      "source_message_id": "std_3e2dae2eeaec4ef595d6ccc283e19206",
+      "ticker": "INTC",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLANNED",
+        "entities": [
+          "Googlebook",
+          "Acer",
+          "Asus",
+          "Dell",
+          "HP",
+          "Lenovo"
+        ],
+        "occurrence_date": "2026-09-21",
+        "proposition": "Googlebook laptops are planned to be offered by Acer, Asus, Dell, HP, and Lenovo.",
+        "subject_time": "Googlebook initial availability"
+      },
+      "candidate_index": 2,
+      "case_id": "case_8c969b922a90462eaa7d45a79022b6f1",
+      "created_at": "2026-09-22T12:38:23.623079Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E79",
+      "runtime_signature": "8664c97ef972cd1d207107c4ec7dfcaa03624806567dbaa9743ed4fc7acc4590",
+      "snapshot_version": 19,
+      "source_message_id": "std_3e2dae2eeaec4ef595d6ccc283e19206",
+      "ticker": "INTC",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLANNED",
+        "entities": [
+          "Googlebook",
+          "Intel",
+          "Qualcomm"
+        ],
+        "occurrence_date": "2026-09-21",
+        "proposition": "The planned Googlebook laptops will use Intel or Qualcomm processors.",
+        "subject_time": "Googlebook initial availability"
+      },
+      "candidate_index": 3,
+      "case_id": "case_8c969b922a90462eaa7d45a79022b6f1",
+      "created_at": "2026-09-22T12:38:23.631000Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E80",
+      "runtime_signature": "7ce008ce50064132fc4f81200e4e4f9c808441acd0263dee8c35e8a665df50f1",
+      "snapshot_version": 20,
+      "source_message_id": "std_3e2dae2eeaec4ef595d6ccc283e19206",
+      "ticker": "INTC",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Google",
+          "Alphabet",
+          "Googlebook",
+          "Gemini",
+          "Android"
+        ],
+        "occurrence_date": "2026-09-21",
+        "proposition": "Google positioned Googlebook around Gemini AI tools and tighter connections with Android.",
+        "subject_time": "Googlebook launch"
+      },
+      "candidate_index": 4,
+      "case_id": "case_8c969b922a90462eaa7d45a79022b6f1",
+      "created_at": "2026-09-22T12:38:23.637135Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E81",
+      "runtime_signature": "afb0044c4c51aedccb3848f50f9938428fa595a656125a5aa7c2fe8d8a99829a",
+      "snapshot_version": 21,
+      "source_message_id": "std_3e2dae2eeaec4ef595d6ccc283e19206",
+      "ticker": "INTC",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Coretura",
+          "BlackBerry",
+          "QNX",
+          "Alloy Kore",
+          "Vector",
+          "Daimler Truck",
+          "Volvo Group"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "Coretura selected BlackBerry QNX's Alloy Kore as the safety-certified foundation inside its software-defined vehicle platform for commercial vehicles.",
+        "subject_time": "Commercial-vehicle software-defined vehicle platform"
+      },
+      "candidate_index": 0,
+      "case_id": "case_bf120d3a07c44037a9283202c473e2c3",
+      "created_at": "2026-09-22T13:02:10.107109Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E82",
+      "runtime_signature": "5d0661839426ce0b4e12dc13b05874d1250b0f0a7268b9891180d6332b53d5ec",
+      "snapshot_version": 22,
+      "source_message_id": "std_131e2de5b7b046f4b6a88f58340d0351",
+      "ticker": "INTC",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "BlackBerry",
+          "QNX",
+          "Alloy Kore",
+          "Coretura"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "The Coretura selection is BlackBerry's first named design win for the Alloy Kore product.",
+        "subject_time": "Alloy Kore commercial-vehicle platform"
+      },
+      "candidate_index": 1,
+      "case_id": "case_bf120d3a07c44037a9283202c473e2c3",
+      "created_at": "2026-09-22T13:02:10.114121Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E83",
+      "runtime_signature": "e41616826ce411f5917cf65001cd8ff74c4cb3eac01e04bb0782047aa87e2f5b",
+      "snapshot_version": 23,
+      "source_message_id": "std_131e2de5b7b046f4b6a88f58340d0351",
+      "ticker": "INTC",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "BlackBerry",
+          "QNX",
+          "Alloy Kore",
+          "Coretura"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "The Alloy Kore announcement disclosed no contract value, revenue split, or revenue-recognition timetable.",
+        "subject_time": "Alloy Kore announcement"
+      },
+      "candidate_index": 2,
+      "case_id": "case_bf120d3a07c44037a9283202c473e2c3",
+      "created_at": "2026-09-22T13:02:10.120333Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E84",
+      "runtime_signature": "d71a30a934db53855cd1ef52bace7279b7139f4b669dfafd76d4c6e1acbe75cf",
+      "snapshot_version": 24,
+      "source_message_id": "std_131e2de5b7b046f4b6a88f58340d0351",
+      "ticker": "INTC",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Mobileye",
+          "MBLY"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "Mobileye shares were up approximately 0.3% in Tuesday morning trading.",
+        "subject_time": "2026-09-22 morning trading"
+      },
+      "candidate_index": 3,
+      "case_id": "case_bf120d3a07c44037a9283202c473e2c3",
+      "created_at": "2026-09-22T13:02:10.126678Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E85",
+      "runtime_signature": "6c1bf88307f9a909fa9db4618693a83282b3043298b21a425ad6f2e8cb0deba5",
+      "snapshot_version": 25,
+      "source_message_id": "std_131e2de5b7b046f4b6a88f58340d0351",
+      "ticker": "INTC",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Intel",
+          "INTC",
+          "Mobileye",
+          "MBLY"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "Intel retains majority ownership of Mobileye.",
+        "subject_time": "Current ownership"
+      },
+      "candidate_index": 4,
+      "case_id": "case_bf120d3a07c44037a9283202c473e2c3",
+      "created_at": "2026-09-22T13:02:10.134282Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E86",
+      "runtime_signature": "be67cea5413e4cf86bac7f179bc3139c77610f5c089ab6309426069e407cd688",
+      "snapshot_version": 26,
+      "source_message_id": "std_131e2de5b7b046f4b6a88f58340d0351",
+      "ticker": "INTC",
+      "trading_date": "2026-09-22"
+    }
+  ],
+  "limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "global_state": {
+    "watches": [],
+    "pins": []
+  },
+  "event_details": {
+    "requested_event_ids": [
+      "E77",
+      "E79",
+      "E80"
+    ],
+    "canonical_events": [],
+    "provisional_events": [
+      {
+        "provisional_event_id": "E77",
+        "known_before_current_message": true,
+        "semantic_day": "2026-09-22",
+        "candidate": {
+          "assertion_state": "ACTUAL",
+          "entities": [
+            "Alphabet",
+            "Googlebook"
+          ],
+          "occurrence_date": "2026-09-21",
+          "proposition": "Alphabet opened pre-orders for Googlebook laptops on 2026-09-21.",
+          "subject_time": "Googlebook launch and pre-order period"
+        }
+      },
+      {
+        "provisional_event_id": "E79",
+        "known_before_current_message": true,
+        "semantic_day": "2026-09-22",
+        "candidate": {
+          "assertion_state": "PLANNED",
+          "entities": [
+            "Googlebook",
+            "Acer",
+            "Asus",
+            "Dell",
+            "HP",
+            "Lenovo"
+          ],
+          "occurrence_date": "2026-09-21",
+          "proposition": "Googlebook laptops are planned to be offered by Acer, Asus, Dell, HP, and Lenovo.",
+          "subject_time": "Googlebook initial availability"
+        }
+      },
+      {
+        "provisional_event_id": "E80",
+        "known_before_current_message": true,
+        "semantic_day": "2026-09-22",
+        "candidate": {
+          "assertion_state": "PLANNED",
+          "entities": [
+            "Googlebook",
+            "Intel",
+            "Qualcomm"
+          ],
+          "occurrence_date": "2026-09-21",
+          "proposition": "The planned Googlebook laptops will use Intel or Qualcomm processors.",
+          "subject_time": "Googlebook initial availability"
+        }
+      }
+    ],
+    "missing_event_ids": []
+  }
+}

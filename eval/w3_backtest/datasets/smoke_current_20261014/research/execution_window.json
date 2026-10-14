@@ -1,0 +1,1 @@
+{"bindings": [{"ticker": "MU", "mode": "PAPER_TRADING", "binding_revision": "ep_a5dfda256b2f7863fc85a605", "exit_offset_minutes": 30}, {"ticker": "*", "mode": "PAPER_TRADING", "binding_revision": "ep_a5dfda256b2f7863fc85a605", "exit_offset_minutes": 30}], "basis": "current production mode binding configuration, replay uses historical cutoff clock"}

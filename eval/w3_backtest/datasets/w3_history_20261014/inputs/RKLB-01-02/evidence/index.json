@@ -1,0 +1,23 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-24T20:31:55.762263Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "The actual time the September 24 vote was taken is not stated in the release; 8:30 a.m. ET was only the scheduled meeting start.",
+    "Detailed vote totals were not included in the verified pre-cutoff release; it said complete results would be reported later.",
+    "No independent editorial coverage with a publication timestamp verified at or before the cutoff was found. Same-day pages located without a verified time were not used as evidence.",
+    "The release does not detail the status of individual regulatory reviews or other remaining closing conditions."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

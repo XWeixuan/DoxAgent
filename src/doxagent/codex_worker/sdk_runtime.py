@@ -210,6 +210,7 @@ class OpenAICodexRuntime:
         settings: DoxAgentSettings | None = None,
         reasoning_summary: str | None = None,
         preserve_requested_model: bool = False,
+        sandbox_override: Sandbox | None = None,
     ) -> None:
         self._settings = settings or DoxAgentSettings()
         self._client = AsyncCodex(config or CodexConfig(client_name="doxagent-codex-worker"))
@@ -220,6 +221,7 @@ class OpenAICodexRuntime:
         self.receipt_callback: Any = None
         self._reasoning_summary = reasoning_summary
         self._preserve_requested_model = preserve_requested_model
+        self._sandbox_override = sandbox_override
 
         secret = capability_secret or self._settings.codex_capability_secret
         if not secret:
@@ -283,7 +285,7 @@ class OpenAICodexRuntime:
             raise ValueError("O4 operational turns require DOXAGENT_CODEX_CONTAINER_ISOLATION=true")
         # Docker supplies the outer isolation boundary. Nested bubblewrap cannot create
         # a user namespace under the hardened container security profile.
-        sandbox = (
+        sandbox = self._sandbox_override or (
             Sandbox.full_access
             if self._container_isolated
             else (Sandbox.read_only if request.read_only else Sandbox.workspace_write)
@@ -408,8 +410,10 @@ class OpenAICodexRuntime:
                     "mcp_servers.data.required": not isinstance(request.node, CodexD2Node),
                     # Preserve recovered maintenance cold starts and the deployed W3 budget.
                     "mcp_servers.data.startup_timeout_sec": (
-                        90 if request.node == CodexPersistentRuntimeNode.W3
-                        else 60 if str(request.node) in {"event_library_o2_maintain", "d3_o3_maintain"}
+                        90
+                        if request.node == CodexPersistentRuntimeNode.W3
+                        else 60
+                        if str(request.node) in {"event_library_o2_maintain", "d3_o3_maintain"}
                         else 20
                     ),
                     "mcp_servers.data.tool_timeout_sec": 120,

@@ -1,0 +1,24 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-24T20:46:45.107799Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "The notice itself, the lease or contract clause, its stated force-majeure basis, and its delivery date and time were not located in public sources.",
+    "Whether Blue Owl accepted any force-majeure trigger, whether any payment deferral could actually occur, and whether any project milestone changed remained unresolved by cutoff.",
+    "No pre-cutoff source found documents a cancellation or change to Bloom Energy’s project scope, capacity, order, or delivery obligations; the reported notice alone does not establish one.",
+    "The supplied W1 references an earlier rumored state, but no separately dated public rumor item was independently traced in this search.",
+    "The Barron’s page does not expose a precise article timestamp or revision history in the live rendering; pre-cutoff verification is limited to the supplied source-message excerpt captured before cutoff."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

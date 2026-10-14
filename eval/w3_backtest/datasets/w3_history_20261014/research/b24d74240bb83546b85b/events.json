@@ -1,0 +1,37 @@
+{
+  "ticker": "BE",
+  "version": 13,
+  "requested_event_ids": [
+    "E1"
+  ],
+  "events": [
+    {
+      "event_id": "E1",
+      "ticker": "BE",
+      "title": "Bloom Energy reported its 2025 year-end $20 billion order backlog",
+      "event_type": "SUPPLY_DEMAND_UPDATE",
+      "occurred_at": "2025-12-31",
+      "occurrence_time_precision": "DAY",
+      "status": "ACTIVE",
+      "canonical_summary": "At 2025 year-end, Bloom Energy reported a $20 billion order backlog, including $14 billion of future services revenue.",
+      "known_event_summary": "On 2025-12-31, Bloom Energy reported a $20 billion backlog, including $14 billion from future services revenue.",
+      "is_important": true,
+      "include_in_reference_view": false,
+      "related_event_ids": [],
+      "supersedes_event_id": null,
+      "derived_from_event_ids": [],
+      "facts": [
+        {
+          "fact_id": "F1",
+          "proposition": "Bloom Energy's order backlog at the end of 2025 was $20 billion, including $14 billion from future services revenue.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "FY2025",
+          "fact_occurred_at": "SAME",
+          "fact_occurrence_time_precision": "DAY"
+        }
+      ],
+      "price_analysis": null
+    }
+  ],
+  "missing_event_ids": []
+}

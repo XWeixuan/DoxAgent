@@ -1,0 +1,24 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-30T20:04:07.478705Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "Within the bounded search, no separate independent full report on Micron’s EPS with a verified publication time at or before cutoff was established; the supplied Dow Jones item is headline-only.",
+    "No matched-basis analyst consensus source with a verified pre-cutoff snapshot was established. The EPS comparison therefore uses Micron’s prior GAAP and non-GAAP guidance.",
+    "The concurrent Reuters/Samsung capacity forecast lacks a verified pre-cutoff snapshot and revision history, so it is retained only as an unverified lead.",
+    "The supplied event library mentions an Intel server-demand/supply update, but this bounded search did not independently verify a cutoff-eligible source for that item.",
+    "UNVERIFIED source S2: https://www.interactivebrokers.com/en/trading/providers.php did not match any saved Web Search result URL/ref; keep retrieval_verification=UNVERIFIED and do not treat it as a verified Web Search source."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

@@ -1,0 +1,3624 @@
+{
+  "schema_version": "document3.v2.2",
+  "ticker": "BE",
+  "policy_set_version": 2,
+  "publication_state": "COMPLETE",
+  "document2_ref": {
+    "run_id": "init-be-788adefdd31844d98a907468b883176d-d2",
+    "artifact_id": "5830b9e9b2d84fa4acc0eb2e711751a0",
+    "sha256": "e4e7ef2733ce4cb52fdaf6638bd620878afec466a9f75119cd1f257d7e9237de",
+    "published_at": "2026-09-21T18:47:06.964292Z",
+    "publication_state": "COMPLETE"
+  },
+  "event_library_ref": {
+    "contract_version": "reference-view-md-v4",
+    "ticker": "BE",
+    "version": 4,
+    "sha256": "1ebe7448e026875a46b02138b27f8581380627e9bf580cce2103230ddafb908e",
+    "published_at": "2026-09-29T13:58:26.185857Z"
+  },
+  "policies": [
+    {
+      "policy_id": "pol_3a5092f395a4deb27eda",
+      "title": "Jupiter空气许可阻断或限制设计",
+      "source_refs": [
+        {
+          "shell_id": "Large-load project execution and funding",
+          "expectation_id": "Large-load project feasibility",
+          "gap_id": "Project Jupiter air permit denied or materially conditioned"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Project Jupiter空气许可的NMED最终命令、听证决定、法院裁判、许可条件、容量、工时、排放限制及项目排期消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "有权机构最终拒绝Project Jupiter空气许可，或施加会削减已公布容量、限制运营时段/排放或实质后移项目排期的条件。",
+          "calibration": {
+            "reference_state": "截至cutoff，相关挑战被驳回且stay解除，行政空气许可程序恢复，但新听证官、听证日及最终许可均未确认；项目仍处于可继续争取许可而非已获批状态。",
+            "trigger_boundary": "消息须确认Project Jupiter的最终许可决定，并列明拒绝，或能与已公布设计直接比较的容量、工时、排放或日期限制；程序性延误不足。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "6eb02eb1b2bacc41647839bf4eb919f56c5307efb22fba238efb43f7ce7ddaf1"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_7b7ccfd2cb4eecfb6a8f",
+      "title": "Green Chile燃气路线错过Jupiter窗口",
+      "source_refs": [
+        {
+          "shell_id": "Large-load project execution and funding",
+          "expectation_id": "Large-load project feasibility",
+          "gap_id": "Green Chile route remains unavailable for the project schedule"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Green Chile管道的FERC授权、环境审查、路线修改、建设/在役日期、Project Jupiter燃料连接里程碑及替代燃料安排消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Green Chile路线被最终拒绝、被要求作会重置许可和建设的实质改线，或其可用日期被确认晚于Project Jupiter燃料连接里程碑。",
+          "calibration": {
+            "reference_state": "Green Chile是17.77英里拟建管道，截至cutoff仍处于环境评估和公众意见阶段（意见截止2026-10-05），最终授权和在役能力未建立。最新Reference View报告Project Jupiter一条关键燃气管线约六个月延误，但未指明该路线为Green Chile，也未给出管道可用日或Jupiter燃料连接日。",
+            "trigger_boundary": "最终拒绝或重置性改线可直接触发；若是时间偏离，消息须同时明确Green Chile、管道可用日与Project Jupiter燃料连接里程碑并显示越窗。仅称Project Jupiter发生force majeure、关键燃气管线延误或供气风险而未完成路线和日期归因不足。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "ae68d3b6cef7a3a4c3313077a08f47d67a67c148a96da6ec33426e0290137552"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_c76a98154cb93c99f2b3",
+      "title": "Jupiter互联批准削减可用负载",
+      "source_refs": [
+        {
+          "shell_id": "Large-load project execution and funding",
+          "expectation_id": "Large-load project feasibility",
+          "gap_id": "Project-specific interconnection is approved only with material curtailment"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Project Jupiter互联研究、执行协议、送电阶段、firm MW、强制削减、注册/建模要求及utility或ISO/RTO运营决定。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Project Jupiter正式互联协议仅允许低于已公布设计的firm load，或规定分阶段送电、强制削减等条件，使全部设计容量不能按原窗口使用。",
+          "calibration": {
+            "reference_state": "截至cutoff，大型负荷互联证据mixed/moderate，尚无Project Jupiter特定互联批准、firm MW或运营决定。",
+            "trigger_boundary": "消息须同时识别Project Jupiter、正式协议中的获批MW/送电阶段或强制削减条件，以及可比较的已公布设计容量和窗口；泛化可靠性要求不足。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "dc2a26a4d28cb178ef0cf6485498710f0008f28c9e7975234eb11d1b80dc27ed"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_2e4afd79099a019c1035",
+      "title": "计算负载规则重置Jupiter执行路径",
+      "source_refs": [
+        {
+          "shell_id": "Large-load project execution and funding",
+          "expectation_id": "Large-load project feasibility",
+          "gap_id": "New computational-load reliability requirements delay Jupiter"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "NERC/FERC计算负载标准、utility或RTO tariff与Project Jupiter适用决定、重新研究/注册、削减方案、容量限制和原新里程碑消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "最终计算负载规则被明确适用于Project Jupiter，并要求重新研究、重新注册、削减方案或拒绝，使原运营日期后移或可用容量受限。",
+          "calibration": {
+            "reference_state": "截至cutoff，NERC标准仅完成初步投票并待2026Q4审查/提交，尚无Project Jupiter特定适用决定；市场已知规则演进但未吸收项目路径重置。",
+            "trigger_boundary": "消息须包含最终规则、Project Jupiter适用性、强制新增程序，以及同口径原/新日期或容量后果；标准发布而无项目适用决定不足。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "c210dcbd58a82165f5344442dcc476449b98665d7c590462568fcba2ff12d2d0"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_ca948f34c6e570aeb623",
+      "title": "Jupiter水或环境授权成为项目阻断",
+      "source_refs": [
+        {
+          "shell_id": "Large-load project execution and funding",
+          "expectation_id": "Large-load project feasibility",
+          "gap_id": "A water or environmental authorization blocks after the air process resumes"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Project Jupiter水资源及相关环境许可、法院或行政机关的拒绝/发回、用水量、监测条件、容量和工期变化消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Project Jupiter水资源或相关环境授权被最终拒绝、发回并要求重做关键审查，或被施加会改变项目容量、用水或排期的实质条件。",
+          "calibration": {
+            "reference_state": "空气许可程序虽已恢复，最新Reference View又报告Project Jupiter存在水权争议；但截至cutoff未确认具体水/环境授权的最终许可、拒绝、发回或实质运营条件。",
+            "trigger_boundary": "消息须识别具体授权和最终法律动作，并给出相对当前路径的日期、用水、容量或监测后果；水权争议、诉讼存在、force-majeure通知或一般审查不足。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "bd4ef572af5e8c68d722e09576d882db21fa123dfe28c3abf617bb45670f6812"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_5dbc8dfe4d036fa20076",
+      "title": "社区和解实质限制Jupiter项目",
+      "source_refs": [
+        {
+          "shell_id": "Large-load project execution and funding",
+          "expectation_id": "Large-load project feasibility",
+          "gap_id": "Community settlement imposes a material project restriction"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Project Jupiter社区和解、地方/州docket、法院同意令、异议解决、容量、运营时段、排放、水、噪声、监测及排期条件消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "具约束力的社区和解或地方决定削减Project Jupiter容量或运营时段，增加会改变设计的排放/水/噪声限制，或实质推迟关键里程碑。",
+          "calibration": {
+            "reference_state": "截至cutoff，社区与环境接受证据mixed/moderate且项目曾受审查，但没有最终否决或改变设计的正式社区限制。",
+            "trigger_boundary": "消息须来自正式docket、同意令或项目方确认，并列明约束前后的容量、工时、日期或明确的设计变化；会议、披露承诺或一般监测不足。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "0ec18ac25d6b9e307e05aaa6282cee5457511477bc29de7537fc53d4a8afe619"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_7e9d1763c8439ef528e6",
+      "title": "关键互联设备推迟Jupiter送电",
+      "source_refs": [
+        {
+          "shell_id": "Large-load project execution and funding",
+          "expectation_id": "Large-load project feasibility",
+          "gap_id": "Critical interconnection equipment shortage delays energization"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Project Jupiter变压器、switchgear、substation等设备的采购、交期、安装，以及utility或sponsor披露的原新送电/运营里程碑。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Project Jupiter所需关键电网设备无法按原计划到货或安装，并因此使具名送电或运营里程碑后移。",
+          "calibration": {
+            "reference_state": "行业变电站变压器交期已超过160周，设备紧张已在基线；截至cutoff没有Project Jupiter特定采购状态或送电表。",
+            "trigger_boundary": "同一消息须识别设备、Project Jupiter原里程碑以及新日期或明确错过；行业交期headline或没有项目日期后果的采购困难不足。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "dd2beb574153a65d1c8a3f5793d7a58dacdbe3732dbd9e96e4ebd766c7a65bd8"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_d165605147f93e18782d",
+      "title": "Jupiter正式重设计削弱原Bloom方案",
+      "source_refs": [
+        {
+          "shell_id": "Large-load project execution and funding",
+          "expectation_id": "Large-load project feasibility",
+          "gap_id": "Jupiter is redesigned around an alternative fuel or hybrid architecture"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Oracle、BorderPlex、Bloom、utility或项目sponsor对Project Jupiter燃料、grid/storage hybrid、微电网phasing、容量、许可路径、Bloom角色和新里程碑的正式设计文件。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Project Jupiter正式采用与当前方案实质不同的燃料、grid/storage hybrid、分阶段微电网或容量设计，使原2.45GW配置、时间表或Bloom角色不再适用。",
+          "calibration": {
+            "reference_state": "当前基线是已公布的Bloom-powered配置继续推进，空气程序恢复而Green Chile等门槛未决；备选架构研究尚未改变正式设计。",
+            "trigger_boundary": "消息须提供旧与新燃料/架构/容量或phasing、正式采用状态和重置后的开发里程碑；仅评估备选方案或不改变Bloom范围的辅助设备不足。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "c903fb9f5049ee80c16748e578a2dd1294b678421ac4aa84f4a7764cacd0f331"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_b737f591c416ec2b6b0f",
+      "title": "Jupiter跨过主要门槛转为可执行承诺",
+      "source_refs": [
+        {
+          "shell_id": "Large-load project execution and funding",
+          "expectation_id": "Large-load project feasibility",
+          "gap_id": "Jupiter clears the principal gates and becomes an executable project commitment"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "Project Jupiter sponsor对空气、水/环境、燃料路线、互联/运营协议等主要门槛的综合确认，以及Bloom-powered可执行建设范围、容量、开工或送电排期消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Project Jupiter sponsor确认所需空气、水/环境、可用燃料路线和互联/运营决定均已取得，并公布已绑定的Bloom-powered建设或送电范围与日期。",
+          "calibration": {
+            "reference_state": "截至cutoff，施工虽被称按计划，但空气程序仅恢复、Green Chile仍在审查，水环境和项目特定互联尚未最终确认；项目仍属已宣布但有条件。",
+            "trigger_boundary": "一条正常项目执行通知须明确列出各主要门槛已闭合、Bloom-powered可执行范围及建设/送电日期；若仍subject to任一关键批准，或仅取得单项许可，则不足。"
+          },
+          "decision": "LONG",
+          "condition_revision": "ceb6466ea24fc2e188593715b632a55bda88a4e75caa4fb81a21d41a169dce8b"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_4ab3d28642eae5d67866",
+      "title": "新环境规则重开大型项目合规路径",
+      "source_refs": [
+        {
+          "shell_id": "Large-load project execution and funding",
+          "expectation_id": "Large-load project feasibility",
+          "gap_id": "A new cumulative-emissions or water rule changes large-load feasibility"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "新的累计排放、碳管理、水资源或环境监测最终规则、法院先例及其对Project Jupiter或具名同类大型负荷项目的适用、许可、设计、容量和日期后果。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "新的最终环境规则被主管机关明确适用于Project Jupiter或一个具名同类大型负荷项目，并要求新增许可、排放/碳控制、用水限制或监测，使现有设计或日期必须改变。",
+          "calibration": {
+            "reference_state": "当前项目路径已包含既有空气、水和环境审查；截至cutoff，没有基线外的新累计规则被明确适用于具名相关项目。",
+            "trigger_boundary": "消息须同时确认最终生效规则、具名项目适用性、新义务及同一项目许可、设计、容量或时间表的具体变化；泛化规则发布不足。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "1255ec8dd3e859cf10a36d3aa0e4f42210e8e292f780dac33e8f99909bccb7fe"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_8a55115eb0e4e5539c3c",
+      "title": "认证EPC形成可重复按期交付",
+      "source_refs": [
+        {
+          "shell_id": "Energy Server field delivery and fleet economics",
+          "expectation_id": "Post-commitment Energy Server delivery economics",
+          "gap_id": "Multi-site certified-EPC delivery validates consult-only execution"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "认证EPC、客户与Bloom围绕“认证EPC重复交付能力”的确认、否定和接近边界的进展消息；主要披露路径包括客户、EPC或项目业主的handover公告。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "同一认证EPC在已完成一个项目后，第二个大型Energy Server项目也在计划窗口内commission并正式handover，且无material unresolved rework。",
+          "calibration": {
+            "reference_state": "第三方EPC/consult-only是拟议扩展模式，但项目级throughput、rework与acceptance cadence未披露；Q2 installation margin约-4%，市场尚未视为已验证。",
+            "trigger_boundary": "消息须含EPC、责任范围、原计划日期、commissioning与正式handover；仅施工进度不足。"
+          },
+          "decision": "LONG",
+          "condition_revision": "a695702f9cee75ded0f48b6d2e6871da021677364b8ede5e3fe1a6ad213630eb"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_278d77371f8c7f651782",
+      "title": "认证EPC执行失败拖延承诺项目",
+      "source_refs": [
+        {
+          "shell_id": "Energy Server field delivery and fleet economics",
+          "expectation_id": "Post-commitment Energy Server delivery economics",
+          "gap_id": "Certified-EPC capacity or scope failure delays committed sites"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "认证EPC、客户或Bloom围绕“EPC capacity与scope handoff”的确认、否定和接近边界的进展消息；主要披露路径包括项目更新、change order或索赔文件。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "具名承诺项目因EPC staffing/sequence或电气、燃气、handoff scope未闭合而错过明确里程碑，并发生EPC replacement、责任回收或material rework。",
+          "calibration": {
+            "reference_state": "EPC培训/资格机制存在但可扩展项目证据缺失；市场预期合格EPC承担后续大型项目。",
+            "trigger_boundary": "须含原/新里程碑、EPC归因与责任转移/rework；一般现场延期不足。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "a05eab7f2bec556be72913b4de92c2c37bd6d5445094cf9d91ce28ee878d4ce1"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_9795c572511e9fcc514e",
+      "title": "承诺后外部门槛阻断commissioning",
+      "source_refs": [
+        {
+          "shell_id": "Energy Server field delivery and fleet economics",
+          "expectation_id": "Post-commitment Energy Server delivery economics",
+          "gap_id": "Post-commitment permit-interconnection-fuel gate stalls commissioning"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "监管者、utility、fuel provider或项目业主围绕“承诺后permit/interconnection/fuel gate”的确认、否定和接近边界的进展消息；主要披露路径包括项目业主、utility或监管项目记录。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "具名承诺项目因permit suspension/denial、interconnection或fuel readiness失败而暂停field work或无法energize，并公布新commissioning date、scope cut或cancel。",
+          "calibration": {
+            "reference_state": "Project Jupiter已在最新Reference View中与Oracle实际force-majeure及关键燃气管线、水权延误相联系，但Oracle称项目仍按计划、Blue Owl称财务承诺不变；尚无Bloom承诺项目的具体permit/interconnection/fuel gate失败、field-work暂停、commissioning重置、scope cut或cancel被确认。",
+            "trigger_boundary": "消息须给出承诺状态、具体gate、原/新commissioning日期或scope/cancel后果。一般force-majeure、潜在供电延误、未指明路线的管线问题、付款保护请求或融资市场评论而无上述Bloom项目后果不足。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "3396e6afeee1055cb45d2ed5201168a1eb9ea7bddcd272363f783a97ee695666"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_9528ce08bd6f74eeeb43",
+      "title": "新合规要求迫使现场重设计",
+      "source_refs": [
+        {
+          "shell_id": "Energy Server field delivery and fleet economics",
+          "expectation_id": "Post-commitment Energy Server delivery economics",
+          "gap_id": "New reliability or environmental requirements force field redesign"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "监管者、utility、客户或EPC围绕“现场设计与acceptance path”的确认、否定和接近边界的进展消息；主要披露路径包括utility/regulator决定、客户/EPC change order。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "final requirement通过change order适用于具名承诺项目，新增controls/equipment或operating restriction并重置acceptance日期或scope。",
+          "calibration": {
+            "reference_state": "当前大型项目规则仍演进，未有新要求已改变具名承诺项目field design；市场只预期一般合规。",
+            "trigger_boundary": "须识别新要求、新设备/配置以及old→new acceptance日期或scope。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "e388cec4fa1a01bb1d7a42c7e4143f62968232da9262565833a8156ccc4917de"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_8b7ce115803d44cd93fd",
+      "title": "BOP短缺打乱现场交付序列",
+      "source_refs": [
+        {
+          "shell_id": "Energy Server field delivery and fleet economics",
+          "expectation_id": "Post-commitment Energy Server delivery economics",
+          "gap_id": "Balance-of-plant component shortage disrupts site sequence"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "EPC、utility、supplier或项目业主围绕“现场BOP component与安装序列”的确认、否定和接近边界的进展消息；主要披露路径包括项目/EPC进度或supplier notice。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "具名承诺site的transformer、switchgear、gas或其他BOP item无法按原日期到货，并导致installation/commissioning重排、暂停或临时电源。",
+          "calibration": {
+            "reference_state": "行业transformer lead time超过160周，但具名项目field-side BOP影响未确认；headline已在基线。",
+            "trigger_boundary": "须含component、原到货/commissioning日、新日或暂停后果；行业短缺不足。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "f6a3853fa76ddc116f38de98173df0f24fdd17933167ad087b1b4eec4a0bfced"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_7907c287701789eed085",
+      "title": "commissioning失败延迟客户验收",
+      "source_refs": [
+        {
+          "shell_id": "Energy Server field delivery and fleet economics",
+          "expectation_id": "Post-commitment Energy Server delivery economics",
+          "gap_id": "Commissioning test failure delays customer acceptance"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "客户、EPC或Bloom围绕“output/efficiency/sync/safety测试与sign-off”的确认、否定和接近边界的进展消息；主要披露路径包括客户/EPC测试记录、项目filing。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "具名site未通过关键性能或安全测试，客户正式withholds sign-off、提出dispute/LD claim或把acceptance推迟至少一个报告季度。",
+          "calibration": {
+            "reference_state": "当前交付和acceptance evidence mixed/weak，accepted MW未披露；市场预期正常commissioning而非material failure。",
+            "trigger_boundary": "须含测试项目、失败、正式acceptance后果与新日期/claim；routine retest不足。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "039ffccf07d1bac00e0ed1f71f6cfb2fa0b2666633594abccfcbc73bf68984e1"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_87c09ed122db2d699296",
+      "title": "部分验收削减承诺项目范围",
+      "source_refs": [
+        {
+          "shell_id": "Energy Server field delivery and fleet economics",
+          "expectation_id": "Post-commitment Energy Server delivery economics",
+          "gap_id": "Partial customer acceptance reduces committed scope"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "客户或项目业主围绕“accepted MW与remaining committed scope”的确认、否定和接近边界的进展消息；主要披露路径包括客户公告、change order或filing。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "具名项目披露实际accepted/energized MW低于committed MW，并对余额作出defer、resize、cancel或新completion window。",
+          "calibration": {
+            "reference_state": "项目级accepted MW与sign-off cadence未披露，市场不能把shipment等同全量acceptance。",
+            "trigger_boundary": "须同口径给出committed MW、accepted MW和余额状态/日期。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "8dc1ce1942132f1ec036cdb7ddf46df001ff29de54acfdaa2fe617e9722c0bfb"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_7000e8ba25cf2afb2e18",
+      "title": "验收后项目现金转换失效",
+      "source_refs": [
+        {
+          "shell_id": "Energy Server field delivery and fleet economics",
+          "expectation_id": "Post-commitment Energy Server delivery economics",
+          "gap_id": "Acceptance-to-cash conversion breaks after physical handover"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "客户与Bloom财务方围绕“acceptance-linked receivable/contract asset”的确认、否定和接近边界的进展消息；主要披露路径包括filing、客户付款/争议记录。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "已accept/energize的具名项目相关receivable或contract asset越过明确付款周期，并进入dispute/default、material term extension或loss provision。",
+          "calibration": {
+            "reference_state": "H1 working capital受milestone billing、deposits与vendor timing影响，项目级acceptance-to-cash bridge未披露；市场预期按合同cycle收款。",
+            "trigger_boundary": "须含acceptance日、合同due date、未付金额和新状态；仅AR增长不足。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "cc6a228828c9221b1c9112a1036f958a51885b5d5c09a338e07e74179cbfb199"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_09deb9d01b2e04296002",
+      "title": "consult-only模式未改善项目经济",
+      "source_refs": [
+        {
+          "shell_id": "Energy Server field delivery and fleet economics",
+          "expectation_id": "Post-commitment Energy Server delivery economics",
+          "gap_id": "Consult-only transition fails to improve project net economics"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Bloom、EPC与客户围绕“delivery-model project contribution”的确认、否定和接近边界的进展消息；主要披露路径包括项目/segment economics disclosure。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "一组consult-only项目披露Bloom support、engineering、warranty/guarantee和pricing后net contribution为负或低于同口径full-scope cohort。",
+          "calibration": {
+            "reference_state": "Q2 direct purchase占99% revenue且installation margin约-4%；consult-only的项目级support/guarantee cost与net contribution未披露，改善尚未进入基线。",
+            "trigger_boundary": "须含两模型同口径scope与net contribution，或明确consult-only为负；gross revenue不足。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "2e2e81f866b777204f748cba07e7fd3ef89186f74389634db63142bf51631449"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_e044c770cd3a9959b2cb",
+      "title": "验收项目证明正贡献与现金转换",
+      "source_refs": [
+        {
+          "shell_id": "Energy Server field delivery and fleet economics",
+          "expectation_id": "Post-commitment Energy Server delivery economics",
+          "gap_id": "Accepted project cohort proves positive net economics and cash conversion"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "Bloom、EPC与客户围绕“accepted cohort net economics与cash cycle”的确认、否定和接近边界的进展消息；主要披露路径包括filing或项目经济披露。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "定义清晰的accepted project cohort披露units/MW、各方scope、field/warranty cost、positive net contribution，并在计划周期内收回deposits/contract assets。",
+          "calibration": {
+            "reference_state": "当前post-commitment economics evidence weak；H1 OCF受大额working-capital timing支持，项目级cost/cash bridge缺失。",
+            "trigger_boundary": "须含cohort、accepted MW、revenue/cost scope、net contribution、planned与actual collection date。"
+          },
+          "decision": "LONG",
+          "condition_revision": "8e809566d19448670fd6a9aab53b49ca0e18ef245e7691140363df6d85e751a3"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_a0affa1a14504bcbf651",
+      "title": "Power Connect验证field-cycle缩短",
+      "source_refs": [
+        {
+          "shell_id": "Energy Server field delivery and fleet economics",
+          "expectation_id": "Post-commitment Energy Server delivery economics",
+          "gap_id": "Power Connect validates field-cycle reduction"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "客户、EPC与Bloom围绕“Power Connect installation/commissioning duration”的确认、否定和接近边界的进展消息；主要披露路径包括客户/EPC project comparison。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "一次披露给出至少两个Power Connect商业项目及可比conventional baseline，显示installation/commissioning duration下降且rework/acceptance failure rate未恶化。",
+          "calibration": {
+            "reference_state": "产品已发布并宣称minimum三个月、安装时间降低>40%，但这是claim，尚无accepted-project comparison。",
+            "trigger_boundary": "须给出同口径duration、baseline和defect/rework/acceptance outcome；产品claim不足。"
+          },
+          "decision": "LONG",
+          "condition_revision": "8c739ded3c02286dab2077fe9adf63ded903f4d968e45aefd299dd86a9438af0"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_05cfd885850f209621b2",
+      "title": "Power Connect接口缺陷造成返工",
+      "source_refs": [
+        {
+          "shell_id": "Energy Server field delivery and fleet economics",
+          "expectation_id": "Post-commitment Energy Server delivery economics",
+          "gap_id": "Power Connect integration defects create rework"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "客户、EPC或Bloom围绕“Power Connect interface quality”的确认、否定和接近边界的进展消息；主要披露路径包括质量bulletin、EPC/customer project record。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "一份项目/质量披露确认至少两个Power Connect sites出现同类interface defect，并造成field change order、rework或acceptance delay。",
+          "calibration": {
+            "reference_state": "Power Connect无accepted-project质量对比；市场已吸收速度主张而未吸收recurring interface defect。",
+            "trigger_boundary": "须识别同一defect、至少两site及各自rework/date后果。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "28402193021bdbd9dc081f2ee41cd39e8378105606f7aad668225d6bd8d76523"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_355081774feba6a0a124",
+      "title": "老龄fleet表现维持合同假设",
+      "source_refs": [
+        {
+          "shell_id": "Energy Server field delivery and fleet economics",
+          "expectation_id": "Installed Energy Server fleet service profitability",
+          "gap_id": "Aging-fleet performance remains within service assumptions"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "Bloom service与客户围绕“age-cohort availability/degradation”的确认、否定和接近边界的进展消息；主要披露路径包括fleet KPI或customer operating report。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "一次fleet disclosure给出至少两个连续期间的older cohort availability、output/efficiency、degradation与forced outage，并均在合同/O&M assumptions内。",
+          "calibration": {
+            "reference_state": "Q2 service revenue$69.02m、+26.8%且margin约19%，但age-cohort availability/degradation未披露，市场尚无寿命曲线证据。",
+            "trigger_boundary": "须含cohort age、两期metrics及明确contract assumptions comparator。"
+          },
+          "decision": "LONG",
+          "condition_revision": "782f55314df05a3b1f79d5b022bcf3e1ca286265a246918384837635ef7dd673"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_141996351344d7308747",
+      "title": "特定vintage出现提前退化集群",
+      "source_refs": [
+        {
+          "shell_id": "Energy Server field delivery and fleet economics",
+          "expectation_id": "Installed Energy Server fleet service profitability",
+          "gap_id": "Early degradation or stack failure cluster"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Bloom service或客户围绕“vintage output/availability与stack failure”的确认、否定和接近边界的进展消息；主要披露路径包括fleet/customer service report。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "具名age/product vintage的output或availability低于其service assumption，并出现重复stack/system replacements或forced outages高于披露pattern。",
+          "calibration": {
+            "reference_state": "fleet condition mixed/moderate，claim payments存在但vintage metrics缺失；市场未吸收特定cohort failure cluster。",
+            "trigger_boundary": "须含vintage、assumption、actual metric与重复failure/replacement count。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "d6ff49c8186cbad94ff8322506e956c5e7d9752d48a2494408e8162fbb445fc4"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_08b02839d96b1a9e816f",
+      "title": "AI duty cycle加速fleet磨损",
+      "source_refs": [
+        {
+          "shell_id": "Energy Server field delivery and fleet economics",
+          "expectation_id": "Installed Energy Server fleet service profitability",
+          "gap_id": "AI duty-cycle change reveals faster fleet wear"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "AI客户与Bloom service围绕“duty-cycle-specific degradation”的确认、否定和接近边界的进展消息；主要披露路径包括customer/fleet operating study。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "跨至少两个AI sites披露显著不同的utilization/cycling/thermal/fuel regime，并显示availability/degradation/repair明显差于同龄legacy cohort。",
+          "calibration": {
+            "reference_state": "新AI fleet utilization/cycling/thermal/fuel profile未披露，单一fleet assumption仍未被分层。",
+            "trigger_boundary": "须含duty variables、AI与legacy同龄comparison和service outcome。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "427a6180e19b8038789024ffc692a4f295f8c1b70e64a030372096824dabce90"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_951bf518834d0e2e9c06",
+      "title": "O&M续约与定价维持服务捕获",
+      "source_refs": [
+        {
+          "shell_id": "Energy Server field delivery and fleet economics",
+          "expectation_id": "Installed Energy Server fleet service profitability",
+          "gap_id": "O&M renewal and pricing sustain service capture"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "客户与Bloom service围绕“O&M renewal、price与revenue/MW”的确认、否定和接近边界的进展消息；主要披露路径包括O&M contract或segment disclosure。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "material expiring cohort续约并披露covered MW、scope、price/escalator，续约后service revenue/MW与margin稳定或上升。",
+          "calibration": {
+            "reference_state": "service增长来自maintenance fleet，但covered MW、renewal/churn、pricing与revenue/MW未披露。",
+            "trigger_boundary": "须含expiring/renewed MW、scope、price和同口径revenue/MW/margin。"
+          },
+          "decision": "LONG",
+          "condition_revision": "5f93d206d49354f4b582c504e02bac6e401b93882ed1e74b9b3c62b2f5fe3fef"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_d8f7b01198e8d6630545",
+      "title": "O&M流失且Bloom义务保留",
+      "source_refs": [
+        {
+          "shell_id": "Energy Server field delivery and fleet economics",
+          "expectation_id": "Installed Energy Server fleet service profitability",
+          "gap_id": "O&M churn or self-maintenance erodes service capture"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "客户与Bloom service围绕“O&M retention与residual obligations”的确认、否定和接近边界的进展消息；主要披露路径包括customer/O&M contract or filing。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "material customer/cohort正式non-renew、insource或降价缩scope，同时文件确认Bloom仍保留warranty/performance obligations。",
+          "calibration": {
+            "reference_state": "installed MW增长但renewal/churn未披露；市场不能确认fleet growth等于service capture。",
+            "trigger_boundary": "须含affected MW、旧/新scope/price及remaining Bloom obligations。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "1eef2496308c312bafa780dd9c4da61849dbf29bd82115329922f75ccff407fd"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_e06f2c751963e422b486",
+      "title": "parts与technician瓶颈延长停机",
+      "source_refs": [
+        {
+          "shell_id": "Energy Server field delivery and fleet economics",
+          "expectation_id": "Installed Energy Server fleet service profitability",
+          "gap_id": "Parts and technician bottleneck extends fleet downtime"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Bloom service network与suppliers围绕“MTTR、repair backlog和availability”的确认、否定和接近边界的进展消息；主要披露路径包括service KPI、filing或customer records。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "multi-site operating data显示repair backlog或MTTR上升，明确归因parts或qualified technicians不足，并使fleet availability/guarantee performance下降。",
+          "calibration": {
+            "reference_state": "technician capacity、parts lead time、MTTR未披露，当前执行gate incompletely evidenced。",
+            "trigger_boundary": "须含至少多site backlog/MTTR、constraint与availability old→new。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "53b17a2150eb761d852fbea15d1f23f326165bcd07cf8602fa6acd4c81cfb54c"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_ff1a45e77717e15d9090",
+      "title": "标准化维护恢复fleet经济性",
+      "source_refs": [
+        {
+          "shell_id": "Energy Server field delivery and fleet economics",
+          "expectation_id": "Installed Energy Server fleet service profitability",
+          "gap_id": "Standardized maintenance program restores fleet economics"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "Bloom regional service network围绕“maintenance process economics”的确认、否定和接近边界的进展消息；主要披露路径包括service program KPI disclosure。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "一次service disclosure对至少两个aging cohorts给出intervention前后MTTR或cost/MW下降及post-repair availability上升。",
+          "calibration": {
+            "reference_state": "prepaid/service activity增长，但MTTR、parts cadence与post-repair availability未披露；市场未验证改善。",
+            "trigger_boundary": "须含program、cohorts、before/after MTTR/cost和availability。"
+          },
+          "decision": "LONG",
+          "condition_revision": "636f593096c2e64b9efc04338d0ab667726fa58bacb9328cc9652320f39d341a"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_a137dd0b7e021fa2e942",
+      "title": "normalized guarantee claims持续受控",
+      "source_refs": [
+        {
+          "shell_id": "Energy Server field delivery and fleet economics",
+          "expectation_id": "Installed Energy Server fleet service profitability",
+          "gap_id": "Performance-guarantee claims remain contained"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "Bloom service/finance围绕“claims/payment per serviced MW”的确认、否定和接近边界的进展消息；主要披露路径包括service/guarantee KPI disclosure。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "一次披露提供至少两个连续期间的claims/payments per serviced MW下降、对应availability/efficiency改善，并确认不是portfolio runoff。",
+          "calibration": {
+            "reference_state": "现有payments已披露但无normalized trend；较低aggregate cash可能仅来自runoff。",
+            "trigger_boundary": "须含serviced MW、两期normalized claims、operating metric和runoff reconciliation。"
+          },
+          "decision": "LONG",
+          "condition_revision": "b818352ad8e359adcb4baf569b921a94dcacd51a2d520c5a0ea8f8758a15243e"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_6c47fe06b2df461860fd",
+      "title": "远程控制或监测事故扰乱服务",
+      "source_refs": [
+        {
+          "shell_id": "Energy Server field delivery and fleet economics",
+          "expectation_id": "Installed Energy Server fleet service profitability",
+          "gap_id": "Remote controls or monitoring outage disrupts service"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Bloom、客户或regulator围绕“remote monitoring/control availability”的确认、否定和接近边界的进展消息；主要披露路径包括incident notice、customer/regulator report。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "具名cyber/software/control/monitoring incident使多个Energy Server sites derate/disconnect，并披露restoration interval与repair/guarantee/service cost。",
+          "calibration": {
+            "reference_state": "当前service thesis未含已知multi-site digital outage；硬件degradation与digital resilience证据分离。",
+            "trigger_boundary": "须含affected sites/MW、outage/derate、restoration time和cost/claim。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "07269c21793f7b458e85be13e207fd9653a0614dfbd2044996a997eb435529e5"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_5e49ffd780a9389c9a71",
+      "title": "区域燃料冲击导致fleet降额",
+      "source_refs": [
+        {
+          "shell_id": "Energy Server field delivery and fleet economics",
+          "expectation_id": "Installed Energy Server fleet service profitability",
+          "gap_id": "Fuel-quality or supply shock derates a regional fleet"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "utility、pipeline、客户或Bloom围绕“regional fuel quality/pressure与fleet output”的确认、否定和接近边界的进展消息；主要披露路径包括utility/customer/operator disclosure。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "utility/customer/Bloom把regional cohort的derate/outage/claim明确归因fuel quality、pressure或pipeline interruption，并披露affected MW与recovery。",
+          "calibration": {
+            "reference_state": "fuel infrastructure exposure存在但无具名regional fleet service impact；维护capacity不证明fuel resilience。",
+            "trigger_boundary": "须含region、fuel condition、affected MW、performance后果和recovery/mitigation。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "cd44e7c8370d38edc2e5d4323182c428dd1c27b78e91b3db0f30a95d4408fa63"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_30a22314a064d4c8cd6d",
+      "title": "support mix稀释fleet服务经济",
+      "source_refs": [
+        {
+          "shell_id": "Energy Server field delivery and fleet economics",
+          "expectation_id": "Installed Energy Server fleet service profitability",
+          "gap_id": "Fleet growth dilutes service economics through warranty or bundled support mix"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Bloom service与客户围绕“service coverage mix与revenue/MW”的确认、否定和接近边界的进展消息；主要披露路径包括segment/service mix disclosure。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "同一披露显示installed MW增速超过O&M-covered MW或service revenue，并归因bundled、warranty-only、customer-managed或low-price scope，同时service margin下降。",
+          "calibration": {
+            "reference_state": "service revenue增长26.8%、margin约19%，但installed/covered MW、scope与revenue/MW未披露。",
+            "trigger_boundary": "须含installed MW、covered MW/revenue growth、mix attribution和margin old→new。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "a1ee2d2fd9db99ee2f54492ed74ceabc5ebeb6bfe78ff511fb62c8c9c0aadd50"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_e1968c74acd0a09a1199",
+      "title": "近期fleet vintage索赔成本兑现",
+      "source_refs": [
+        {
+          "shell_id": "Energy Server field delivery and fleet economics",
+          "expectation_id": "Post-commitment Energy Server delivery economics",
+          "gap_id": "Early-life warranty cluster changes delivery economics"
+        },
+        {
+          "shell_id": "Energy Server field delivery and fleet economics",
+          "expectation_id": "Installed Energy Server fleet service profitability",
+          "gap_id": "Performance-guarantee claims crystallize across a fleet vintage"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Bloom service、客户或insurer；Bloom service/finance与客户围绕“recent delivery vintage early-life claims；realized guarantee exposure”的确认、否定和接近边界的进展消息；主要披露路径包括service/warranty filing或customer disclosure。；warranty/guarantee filing。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "一个具名近期Energy Server交付或fleet vintage的normalized repairs、replacements、guarantee claims/payments或accruals显著上升，并产生material service/field cost或margin影响。",
+          "calibration": {
+            "reference_state": "截至cutoff，Q2 guarantee payments为$5.4m、H1为$13.8m、remaining potential exposure约$468.9m，但cap不是loss forecast且vintage-level claim curve未披露。",
+            "trigger_boundary": "消息须识别vintage/cohort、serviced MW或units、actual claims/payments/cost的新值及可比旧值或合同假设，并给出margin、availability或project-economics影响；aggregate cap单独不足。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "faa6f03b034a9627b2ccf8a78837aecd6a3c547caa4d52ad942d623462d3a44f"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_e6bd171b6be8e915fd82",
+      "title": "财务下行边界：Recurring tariff-and-input pass-through failure",
+      "source_refs": [
+        {
+          "shell_id": "Corporate financial realization and per-share earnings",
+          "expectation_id": "Normalized Energy Server product margins",
+          "gap_id": "Recurring tariff-and-input pass-through failure"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Bloom、客户、供应商及制造/财务管理层围绕“Recurring tariff-and-input pass-through failure”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Across one or more subsequent reporting quarters, newly imposed tariffs, commodity or freight costs, labor costs, or supplier price resets rise while fixed-price Energy Server projects or customer negotiations prevent Bloom from passing the increase through.",
+          "calibration": {
+            "reference_state": "Q2 Energy Server product gross margin约37%，FY2026 non-GAAP gross-margin guidance约34%；normalization evidence mixed/moderate，市场已吸收强Q2但未验证持久性。",
+            "trigger_boundary": "未来单条披露须明确主体、期间和同口径old→new数值/状态，并满足以下业务边界：A quarterly product-cost bridge identifies a new tariff, commodity, freight, labor, or supplier burden not offset by price, or Energy Server product GAAP margin falls materially below the Q2 level of roughly 37% for two consecutive quarters with management attributing the gap to recurring costs rather than a one-time item or mix alone."
+          },
+          "decision": "SHORT",
+          "condition_revision": "7b07095b19639145a6664a21445df1d81083a7715b85e5894b6dfaf9e6af5b20"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_26f8286632a439db9490",
+      "title": "财务上行边界：Qualified scale delivers repeatable product-cost step-down",
+      "source_refs": [
+        {
+          "shell_id": "Corporate financial realization and per-share earnings",
+          "expectation_id": "Normalized Energy Server product margins",
+          "gap_id": "Qualified scale delivers repeatable product-cost step-down"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "Bloom、客户、供应商及制造/财务管理层围绕“Qualified scale delivers repeatable product-cost step-down”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Fremont and Delmarva expansion and supplier qualification produce sustained qualified Energy Server throughput with lower recurring material, labor, rework, and freight cost across several quarters.",
+          "calibration": {
+            "reference_state": "Q2 Energy Server product gross margin约37%，FY2026 non-GAAP gross-margin guidance约34%；normalization evidence mixed/moderate，市场已吸收强Q2但未验证持久性。",
+            "trigger_boundary": "未来单条披露须明确主体、期间和同口径old→new数值/状态，并满足以下业务边界：At least two successive filings disclose qualified throughput or yield and recurring product-cost or margin improvement without duty refunds, unusual credits, or mix-only explanations, while warranty and rework costs remain stable."
+          },
+          "decision": "LONG",
+          "condition_revision": "d4e9809f7fa40d5a255f628324e6605c381c8452960cb54a6c0a108b3477dd42"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_43cab16bca794991c1e6",
+      "title": "财务下行边界：Ramp-quality and warranty failure",
+      "source_refs": [
+        {
+          "shell_id": "Corporate financial realization and per-share earnings",
+          "expectation_id": "Normalized Energy Server product margins",
+          "gap_id": "Ramp-quality and warranty failure"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Bloom、客户、供应商及制造/财务管理层围绕“Ramp-quality and warranty failure”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "A rapid production ramp produces abnormal defect, rework, field-failure, warranty, recall, or performance-guarantee charges in newly delivered Energy Server cohorts.",
+          "calibration": {
+            "reference_state": "Q2 Energy Server product gross margin约37%，FY2026 non-GAAP gross-margin guidance约34%；normalization evidence mixed/moderate，市场已吸收强Q2但未验证持久性。",
+            "trigger_boundary": "未来单条披露须明确主体、期间和同口径old→new数值/状态，并满足以下业务边界：Bloom discloses a material defect, rework, recall, warranty reserve, replacement, or performance-guarantee charge tied to new production cohorts together with product-cost or margin deterioration in the same or following quarters."
+          },
+          "decision": "SHORT",
+          "condition_revision": "91184491072b683bc357140a15211071ae3572a3f99bc9033b190ae9df9d91df"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_bc194d73d970fa06f21e",
+      "title": "财务下行边界：Lower-margin project-recognition mix",
+      "source_refs": [
+        {
+          "shell_id": "Corporate financial realization and per-share earnings",
+          "expectation_id": "Normalized Energy Server product margins",
+          "gap_id": "Lower-margin project-recognition mix"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Bloom、客户、供应商及制造/财务管理层围绕“Lower-margin project-recognition mix”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "As large-load deployments mature, a larger share of recognized revenue comes from installation, service, electricity, or other lower-margin obligations before high-margin Energy Server product revenue is recognized.",
+          "calibration": {
+            "reference_state": "Q2 Energy Server product gross margin约37%，FY2026 non-GAAP gross-margin guidance约34%；normalization evidence mixed/moderate，市场已吸收强Q2但未验证持久性。",
+            "trigger_boundary": "未来单条披露须明确主体、期间和同口径old→new数值/状态，并满足以下业务边界：Two or more subsequent quarters show product share materially below the Q2 mix or installation, electricity, or service gross profit diluting the consolidated product-led margin, with the change linked to project or contract recognition rather than only a one-time accounting item."
+          },
+          "decision": "SHORT",
+          "condition_revision": "30e8107a26ee0cbf39bfc99f222e5cdd7e156ebc02f0b79399efeefd5ad4f9d7"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_dee1b188f54a25371ae2",
+      "title": "财务下行边界：Competitive price compression",
+      "source_refs": [
+        {
+          "shell_id": "Corporate financial realization and per-share earnings",
+          "expectation_id": "Normalized Energy Server product margins",
+          "gap_id": "Competitive price compression"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Bloom、客户、供应商及制造/财务管理层围绕“Competitive price compression”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Customers or channel partners obtain lower Energy Server prices, discounts, or more onerous performance guarantees as grid upgrades, gas turbines, storage, engines, or other firm-power alternatives become more available.",
+          "calibration": {
+            "reference_state": "Q2 Energy Server product gross margin约37%，FY2026 non-GAAP gross-margin guidance约34%；normalization evidence mixed/moderate，市场已吸收强Q2但未验证持久性。",
+            "trigger_boundary": "未来单条披露须明确主体、期间和同口径old→new数值/状态，并满足以下业务边界：New-order or contract disclosures identify pricing concessions, discounts, expanded guarantees, or lower realized economics while input costs are unchanged or rising, or product margin falls with management attributing the change to price or competitive mix."
+          },
+          "decision": "SHORT",
+          "condition_revision": "ddf696b430c33b66c209b3150291be25dd6f46a1183907d2958cfb29afc68e1a"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_1f91dbe60dc2c1dec9de",
+      "title": "财务下行边界：Supply-chain interruption and expedited-cost shock",
+      "source_refs": [
+        {
+          "shell_id": "Corporate financial realization and per-share earnings",
+          "expectation_id": "Normalized Energy Server product margins",
+          "gap_id": "Supply-chain interruption and expedited-cost shock"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Bloom、客户、供应商及制造/财务管理层围绕“Supply-chain interruption and expedited-cost shock”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "A single-source or long-lead component qualification failure, geopolitical or trade disruption, or supplier outage interrupts production and forces expensive substitutions, expediting, or air freight.",
+          "calibration": {
+            "reference_state": "Q2 Energy Server product gross margin约37%，FY2026 non-GAAP gross-margin guidance约34%；normalization evidence mixed/moderate，市场已吸收强Q2但未验证持久性。",
+            "trigger_boundary": "未来单条披露须明确主体、期间和同口径old→new数值/状态，并满足以下业务边界：Bloom reports a supplier disruption, substitution, qualification failure, or expedited-logistics response and identifies related product-cost, delivery, or margin impact in a subsequent filing."
+          },
+          "decision": "SHORT",
+          "condition_revision": "51d9fbb7ba978a82d9ebb2db1f3cf2452a27eba87ee324d7e66b5f559294c62c"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_918e9ee408c338cf70f7",
+      "title": "财务上行边界：Multi-quarter operating leverage confirmation",
+      "source_refs": [
+        {
+          "shell_id": "Corporate financial realization and per-share earnings",
+          "expectation_id": "Operating expense leverage and operating income",
+          "gap_id": "Multi-quarter operating leverage confirmation"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "Bloom管理层、监管/诉讼主体及渠道伙伴围绕“Multi-quarter operating leverage confirmation”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Revenue and product gross profit continue to grow across successive quarters while expansion, engineering, certification, regulatory-support, and corporate operating expenses grow more slowly on both GAAP and comparable non-GAAP bases.",
+          "calibration": {
+            "reference_state": "Q2 GAAP operating income$182m、opex $173.3m；FY2026 non-GAAP operating-income guidance $800m-$900m、opex ratio约13%，仅一个盈利季度不足以证明durability。",
+            "trigger_boundary": "未来单条披露须明确主体、期间和同口径old→new数值/状态，并满足以下业务边界：At least three consecutive reporting quarters show gross-profit growth exceeding comparable operating-expense growth, positive operating income, and no comparable reduction in required project, certification, or regulatory capability."
+          },
+          "decision": "LONG",
+          "condition_revision": "16080a902b69efd7838053d3b1a7e6fc747a117f06e7d94cf93014b960076ff3"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_db14bc639b66728460b1",
+      "title": "财务下行边界：Project-support costs outrun gross-profit growth",
+      "source_refs": [
+        {
+          "shell_id": "Corporate financial realization and per-share earnings",
+          "expectation_id": "Operating expense leverage and operating income",
+          "gap_id": "Project-support costs outrun gross-profit growth"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Bloom管理层、监管/诉讼主体及渠道伙伴围绕“Project-support costs outrun gross-profit growth”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Engineering, certification, permitting, regulatory support, field enablement, hiring, or customer-specific integration costs grow faster than gross profit as large-load deployments expand.",
+          "calibration": {
+            "reference_state": "Q2 GAAP operating income$182m、opex $173.3m；FY2026 non-GAAP operating-income guidance $800m-$900m、opex ratio约13%，仅一个盈利季度不足以证明durability。",
+            "trigger_boundary": "未来单条披露须明确主体、期间和同口径old→new数值/状态，并满足以下业务边界：Two or more quarters show operating-expense growth at or above gross-profit growth, with management or filings linking the increase to recurring project qualification, engineering, certification, regulatory, or customer-support requirements."
+          },
+          "decision": "SHORT",
+          "condition_revision": "c56b1eb51115d01fccd57a601b6bd6bea2c8eb88f44390006fe7b4f590cd4bad"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_3eef45858410553f2f96",
+      "title": "财务下行边界：Recurring exclusions revealed in the non-GAAP bridge",
+      "source_refs": [
+        {
+          "shell_id": "Corporate financial realization and per-share earnings",
+          "expectation_id": "Operating expense leverage and operating income",
+          "gap_id": "Recurring exclusions revealed in the non-GAAP bridge"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Bloom管理层、监管/诉讼主体及渠道伙伴围绕“Recurring exclusions revealed in the non-GAAP bridge”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Future filings disclose that stock compensation, retention, certification, regulatory, restructuring, or other items excluded from non-GAAP operating income recur at a material level as the business scales.",
+          "calibration": {
+            "reference_state": "Q2 GAAP operating income$182m、opex $173.3m；FY2026 non-GAAP operating-income guidance $800m-$900m、opex ratio约13%，仅一个盈利季度不足以证明durability。",
+            "trigger_boundary": "未来单条披露须明确主体、期间和同口径old→new数值/状态，并满足以下业务边界：A period-by-period GAAP-to-non-GAAP bridge shows the same excluded categories recurring across at least two reporting periods or rising with deployment volume, without a credible finite end point."
+          },
+          "decision": "SHORT",
+          "condition_revision": "3ec5f4d436a79f018ebe57e38e4117e452da87e3ed70eeb18755ff93944fc75b"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_0501bfd5e078d97cc592",
+      "title": "财务下行边界：Compliance, safety, litigation, or recall cost shock",
+      "source_refs": [
+        {
+          "shell_id": "Corporate financial realization and per-share earnings",
+          "expectation_id": "Operating expense leverage and operating income",
+          "gap_id": "Compliance, safety, litigation, or recall cost shock"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Bloom管理层、监管/诉讼主体及渠道伙伴围绕“Compliance, safety, litigation, or recall cost shock”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "A product-safety, environmental, regulatory, litigation, or disclosure event causes Bloom to add a material operating workforce, investigation, legal reserve, remediation program, or customer-support burden.",
+          "calibration": {
+            "reference_state": "Q2 GAAP operating income$182m、opex $173.3m；FY2026 non-GAAP operating-income guidance $800m-$900m、opex ratio约13%，仅一个盈利季度不足以证明durability。",
+            "trigger_boundary": "未来单条披露须明确主体、期间和同口径old→new数值/状态，并满足以下业务边界：Bloom or a regulator discloses a material investigation, recall, remediation, litigation reserve, compliance program, or customer-support cost recognized in operating expense and linked to the Energy Server business."
+          },
+          "decision": "SHORT",
+          "condition_revision": "0f7d7d0b12912d77300c0448be51a85a2e590332e1996c6269768f5ee5c4df51"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_fd1220b434d9d2d17275",
+      "title": "财务下行边界：Strategic capability build resets the expense base",
+      "source_refs": [
+        {
+          "shell_id": "Corporate financial realization and per-share earnings",
+          "expectation_id": "Operating expense leverage and operating income",
+          "gap_id": "Strategic capability build resets the expense base"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Bloom管理层、监管/诉讼主体及渠道伙伴围绕“Strategic capability build resets the expense base”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Bloom commits to a major new product, software, service, international, carbon-management, or manufacturing capability and materially increases engineering, sales, or corporate headcount before associated revenue arrives.",
+          "calibration": {
+            "reference_state": "Q2 GAAP operating income$182m、opex $173.3m；FY2026 non-GAAP operating-income guidance $800m-$900m、opex ratio约13%，仅一个盈利季度不足以证明durability。",
+            "trigger_boundary": "未来单条披露须明确主体、期间和同口径old→new数值/状态，并满足以下业务边界：Management announces a program with a material recurring headcount, R&D, sales, facility, or certification commitment and subsequent filings show the related operating expense rising before corresponding revenue or gross profit is reported."
+          },
+          "decision": "SHORT",
+          "condition_revision": "4b34a8dd806df74ed0f3613d2708b6f91140b4bcc2e8ce6d5a8b7e8b5283bf4d"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_e334bf9b374d107b2943",
+      "title": "财务上行边界：Channelized delivery lowers recurring operating burden",
+      "source_refs": [
+        {
+          "shell_id": "Corporate financial realization and per-share earnings",
+          "expectation_id": "Operating expense leverage and operating income",
+          "gap_id": "Channelized delivery lowers recurring operating burden"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "Bloom管理层、监管/诉讼主体及渠道伙伴围绕“Channelized delivery lowers recurring operating burden”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Certified installers, utility channels, financing partners, or standardized deployment systems absorb more qualification, sales, installation-support, or project-management work, reducing Bloom's recurring operating cost per deployment.",
+          "calibration": {
+            "reference_state": "Q2 GAAP operating income$182m、opex $173.3m；FY2026 non-GAAP operating-income guidance $800m-$900m、opex ratio约13%，仅一个盈利季度不足以证明durability。",
+            "trigger_boundary": "未来单条披露须明确主体、期间和同口径old→new数值/状态，并满足以下业务边界：Subsequent disclosures show repeated projects using third-party or channel delivery with lower Bloom project-support expense per unit or lower operating-expense growth, without simply shifting the same costs into another excluded category."
+          },
+          "decision": "LONG",
+          "condition_revision": "490e0e5cb3244d97980e31f29d8142c1521e3b6aaa9f061558962f9eec0f9cf0"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_45a7e767c31ef6513035",
+      "title": "财务上行边界：Diversified accepted-deployment cadence",
+      "source_refs": [
+        {
+          "shell_id": "Corporate financial realization and per-share earnings",
+          "expectation_id": "Earnings duration",
+          "gap_id": "Diversified accepted-deployment cadence"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "Bloom、客户、项目伙伴及服务客户围绕“Diversified accepted-deployment cadence”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Across successive quarters, funded and permitted projects for multiple customers ship, reach customer acceptance, and generate recognized revenue without one customer or project dominating the period.",
+          "calibration": {
+            "reference_state": "Q2 revenue $1.0654bn且首次季度GAAP operating profitability，管理层预计FY2027-FY2028继续margin/leverage expansion，但multi-quarter duration尚未建立。",
+            "trigger_boundary": "未来单条披露须明确主体、期间和同口径old→new数值/状态，并满足以下业务边界：At least three successive quarters disclose accepted deployments or equivalent customer/project revenue from multiple customers, with no single project accounting for the majority of the incremental revenue and no material cancellation or deferral spike."
+          },
+          "decision": "LONG",
+          "condition_revision": "f1deeafe7eac4e2917aeb9a68844750aee9225f584331529464a04fc9a23507f"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_97c655358cbadef286da",
+      "title": "财务下行边界：Post-pull-forward revenue gap",
+      "source_refs": [
+        {
+          "shell_id": "Corporate financial realization and per-share earnings",
+          "expectation_id": "Earnings duration",
+          "gap_id": "Post-pull-forward revenue gap"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Bloom、客户、项目伙伴及服务客户围绕“Post-pull-forward revenue gap”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "One or two large projects complete or recognize revenue unusually early, followed by a subsequent quarter in which replacement shipments, acceptances, or funded backlog do not sustain the prior run rate.",
+          "calibration": {
+            "reference_state": "Q2 revenue $1.0654bn且首次季度GAAP operating profitability，管理层预计FY2027-FY2028继续margin/leverage expansion，但multi-quarter duration尚未建立。",
+            "trigger_boundary": "未来单条披露须明确主体、期间和同口径old→new数值/状态，并满足以下业务边界：A subsequent quarter shows a material sequential revenue or product-volume decline after a large project recognition, together with disclosed concentration, depleted project milestones, or insufficient replacement bookings and no offsetting accepted deployments."
+          },
+          "decision": "SHORT",
+          "condition_revision": "bec07f15357c246235fbfd10513b7d5e900e3cade568875c829cf90bc9556861"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_358b18ca588879801d4d",
+      "title": "财务下行边界：Permit, financing, or acceptance bottleneck cluster",
+      "source_refs": [
+        {
+          "shell_id": "Corporate financial realization and per-share earnings",
+          "expectation_id": "Earnings duration",
+          "gap_id": "Permit, financing, or acceptance bottleneck cluster"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Bloom、客户、项目伙伴及服务客户围绕“Permit, financing, or acceptance bottleneck cluster”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Several large-load projects remain technically selected but experience a synchronized delay in permits, interconnection, customer financing, installation, or final acceptance.",
+          "calibration": {
+            "reference_state": "Q2 revenue $1.0654bn且首次季度GAAP operating profitability，管理层预计FY2027-FY2028继续margin/leverage expansion，但multi-quarter duration尚未建立。",
+            "trigger_boundary": "未来单条披露须明确主体、期间和同口径old→new数值/状态，并满足以下业务边界：Two or more material projects miss milestone windows because of permit, interconnection, financing, installation, or acceptance status, and the delay affects reported shipments or revenue timing."
+          },
+          "decision": "SHORT",
+          "condition_revision": "0f27829c2c8caa3e76860644671bbce94f10f79006a45f85519e01420a2c5993"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_b88a58def59b82c29eb5",
+      "title": "财务下行边界：Large-customer cancellation or renegotiation",
+      "source_refs": [
+        {
+          "shell_id": "Corporate financial realization and per-share earnings",
+          "expectation_id": "Earnings duration",
+          "gap_id": "Large-customer cancellation or renegotiation"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Bloom、客户、项目伙伴及服务客户围绕“Large-customer cancellation or renegotiation”的部署、付款或验收条款，以及正式财报、guidance、合同、交易或监管消息和同口径比较值接近边界的更新。",
+      "activation_conditions": [
+        {
+          "condition_id": "C2",
+          "criterion": "A major customer, developer, or infrastructure partner cancels, defers, materially downsizes, or renegotiates an Energy Server deployment or its binding payment or acceptance terms after qualification or framework announcement.",
+          "calibration": {
+            "reference_state": "Q2 revenue $1.0654bn且首次季度GAAP operating profitability，管理层预计FY2027-FY2028继续margin/leverage expansion。E31报告Oracle就Project Jupiter发出force-majeure，并称若2028年未投运可能调整部分付款；Blue Owl称各方财务承诺未改变，尚无Bloom特定容量取消/延期或backlog、shipment、revenue、collection时点变化。",
+            "trigger_boundary": "消息须明确主体、项目及Bloom关联，并给出部署或绑定付款/验收条款的old→new状态或正式变更，以及对backlog、shipment、revenue或collection timing的影响。一般force-majeure、未绑定Bloom的条件性付款请求、没有客户条款变化的项目延误或明确承诺不变不足。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "336acdd3c77f1cc59d8c34374623af1839b84185b30905f2b864fb306c7c7c8a"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_63cd99fd73d6a00ab832",
+      "title": "财务下行边界：Installed-fleet performance burden escalates",
+      "source_refs": [
+        {
+          "shell_id": "Corporate financial realization and per-share earnings",
+          "expectation_id": "Earnings duration",
+          "gap_id": "Installed-fleet performance burden escalates"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Bloom、客户、项目伙伴及服务客户围绕“Installed-fleet performance burden escalates”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Availability, degradation, repair, replacement, warranty, or performance-guarantee claims rise materially across the installed Energy Server fleet as the deployment base ages or expands.",
+          "calibration": {
+            "reference_state": "Q2 revenue $1.0654bn且首次季度GAAP operating profitability，管理层预计FY2027-FY2028继续margin/leverage expansion，但multi-quarter duration尚未建立。",
+            "trigger_boundary": "未来单条披露须明确主体、期间和同口径old→new数值/状态，并满足以下业务边界：Two or more reporting periods show rising performance-guarantee payments, warranty or replacement costs, degradation claims, or service-margin deterioration linked to fleet cohorts rather than an isolated site event."
+          },
+          "decision": "SHORT",
+          "condition_revision": "98cede877811ffaa80ffd5abd3218674ef73eeb05d8e231975f753c2645635b9"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_5e8a9f112a05f0479677",
+      "title": "财务下行边界：Alternative firm-power supply closes the opportunity window",
+      "source_refs": [
+        {
+          "shell_id": "Corporate financial realization and per-share earnings",
+          "expectation_id": "Earnings duration",
+          "gap_id": "Alternative firm-power supply closes the opportunity window"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Bloom、客户、项目伙伴及服务客户围绕“Alternative firm-power supply closes the opportunity window”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Gas-turbine or engine slots, grid interconnection, natural-gas infrastructure, storage, or other firm-power alternatives become available earlier, cheaper, or more acceptable to large-load customers, displacing planned Bloom deployments.",
+          "calibration": {
+            "reference_state": "Q2 revenue $1.0654bn且首次季度GAAP operating profitability，管理层预计FY2027-FY2028继续margin/leverage expansion，但multi-quarter duration尚未建立。",
+            "trigger_boundary": "未来单条披露须明确主体、期间和同口径old→new数值/状态，并满足以下业务边界：Multiple large-load customers or developers disclose choosing, reserving, or switching to an alternative firm-power route for projects previously associated with Bloom, and the change is linked to improved availability, economics, interconnection, or delivery timing."
+          },
+          "decision": "SHORT",
+          "condition_revision": "09edf24c526296769b3f2dcb6543e5a2e4e22469ffdeb0e085178590303cc565"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_803b5e9ad89fba5ead04",
+      "title": "财务上行边界：C&I and service diversification extends the earnings base",
+      "source_refs": [
+        {
+          "shell_id": "Corporate financial realization and per-share earnings",
+          "expectation_id": "Earnings duration",
+          "gap_id": "C&I and service diversification extends the earnings base"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "Bloom、客户、项目伙伴及服务客户围绕“C&I and service diversification extends the earnings base”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Industrial, healthcare, semiconductor, food, utility, or other C&I deployments and recurring service contracts begin contributing a stable replacement stream as data-center project timing varies.",
+          "calibration": {
+            "reference_state": "Q2 revenue $1.0654bn且首次季度GAAP operating profitability，管理层预计FY2027-FY2028继续margin/leverage expansion，但multi-quarter duration尚未建立。",
+            "trigger_boundary": "未来单条披露须明确主体、期间和同口径old→new数值/状态，并满足以下业务边界：At least three consecutive quarters show new accepted C&I or service revenue from multiple customers that replaces a meaningful portion of large-load timing variability and carries disclosed recurring or repeat-order characteristics."
+          },
+          "decision": "LONG",
+          "condition_revision": "64e48da076877b971830520fc3a09d07ff24e040ec70ae1594a43ca38a77ba1c"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_b22b4958ebaa7208247c",
+      "title": "财务下行边界：Deposits reverse while receivables and contract assets expand",
+      "source_refs": [
+        {
+          "shell_id": "Corporate financial realization and per-share earnings",
+          "expectation_id": "Repeatable operating cash conversion",
+          "gap_id": "Deposits reverse while receivables and contract assets expand"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Bloom、客户、供应商及项目融资方围绕“Deposits reverse while receivables and contract assets expand”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Customer deposits or deferred revenue decline or are refunded while receivables and contract assets continue to rise because billing, collection, installation, or acceptance lags.",
+          "calibration": {
+            "reference_state": "Q2 OCF $226.4m、H1 $300m，但H1 deposits +$226.2m、AR/contract assets +$276.7m、inventory +$115.1m且supplier-payment timing贡献$247.6m；cash quality mixed。",
+            "trigger_boundary": "未来单条披露须明确主体、期间和同口径old→new数值/状态，并满足以下业务边界：A subsequent quarter shows a material deposit or deferred-revenue outflow together with rising receivables or contract assets, delayed collections, or a negative operating-cash contribution from customer billing and acceptance."
+          },
+          "decision": "SHORT",
+          "condition_revision": "0b73c50906f3d4ef55446b8c79c5d0d2ec9e65cd8474da0449cf59aee3b9889e"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_801f4a5c0c647a8119f6",
+      "title": "财务下行边界：Supplier-payment catch-up and inventory unwind",
+      "source_refs": [
+        {
+          "shell_id": "Corporate financial realization and per-share earnings",
+          "expectation_id": "Repeatable operating cash conversion",
+          "gap_id": "Supplier-payment catch-up and inventory unwind"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Bloom、客户、供应商及项目融资方围绕“Supplier-payment catch-up and inventory unwind”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Supplier payment terms normalize or vendors demand earlier cash while inventory built for demand remains unconsumed or is converted more slowly than planned.",
+          "calibration": {
+            "reference_state": "Q2 OCF $226.4m、H1 $300m，但H1 deposits +$226.2m、AR/contract assets +$276.7m、inventory +$115.1m且supplier-payment timing贡献$247.6m；cash quality mixed。",
+            "trigger_boundary": "未来单条披露须明确主体、期间和同口径old→new数值/状态，并满足以下业务边界：A subsequent filing shows a material operating-cash outflow from accounts payable or supplier payments and either elevated inventory, slower turns, or inventory write-downs without a corresponding increase in accepted shipments."
+          },
+          "decision": "SHORT",
+          "condition_revision": "f0e251089ded9cd47d2fb231c83da3be1231337fa17de16fbf499e9167c1be71"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_ed26aa0aaa2c250760e7",
+      "title": "财务上行边界：Normalized working-capital conversion becomes repeatably positive",
+      "source_refs": [
+        {
+          "shell_id": "Corporate financial realization and per-share earnings",
+          "expectation_id": "Repeatable operating cash conversion",
+          "gap_id": "Normalized working-capital conversion becomes repeatably positive"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "Bloom、客户、供应商及项目融资方围绕“Normalized working-capital conversion becomes repeatably positive”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "After the current project ramp, customer deposits, receivables, contract assets, inventory, and supplier payments stabilize and operating cash flow remains positive across successive periods without a comparable one-off advance or payable build.",
+          "calibration": {
+            "reference_state": "Q2 OCF $226.4m、H1 $300m，但H1 deposits +$226.2m、AR/contract assets +$276.7m、inventory +$115.1m且supplier-payment timing贡献$247.6m；cash quality mixed。",
+            "trigger_boundary": "未来单条披露须明确主体、期间和同口径old→new数值/状态，并满足以下业务边界：At least three successive reporting periods show positive operating cash flow, collections and accepted milestones keeping pace with revenue, no repeated exceptional customer advance, and inventory and payables normalizing rather than supplying the majority of the cash increase."
+          },
+          "decision": "LONG",
+          "condition_revision": "4ab8a5ed437990b143d28811a4e827df89ff9fcf1d5179fe70443a78bde80b01"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_26bece4c08cfbaa5027e",
+      "title": "财务下行边界：Long-dated PPA or lease billing shifts cash beyond recognition",
+      "source_refs": [
+        {
+          "shell_id": "Corporate financial realization and per-share earnings",
+          "expectation_id": "Repeatable operating cash conversion",
+          "gap_id": "Long-dated PPA or lease billing shifts cash beyond recognition"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Bloom、客户、供应商及项目融资方围绕“Long-dated PPA or lease billing shifts cash beyond recognition”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "A larger share of deployments uses PPA, lease, capacity, or third-party-financed structures that recognize economic activity before Bloom collects the related cash or leave Bloom carrying receivables and contract assets.",
+          "calibration": {
+            "reference_state": "Q2 OCF $226.4m、H1 $300m，但H1 deposits +$226.2m、AR/contract assets +$276.7m、inventory +$115.1m且supplier-payment timing贡献$247.6m；cash quality mixed。",
+            "trigger_boundary": "未来单条披露须明确主体、期间和同口径old→new数值/状态，并满足以下业务边界：Future disclosures show a rising share of PPA, lease, capacity, or third-party-financed contracts alongside longer collection periods, higher contract assets or receivables, or explicit Bloom cash funding before customer collections."
+          },
+          "decision": "SHORT",
+          "condition_revision": "242949175c1d3ddc1f10a6af4c5cef49f67e2d086edf4b095f70828b21f748e7"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_3472bf9374c2ab5c4697",
+      "title": "财务下行边界：Project cancellation triggers deposit return or cash dispute",
+      "source_refs": [
+        {
+          "shell_id": "Corporate financial realization and per-share earnings",
+          "expectation_id": "Repeatable operating cash conversion",
+          "gap_id": "Project cancellation triggers deposit return or cash dispute"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Bloom、客户、供应商及项目融资方围绕“Project cancellation triggers deposit return or cash dispute”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "A customer or project developer cancels, delays, or renegotiates a deployment and Bloom must refund deposits, settle disputed milestones, or absorb unrecovered project costs.",
+          "calibration": {
+            "reference_state": "Q2 OCF $226.4m、H1 $300m，但H1 deposits +$226.2m、AR/contract assets +$276.7m、inventory +$115.1m且supplier-payment timing贡献$247.6m；cash quality mixed。",
+            "trigger_boundary": "未来单条披露须明确主体、期间和同口径old→new数值/状态，并满足以下业务边界：A filing or customer disclosure identifies a material deposit refund, milestone reversal, contract-asset write-down, termination payment, or disputed receivable tied to a delayed or canceled Energy Server project."
+          },
+          "decision": "SHORT",
+          "condition_revision": "99a1fca6196e67557522f1039ed174edb15f95b509222167c02282f87bb7ed77"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_c6292d35ffedc2889ad1",
+      "title": "财务下行边界：Supply shock forces cash prepayment and stockpiling",
+      "source_refs": [
+        {
+          "shell_id": "Corporate financial realization and per-share earnings",
+          "expectation_id": "Repeatable operating cash conversion",
+          "gap_id": "Supply shock forces cash prepayment and stockpiling"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Bloom、客户、供应商及项目融资方围绕“Supply shock forces cash prepayment and stockpiling”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "A tariff, geopolitical disruption, or long-lead shortage causes Bloom to prepay suppliers, purchase scarce components, or build inventory materially ahead of accepted shipments.",
+          "calibration": {
+            "reference_state": "Q2 OCF $226.4m、H1 $300m，但H1 deposits +$226.2m、AR/contract assets +$276.7m、inventory +$115.1m且supplier-payment timing贡献$247.6m；cash quality mixed。",
+            "trigger_boundary": "未来单条披露须明确主体、期间和同口径old→new数值/状态，并满足以下业务边界：Bloom discloses material supplier prepayments, non-cancellable purchase commitments, inventory acceleration, or component stockpiling tied to a supply or trade shock, with cash use preceding accepted shipments."
+          },
+          "decision": "SHORT",
+          "condition_revision": "1081acc43ccff0ebae2f27383fef712753922e509db6018a86578bd491d0a404"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_151d3764f0a68ca1d1f3",
+      "title": "财务下行边界：Warranty and guarantee cash claims consume operations",
+      "source_refs": [
+        {
+          "shell_id": "Corporate financial realization and per-share earnings",
+          "expectation_id": "Repeatable operating cash conversion",
+          "gap_id": "Warranty and guarantee cash claims consume operations"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Bloom、客户、供应商及项目融资方围绕“Warranty and guarantee cash claims consume operations”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Performance-guarantee, warranty, repair, replacement, or customer-remediation payments rise as the installed fleet expands and consume operating cash independently of new-project billing.",
+          "calibration": {
+            "reference_state": "Q2 OCF $226.4m、H1 $300m，但H1 deposits +$226.2m、AR/contract assets +$276.7m、inventory +$115.1m且supplier-payment timing贡献$247.6m；cash quality mixed。",
+            "trigger_boundary": "未来单条披露须明确主体、期间和同口径old→new数值/状态，并满足以下业务边界：Two or more periods show rising cash payments or reserves for performance guarantees, warranty, repairs, replacements, or remediation relative to service revenue, with management linking the increase to fleet cohorts."
+          },
+          "decision": "SHORT",
+          "condition_revision": "9f6f308e0375fc66579921b588c7433eccd486db126032f58e6065a8b31642d0"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_b2475a5727c6b73f0d18",
+      "title": "财务上行边界：Capacity expansion reaches qualified output within funding plan",
+      "source_refs": [
+        {
+          "shell_id": "Corporate financial realization and per-share earnings",
+          "expectation_id": "Capital intensity and financing capacity",
+          "gap_id": "Capacity expansion reaches qualified output within funding plan"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "Bloom、投资者、债权人、项目融资方及供应商围绕“Capacity expansion reaches qualified output within funding plan”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Fremont and Delmarva expansion reaches qualified effective Energy Server throughput near the planned target without material cost overrun, while operating cash and existing liquidity fund the build-out.",
+          "calibration": {
+            "reference_state": "2026-06-30 cash $2.6669bn、recourse debt $2.4754bn、H1 PP&E capex $77.82m；2GW扩产仍为名义计划，管理层只承诺至少12个月liquidity。",
+            "trigger_boundary": "未来单条披露须明确主体、期间和同口径old→new数值/状态，并满足以下业务边界：Filings disclose qualified effective capacity, throughput, supplier qualification, and shipments approaching the planned expansion while PP&E and working-capital spending remain within internally funded or already committed resources and recourse debt does not rise materially for the build."
+          },
+          "decision": "LONG",
+          "condition_revision": "1b08bc0e919cc3c2ca2f5692c1f6e3b479f601f8b4aa9cb67ff4e4521e9a78cd"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_0068aa482ba81ee4be16",
+      "title": "财务下行边界：Nominal capacity misses or overruns qualified output",
+      "source_refs": [
+        {
+          "shell_id": "Corporate financial realization and per-share earnings",
+          "expectation_id": "Capital intensity and financing capacity",
+          "gap_id": "Nominal capacity misses or overruns qualified output"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Bloom、投资者、债权人、项目融资方及供应商围绕“Nominal capacity misses or overruns qualified output”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Fremont or Delmarva expansion is delayed, costs more than planned, produces lower qualified yield than nominal capacity, or allocates shared solid-oxide resources away from Energy Server.",
+          "calibration": {
+            "reference_state": "2026-06-30 cash $2.6669bn、recourse debt $2.4754bn、H1 PP&E capex $77.82m；2GW扩产仍为名义计划，管理层只承诺至少12个月liquidity。",
+            "trigger_boundary": "未来单条披露须明确主体、期间和同口径old→new数值/状态，并满足以下业务边界：Management or filings report a missed expansion milestone, material cost overrun, lower yield or qualified output than nominal capacity, supplier qualification delay, or explicit Energy Server/electrolyzer allocation conflict with corresponding cash or schedule impact."
+          },
+          "decision": "SHORT",
+          "condition_revision": "ff32c035bcdd24021611eb0a4bf52c52fe34427c20ae0a0a869ccf55fc763df4"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_14def55a1205537e8001",
+      "title": "财务下行边界：Liquidity buffer is consumed by growth timing",
+      "source_refs": [
+        {
+          "shell_id": "Corporate financial realization and per-share earnings",
+          "expectation_id": "Capital intensity and financing capacity",
+          "gap_id": "Liquidity buffer is consumed by growth timing"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Bloom、投资者、债权人、项目融资方及供应商围绕“Liquidity buffer is consumed by growth timing”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Working-capital needs, PP&E spending, guarantee obligations, or project delays consume cash faster than operating cash is generated and Bloom must draw financing, refinance recourse debt, or reduce planned expansion.",
+          "calibration": {
+            "reference_state": "2026-06-30 cash $2.6669bn、recourse debt $2.4754bn、H1 PP&E capex $77.82m；2GW扩产仍为名义计划，管理层只承诺至少12个月liquidity。",
+            "trigger_boundary": "未来单条披露须明确主体、期间和同口径old→new数值/状态，并满足以下业务边界：Quarterly disclosures show cash declining materially from growth funding, operating cash failing to cover PP&E and working-capital needs, a new recourse draw or refinancing, covenant or liquidity warning, or a stated reduction in planned investment due to funding constraints."
+          },
+          "decision": "SHORT",
+          "condition_revision": "847f19a3a1359a8112e0e64ab4a2bed079c0003ffb51cd6609be02f2ba1da9f6"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_a0833a0dc2ee614eda49",
+      "title": "财务上行边界：Project financing closes and transfers capital burden",
+      "source_refs": [
+        {
+          "shell_id": "Corporate financial realization and per-share earnings",
+          "expectation_id": "Capital intensity and financing capacity",
+          "gap_id": "Project financing closes and transfers capital burden"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "Bloom、投资者、债权人、项目融资方及供应商围绕“Project financing closes and transfers capital burden”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Diversified customer, utility-channel, or infrastructure-partner project financings close, fund deployments, and provide deposits or allocated commitments without Bloom carrying the full project capital requirement.",
+          "calibration": {
+            "reference_state": "2026-06-30 cash $2.6669bn、recourse debt $2.4754bn、H1 PP&E capex $77.82m；2GW扩产仍为名义计划，管理层只承诺至少12个月liquidity。",
+            "trigger_boundary": "未来单条披露须明确主体、期间和同口径old→new数值/状态，并满足以下业务边界：Future disclosures identify project-level financing closes, counterparty funding, customer deposits, Bloom cash contributions, allocated commitments, and funded or accepted MW across more than one project or financing partner."
+          },
+          "decision": "LONG",
+          "condition_revision": "bd875eeb0d97d4638ed91a35793b47cd7d1f6854c2a0ee7a5a97d0574ddc40d6"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_f57ed873d70e720a39ef",
+      "title": "财务下行边界：Channel or lender risk-off blocks conditional projects",
+      "source_refs": [
+        {
+          "shell_id": "Corporate financial realization and per-share earnings",
+          "expectation_id": "Capital intensity and financing capacity",
+          "gap_id": "Channel or lender risk-off blocks conditional projects"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Bloom、投资者、债权人、项目融资方及供应商围绕“Channel or lender risk-off blocks conditional projects”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "A utility channel, infrastructure partner, or lender withdraws, delays, reprices, or materially narrows a financing or procurement framework before projects are funded.",
+          "calibration": {
+            "reference_state": "2026-06-30 cash $2.6669bn、recourse debt $2.4754bn、H1 PP&E capex $77.82m；2GW扩产仍为名义计划，管理层只承诺至少12个月liquidity。最新Project Jupiter事件已引发AI基础设施融资审查收紧和其他项目融资担忧，但尚无Bloom相关渠道、伙伴或贷款方改变框架的披露。",
+            "trigger_boundary": "未来消息须由Bloom相关partner、utility channel或lender明确withdrawal、repricing、reduced capacity、delayed close、changed underwriting或cancellation，并显示受影响项目仍未融资或需要更多Bloom现金支持。一般利率上升、第三方项目force-majeure、行业融资审查或其他公司的IPO延迟而无Bloom-linked框架及资金后果不足。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "c4c7bddb88c6497539ad91bf966486ce918d068bef6bab28b31d6b29bdc87713"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_8eb8c8d7f871f916e144",
+      "title": "财务下行边界：Unfavorable external funding increases recourse and dilution",
+      "source_refs": [
+        {
+          "shell_id": "Corporate financial realization and per-share earnings",
+          "expectation_id": "Capital intensity and financing capacity",
+          "gap_id": "Unfavorable external funding increases recourse and dilution"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Bloom、投资者、债权人、项目融资方及供应商围绕“Unfavorable external funding increases recourse and dilution”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Bloom funds the expansion or project gap through new debt, equity, convertible, warrant-linked, or receivables financing on materially more expensive, restrictive, or dilutive terms than existing resources.",
+          "calibration": {
+            "reference_state": "2026-06-30 cash $2.6669bn、recourse debt $2.4754bn、H1 PP&E capex $77.82m；2GW扩产仍为名义计划，管理层只承诺至少12个月liquidity。",
+            "trigger_boundary": "未来单条披露须明确主体、期间和同口径old→new数值/状态，并满足以下业务边界：Bloom announces or files a financing whose coupon, fees, collateral, recourse, conversion, warrant, or share issuance materially increases the cost or denominator of funding relative to the current capital structure."
+          },
+          "decision": "SHORT",
+          "condition_revision": "ef726459b618d3dd304d88e3b103279390ae81d2cf6dcddd6bfd7839cfb9601b"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_70aa679c6e946788a85e",
+      "title": "财务下行边界：Input inflation or trade disruption expands capital needs",
+      "source_refs": [
+        {
+          "shell_id": "Corporate financial realization and per-share earnings",
+          "expectation_id": "Capital intensity and financing capacity",
+          "gap_id": "Input inflation or trade disruption expands capital needs"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Bloom、投资者、债权人、项目融资方及供应商围绕“Input inflation or trade disruption expands capital needs”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Commodity, tariff, logistics, labor, or component scarcity forces materially higher PP&E, inventory, supplier prepayment, or project-support spending during the capacity ramp.",
+          "calibration": {
+            "reference_state": "2026-06-30 cash $2.6669bn、recourse debt $2.4754bn、H1 PP&E capex $77.82m；2GW扩产仍为名义计划，管理层只承诺至少12个月liquidity。",
+            "trigger_boundary": "未来单条披露须明确主体、期间和同口径old→new数值/状态，并满足以下业务边界：Subsequent filings show material increases in PP&E, inventory, supplier prepayments, or project-support cash per unit of qualified output attributable to tariffs, commodities, freight, labor, or component scarcity."
+          },
+          "decision": "SHORT",
+          "condition_revision": "ff34bf933d93e00ae037845c77fb2ee8dcce4ad4438ff7028fd1bdc358cfb9f6"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_1475d176bab2ca0a1f8a",
+      "title": "财务下行边界：Dilution outruns operating-profit growth",
+      "source_refs": [
+        {
+          "shell_id": "Corporate financial realization and per-share earnings",
+          "expectation_id": "Durable diluted per-share earnings",
+          "gap_id": "Dilution outruns operating-profit growth"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Bloom、资本工具持有人、投资者及监管披露主体围绕“Dilution outruns operating-profit growth”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Convertible settlement, warrant exercise, equity compensation, or new share issuance causes fully diluted shares to grow faster than after-tax operating profit across subsequent reporting periods.",
+          "calibration": {
+            "reference_state": "Q2 GAAP diluted EPS $0.62、diluted shares 323.331m；FY2026 fully diluted non-GAAP EPS guidance $2.55-$2.85，但GAAP bridge和instrument effects仍mixed/weak。",
+            "trigger_boundary": "未来单条披露须明确主体、期间和同口径old→new数值/状态，并满足以下业务边界：At least two subsequent filings show diluted weighted-average shares or fully diluted assumptions increasing faster than comparable after-tax operating earnings, with disclosed conversion, warrant, equity-compensation, or issuance activity as the driver."
+          },
+          "decision": "SHORT",
+          "condition_revision": "a5f5991832ab4e3d0945ef6ac11d88bf5a929a5bd4bae7e66b6a0a43d15df704"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_e240a7c0240aa9108fe0",
+      "title": "财务上行边界：Capital-instrument settlement caps future dilution",
+      "source_refs": [
+        {
+          "shell_id": "Corporate financial realization and per-share earnings",
+          "expectation_id": "Durable diluted per-share earnings",
+          "gap_id": "Capital-instrument settlement caps future dilution"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "Bloom、资本工具持有人、投资者及监管披露主体围绕“Capital-instrument settlement caps future dilution”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Bloom settles, repurchases, cash-settles, retires, or renegotiates a convertible, warrant, or similar capital instrument so that fully diluted share growth is materially below the current implied path.",
+          "calibration": {
+            "reference_state": "Q2 GAAP diluted EPS $0.62、diluted shares 323.331m；FY2026 fully diluted non-GAAP EPS guidance $2.55-$2.85，但GAAP bridge和instrument effects仍mixed/weak。",
+            "trigger_boundary": "未来单条披露须明确主体、期间和同口径old→new数值/状态，并满足以下业务边界：A filing or transaction disclosure shows retirement, cash settlement, repurchase, capped conversion, warrant cancellation, or other binding change that reduces expected fully diluted shares relative to prior guidance or instrument terms."
+          },
+          "decision": "LONG",
+          "condition_revision": "b0975b19f522bcb87e62c21320f5144903e86d981282a1da749a773778767ef9"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_f496b27d05ce9dc7e1dc",
+      "title": "财务下行边界：Non-GAAP EPS bridge reveals recurring dilution or cost exclusions",
+      "source_refs": [
+        {
+          "shell_id": "Corporate financial realization and per-share earnings",
+          "expectation_id": "Durable diluted per-share earnings",
+          "gap_id": "Non-GAAP EPS bridge reveals recurring dilution or cost exclusions"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Bloom、资本工具持有人、投资者及监管披露主体围绕“Non-GAAP EPS bridge reveals recurring dilution or cost exclusions”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "A complete period-by-period reconciliation shows that stock compensation, capital-instrument effects, interest, or other excluded items recur at a material level and that fully diluted non-GAAP EPS materially overstates comparable GAAP diluted EPS.",
+          "calibration": {
+            "reference_state": "Q2 GAAP diluted EPS $0.62、diluted shares 323.331m；FY2026 fully diluted non-GAAP EPS guidance $2.55-$2.85，但GAAP bridge和instrument effects仍mixed/weak。",
+            "trigger_boundary": "未来单条披露须明确主体、期间和同口径old→new数值/状态，并满足以下业务边界：A future filing or guidance release provides a comparable GAAP-to-non-GAAP bridge in which recurring adjustments or fully diluted share assumptions explain a material and persistent gap between the two measures."
+          },
+          "decision": "SHORT",
+          "condition_revision": "e5ceedcf72bcc3921927681931e19c500b38214a0620b1f06390085f64375cb9"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_a04975497ca673433fe6",
+      "title": "财务下行边界：Cash deployment removes interest-income support",
+      "source_refs": [
+        {
+          "shell_id": "Corporate financial realization and per-share earnings",
+          "expectation_id": "Durable diluted per-share earnings",
+          "gap_id": "Cash deployment removes interest-income support"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Bloom、资本工具持有人、投资者及监管披露主体围绕“Cash deployment removes interest-income support”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Cash is deployed into inventory, PP&E, projects, or a settlement and/or market rates fall, while debt refinancing or new funding increases interest expense.",
+          "calibration": {
+            "reference_state": "Q2 GAAP diluted EPS $0.62、diluted shares 323.331m；FY2026 fully diluted non-GAAP EPS guidance $2.55-$2.85，但GAAP bridge和instrument effects仍mixed/weak。",
+            "trigger_boundary": "未来单条披露须明确主体、期间和同口径old→new数值/状态，并满足以下业务边界：Subsequent income statements show a material decline in interest income, rise in interest expense or refinancing cost, or a loss of cash yield tied to growth funding, with the change reducing diluted EPS after operating results are held constant."
+          },
+          "decision": "SHORT",
+          "condition_revision": "d436a2dc2260dd75d9577ab31c10867c1d8d91888376504360ba1bba2b90bacd"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_caaff5930c8550b9d0c8",
+      "title": "财务上行边界：Sustained GAAP earnings with a stable denominator",
+      "source_refs": [
+        {
+          "shell_id": "Corporate financial realization and per-share earnings",
+          "expectation_id": "Durable diluted per-share earnings",
+          "gap_id": "Sustained GAAP earnings with a stable denominator"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "Bloom、资本工具持有人、投资者及监管披露主体围绕“Sustained GAAP earnings with a stable denominator”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Operating income, net income, and diluted EPS remain positive across successive quarters while diluted shares stabilize and the GAAP-to-non-GAAP bridge becomes transparent and nonrecurring adjustments decline.",
+          "calibration": {
+            "reference_state": "Q2 GAAP diluted EPS $0.62、diluted shares 323.331m；FY2026 fully diluted non-GAAP EPS guidance $2.55-$2.85，但GAAP bridge和instrument effects仍mixed/weak。",
+            "trigger_boundary": "未来单条披露须明确主体、期间和同口径old→new数值/状态，并满足以下业务边界：At least three consecutive reporting quarters show positive GAAP diluted EPS, diluted share growth below after-tax earnings growth or broadly stable shares, and a disclosed bridge in which recurring exclusions do not account for the majority of per-share earnings."
+          },
+          "decision": "LONG",
+          "condition_revision": "08c50e558e9ed05e8efa465c4d56d8d55dc5d418379d99b9e5079b25d326af67"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_a221049976820948e33e",
+      "title": "财务下行边界：Growth financing creates a new dilutive denominator",
+      "source_refs": [
+        {
+          "shell_id": "Corporate financial realization and per-share earnings",
+          "expectation_id": "Durable diluted per-share earnings",
+          "gap_id": "Growth financing creates a new dilutive denominator"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Bloom、资本工具持有人、投资者及监管披露主体围绕“Growth financing creates a new dilutive denominator”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Bloom funds capacity or project working capital through a primary equity issue, equity-linked financing, acquisition consideration, or warrant package that materially increases fully diluted shares.",
+          "calibration": {
+            "reference_state": "Q2 GAAP diluted EPS $0.62、diluted shares 323.331m；FY2026 fully diluted non-GAAP EPS guidance $2.55-$2.85，但GAAP bridge和instrument effects仍mixed/weak。",
+            "trigger_boundary": "未来单条披露须明确主体、期间和同口径old→new数值/状态，并满足以下业务边界：A financing or acquisition disclosure includes new common shares, convertibles, warrants, or other equity-linked instruments and subsequent fully diluted guidance or filings quantify a material increase in the denominator."
+          },
+          "decision": "SHORT",
+          "condition_revision": "0ac4fbfd568ab4e46e64f4a2017aab3d358be6ce24309481e71bc39fa40788c5"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_20f98581448992eb753e",
+      "title": "财务下行边界：One-time charge interrupts GAAP per-share durability",
+      "source_refs": [
+        {
+          "shell_id": "Corporate financial realization and per-share earnings",
+          "expectation_id": "Durable diluted per-share earnings",
+          "gap_id": "One-time charge interrupts GAAP per-share durability"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Bloom、资本工具持有人、投资者及监管披露主体围绕“One-time charge interrupts GAAP per-share durability”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "A litigation settlement, tax assessment, impairment, debt extinguishment, restructuring, warranty, or other non-operating charge materially reduces GAAP net income or diluted EPS during the operating ramp.",
+          "calibration": {
+            "reference_state": "Q2 GAAP diluted EPS $0.62、diluted shares 323.331m；FY2026 fully diluted non-GAAP EPS guidance $2.55-$2.85，但GAAP bridge和instrument effects仍mixed/weak。",
+            "trigger_boundary": "未来单条披露须明确主体、期间和同口径old→new数值/状态，并满足以下业务边界：A subsequent filing records a material litigation, tax, impairment, debt-extinguishment, restructuring, warranty, or other charge that reduces GAAP net income or diluted EPS and is not already reflected in the current guidance bridge."
+          },
+          "decision": "SHORT",
+          "condition_revision": "0a8fffa9469b3b51698c485be4ba8c5be5e51633a8da1f74d46cfbf80630c72b"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_940f8e7f33d3c629d201",
+      "title": "财务上行边界：Share repurchase or retirement improves per-share conversion",
+      "source_refs": [
+        {
+          "shell_id": "Corporate financial realization and per-share earnings",
+          "expectation_id": "Durable diluted per-share earnings",
+          "gap_id": "Share repurchase or retirement improves per-share conversion"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "Bloom、资本工具持有人、投资者及监管披露主体围绕“Share repurchase or retirement improves per-share conversion”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Bloom uses excess cash or an asset-finance or strategic transaction to repurchase, retire, or otherwise reduce common-share and equity-linked dilution while maintaining the operating investment plan.",
+          "calibration": {
+            "reference_state": "Q2 GAAP diluted EPS $0.62、diluted shares 323.331m；FY2026 fully diluted non-GAAP EPS guidance $2.55-$2.85，但GAAP bridge和instrument effects仍mixed/weak。",
+            "trigger_boundary": "未来单条披露须明确主体、期间和同口径old→new数值/状态，并满足以下业务边界：Bloom announces and executes a binding repurchase, retirement, cash settlement, or equivalent capital action, and subsequent filings show a lower or slower-growing fully diluted share count without a compensating new equity-linked issuance."
+          },
+          "decision": "LONG",
+          "condition_revision": "872661f2abb91b6287eb0c1ba4b9c2cc5bcc65cd7a67325bcfd3213cfb7e60ff"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_2161be3422140573eb73",
+      "title": "多站点SOEC商业运行获得验证",
+      "source_refs": [
+        {
+          "shell_id": "Electrolyzer and hydrogen commercialization",
+          "expectation_id": "Repeatable electrolyzer and hydrogen commercialization",
+          "gap_id": "multi-site commercial SOEC operating validation"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘multi-site commercial SOEC operating validation’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Bloom or customers publish operating data from at least two distinct electrolyzer sites showing sustained output, availability, efficiency and degradation through customer acceptance.",
+          "calibration": {
+            "reference_state": "截至cutoff，未见至少两个具名Bloom电解槽站点披露持续运行、客户验收及扩张所需的成套商业数据。",
+            "trigger_boundary": "未来单条正常披露须自带项目/客户、商业或法律阶段、capacity/volume/date等比较要素，并满足：Two or more named sites report defined operating data and an acceptance or expansion decision."
+          },
+          "decision": "LONG",
+          "condition_revision": "e976ba17b0f8677de9a204f9eeafe6f45e6b1f312eb8680d809e228214b5262f"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_ef7ac5cf53516fd8ac1f",
+      "title": "SOEC耐久性或可用率失效",
+      "source_refs": [
+        {
+          "shell_id": "Electrolyzer and hydrogen commercialization",
+          "expectation_id": "Repeatable electrolyzer and hydrogen commercialization",
+          "gap_id": "commercial SOEC durability or availability failure"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘commercial SOEC durability or availability failure’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "A customer or independent test reports material degradation, outage, derating, maintenance burden or redesign at a Bloom installation, delaying qualification or acceptance.",
+          "calibration": {
+            "reference_state": "截至cutoff，尚无客户、独立测试或正式文件把重大降解、停机、降额或验收失败归因于Bloom商业电解槽。",
+            "trigger_boundary": "未来单条正常披露须自带项目/客户、商业或法律阶段、capacity/volume/date等比较要素，并满足：A customer, laboratory or filing attributes missed output, availability, efficiency, degradation or acceptance to Bloom equipment."
+          },
+          "decision": "SHORT",
+          "condition_revision": "06c549ea57274ed8a9655bdbef0db49e9a4119fbef3de0b4355ed267baca92c3"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_d568425669087bb49265",
+      "title": "首个具名电解槽绑定订单",
+      "source_refs": [
+        {
+          "shell_id": "Electrolyzer and hydrogen commercialization",
+          "expectation_id": "Repeatable electrolyzer and hydrogen commercialization",
+          "gap_id": "first product-specific electrolyzer purchase order"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘first product-specific electrolyzer purchase order’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "A named customer signs a binding purchase order or supply contract specifically for Bloom Electrolyzer equipment at a named project, with capacity and delivery or acceptance terms.",
+          "calibration": {
+            "reference_state": "截至cutoff，未见同时具名客户、项目、Bloom Electrolyzer容量及交付或验收义务的绑定采购订单或供货合同。",
+            "trigger_boundary": "未来单条正常披露须自带项目/客户、商业或法律阶段、capacity/volume/date等比较要素，并满足：The contract names Bloom Electrolyzer, customer, project, capacity and delivery or acceptance obligations; an MOU or mixed-platform target does not qualify."
+          },
+          "decision": "LONG",
+          "condition_revision": "99dd6780cd76300949425d1a69b63dec75f6e3ef2d7f51ca11dfa14ce803a563"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_de3bcdc40d2887167af1",
+      "title": "验收后形成重复电解槽订单",
+      "source_refs": [
+        {
+          "shell_id": "Electrolyzer and hydrogen commercialization",
+          "expectation_id": "Repeatable electrolyzer and hydrogen commercialization",
+          "gap_id": "repeat electrolyzer order after accepted installation"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘repeat electrolyzer order after accepted installation’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "After a first product-specific Bloom electrolyzer installation is accepted, the original or another customer places an additional product-specific order or expansion.",
+          "calibration": {
+            "reference_state": "截至cutoff，尚无已验收Bloom电解槽安装之后出现的追加产品订单或扩建订单。",
+            "trigger_boundary": "未来单条正常披露须自带项目/客户、商业或法律阶段、capacity/volume/date等比较要素，并满足：A public contract or filing identifies an additional Bloom Electrolyzer order after acceptance of the first installation."
+          },
+          "decision": "LONG",
+          "condition_revision": "491a9072faa2a1c9d27a08c79e138267184031cc616c99f58b791a8508723152"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_df372642af0a50604849",
+      "title": "可融资氢offtake正式绑定",
+      "source_refs": [
+        {
+          "shell_id": "Electrolyzer and hydrogen commercialization",
+          "expectation_id": "Repeatable electrolyzer and hydrogen commercialization",
+          "gap_id": "binding hydrogen offtake with financeable terms"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘binding hydrogen offtake with financeable terms’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "A named hydrogen end user signs a binding long-term offtake or take-or-pay agreement for a Bloom electrolyzer project with volume, term, price or pricing basis and delivery terms.",
+          "calibration": {
+            "reference_state": "截至cutoff，氢offtake证据仍mixed/weak，未见具名终端客户签署含承诺量、期限、定价基础及交付条款的可融资绑定协议。",
+            "trigger_boundary": "未来单条正常披露须自带项目/客户、商业或法律阶段、capacity/volume/date等比较要素，并满足：The agreement names end user and project and discloses committed volume, duration, price or take-or-pay terms and delivery milestones."
+          },
+          "decision": "LONG",
+          "condition_revision": "8297cc2e96d297665a44a7808255e6532583313574a887be2960ff4d1ddd747a"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_5dad38296e3815cb8589",
+      "title": "氢offtake撤回或实质缩量",
+      "source_refs": [
+        {
+          "shell_id": "Electrolyzer and hydrogen commercialization",
+          "expectation_id": "Repeatable electrolyzer and hydrogen commercialization",
+          "gap_id": "offtake withdrawal or project volume reduction"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘offtake withdrawal or project volume reduction’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "A named hydrogen offtaker cancels, defers, materially reduces or reprices committed volume before FID or stable operation.",
+          "calibration": {
+            "reference_state": "截至cutoff，未见具名Bloom相关项目的已承诺offtake被正式取消、延期、实质缩量或重定价。",
+            "trigger_boundary": "未来单条正常披露须自带项目/客户、商业或法律阶段、capacity/volume/date等比较要素，并满足：A customer, sponsor or financier documents termination, deferral, volume reduction or commercial reset before stable operation."
+          },
+          "decision": "SHORT",
+          "condition_revision": "1a45e506804824596561ceccbd7c4757f613359765a9ddb969308c9960c267c5"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_638bb2429b4c5bf0bc40",
+      "title": "氢项目物理与许可门槛闭合",
+      "source_refs": [
+        {
+          "shell_id": "Electrolyzer and hydrogen commercialization",
+          "expectation_id": "Repeatable electrolyzer and hydrogen commercialization",
+          "gap_id": "hydrogen project permitting and physical-gate clearance"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘hydrogen project permitting and physical-gate clearance’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "A named Bloom electrolyzer project obtains required permits, power, steam and water arrangements, interconnection approvals and hydrogen-handling permissions, then starts construction.",
+          "calibration": {
+            "reference_state": "截至cutoff，未见具名Bloom电解槽项目同时闭合关键许可、互联、水/蒸汽/电力和氢处理门槛并开工。",
+            "trigger_boundary": "未来单条正常披露须自带项目/客户、商业或法律阶段、capacity/volume/date等比较要素，并满足：Official records identify the site, material permits, interconnection or input arrangements, hydrogen-handling approvals and construction start."
+          },
+          "decision": "LONG",
+          "condition_revision": "fe7f5c02abc1592e0c7e5df5c1ba5a7ceff8397b16bbcc0000f2462fe91e9ab0"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_2e6ccf717d91e09a3ed3",
+      "title": "Bloom电解槽项目完成FID或融资关闭",
+      "source_refs": [
+        {
+          "shell_id": "Electrolyzer and hydrogen commercialization",
+          "expectation_id": "Repeatable electrolyzer and hydrogen commercialization",
+          "gap_id": "project finance close for electrolyzer deployment"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘project finance close for electrolyzer deployment’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "A named Bloom electrolyzer project reaches FID or financial close with committed capital identifying the Bloom equipment scope.",
+          "calibration": {
+            "reference_state": "截至cutoff，未见具名Bloom电解槽项目完成FID或financial close并落实明确覆盖Bloom设备范围的资本。",
+            "trigger_boundary": "未来单条正常披露须自带项目/客户、商业或法律阶段、capacity/volume/date等比较要素，并满足：Sponsors or lenders announce FID or financial close with committed documents and explicit Bloom Electrolyzer scope."
+          },
+          "decision": "LONG",
+          "condition_revision": "db86d63b64cd865e11452f9ba8be3514759784b0a8f76b8ba7fe21dabe7e16ff"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_f71b83e8fd3c390a0db2",
+      "title": "电解槽项目FID或融资失败",
+      "source_refs": [
+        {
+          "shell_id": "Electrolyzer and hydrogen commercialization",
+          "expectation_id": "Repeatable electrolyzer and hydrogen commercialization",
+          "gap_id": "project finance or FID failure"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘project finance or FID failure’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "A proposed Bloom electrolyzer project misses FID or loses committed financing and is formally deferred or cancelled.",
+          "calibration": {
+            "reference_state": "截至cutoff，项目级FID/financial close尚未形成，亦未见具名项目因融资或经济性原因被正式延期或取消。",
+            "trigger_boundary": "未来单条正常披露须自带项目/客户、商业或法律阶段、capacity/volume/date等比较要素，并满足：The sponsor, lender or customer announces financing withdrawal, failed FID, deferral or cancellation and identifies funding or economics as the cause."
+          },
+          "decision": "SHORT",
+          "condition_revision": "95d7a58f37e6fbd45bd3efc6160e4f4f3aee33e6bcd21a428390ab61f401a854"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_a9730a5901aebd5fb372",
+      "title": "承诺后现场门槛阻断氢项目",
+      "source_refs": [
+        {
+          "shell_id": "Electrolyzer and hydrogen commercialization",
+          "expectation_id": "Repeatable electrolyzer and hydrogen commercialization",
+          "gap_id": "site-level permitting or hydrogen-logistics blocker after commitment"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘site-level permitting or hydrogen-logistics blocker after commitment’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "After a product or offtake commitment, a project is delayed or cancelled by a permit, interconnection, water, storage, transport, pipeline or handling constraint.",
+          "calibration": {
+            "reference_state": "截至cutoff，尚无已作产品或offtake承诺的具名项目因许可、互联、水、储运、管线或处理门槛而确认错期或取消。",
+            "trigger_boundary": "未来单条正常披露须自带项目/客户、商业或法律阶段、capacity/volume/date等比较要素，并满足：An official permit, utility, water, pipeline, transport or project filing attributes a missed milestone or cancellation to the named gate."
+          },
+          "decision": "SHORT",
+          "condition_revision": "029ffcd418a17109cfbbeafd347022b28b8e4c158677b4a9ff7b95b7a2e33b2c"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_ea1d0121261716234de6",
+      "title": "具名项目取得清洁氢政策资格",
+      "source_refs": [
+        {
+          "shell_id": "Electrolyzer and hydrogen commercialization",
+          "expectation_id": "Repeatable electrolyzer and hydrogen commercialization",
+          "gap_id": "project-specific clean-hydrogen policy qualification"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘project-specific clean-hydrogen policy qualification’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "A named Bloom electrolyzer project receives a final tax-credit, grant, carbon-intensity, certification or other policy-eligibility determination needed for its economics.",
+          "calibration": {
+            "reference_state": "截至cutoff，清洁氢政策支持证据mixed/weak，未见具名Bloom项目获得决定其经济性的最终税收、补助、碳强度或认证资格裁定。",
+            "trigger_boundary": "未来单条正常披露须自带项目/客户、商业或法律阶段、capacity/volume/date等比较要素，并满足：An agency, grant administrator or project filing gives a final decision tied to the named project, technology scope and applicable conditions."
+          },
+          "decision": "LONG",
+          "condition_revision": "8f50b1b22a1494f084a66cf76e2bf01a3e7ce5fff9371ce104abcd7219527b2e"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_5f3e8b21afc39234791d",
+      "title": "政策退出或资格丧失打击项目经济",
+      "source_refs": [
+        {
+          "shell_id": "Electrolyzer and hydrogen commercialization",
+          "expectation_id": "Repeatable electrolyzer and hydrogen commercialization",
+          "gap_id": "policy withdrawal or hydrogen-project ineligibility"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘policy withdrawal or hydrogen-project ineligibility’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "A policy, carbon-intensity rule, tax-credit interpretation, grant decision or permitting regime removes eligibility or makes a target Bloom project uneconomic.",
+          "calibration": {
+            "reference_state": "截至cutoff，尚无主管机关或项目方确认政策退出、规则解释或资格丧失使具名Bloom氢项目失去经济性。",
+            "trigger_boundary": "未来单条正常披露须自带项目/客户、商业或法律阶段、capacity/volume/date等比较要素，并满足：An official policy or agency decision changes eligibility or denies support and the sponsor links it to scope reduction, relocation, deferral or cancellation."
+          },
+          "decision": "SHORT",
+          "condition_revision": "1ca5609d90c6eb1f137df01336ec32709897b00354ba09c687109c7875dce6e7"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_1893774589773bcf01cd",
+      "title": "电解槽获得独立qualified capacity slot",
+      "source_refs": [
+        {
+          "shell_id": "Electrolyzer and hydrogen commercialization",
+          "expectation_id": "Repeatable electrolyzer and hydrogen commercialization",
+          "gap_id": "qualified electrolyzer capacity reservation"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘qualified electrolyzer capacity reservation’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "After factory expansion or process qualification, Bloom discloses product-specific qualified electrolyzer capacity, a production schedule or reservation and a shipment or committed slot for a named project.",
+          "calibration": {
+            "reference_state": "截至cutoff，2GW只是2026年末共享平台名义目标，未见产品特定的合格电解槽产能、排产及具名项目交付slot。",
+            "trigger_boundary": "未来单条正常披露须自带项目/客户、商业或法律阶段、capacity/volume/date等比较要素，并满足：Bloom reports qualified Electrolyzer output or slots separately from Energy Server with utilization or yield and named project reservation or shipment."
+          },
+          "decision": "LONG",
+          "condition_revision": "333d602af44a2df34a2bf3ae145d79f4619ae0d133a935f7876b807d840f6885"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_35d0508e4119f9bf8ed8",
+      "title": "Energy Server优先挤压电解槽产能",
+      "source_refs": [
+        {
+          "shell_id": "Electrolyzer and hydrogen commercialization",
+          "expectation_id": "Repeatable electrolyzer and hydrogen commercialization",
+          "gap_id": "Energy Server priority crowds out electrolyzer allocation"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘Energy Server priority crowds out electrolyzer allocation’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Bloom discloses that Energy Server demand, backlog, components or production priority consumes qualified shared-platform slots and defers or limits electrolyzer production or delivery.",
+          "calibration": {
+            "reference_state": "截至cutoff，共享平台allocation不透明，未见Energy Server优先级已明确挤占合格电解槽生产或交付。",
+            "trigger_boundary": "未来单条正常披露须自带项目/客户、商业或法律阶段、capacity/volume/date等比较要素，并满足：Bloom explicitly attributes electrolyzer delay, lead-time increase, unaccepted order or product-mix decision to Energy Server priority or shared capacity."
+          },
+          "decision": "SHORT",
+          "condition_revision": "a00dc99d38a3a48d162989b1d9deb9d2c7c8f9de8b6bb19b33e7228b25ef5c89"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_64abee84ce56b124da4d",
+      "title": "名义扩产未转成合格电解槽输出",
+      "source_refs": [
+        {
+          "shell_id": "Electrolyzer and hydrogen commercialization",
+          "expectation_id": "Repeatable electrolyzer and hydrogen commercialization",
+          "gap_id": "nominal shared-capacity expansion misses qualified electrolyzer output"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘nominal shared-capacity expansion misses qualified electrolyzer output’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Factory expansion meets or misses its nominal milestone while qualification, yield, component supply or supplier execution leaves qualified electrolyzer output below target or delays the expansion.",
+          "calibration": {
+            "reference_state": "截至cutoff，2GW共享平台目标尚未被合格电解槽产出、良率或按期扩产证据验证。",
+            "trigger_boundary": "未来单条正常披露须自带项目/客户、商业或法律阶段、capacity/volume/date等比较要素，并满足：Factory or supplier disclosures show a material gap between expansion/nameplate and product-specific qualification, yield, component availability or shipments."
+          },
+          "decision": "SHORT",
+          "condition_revision": "337d02c0234d2535dd99ba1942b54a996f70e685b5b46344279a1056c1eab697"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_7ac7e1c95cb2f29a1910",
+      "title": "项目能源输入经济性验证SOEC路线",
+      "source_refs": [
+        {
+          "shell_id": "Electrolyzer and hydrogen commercialization",
+          "expectation_id": "Repeatable electrolyzer and hydrogen commercialization",
+          "gap_id": "project energy-input economics validate SOEC route"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘project energy-input economics validate SOEC route’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "A named project discloses contracted low-carbon electricity and usable steam or waste heat and reports measured utilization, energy use, carbon intensity and delivered-hydrogen economics accepted by the offtaker.",
+          "calibration": {
+            "reference_state": "截至cutoff，未见具名项目用已签能源输入与实测利用率、能耗、碳强度及客户接受的到岸氢经济性验证SOEC路线。",
+            "trigger_boundary": "未来单条正常披露须自带项目/客户、商业或法律阶段、capacity/volume/date等比较要素，并满足：The project discloses contracted inputs and measured utilization, energy intensity, carbon intensity and delivered-cost evidence accepted by the named offtaker."
+          },
+          "decision": "LONG",
+          "condition_revision": "390b9b20fb61dfe0ea44967d4a0ab97d0e70873a056705994c1474c5811c66e3"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_5690a43f58df04dc5ada",
+      "title": "能源输入经济性失败迫使缩量或换路线",
+      "source_refs": [
+        {
+          "shell_id": "Electrolyzer and hydrogen commercialization",
+          "expectation_id": "Repeatable electrolyzer and hydrogen commercialization",
+          "gap_id": "energy-input economics fail or route switches"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘energy-input economics fail or route switches’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "A Bloom hydrogen project finds that electricity, steam, waste heat, water, utilization, carbon intensity or delivered cost fails requirements and is resized, paused or switched.",
+          "calibration": {
+            "reference_state": "截至cutoff，尚无具名Bloom氢项目因电力、蒸汽、余热、水、利用率、碳强度或交付成本不达标而被确认缩量、暂停或换路线。",
+            "trigger_boundary": "未来单条正常披露须自带项目/客户、商业或法律阶段、capacity/volume/date等比较要素，并满足：Project or customer disclosures identify the input or delivered-cost failure and link it to scope reduction, delay, cancellation or technology switch."
+          },
+          "decision": "SHORT",
+          "condition_revision": "74aa9d65d87de0d4b41064b3080539b59397878c01f1e6cb666ddbace73f2adf"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_b77c772d57e6ec02a4d2",
+      "title": "竞争电解槽路线赢得可比项目",
+      "source_refs": [
+        {
+          "shell_id": "Electrolyzer and hydrogen commercialization",
+          "expectation_id": "Repeatable electrolyzer and hydrogen commercialization",
+          "gap_id": "competing electrolyzer technology captures a comparable project"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘competing electrolyzer technology captures a comparable project’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "A named project awards comparable electrolyzer scope to PEM, alkaline, AEM or another route after technical, cost, availability or policy evaluation.",
+          "calibration": {
+            "reference_state": "截至cutoff，尚无可比具名项目在正式技术、成本、供货或政策评估后把Bloom可争取范围授予其他电解槽路线。",
+            "trigger_boundary": "未来单条正常披露须自带项目/客户、商业或法律阶段、capacity/volume/date等比较要素，并满足：An official customer, developer or procurement disclosure names the competing route and links the decision to project requirements."
+          },
+          "decision": "SHORT",
+          "condition_revision": "260c06660e8c07e7b8236d3c553d815f84e76a88354c50a053ea093cfa305626"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_169ccb6876427855fe52",
+      "title": "替代制氢突破重置客户标准",
+      "source_refs": [
+        {
+          "shell_id": "Electrolyzer and hydrogen commercialization",
+          "expectation_id": "Repeatable electrolyzer and hydrogen commercialization",
+          "gap_id": "alternative-hydrogen breakthrough resets customer standard"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘alternative-hydrogen breakthrough resets customer standard’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "A competing hydrogen-production or supply pathway achieves a recognized step-change and becomes the stated design standard across multiple new projects.",
+          "calibration": {
+            "reference_state": "截至cutoff，尚无替代制氢或供氢路线的可验证阶跃突破成为多个新项目的明确设计标准。",
+            "trigger_boundary": "未来单条正常披露须自带项目/客户、商业或法律阶段、capacity/volume/date等比较要素，并满足：Multiple independent projects or procurement standards identify the alternative as preferred or required and report a measurable advantage."
+          },
+          "decision": "SHORT",
+          "condition_revision": "71fc10a1f7960a36ae19a98cd5d5b370a027e8641896d0617d462d8463ce3793"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_bab586f7f7d386c09af1",
+      "title": "终端客户替代掉原氢需求",
+      "source_refs": [
+        {
+          "shell_id": "Electrolyzer and hydrogen commercialization",
+          "expectation_id": "Repeatable electrolyzer and hydrogen commercialization",
+          "gap_id": "hydrogen end-user substitutes away from the use case"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘hydrogen end-user substitutes away from the use case’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "A major intended hydrogen end user changes its process, feedstock or energy strategy and removes or replaces the hydrogen demand supporting a Bloom project.",
+          "calibration": {
+            "reference_state": "截至cutoff，尚无支撑Bloom项目的主要终端用户因工艺、原料或能源策略改变而正式取消或替代氢需求。",
+            "trigger_boundary": "未来单条正常披露须自带项目/客户、商业或法律阶段、capacity/volume/date等比较要素，并满足：The end user or sponsor publicly announces substitution and removes, replaces or materially reduces the hydrogen volume tied to the Bloom route."
+          },
+          "decision": "SHORT",
+          "condition_revision": "c1bc391d1b558f33bcadda94dcef8c7904999412478fd524ca437882eb053a6c"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_d6aad606407bed0fddb6",
+      "title": "客户内化电解槽所有权削弱整机销售",
+      "source_refs": [
+        {
+          "shell_id": "Electrolyzer and hydrogen commercialization",
+          "expectation_id": "Repeatable electrolyzer and hydrogen commercialization",
+          "gap_id": "customer or partner internalizes electrolyzer ownership"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘customer or partner internalizes electrolyzer ownership’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "A customer or partner proceeds with hydrogen production but owns and operates the electrolyzer, licenses or sources Bloom stacks/components, or uses a joint venture instead of buying complete Bloom systems.",
+          "calibration": {
+            "reference_state": "截至cutoff，尚无具名客户或伙伴在推进氢生产时改为自持运营、仅采购stack/component、许可或JV，从而替代Bloom整机销售。",
+            "trigger_boundary": "未来单条正常披露须自带项目/客户、商业或法律阶段、capacity/volume/date等比较要素，并满足：A signed agreement or filing explicitly identifies customer or partner ownership and Bloom's role as stack, component, license or JV supplier."
+          },
+          "decision": "SHORT",
+          "condition_revision": "b6e8f30ae05334a645e4128654c084fc888445fbbb0e8f11f3a09d103d47fb9a"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_9fb0dc74548c12d759e8",
+      "title": "氢安全事件迫使重设计或许可重置",
+      "source_refs": [
+        {
+          "shell_id": "Electrolyzer and hydrogen commercialization",
+          "expectation_id": "Repeatable electrolyzer and hydrogen commercialization",
+          "gap_id": "hydrogen safety incident triggers redesign or stricter permitting"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘hydrogen safety incident triggers redesign or stricter permitting’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "A hydrogen or electrolyzer safety incident, code change or regulator determination imposes new design, monitoring, separation or permitting requirements that force redesign or pause.",
+          "calibration": {
+            "reference_state": "截至cutoff，尚无氢安全事故、法规变化或监管裁定迫使Bloom相关设计、监测、间距或许可重置。",
+            "trigger_boundary": "未来单条正常披露须自带项目/客户、商业或法律阶段、capacity/volume/date等比较要素，并满足：An official investigation, code revision or regulator order is followed by documented project redesign, permit reset, construction pause or added requirement."
+          },
+          "decision": "SHORT",
+          "condition_revision": "d60df87647486f53807e043b205e00a56780b44f96505d83c92f3b6ecd006f6d"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_112267e1bc7a06080fc5",
+      "title": "战略暂停或产能转离Electrolyzer",
+      "source_refs": [
+        {
+          "shell_id": "Electrolyzer and hydrogen commercialization",
+          "expectation_id": "Repeatable electrolyzer and hydrogen commercialization",
+          "gap_id": "strategic pause or capacity reallocation away from Electrolyzer"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘strategic pause or capacity reallocation away from Electrolyzer’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Bloom or a hydrogen partner pauses, exits, sells or redirects the Electrolyzer program, resources, manufacturing slots or pipeline toward Energy Server or another product.",
+          "calibration": {
+            "reference_state": "截至cutoff，Bloom未正式暂停、退出、出售Electrolyzer业务，或把其资源、制造slot及pipeline转向Energy Server等其他产品。",
+            "trigger_boundary": "未来单条正常披露须自带项目/客户、商业或法律阶段、capacity/volume/date等比较要素，并满足：A company or partner announcement, filing, budget, staffing disclosure or allocation notice explicitly states pause, exit, sale, material resource cut or redirection."
+          },
+          "decision": "SHORT",
+          "condition_revision": "3ec30d98e131a4b7b9d542874d0972d50012ea7b28cce5043f1321c525955e8a"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_f38281a8adc6a31a862f",
+      "title": "旗舰项目未形成后续商业复制",
+      "source_refs": [
+        {
+          "shell_id": "Electrolyzer and hydrogen commercialization",
+          "expectation_id": "Repeatable electrolyzer and hydrogen commercialization",
+          "gap_id": "successful flagship remains a one-off"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘successful flagship remains a one-off’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "A flagship demonstration or first commercial site operates acceptably, but no additional product-specific order, FID or commissioned site follows during the medium-term window.",
+          "calibration": {
+            "reference_state": "截至cutoff，电解槽仍属early commercialization，尚无已成功旗舰项目经过中期窗口却未产生任何追加订单、FID或投运站点的完整观察。",
+            "trigger_boundary": "未来单条正常披露须自带项目/客户、商业或法律阶段、capacity/volume/date等比较要素，并满足：After the first acceptance or operating milestone, no second product-specific order, FID or commissioned site appears while the pipeline remains studies, MOUs or unallocated plans."
+          },
+          "decision": "SHORT",
+          "condition_revision": "5bec473ba5a2f92bc53a242f680f77869411b12018348c5f833ba280d0fb009a"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_aa43cd0fa14a74a6bc97",
+      "title": "氢hub或物流网络释放多项目机会",
+      "source_refs": [
+        {
+          "shell_id": "Electrolyzer and hydrogen commercialization",
+          "expectation_id": "Repeatable electrolyzer and hydrogen commercialization",
+          "gap_id": "hydrogen hub or logistics network unlocks multiple projects"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘hydrogen hub or logistics network unlocks multiple projects’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "A hydrogen hub, pipeline, storage, industrial cluster or shared steam and power arrangement becomes operational and enables several Bloom-linked offtake or FID decisions.",
+          "calibration": {
+            "reference_state": "截至cutoff，尚无已运营的氢hub、管线、储运网络或共享能源基础设施同时促成多个Bloom相关offtake或FID。",
+            "trigger_boundary": "未来单条正常披露须自带项目/客户、商业或法律阶段、capacity/volume/date等比较要素，并满足：Independent disclosures show the network operating or funded, followed by at least two named Bloom-linked projects receiving binding offtake, FID or construction decisions."
+          },
+          "decision": "LONG",
+          "condition_revision": "b4ebcfd5b05c0dbf05d1f9c1c8858213857591e53b18abe18a55ae733041f25a"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_428d5b23a0332143d4e7",
+      "title": "shared capacity延误导致错失政策窗口",
+      "source_refs": [
+        {
+          "shell_id": "Electrolyzer and hydrogen commercialization",
+          "expectation_id": "Repeatable electrolyzer and hydrogen commercialization",
+          "gap_id": "policy-window and shared-capacity interaction misses deployment"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘policy-window and shared-capacity interaction misses deployment’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "A qualified project reaches offtake and financing readiness but misses its policy construction window because shared-component, qualification or Energy Server-priority delays postpone Bloom delivery.",
+          "calibration": {
+            "reference_state": "截至cutoff，尚无已具备offtake和融资条件的项目因共享部件、qualification或Energy Server优先延迟而错失政策开工窗口。",
+            "trigger_boundary": "未来单条正常披露须自带项目/客户、商业或法律阶段、capacity/volume/date等比较要素，并满足：A named project has documented offtake and financing readiness, but product qualification, allocation or delivery timing causes it to miss the applicable credit or construction deadline and lose or resize scope."
+          },
+          "decision": "SHORT",
+          "condition_revision": "52d5bf66e76f90df0b23ee357f816e1159da12f3b8efceec3d59a731e477f593"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_86684679566a07753117",
+      "title": "锚定客户形成重复验收",
+      "source_refs": [
+        {
+          "shell_id": "Large-load Energy Server adoption and share",
+          "expectation_id": "Qualified large-load customer adoption",
+          "gap_id": "Independent repeat acceptance of anchor customer sites"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "大型负荷客户的第二站点、扩容、续购、性能测试、正式验收、交接和投运消息；覆盖客户、项目业主及独立EPC对同一重复部署的确认或否定。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "一个已使用Bloom的重要大型负荷客户确认第二个站点或实质扩容的Energy Server完成性能测试、正式验收并投入运行。",
+          "calibration": {
+            "reference_state": "截至cutoff，Oracle现场部署、Equinix多年部署和约1.2GW已签约部署证明采用推进，但客户侧重复正式验收序列尚未公开。",
+            "trigger_boundary": "须是同一重要客户与既有部署可区分的第二站点或扩容，并由消息同时确认Bloom容量、验收完成和运营日期；新增签约、安装或管理层管线表述不足。"
+          },
+          "decision": "LONG",
+          "condition_revision": "dab832c2e5e918a6f53cae5119a1feb65709905a849470569c23063e0773ae07"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_36b5ed507595cdea3382",
+      "title": "新AI大型客户转为绑定采用",
+      "source_refs": [
+        {
+          "shell_id": "Large-load Energy Server adoption and share",
+          "expectation_id": "Qualified large-load customer adoption",
+          "gap_id": "Diversified new customer cohort converts"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "此前未确认且不属于已确认锚定客户（包括Oracle）的hyperscaler、neocloud、AI实验室或托管客户对Bloom的具名采购、项目授予、容量、取消条款和部署排期消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C2",
+          "criterion": "除已确认的Oracle等锚定客户外，此前未确认的重要AI或数据中心客户授予Bloom具名项目的绑定订单或等效客户指令，并披露容量与部署时间表。",
+          "calibration": {
+            "reference_state": "Oracle已是已确认的Bloom锚定客户：既有材料记录最多约2.8GW框架及约1.2GW已签约并部署；最新Reference View又报告Project Jupiter约2.5GW由Bloom提供，但未把该报道全部确认为新的独立绑定容量。除Oracle等已确认锚定客户外，终端客户身份及绑定分配仍不完整。",
+            "trigger_boundary": "一名足够重要且不在当前已确认锚定客户集合中的终端客户，须在同一消息中明确Bloom、具名项目或容量、不可任意撤回的采购承诺及部署窗口；Oracle或其他已知锚定客户的重复报道/容量复述、匿名客户数、验证或渠道框架不足。"
+          },
+          "decision": "LONG",
+          "condition_revision": "371a909ef48b83e3a87f8641ee758eacc5311265ae935f1c4c224c9492b6ea65"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_6b1eaa76a5f8541ce0de",
+      "title": "非AI关键负载形成第二采用引擎",
+      "source_refs": [
+        {
+          "shell_id": "Large-load Energy Server adoption and share",
+          "expectation_id": "Qualified large-load customer adoption",
+          "gap_id": "Non-AI critical-load cohort creates a second adoption engine"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "半导体、制药、先进制造及其他关键基础设施的Bloom多站点采购、重复批次、首站验收和运营消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "一个重要非AI关键负载客户作出至少两个站点或批次的绑定Bloom选择，且首站已正式验收运营。",
+          "calibration": {
+            "reference_state": "当前公开大型负荷增长和近两打客户主要集中AI基础设施，非AI关键负载尚未形成已验证的重复采用引擎。",
+            "trigger_boundary": "同一具名非AI客户须同时披露多站点/多批次绑定选择和至少一个首站的正式验收运营；单一示范或目标市场宣称不足。"
+          },
+          "decision": "LONG",
+          "condition_revision": "80e5d1256e7609cbb264d3714ce5af0f2d3506ab9f5609f10d03afdbff3a7eda"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_78cdbe998178fbdb9b50",
+      "title": "Bloom验收速度前移采用窗口",
+      "source_refs": [
+        {
+          "shell_id": "Large-load Energy Server adoption and share",
+          "expectation_id": "Qualified large-load customer adoption",
+          "gap_id": "Rapid deployment pulls adoption forward"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "客户、项目业主或EPC披露Bloom投运/验收日期，并与同项目此前公布的公用电网或替代供电可用日期比较的消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "一个重要大型负荷项目的Bloom容量在该项目此前披露的电网或替代供电可用日期之前完成客户验收并运营。",
+          "calibration": {
+            "reference_state": "Bloom已宣称最快约三个月部署、Power Connect缩时超过40%，Oracle也曾承诺90天供电；这些速度主张已进入预期，但相对客户旧时间表的正式验收仍缺。",
+            "trigger_boundary": "新消息须给出同一项目的Bloom验收运营日与此前公开的替代供电日（或明确old→new），且前者更早；仅称快速或提供产品理论周期不足。"
+          },
+          "decision": "LONG",
+          "condition_revision": "c0d2c2e0d573c7560d099238e8bc568d78867e2a7140fdbcfce3f13ccbdde4d1"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_c6f78f9f2be8ff1d1ee8",
+      "title": "锚定客户承诺被取消或缩量",
+      "source_refs": [
+        {
+          "shell_id": "Large-load Energy Server adoption and share",
+          "expectation_id": "Qualified large-load customer adoption",
+          "gap_id": "Anchor program cancellation or material scope deferral"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "已验证或已签约锚定客户的取消、容量缩减、合同修订、交付承诺和替代计划消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "已验证或已签约的锚定大型负荷客户取消Bloom项目，或正式削减其承诺容量。",
+          "calibration": {
+            "reference_state": "约1.2GW被描述为已签约并部署，Oracle等锚定项目进入执行；当前基线仍是假设这些承诺继续推进。",
+            "trigger_boundary": "须由客户、项目业主或有权伙伴明确识别原项目/容量，并确认取消或新的承诺容量低于原值；普通进度调整或无量化影响的措辞不足。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "b7a6cff7da30b3255a0e0c787ec4325a84e205930ae90f4d3d03299230cafe62"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_af4c18c9797e6d5a513f",
+      "title": "已选项目开发或验收窗口实质后移",
+      "source_refs": [
+        {
+          "shell_id": "Large-load Energy Server adoption and share",
+          "expectation_id": "Qualified large-load customer adoption",
+          "gap_id": "Selected deployments slip without acceptance"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "锚定项目的原开发、完工、送电、commissioning、验收/交接日期、新日期、撤回排期、现场准备和未验收状态消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C2",
+          "criterion": "一个重大锚定项目把正式开发、完工、送电、commissioning、验收或交接从已公布窗口推迟至少一个报告季度，或撤回该日期并确认Bloom部署或验收仍未完成。",
+          "calibration": {
+            "reference_state": "E31确认Oracle已发出Project Jupiter force-majeure；Reference View还报告关键燃气管线约六个月延误及整体计划约一年延误，但Oracle称项目仍按计划、Blue Owl称财务承诺未改变。尚无Bloom特定正式验收/交接窗口或客户确认的新日期。",
+            "trigger_boundary": "消息须同时识别重大锚定项目，并提供正式原始与新开发、完工、送电、commissioning、验收或交接窗口，或正式撤回日期并确认Bloom部署/验收仍未完成；重复E31的force-majeure、无量化外部延误、一般支付保护或行业融资评论不足。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "53c77ccba049fe1ff8ea32fd5367bf5b97825238c1f5addcbb749644f2354daf"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_64ddbb92504f20c42bb8",
+      "title": "客户技术资格或正式验收失效",
+      "source_refs": [
+        {
+          "shell_id": "Large-load Energy Server adoption and share",
+          "expectation_id": "Qualified large-load customer adoption",
+          "gap_id": "Customer acceptance failure after installation"
+        },
+        {
+          "shell_id": "Large-load Energy Server adoption and share",
+          "expectation_id": "Qualified large-load customer adoption",
+          "gap_id": "Validation fails to generalize across customer load profiles"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "大型负荷项目的验收测试、负载画像、可用率、排放、水、维护要求、重大整改、资格撤回和重复采购暂停消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "已安装的Bloom系统未通过客户验收或性能测试，并需重大整改、更换或备用供电，使交接至少推迟一个报告季度。",
+          "calibration": {
+            "reference_state": "公开材料主要证明验证、签约和部署，客户正式验收证据仍弱；市场预期常规调试后可转入运营。",
+            "trigger_boundary": "须有已安装项目、明确未达验收要求，以及重大整改/更换/备用供电或至少一季交接延期；短暂调试问题不足。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "612f9d3f9edcbe0981ecb60a3c1084ebfef6f9691cb42c9ad8a21ad39989ef0e"
+        },
+        {
+          "condition_id": "C2",
+          "criterion": "一个重要客户确认Bloom未满足其明确的负载或运营要求，并暂停重复采购、撤回资格或要求重大重新设计。",
+          "calibration": {
+            "reference_state": "多类大型负荷客户已验证或批准Bloom，市场据此预期方案可扩展，但跨负载画像的重复接受尚未证明。",
+            "trigger_boundary": "消息须识别客户、未满足的负载/可靠性/排放/水/维护要求及资格或采购后果；仅因价格选择其他路线不足。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "9203d570864eac20e458e967a0c47434f0f45cdc5eef21973f55093cac092a1d"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_885744b0d9ea3875d304",
+      "title": "渠道MW失去终端客户承诺",
+      "source_refs": [
+        {
+          "shell_id": "Large-load Energy Server adoption and share",
+          "expectation_id": "Qualified large-load customer adoption",
+          "gap_id": "Channel-mediated deployment lacks end-customer commitment"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "大型utility、融资方、SPV或渠道伙伴披露资产所有人、终端客户分配、退出权、条件性和客户验收状态的消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "重大渠道框架被正式改为第三方持有的部署，且终端客户选择或分配被明确为可选、未指定或可无罚退出。",
+          "calibration": {
+            "reference_state": "现有渠道与融资安排支持部署，但终端客户选择、取消权和容量分配并不完整，框架上限尚不能等同客户采用。",
+            "trigger_boundary": "文件须明确买方/所有人、适用容量以及终端客户未绑定或可退出的合同状态；具名终端客户的直接绑定奖项不匹配。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "c3ff2e19ccdd72ca8d917bfe765d2af53438941271c0b3bc1d636977c9fc5370"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_2989e6aab161e793083a",
+      "title": "客户侧标准化确立Bloom偏好",
+      "source_refs": [
+        {
+          "shell_id": "Large-load Energy Server adoption and share",
+          "expectation_id": "Durable onsite-power customer preference and share",
+          "gap_id": "Preferred-provider status becomes observable"
+        },
+        {
+          "shell_id": "Large-load Energy Server adoption and share",
+          "expectation_id": "Durable onsite-power customer preference and share",
+          "gap_id": "Quantified comparative advantage produces standardization"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "客户采购标准、优选供应商名录、路线量化比较、多站点授予、扩容和续购消息；包括独立受托比较所证明的同一采购决定。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "一个重要大型负荷客户正式指定Bloom为优选或标准供应商，并同步授予重复站点、扩容或续购。",
+          "calibration": {
+            "reference_state": "Bloom及行业材料已称其为标准或首选选项且客户验证广泛，但客户侧正式优选身份与采购后果尚未充分公开。",
+            "trigger_boundary": "同一客户消息须同时确认preferred/standard身份和重复/扩容授予；Bloom自称、仅资格批准或无采购后果的名录不足。"
+          },
+          "decision": "LONG",
+          "condition_revision": "50409d6bee201572514f840c24d76375dd3a017efc86a13d62544deafaffb207"
+        },
+        {
+          "condition_id": "C2",
+          "criterion": "客户或独立采购记录以同口径量化Bloom相对至少一条可用替代路线的优势，并据此作出多站点标准化或续购。",
+          "calibration": {
+            "reference_state": "部署速度、环境和可靠性优势已有公司主张，但缺少独立量化比较直接导致标准化的证据。",
+            "trigger_boundary": "消息须给出被比较路线、至少一项同口径交付/可靠性/环境/总成本指标，以及由此产生的多站点或续购决定；营销比较不足。"
+          },
+          "decision": "LONG",
+          "condition_revision": "e79aaaddc2336d9d4012bd2fda99beddb1b8e44287275521e3e8d7dd8d44f196"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_6d497580e0f6e14ff711",
+      "title": "替代路线延误转化为Bloom份额",
+      "source_refs": [
+        {
+          "shell_id": "Large-load Energy Server adoption and share",
+          "expectation_id": "Durable onsite-power customer preference and share",
+          "gap_id": "Alternative bottlenecks translate into Bloom share gains"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "客户或项目业主将电网/燃机延误与Bloom主供选择、容量、需求日期及可执行扩容直接关联的消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "一个具名重大项目因电网或燃机可用日期晚于负载需求窗口，正式选择Bloom作为按期主供路线并授予实质容量或可执行扩容。",
+          "calibration": {
+            "reference_state": "电网设备和燃机交付受限已广为人知，Bloom也被视作快速现场选项；宏观短缺本身尚不等同Bloom份额。",
+            "trigger_boundary": "同一消息须给出替代路线可用日、负载需求日、Bloom主供角色及实质容量/可执行扩容；只有短缺或未量化选择不足。"
+          },
+          "decision": "LONG",
+          "condition_revision": "5e3b9c2cd20006d65b50b62aab56d30fb06b321cbed29aa57f9edede4929ef56"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_fe399d4f61fe7299fc90",
+      "title": "客户或渠道把新增份额转向替代路线",
+      "source_refs": [
+        {
+          "shell_id": "Large-load Energy Server adoption and share",
+          "expectation_id": "Durable onsite-power customer preference and share",
+          "gap_id": "Validated customer switches new capacity to an alternative route"
+        },
+        {
+          "shell_id": "Large-load Energy Server adoption and share",
+          "expectation_id": "Durable onsite-power customer preference and share",
+          "gap_id": "Hybrid architecture caps Bloom's primary share"
+        },
+        {
+          "shell_id": "Large-load Energy Server adoption and share",
+          "expectation_id": "Durable onsite-power customer preference and share",
+          "gap_id": "Dominant channel designates a competing route"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "既有Bloom客户或关键渠道的新增负载路线选择、混合架构容量分配、优先/排他采购标准、Bloom削减或排除消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "已验证或使用Bloom的客户把可比新增负载授予可交付替代路线，并明确Bloom未续、被削减或被排除。",
+          "calibration": {
+            "reference_state": "多个客户已验证Bloom，当前预期其会参与后续容量；绝对Bloom MW增长并不保证客户内份额。",
+            "trigger_boundary": "消息须识别同一客户的可比新增负载、替代路线和Bloom分配后果；孤立竞争者订单不足。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "33f666608dd6729805615cdc334ad8c097c9f455126b95635a3b324debf590c3"
+        },
+        {
+          "condition_id": "C2",
+          "criterion": "一个锚定客户的最终供电架构把Bloom限定为桥接、备用或少数容量，并把大部分新增firm-power MW授予其他路线。",
+          "calibration": {
+            "reference_state": "现有部署与验证尚未证明Bloom在混合架构中的主供份额，市场仍将其视为可能的标准现场电源。",
+            "trigger_boundary": "消息须同时说明Bloom角色及同项目各路线容量或明确多数分配；临时调试配置不足。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "a89a940718411752888e1e86e01a5e0b4163b5eff3498ac8ec653d5711c43ccd"
+        },
+        {
+          "condition_id": "C3",
+          "criterion": "支配性utility、融资平台或采购渠道采用优先/排他竞争技术，并把具名重要项目群分配给该路线、排除Bloom。",
+          "calibration": {
+            "reference_state": "Bloom拥有大型融资和渠道关系，但项目分配仍可能集中；当前预期这些渠道支持其进入大型负荷项目。",
+            "trigger_boundary": "消息须同时确认规则的优先/排他性、受影响的具名项目群和Bloom排除；非排他营销合作或未分配框架不足。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "620007ef079406f3e72292acf38aa60e7e5b3b6dd325f25d34f5849148a8bacc"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_6dcd55a9faeb41870d86",
+      "title": "监管变化压缩Bloom可获取客户群",
+      "source_refs": [
+        {
+          "shell_id": "Large-load Energy Server adoption and share",
+          "expectation_id": "Durable onsite-power customer preference and share",
+          "gap_id": "Regulatory regime redirects the accessible customer cohort"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "数据中心辖区最终法规、费率、许可或成本分摊制度，以及具名客户的迁移、取消、延期或路线变化消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "正式生效的监管或费率制度导致一个具名大型负荷项目迁移、取消、实质延期或改用Bloom不受益的供电路线。",
+          "calibration": {
+            "reference_state": "数据中心成本分摊已出现政治反对，但尚未形成可归因的客户迁移或路线后果；政策争论本身在基线内。",
+            "trigger_boundary": "须确认最终有效规则及具名项目的迁移、取消、实质延期或路线变化；提案、评论或无客户后果的规则不足。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "c88d38765ea40e2a1080b1ac58cd5e8a1b565ee7c92512ba1d44e46590fb66b9"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_34fd912e41e5ef4f7cb7",
+      "title": "新型firm-power架构获得重复商业采用",
+      "source_refs": [
+        {
+          "shell_id": "Large-load Energy Server adoption and share",
+          "expectation_id": "Durable onsite-power customer preference and share",
+          "gap_id": "Previously non-material firm-power entrant captures share"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "先进核能、微堆、长时储能、800VDC原生电源等新型架构在数据中心的商运验收、负载画像、第二站点和扩容奖项消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "此前非主流的firm-power架构在具名数据中心按所需负载画像可靠商运并验收，且获得同一客户第二站点或实质扩容。",
+          "calibration": {
+            "reference_state": "新型路线仍主要属于潜在竞争集合，其在相关大型负载的可靠商运和重复采购尚未成为现实基线。",
+            "trigger_boundary": "同一客户消息须确认商业运行/验收、所需负载画像及后续站点或扩容；实验室演示和单站试点不足。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "fce91e0c93de32c33d96d06aa5d37cac82d59b00c90cbb46c524833702beb814"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_4ac9db3f20dd55d2ffce",
+      "title": "独立路线数据确认Bloom仅占小众份额",
+      "source_refs": [
+        {
+          "shell_id": "Large-load Energy Server adoption and share",
+          "expectation_id": "Durable onsite-power customer preference and share",
+          "gap_id": "Independent route mix reveals a Bloom niche"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "独立采购数据库、行业顾问或客户联盟发布的大型负荷路线组合、周期、MW分母、Bloom占比和优选身份消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "独立数据以同一定义客户群和MW口径列出最近两个采购周期的路线分配，并显示Bloom每期均为少数且没有客户优选或标准身份。",
+          "calibration": {
+            "reference_state": "Bloom绝对客户数和MW快速增长，但市场缺少有分母的独立相对份额，不能由绝对增长推断标准提供者地位。",
+            "trigger_boundary": "当前消息自身须给出客户群、两个周期、各路线MW分母和Bloom占比，并显示Bloom连续为少数；零散奖项不可拼接。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "caee2a0b9a8121e8d5de64768e88ea5efc2b03d6878a96f5628a8499c040514b"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_f7cde392e3eb2e1ef3d3",
+      "title": "燃机预留取消或越窗交付延长Bloom机会窗口",
+      "source_refs": [
+        {
+          "shell_id": "Large-load Energy Server adoption and share",
+          "expectation_id": "Alternative firm-power supply window",
+          "gap_id": "Gas-power reservations fail to become timely delivery"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "燃机或发动机预留、设备交付日期与具名大型负荷项目需求窗口的确认、否定和接近边界的项目级消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "具名大型负荷项目的燃机或发动机预留被取消，或交付日期被推迟到该项目公开需求日之后。",
+          "calibration": {
+            "reference_state": "燃机供应被描述为售罄三至四年且预留积压高；一般延误风险已在预期内，项目级失败尚未被吸收。",
+            "trigger_boundary": "消息须给出取消状态，或同一项目的原/新设备交付日与需求日并显示越窗；积压上升不足。"
+          },
+          "decision": "LONG",
+          "condition_revision": "7b0871c2d1f6db9187f744143ab819ce11dbb29cf63c4b510cc4b1b40bf9990e"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_1cbfa69142c426bc0275",
+      "title": "计算负载规则推迟送电延长Bloom机会窗口",
+      "source_refs": [
+        {
+          "shell_id": "Large-load Energy Server adoption and share",
+          "expectation_id": "Alternative firm-power supply window",
+          "gap_id": "Computational-load reliability rules delay grid service"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "最终计算负载可靠性要求、具名项目原计划送电日及规则导致的新送电日或条件日期消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "最终计算负载可靠性要求使一个具名项目的电网送电日从原计划实质后移。",
+          "calibration": {
+            "reference_state": "相关可靠性标准仍在审议推进，市场已知规则可能收紧，但尚无具名项目日期后果。",
+            "trigger_boundary": "消息须给出最终要求、同一项目的原送电日和新/条件日期，并明确延误由该要求造成；标准讨论不足。"
+          },
+          "decision": "LONG",
+          "condition_revision": "79331e6e551024e760f2231ea6486d563087b1e2e9cc694d48a90d537d833dcf"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_82afe9ef8746239e0beb",
+      "title": "本地燃气路线受阻延长Bloom机会窗口",
+      "source_refs": [
+        {
+          "shell_id": "Large-load Energy Server adoption and share",
+          "expectation_id": "Alternative firm-power supply window",
+          "gap_id": "Local gas route is blocked or lacks firm transport"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "具名负荷区燃气路线许可、投运日、firm transport容量申请及项目需求窗口消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "具名负荷区的计划燃气路线被否决、推迟到项目需求日之后，或其firm transport申请被正式拒绝。",
+          "calibration": {
+            "reference_state": "全国燃气路线活动改善，但相关负荷区的本地firm transport尚未证明；最新Reference View报告Project Jupiter一条关键燃气管线约六个月延误，却未识别路线、负荷区、firm transport容量或项目需求窗口。",
+            "trigger_boundary": "消息须识别路线、负荷区，并给出否决/firm容量拒绝，或可直接比较的原/新投运日与项目需求日。仅称Project Jupiter存在关键管线延误、force-majeure或供气风险而无路线和firm容量/日期比较不足。"
+          },
+          "decision": "LONG",
+          "condition_revision": "9d54aba39f290658eb56fc47cb8cc224d96e50b4551d120497a4f2e542dd616e"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_698b1648f0911ec91a16",
+      "title": "关键电网设备延误延长Bloom机会窗口",
+      "source_refs": [
+        {
+          "shell_id": "Large-load Energy Server adoption and share",
+          "expectation_id": "Alternative firm-power supply window",
+          "gap_id": "Critical grid equipment shortage worsens"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "关键变压器等电网设备的项目级到货状态、原送电里程碑及新日期消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "关键变压器或其他电网设备未按期到货，并使一个具名大型负荷项目错过原送电里程碑。",
+          "calibration": {
+            "reference_state": "行业已披露变电站变压器交期超过160周，该headline已在基线；尚缺具名项目后果。",
+            "trigger_boundary": "消息须识别设备、项目、原送电日及新日期或明确错过；仅行业交期延长不足。"
+          },
+          "decision": "LONG",
+          "condition_revision": "42abb6616ef270cd5a677e2ea54e55c0b0f64c5d32d58b5b6a5060bf2075170e"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_392b8f242b54614b6429",
+      "title": "当地燃机商运收窄Bloom机会窗口",
+      "source_refs": [
+        {
+          "shell_id": "Large-load Energy Server adoption and share",
+          "expectation_id": "Alternative firm-power supply window",
+          "gap_id": "Reserved gas-power slots convert to operating local capacity"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Bloom相关负荷区预留燃机或发动机的交付、并网、可用MW、商业运行日和客户需求日消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "预留燃机或发动机在Bloom相关负荷区按客户所需日期交付、并网并商业运行。",
+          "calibration": {
+            "reference_state": "燃机被描述售罄三至四年，相关积压和预留约116GW；预留很多并不等于当地可用容量。",
+            "trigger_boundary": "消息须给出具名项目/区域、商业运行日、可用MW及客户需求日，并显示按期；预留或采购订单不足。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "6797c053d5ce164c3f6eb9d0e10b61eb6acda8e1ff86cdba458fddac6930e369"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_cae046b5c5cfefdd95ce",
+      "title": "按期firm grid送电收窄Bloom机会窗口",
+      "source_refs": [
+        {
+          "shell_id": "Large-load Energy Server adoption and share",
+          "expectation_id": "Alternative firm-power supply window",
+          "gap_id": "Transmission and interconnection accelerate to energization"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "具名数据中心firm grid合同容量、实际送电日、需求日及现场替代方案可用日消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "一个具名数据中心在其现场替代方案可用日前取得合同firm grid容量并实际送电。",
+          "calibration": {
+            "reference_state": "输电、互联和可靠性改革在推进，但项目级交付时点不完整；中期改善预期不等于按期送电。",
+            "trigger_boundary": "消息须给出项目、firm MW、实际送电日和可比较的现场替代日期；规划研究或queue改革不足。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "659d13de79a615660e85e337fbb800ca0d22397cd17f2178edbacee34147cd0c"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_f37f3977c21ff5d79db8",
+      "title": "本地firm gas管线投运收窄Bloom机会窗口",
+      "source_refs": [
+        {
+          "shell_id": "Large-load Energy Server adoption and share",
+          "expectation_id": "Alternative firm-power supply window",
+          "gap_id": "Local gas pipeline enables competing firm power"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Bloom相关负荷区本地管线在役日、firm transport容量和客户需求窗口消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "本地管道已投入服务，并向具名大型负荷区提供覆盖客户需求窗口的firm gas transport容量。",
+          "calibration": {
+            "reference_state": "全国电力用气预计上升，但这不是本地firm transport；相关管道仍需从许可建设转为可用容量。",
+            "trigger_boundary": "消息须给出在役日、firm容量、负荷区及客户需求窗口；许可、开工或可中断运输不足。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "04c842c6c07c93303bb4a6c36f25abf59b277088c7dfafa2015f1a237ed165e8"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_e16fc8402cb307b95835",
+      "title": "非燃气混合方案可靠商运收窄Bloom机会窗口",
+      "source_refs": [
+        {
+          "shell_id": "Large-load Energy Server adoption and share",
+          "expectation_id": "Alternative firm-power supply window",
+          "gap_id": "Non-gas hybrid reaches reliable firm operation"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "具名大型负荷非燃气混合配置跨峰值/夜间运行、客户验收和扩容或第二站点消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "非燃气混合配置在具名大型负荷项目跨所需峰值和夜间周期可靠商运并验收，且获得扩容或第二站点。",
+          "calibration": {
+            "reference_state": "太阳能加储能、柴油/发动机混合等已是候选路线，但缺乏符合大型负载画像的客户验收和可复制性。",
+            "trigger_boundary": "同一消息须确认跨峰值/夜间的可靠运行、客户验收及后续扩容/站点；短期演示或铭牌MW不足。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "c38e7e219d79ced5aa0e4b010ba308cc96c8fdb56c74ee3b2b583f61f4172ff5"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_9b7af3b3194022fbee4f",
+      "title": "firm grid市场规则落地收窄Bloom机会窗口",
+      "source_refs": [
+        {
+          "shell_id": "Large-load Energy Server adoption and share",
+          "expectation_id": "Alternative firm-power supply window",
+          "gap_id": "Grid market design unlocks firm service without full buildout"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "最终生效的电网市场规则或费率及其促成的具名项目firm MW、服务日与需求日消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "最终生效的市场规则或费率使具名大型负荷项目签订不晚于其需求日开始的可执行firm grid服务合同。",
+          "calibration": {
+            "reference_state": "队列改革、费率和需求响应处于讨论或推进中，且存在成本分摊争议；尚无规则落地后的具名按期合同。",
+            "trigger_boundary": "消息须给出生效规则、具名项目、firm MW、服务日和需求日；建议稿或无日期承诺不足。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "386dd1b40540d1e0316444a95bf0461b08f625bd6eb9aabbed57943cd6301b5c"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_ef69ddf0e00aa6ef3c46",
+      "title": "新型低碳firm-power进入执行阶段收窄Bloom窗口",
+      "source_refs": [
+        {
+          "shell_id": "Large-load Energy Server adoption and share",
+          "expectation_id": "Alternative firm-power supply window",
+          "gap_id": "New low-carbon firm route enters the load zone"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "具名低碳firm-power项目的最终许可、绑定客户/MW、不可逆建设里程碑和交付窗口消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "一个新型低碳firm-power项目取得全部关键最终许可和绑定大型负荷客户授予，并进入已动工或主要设备不可撤销采购阶段。",
+          "calibration": {
+            "reference_state": "先进核能、微堆、地热等仍主要是潜在竞争集合，概念和研究公告未构成近期可交付容量。",
+            "trigger_boundary": "同一项目须具备最终许可、绑定客户/MW、不可逆建设里程碑及覆盖客户需求的交付窗口；早期概念不足。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "16238fa8379191c006d2d52f8cca444318cd429ce1c9dbb359a645d63c5a03ef"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_1ab64bb336f6624cd158",
+      "title": "主要工厂形成可重复合格产出",
+      "source_refs": [
+        {
+          "shell_id": "Qualified Energy Server manufacturing capacity",
+          "expectation_id": "Qualified Energy Server manufacturing throughput",
+          "gap_id": "Fremont and Delmarva qualified output reaches sustained scale"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "Fremont或Delmarva的设施commissioning、Energy Server合格释放units/MW、生产计划达成、连续周期run-rate和可供出货状态消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Fremont或Delmarva在至少两个连续可比周期披露Energy Server合格释放量，且最新周期达到该设施生产计划并可供出货。",
+          "calibration": {
+            "reference_state": "扩产投资、备货和供应商准备在推进，Fremont目标为2026年末约2GW名义年产能；设施级installed capacity、利用率和合格输出尚未披露。",
+            "trigger_boundary": "当前消息须自行提供同一设施两个可比周期的合格units/MW以及最新周期的计划达成/可出货状态；名义产能或单期产量不足。"
+          },
+          "decision": "LONG",
+          "condition_revision": "bc8e4393dac2c987fd4dacf6e68120ff63dc6c309940dd9170b7dc22d4b30ccf"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_a59e4ace72f858b7376f",
+      "title": "名义扩产未转化为合格产出",
+      "source_refs": [
+        {
+          "shell_id": "Qualified Energy Server manufacturing capacity",
+          "expectation_id": "Qualified Energy Server manufacturing throughput",
+          "gap_id": "Expansion remains nominal rather than qualified Energy Server output"
+        },
+        {
+          "shell_id": "Qualified Energy Server manufacturing capacity",
+          "expectation_id": "Qualified Energy Server manufacturing throughput",
+          "gap_id": "Commissioning and quality staffing becomes the bottleneck"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Fremont/Delmarva扩产里程碑、installed capacity、commissioning、班次人员、内部释放计划、合格Energy Server输出与日期偏差消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "扩产里程碑已到或名义产能已安装，但合格Energy Server释放量低于明确生产计划，并归因于commissioning、utilization、qualification或产品分配约束。",
+          "calibration": {
+            "reference_state": "Fremont约2GW是2026年末名义capacity目标而非已验证合格产出，市场仍预期扩产最终转成可出货能力。",
+            "trigger_boundary": "消息须给出同口径合格输出与公司计划/目标或明确未达状态，并识别工厂原因；客户site延误不足。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "a670b26a059c2dfda13b5ab4c7e0e60598184203ff389a9787ffe8921b9ffc0f"
+        },
+        {
+          "condition_id": "C2",
+          "criterion": "关键制造、维护、工程、认证或trained-shift人员不足，使Fremont或Delmarva错过明确commissioning、班次或合格释放窗口。",
+          "calibration": {
+            "reference_state": "扩产正在执行但利用率和合格输出未披露，当前没有证据表明staffing已成为binding constraint。",
+            "trigger_boundary": "消息须识别岗位缺口、设施及原定commissioning/生产窗口与实际延期或output缺口；一般招聘需求不足。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "83fb68564c1c5c1f9374bad7cfec6efcb1b8dda471172778f1e3521a3ed31db5"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_f7ea29c640ae1f23c289",
+      "title": "关键替代供应源转为可用产能",
+      "source_refs": [
+        {
+          "shell_id": "Qualified Energy Server manufacturing capacity",
+          "expectation_id": "Qualified Energy Server manufacturing throughput",
+          "gap_id": "Critical alternate supplier becomes production-qualified"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "Bloom及供应商对关键单一/有限来源组件的production qualification、长期采购、最小量、产能、交期和Energy Server适用配置消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "此前单一或有限来源的关键Energy Server投入新增production-qualified供应商，并形成含明确产能/最小量与交期的经常性供货安排。",
+          "calibration": {
+            "reference_state": "供应商多元化和qualification在进行，已有长期合同及不可取消订单，但每项qualification完成度和释放产能未披露。",
+            "trigger_boundary": "须同时确认关键投入、新来源的production-qualified状态，以及可执行的产能或最小量和交期；pilot样品、MOU或无量化能力的认证不足。"
+          },
+          "decision": "LONG",
+          "condition_revision": "ba1713b0706225b39f20f924d0173d19c6a0c192b8da433aaf9681a295be83ac"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_af07aa0520150a26feae",
+      "title": "关键组件连续性发生生产级失效",
+      "source_refs": [
+        {
+          "shell_id": "Qualified Energy Server manufacturing capacity",
+          "expectation_id": "Qualified Energy Server manufacturing throughput",
+          "gap_id": "Replacement supplier fails production qualification"
+        },
+        {
+          "shell_id": "Qualified Energy Server manufacturing capacity",
+          "expectation_id": "Qualified Energy Server manufacturing throughput",
+          "gap_id": "External critical-input disruption interrupts production"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "关键组件替代来源qualification、生产lot拒绝/隔离、外部短缺/限制、库存覆盖、产线停顿、排产重排和合格释放后果消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "新增或替代关键供应商被拒绝或暂停production qualification，并因此推迟Energy Server排产或减少合格释放。",
+          "calibration": {
+            "reference_state": "替代来源qualification仍在推进，完成状态和释放容量未披露；一般执行风险已知但没有生产级失败。",
+            "trigger_boundary": "消息须识别组件/来源、正式失败或暂停状态，以及具体排产/合格输出后果；普通试验迭代不足。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "d80c7af99fbd416b96ab1f2bcc8ab1141bbb8988ecc2869f4729304c42fcbbb7"
+        },
+        {
+          "condition_id": "C2",
+          "criterion": "关键Energy Server投入发生外部限制或不可用，并穿透库存缓冲，造成产线停顿、生产重排、缓冲耗尽或产品级释放延误。",
+          "calibration": {
+            "reference_state": "截至2026-06-30公司称没有影响2026 forecast的重大组件短缺并通过增库存管理lead time，市场尚未吸收实际生产中断。",
+            "trigger_boundary": "消息须连接具体投入中断与明确产线、缓冲或合格释放后果；泛化行业短缺或无生产影响的supplier notice不足。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "f3b5edd126707d4a33295f4d8b4e897e703365c239d29a282dea2bbc235d771c"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_d70cf7e8afa3fb1542aa",
+      "title": "放量良率与质量释放保持稳定",
+      "source_refs": [
+        {
+          "shell_id": "Qualified Energy Server manufacturing capacity",
+          "expectation_id": "Qualified Energy Server manufacturing throughput",
+          "gap_id": "Scaled yield and quality release become repeatable"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "扩产设施的Energy Server produced/released units或MW、first-pass release、rework/defect、quality hold及连续周期放量趋势消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "扩产设施至少两个连续可比周期的Energy Server数据表明产量上升时合格释放率未恶化，且没有重大factory-quality hold。",
+          "calibration": {
+            "reference_state": "公司报告流程和自动化改善，但没有可比Energy Server产量、first-pass yield、返工率或多周期质量趋势。",
+            "trigger_boundary": "当前消息须同口径列出两期produced及released/reworked数据和quality-hold状态；仅称yield改善或只给单期结果不足。"
+          },
+          "decision": "LONG",
+          "condition_revision": "3a7424dfc8a75f07652f6c28d83b413b872566842eaa06986b98dfbcb7b3da75"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_5cb306ceafdd2ba18058",
+      "title": "质量或重新认证中断Energy Server释放",
+      "source_refs": [
+        {
+          "shell_id": "Qualified Energy Server manufacturing capacity",
+          "expectation_id": "Qualified Energy Server manufacturing throughput",
+          "gap_id": "Scaled defect or certification issue triggers a release hold"
+        },
+        {
+          "shell_id": "Qualified Energy Server manufacturing capacity",
+          "expectation_id": "Qualified Energy Server manufacturing throughput",
+          "gap_id": "External standard or customer architecture forces product requalification"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Energy Server重复缺陷、电气/stack安全、认证不合规、新标准或客户架构要求、生产hold、返工、line split和release延期消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "重复工厂缺陷或认证不合规使明确Energy Server lot/units进入shipment hold、返工、召回、替换或临时停线。",
+          "calibration": {
+            "reference_state": "当前yield和质量release证据mixed/weak，尚无已进入基线的material factory hold。",
+            "trigger_boundary": "消息须识别缺陷/不合规、受影响lot/units与正式release处置；孤立缺陷而无释放后果不足。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "7af48e1157e91eeb3f609cc776c40ecfaa08b4945bc7d98c17747f0bb6052894"
+        },
+        {
+          "condition_id": "C2",
+          "criterion": "最终外部标准或重大客户架构要求迫使Energy Server/Power Connect实质重设计或重新认证，并触发production hold、line split、rework或release delay。",
+          "calibration": {
+            "reference_state": "现有配置仍处于生产和推广路径，没有新标准已迫使factory requalification的公开事实。",
+            "trigger_boundary": "消息须给出强制新要求、受影响配置及具体生产/qualification中断或原新release日期；标准发布而无工厂后果不足。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "ade81bfb60cccbf1146d2bcc84ac4fe9795b2796af7efd7ad1a2206cf1650fb4"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_a1ac8ecde84b58a1edd8",
+      "title": "工厂lead time压缩且出货节奏稳定",
+      "source_refs": [
+        {
+          "shell_id": "Qualified Energy Server manufacturing capacity",
+          "expectation_id": "Qualified Energy Server manufacturing throughput",
+          "gap_id": "Qualified factory lead time compresses and cadence stabilizes"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "Energy Server release-to-shipment天数、合格units/MW、schedule adherence、backlog aging及连续可比周期的制造物流KPI消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "至少两个连续可比周期显示Energy Server release-to-shipment lead time下降，同时最新周期合格出货量和按期率保持或改善。",
+          "calibration": {
+            "reference_state": "工厂lead time尚无可比公开序列；库存缓冲和供应承诺用于管理交付，但稳定cadence未被验证。",
+            "trigger_boundary": "当前消息须按同一产品口径提供两期lead time、合格出货量与schedule adherence；泛化加快交付或仅现场安装时间不足。"
+          },
+          "decision": "LONG",
+          "condition_revision": "1ce92a672e01895975f244a68b8d471de99c48c280f829e5611766bcda018b73"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_9517f0b4bb86ec1b3936",
+      "title": "合格工厂run-rate无法满足释放需求",
+      "source_refs": [
+        {
+          "shell_id": "Qualified Energy Server manufacturing capacity",
+          "expectation_id": "Qualified Energy Server manufacturing throughput",
+          "gap_id": "Factory backlog ages despite nominal capacity and inventory"
+        },
+        {
+          "shell_id": "Qualified Energy Server manufacturing capacity",
+          "expectation_id": "Qualified Energy Server manufacturing throughput",
+          "gap_id": "Energy Server release demand outruns the qualified factory run-rate"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Energy Server factory backlog age、release-to-shipment窗口、expedite、allocation/rationing、qualified run-rate、release demand与工厂归因消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Energy Server factory-release backlog age或shipment window恶化，且公司明确归因于生产、供应商、质量或工厂排程而非客户site。",
+          "calibration": {
+            "reference_state": "名义扩产和库存增加已公开，但没有backlog aging或schedule-adherence序列，市场仍把库存视为缓冲。",
+            "trigger_boundary": "消息须提供同口径old→new backlog age或shipment window及工厂原因；客户permit、安装或融资延误不足。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "6a9759372b6610ea12043cf19d29adb0c90845d4cb5fbd926ee3331fd315a451"
+        },
+        {
+          "condition_id": "C2",
+          "criterion": "Energy Server生产release需求超过当前qualified factory run-rate，并触发allocation/rationing或factory lead time延长。",
+          "calibration": {
+            "reference_state": "需求和backlog增长与扩产计划已知，但设施级qualified run-rate及正式allocation尚未披露。",
+            "trigger_boundary": "消息须同时给出qualified run-rate不足、生产release需求，以及allocation或old→new factory lead time，并排除customer-site原因。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "ff8194c65e0f97c979704bc583ae519437f0bcf8f2485f8a3794bd66b0de4555"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_8c11f99b5787c1a44430",
+      "title": "电解槽资源分配挤压Energy Server产能",
+      "source_refs": [
+        {
+          "shell_id": "Qualified Energy Server manufacturing capacity",
+          "expectation_id": "Qualified Energy Server manufacturing throughput",
+          "gap_id": "Electrolyzer demand displaces Energy Server capacity"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Bloom共享固体氧化物line time、关键组件、qualified capacity及Energy Server与Electrolyzer之间的产品级allocation、release和lead-time消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "重大Electrolyzer项目获得受约束的共享line time、组件或qualified capacity，并使Energy Server释放量下降、排期后移或lead time增加。",
+          "calibration": {
+            "reference_state": "Energy Server与Electrolyzer共享平台，但产品级capacity、allocation规则和contention未披露，也无Energy Server优先保证。",
+            "trigger_boundary": "同一消息须提供两产品资源分配及Energy Server同口径old→new release/lead-time后果；电解槽订单或总平台产量单独不足。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "4964ea6a323bd5c10fcdcccaeb658555187f45647551721fdd9ef7517553239b"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_1776bba20482825ce8a1",
+      "title": "氢项目停滞释放Energy Server共享产能",
+      "source_refs": [
+        {
+          "shell_id": "Qualified Energy Server manufacturing capacity",
+          "expectation_id": "Qualified Energy Server manufacturing throughput",
+          "gap_id": "Hydrogen commercialization stalls and releases shared capacity"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "Electrolyzer/hydrogen项目暂停、取消或降级，以及Bloom对共享line time、组件、qualified MW和Energy Server release window的重分配消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "重大Electrolyzer或hydrogen计划暂停、取消或降级后，Bloom正式把相关共享资源转给Energy Server并量化新增可用MW或提前后的release window。",
+          "calibration": {
+            "reference_state": "共享平台allocation未量化且没有Energy Server优先规则，市场尚未把任何氢项目资源释放计入Energy Server产能。",
+            "trigger_boundary": "消息须同时确认氢项目状态、明确resource reallocation及Energy Server新增MW或新窗口；仅氢项目失败或未量化意向不足。"
+          },
+          "decision": "LONG",
+          "condition_revision": "0925812143b36335d30daa59d25891545ecf8423799ecf10304ca897ad7bc4ac"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_76dd876f8d8af9c3d02f",
+      "title": "工厂集成架构提高合格吞吐",
+      "source_refs": [
+        {
+          "shell_id": "Qualified Energy Server manufacturing capacity",
+          "expectation_id": "Qualified Energy Server manufacturing throughput",
+          "gap_id": "Factory-integrated product architecture improves qualified throughput"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "Power Connect、800VDC-native等Energy Server配置的production qualification、qualified-for-shipment状态、integration/test/rework步骤和factory release time比较消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "新的factory-integrated Energy Server配置完成production qualification，并相对旧配置量化减少integration/test/rework步骤或factory release time。",
+          "calibration": {
+            "reference_state": "Power Connect已推出且宣称缩短现场安装，但这并不证明factory qualification或制造周期改善；工厂lead-time证据仍弱。",
+            "trigger_boundary": "须同时确认特定配置qualified for shipment，并给出旧/新同口径工序或release time；产品发布和现场安装缩时不足。"
+          },
+          "decision": "LONG",
+          "condition_revision": "73c99cd6205a7c22e595ab7c8517ee68f63dbb41b6dcca890490ec16036b69d9"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_90de2b493c9bd31aebc7",
+      "title": "主要工厂中断削弱短期合格输出",
+      "source_refs": [
+        {
+          "shell_id": "Qualified Energy Server manufacturing capacity",
+          "expectation_id": "Qualified Energy Server manufacturing throughput",
+          "gap_id": "Fremont or Delmarva suffers a material site disruption"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Fremont或Delmarva的火灾、自然灾害、utility failure、cyber incident、设施关闭、line downtime、生产窗口及合格输出转移/减少消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Fremont或Delmarva因非计划事件关闭或关键line停机，跨过至少一个明确生产窗口，并造成合格Energy Server输出减少或转移。",
+          "calibration": {
+            "reference_state": "两座设施扩产推进，但设施级合格输出和可替代qualified route未披露，市场未吸收主要工厂的计划窗口损失。",
+            "trigger_boundary": "消息须识别设施、停机起止/预计时长、被跨过的生产窗口和合格输出后果；短暂停机且无排产影响不足。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "d1de50b196a2470e4d8ac8cb985cc83f99c65961cb1297d01e9151da7ffe253a"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_8ffc76471b1c39816531",
+      "title": "库存错配削弱Energy Server有效吞吐",
+      "source_refs": [
+        {
+          "shell_id": "Qualified Energy Server manufacturing capacity",
+          "expectation_id": "Qualified Energy Server manufacturing throughput",
+          "gap_id": "Inventory build becomes mismatched or obsolete"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Energy Server库存/WIP因产品revision、product mix、客户规格或取消导致的reserve、write-down、rework、disposal及release影响消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "产品或客户规格变化使Energy Server关键库存/WIP不能用于当前qualified build，并产生material write-down、rework或disposal及release延期。",
+          "calibration": {
+            "reference_state": "公司增加库存以缓冲需求和supplier lead time，但产品级mix、qualification和obsolescence未披露，库存仍被市场视为缓冲。",
+            "trigger_boundary": "消息须给出错配原因、material处置类型/规模和Energy Server release或shipment-window后果；单纯库存增加或无生产连接的会计reserve不足。"
+          },
+          "decision": "SHORT",
+          "condition_revision": "cfdd3fc24eb264d0944fe500dd7e43be4621fe33eb42b1aeb0044d08486551cc"
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_643e8d1a999ed551cbe2",
+      "title": "合格合作制造路线扩充有效产能",
+      "source_refs": [
+        {
+          "shell_id": "Qualified Energy Server manufacturing capacity",
+          "expectation_id": "Qualified Energy Server manufacturing throughput",
+          "gap_id": "Qualified partner manufacturing adds or reallocates effective capacity"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "Bloom与contract/regional manufacturing partner的Energy Server配置、quality qualification、承诺units/MW、首个release window和合格释放消息。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "合作制造方的特定Energy Server配置完成Bloom production qualification，并取得量化units/MW及首个release window的可执行产能承诺。",
+          "calibration": {
+            "reference_state": "当前有效产能研究集中Fremont与Delmarva，没有已验证partner route贡献qualified output。",
+            "trigger_boundary": "须同时确认partner、配置、Bloom qualification、承诺units/MW和首个release window；未qualification的capacity announcement不足。"
+          },
+          "decision": "LONG",
+          "condition_revision": "a95f8ce70f0c52be6a03821a4bc3a99f91e2020768cc1ff6ce9960aefa0107a8"
+        }
+      ]
+    }
+  ],
+  "published_at": "2026-09-29T14:11:07.420693Z",
+  "replay_view": "legacy-condition-direction.v1"
+}

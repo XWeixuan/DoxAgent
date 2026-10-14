@@ -1,0 +1,159 @@
+{
+  "case_key": "MU-01-04",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-09-25T05:53:12.170085Z",
+  "reviewed_at": "2026-10-13T22:58:31.843654Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 6,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a1375c-8ec3-7ff1-9f03-25768e81d251",
+    "turn_id": "01a1375c-8edc-7723-906b-18a021940fbd",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 76544,
+        "inputTokens": 88503,
+        "outputTokens": 8695,
+        "reasoningOutputTokens": 6732,
+        "totalTokens": 97198
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 377088,
+        "inputTokens": 456975,
+        "outputTokens": 15678,
+        "reasoningOutputTokens": 13038,
+        "totalTokens": 472653
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "056b55572e61934f651bd1116c30fedfe223a17a71bf339835777a1730941298",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://elonmuskarchive.org/posts/2103352821135376584",
+      "title": "Elon Musk post on Colossus 1 and Colossus 2 hardware and planned additions",
+      "published_at": "2026-09-25T05:16:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn1search0",
+        "turn2view1",
+        "turn4view0"
+      ],
+      "source_call_ids": [
+        "exec-05a1d5f7-66a7-4ff8-89b2-401929c03c6c",
+        "exec-0ec972f9-7329-43f7-b1df-eb85add4d320",
+        "exec-71c0d517-6ca8-41d2-a86b-d614a5f4a5a9"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://content.spacex.com/cms-assets/FINAL_Documents%20and%20Updates/SpaceX%20-%20EU%20Prospectus%20%28Approved%20by%20Bafin%29%20-%20June%205%2C%202026.pdf",
+      "title": "SpaceX EU Prospectus, June 5, 2026",
+      "published_at": "2026-06-05",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn2view2",
+        "turn3search21",
+        "turn5search13"
+      ],
+      "source_call_ids": [
+        "exec-05a1d5f7-66a7-4ff8-89b2-401929c03c6c",
+        "exec-1cb5329a-a849-4485-9969-1b9c8a906cb5",
+        "exec-9300bb6a-30cf-42df-8346-5705f39b951f"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://huggingnews.com/ai/elon-musk-deploys-660000-nvidia-gb300-gpus-for-colossus-in-q4-d98b7ec6",
+      "title": "Elon Musk Deploys 660,000 Nvidia GB300 GPUs for Colossus in Q4",
+      "published_at": null,
+      "time_precision": "UNKNOWN",
+      "updated_at": null,
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn2view0",
+        "turn5search0"
+      ],
+      "source_call_ids": [
+        "exec-05a1d5f7-66a7-4ff8-89b2-401929c03c6c",
+        "exec-1cb5329a-a849-4485-9969-1b9c8a906cb5"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "Before the cutoff, Musk publicly reported Colossus 2’s existing 110,000 GB200 and 440,000 GB300 count and outlined up to three further 220,000-GB300 tranches: one expected the following week, one in November, and a late-December tranche explicitly conditional on the schedule going well. These were plans, not completed future deployments.",
+      "source_urls": [
+        "https://elonmuskarchive.org/posts/2103352821135376584"
+      ],
+      "event_time": "2026-09-25T05:16:00Z",
+      "publication_time": "2026-09-25T05:16:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The counts are Musk’s reported figures; no independent inventory verification is provided. The final tranche is conditional, and the post says nothing about Minihard, costs, Micron, or memory sourcing."
+    },
+    {
+      "observation": "A June 5 SpaceX prospectus had already described a next Colossus II phase of at least 220,000 additional GB300 processors and more than 400 MW. Compared with that prior context, the September post adds a staged schedule and describes potential additions totaling as many as 660,000, but does not establish that the tranches were delivered.",
+      "source_urls": [
+        "https://content.spacex.com/cms-assets/FINAL_Documents%20and%20Updates/SpaceX%20-%20EU%20Prospectus%20%28Approved%20by%20Bafin%29%20-%20June%205%2C%202026.pdf",
+        "https://elonmuskarchive.org/posts/2103352821135376584"
+      ],
+      "event_time": "2026-06-05",
+      "publication_time": "2026-06-05",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The prospectus's earlier expansion figure was a company expectation; it does not independently confirm the later schedule or future capacity."
+    },
+    {
+      "observation": "The supplied HuggingNews item frames the story as a 660,000-GPU Q4 deployment and includes facility and cost claims beyond the Musk post. Its supplied timestamp and displayed feed time conflict, and no pre-cutoff page snapshot was verified.",
+      "source_urls": [
+        "https://huggingnews.com/ai/elon-musk-deploys-660000-nvidia-gb300-gpus-for-colossus-in-q4-d98b7ec6"
+      ],
+      "event_time": null,
+      "publication_time": null,
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "Treat the additional Minihard and dollar-value claims as unverified from the available pre-cutoff evidence; the article’s exact usable publication time and pre-cutoff content state are unknown."
+    }
+  ],
+  "gaps": [
+    "No independently verified, pre-cutoff report corroborating the GPU counts or schedule was found within the search limit.",
+    "The source passage does not identify GPU supplier contracts, memory/HBM supplier allocation, or memory content per accelerator; it does not establish a direct Micron link.",
+    "The Minihard location and reported deployment cost figures in the supplied news item are not substantiated by the Musk post or the cited June prospectus.",
+    "The exact pre-cutoff version and publication/revision time of the HuggingNews article remain unverified."
+  ],
+  "research_notes": "Cutoff: 2026-09-25T05:53:12.170085Z. The earliest traceable disclosure found is an Elon Musk X post timestamped 2026-09-25 05:16Z in a third-party archive; direct X access returned 403. Musk described existing Colossus hardware and planned additions, not completed future deployments. SpaceX's June 5 prospectus had already disclosed a next phase of at least 220,000 additional GB300 processors, so the new information is a staged schedule and a possible expansion of up to three 220,000-unit tranches, with the last conditional. The supplied HuggingNews item’s collector publication timestamp conflicts with its displayed 11:44 PM EDT time, and its page is not verified in a pre-cutoff snapshot. Its claims about Minihard and deployment costs are not supported by the Musk post. No independent contemporaneous coverage was verified within the cutoff. The sources do not establish Micron as a supplier or disclose memory/HBM content, procurement, or allocation for these GPU deployments."
+}

@@ -1507,3 +1507,26 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-06 · Event Library 修复最终验收：定向回归补齐至 119 passed / 2 deselected；MU 10/2 补跑及四个 ticker 10/5 SWEEP/维护均 SUCCEEDED，Event Library MU V32、INTC V22、BE V16、RKLB V18，visibility 均 10/5。BE 两次真实阶段超时经既有有限局部恢复成功，未重启 Worker/Site Access/Chrome；新 W1 冻结输入均仅当前语义日，旧 PENDING 保留。约 5 分钟间隔完成收尾检查，未新增定时任务。最终收据、119 项测试边界、部署回滚及 pending 快照见 docs/event-library-maintenance-repair-acceptance-20261006.md。
 
 2026-10-14: Restore omitted maintenance phase recovery, Event Library partial publication, same-day inputs, Barrons exact timestamps, W3 writer handoff/MCP budgets; consolidate MAIN deployment sources and preserve production storage identities.
+
+
+2026-10-14 W3 历史 Web Search 采集器（本地）：新增可恢复的 gpt-6-luna/max SDK 队列，基于 source Envelope snapshot 构造安全输入，逐 Case 截止时间审核网页、保存实际 Web Search 调用/来源及 review 审计；采集 SDK 仅使用临时隔离 CODEX_HOME（认证文件副本 + 空 MCP 配置），不继承生产 MCP。初步验证账户模型清单含精确 Luna，隔离 thread/start 成功；首批15条真实检索仍进行中，尚无完成回执。NASA Bloomberg Law 页面只保存截止前可见部分，完整正文及版本历史受登录墙限制。详见 eval/w3_backtest/datasets/w3_history_20261014/inputs/EXTRA-RKLB-NASA/evidence/sources/S1.md。
+
+2026-10-14 W3生产-32600修复：双SDK进程复现thread/fork创建者未释放writer导致Capsule resume失败；生命周期Fork后finally关闭创建者，生命周期RPC与close互斥，补正常/丢响应/并发回归。32项W3测试及Ruff通过；基于线上release-8a8f60f2仅替换该模块、发布codex-worker热修复镜像并固定compose镜像，未混入回测开发。按原Effect ID恢复14个受影响Case（42次writer错误），已有真实两阶段提交，余项恢复中。排查、证据、部署与恢复状态见docs/w3-active-writer-repair-20261014.md；未git提交/push。
+2026-10-14 W3恢复补充：真实任务暴露Data MCP冷启动20秒握手超时，远端测得模块导入27.9/38.3秒；仅W3启动预算改90秒，保留required与原工具权限，5项权限/能力测试通过。第二版Worker窄镜像w3-writer-mcp-fix-20261014发布，原受影响Case内MCP失败Effect按审计恢复。
+2026-10-14 W3历史Web Search采集续进展：采集器隔离进程启动前剥离父环境的CODEX_/DOXAGENT_/IBKR_/TWS_及线程标识，只向临时SDK环境显式提供隔离CODEX_HOME与doxagent-w3-backtest originator；真实account/model清单、thread_start smoke通过，thread回执核验精确gpt-6-luna/max。V2提示将单Case搜索/open合计限制6次，并把模型source result refs绑定至真实SDK调用ID；首15条V1已完成、0失败（原提示调用数未受新上限约束），3条优先V2已完成且各≤6次搜索，剩余55条开始以4并发采集。NASA Bloomberg Law仅存可见截止前开篇，登录墙正文与修订历史缺失如实标注。
+2026-10-14 W3采集器隔离补强：后续/恢复Thread保留live Web Search同时禁用云端Apps、plugins、memories、host skill discovery、browser/computer/image与host code mode；新增非Web工具调用审计并拒绝落入证据输出。队列将Semaphore等待状态区分为queued/running；Ruff格式与检查通过。当前已启动的55条进程配置保持原样，不重跑已采集证据。
+
+2026-10-14 W3 本地历史回放实现（准备与验收进行中）：新增独立 w3_backtest CLI、历史版本/旧Policy方向适配、截止时钟、本地 Template/Fork 双阶段、恢复、Gold评分/版本比较与原生工具审计；关闭回放Web/Data MCP/IBKR，生产默认行为保留。73条基础输入与96,433根10分钟历史行情已备齐，NASA真实W1/W2完成，44条原评估导入（37条可明确评分、7条条件文字）、29条Gold留空；Web证据由精确gpt-6-luna/max持续采集。修复嵌入SDK身份回调异步桥接、桌面环境/Apps继承与Windows只读策略阻断实际文件读取；Windows本地使用full-access进程执行文件工具，任务只读合同与禁用业务能力独立记录。真实Policy HIT以Sol/medium读取Skill/旧Policy/行情并完成双阶段，49项回归通过；全量证据及完整73条baseline仍在进行，不宣称完成验收。使用与边界见eval/w3_backtest/README.md。未提交、推送或部署生产。
+
+2026-10-14 W3 Web Search 时间精度审核修正：明确 DAY/UNKNOWN 日期精度时按日比较，截止同日标为 UNKNOWN；新增离线回执重整工具，可重建截止过滤、来源决策和对应观察标签，不发起网络请求。边界用例覆盖同日、前后日期及精确时分；对73条实际回执的重整与汇总待采集队列结束后执行。
+
+2026-10-14 W3历史 Web Search 证据采集完成：73/73 案例均有精确 gpt-6-luna/max 回执，共540次 live Web Search（首15条 v1共204次、其余58条 v2最多6次/条共336次），失败0；首批15条早期 invalid-transport 记录均被成功重试覆盖。保留395条来源，2条因 cutoff 后更新且无前置快照而移出输入；修正16条 DAY/UNKNOWN 同日来源为 UNKNOWN、52条观察时间标签为 UNKNOWN。两个未回连 URL 已标UNVERIFIED，一条 Reuters 原始来源标 CASE_SEED_SOURCE；NASA Bloomberg Law 仅保留截止前可见开篇，全文及修订史不可得。全部540行 as_of 与各案 cutoff 一致，输出证据中无 AFTER 来源。SDK原始回执未保存完整非Web工具面审计，故不宣称已证明 Apps/MCP 调用不存在；具体统计和缺口见 eval/w3_backtest/datasets/w3_history_20261014/preparation/web_collection_complete.json。离线重整只用保存的 SDK 回执，无新网络调用。
+
+2026-10-14 W3回测收尾：73条检索/行情全部齐备，52项相关回归及12项SDK回归通过。报告补运营动作宿主回执，保留人工Gold，网页日精度不虚构时分。C盘满导致首轮启动失败，保留所有文件并改由D:/DoxAgentBacktest承载4并发baseline及SDK/临时状态；当前运行中，不宣称全量验收完成。
+
+2026-10-14 W3 backtest final: frozen 73-case Luna/max Web + remote IBKR dataset; baseline D:/DoxAgentBacktest/runs/baseline-20261014 completed: 73 decisions, 71 two-phase successes, 2 existing novelty Reference View validation failures (EXTRA-INTC-OPENAI E214; NOISE-17 E1). Gold 33/37 match, 2 wrong trades, 2 missed; final report/audit and receipt on D. C disk full; no cleanup, prompt changes or production deployment.
+
+2026-10-14 合并前容量清理：按用户仅授权第一项执行，重验后精确删除177个Reclaimable且非Shared的BuildKit缓存ID；213个共享记录保留，镜像标签/ID与51个容器身份、状态、启动时间前后一致。BuildKit报告9.809GB，根盘可用实际16.21→24.18GiB，净增7.97GiB。未删除旧镜像、worktree或业务数据，未重启服务。记录见docs/remote-premerge-storage-audit-20261014.md及eval/merge_storage_audit_20261014/cache-deletion-receipt.json。
+
+2026-10-15 W3 历史回测合入 MAIN：在 21b9b7bd 上整合离线回放实现、SDK 可选配置、两阶段/Gold/截止时间回归、使用文档与冻结输入。保留 MAIN 的维护节点 60 秒启动预算和 W3 writer 修复；不提交 SDK 私有状态、运行数据库及重复原始导出。测试与同步结果见后续执行回执。
+2026-10-15 W3 回测整合验证：72 项回测/W3/权限/生命周期/writer/维护恢复回归通过；冻结输入 JSON/JSONL 解析和凭据模式检查通过。四份冻结研究原文的历史行尾空格保持原样，代码/文档单独空白检查。

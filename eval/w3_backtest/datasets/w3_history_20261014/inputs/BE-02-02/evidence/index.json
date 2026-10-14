@@ -1,0 +1,23 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-25T12:51:20.141491Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "The underlying Goldman Hammond research note was not publicly accessible in the retrieved sources; its exact publication time, methodology, company scope, and definitions of the $300B revenue threshold remain unverified.",
+    "The $1.1T consensus comparator is reported by Bloomberg and approximated by RBC GAM, but no contemporaneous consensus dataset or methodology was retrieved.",
+    "The news concerns aggregate hyperscaler capex; no evidence links the forecast to Bloom-specific orders, procurement, project allocation, or power-source choice.",
+    "The supplied HuggingNews item's metadata and displayed feed time conflict, and its full page text was not retrievable."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

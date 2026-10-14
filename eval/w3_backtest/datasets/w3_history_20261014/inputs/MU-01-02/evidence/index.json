@@ -1,0 +1,23 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-24T17:02:40.928304Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "No pre-cutoff official joint readout or primary document was located confirming that both leaders agreed against new AI limits.",
+    "Whether officials discussed an incident-alert channel, and the scope or status of any such discussion by cutoff, remains unverified.",
+    "The exact first-publication time and pre-cutoff text version of the HuggingNews item remain unresolved.",
+    "The reviewed event evidence does not establish a direct Micron product, supply, financial, or customer impact."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

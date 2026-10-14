@@ -1,0 +1,23 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-10-01T12:55:24.579038Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "No pre-cutoff full transcript with an original, dated snapshot was verified. The statement that most overall capacity was already sold is available in contemporaneous reporting; Micron's dated prepared remarks more narrowly confirm agreements covering the vast majority of calendar-2027 HBM bit supply and higher year-over-year pricing.",
+    "Exact posting times for Micron's September 30 release and prepared remarks are not shown; only the date and call time are verified.",
+    "The Acer counterpoint is secondary reporting; the original DigiTimes interview or transcript was not independently verified.",
+    "The sources concern memory-industry forecasts and do not establish a specific Intel supplier allocation, order, shipment, or cost impact by cutoff."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

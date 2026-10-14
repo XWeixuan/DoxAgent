@@ -1,0 +1,23 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-22T17:06:24.143456Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "The supplied Yahoo Finance page returned 429 on direct open; the identical text and original timing were checked against Schaeffer's original article and the Finviz copy.",
+    "Schaeffer's page does not specify the timezone for its 12:57 PM timestamp or publish the underlying time-stamped price and moving-average calculation.",
+    "Benzinga and Invezz display Sep. 22 morning times without timezones; neither is treated as verified pre-cutoff evidence. Invezz's below-50-day statement therefore remains a time-uncertain same-day discrepancy.",
+    "No source found establishes that the reported technical crossover was driven by a new company-specific disclosure; the prior-session attribution to analyst commentary and other themes is media framing, not verified causality."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

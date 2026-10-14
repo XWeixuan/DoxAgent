@@ -1,0 +1,22 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-27T09:31:04.173668Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "The full September 26 On3 article body was unavailable; the underlying recruiting claim, event time, and any firsthand source or details cannot be checked.",
+    "No dated archived pre-cutoff snapshots or revision history were surfaced for these pages, so their currently visible text is not independently verified as a pre-cutoff snapshot.",
+    "No material, independently verified pre-cutoff counterpoint or update to the September 26 recruiting report was located; the AOL/FSU Wire item is prior context and attributes its recruiting information to Rivals."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

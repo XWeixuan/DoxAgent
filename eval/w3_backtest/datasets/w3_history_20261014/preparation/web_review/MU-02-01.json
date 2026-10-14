@@ -1,0 +1,179 @@
+{
+  "case_key": "MU-02-01",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-09-29T01:11:31.653741Z",
+  "reviewed_at": "2026-10-13T22:58:31.921194Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 6,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a1375d-b493-7a71-872f-29cbc1113849",
+    "turn_id": "01a1375d-b4a3-78e2-a572-4fb643a5c5f2",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 84736,
+        "inputTokens": 93979,
+        "outputTokens": 12044,
+        "reasoningOutputTokens": 9840,
+        "totalTokens": 106023
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 370176,
+        "inputTokens": 467919,
+        "outputTokens": 17166,
+        "reasoningOutputTokens": 14345,
+        "totalTokens": 485085
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "ffb84a844b184d61c3f7604c3e14ecf4cf4b2bf38ce6d4f8c69a13c5e8f91a39",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://www.anthropic.com/news/confidential-draft-s1-sec",
+      "title": "Anthropic confidentially submits draft S-1 to the SEC",
+      "published_at": "2026-06-01",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn2search0"
+      ],
+      "source_call_ids": [
+        "exec-17bb0e4b-25b4-49f5-9eea-e89622c9f2f7"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://www.investing.com/news/stock-market-news/anthropic-plans-to-publicly-unveil-ipo-prospectus-after-labor-day-the-information-reports-4880033",
+      "title": "Anthropic plans to publicly unveil IPO prospectus after Labor Day, the Information reports",
+      "published_at": "2026-08-27",
+      "time_precision": "DAY",
+      "updated_at": "2026-08-27",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "BEFORE_CUTOFF",
+      "content_state": "UPDATED",
+      "decision": "KEEP",
+      "reason": "The supplied publication and revision times do not exceed the case cutoff.",
+      "source_result_refs": [
+        "turn2search2"
+      ],
+      "source_call_ids": [
+        "exec-17bb0e4b-25b4-49f5-9eea-e89622c9f2f7"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://www.investing.com/news/stock-market-news/exclusiveanthropics-ipo-prospectus-shows-sweeping-ai-vision-surging-costs-4921382",
+      "title": "Exclusive—Anthropic’s IPO prospectus shows sweeping AI vision, surging costs",
+      "published_at": "2026-09-28T19:17:00-04:00",
+      "time_precision": "MINUTE",
+      "updated_at": "2026-09-28T19:18:00-04:00",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "BEFORE_CUTOFF",
+      "content_state": "UPDATED",
+      "decision": "KEEP",
+      "reason": "The supplied publication and revision times do not exceed the case cutoff.",
+      "source_result_refs": [
+        "turn0search1"
+      ],
+      "source_call_ids": [
+        "exec-f21e4f12-bf89-4cad-abbd-68b2f96b5b24"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://www.fidelity.com/news/article/company-news/202609282001RTRSNEWSCOMBINED_KBN3VE2HI-OUSBS_1",
+      "title": "Anthropic’s IPO prospectus shows sweeping AI vision, surging costs",
+      "published_at": "2026-09-28T20:01:00-04:00",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn5search0"
+      ],
+      "source_call_ids": [
+        "exec-c0f5199e-6228-42df-9c4e-5dfacfe9d9b8"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "Prior public status was confidential: Anthropic’s June 1 statement said it had submitted a draft S-1 confidentially, with any offering conditional on SEC review and market conditions. A Reuters report in August described a planned public prospectus unveiling after Labor Day, but attributed that timetable to The Information and sources familiar with the process.",
+      "source_urls": [
+        "https://www.anthropic.com/news/confidential-draft-s1-sec",
+        "https://www.investing.com/news/stock-market-news/anthropic-plans-to-publicly-unveil-ipo-prospectus-after-labor-day-the-information-reports-4880033"
+      ],
+      "event_time": "2026-06-01",
+      "publication_time": "2026-06-01",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "These sources establish a confidential filing and a reported timetable, not that Anthropic publicly released a prospectus by the September cutoff."
+    },
+    {
+      "observation": "The earliest traceable report found on the $518B figure is Reuters’ September 28, 7:17 PM ET article, updated at 7:18 PM. It says Reuters had seen the prospectus and describes cloud, computing, and infrastructure obligations; this copy says they were planned in the coming year.",
+      "source_urls": [
+        "https://www.investing.com/news/stock-market-news/exclusiveanthropics-ipo-prospectus-shows-sweeping-ai-vision-surging-costs-4921382"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-28T19:17:00-04:00",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The underlying prospectus was not publicly reproduced in this source, and this report alone does not establish the exact timing or cash-flow schedule of the obligations."
+    },
+    {
+      "observation": "A Reuters dispatch carried by Fidelity at 8:01 PM ET on September 28 describes the same $518B obligations as occurring in the coming years. This is same-evening wording variation in Reuters copies; it supports multi-year phrasing before cutoff but does not by itself document a formal correction.",
+      "source_urls": [
+        "https://www.fidelity.com/news/article/company-news/202609282001RTRSNEWSCOMBINED_KBN3VE2HI-OUSBS_1",
+        "https://www.investing.com/news/stock-market-news/exclusiveanthropics-ipo-prospectus-shows-sweeping-ai-vision-surging-costs-4921382"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-28T20:01:00-04:00",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "Both pages carry Reuters reporting, not independent confirmation; no formal correction note or public prospectus passage verifying the duration was located."
+    },
+    {
+      "observation": "Reuters’ early report also gives material context: 2025 revenue was nearly $4.6B, the net loss was about $42B (including an approximately $34B financing-related accounting charge), operating loss exceeded $8B, and nearly one-quarter of revenue came from two customers; the report says many large customers were not bound by long-term contracts.",
+      "source_urls": [
+        "https://www.investing.com/news/stock-market-news/exclusiveanthropics-ipo-prospectus-shows-sweeping-ai-vision-surging-costs-4921382"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-28T19:17:00-04:00",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "These financial and customer-risk details are reported from the prospectus by Reuters, not independently verified here. The spending description does not identify memory suppliers, HBM/DRAM/NAND volumes, or Micron allocation."
+    }
+  ],
+  "gaps": [
+    "No independently reported non-Reuters contemporaneous coverage before the cutoff was verified.",
+    "No public copy of the prospectus or SEC filing passage containing the $518B figure was located in this focused search; exact duration, contractual composition, payment timing, and supplier-level allocations remain unverified.",
+    "The same-evening Reuters copies differ between singular- and plural-year wording; without a dated correction notice or original document passage, a formal correction cannot be confirmed."
+  ],
+  "research_notes": "Cutoff: 2026-09-29T01:11:31.653741Z (2026-09-28 21:11:31 EDT). The $518B figure is traceable by cutoff to Reuters reporting that it had seen a prospectus, not to a public primary prospectus located in this search. Anthropic’s prior official statement described a confidential draft S-1. Same-evening Reuters versions differ: an early copy says obligations in the coming year, while an 8:01 PM ET Reuters dispatch says coming years. That supports multi-year wording appearing before cutoff but does not establish a formal correction or the exact obligation schedule. The reported cloud, computing, and infrastructure obligations do not specify Micron purchases or memory-product allocation; that is a scope limitation, not a conclusion about Micron demand. No independently reported non-Reuters contemporaneous coverage within the cutoff window was verified."
+}

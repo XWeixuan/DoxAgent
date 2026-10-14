@@ -1,0 +1,149 @@
+{
+  "case_key": "NOISE-06",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-10-07T11:17:57.219922Z",
+  "reviewed_at": "2026-10-13T22:58:32.475251Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 6,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a1376c-fe7c-7021-9de6-a576cf95cbe6",
+    "turn_id": "01a1376c-fe8a-79c1-ad25-06c1a1dee9f5",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 87808,
+        "inputTokens": 98013,
+        "outputTokens": 11724,
+        "reasoningOutputTokens": 9920,
+        "totalTokens": 109737
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 397568,
+        "inputTokens": 490238,
+        "outputTokens": 17081,
+        "reasoningOutputTokens": 14734,
+        "totalTokens": 507319
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "f8ce7a4f4637fb6ce60871ec2eabfea424cb5800e492579c29cd123b9384245a",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://www.globenewswire.com/news-release/2026/10/07/3376366/0/en/united-states-engineering-services-market-size-share-growth-and-forecast-2026-2035-infrastructure-clean-energy-and-chips-act-fuel-growth-to-usd-240-billion.html",
+      "title": "United States Engineering Services Market Size, Share, Growth and Forecast 2026-2035 | Infrastructure, Clean Energy, and CHIPS Act Fuel Growth to USD 240 Billion",
+      "published_at": "2026-10-07T11:12:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search1"
+      ],
+      "source_call_ids": [
+        "exec-0790574e-1631-4fb1-ba18-81fa74e8f30f"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://www.marketresearch.com/Expert-Market-Research-v4220/United-States-Engineering-Services-Size-45227984/",
+      "title": "United States Engineering Services Market Size and Share - Growth Analysis Report and Forecast Trends (2026-2035)",
+      "published_at": "2026-04-11",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search0"
+      ],
+      "source_call_ids": [
+        "exec-0790574e-1631-4fb1-ba18-81fa74e8f30f"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000006/mu-20260226.htm",
+      "title": "Micron Technology, Inc. Form 10-Q for the quarter ended February 26, 2026",
+      "published_at": "2026-03-19",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn4search1",
+        "turn4search11"
+      ],
+      "source_call_ids": [
+        "exec-5395f37d-4c05-4a72-80fd-86d52bae1310"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "At 2026-10-07 11:12 UTC, Research and Markets issued a release announcing a report listing and stating market estimates and sector drivers. The Micron mention is an example within that general market discussion, not a company-status disclosure.",
+      "source_urls": [
+        "https://www.globenewswire.com/news-release/2026/10/07/3376366/0/en/united-states-engineering-services-market-size-share-growth-and-forecast-2026-2035-infrastructure-clean-energy-and-chips-act-fuel-growth-to-usd-240-billion.html"
+      ],
+      "event_time": "2026-10-07T11:12:00Z",
+      "publication_time": "2026-10-07T11:12:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The market-size figures and Micron facility reference are claims in a Research and Markets press release; the release supplies no methodology or Micron-specific operational update."
+    },
+    {
+      "observation": "A MarketResearch.com catalog listing dated April 11, 2026 carries the same report title and the same market value and forecast figures, so the October release appears to be a later offering/dissemination notice rather than the first public appearance of those estimates.",
+      "source_urls": [
+        "https://www.marketresearch.com/Expert-Market-Research-v4220/United-States-Engineering-Services-Size-45227984/"
+      ],
+      "event_time": "2026-04-11",
+      "publication_time": "2026-04-11",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This is a catalog listing for a report, not independent validation of its estimates; matching title and publisher do not confirm the exact ResearchAndMarkets catalog record."
+    },
+    {
+      "observation": "Micron’s pre-cutoff Form 10-Q describes two Idaho fab plans and their projected timing, providing prior project context for the release’s Idaho reference.",
+      "source_urls": [
+        "https://www.sec.gov/Archives/edgar/data/723125/000072312526000006/mu-20260226.htm"
+      ],
+      "event_time": "2026-03-19",
+      "publication_time": "2026-03-19",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The filing does not quantify a $35 billion cost for one Idaho facility, and its output dates are projections rather than completed milestones."
+    }
+  ],
+  "gaps": [
+    "No independent contemporaneous editorial coverage with a verified pre-cutoff timestamp was established. A Yahoo Finance copy surfaced in search, but its exact publication time was not verified.",
+    "The underlying full report and its methodology were not independently reviewed.",
+    "No pre-cutoff archived snapshot of the ResearchAndMarkets product page was verified, so its current report-date metadata was not used as evidence that the listing existed in that form by the cutoff.",
+    "The reviewed Micron filing does not reconcile the release’s $35 billion Idaho-facility description with the company’s project-specific investment figures."
+  ],
+  "research_notes": "The earliest traceable source for the October 7 dissemination is Research and Markets’ GlobeNewswire release, timestamped 07:12 ET (11:12 UTC), about six minutes before the cutoff. It announces that a report was added to the offering; it is not a Micron issuer update. An earlier catalog listing for a report with the same title and forecast provides prior context, but is not independent validation. Search surfaced a Yahoo Finance copy, but its exact publication time could not be verified and it was not treated as eligible independent, pre-cutoff coverage. A current ResearchAndMarkets listing labels the report April 2026, but no pre-cutoff snapshot was verified, so that page is not used as cutoff evidence."
+}

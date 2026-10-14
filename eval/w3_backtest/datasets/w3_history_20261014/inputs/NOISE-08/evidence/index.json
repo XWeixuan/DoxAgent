@@ -1,0 +1,22 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-27T08:28:52.441980Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "No archived, dated pre-cutoff snapshot of the Stocktwits article was located; its case-feed timestamp and live page publication date conflict.",
+    "The Intel Newsroom source page timed out; exact primary-release wording was not independently verified from the full page, though the search result and DCD report provide partial corroboration.",
+    "The sources do not independently quantify Stocktwits’ “overshadowed” characterization or establish shipment volumes, realized adoption, or a confirmed September 22 publication of this article."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

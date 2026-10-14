@@ -1,0 +1,57 @@
+{
+  "ticker": "MU",
+  "version": 17,
+  "requested_event_ids": [
+    "E52"
+  ],
+  "events": [
+    {
+      "event_id": "E52",
+      "ticker": "MU",
+      "title": "Anthropic and OpenAI reported accelerating AI demand",
+      "event_type": "SUPPLY_DEMAND_UPDATE",
+      "occurred_at": "2026-08-14..2026-09-14",
+      "occurrence_time_precision": "INTERVAL",
+      "status": "ACTIVE",
+      "canonical_summary": "Anthropic and OpenAI disclosed rapid revenue growth and expanding enterprise demand, reinforcing the external AI-infrastructure demand path for Micron memory.",
+      "known_event_summary": "2026-08-14..2026-09-14 AI-customer demand update: Anthropic revenue exceeded $11.5 billion, OpenAI reached a $40 billion annualized run rate, and enterprise revenue exceeded consumer revenue.",
+      "is_important": true,
+      "include_in_reference_view": true,
+      "related_event_ids": [
+        "E4",
+        "E28",
+        "E29"
+      ],
+      "supersedes_event_id": null,
+      "derived_from_event_ids": [],
+      "facts": [
+        {
+          "fact_id": "F371",
+          "proposition": "Anthropic's second-quarter 2026 revenue exceeded $11.5 billion, more than 14 times the prior-year level.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "FY2026-Q2",
+          "fact_occurred_at": "2026-09-14",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F372",
+          "proposition": "OpenAI's annualized revenue run rate reached approximately $40 billion.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "fact_occurred_at": "2026-09-14",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F373",
+          "proposition": "OpenAI's enterprise business generated more revenue than its consumer segment.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "fact_occurred_at": "2026-09-14",
+          "fact_occurrence_time_precision": "DAY"
+        }
+      ],
+      "price_analysis": null
+    }
+  ],
+  "missing_event_ids": []
+}

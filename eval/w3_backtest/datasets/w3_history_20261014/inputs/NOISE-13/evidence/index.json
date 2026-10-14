@@ -1,0 +1,23 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-28T17:28:40.710250Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "Cantor's original research note was not retrieved. Investing.com's displayed publication time lacks a stated timezone, and a pre-cutoff page snapshot was not verified; the supplied Stocktwits copy does verify that its summary had circulated by 17:15:46Z.",
+    "No pre-meeting proxy or notice was opened to independently verify the previously scheduled shareholder-vote expectation; the supplied case context identifies the vote as pending before September 24.",
+    "The SpaceX Flight 14 page was found with a September 28 date, but its open fetch returned no body and its publication time or pre-cutoff snapshot could not be established. The current AP page's search timestamp was inconsistent with its post-flight text, so its early-return detail is not treated as cutoff-verified.",
+    "The Stocktwits article links to a Wall Street Journal report on Falcon 9 rideshare availability, but the accessible WSJ page exposed only its headline and subtitle; the specific rideshare and post-2028 assertions could not be independently verified from accessible pre-cutoff text."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

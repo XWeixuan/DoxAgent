@@ -100,12 +100,17 @@ class W3Execution:
             provider=getattr(self.agent, "_model_provider", None),
             override=getattr(self.agent, "_execution_model_override", None),
         )
+        environment = getattr(self.agent, "environment", None)
+        capabilities = (
+            [environment.web_search_mode, environment.compatibility()]
+            if environment and environment.mode != "PRODUCTION"
+            else ["live", {"read_only": True, "data_mcp_enabled": True, "allow_subagents": False}]
+        )
         compatibility = digest(
             [
                 case.frozen_inputs["w3_assets"],
                 profile,
-                "live",
-                {"read_only": True, "data_mcp_enabled": True, "allow_subagents": False},
+                *capabilities,
                 "persistent-runtime.w3.v4",
             ]
         )
@@ -184,13 +189,16 @@ class W3Execution:
             self._sync_route_case(case, {"thread_id": stage["thread_id"]})
             return
         if stage["result_json"] is None:
+            replay = case.frozen_inputs.get("w3_replay")
             membership = freeze_history(
                 self.journal, case, datetime.fromisoformat(stage["accepted_at"])
             )
             saved_state = self.journal.get("w3_global_input", case.case_id)
             if saved_state is None:
                 with self.journal.transaction() as db:
-                    saved_state = global_snapshot(db, case.ticker, self.journal.clock())
+                    saved_state = (replay or {}).get("global_state") or global_snapshot(
+                        db, case.ticker, self.journal.clock()
+                    )
                     policy_consumption.put_value(db, "w3_global_input", case.case_id, saved_state)
             context = self.agent.prepare_case(case)
             research = derive_research_assets(context, policy_origins=context.policy_origins)
@@ -198,6 +206,9 @@ class W3Execution:
             history, matches = history_payload(
                 self.journal, self.service.repository, case, membership
             )
+            if replay is not None:
+                history = replay.get("recent_trade_intents", history)
+                matches = replay.get("history_matches", matches)
             labels = case_labels(
                 case,
                 history_matches=matches,
@@ -366,7 +377,9 @@ class W3Execution:
         state = self.journal.get("w3_operations_input", case.case_id)
         if state is None:
             with self.journal.transaction() as db:
-                state = global_snapshot(db, case.ticker, self.journal.clock())
+                state = case.frozen_inputs.get("w3_replay", {}).get(
+                    "global_state"
+                ) or global_snapshot(db, case.ticker, self.journal.clock())
                 policy_consumption.put_value(db, "w3_operations_input", case.case_id, state)
         if stage["result_json"] is None:
             context = self.agent.prepare_case(case)
@@ -382,7 +395,9 @@ class W3Execution:
                     candidate_eligibility={
                         "origin_trade_eligible": candidate["origin_trade_eligible"],
                         "trade_disposition": candidate["trade_disposition"],
-                    } if candidate else None,
+                    }
+                    if candidate
+                    else None,
                     watch=state["watch"],
                     pins=state["pins"],
                 ),

@@ -1,0 +1,320 @@
+{
+  "case_key": "BE-01-02",
+  "evidence_cutoff_at": "2026-09-24T15:52:35.640602Z",
+  "reviewed_at": "2026-10-13T22:58:31.355815Z",
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a1373b-387d-7cb3-8605-ad262d25dc13",
+    "turn_id": "01a1373b-38ab-7b70-8b40-685e17f812c9",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 161536,
+        "inputTokens": 169805,
+        "outputTokens": 16257,
+        "reasoningOutputTokens": 11619,
+        "totalTokens": 186062
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 1640448,
+        "inputTokens": 1820509,
+        "outputTokens": 34453,
+        "reasoningOutputTokens": 28159,
+        "totalTokens": 1854962
+      }
+    },
+    "prompt_version": "w3-web-evidence-v1",
+    "input_fingerprint": "f902d0f805cfd79e55c9d1b12fc2039e266276e8931a273fb5fe5b2b3d46a030",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": null,
+      "url": "https://bloomberg.com/news/articles/2026-09-24/oracle-cites-force-majeure-to-shield-itself-on-controversial-data-center",
+      "title": "Oracle Cites ‘Force Majeure’ to Shield Itself on Controversial Data Center",
+      "published_at": "2026-09-24T12:25:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": "2026-09-24T16:50:00Z",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "AFTER_CUTOFF",
+      "content_state": "UPDATED",
+      "decision": "DROP",
+      "reason": "The source was updated after cutoff and no dated pre-cutoff passage or snapshot was identified.",
+      "source_result_refs": [
+        "turn1search0"
+      ],
+      "source_call_ids": [
+        "exec-34688d53-3f8d-4f8e-925b-bcd06fa4752a"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S1",
+      "url": "https://www.marketscreener.com/news/oracle-stock-slides-on-report-of-notice-citing-force-majeure-to-data-center-developer-ce785aded18cfe2c",
+      "title": "Oracle Stock Slides on Report of Notice Citing 'Force Majeure' to Data-Center Developer",
+      "published_at": "2026-09-24T14:20:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": "2026-09-24T14:21:00Z",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "BEFORE_CUTOFF",
+      "content_state": "UPDATED",
+      "decision": "KEEP",
+      "reason": "The supplied publication and revision times do not exceed the case cutoff.",
+      "source_result_refs": [
+        "turn7search3"
+      ],
+      "source_call_ids": [
+        "exec-11faef97-cb66-4d90-9d33-965c5ba41bfd"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://247wallst.com/investing/2026/09/24/bloom-energys-single-largest-fuel-cell-deployment-is-in-trouble/",
+      "title": "Bloom Energy’s Single Largest Fuel Cell Deployment Is In Trouble",
+      "published_at": "2026-09-24T15:29:32Z",
+      "time_precision": "EXACT",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn2search0"
+      ],
+      "source_call_ids": [
+        "exec-245ba7f2-3378-453f-be00-448666b1e477"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://news.bloomberglaw.com/health-law-and-business/gas-pipeline-for-proposed-oracle-data-center-delayed-to-2027-2",
+      "title": "Gas Pipeline for Proposed Oracle Data Center Delayed to 2027",
+      "published_at": "2026-08-14T19:47:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn5search2"
+      ],
+      "source_call_ids": [
+        "exec-99109d65-c91a-475f-8b98-b5dd434753cb"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://finwires.com/en/article/correction-energy-transfer-s-green-chile-pipeline-delayed-7125335",
+      "title": "Correction: Energy Transfer's Green Chile Pipeline Delayed to February 2027",
+      "published_at": "2026-08-14T18:11:16Z",
+      "time_precision": "EXACT",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UPDATED",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn5search0"
+      ],
+      "source_call_ids": [
+        "exec-99109d65-c91a-475f-8b98-b5dd434753cb"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S5",
+      "url": "https://www.nmstatelands.org/2026/07/15/commissioner-garcia-richard-again-denies-request-to-run-portion-of-project-jupiter-pipeline-through-state-lands/",
+      "title": "Commissioner Garcia Richard Again Denies Request to Run Portion of Project Jupiter Pipeline Through State Lands",
+      "published_at": "2026-07-15",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn2search2"
+      ],
+      "source_call_ids": [
+        "exec-245ba7f2-3378-453f-be00-448666b1e477"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S6",
+      "url": "https://www.oracle.com/news/announcement/oracle-borderplex-and-bloom-energy-to-power-project-jupiter-with-fuel-cell-technology-2026-04-27/",
+      "title": "Oracle, BorderPlex, and Bloom Energy to Power Project Jupiter with Cleaner, Water-Efficient Fuel Cell Technology",
+      "published_at": "2026-04-27",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn11search0"
+      ],
+      "source_call_ids": [
+        "exec-44b166bd-f34c-46f1-8a8c-d2ac97063e81"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S7",
+      "url": "https://investor.bloomenergy.com/press-releases/press-release-details/2026/Bloom-Energy-and-Oracle-Expand-Strategic-Partnership-to-Deploy-up-to-2-8-GW-to-Accelerate-AI-Infrastructure-Build-Out/default.aspx",
+      "title": "Bloom Energy and Oracle Expand Strategic Partnership to Deploy up to 2.8 GW to Accelerate AI Infrastructure Build-Out",
+      "published_at": "2026-04-13",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search6"
+      ],
+      "source_call_ids": [
+        "exec-c7e2a4db-1c84-46c4-93ae-6df78ec0ffc5"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S8",
+      "url": "https://www.sec.gov/Archives/edgar/data/1664703/000162828026050150/ex991_q226financialresults.htm",
+      "title": "Bloom Energy Reports Record Second Quarter 2026 Financial Results and Raises Full Year 2026 Guidance",
+      "published_at": "2026-07-28",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn7search1"
+      ],
+      "source_call_ids": [
+        "exec-11faef97-cb66-4d90-9d33-965c5ba41bfd"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S9",
+      "url": "https://nmcourts.gov/wp-content/uploads/2026/09/Orders-in-Project-Jupiter-air-quality-permit-and-water-cases.pdf",
+      "title": "Orders in Project Jupiter Air Quality Permit and Water Cases",
+      "published_at": "2026-09-17",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn12search12"
+      ],
+      "source_call_ids": [
+        "exec-177344fb-f732-4db9-856f-5f122b750e47"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "The Green Chile pipeline schedule change underlying the Sept. 24 article was already public: Aug. 14 coverage of a Transwestern regulatory filing reported a forecast service date of Feb. 1, 2027, versus Aug. 15, 2026. The New Mexico State Land Office had announced a renewed route denial in July. Thus, the pipeline date change itself was prior context, not a new Sept. 24 disclosure.",
+      "source_urls": [
+        "https://finwires.com/en/article/correction-energy-transfer-s-green-chile-pipeline-delayed-7125335",
+        "https://news.bloomberglaw.com/health-law-and-business/gas-pipeline-for-proposed-oracle-data-center-delayed-to-2027-2",
+        "https://www.nmstatelands.org/2026/07/15/commissioner-garcia-richard-again-denies-request-to-run-portion-of-project-jupiter-pipeline-through-state-lands/"
+      ],
+      "event_time": "2026-08-14",
+      "publication_time": "2026-08-14T18:11:16Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The FERC filing itself was not retrievable in this search. The reporting describes a forecast date; it does not establish that Jupiter's opening date changed or that Bloom deliveries were canceled. The corrected FINWIRES page has no archived earlier version."
+    },
+    {
+      "observation": "Pre-event project disclosures were substantial but not interchangeable: Oracle said Jupiter would be supported by up to 2.45 GW of installed Bloom fuel-cell capacity. Separately, Bloom's Oracle master agreement was up to 2.8 GW, with an initial 1.2 GW contracted across U.S. Oracle projects and deployment underway.",
+      "source_urls": [
+        "https://www.oracle.com/news/announcement/oracle-borderplex-and-bloom-energy-to-power-project-jupiter-with-fuel-cell-technology-2026-04-27/",
+        "https://investor.bloomenergy.com/press-releases/press-release-details/2026/Bloom-Energy-and-Oracle-Expand-Strategic-Partnership-to-Deploy-up-to-2-8-GW-to-Accelerate-AI-Infrastructure-Build-Out/default.aspx"
+      ],
+      "event_time": null,
+      "publication_time": "2026-04-27",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "Oracle's Jupiter capacity statement is 'up to'; Bloom's 1.2 GW initial contracted capacity is described across U.S. Oracle projects, not identified as a Jupiter-only contracted delivery."
+    },
+    {
+      "observation": "The fresh Sept. 24 information was Bloomberg's report that Oracle had sent a force-majeure notice to the Jupiter developer and sought potential payment deferral if the project missed its planned 2028 start, rather than seeking to leave as tenant. The notice's actual issuance time was not stated in the pre-cutoff material reviewed. The target 24/7 Wall St. article followed at 11:29 a.m. EDT and framed the notice together with the already-public pipeline delay as risk to future Bloom revenue.",
+      "source_urls": [
+        "https://bloomberg.com/news/articles/2026-09-24/oracle-cites-force-majeure-to-shield-itself-on-controversial-data-center",
+        "https://www.marketscreener.com/news/oracle-stock-slides-on-report-of-notice-citing-force-majeure-to-data-center-developer-ce785aded18cfe2c",
+        "https://247wallst.com/investing/2026/09/24/bloom-energys-single-largest-fuel-cell-deployment-is-in-trouble/"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-24T12:25:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The report describes a conditional legal notice, not a confirmed payment deferral, lease termination, change to Bloom's order, or revised project opening. Bloomberg's page was updated after cutoff without a verified pre-cutoff snapshot; the 24/7 page also lacks a verified snapshot."
+    },
+    {
+      "observation": "A same-morning response reported before cutoff was that Oracle said Jupiter remained on its planned schedule and that it remained committed to New Mexico. This counters treating the notice itself as confirmation of a changed project schedule.",
+      "source_urls": [
+        "https://www.marketscreener.com/news/oracle-stock-slides-on-report-of-notice-citing-force-majeure-to-data-center-developer-ce785aded18cfe2c"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-24T14:20:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This is Oracle's reported statement, not independent verification of construction, fuel readiness, or permit status; the notice's underlying terms were not public in the cited wire."
+    },
+    {
+      "observation": "On Sept. 17, the New Mexico Supreme Court denied petitions and lifted stays in Project Jupiter air-quality and water proceedings. The action allowed proceedings to continue but did not itself grant the air permit, so the regulatory path remained a separate project condition.",
+      "source_urls": [
+        "https://nmcourts.gov/wp-content/uploads/2026/09/Orders-in-Project-Jupiter-air-quality-permit-and-water-cases.pdf"
+      ],
+      "event_time": "2026-09-17",
+      "publication_time": "2026-09-17",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The orders are procedural and do not resolve the permit merits or establish a new project delivery date."
+    },
+    {
+      "observation": "Bloom's July 28 primary release set formal FY2026 revenue guidance at $3.9–$4.2 billion and identified project-development, installation, interconnection, and backlog-conversion risks. The primary release reviewed here does not provide numeric FY2027/2028 revenue guidance, so the target article's future-year framing should not be treated as company guidance based on this source.",
+      "source_urls": [
+        "https://www.sec.gov/Archives/edgar/data/1664703/000162828026050150/ex991_q226financialresults.htm"
+      ],
+      "event_time": "2026-07-28",
+      "publication_time": "2026-07-28",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This limits what the cited release verifies; it does not establish that no longer-range company goal appeared in any other document."
+    }
+  ],
+  "gaps": [
+    "The original force-majeure notice, its exact date/time, its precise clause, any required counterparty agreement, and any later exercise of payment relief were not publicly verified in pre-cutoff source material.",
+    "No cited pre-cutoff primary source ties Bloom's exact Jupiter delivery/acceptance schedule or revenue recognition to a changed pipeline date or confirms cancellation, rescheduling, or a change to Bloom's contract.",
+    "The FERC eLibrary filing referenced by the Aug. 14 coverage was linked but not directly retrievable; its exact filing timestamp and wording remain unverified.",
+    "The 24/7 Wall St. page has no verified pre-cutoff snapshot and contains changing session fields; Bloomberg's report page shows a post-cutoff update. No post-cutoff content or market prices were used.",
+    "The primary company release reviewed establishes FY2026 guidance, not formal FY2027/2028 revenue targets. Those future-year references remain unverified as company guidance.",
+    "The Sept. 17 court action lifted stays but did not decide the air permit on its merits; no final permit approval was verified by the cutoff."
+  ],
+  "research_notes": "Cutoff: 2026-09-24T15:52:35.640602Z. The target 24/7 Wall St. article is timestamped 15:29:32Z, about 23 minutes before cutoff. Bloomberg is the earliest traceable report of Oracle's force-majeure notice (08:25 EDT / 12:25Z); its page later shows a 12:50 EDT update, after cutoff, and no dated pre-cutoff snapshot was found. A Dow Jones wire report published and modified before cutoff also reports the notice and Oracle's response. The target article's current page has changing session fields and no verified pre-cutoff snapshot; no prices or later market reactions are used.\n\nThe pipeline schedule change was already public weeks earlier: reporting on an Aug. 14 Transwestern filing described Green Chile's forecast service date moving from Aug. 15, 2026, to Feb. 1, 2027. The earliest timestamped coverage located in this search was a corrected FINWIRES item; Bloomberg Law also reported the filing. The underlying FERC record was not directly retrievable here, so its exact filing timestamp and wording remain unverified.\n\nThe prior project context is distinct from the new notice: Oracle announced up to 2.45 GW of Bloom fuel-cell capacity for Project Jupiter, while Bloom's separate Oracle master agreement was up to 2.8 GW, with an initial 1.2 GW contracted across U.S. Oracle projects. Bloom's July 28 formal guidance was for FY2026; the primary release reviewed here does not substantiate formal 2027/2028 revenue targets. This evidence set does not establish a changed Bloom order, delivery schedule, revenue outlook, or Jupiter opening date.",
+  "collection_prompt_version": "w3-web-evidence-v1"
+}

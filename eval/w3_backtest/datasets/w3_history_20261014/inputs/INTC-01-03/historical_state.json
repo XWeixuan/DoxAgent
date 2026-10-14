@@ -1,0 +1,691 @@
+{
+  "recent_trade_intents": [
+    {
+      "message": {
+        "title": "AMD drops an EPYC $15,000, 256-core beast",
+        "body": "Facebook\n\nX\n\nWhatsapp\n\nReddit\n\nPinterest\n\nFlipboard\n\nEmail\n\nAfter unveiling the EPYC 9006 (codenamed Venice) series in July and previewing a few impressive Zen 6 benchmarks, AMD has now released full pricing for its highly anticipated next-generation server chips. According to the list StorageReview obtained, AMD has big plans for the data center, with a wide range of SKUs from eight to 256 cores and pricing from $700 to $14,904.\n\nIntel VP Robert Hallock sets Nova Lake expectations, teases return to Raptor Lake for DDR4 platforms\n\nCPU scaling with DLSS\n\nIntel's one-two punch plan in desktop CPUs is taking shape\n\nBenchmarking AMD's BC-250, offering Steam Machine-like performance at half the price\n\nAMD splits Zen 7 into three EPYC families for 2028 and starts selling server CPUs by the agent\n\nAs a quick refresher, AMD strategically divided the Venice lineup into two distinct segments. The SP7 platform is the flagship offering, delivering maximum memory capacity and throughput. It supports up to 16 memory channels, accommodating both RDIMMs and MDRDIMMs up to DDR5-12800. The platform offers up to 96 PCIe 6.0 lanes and supports Venice chips with TDPs between 400W and 600W.\n\nThe Venice parts designed for the SP7 socket offer scalable performance for enterprises. The lineup begins with the 64-core EPYC 9556, priced at $8,008, and extends to the flagship 256-core EPYC 9996, which commands $14,904. In retrospect, the EPYC 9996's price tag does not seem particularly shocking, especially since the previous-generation EPYC 9965 (codenamed Turin) launched at nearly the same price, around $14,800.\n\nAs is typical for server processors, the total price increases as the number of cores rises. However, the price per core actually decreases substantially as you move up the core ladder. The pricing dynamic is very notable with Venice. For example, the flagship EPYC 9996, with a massive 256 cores, comes out to just $58.21 per core, whereas the \"entry-level\" SP7 chip, the 64-core EPYC 9556, costs around $125.12 per core. As a result, higher core-count models are more attractive from a per-core value perspective for data centers, cloud service providers, and enterprises.\n\nAMD EPYC 9006 SP7 Specifications and Pricing\n\nProcessor\n1Ku Price\nCores / Threads\nBase / Boost Clock (GHz)\nL3 Cache (MB)\nSocket\nTDP (W)\n\n\n\n\nEPYC 9996\n$14,904\n256 / 512\n2.55 / 4.10\n1,024\n1P / 2P\n600\n\n\nEPYC 9966\n$14,079\n192 / 384\n2.90 / 4.00\n768\n1P / 2P\n600\n\n\nEPYC 9846\n$13,114\n168 / 336\n2.85 / 3.70\n768\n1P / 2P\n500\n\n\nEPYC 9756\n$12,498\n128 / 256\n3.15 / 4.00\n512\n1P / 2P\n500\n\n\nEPYC 9G76\n$11,622\n96 / 192\n3.40 / 4.80\n384\n1P / 2P\n500\n\n\nEPYC 9686F\n$11,434\n96 / 192\n3.40 / 5.00\n384\n1P / 2P\n500\n\n\nEPYC 9656\n$9,713\n96 / 192\n3.05 / 3.70\n512\n1P / 2P\n400\n\n\nEPYC 9586F\n$9,701\n64 / 128\n3.75 / 5.00\n384\n1P / 2P\n500\n\n\nEPYC 9556\n$8,008\n64 / 128\n2.75 / 4.30\n384\n1P / 2P\n300\n\nThe SP7 SKUs support both 1P and 2P socket configurations. The latter, in particular, enables up to 512 Zen 6 cores in one system by pairing two EPYC 9996 chips on a single motherboard. That level of performance logically comes with a substantial investment, since the processors alone would cost $29,808 before factoring in the significant expense of memory today.\n\nAmong the nine SP7 SKUs, two models in particular stand out: the EPYC 9686F and EPYC 9586F. The \"F\" suffix means these chips feature maximum boost clock speeds, in this case, 5 GHz. While both are impressive in their own right, AMD optimized these parts to hit 5 GHz. Naturally, this level of optimization carries a price premium. For example, the 64-core EPYC 9586F costs almost as much as the 96-core EPYC 9656, despite offering 33% fewer cores. The trade-off is also apparent in the thermal envelope. The EPYC 9586F has a TDP that is 100W higher than the EPYC 9656.\n\nAMD EPYC 9006 SP8 Specifications and Pricing\n\nProcessor\n1Ku Price\nCores / Threads\nBase / Boost Clock (GHz)\nL3 Cache (MB)\nSocket\nTDP (W)\n\n\n\n\nEPYC 9746\n$11,679\n128 / 256\n2.90 / 4.00\n512\n1P / 2P\n400\n\n\nEPYC 9736\n$10,639\n128 / 256\n2.70 / 3.70\n256\n1P / 2P\n360\n\n\nEPYC 9736P\n$9,989\n128 / 256\n2.70 / 3.70\n256\n1P\n360\n\n\nEPYC 9676F\n$10,116\n96 / 192\n3.10 / 5.00\n384\n1P / 2P\n400\n\n\nEPYC 9646\n$8,904\n96 / 192\n2.80 / 3.70\n256\n1P / 2P\n300\n\n\nEPYC 9646P\n$8,001\n96 / 192\n2.80 / 3.70\n256\n1P\n300\n\n\nEPYC 9576F\n$9,431\n64 / 128\n3.55 / 5.00\n384\n1P / 2P\n400\n\n\nEPYC 9536\n$7,837\n64 / 128\n3.25 / 4.00\n256\n1P / 2P\n300\n\n\nEPYC 9526\n$7,123\n64 / 128\n2.75 / 3.70\n256\n1P / 2P\n220\n\n\nEPYC 9536P\n$6,595\n64 / 128\n3.25 / 4.00\n256\n1P\n300\n\n\nEPYC 9476F\n$6,695\n48 / 96\n3.65 / 5.00\n192\n1P / 2P\n330\n\n\nEPYC 9456\n$5,252\n48 / 96\n3.20 / 3.70\n256\n1P / 2P\n265\n\n\nEPYC 9456P\n$4,628\n48 / 96\n3.20 / 3.70\n256\n1P\n265\n\n\nEPYC 9376F\n$4,849\n32 / 64\n3.80 / 5.00\n192\n1P / 2P\n285\n\n\nEPYC 9356\n$3,789\n32 / 64\n3.60 / 4.50\n192\n1P / 2P\n250\n\n\nEPYC 9336\n$3,320\n32 / 64\n3.15 / 3.70\n128\n1P / 2P\n195\n\n\nEPYC 9356P\n$2,795\n32 / 64\n3.60 / 4.50\n192\n1P\n250\n\n\nEPYC 9276F\n$3,512\n24 / 48\n3.80 / 5.00\n96\n1P / 2P\n230\n\n\nEPYC 9256\n$2,501\n24 / 48\n2.85 / 4.50\n96\n1P / 2P\n190\n\n\nEPYC 9176F\n$3,787\n16 / 32\n3.90 / 5.00\n192\n1P / 2P\n200\n\n\nEPYC 9116\n$1,200\n16 / 32\n2.85 / 4.50\n48\n1P / 2P\n160\n\n\nEPYC 9016\n$700\n8 / 16\n3.05 / 4.80\n48\n1P / 2P\n130\n\nThe SP8 platform is a more streamlined and cost-effective counterpart to the SP7 platform for the Venice family. It supports eight-channel memory and does not embrace MRDIMMs. However, the limitation balances out by expansion possibilities, as the SP8 platform offers 128 PCIe 6.0 lanes, 33% more than the SP7 platform. Additionally, the SP7 platform has a lower thermal footprint, as these Zen 6 parts carry TDP ratings between 130W and 400W.\n\nGet Tom's Hardware's best news and in-depth reviews, straight to your inbox.\n\nThe SP8 platform offers an accessible entry point for organizations, with the octa-core EPYC 9106 priced at just $700. At the other end of the spectrum, the EPYC 9746, which is the top SP8 SKU, offers 128 Zen 6 cores at $11,679.\n\nWith the SP8 platform, we also see Zen 6 models with the “P” suffix, which indicates support for single-socket systems only. These variants deliver the same performance as their standard counterparts but at a significantly lower price. For example, the 128-core EPYC 9736P is 6% less expensive than the EPYC 9736. In an even more dramatic case, the 32-core EPYC 9356P retails for 26% less than the EPYC 9356.\n\nOne of the more unusual Venice chips is the 16-core EPYC 9176F. Despite its modest core count, it features a massive 192MB of L3 cache, 4X that of the 16-core EPYC 9116, while costing more than 3X as much. This translates to 12MB of L3 cache per core. With its high cache capacity and 5 GHz boost clock, AMD likely designed the EPYC 9176F for organizations seeking to minimize licensing costs for software priced per core.\n\nAMD’s SP7 and SP8 platforms are scheduled to launch in the fourth quarter of this year and the first half of 2027, respectively. However, these Venice prices are not final, as AMD has stated that the list is subject to change. AMD will extend the lineup further later in 2027 with Venice-X chips, which use the company's 3D V-Cache stacking.\n\nFollow Tom's Hardware on Google News, or add us as a preferred source, to get our latest news, analysis, & reviews in your feeds.\n\nZhiye Liu is a news editor, memory reviewer, and SSD tester at Tom’s Hardware. Although he loves everything that’s hardware, he has a soft spot for CPUs, GPUs, and RAM.",
+        "source_name": "tomshardware.com",
+        "published_at": "2026-09-29T11:20:00Z"
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": []
+      },
+      "w2": {
+        "policy_hit": false,
+        "policy_related": false,
+        "policy_ids": [],
+        "hit_condition_ids": [],
+        "matched_condition_ids": []
+      },
+      "w3_decision": {
+        "novelty": {
+          "reason": "E41、E763、E764、E766、E768和E769已覆盖AMD供给、份额、产能扩张及Intel服务器供给和价格计划，但未覆盖AMD Zen 6 Venice EPYC 9006的完整价格表、256核旗舰规格及SP7/SP8上市时点。",
+          "reference_ids": [
+            "E41",
+            "E763",
+            "E764",
+            "E766",
+            "E768",
+            "E769"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息提供了竞争产品定价、规格和计划上市信息，但没有客户将Intel订单转向AMD、取消Intel采购或确认部署变化，因此不满足现行Policy的客户迁移或订单触发条件。"
+        },
+        "expert_trade": {
+          "direction": "SHORT",
+          "evaluated": true,
+          "expectation_delta": "AMD公布EPYC 9006 Venice从700美元至14904美元的完整价格带，最高256核旗舰将于SP7平台在2026年第四季度附近进入市场，SP8平台计划于2027年上半年推出。该信息把此前的AMD供给改善预期具体化为接近Intel涨价窗口的高核心数、广覆盖价格替代方案，增加AMD争夺增量服务器需求并限制Intel ASP和份额的概率。",
+          "prior_expectation": "事件前Intel服务器业务的基线是需求强劲但供给只能满足约50%客户需求，并计划于2027年3月涨价；AMD虽已取得34.5%的服务器CPU份额且预计2027年供给改善，但下一代产品的价格、上市时点和可供客户选择的具体程度尚未明确。",
+          "reason": "竞争产品的核心数、价格和上市时点形成了非琐碎的Surprise；服务器CPU是Intel DCAI的重要价值接口，AMD产品供给改善可通过客户平台分配、Intel价格实现和单位量传导至INTC。虽然价格尚可能调整、上市仍属计划且尚无客户转单，但当前竞争威胁的方向和时间窗口已足够清晰，支持适度SHORT。",
+          "trade": true
+        }
+      },
+      "direction": "SHORT",
+      "initiated_at": "2026-09-29T11:23:57.839037+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    }
+  ],
+  "history_matches": [
+    {
+      "events": [],
+      "policies": []
+    }
+  ],
+  "watches": [],
+  "pins": [],
+  "policy_consumptions": [],
+  "provisional": [
+    {
+      "candidate": {
+        "assertion_state": "ONGOING",
+        "entities": [
+          "HBM",
+          "GPU",
+          "CoWoS",
+          "AI semiconductor packaging"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "HBM is approaching half of the total cost of a GPU-HBM CoWoS package.",
+        "subject_time": "Current GPU-HBM CoWoS package cost structure"
+      },
+      "candidate_index": 0,
+      "case_id": "case_28971973b5704a269c1234e5965c5d47",
+      "created_at": "2026-09-30T06:07:26.963031Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E249",
+      "runtime_signature": "a484a91b1294b4f22f924eab3d364691e6c78aec4b20a86b06df2a3265315f89",
+      "snapshot_version": 1,
+      "source_message_id": "std_d464d0eba938417a8ad922a17ca9feb8",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Samsung Electro-Mechanics",
+          "server components"
+        ],
+        "occurrence_date": null,
+        "proposition": "Samsung Electro-Mechanics signed another long-term supply agreement for server components.",
+        "subject_time": "2026 server-component supply activity"
+      },
+      "candidate_index": 0,
+      "case_id": "case_0b9b891991834e57bb1a0176024c9918",
+      "created_at": "2026-09-30T06:10:56.695553Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E250",
+      "runtime_signature": "21e653c0b6896576a18bdb78da0e62674ff2a251a3b360124b2701358f566192",
+      "snapshot_version": 2,
+      "source_message_id": "std_b632ca2729094bc595a5ff2392b5e09b",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Samsung Electro-Mechanics",
+          "2026 supply agreements"
+        ],
+        "occurrence_date": null,
+        "proposition": "Samsung Electro-Mechanics' disclosed supply agreements in 2026 total approximately US$2.6 billion.",
+        "subject_time": "2026 disclosed supply agreements"
+      },
+      "candidate_index": 1,
+      "case_id": "case_0b9b891991834e57bb1a0176024c9918",
+      "created_at": "2026-09-30T06:10:56.719341Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E251",
+      "runtime_signature": "4edbefe2e906b0df663e2a9e68117652a891bfb5e6d5c854324b985d74f7b33f",
+      "snapshot_version": 3,
+      "source_message_id": "std_b632ca2729094bc595a5ff2392b5e09b",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ONGOING",
+        "entities": [
+          "high-performance passive components",
+          "server market"
+        ],
+        "occurrence_date": null,
+        "proposition": "Demand for high-performance passive components is continuing to rise.",
+        "subject_time": "Current high-performance passive-component demand"
+      },
+      "candidate_index": 2,
+      "case_id": "case_0b9b891991834e57bb1a0176024c9918",
+      "created_at": "2026-09-30T06:10:56.749939Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E252",
+      "runtime_signature": "b99fc2c2c360f059f9444fce8748e7c1ef83c8f406a9fa2b7aa0d32b88eec00a",
+      "snapshot_version": 4,
+      "source_message_id": "std_b632ca2729094bc595a5ff2392b5e09b",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Anthropic",
+          "GLM-5.3",
+          "Claude Mythos Preview",
+          "Browser exploits"
+        ],
+        "occurrence_date": "2026-09-29",
+        "proposition": "Anthropic research found that GLM-5.3 built functional browser exploits in 50 of 410 trials, compared with 56 successful trials for Anthropic's restricted Claude Mythos Preview.",
+        "subject_time": "GLM-5.3 autonomous-cyber exploit testing"
+      },
+      "candidate_index": 0,
+      "case_id": "case_e5fb368a0223488da18b22b221e80dc2",
+      "created_at": "2026-09-30T06:44:14.233392Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E253",
+      "runtime_signature": "7422f5680299b356849bbb200713eff72a8ecf4e5ee0a5ec8c680fc9fbb0faa2",
+      "snapshot_version": 5,
+      "source_message_id": "std_e15d757041354905b1ed3a947332f87f",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "GLM-5.3",
+          "Browser vulnerabilities",
+          "SSH private key",
+          "Cybersecurity"
+        ],
+        "occurrence_date": "2026-09-29",
+        "proposition": "During sandboxed testing, GLM-5.3 discovered unknown browser vulnerabilities within a day and chained them into a webpage that stole an SSH private key.",
+        "subject_time": "GLM-5.3 sandboxed cyber testing"
+      },
+      "candidate_index": 1,
+      "case_id": "case_e5fb368a0223488da18b22b221e80dc2",
+      "created_at": "2026-09-30T06:44:14.243960Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E254",
+      "runtime_signature": "d5d77541c763645838a3895b7f69cd4d01bf8ee3ffa25c36c5421f477c99ef77",
+      "snapshot_version": 6,
+      "source_message_id": "std_e15d757041354905b1ed3a947332f87f",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Anthropic",
+          "GLM-5.3",
+          "Abliteration",
+          "GPU hours"
+        ],
+        "occurrence_date": "2026-09-29",
+        "proposition": "Anthropic researchers used abliteration costing approximately $4,400 and 2,200 GPU hours to remove GLM-5.3's refusal mechanisms.",
+        "subject_time": "GLM-5.3 abliteration process"
+      },
+      "candidate_index": 2,
+      "case_id": "case_e5fb368a0223488da18b22b221e80dc2",
+      "created_at": "2026-09-30T06:44:14.266527Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E255",
+      "runtime_signature": "6a15fabbeb20676642a4e8c6848652c48a1d13625719a7e91ed074121805d144",
+      "snapshot_version": 7,
+      "source_message_id": "std_e15d757041354905b1ed3a947332f87f",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "GLM-5.3",
+          "Abliteration",
+          "Refusal rate",
+          "AI safety"
+        ],
+        "occurrence_date": "2026-09-29",
+        "proposition": "Abliteration reduced GLM-5.3's refusal rate from above 90% to as low as 2% without significantly reducing general-intelligence or scientific capabilities.",
+        "subject_time": "Post-abliteration GLM-5.3 safety behavior"
+      },
+      "candidate_index": 3,
+      "case_id": "case_e5fb368a0223488da18b22b221e80dc2",
+      "created_at": "2026-09-30T06:44:14.294474Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E256",
+      "runtime_signature": "0c96aefaa50673e4cf4db8bb0f75652b507ec4409faf4ae6ac39af33a0f90e39",
+      "snapshot_version": 8,
+      "source_message_id": "std_e15d757041354905b1ed3a947332f87f",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "GLM-5.3",
+          "GLM-5.2",
+          "Claude Opus 4.6",
+          "Control-flow hijacks"
+        ],
+        "occurrence_date": "2026-09-29",
+        "proposition": "GLM-5.3 achieved full control-flow hijacks in 4% of the trials, while GLM-5.2 and Claude Opus 4.6 produced no successful exploits in the reported tests.",
+        "subject_time": "Comparative GLM-5.3 exploit testing"
+      },
+      "candidate_index": 4,
+      "case_id": "case_e5fb368a0223488da18b22b221e80dc2",
+      "created_at": "2026-09-30T06:44:14.331165Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E257",
+      "runtime_signature": "dc441f57408aff80f79b565761db4de307bf906208de03e71b471ded009aa401",
+      "snapshot_version": 9,
+      "source_message_id": "std_e15d757041354905b1ed3a947332f87f",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "TrendForce",
+          "Conventional DRAM",
+          "Memory contract prices"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Conventional DRAM contract prices are forecast to rise 10% to 15% quarter over quarter in 4Q26.",
+        "subject_time": "4Q26 conventional DRAM contract pricing"
+      },
+      "candidate_index": 0,
+      "case_id": "case_7ac074fce2d2437696e01a12ead8870c",
+      "created_at": "2026-09-30T07:59:09.224067Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E258",
+      "runtime_signature": "ed631b11b09c2009febae8e541249cec4e74cf9118ff76986c2b422970e6f412",
+      "snapshot_version": 10,
+      "source_message_id": "std_ef3b63a7e9fe4bddae057db2348229ba",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "TrendForce",
+          "NAND Flash",
+          "Memory contract prices"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "NAND Flash contract prices are forecast to rise 15% to 20% quarter over quarter in 4Q26.",
+        "subject_time": "4Q26 NAND Flash contract pricing"
+      },
+      "candidate_index": 1,
+      "case_id": "case_7ac074fce2d2437696e01a12ead8870c",
+      "created_at": "2026-09-30T07:59:09.243954Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E259",
+      "runtime_signature": "a4c7019fe29fddce8bd699ca07e2fbe2cc106b31092d2653627ae39a350e95d8",
+      "snapshot_version": 11,
+      "source_message_id": "std_ef3b63a7e9fe4bddae057db2348229ba",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "TrendForce",
+          "Enterprise SSD",
+          "CSPs",
+          "AI inference",
+          "Agentic AI"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Enterprise-SSD bit demand is projected to grow more than 80% year over year in 2026 as cloud-service providers expand AI-inference infrastructure and agentic-AI data volumes increase.",
+        "subject_time": "2026 enterprise-SSD demand"
+      },
+      "candidate_index": 2,
+      "case_id": "case_7ac074fce2d2437696e01a12ead8870c",
+      "created_at": "2026-09-30T07:59:09.279955Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E260",
+      "runtime_signature": "dc7cfd1033da6161b3362260c8dd83e7cfd650393b3da565f6eaf95a45d58405",
+      "snapshot_version": 12,
+      "source_message_id": "std_ef3b63a7e9fe4bddae057db2348229ba",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "Enterprise SSD",
+          "AI infrastructure",
+          "Memory suppliers"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Enterprise SSDs are expected to be the only memory category with accelerating price growth in 4Q26 because most incremental supply is already committed.",
+        "subject_time": "4Q26 enterprise-SSD pricing"
+      },
+      "candidate_index": 3,
+      "case_id": "case_7ac074fce2d2437696e01a12ead8870c",
+      "created_at": "2026-09-30T07:59:09.305278Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E261",
+      "runtime_signature": "c8d8ee7ec0ef313de24532c80b9dd6e5403d7539fde4d8c0e8184babb572c195",
+      "snapshot_version": 13,
+      "source_message_id": "std_ef3b63a7e9fe4bddae057db2348229ba",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "EXPECTED",
+        "entities": [
+          "Server DRAM",
+          "Packaging",
+          "Testing capacity",
+          "Server CPUs",
+          "Memory suppliers"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Server DRAM is expected to remain undersupplied in 4Q26 despite improving server-CPU availability, because component, packaging, testing, and front-end DRAM production constraints continue to limit supply.",
+        "subject_time": "4Q26 server DRAM supply"
+      },
+      "candidate_index": 4,
+      "case_id": "case_7ac074fce2d2437696e01a12ead8870c",
+      "created_at": "2026-09-30T07:59:09.317209Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E262",
+      "runtime_signature": "c81acd6fc3b6174ee73400a1fbb5191eb70cde7c7e6e9c596ebb10749b7010dc",
+      "snapshot_version": 14,
+      "source_message_id": "std_ef3b63a7e9fe4bddae057db2348229ba",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "PC DRAM",
+          "PC OEMs",
+          "Server DRAM",
+          "Memory suppliers"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "PC DRAM supply could decline in 2027 as suppliers shift more capacity toward server applications, while PC OEMs continue procuring aggressively in anticipation of tight supply.",
+        "subject_time": "2027 PC DRAM supply allocation"
+      },
+      "candidate_index": 5,
+      "case_id": "case_7ac074fce2d2437696e01a12ead8870c",
+      "created_at": "2026-09-30T07:59:09.326953Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E263",
+      "runtime_signature": "17755935661c8f4c4cb772d62895a06185400013207b583ceef9a8137ed4eb3c",
+      "snapshot_version": 15,
+      "source_message_id": "std_ef3b63a7e9fe4bddae057db2348229ba",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "AMD",
+          "Intel",
+          "SOXX"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "截至2026年9月30日，AMD和Intel推动半导体股票反弹，使SOXX指数接近2026年6月以来最佳月度表现。",
+        "subject_time": "2026年9月月度交易截至2026-09-30"
+      },
+      "candidate_index": 0,
+      "case_id": "case_07fa1dc00bb14447aad0e71be9e4b4bd",
+      "created_at": "2026-09-30T08:09:32.224488Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E264",
+      "runtime_signature": "eed2e287d90d24352d8c0bf2082b4b03462b6a7effebe8eb4ab6686ffd5ac5f2",
+      "snapshot_version": 16,
+      "source_message_id": "std_187a223cf424486eb83e6a2ec8ce8f58",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMORED",
+        "entities": [
+          "NVIDIA",
+          "Rubin Ultra NVL576",
+          "hydrocarbon resin CCL",
+          "hydrocarbon PP",
+          "PTFE CCL"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "据供应链分析，NVIDIA正在为Rubin Ultra NVL576的交换托盘PCB评估烃类树脂基无玻璃铜箔层压板（CCL）及烃基聚丙烯（PP），以替代无玻璃PTFE基CCL。",
+        "subject_time": "Rubin Ultra NVL576预计2027年下半年量产准备"
+      },
+      "candidate_index": 0,
+      "case_id": "case_8563aa8e7b0343f19e5dea2dff924f3d",
+      "created_at": "2026-09-30T08:15:12.897300Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E265",
+      "runtime_signature": "56fd72d99b66cb8879ea3175d15d6838ee76dc4c791e8bfdbeb5d2f37635435c",
+      "snapshot_version": 17,
+      "source_message_id": "std_9ac2e612dc6b4c87a66bb2b53a39797a",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMORED",
+        "entities": [
+          "NVIDIA",
+          "Shengyi Technology",
+          "SG1030N",
+          "SIF09"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Shengyi Technology为NVIDIA该材料评估提供SG1030N和SIF09材料，这些材料仍含少量PTFE。",
+        "subject_time": "Rubin Ultra NVL576材料评估阶段"
+      },
+      "candidate_index": 1,
+      "case_id": "case_8563aa8e7b0343f19e5dea2dff924f3d",
+      "created_at": "2026-09-30T08:15:12.931359Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E266",
+      "runtime_signature": "caafe346c8fbb333a333cb720c77b89595d77cefdb457d710891cb24e24b9758",
+      "snapshot_version": 18,
+      "source_message_id": "std_9ac2e612dc6b4c87a66bb2b53a39797a",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "NVIDIA",
+          "Rubin Ultra NVL576"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "NVIDIA针对Rubin Ultra NVL576的上述PCB材料测试仍属初步评估，尚未形成最终材料选型。",
+        "subject_time": "截至2026-09-30的Rubin Ultra NVL576材料评估"
+      },
+      "candidate_index": 2,
+      "case_id": "case_8563aa8e7b0343f19e5dea2dff924f3d",
+      "created_at": "2026-09-30T08:15:12.991875Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E267",
+      "runtime_signature": "452db558f72bb822c26683d6d23c2fbc8035c4e065f9168c218c28c9999b9482",
+      "snapshot_version": 19,
+      "source_message_id": "std_9ac2e612dc6b4c87a66bb2b53a39797a",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "경동나비엔",
+          "Kyungdong Navien",
+          "KCSI"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "경동나비엔在2026年韩国工业客户满意度调查（KCSI）锅炉部门获评第一名，实现连续13年第一。",
+        "subject_time": "2026年KCSI锅炉部门评选"
+      },
+      "candidate_index": 0,
+      "case_id": "case_33fefb2fa32f4404bbbb901c0357ca63",
+      "created_at": "2026-09-30T08:35:32.824514Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E268",
+      "runtime_signature": "b4faacdde8ccb634838615c9a69bd22220913248b41809a26381659c7f557531",
+      "snapshot_version": 20,
+      "source_message_id": "std_2827aebdc6994f2693aa25a8b4f90334",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "경동나비엔",
+          "Navien Condensing ON AI",
+          "KSA",
+          "AI+"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "경동나비엔的“Navien Condensing ON AI”产品凭借智能热水运行功能获得韩国标准协会KSA AI+认证。",
+        "subject_time": "当前产品认证状态"
+      },
+      "candidate_index": 1,
+      "case_id": "case_33fefb2fa32f4404bbbb901c0357ca63",
+      "created_at": "2026-09-30T08:35:32.848028Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E269",
+      "runtime_signature": "3e72c3ab5a8fd8dcee5f3031158f3e62eb0d590888765964822e8fe9a9042229",
+      "snapshot_version": 21,
+      "source_message_id": "std_2827aebdc6994f2693aa25a8b4f90334",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "EXPECTED",
+        "entities": [
+          "Anthropic",
+          "AMD"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Anthropic预计AMD将在其AI基础设施建设中提供超过200亿美元的AI计算容量。",
+        "subject_time": "Anthropic未来多年AI基础设施建设周期"
+      },
+      "candidate_index": 0,
+      "case_id": "case_82bb5fc2f13144b38e6336220e872312",
+      "created_at": "2026-09-30T08:38:39.200693Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E270",
+      "runtime_signature": "c02739cc48603dece87ca5aaa564978ee47dfe5b97771ad8e005228ee2ca612a",
+      "snapshot_version": 22,
+      "source_message_id": "std_e44f05b7761a450a98fd60d660454fb4",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Anthropic",
+          "Micron",
+          "Samsung",
+          "SK hynix",
+          "Claude"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Anthropic在Series H公告中将Micron、Samsung和SK hynix列为战略基础设施合作伙伴，其内存技术将支持Claude算力扩张。",
+        "subject_time": "Anthropic Series H公告及当前AI基础设施扩张"
+      },
+      "candidate_index": 1,
+      "case_id": "case_82bb5fc2f13144b38e6336220e872312",
+      "created_at": "2026-09-30T08:38:39.207419Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E271",
+      "runtime_signature": "413d6ea58f483ca3c8b28656ef794132bdf33cae2e928d9af03415b35cb0dcc7",
+      "snapshot_version": 23,
+      "source_message_id": "std_e44f05b7761a450a98fd60d660454fb4",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "台湾政府",
+          "TSMC",
+          "台湾半导体产业"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "台湾政府在支持TSMC可能扩大美国制造布局的同时，强调台湾半导体产业的核心研发应继续留在台湾。",
+        "subject_time": "当前台湾半导体产业海外扩张与核心研发地域政策"
+      },
+      "candidate_index": 0,
+      "case_id": "case_3d913fe518e64263a4133b21b715da92",
+      "created_at": "2026-09-30T09:17:07.618797Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E272",
+      "runtime_signature": "e0c243d78b48d47ac5d3db6e9cf44344f8a05fb686dee72a64a37ee7a550507f",
+      "snapshot_version": 24,
+      "source_message_id": "std_ce942148057e4960b015ea87207e6e20",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "ASE Technology Holding",
+          "ASE Singapore",
+          "Lumileds Singapore",
+          "Yishun Industrial Park"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "ASE Technology Holding的新加坡子公司批准以约6844万美元（约新台币21.52亿元）从Lumileds Singapore购入位于Yishun Industrial Park的工厂。",
+        "subject_time": "当前厂房收购审批"
+      },
+      "candidate_index": 0,
+      "case_id": "case_fc9aa847766d46068e2d687bded30a3d",
+      "created_at": "2026-09-30T09:18:14.001672Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E273",
+      "runtime_signature": "f72ab13eddcd855a43c24fb6e01b49e6c6adb6af4fed092fc6cf039f6b08e3d8",
+      "snapshot_version": 25,
+      "source_message_id": "std_5a4e888213b24af7be279d5387f35b2d",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLANNED",
+        "entities": [
+          "ASE Technology Holding",
+          "ASE Singapore",
+          "Yishun Industrial Park"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "该Yishun Industrial Park厂址拟用于支持ASE未来产能扩张。",
+        "subject_time": "未来ASE新加坡产能扩张"
+      },
+      "candidate_index": 1,
+      "case_id": "case_fc9aa847766d46068e2d687bded30a3d",
+      "created_at": "2026-09-30T09:18:14.016838Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E274",
+      "runtime_signature": "124e61aa40a222f4fcc7b1f98002001eb84b081b5dd5959b459e37dae35c9dbc",
+      "snapshot_version": 26,
+      "source_message_id": "std_5a4e888213b24af7be279d5387f35b2d",
+      "ticker": "INTC",
+      "trading_date": "2026-09-30"
+    }
+  ],
+  "limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "global_state": {
+    "watches": [],
+    "pins": []
+  },
+  "event_details": {
+    "requested_event_ids": [],
+    "canonical_events": [],
+    "provisional_events": [],
+    "missing_event_ids": []
+  }
+}

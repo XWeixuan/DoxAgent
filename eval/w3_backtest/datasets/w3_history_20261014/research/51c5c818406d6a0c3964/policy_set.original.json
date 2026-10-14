@@ -1,0 +1,2349 @@
+{
+  "schema_version": "document3.v2.2",
+  "ticker": "RKLB",
+  "policy_set_version": 6,
+  "publication_state": "COMPLETE",
+  "document2_ref": {
+    "run_id": "init-rklb-9631e4071e75470a97313eafbbdc51aa-d2",
+    "artifact_id": "54d0b03deaa44275809f6bca706d9229",
+    "sha256": "18afbde898390f292913ef14e27109a967915c80fd345a6721709c53e19c4efc",
+    "published_at": "2026-09-16T18:54:52.445381Z",
+    "publication_state": "COMPLETE"
+  },
+  "event_library_ref": {
+    "contract_version": "reference-view-md-v4",
+    "ticker": "RKLB",
+    "version": 7,
+    "sha256": "fe164f0b0857315768596ebef9b0686454f61f7fd026d8f74e1d00bc0c1f5760",
+    "published_at": "2026-09-23T06:23:28.783459Z"
+  },
+  "policies": [
+    {
+      "policy_id": "pol_7e1d611efd993fb053ba",
+      "title": "Iridium交易在交割前终止",
+      "source_refs": [
+        {
+          "shell_id": "Iridium交易交割整合与每股经济性",
+          "expectation_id": "Iridium交易交割融资与流动性",
+          "gap_id": "Iridium交易交割前终止"
+        },
+        {
+          "shell_id": "Iridium交易交割整合与每股经济性",
+          "expectation_id": "Iridium网络与卫星业务整合",
+          "gap_id": "Iridium交易交割前终止"
+        },
+        {
+          "shell_id": "Iridium交易交割整合与每股经济性",
+          "expectation_id": "Iridium交易后资本结构与每股经济",
+          "gap_id": "Iridium交易交割前终止"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Iridium合并协议、股东表决、终止公告及交割状态。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Iridium股东未批准交易，或交易双方正式终止当前合并协议且交易不再按现有协议交割。",
+          "calibration": {
+            "reference_state": "交易已签署但尚未交割；Iridium股东表决已排定于2026年9月24日，股东批准和其他交割条件仍待完成。",
+            "trigger_boundary": "正式披露股东表决未通过或当前合并协议终止；传闻、一般延期或条件仍在处理中不足以触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_02f0143e06b3f9b081d6",
+      "title": "最终交割资金需求超过当前上沿",
+      "source_refs": [
+        {
+          "shell_id": "Iridium交易交割整合与每股经济性",
+          "expectation_id": "Iridium交易交割融资与流动性",
+          "gap_id": "最终来源用途暴露更高的目标债务偿还需求"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "最终sources-and-uses、目标债务偿还、费用与资金来源。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "最终交割资金用途高于当前披露区间上沿，并需要增加融资来源。",
+          "calibration": {
+            "reference_state": "当前交易资金需求框架约为30亿至48亿美元。",
+            "trigger_boundary": "最终sources-and-uses超过48亿美元，且超额部分由新增债务、股权或公司现金承担。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_8ed74d2639f5e718ec4f",
+      "title": "交易对价转向更高现金或短债",
+      "source_refs": [
+        {
+          "shell_id": "Iridium交易交割整合与每股经济性",
+          "expectation_id": "Iridium交易交割融资与流动性",
+          "gap_id": "交易对价结构转向现金或其他高成本资金"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "最终现金与股票对价比例及为现金对价配置的资金工具。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "最终交易结构提高现金对价占比，或以更高成本短期债务替代原有资金结构。",
+          "calibration": {
+            "reference_state": "当前交易对价大致由现金和股票各占一半。",
+            "trigger_boundary": "最终条款使现金占比明确高于约50%，或新增高成本短债为增加的现金对价融资。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_c451d2cc9b8b9764a22c",
+      "title": "Iridium重谈价格或接受替代方案",
+      "source_refs": [
+        {
+          "shell_id": "Iridium交易交割整合与每股经济性",
+          "expectation_id": "Iridium交易交割融资与流动性",
+          "gap_id": "Iridium董事会重谈价格或接受竞争性方案"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Iridium董事会行动、修订协议与竞争性收购方案。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Iridium董事会正式要求提高价格或改变经济条款，或接受竞争性替代交易。",
+          "calibration": {
+            "reference_state": "双方已按现有价格和条款签署合并协议。",
+            "trigger_boundary": "董事会或双方正式公告修订价格/核心经济条款，或Iridium接受并推进替代方案；市场传闻不足以触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_9b2510287b29e2d1914b",
+      "title": "交易融资条件显著恶化",
+      "source_refs": [
+        {
+          "shell_id": "Iridium交易交割整合与每股经济性",
+          "expectation_id": "Iridium交易交割融资与流动性",
+          "gap_id": "融资市场冲击迫使交割重新定价"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "bridge或替代再融资的利率、费用、契约、期限与交割时间。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "融资市场变化迫使公司以更高成本或更严契约重签交易融资，或因此推迟交割。",
+          "calibration": {
+            "reference_state": "约19.4亿美元ATM股权融资已完成并替代原计划bridge；交割后的长期债务或替代再融资条件尚未锁定。",
+            "trigger_boundary": "正式文件显示利率或费用上升、契约明显收紧并需要重签，或融资条件直接导致交割延期。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_cf8683cef9c85fbadabc",
+      "title": "提前交割前置现金占用",
+      "source_refs": [
+        {
+          "shell_id": "Iridium交易交割整合与每股经济性",
+          "expectation_id": "Iridium交易交割融资与流动性",
+          "gap_id": "交易获批并提前交割但现金占用前置"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "实际交割日以及交割时公司现金和bridge提款。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "交易早于当前时间框架交割并立即占用公司现金或bridge资金。",
+          "calibration": {
+            "reference_state": "当前交割目标为2027年中，资金占用预计与该时间表一致。",
+            "trigger_boundary": "交易在2027年5月前完成，且交割披露确认已动用公司现金或bridge。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_3dd271d1688f969ba370",
+      "title": "整合切换损害网络与客户留存",
+      "source_refs": [
+        {
+          "shell_id": "Iridium交易交割整合与每股经济性",
+          "expectation_id": "Iridium网络与卫星业务整合",
+          "gap_id": "整合切换引发网络中断与订户流失"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "交割后的网络、计费、运营切换事件及客户或订户反应。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "整合切换造成重大服务中断，并出现可归因的客户取消、订户流失或合同损失。",
+          "calibration": {
+            "reference_state": "交割前Iridium网络持续运营，尚无合并系统切换结果。",
+            "trigger_boundary": "正式披露重大整合相关中断，同时确认客户取消、订户减少或合同流失；短暂故障且无客户影响不足以触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_9883c3943258c6fd9e47",
+      "title": "监管条件限制网络联合运营",
+      "source_refs": [
+        {
+          "shell_id": "Iridium交易交割整合与每股经济性",
+          "expectation_id": "Iridium网络与卫星业务整合",
+          "gap_id": "频谱或国家安全条件限制联合运营"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "FCC、国家安全或其他交割批准附加条件及联合运营范围。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "监管批准要求业务或数据隔离，或禁止计划中的联合网络服务。",
+          "calibration": {
+            "reference_state": "交易尚待监管批准，协同论据包含网络和服务联合运营。",
+            "trigger_boundary": "最终批准文件加入实质性隔离或服务限制，直接排除原计划的联合运营或联合产品。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_d3189b212721059f6cfa",
+      "title": "Iridium舰队更新协同订单旁落",
+      "source_refs": [
+        {
+          "shell_id": "Iridium交易交割整合与每股经济性",
+          "expectation_id": "Iridium网络与卫星业务整合",
+          "gap_id": "Iridium舰队更新订单转给竞争对手"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Iridium重大卫星、载荷、发射或空间系统采购授标。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Iridium将重大舰队更新工作正式授予非Rocket Lab供应商。",
+          "calibration": {
+            "reference_state": "收购论据包含Rocket Lab承接Iridium未来舰队更新工作的机会。",
+            "trigger_boundary": "Iridium或合并公司正式授予竞争供应商重大舰队更新主合同；仅询价或多方初选不足以触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_4611cf2fec38482afa83",
+      "title": "首个联合订单未形成重复采购",
+      "source_refs": [
+        {
+          "shell_id": "Iridium交易交割整合与每股经济性",
+          "expectation_id": "Iridium网络与卫星业务整合",
+          "gap_id": "首个联合订单成功但未形成重复采购"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "首个联合项目的交付、验收、取消与后续批次决策。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "首个联合订单失败、严重延期或未获验收，且客户正式取消或明确不采购第二批。",
+          "calibration": {
+            "reference_state": "联合订单的重复采购尚未得到交付和后续批次验证。",
+            "trigger_boundary": "同时出现首单失败/延期/未验收与正式取消或不再采购后续批次的确认。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_5e754dbe6468f13114f9",
+      "title": "Iridium客户拒绝组合服务并流失",
+      "source_refs": [
+        {
+          "shell_id": "Iridium交易交割整合与每股经济性",
+          "expectation_id": "Iridium网络与卫星业务整合",
+          "gap_id": "Iridium客户拒绝组合服务并降低续约"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "重要客户对组合服务、续约及所有权变化的正式决定。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "重要客户因整合或所有权变化拒绝组合服务，并取消或不续约现有业务。",
+          "calibration": {
+            "reference_state": "交易前客户关系和续约仍按Iridium独立运营基础维持。",
+            "trigger_boundary": "客户或公司正式确认拒绝组合方案且取消或不续约重要合同；一般谈判或单独拒绝试点不足以触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_5a1a7060302f9d045ade",
+      "title": "接口或网络安全故障迫使整合重构",
+      "source_refs": [
+        {
+          "shell_id": "Iridium交易交割整合与每股经济性",
+          "expectation_id": "Iridium网络与卫星业务整合",
+          "gap_id": "网络接口或网络安全故障触发整合重构"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "联合网络接口、网络安全事件、运营暂停及修复支出。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "整合接口或网络安全故障迫使暂停联合运营，并产生专项修复或架构重构支出。",
+          "calibration": {
+            "reference_state": "联合系统尚未完成运行整合，未形成整合故障基线。",
+            "trigger_boundary": "公司确认故障导致联合运营暂停，并批准或发生专项修复/重构支出。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_25fa4440ee2f95469bf2",
+      "title": "Iridium网络遭遇非计划替换事件",
+      "source_refs": [
+        {
+          "shell_id": "Iridium交易交割整合与每股经济性",
+          "expectation_id": "Iridium网络与卫星业务整合",
+          "gap_id": "卫星或空间环境事件迫使加速替换"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "卫星故障、空间环境事件、网络容量与应急替换计划。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "重大卫星或空间环境事件造成网络降级，并触发非计划卫星替换或应急发射。",
+          "calibration": {
+            "reference_state": "现有舰队按计划维护和更新，未计入突发的大规模替换。",
+            "trigger_boundary": "正式确认网络性能受损，且新增非计划替换卫星或应急发射任务；单颗故障且无网络或资本影响不足以触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_51602242ae702c4a4b1d",
+      "title": "联合网络方案赢得新增客户合同",
+      "source_refs": [
+        {
+          "shell_id": "Iridium交易交割整合与每股经济性",
+          "expectation_id": "Iridium网络与卫星业务整合",
+          "gap_id": "联合网络服务赢得新的政府或企业需求"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "交割后的政府或企业组合服务合同及交易前客户范围。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "合并业务赢得交易前不存在的政府或企业联合网络服务合同。",
+          "calibration": {
+            "reference_state": "交易前两家公司尚未以合并实体提供该组合服务。",
+            "trigger_boundary": "正式签署具有明确客户和服务范围的新合同，且服务实质依赖双方能力组合；意向或试验不足以触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_5aed3b10ed453b01a004",
+      "title": "最终债务结构形成超预期利息与到期压力",
+      "source_refs": [
+        {
+          "shell_id": "Iridium交易交割整合与每股经济性",
+          "expectation_id": "Iridium交易后资本结构与每股经济",
+          "gap_id": "最终债务结构在协同前形成高利息负担"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "最终债务本金、利率、到期日、偿债安排与协同实现时间。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "最终债务本金或融资成本高于交易框架，且重大到期早于预期协同兑现。",
+          "calibration": {
+            "reference_state": "最终永久融资和协同兑现节奏尚未锁定。",
+            "trigger_boundary": "交割文件确认债务本金/利率高于此前框架，并存在早于协同兑现的重大到期或偿还义务。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_52bd422b89159f05d665",
+      "title": "购买价摊销与整合费用恶化GAAP每股结果",
+      "source_refs": [
+        {
+          "shell_id": "Iridium交易交割整合与每股经济性",
+          "expectation_id": "Iridium交易后资本结构与每股经济",
+          "gap_id": "会计摊销与整合费用压低GAAP每股结果"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "购买价会计、无形资产摊销、SBC、整合费用与GAAP稀释EPS。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "交易会计摊销、SBC或整合费用使GAAP稀释每股结果显著低于交易前口径。",
+          "calibration": {
+            "reference_state": "购买价分配和完整整合费用尚未计入合并GAAP每股结果。",
+            "trigger_boundary": "公司首次量化相关费用并确认其使GAAP稀释EPS恶化或转亏；仅非GAAP排除项目而无GAAP影响量化不足以触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_9c2e28680f7c00a7c29d",
+      "title": "再融资压力迫使再稀释或资产处置",
+      "source_refs": [
+        {
+          "shell_id": "Iridium交易交割整合与每股经济性",
+          "expectation_id": "Iridium交易后资本结构与每股经济",
+          "gap_id": "再融资冲击迫使交割后补充股权或出售资产"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "bridge、债务契约、流动性措施及资本支出调整。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "再融资或契约压力迫使公司发行额外股权、出售资产、重组债务或削减计划投入。",
+          "calibration": {
+            "reference_state": "交易融资尚未触发交割后的强制补救措施。",
+            "trigger_boundary": "公司正式宣布上述至少一项措施，并明确归因于bridge再融资、契约或流动性压力。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_607eeeacba00b71b9d5b",
+      "title": "Iridium现金流被维护与受限用途锁定",
+      "source_refs": [
+        {
+          "shell_id": "Iridium交易交割整合与每股经济性",
+          "expectation_id": "Iridium交易后资本结构与每股经济",
+          "gap_id": "Iridium自由现金流被网络维护和再投资锁定"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Iridium维护、替换投资、受限现金及向母公司上行偿债能力。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Iridium现金被额外维护、舰队替换或受限用途吸收，无法按交易论据上行用于偿债。",
+          "calibration": {
+            "reference_state": "交易论据假设Iridium现金生成可支持合并后的债务负担。",
+            "trigger_boundary": "正式披露新增维护/替换需求或现金限制，并确认分派或偿债资金低于原计划。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_e3b356736f1241051361",
+      "title": "资本配置优先扩张并推迟去杠杆",
+      "source_refs": [
+        {
+          "shell_id": "Iridium交易交割整合与每股经济性",
+          "expectation_id": "Iridium交易后资本结构与每股经济",
+          "gap_id": "资本配置优先扩张而非去杠杆"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "交割后的资本配置、扩张投资、并购与债务偿还计划。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "管理层正式将Iridium现金优先投入扩张或新增并购，并推迟原定去杠杆。",
+          "calibration": {
+            "reference_state": "合并资本结构需要Iridium现金支持债务偿还。",
+            "trigger_boundary": "董事会或管理层宣布具有资金规模的扩张/并购安排，同时下调、延后或取消债务偿还目标。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_7616b4ee642e15b8d32d",
+      "title": "未披露或有负债增加交易后资本需求",
+      "source_refs": [
+        {
+          "shell_id": "Iridium交易交割整合与每股经济性",
+          "expectation_id": "Iridium交易后资本结构与每股经济",
+          "gap_id": "交割后出现未披露的重大或有负债"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "交割后识别的诉讼、税务、合同、监管或其他或有负债。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "交割后确认此前未披露的重大Iridium或有负债，并增加现金或资本需求。",
+          "calibration": {
+            "reference_state": "现有交易披露和购买价假设未包含该重大负债。",
+            "trigger_boundary": "正式文件确认新增重大负债或准备金，且需要现金支付、抵押资本或额外融资；未量化的一般风险提示不足以触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_6db9f073b136875b7be9",
+      "title": "任务批次由潜在需求转为正式授权",
+      "source_refs": [
+        {
+          "shell_id": "Launch Services订单兑现与发射运营",
+          "expectation_id": "Launch Services订单与发射清单兑现",
+          "gap_id": "Launch Services任务级授权与已行权options显著增加"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "发射合同、Neutron专属任务预订、option行权、task order、工作授权及明确发射窗口。",
+      "activation_conditions": [
+        {
+          "condition_id": "C2",
+          "criterion": "重要客户的一批此前未锁定Launch Services任务取得正式option行权、具有约束力的任务合同或任务级工作授权，并排入明确发射窗口。",
+          "calibration": {
+            "reference_state": "Launch Services backlog为9.402亿美元且manifest超过90项；截至cutoff另有客户已签署五项Neutron专属任务、排期延续至2029年，但该批次的逐项发射窗口及更广泛任务锁定度仍未完全确认。",
+            "trigger_boundary": "已知五项Neutron任务及仅给出多年期限的预订不触发；须确认其之外的重要客户多任务批次，同时具备有约束力的授权或合同和明确发射窗口；新增框架合同不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_3f3d90d4056b17646b5e",
+      "title": "重要客户终止导致manifest收缩",
+      "source_refs": [
+        {
+          "shell_id": "Launch Services订单兑现与发射运营",
+          "expectation_id": "Launch Services订单与发射清单兑现",
+          "gap_id": "客户不行权options并行使终止权导致manifest收缩"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "客户options、终止权、任务减量、终止费和manifest删除。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "重要客户正式不行权一批options或终止、减量，导致原计划任务从Rocket Lab manifest实质移除。",
+          "calibration": {
+            "reference_state": "未行权options与提前终止权使headline backlog和manifest并非全部锁定。",
+            "trigger_boundary": "相邻月份改期不触发；须有正式不行权或终止以及任务范围实质减少。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_04d56b34c690b1313848",
+      "title": "授权与外部接口延误发射窗口",
+      "source_refs": [
+        {
+          "shell_id": "Launch Services订单兑现与发射运营",
+          "expectation_id": "Launch Services订单与发射清单兑现",
+          "gap_id": "授权或载荷准备延迟使已签任务跨窗口滚动"
+        },
+        {
+          "shell_id": "Launch Services订单兑现与发射运营",
+          "expectation_id": "Electron与HASTE既有任务授权及稳定节奏",
+          "gap_id": "许可靶场或载荷准备反复延迟造成节奏变得不规则"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "已签Electron/HASTE任务的许可、靶场、载荷、工作授权、原窗口和新窗口。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "一项重要已签Launch Services任务因许可、工作授权、载荷准备或最终验收未满足而正式撤回原季度窗口。",
+          "calibration": {
+            "reference_state": "已签任务仍逐项依赖许可、载荷和授权；下一公开商业星座Electron窗口为2026年9月底前。",
+            "trigger_boundary": "消息须给出任务、原季度窗口、未满足条件和新窗口或撤回状态。"
+          }
+        },
+        {
+          "condition_id": "C2",
+          "criterion": "同一运营期至少两项公开Electron/HASTE任务因共同的许可、靶场、载荷准备或天气约束而改期。",
+          "calibration": {
+            "reference_state": "Electron/HASTE具备飞行能力，但运营节奏仍受外部接口约束。",
+            "trigger_boundary": "单次天气推迟不触发；须列明至少两项任务、原新窗口和共同外部原因。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_de8300c67bf6f995c01f",
+      "title": "车辆或场地供给拖累已授权manifest",
+      "source_refs": [
+        {
+          "shell_id": "Launch Services订单兑现与发射运营",
+          "expectation_id": "Launch Services订单与发射清单兑现",
+          "gap_id": "Electron/HASTE车辆或发射场供给不足拖累manifest兑现"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Electron/HASTE车辆、部件、人员、发射场容量和多任务窗口。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Rocket Lab车辆、关键部件、人员或发射场容量不足，使至少两项已授权Electron/HASTE任务错过公开窗口。",
+          "calibration": {
+            "reference_state": "2026年上半年完成12项任务，但未来manifest仍需车辆和场地容量兑现。",
+            "trigger_boundary": "须是Rocket Lab供给侧共同原因影响至少两项已授权任务；单项客户载荷延期不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_b75de5aa0dcad5e2b82d",
+      "title": "政府采购重排削弱任务授权",
+      "source_refs": [
+        {
+          "shell_id": "Launch Services订单兑现与发射运营",
+          "expectation_id": "Launch Services订单与发射清单兑现",
+          "gap_id": "政府预算或采购重排削弱发射任务分配"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "RSLP、VADR等政府任务的拨款、去义务化、撤回、顺延与重新竞争。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "政府正式去义务化、撤回、预算顺延或重新竞争一批原拟给Rocket Lab的任务级工作授权。",
+          "calibration": {
+            "reference_state": "政府框架需求存在，但框架金额不等于已拨款、已授权任务。",
+            "trigger_boundary": "泛泛预算讨论不触发；正式文件须改变具体Rocket Lab工作授权。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_4b012c0a3b95c402de27",
+      "title": "客户把Rocket Lab任务转给替代发射路径",
+      "source_refs": [
+        {
+          "shell_id": "Launch Services订单兑现与发射运营",
+          "expectation_id": "Launch Services订单与发射清单兑现",
+          "gap_id": "客户将发射任务重新分配给替代供应商"
+        },
+        {
+          "shell_id": "Launch Services订单兑现与发射运营",
+          "expectation_id": "Electron与HASTE既有任务授权及稳定节奏",
+          "gap_id": "商业客户把专属Electron任务转向rideshare或替代发射"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "已列入Rocket Lab计划的专属任务、rideshare替代、竞争供应商授标和manifest移除。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "客户或政府将已列入Rocket Lab计划的发射任务正式改分给其他供应商或rideshare，并从Rocket Lab履约范围移除。",
+          "calibration": {
+            "reference_state": "90+ manifest支持需求，但客户仍可因价格、窗口或策略改变执行方。",
+            "trigger_boundary": "未签意向不触发；须识别原Rocket Lab任务、替代路径和任务删除或减量。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_9792f4a4d0f388374643",
+      "title": "飞行异常触发机队运营中断",
+      "source_refs": [
+        {
+          "shell_id": "Launch Services订单兑现与发射运营",
+          "expectation_id": "Electron与HASTE既有任务授权及稳定节奏",
+          "gap_id": "Electron或HASTE飞行异常触发机队停飞与节奏中断"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Electron/HASTE飞行结果、事故调查、停飞、复飞整改和后续任务重排。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Electron或HASTE飞行失败或重大异常后，官方启动调查、暂停相关飞行或重排多项后续任务。",
+          "calibration": {
+            "reference_state": "截至2026-09-19 Electron累计96次成功，市场基线是持续运营。",
+            "trigger_boundary": "天气或倒计时中止不触发；须有飞行异常及调查、停飞或多任务重排。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_d956d69b10e1287bf700",
+      "title": "HASTE后续任务获得正式验收",
+      "source_refs": [
+        {
+          "shell_id": "Launch Services订单兑现与发射运营",
+          "expectation_id": "Electron与HASTE既有任务授权及稳定节奏",
+          "gap_id": "HASTE后续测试批次完成并获得客户验收"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "MACH-TB 2.0等HASTE任务授权、飞行结果和Kratos/政府客户验收。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "一项后续HASTE任务取得授权、完成飞行并由Kratos、政府或客户正式验收。",
+          "calibration": {
+            "reference_state": "Q2已完成2项HASTE任务，后续批次仍需逐项授权和验收。",
+            "trigger_boundary": "单次新任务须完整具备授权、实际飞行和正式接受；仅飞行完成不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_6093ebca6053ffde90a8",
+      "title": "HASTE测试失败阻断后续批次",
+      "source_refs": [
+        {
+          "shell_id": "Launch Services订单兑现与发射运营",
+          "expectation_id": "Electron与HASTE既有任务授权及稳定节奏",
+          "gap_id": "HASTE测试失败或主承包方验收停滞"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "HASTE测试目标、客户验收、暂停、减量、重做和改期。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "客户确认HASTE测试未达目标或未验收，并暂停、减量、重做或重排后续批次。",
+          "calibration": {
+            "reference_state": "HASTE已有执行记录，但后续批次依赖主承包方或政府验收。",
+            "trigger_boundary": "天气延期不触发；须有测试或验收失败以及正式批次处置。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_8e64ed4fed4090985fc9",
+      "title": "新发射走廊形成真实可用容量",
+      "source_refs": [
+        {
+          "shell_id": "Launch Services订单兑现与发射运营",
+          "expectation_id": "Electron与HASTE既有任务授权及稳定节奏",
+          "gap_id": "新的发射走廊或空间港政策实际释放节奏容量"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "FAA、靶场或空间港新走廊/设施许可、启用和Electron/HASTE实际使用。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "正式许可的新发射走廊或设施启用，并由一项Electron/HASTE任务首次按期实际使用。",
+          "calibration": {
+            "reference_state": "现有节奏受发射窗口约束，新增空间港或走廊尚未计入已验证容量。",
+            "trigger_boundary": "政策目标不触发；须有正式启用和一项实际任务使用。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_b81af29bace770509b7e",
+      "title": "外部事件造成多任务窗口停摆",
+      "source_refs": [
+        {
+          "shell_id": "Launch Services订单兑现与发射运营",
+          "expectation_id": "Electron与HASTE既有任务授权及稳定节奏",
+          "gap_id": "外部安全或极端天气事件造成多任务停摆"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "天气、靶场安全、地缘或轨道环境事件及多项任务取消、改期。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "同一外部安全或极端天气事件限制发射窗口，并使至少两项已安排Electron/HASTE任务取消或改期。",
+          "calibration": {
+            "reference_state": "当前发射能力运行中，但场地仍暴露于外部窗口风险。",
+            "trigger_boundary": "单次天气推迟不触发；须确认共同事件、限制期和至少两项受影响任务。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_5fbaf3a2a744a10b6c0d",
+      "title": "GHOST/Kodiak完成首次运营发射",
+      "source_refs": [
+        {
+          "shell_id": "Launch Services订单兑现与发射运营",
+          "expectation_id": "GHOST与Kodiak发射系统建设及有效容量",
+          "gap_id": "LC4建设许可与GHOST资格完成并执行首次运营性发射"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "GHOST、Kodiak LC4、首次运营性阿拉斯加次轨道任务和任务结果。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "GHOST在Kodiak LC4完成首次运营性阿拉斯加次轨道发射并达到任务目标。",
+          "calibration": {
+            "reference_state": "GHOST/Kodiak仍处建设与资格准备，2027年首发尚未验证。",
+            "trigger_boundary": "动工、运输或静态测试不触发；须确认GHOST、LC4、运营任务及成功结果。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_eee35dd13fba93bf24b9",
+      "title": "GHOST/Kodiak首发窗口后移",
+      "source_refs": [
+        {
+          "shell_id": "Launch Services订单兑现与发射运营",
+          "expectation_id": "GHOST与Kodiak发射系统建设及有效容量",
+          "gap_id": "LC4许可或建设条件延迟使GHOST首发后移"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "LC4建设、许可、资格、安全审查及2027年首发窗口。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "建设、许可、资格或安全条件使GHOST/Kodiak首次运营发射从2027年正式后移、取消或改址。",
+          "calibration": {
+            "reference_state": "首个运营发射计划为2027年，建设、许可和资格尚未完成。",
+            "trigger_boundary": "无日期风险提示不触发；消息须给出原2027计划、原因和新窗口、取消或改址。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_bc1deb510ba7f66da7b4",
+      "title": "GHOST首次运营任务失败",
+      "source_refs": [
+        {
+          "shell_id": "Launch Services订单兑现与发射运营",
+          "expectation_id": "GHOST与Kodiak发射系统建设及有效容量",
+          "gap_id": "GHOST首次运营任务失败并进入整改或停飞"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "GHOST首个运营任务、关键目标、调查、设计修改、复测和停飞。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "GHOST首次运营任务未完成关键目标并触发调查、设计修改、复测或停飞。",
+          "calibration": {
+            "reference_state": "GHOST尚无已验证运营发射，市场期待首发建立端到端能力。",
+            "trigger_boundary": "发射前静态测试异常不触发；须有运营任务失败和正式整改状态。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_a62085b928b576651a6e",
+      "title": "RSLP任务正式分配至GHOST/Kodiak",
+      "source_refs": [
+        {
+          "shell_id": "Launch Services订单兑现与发射运营",
+          "expectation_id": "GHOST与Kodiak发射系统建设及有效容量",
+          "gap_id": "RSLP基础任务与options被明确分配并行权至GHOST/Kodiak"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "Space Force RSLP task order、GHOST/Kodiak系统地点和任务窗口。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Space Force task order或合同修改把具体RSLP任务正式分配给GHOST/Kodiak并给出任务窗口。",
+          "calibration": {
+            "reference_state": "RSLP基础范围12次、最多6次options，但尚不能视为GHOST/Kodiak已分配任务。",
+            "trigger_boundary": "总合同金额不触发；须有具体任务、系统/地点、正式授权和窗口。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_80a2bf0a6dcb54d40d45",
+      "title": "RSLP需求退出GHOST/Kodiak",
+      "source_refs": [
+        {
+          "shell_id": "Launch Services订单兑现与发射运营",
+          "expectation_id": "GHOST与Kodiak发射系统建设及有效容量",
+          "gap_id": "RSLP options失效或任务转给其他发射系统"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "RSLP options到期、不行权、任务转移和替代系统分配。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "政府正式确认GHOST/Kodiak option到期不行权，或把已规划任务改由其他系统或供应商执行。",
+          "calibration": {
+            "reference_state": "RSLP最多6次options尚非锁定需求。",
+            "trigger_boundary": "尚未披露分配不触发；须有正式不行权或具体任务转移。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_e15cfcd0dae26407002f",
+      "title": "Kodiak地点条件压低有效容量",
+      "source_refs": [
+        {
+          "shell_id": "Launch Services订单兑现与发射运营",
+          "expectation_id": "GHOST与Kodiak发射系统建设及有效容量",
+          "gap_id": "Kodiak物流天气或靶场条件成为有效容量瓶颈"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "LC4物流、天气、测控、靶场、驻场条件和计划窗口。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "同一运营期至少两个Kodiak计划窗口因物流、天气、测控、靶场或驻场条件不可用。",
+          "calibration": {
+            "reference_state": "LC4计划两台，但地点条件下的实际周转尚未验证。",
+            "trigger_boundary": "单次天气取消不触发；须有至少两个窗口受共同地点约束且无替代。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_760973333cf7b8821151",
+      "title": "GHOST快速响应需求超过合格供给",
+      "source_refs": [
+        {
+          "shell_id": "Launch Services订单兑现与发射运营",
+          "expectation_id": "GHOST与Kodiak发射系统建设及有效容量",
+          "gap_id": "快速响应需求增长快于GHOST/Kodiak合格供给"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "快速响应task order、任务队列、合格车辆、设施窗口和延期。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "至少两项新增或行权快速响应任务形成正式排队，并因GHOST合格车辆、设施或窗口不足而延期。",
+          "calibration": {
+            "reference_state": "LC4名义两台且车辆资格未验证，实际吞吐仍有限。",
+            "trigger_boundary": "合同额增长不触发；须有两项已授权任务、正式排队和供给性延期。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_8d06dfc2f17ff446be19",
+      "title": "发射任务异常造成履约成本冲击",
+      "source_refs": [
+        {
+          "shell_id": "Launch Services订单兑现与发射运营",
+          "expectation_id": "Launch Services任务组合与单次经济",
+          "gap_id": "供应链质量或任务异常引发发射履约成本冲击"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Electron/HASTE材料、质量、返工、异常处置、履约成本和完工成本估计。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "一批Electron/HASTE任务的材料、质量、返工或异常处置导致Launch Services履约成本或完工成本估计显著增加。",
+          "calibration": {
+            "reference_state": "H1每完成任务报告履约成本约490万美元，普通波动已进入当前基线。",
+            "trigger_boundary": "小幅波动不触发；须有异常批次归因及分部成本显著上修。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_5593c6b3158429199d87",
+      "title": "竞争容量压低Electron新签价格",
+      "source_refs": [
+        {
+          "shell_id": "Launch Services订单兑现与发射运营",
+          "expectation_id": "Launch Services任务组合与单次经济",
+          "gap_id": "rideshare供给恢复或竞争降价压缩Electron单次价格"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "rideshare可订容量、商业客户选择和Rocket Lab新签/续签专属任务价格。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "替代供应商开放可订rideshare容量后，Rocket Lab新签或续签专属Electron任务出现明确降价或转为低价值任务组合。",
+          "calibration": {
+            "reference_state": "H1每完成任务报告收入约920万美元，但该代理混合任务类型且未锁定未来定价。",
+            "trigger_boundary": "竞争者报价本身不触发；须有Rocket Lab实际合同价格或任务组合下移。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_0e348f41a425bb4559c5",
+      "title": "合同责任上升但可收经济恶化",
+      "source_refs": [
+        {
+          "shell_id": "Launch Services订单兑现与发射运营",
+          "expectation_id": "Launch Services任务组合与单次经济",
+          "gap_id": "主承包方或客户重新分配发射合同经济"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "主承包/客户合同修改、Rocket Lab工作范围、验收风险、单价和可收金额。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "合同修改增加Rocket Lab发射任务风险、验收责任或履约工作，而其可收金额未同步增加或被下调。",
+          "calibration": {
+            "reference_state": "RSLP与HASTE存在主承包链，总项目金额不等于Rocket Lab实际经济。",
+            "trigger_boundary": "须在同一合同中比较原新责任和可收金额；总项目金额变化不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_f1867745e4997b38b0f5",
+      "title": "已完成任务现金回收滞后",
+      "source_refs": [
+        {
+          "shell_id": "Launch Services订单兑现与发射运营",
+          "expectation_id": "Launch Services任务组合与单次经济",
+          "gap_id": "任务已完成但开票验收争议使现金回收滞后"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Launch Services任务验收、开票争议、逾期应收、合同资产和现金短收。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "已完成Electron/HASTE任务因客户验收或开票争议形成明确逾期应收、合同资产增加或现金短收。",
+          "calibration": {
+            "reference_state": "公司现金流承压但尚无Launch Services独立回款数据，合并现金流不能代替分部归因。",
+            "trigger_boundary": "须识别已完成任务、争议及任务级或分部逾期状态；仅合并应收增加不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_8345c9b083883b7043e2",
+      "title": "发射异常形成客户赔付义务",
+      "source_refs": [
+        {
+          "shell_id": "Launch Services订单兑现与发射运营",
+          "expectation_id": "Launch Services任务组合与单次经济",
+          "gap_id": "一次发射异常引发客户索赔与后续任务经济恶化"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Electron/HASTE异常、客户索赔、退款抵扣、重飞义务、保险和分部经济。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Electron或HASTE任务异常后，Rocket Lab确认客户索赔、退款抵扣、重飞义务或异常保险成本并归入Launch Services。",
+          "calibration": {
+            "reference_state": "当前任务经济未吸收新的飞行异常赔付或重飞义务。",
+            "trigger_boundary": "倒计时中止不触发；须连接飞行异常、可确认义务和Launch Services经济影响。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_81b4fe3dbd2dba00f9f6",
+      "title": "Neutron当前首飞路径被关键门槛后移",
+      "source_refs": [
+        {
+          "shell_id": "Neutron工程验证与商业化",
+          "expectation_id": "Neutron硬件资格与首飞验证",
+          "gap_id": "Neutron Stage 1 tank在Q4 2026未按期交付并进入返工/重新验证"
+        },
+        {
+          "shell_id": "Neutron工程验证与商业化",
+          "expectation_id": "Neutron硬件资格与首飞验证",
+          "gap_id": "Archimedes或Neutron关键结构资格测试未通过"
+        },
+        {
+          "shell_id": "Neutron工程验证与商业化",
+          "expectation_id": "Neutron硬件资格与首飞验证",
+          "gap_id": "硬件就绪后Virginia发射台、许可或任务整合阻断首飞"
+        },
+        {
+          "shell_id": "Neutron工程验证与商业化",
+          "expectation_id": "Neutron硬件资格与首飞验证",
+          "gap_id": "关键供应商或材料替代使Neutron首飞硬件重新资格"
+        },
+        {
+          "shell_id": "Neutron工程验证与商业化",
+          "expectation_id": "Neutron硬件资格与首飞验证",
+          "gap_id": "Neutron基本构型或任务剖面发生重大改变并重新资格"
+        },
+        {
+          "shell_id": "Neutron工程验证与商业化",
+          "expectation_id": "Neutron硬件资格与首飞验证",
+          "gap_id": "管理层将Neutron关键资源转投其他项目并暂停首飞路径"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Stage 1 tank、Archimedes与结构资格、Virginia发射台许可、飞行关键供应配置、基线构型、项目资源和晚2026至初2027首飞窗口。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "2026年第四季度结束仍未确认首飞用Stage 1 tank在Virginia接收，或该tank因结构/压力问题进入返工重测。",
+          "calibration": {
+            "reference_state": "管理层目标是在2026年Q4交付Stage 1 tank；截至cutoff尚未实现。",
+            "trigger_boundary": "Q4内完成接收是当前比较锚；Q4未接收或正式返工并后移交付即越界。"
+          }
+        },
+        {
+          "condition_id": "C2",
+          "criterion": "Archimedes或Neutron飞行关键结构正式资格未通过或发生重大超限，并触发设计变更、资格冻结或重复测试。",
+          "calibration": {
+            "reference_state": "关键资格仍在进行，当前首飞窗口以完成签核为前提。",
+            "trigger_boundary": "计划测试或轻微异常不触发；须有正式不通过/重大超限及资格处置。"
+          }
+        },
+        {
+          "condition_id": "C3",
+          "criterion": "主要首飞硬件就绪后，Virginia发射台验收、FAA/靶场许可或任务整合未完成，使首飞移出晚2026至初2027窗口。",
+          "calibration": {
+            "reference_state": "首飞窗口为晚2026至初2027，除硬件外仍依赖发射台、许可和任务接口。",
+            "trigger_boundary": "一次天气暂停不触发；须确认硬件已基本就绪、运行接口缺失及窗口正式后移。"
+          }
+        },
+        {
+          "condition_id": "C4",
+          "criterion": "Neutron飞行关键供应商、材料或工艺被替换为未资格来源，并要求首飞硬件重测、换件或暂停交付。",
+          "calibration": {
+            "reference_state": "当前资格证据对应既有首飞配置，替代来源不能自动继承原签核。",
+            "trigger_boundary": "一般供应风险不触发；须有实际配置替代和新增资格或交付影响。"
+          }
+        },
+        {
+          "condition_id": "C5",
+          "criterion": "Rocket Lab正式改变Neutron飞行关键架构或任务剖面，并为新构型重新开启资格测试或首飞准备。",
+          "calibration": {
+            "reference_state": "当前资格和首飞窗口对应现有基线构型。",
+            "trigger_boundary": "小型工程优化不触发；须识别关键原新构型、被重置资格和新首飞计划。"
+          }
+        },
+        {
+          "condition_id": "C6",
+          "criterion": "管理层正式把Neutron关键资本、工程、测试或发射资源转给其他项目，并暂停当前窗口内的资格、硬件或首飞里程碑。",
+          "calibration": {
+            "reference_state": "当前首飞窗口依赖公司持续投入关键资源。",
+            "trigger_boundary": "研发费用波动不触发；须有正式资源重分配及具体里程碑暂停或移出窗口。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_114a7e82bfa85d7c3b6a",
+      "title": "Neutron首飞关键技术验证失败",
+      "source_refs": [
+        {
+          "shell_id": "Neutron工程验证与商业化",
+          "expectation_id": "Neutron硬件资格与首飞验证",
+          "gap_id": "Neutron首次全尺寸试飞发生重大飞行失效"
+        },
+        {
+          "shell_id": "Neutron工程验证与商业化",
+          "expectation_id": "Neutron硬件资格与首飞验证",
+          "gap_id": "首飞入轨但关键技术目标或数据验证不完整"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Neutron首次全尺寸飞行的入轨、推进、分离、制导、轨道精度、关键遥测、事故调查与纠正性测试。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Neutron首次全尺寸试飞升空后车辆丢失、未进入预定轨道或未完成主要飞行目标，并进入事故调查或停飞。",
+          "calibration": {
+            "reference_state": "截至cutoff尚无Neutron飞行结果，市场基线期待晚2026至初2027首飞建立技术证据。",
+            "trigger_boundary": "发射前取消不触发；须确认首飞重大失效以及调查、停飞或重新飞行计划。"
+          }
+        },
+        {
+          "condition_id": "C2",
+          "criterion": "Neutron首飞完成部分里程碑或入轨，但至少一项关键推进、分离、制导或轨道精度目标未达，或关键数据缺失并需纠正性测试。",
+          "calibration": {
+            "reference_state": "市场期待首飞完成主要技术目标，而非仅升空或取得部分数据。",
+            "trigger_boundary": "未披露细节不触发；须正式区分已完成里程碑、未达关键目标和补测或重飞要求。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_a50029e1c7f80d162a34",
+      "title": "Neutron在当前窗口完成强首飞验证",
+      "source_refs": [
+        {
+          "shell_id": "Neutron工程验证与商业化",
+          "expectation_id": "Neutron硬件资格与首飞验证",
+          "gap_id": "Neutron在当前窗口内完成强首飞技术验证"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "Neutron关键资格、全车地面测试、Virginia发射台整合、晚2026至初2027全尺寸首飞、主要飞行目标、关键遥测和整改状态。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Neutron在2026年末至2027年初窗口完成全尺寸首飞主要目标，关键遥测可用且未触发重大设计返工或停飞。",
+          "calibration": {
+            "reference_state": "截至cutoff Neutron仍处首飞前；Hungry Hippo可复用整流罩已完成飞行前测试，Virginia已安装10米二级测试台，且已有客户签署五项Neutron任务至2029年，但全车综合测试、湿排演练、一级静态点火及首飞结果仍未确认，正式窗口仍为2026年末至2027年初。",
+            "trigger_boundary": "上述部件测试、测试台安装、任务预订或其他首飞前准备不触发；须确认窗口内全尺寸飞行、主要目标完成、关键遥测可用且无重大纠正要求。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_219a5c2a7c61fe4cd6ff",
+      "title": "首个Neutron客户载荷验收失败",
+      "source_refs": [
+        {
+          "shell_id": "Neutron工程验证与商业化",
+          "expectation_id": "Neutron客户验收与重复商业运营",
+          "gap_id": "首个Neutron客户载荷未通过接口或环境验收"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Kepler或其他首个Neutron客户载荷的接口、环境、任务验收和任务分配。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "首个Neutron客户载荷正式未通过接口、环境或任务验收，并因此延期、取消或转用替代运力。",
+          "calibration": {
+            "reference_state": "Kepler已选择不早于2028年的首个专属任务，但尚无载荷验收。",
+            "trigger_boundary": "常规排期调整不触发；须有正式验收失败及任务延期、取消或转移。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_461fb57ef5c2c689f450",
+      "title": "首个Neutron商业任务在轨交付失败",
+      "source_refs": [
+        {
+          "shell_id": "Neutron工程验证与商业化",
+          "expectation_id": "Neutron客户验收与重复商业运营",
+          "gap_id": "首个客户载荷发射后未完成在轨交付或正式验收"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "首个客户载荷的入轨、部署、通信、任务目标、正式验收、重飞与索赔。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "首个Neutron客户任务未完成载荷入轨、部署或关键任务目标，或客户在约定窗口正式拒收并要求重飞。",
+          "calibration": {
+            "reference_state": "Neutron尚未进入客户载荷飞行验收，商业任务结果为零基线。",
+            "trigger_boundary": "普通在轨调试延迟不触发；须有关键交付失败或正式拒收以及补救安排。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_4bfbd70dbbc0c2891a6a",
+      "title": "Neutron重复制造未能兑现客户窗口",
+      "source_refs": [
+        {
+          "shell_id": "Neutron工程验证与商业化",
+          "expectation_id": "Neutron客户验收与重复商业运营",
+          "gap_id": "首飞后第二枚或后续Neutron制造交付失败"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "第二枚及后续Neutron机体、Archimedes发动机的返工、良率、材料设备约束、制造验收和客户窗口。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "第二枚或后续Neutron因返工、低良率、材料或设备约束未按客户窗口完成制造验收。",
+          "calibration": {
+            "reference_state": "尚无Neutron重复制造证据，首飞后量产高频目标未验证。",
+            "trigger_boundary": "泛称产能爬坡不触发；须识别后续硬件、实际制造验收延期及原新客户窗口。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_66baa0944fe39eb26b78",
+      "title": "后续Neutron飞行异常触发机队停飞",
+      "source_refs": [
+        {
+          "shell_id": "Neutron工程验证与商业化",
+          "expectation_id": "Neutron客户验收与重复商业运营",
+          "gap_id": "后续Neutron飞行异常触发停飞或重新认证"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "首飞后Neutron验证或商业任务、重大飞行异常、事故调查、设计修订、停飞和重新认证。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "首飞后Neutron任务发生重大飞行异常或失败，并触发全队停飞、根因调查、设计修订或重新认证。",
+          "calibration": {
+            "reference_state": "首飞后可靠性、客户续单和可预测节奏尚未验证。",
+            "trigger_boundary": "天气取消不触发；须有正式飞行异常以及机队级停飞或重新认证。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_ca64b70d4c0525df3197",
+      "title": "Neutron复用翻修路径失效",
+      "source_refs": [
+        {
+          "shell_id": "Neutron工程验证与商业化",
+          "expectation_id": "Neutron客户验收与重复商业运营",
+          "gap_id": "Neutron可复用部件无法按目标翻修周转"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "实际回收Neutron一级或关键部件的检查、翻修、重建、一次性改用和后续任务窗口。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "实际回收的Neutron一级或关键部件经检查无法按计划翻修，正式改为一次性使用或重大重建并延后后续任务。",
+          "calibration": {
+            "reference_state": "Rocket Lab已公开计划每台Neutron发动机最多复用20次，但Neutron仍处于开发阶段，尚无实际回收翻修证据。",
+            "trigger_boundary": "概念设计、复用次数目标或计划表述变化不触发；须有实际回收检查结论、运营处置及任务影响。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_3bd362a0dad4f9bce8c5",
+      "title": "竞争替代削弱Neutron目标任务或定价",
+      "source_refs": [
+        {
+          "shell_id": "Neutron工程验证与商业化",
+          "expectation_id": "Neutron客户验收与重复商业运营",
+          "gap_id": "竞争运力或替代方案夺走Neutron目标任务并迫使重定价"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "已规划Neutron目标任务的客户分配、竞争发射器或拼车替代，以及Neutron合同价格和条款。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "目标客户将已规划Neutron任务正式转给竞争发射器或拼车，或Rocket Lab因竞争正式大幅降低Neutron价格或让利。",
+          "calibration": {
+            "reference_state": "Kepler等客户选择提供需求锚，但尚未形成广泛锁定商业清单。",
+            "trigger_boundary": "一般竞争存在不触发；须识别原Neutron任务及正式替代安排，或可比较的原新价格条款。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_55fe78e13e122d18d2fe",
+      "title": "首个客户验收后续单撤回",
+      "source_refs": [
+        {
+          "shell_id": "Neutron工程验证与商业化",
+          "expectation_id": "Neutron客户验收与重复商业运营",
+          "gap_id": "首个客户任务验收后未形成续单而成为一次性示范"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "首个Neutron客户任务验收、已识别后续任务、取消、无限期推迟和替代供应商转移。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "首个客户任务验收后，客户正式取消、无限期推迟或转移一项已识别的后续Neutron任务。",
+          "calibration": {
+            "reference_state": "当前仅有客户选择，首个验收与后续留存均未发生。",
+            "trigger_boundary": "下一订单未公开不触发；须连接首个验收、可识别后续任务计划和正式撤回或转移。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_c2f56605c7eb9770b85f",
+      "title": "首飞后认证或保险门槛阻断商业任务",
+      "source_refs": [
+        {
+          "shell_id": "Neutron工程验证与商业化",
+          "expectation_id": "Neutron客户验收与重复商业运营",
+          "gap_id": "商业认证或保险条件在首飞后显著抬高客户进入门槛"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Neutron首飞后FAA/靶场、政府任务方或保险市场的新增认证、许可、承保条件和客户任务后果。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Neutron首飞后，监管、政府任务方或保险方正式提高认证、许可或承保要求，并导致客户任务延期、条件变化或单次成本上升。",
+          "calibration": {
+            "reference_state": "首飞技术成功不自动等于客户任务授权，当前基线未吸收额外商业进入门槛。",
+            "trigger_boundary": "抽象合规风险不触发；须有正式新增要求、生效范围和可观察客户窗口或成本后果。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_0fee70a50bff9c7405be",
+      "title": "重大固定价合同损失冲击合并毛利",
+      "source_refs": [
+        {
+          "shell_id": "Rocket Lab合并经营杠杆与自我融资",
+          "expectation_id": "Rocket Lab收入增长的合并经营杠杆",
+          "gap_id": "Rocket Lab固定价合同完工成本发生重大不利重估"
+        },
+        {
+          "shell_id": "Rocket Lab合并经营杠杆与自我融资",
+          "expectation_id": "Rocket Lab合并毛利波动的持续性",
+          "gap_id": "Rocket Lab固定价合同发生亏损或完工成本大幅上调"
+        },
+        {
+          "shell_id": "Space Systems项目执行与交付经济",
+          "expectation_id": "Space Systems项目经济质量",
+          "gap_id": "Space Systems固定价合同完工成本重大上修"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "重大固定价卫星、Space Systems或Launch Services合同的成本至完工、亏损准备、返工保修及合并毛利影响。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Rocket Lab对一项重大固定价合同确认重大成本至完工上调、预计亏损或显著返工保修损失。",
+          "calibration": {
+            "reference_state": "Q2 2026 GAAP毛利率为36.1%、经营亏损5750万美元，当前基线未包含新的重大合同亏损。",
+            "trigger_boundary": "普通季度毛利波动不触发；须正式识别重大固定价合同、损失性质及对合并毛利或经营损失的影响。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_e8eb39d8bc843db74ce5",
+      "title": "重大backlog合同释放后移或失效",
+      "source_refs": [
+        {
+          "shell_id": "Rocket Lab合并经营杠杆与自我融资",
+          "expectation_id": "Rocket Lab收入增长的合并经营杠杆",
+          "gap_id": "Rocket Lab重大backlog合同延期或选项不行权"
+        },
+        {
+          "shell_id": "Space Systems项目执行与交付经济",
+          "expectation_id": "Space Systems长期订单转换",
+          "gap_id": "已计入Space Systems backlog的合同被取消或削减"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Space Systems与Launch Services重大backlog合同、options、原履约窗口、终止缩减和收入释放。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "重大backlog合同被正式终止、实质缩减或延期至少一个报告季度，或重要option明确不行权。",
+          "calibration": {
+            "reference_state": "合并增长依赖backlog按计划释放，但合同延期、修改和options不行权风险仍在。",
+            "trigger_boundary": "普通排程移动不触发；须有重大合同权利丧失或可比较的正式跨季度延期。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_59b4e92aac8d93554ba1",
+      "title": "可比后续任务份额转给竞争者或客户内制",
+      "source_refs": [
+        {
+          "shell_id": "Rocket Lab合并经营杠杆与自我融资",
+          "expectation_id": "Rocket Lab收入增长的合并经营杠杆",
+          "gap_id": "Rocket Lab后续任务份额被竞争者或客户内制转移"
+        },
+        {
+          "shell_id": "Space Systems项目执行与交付经济",
+          "expectation_id": "Space Systems长期订单转换",
+          "gap_id": "Space Systems选项或后续批次转给竞争供应商"
+        },
+        {
+          "shell_id": "Space Systems项目执行与交付经济",
+          "expectation_id": "Space Systems任务级平台采用与客户留存",
+          "gap_id": "技术成功但后续批次改由竞争平台承接"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "既有客户后续卫星、发射或任务集成采购的正式授予、内制决定和Rocket Lab份额。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "既有客户将一项重大可比后续任务正式授予竞争者或改为内制，使Rocket Lab失去原计划份额。",
+          "calibration": {
+            "reference_state": "当前合并增长假定既有客户后续采购继续贡献Rocket Lab份额。",
+            "trigger_boundary": "竞争报价不触发；须连接既有Rocket Lab业务、可比后续任务和正式新承接方或内制范围。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_66273448741a7253b532",
+      "title": "组合级政府预算重排削弱需求",
+      "source_refs": [
+        {
+          "shell_id": "Rocket Lab合并经营杠杆与自我融资",
+          "expectation_id": "Rocket Lab收入增长的合并经营杠杆",
+          "gap_id": "Rocket Lab政府任务需求遭政策或预算重排"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "美国政府拨款、采购政策和至少两个Rocket Lab相关项目的预算、范围与时间表。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "同一正式政策、拨款或采购决定使至少两个Rocket Lab相关政府项目延迟、缩减、重新竞争或取消。",
+          "calibration": {
+            "reference_state": "政府相关收入是合并费用吸收来源，但多个项目暴露于共同预算与采购政策。",
+            "trigger_boundary": "单个项目改期不触发；消息须识别共同决定、至少两个项目及各自被下调的状态。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_abfb3b667130265c3e49",
+      "title": "HASTE确认时点造成任务数与毛利背离",
+      "source_refs": [
+        {
+          "shell_id": "Rocket Lab合并经营杠杆与自我融资",
+          "expectation_id": "Rocket Lab合并毛利波动的持续性",
+          "gap_id": "HASTE履约进度与发射数量再次脱钩"
+        },
+        {
+          "shell_id": "Launch Services订单兑现与发射运营",
+          "expectation_id": "Launch Services任务组合与单次经济",
+          "gap_id": "发射次数增加但HASTE确认时点令收入与毛利再次背离"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "季度Electron/HASTE任务数、HASTE履约进度、Launch Services收入和分部毛利。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "报告季度Electron/HASTE完成任务数增加，但Launch Services收入或毛利下降或显著波动，并由HASTE履约进度或确认时点解释。",
+          "calibration": {
+            "reference_state": "Q2含两次HASTE任务且按over-time确认，部分收入已在前期确认。",
+            "trigger_boundary": "总公司组合变化不触发；同一披露须提供可比任务数、分部结果及HASTE确认归因。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_392420506930e1913ba4",
+      "title": "关键供应或质量事件冲击毛利",
+      "source_refs": [
+        {
+          "shell_id": "Rocket Lab合并经营杠杆与自我融资",
+          "expectation_id": "Rocket Lab合并毛利波动的持续性",
+          "gap_id": "Rocket Lab关键供应链或质量中断触发返工与加急成本"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "关键部件短缺、资格失败、返工报废、加急采购、交付和季度毛利桥。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "关键部件短缺、资格失败或制造质量问题迫使重大返工、报废或加急采购，并在季度毛利桥形成可识别冲击。",
+          "calibration": {
+            "reference_state": "当前毛利指引已反映普通组合波动，未吸收新的重大供应链或质量事件。",
+            "trigger_boundary": "一般采购涨价不触发；须有具体中断、处置措施和可归因的分部或合并毛利影响。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_15a3b2b9f159de37ee24",
+      "title": "后续采购降价或风险条款恶化",
+      "source_refs": [
+        {
+          "shell_id": "Rocket Lab合并经营杠杆与自我融资",
+          "expectation_id": "Rocket Lab合并毛利波动的持续性",
+          "gap_id": "Rocket Lab在后续采购中被迫降价换取任务量"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "可比后续发射或航天器合同的任务范围、原新单价、风险条款和正式授标。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "可比后续采购中Rocket Lab正式接受低于现有合同的单价或更不利风险条款，而任务范围未相应减少。",
+          "calibration": {
+            "reference_state": "当前收入增长不保证后续定价维持，市场基线未吸收正式降价或风险转移。",
+            "trigger_boundary": "竞争存在不触发；须能按同一任务范围比较原新价格或风险条款，并确认已生效。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_aac54a8e5b53bf511a48",
+      "title": "合同会计错误重述历史毛利",
+      "source_refs": [
+        {
+          "shell_id": "Rocket Lab合并经营杠杆与自我融资",
+          "expectation_id": "Rocket Lab合并毛利波动的持续性",
+          "gap_id": "Rocket Lab因合同估计或收入确认错误重述毛利"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "前期合同收入、成本至完工、GAAP毛利、会计控制错误和正式重述。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Rocket Lab正式重述或重大重分类前期合同收入、成本至完工或GAAP毛利，并归因于会计控制或估计错误。",
+          "calibration": {
+            "reference_state": "市场当前使用已报告Q2 36.1% GAAP毛利率作为历史比较基线。",
+            "trigger_boundary": "普通估计更新不触发；须识别受影响期间、科目、错误原因及重述后的毛利。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_583b853692d7b67ba250",
+      "title": "新增监管要求推高项目单位成本",
+      "source_refs": [
+        {
+          "shell_id": "Rocket Lab合并经营杠杆与自我融资",
+          "expectation_id": "Rocket Lab合并毛利波动的持续性",
+          "gap_id": "Rocket Lab监管或许可要求推高单位合规成本"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "FAA、FCC、出口等规则和许可条件，以及新增测试、设施、保险、合规成本与确认周期。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "正式规则或许可条件要求Rocket Lab新增测试、设施、保险或合规投入，并使可比项目单位成本上升或确认周期延长。",
+          "calibration": {
+            "reference_state": "当前项目成本基线未包含未来新增监管测试、设施或保险义务。",
+            "trigger_boundary": "一般审批等待不触发；须有正式新要求及同一适用项目的可归因成本或周期变化。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_a163109a4dbcb4580cb7",
+      "title": "重大合同取消引发退款与资产减值",
+      "source_refs": [
+        {
+          "shell_id": "Rocket Lab合并经营杠杆与自我融资",
+          "expectation_id": "Rocket Lab扩张的现金自我融资",
+          "gap_id": "Rocket Lab重大合同取消引发退款与存货减值"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "重大客户合同取消缩减、预付款退款、合同负债、项目存货、合同资产和在制品减值。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "重大合同取消或缩减使Rocket Lab退还客户预付款，并对同一项目存货、合同资产或在制品确认减值或处置。",
+          "calibration": {
+            "reference_state": "Q2合同负债3.512亿美元、存货2.669亿美元，当前基线假定重大项目继续履约。",
+            "trigger_boundary": "单纯收入延期不触发；同一消息须连接合同变化、退款义务和对应项目资产损失。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_94c25c69b0a35ce18021",
+      "title": "增长投入上调而现金回收未改善",
+      "source_refs": [
+        {
+          "shell_id": "Rocket Lab合并经营杠杆与自我融资",
+          "expectation_id": "Rocket Lab扩张的现金自我融资",
+          "gap_id": "Rocket Lab增长研发与产能资本开支先于现金回收加速"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Neutron工业化或产能扩张的研发、capex计划、经营现金流和客户回款指引。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Rocket Lab正式上调Neutron工业化或产能扩张的研发或capex计划，同时维持或下调经营现金流或客户回款预期。",
+          "calibration": {
+            "reference_state": "H1经营现金流为负1.344亿美元、capex 5310万美元，Q3现金消耗方向继续弱化。",
+            "trigger_boundary": "一次设备购置不触发；须有正式增长投入上调和同期现金回收不改善。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_cccd69ee150fa533b52a",
+      "title": "ATM受阻迫使高成本融资或削减扩张",
+      "source_refs": [
+        {
+          "shell_id": "Rocket Lab合并经营杠杆与自我融资",
+          "expectation_id": "Rocket Lab扩张的现金自我融资",
+          "gap_id": "Rocket Lab股权融资窗口关闭并被迫转向高成本债务或削减扩张"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "ATM可用性、发行经济性、替代债务成本及研发设施计划削减。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Rocket Lab确认ATM暂停或经济性不可接受，并在同一融资周期新增高成本债务或正式削减研发、设施扩张。",
+          "calibration": {
+            "reference_state": "约19.4亿美元ATM股权融资已完成并用于Iridium交易，原有约19.44亿美元未售额度已基本消耗；剩余ATM可用性及后续融资窗口未确认。",
+            "trigger_boundary": "股价波动或已完成的Iridium股权融资不触发；须有公司确认的ATM约束及替代债务或正式削减动作。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_e5b1ac12eb9172b812dd",
+      "title": "现金改善由投资收缩换取",
+      "source_refs": [
+        {
+          "shell_id": "Rocket Lab合并经营杠杆与自我融资",
+          "expectation_id": "Rocket Lab扩张的现金自我融资",
+          "gap_id": "Rocket Lab以削减研发或资本开支制造现金流改善"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "经营现金流/FCF、研发人员或capex削减，以及Neutron、设施或交付里程碑。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "报告期现金流改善主要来自研发、人员或capex正式削减，并造成Neutron、设施或交付里程碑延期。",
+          "calibration": {
+            "reference_state": "当前现金消耗较高，市场期待增长投入最终转为自我融资而非停投。",
+            "trigger_boundary": "仅费用率下降不触发；须同时确认现金改善、被削减投入和具体里程碑延期。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_acd1e9e7c6c5e66a0288",
+      "title": "预收款驱动现金改善但质量未提升",
+      "source_refs": [
+        {
+          "shell_id": "Rocket Lab合并经营杠杆与自我融资",
+          "expectation_id": "Rocket Lab扩张的现金自我融资",
+          "gap_id": "Rocket Lab预收款推高经营现金但未改善现金质量"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "合同负债或客户预付款、经营现金流、应收、存货、合同资产和营运资金桥。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "经营现金流改善主要来自合同负债或客户预付款增加，而应收、存货或合同资产没有下降。",
+          "calibration": {
+            "reference_state": "Q2合同负债3.512亿美元、应收1.129亿美元、存货2.669亿美元，现金质量仍需区分预收与经常转换。",
+            "trigger_boundary": "现金增加本身不触发；同一报告须显示预收为主要现金来源且营运资产未改善。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_6df780146cf34613c23b",
+      "title": "重大项目交付窗口后移",
+      "source_refs": [
+        {
+          "shell_id": "Space Systems项目执行与交付经济",
+          "expectation_id": "Space Systems项目经济质量",
+          "gap_id": "Space Systems重大项目验收连续延期"
+        },
+        {
+          "shell_id": "Space Systems项目执行与交付经济",
+          "expectation_id": "Space Systems长期订单转换",
+          "gap_id": "Space Systems主要项目backlog转换窗口后移"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "重大Space Systems项目的制造、验收、交付时间表及原窗口和新窗口。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "同一重大Space Systems项目的正式验收或最终交付窗口较原计划至少后移一个报告季度。",
+          "calibration": {
+            "reference_state": "主要项目仍在制造或集成；T2TL-Beta窗口为2027年，Tracking Layer Tranche 3最终交付窗口为2029年。",
+            "trigger_boundary": "消息须同时给出项目、原正式窗口与新窗口，且新窗口至少晚一个报告季度；无项目影响的日历调整不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_5a71ab2f696676d0794e",
+      "title": "Space Systems回款推动经营现金转正",
+      "source_refs": [
+        {
+          "shell_id": "Space Systems项目执行与交付经济",
+          "expectation_id": "Space Systems项目经济质量",
+          "gap_id": "Space Systems里程碑预付款释放带动现金转正"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "季度经营现金流、Space Systems里程碑收款、合同资产和存货释放及营运资金桥。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Space Systems交付密集报告期的合并经营现金流转正，且主要改善明确来自Space Systems里程碑收款或合同资产、存货释放。",
+          "calibration": {
+            "reference_state": "2026年上半年合并经营现金流为负1.344亿美元，项目回款证据偏弱。",
+            "trigger_boundary": "经营现金流实际大于零且有Space Systems项目归因才触发；融资、处置或其他分部驱动不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_62771c207ad7fce271a9",
+      "title": "收购组件整合出现运营断裂",
+      "source_refs": [
+        {
+          "shell_id": "Space Systems项目执行与交付经济",
+          "expectation_id": "Space Systems项目经济质量",
+          "gap_id": "收购业务整合引发Space Systems质量逃逸"
+        },
+        {
+          "shell_id": "Space Systems项目执行与交付经济",
+          "expectation_id": "Space Systems关键组件资格与供给可靠性",
+          "gap_id": "收购关键人员或工艺数据流失"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Mynaric或Motiv整合后的人员、工艺、质量、资格、生产、交付与减值。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Mynaric或Motiv整合造成重大返工、质量事件或Space Systems交付延期。",
+          "calibration": {
+            "reference_state": "两项收购已完成并处内部整合，市场基线仍是能力保留并进入资格和供给爬坡。",
+            "trigger_boundary": "必须由公司把实际重大返工、质量事件或延期明确归因于整合；一般整合费用不触发。"
+          }
+        },
+        {
+          "condition_id": "C2",
+          "criterion": "Mynaric或Motiv的关键人员或工艺质量数据流失，直接导致资格重做、生产停顿、相关减值或客户复评。",
+          "calibration": {
+            "reference_state": "隐性工艺知识和关键人员能否顺利迁移尚未得到公开运营结果验证。",
+            "trigger_boundary": "关键流失须与资格重做、停产、减值或客户复评存在正式确认的直接因果；一般离职不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_f18d4fc16daa95621a1e",
+      "title": "重大客户履约索赔落地",
+      "source_refs": [
+        {
+          "shell_id": "Space Systems项目执行与交付经济",
+          "expectation_id": "Space Systems项目经济质量",
+          "gap_id": "Space Systems客户液化损害或履约索赔落地"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "重大客户液化损害、延迟索赔、合同重谈、和解、准备金与合同修改。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "重大Space Systems客户索赔、液化损害或合同重谈形成Rocket Lab确认的赔偿义务、和解、准备金或实质降价。",
+          "calibration": {
+            "reference_state": "项目存在验收与交付风险，但尚无重大客户索赔义务进入基线。",
+            "trigger_boundary": "正式索赔或重谈须已形成可确认经济义务或合同价值下降，并归因于具体项目；风险因素重述不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_38b1a288aa3594b48211",
+      "title": "合格产能瓶颈恶化项目经济",
+      "source_refs": [
+        {
+          "shell_id": "Space Systems项目执行与交付经济",
+          "expectation_id": "Space Systems项目经济质量",
+          "gap_id": "Space Systems高增长超过合格产能"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Space Systems合格产能、外包、加急采购、临时设施、单位成本与交付周期。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Space Systems因内部合格产能不足启用高成本外包、加急采购、临时设施或额外班次，并出现单位成本上升或交付周期延长。",
+          "calibration": {
+            "reference_state": "Space Systems收入快速增长但成本控制证据仅为混合，市场假定扩产可支持已签项目。",
+            "trigger_boundary": "同一披露须确认产能不足、应急措施和成本或周期恶化；一般资本开支计划不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_ab9d5d2128c8a6ba183e",
+      "title": "平台系统性质量逃逸",
+      "source_refs": [
+        {
+          "shell_id": "Space Systems项目执行与交付经济",
+          "expectation_id": "Space Systems项目经济质量",
+          "gap_id": "已交付Space Systems平台出现系统性质量事件"
+        },
+        {
+          "shell_id": "Space Systems项目执行与交付经济",
+          "expectation_id": "Space Systems任务级平台采用与客户留存",
+          "gap_id": "任务级平台批量质量逃逸触发舰队补救"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "已交付平台或组件的多单元共同故障、舰队级返修、换件、升级、保修与暂停交付。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "同一Space Systems平台或关键组件的多个单元出现共同设计制造缺陷，并触发批量补救、保修准备或暂停后续交付。",
+          "calibration": {
+            "reference_state": "Rocket Lab已交付超过250颗航天器，但新平台规模化长期质量尚无统一指标。",
+            "trigger_boundary": "单一偶发异常不触发；须有多单元共同故障模式及舰队级补救、财务责任或交付暂停。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_c7f54ca111287cffc9b7",
+      "title": "重大backlog提前批量转化",
+      "source_refs": [
+        {
+          "shell_id": "Space Systems项目执行与交付经济",
+          "expectation_id": "Space Systems长期订单转换",
+          "gap_id": "Space Systems backlog提前批量释放"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "重大项目的硬件交付、客户验收、收入确认和backlog余额变化。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "重大Space Systems项目早于当前正式窗口完成硬件交付与客户验收，并实质确认对应backlog收入。",
+          "calibration": {
+            "reference_state": "重大项目仍处制造履约阶段，市场基线是按现有窗口逐步转换。",
+            "trigger_boundary": "须同时发生相对现有窗口提前的交付验收和同一项目的实质收入确认或backlog减少；设计评审不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_99321ee05d6387b5ec4c",
+      "title": "已转收入合同重大回款失效",
+      "source_refs": [
+        {
+          "shell_id": "Space Systems项目执行与交付经济",
+          "expectation_id": "Space Systems长期订单转换",
+          "gap_id": "Space Systems backlog收入实现但经济质量恶化"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "已确认收入的重大Space Systems合同之付款日、客户验收争议、应收与合同资产回收及减值。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "一项已确认收入的重大Space Systems合同在约定付款日后仍未收回，且客户正式拒付、提出实质验收争议或公司确认对应应收或合同资产减值。",
+          "calibration": {
+            "reference_state": "相关backlog收入可以在现金收回前确认，已转收入合同仍存在里程碑验收与回款风险。",
+            "trigger_boundary": "正常结算时差不触发；须识别同一重大合同已逾期，并确认正式拒付、实质验收争议或对应资产减值中的至少一项。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_3990c137e2010acc209d",
+      "title": "任务架构变更削弱平台份额",
+      "source_refs": [
+        {
+          "shell_id": "Space Systems项目执行与交付经济",
+          "expectation_id": "Space Systems长期订单转换",
+          "gap_id": "客户任务架构重设导致Space Systems工作份额重分配"
+        },
+        {
+          "shell_id": "Space Systems项目执行与交付经济",
+          "expectation_id": "Space Systems任务级平台采用与客户留存",
+          "gap_id": "客户任务架构或接口标准替代现有平台"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "客户后续任务架构、接口、设计基线、主承包分工与Rocket Lab工作份额。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "客户或政府正式改变后续任务架构或接口，使Rocket Lab现有平台退出设计基线、需要重大重设计或丧失重大工作份额。",
+          "calibration": {
+            "reference_state": "若干平台已获选择，但后续批次仍依赖现有架构和接口继续适用。",
+            "trigger_boundary": "正式新架构须适用于目标后续批次并明确造成不兼容、重大重设计或份额转移；一般性能改进不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_122bb609dbe8adef08bc",
+      "title": "Space Systems backlog可执行性下修",
+      "source_refs": [
+        {
+          "shell_id": "Space Systems项目执行与交付经济",
+          "expectation_id": "Space Systems长期订单转换",
+          "gap_id": "Space Systems backlog可执行性被后续披露重分类"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "backlog与RPO口径、拨款条件、取消权、非强制选项及重分类。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Rocket Lab因未批准拨款、可取消条件或非强制选项，将既有Space Systems backlog余额明确移出可执行订单口径。",
+          "calibration": {
+            "reference_state": "14.16亿美元Space Systems backlog的可执行性证据为混合，市场仍将列报余额作为收入锚。",
+            "trigger_boundary": "须披露具体移出余额及可执行性原因；正常收入确认消耗不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_42ffc8bcd034ba71b635",
+      "title": "收购带入订单未能转化",
+      "source_refs": [
+        {
+          "shell_id": "Space Systems项目执行与交付经济",
+          "expectation_id": "Space Systems长期订单转换",
+          "gap_id": "收购带入的Space Systems backlog或客户关系未能转换"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Mynaric或Motiv带入项目、backlog、客户流失、范围削减、冲销与整合延期。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Mynaric或Motiv带入的客户项目因客户流失或整合失败被冲销、实质削减或显著延期。",
+          "calibration": {
+            "reference_state": "两项收购已完成，但带入项目与客户关系尚未形成普遍可验证的转换结果。",
+            "trigger_boundary": "须有可观察的订单、backlog或收入影响并明确归因于整合；购买会计调整不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_d1cd58dfbef400a5a0fd",
+      "title": "新平台发射前关键验收失败",
+      "source_refs": [
+        {
+          "shell_id": "Space Systems项目执行与交付经济",
+          "expectation_id": "Space Systems任务级平台采用与客户留存",
+          "gap_id": "Lightning-GEO或Flatellite在发射前未通过任务验收"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Lightning-GEO与Flatellite的环境、集成、客户验收、返工和首批交付窗口。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Lightning-GEO或Flatellite在关键环境、集成或客户验收中正式不通过，并发生重大返工或首批交付窗口重排。",
+          "calibration": {
+            "reference_state": "Viasat已选择Rocket Lab为Lightning-GEO/PTS-G受保护通信卫星总线提供方，项目处于建造集成；Flatellite已完成SB-AMTI演示项目kickoff，但仍未完成制造、关键验收或首批交付。",
+            "trigger_boundary": "普通测试迭代或项目kickoff不触发；须有正式不通过结论及重大返工或新交付窗口。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_3c2876456eebfbb2176e",
+      "title": "新平台首批在轨目标失败",
+      "source_refs": [
+        {
+          "shell_id": "Space Systems项目执行与交付经济",
+          "expectation_id": "Space Systems任务级平台采用与客户留存",
+          "gap_id": "首批任务在轨性能低于客户要求"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "新平台在轨调试、关键载荷可用性、任务目标、客户接受与重大补救。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "新Space Systems平台首批在轨调试确认关键任务目标未达，并触发客户不接受或重大补救。",
+          "calibration": {
+            "reference_state": "新平台客户选择和建造已发生，但首批在轨性能尚未验证。",
+            "trigger_boundary": "短暂非关键异常不触发；须有关键目标失败和客户不接受或重大补救。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_b9534de3933546eb4b0b",
+      "title": "首批在轨成功带来重复采用",
+      "source_refs": [
+        {
+          "shell_id": "Space Systems项目执行与交付经济",
+          "expectation_id": "Space Systems任务级平台采用与客户留存",
+          "gap_id": "首批在轨结果触发平台重复采用"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "平台首批在轨验收、客户选项、追加批次、续单与跨项目复用。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "客户正式确认首批Space Systems平台在轨表现达到要求，并签署追加批次、行使明确选项或在另一项目采用同一平台。",
+          "calibration": {
+            "reference_state": "任务级重复采用证据仍弱，一次客户选择尚未被视为持续平台份额。",
+            "trigger_boundary": "泛泛表扬和单次交付不触发；须有正式在轨验收及具有约束力的重复采用。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_b26b426a29bf7c97f3b3",
+      "title": "Photon LOXSAT演示失败",
+      "source_refs": [
+        {
+          "shell_id": "Space Systems项目执行与交付经济",
+          "expectation_id": "Space Systems任务级平台采用与客户留存",
+          "gap_id": "Photon LOXSAT在轨演示未完成目标"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Photon LOXSAT的发射、在轨运行、低温流体管理目标和正式任务结果。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Photon LOXSAT未入轨、Photon或关键载荷未运行，或正式结果确认关键低温流体管理演示目标未达到。",
+          "calibration": {
+            "reference_state": "公开基线是使用Photon进行在轨演示，尚无成功结果进入当前状态。",
+            "trigger_boundary": "发射日期变化不触发；须由NASA、Eta Space或Rocket Lab正式确认关键任务结果失败。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_12730dbdedc7ee1afcce",
+      "title": "平台合同降格为低价值组件供应",
+      "source_refs": [
+        {
+          "shell_id": "Space Systems项目执行与交付经济",
+          "expectation_id": "Space Systems任务级平台采用与客户留存",
+          "gap_id": "平台订单保留但Rocket Lab退回低价值组件份额"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "平台合同工作范围、在轨责任、组件分工、合同价值与合同修改。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "正式合同重谈将Rocket Lab从平台或在轨方案提供方降为单一组件或低价值子系统供应商，并实质缩减合同责任或价值。",
+          "calibration": {
+            "reference_state": "相关订单当前支持Rocket Lab作为平台或在轨方案提供者。",
+            "trigger_boundary": "须可比较原平台范围与新组件范围并显示责任或价值实质下降；一般分工不触发。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_7ca9c474e52b25f6a62f",
+      "title": "平台地面或数据安全事件阻断采用",
+      "source_refs": [
+        {
+          "shell_id": "Space Systems项目执行与交付经济",
+          "expectation_id": "Space Systems任务级平台采用与客户留存",
+          "gap_id": "任务级平台地面运营或网络安全事件损害客户信任"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "平台地面系统、数据链、兼容性、数据完整性、网络安全与客户运营限制。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "具体Space Systems平台发生重大地面兼容性、数据完整性或网络安全事件，导致客户暂停验收、限制运行或复评后续订单。",
+          "calibration": {
+            "reference_state": "硬件交付记录存在，但新平台地面运营与网络安全尚未形成留存验证。",
+            "trigger_boundary": "一般企业IT事件不触发；事件须与具体平台直接相关并产生客户项目后果。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_546b475983a277f4431e",
+      "title": "收购组件任务资格失败",
+      "source_refs": [
+        {
+          "shell_id": "Space Systems项目执行与交付经济",
+          "expectation_id": "Space Systems关键组件资格与供给可靠性",
+          "gap_id": "收购组件未通过客户或任务资格"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Mynaric光学终端、Motiv机构的客户资格、批准供应商状态、设计基线与替代。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Mynaric光学终端或Motiv SADA、精密机构正式资格失败，被目标任务设计基线拒绝或改用外部替代件。",
+          "calibration": {
+            "reference_state": "能力已经内化，但客户或任务资格与稳定批量供给尚未确认。",
+            "trigger_boundary": "测试进行中不触发；须有正式不通过结论并明确影响目标任务或设计基线。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_0ba7e27c66e56f099a44",
+      "title": "已资格组件量产失稳",
+      "source_refs": [
+        {
+          "shell_id": "Space Systems项目执行与交付经济",
+          "expectation_id": "Space Systems关键组件资格与供给可靠性",
+          "gap_id": "内部关键组件资格通过但量产良率失稳"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "已资格组件连续批次的良率、报废、返工、周期、按期交付和平台影响。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "已资格Mynaric或Motiv组件至少两个连续批次出现低良率、返工报废或周期恶化，并影响具体平台交付。",
+          "calibration": {
+            "reference_state": "稳定量产良率和周期尚未公开确认，市场基线是资格后逐步爬坡。",
+            "trigger_boundary": "一次试制偏差不触发；单条消息须自行给出至少两个连续批次的恶化状态和项目影响。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_6d549ca71da89c7814b0",
+      "title": "外部关键单一来源中断",
+      "source_refs": [
+        {
+          "shell_id": "Space Systems项目执行与交付经济",
+          "expectation_id": "Space Systems关键组件资格与供给可靠性",
+          "gap_id": "外部单一来源关键件发生无替代中断"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "关键少数供应商的停供、质量隔离、出口限制、替代资格和项目窗口。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Space Systems关键单一来源组件停供、质量隔离或受出口限制，且无已批准替代并造成具体平台延期。",
+          "calibration": {
+            "reference_state": "外部供应链已有延迟证据，内部替代尚未成熟，但当前排期仍假定关键件可供。",
+            "trigger_boundary": "普通采购波动不触发；须同时确认关键件中断、无替代和具体项目延期。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_94e6612a81898ccc27cf",
+      "title": "内部组件形成稳定批量供给",
+      "source_refs": [
+        {
+          "shell_id": "Space Systems项目执行与交付经济",
+          "expectation_id": "Space Systems关键组件资格与供给可靠性",
+          "gap_id": "内部关键组件形成合格稳定批量供给"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "内部组件资格、连续批次良率和周期、按期供货、外部替代与平台导入。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Rocket Lab内部组件通过客户或任务资格，并在至少两个连续批次稳定按期供货、替代外部瓶颈且导入具体平台。",
+          "calibration": {
+            "reference_state": "组件能力已内化，但资格、客户批准、量产稳定性和周期改善尚未确认。",
+            "trigger_boundary": "资格或产能计划不触发；单条消息须确认资格、至少两个连续批次稳定、外部替代和平台导入。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_2f924f1e289b5ec98bf0",
+      "title": "跨境合规限制阻断组件交付",
+      "source_refs": [
+        {
+          "shell_id": "Space Systems项目执行与交付经济",
+          "expectation_id": "Space Systems关键组件资格与供给可靠性",
+          "gap_id": "跨境出口或安全合规限制阻断组件整合"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "Rocket Lab Germany与Mynaric飞行件的出口、审查、安全许可、国别限制和任务交付。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "正式出口、投资审查、安全许可或客户国别限制，阻断Mynaric飞行件转移、认证或交付并延后具体任务。",
+          "calibration": {
+            "reference_state": "Mynaric收购已完成并形成欧洲足迹，市场基线是合规条件下继续整合。",
+            "trigger_boundary": "一般申报不触发；须有正式限制决定、受影响组件及具体任务后果。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_86fab545b052e3cf961d",
+      "title": "关键组件系统性在轨缺陷",
+      "source_refs": [
+        {
+          "shell_id": "Space Systems项目执行与交付经济",
+          "expectation_id": "Space Systems关键组件资格与供给可靠性",
+          "gap_id": "关键组件首批飞行后暴露潜在缺陷"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "内部关键组件的多飞行单元寿命、热辐射、驱动或通信故障与批量整改。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "同一内部关键组件的多个飞行单元出现共同在轨故障，并触发设计修订、批量替换或暂停后续交付。",
+          "calibration": {
+            "reference_state": "资格和地面验收尚不能证明长期在轨可靠性，系统性缺陷未进入基线。",
+            "trigger_boundary": "单一偶发故障不触发；须有多飞行单元共同模式和批量措施。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_bd845896ff1af2d44738",
+      "title": "替代架构淘汰收购组件设计份额",
+      "source_refs": [
+        {
+          "shell_id": "Space Systems项目执行与交付经济",
+          "expectation_id": "Space Systems关键组件资格与供给可靠性",
+          "gap_id": "替代材料或架构使收购组件失去设计导入"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "客户后续任务的光学通信、机构或材料架构及Mynaric、Motiv设计基线。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "客户正式采用替代架构，并将Mynaric或Motiv目标组件移出后续任务设计基线。",
+          "calibration": {
+            "reference_state": "Rocket Lab已拥有相关能力，但客户设计导入尚未普遍确认。",
+            "trigger_boundary": "竞争产品发布不触发；须有客户正式设计决定及目标任务、被移出组件和商业影响。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_897d6790e26dc63f1eb5",
+      "title": "组件客户实质份额转向第二来源",
+      "source_refs": [
+        {
+          "shell_id": "Space Systems项目执行与交付经济",
+          "expectation_id": "Space Systems关键组件资格与供给可靠性",
+          "gap_id": "客户转向双来源并把组件份额给竞争者"
+        }
+      ],
+      "decision": "SHORT",
+      "match_scope": "已资格组件的双来源认证、后续订单、批次分配与竞争供应商份额。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "客户认证同一组件的竞争第二来源，并在正式后续订单或批次中把实质份额从Rocket Lab转给该供应商。",
+          "calibration": {
+            "reference_state": "组件资格并不保证份额锁定，当前基线尚未吸收Rocket Lab实质份额流失。",
+            "trigger_boundary": "仅认证备选不触发；须同时确认竞争资格和实际订单或批次份额迁移。"
+          }
+        }
+      ]
+    },
+    {
+      "policy_id": "pol_33288d9e3c26f5517bba",
+      "title": "Neutron首飞前地面验证推进",
+      "source_refs": [
+        {
+          "shell_id": "Neutron工程验证与商业化",
+          "expectation_id": "Neutron硬件资格与首飞验证",
+          "gap_id": "Neutron在当前窗口内完成强首飞技术验证"
+        }
+      ],
+      "decision": "LONG",
+      "match_scope": "Neutron全车综合测试、湿排演练、一级静态点火、首飞准备状态、主要返工与首飞窗口。",
+      "activation_conditions": [
+        {
+          "condition_id": "C1",
+          "criterion": "Rocket Lab正式完成Neutron全车综合测试、湿排演练和一级静态点火，主要结果支持保留当前首飞窗口，且未触发重大设计返工或停飞。",
+          "calibration": {
+            "reference_state": "Neutron已完成可复用整流罩飞行前测试并安装Virginia二级测试台，已有客户签署五项任务至2029年；全车综合测试、湿排演练和一级静态点火仍待完成。",
+            "trigger_boundary": "单一部件测试、设施安装、计划表述或客户任务预订不触发；须由正式披露确认三项地面验证均完成、主要结果可用且当前首飞窗口未因重大问题后移。"
+          }
+        }
+      ]
+    }
+  ],
+  "published_at": "2026-09-23T06:36:23.974322Z"
+}

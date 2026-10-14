@@ -1,0 +1,241 @@
+{
+  "recent_trade_intents": [],
+  "history_matches": [],
+  "watches": [],
+  "pins": [],
+  "policy_consumptions": [],
+  "provisional": [
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "SPDR S&P 500 ETF Trust",
+          "SPY"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "The SPDR S&P 500 ETF Trust (SPY) was up approximately 0.1% in pre-bell trading on September 22, 2026.",
+        "subject_time": "pre-bell trading"
+      },
+      "candidate_index": 0,
+      "case_id": "case_c58a295fde584813b4053c3baa7d9b2b",
+      "created_at": "2026-09-22T13:21:48.319416Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E85",
+      "runtime_signature": "c0593bf28673d5899dda751dea9333613eab2e5bf7478d74ec2c79487eae8824",
+      "snapshot_version": 1,
+      "source_message_id": "std_893c743c2614494fa8929c43f1e1ab91",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "U.S. equity futures"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "U.S. equity futures were higher before the market opened on September 22, 2026.",
+        "subject_time": "pre-bell trading"
+      },
+      "candidate_index": 1,
+      "case_id": "case_c58a295fde584813b4053c3baa7d9b2b",
+      "created_at": "2026-09-22T13:21:48.335968Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E86",
+      "runtime_signature": "008b3cb4f808ce19e3c889fc92861488464749ebac427ed885aac76cab461703",
+      "snapshot_version": 2,
+      "source_message_id": "std_893c743c2614494fa8929c43f1e1ab91",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "oil market"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "Oil prices declined in pre-bell trading on September 22, 2026.",
+        "subject_time": "pre-bell trading"
+      },
+      "candidate_index": 2,
+      "case_id": "case_c58a295fde584813b4053c3baa7d9b2b",
+      "created_at": "2026-09-22T13:21:48.361085Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E87",
+      "runtime_signature": "d4c3e42273a572487722fb83fcb2dd5beb31e9762de20e859bb913d16617b7fa",
+      "snapshot_version": 3,
+      "source_message_id": "std_893c743c2614494fa8929c43f1e1ab91",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Rocket Lab",
+          "RKLB"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "Rocket Lab shares were trading at approximately $71.89 on September 22, 2026.",
+        "subject_time": "at article publication"
+      },
+      "candidate_index": 0,
+      "case_id": "case_ae098ed621264f05bc944f61b42cc9fb",
+      "created_at": "2026-09-22T16:28:19.044513Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E88",
+      "runtime_signature": "b23aca4fc093951a6e45accca9ac7a0542096b9cbc88291ce0dfb7c23c4d1df0",
+      "snapshot_version": 4,
+      "source_message_id": "std_d440a09298eb453ba379b25994f0f540",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Rocket Lab",
+          "RKLB",
+          "S&P 500"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "Rocket Lab shares had gained approximately 5.7% over the prior six months, versus an approximately 16.2% gain for the S&P 500.",
+        "subject_time": "six-month period ending September 22, 2026"
+      },
+      "candidate_index": 1,
+      "case_id": "case_ae098ed621264f05bc944f61b42cc9fb",
+      "created_at": "2026-09-22T16:28:19.051238Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E89",
+      "runtime_signature": "55f97e3549770babb220e8ec8ad605aea4ce64be7fe46c179b9497991a496758",
+      "snapshot_version": 5,
+      "source_message_id": "std_d440a09298eb453ba379b25994f0f540",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Rocket Lab",
+          "RKLB"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "Rocket Lab's revenue had grown at an approximately 68.9% compounded annual rate over the prior five years.",
+        "subject_time": "prior five years"
+      },
+      "candidate_index": 2,
+      "case_id": "case_ae098ed621264f05bc944f61b42cc9fb",
+      "created_at": "2026-09-22T16:28:19.060657Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E90",
+      "runtime_signature": "56213ed9f6c14fc21b8654b37a7a37d0a08bdaa240946ea88edb4cd149d66edd",
+      "snapshot_version": 6,
+      "source_message_id": "std_d440a09298eb453ba379b25994f0f540",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Rocket Lab",
+          "RKLB"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "Rocket Lab's free-cash-flow margin had expanded by approximately 59.4 percentage points over the prior five years.",
+        "subject_time": "prior five years"
+      },
+      "candidate_index": 3,
+      "case_id": "case_ae098ed621264f05bc944f61b42cc9fb",
+      "created_at": "2026-09-22T16:28:19.070573Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E91",
+      "runtime_signature": "085ac51bb6c3be25223d4bed24be78e41ffa02b44d75374fe2042559635dffa7",
+      "snapshot_version": 7,
+      "source_message_id": "std_d440a09298eb453ba379b25994f0f540",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Rocket Lab",
+          "RKLB"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "Rocket Lab's trailing-twelve-month free-cash-flow margin was approximately negative 48.3%.",
+        "subject_time": "trailing twelve months"
+      },
+      "candidate_index": 4,
+      "case_id": "case_ae098ed621264f05bc944f61b42cc9fb",
+      "created_at": "2026-09-22T16:28:19.079757Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E92",
+      "runtime_signature": "25d809870f3600afae844784ed9a71900494393419ad9f8ff1e531bc5186b938",
+      "snapshot_version": 8,
+      "source_message_id": "std_d440a09298eb453ba379b25994f0f540",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Rocket Lab",
+          "RKLB"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "Rocket Lab's return on invested capital had increased over the prior few years.",
+        "subject_time": "prior few years"
+      },
+      "candidate_index": 5,
+      "case_id": "case_ae098ed621264f05bc944f61b42cc9fb",
+      "created_at": "2026-09-22T16:28:19.087269Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E93",
+      "runtime_signature": "f291e8249a57ae1a3d4445bc7fd7fa8a459a5f0cd3ee07fb72208bbc8b5b4021",
+      "snapshot_version": 9,
+      "source_message_id": "std_d440a09298eb453ba379b25994f0f540",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-22"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Rocket Lab",
+          "RKLB"
+        ],
+        "occurrence_date": "2026-09-22",
+        "proposition": "Rocket Lab was reported to trade at approximately 2,869.8 times forward earnings.",
+        "subject_time": "forward earnings period"
+      },
+      "candidate_index": 6,
+      "case_id": "case_ae098ed621264f05bc944f61b42cc9fb",
+      "created_at": "2026-09-22T16:28:19.095883Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E94",
+      "runtime_signature": "2373b93c8a58f9fd9f0e9f482074a4b5db5022dac8c4d777c1f30af8f8908293",
+      "snapshot_version": 10,
+      "source_message_id": "std_d440a09298eb453ba379b25994f0f540",
+      "ticker": "RKLB",
+      "trading_date": "2026-09-22"
+    }
+  ],
+  "limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "global_state": {
+    "watches": [],
+    "pins": []
+  },
+  "event_details": {
+    "requested_event_ids": [],
+    "canonical_events": [],
+    "provisional_events": [],
+    "missing_event_ids": []
+  }
+}

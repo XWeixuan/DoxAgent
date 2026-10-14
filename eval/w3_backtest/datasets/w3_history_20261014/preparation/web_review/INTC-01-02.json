@@ -1,0 +1,150 @@
+{
+  "case_key": "INTC-01-02",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-09-29T11:22:09.224153Z",
+  "reviewed_at": "2026-10-13T22:58:31.569088Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 6,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a13754-1d15-7f91-b282-c5379ee1335d",
+    "turn_id": "01a13754-1db3-7d32-8ba5-77842e14c7a0",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 90880,
+        "inputTokens": 100069,
+        "outputTokens": 11164,
+        "reasoningOutputTokens": 9098,
+        "totalTokens": 111233
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 402944,
+        "inputTokens": 507110,
+        "outputTokens": 15318,
+        "reasoningOutputTokens": 12633,
+        "totalTokens": 522428
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "f9937d15263b0a70815e0b04c893b4b0b3b14f762fa13b77807b4b66e1cc2f60",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://www.storagereview.com/news/amd-posts-the-full-epyc-9006-sku-list-31-venice-parts-from-700-to-14904-across-sp7-and-sp8",
+      "title": "AMD EPYC 9006 SKU List: 31 Venice Parts, SP7 and SP8 Pricing",
+      "published_at": "2026-09-26",
+      "time_precision": "DAY",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn0search0"
+      ],
+      "source_call_ids": [
+        "exec-6f615e96-bfea-40e0-b0af-bc6889fa32d8"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://www.tomshardware.com/pc-components/cpus/amd-drops-an-epyc-usd15-000-256-core-bomb-epyc-9006-zen-6-venice-cpus-get-full-spec-and-pricing-treatment-from-usd700-up-to-usd14-904",
+      "title": "AMD drops an EPYC $15,000, 256-core beast — EPYC 9006 Zen 6 'Venice' CPUs get full spec and pricing treatment, from $700 up to $14,904",
+      "published_at": "2026-09-29T11:20:00Z",
+      "time_precision": "EXACT",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search3"
+      ],
+      "source_call_ids": [
+        "exec-6f615e96-bfea-40e0-b0af-bc6889fa32d8"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://www.amd.com/en/blogs/2026/agentic-ai-amd-epyc-9005-cpus-wins-today-epyc-9006.html",
+      "title": "Agentic AI: AMD EPYC 9005 CPUs Wins Today, EPYC 9006, formerly code-named “Venice”, Takes It to a New Level",
+      "published_at": "2026-07-23",
+      "time_precision": "DAY",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn3search2"
+      ],
+      "source_call_ids": [
+        "exec-cc987183-dcfb-436f-96ae-c0f6d08f90ae"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "Earliest located public report: StorageReview’s page dated September 26 says AMD had posted the EPYC 9006 SKU list. The underlying AMD posting time is not stated. The supplied Tom’s Hardware capture later reports the full list before cutoff: 31 SKUs across SP7 and SP8, priced from $700 to $14,904.",
+      "source_urls": [
+        "https://www.storagereview.com/news/amd-posts-the-full-epyc-9006-sku-list-31-venice-parts-from-700-to-14904-across-sp7-and-sp8",
+        "https://www.tomshardware.com/pc-components/cpus/amd-drops-an-epyc-usd15-000-256-core-bomb-epyc-9006-zen-6-venice-cpus-get-full-spec-and-pricing-treatment-from-usd700-up-to-usd14-904"
+      ],
+      "event_time": "UNKNOWN",
+      "publication_time": "2026-09-26",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "StorageReview gives only a calendar date and its pre-cutoff page snapshot could not be verified. Tom’s confirms the contemporaneous report but attributes its list to StorageReview."
+    },
+    {
+      "observation": "Tom’s Hardware’s report was published at 2026-09-29T11:20:00Z, shortly before cutoff, and the supplied article capture was collected at 11:20:27Z. It presents the list as 1Ku pricing guidance and reports SP7 systems for Q4 2026 and SP8 systems for the first half of 2027.",
+      "source_urls": [
+        "https://www.tomshardware.com/pc-components/cpus/amd-drops-an-epyc-usd15-000-256-core-bomb-epyc-9006-zen-6-venice-cpus-get-full-spec-and-pricing-treatment-from-usd700-up-to-usd14-904"
+      ],
+      "event_time": "UNKNOWN",
+      "publication_time": "2026-09-29T11:20:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The article says prices are not final and the list is subject to change. 1Ku guidance is not evidence of realized transaction pricing; the reported platform windows were future schedules."
+    },
+    {
+      "observation": "AMD’s July 23 dated blog establishes prior public context for the EPYC 9006/Venice product family. The new September reporting adds a complete SKU price list; StorageReview says the $14,904 flagship figure had already appeared in a July AMD comparison, so that particular headline figure may not itself have been new.",
+      "source_urls": [
+        "https://www.amd.com/en/blogs/2026/agentic-ai-amd-epyc-9005-cpus-wins-today-epyc-9006.html",
+        "https://www.storagereview.com/news/amd-posts-the-full-epyc-9006-sku-list-31-venice-parts-from-700-to-14904-across-sp7-and-sp8"
+      ],
+      "event_time": "UNKNOWN",
+      "publication_time": "2026-09-26",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The July comparison claim is source-attributed to StorageReview and was not independently checked against a dated original AMD comparison. The AMD blog page was not available as a verified pre-cutoff snapshot."
+    }
+  ],
+  "gaps": [
+    "No direct, dated AMD announcement or archived snapshot establishing the exact time the full SKU list first became public was located.",
+    "StorageReview’s page is dated September 26, but its content at cutoff and revision history could not be verified; its report should be treated as the earliest located account, not definitive proof of first publication.",
+    "The claimed July disclosure of the $14,904 flagship figure was not independently verified against the original AMD presentation.",
+    "The reviewed sources do not establish actual negotiated prices, volumes, purchase commitments, customer deployments, Intel customer/order changes, or an Intel response."
+  ],
+  "research_notes": "Cutoff: 2026-09-29T11:22:09.224153Z. The earliest traceable public report found was StorageReview’s September 26 account that AMD had posted an EPYC 9006 SKU list; it gives a date but no publication time. Tom’s Hardware separately published its report at 11:20:00Z on September 29, and the supplied case capture at 11:20:27Z verifies that article’s contents before the cutoff. Tom’s relies on the StorageReview list, so it is contemporaneous coverage, not independent primary confirmation. The list is described as 1Ku pricing guidance, subject to change, with platform availability still in future windows. Inference: these materials establish published price guidance and product specifications, not realized transaction prices, sales volume, customer adoption, or any Intel customer/order change. No post-cutoff market reaction or coverage is used."
+}

@@ -1,0 +1,22 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-27T06:45:47.252849Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "No independently sourced contemporaneous report confirming the bank pitch meetings, valuation estimate or proceeds estimate was identified; the located early coverage was Reuters syndication or attribution.",
+    "Exact meeting dates, IPO venue, ownership/sale structure, valuation basis, financing terms and any binding underwriting or transaction decision were not established in the reviewed pre-cutoff sources.",
+    "The supplied Benzinga URL’s available page is marked updated after cutoff, and no dated pre-cutoff snapshot was verified; its article body therefore cannot be used to confirm the supplied source-message version."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

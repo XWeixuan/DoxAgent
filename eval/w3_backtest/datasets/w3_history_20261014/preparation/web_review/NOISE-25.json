@@ -1,0 +1,210 @@
+{
+  "case_key": "NOISE-25",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-09-30T20:04:07.478705Z",
+  "reviewed_at": "2026-10-13T22:58:33.282086Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 6,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a1377a-8304-70b3-9317-c87aad32bb76",
+    "turn_id": "01a1377a-831b-7ef2-9a40-0ec7154aabc6",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 84736,
+        "inputTokens": 94734,
+        "outputTokens": 12028,
+        "reasoningOutputTokens": 9315,
+        "totalTokens": 106762
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 381184,
+        "inputTokens": 468210,
+        "outputTokens": 18262,
+        "reasoningOutputTokens": 15030,
+        "totalTokens": 486472
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "0cdd36ef4cf6d16f0b72d56b92ffdb330085b6d9332f2c5bff98619fae0e8a98",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://rss.globenewswire.com/news-release/2026/09/30/3372366/14450/en/micron-technology-inc-reports-record-fiscal-fourth-quarter-and-full-year-2026-results.html",
+      "title": "Micron Technology, Inc. Reports Record Fiscal Fourth-Quarter and Full-Year 2026 Results",
+      "published_at": "2026-09-30T20:01:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn3search0"
+      ],
+      "source_call_ids": [
+        "exec-a767f638-1b8c-45a9-81cc-8a3f135f16b5"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://www.interactivebrokers.com/en/trading/providers.php",
+      "title": "* Micron Technology 4Q EPS $32.87 >MU",
+      "published_at": "2026-09-30T20:01:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [],
+      "source_call_ids": [],
+      "source_link_method": "UNMAPPED",
+      "retrieval_verification": "UNVERIFIED",
+      "retrieval_verification_note": "检索回执未能回连；此 URL/ref 未出现在已保存的 Web Search 结果中，未声称存在已验证的调用。"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000018/0000723125-26-000018-index.htm",
+      "title": "Form 8-K — Micron Technology Inc., accession 0000723125-26-000018",
+      "published_at": "2026-09-30T20:02:22Z",
+      "time_precision": "EXACT",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search4",
+        "turn0search0"
+      ],
+      "source_call_ids": [
+        "exec-44eb619e-f1fd-4c02-a382-8666aa2288f2"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Results-for-the-Third-Quarter-of-Fiscal-2026/default.aspx",
+      "title": "Micron Technology, Inc. Reports Record Results for the Third Quarter of Fiscal 2026",
+      "published_at": "2026-06-24",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search11"
+      ],
+      "source_call_ids": [
+        "exec-44eb619e-f1fd-4c02-a382-8666aa2288f2"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S5",
+      "url": "https://www.fidelity.com/news/article/company-news/202609282101RTRSNEWSCOMBINED_P8N443085_1",
+      "title": "Samsung Electronics says HBM to account for nearly 30% of industry DRAM capacity next year",
+      "published_at": null,
+      "time_precision": "UNKNOWN",
+      "updated_at": null,
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn4search2"
+      ],
+      "source_call_ids": [
+        "exec-8336c958-628c-4aed-ab94-c009bbf002b5"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "Micron’s September 30 release reported GAAP diluted EPS of $32.87 for the fiscal quarter ended September 3, 2026, and separately reported non-GAAP diluted EPS of $33.42.",
+      "source_urls": [
+        "https://rss.globenewswire.com/news-release/2026/09/30/3372366/14450/en/micron-technology-inc-reports-record-fiscal-fourth-quarter-and-full-year-2026-results.html"
+      ],
+      "event_time": "2026-09-03",
+      "publication_time": "2026-09-30T20:01:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This establishes the reported quarter’s result; it does not by itself establish persistence of results or later-period performance."
+    },
+    {
+      "observation": "The supplied Dow Jones headline reports Q4 EPS of $32.87 at 16:01 ET, the same minute as the issuer’s full release. Its body is marked “MORE TO FOLLOW,” and the available metadata cannot establish which item appeared first within that minute.",
+      "source_urls": [
+        "https://www.interactivebrokers.com/en/trading/providers.php",
+        "https://rss.globenewswire.com/news-release/2026/09/30/3372366/14450/en/micron-technology-inc-reports-record-fiscal-fourth-quarter-and-full-year-2026-results.html"
+      ],
+      "event_time": "2026-09-03",
+      "publication_time": "2026-09-30T20:01:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The captured newswire item is headline-only; its generic provider URL does not independently expose the complete Dow Jones story."
+    },
+    {
+      "observation": "Compared on like accounting bases, reported GAAP diluted EPS of $32.87 was $1.14 above the upper end of Micron’s prior GAAP outlook ($31.73); non-GAAP diluted EPS of $33.42 was $1.42 above the upper end of its prior non-GAAP outlook ($32.00).",
+      "source_urls": [
+        "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Results-for-the-Third-Quarter-of-Fiscal-2026/default.aspx",
+        "https://rss.globenewswire.com/news-release/2026/09/30/3372366/14450/en/micron-technology-inc-reports-record-fiscal-fourth-quarter-and-full-year-2026-results.html"
+      ],
+      "event_time": "2026-09-03",
+      "publication_time": "2026-09-30T20:01:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This comparison uses Micron’s own June guidance, not a verified matched-basis analyst consensus; GAAP and non-GAAP EPS are distinct measures."
+    },
+    {
+      "observation": "Micron attributed the record results to AI-driven demand and operational execution and said it expected a stronger FY27; these are management’s characterization and forward-looking statement.",
+      "source_urls": [
+        "https://rss.globenewswire.com/news-release/2026/09/30/3372366/14450/en/micron-technology-inc-reports-record-fiscal-fourth-quarter-and-full-year-2026-results.html"
+      ],
+      "event_time": "2026-09-30",
+      "publication_time": "2026-09-30T20:01:00Z",
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "The outlook is forward-looking and does not independently verify future demand, supply, or earnings."
+    },
+    {
+      "observation": "A retrieved Reuters syndication page surfaced a September 29 datelined forecast about HBM’s prospective share of industry DRAM wafer capacity, but its pre-cutoff snapshot and revision state could not be verified.",
+      "source_urls": [
+        "https://www.fidelity.com/news/article/company-news/202609282101RTRSNEWSCOMBINED_P8N443085_1"
+      ],
+      "event_time": null,
+      "publication_time": null,
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "Do not treat this lead as verified public-by-cutoff evidence or as proof of realized capacity or Micron-specific share."
+    }
+  ],
+  "gaps": [
+    "Within the bounded search, no separate independent full report on Micron’s EPS with a verified publication time at or before cutoff was established; the supplied Dow Jones item is headline-only.",
+    "No matched-basis analyst consensus source with a verified pre-cutoff snapshot was established. The EPS comparison therefore uses Micron’s prior GAAP and non-GAAP guidance.",
+    "The concurrent Reuters/Samsung capacity forecast lacks a verified pre-cutoff snapshot and revision history, so it is retained only as an unverified lead.",
+    "The supplied event library mentions an Intel server-demand/supply update, but this bounded search did not independently verify a cutoff-eligible source for that item.",
+    "UNVERIFIED source S2: https://www.interactivebrokers.com/en/trading/providers.php did not match any saved Web Search result URL/ref; keep retrieval_verification=UNVERIFIED and do not treat it as a verified Web Search source."
+  ],
+  "research_notes": "Cutoff: 2026-09-30T20:04:07.478705Z. Micron’s GlobeNewswire release is the earliest traceable full public disclosure found: 16:01 ET (20:01Z). The supplied Dow Jones headline also carries a 16:01 ET timestamp and states EPS of $32.87, but its body says “MORE TO FOLLOW”; the two same-minute items cannot be ordered to the second. The SEC filing was accepted at 20:02:22Z, before cutoff. Keep the measures separate: reported GAAP diluted EPS of $32.87 was $1.14 above the upper end of Micron’s prior GAAP outlook ($30.73 ± $1.00); non-GAAP EPS of $33.42 was $1.42 above the upper end of its prior non-GAAP outlook ($31.00 ± $1.00). Micron’s characterization of AI demand and operational execution, and its FY27 outlook, are company statements, not independent evidence of future results. No post-cutoff market reaction or prices used."
+}

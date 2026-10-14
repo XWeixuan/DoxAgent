@@ -1,0 +1,23 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-29T11:13:23.496227Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "No contemporaneous archived retailer listing or checkout capture was verified, so the advertised price and availability are supported here by the editorial report rather than an independently captured transaction page.",
+    "The PC offer does not name the DRAM manufacturer, memory-module part, or Micron as a supplier.",
+    "Independent same-deal coverage was located, but its initial publication time and pre-cutoff content snapshot could not be verified; it is not used as contemporaneous corroboration.",
+    "The promotion's exact start/end time, inventory, and sales volume remain unknown."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

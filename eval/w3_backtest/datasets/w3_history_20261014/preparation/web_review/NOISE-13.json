@@ -1,0 +1,221 @@
+{
+  "case_key": "NOISE-13",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-09-28T17:28:40.710250Z",
+  "reviewed_at": "2026-10-13T22:58:32.797182Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 6,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a13772-0d9b-76d1-ba68-62baeee8c1a8",
+    "turn_id": "01a13772-0daa-7ef0-8771-471166e8bf00",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 83712,
+        "inputTokens": 97968,
+        "outputTokens": 16022,
+        "reasoningOutputTokens": 13289,
+        "totalTokens": 113990
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 401664,
+        "inputTokens": 492289,
+        "outputTokens": 28526,
+        "reasoningOutputTokens": 25238,
+        "totalTokens": 520815
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "dea3d0be22572944118438c4e496d33c52b4fe5af4b5ea93a91435e8a0937991",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://rocketlabcorp.com/updates/mission-success-rocket-lab-launches-97th-electron-mission/",
+      "title": "MISSION SUCCESS: Rocket Lab Launches 97th Electron Mission",
+      "published_at": "2026-09-26",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search1"
+      ],
+      "source_call_ids": [
+        "exec-985b9485-7582-4024-9639-bfd11b3be901"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://investors.rocketlabcorp.com/node/13331/pdf",
+      "title": "MISSION SUCCESS: Rocket Lab Launches 96th Electron Mission",
+      "published_at": null,
+      "time_precision": "UNKNOWN",
+      "updated_at": null,
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn0search17"
+      ],
+      "source_call_ids": [
+        "exec-985b9485-7582-4024-9639-bfd11b3be901"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://www.space.com/space-exploration/launches-spacecraft/owlright-owlright-owlright-watch-rocket-lab-launch-private-japanese-radar-satellite-tonight",
+      "title": "'Owlright, Owlright, Owlright': Rocket Lab launches private Japanese radar satellite to orbit",
+      "published_at": null,
+      "time_precision": "UNKNOWN",
+      "updated_at": "2026-09-26T06:45:00Z",
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "BEFORE_CUTOFF",
+      "content_state": "UPDATED",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn2search3"
+      ],
+      "source_call_ids": [
+        "exec-9fa5c687-a02c-47db-81bb-e15e48cfa8f8"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://www.sec.gov/Archives/edgar/data/1418819/000095010326014464/dp253851_8k.htm",
+      "title": "Iridium Communications Inc. Form 8-K — September 24, 2026",
+      "published_at": "2026-09-24",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search9"
+      ],
+      "source_call_ids": [
+        "exec-985b9485-7582-4024-9639-bfd11b3be901"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S5",
+      "url": "https://www.investing.com/news/analyst-ratings/cantor-fitzgerald-reiterates-rocket-lab-stock-rating-on-launch-record-93CH-4920175",
+      "title": "Cantor Fitzgerald reiterates Rocket Lab stock rating on launch record",
+      "published_at": "2026-09-28 08:08 AM (timezone not stated)",
+      "time_precision": "UNKNOWN",
+      "updated_at": null,
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn0search2"
+      ],
+      "source_call_ids": [
+        "exec-985b9485-7582-4024-9639-bfd11b3be901"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S6",
+      "url": "https://stocktwits.com/news-articles/markets/equity/rocket-lab-launch-97th-electron-mission-cantor-highlights-competitive-advantages/cZMjbbxRBXR",
+      "title": "Cantor Backs Rocket Lab’s Launch Momentum After 97th Electron Mission – Highlights These ‘Competitive Advantages’",
+      "published_at": "2026-09-28T17:15:46Z",
+      "time_precision": "EXACT",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search10"
+      ],
+      "source_call_ids": [
+        "exec-985b9485-7582-4024-9639-bfd11b3be901"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "Rocket Lab's September 26 release reports a successful Electron mission delivering Synspective's 13th StriX satellite; it calls this Electron's 97th launch and Rocket Lab's 18th launch of 2026. The prior-context search result identifies the preceding Electron mission as number 96 on September 19.",
+      "source_urls": [
+        "https://rocketlabcorp.com/updates/mission-success-rocket-lab-launches-97th-electron-mission/",
+        "https://www.space.com/space-exploration/launches-spacecraft/owlright-owlright-owlright-watch-rocket-lab-launch-private-japanese-radar-satellite-tonight",
+        "https://investors.rocketlabcorp.com/node/13331/pdf"
+      ],
+      "event_time": "2026-09-26T00:39:00Z",
+      "publication_time": "2026-09-26 (issuer release; exact time UNKNOWN)",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The NZST launch time converts to 00:39 UTC; the prior 96th-mission page's exact publication time and pre-cutoff snapshot were not verified. One additional successful mission alone does not establish a future cadence."
+    },
+    {
+      "observation": "Iridium stockholders approved the merger agreement at the September 24 meeting. The primary filing reports the exact vote and says closing was still expected in mid-2027, subject to remaining conditions including regulatory approvals.",
+      "source_urls": [
+        "https://www.sec.gov/Archives/edgar/data/1418819/000095010326014464/dp253851_8k.htm"
+      ],
+      "event_time": "2026-09-24",
+      "publication_time": "2026-09-24",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The vote removed the shareholder-approval uncertainty but was not a completed acquisition; regulatory and other closing conditions remained."
+    },
+    {
+      "observation": "The timestamped Stocktwits article reports that Cantor Fitzgerald reiterated its Overweight rating and highlighted customer mix, dedicated launch sites, Neutron's first launch, and the Iridium closing as catalysts. Its copy was published at 17:15:46Z, before the cutoff.",
+      "source_urls": [
+        "https://stocktwits.com/news-articles/markets/equity/rocket-lab-launch-97th-electron-mission-cantor-highlights-competitive-advantages/cZMjbbxRBXR",
+        "https://www.investing.com/news/analyst-ratings/cantor-fitzgerald-reiterates-rocket-lab-stock-rating-on-launch-record-93CH-4920175"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-28T17:15:46Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The article describes a reiteration, not a reported initiation or upgrade. Cantor's original note and the exact first-publication time of the Investing.com page were not verified."
+    },
+    {
+      "observation": "The same timestamped Stocktwits article reports that SpaceX's Starship reached Earth orbit for the first time and deployed its first batch of next-generation Starlink satellites on September 28.",
+      "source_urls": [
+        "https://stocktwits.com/news-articles/markets/equity/rocket-lab-launch-97th-electron-mission-cantor-highlights-competitive-advantages/cZMjbbxRBXR"
+      ],
+      "event_time": "2026-09-28 (exact time UNKNOWN)",
+      "publication_time": "2026-09-28T17:15:46Z",
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "This is a reported concurrent competitor milestone, not evidence of a repeatable operational cadence. The official SpaceX page could not be verified in a pre-cutoff snapshot; independent coverage's early-return qualifier also could not be securely placed before cutoff."
+    }
+  ],
+  "gaps": [
+    "Cantor's original research note was not retrieved. Investing.com's displayed publication time lacks a stated timezone, and a pre-cutoff page snapshot was not verified; the supplied Stocktwits copy does verify that its summary had circulated by 17:15:46Z.",
+    "No pre-meeting proxy or notice was opened to independently verify the previously scheduled shareholder-vote expectation; the supplied case context identifies the vote as pending before September 24.",
+    "The SpaceX Flight 14 page was found with a September 28 date, but its open fetch returned no body and its publication time or pre-cutoff snapshot could not be established. The current AP page's search timestamp was inconsistent with its post-flight text, so its early-return detail is not treated as cutoff-verified.",
+    "The Stocktwits article links to a Wall Street Journal report on Falcon 9 rideshare availability, but the accessible WSJ page exposed only its headline and subtitle; the specific rideshare and post-2028 assertions could not be independently verified from accessible pre-cutoff text."
+  ],
+  "research_notes": "Evidence cutoff: 2026-09-28T17:28:40.710250Z. The dated primary releases verify the 97th Electron launch and Iridium shareholder approval; the same-day Stocktwits article is a timestamped dissemination of the Cantor summary and concurrent Starship report. Cantor's original research note was not retrieved. No stock prices or price targets are reproduced, and no trading view is offered."
+}

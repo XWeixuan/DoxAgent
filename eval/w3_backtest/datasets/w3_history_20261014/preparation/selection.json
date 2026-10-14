@@ -1,0 +1,367 @@
+{
+  "kind": "selection",
+  "seed": 20261014,
+  "candidate_count": 4059,
+  "cases": [
+    {
+      "case_key": "BE-01-01",
+      "case_id": "case_d352e02e723b459486242d142db27af3",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "BE-01-02",
+      "case_id": "case_3ea75c51070f43cfbf3f95b2180433dc",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "BE-01-03",
+      "case_id": "case_403144dc6a504d0582477529846097d8",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "BE-01-04",
+      "case_id": "case_c86c75f6556a499a8960974922aae41b",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "BE-01-05",
+      "case_id": "case_2889fbb92ed94d4a85cc07264be4bb87",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "BE-02-01",
+      "case_id": "case_8a9bf47799544318b931894cd955c109",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "BE-02-02",
+      "case_id": "case_9207bf5c695042d286fc85b05efd72e1",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "BE-02-03",
+      "case_id": "case_e5399f98a9d5475ca306f77cbf76a7a9",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "BE-02-04",
+      "case_id": "case_15f7297e163044719e7ab380a5c0ef6a",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "BE-02-05",
+      "case_id": "case_fbd4812e4c2044e890f9967655191ceb",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "BE-03-01",
+      "case_id": "case_b9c894cab25d44f9a460b3728e910d48",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "BE-03-02",
+      "case_id": "case_bb3f60a12775493baf757cde0e66a1c8",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "BE-03-03",
+      "case_id": "case_a5d78ace5c0d462fb2ae722ff04b234f",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "BE-03-04",
+      "case_id": "case_d2034923c648403b9399ff7084337b98",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "BE-03-05",
+      "case_id": "case_4a89a6a48f1b42c0893797c8847928a1",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "INTC-01-01",
+      "case_id": "case_be54a8b3078048dba6f49560cf9d9629",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "INTC-01-02",
+      "case_id": "case_105b32c987c54684ad1a890e639298ad",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "INTC-01-03",
+      "case_id": "case_22e5f50bc9174893989e0321a397219d",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "INTC-01-04",
+      "case_id": "case_2420a79ef4df43e2bfc5f4792d0ce38a",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "INTC-01-05",
+      "case_id": "case_7378fdedc94241bbacdf753c94cc2f8d",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "INTC-02-01",
+      "case_id": "case_eafa7ae7cba147e68fbf9e021466480d",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "INTC-02-02",
+      "case_id": "case_08a55f792d5c48acbf65a368fa5d81de",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "INTC-02-03",
+      "case_id": "case_b39f31b559ab46bc8c81cd9f344ebb8f",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "INTC-02-04",
+      "case_id": "case_c24add34b3594b8aa8c356869a18f222",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "MU-01-01",
+      "case_id": "case_5a7956936b8745c7b1c49d3d8abaec16",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "MU-01-02",
+      "case_id": "case_8b8bc2ed291848838b96309a3ad5d5f5",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "MU-01-03",
+      "case_id": "case_32cf1d11b688492ebbe870f62b1e0be4",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "MU-01-04",
+      "case_id": "case_ec8be0fbcbab4a8c94ce970700b962b1",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "MU-01-05",
+      "case_id": "case_49f2fa8f59314e6080f2f6146f1caa11",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "MU-02-01",
+      "case_id": "case_24eabfc74a7b496e80fe7e6328d7acf7",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "MU-02-02",
+      "case_id": "case_5259ee788ee0456fb772d82297cb93c0",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "MU-02-03",
+      "case_id": "case_36bc442141224337890f79ba2d52a48a",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "MU-02-04",
+      "case_id": "case_6391494fb8bb448a932ec215c5611ebd",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "MU-02-05",
+      "case_id": "case_22bf0db78d194fa19001a9efacf4f534",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "MU-03-01",
+      "case_id": "case_263bdf4e7658437f917b5fd78fc4d57d",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "MU-03-02",
+      "case_id": "case_64e48b767f89452fa2ea9748616acbb3",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "MU-03-03",
+      "case_id": "case_4be7a686d63943aba06c2d337561135e",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "MU-03-04",
+      "case_id": "case_05e5da6081404ac08f72e26f3171fd8d",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "MU-03-05",
+      "case_id": "case_5e7ae91538234d3dac6b6378e599b71e",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "MU-04-01",
+      "case_id": "case_d92564598f294e6c91d3cee128cbe800",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "RKLB-01-01",
+      "case_id": "case_9ac52592e7744107bd0cb7c6cd015c38",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "RKLB-01-02",
+      "case_id": "case_193e9c52c1204471aac4e1b597a9bd3c",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "RKLB-01-03",
+      "case_id": "case_a62010dd77c5428486b77e527ecbadf6",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "RKLB-01-04",
+      "case_id": "case_91adbdf5ecaa4827b0ca5262574fb9dc",
+      "group": "reviewed"
+    },
+    {
+      "case_key": "EXTRA-INTC-OPENAI",
+      "case_id": "case_1514e9e49e654055ab92d1428ec9afaf",
+      "group": "extra"
+    },
+    {
+      "case_key": "EXTRA-INTC-TERAFAB",
+      "case_id": "case_9dd6c3ac9c8a4796adae3f93d31d93a1",
+      "group": "extra"
+    },
+    {
+      "case_key": "EXTRA-RKLB-SYNSPECTIVE",
+      "case_id": "case_cb774ab16f154c5c9535f8453b99ff86",
+      "group": "extra"
+    },
+    {
+      "case_id": "case_bdfd716fd45d4c7c87e18fbe0898924b",
+      "case_key": "NOISE-01",
+      "group": "noise"
+    },
+    {
+      "case_id": "case_9043ad9f7d944534a8b33cbc594114b8",
+      "case_key": "NOISE-02",
+      "group": "noise"
+    },
+    {
+      "case_id": "case_2cf8a180f0154009bc5a853167298090",
+      "case_key": "NOISE-03",
+      "group": "noise"
+    },
+    {
+      "case_id": "case_b0d09eab591e4cdb9d997660065a4b14",
+      "case_key": "NOISE-04",
+      "group": "noise"
+    },
+    {
+      "case_id": "case_c7fe75ccafce4afdbba22fca7c8c410f",
+      "case_key": "NOISE-05",
+      "group": "noise"
+    },
+    {
+      "case_id": "case_2630dd9e08984669bc23ad419381fe6d",
+      "case_key": "NOISE-06",
+      "group": "noise"
+    },
+    {
+      "case_id": "case_d2c0c5f678cd433ca24d87fb5c4f8928",
+      "case_key": "NOISE-07",
+      "group": "noise"
+    },
+    {
+      "case_id": "case_7fdd95bebe074eb281d1e754dbae3784",
+      "case_key": "NOISE-08",
+      "group": "noise"
+    },
+    {
+      "case_id": "case_9b2434a2393e4ab2bca6958cdca94a23",
+      "case_key": "NOISE-09",
+      "group": "noise"
+    },
+    {
+      "case_id": "case_861d11a6d739494fb4b61ae5a1cfa14e",
+      "case_key": "NOISE-10",
+      "group": "noise"
+    },
+    {
+      "case_id": "case_578cdbddaef743b780324cc1229dc28d",
+      "case_key": "NOISE-11",
+      "group": "noise"
+    },
+    {
+      "case_id": "case_a4a674ec764443f897e8fc09aa1e86a2",
+      "case_key": "NOISE-12",
+      "group": "noise"
+    },
+    {
+      "case_id": "case_5dcc97e02b844fd0a04da38b686348f1",
+      "case_key": "NOISE-13",
+      "group": "noise"
+    },
+    {
+      "case_id": "case_546735133f644c9baf5f4c764fc510c9",
+      "case_key": "NOISE-14",
+      "group": "noise"
+    },
+    {
+      "case_id": "case_8b4f7e89a4dc4d3581d21a033a82669d",
+      "case_key": "NOISE-15",
+      "group": "noise"
+    },
+    {
+      "case_id": "case_5cac385b497f42d894e5afe249521459",
+      "case_key": "NOISE-16",
+      "group": "noise"
+    },
+    {
+      "case_id": "case_cfd153b19fcd43b3a926f91e646324fd",
+      "case_key": "NOISE-17",
+      "group": "noise"
+    },
+    {
+      "case_id": "case_26dbb9e40ca54be8b183d6d77525adf8",
+      "case_key": "NOISE-18",
+      "group": "noise"
+    },
+    {
+      "case_id": "case_f25efcbc037746cabf13e46dd5ffba7f",
+      "case_key": "NOISE-19",
+      "group": "noise"
+    },
+    {
+      "case_id": "case_904073b00b87430e8065122c01f388ce",
+      "case_key": "NOISE-20",
+      "group": "noise"
+    },
+    {
+      "case_id": "case_74936c05acbb422e80705909c2c83522",
+      "case_key": "NOISE-21",
+      "group": "noise"
+    },
+    {
+      "case_id": "case_d3b92d6dbd2343f392f0e70812c80736",
+      "case_key": "NOISE-22",
+      "group": "noise"
+    },
+    {
+      "case_id": "case_522e068fd8cf4547b9a62b6ff1aeeb6d",
+      "case_key": "NOISE-23",
+      "group": "noise"
+    },
+    {
+      "case_id": "case_e86fd2dbb1a6498d83a4816acc591f05",
+      "case_key": "NOISE-24",
+      "group": "noise"
+    },
+    {
+      "case_id": "case_76daab2721144507adea0864992665e6",
+      "case_key": "NOISE-25",
+      "group": "noise"
+    }
+  ]
+}

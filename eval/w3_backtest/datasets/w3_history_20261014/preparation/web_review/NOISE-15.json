@@ -1,0 +1,247 @@
+{
+  "case_key": "NOISE-15",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-10-04T09:38:16.266637Z",
+  "reviewed_at": "2026-10-13T22:58:32.889778Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 6,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a13773-ba8f-75d0-9003-24a55b4a05ad",
+    "turn_id": "01a13773-ba9e-70c0-907a-d0501d08b42d",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 83712,
+        "inputTokens": 88326,
+        "outputTokens": 15219,
+        "reasoningOutputTokens": 11973,
+        "totalTokens": 103545
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 397568,
+        "inputTokens": 478553,
+        "outputTokens": 19921,
+        "reasoningOutputTokens": 16115,
+        "totalTokens": 498474
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "4488acfc8feed5a0cf639fa4946501323b81f992f440b0743bd013b4dfa50fd7",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://www.aol.com/articles/buy-intel-stock-foundry-turnaround-190500000.html",
+      "title": "Should You Buy Intel Stock as Its Foundry Turnaround Takes Shape?",
+      "published_at": "2026-10-03T19:05:00Z",
+      "time_precision": "EXACT",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn5search0"
+      ],
+      "source_call_ids": [
+        "exec-27f71216-cb49-48d6-9a50-83be1a8638a5"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://www.fool.com/investing/2026/10/03/should-you-buy-intel-stock-as-its-foundry-turnarou/",
+      "title": "Should You Buy Intel Stock as Its Foundry Turnaround Takes Shape?",
+      "published_at": "2026-10-03 14:45 EST (as labeled on page; UTC offset uncertain)",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn0search0"
+      ],
+      "source_call_ids": [
+        "exec-2e5ae3f8-54db-4624-a9ad-c8ce264f23e6"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://www.intc.com/news-events/ir-calendar/detail/20260723-q2-2026-intel-corporation-earnings-conference-call",
+      "title": "Q2 2026 Intel Corporation Earnings Conference Call",
+      "published_at": null,
+      "time_precision": "UNKNOWN",
+      "updated_at": null,
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn3search0"
+      ],
+      "source_call_ids": [
+        "exec-4cc00910-ce33-49fc-89f1-5743a04b5c62"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://stockanalysis.com/stocks/intc/transcripts/653928-q2-2026/",
+      "title": "Intel (INTC) Q2 2026 Earnings Call Transcript & Audio",
+      "published_at": null,
+      "time_precision": "UNKNOWN",
+      "updated_at": null,
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn0search3",
+        "turn3search9"
+      ],
+      "source_call_ids": [
+        "exec-2e5ae3f8-54db-4624-a9ad-c8ce264f23e6",
+        "exec-4cc00910-ce33-49fc-89f1-5743a04b5c62"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S5",
+      "url": "https://www.intc.com/filings-reports/all-sec-filings/content/0000050863-26-000157/intc-20260627.htm",
+      "title": "Intel Form 10-Q for the quarter ended June 27, 2026",
+      "published_at": "2026-07-24",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search2",
+        "turn0search12"
+      ],
+      "source_call_ids": [
+        "exec-2e5ae3f8-54db-4624-a9ad-c8ce264f23e6"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S6",
+      "url": "https://www.intc.com/filings-reports/all-sec-filings/content/0000050863-26-000155/q226earningsrelease.htm",
+      "title": "Intel Reports Second-Quarter 2026 Financial Results",
+      "published_at": "2026-07-23",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search4"
+      ],
+      "source_call_ids": [
+        "exec-2e5ae3f8-54db-4624-a9ad-c8ce264f23e6"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S7",
+      "url": "https://www.tomshardware.com/tech-industry/semiconductors/intel-says-it-has-two-prospective-customers-for-14a-expects-to-hear-about-commitments-in-second-half-of-2026",
+      "title": "Intel says it has two prospective customers for 14A — expects to hear about commitments in second half of 2026",
+      "published_at": "2026-01-23",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0news26"
+      ],
+      "source_call_ids": [
+        "exec-2e5ae3f8-54db-4624-a9ad-c8ce264f23e6"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "The January baseline was evaluation, not a disclosed external production commitment: independent coverage reported two prospective 14A test-chip customers but zero committed external customers. The July call later described increased engagement and positive feedback, a change in reported interest rather than disclosed order status.",
+      "source_urls": [
+        "https://www.tomshardware.com/tech-industry/semiconductors/intel-says-it-has-two-prospective-customers-for-14a-expects-to-hear-about-commitments-in-second-half-of-2026",
+        "https://www.intc.com/news-events/ir-calendar/detail/20260723-q2-2026-intel-corporation-earnings-conference-call",
+        "https://stockanalysis.com/stocks/intc/transcripts/653928-q2-2026/"
+      ],
+      "event_time": "2026-07-23 (Q2 earnings call; scheduled start 14:00 PDT, exact time of the relevant remarks unknown)",
+      "publication_time": "2026-01-23 for the earlier report; the July call was publicly webcast on 2026-07-23",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The January report predates the July update. The transcript’s initial publication time is unknown, although Intel identifies the underlying public webcast and archive. Neither source identifies an external 14A customer with a binding production order or capacity reservation."
+    },
+    {
+      "observation": "The available Q2 call transcript attributes the explicit statement about customers considering what product to run and how much capacity they could use to CEO Lip-Bu Tan, conditional on seeing the PDK 0.9 and yield. Tan said PDK 0.9 was on track for October, 14A risk production for internal products was planned for H2 2027, and the company had committed to a 2028 high-volume ramp. The AOL/Motley Fool article presents the capacity-inquiry interpretation as a CFO David Zinsner implication; Zinsner separately discussed investing based on internal and external demand. This attribution difference should be preserved.",
+      "source_urls": [
+        "https://www.intc.com/news-events/ir-calendar/detail/20260723-q2-2026-intel-corporation-earnings-conference-call",
+        "https://stockanalysis.com/stocks/intc/transcripts/653928-q2-2026/",
+        "https://www.aol.com/articles/buy-intel-stock-foundry-turnaround-190500000.html"
+      ],
+      "event_time": "2026-07-23",
+      "publication_time": "2026-07-23 (live call; exact minute of the remarks unknown)",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The call describes customer engagement and future milestones, not a named external customer, completed PDK 0.9 delivery, signed capacity booking, or external production schedule. The transcript page’s own publication/revision time is unknown."
+    },
+    {
+      "observation": "The Q2 filing supplies a material scale and composition counterpoint: $293 million of reported external Foundry revenue was a small part of $5.765 billion total Foundry revenue, while $5.5 billion was intersegment revenue. Intel said the external-revenue increase was primarily due to Altera’s transition to an external customer; Foundry reported a $2.089 billion operating loss.",
+      "source_urls": [
+        "https://www.intc.com/filings-reports/all-sec-filings/content/0000050863-26-000157/intc-20260627.htm"
+      ],
+      "event_time": "Quarter ended 2026-06-27",
+      "publication_time": "2026-07-24",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "These are Q2 reported figures, not a direct measure of 14A prospective-customer engagement or later orders."
+    },
+    {
+      "observation": "The Oct. 3 article is later commentary on the already-public Q2 results and July call. It characterizes customer conversations as moving toward capacity inquiries but supplies no named customer, quantity, order, or production commitment; it also says Intel still needs to win a large-scale customer.",
+      "source_urls": [
+        "https://www.aol.com/articles/buy-intel-stock-foundry-turnaround-190500000.html",
+        "https://www.fool.com/investing/2026/10/03/should-you-buy-intel-stock-as-its-foundry-turnarou/"
+      ],
+      "event_time": "Underlying Q2 call: 2026-07-23",
+      "publication_time": "AOL: 2026-10-03T19:05:00Z; Motley Fool page labels 2026-10-03 14:45 EST, with UTC offset ambiguity",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The article is commentary and does not disclose a new customer commitment. No dated pre-cutoff snapshot or revision history was verified for the Motley Fool page itself; the AOL copy was captured before cutoff."
+    }
+  ],
+  "gaps": [
+    "No pre-cutoff source found in this search names a 14A external production customer or gives a binding order, booked capacity, or quantity.",
+    "The July call described PDK 0.9 as on track for October; this collection found no pre-cutoff confirmation that it had been delivered by Oct. 4.",
+    "The transcript provider’s initial publication/revision time is unknown; the transcript is treated as a rendering of the July public call, not an independently time-stamped contemporaneous publication.",
+    "The Motley Fool article page has an ambiguous EST label for an October timestamp, and its own revision history or pre-cutoff snapshot was not verified. The AOL copy has a specific pre-cutoff timestamp.",
+    "No additional independently time-verified July report was established here; the independent prior-context report is dated Jan. 23, while the primary July call and filing provide the contemporaneous update."
+  ],
+  "research_notes": "Evidence cutoff: 2026-10-04T09:38:16.266637Z. Research focused on the article’s 14A customer-engagement claim, its original public basis, prior customer-commitment context, and the scale/composition of reported Foundry revenue. The article is commentary, not a new company disclosure. No post-cutoff facts or market reactions are used. The Fool page labels its time 2:45 PM EST, while the AOL syndication page gives 19:05 UTC; the Fool page’s time-zone label makes exact UTC ordering uncertain."
+}

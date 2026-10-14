@@ -1,0 +1,524 @@
+{
+  "recent_trade_intents": [
+    {
+      "message": {
+        "title": "Netlist and Micron Enter Patent License and Settlement Agreements",
+        "body": "IRVINE, Calif., Oct. 6, 2026 /PRNewswire/ -- Netlist, Inc. (OTCQB: NLST) today announced that the Company and Micron Technology, Inc. (\"Micron\") have entered into Patent License and Settlement Agreements.\n\nUnder the agreements, the parties have agreed to settle and mutually release all pending legal proceedings between the companies, and Micron will receive a 5-year term license to Netlist's patent portfolio, including patents covering server DIMMs and High Bandwidth Memory technologies. Micron will pay Netlist $30 million per quarter from the fourth quarter of 2026 through the third quarter of 2031, totaling $600 million during the term.\n\n\"The agreement with Micron further validates the value of our AI memory technologies,\" said C.K. Hong, Netlist's Chief Executive Officer. \"We remain committed to protecting our IP while continuing to invest in the development of next-generation products.\"\n\nFurther details regarding the transaction are available in Netlist's Current Report on Form 8-K filed concurrently with the issuance of this release and available on the SEC filings page of the Netlist website here.\n\nAbout NetlistNetlist is a leading innovator in advanced memory and storage solutions. With a rich portfolio of patented technologies, Netlist's inventions are foundational to the advancement of AI computing. To learn more about Netlist, please visit www.netlist.com.\n\nSafe Harbor StatementThis news release contains forward-looking statements within the meaning of the Private Securities Litigation Reform Act of 1995. Forward-looking statements contained in this news release include, without limitation, statements about anticipated benefits of the agreements, the parties' ability to perform their respective obligations under, and to realize the anticipated benefits of those agreements, future exclusion and cease and desist orders, Netlist's ability to successfully enforce its intellectual property rights, and evaluations and judgments regarding Netlist's intellectual property portfolio. Forward-looking statements are statements other than historical facts and often address future events or Netlist's future performance. They reflect management's present expectations regarding future events and are subject to known and unknown risks, uncertainties and other factors that could cause actual results to differ materially from those expressed in or implied by any forward-looking statements. These risks, uncertainties and other factors include, among others, risks: Netlist may not be able to collect the substantial amount in damages previously awarded to it in its litigations (appeals in general could cause a lengthy delay in Netlist's ability to collect damages awards, could overturn the verdicts or reduce the damages awards); Netlist will suffer adverse outcomes in its litigation with Google or in its various other active proceedings to defend the validity of its patents; related to Netlist's plans for its intellectual property, including its strategies for monetizing, licensing, expanding, and defending its patent portfolio, which efforts may not be successful; other patent infringement litigation initiated by Netlist, or by others against Netlist, may not be successful or resolve favorably for Netlist, particularly given the costs and unpredictability of any such litigation; associated with Netlist's product sales, including whether and how long the current market and demand for products sold by Netlist will persist or persist as expected and whether Netlist may successfully develop and launch new products that are attractive to the market; whether Netlist will continue to acquire components or products for resale on favorable terms; that Netlist or its counterparties may fail to perform their obligations as required pursuant to applicable license and supply agreements, associated with the competitive landscape of Netlist's industry, general economic, political and market conditions, factory slowdowns and/or shutdowns, and changes in international trade and tariff policies. All forward-looking statements reflect management's present assumptions, expectations and beliefs regarding future events and are subject to known and unknown risks, uncertainties and other factors that could cause actual results to differ materially from those expressed in or implied by any forward-looking statements. These and other risks and uncertainties are described in Netlist's Annual Report on Form 10-K for the fiscal year ended December 27, 2025 filed with the SEC on March 19, 2026, and the other filings it makes with the U.S. Securities and Exchange Commission from time to time, including any subsequently filed quarterly and current reports. In light of these risks, uncertainties and other factors, these forward-looking statements should not be relied on as predictions of future events. These forward-looking statements represent Netlist's assumptions, expectations and beliefs only as of the date they are made, and except as required by law, Netlist undertakes no obligation to revise or update any forward-looking statements for any reason.\n\nFor more information, please contact:Investors / MediaMike SmargiassiThe Plunkett GroupNLST@theplunkettgroup.com(212) 739‑6729\n\nView original content to download multimedia:https://www.prnewswire.com/news-releases/netlist-and-micron-enter-patent-license-and-settlement-agreements-302899647.html",
+        "source_name": "yahoo",
+        "published_at": "2026-10-06T12:00:00Z"
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": []
+      },
+      "w2": {
+        "policy_hit": false,
+        "policy_related": false,
+        "policy_ids": [],
+        "hit_condition_ids": [],
+        "matched_condition_ids": []
+      },
+      "w3_decision": {
+        "novelty": {
+          "reason": "Reference View记录了Micron与Netlist之间仍在进行的ITC、上诉及损害赔偿事项，但没有记录双方已达成和解或五年许可。此次协议带来的法律状态变化是新的。",
+          "reference_ids": [
+            "E21",
+            "E22",
+            "E23",
+            "E176"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "PolicySet v17没有覆盖专利和解或许可的触发条件。消息也未触发其中关于HBM商业出货、竞争地位、经营或财务结果的具体门槛。"
+        },
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "双方现已约定解决并相互解除所有未决法律程序，Micron取得覆盖服务器DIMM及HBM专利的五年许可；原先未定的法律风险转为许可期内较明确的经营保障和每季度3,000万美元的约定费用。核心变化是高价值内存产品的法律确定性提升，而非新增出货或需求。",
+          "prior_expectation": "消息前公开状态仍包括Netlist针对Micron的HBM ITC新案、服务器内存相关诉讼、上诉及单独的损害赔偿事项；尚无公开的全面和解或HBM/服务器DIMM许可。此前存在未解决的法律与潜在供货限制风险，但没有证据支持对禁令概率作精确估值。",
+          "reason": "这是相对近期公开状态的正向惊喜：9月29日刚出现新的HBM ITC行动，此次协议迅速解决双方未决程序并覆盖HBM和服务器DIMM。传导路径是法律不确定性和潜在供货限制风险下降，保护Micron面向AI/服务器市场的高价值产品经营；已知许可费用每年约1.2亿美元，不到FY26收入的0.1%，相对公司规模较小。由于此前没有证据表明禁令迫近，不将其视为新增收入，但净影响仍支持LONG。",
+          "trade": true
+        }
+      },
+      "direction": "LONG",
+      "initiated_at": "2026-10-06T12:13:16.195646+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    },
+    {
+      "message": {
+        "title": "Netlist and Micron reach $600M patent license and settlement deal",
+        "body": "© Reuters\n\nNetlist, Inc. (NLST) and Micron Technology, Inc. have entered into patent license and settlement agreements, according to a press release from Netlist.\n\nUnder the terms of the agreements, all pending legal proceedings between the two companies will be settled and mutually released. Micron will receive a five-year license to Netlist’s patent portfolio, which includes patents covering server DIMMs and High Bandwidth Memory technologies.\n\nMicron will pay Netlist $30 million per quarter beginning in the fourth quarter of 2026 through the third quarter of 2031, totaling $600 million over the term of the license.\n\n\"The agreement with Micron further validates the value of our AI memory technologies,\" said C.K. Hong, Netlist’s Chief Executive Officer. \"We remain committed to protecting our IP while continuing to invest in the development of next-generation products.\"\n\nNetlist filed a Current Report on Form 8-K with the SEC concurrently with the announcement.\n\nShould you invest $2,000 in MU right now?\n\nProPicks AI evaluates MU alongside thousands of other companies every month using 100+ financial metrics. Using powerful AI to generate exciting stock ideas, it looks beyond popularity to assess fundamentals, momentum, and valuation. The AI has no bias—it simply identifies which stocks offer the best risk-reward based on current data with notable past winners that include Super Micro Computer (+185%) and AppLovin (+157%). Want to know if MU is currently featured in any ProPicks AI strategies, or if there are better opportunities in the same space?\n\nLatest comments",
+        "source_name": "investing.com",
+        "published_at": "2026-10-06T12:10:04Z"
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": [
+          "E176",
+          "E21"
+        ]
+      },
+      "w2": {
+        "policy_hit": false,
+        "policy_related": false,
+        "policy_ids": [],
+        "hit_condition_ids": [],
+        "matched_condition_ids": []
+      },
+      "w3_decision": {
+        "novelty": {
+          "reason": "新现实是Micron与Netlist达成五年专利许可及和解，涵盖服务器DIMM与HBM，并约定每季度支付3000万美元、合计6亿美元。Reference View中的E176、E21、E22和E23只记录未决诉讼、ITC救济请求及既有赔偿判决，未记录许可或和解。 [当日消息](https://www.investing.com/news/assorted/netlist-and-micron-reach-600m-patent-license-and-settlement-deal-432SI-4934250)",
+          "reference_ids": [
+            "E176",
+            "E21",
+            "E22",
+            "E23"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "PolicySet v17没有针对Netlist诉讼、专利许可或法律风险解除的触发条件；现有经营与产品相关条件均未被该和解事实满足，因此此案仍属uncovered。"
+        },
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "法律状态从未决诉讼、赔偿与潜在排除风险，转为Micron获得覆盖服务器DIMM及HBM的五年许可、双方约定解决所有未决诉讼；相应代价是2026年Q4至2031年Q3每季度3000万美元、总计6亿美元。需要上修法律确定性及产品供货连续性预期，并将成本风险收敛为明确的许可费；这不是内存需求、销量或ASP上修。",
+          "prior_expectation": "事件前的基线是内存业务继续运营，但Netlist相关的损害赔偿与排除救济风险仍未解决，并非已有许可或和解。Reference View记录了Netlist针对HBM的ITC行动（E176）、先前ITC行动（E21）、专利上诉状态（E22）及既有4.45亿美元赔偿判决（E23）；Micron公开申报亦记载该判决及上诉。[Micron申报](https://www.sec.gov/Archives/edgar/data/723125/000072312526000006/mu-20260226.htm) Netlist于9月29日宣布新的HBM专利ITC行动并寻求排除及停止令。[Netlist公告](https://www.prnewswire.com/news-releases/netlist-files-new-itc-action-against-micron-technology-inc-involving-hbm-patents-for-ai-computing-302892194.html) 合理预期是继续出货与未决法律尾部风险并存，结果不确定，而非禁售必然。",
+          "reason": "和解及许可条款此前未公开，且Netlist在9月29日刚针对HBM寻求ITC排除救济，故相对事件前未决基线有明显惊喜。HBM和服务器内存是Micron重要业务；许可及诉讼和解降低产品销售受法律救济干扰的尾部风险，传导路径清晰。每季度3000万美元虽为新增成本，但约为FY26 Q4约500亿美元收入指引中点的0.06%；净预期变化偏正，支持LONG。[协议报道](https://www.investing.com/news/assorted/netlist-and-micron-reach-600m-patent-license-and-settlement-deal-432SI-4934250)",
+          "trade": true
+        }
+      },
+      "direction": "LONG",
+      "initiated_at": "2026-10-06T12:19:43.686860+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    }
+  ],
+  "history_matches": [
+    {
+      "events": [],
+      "policies": []
+    },
+    {
+      "events": [],
+      "policies": []
+    }
+  ],
+  "watches": [],
+  "pins": [],
+  "policy_consumptions": [],
+  "provisional": [
+    {
+      "candidate": {
+        "assertion_state": "RUMORED",
+        "entities": [
+          "SoftBank Group",
+          "Masayoshi Son",
+          "海湾投资者",
+          "阿联酋"
+        ],
+        "occurrence_date": "2026-10-09",
+        "proposition": "Reuters转述Financial Times报道称，Masayoshi Son正与包括阿联酋在内的海湾投资者讨论最高1000亿美元募资，用于新的AI投资基金；Reuters称无法核实该报道，SoftBank未回应。",
+        "subject_time": "据报在募资前数周进行的讨论；拟议AI投资基金"
+      },
+      "candidate_index": 0,
+      "case_id": "case_c410832977ef4741884fa85b568a2b1e",
+      "created_at": "2026-10-09T07:02:26.089878Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E336",
+      "runtime_signature": "ff3f4456c86159ec6cdd34faac35cea310c19055cf7b39720a14200f8d1dd3fa",
+      "snapshot_version": 1,
+      "source_message_id": "std_630de115aee94c9d9f5024c7bb4bce77",
+      "ticker": "MU",
+      "trading_date": "2026-10-09"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Microsoft",
+          "Windows"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "Microsoft于2026年10月7日公布可在个人电脑上运行的AI编码模型，并展示面向本地AI任务的Windows PC方案。",
+        "subject_time": "2026年10月7日的Microsoft Windows与Surface发布"
+      },
+      "candidate_index": 1,
+      "case_id": "case_c410832977ef4741884fa85b568a2b1e",
+      "created_at": "2026-10-09T07:02:26.116282Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E337",
+      "runtime_signature": "046e2f989f35c663a732e618ba16945d21523c5b6faa7afc05756258908fca4a",
+      "snapshot_version": 2,
+      "source_message_id": "std_630de115aee94c9d9f5024c7bb4bce77",
+      "ticker": "MU",
+      "trading_date": "2026-10-09"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Microsoft",
+          "NVIDIA",
+          "Surface Laptop Ultra"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "Microsoft公布搭载NVIDIA RTX Spark的Surface Laptop Ultra，起售价2599美元；128GB内存、1TB存储配置售价5899美元。",
+        "subject_time": "2026年10月7日发布的Surface Laptop Ultra"
+      },
+      "candidate_index": 2,
+      "case_id": "case_c410832977ef4741884fa85b568a2b1e",
+      "created_at": "2026-10-09T07:02:26.147050Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E338",
+      "runtime_signature": "91cd90d8d2cf6935babd6c6a0eef85a0037a5310bf371d3d1ec213c08078c3ce",
+      "snapshot_version": 3,
+      "source_message_id": "std_630de115aee94c9d9f5024c7bb4bce77",
+      "ticker": "MU",
+      "trading_date": "2026-10-09"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Stocktwits",
+          "SPY",
+          "QQQ"
+        ],
+        "occurrence_date": "2026-10-09",
+        "proposition": "Stocktwits报告，2026年10月9日所在周，散户对SPY和QQQ的情绪维持“极度看涨”。",
+        "subject_time": "2026-10-05当周"
+      },
+      "candidate_index": 0,
+      "case_id": "case_dfd38422b46a486dbdb51fedf7dcd8cd",
+      "created_at": "2026-10-09T08:50:27.678399Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E339",
+      "runtime_signature": "db411b31a3df8c9cebe6c3d3fc78b536d6b4878892518e0faad0e8d1e3d4b437",
+      "snapshot_version": 4,
+      "source_message_id": "std_961fbc36c1a647dcbe01786d5b257952",
+      "ticker": "MU",
+      "trading_date": "2026-10-09"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Stocktwits",
+          "SPY",
+          "QQQ"
+        ],
+        "occurrence_date": "2026-10-09",
+        "proposition": "Stocktwits报告，2026年10月9日所在周，散户对SPY和QQQ的情绪维持“极度看涨”。",
+        "subject_time": "2026-10-05当周"
+      },
+      "candidate_index": 0,
+      "case_id": "case_588310ca4f1f418c801910203ec80bc7",
+      "created_at": "2026-10-09T09:03:12.167803Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E340",
+      "runtime_signature": "db411b31a3df8c9cebe6c3d3fc78b536d6b4878892518e0faad0e8d1e3d4b437",
+      "snapshot_version": 5,
+      "source_message_id": "std_1be6b7bece9847498be4a11ffbf770a4",
+      "ticker": "MU",
+      "trading_date": "2026-10-09"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Micron Technology"
+        ],
+        "occurrence_date": "2026-10-09",
+        "proposition": "Micron股价在2026年10月9日盘前上涨2.23%至1058.98美元。",
+        "subject_time": "2026-10-09盘前交易"
+      },
+      "candidate_index": 0,
+      "case_id": "case_621cbbff3603420da6174db7a70b7cb4",
+      "created_at": "2026-10-09T10:02:04.492442Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E341",
+      "runtime_signature": "e2bf415b22173b169bd90bc70c6dbbf4e60a0061ccd60a25015a7b7b793eebb3",
+      "snapshot_version": 6,
+      "source_message_id": "std_66d469c2e16a47abaf9fa9a0fcae115b",
+      "ticker": "MU",
+      "trading_date": "2026-10-09"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "Gil Luria",
+          "D.A. Davidson",
+          "Micron Technology",
+          "Nasdaq 100"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "Gil Luria称Micron约占Nasdaq 100市值的3%，并可能贡献未来12个月该指数约10%的盈利。",
+        "subject_time": "未来12个月"
+      },
+      "candidate_index": 1,
+      "case_id": "case_621cbbff3603420da6174db7a70b7cb4",
+      "created_at": "2026-10-09T10:02:04.508097Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E342",
+      "runtime_signature": "883187ce6070d489cc4a092f08c43ce40deb599ebabddf6688e692064f9e85ae",
+      "snapshot_version": 7,
+      "source_message_id": "std_66d469c2e16a47abaf9fa9a0fcae115b",
+      "ticker": "MU",
+      "trading_date": "2026-10-09"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "Gil Luria",
+          "D.A. Davidson",
+          "Micron Technology",
+          "Microsoft",
+          "Amazon",
+          "Alphabet"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "Gil Luria预计Micron超过一半的产品将通过五年期协议销售，并将Microsoft、Amazon和Alphabet在数据中心设计特定内存产品作为依据。",
+        "subject_time": "未来五年期协议"
+      },
+      "candidate_index": 2,
+      "case_id": "case_621cbbff3603420da6174db7a70b7cb4",
+      "created_at": "2026-10-09T10:02:04.534531Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E343",
+      "runtime_signature": "f954c2f7c61bc2a00e462e98f1e1ce9e54ef84cc354190e6ec9a5a6bca9a6f1e",
+      "snapshot_version": 8,
+      "source_message_id": "std_66d469c2e16a47abaf9fa9a0fcae115b",
+      "ticker": "MU",
+      "trading_date": "2026-10-09"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Gil Luria",
+          "D.A. Davidson",
+          "Micron Technology",
+          "AMD",
+          "Intel"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "Gil Luria称Micron约以6倍盈利交易，而AMD和Intel约为40倍或更高。",
+        "subject_time": "2026-10-08的估值评论"
+      },
+      "candidate_index": 3,
+      "case_id": "case_621cbbff3603420da6174db7a70b7cb4",
+      "created_at": "2026-10-09T10:02:04.562317Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E344",
+      "runtime_signature": "7a1b5138e5d3717cb6befefc1293bfba7d9ec4577e547c3a7a2907c6c275aa41",
+      "snapshot_version": 9,
+      "source_message_id": "std_66d469c2e16a47abaf9fa9a0fcae115b",
+      "ticker": "MU",
+      "trading_date": "2026-10-09"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "TrendForce",
+          "VCSEL"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "TrendForce预计全球VCSEL销售量将从2025年至2031年以38%的CAGR增长，并于2031年达到6.5亿颗。",
+        "subject_time": "2025年至2031年"
+      },
+      "candidate_index": 0,
+      "case_id": "case_a1d7f9a250b347099cb50eeef30a5f38",
+      "created_at": "2026-10-09T10:33:21.343850Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E345",
+      "runtime_signature": "acf7692d8c40d71a856199a4b9cfa26d81668d0c08d72708674d10ec91278e60",
+      "snapshot_version": 10,
+      "source_message_id": "std_b83a9855bdb847f48935a16d78c0b894",
+      "ticker": "MU",
+      "trading_date": "2026-10-09"
+    },
+    {
+      "candidate": {
+        "assertion_state": "EXPECTED",
+        "entities": [
+          "TrendForce",
+          "VCSEL NPO"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "TrendForce预计多种基于VCSEL的近封装光学（NPO）方案将在2027年至2028年间推出。",
+        "subject_time": "2027年至2028年"
+      },
+      "candidate_index": 1,
+      "case_id": "case_a1d7f9a250b347099cb50eeef30a5f38",
+      "created_at": "2026-10-09T10:33:21.353431Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E346",
+      "runtime_signature": "4610548e527b9765ac8646693e56c7d9b99581bbf809728b49c3e57facb5333f",
+      "snapshot_version": 11,
+      "source_message_id": "std_b83a9855bdb847f48935a16d78c0b894",
+      "ticker": "MU",
+      "trading_date": "2026-10-09"
+    },
+    {
+      "candidate": {
+        "assertion_state": "EXPECTED",
+        "entities": [
+          "TrendForce",
+          "VCSEL NPO",
+          "Micro LED CPO"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "TrendForce预计传输速度进入1.6 Tbps时代后，铜缆高频信号衰减将加速短距光互连技术（包括VCSEL NPO和Micro LED CPO）的转型。",
+        "subject_time": "AI数据中心网络进入1.6 Tbps时代"
+      },
+      "candidate_index": 2,
+      "case_id": "case_a1d7f9a250b347099cb50eeef30a5f38",
+      "created_at": "2026-10-09T10:33:21.361514Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E347",
+      "runtime_signature": "530a6f81c14b71c6de3f807e020b3e4488b24bce60f50fc90350c48c9dd1a299",
+      "snapshot_version": 12,
+      "source_message_id": "std_b83a9855bdb847f48935a16d78c0b894",
+      "ticker": "MU",
+      "trading_date": "2026-10-09"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "美国基准股市指标",
+          "科技股"
+        ],
+        "occurrence_date": "2026-10-09",
+        "proposition": "美国基准股市指标于2026年10月9日开盘前走高，此前科技股出现抛售。",
+        "subject_time": "2026-10-09盘前"
+      },
+      "candidate_index": 0,
+      "case_id": "case_de3d83b3a73741618739b684e0eae862",
+      "created_at": "2026-10-09T12:01:09.727277Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E348",
+      "runtime_signature": "323f71eea2c4c47e0fdd6d175eff03244369c5b78c3cdc4865a91713aca1a223",
+      "snapshot_version": 13,
+      "source_message_id": "std_85cebd82fcf44130aae70aae1fccf2b1",
+      "ticker": "MU",
+      "trading_date": "2026-10-09"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "GlobalFoundries",
+          "FDX Fusion"
+        ],
+        "occurrence_date": "2026-10-09",
+        "proposition": "GlobalFoundries公布面向Physical AI应用的FDX Fusion FD-SOI平台路线图，设计包含存内计算和嵌入式非易失性存储。",
+        "subject_time": "FDX Fusion平台路线图"
+      },
+      "candidate_index": 0,
+      "case_id": "case_3e04a00e6dc44ee68b03931ba1e10046",
+      "created_at": "2026-10-09T12:06:21.004755Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E349",
+      "runtime_signature": "66efcb056e87380a1cec4b1080684fe9a1e6486dd0cd0399dd9d523437018de0",
+      "snapshot_version": 14,
+      "source_message_id": "std_e9ceeb09dd264cacb5fe38c659e69e29",
+      "ticker": "MU",
+      "trading_date": "2026-10-09"
+    },
+    {
+      "candidate": {
+        "assertion_state": "EXPECTED",
+        "entities": [
+          "GlobalFoundries",
+          "FDX Fusion"
+        ],
+        "occurrence_date": "2026-10-09",
+        "proposition": "GlobalFoundries预计第一代FDX Fusion将实现7纳米级数字性能，并较第一代FDX提升超过2倍密度。",
+        "subject_time": "FDX Fusion第一代"
+      },
+      "candidate_index": 1,
+      "case_id": "case_3e04a00e6dc44ee68b03931ba1e10046",
+      "created_at": "2026-10-09T12:06:21.024159Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E350",
+      "runtime_signature": "2b558b98004bef16d607f80a4fc819c917a0eb482cc0ad93ccbf97d00eb6e4ef",
+      "snapshot_version": 15,
+      "source_message_id": "std_e9ceeb09dd264cacb5fe38c659e69e29",
+      "ticker": "MU",
+      "trading_date": "2026-10-09"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ONGOING",
+        "entities": [
+          "GlobalFoundries",
+          "FDX Fusion"
+        ],
+        "occurrence_date": "2026-10-09",
+        "proposition": "GlobalFoundries表示正在与数家客户开展FDX Fusion的早期开发和评估。",
+        "subject_time": "FDX Fusion早期开发和评估阶段"
+      },
+      "candidate_index": 2,
+      "case_id": "case_3e04a00e6dc44ee68b03931ba1e10046",
+      "created_at": "2026-10-09T12:06:21.050299Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E351",
+      "runtime_signature": "18a6eb7a34e18c3d1e9bacafa2db16f9f06f60fd9694f2fa9b95c276587e38f3",
+      "snapshot_version": 16,
+      "source_message_id": "std_e9ceeb09dd264cacb5fe38c659e69e29",
+      "ticker": "MU",
+      "trading_date": "2026-10-09"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLAN",
+        "entities": [
+          "GlobalFoundries",
+          "FDX Fusion",
+          "德累斯顿"
+        ],
+        "occurrence_date": "2026-10-09",
+        "proposition": "GlobalFoundries计划于2027年初提供演示硅供客户评估、于2027年年中发布初始PDK，并于2028年在德国德累斯顿开始FDX Fusion制造。",
+        "subject_time": "2027年至2028年"
+      },
+      "candidate_index": 3,
+      "case_id": "case_3e04a00e6dc44ee68b03931ba1e10046",
+      "created_at": "2026-10-09T12:06:21.062592Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E352",
+      "runtime_signature": "e37cfa7e60eea8a875bdd9206ec05365cfe03b00dc24872f965057e674bf6bd8",
+      "snapshot_version": 17,
+      "source_message_id": "std_e9ceeb09dd264cacb5fe38c659e69e29",
+      "ticker": "MU",
+      "trading_date": "2026-10-09"
+    }
+  ],
+  "limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "global_state": {
+    "watches": [],
+    "pins": []
+  },
+  "event_details": {
+    "requested_event_ids": [],
+    "canonical_events": [],
+    "provisional_events": [],
+    "missing_event_ids": []
+  }
+}

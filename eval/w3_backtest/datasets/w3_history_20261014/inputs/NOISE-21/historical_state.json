@@ -1,0 +1,678 @@
+{
+  "recent_trade_intents": [
+    {
+      "message": {
+        "title": "U.S. Data Center Power Crunch Poses Greater Risk to Memory and Optical Networking Than Nvidia - BigGo Finance",
+        "body": "U.S. Data Center Power Crunch Poses Greater Risk to Memory and Optical Networking Than Nvidia\nThe bottleneck in U.S. artificial intelligence (AI) infrastructure is shifting from chip shortages to power shortages. Even if servers are installed in data centers, without electricity they cannot be converted into actual computing capacity—raising concerns that AI supply chain risk may concentrate in specific component categories.\nMorgan Stanley, in a report released on the 5th (local time), estimated that U.S. data center developers will face a net power shortfall of approximately 32 gigawatts (GW) by 2028. That represents roughly 34% of required power, and the figure already accounts for additional power procurement measures including on-site generation and fuel cells.\nThe core insight of the analysis is that power shortages will not affect all AI semiconductor companies equally. Nvidia and Broadcom are relatively safe, while suppliers of peripheral components—ASICs, memory, optical networking, and power management semiconductors—could take a bigger hit.\nDiverging Impact Across Chipmakers\nMorgan Stanley assessed that the power bottleneck does not yet threaten Nvidia's and Broadcom's 2027 earnings outlooks. The two companies have relatively high visibility into which data centers their semiconductors will actually be deployed in, and they have room to respond to power shortages through regional business expansion and coordination among data center operators, semiconductor companies, and power supply chains.\nProduct efficiency also makes a difference. Nvidia GPUs can produce more tokens per gigawatt of power, giving them higher deployment priority in power-constrained environments. ASICs, by contrast, have lower output per unit of power and require securing more power resources, making them more sensitive to bottlenecks.\nBroadcom's guidance revisions also show that market expectations are converging. In March, the company said AI revenue for fiscal 2027 would \"significantly exceed\" $100 billion, but by September it had specified the figure at $115 billion. The absolute scale remains large, but the room for further upward revision appears limited.\nNvidia CEO Jensen Huang and Broadcom CEO Hock Tan have both recently emphasized that power resources have become a harder constraint to coordinate than chips or memory in AI infrastructure deployment.\nInventory Risk in the Component Supply Chain\nIf power constraints translate into actual deployment delays, customers may postpone product deliveries or cancel orders. Morgan Stanley noted that in this scenario, memory, optical networking, power management, and analog semiconductors face the greatest exposure to inventory disruptions.\nThese component categories have benefited from AI infrastructure expansion and tightening supply-demand dynamics. However, if final projects are delayed, customers are likely to draw down existing inventory first and then reduce follow-on orders. The implication is that expanded AI investment does not automatically translate into revenue growth for all semiconductor companies.\nOracle's case illustrates this risk concretely. \"Project Lighthouse,\" a 1.3 GW facility under construction in Wisconsin, could see power delivery delayed until October 2028 at the earliest—or spring 2029 in a pessimistic scenario—even after transmission approval procedures resumed. Even if AI servers are already mounted in racks, without electricity they cannot be converted into actual computing capacity or revenue.\nEfforts to Expand Power Supply—and Their Limits\nMorgan Stanley expects new behind-the-meter gas turbine and engine capacity to reach approximately 19 GW from 2026 through 2028 under its base case. Bloom Energy's fuel cells could contribute about 6 GW, while nuclear power and repurposed cryptocurrency mining facilities are also cited as supplementary options. Yet even combined, all these measures fall short of closing the gap.\nOverseas expansion offers only a partial solution. Morgan Stanley lowered its forecast for the U.S. share of global computing capacity from 60% to 55%. Slow approval processes in Europe and geopolitical risks in the Middle East are factors limiting demand relocation.\nLabor shortages also act as a structural constraint. According to estimates from the Center for Strategic and International Studies (CSIS), the U.S. will need more than 140,000 additional skilled technical workers by 2030. The current workforce can only support roughly 10–20 GW of new natural gas capacity per year.\nPower demand forecasts continue to be revised upward. Morgan Stanley projects additional power demand of 97 GW by 2028—about 43% higher than its previous estimate of 68 GW. After excluding 21 GW of data centers under construction and 19 GW of available or contractable grid capacity, the shortfall reaches 57 GW.\nDrivers of demand growth include upward revisions to chip shipment forecasts and changes in server architecture. The transition from traditional servers with 8 GPUs to rack-scale integrated systems has caused power consumption to surge. Nvidia's next-generation \"Vera Rubin\" rack power assumptions have risen from 149 kW to 234 kW, while \"Rubin Ultra\" has increased from 415 kW to 600 kW. These figures include not just GPUs but also memory, networking, power delivery, and liquid cooling.\nEfficiency improvements are also unlikely to prevent overall power consumption from rising. Morgan Stanley expects token production per watt to increase roughly 6x and per-chip output to increase roughly 15x between 2025 and 2028. However, the analysis suggests that as unit costs fall, AI usage will expand—driving total power consumption even higher.\nPolitical backlash has also emerged as a variable. The state of Texas suspended new data center permit issuance pending completion of an audit. With midterm elections approaching next month, data centers have become a political flashpoint, prompting Big Tech companies to roll out community support measures.\nGoldman Sachs expects the near-term impact of political backlash to be limited, while Morgan Stanley identified labor, power, and political issues as the primary obstacles to data center expansion. In the AI industry, whether chips can be produced is no longer the only constraint—securing power and achieving actual operational status have become the next gate determining order fulfillment speed and supply chain profitability.\nOnce added, BigGo Finance appears first in Google Search Top Stories, so you get the broadest, most up-to-the-minute, and most comprehensive global financial news first.",
+        "source_name": "finance.biggo.com",
+        "published_at": "2026-10-07T07:35:00Z"
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": []
+      },
+      "w2": {
+        "policy_hit": true,
+        "policy_related": false,
+        "policy_ids": [
+          "pol_b6eb54be9d4d509c8c80"
+        ],
+        "hit_condition_ids": [
+          {
+            "condition_ids": [
+              "C3"
+            ],
+            "policy_id": "pol_b6eb54be9d4d509c8c80"
+          }
+        ],
+        "matched_condition_ids": []
+      },
+      "w3_decision": null,
+      "direction": "LONG",
+      "initiated_at": "2026-10-07T08:01:51.930572+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    }
+  ],
+  "history_matches": [
+    {
+      "events": [],
+      "policies": [
+        "pol_b6eb54be9d4d509c8c80"
+      ]
+    }
+  ],
+  "watches": [],
+  "pins": [],
+  "policy_consumptions": [],
+  "provisional": [
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Kodiak Gas Services",
+          "未具名西德克萨斯数据中心运营商"
+        ],
+        "occurrence_date": "2026-09-21",
+        "proposition": "Kodiak Gas Services宣布签订一项为期六年的协议，为一处未具名的西德克萨斯数据中心提供76MW表后基荷电力容量及配套设备，拟部署约40台天然气往复式发电机组。",
+        "subject_time": "六年协议期限"
+      },
+      "candidate_index": 0,
+      "case_id": "case_b8165e8f4cf54feb95b87cd4e8102a44",
+      "created_at": "2026-10-09T07:15:59.011551Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E107",
+      "runtime_signature": "2cfa42211d126c6e82d1bf6f45485a4813882736541c408a5b83e6e5eb390d3e",
+      "snapshot_version": 1,
+      "source_message_id": "std_a51acc1231c44a2b96f33a9fc41d465e",
+      "ticker": "BE",
+      "trading_date": "2026-10-09"
+    },
+    {
+      "candidate": {
+        "assertion_state": "EXPECTED",
+        "entities": [
+          "Kodiak Gas Services",
+          "未具名西德克萨斯数据中心运营商"
+        ],
+        "occurrence_date": "2026-09-21",
+        "proposition": "Kodiak Gas Services表示，预计该数据中心项目的电力设备部署于2026年第四季度开始，并延续至2027年第一季度。",
+        "subject_time": "2026年第四季度至2027年第一季度"
+      },
+      "candidate_index": 1,
+      "case_id": "case_b8165e8f4cf54feb95b87cd4e8102a44",
+      "created_at": "2026-10-09T07:15:59.019286Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E108",
+      "runtime_signature": "2e5142eda7de9d4956c6d352adde679ca13b0afe8fa967bd09b1330491cbd7d6",
+      "snapshot_version": 2,
+      "source_message_id": "std_a51acc1231c44a2b96f33a9fc41d465e",
+      "ticker": "BE",
+      "trading_date": "2026-10-09"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "GovCon Wire",
+          "美国能源部"
+        ],
+        "occurrence_date": "2026-10-09",
+        "proposition": "GovCon Wire于2026年10月9日发布标题为“Can the Grid Keep Up With AI? Inside DOE’s Data Center Power Push”的报道，将美国能源部描述为正在推进数据中心供电举措；当前消息快照未提供具体措施、规模或实施变化。",
+        "subject_time": null
+      },
+      "candidate_index": 0,
+      "case_id": "case_450b9bdcf55341aaabc7d3be5a50b258",
+      "created_at": "2026-10-09T09:53:06.570608Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E109",
+      "runtime_signature": "1c24b605e22c0eb786cf2aafbfbfbe19fba3953f74830841281ace46a9a4654a",
+      "snapshot_version": 3,
+      "source_message_id": "std_5993fa21145540b181c585b3000e5bd0",
+      "ticker": "BE",
+      "trading_date": "2026-10-09"
+    },
+    {
+      "candidate": {
+        "assertion_state": "EXPECTED",
+        "entities": [
+          "TrendForce",
+          "VCSEL NPO"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "TrendForce预计多种基于VCSEL的近封装光学（NPO）方案将于2027至2028年推出。",
+        "subject_time": "2027—2028年"
+      },
+      "candidate_index": 0,
+      "case_id": "case_306c2ab0a94e470d9bbc3d769d2076d8",
+      "created_at": "2026-10-09T10:32:03.416203Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E110",
+      "runtime_signature": "b747f056b048ba2046c70a757ab93acf20ba6670a664ef46628c23efd77dec2f",
+      "snapshot_version": 4,
+      "source_message_id": "std_31d48c0069db464ab6e24a0a4f95449a",
+      "ticker": "BE",
+      "trading_date": "2026-10-09"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "TrendForce",
+          "VCSEL"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "TrendForce预测VCSEL市场需求量到2031年将达到6.5亿颗，2025至2031年复合年增长率为38%。",
+        "subject_time": "2025—2031年；2031年"
+      },
+      "candidate_index": 1,
+      "case_id": "case_306c2ab0a94e470d9bbc3d769d2076d8",
+      "created_at": "2026-10-09T10:32:03.440045Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E111",
+      "runtime_signature": "dff70f4f16e8db2f5e63c9327c91827b77a985d67815cad1ea13f7716b1e0022",
+      "snapshot_version": 5,
+      "source_message_id": "std_31d48c0069db464ab6e24a0a4f95449a",
+      "ticker": "BE",
+      "trading_date": "2026-10-09"
+    },
+    {
+      "candidate": {
+        "assertion_state": "EXPECTED",
+        "entities": [
+          "TrendForce",
+          "AI数据中心",
+          "VCSEL NPO",
+          "Micro LED CPO"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "TrendForce认为传输速率进入1.6 Tbps时代时，铜缆信号衰减预计将加速数据中心短距离传输转向光互连，包括VCSEL NPO和Micro LED CPO。",
+        "subject_time": "传输速率进入1.6 Tbps时代"
+      },
+      "candidate_index": 2,
+      "case_id": "case_306c2ab0a94e470d9bbc3d769d2076d8",
+      "created_at": "2026-10-09T10:32:03.456527Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E112",
+      "runtime_signature": "4a6ca0ea78d4fd300ebe93d4ee4ba838dd0ea0142749318cec0631a5ad5e02d8",
+      "snapshot_version": 6,
+      "source_message_id": "std_31d48c0069db464ab6e24a0a4f95449a",
+      "ticker": "BE",
+      "trading_date": "2026-10-09"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Corvus Energy",
+          "BYD"
+        ],
+        "occurrence_date": null,
+        "proposition": "Corvus Energy与BYD共同开发了使用BYD磷酸铁锂电芯的Blue Whale NxtGen Power ESS。",
+        "subject_time": null
+      },
+      "candidate_index": 0,
+      "case_id": "case_5b60f590b6c84dfa9c83cdb629f252af",
+      "created_at": "2026-10-09T11:06:55.186929Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E113",
+      "runtime_signature": "ba8512959000b9094898c5dcf1a548f51c818a2969b6de7fbbd953137a1bf3b4",
+      "snapshot_version": 7,
+      "source_message_id": "std_25be7e5c7c4c46b7bf240e625234b911",
+      "ticker": "BE",
+      "trading_date": "2026-10-09"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "EnerVenue",
+          "中国武进"
+        ],
+        "occurrence_date": null,
+        "proposition": "EnerVenue已在中国武进的工厂开始生产水系金属电池，产品模块容量最高可达1 MWh，面向陆上及海事应用。",
+        "subject_time": null
+      },
+      "candidate_index": 1,
+      "case_id": "case_5b60f590b6c84dfa9c83cdb629f252af",
+      "created_at": "2026-10-09T11:06:55.201065Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E114",
+      "runtime_signature": "39feac8f4ad5263be0c54224d58948b920a942dce32d0a3f51d2716554a86c15",
+      "snapshot_version": 8,
+      "source_message_id": "std_25be7e5c7c4c46b7bf240e625234b911",
+      "ticker": "BE",
+      "trading_date": "2026-10-09"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Lehmann Marine",
+          "Sunlight Group",
+          "Xanthi",
+          "Hittfeld"
+        ],
+        "occurrence_date": null,
+        "proposition": "Lehmann Marine在希腊Xanthi投产专用生产线并扩建德国Hittfeld设施；其自动化生产线的海事储能系统年产能最高为300 MWh。",
+        "subject_time": null
+      },
+      "candidate_index": 2,
+      "case_id": "case_5b60f590b6c84dfa9c83cdb629f252af",
+      "created_at": "2026-10-09T11:06:55.214377Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E115",
+      "runtime_signature": "bcca46102c3a5a26606e79488765e441b732761c43630c53b3c926c9b3771ddc",
+      "snapshot_version": 9,
+      "source_message_id": "std_25be7e5c7c4c46b7bf240e625234b911",
+      "ticker": "BE",
+      "trading_date": "2026-10-09"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Echandia",
+          "印度拖船"
+        ],
+        "occurrence_date": null,
+        "proposition": "Echandia开发了基于锂钛氧化物技术的Core海事电池系统，并已获得为印度在建拖船供货的订单。",
+        "subject_time": null
+      },
+      "candidate_index": 3,
+      "case_id": "case_5b60f590b6c84dfa9c83cdb629f252af",
+      "created_at": "2026-10-09T11:06:55.227653Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E116",
+      "runtime_signature": "39b158c908ef9015a6fc26fe5be4b118e46678c2434d6fd9ec9bb497b4a1427a",
+      "snapshot_version": 10,
+      "source_message_id": "std_25be7e5c7c4c46b7bf240e625234b911",
+      "ticker": "BE",
+      "trading_date": "2026-10-09"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Yanmar Power Solutions",
+          "Yanmar Holdings",
+          "DNV"
+        ],
+        "occurrence_date": null,
+        "proposition": "Yanmar Power Solutions的GH-FC系列海事氢燃料电池系统获得DNV型式认可。",
+        "subject_time": null
+      },
+      "candidate_index": 4,
+      "case_id": "case_5b60f590b6c84dfa9c83cdb629f252af",
+      "created_at": "2026-10-09T11:06:55.247479Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E117",
+      "runtime_signature": "847b77cf45bfa76da8af62f2259e1c57ea51d6a5faf64cdb14e0cdfbf277f07a",
+      "snapshot_version": 11,
+      "source_message_id": "std_25be7e5c7c4c46b7bf240e625234b911",
+      "ticker": "BE",
+      "trading_date": "2026-10-09"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "XMax Inc.",
+          "Hexa Creation Inc."
+        ],
+        "occurrence_date": "2026-10-09",
+        "proposition": "XMax Inc.宣布已签署最终股权购买协议，拟收购Hexa Creation Inc.全部已发行股份；公告未称收购已完成。",
+        "subject_time": null
+      },
+      "candidate_index": 0,
+      "case_id": "case_45c0450f1b4a4a5489b2e6a5ab8eed74",
+      "created_at": "2026-10-09T12:04:18.013898Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E118",
+      "runtime_signature": "2885e056dae1edc97a0b6b213fa3bd32a832bd1a80134b5be0472b352cf5037d",
+      "snapshot_version": 12,
+      "source_message_id": "std_edc4af37c7df49c19a5bfe6fb9cff3be",
+      "ticker": "BE",
+      "trading_date": "2026-10-09"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLAN",
+        "entities": [
+          "Hexa Creation Inc."
+        ],
+        "occurrence_date": "2026-10-09",
+        "proposition": "Hexa Creation的技术路线以面向高电压、高功率应用的原生1200V垂直GaN沟槽MOSFET为核心，并将AI数据中心电力基础设施列为目标应用。",
+        "subject_time": null
+      },
+      "candidate_index": 1,
+      "case_id": "case_45c0450f1b4a4a5489b2e6a5ab8eed74",
+      "created_at": "2026-10-09T12:04:18.022067Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E119",
+      "runtime_signature": "d71b27846c7fcdc1676d41b1b278acb089412a23104eae592cde21e9211a8ee7",
+      "snapshot_version": 13,
+      "source_message_id": "std_edc4af37c7df49c19a5bfe6fb9cff3be",
+      "ticker": "BE",
+      "trading_date": "2026-10-09"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Hexa Creation Inc."
+        ],
+        "occurrence_date": null,
+        "proposition": "Hexa Creation持有美国一所公立大学相关专利及知识产权的独家许可，以支持其高电压垂直GaN技术平台。",
+        "subject_time": null
+      },
+      "candidate_index": 2,
+      "case_id": "case_45c0450f1b4a4a5489b2e6a5ab8eed74",
+      "created_at": "2026-10-09T12:04:18.028478Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E120",
+      "runtime_signature": "27b4e86948e675c0356a63461c3184be1742228c4519d2eedec866b7f96ef3a6",
+      "snapshot_version": 14,
+      "source_message_id": "std_edc4af37c7df49c19a5bfe6fb9cff3be",
+      "ticker": "BE",
+      "trading_date": "2026-10-09"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "USDA",
+          "Rural Energy for America Program (REAP)"
+        ],
+        "occurrence_date": "2026-10-02",
+        "proposition": "USDA发布REAP规则，要求农户完成能源项目并证明一年能源节省后才能申请资金；新要求定于2026-10-16生效。",
+        "subject_time": "规则生效日：2026-10-16"
+      },
+      "candidate_index": 0,
+      "case_id": "case_5b9664408ffa49d6802bce73a9aa4316",
+      "created_at": "2026-10-09T12:13:39.421523Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E121",
+      "runtime_signature": "93fb7abbb6466848d100c7b54e35edc05fcc580d573d3bc199f9e08599c18091",
+      "snapshot_version": 15,
+      "source_message_id": "std_277b230f09a446f2a7afe8fa71cf0571",
+      "ticker": "BE",
+      "trading_date": "2026-10-09"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Reuters/Ipsos",
+          "美国选民",
+          "特朗普政府",
+          "美国国会",
+          "AI公司"
+        ],
+        "occurrence_date": "2026-10-09",
+        "proposition": "Reuters于2026年10月9日报道称，一项新的Reuters/Ipsos民调显示，多数美国选民认为特朗普政府、国会和AI公司对AI风险重视不足。",
+        "subject_time": null
+      },
+      "candidate_index": 0,
+      "case_id": "case_f349977212834c53ac1ca40113089341",
+      "created_at": "2026-10-09T12:15:04.391146Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E122",
+      "runtime_signature": "515a896af5785c57778a8deb455afcf7d93b2a355629cfed1f2bb90f2b662439",
+      "snapshot_version": 16,
+      "source_message_id": "std_5a78b1f1be0348e39ce4735266bff69a",
+      "ticker": "BE",
+      "trading_date": "2026-10-09"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMOR",
+        "entities": [
+          "Goldman Sachs",
+          "John Waldron",
+          "Denis Coleman",
+          "Ashok Varadhan"
+        ],
+        "occurrence_date": "2026-10-09",
+        "proposition": "Reuters reported that two people familiar with the matter identified Denis Coleman and Ashok Varadhan among possible candidates to replace John Waldron as Goldman Sachs COO if Waldron later becomes CEO; the report said no formal succession process had begun.",
+        "subject_time": "Possible future Goldman COO succession, conditional on Waldron becoming CEO"
+      },
+      "candidate_index": 0,
+      "case_id": "case_0613d3c81bb8478d86860f0fbfbcc0cd",
+      "created_at": "2026-10-09T12:15:33.763183Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E123",
+      "runtime_signature": "df457fa5f42e4873ce2693b8f62504adf3c5768cf60fe1c32804818078988f82",
+      "snapshot_version": 17,
+      "source_message_id": "std_56d228a637744e3b80547c8ac6111000",
+      "ticker": "BE",
+      "trading_date": "2026-10-09"
+    },
+    {
+      "candidate": {
+        "assertion_state": "DENIAL",
+        "entities": [
+          "Goldman Sachs",
+          "Tony Fratto",
+          "John Waldron"
+        ],
+        "occurrence_date": "2026-10-09",
+        "proposition": "Goldman Sachs communications head Tony Fratto characterized the internal succession discussion as speculation that did not reflect real facts at the firm.",
+        "subject_time": "Goldman succession discussion as of 2026-10-09"
+      },
+      "candidate_index": 1,
+      "case_id": "case_0613d3c81bb8478d86860f0fbfbcc0cd",
+      "created_at": "2026-10-09T12:15:33.781620Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E124",
+      "runtime_signature": "007290bdf6f8f593b1e855fe6c680a949d87468dbf33e297086e25057fe4da55",
+      "snapshot_version": 18,
+      "source_message_id": "std_56d228a637744e3b80547c8ac6111000",
+      "ticker": "BE",
+      "trading_date": "2026-10-09"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMORED",
+        "entities": [
+          "Apple",
+          "iPhone 18 Pro",
+          "iPhone 18 Pro Max",
+          "Nikkei Asia",
+          "Reuters"
+        ],
+        "occurrence_date": null,
+        "proposition": "Nikkei Asia报道称，Apple已要求部分供应商将iPhone 18 Pro及iPhone 18 Pro Max的2026年10月组件订单较最初要求至少削减15%；Reuters称无法立即核实该报道。",
+        "subject_time": "2026年10月组件订单"
+      },
+      "candidate_index": 0,
+      "case_id": "case_9e5c301f0dc74a248e89e6786185debd",
+      "created_at": "2026-10-09T12:15:50.628418Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E125",
+      "runtime_signature": "053f274707b987ddead652e40d7cf5bdf3f043efe4298cc102e756e56b1ff9ab",
+      "snapshot_version": 19,
+      "source_message_id": "std_54c5f746e2574a48865dc182028ced1b",
+      "ticker": "BE",
+      "trading_date": "2026-10-09"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Bloom Energy",
+          "Lang & Schwarz"
+        ],
+        "occurrence_date": "2026-10-09",
+        "proposition": "Bloom Energy在Lang & Schwarz于2026年10月9日14:59 CEST的报价为247.50欧元，较前一收盘价249.50欧元下跌0.80%。",
+        "subject_time": "2026-10-09 14:59 CEST"
+      },
+      "candidate_index": 0,
+      "case_id": "case_30b9824313744eeebf26406effc55842",
+      "created_at": "2026-10-09T13:11:17.859568Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E126",
+      "runtime_signature": "58bc5772c28bfb47e6340610bd14b4906531b9ceb8dacd4bd62a063e2f84c0f7",
+      "snapshot_version": 20,
+      "source_message_id": "std_0d738368de944aa4a7050cea8ffa0dcd",
+      "ticker": "BE",
+      "trading_date": "2026-10-09"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "T5 Data Centers",
+          "Fairfax County",
+          "Project Charlie"
+        ],
+        "occurrence_date": null,
+        "proposition": "T5 Data Centers于2026年9月中旬向Fairfax County提交特别例外申请，拟在Chantilly建设312,000平方英尺的Project Charlie数据中心。",
+        "subject_time": "申请于2026年9月中旬提交；项目拟建，未披露投运时间"
+      },
+      "candidate_index": 0,
+      "case_id": "case_a1b3e960b8a7424d82c19fd968512427",
+      "created_at": "2026-10-09T13:23:16.397214Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E127",
+      "runtime_signature": "ee1f3526b6180994c04ac64e8bffa61f95071b4119d15e5fc7b0c850f56d5634",
+      "snapshot_version": 21,
+      "source_message_id": "std_a66c54cd2cb245c88a58422017eefe99",
+      "ticker": "BE",
+      "trading_date": "2026-10-09"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLAN",
+        "entities": [
+          "T5 Data Centers",
+          "Project Charlie",
+          "Washington Gas",
+          "Dominion Energy"
+        ],
+        "occurrence_date": null,
+        "proposition": "Project Charlie申请文件提出以约48MW天然气燃料电池提供基荷，并由Dominion Energy电网补充最多27MW。",
+        "subject_time": "拟议项目供电配置；未披露投运时间"
+      },
+      "candidate_index": 1,
+      "case_id": "case_a1b3e960b8a7424d82c19fd968512427",
+      "created_at": "2026-10-09T13:23:16.408106Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E128",
+      "runtime_signature": "538423eedac706dcb3383a70b012cbbac98e9627ff8dc4fe3dcef73cfb1cfd98",
+      "snapshot_version": 22,
+      "source_message_id": "std_a66c54cd2cb245c88a58422017eefe99",
+      "ticker": "BE",
+      "trading_date": "2026-10-09"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ONGOING",
+        "entities": [
+          "Intergovernmental Panel on Climate Change",
+          "IPCC成员"
+        ],
+        "occurrence_date": null,
+        "proposition": "截至Reuters报道时，IPCC成员对下一份气候科学评估报告的发布时间表仍未达成一致，相关讨论已持续近三年。",
+        "subject_time": "IPCC下一份气候科学评估报告的发布时间表"
+      },
+      "candidate_index": 0,
+      "case_id": "case_19ed6d99849a4bc2a6d2221baba7998e",
+      "created_at": "2026-10-09T13:27:19.038450Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E129",
+      "runtime_signature": "2457957b04159967ccfbbcb1dd1b64212f54e0b186b234fccf180000dbfa28e3",
+      "snapshot_version": 23,
+      "source_message_id": "std_92573aca28c04f989b3c3a16a1824cec",
+      "ticker": "BE",
+      "trading_date": "2026-10-09"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "美国",
+          "可再生能源发电",
+          "数据中心"
+        ],
+        "occurrence_date": null,
+        "proposition": "Reuters气候通讯称，美国创纪录的可再生能源发电帮助承担了数据中心和空调新增负荷中的很大部分；报道未给出具体测量期间或数值。",
+        "subject_time": "近期美国电力负荷；具体统计期间未说明"
+      },
+      "candidate_index": 1,
+      "case_id": "case_19ed6d99849a4bc2a6d2221baba7998e",
+      "created_at": "2026-10-09T13:27:19.051472Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E130",
+      "runtime_signature": "f8ae4f86b94e7a9d2c95e96881d211d3d4e80cde4bf2fc974faeae81ac963d59",
+      "snapshot_version": 24,
+      "source_message_id": "std_92573aca28c04f989b3c3a16a1824cec",
+      "ticker": "BE",
+      "trading_date": "2026-10-09"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Bazan Group",
+          "ALLENBUS",
+          "Marcopolo",
+          "以色列"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "2026年10月8日，以色列首辆氢燃料电池城际公交Audace 1050交付给Bazan Group；车型由ALLENBUS与Marcopolo提供。",
+        "subject_time": "交付及试点启动阶段"
+      },
+      "candidate_index": 0,
+      "case_id": "case_e959b0cac5bf45349b1b7011216f617a",
+      "created_at": "2026-10-09T13:47:01.507802Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E131",
+      "runtime_signature": "6de74a3cfc74f7bd43cd680cd7b399993efe7923407e7f910bd33aaad72f44ad",
+      "snapshot_version": 25,
+      "source_message_id": "std_5db0b56476464a4c8d33c7204cf02d91",
+      "ticker": "BE",
+      "trading_date": "2026-10-09"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLAN",
+        "entities": [
+          "Bazan Group",
+          "以色列能源与基础设施部",
+          "Nahariya"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "Bazan Group计划将该氢燃料电池公交用于接送员工往返Nahariya与其炼油厂，并使用Bazan生产的氢气。",
+        "subject_time": "后续试点运营；具体开始日期未披露"
+      },
+      "candidate_index": 1,
+      "case_id": "case_e959b0cac5bf45349b1b7011216f617a",
+      "created_at": "2026-10-09T13:47:01.523639Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E132",
+      "runtime_signature": "8c1118b6e4b579b88d15903f9d4f2cb926204444adf942883a7cf403d0b19057",
+      "snapshot_version": 26,
+      "source_message_id": "std_5db0b56476464a4c8d33c7204cf02d91",
+      "ticker": "BE",
+      "trading_date": "2026-10-09"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMORED",
+        "entities": [
+          "Broadcom",
+          "OpenAI"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "据报道，Broadcom就安排债务融资以帮助OpenAI购买双方共同开发的定制AI芯片进行了初步讨论；不同报道估计金额约为300亿美元至超过500亿美元，尚未启动正式融资流程且金额可能变化。",
+        "subject_time": "OpenAI后续定制AI芯片采购融资；金额及时间未确定"
+      },
+      "candidate_index": 0,
+      "case_id": "case_02ce313b252e47498f35e239baea4a66",
+      "created_at": "2026-10-09T13:56:39.095040Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E133",
+      "runtime_signature": "4083e2c4144f3e4be76e0d262ca42225c9c3c5dcbd3d3f2d012da0dc04aaa08d",
+      "snapshot_version": 27,
+      "source_message_id": "std_fe3bef2e98904bc3ae2769a6c4f9aed9",
+      "ticker": "BE",
+      "trading_date": "2026-10-09"
+    }
+  ],
+  "limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "global_state": {
+    "watches": [],
+    "pins": []
+  },
+  "event_details": {
+    "requested_event_ids": [],
+    "canonical_events": [],
+    "provisional_events": [],
+    "missing_event_ids": []
+  }
+}

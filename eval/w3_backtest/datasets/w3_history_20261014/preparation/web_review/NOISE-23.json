@@ -1,0 +1,197 @@
+{
+  "case_key": "NOISE-23",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-10-07T12:06:34.089039Z",
+  "reviewed_at": "2026-10-13T22:58:33.204998Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 6,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a13778-ff93-7ef1-b73d-9e7c017c30c8",
+    "turn_id": "01a13778-ffa2-7c52-941d-d881dbe3d42a",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 88832,
+        "inputTokens": 90950,
+        "outputTokens": 20744,
+        "reasoningOutputTokens": 18354,
+        "totalTokens": 111694
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 405760,
+        "inputTokens": 489964,
+        "outputTokens": 23461,
+        "reasoningOutputTokens": 20428,
+        "totalTokens": 513425
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "52557cb79503be079aadebc3a141bc706618b75d663774e7a421486783e6b9d3",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://www.intc.com/filings-reports/all-sec-filings/content/0000050863-26-000077/0000050863-26-000077.pdf",
+      "title": "Intel Q1 2026 Form 8-K and results release",
+      "published_at": "2026-04-23",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn1search14"
+      ],
+      "source_call_ids": [
+        "exec-a18752d7-8c87-4a1c-9fbb-a32fc84b2076"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://www.tomshardware.com/tech-industry/semiconductors/elon-musk-confirms-discussions-with-tsmc-about-terafab-chipmaking-collaboration-intel-is-the-only-other-named-partner-terafab-to-exclusively-supply-tesla-spacex-and-xai",
+      "title": "Elon Musk confirms discussions with TSMC about Terafab chipmaking collaboration",
+      "published_at": "2026-10-03T14:50:50Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn3news28"
+      ],
+      "source_call_ids": [
+        "exec-f1d3f98f-d268-4ff7-bf75-1f278e6670bc"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://ca.finance.yahoo.com/news/intel-keep-working-elon-musk-043229831.html",
+      "title": "Intel to Keep Working on Elon Musk’s Terafab Chipmaking Venture",
+      "published_at": "2026-10-07 00:32 (timezone UNKNOWN)",
+      "time_precision": "UNKNOWN",
+      "updated_at": null,
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn3search0"
+      ],
+      "source_call_ids": [
+        "exec-f1d3f98f-d268-4ff7-bf75-1f278e6670bc"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://uk.marketscreener.com/news/intel-to-keep-working-on-musk-s-terafab-chipmaking-venture-bloomberg-news-reports-ce785dd9de8ef125",
+      "title": "Intel to keep working on Musk's Terafab chipmaking venture, Bloomberg News reports",
+      "published_at": "2026-10-07T05:12:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": "2026-10-07T05:14:00Z",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "BEFORE_CUTOFF",
+      "content_state": "UPDATED",
+      "decision": "KEEP",
+      "reason": "The supplied publication and revision times do not exceed the case cutoff.",
+      "source_result_refs": [
+        "turn3search5"
+      ],
+      "source_call_ids": [
+        "exec-f1d3f98f-d268-4ff7-bf75-1f278e6670bc"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S5",
+      "url": "https://www.marketwatch.com/story/elon-musk-and-intel-ceo-shore-up-chipmakers-role-in-terafab-project-and-heres-what-the-news-is-doing-to-the-stock-315d0974",
+      "title": "Intel investors get some reassurance from Elon Musk over a major chip endeavor",
+      "published_at": null,
+      "time_precision": "UNKNOWN",
+      "updated_at": null,
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [],
+      "source_call_ids": [
+        "exec-b9ea0b7d-6aa6-4209-a21c-5871473d4c19",
+        "exec-c8f9ecb1-ea4d-4f08-9121-16788e81ee04"
+      ],
+      "source_link_method": "URL_MATCH"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "Intel’s April filing described it as a strategic partner in Terafab with SpaceX, xAI, and Tesla, establishing the prior public context for Intel’s participation.",
+      "source_urls": [
+        "https://www.intc.com/filings-reports/all-sec-filings/content/0000050863-26-000077/0000050863-26-000077.pdf"
+      ],
+      "event_time": "2026-04-23",
+      "publication_time": "2026-04-23",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The cited filing passage does not disclose a binding production commitment, quantity, or commercial terms."
+    },
+    {
+      "observation": "October 3 coverage reports Musk confirmed TSMC-Terafab discussions; it attributes the earlier report to a Culpium newsletter and says the potential manufacturing arrangements remained unsettled.",
+      "source_urls": [
+        "https://www.tomshardware.com/tech-industry/semiconductors/elon-musk-confirms-discussions-with-tsmc-about-terafab-chipmaking-collaboration-intel-is-the-only-other-named-partner-terafab-to-exclusively-supply-tesla-spacex-and-xai"
+      ],
+      "event_time": "2026-10-03",
+      "publication_time": "2026-10-03T14:50:50Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "Musk’s reported description was of discussions, not a confirmed TSMC selection or a reported cancellation of Intel’s role. The underlying Culpium newsletter was not retrieved."
+    },
+    {
+      "observation": "Reuters coverage published before cutoff reports Tan told Bloomberg that Intel would remain involved in Terafab, while noting that potential TSMC involvement could challenge Intel’s role.",
+      "source_urls": [
+        "https://uk.marketscreener.com/news/intel-to-keep-working-on-musk-s-terafab-chipmaking-venture-bloomberg-news-reports-ce785dd9de8ef125"
+      ],
+      "event_time": "2026-10-07",
+      "publication_time": "2026-10-07T05:12:00Z",
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "The statement is qualitative; this report does not specify Intel’s production share, binding work scope, quantity, or commercial terms."
+    },
+    {
+      "observation": "The supplied W1 feed records the MarketWatch title at 11:44Z and collection at 12:05Z, both before cutoff. The live MarketWatch page now shows a post-cutoff update, so its current article-body wording cannot be verified as present in a pre-cutoff version.",
+      "source_urls": [
+        "https://www.marketwatch.com/story/elon-musk-and-intel-ceo-shore-up-chipmakers-role-in-terafab-project-and-heres-what-the-news-is-doing-to-the-stock-315d0974"
+      ],
+      "event_time": null,
+      "publication_time": "2026-10-07T11:44:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "Only the supplied feed metadata is treated as pre-cutoff evidence; no claim from the current live article body is used."
+    }
+  ],
+  "gaps": [
+    "The original Culpium newsletter cited in the October 3 coverage was not retrieved, so its exact publication time and original wording are unverified.",
+    "The Bloomberg original page was inaccessible; the Yahoo result’s displayed 00:32 time has no timezone, so exact publication order and cutoff placement cannot be confirmed from it.",
+    "A Reuters page reporting Musk’s later build/run and possible sublease remarks displays publication/update times without a timezone; the direct X post was not accessible, and no dated pre-cutoff snapshot was verified.",
+    "No inspected pre-cutoff passage specifies a binding Intel production scope, volume, funding, ownership, or delivery schedule for Terafab."
+  ],
+  "research_notes": "Cutoff: 2026-10-07T12:06:34.089039Z. The available sequence is: Intel’s April filing identified it as a Terafab strategic partner; October 3 coverage reported Musk’s confirmation of TSMC discussions; and Reuters coverage before the cutoff repeated Lip-Bu Tan’s statement to Bloomberg that Intel would remain involved. The Bloomberg-syndicated Yahoo result appears to be the earliest located report of Tan’s statement, but its displayed time has no timezone and the original Bloomberg page was inaccessible, so its exact chronology is unresolved. The MarketWatch feed metadata supplied with the case predates cutoff, but its live page now indicates a post-cutoff update; without a dated pre-cutoff snapshot, its current article text is not used. The inspected pre-cutoff passages do not specify Intel’s binding scope, production quantity, or commercial terms."
+}

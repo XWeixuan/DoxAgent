@@ -1,0 +1,156 @@
+{
+  "case_key": "BE-03-05",
+  "evidence_cutoff_at": "2026-09-30T18:52:42.388510Z",
+  "reviewed_at": "2026-10-13T22:58:31.471121Z",
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a1374b-9c8b-7241-ba95-ea0db6d2b80e",
+    "turn_id": "01a1374b-9ca1-7951-b83b-6f8f689e47a8",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 97024,
+        "inputTokens": 98291,
+        "outputTokens": 17137,
+        "reasoningOutputTokens": 15067,
+        "totalTokens": 115428
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 585728,
+        "inputTokens": 689599,
+        "outputTokens": 22639,
+        "reasoningOutputTokens": 19661,
+        "totalTokens": 712238
+      }
+    },
+    "prompt_version": "w3-web-evidence-v1",
+    "input_fingerprint": "0782afe6ddd8ffbb1451abb2567903a7637742556cbfc22a4d65765057eafa32",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://www.pjm.com/pjmfiles/directory/etariff/FercOrders/9154/20260929-er26-3380-000.pdf",
+      "title": "Order Accepting Reliability Backstop Procurement and Establishing Further Procedures (ER26-3380-000 / EL26-108-000)",
+      "published_at": "2026-09-29",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn3view1",
+        "turn2search0"
+      ],
+      "source_call_ids": [
+        "exec-6061e977-ea3a-4e1d-bb5e-9a65ed57b33c",
+        "exec-adea19d9-b23f-4ab0-99c1-d405be5690dc"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://insidelines.pjm.com/pjm-reliability-backstop-proposal-outlines-steps-to-secure-new-supply-and-maintain-reliability/",
+      "title": "PJM Reliability Backstop Proposal Outlines Steps to Secure New Supply and Maintain Reliability",
+      "published_at": "2026-07-31",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn1view3"
+      ],
+      "source_call_ids": [
+        "exec-c49428ef-76d5-477b-b873-617d36647aac"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://content.next.westlaw.com/Document/Ib7a4db70bd1a11f1845493cf35d5c8fc/View/FullText.html?contextData=%28sc.Default%29&productData=categoryPageUrl%3AHome%2F&transitionType=CategoryPageItem",
+      "title": "FERC asks grid operator PJM to revise plan to shield homes from data center costs",
+      "published_at": "2026-09-30",
+      "time_precision": "UNKNOWN",
+      "updated_at": null,
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn5search0"
+      ],
+      "source_call_ids": [
+        "exec-19f8a968-ce1b-4cd9-b43f-40c91c6bd06e"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "FERC’s September 29 order changed the schedule expected in PJM’s proposal: the filing was suspended for five months, effective February 28, 2027, so the proposed September 30 start could not proceed under that order. The order did not permanently reject the procurement.",
+      "source_urls": [
+        "https://www.pjm.com/pjmfiles/directory/etariff/FercOrders/9154/20260929-er26-3380-000.pdf",
+        "https://insidelines.pjm.com/pjm-reliability-backstop-proposal-outlines-steps-to-secure-new-supply-and-maintain-reliability/"
+      ],
+      "event_time": "2026-09-29 (FERC order issuance; hour unknown)",
+      "publication_time": "2026-09-29 (order/accession date; hour unknown)",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The suspension was subject to further proceedings; the order also invited a new filing that could expedite a revised procurement."
+    },
+    {
+      "observation": "Before the order, PJM had publicly targeted a September 30 start for a one-time procurement aimed at the 6,831 MW 2028/2029 capacity shortfall. The new fact was a regulatory suspension and further review, not evidence that the underlying capacity shortfall had been resolved.",
+      "source_urls": [
+        "https://insidelines.pjm.com/pjm-reliability-backstop-proposal-outlines-steps-to-secure-new-supply-and-maintain-reliability/",
+        "https://www.pjm.com/pjmfiles/directory/etariff/FercOrders/9154/20260929-er26-3380-000.pdf"
+      ],
+      "event_time": "2026-07-31 (PJM proposal announcement); 2026-09-29 (FERC order)",
+      "publication_time": "2026-07-31 and 2026-09-29, respectively; hours unknown",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The 6,831 MW figure is the stated regional procurement rationale, not a project-specific or Bloom-specific allocation."
+    },
+    {
+      "observation": "The FERC order was qualified rather than a wholesale rejection: it found some parts of PJM’s proposal just and reasonable, identified three subjects for further procedures, and said a prompt new section 205 filing could potentially put the paper hearing in abeyance. The order also described bilateral matchmaking as an ongoing parallel process.",
+      "source_urls": [
+        "https://www.pjm.com/pjmfiles/directory/etariff/FercOrders/9154/20260929-er26-3380-000.pdf"
+      ],
+      "event_time": "2026-09-29",
+      "publication_time": "2026-09-29; hour unknown",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The order did not establish a replacement bid window or confirm that the revised process would occur on a particular schedule."
+    },
+    {
+      "observation": "Reuters coverage was present in the supplied source capture by 2026-09-30T18:50:12.661272Z. The publication-time evidence is insufficient to establish its exact release time or its position in the first-media sequence.",
+      "source_urls": [
+        "https://content.next.westlaw.com/Document/Ib7a4db70bd1a11f1845493cf35d5c8fc/View/FullText.html?contextData=%28sc.Default%29&productData=categoryPageUrl%3AHome%2F&transitionType=CategoryPageItem"
+      ],
+      "event_time": "2026-09-29 (order covered)",
+      "publication_time": "UNKNOWN; capture timestamp 2026-09-30T18:50:12.661272Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The capture verifies availability of this text by that time, not that Reuters was the earliest outlet; the displayed reprint time lacks a timezone and update history is unavailable."
+    }
+  ],
+  "gaps": [
+    "The exact hour the FERC order first became publicly accessible is not established; only the September 29 issuance and accession dates are traceable.",
+    "The Reuters publication timestamp and chronology relative to other outlets cannot be resolved from the date-level supplied metadata and the unzoned reprint timestamp.",
+    "The focused evidence does not establish any Project Jupiter, Bloom-specific, or other named project change in committed MW, permits, interconnection, delivery, or acceptance caused by this regional procurement order."
+  ],
+  "research_notes": "Cutoff: 2026-09-30T18:52:42.388510Z. The earliest traceable primary disclosure located is FERC’s original order issued September 29; its exact public-posting hour is unavailable. PJM’s July 31 announcement supplies the pre-event schedule and rationale. The Reuters story is present in the supplied capture collected at 18:50:12Z, before cutoff, but its initial publication time and revision history cannot be resolved; it is not asserted to be the first media report. No post-cutoff coverage, market reactions, or prices are used.",
+  "collection_prompt_version": "w3-web-evidence-v1"
+}

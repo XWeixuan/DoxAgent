@@ -1,0 +1,1793 @@
+{
+  "recent_trade_intents": [
+    {
+      "message": {
+        "title": "Boosting Agentic AI Throughput with Intel® Xeon® CPUs - Intel",
+        "body": "By: Nithya Rao, System and Software Optimization Engineer, Intel Corporation\nContributors\nSaumya Buliya, System and Software Optimization Engineer, Intel Corporation\nFor years, AI infrastructure discussions have focused on model quality, accelerator performance, and inference latency. That approach made sense when most AI applications consisted of relatively simple interactions: a prompt was submitted, a model generated a response, and the transaction ended.\nThe rise of agentic AI is changing that paradigm. Modern AI systems are increasingly expected to reason, plan, retrieve information, invoke tools, execute actions, validate results, and iteratively refine their behavior. What appears to be a single user interaction may trigger dozens of independent tasks spanning multiple software components before a result is delivered.\nRather than focusing exclusively on latency, organizations are increasingly asking a more practical question: How much useful work can the system complete over time? In many agentic deployments, throughput is becoming the metric that ultimately determines productivity.\nAgentic AI Creates New Infrastructure Challenges\nTraditional AI applications typically follow a straightforward execution model: prompt to model to response. Agentic AI introduces planning, tool selection, execution, validation, and iteration.\nAs a result, modern agentic AI workloads generate significantly more activity across the system stack than traditional inference workloads. Organizations deploying coding agents, enterprise copilots, research assistants, operational automation systems, and AI-powered business workflows often discover that the limiting factor is not model generation speed. Instead, bottlenecks emerge across task orchestration, tool execution, memory access, storage operations, and runtime management.\nWhy Intel® Xeon® CPUs Are Well-Suited for Agentic AI\nA common misconception is that agentic AI performance can be measured solely by model inference speed. While strong CPU performance remains foundational for reasoning, tool execution, orchestration, and security operations, agentic workloads also place significant demands on memory, storage, and I/O resources.\nUnlike traditional AI applications, agents maintain conversation history, execution context, retrieved knowledge, intermediate outputs, and workflow state across multiple stages of execution. They continuously invoke tools, access data sources, launch subprocesses, and coordinate dependent tasks. As a result, overall performance depends not only on compute capability, but also on how efficiently the platform moves work through each stage of the workflow.\nEnterprise-scale agent deployments are characterized by high concurrency, significant memory utilization, intensive orchestration requirements, and continuous execution of heterogeneous tasks. Intel Xeon processors with built-in acceleration combine strong compute performance with large memory capacity, substantial memory bandwidth, and robust I/O capabilities, enabling efficient execution across diverse workload requirements.\nAs organizations scale from individual agents to thousands of concurrent workflows, platform efficiency increasingly determines overall productivity. The platforms that deliver the highest throughput are those that balance compute, memory, storage, and orchestration resources to minimize bottlenecks and sustain work under continuous load. This makes Intel Xeon CPUs well suited to the demands of modern agentic AI deployments.\nBuilding a Repeatable Agentic AI Benchmark\nOne of the challenges associated with benchmarking agentic AI is that real-world agent behavior is inherently dynamic. Different prompts can produce different execution paths and different tool selections.\nTo address this challenge, a record-and-replay methodology was adopted. During the recording phase, representative agent workflows were executed while capturing workflow composition and execution characteristics. During replay, each platform processes the exact same workload trace, ensuring observed differences are attributable to infrastructure behavior rather than application-level randomness.\nEvaluating Agentic AI Using a Real-World Workflow\nTo understand how platform capabilities translate into real-world agent performance, we evaluated the same deterministic Terminal-Bench workload across Intel Xeon 6 processor-based, 5th Gen AMD EPYC processor-based, and Arm v9.2A-based instances. The benchmark consisted of a representative set of agent tasks executed at 24-way concurrency over a 60-minute evaluation window, with identical code, inputs, and agent trajectories across all platforms\nTo assess performance across different real-world deployment scenarios, we evaluated three representative industry verticals: healthcare, banking and financial services industry (FSI) and manufacturing. While the specific application workflows differ, these workflows reflect common agentic AI characteristics, including reasoning, retrieval, analytics, document processing, and orchestration.\nAgentic AI for Healthcare\nThe healthcare benchmark includes representative agent workflows spanning clinical documentation, evidence retrieval, diagnostic analysis, fraud detection, risk assessment, molecular research, genomic analysis, and laboratory diagnostics.\nFigure 1. Representative of healthcare agent tasks\nAs shown in Figure 2, the Intel Xeon 6 processor-based instance achieved the highest normalized agent-task throughput, delivering 1.66 times the throughput of the 5th Gen AMD EPYC processor-based instance and 4.5 times the throughput of the Arm v9.2A-based instance during the 60-minute evaluation. Higher throughput enables organizations to support more concurrent agent workflows on the same infrastructure, improving overall productivity and accelerating completion of large-scale agent-driven workloads.\nIntel Xeon 6 CPU’s throughput advantage is not driven by a single workload type. Instead, it delivers consistently higher task completion rates across reasoning, security, and control operations, enabling faster end-to-end execution of real-world healthcare agent workflows.\nAs shown in Figure 3, the Intel Xeon 6 processor-based instance delivered the highest normalized throughput across all workload categories evaluated. Relative to the 5th Gen AMD EPYC processor-based instance, Intel Xeon 6 achieved 1.67 times higher throughput for analytical and reasoning workloads, 1.63 times higher throughput for secure data processing workloads, and 1.61 times higher throughput for control workloads. Relative to the Arm v9.2A based instance, Intel Xeon 6 achieved 4.67 times, 4 times, and 4.14 times higher throughput, respectively. This consistent performance advantage enables organizations to support more concurrent AI agent workflows, improve infrastructure utilization, and complete agent-driven work more quickly.\nAgentic AI for Banking and Financial Services\nThe banking and financial services benchmark includes representative agent workflows spanning lending, risk analysis, investment research, trading analytics, fraud detection, compliance, and regulatory reporting.\nFigure 4. Representative banking and financial services agent tasks\nAs shown in Figure 5, the Intel Xeon 6 processor-based instance delivered the highest normalized agent-task throughput, achieving 1.64 times the throughput of the 5th Gen AMD EPYC processor-based instance and 4.57 times the throughput of the Arm v9.2A-based instance. This higher throughput enables financial institutions to support more concurrent agent-driven workloads, including risk analysis, document processing, compliance operations, and customer-facing services, within the same infrastructure footprint.\nAs shown in Figure 6, the Intel Xeon 6 processor-based instance delivered the highest normalized throughput across all workload categories evaluated. Relative to the 5th Gen AMD EPYC processor-based instance, Intel Xeon 6 achieved 1.66 times higher throughput for analytical and reasoning workloads, 1.61 times higher throughput for secure data processing workloads, and 1.59 times higher throughput for control workloads. Relative to the Arm v9.2A-based instance, Intel Xeon 6 achieved 4.84 times, 3.95 times, and 3.91 times higher throughput, respectively. This consistent performance advantage helps prevent bottlenecks across key stages of AI agent workflows, enabling financial institutions to process more agent-driven work within a given infrastructure footprint.\nAgentic AI for Manufacturing\nThe manufacturing benchmark includes representative agent workflows spanning predictive maintenance, quality inspection, supply chain optimization, production planning, factory operations, industrial security, and process optimization.\nFigure 7. Representative manufacturing agent tasks\nAs shown in Figure 8, the Intel Xeon 6 processor-based instance delivered the highest normalized agent-task throughput, achieving 1.58 times the throughput of the 5th Gen AMD EPYC processor-based instance and 4.24 times the throughput of the Arm v9.2A-based instance. This throughput advantage enables manufacturers to support more concurrent agent-driven workflows per server, accelerating tasks such as predictive maintenance, quality inspection, yield analysis, supplier management, and production optimization while maintaining the same infrastructure footprint.\nAs shown in Figure 9, the Intel Xeon 6 processor-based instance delivered the highest normalized throughput across all workload categories evaluated. Relative to the 5th Gen AMD EPYC processor-based instance, Intel Xeon 6 achieved 1.59 times higher throughput for analytical and reasoning workloads, 1.55 times higher throughput for secure data processing workloads, and 1.55 times higher throughput for control workloads. Relative to the Arm v9.2A-based instance, Intel Xeon 6 achieved 4.48 times, 3.78 times, and 3.78 times higher throughput, respectively. This consistent performance advantage helps maintain throughput and responsiveness across end-to-end manufacturing agent workflows, from production analysis and quality inspection to factory operations and process control.\nWhy Throughput Matters\nAgentic AI shifts performance measurement away from isolated operations and toward complete workflow execution. What ultimately matters is how efficiently the platform can execute tasks, invoke tools, process data, manage state, validate outputs, coordinate dependent actions, and sustain productivity under continuous load.\nThe most valuable platform is the one that can continuously move the greatest amount of work through the system while maintaining efficiency, responsiveness, and scalability.\nFinal Takeaway\nAs organizations deploy larger numbers of agents and increasingly complex workflows, sustaining high throughput becomes a key determinant of operational efficiency. These results demonstrate that an Intel Xeon 6 processor-based instance provides a strong foundation for agentic AI, delivering higher throughput across real-world healthcare, manufacturing and financial services workflows and enabling organizations to process more agent-driven work on the same infrastructure.\nProduct and Performance Information:\nTerminal Bench:\nIntel Xeon 6: 1-instance m8id.12xlarge: 48 vCPU, 185 GB total memory, Ubuntu 26.04, 7.0.0-1006-aws, Terminal-Bench 2.0. Tested by Intel as of September 2026. Results may vary.\n5th Gen AMD EPYC: 1-instance m8a.12xlarge: 48 vCPU, 185 GB total memory, Ubuntu 26.04, 7.0.0-1006-aws, Terminal-Bench 2.0. Tested by Intel as of September 2026. Results may vary.\nArm v9.2A: 1-instance m9gd.12xlarge: 48 vCPU, 185 GB total memory, Ubuntu 26.04, 7.0.0-1006-aws, Terminal-Bench 2.0. Tested by Intel as of September 2026. Results may vary.\nTest-Methodology:\nBenchmark\nTerminal-Bench + Harbor 0.16.1, terminus-2 agent. Deterministic fixture replays - A recorded Claude trajectory is replayed through a local proxy, so runs do no model inference and no network (identical work on every system); one canonical terminus on all systems; verifier enabled, all three instances ran all the tasks without any failures.\nLoad\nOne sandbox per physical core, pinned 1 core/task via cpuset_slot_pinner, memory local to the socket. 24 concurrent sandboxes. 60-minute run, refill setting -k 500 (slots stay full); each task cycles many times.\nImages\nTask images pre-built and staged; runs make no network access (LLM replaced by the replay proxy on :4001). Per-container thread cap = 1.\nPrimary metric\nwhole-box system throughput calculated as tasks completed per 60 minutes (primary).\n1\nPerformance results are based on testing as of the dates shown in configurations and may not reflect all publicly available updates. See backup for configuration details. No product or component can be absolutely secure.\n Your costs and results may vary.\n1 Performance varies by use, configuration, and other factors. Learn more on the Performance Index site.",
+        "source_name": "intel.com",
+        "published_at": "2026-10-06T17:04:14Z"
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": []
+      },
+      "w2": {
+        "policy_hit": false,
+        "policy_related": false,
+        "policy_ids": [],
+        "hit_condition_ids": [],
+        "matched_condition_ids": []
+      },
+      "w3_decision": {
+        "novelty": {
+          "reason": "E388已记录Agentic AI带动服务器CPU需求的市场预测，但未覆盖Intel披露的Xeon 6跨行业代理工作负载吞吐测试及其对比结果。",
+          "reference_ids": [
+            "E388"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "此为Intel自述的性能基准测试结果，未确认客户选型、绑定订单、部署、出货或新增供给；不满足现行Policy的触发条件。"
+        },
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "Intel报告的Terminal-Bench 2.0测试显示Xeon 6在医疗、银行金融及制造代理任务中的归一化吞吐均显著领先第五代AMD EPYC和Arm v9.2A，提升了Intel在Agentic AI服务器CPU工作负载中赢得分配的预期。",
+          "prior_expectation": "Agentic AI扩大CPU需求的预期已存在（E388）；Intel服务器需求改善且Xeon 6快速爬坡，但D2指出相对性能优势和客户级分配尚未确立。",
+          "reason": "测试是在相同工作轨迹与实例资源下进行，跨三个垂直领域结果方向一致且差距显著；在Agentic AI需求扩张背景下，这改善了Xeon的竞争力预期，并可经客户工作负载分配影响DCAI需求。数据由Intel自测，且没有客户采用、价格/功耗比较或订单确认，限制了结论强度；但该测试为D2尚缺的相关性能证据，提供了足够明确的正向边际信号，故作LONG。",
+          "trade": true
+        }
+      },
+      "direction": "LONG",
+      "initiated_at": "2026-10-06T17:13:38.428968+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    }
+  ],
+  "history_matches": [
+    {
+      "events": [],
+      "policies": []
+    }
+  ],
+  "watches": [],
+  "pins": [],
+  "policy_consumptions": [],
+  "provisional": [
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Moomoo",
+          "Intel"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "Moomoo社区出现一条关于Intel的模糊个人评论，称其结果取决于当周，但未指出具体催化剂或业务事实。",
+        "subject_time": "2026-10-08的社区帖子"
+      },
+      "candidate_index": 0,
+      "case_id": "case_2f6def216b394345bf5ecc2179c38bad",
+      "created_at": "2026-10-08T06:09:18.384810Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E362",
+      "runtime_signature": "beca6a86ab3855797ebfab3a050db9b0b05bf44b1a3ea119570866ee5d8ccf4a",
+      "snapshot_version": 1,
+      "source_message_id": "std_965d6a0557ea4718b799a6e712532984",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Coinbase",
+          "Stove Finance",
+          "INTCs",
+          "Intel Corporation"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "Coinbase区域资产信息页面介绍Stove Finance生态中的INTCs代币，称其提供Intel普通股的链上经济敞口，并称底层股份由经纪及托管机构持有。",
+        "subject_time": "截至2026-10-08页面所述"
+      },
+      "candidate_index": 0,
+      "case_id": "case_97983ded90bb4890a8f2287227961947",
+      "created_at": "2026-10-08T07:26:04.068962Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E363",
+      "runtime_signature": "d4f6a424cadbf5452aff1ec0ccfc3ed7ff7e8a161b40b2d1b5cedf0e37b54211",
+      "snapshot_version": 2,
+      "source_message_id": "std_9b1013b2d1d7491bac6f9b3b9b6429bc",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "The Motley Fool",
+          "Intel Corporation"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "The Motley Fool headline forecasts that an unspecified non-revenue number will move Intel stock in October; the captured message does not identify the number.",
+        "subject_time": "October 2026"
+      },
+      "candidate_index": 0,
+      "case_id": "case_3f9051af09fe4746a2b572c1f34b3e4c",
+      "created_at": "2026-10-08T07:29:36.915504Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E364",
+      "runtime_signature": "5ad5c9291540eb9da8f9dcc3696841582a9a260c6e6faf0ecf6b17c44460aacb",
+      "snapshot_version": 3,
+      "source_message_id": "std_521d512bd94e4eb39491c0e6450c241a",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "AMD",
+          "Lisa Su",
+          "Samsung Electronics",
+          "Jun Young-hyun"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "AMD CEO Lisa Su于2026年10月7日在首尔与三星电子高管Jun Young-hyun会面。",
+        "subject_time": "2026-10-07会面"
+      },
+      "candidate_index": 0,
+      "case_id": "case_cc844b60919d439bb029b107f04d3d37",
+      "created_at": "2026-10-08T07:45:26.197370Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E365",
+      "runtime_signature": "9e0ee04b0a8aef1ebd02c9cddf5e2907cc86f8ce17830ae9b6d68530a27dfa92",
+      "snapshot_version": 4,
+      "source_message_id": "std_3ee0843b20e64776a3ba8fd3c04f5ecc",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMORED",
+        "entities": [
+          "AMD",
+          "Samsung Electronics",
+          "Lisa Su",
+          "Jun Young-hyun"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "报道指Lisa Su与三星方面在会面中讨论拓展双方合作，涉及现有内存合作以外的领域，包括潜在Foundry与physical AI合作。",
+        "subject_time": "2026-10-07会面讨论"
+      },
+      "candidate_index": 1,
+      "case_id": "case_cc844b60919d439bb029b107f04d3d37",
+      "created_at": "2026-10-08T07:45:26.214094Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E366",
+      "runtime_signature": "329ca954cbc0fbc9184a1fe31bfe3f1af36cbbdcb5a181b17aeb8e06c164a355",
+      "snapshot_version": 5,
+      "source_message_id": "std_3ee0843b20e64776a3ba8fd3c04f5ecc",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Intel Corporation",
+          "INTC"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "Intel普通股在Yahoo Finance文章引用的最近一个交易日收盘价为US$113.12。",
+        "subject_time": "2026-10-07收盘"
+      },
+      "candidate_index": 0,
+      "case_id": "case_ca4e12d6fdf04caaa9508cc2865665fc",
+      "created_at": "2026-10-08T07:47:20.071551Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E367",
+      "runtime_signature": "7f1455684a505570faf82721c00aa4c4d7f2a325a7ae5e4dfbf65ffe4df53aa2",
+      "snapshot_version": 6,
+      "source_message_id": "std_23c30a55b55e4147b55c2440d9ba580c",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "Yahoo Finance",
+          "Intel Corporation",
+          "INTC"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "Yahoo Finance发布的文章根据DCF分析称，按引用的最近收盘价计算，INTC股价可能高估46%。",
+        "subject_time": "以文章发布时最近收盘价为基准的估值"
+      },
+      "candidate_index": 1,
+      "case_id": "case_ca4e12d6fdf04caaa9508cc2865665fc",
+      "created_at": "2026-10-08T07:47:20.124525Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E368",
+      "runtime_signature": "62b0a65d80c966db5bbc9db5f78530efc4bdf3ff08ecd5f31232318813cbea79",
+      "snapshot_version": 7,
+      "source_message_id": "std_23c30a55b55e4147b55c2440d9ba580c",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "AI stocks",
+          "Treasury yields",
+          "oil prices"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "市场综述称，AI股票在投资者担忧收益率和油价的背景下承压。",
+        "subject_time": "2026-10-08市场交易时段"
+      },
+      "candidate_index": 0,
+      "case_id": "case_fc146ce15b9b49d88d17486eedf059c3",
+      "created_at": "2026-10-08T09:20:34.424305Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E369",
+      "runtime_signature": "517dde9b233238e1fbd2d2b544fb132bb52bc8b786f71f49d6e131bc11b336b2",
+      "snapshot_version": 8,
+      "source_message_id": "std_f43c2f9bbe1f4a52a56be4af2577da88",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Wolfspeed",
+          "U.S. Department of Defense"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "市场综述称，Wolfspeed获得一项五角大楼融资交易后股价走强。",
+        "subject_time": "2026-10-08"
+      },
+      "candidate_index": 1,
+      "case_id": "case_fc146ce15b9b49d88d17486eedf059c3",
+      "created_at": "2026-10-08T09:20:34.445327Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E370",
+      "runtime_signature": "09cc4306c218b05ff905fc297b29840e7d7b89cc047a2e81b5737175f36a3cfb",
+      "snapshot_version": 9,
+      "source_message_id": "std_f43c2f9bbe1f4a52a56be4af2577da88",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Apple",
+          "Magic Mouse",
+          "Magic Trackpad",
+          "Intel Macs"
+        ],
+        "occurrence_date": null,
+        "proposition": "Apple的Magic Mouse和Magic Trackpad兼容性列表移除了Intel Mac型号；报道指出该列表变更约于2026年8月下旬出现。",
+        "subject_time": "2026年8月下旬起的兼容性列表"
+      },
+      "candidate_index": 0,
+      "case_id": "case_c6877a39045947ce9a264e7a664b2d74",
+      "created_at": "2026-10-08T09:32:10.553533Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E371",
+      "runtime_signature": "23c8d40b36d74306819c9809663d63da7f2117d1e49e6533366eb5098054458b",
+      "snapshot_version": 10,
+      "source_message_id": "std_e4f0e293ab574783a5e474288e09bf15",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "SCHEDULED",
+        "entities": [
+          "Foundry Theater",
+          "Zombie Walk",
+          "Night of the Living Dead"
+        ],
+        "occurrence_date": null,
+        "proposition": "Foundry Theater举办第3届年度Zombie Walk，并放映《Night of the Living Dead》。",
+        "subject_time": "具体活动日期未提供"
+      },
+      "candidate_index": 0,
+      "case_id": "case_2e0933dc13a549a6bae4288c2aecbb38",
+      "created_at": "2026-10-08T09:53:23.781849Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E372",
+      "runtime_signature": "b662bc1c9680bd8862d20243292008e0e8e5f4c204ced603625bee645400d552",
+      "snapshot_version": 11,
+      "source_message_id": "std_3dbf04f29f6c431389cf7a1eef5b01c7",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Phoronix",
+          "NVIDIA Vera",
+          "AMD EPYC 9755",
+          "Intel Xeon 6980P"
+        ],
+        "occurrence_date": "2026-10-06",
+        "proposition": "Phoronix发布的双路经典HPC基准测试中，NVIDIA Vera系统几何均值为58.59，AMD EPYC 9755为50.43，Intel Xeon 6980P为36.00。",
+        "subject_time": "2026年双路经典HPC基准测试"
+      },
+      "candidate_index": 0,
+      "case_id": "case_a88dcca5711d434f96c625e8759a9716",
+      "created_at": "2026-10-08T10:34:38.782501Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E373",
+      "runtime_signature": "a1eee885f2d647731dcb354c842eb5f527862ab7faa0479f22e18be68cc51754",
+      "snapshot_version": 12,
+      "source_message_id": "std_fa8a3e073b0942339f039527749f1911",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "NVIDIA Vera",
+          "Intel Xeon 6980P",
+          "Phoronix"
+        ],
+        "occurrence_date": "2026-10-06",
+        "proposition": "该组测试记录两颗NVIDIA Vera处理器平均功耗842瓦、峰值1044瓦；报道指出Xeon 6980P服务器总体功耗更高。",
+        "subject_time": "2026年双路经典HPC基准测试"
+      },
+      "candidate_index": 1,
+      "case_id": "case_a88dcca5711d434f96c625e8759a9716",
+      "created_at": "2026-10-08T10:34:38.799355Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E374",
+      "runtime_signature": "e740cb63e7e0615098c3f29598a1c06e5c50b4e7b87fdafdafec1260393fb16c",
+      "snapshot_version": 13,
+      "source_message_id": "std_fa8a3e073b0942339f039527749f1911",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Muon Space",
+          "Jody Kelman"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "Muon Space宣布Jody Kelman已加入公司并担任首席产品官。",
+        "subject_time": "2026-10-08"
+      },
+      "candidate_index": 0,
+      "case_id": "case_ea21bf9a351f4055b5d6f40ed1222a0b",
+      "created_at": "2026-10-08T11:03:45.250161Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E375",
+      "runtime_signature": "60779a6fa665c90bf93985ddf87534d79eab32af5fed637d6c2adb096c7bc3ea",
+      "snapshot_version": 14,
+      "source_message_id": "std_c2364110d4a6446fb5ef830ce85aef96",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Muon Space",
+          "Emelia Probasco"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "Muon Space宣布Emelia Probasco已加入公司并担任战略与传播负责人。",
+        "subject_time": "2026-10-08"
+      },
+      "candidate_index": 1,
+      "case_id": "case_ea21bf9a351f4055b5d6f40ed1222a0b",
+      "created_at": "2026-10-08T11:03:45.267465Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E376",
+      "runtime_signature": "d5e9c981dccc7bf00bfc3a44577c15ac98878118e197a1ac75141c6413b280f5",
+      "snapshot_version": 15,
+      "source_message_id": "std_c2364110d4a6446fb5ef830ce85aef96",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "TechRepublic",
+          "AMD Ryzen 7 9850X3D",
+          "Intel Core Ultra 7 270K Plus"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "TechRepublic发布了一篇比较AMD Ryzen 7 9850X3D与Intel Core Ultra 7 270K Plus、讨论哪款CPU在2026年更好的文章。",
+        "subject_time": "2026年CPU对比文章"
+      },
+      "candidate_index": 0,
+      "case_id": "case_e81055f921284845893ff6da9fbc41bb",
+      "created_at": "2026-10-08T11:29:33.719806Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E377",
+      "runtime_signature": "878c9c31084ceb24a426202834bd7abddf80f76c563d56270f769b077f823de6",
+      "snapshot_version": 16,
+      "source_message_id": "std_3bdcee04f847465683e25a33dda47357",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "HWG Holdings LP",
+          "Intel Corporation",
+          "INTC"
+        ],
+        "occurrence_date": null,
+        "proposition": "HWG Holdings LP取得了40,849股Intel Corporation普通股。",
+        "subject_time": null
+      },
+      "candidate_index": 0,
+      "case_id": "case_6ef239c7dc3540779bab7e8879cc43ce",
+      "created_at": "2026-10-08T11:32:09.406933Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E378",
+      "runtime_signature": "edff1163ad9ea25641b9ed4b94809b08205ac94326c5486f71e5650dbe729cba",
+      "snapshot_version": 17,
+      "source_message_id": "std_858511431201437a88330f46f66bf7d4",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "The Athletic",
+          "Bhayshul Tuten",
+          "Jacoby Brissett"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "《The Athletic》在Fantasy Football第5周阵容建议中推荐关注Bhayshul Tuten并首发Jacoby Brissett。",
+        "subject_time": "2026赛季Fantasy Football第5周"
+      },
+      "candidate_index": 0,
+      "case_id": "case_d630148b17994db393601cce5d9cdb92",
+      "created_at": "2026-10-08T11:49:54.816230Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E379",
+      "runtime_signature": "43276b7a0e69161f7160b179eb3b11c3368b3aeb64cbb9df011c242f34bcab28",
+      "snapshot_version": 18,
+      "source_message_id": "std_eda62e888c184cc29874f0de0f6c3e6b",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Brent原油期货"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "Reuters报道称，2026年10月8日Brent原油期货上涨4.8%，超过每桶105美元。",
+        "subject_time": "2026-10-08交易时段"
+      },
+      "candidate_index": 0,
+      "case_id": "case_5287ad45bfe7407bb51f2e495d5fc3aa",
+      "created_at": "2026-10-08T12:04:06.584209Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E380",
+      "runtime_signature": "c6275bcfb28fd599108e9cdc857362326460b4567bce3cbbe02bdddea77e1910",
+      "snapshot_version": 19,
+      "source_message_id": "std_2cb7d70954194dda9b0e0c57c258bff2",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "美国10年期国债"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "Reuters报道称，2026年10月8日美国基准10年期国债收益率为5.34%，接近2002年以来最高水平。",
+        "subject_time": "2026-10-08"
+      },
+      "candidate_index": 1,
+      "case_id": "case_5287ad45bfe7407bb51f2e495d5fc3aa",
+      "created_at": "2026-10-08T12:04:06.597826Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E381",
+      "runtime_signature": "37ffa303cf36b1f6e25d2d6621a4fd677ca3946c782120fce87b83b7979174a0",
+      "snapshot_version": 20,
+      "source_message_id": "std_2cb7d70954194dda9b0e0c57c258bff2",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Intel",
+          "AMD",
+          "Marvell"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "Reuters报道称，2026年10月8日Intel、AMD和Marvell股价在科技股普遍走弱时均下跌约2%。",
+        "subject_time": "2026-10-08交易时段"
+      },
+      "candidate_index": 2,
+      "case_id": "case_5287ad45bfe7407bb51f2e495d5fc3aa",
+      "created_at": "2026-10-08T12:04:06.610441Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E382",
+      "runtime_signature": "91d1a4c74be981aa1056498a06797b4094d9f463d5e1f774d2ab9654a856e429",
+      "snapshot_version": 21,
+      "source_message_id": "std_2cb7d70954194dda9b0e0c57c258bff2",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMOR",
+        "entities": [
+          "Broadcom",
+          "OpenAI",
+          "《华尔街日报》"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "《华尔街日报》报道称，Broadcom正在筹备为OpenAI安排500亿美元融资。",
+        "subject_time": "2026-10-07报道"
+      },
+      "candidate_index": 3,
+      "case_id": "case_5287ad45bfe7407bb51f2e495d5fc3aa",
+      "created_at": "2026-10-08T12:04:06.629913Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E383",
+      "runtime_signature": "854029e9322c01855cd8ae4bdf2d01a44f7b2f14f538e3017fe67de79eca1f1d",
+      "snapshot_version": 22,
+      "source_message_id": "std_2cb7d70954194dda9b0e0c57c258bff2",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Christopher Waller",
+          "美联储"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "美联储理事Christopher Waller表示，央行即将举行的会议可能暂停加息，且加息节奏存在灵活性。",
+        "subject_time": "2026-10-08"
+      },
+      "candidate_index": 4,
+      "case_id": "case_5287ad45bfe7407bb51f2e495d5fc3aa",
+      "created_at": "2026-10-08T12:04:06.640129Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E384",
+      "runtime_signature": "e1ba1d7369cafa8ac43d6158769eec5fd34880851e33722b839266ac1814085b",
+      "snapshot_version": 23,
+      "source_message_id": "std_2cb7d70954194dda9b0e0c57c258bff2",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "Ben Parker",
+          "On3",
+          "Stanford",
+          "Notre Dame"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "Ben Parker在On3刊载的赛前访谈中预测Notre Dame将以45比10击败Stanford。",
+        "subject_time": "即将举行的Stanford与Notre Dame比赛"
+      },
+      "candidate_index": 0,
+      "case_id": "case_34f9e6d2bddf4de9bf4f3999ea8f1ee8",
+      "created_at": "2026-10-08T12:07:03.977963Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E385",
+      "runtime_signature": "b923c44a00e13e036ce215a85f343e483345076af8d5d552b90a552497570a18",
+      "snapshot_version": 24,
+      "source_message_id": "std_00c05b44ee5745de843d31c71deb2c68",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "ASML",
+          "Carl Zeiss",
+          "Hyper NA"
+        ],
+        "occurrence_date": null,
+        "proposition": "ASML与Zeiss工程师在同行评审论文中称，下一代Hyper NA光刻工具可能约十年后就绪，并可能打印小至5纳米的特征。",
+        "subject_time": "约十年后的技术就绪展望"
+      },
+      "candidate_index": 0,
+      "case_id": "case_13706f4b72d849cc88a2281635b6b5b8",
+      "created_at": "2026-10-08T12:51:41.776120Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E386",
+      "runtime_signature": "7e0879cc41a1e211e80341458fca3e0adafd8dca19a3ef7fea615f914b2e8e64",
+      "snapshot_version": 25,
+      "source_message_id": "std_c695bfa6b0c942bbbf9c7475378ca57a",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ONGOING",
+        "entities": [
+          "ASML",
+          "Hyper NA"
+        ],
+        "occurrence_date": null,
+        "proposition": "Reuters报道称，ASML已开始开发Hyper NA光刻工具，但尚未承诺生产该设备。",
+        "subject_time": "Hyper NA当前研发阶段"
+      },
+      "candidate_index": 1,
+      "case_id": "case_13706f4b72d849cc88a2281635b6b5b8",
+      "created_at": "2026-10-08T12:51:41.794999Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E387",
+      "runtime_signature": "61e5d00875d4c467a833135665651d31cf856b369b950174763b9bf6d48dda3e",
+      "snapshot_version": 26,
+      "source_message_id": "std_c695bfa6b0c942bbbf9c7475378ca57a",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Pairwise",
+          "Rainbow Crops",
+          "Fulcrum"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "Pairwise与Rainbow Crops宣布达成许可协议，授予Rainbow Crops使用Pairwise的Fulcrum植物基因编辑平台的权限。",
+        "subject_time": "Fulcrum平台许可协议"
+      },
+      "candidate_index": 0,
+      "case_id": "case_7a764e179e5840bbb53bfaf413dc834b",
+      "created_at": "2026-10-08T12:57:09.332063Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E388",
+      "runtime_signature": "faf56be96b3780c94e828c7c558a2fd6d5ab606d9c32f0fab5612d40a16558e5",
+      "snapshot_version": 27,
+      "source_message_id": "std_0de33f1b03404ea8ab6448f3e4f5b8d1",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "AMD",
+          "BNP Paribas",
+          "Karl Ackerman"
+        ],
+        "occurrence_date": null,
+        "proposition": "BNP Paribas分析师Karl Ackerman为AMD设定960美元目标价并给予Outperform评级。",
+        "subject_time": null
+      },
+      "candidate_index": 0,
+      "case_id": "case_d3f17224d94544c19bdb65a2c49541dd",
+      "created_at": "2026-10-08T12:58:52.906571Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E389",
+      "runtime_signature": "663876db599dfd3ed1113f72860783d8d6774d5ebf35fd3d465a8a5f7a7297c0",
+      "snapshot_version": 28,
+      "source_message_id": "std_c342387358b5423bad761c26493d3d0e",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "AMD",
+          "BNP Paribas",
+          "Karl Ackerman"
+        ],
+        "occurrence_date": null,
+        "proposition": "BNP Paribas分析师Karl Ackerman预测AMD到2030年可获得至少8%的GPU市场份额。",
+        "subject_time": "到2030年"
+      },
+      "candidate_index": 1,
+      "case_id": "case_d3f17224d94544c19bdb65a2c49541dd",
+      "created_at": "2026-10-08T12:58:52.924770Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E390",
+      "runtime_signature": "39b977e339972565b04e225eb38368554c8f695313eb93678176fcddd5256b0c",
+      "snapshot_version": 29,
+      "source_message_id": "std_c342387358b5423bad761c26493d3d0e",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Astera Labs",
+          "Aries 7",
+          "PCIe 7"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "Astera Labs宣布Aries 7 PCIe 7信号调理产品组合，涵盖retimers、redrivers、线缆模块、光驱动器和光学TIA，并支持铜缆与光互连。",
+        "subject_time": "2026-10-08公布的Aries 7产品组合"
+      },
+      "candidate_index": 0,
+      "case_id": "case_560d7d382c8243f78ed3cbac97de39c4",
+      "created_at": "2026-10-08T13:05:32.699919Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E391",
+      "runtime_signature": "6089a795fa3834e1ecc178951fb48f2027371c42aefd8ac11ee51873438b994b",
+      "snapshot_version": 30,
+      "source_message_id": "std_c673957c0ba745ac88fa211155b57bc6",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Astera Labs",
+          "Intel",
+          "AMD",
+          "Aries Smart Retimers"
+        ],
+        "occurrence_date": null,
+        "proposition": "Astera Labs称Intel与AMD已在PCIe 4至PCIe 6世代的平台中，将Aries Smart Retimers验证用于生产。",
+        "subject_time": "PCIe 4至PCIe 6平台世代"
+      },
+      "candidate_index": 1,
+      "case_id": "case_560d7d382c8243f78ed3cbac97de39c4",
+      "created_at": "2026-10-08T13:05:32.732482Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E392",
+      "runtime_signature": "13c007b367016b8123fd13d328360328d05af2f9d04e13d4917016c57fe3cfc3",
+      "snapshot_version": 31,
+      "source_message_id": "std_c673957c0ba745ac88fa211155b57bc6",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Astera Labs",
+          "Intel",
+          "AMD",
+          "PCIe 7"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "Astera Labs称Intel与AMD目前正与其合作，推进业界向PCIe 7过渡。",
+        "subject_time": "PCIe 7转型"
+      },
+      "candidate_index": 2,
+      "case_id": "case_560d7d382c8243f78ed3cbac97de39c4",
+      "created_at": "2026-10-08T13:05:32.765881Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E393",
+      "runtime_signature": "86278e15d90504441dd407c9b861264b646241745a84764e1dd9d1cf3458639f",
+      "snapshot_version": 32,
+      "source_message_id": "std_c673957c0ba745ac88fa211155b57bc6",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "EXPECTED",
+        "entities": [
+          "Astera Labs",
+          "Aries 7",
+          "超大规模客户",
+          "OEM",
+          "NPO客户"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "Astera Labs预计Aries 7产品将于2026年第四季度开始向部分超大规模客户、OEM及NPO客户送样，并在平台完成资格认证后扩大供应。",
+        "subject_time": "2026年第四季度及后续平台资格认证阶段"
+      },
+      "candidate_index": 3,
+      "case_id": "case_560d7d382c8243f78ed3cbac97de39c4",
+      "created_at": "2026-10-08T13:05:32.806757Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E394",
+      "runtime_signature": "c544a2609f6f95baab9af556f680687f83577a5502629e96cb963d04795cceda",
+      "snapshot_version": 33,
+      "source_message_id": "std_c673957c0ba745ac88fa211155b57bc6",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLAN",
+        "entities": [
+          "ASUS",
+          "Zenbook 14 UX3480AA",
+          "Intel Core Ultra 9 386H"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "ASUS计划在2026年Q4初提供搭载Intel Core Ultra 9 386H处理器的Zenbook 14 UX3480AA配置。",
+        "subject_time": "2026年Q4初"
+      },
+      "candidate_index": 0,
+      "case_id": "case_be365d546ee046a9a1d80d1fd9611f1d",
+      "created_at": "2026-10-08T13:08:17.069362Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E395",
+      "runtime_signature": "333691978525d0ffc5dea209b405ede6970cd8cfc2e407bb31b34b148d164a2e",
+      "snapshot_version": 34,
+      "source_message_id": "std_4adedbf3dc164e2497b261a5bedabf83",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Heaven Hill Brands",
+          "Irish Mist",
+          "The Old Canal Quay Spirits Co"
+        ],
+        "occurrence_date": null,
+        "proposition": "Heaven Hill Brands同意将Irish Mist利口酒品牌转让给The Old Canal Quay Spirits Co，交易对价未披露。",
+        "subject_time": "Irish Mist品牌转让交易"
+      },
+      "candidate_index": 0,
+      "case_id": "case_5654542390bc4949962b20197ecd5125",
+      "created_at": "2026-10-08T13:11:25.556807Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E396",
+      "runtime_signature": "58e90caf636a44b5f28de4d4debfceaaa4a2ecb9554bd431451b93d858ab70ec",
+      "snapshot_version": 35,
+      "source_message_id": "std_f2b733b47c724ec5a51a783e51ad6687",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Qualcomm",
+          "Cristiano Amon",
+          "Intel",
+          "Arm"
+        ],
+        "occurrence_date": null,
+        "proposition": "Qualcomm CEO Cristiano Amon在Qualcomm诉Arm案庭审中作证称，Qualcomm此前曾接洽Intel寻求x86授权；接洽时间未说明。",
+        "subject_time": "日期未披露的历史接洽"
+      },
+      "candidate_index": 0,
+      "case_id": "case_b9042e6647a2499d87b5d551502ad795",
+      "created_at": "2026-10-08T13:21:26.406092Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E397",
+      "runtime_signature": "6d9d952076e00f00c169f1492b88fe3f713e9cb22f44460663118bec053083b0",
+      "snapshot_version": 36,
+      "source_message_id": "std_c7246a6f53c945bf895a702c9b5c3e8f",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Microsoft",
+          "Surface Laptop Ultra",
+          "NVIDIA",
+          "Intel"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "Microsoft于2026-10-07开放Surface Laptop Ultra预购；该机采用NVIDIA RTX Spark处理器，且不提供Intel处理器选项。",
+        "subject_time": "2026年10月Surface Laptop Ultra预售"
+      },
+      "candidate_index": 0,
+      "case_id": "case_4e1523035cda45a6aa8aed098143d225",
+      "created_at": "2026-10-08T13:36:52.556579Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E398",
+      "runtime_signature": "9548e697099a204b31b042897ae1cf3b4a60ca219165283a8fc401e8f4c13071",
+      "snapshot_version": 37,
+      "source_message_id": "std_20b3d9ba7393433e87de8efdd1b88417",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "SCHEDULED",
+        "entities": [
+          "Microsoft",
+          "Surface Laptop Ultra"
+        ],
+        "occurrence_date": null,
+        "proposition": "Microsoft公布Surface Laptop Ultra将于2026-10-16开始发货。",
+        "subject_time": "2026-10-16首批发货"
+      },
+      "candidate_index": 1,
+      "case_id": "case_4e1523035cda45a6aa8aed098143d225",
+      "created_at": "2026-10-08T13:36:52.900968Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E399",
+      "runtime_signature": "e9b66f710855c7de48d9332a9d33f46a38bca924fae00ad02d902f8bbf5a1eec",
+      "snapshot_version": 38,
+      "source_message_id": "std_20b3d9ba7393433e87de8efdd1b88417",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "TheStreet",
+          "Meta",
+          "Muse",
+          "AMD",
+          "Intel"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "TheStreet于2026-10-08发表文章，将Meta Muse视为可能利好AMD和Intel投资者的因素，暗示其可能支持CPU需求；未提供Intel特定需求数据。",
+        "subject_time": "Meta Muse相关CPU需求前景（规模和时点未量化）"
+      },
+      "candidate_index": 0,
+      "case_id": "case_6c121869de3848b4bd05f9086ca1efa1",
+      "created_at": "2026-10-08T13:39:49.236486Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E400",
+      "runtime_signature": "54fe3b39c20523a0f37d90a0cc2f8b504c0e38e959a1d9de54d87b2174008a6d",
+      "snapshot_version": 39,
+      "source_message_id": "std_c0999ada922a4fbba32bdce268abe171",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "ResearchAndMarkets.com",
+          "全球锆砂市场"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "ResearchAndMarkets.com的报告预测，全球锆砂市场规模将从2026年的30亿美元增长至2033年的48亿美元，CAGR为7.10%。",
+        "subject_time": "2026—2033年"
+      },
+      "candidate_index": 0,
+      "case_id": "case_377bf697040742709c9bf0e9a0d9ce92",
+      "created_at": "2026-10-08T13:41:02.470506Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E401",
+      "runtime_signature": "67cde8505756cd59be2f6b58cef3e3cebf3eb3b9aaddb4ecfd59169576c2f213",
+      "snapshot_version": 40,
+      "source_message_id": "std_4cf08fe51ce94e9fbac14c09fb5f3efc",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "ResearchAndMarkets.com",
+          "Steel Casting Market Insights, Competitive Landscape, and Market Forecast - 2033"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "ResearchAndMarkets.com于2026-10-08将《Steel Casting Market Insights, Competitive Landscape, and Market Forecast - 2033》加入其报告产品目录。",
+        "subject_time": "2026-10-08报告上架"
+      },
+      "candidate_index": 0,
+      "case_id": "case_7c73652e23a34ac48abc6427eb2c360f",
+      "created_at": "2026-10-08T13:57:20.715103Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E402",
+      "runtime_signature": "c320efd3cae7497715edee8fa7a84e1c84e0293d50b85e2106e17828e9f45355",
+      "snapshot_version": 41,
+      "source_message_id": "std_a8d00edc1b37485ea05b0d6e0d39311b",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "ResearchAndMarkets.com",
+          "全球钢铸件市场"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "ResearchAndMarkets.com报告预测全球钢铸件市场将从2026年的372亿美元增至2033年的567亿美元，预测期CAGR为6.20%。",
+        "subject_time": "2026—2033年预测期"
+      },
+      "candidate_index": 1,
+      "case_id": "case_7c73652e23a34ac48abc6427eb2c360f",
+      "created_at": "2026-10-08T13:57:20.740122Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E403",
+      "runtime_signature": "9a3f216c1d955e2226f773488cd1d7a5ab0516319eee6ae6a6c07e2895cd8a46",
+      "snapshot_version": 42,
+      "source_message_id": "std_a8d00edc1b37485ea05b0d6e0d39311b",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "ResearchAndMarkets.com",
+          "NOR Flash for Consumer Electronics Market Size and Share - Growth Analysis Report and Forecast Trends (2026-2035)"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "ResearchAndMarkets.com于2026-10-08将《NOR Flash for Consumer Electronics Market Size and Share - Growth Analysis Report and Forecast Trends (2026-2035)》加入其报告产品目录。",
+        "subject_time": "2026-10-08报告上架"
+      },
+      "candidate_index": 0,
+      "case_id": "case_7a5968229b354b9fa5eeb5dc49556346",
+      "created_at": "2026-10-08T13:59:40.404394Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E404",
+      "runtime_signature": "bca17518f355932a8d3f0ed08d75801791c47c60989be8ef8c0131cbbd3e774a",
+      "snapshot_version": 43,
+      "source_message_id": "std_687e4f6d6ddf4893a14f3693f2aa3f93",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "ResearchAndMarkets.com",
+          "全球NOR Flash消费电子市场"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "ResearchAndMarkets.com报告预测全球NOR Flash消费电子市场在2026—2035年间以约6.9%的CAGR增长，并于2035年达到58.5亿美元。",
+        "subject_time": "2026—2035年预测期"
+      },
+      "candidate_index": 1,
+      "case_id": "case_7a5968229b354b9fa5eeb5dc49556346",
+      "created_at": "2026-10-08T13:59:40.440920Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E405",
+      "runtime_signature": "bcce84fd4b8cd318afe1f3e15c590c7c7655ec28b385557241baf24cf36e1569",
+      "snapshot_version": 44,
+      "source_message_id": "std_687e4f6d6ddf4893a14f3693f2aa3f93",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Intel"
+        ],
+        "occurrence_date": null,
+        "proposition": "Intel确认其销售组织实施了未披露具体人数的定向裁员；报道指出其中包括渠道销售及伙伴支持岗位，裁撤发生于2026年夏季前后。",
+        "subject_time": "2026年夏季销售组织调整"
+      },
+      "candidate_index": 0,
+      "case_id": "case_5f0fdea264424079a6f3678d0f673946",
+      "created_at": "2026-10-08T14:16:09.829903Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E406",
+      "runtime_signature": "24d0d434fa26e910d6ba606ce2fd39c43943b51c34c5e8ce94d92edc9117a970",
+      "snapshot_version": 45,
+      "source_message_id": "std_b57c6972c3d241d0a86c5e1eaac98e18",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Intel",
+          "Nor-Tech"
+        ],
+        "occurrence_date": null,
+        "proposition": "Nor-Tech称，覆盖该公司的Intel销售客户经理于2026年夏季被裁撤；截至2026-10-08，Nor-Tech已超过三个月没有获分配替代代表，并称目前没有已知的Intel竞争报价支持（meet-comp）渠道。",
+        "subject_time": "2026年夏季至2026-10-08的Nor-Tech渠道覆盖"
+      },
+      "candidate_index": 1,
+      "case_id": "case_5f0fdea264424079a6f3678d0f673946",
+      "created_at": "2026-10-08T14:16:09.856600Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E407",
+      "runtime_signature": "88be37030ed22d320dd20bb4cf6f35daecfb63cd144646be8289d3b3779f52c0",
+      "snapshot_version": 46,
+      "source_message_id": "std_b57c6972c3d241d0a86c5e1eaac98e18",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Sunil Kaul",
+          "Intel",
+          "Marvell Technology"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Sunil Kaul于2026-09-30宣布加入Intel，担任负责全球超大规模及数据中心销售的副总裁；此前他是Marvell数据中心销售副总裁。",
+        "subject_time": "Intel全球超大规模及数据中心销售组织，2026年9月"
+      },
+      "candidate_index": 0,
+      "case_id": "case_1226e1b4970f4ec2b65bfc3f32cbc33c",
+      "created_at": "2026-10-08T14:21:11.623507Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E408",
+      "runtime_signature": "b8bb3e0f4289a9a57ee0137100bea298d5210ad72b173c9347073573a0f1bfb3",
+      "snapshot_version": 47,
+      "source_message_id": "std_1c73cb15f9b648ab81deccbfef1cb959",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Intel",
+          "Greg Ernst",
+          "Dean Jarnac"
+        ],
+        "occurrence_date": null,
+        "proposition": "Intel在任命Dean Jarnac接替Greg Ernst的公告中称，Ernst将在任职27年后离开公司，但未说明离职性质。",
+        "subject_time": "2026年销售领导层交接"
+      },
+      "candidate_index": 1,
+      "case_id": "case_1226e1b4970f4ec2b65bfc3f32cbc33c",
+      "created_at": "2026-10-08T14:21:11.678130Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E409",
+      "runtime_signature": "6029d38e73a609264a3698845feef34c55ec54afa6acabc66b2dde20848fe061",
+      "snapshot_version": 48,
+      "source_message_id": "std_1c73cb15f9b648ab81deccbfef1cb959",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "Lane Kiffin",
+          "LSU Tigers"
+        ],
+        "occurrence_date": null,
+        "proposition": "Lane Kiffin公开表示，他对LSU未来赛季前景有信心，并称目前组队的经历使他对未来一至两年的球队发展有信心。",
+        "subject_time": "LSU未来一至两个赛季"
+      },
+      "candidate_index": 0,
+      "case_id": "case_a253ea0ceb414a119a14fe89be1838f5",
+      "created_at": "2026-10-08T14:23:14.985152Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E410",
+      "runtime_signature": "671b55df6864ef3ccc84542a9592c47403b4ddad0becac5b419cd076008292fd",
+      "snapshot_version": 49,
+      "source_message_id": "std_bcba161c806a4751941189c3e47ede75",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Advanced Micro Devices",
+          "AMD"
+        ],
+        "occurrence_date": null,
+        "proposition": "Advanced Micro Devices（AMD）于2026年9月市值突破1万亿美元。",
+        "subject_time": "2026年9月"
+      },
+      "candidate_index": 0,
+      "case_id": "case_29ff36ab1a4c45e4977f8ed3feded0e2",
+      "created_at": "2026-10-08T14:53:57.298856Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E411",
+      "runtime_signature": "ece456a1318dbaa1b1ac2fb3e04509505b7bb68af455ec48246e33548f934f1e",
+      "snapshot_version": 50,
+      "source_message_id": "std_040ad5a7919c4f53a705a3f88476c10d",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "H. Peter Anvin",
+          "Rosaic Labs",
+          "Linux kernel mailing list"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "H. Peter Anvin 于 2026-10-08 在 Linux 内核邮件列表认可有关移除 Linux x32 ABI 的补丁，签名使用了「H. Peter Anvin (Rosaic)」这一 Rosaic 关联。",
+        "subject_time": "2026-10-08 Linux 内核邮件列表讨论"
+      },
+      "candidate_index": 0,
+      "case_id": "case_d3e9d2a5075f42f5ad47c08ebb1605a5",
+      "created_at": "2026-10-08T14:56:04.265383Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E412",
+      "runtime_signature": "41100c5b1ddd0fec36643a2ebd558e41d5ac44de6501efdb09a74248d467a144",
+      "snapshot_version": 51,
+      "source_message_id": "std_66bb5049a38d4e24be0ad4d2ef04c29b",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMORED",
+        "entities": [
+          "H. Peter Anvin",
+          "Intel"
+        ],
+        "occurrence_date": null,
+        "proposition": "Phoronix 报道称，H. Peter Anvin 据报于 2026 年夏季在 Intel 重组期间被裁撤；该离职说法来自未具名线索。",
+        "subject_time": "2026 年夏季"
+      },
+      "candidate_index": 1,
+      "case_id": "case_d3e9d2a5075f42f5ad47c08ebb1605a5",
+      "created_at": "2026-10-08T14:56:04.288425Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E413",
+      "runtime_signature": "ef0930748c7fe68909e2e4ead412071a6afbe9fee1b3de5762b3236752167899",
+      "snapshot_version": 52,
+      "source_message_id": "std_66bb5049a38d4e24be0ad4d2ef04c29b",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMORED",
+        "entities": [
+          "On3",
+          "California recruiting prospects"
+        ],
+        "occurrence_date": null,
+        "proposition": "On3刊载的加州体育招募动态称，周末访问前有新的领先招募人选出现；所提供内容未指明人选。",
+        "subject_time": "周末访问前的招募动态"
+      },
+      "candidate_index": 0,
+      "case_id": "case_b8f52a87bbbd4577b8c200ad372b39da",
+      "created_at": "2026-10-08T15:17:23.349841Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E414",
+      "runtime_signature": "aa380b8f8700989ac7fb5192d010849f57452ff9e8a990c62be18618fdf9d828",
+      "snapshot_version": 53,
+      "source_message_id": "std_207211eee3974385b63026856a75c145",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Seeking Alpha",
+          "Intel Corporation"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "Seeking Alpha发布标题为“Intel Stock: Cheapest CPU Name In Sight”的文章，表达Intel可能是CPU同业中最便宜标的的估值观点；消息快照未提供比较数据或分析依据。",
+        "subject_time": "2026-10-08发布的相对估值评论"
+      },
+      "candidate_index": 0,
+      "case_id": "case_f8327ea095524dcaa133efe01057b77f",
+      "created_at": "2026-10-08T15:28:18.899497Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E415",
+      "runtime_signature": "90705a65f5fa0b66a14d9ffbd867627436b3d1b9e41b766a27d535fea5bb1277",
+      "snapshot_version": 54,
+      "source_message_id": "std_a91f0204bcf1418898c5e92246c7a2cb",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "SCHEDULED",
+        "entities": [
+          "On3",
+          "Terence Parsee",
+          "Nebraska",
+          "California defensive backs"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "On3报道称，Terence Parsee计划本周末与其他加州防守后卫一起前往Nebraska访问。",
+        "subject_time": "2026年10月8日报道的本周末访问计划"
+      },
+      "candidate_index": 0,
+      "case_id": "case_e2b0d901c139431f91b49f34ea5965f0",
+      "created_at": "2026-10-08T15:43:09.991758Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E416",
+      "runtime_signature": "dcda63c87c177fba72521698a9f5f5142532f1c90e0f03773bd255afc7c12494",
+      "snapshot_version": 55,
+      "source_message_id": "std_5ccd922ae5ed4078b4e7a8b761e78fa1",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "EXPECTED",
+        "entities": [
+          "On3",
+          "Oregon",
+          "college football recruits"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "On3报道称，Oregon是未来数日球员访问的热门目的地。",
+        "subject_time": "2026年10月8日之后数日的访校动态"
+      },
+      "candidate_index": 1,
+      "case_id": "case_e2b0d901c139431f91b49f34ea5965f0",
+      "created_at": "2026-10-08T15:43:10.003622Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E417",
+      "runtime_signature": "c15c595efa3a9b526de100e756890cfc342a4b587332163479a526d6d53ad51a",
+      "snapshot_version": 56,
+      "source_message_id": "std_5ccd922ae5ed4078b4e7a8b761e78fa1",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Pluang",
+          "Intel Corporation"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "Pluang于2026-10-08发布标题称Intel在近期波动后仍为Buy，并以Q3指引和利润率改善作为依据；消息快照未提供具体数据。",
+        "subject_time": "2026-10-08发布的投资评论"
+      },
+      "candidate_index": 0,
+      "case_id": "case_0402fe4871bf4b9fb269e3b35320a851",
+      "created_at": "2026-10-08T15:44:59.155881Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E418",
+      "runtime_signature": "2e341c92ca68f09aec2326acd0c8945bfb329d07d99eed24d91e58321a1063ac",
+      "snapshot_version": 57,
+      "source_message_id": "std_5228a06ad3b14fabb40dce5a0c3ebc23",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "全球股权资本市场"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "全球股权资本市场在2026年1月至9月的发行总额超过1万亿美元。",
+        "subject_time": "2026年1月至9月"
+      },
+      "candidate_index": 0,
+      "case_id": "case_7003e756d37846b482e7b77f9c48895f",
+      "created_at": "2026-10-08T15:48:40.217279Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E419",
+      "runtime_signature": "7c28f285f239efa0897de365c8888ad465659a4b43a5af20fbed012878d61d43",
+      "snapshot_version": 58,
+      "source_message_id": "std_b605b48f99654ab2bdeca3b27d25d5bd",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Samuel Kerr",
+          "美国IPO市场"
+        ],
+        "occurrence_date": "2026-10-05",
+        "proposition": "Samuel Kerr在2026年10月5日的访谈中表示，美国IPO市场开始放缓；他将较高借贷成本和主权债务收益率上升与企业WACC提高及IPO延期联系起来。",
+        "subject_time": "2026年10月5日访谈所述的美国IPO市场状况"
+      },
+      "candidate_index": 1,
+      "case_id": "case_7003e756d37846b482e7b77f9c48895f",
+      "created_at": "2026-10-08T15:48:40.239248Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E420",
+      "runtime_signature": "1002e045a1ce6a4be0027f6e28a9a52027a4276c458b975ea077e1c9c6464b22",
+      "snapshot_version": 59,
+      "source_message_id": "std_b605b48f99654ab2bdeca3b27d25d5bd",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Pensions & Investments",
+          "retirement industry",
+          "U.S. Supreme Court",
+          "Anderson v. Intel"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "Pensions & Investments报道，退休行业希望美国最高法院就ERISA诉讼中的“meaningful benchmark”给出明确指导，以降低诉讼风险。",
+        "subject_time": "Anderson v. Intel案及相关ERISA诉讼标准"
+      },
+      "candidate_index": 0,
+      "case_id": "case_feb8b837f06a47428cc8b4b0ddd76e85",
+      "created_at": "2026-10-08T15:51:51.820860Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E421",
+      "runtime_signature": "3d589243ff005befabd455bda8016a827f3b740e10bc34d173572d630a8e4719",
+      "snapshot_version": 60,
+      "source_message_id": "std_c116bd1e16e54320abcf4eeb0f3e764f",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Notebookcheck",
+          "Qualcomm Snapdragon X",
+          "HP OmniBook 3 16",
+          "Intel Wildcat Lake",
+          "Lenovo IdeaPad Slim 3"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "Notebookcheck评测称，搭载Qualcomm Snapdragon X的HP OmniBook 3 16在该组对比中多核性能约快20%，续航更长（但电池容量也更大），且运行噪音更低于搭载Intel Wildcat Lake的Lenovo IdeaPad Slim 3。",
+        "subject_time": "Notebookcheck对HP OmniBook 3 16与Lenovo IdeaPad Slim 3的评测"
+      },
+      "candidate_index": 0,
+      "case_id": "case_741d50d656224190aef716257140858a",
+      "created_at": "2026-10-08T16:13:27.133289Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E422",
+      "runtime_signature": "592a5397d78a91cd0823156cc1bb8beb70d4ff3703bd1c455c101d1bbb6376e4",
+      "snapshot_version": 61,
+      "source_message_id": "std_bab3e90c7746409fbd57360399f90454",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Notebookcheck",
+          "Intel Wildcat Lake",
+          "Lenovo IdeaPad Slim 3",
+          "Qualcomm Snapdragon X",
+          "HP OmniBook 3 16"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "同一Notebookcheck评测称，搭载Intel Wildcat Lake的Lenovo IdeaPad Slim 3单核性能约高23%，且运行温度略低于搭载Snapdragon X的HP OmniBook 3 16。",
+        "subject_time": "Notebookcheck对HP OmniBook 3 16与Lenovo IdeaPad Slim 3的评测"
+      },
+      "candidate_index": 1,
+      "case_id": "case_741d50d656224190aef716257140858a",
+      "created_at": "2026-10-08T16:13:27.159425Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E423",
+      "runtime_signature": "f1d99a9ac275fa653ef4ea6a24c0f26e776b7ee7c80bb28577dd32d17b7bc4b9",
+      "snapshot_version": 62,
+      "source_message_id": "std_bab3e90c7746409fbd57360399f90454",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Intel",
+          "Barron's",
+          "债券收益率",
+          "原油"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "Barron's报道称，2026年10月8日交易时段Intel股价下跌3.4%；报道将当日市场走弱与债券收益率上升、油价上涨引发的通胀担忧联系起来。",
+        "subject_time": "2026-10-08交易时段"
+      },
+      "candidate_index": 0,
+      "case_id": "case_6a84ff6cbea14456ae851e529f99c4b7",
+      "created_at": "2026-10-08T16:41:26.141574Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E424",
+      "runtime_signature": "7bfcb8bcb6f1d1e74032d2cb585a8ac42c05c3aebf37e81c5c3cdb1a2cddba8e",
+      "snapshot_version": 63,
+      "source_message_id": "std_78a6d08c380b46d898559d8d2b283e07",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "TheStreet",
+          "Meta",
+          "Muse",
+          "Intel",
+          "AMD"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "TheStreet于2026-10-08发表Meta Muse主题评论，称AI交易主题正在变化、投资者开始关注这一变化。",
+        "subject_time": "2026-10-08的AI交易评论"
+      },
+      "candidate_index": 0,
+      "case_id": "case_803ebc61f94b464b88e0e651431b1f65",
+      "created_at": "2026-10-08T16:45:00.951462Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E425",
+      "runtime_signature": "86f40baac5a8b1608cb10a2682c836b744176e62ab338f5640f948fe289de94f",
+      "snapshot_version": 64,
+      "source_message_id": "std_1a28427db1154ac69660e2fb3df2c4fb",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "On3",
+          "Florida Gators"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "On3发布了一篇讨论Florida Gators十月招募问题的文章。",
+        "subject_time": "Florida Gators十月招募"
+      },
+      "candidate_index": 0,
+      "case_id": "case_3c7169dc50f0451aba0e49bf44966be1",
+      "created_at": "2026-10-08T16:53:53.637878Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E426",
+      "runtime_signature": "9187b4f9c4e69152e96462ec331460e0afc9b86b62f7f0e11baffd0775b67044",
+      "snapshot_version": 65,
+      "source_message_id": "std_022cfb9f51434ad08f936d4b8d67b9df",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "The Motley Fool",
+          "AMD",
+          "Intel"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "Motley Fool于2026-10-08发布AMD与Intel的对比投资分析，并判断AMD在中期更具上涨空间。",
+        "subject_time": "2026-10-08发布的中期投资观点"
+      },
+      "candidate_index": 0,
+      "case_id": "case_6c543467f74342d192acf9b8f34bff21",
+      "created_at": "2026-10-08T17:00:40.397819Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E427",
+      "runtime_signature": "19abe6c22766a01661373d226bcfaeeae044f0d7eb18471f3a31f2d5527c54ba",
+      "snapshot_version": 66,
+      "source_message_id": "std_b21ab3bc90cd4a66b9991429fa45308d",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Intel",
+          "Xeon 6990E+",
+          "Xeon 6980P",
+          "AMD EPYC 9965",
+          "Tencent CubeSandbox"
+        ],
+        "occurrence_date": null,
+        "proposition": "Intel称其截至2026年9月进行的CubeSandbox创建/删除测试显示，在平均创建延迟不超过200毫秒时，Xeon 6990E+支持约313个并发创建请求、Xeon 6980P约277个，AMD EPYC 9965约246个。",
+        "subject_time": "Intel截至2026年9月的CubeSandbox基准测试"
+      },
+      "candidate_index": 0,
+      "case_id": "case_c61d5b19650f4421b5fc4263b9ea728d",
+      "created_at": "2026-10-08T17:11:05.884103Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E428",
+      "runtime_signature": "d51d39ee77f7e395c6478f30a59fe7eebf9ba407d21b59d36f45ae828f8a8dc6",
+      "snapshot_version": 67,
+      "source_message_id": "std_5caec9989b754309bd0857a340c65f45",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "油轮",
+          "卡塔尔"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "报道说，一艘油轮在卡塔尔附近遭投射物袭击，引发对霍尔木兹海峡航运中断的担忧。",
+        "subject_time": "2026-10-08卡塔尔附近的油轮袭击"
+      },
+      "candidate_index": 0,
+      "case_id": "case_b442db40a31b473e8f22560c5648675c",
+      "created_at": "2026-10-08T17:16:07.924356Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E429",
+      "runtime_signature": "c622f08d9050a02bcd7df94dec25c4f8b31d67e930cdaee3a7552d9d1ef7d475",
+      "snapshot_version": 68,
+      "source_message_id": "std_2b83a57a2570490abe42fac0dbfdcf5e",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Donald Trump",
+          "伊朗",
+          "霍尔木兹海峡"
+        ],
+        "occurrence_date": null,
+        "proposition": "报道说，特朗普拒绝了伊朗关于重新开放霍尔木兹海峡航线的提议。",
+        "subject_time": "美国与伊朗关于霍尔木兹海峡航线的提议"
+      },
+      "candidate_index": 1,
+      "case_id": "case_b442db40a31b473e8f22560c5648675c",
+      "created_at": "2026-10-08T17:16:07.939880Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E430",
+      "runtime_signature": "67d2662f9b775861ef259c560aa034c73700e7600df595aaf6864fcf87de1f5c",
+      "snapshot_version": 69,
+      "source_message_id": "std_2b83a57a2570490abe42fac0dbfdcf5e",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "RUMORED",
+        "entities": [
+          "Samsung Electronics",
+          "AMD",
+          "HBM",
+          "Samsung Foundry"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "TechPowerUp报道称，Samsung希望在与AMD的HBM合作中获得Foundry订单作为回报；报道未确认AMD接受或形成绑定订单。",
+        "subject_time": "AMD与Samsung的HBM及潜在Foundry合作"
+      },
+      "candidate_index": 0,
+      "case_id": "case_168dbb1c844f4e6b91a1e675030aa2e6",
+      "created_at": "2026-10-08T17:23:18.792723Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E431",
+      "runtime_signature": "52d70f38c3271deb1982b633b2d86fb08eca8d1b30b456c37e5abed4a83efb27",
+      "snapshot_version": 70,
+      "source_message_id": "std_4873f47471e94209b68ea4a69cb4dbd3",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Alex Karp",
+          "Ted Mabrey",
+          "Palantir",
+          "Zeta Global"
+        ],
+        "occurrence_date": "2026-10-08",
+        "proposition": "Alex Karp在Zeta Live '26回忆，Palantir高管Ted Mabrey曾劝他停止反复夸谈Palantir Foundry平台未来的规模。",
+        "subject_time": "Palantir Foundry平台增长前景"
+      },
+      "candidate_index": 0,
+      "case_id": "case_7edfd4c09833481280342e70698a23d4",
+      "created_at": "2026-10-08T17:35:00.361976Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E432",
+      "runtime_signature": "cfa8c0fb67a0ef4c62da9659aff43c90e958b72410d916fd32016fc0fb00b473",
+      "snapshot_version": 71,
+      "source_message_id": "std_091b24cbb9824b348d6207b674455f63",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "D.A. Davidson",
+          "Gil Luria",
+          "Micron"
+        ],
+        "occurrence_date": "2026-10-07",
+        "proposition": "D.A. Davidson分析师Gil Luria将Micron目标价从2100美元上调至3000美元。",
+        "subject_time": "2026-10-07"
+      },
+      "candidate_index": 0,
+      "case_id": "case_dc22f5bf53ca4fc98908849ba53718d0",
+      "created_at": "2026-10-08T17:48:27.592955Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E433",
+      "runtime_signature": "90cdc02ec2dce8a617bff3d33861edeeb8fda8892c1ae32b37aa284003e4890f",
+      "snapshot_version": 72,
+      "source_message_id": "std_6e4e9a79f7234b7f877003f8210b1976",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    },
+    {
+      "candidate": {
+        "assertion_state": "SCHEDULED",
+        "entities": [
+          "Micron",
+          "CHIPS Act"
+        ],
+        "occurrence_date": null,
+        "proposition": "报道称，与Micron CHIPS Act资金协议相关的限制计划于2026年12月9日到期；Gil Luria称届时Micron可增加股票回购，报道未称新增回购已执行。",
+        "subject_time": "2026-12-09"
+      },
+      "candidate_index": 1,
+      "case_id": "case_dc22f5bf53ca4fc98908849ba53718d0",
+      "created_at": "2026-10-08T17:48:27.614946Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E434",
+      "runtime_signature": "8757fb205239ec57540d5e187c937a97c23991c50f1ad875a7fb0d0673dfdd4d",
+      "snapshot_version": 73,
+      "source_message_id": "std_6e4e9a79f7234b7f877003f8210b1976",
+      "ticker": "INTC",
+      "trading_date": "2026-10-08"
+    }
+  ],
+  "limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "global_state": {
+    "watches": [],
+    "pins": []
+  },
+  "event_details": {
+    "requested_event_ids": [
+      "E214"
+    ],
+    "canonical_events": [
+      {
+        "event_id": "E214",
+        "title": "OpenAI reported a private-financing and revenue update",
+        "event_type": "FINANCING",
+        "occurred_at": "2026-09-29",
+        "occurrence_time_precision": "DAY",
+        "status": "ACTIVE",
+        "canonical_summary": "OpenAI reported a private-financing and revenue update.",
+        "known_event_summary": "On 2026-09-29, OpenAI reported a private-financing and revenue update.",
+        "related_event_ids": [
+          "E98",
+          "E161"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F958",
+            "proposition": "Sam Altman ruled out an OpenAI public listing in 2026, citing AI-safety concerns.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "2026 public-listing plan",
+            "fact_occurred_at": "2026-09-29",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F959",
+            "proposition": "OpenAI is reportedly seeking at least $30 billion in private capital at a pre-money valuation of approximately $1.4 trillion.",
+            "assertion_state": "RUMOR",
+            "subject_time": "Proposed 2026 private financing round",
+            "fact_occurred_at": "2026-09-29",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F960",
+            "proposition": "OpenAI's annualized revenue is reported to be near $70 billion, more than 70% above the start of the current quarter.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "Current annualized revenue",
+            "fact_occurred_at": "2026-09-29",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      }
+    ],
+    "provisional_events": [],
+    "missing_event_ids": []
+  }
+}

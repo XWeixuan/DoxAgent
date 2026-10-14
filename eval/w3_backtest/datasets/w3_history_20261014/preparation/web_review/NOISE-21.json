@@ -1,0 +1,192 @@
+{
+  "case_key": "NOISE-21",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-10-09T14:23:08.207529Z",
+  "reviewed_at": "2026-10-13T22:58:33.142451Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 5,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a13777-4d39-71a3-8327-8e25c9d99ab7",
+    "turn_id": "01a13777-4d51-7dc3-870d-c84847ca4784",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 76544,
+        "inputTokens": 87511,
+        "outputTokens": 20349,
+        "reasoningOutputTokens": 18096,
+        "totalTokens": 107860
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 290304,
+        "inputTokens": 370130,
+        "outputTokens": 24364,
+        "reasoningOutputTokens": 21605,
+        "totalTokens": 394494
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "331ce19bee169f50c06133d93c76700ff1380c65c128e8b708acc315f45e744a",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://www.newswire.ca/news-releases/ballard-secures-4-8mw-order-from-siemens-mobility-to-power-hydrogen-trains-in-romania-805783661.html",
+      "title": "Ballard Secures 4.8MW Order from Siemens Mobility to Power Hydrogen Trains in Romania",
+      "published_at": "2026-10-06 22:30 ET",
+      "time_precision": "MINUTE",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn3search6",
+        "turn3search1"
+      ],
+      "source_call_ids": [
+        "exec-8732a196-f253-459d-a7a7-aa6f2d70a3a2"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://press.siemens.com/global/en/pressrelease/siemens-deliver-romanias-first-hydrogen-powered-train-fleet",
+      "title": "Siemens to deliver Romania’s First Hydrogen-Powered Train Fleet",
+      "published_at": "2026-04-28",
+      "time_precision": "DAY",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search3",
+        "turn3search0"
+      ],
+      "source_call_ids": [
+        "exec-1f88f76d-f033-49f2-bb36-15d28be0505d",
+        "exec-8732a196-f253-459d-a7a7-aa6f2d70a3a2"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://interestingengineering.com/transportation/hydrogen-powered-train-fuel-cell-module",
+      "title": "200 kW fuel cell modules to power 12 hydrogen passenger trains - Interesting Engineering",
+      "published_at": "2026-10-09T14:13:00Z",
+      "time_precision": "EXACT",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search0"
+      ],
+      "source_call_ids": [
+        "exec-1f88f76d-f033-49f2-bb36-15d28be0505d"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://www.chemanalyst.com/NewsAndDeals/NewsDetails/ballard-wins-4-8-mw-siemens-order-to-power-romanias-hydrogen-44868",
+      "title": "Ballard Wins 4.8 MW Siemens Order to Power Romania’s Hydrogen Trains",
+      "published_at": "2026-10-07",
+      "time_precision": "DAY",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn0search5"
+      ],
+      "source_call_ids": [
+        "exec-1f88f76d-f033-49f2-bb36-15d28be0505d"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S5",
+      "url": "https://tvrinfo.ro/romania-vrea-sa-cumpere-12-trenuri-pe-hidrogen-exista-insa-obstacole-infrastructura-si-statiile-de-alimentare/",
+      "title": "România vrea să cumpere 12 trenuri pe hidrogen. Există, însă, obstacole: infrastructura și stațiile de alimentare",
+      "published_at": "2026-04-19 19:34 (timezone not stated)",
+      "time_precision": "MINUTE",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn3search11"
+      ],
+      "source_call_ids": [
+        "exec-8732a196-f253-459d-a7a7-aa6f2d70a3a2"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "Ballard publicly announced that it had received a Siemens Mobility order for 24 FCrail 200 kW modules, totaling 4.8 MW, intended for 12 Mireo Plus H trains for Romania’s ARF.",
+      "source_urls": [
+        "https://www.newswire.ca/news-releases/ballard-secures-4-8mw-order-from-siemens-mobility-to-power-hydrogen-trains-in-romania-805783661.html"
+      ],
+      "event_time": "2026-10-06 22:30 ET (public announcement)",
+      "publication_time": "2026-10-06 22:30 ET",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The release does not state the supplier-order signing date, monetary value, revenue-recognition timing, or margin; the disclosed delivery and service dates are forecasts."
+    },
+    {
+      "observation": "Siemens had announced the ARF contract for 12 two-car trains on April 28, with an initial 15-year maintenance term and passenger service due in 2029. Comparing this with Ballard’s October 6 release, the newer disclosure adds Ballard’s module order rather than announcing the train award itself; this is a chronology-based inference.",
+      "source_urls": [
+        "https://press.siemens.com/global/en/pressrelease/siemens-deliver-romanias-first-hydrogen-powered-train-fleet",
+        "https://www.newswire.ca/news-releases/ballard-secures-4-8mw-order-from-siemens-mobility-to-power-hydrogen-trains-in-romania-805783661.html"
+      ],
+      "event_time": "2026-04-28 (Siemens award announcement); 2026-10-06 22:30 ET (Ballard announcement)",
+      "publication_time": "2026-04-28 (Siemens release); 2026-10-06 22:30 ET (Ballard release)",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The Siemens release predates the Ballard order and does not identify Ballard as module supplier; neither release establishes delivery or operational service by the cutoff."
+    },
+    {
+      "observation": "Ballard’s release scheduled module deliveries for 2027 and 2028 and expected passenger service in 2029; it also cautioned that forward-looking statements carry risks and actual results may differ materially.",
+      "source_urls": [
+        "https://www.newswire.ca/news-releases/ballard-secures-4-8mw-order-from-siemens-mobility-to-power-hydrogen-trains-in-romania-805783661.html"
+      ],
+      "event_time": "2026-10-06",
+      "publication_time": "2026-10-06 22:30 ET",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "These are issuer-provided forward-looking dates, not evidence of completed delivery, commissioning, hydrogen supply readiness, or passenger operation."
+    }
+  ],
+  "gaps": [
+    "The supplier-order signing date, monetary terms, delivery acceptance terms, and financial contribution to Ballard are not disclosed in the cited release.",
+    "No cutoff-verified evidence establishes that the modules were delivered, the trains commissioned, or project-specific hydrogen refuelling and route readiness were secured; the stated dates are future forecasts as of cutoff.",
+    "TVR’s currently accessible April 19 page raises pre-award infrastructure, refuelling, and funding issues, but no verified pre-cutoff snapshot or post-April 28 disposition was found; whether those constraints remained unresolved at cutoff is unknown.",
+    "ChemAnalyst’s currently accessible page displays an October 7 date, but no dated pre-cutoff snapshot or revision history was verified; its text is not relied upon as independent historical confirmation."
+  ],
+  "research_notes": "The earliest traceable public disclosure located is Ballard’s issuer-supplied CNW release at 2026-10-06 22:30 ET; an SEC Exhibit 99.1 preserves the release dated October 6. The supplied Interesting Engineering source record gives publication time 2026-10-09T14:13:00Z and an excerpt collected at 14:22:39.442927Z, before the 14:23:08.207529Z cutoff; only that captured excerpt is treated as pre-cutoff content. Siemens had already announced the ARF contract for 12 trains on April 28, 2026. Comparing the two releases, the October disclosure adds Ballard’s module order, rather than announcing the train procurement award itself (inference). The disclosed delivery and service dates are forward-looking; Ballard’s release expressly notes risks and uncertainty. A search surfaced earlier third-party coverage and a pre-award counterpoint, but no dated pre-cutoff snapshots or revision history were verified for those pages, so their content is not treated as confirmed cutoff-state evidence. No post-cutoff facts or market reactions are used."
+}

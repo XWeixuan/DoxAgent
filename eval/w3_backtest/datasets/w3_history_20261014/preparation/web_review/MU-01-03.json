@@ -1,0 +1,182 @@
+{
+  "case_key": "MU-01-03",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-09-24T19:39:49.982676Z",
+  "reviewed_at": "2026-10-13T22:58:31.812686Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 6,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a1375a-aeb6-7651-9351-89f7cdd1374e",
+    "turn_id": "01a1375a-aec4-7561-99e1-3196fdd07f8e",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 86784,
+        "inputTokens": 96726,
+        "outputTokens": 12541,
+        "reasoningOutputTokens": 10193,
+        "totalTokens": 109267
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 386304,
+        "inputTokens": 479396,
+        "outputTokens": 19800,
+        "reasoningOutputTokens": 16685,
+        "totalTokens": 499196
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "0d745c04da6538fc7200052b52e41ceabb1b2ca36ff09d15e3350d3287863f23",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://www.itiger.com/news/2669495747",
+      "title": "How Micron Stock Could Rise Another 50%",
+      "published_at": "2026-09-24T19:37:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn5search0",
+        "turn2search5",
+        "turn2search0"
+      ],
+      "source_call_ids": [
+        "exec-1fde3b1e-b9b2-4f17-b905-73ed024670ca",
+        "exec-d61a824f-fa8f-4879-881c-2f667f95ff4d"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000013/a2026q3ex991-pressrelease.htm",
+      "title": "Micron Technology Reports Results for the Third Quarter of Fiscal 2026",
+      "published_at": "2026-06-24",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search0"
+      ],
+      "source_call_ids": [
+        "exec-56f5e42d-c349-4ced-830b-a5e9f5049bca"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://www.benzinga.com/markets/tech/26/09/61982882/micron-earnings-break-memory-cycle-pureplay-etfs-nvps",
+      "title": "EXCLUSIVE: Micron's AI Earnings Could Break the Old Memory Cycle, PurePlay ETFs CEO Says",
+      "published_at": "2026-09-24T15:05:00-04:00",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn3search0"
+      ],
+      "source_call_ids": [
+        "exec-fe8cecab-3257-4d71-baf0-37540c4f9bb8"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://www.tomshardware.com/pc-components/dram/acer-ceo-says-memory-makers-are-hyping-2030-shortage-fears-to-protect-margins-pc-prices-set-to-decline-by-late-2027-cheaper-chinese-capacity-coming-online-delivers-lower-memory-prices",
+      "title": "Acer CEO says memory makers are hyping 2030 shortage fears to protect margins",
+      "published_at": "2026-09-21",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn3news18"
+      ],
+      "source_call_ids": [
+        "exec-fe8cecab-3257-4d71-baf0-37540c4f9bb8"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "Arcuri’s note was dated Wednesday, September 23, according to the September 24 report. It presented $52.4 billion of Q4 revenue and $32.50 EPS as forecasts above company guidance, alongside a multi-quarter buyback scenario and a conditional long-term price-down scenario. The article reports an analyst view, not realized performance or a Micron commitment.",
+      "source_urls": [
+        "https://www.itiger.com/news/2669495747",
+        "https://www.sec.gov/Archives/edgar/data/723125/000072312526000013/a2026q3ex991-pressrelease.htm"
+      ],
+      "event_time": "2026-09-23",
+      "publication_time": "2026-09-24T19:37:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "No original UBS research note was located; the article does not state the EPS basis, and the buyback amounts and 2028 price scenario are projections, not confirmed company actions or results."
+    },
+    {
+      "observation": "Micron’s June 24 Q3 release had set the Q4 revenue and EPS guidance used as the comparison point in the September article.",
+      "source_urls": [
+        "https://www.sec.gov/Archives/edgar/data/723125/000072312526000013/a2026q3ex991-pressrelease.htm"
+      ],
+      "event_time": "2026-06-24",
+      "publication_time": "2026-06-24",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "Company guidance is a prior outlook, not a Q4 result; GAAP and non-GAAP EPS ranges are distinct."
+    },
+    {
+      "observation": "A Benzinga interview published earlier on September 24 paired a historical memory-cycle warning with DeYonker’s view that AI demand and multi-year agreements could make the cycle different; he highlighted HBM guidance as a key upcoming disclosure.",
+      "source_urls": [
+        "https://www.benzinga.com/markets/tech/26/09/61982882/micron-earnings-break-memory-cycle-pureplay-etfs-nvps"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-24T15:05:00-04:00",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This is an interviewee’s opinion, not an independent estimate of Micron’s Q4 results or evidence of realized memory pricing."
+    },
+    {
+      "observation": "A September 21 report attributed to Acer CEO Jason Chen the view that some component prices might reverse in H2 2027 and that lower-cost Chinese supply could disrupt the market.",
+      "source_urls": [
+        "https://www.tomshardware.com/pc-components/dram/acer-ceo-says-memory-makers-are-hyping-2030-shortage-fears-to-protect-margins-pc-prices-set-to-decline-by-late-2027-cheaper-chinese-capacity-coming-online-delivers-lower-memory-prices"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-21",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The comments concern a broad component and PC-market outlook; they do not establish a change in Micron’s contract prices or HBM demand."
+    }
+  ],
+  "gaps": [
+    "No public original UBS note was found to verify the exact estimate basis, prior estimate changes, buyback assumptions, or valuation calculation.",
+    "The exact December 9 CHIPS Act restriction-expiration claim and projected repurchase amounts were not independently checked against a primary Micron, Commerce Department, or NIST source.",
+    "The original newswire capture supplied in the case supports the pre-cutoff article timing; live search surfaced a dated Barron's listing and syndicated copy but no dated archive of the Barron's article itself.",
+    "The September 30 fiscal Q4 results had not been published by the evidence cutoff, so the forecasts remained unverified."
+  ],
+  "research_notes": "Cutoff: 2026-09-24T19:39:49.982676Z. The earliest traceable public report located for UBS analyst Timothy Arcuri’s new estimates is the Barron’s/Dow Jones story dated September 24; the case-supplied wire capture timestamps it at 19:37Z, about three minutes before cutoff. It attributes the forecasts to Arcuri’s Wednesday note; no public copy of that UBS note was found. Prior context is Micron’s June 24 Q3 release and Q4 guidance. The new report is an analyst forecast and conditional scenario, not a Micron result. A same-day Benzinga interview and a September 21 report of Acer CEO Jason Chen’s views provide contemporaneous context on memory cyclicality and possible price easing. No post-cutoff facts or market reactions are used."
+}

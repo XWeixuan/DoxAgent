@@ -1,0 +1,47 @@
+{
+  "ticker": "RKLB",
+  "version": 13,
+  "requested_event_ids": [
+    "E10"
+  ],
+  "events": [
+    {
+      "event_id": "E10",
+      "ticker": "RKLB",
+      "title": "Rocket Lab secures additional Synspective Electron bookings",
+      "event_type": "MATERIAL_CONTRACT",
+      "occurred_at": "2026-06-01..2026-09-04",
+      "occurrence_time_precision": "INTERVAL",
+      "status": "ACTIVE",
+      "canonical_summary": "Rocket Lab and Synspective reported 16 additional dedicated Electron missions booked through 2030, following a June contract described as covering 17 launches.",
+      "known_event_summary": "From June through September 2026, Rocket Lab reported additional Synspective Electron bookings through 2030.",
+      "is_important": true,
+      "include_in_reference_view": true,
+      "related_event_ids": [
+        "E36"
+      ],
+      "supersedes_event_id": null,
+      "derived_from_event_ids": [],
+      "facts": [
+        {
+          "fact_id": "F22",
+          "proposition": "Rocket Lab had 16 additional dedicated Electron missions booked for Synspective through 2030.",
+          "assertion_state": "ONGOING",
+          "subject_time": "2030",
+          "fact_occurred_at": "2026-09-02",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F23",
+          "proposition": "Synspective signed a contract for 17 additional Electron launches with Rocket Lab in June 2026.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "2026-06",
+          "fact_occurred_at": "2026-09-03",
+          "fact_occurrence_time_precision": "DAY"
+        }
+      ],
+      "price_analysis": null
+    }
+  ],
+  "missing_event_ids": []
+}

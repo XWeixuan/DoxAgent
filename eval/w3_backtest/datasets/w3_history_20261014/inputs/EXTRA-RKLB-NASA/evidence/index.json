@@ -1,0 +1,23 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-10-06T12:05:00+00:00",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "No independent same-event report with a demonstrable publication time at or before 2026-10-06T12:05:00Z was identified.",
+    "The accessible Bloomberg opening does not verify the order’s formal status, number of launches, provider mix, award value, schedule, or any Rocket Lab-specific assignment.",
+    "The report title refers to a SpaceX phaseout, but the available pre-cutoff text does not establish what is being phased out or its operational implications.",
+    "A NASA April architecture-guide search excerpt suggested earlier mixed-fleet/block-buy language, but the oversized PDF could not be opened and its exact publication/revision time and pre-cutoff snapshot could not be verified; it is excluded from the observations."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

@@ -1,0 +1,235 @@
+{
+  "case_key": "INTC-01-05",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-10-01T12:55:24.579038Z",
+  "reviewed_at": "2026-10-13T22:58:31.608357Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 6,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a13756-a9bb-7a33-9e45-f7a53b6c768c",
+    "turn_id": "01a13756-a9e9-70f3-978d-e27673cb8f1b",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 88832,
+        "inputTokens": 97886,
+        "outputTokens": 19572,
+        "reasoningOutputTokens": 16232,
+        "totalTokens": 117458
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 407808,
+        "inputTokens": 501058,
+        "outputTokens": 23217,
+        "reasoningOutputTokens": 19213,
+        "totalTokens": 524275
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "f49d0a78a3290642c9bad3758a3aa2ba71f5830ac48217d0fddfafef86eadee6",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+      "title": "Fiscal Q4 2026 Earnings Call Prepared Remarks",
+      "published_at": "2026-09-30",
+      "time_precision": "DAY",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn5view0",
+        "turn3search3"
+      ],
+      "source_call_ids": [
+        "exec-52fb8044-6838-4222-b4c8-25e8a23600a9",
+        "exec-e2c13487-1736-4b13-b480-b87a2fca44ec"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000018/a2026q4ex991-pressrelease.htm",
+      "title": "Micron Technology, Inc. Reports Record Fiscal Fourth-Quarter and Full-Year 2026 Results",
+      "published_at": "2026-09-30",
+      "time_precision": "DAY",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search5"
+      ],
+      "source_call_ids": [
+        "exec-4d64c7ed-3048-441f-9f37-602716ae6c19"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://investors.micron.com/static-files/631b1a32-5537-46ae-8f40-82e42fc79dfe",
+      "title": "Fiscal Q3 2026 Earnings Call Prepared Remarks",
+      "published_at": "2026-06-24",
+      "time_precision": "DAY",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn3search12"
+      ],
+      "source_call_ids": [
+        "exec-52fb8044-6838-4222-b4c8-25e8a23600a9"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://www.pcgamer.com/hardware/memory/micron-ceo-says-itll-be-tougher-to-get-memory-in-the-next-couple-of-years-than-it-is-today-and-keeps-saying-it-over-and-over-again/",
+      "title": "Micron CEO says it'll be tougher to get memory in the next couple of years than it is today, and keeps saying it over and over again",
+      "published_at": "2026-10-01T10:13:59Z",
+      "time_precision": "EXACT",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn2news22"
+      ],
+      "source_call_ids": [
+        "exec-5d14df6c-131e-40e3-840b-6d502351ca00"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S5",
+      "url": "https://www.tomshardware.com/pc-components/dram/micron-projects-tightening-ram-shortages-through-2028-as-it-generates-record-profit-record-86-25-percent-gross-margin-drives-over-usd53-billion-in-quarterly-profit",
+      "title": "Micron projects tightening RAM shortages through 2028 as it generates record profit",
+      "published_at": "2026-10-01T12:50:00Z",
+      "time_precision": "EXACT",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn2search0",
+        "turn2news21"
+      ],
+      "source_call_ids": [
+        "exec-5d14df6c-131e-40e3-840b-6d502351ca00"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S6",
+      "url": "https://www.tomshardware.com/pc-components/dram/acer-ceo-says-memory-makers-are-hyping-2030-shortage-fears-to-protect-margins-pc-prices-set-to-decline-by-late-2027-cheaper-chinese-capacity-coming-online-delivers-lower-memory-prices",
+      "title": "Acer CEO says memory makers are hyping 2030 shortage fears to protect margins — PC prices set to decline by late 2027",
+      "published_at": "2026-09-21",
+      "time_precision": "DAY",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search0"
+      ],
+      "source_call_ids": [
+        "exec-4d64c7ed-3048-441f-9f37-602716ae6c19"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "As prior context, Micron's June 24 Q3 remarks already expected tight supply conditions to persist beyond calendar 2027, citing AI demand and structural supply constraints.",
+      "source_urls": [
+        "https://investors.micron.com/static-files/631b1a32-5537-46ae-8f40-82e42fc79dfe"
+      ],
+      "event_time": "2026-06-24",
+      "publication_time": "2026-06-24",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This establishes an existing tight-supply baseline; it does not quantify realized shortages or prove future conditions."
+    },
+    {
+      "observation": "In September 30 Q4 prepared remarks, Micron projected tighter memory and storage supply-demand conditions in calendar 2027 and 2028 than in 2026, while expecting DRAM and NAND shipments to grow and remaining supply-constrained. Micron said it had no line of sight to when supply and demand would balance.",
+      "source_urls": [
+        "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+        "https://investors.micron.com/events-and-presentations/event-details/2026/Microns-Fourth-Quarter-2026-Financial-Call/default.aspx"
+      ],
+      "event_time": "2026-09-30T16:30:00-04:00",
+      "publication_time": "2026-09-30",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "These are management forecasts, not observed 2027–28 outcomes; the remarks also project industry bit-shipment growth."
+    },
+    {
+      "observation": "The official release reports Q4 actual gross margin of 86.8% GAAP and 87.0% non-GAAP. The 86.25% figure is Q1 FY2027 guidance, alongside revenue guidance of $61.5 billion plus or minus $1.5 billion and EPS guidance of $38.15 plus or minus $1.00.",
+      "source_urls": [
+        "https://www.sec.gov/Archives/edgar/data/723125/000072312526000018/a2026q4ex991-pressrelease.htm",
+        "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf"
+      ],
+      "event_time": "2026-09-30",
+      "publication_time": "2026-09-30",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The supplied article's opening characterization of 86.25% as a record gross margin can be confused with the actual Q4 result; its later text describes the figure as a forecast."
+    },
+    {
+      "observation": "The Micron financial call was scheduled for September 30 at 4:30 p.m. ET. The earliest independent report located in search metadata was PC Gamer at 10:13:59Z on October 1; the supplied Tom's Hardware article followed at 12:50Z and was captured at 12:52:28Z, before cutoff.",
+      "source_urls": [
+        "https://investors.micron.com/events-and-presentations/event-details/2026/Microns-Fourth-Quarter-2026-Financial-Call/default.aspx",
+        "https://www.pcgamer.com/hardware/memory/micron-ceo-says-itll-be-tougher-to-get-memory-in-the-next-couple-of-years-than-it-is-today-and-keeps-saying-it-over-and-over-again/",
+        "https://www.tomshardware.com/pc-components/dram/micron-projects-tightening-ram-shortages-through-2028-as-it-generates-record-profit-record-86-25-percent-gross-margin-drives-over-usd53-billion-in-quarterly-profit"
+      ],
+      "event_time": "2026-09-30T16:30:00-04:00",
+      "publication_time": "2026-10-01T12:50:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "PC Gamer's timestamp is from search metadata and no dated pre-cutoff page snapshot was obtained; it is the earliest located coverage, not necessarily the earliest public report. Exact posting time of Micron's release and prepared remarks is not available."
+    },
+    {
+      "observation": "A pre-event Tom's Hardware report attributed to Acer CEO Jason Chen a more optimistic PC-price forecast: near-term rises, a plateau in the first half of 2027, and potential declines later in 2027 with Chinese capacity.",
+      "source_urls": [
+        "https://www.tomshardware.com/pc-components/dram/acer-ceo-says-memory-makers-are-hyping-2030-shortage-fears-to-protect-margins-pc-prices-set-to-decline-by-late-2027-cheaper-chinese-capacity-coming-online-delivers-lower-memory-prices"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-21",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This is an Acer executive's forecast as reported by Tom's Hardware, and concerns PC-component pricing rather than a direct measurement of DRAM/NAND industry supply or Micron's committed capacity."
+    }
+  ],
+  "gaps": [
+    "No pre-cutoff full transcript with an original, dated snapshot was verified. The statement that most overall capacity was already sold is available in contemporaneous reporting; Micron's dated prepared remarks more narrowly confirm agreements covering the vast majority of calendar-2027 HBM bit supply and higher year-over-year pricing.",
+    "Exact posting times for Micron's September 30 release and prepared remarks are not shown; only the date and call time are verified.",
+    "The Acer counterpoint is secondary reporting; the original DigiTimes interview or transcript was not independently verified.",
+    "The sources concern memory-industry forecasts and do not establish a specific Intel supplier allocation, order, shipment, or cost impact by cutoff."
+  ],
+  "research_notes": "Cutoff: 2026-10-01T12:55:24.579038Z. Micron's original, September 30 Q4 prepared remarks are the primary source for the new 2027–28 supply outlook; June 24 remarks establish that tightness beyond 2027 was already expected. The earliest independent coverage located was a PC Gamer result timestamped 10:13:59Z on October 1, followed by the supplied Tom's Hardware article at 12:50Z, captured at 12:52:28Z. The latter is within cutoff. Official materials clarify that 86.25% was Q1 guidance, not Q4's actual gross margin. The forecast concerns the memory industry; these sources do not establish a specific Intel order, shipment, or cost effect."
+}

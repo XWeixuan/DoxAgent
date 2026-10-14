@@ -1,0 +1,24 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-10-09T12:09:12.092187Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "Nikkei Asia was identified by contemporaneous relays as the original Apple report, but its page was blocked in search; the original text and exact first-publication time remain unverified.",
+    "The Reuters Apple relay on Euronext displayed 09:32 on October 9 without specifying a time zone; it was not counted as confirmed pre-cutoff evidence.",
+    "The FT page located for the OpenAI report was available only through an October 10 archive capture. Its article body was not used as pre-cutoff evidence; Axios provides the usable contemporaneous detail.",
+    "Search surfaced a Bloomberg report about a possible $70 billion year-end annualized-revenue expectation, but page access failed, so its contents were not relied on.",
+    "No primary Apple or supplier document confirming order changes, named supplier exposure, or a Micron connection was found; no primary OpenAI revenue filing or underlying investor materials were verified."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

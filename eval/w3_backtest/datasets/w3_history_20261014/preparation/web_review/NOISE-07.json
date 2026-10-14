@@ -1,0 +1,292 @@
+{
+  "case_key": "NOISE-07",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-09-23T13:29:45.637581Z",
+  "reviewed_at": "2026-10-13T22:58:32.543963Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 6,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a1376e-5221-7d73-ae34-f8d6b04881c5",
+    "turn_id": "01a1376e-523a-78a3-a765-6ed1f80fffab",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 89856,
+        "inputTokens": 103092,
+        "outputTokens": 17888,
+        "reasoningOutputTokens": 14502,
+        "totalTokens": 120980
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 403712,
+        "inputTokens": 499597,
+        "outputTokens": 26256,
+        "reasoningOutputTokens": 22225,
+        "totalTokens": 525853
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "5be85bdcd5aca65c1c4e8f980a4015795ef31c9696dcfb221e5c7ce29028ca9b",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://www.trefis.com/articles/616321/is-it-too-late-to-buy-micron-stock-after-its-record-memory-run/2026-09-23",
+      "title": "Is It Too Late To Buy Micron Stock After Its Record Memory Run?",
+      "published_at": "2026-09-23T13:01:32Z",
+      "time_precision": "EXACT",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search0"
+      ],
+      "source_call_ids": [
+        "exec-5c914883-e8b0-47e8-9b3e-48fbd9987025"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://investors.micron.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356",
+      "title": "Q3 2026 Earnings Deck — Business Model Transformation and Strategic Customer Agreements",
+      "published_at": "2026-06-24",
+      "time_precision": "DAY",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn2search12",
+        "turn2search6"
+      ],
+      "source_call_ids": [
+        "exec-0cc6f754-290a-4ed4-87c0-7747e2e19147"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://investors.micron.com/static-files/631b1a32-5537-46ae-8f40-82e42fc79dfe",
+      "title": "Micron Fiscal Q3 2026 Earnings Call Prepared Remarks",
+      "published_at": "2026-06-24",
+      "time_precision": "DAY",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search13"
+      ],
+      "source_call_ids": [
+        "exec-5c914883-e8b0-47e8-9b3e-48fbd9987025"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://micron.gcs-web.com/index.php/news-releases/news-release-details/micron-technology-inc-reports-record-results-third-quarter",
+      "title": "Micron Technology, Inc. Reports Record Results for the Third Quarter of Fiscal 2026",
+      "published_at": "2026-06-24",
+      "time_precision": "DAY",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn2search7"
+      ],
+      "source_call_ids": [
+        "exec-0cc6f754-290a-4ed4-87c0-7747e2e19147"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S5",
+      "url": "https://micron.gcs-web.com/news-releases/news-release-details/micron-technology-report-fiscal-fourth-quarter-results-5",
+      "title": "Micron Technology to Report Fiscal Fourth Quarter Results on September 30, 2026",
+      "published_at": "2026-08-26T16:01:00-04:00",
+      "time_precision": "MINUTE",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search11"
+      ],
+      "source_call_ids": [
+        "exec-5c914883-e8b0-47e8-9b3e-48fbd9987025"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S6",
+      "url": "https://www.tomshardware.com/pc-components/dram/micron-inks-long-term-supply-agreements-worth-usd100-billion-says-it-has-no-idea-when-ram-crisis-will-end",
+      "title": "Micron inks long-term supply agreements worth $100 billion — says it has no idea when RAM crisis will end",
+      "published_at": "2026-06-25",
+      "time_precision": "DAY",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0news20"
+      ],
+      "source_call_ids": [
+        "exec-5c914883-e8b0-47e8-9b3e-48fbd9987025"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S7",
+      "url": "https://www.tomshardware.com/pc-components/dram/acer-ceo-says-memory-makers-are-hyping-2030-shortage-fears-to-protect-margins-pc-prices-set-to-decline-by-late-2027-cheaper-chinese-capacity-coming-online-delivers-lower-memory-prices",
+      "title": "Acer CEO says memory makers are hyping 2030 shortage fears to protect margins — PC prices set to decline by late 2027",
+      "published_at": "2026-09-21",
+      "time_precision": "DAY",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn2news22"
+      ],
+      "source_call_ids": [
+        "exec-0cc6f754-290a-4ed4-87c0-7747e2e19147"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S8",
+      "url": "https://www.investing.com/news/stock-market-news/nvidia-forecasts-quarterly-revenue-above-estimates-4877887",
+      "title": "Nvidia forecasts 70% sales growth next year, signals AI spending boom has years left to run",
+      "published_at": "2026-08-26 04:28 PM (displayed timezone not specified)",
+      "time_precision": "MINUTE",
+      "updated_at": "2026-08-27 02:48 AM (displayed timezone not specified)",
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UPDATED",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn4search1"
+      ],
+      "source_call_ids": [
+        "exec-cb407a04-04e4-4c6c-9bf3-066929a8c7bd"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "The Trefis article was published and captured before cutoff. It frames Micron’s recent performance, valuation, cash flow, SCA terms, and upcoming results through an analytical lens; it is not a new Micron disclosure.",
+      "source_urls": [
+        "https://www.trefis.com/articles/616321/is-it-too-late-to-buy-micron-stock-after-its-record-memory-run/2026-09-23"
+      ],
+      "event_time": "2026-09-23T13:01:32Z",
+      "publication_time": "2026-09-23T13:01:32Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The article’s return, valuation, and cash-flow calculations were not independently reconciled here. Its contract claims should be read against Micron’s earlier disclosures."
+    },
+    {
+      "observation": "Micron had publicly described the SCA structure on June 24: total SCA coverage was expected to reach about half or more of revenue, while fixed-price or near-current-Q2-ceiling agreements were expected to represent about 40% once planned deals were executed. Typical terms were described as five years through calendar 2030.",
+      "source_urls": [
+        "https://investors.micron.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356",
+        "https://investors.micron.com/static-files/631b1a32-5537-46ae-8f40-82e42fc79dfe"
+      ],
+      "event_time": "2026-06-24",
+      "publication_time": "2026-06-24",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The 40% figure is conditional and concerns fixed-price or ceiling terms, not all SCA revenue. Micron also described floors as supporting margins at the low end; these were company expectations, not realized outcomes."
+    },
+    {
+      "observation": "Independent coverage on June 25 repeated the agreement terms and reported Micron’s stated minimum-price revenue and customer deposit commitments. The key SCA facts in the September 23 Trefis article therefore were traceable to earlier company disclosures and coverage.",
+      "source_urls": [
+        "https://www.tomshardware.com/pc-components/dram/micron-inks-long-term-supply-agreements-worth-usd100-billion-says-it-has-no-idea-when-ram-crisis-will-end",
+        "https://investors.micron.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356"
+      ],
+      "event_time": "2026-06-25",
+      "publication_time": "2026-06-25",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The independent report largely relays Micron’s own statements; it does not establish subsequent cash receipt, shipments, or revenue recognition."
+    },
+    {
+      "observation": "Micron’s June 24 Q3 release supplied a prior baseline: $41.456 billion in Q3 revenue, $50.0 billion ± $1.0 billion in Q4 revenue guidance, and HBM4 high-volume shipments to a lead customer with samples to other end customers.",
+      "source_urls": [
+        "https://micron.gcs-web.com/index.php/news-releases/news-release-details/micron-technology-inc-reports-record-results-third-quarter"
+      ],
+      "event_time": "2026-06-24",
+      "publication_time": "2026-06-24",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "Guidance and product-status statements were forward-looking/company-reported; they do not establish the later Q4 result."
+    },
+    {
+      "observation": "Micron announced on August 26 that its Q4 earnings call was scheduled for September 30, confirming the date cited in Trefis. The call itself was after the evidence cutoff.",
+      "source_urls": [
+        "https://micron.gcs-web.com/news-releases/news-release-details/micron-technology-report-fiscal-fourth-quarter-results-5"
+      ],
+      "event_time": "2026-08-26",
+      "publication_time": "2026-08-26T16:01:00-04:00",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "Only the schedule announcement is usable here; no September 30 results or subsequent reaction are included."
+    },
+    {
+      "observation": "Acer CEO Jason Chen’s comments, reported before cutoff, challenged the expectation of a prolonged broad memory shortage: he described supply as ample outside high-end DDR5 and pointed to Chinese capacity as a potential source of price pressure, with lower PC prices projected for late 2027.",
+      "source_urls": [
+        "https://www.tomshardware.com/pc-components/dram/acer-ceo-says-memory-makers-are-hyping-2030-shortage-fears-to-protect-margins-pc-prices-set-to-decline-by-late-2027-cheaper-chinese-capacity-coming-online-delivers-lower-memory-prices"
+      ],
+      "event_time": "2026-09-20",
+      "publication_time": "2026-09-21",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "These are attributed Acer forecasts and comments, relayed through DigiTimes coverage; they do not quantify Micron’s supply, AI-memory demand, or SCA performance."
+    },
+    {
+      "observation": "By August 26, Reuters reported Nvidia’s forecast of 70% growth in its next fiscal year while noting memory-component shortages constrained expansion. This was concurrent evidence of strong AI demand alongside supply constraints.",
+      "source_urls": [
+        "https://www.investing.com/news/stock-market-news/nvidia-forecasts-quarterly-revenue-above-estimates-4877887"
+      ],
+      "event_time": "2026-08-26",
+      "publication_time": "2026-08-26 04:28 PM (displayed timezone not specified)",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "Nvidia’s outlook is not a Micron-specific demand forecast, and the article also records constraints on Nvidia’s ability to expand."
+    }
+  ],
+  "gaps": [
+    "The Trefis article’s valuation, return, and cash-flow calculations were not independently recomputed; the direct page open timed out, so the supplied pre-cutoff capture and matching live search result were used.",
+    "Micron’s approximately 40% fixed/ceiling revenue figure was conditional on completing planned SCAs; no pre-cutoff evidence here establishes that all planned agreements were executed or that the expected mix had been realized.",
+    "No evidence in this collection establishes actual SCA cash receipts, shipments, revenue recognition, or the September 30 Q4 results by the cutoff.",
+    "The DigiTimes material underlying the Acer report is not fully accessible in the open page; the usable counterpoint is the accessible secondary report and its attributed description.",
+    "No post-cutoff market reaction, later price data, or later coverage was used."
+  ],
+  "research_notes": "Six live Web Search calls were used. The subject article was captured in the supplied context before the cutoff; its SCA terms were already present in Micron’s June 24 materials and in June 25 independent coverage. The Q4 results date was announced before cutoff, but the scheduled September 30 call was after it. Later results, market reactions, prices, and post-cutoff coverage are not used."
+}

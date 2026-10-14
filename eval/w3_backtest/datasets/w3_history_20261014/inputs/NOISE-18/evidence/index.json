@@ -1,0 +1,22 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-10-05T13:46:44.129567Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "No independent contemporaneous editorial report was located in the focused search. Yahoo and other surfaced copies reproduce the press release; the official report-publisher catalog is not an independent news account.",
+    "The underlying report's exact first-publication date and as-of-cutoff catalog text remain unverified because the current distributor and publisher pages conflict on publication month and lack dated pre-cutoff snapshots.",
+    "The public release does not provide enough methodology or source detail to independently validate the forecast assumptions; the full underlying report was not reviewed."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

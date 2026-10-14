@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from datetime import UTC, timedelta
+from datetime import UTC, datetime, timedelta
 
 from .journal import encode
 from .message_pin import active_states, message_content, pin_snapshot
@@ -287,7 +287,8 @@ def trading_context(case, journal=None):
         runtime_mode=case.runtime_mode,
         semantic_day=case.trading_date.isoformat(),
         intent_expires_at=expires_at(case.trading_date).isoformat()
-        if case.runtime_mode != "CLOSED" else None,
+        if case.runtime_mode != "CLOSED"
+        else None,
         output_kind="CANDIDATE" if case.runtime_mode == "CLOSED" else "TRADE_INTENT",
         holding_exit_at=None,
         exit_before_regular_close_minutes=None,
@@ -301,9 +302,13 @@ def trading_context(case, journal=None):
             exists = db.execute(
                 "SELECT 1 FROM sqlite_master WHERE type='table' AND name='te_profiles'"
             ).fetchone()
-            row = db.execute(
-                "SELECT payload FROM te_profiles WHERE revision=?", (binding["revision"],)
-            ).fetchone() if binding and exists else None
+            row = (
+                db.execute(
+                    "SELECT payload FROM te_profiles WHERE revision=?", (binding["revision"],)
+                ).fetchone()
+                if binding and exists
+                else None
+            )
         if row:
             from doxagent.trade_execution.schema import ExecutionProfile
             from doxagent.trade_execution.sessions import Sessions
@@ -311,9 +316,17 @@ def trading_context(case, journal=None):
             offset = ExecutionProfile.model_validate_json(row[0]).strategy.exit_offset_minutes
             value["exit_before_regular_close_minutes"] = offset
             if case.runtime_mode != "CLOSED":
-                value["holding_exit_at"] = Sessions(journal).exit_at(
-                    case.source.message_bus_event_time, offset
-                ).isoformat()
+                cutoff = case.frozen_inputs.get("w3_replay", {}).get("cutoff_at")
+                value["holding_exit_at"] = (
+                    Sessions(journal)
+                    .exit_at(
+                        datetime.fromisoformat(cutoff)
+                        if cutoff
+                        else case.source.message_bus_event_time,
+                        offset,
+                    )
+                    .isoformat()
+                )
     return value
 
 
@@ -326,6 +339,11 @@ def build_case_payload(case, context, *, events, history, labels, state, journal
     policies = [
         p.model_dump(mode="json") for p in context.policy_set.policies if p.policy_id in wanted
     ]
+    replay = case.frozen_inputs.get("w3_replay", {})
+    if replay.get("policy_execution_view"):
+        policies = [
+            p for p in replay["policy_execution_view"]["policies"] if p["policy_id"] in wanted
+        ]
     usage = []
     for row in case.frozen_inputs.get("policy_usage", []):
         usage.append(
@@ -344,9 +362,9 @@ def build_case_payload(case, context, *, events, history, labels, state, journal
         trading_context=trading_context(case, journal),
         ibkr_history=dict(
             # Separate read-only API clients for concurrently evaluated cases.
-            client_id=100_000_000 + int.from_bytes(
-                hashlib.sha256(case.case_id.encode()).digest()[:4], "big"
-            ) % 1_000_000_000,
+            client_id=100_000_000
+            + int.from_bytes(hashlib.sha256(case.case_id.encode()).digest()[:4], "big")
+            % 1_000_000_000,
             end_datetime=case.source.message_bus_event_time.astimezone(UTC).strftime(
                 "%Y%m%d %H:%M:%S UTC"
             ),
@@ -370,4 +388,9 @@ def build_case_payload(case, context, *, events, history, labels, state, journal
 
         hit, related = alignment_flags(case.w2_final, case.w2_alignment)
         payload["alignment"] = dict(hit_has_new_fact=hit, related_has_new_fact=related)
+    if replay:
+        payload["cutoff_at"] = replay["cutoff_at"]
+        payload.pop("ibkr_history", None)
+        if replay.get("trading_context"):
+            payload["trading_context"].update(replay["trading_context"])
     return payload

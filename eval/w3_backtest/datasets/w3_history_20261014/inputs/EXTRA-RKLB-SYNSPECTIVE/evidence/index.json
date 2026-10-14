@@ -1,0 +1,23 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-30T23:02:43.099701Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "No independent, contract-specific account with a publication time demonstrably at or before the cutoff was verified; the independent coverage found is pre-announcement operational context.",
+    "The contract’s value and remaining terms were not disclosed in the primary release, so pricing, payment schedule, cancellation provisions, and other economics remain unknown.",
+    "The focused source set does not establish actual execution of the 2028–2031 launch schedule or independently validate the issuer’s backlog total.",
+    "A comprehensive screen of all separate company and industry events public immediately around the cutoff was not completed beyond the identified recent Electron/Synspective launch updates."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

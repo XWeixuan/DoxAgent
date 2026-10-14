@@ -1,0 +1,22 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-22T15:38:58.981441Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "Exact publication times and same-day ordering for the September 21 Intel, Google, and ASUS announcements were not established.",
+    "The selected pre-cutoff materials do not establish actual device shipments, sales-through, unit volumes, production purchase commitments, repeat orders, or customer-level demand.",
+    "Intel's stated October 5 availability date is after the evidence cutoff; actual availability cannot be inferred from that announcement."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

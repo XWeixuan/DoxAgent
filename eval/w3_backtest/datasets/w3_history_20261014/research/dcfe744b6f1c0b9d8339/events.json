@@ -1,0 +1,423 @@
+{
+  "ticker": "INTC",
+  "version": 17,
+  "requested_event_ids": [
+    "E16"
+  ],
+  "events": [
+    {
+      "event_id": "E16",
+      "ticker": "INTC",
+      "title": "Intel reported Q2 FY2026 results and issued Q3 guidance",
+      "event_type": "EARNINGS_RELEASE",
+      "occurred_at": "2026-07-23",
+      "occurrence_time_precision": "DAY",
+      "status": "ACTIVE",
+      "canonical_summary": "Intel reported Q2 FY2026 operating results, including strong DCAI and server metrics, Foundry revenue and loss, margins, cash intensity, and formal Q3 guidance.",
+      "known_event_summary": "On 2026-07-23, Intel reported Q2 FY2026 results and issued Q3 guidance.",
+      "is_important": true,
+      "include_in_reference_view": true,
+      "related_event_ids": [
+        "E17"
+      ],
+      "supersedes_event_id": null,
+      "derived_from_event_ids": [],
+      "facts": [
+        {
+          "fact_id": "F97",
+          "proposition": "Intel's average selling prices rose by 48%.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "Q2_2026",
+          "fact_occurred_at": "2026-07-23",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F98",
+          "proposition": "Intel reported adjusted EPS of $0.42 for Q2 FY2026, versus a $0.10 loss in the comparable prior period.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "Q2_2026",
+          "fact_occurred_at": "2026-07-23",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F99",
+          "proposition": "Intel reported Q2 revenue of $16.1 billion, up 25% year over year.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "Q2_2026",
+          "fact_occurred_at": "2026-07-23",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F100",
+          "proposition": "Intel Foundry reported $5.8 billion of Q2 revenue, the majority from internal Intel orders.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "Q2_2026",
+          "fact_occurred_at": "2026-07-23",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F101",
+          "proposition": "Intel recorded a non-cash accounting charge tied to shares owed to the U.S. government under the CHIPS Act.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "SAME",
+          "fact_occurred_at": "2026-07-23",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F102",
+          "proposition": "Intel guided its 2026 capital spending to more than $20 billion.",
+          "assertion_state": "GUIDANCE",
+          "subject_time": "FY2026",
+          "fact_occurred_at": "2026-07-23",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F103",
+          "proposition": "Intel's non-GAAP gross margin reached 41.8% in Q2 FY2026, compared with 41% in Q1 FY2026 and 29.7% in the comparable prior-year period.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "Q2_2026; comparison Q1_2026 and Q2_2025",
+          "fact_occurred_at": "2026-07-23",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F104",
+          "proposition": "Only $293 million of Intel Foundry's Q2 revenue came from external customers.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "Q2_2026",
+          "fact_occurred_at": "2026-07-23",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F105",
+          "proposition": "Intel's data center group achieved an operating margin of 40% in Q2 2026.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "Q2_2026",
+          "fact_occurred_at": "2026-07-23",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F106",
+          "proposition": "Intel's client group achieved an operating margin of 26% in Q2 2026.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "Q2_2026",
+          "fact_occurred_at": "2026-07-23",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F107",
+          "proposition": "Intel's Data Center and AI group reported Q2 revenue of $6.3 billion, up 59% year over year.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "Q2_2026",
+          "fact_occurred_at": "2026-07-23",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F108",
+          "proposition": "Intel Foundry reported a roughly $2.1 billion Q2 operating loss (reported as $2.089 billion), $348 million lower than the prior quarter.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "Q2_2026",
+          "fact_occurred_at": "2026-07-23",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F109",
+          "proposition": "Intel guided Q3 FY2026 revenue to $15.8 billion to $16.8 billion.",
+          "assertion_state": "GUIDANCE",
+          "subject_time": "Q3_2026",
+          "fact_occurred_at": "2026-07-23",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F110",
+          "proposition": "Intel's AI-driven businesses grew by more than 70% year-over-year in fiscal Q2 2026.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "Q2_2026",
+          "fact_occurred_at": "2026-07-23",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F111",
+          "proposition": "Intel's client segment generated $8.9 billion in revenue in Q2 2026.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "Q2_2026",
+          "fact_occurred_at": "2026-07-23",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F112",
+          "proposition": "Intel's AI-driven businesses accounted for approximately 70% of Intel's total revenue.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "Q2_2026",
+          "fact_occurred_at": "2026-07-23",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F113",
+          "proposition": "Intel's data center and AI segment grew 22% in the first quarter of 2026.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "Q1_2026",
+          "fact_occurred_at": "2026-07-23",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F114",
+          "proposition": "Intel's server volumes increased by 9%.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "Q2_2026",
+          "fact_occurred_at": "2026-07-23",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F115",
+          "proposition": "Intel management stated that Q2 2026 year-over-year server growth was the strongest on record.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "Q2_2026",
+          "fact_occurred_at": "2026-07-23",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F116",
+          "proposition": "Intel guided Q3 FY2026 non-GAAP gross margin to approximately 42%.",
+          "assertion_state": "GUIDANCE",
+          "subject_time": "Q3_2026",
+          "fact_occurred_at": "2026-07-23",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F117",
+          "proposition": "Intel's client computing and physical AI segment grew 13% in the second quarter of 2026.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "Q2_2026",
+          "fact_occurred_at": "2026-07-23",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F118",
+          "proposition": "Intel reported a net loss of $11.3 billion over the trailing twelve months.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "TTM",
+          "fact_occurred_at": "2026-07-23",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F119",
+          "proposition": "Intel ended fiscal Q2 2026 with a net loss of $10.8 billion.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "Q2_2026",
+          "fact_occurred_at": "2026-07-23",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F120",
+          "proposition": "Intel reported a 12% operating margin for the quarter ended June 27, 2026.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "2026-04-01..2026-06-27",
+          "fact_occurred_at": "2026-07-23",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F121",
+          "proposition": "Intel's revenue growth was 7% in the first quarter of 2026.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "Q1_2026",
+          "fact_occurred_at": "2026-07-23",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F122",
+          "proposition": "Intel management expects the client business to decline year-over-year.",
+          "assertion_state": "EXPECTED",
+          "subject_time": "year over year",
+          "fact_occurred_at": "2026-07-23",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F123",
+          "proposition": "Intel reported trailing twelve-month revenue of $57.03 billion, representing a 7.5% growth.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "TTM",
+          "fact_occurred_at": "2026-07-23",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F124",
+          "proposition": "Intel's revenue growth was 3% in the third quarter of 2025.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "Q3_2025",
+          "fact_occurred_at": "2026-07-23",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F125",
+          "proposition": "Intel achieved an adjusted operating profit margin of 17.2% in Q2 FY2026, versus an adjusted operating loss margin of 3.9% in Q2 FY2025.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "Q2_2026; comparison Q2_2025",
+          "fact_occurred_at": "2026-07-23",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F126",
+          "proposition": "Intel management expects PC consumption to decline by low double digits in 2026 due to rising memory prices.",
+          "assertion_state": "EXPECTED",
+          "subject_time": "FY2026",
+          "fact_occurred_at": "2026-09-16",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F127",
+          "proposition": "Intel's data center revenue grew 22% year over year in Q1 2026.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "FY2026-Q1",
+          "fact_occurred_at": "2026-09-16",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F128",
+          "proposition": "Intel plans capital spending exceeding $20 billion for 2026.",
+          "assertion_state": "PLAN",
+          "subject_time": "FY2026",
+          "fact_occurred_at": "2026-09-11",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F129",
+          "proposition": "Intel's server CPU demand outlook has improved since April 2026.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "fact_occurred_at": "2026-09-16",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F130",
+          "proposition": "Intel management expected 2026 capital spending to be flat compared to 2025.",
+          "assertion_state": "EXPECTED",
+          "subject_time": "FY2026; comparison FY2025",
+          "fact_occurred_at": "2026-09-16",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F131",
+          "proposition": "Intel's server business growth in Q2 2026 was the strongest on record.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "FY2026-Q2",
+          "fact_occurred_at": "2026-09-16",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F132",
+          "proposition": "Intel management guided gross margin to remain flat at 42% (non-GAAP) from Q2 2026 to Q3 2026.",
+          "assertion_state": "EXPECTED",
+          "subject_time": "2026-04-01..2026-09-30",
+          "fact_occurred_at": "2026-09-16",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F133",
+          "proposition": "Intel guided 2026 capital spending to exceed $20 billion.",
+          "assertion_state": "EXPECTED",
+          "subject_time": "FY2026",
+          "fact_occurred_at": "2026-09-16",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F134",
+          "proposition": "Xeon 6 and 18A-based Xeon 6+ platforms positioned Intel to capture growing demand.",
+          "assertion_state": "EXPECTED",
+          "subject_time": null,
+          "fact_occurred_at": "2026-09-16",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F135",
+          "proposition": "Intel's Xeon 6 product was ramping faster than most other products in Intel's history.",
+          "assertion_state": "ONGOING",
+          "subject_time": null,
+          "fact_occurred_at": "2026-09-09",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F136",
+          "proposition": "Intel guided that capital spending in 2027 would run significantly above 2026 levels.",
+          "assertion_state": "EXPECTED",
+          "subject_time": "2027",
+          "fact_occurred_at": "2026-09-16",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F137",
+          "proposition": "Intel management expected capital spending in 2027 to be significantly higher than in 2026.",
+          "assertion_state": "EXPECTED",
+          "subject_time": "2027",
+          "fact_occurred_at": "2026-09-11",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F138",
+          "proposition": "Intel's trailing-twelve-month revenue was approximately $57 billion.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "TTM",
+          "fact_occurred_at": "2026-09-16",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F139",
+          "proposition": "Intel’s second-quarter results indicated improving fundamentals.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "FY2026-Q2",
+          "fact_occurred_at": "2026-09-16",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F140",
+          "proposition": "Intel’s trailing-twelve-month operating margin was 7.6%, its highest in three years and above the three-year average of -2.0%.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "TTM",
+          "fact_occurred_at": "2026-09-09",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F141",
+          "proposition": "Intel Foundry's operating losses were $3.2 billion in Q2 FY2025",
+          "assertion_state": "ACTUAL",
+          "subject_time": "FY2025-Q2",
+          "fact_occurred_at": "2026-09-16",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F142",
+          "proposition": "Intel Foundry booked $5.8 billion of revenue in Q2 FY2026.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "FY2026-Q2",
+          "fact_occurred_at": "2026-09-16",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F143",
+          "proposition": "Intel Foundry's operating losses were $2.4 billion in Q1 FY2026.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "FY2026-Q1",
+          "fact_occurred_at": "2026-09-16",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F144",
+          "proposition": "Only $293 million of Intel Foundry's Q2 FY2026 revenue came from customers other than Intel.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "FY2026-Q2",
+          "fact_occurred_at": "2026-09-16",
+          "fact_occurrence_time_precision": "DAY"
+        },
+        {
+          "fact_id": "F145",
+          "proposition": "Intel Foundry's operating losses were $2.1 billion in Q2 FY2026.",
+          "assertion_state": "ACTUAL",
+          "subject_time": "FY2026-Q2",
+          "fact_occurred_at": "2026-09-16",
+          "fact_occurrence_time_precision": "DAY"
+        }
+      ],
+      "price_analysis": null
+    }
+  ],
+  "missing_event_ids": []
+}

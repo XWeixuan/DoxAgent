@@ -1,0 +1,1609 @@
+{
+  "recent_trade_intents": [
+    {
+      "message": {
+        "title": "JPMorgan Says Micron's Rally May Not Be Over",
+        "body": "This article first appeared on GuruFocus.\n\nMicron Technology (NASDAQ:MU) heads into Wednesday's earnings report after a roughly 278% gain this year, but JPMorgan analyst Harlan Sur still sees room for the memory-chip maker to surprise Wall Street and raise its outlook again.\n\nMicron shares gained about 2.5% Tuesday as investors positioned for the fiscal fourth-quarter report.\n\nWe see the setup as constructive with multiple beat-and-raise levers still in play, Sur said.\n\nWall Street currently expects roughly $51.4 billion in revenue, an 86.2% gross margin and earnings of $31.73 per share. Sur expects Micron to exceed those forecasts.\n\nOne of the most important parts of his thesis is memory pricing.\n\nManagement has previously discussed moderating price increases, but Sur does not interpret that as weakening demand.\n\nIn our view, moderation here reflects a strategic decision to preserve customer relationships and cement long-term SCA commitments rather than any demandside softening, he said.\n\nThose supply commitment agreements could become increasingly important for investors.\n\nSur estimates SCAs may now cover more than 35% of Micron's forward bit production and believes contracted volumes could already exceed 50%.\n\nWe think the market underappreciates the pace at which SCA coverage is compounding, Sur said.\n\nThat could give Micron greater revenue visibility and reduce some of the cyclicality historically associated with memory markets.\n\nSur also expects management to raise its November-quarter outlook, pointing to stronger customer requirements, tighter memory availability expected during 2027 and continued progress with Micron's HBM4 ramp.\n\nHe believes HBM supply could remain insufficient through 2028.\n\nInvestor Takeaway\n\nCapital returns could provide another catalyst.\n\nMicron reaches the second anniversary of its definitive CHIPS Act agreements in December, after which management plans to increase shareholder returns and ultimately return 100% of excess cash, primarily through buybacks.\n\nSur called that a substantial value-unlock lever that has yet to be fully priced in.\n\nJPMorgan (NYSE:JPM) maintains an Overweight rating and $1,540 price target, implying roughly 43% upside from the level cited Tuesday.\n\nAfter Micron's enormous 2026 rally, Wednesday's report will need to show that stronger pricing, HBM demand and longer-term contracts can support durable earnings rather than simply another cyclical peak.",
+        "source_name": "yahoo",
+        "published_at": "2026-09-29T19:21:32Z"
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": [
+          "E231",
+          "E251"
+        ]
+      },
+      "w2": {
+        "policy_hit": false,
+        "policy_related": false,
+        "policy_ids": [],
+        "hit_condition_ids": [],
+        "matched_condition_ids": []
+      },
+      "w3_decision": {
+        "novelty": {
+          "reason": "The prior record already covered JPMorgan's constructive view, Overweight rating, Micron's existing SCA framework, FY26 Q4 guidance, HBM4 progress, and the post-December buyback timing. New information is the specific SCA coverage estimates, the interpretation of moderating price increases, the expected November-quarter outlook raise, and the forecast of HBM undersupply through 2028.",
+          "reference_ids": [
+            "E231",
+            "E251",
+            "E9",
+            "E1",
+            "E65",
+            "E75"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "No policy criterion is met. The message contains analyst estimates and interpretations, not formal company or customer disclosures of the continuous operational, contractual, qualification, supply, or financial conditions required by the policies."
+        },
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "JPMorgan's Harlan Sur expects Micron to exceed already elevated consensus of roughly $51.4 billion revenue, 86.2% gross margin, and $31.73 EPS, while estimating SCA coverage above 35% of forward bit production and contracted volumes above 50%. He also interprets moderating price increases as relationship-preserving SCA strategy rather than weakening demand, expects a November-quarter outlook raise, and forecasts HBM undersupply through 2028. This raises the expected duration, certainty, and visibility of revenue, pricing, margin, and cash-return support.",
+          "prior_expectation": "The pre-event baseline was Micron FY26 Q4 management guidance of approximately $49-$51 billion revenue, about 86% GAAP gross margin, and $29.73-$31.73 GAAP EPS; existing SCAs covered about 20% of DRAM bits and 33% of NAND bits with at least half of eventual revenue expected when fully executed, while HBM4 progress and contract fulfillment remained only partly verified. JPMorgan was already constructive but had not established these more specific coverage estimates.",
+          "reason": "TRADE/LONG: the specific contract-coverage and multi-year HBM-tightness estimates are a positive incremental signal beyond the already bullish baseline. Greater contracted volume visibility and persistent HBM scarcity can support MU revenue, high-value mix, gross margin, and EPS durability. Analyst estimates are not formal company disclosures and SCA price caps and earnings-event risk are offsets, but the direct MU transmission is sufficiently material for a long bias.",
+          "trade": true
+        }
+      },
+      "direction": "LONG",
+      "initiated_at": "2026-09-29T19:47:34.510542+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    },
+    {
+      "message": {
+        "title": "Anthropic Files for $2T IPO with $518B Multi Year AI Spend",
+        "body": "← Back to live feed · 1 stories across 1 day\nMonday, Sep 28, 2026\n1 story1 Anthropic Files for $2T IPO with $518B Multi Year AI Spend AI Sep 28, 7:16 PM EDT 65/42 \n Anthropic has released its initial public offering prospectus and clarified that its planned expenditure of $518 billion on cloud and infrastructure will span multiple years. This detail corrects an earlier report stating the costs would occur within a single year, as the AI lab moves toward a listing that could value the company above $2 trillion. The public filing provides a first look at the capital requirements of a frontier AI lab competing with rivals such as OpenAI, Google, Meta and xAI.\nFinancials for 2025 show revenue grew 1,088% to $4.59 billion, but the company posted a GAAP net loss of $41.97 billion. This figure includes a $34 billion non cash accounting charge for the rising value of financing instruments, while the operating loss widened to $8.06 billion. Anthropic spent $7.33 billion on compute and infrastructure and ended 2025 with $20.28 billion in cash. The company warned that 24% of sales came from its two largest customers who are not locked into long term contracts, and noted risks involving the behavior of autonomous AI. The IPO follows the November US midterm elections.",
+        "source_name": "huggingnews.com",
+        "published_at": "2026-09-29T01:05:06.301000Z"
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": [
+          "E180",
+          "E181"
+        ]
+      },
+      "w2": {
+        "policy_hit": false,
+        "policy_related": false,
+        "policy_ids": [],
+        "hit_condition_ids": [],
+        "matched_condition_ids": []
+      },
+      "w3_decision": {
+        "novelty": {
+          "reason": "The Reference View covers Anthropic's confidential IPO filing, the expectation of an official filing, reported contracted AI capacity above $180 billion, and a separate cloud-capacity agreement, but not the completed public prospectus, its $518 billion multi-year infrastructure plan, or the detailed FY2025 financial and customer-concentration disclosures.",
+          "reference_ids": [
+            "E180",
+            "E181",
+            "E1480",
+            "E1000"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "No existing Policy criterion is met. The filing provides no Micron-specific order, product volume, price, qualification, delivery, share, capacity, or financial metric; it is an uncovered change in the timing and certainty of a broad AI-infrastructure demand signal."
+        },
+        "expert_trade": {
+          "direction": "SHORT",
+          "evaluated": true,
+          "expectation_delta": "The prospectus increases the certainty of Anthropic's total planned commitment but explicitly spreads the $518 billion across multiple years, materially reducing the near-term annualized compute deployment implied by the earlier report. The filing also reveals customer concentration and financing risks, requiring a downward revision to near-term accelerator, HBM, server-DRAM, and SSD demand expectations relative to the one-year interpretation.",
+          "prior_expectation": "Immediately before this filing, the newly circulated report implied that Anthropic would incur approximately $518 billion of cloud and compute obligations within one year. More broadly, the baseline expected strong AI infrastructure demand and an Anthropic-Micron architecture and supply relationship, but no confirmed Micron volumes or prices.",
+          "reason": "The timing correction is a material negative surprise for MU's near-term AI-memory demand assumptions. Anthropic's compute obligations transmit through accelerator deployment to HBM, server DRAM, and storage, and Anthropic is already a named Micron architecture and supply collaborator. The formal filing and large multi-year total are offsets, and no MU order is disclosed, but the immediate annualization reset supports a cautious SHORT.",
+          "trade": true
+        }
+      },
+      "direction": "SHORT",
+      "initiated_at": "2026-09-29T01:15:01.109608+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    },
+    {
+      "message": {
+        "title": "OpenAI Annual Revenue Hits Nearly $70B Following Enterprise Surge",
+        "body": "← Back to live feed · 1 stories across 1 day\nTuesday, Sep 29, 2026\n1 story1 NEWOpenAI Annual Revenue Hits Nearly $70B Following Enterprise Surge AI Sep 29, 10:20 AM EDT 25/18 \n The creator of ChatGPT saw its business-facing sales grow by more than 100% since July to accelerate AI adoption among corporate clients. This enterprise surge helped push OpenAI's annual recurring revenue to nearly $70 billion, an increase of more than 70% since the start of the third quarter, Axios reported. The company also added more revenue from consumer subscriptions in Q3 alone than it did throughout all of 2025.\nThe revenue expansion coincides with OpenAI and rival Anthropic preparing for potential initial public offerings. Current data suggest that previous estimates of the startup's recurring revenue, including a $40 billion figure reported by Bloomberg, significantly understated its current run rate.",
+        "source_name": "huggingnews.com",
+        "published_at": "2026-09-29T14:43:04.893000Z"
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": [
+          "E52"
+        ]
+      },
+      "w2": {
+        "policy_hit": false,
+        "policy_related": false,
+        "policy_ids": [],
+        "hit_condition_ids": [],
+        "matched_condition_ids": []
+      },
+      "w3_decision": {
+        "novelty": {
+          "reason": "E52 recorded OpenAI's annualized revenue at approximately $40 billion, but the current report adds a run rate near $70 billion, more than 100% enterprise-sales growth since July, and stronger Q3 consumer monetization.",
+          "reference_ids": [
+            "E52"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "No Policy applies. The report does not disclose Micron-specific memory shipments, pricing, qualification, allocation, contracts, capacity, or financial results."
+        },
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "OpenAI's reported run rate near $70 billion, up more than 70% since the start of Q3, and enterprise sales more than doubling since July materially raise the expected scale and pace of AI workload adoption versus the prior $40 billion baseline. This increases expected training and inference compute demand and the duration of server-memory tightness.",
+          "prior_expectation": "The pre-event baseline included OpenAI annualized revenue of approximately $40 billion and strong but still developing AI-infrastructure demand, with Micron's CMBU/CDBU exposure dependent on continued workload growth and tight server-memory supply.",
+          "reason": "LONG: the revenue acceleration is a substantial positive surprise in a major AI demand source. The path from enterprise AI adoption to compute deployment, HBM/DRAM/NAND demand, and Micron's data-center businesses is clear enough for an actionable directional edge despite the absence of Micron-specific order disclosure.",
+          "trade": true
+        }
+      },
+      "direction": "LONG",
+      "initiated_at": "2026-09-29T14:47:31.358303+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    },
+    {
+      "message": {
+        "title": "Nvidia Discloses Anthropic Contract Value Above $180B",
+        "body": "Trending \n ← Back to live feed · 1 stories across 1 day\nMonday, Sep 28, 2026\n1 story1 NEWNvidia Discloses Anthropic Contract Value Above $180B AI Sep 28, 7:42 AM EDT 5/5 \n 1\n NEWNvidia Discloses Anthropic Contract Value Above $180B\n AI Sep 28, 7:42 AM EDT 5/5\n Infrastructure commitments for generative AI have reached a new order of magnitude in recent commercial disclosures. The reported contracted value for AI lab Anthropic exceeds $180 billion, according to data attributed to Nvidia, signaling a massive allocation of computing power for the startup.\nThe figures emerged on Sept. 28 via multiple market news sources. This disclosure highlights the scale of the relationship between the primary provider of AI chips and the developers of foundational models who require vast hardware fleets to train their systems.",
+        "source_name": "huggingnews.com",
+        "published_at": "2026-09-28T11:52:08.852000Z"
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": []
+      },
+      "w2": {
+        "policy_hit": false,
+        "policy_related": false,
+        "policy_ids": [],
+        "hit_condition_ids": [],
+        "matched_condition_ids": []
+      },
+      "w3_decision": {
+        "novelty": {
+          "reason": "消息新增了据Nvidia数据披露的Anthropic合同价值超过1800亿美元这一量化、命名客户的AI计算基础设施承诺。Reference View已覆盖Anthropic收入增长、广义AI基础设施承诺和Akamai向Anthropic提供约116亿美元云容量的协议，但没有该Nvidia-Anthropic合同规模。",
+          "reference_ids": [
+            "E52",
+            "E96",
+            "E1181"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "消息没有披露Micron自身的HBM/DRAM/NAND合同、产品规格、份额、价格、交付、资格或财务数据，因此未满足现行Policy的具体触发条件。"
+        },
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "据报道的超过1800亿美元Nvidia-Anthropic合同价值显著上调了Anthropic计算部署的规模和持续时间预期，提升AI服务器机群扩张以及HBM、服务器DRAM和数据中心SSD需求超过一般AI增长基线的概率。由于Anthropic已与Micron开展内存/存储协作，该需求增量也提高了Micron获得部分价值的概率，尽管不会立即改变FY26 Q4已锁定的收入预期。",
+          "prior_expectation": "事件前基线已预期Anthropic和其他基础模型公司的增长将支持AI数据中心、HBM、服务器DRAM和SSD需求；Micron与Anthropic已有AI内存/存储架构及供需协作，但客户数量、价格和采购规模未公开。市场没有一个已量化的、超过1800亿美元的Anthropic计算承诺作为需求锚点。",
+          "reason": "这是规模极大的命名AI客户计算承诺，具备从Anthropic合同到Nvidia计算硬件部署、再到AI内存需求和Micron既有客户协作的清晰传导，且潜在持续期和Materiality显著。合同的确切时间、内存BOM及Micron份额仍未披露，来源也属于据报道，但这些不确定性降低强度而不消除方向性；未覆盖Policy不妨碍该未覆盖需求信号支持LONG。",
+          "trade": true
+        }
+      },
+      "direction": "LONG",
+      "initiated_at": "2026-09-28T12:02:21.353889+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    },
+    {
+      "message": {
+        "title": "HBM Supply Constraints Persist, 2027 Price Outlook Revised Upward with Blended ASP Forecast to Rise 121% YoY, Says TrendForce",
+        "body": "TrendForce’s latest research reveals that continued expansion in AI server demand is keeping HBM and conventional DRAM in competition for limited advanced-process and wafer capacity. Meanwhile, yields and output for next-generation products will take time to ramp, keeping memory supply tight through 2027.\n\nAgainst a backdrop of continued memory price increases, suppliers have also taken a firmer stance on raising HBM prices in 2027. TrendForce has raised its 2027 HBM price outlook to reflect persistent supply constraints, a growing share of higher-priced HBM4, and the gradual ramp-up of HBM4e in 2H27. Blended ASP is now projected to jump 121% YoY.\n\nSupply and cost constraints drive capacity adjustments, with 8-Hi emerging as a priority option\n\nTrendForce reports that GPU and ASIC manufacturers are now considering reducing HBM capacity per device. This shift is driven not by waning end-market demand but by limited HBM supply and quickly increasing system costs.\n\nCompared to earlier plans for 12-Hi HBM modules, 8-Hi configurations use fewer DRAM dies, lowering both the cost per stack and the overall GPU bill of materials. These configurations also enable the same HBM bit output to support more GPUs. Given the ongoing tight HBM supply, 8-Hi setups are expected to be a priority for evaluation by many GPU and ASIC vendors in 2027, balancing performance, supply, and cost.\n\nHowever, reducing HBM capacity does not necessarily translate into a lower price per gigabit. Each HBM stack requires one base die, and this cost does not decline proportionally with the number of DRAM layers. An 8-Hi stack has less DRAM capacity over which to spread the base-die cost than a 12-Hi stack, making its per-Gb cost actually higher. TrendForce expects 8-Hi products to carry a roughly 10–20% price premium per Gb over 12-Hi products in 2027.\n\nOverall, TrendForce expects the HBM market to remain supply-constrained in 2027. With both availability and rising costs shaping purchasing decisions, 8-Hi penetration is expected to increase as more GPU and ASIC vendors evaluate the configuration. However, its higher per-Gb cost relative to 12-Hi will remain an important consideration in specification negotiations and supply-chain planning. As a result, while adjustments to HBM capacity may help alleviate some GPU cost pressure in 2027, they are unlikely to reverse the broader trend of substantial HBM price increases.",
+        "source_name": "trendforce.com",
+        "published_at": "2026-09-29"
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": []
+      },
+      "w2": {
+        "policy_hit": false,
+        "policy_related": false,
+        "policy_ids": [],
+        "hit_condition_ids": [],
+        "matched_condition_ids": []
+      },
+      "w3_decision": {
+        "novelty": {
+          "reason": "No existing Reference View fact covers TrendForce's upward revision of the 2027 HBM blended-ASP forecast to 121% year over year, the expected industry-wide prioritization of 8-Hi configurations, or the projected 8-Hi per-gigabit premium.",
+          "reference_ids": [],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "The message contains forward-looking industry forecasts and vendor evaluation expectations rather than formal platform production specifications or sustained deployment evidence. It therefore does not satisfy the existing Policy boundaries, despite being directly relevant to HBM pricing and configuration."
+        },
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "TrendForce's revision materially raises the expected 2027 HBM pricing and revenue opportunity, extends supply tightness through 2027, and places the HBM4E ramp in the second half of 2027. The move toward 8-Hi is attributed to supply and cost constraints rather than weaker demand; the same HBM bits can support more accelerators, while 8-Hi is forecast to command a 10%–20% per-gigabit premium over 12-Hi.",
+          "prior_expectation": "The pre-event baseline included Micron HBM4 high-volume shipments, an HBM4E production roadmap for 2027, and persistent but uncertain HBM supply tightness. It did not include a specific upward revision to a 121% 2027 HBM blended-ASP increase or a quantified 8-Hi premium.",
+          "reason": "The surprise is material because the explicit ASP revision changes the medium-term price and mix outlook for Micron's high-value HBM business. The transmission is direct: persistent HBM scarcity and higher per-gigabit pricing can raise realized ASP, HBM revenue, and margins, while Micron already has HBM4 high-volume shipments and a 2027 HBM4E path. The forecast and 8-Hi adoption remain unconfirmed, and lower capacity per accelerator is a countervailing risk, but the upward price revision and continued demand strength are sufficient for a LONG judgment.",
+          "trade": true
+        }
+      },
+      "direction": "LONG",
+      "initiated_at": "2026-09-29T08:10:43.556490+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    },
+    {
+      "message": {
+        "title": "Anthropic Locked Into $518B of Compute Deals, 80% Non-Cancelable",
+        "body": "← Back to live feed · 1 stories across 1 day\nTuesday, Sep 29, 2026\n1 story1 Anthropic Locked Into $518B of Compute Deals, 80% Non-Cancelable↩︎ AI Sep 28, 7:16 PM EDT 182/87 \n Anthropic is locked into more than $518 billion of cloud, compute and infrastructure spending over 10 years with six partners, and about 80% of the total is non-cancelable or payable regardless of usage, its IPO filing shows. The commitments include $252 billion in non-cancelable compute obligations across Microsoft, Google and Amazon, and $161.2 billion in Broadcom TPU leases that are largely non-cancelable.\nThe company also agreed to pay SpaceX up to $84.5 billion through 2029 for Nvidia-based compute, nearly double the roughly $45 billion cap SpaceX disclosed in May, The Information reported. Most of the SpaceX spending can be canceled with 90 days' notice, unlike the bulk of the buildout.\nThe obligations are more than 100 times Anthropic's 2025 revenue of $4.59 billion and roughly 25 times the $20.28 billion in cash, cash equivalents and short-term investments it held at year-end. The company posted an $8.06 billion operating loss in 2025, and its $41.97 billion net loss included about $34 billion in non-cash charges tied to the rising value of financing that could convert into shares. Its two largest customers accounted for 24% of revenue, and Anthropic warned that many of its largest clients are not locked into long-term contracts and could reduce or stop spending, even as it cannot cancel most of its own compute bill. Google and Amazon, both major investors in Anthropic, supply much of the infrastructure behind Claude. The IPO could value the company above $2 trillion.",
+        "source_name": "huggingnews.com",
+        "published_at": "2026-09-29T18:10:19.614000Z"
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": [
+          "E207"
+        ]
+      },
+      "w2": {
+        "policy_hit": false,
+        "policy_related": false,
+        "policy_ids": [],
+        "hit_condition_ids": [],
+        "matched_condition_ids": []
+      },
+      "w3_decision": {
+        "novelty": {
+          "reason": "Existing references cover Anthropic's approximately $518 billion aggregate future infrastructure obligations and its separate cloud-services agreement, but not the newly disclosed non-cancelability, partner-level allocation, TPU leases, or expanded SpaceX compute commitment.",
+          "reference_ids": [
+            "E207",
+            "E214",
+            "E131"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "No current Policy directly covers Anthropic's compute-contract enforceability or partner-level obligations. The message does not disclose a Micron-specific order, allocation, pricing, shipment, qualification, or capacity change."
+        },
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "The IPO filing materially increases the certainty and duration of AI-compute demand: approximately 80% of the $518 billion obligation is non-cancelable or payable regardless of usage, including $252 billion of cloud-compute commitments and $161.2 billion of largely non-cancelable Broadcom TPU leases. This reduces the probability that Anthropic usage weakness removes planned infrastructure demand and raises expected sustained server-memory, HBM, and data-center SSD demand through the deployment horizon, with potential value capture through Micron's Anthropic architecture and supply collaboration.",
+          "prior_expectation": "The pre-event MU baseline recognized Anthropic as a named AI-memory architecture and supply collaborator and supported strong external AI demand, but public information did not establish how much of Anthropic's $518 billion obligation was non-cancelable, which partners held the commitments, or how durable the resulting compute deployment would be; Micron quantities and pricing remained undisclosed.",
+          "reason": "The scale and enforceability of the commitments create a non-trivial positive surprise versus the prior aggregate-only baseline. The transmission is compute obligations to cloud/accelerator deployment, then memory content and Micron's named architecture/supply relationship. Anthropic's losses, customer concentration, and undisclosed MU share limit confidence but do not negate the directional demand signal; the result supports a LONG trade.",
+          "trade": true
+        }
+      },
+      "direction": "LONG",
+      "initiated_at": "2026-09-29T18:39:11.663900+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    }
+  ],
+  "history_matches": [
+    {
+      "events": [],
+      "policies": []
+    },
+    {
+      "events": [],
+      "policies": []
+    },
+    {
+      "events": [],
+      "policies": []
+    },
+    {
+      "events": [],
+      "policies": []
+    },
+    {
+      "events": [],
+      "policies": []
+    },
+    {
+      "events": [],
+      "policies": []
+    }
+  ],
+  "watches": [],
+  "pins": [],
+  "policy_consumptions": [],
+  "provisional": [
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Samsung Electro-Mechanics",
+          "Server components",
+          "Long-term supply agreements"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Samsung Electro-Mechanics在2026年签署了另一项服务器元件长期供货协议，使其当年已披露供货协议总额达到约26亿美元。",
+        "subject_time": "2026 annual disclosed server-component supply agreements"
+      },
+      "candidate_index": 0,
+      "case_id": "case_3de0faf18ae54b06a9902cb18978f7e6",
+      "created_at": "2026-09-30T06:09:48.076923Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E207",
+      "runtime_signature": "bb92d51286abbf94380bb914d8c092d86210124f74583bfbd48fb01db7548f43",
+      "snapshot_version": 1,
+      "source_message_id": "std_199d01de8d6349c395a3134e75eb7d4d",
+      "ticker": "MU",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ONGOING",
+        "entities": [
+          "Samsung Electro-Mechanics",
+          "High-performance passive components",
+          "AI servers"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "高性能被动元件需求持续上升，推动Samsung Electro-Mechanics扩大服务器元件长期供货合作。",
+        "subject_time": "2026年服务器基础设施需求周期"
+      },
+      "candidate_index": 1,
+      "case_id": "case_3de0faf18ae54b06a9902cb18978f7e6",
+      "created_at": "2026-09-30T06:09:48.109575Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E208",
+      "runtime_signature": "29e352debb2b446d645e0196ecb1eb3fb0629a9104595a0efcea04c50381f0b3",
+      "snapshot_version": 2,
+      "source_message_id": "std_199d01de8d6349c395a3134e75eb7d4d",
+      "ticker": "MU",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ONGOING",
+        "entities": [
+          "HBM",
+          "GPU-HBM CoWoS",
+          "AI semiconductor packaging"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "HBM在GPU-HBM CoWoS封装中的成本占比正接近一半，显示其不再只是AI计算中的被动组件。",
+        "subject_time": "Current GPU-HBM CoWoS package cost structure"
+      },
+      "candidate_index": 0,
+      "case_id": "case_a4c94e4309de4f628861636ddca514c2",
+      "created_at": "2026-09-30T06:11:21.708126Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E209",
+      "runtime_signature": "b8111113f2e0a5e1c615570d1860e5ba341386dcf1ad70159f996a2e61e29978",
+      "snapshot_version": 3,
+      "source_message_id": "std_3a1068a6c2174dda9b3f48158ce80862",
+      "ticker": "MU",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Zhipu AI",
+          "GLM-5.3",
+          "Anthropic",
+          "Claude Mythos Preview"
+        ],
+        "occurrence_date": "2026-09-29",
+        "proposition": "Anthropic研究显示，GLM-5.3在410次测试中构建出可运行的浏览器漏洞利用工具50次，接近Claude Mythos Preview的56次。",
+        "subject_time": "September 29, 2026 AI cybersecurity evaluation"
+      },
+      "candidate_index": 0,
+      "case_id": "case_0c09de4b5df04282a7fc7cef20a1031f",
+      "created_at": "2026-09-30T06:45:04.382538Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E210",
+      "runtime_signature": "51a78a32036cfae2e5d0857203daf8ea139b4172fd05a57af92465cbf641532f",
+      "snapshot_version": 4,
+      "source_message_id": "std_ca2e0647593e4a88820548371afaeb7c",
+      "ticker": "MU",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Anthropic",
+          "GLM-5.3",
+          "AI safety safeguards"
+        ],
+        "occurrence_date": "2026-09-29",
+        "proposition": "Anthropic研究团队以约4400美元和2200个GPU小时移除GLM-5.3的拒答机制，使拒答率从超过90%降至最低约2%，且一般智能和科学能力未显著下降。",
+        "subject_time": "September 29, 2026 abliteration research"
+      },
+      "candidate_index": 1,
+      "case_id": "case_0c09de4b5df04282a7fc7cef20a1031f",
+      "created_at": "2026-09-30T06:45:04.396943Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E211",
+      "runtime_signature": "e544adea04d1748e57b5cad69aa41fd2b9d56341d35b2d1ebcaeb37a1aa0febb",
+      "snapshot_version": 5,
+      "source_message_id": "std_ca2e0647593e4a88820548371afaeb7c",
+      "ticker": "MU",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "OpenAI",
+          "GLM-5.3",
+          "Codex"
+        ],
+        "occurrence_date": "2026-09-29",
+        "proposition": "OpenAI在该安全研究发布当日将GLM-5.3加入Codex订阅。",
+        "subject_time": "September 29, 2026 Codex availability"
+      },
+      "candidate_index": 2,
+      "case_id": "case_0c09de4b5df04282a7fc7cef20a1031f",
+      "created_at": "2026-09-30T06:45:04.413517Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E212",
+      "runtime_signature": "138cae065dd700c932808b918c9b82b069e9439f9a8a751920f3eb437c85eb40",
+      "snapshot_version": 6,
+      "source_message_id": "std_ca2e0647593e4a88820548371afaeb7c",
+      "ticker": "MU",
+      "trading_date": "2026-09-30"
+    }
+  ],
+  "limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "global_state": {
+    "watches": [],
+    "pins": []
+  },
+  "event_details": {
+    "requested_event_ids": [
+      "E4"
+    ],
+    "canonical_events": [
+      {
+        "event_id": "E4",
+        "title": "AI-driven memory tightness and pricing remained an evolving market state",
+        "event_type": "SUPPLY_DEMAND_UPDATE",
+        "occurred_at": "UNKNOWN",
+        "occurrence_time_precision": "UNKNOWN",
+        "status": "ACTIVE",
+        "canonical_summary": "AI-driven memory demand continued to exceed available supply while late-September spot pricing was mixed: DDR4 rose, 512Gb TLC NAND weakened, and NAND buyers remained cautious as sellers increased quotation flexibility.",
+        "known_event_summary": "2026-08-27..2026-09-29 memory-market state: AI demand continued to exceed available supply; late-September reports added Micron fulfillment constraints and component price pressure, while spot DDR4 rose, TLC NAND weakened and NAND trading stayed soft.",
+        "related_event_ids": [
+          "E6",
+          "E11",
+          "E12",
+          "E19",
+          "E101"
+        ],
+        "supersedes_event_id": null,
+        "derived_from_event_ids": [],
+        "facts": [
+          {
+            "fact_id": "F67",
+            "proposition": "AI computing and services demand continues to exceed available supply across the memory industry.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-08-27",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F68",
+            "proposition": "SK hynix described its 2026 production capacity as effectively sold out.",
+            "assertion_state": "ONGOING",
+            "subject_time": "FY2026",
+            "fact_occurred_at": "2026-08-27",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F69",
+            "proposition": "Suppliers are expected to use profits from the current cycle to expand manufacturing capacity.",
+            "assertion_state": "EXPECTED",
+            "subject_time": null,
+            "fact_occurred_at": "2026-08-27",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F70",
+            "proposition": "Memory is a key bottleneck for NVIDIA alongside power, water, and land availability.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-08-27",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F71",
+            "proposition": "Colette Kress stated that memory price increases have exceeded prior expectations and are projected to rise further into next year.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "2027",
+            "fact_occurred_at": "2026-08-27",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F72",
+            "proposition": "SK Hynix's memory supply is sold out for a period of at least two years.",
+            "assertion_state": "ONGOING",
+            "subject_time": "2026..2028",
+            "fact_occurred_at": "2026-08-27",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F73",
+            "proposition": "Memory scarcity is being driven in large part by the AI build-out.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-08-27",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F74",
+            "proposition": "Memory chips continue to be in short supply.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-08-27",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F75",
+            "proposition": "Elevated memory prices are expected to persist due to growing AI demand.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "FUTURE",
+            "fact_occurred_at": "2026-08-27",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F76",
+            "proposition": "Memory has become the fastest-inflating component in the bill of materials for an AI server.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-08-27",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F77",
+            "proposition": "Memory demand is expected to continue increasing.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "FUTURE",
+            "fact_occurred_at": "2026-08-27",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F78",
+            "proposition": "Memory price increases had exceeded prior expectations and were expected to rise further into 2027.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "2027",
+            "fact_occurred_at": "2026-08-27",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F79",
+            "proposition": "Supply constraints limit Nvidia Corporation's revenue growth to approximately 70%.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-08-27",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F80",
+            "proposition": "The memory supply shortage is expected to persist through 2029 or 2030.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "2029..2030",
+            "fact_occurred_at": "2026-08-28",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F81",
+            "proposition": "U.S. tech firms view CXMT as a potential fourth major global DRAM supplier.",
+            "assertion_state": "ONGOING",
+            "subject_time": "FUTURE",
+            "fact_occurred_at": "2026-08-28",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F82",
+            "proposition": "CXMT is ramping up output of newer products, including DDR5 memory.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-08-28",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F83",
+            "proposition": "An increase in Long-Term Agreements makes Average Selling Prices likely more stable.",
+            "assertion_state": "EXPECTED",
+            "subject_time": null,
+            "fact_occurred_at": "2026-08-31",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F84",
+            "proposition": "Micron's high-bandwidth-memory production capacity was sold out for the entirety of calendar 2026.",
+            "assertion_state": "ONGOING",
+            "subject_time": "FY2026",
+            "fact_occurred_at": "2026-08-31",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F85",
+            "proposition": "CXMT has begun producing small quantities of HBM3E.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-08-31",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F86",
+            "proposition": "Aggregate DRAM demand continues to grow.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-08-31",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F87",
+            "proposition": "BofA anticipates that memory supply will remain tight over the long term.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "LONG_TERM",
+            "fact_occurred_at": "2026-08-31",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F88",
+            "proposition": "Supply of AI chips is currently well below demand.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-01",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F89",
+            "proposition": "Supplies of NAND and DRAM memory are well below demand.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-01",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F90",
+            "proposition": "The overall memory market's revenue is expected to reach $1.28 trillion in 2027.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "2027",
+            "fact_occurred_at": "2026-09-01",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F91",
+            "proposition": "MRDIMM could be a $100 billion market by 2030.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "2030",
+            "fact_occurred_at": "2026-09-01",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F92",
+            "proposition": "Demand for AI chips is expected to rise through next year.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "FUTURE",
+            "fact_occurred_at": "2026-09-01",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F93",
+            "proposition": "TrendForce expects NAND flash industry revenue to reach $379.4 billion in 2027.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "2027",
+            "fact_occurred_at": "2026-09-01",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F94",
+            "proposition": "Massive shortages of memory chips are expected to persist through the end of 2027.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "2027",
+            "fact_occurred_at": "2026-09-01",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F95",
+            "proposition": "Deloitte estimated that DRAM prices could increase fourfold in 2026.",
+            "assertion_state": "FORECAST",
+            "subject_time": "FY2026",
+            "fact_occurred_at": "2026-09-01",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F96",
+            "proposition": "NAND flash market revenue was projected to reach $270.6 billion in 2026.",
+            "assertion_state": "FORECAST",
+            "subject_time": "FY2026",
+            "fact_occurred_at": "2026-09-01",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F97",
+            "proposition": "Prices for memory surged.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-01",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F98",
+            "proposition": "South Korean memory chip providers are currently facing supply shortages.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-01",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F99",
+            "proposition": "Memory prices are expected to remain elevated due to long fabrication plant construction timelines.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "FUTURE",
+            "fact_occurred_at": "2026-09-01",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F100",
+            "proposition": "Management indicated that memory availability constraints could prevail through the next year.",
+            "assertion_state": "EXPECTED",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-01",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F101",
+            "proposition": "Memory manufacturers have kept supply in check, producing a pricing recovery that lifted revenue growth at pure-play leaders into triple digits.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-01",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F102",
+            "proposition": "Micron experiences strong demand for AI-related memory products.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-01",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F103",
+            "proposition": "Memory chip shortages are expected to remain in place through the rest of 2027.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "2027",
+            "fact_occurred_at": "2026-09-01",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F104",
+            "proposition": "New memory capacity will not come online until 2029 or 2030.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "2029..2030",
+            "fact_occurred_at": "2026-09-01",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F105",
+            "proposition": "Micron expects industry supply to improve gradually in 2028.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "2028",
+            "fact_occurred_at": "2026-09-01",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F106",
+            "proposition": "AI data-center spending absorbs record volumes of DRAM and NAND flash.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-01",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F107",
+            "proposition": "Micron does not currently have visibility into when memory supply will catch up with increasing demand.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-01",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F108",
+            "proposition": "Memory chipmakers, including Micron, are spending heavily to increase capacity.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-01",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F109",
+            "proposition": "AI computing demand continues to outpace memory supply.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-01",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F110",
+            "proposition": "Memory supply issues and surging AI-driven demand are creating strong pricing tailwinds for Netlist.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-01",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F111",
+            "proposition": "Demand for memory exceeds supply in the memory market.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-01",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F112",
+            "proposition": "Customers rejected by Micron are undergoing qualification processes with other suppliers.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F113",
+            "proposition": "Micron expects the tightness in the memory chip market to persist until at least 2028.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "2028",
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F114",
+            "proposition": "Memory chip prices have skyrocketed.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F115",
+            "proposition": "Memory chips are currently in short supply due to demand exceeding production capacity.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F116",
+            "proposition": "CXMT's rapid capacity expansion poses a long-term competitive threat to Micron Technology.",
+            "assertion_state": "ONGOING",
+            "subject_time": "LONG_TERM",
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F117",
+            "proposition": "New fabrication plants taking years to build will keep memory prices elevated.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "FUTURE",
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F118",
+            "proposition": "Combined capital expenditure of memory manufacturers was estimated to rise from $58 billion in 2025 to $97 billion in 2026 and $146 billion in 2027.",
+            "assertion_state": "FORECAST",
+            "subject_time": "FY2025..FY2027",
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F119",
+            "proposition": "High demand for memory chips has constrained supply and caused memory chip prices to rise significantly.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F120",
+            "proposition": "Micron's management team expects the memory chip market to remain supply-constrained beyond 2027.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "2028",
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F121",
+            "proposition": "DRAM prices were estimated to increase fourfold in 2026.",
+            "assertion_state": "FORECAST",
+            "subject_time": "FY2026",
+            "fact_occurred_at": "2026-09-02",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F122",
+            "proposition": "The NAND market experienced 90% growth in the first quarter of 2026.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q1",
+            "fact_occurred_at": "2026-09-03",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F123",
+            "proposition": "Analysts expected DRAM prices to increase by approximately 50% in the current quarter.",
+            "assertion_state": "FORECAST",
+            "subject_time": "CURRENT",
+            "fact_occurred_at": "2026-09-03",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F124",
+            "proposition": "NAND memory prices increased by 55% sequentially in Q2 2026.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q2",
+            "fact_occurred_at": "2026-09-03",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F125",
+            "proposition": "Micron faces the risk of memory cycles where production decisions alter industry economics.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-03",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F126",
+            "proposition": "Broadcom considers the availability of leading-edge wafers, substrates, and HBM memory when building AI revenue forecasts.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-03",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F127",
+            "proposition": "Micron Technology challenges Penguin Solutions through its broad DRAM and NAND portfolio, which overlaps with specialty memory and storage demand.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-03",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F128",
+            "proposition": "Micron Technology is expected to experience margin compression, slowing revenue growth, and normalization of supply-demand conditions.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "FUTURE",
+            "fact_occurred_at": "2026-09-03",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F129",
+            "proposition": "SK Hynix is expanding manufacturing capacity.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-03",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F130",
+            "proposition": "The NAND market experienced 70% growth in the second quarter of 2026.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q2",
+            "fact_occurred_at": "2026-09-03",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F131",
+            "proposition": "Wall Street fundamental estimates suggest the memory industry could deliver growth of 35% or more.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "FUTURE",
+            "fact_occurred_at": "2026-09-03",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F132",
+            "proposition": "Demand from AI hyperscalers consumed all available memory chip production capacity.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-03",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F133",
+            "proposition": "An earlier-than-expected ramp up in memory chip output could pressure prices and profits.",
+            "assertion_state": "HYPOTHETICAL",
+            "subject_time": "FUTURE",
+            "fact_occurred_at": "2026-09-03",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F134",
+            "proposition": "NAND prices rose 55% to 60% quarter over quarter in Q1 2026.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q1",
+            "fact_occurred_at": "2026-09-03",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F135",
+            "proposition": "Micron Technology supplies DRAM, high bandwidth memory, CXL memory, and SSDs into data centers, PCs, mobile devices, cars, and industrial equipment.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-03",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F136",
+            "proposition": "DRAM prices are expected to increase by more than 200% year over year.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "FUTURE",
+            "fact_occurred_at": "2026-09-03",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F137",
+            "proposition": "SK Hynix predicts the DRAM market will remain supply-constrained through at least 2030.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "2030",
+            "fact_occurred_at": "2026-09-03",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F138",
+            "proposition": "NAND prices jumped 55% in the second quarter.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q2",
+            "fact_occurred_at": "2026-09-03",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F139",
+            "proposition": "NAND prices increased by approximately 85% sequentially in Q3.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q3",
+            "fact_occurred_at": "2026-09-03",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F140",
+            "proposition": "Analysts expected NAND prices to increase by approximately 60% in the current quarter.",
+            "assertion_state": "FORECAST",
+            "subject_time": "CURRENT",
+            "fact_occurred_at": "2026-09-03",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F141",
+            "proposition": "Conventional DRAM contract prices rose between 90% and 95% quarter over quarter in Q1 2026.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q1",
+            "fact_occurred_at": "2026-09-03",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F142",
+            "proposition": "Future memory pricing and HBM demand levels are expected to determine if analyst projections for Micron remain justified leading up to the next earnings report.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "NEAR_TERM",
+            "fact_occurred_at": "2026-09-03",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F143",
+            "proposition": "Chinese memory companies are increasing their production capacity.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-03",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F144",
+            "proposition": "Drew Pettit projected that memory industry revenue could reach approximately three times current levels by 2030.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "2030",
+            "fact_occurred_at": "2026-09-03",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F145",
+            "proposition": "DRAM prices rose in the low-60% range sequentially in Q3.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "FY2026-Q3",
+            "fact_occurred_at": "2026-09-03",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F146",
+            "proposition": "High-bandwidth memory demand remains strong across AI data centers.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-04",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F147",
+            "proposition": "SanDisk's CEO reported that NAND memory customers demand more memory than three months earlier.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-04",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F148",
+            "proposition": "Industry data indicates continued strength in DRAM and NAND demand.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-04",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F149",
+            "proposition": "Supply constraints in the memory market have persisted while consumer end-markets stabilize.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-04",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F150",
+            "proposition": "Counterpoint Research estimates memory will be in short supply through 2027.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "2027",
+            "fact_occurred_at": "2026-09-04",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F151",
+            "proposition": "Micron guided that tight market conditions will persist beyond calendar 2027.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "2028",
+            "fact_occurred_at": "2026-09-05",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F152",
+            "proposition": "Potential price increases exceeding 15% are expected on servers equipped with AI chips.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "FUTURE",
+            "fact_occurred_at": "2026-09-05",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F153",
+            "proposition": "Analyst consensus expects memory chip supply to catch up to demand by 2028.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "2028",
+            "fact_occurred_at": "2026-09-05",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F154",
+            "proposition": "Smartphone producers are fighting over conventional DRAM supply.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-07",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F155",
+            "proposition": "A severe short-term shortage persisted in memory semiconductors.",
+            "assertion_state": "ONGOING",
+            "subject_time": "NEAR_TERM",
+            "fact_occurred_at": "2026-09-07",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F156",
+            "proposition": "Investors expect AI demand to delay the downturn of the memory price cycle.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "FUTURE",
+            "fact_occurred_at": "2026-09-07",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F157",
+            "proposition": "Some smartphone-memory prices have more than quadrupled.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-07",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F158",
+            "proposition": "Meaningful relief for smartphone-memory prices is expected to be delayed until late 2027 or 2028.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "2027..2028",
+            "fact_occurred_at": "2026-09-07",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F159",
+            "proposition": "Apple faces a tightening memory crunch due to AI data centers consuming an expanding share of global chip capacity.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-07",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F160",
+            "proposition": "SK Hynix has gained a competitive advantage due to its leadership in high-bandwidth memory.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-08",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F161",
+            "proposition": "High-bandwidth memory used with AI accelerators has sold out.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-08",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F162",
+            "proposition": "The memory supply crunch is expected to intensify due to increasing consumption by AI data centers.",
+            "assertion_state": "EXPECTED",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-08",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F163",
+            "proposition": "Micron stated that tightness in the memory chip market will persist beyond 2027.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "2028",
+            "fact_occurred_at": "2026-09-08",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F164",
+            "proposition": "Memory-market craziness levels are expected to reach 10 and remain there through at least the end of 2027.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "2027",
+            "fact_occurred_at": "2026-09-08",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F165",
+            "proposition": "Memory shortages have spread to other memory products beyond high-bandwidth memory.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-08",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F166",
+            "proposition": "There is effectively no available memory supply that has not already been committed.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-08",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F167",
+            "proposition": "Data center build-out by hyperscale providers drove an uplift to Micron Technology's pricing power and volume outlook.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-08",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F168",
+            "proposition": "Samsung and SK Hynix are expanding memory chip production capacity in South Korea.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-08",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F169",
+            "proposition": "Competing manufacturers are developing rival high-bandwidth memory products.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-08",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F170",
+            "proposition": "There is effectively no memory supply available that has not already been committed.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-08",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F171",
+            "proposition": "Automotive companies, medical-device manufacturers and other traditional customers face allocation limits for memory products.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-08",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F172",
+            "proposition": "SanDisk expects sellable bit growth to be in the mid-teens percentage range for fiscal 2027.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "FY2027",
+            "fact_occurred_at": "2026-09-08",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F173",
+            "proposition": "SanDisk states that it increases supply primarily through nodal transitions rather than wafer additions.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-08",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F174",
+            "proposition": "SanDisk expects its bit supply to remain under allocation constraints beyond calendar year 2027.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "2027",
+            "fact_occurred_at": "2026-09-08",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F175",
+            "proposition": "Booming artificial intelligence demand is tightening memory-chip supply and driving prices sharply higher.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-08",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F176",
+            "proposition": "Memory suppliers state that supply capacity will not meet demand before 2028.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "2028",
+            "fact_occurred_at": "2026-09-08",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F177",
+            "proposition": "SK Hynix has gained a competitive advantage through leadership in high-bandwidth memory.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-08",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F178",
+            "proposition": "Micron Technology, Inc. expects 2027 supply conditions to tighten further.",
+            "assertion_state": "EXPECTED",
+            "subject_time": "2027",
+            "fact_occurred_at": "2026-09-08",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F179",
+            "proposition": "Everpure purchases raw NAND flash memory from suppliers including Micron Technology and Sandisk.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-09",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F180",
+            "proposition": "Earnings expectations in the memory sector are rising.",
+            "assertion_state": "ONGOING",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-09",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F297",
+            "proposition": "Chinese AI-chip makers including Huawei and Cambricon are raising accelerator prices because high-bandwidth memory has become increasingly scarce.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-11",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F298",
+            "proposition": "Huawei's upcoming Ascend 950DT accelerator has reportedly been quoted at more than 250,000 yuan, representing a price increase of roughly 20%.",
+            "assertion_state": "RUMOR",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-11",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F316",
+            "proposition": "SK Hynix planned to start AI-chip output at its Indiana facility in 2029.",
+            "assertion_state": "PLAN",
+            "subject_time": "2029",
+            "fact_occurred_at": "2026-08-28",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F317",
+            "proposition": "Chinese AI chipmakers raised prices amid a high-bandwidth-memory shortage.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-11",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F397",
+            "proposition": "TrendForce forecasts conventional DRAM contract prices will rise 13% to 18% quarter over quarter for the quarter ending September 2026, a sharp deceleration from the 93%-98% gain in Q1 2026 and 58%-63% forecast for Q2 2026.",
+            "assertion_state": "FORECAST",
+            "subject_time": "FY2026-Q3",
+            "fact_occurred_at": "2026-09-15",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F398",
+            "proposition": "TrendForce forecasts NAND flash contract prices will rise 10% to 15% quarter over quarter for the quarter ending September 2026, cooled from a 70%-75% jump projected for spring 2026.",
+            "assertion_state": "FORECAST",
+            "subject_time": "FY2026-Q3",
+            "fact_occurred_at": "2026-09-15",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F429",
+            "proposition": "Intel CEO Lip-Bu Tan said at the September 15 AI Infrastructure Summit that memory-chip prices had risen approximately five- to sevenfold because supply could not keep pace with AI demand.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "fact_occurred_at": "2026-09-15",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F430",
+            "proposition": "Intel CEO Lip-Bu Tan said memory-supply bottlenecks could worsen in 2027.",
+            "assertion_state": "FORECAST",
+            "subject_time": "2027",
+            "fact_occurred_at": "2026-09-15",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F460",
+            "proposition": "Management was reported to expect data-center DRAM and NAND bit shipments to more than double from two years earlier.",
+            "assertion_state": "GUIDANCE",
+            "subject_time": "2027",
+            "fact_occurred_at": "2026-09-18",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F461",
+            "proposition": "UBS forecast total artificial-intelligence capital expenditure of approximately $998 billion in 2026 and approximately $1.447 trillion in 2027.",
+            "assertion_state": "FORECAST",
+            "subject_time": "2026..2027",
+            "fact_occurred_at": "2026-09-19",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F462",
+            "proposition": "UBS forecast memory spending of approximately $367 billion in 2026 and approximately $923 billion in 2027, versus approximately $71 billion in 2025.",
+            "assertion_state": "FORECAST",
+            "subject_time": "2025..2027",
+            "fact_occurred_at": "2026-09-19",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F463",
+            "proposition": "UBS estimated memory's share of total artificial-intelligence capital expenditure at approximately 37% in 2026 and 64% in 2027, versus approximately 14% in 2025.",
+            "assertion_state": "FORECAST",
+            "subject_time": "2025..2027",
+            "fact_occurred_at": "2026-09-19",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F464",
+            "proposition": "UBS calculated that approximately 90% of the nearly $1 trillion increase in artificial-intelligence capital expenditure between 2025 and 2027 would come from higher memory spending.",
+            "assertion_state": "FORECAST",
+            "subject_time": "2025..2027",
+            "fact_occurred_at": "2026-09-19",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F477",
+            "proposition": "Goldman Sachs estimated that DRAM demand would exceed supply by approximately 5% in 2026 and 5.9% in 2027.",
+            "assertion_state": "FORECAST",
+            "subject_time": "2026..2027",
+            "fact_occurred_at": "2026-09-21",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F496",
+            "proposition": "As of September 22, 2026, reported AI demand showed no signs of weakening.",
+            "assertion_state": "ONGOING",
+            "subject_time": "2026-09-22",
+            "fact_occurred_at": "2026-09-22",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F525",
+            "proposition": "GF Securities expected NAND prices to become stable by the end of 2026.",
+            "assertion_state": "FORECAST",
+            "subject_time": "2026",
+            "fact_occurred_at": "2026-09-13",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F672",
+            "proposition": "A Synovus Trust research note stated that Micron was fulfilling less than 50% of the volumes requested by its data-center customers.",
+            "assertion_state": "RUMOR",
+            "subject_time": "Micron's current data-center customer fulfillment",
+            "fact_occurred_at": "2026-09-28",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F673",
+            "proposition": "Daniel Morgan of Synovus Trust forecast that DRAM and NAND memory supply would remain tight through FY2027, with incremental real supply only coming into balance by FY2028.",
+            "assertion_state": "FORECAST",
+            "subject_time": "FY2027-FY2028",
+            "fact_occurred_at": "2026-09-28",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F674",
+            "proposition": "Finished-goods manufacturers were asking South Korean electronics-component suppliers for price cuts of approximately 10% to 20% beginning in the third quarter of 2026 as memory costs increased.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "Beginning in Q3 2026",
+            "fact_occurred_at": "2026-09-29",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F675",
+            "proposition": "Chinese competing suppliers were offering bids approximately 20% to 30% below the prices sought by South Korean electronics-component suppliers.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "Q3 2026 component pricing",
+            "fact_occurred_at": "2026-09-29",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F821",
+            "proposition": "TrendForce reported that the average spot price of mainstream DDR4 1Gx8 3200MT/s DRAM rose 0.93% from $45.89 on September 23 to $46.32 on September 29, 2026.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "Week ending September 29, 2026",
+            "fact_occurred_at": "2026-09-29",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F822",
+            "proposition": "TrendForce reported that the average spot price of 512Gb TLC NAND wafers fell 2.45% to $19.396 during the week of September 28, 2026.",
+            "assertion_state": "ACTUAL",
+            "subject_time": "Week of September 28, 2026",
+            "fact_occurred_at": "2026-09-28",
+            "fact_occurrence_time_precision": "DAY"
+          },
+          {
+            "fact_id": "F823",
+            "proposition": "During the week of September 28-29, 2026, NAND sellers became more flexible on quotations to promote shipments while buyers remained cautious and transaction activity stayed weak.",
+            "assertion_state": "ONGOING",
+            "subject_time": "Week of September 28-29, 2026",
+            "fact_occurred_at": "2026-09-29",
+            "fact_occurrence_time_precision": "DAY"
+          }
+        ]
+      }
+    ],
+    "provisional_events": [],
+    "missing_event_ids": []
+  }
+}

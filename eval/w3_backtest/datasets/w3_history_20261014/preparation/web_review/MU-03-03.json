@@ -1,0 +1,184 @@
+{
+  "case_key": "MU-03-03",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-10-05T13:57:36.482418Z",
+  "reviewed_at": "2026-10-13T22:58:32.144748Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 6,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a13762-434d-74d0-ad2e-bb8be5baa4a5",
+    "turn_id": "01a13762-435d-72a0-aa43-861566287a97",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 85760,
+        "inputTokens": 94464,
+        "outputTokens": 18016,
+        "reasoningOutputTokens": 15771,
+        "totalTokens": 112480
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 395520,
+        "inputTokens": 481353,
+        "outputTokens": 21731,
+        "reasoningOutputTokens": 18790,
+        "totalTokens": 503084
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "c8d1ccce4e738aac127a7b8133e943a6e9ce02961788821345011775e179a3c9",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://www.semiconductors.org/year-to-date-global-semiconductor-sales-top-1-trillion-through-august/",
+      "title": "Year-to-Date Global Semiconductor Sales Top $1 Trillion Through August",
+      "published_at": "2026-10-05 08:00 (timezone not stated on page)",
+      "time_precision": "HOUR",
+      "updated_at": null,
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn1search0"
+      ],
+      "source_call_ids": [
+        "exec-b3388e9b-0017-4d4c-ab30-49a5ae12a8ca"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://www.trendforce.com/presscenter/news/20260930-13258.html",
+      "title": "AI Server Demand Sustains Memory Contract Price Increases in 4Q26, While Consumer-Side Pressure Persists, Says TrendForce",
+      "published_at": "2026-09-30",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search0"
+      ],
+      "source_call_ids": [
+        "exec-553e84ed-6501-451d-8d5e-89a4b5996f95"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://www.interactivebrokers.com/en/trading/providers.php",
+      "title": "Micron Stock Drops Amid Fears of Memory-Price Peak. The Data Tell a Different Story.",
+      "published_at": "2026-10-05T13:49:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn4search0",
+        "turn4search1",
+        "turn5view0"
+      ],
+      "source_call_ids": [
+        "exec-268fad89-1c78-4991-9afc-19f95e1a91a8",
+        "exec-db6858eb-29f3-4896-8a07-cd40b97077ff"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://www.itiger.com/news/2673704071",
+      "title": "Micron Stock Falls Amid Fears of Memory-Price Peak. The Data Tell a Different Story.",
+      "published_at": "2026-10-05 19:34 (timezone not stated in page data)",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn4search0",
+        "turn5view0"
+      ],
+      "source_call_ids": [
+        "exec-268fad89-1c78-4991-9afc-19f95e1a91a8",
+        "exec-db6858eb-29f3-4896-8a07-cd40b97077ff"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "SIA's WSTS-based release reported August 2026 global semiconductor sales of $159.7 billion, up 8% month over month and 144.3% year over year, on a three-month moving-average basis.",
+      "source_urls": [
+        "https://www.semiconductors.org/year-to-date-global-semiconductor-sales-top-1-trillion-through-august/"
+      ],
+      "event_time": "2026-08 reporting month",
+      "publication_time": "2026-10-05 08:00 (timezone not stated)",
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "This is the primary aggregate release, not a memory-segment report. Its displayed publication time lacks a time zone, so it cannot be conclusively placed relative to the same-day UTC cutoff."
+    },
+    {
+      "observation": "Before the supplied article, TrendForce forecast 4Q26 conventional DRAM contract prices to rise 10–15% QoQ and NAND Flash contract prices to rise 15–20% QoQ; it also described consumer-side demand pressure alongside tight server DRAM supply.",
+      "source_urls": [
+        "https://www.trendforce.com/presscenter/news/20260930-13258.html"
+      ],
+      "event_time": "2026-09-30",
+      "publication_time": "2026-09-30",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "TrendForce specifies contract prices and conventional DRAM. Its forecast basis is not shown to match the broader price estimates later attributed to Circular Technologies."
+    },
+    {
+      "observation": "The supplied 5 October newswire passage reported WSTS August memory sales growth of 36%, attributing it to shipment volumes and pricing, and reported DRAM and NAND price increases of 8% and 5%.",
+      "source_urls": [
+        "https://www.interactivebrokers.com/en/trading/providers.php"
+      ],
+      "event_time": "2026-08",
+      "publication_time": "2026-10-05T13:49:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The passage does not specify the comparison basis for the category percentages. The official SIA release located verifies only aggregate semiconductor sales, not these category-level numbers."
+    },
+    {
+      "observation": "The same passage attributed 4Q estimates of DRAM price growth of 15–20% and NAND price growth of 12–20% to Brad Gastwirth of Circular Technologies, citing a Friday research note.",
+      "source_urls": [
+        "https://www.interactivebrokers.com/en/trading/providers.php",
+        "https://www.trendforce.com/presscenter/news/20260930-13258.html"
+      ],
+      "event_time": "2026-10-02 (Friday research note, as referenced in the article)",
+      "publication_time": "2026-10-05T13:49:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The underlying Circular note was not located, and the article does not define the price series. The estimates differ from TrendForce's prior ranges, but the available evidence does not establish comparability or a forecast revision."
+    }
+  ],
+  "gaps": [
+    "No directly accessible, dated WSTS memory/DRAM/NAND breakout or methodology table was located to independently verify the reported +36%, +8%, and +5% figures or their comparison basis.",
+    "Circular Technologies' cited research note was not located; its forecast series, definitions, and exact publication time remain unverified.",
+    "The exact first-publication time and archived pre-cutoff version of the Barron's/Dow Jones article could not be independently verified beyond the supplied original passage.",
+    "A separate verification of other potentially relevant concurrent events from the supplied case context was not completed in this focused search."
+  ],
+  "research_notes": "As of the 2026-10-05T13:57:36.482418Z cutoff, the supplied original Dow Jones/Barron's passage is timestamped 13:49Z and reports August memory data and a Circular Technologies forecast. The earliest traceable primary release located is SIA's same-day WSTS-based aggregate sales release; it reports total semiconductor sales, not the memory/DRAM/NAND breakdown. TrendForce's 30 September forecast supplies prior context: conventional DRAM contract prices +10–15% QoQ and NAND +15–20% QoQ for 4Q26. The later article reports Circular estimates of DRAM +15–20% and NAND +12–20%; these are not demonstrably like-for-like with TrendForce's contract-price series, so no consensus revision is inferred. The article's detailed WSTS figures and Circular quote lack a located underlying dataset or analyst note. The supplied original passage is the basis for its cutoff timestamp; live copies do not establish an archived pre-cutoff snapshot of the same version. No stock-price data or later market reaction is used."
+}

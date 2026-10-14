@@ -1,0 +1,1765 @@
+{
+  "schema_version": "w3-backtest.case.v1",
+  "case_key": "MU-03-04",
+  "group": "reviewed",
+  "original_case_id": "case_05e5da6081404ac08f72e26f3171fd8d",
+  "ticker": "MU",
+  "evidence_cutoff_at": "2026-10-06T12:08:03.238262Z",
+  "cutoff_basis": "original_worker_started_at",
+  "research_key": "d5e1730729648ed3d175",
+  "research_path": "research/d5e1730729648ed3d175",
+  "original_case": {
+    "case_id": "case_05e5da6081404ac08f72e26f3171fd8d",
+    "trading_date": "2026-10-06",
+    "source": {
+      "admission_context": {
+        "cutoff": null,
+        "mode": "REALTIME",
+        "policy_version": 1,
+        "source_task_id": null,
+        "sweep_id": null,
+        "window_start": null
+      },
+      "binding_id": "MU:yahoo_finance_news",
+      "business_version": 1,
+      "collected_at": "2026-10-06T12:06:27.214798Z",
+      "eligibility_at": "2026-10-06T12:06:27.206429Z",
+      "logical_message_id": "message_a847a042363d4472bff33ca2805189e9",
+      "member_count": 1,
+      "member_message_ids": [
+        "std_0564443dd35a4ec68c2318f7dee357ce"
+      ],
+      "message_bus_event_time": "2026-10-06T12:06:27.214798Z",
+      "normalized_at": null,
+      "previous_raw_message_id": null,
+      "publication_time_basis": "EXACT",
+      "published_at": "2026-10-06T12:00:00Z",
+      "snapshot": {
+        "body": "IRVINE, Calif., Oct. 6, 2026 /PRNewswire/ -- Netlist, Inc. (OTCQB: NLST) today announced that the Company and Micron Technology, Inc. (\"Micron\") have entered into Patent License and Settlement Agreements.\n\nUnder the agreements, the parties have agreed to settle and mutually release all pending legal proceedings between the companies, and Micron will receive a 5-year term license to Netlist's patent portfolio, including patents covering server DIMMs and High Bandwidth Memory technologies. Micron will pay Netlist $30 million per quarter from the fourth quarter of 2026 through the third quarter of 2031, totaling $600 million during the term.\n\n\"The agreement with Micron further validates the value of our AI memory technologies,\" said C.K. Hong, Netlist's Chief Executive Officer. \"We remain committed to protecting our IP while continuing to invest in the development of next-generation products.\"\n\nFurther details regarding the transaction are available in Netlist's Current Report on Form 8-K filed concurrently with the issuance of this release and available on the SEC filings page of the Netlist website here.\n\nAbout NetlistNetlist is a leading innovator in advanced memory and storage solutions. With a rich portfolio of patented technologies, Netlist's inventions are foundational to the advancement of AI computing. To learn more about Netlist, please visit www.netlist.com.\n\nSafe Harbor StatementThis news release contains forward-looking statements within the meaning of the Private Securities Litigation Reform Act of 1995. Forward-looking statements contained in this news release include, without limitation, statements about anticipated benefits of the agreements, the parties' ability to perform their respective obligations under, and to realize the anticipated benefits of those agreements, future exclusion and cease and desist orders, Netlist's ability to successfully enforce its intellectual property rights, and evaluations and judgments regarding Netlist's intellectual property portfolio. Forward-looking statements are statements other than historical facts and often address future events or Netlist's future performance. They reflect management's present expectations regarding future events and are subject to known and unknown risks, uncertainties and other factors that could cause actual results to differ materially from those expressed in or implied by any forward-looking statements. These risks, uncertainties and other factors include, among others, risks: Netlist may not be able to collect the substantial amount in damages previously awarded to it in its litigations (appeals in general could cause a lengthy delay in Netlist's ability to collect damages awards, could overturn the verdicts or reduce the damages awards); Netlist will suffer adverse outcomes in its litigation with Google or in its various other active proceedings to defend the validity of its patents; related to Netlist's plans for its intellectual property, including its strategies for monetizing, licensing, expanding, and defending its patent portfolio, which efforts may not be successful; other patent infringement litigation initiated by Netlist, or by others against Netlist, may not be successful or resolve favorably for Netlist, particularly given the costs and unpredictability of any such litigation; associated with Netlist's product sales, including whether and how long the current market and demand for products sold by Netlist will persist or persist as expected and whether Netlist may successfully develop and launch new products that are attractive to the market; whether Netlist will continue to acquire components or products for resale on favorable terms; that Netlist or its counterparties may fail to perform their obligations as required pursuant to applicable license and supply agreements, associated with the competitive landscape of Netlist's industry, general economic, political and market conditions, factory slowdowns and/or shutdowns, and changes in international trade and tariff policies. All forward-looking statements reflect management's present assumptions, expectations and beliefs regarding future events and are subject to known and unknown risks, uncertainties and other factors that could cause actual results to differ materially from those expressed in or implied by any forward-looking statements. These and other risks and uncertainties are described in Netlist's Annual Report on Form 10-K for the fiscal year ended December 27, 2025 filed with the SEC on March 19, 2026, and the other filings it makes with the U.S. Securities and Exchange Commission from time to time, including any subsequently filed quarterly and current reports. In light of these risks, uncertainties and other factors, these forward-looking statements should not be relied on as predictions of future events. These forward-looking statements represent Netlist's assumptions, expectations and beliefs only as of the date they are made, and except as required by law, Netlist undertakes no obligation to revise or update any forward-looking statements for any reason.\n\nFor more information, please contact:Investors / MediaMike SmargiassiThe Plunkett GroupNLST@theplunkettgroup.com(212) 739‑6729\n\nView original content to download multimedia:https://www.prnewswire.com/news-releases/netlist-and-micron-enter-patent-license-and-settlement-agreements-302899647.html",
+        "ticker": "MU",
+        "title": "Netlist and Micron Enter Patent License and Settlement Agreements"
+      },
+      "source_id": "yahoo_finance_news",
+      "source_message_id": "std_0564443dd35a4ec68c2318f7dee357ce",
+      "stream_item_id": "stream_c50bd2732565460a9ca47555191dde3c",
+      "update_kind": "NEW_MESSAGE",
+      "url": "https://finance.yahoo.com/technology/ai/articles/netlist-micron-enter-patent-license-120000503.html?.tsrc=rss"
+    },
+    "version_pin": {
+      "activation_revision_id": "runtime-maintain-0f4cc1b185dce4cc06429106-activation",
+      "document1_run_id": "init-mu-1f3e9130ae304b01a7fdf2991a35e028-d1",
+      "document2_run_id": "init-mu-ce1a897cebf549f88d93fa485671644b-d2",
+      "event_library_root": "/data/runtime/runtime_artifacts/runtime-maintain-0f4cc1b185dce4cc06429106/events",
+      "event_library_version": 34,
+      "policy_set_version": 17,
+      "provisional_snapshot_version": 48,
+      "runtime_projection_version": 17
+    },
+    "runtime_mode": "REALTIME",
+    "closed_cycle_id": null,
+    "w1_final": {
+      "confidence": "normal",
+      "fact_attributions": [],
+      "reason": "当前消息核心事实是 Netlist 与 Micron 已签署专利许可及和解协议（相互撤回所有未决诉讼、Micron 获 5 年期许可、每季度 3000 万美元共 6 亿美元）。已知事实仅覆盖 ITC 诉讼提起、排除令请求、4.45 亿美元损害赔偿、专利无效裁决及上诉进行中，无任何事实表明双方已达成和解或许可协议。这是一个全新的状态变化。",
+      "reference_ids": [],
+      "result": "NEW"
+    },
+    "w1_extraction": null,
+    "w2_final": {
+      "confidence": "normal",
+      "matched_condition_ids": [],
+      "policy_ids": [],
+      "reason": "该消息为Netlist与Micron之间的专利许可与诉讼和解公告（Micron每季度支付3000万美元，5年期共6亿美元，涉及服务器DIMM和HBM相关专利授权）。消息核心事实是IP许可与法律和解安排，未涉及Micron的收入组合、ASP、bit shipments、HBM市场份额变化、客户合同交付、产能爬坡、良率、库存、现金流结构、竞争供应商供货地位或平台规格替代等任何Policy criterion所关注的运营或财务状态变化。不存在与任何criterion构成具体、实质性触发关系的事实。"
+    },
+    "created_at": "2026-10-06T12:06:30.110086Z",
+    "frozen_inputs": {
+      "index": {
+        "contract_version": "known-event-index-v2",
+        "known_event_index": "E208 | 2026-09-30..2026-10-05 | Analysts updated Micron targets and forecasts after FY2026 Q4 results | 2026-09-30..2026-10-05 post-results analyst response: BofA raised Micron FY2027/FY2028 revenue estimates to $275.4B/$317B and EPS to $171.78/$197.90; Oct. 1 Morgan Stanley analyst Joseph Moore raised FY2027 EPS to $182.52 from $168.52 and revenue to $281B from $266.9B; Oct. 2 updates included BNP Paribas Outperform/$1,700, D.A. Davidson Buy/$2,100, CLSA FY27/FY28 EPS estimate increases of 8%/18%, Baird margin/DRAM/supply-agreement views and Melius supply, margin and buyback forecasts; Oct. 5 Cantor Fitzgerald analyst C.J. Muse modeled free cash flow at $150B in CY2027 and $182B in CY2028; BNP also described hypothetical Rubin Ultra/CXL risks.\nE298 | 2026-10-05 | Morgan Stanley analysts discussed possible DRAM down-specs and resilient future memory demand | 2026-10-05 Morgan Stanley DRAM-bottleneck outlook: business-leader discussions included possible lower memory configurations, with no platform adoption reported; Morgan Stanley expected memory demand to remain resilient absent a broad AI slowdown and new supply to be absorbed when higher specifications return.\nE300 | 2026-10-05 | Morgan Stanley identified power delays as a risk to AI-related memory orders | 2026-10-05 Morgan Stanley AI data-center power-risk scenario: potential power delays could defer/cancel customer component orders and disrupt memory-supplier inventories through 2028.\nE301 | 2026-10-05 | ISM September services survey flagged memory shortages and price increases | 2026-10-05 ISM September 2026 services survey: memory components listed as short supply; memory products listed among rising-price items.\nE4 | 2026-08-27..2026-10-04 | AI-driven memory tightness and pricing remained an evolving market state | 2026-08-27..2026-10-04 memory-market state: AI demand continued to exceed available supply; October 4 reporting showed AI-datacenter LPDDR5X demand tightening PC/smartphone allocations and pressuring device prices, alongside mixed late-September DRAM/NAND spot data.\nE157 | 2026-09-28..2026-10-04 | Meta launched an enterprise AI platform and Muse for Small Business as Muse usage grew | 2026-09-28..2026-10-04 Meta AI rollout: Enterprise Platform and Muse for Small Business launched with multiple integrations; Muse later exceeded 3 million weekly prompt users, up from about 500,000 since its September 8 launch.\nE290 | 2026-10-04 | Wiiwynn and Quanta expanded automation on AI-server production lines | 2026-10-04 AI-server manufacturing update: Wiiwynn expanded cobots at Mexico/Texas plants and Quanta deployed Techman arms on server lines.\nE291 | 2026-10-04 | AI data-center debt risks and lender pullbacks drew fresh attention | 2026-10-04 AI-infrastructure financing report: lawmakers monitored systemic debt risk; AI borrowers issued about $55B of high-yield bonds in 2026, debt spread into bond funds, and several banks narrowed lending.\nE293 | 2026-10-04 | Samsung planned Winbond DRAM sourcing as TV LPDDR4/4X supply phases out | 2026-10-04 television-memory update: Samsung planned 2027 Winbond DRAM sourcing for about half its TVs as suppliers phased out LPDDR4/4X.\nE297 | 2026-10-04 | Google outlined Project Suncatcher satellite tests and orbital data-center economics | 2026-10-04 Google Project Suncatcher: two additional satellites planned for 2027 to test laser links up to 800 Gbps for a potential 81-satellite constellation; Google estimated a 1 GW orbital cluster would need launch costs near $200/kg by 2035 to approach terrestrial data-center costs.\nE7 | 2026-08-27..2026-10-02 | Micron advanced U.S., Taiwan and global manufacturing capacity plans | 2026-08-27..2026-10-02 Micron capacity baseline: >NT$1.6T invested in Taiwan through June 2026, new fab and HBM packaging buildouts, overseas expansion and supplier coordination.\nE254 | 2026-10-02 | Micron moved equipment into P5 and began construction of a second wafer fab | 2026-10-02 Micron P5 site: more than 100 equipment units installed and a second wafer fab under construction.\nE256 | 2026-10-02 | Micron converted a Tainan site into front-end wafer-test capacity | 2026-10-02 Micron Tainan conversion: former panel site and warehouse being rebuilt as semiconductor production and a three-floor cleanroom for front-end wafer testing.\nE257 | 2026-10-02 | Micron built its Taoyuan 11E fab for future EUV equipment | 2026-10-02 Micron Taoyuan 11E: fab under construction for EUV and possible future High-NA EUV equipment, expected online around 2028.\nE258 | 2026-10-02 | Micron introduced 1-gamma DRAM technology in Taiwan | 2026-10-02 Micron Taiwan technology deployment: latest DRAM technology, including first EUV-based 1-gamma process, entering Taiwan.\nE268 | 2026-10-02 | Industry reports highlighted rising power density in advanced packages | 2026-10-02 advanced-packaging power update: backside power delivery gaining attention; Rubin Ultra projected at 3.5-4 kW in 2027; Intel modeled sharply rising PDN losses at 1-5 kW.\nE273 | 2026-10-02 | Amazon reportedly sought buyers for $8 billion of NVIDIA AI chips | 2026-10-02 report: Amazon was seeking investors to take ~$8B of NVIDIA AI chips from its own holdings; sale/execution was not reported as complete.\nE279 | 2026-10-02 | Nvidia raised the Shield TV Pro price as memory costs rose | 2026-10-02 Nvidia raised the Shield TV Pro price 50%, from $199.99 to $299.99; a spokesperson said component costs including memory had risen sharply industry-wide amid AI-related memory shortages.\nE282 | 2026-10-02 | Cloud providers pulled forward SSD orders amid expected tightening | 2026-10-02 Counterpoint Research analyst MS Hwang said cloud providers were bringing SSD orders forward before anticipated tighter supply and higher prices; memory investment remained concentrated in DRAM.\nE283 | 2026-10-02 | SK hynix awarded an infrastructure contract for its Indiana fab | 2026-10-02 report: CK Solution’s September 2026 award of a KRW 147.7B SK hynix Indiana-fab infrastructure contract, with a contract term through October 2028.\nE284 | 2026-10-02 | SK hynix planned locally packaged HBM supply from its Indiana facility | 2026-10-02 SK hynix plan: locally package and test next-generation HBM at its Indiana facility for U.S. customers beginning in H2 2029.\nE285 | 2026-10-02 | Toshiba planned HDD capacity and product expansion for AI data centers | 2026-10-02 Toshiba AI-storage plan: double AI-data-center HDD capacity by FY2027; expand Philippine facilities; develop drives with up to 40% more capacity, target 65TB-class production by 2030 and later 100TB; seek 30% share from just over 10%.\nE286 | 2026-10-02 | Broadcom reportedly arranged potential financing for AI hardware purchases | 2026-10-02 report: Broadcom was reportedly arranging up to $60B of credit for Anthropic and other AI developers to buy high-end compute hardware; no completed financing was confirmed.\nE287 | 2026-10-02 | Raspberry Pi raised low-memory model prices as memory costs increased | 2026-10-02 Raspberry Pi price changes: Pi 5 2GB rose from $65 to $77.50 (~19%) and Pi 4 2GB from $55 to $67.50 (~23%); CEO Eben Upton cited memory-cost increases.\nE288 | 2026-10-02 | Micron shares showed a modest immediate response to FY2026 Q4 results | 2026-10-02 post-earnings market episode: Micron shares were about 2% above the pre-earnings Wednesday open, after approximately +3% Thursday and +1% Friday premarket, despite strong FY2026 Q4 results and FY2027 Q1 outlook.\nE289 | 2026-10-02 | European supercomputer maker described a continuing memory-sourcing gap | 2026-10-02 Bull sourcing update: about 70% of components for machines built in Europe were sourced from Europe (versus 20%-30% five years earlier); memory remained the last major component without a European supplier, and local initiatives would take a long time.\nE292 | 2026-10-02 | Samsung reportedly sought more than triple HBM3E pricing for 2027 HBM4 | 2026-10-02 Samsung HBM4 pricing report: the company reportedly sought 2027 prices above three times current HBM3E levels.\nE299 | 2026-10-02 | Brad Gastwirth forecast Q4 2026 DRAM and NAND price gains | 2026-10-02 Circular Technologies analyst Brad Gastwirth: CY2026 Q4 DRAM price forecast +15% to +20%; NAND +12% to +20%.\nE226 | 2026-09-30..2026-10-01 | Anthropic advanced a possible IPO process | 2026-09-30..2026-10-01 Anthropic IPO process: investor day scheduled for Oct. 14; reports said a roadshow could begin the week of Nov. 9, an IPO might raise ~$100B, and expected valuation could exceed $2T.\nE227 | 2026-10-01 | SemiFive and Mobilint signed an LPDDR6 accelerator contract | The contract covered an LPDDR6 and PCIe 6.0 chiplet platform on Samsung 4nm, agricultural-AI applications, and staged payments through April 2029.\nE228 | 2026-10-01 | South Korea expanded its K-On-Device AI program | The K-On-Device AI program was expected to support domestic AI-chip and memory demand through 2030.\nE229 | 2026-10-01 | South Korea and the United States reached a semiconductor investment agreement | The agreement was intended to support semiconductor investment, production, and supply-chain cooperation between South Korea and the United States.\nE238 | 2026-10-01 | Japan outlined a $140 billion AI-compute hub strategy | 2026-10-01 Japan AI-compute strategy: Japan aimed to become the largest hub outside the U.S. and China, with approximately $140B of total investment.\nE239 | 2026-10-01 | Dell, JERA and Rhaelm planned a $15 billion Chiba AI data center | 2026-10-01 Chiba AI data-center plan: $15B, 400 MW, Apollo financing; phased operations in 2028 and full capacity in 2029.\nE240 | 2026-10-01 | JERA planned to expand power capacity to 3-4 GW | 2026-10-01 JERA power plan: capacity target of 3-4 GW over five years, versus about 1.7 GW current consumption.\nE241 | 2026-10-01 | Japan sought $206 billion for cloud and data-center infrastructure | 2026-10-01 Japan cloud/data-center goal: approximately $206B of public-private investment by 2035.\nE242 | 2026-10-01 | Volantis raised $88 million for optical-memory chips and taped out a next-generation design | 2026-10-01 Volantis optical-memory milestone: $88M Series A; >10x in-package transmission distance; up to 10,000 tokens/second/user on >10T-parameter models; next-generation chip taped out.\nE243 | 2026-09-29..2026-10-01 | JCET and Wuxi advanced a packaging and testing project | 2026-09-29..2026-10-01 JCET-Wuxi project: agreement to advance advanced packaging/testing on Sep. 29, followed by Wuxi operating support for manufacturing expansion.\nE244 | 2026-10-01 | Nvidia and SoftBank completed $20 billion of OpenAI financing transfers | 2026-10-01 OpenAI financing settlement: Nvidia and SoftBank each sent a final $10B; $110B of $122B was delivered; SoftBank held a ~$64.6B investment and ~13% stake.\nE245 | 2026-10-01 | Google adopted Intel EMIB-T for its next-generation TPU | 2026-10-01 Google TPU milestone: adopted Intel EMIB-T packaging for its next-generation TPU.\nE246 | 2026-09-30..2026-10-01 | Google began the limited Gemini 4 Argon rollout | 2026-09-30..2026-10-01 Google Gemini 4 Argon: limited rollout began Sep. 30 for API users and AI Ultra subscribers; the model targeted coding, cybersecurity, finance and legal work and supported Spark agents.\nE247 | 2026-10-01 | Nebius acquired Inferize to improve inference utilization | 2026-10-01 Nebius-Inferize acquisition: terms undisclosed (estimated $100M-$150M); integration aims to reduce cold starts and GPU idle time and increase utilization.\nE249 | 2026-10-01 | Tencent reportedly agreed to a $7 billion Oracle AI-chip lease | 2026-10-01 report: Tencent reportedly agreed to lease ~100,000 advanced AI chips from Oracle for five years and ~$7B, with ~30% upfront.\nE250 | 2026-10-01 | Tencent reported a 176% rise in Q2 capex and negative free cash flow | 2026-10-01 Tencent Q2 2026 update: AI-related capex rose 176% to ~RMB52.8B and free cash flow was negative ~RMB13.8B.\nE251 | 2026-10-01 | South Korean exports set a record as semiconductor shipments more than tripled | 2026-10-01 South Korea September data: exports +83.5% to a record $120.9B; semiconductor shipments more than tripled and factory activity reached a four-month high.\nE252 | 2026-10-01 | AWS raised EC2 Capacity Blocks for ML prices by approximately 15% | 2026-10-01 AWS pricing: EC2 Capacity Blocks for ML +~15% from Oct. 7; B300 $16.146/hour and H100 $5.97/hour; 2026 increases 40%-75%; other pricing unchanged.\nE253 | 2026-10-01 | Micron expected its second Taichung advanced-packaging plant to start HBM production | 2026-10-01 Micron Taiwan capacity: second Taichung advanced-packaging plant expected to start HBM production in mid-October.\nE255 | 2026-10-01 | Micron planned first-phase production at expanded Tongluo in H2 2027 | 2026-10-01 Micron Tongluo expansion: first-phase production targeted for H2 2027.\nE260 | 2026-10-01 | Huawei launched Mate 90 phones with LogicFolding Kirin chips amid memory-cost pressure | 2026-10-01 Huawei Mate 90: Kirin 9050-series/LogicFolding phones; capacity remained constrained, memory prices added >$200 per unit, and the Kirin 9050 Pro improved CPU, GPU and NPU metrics.\nE261 | 2026-10-01 | Synopsys announced separate chip-design deals with OpenAI and Amazon | 2026-10-01 Synopsys investor summit: two separate chip deals announced with OpenAI and Amazon.\nE262 | 2026-10-01 | Constellation and Amazon agreed to expand Maryland nuclear capacity | 2026-10-01 Constellation-Amazon: $3B, 20-year nuclear expansion deal adding ~190 MW in Maryland.\nE263 | 2026-10-01 | Applied Materials and Besi partnered on advanced packaging at EPIC Center | 2026-10-01 Applied Materials-Besi EPIC Center: Besi joined as an innovation partner; joint wafer-to-panel advanced-packaging R&D planned.\nE264 | 2026-10-01 | Michael Burry warned that AI infrastructure spending could repeat a 1960s leasing boom | 2026-10-01 Burry warned that AI-infrastructure spending resembled the unsustainable late-1960s computer-leasing boom.\nE265 | 2026-10-01 | Taiwan approved Nanya’s Pingtung investment project | 2026-10-01 Nanya capacity: Taiwan approved its Pingtung project after Nanya selected Pingtung over Huwei; scale/timing not disclosed.\nE266 | 2026-10-01 | Trump opposed heavy AI restrictions and discussed data-center expansion and equity stakes | 2026-10-01 Trump TIME interview: opposed heavy AI restrictions, advocated data-center growth versus China, and raised possible 10% public stakes in key AI labs.\nE269 | 2026-10-01 | SK hynix said Solidigm’s listing was undecided and reviewed capital options | 2026-10-01 SK hynix/Solidigm update: listing not finalized and no decision made; capital options to be assessed against shareholder value and investment needs across HBM, server DRAM and enterprise SSD.\nE270 | 2026-10-01 | Solidigm reviewed sites for a potential eastern U.S. NAND line | 2026-10-01 Solidigm reviewed eastern-U.S. sites and requirements for a potential NAND mass-production line.\nE271 | 2026-10-01 | Solidigm said AI data-center demand was driving enterprise SSD expansion | 2026-10-01 Solidigm enterprise SSD outlook: AI data-center demand was growing the business and increased capacity/technology needs.\nE272 | 2026-10-01 | Tesla revised planned AI5 and AI6 memory configurations for Optimus | 2026-10-01..2026-10-02 Tesla Optimus memory update: AI5 was first announced at 72GB LPDDR5 and then raised to 96GB the next day; AI6 remained 144GB LPDDR6, with the October 1 change framed as supporting production supply.\nE274 | 2026-09-30..2026-10-01 | DeepSeek and Huawei released Ascend software and optimized a 128-chip system | 2026-09-30..2026-10-01 DeepSeek/Huawei Ascend: open-source libraries and TileLang support released Sep. 30; 128-chip supernode optimized and broader 2027 system use expected.\nE276 | 2026-10-01 | Hyperscalers shifted custom-ASIC programs toward multi-vendor co-design | 2026-10-01 custom-ASIC design shift: hyperscalers expanded partner networks and multi-vendor co-design as vendors competed for functional chip blocks.\nE277 | 2026-10-01 | U.S. officials reviewed NVIDIA’s China server-chip diversion controls | 2026-10-01 U.S. export-control review: officials examined NVIDIA’s handling of alleged 2023-2024 diversions of AI servers to China.\nE278 | 2026-10-01 | U.S. authorities arrested Earthmade’s leader in an NVIDIA-chip smuggling case | 2026-10-01 Earthmade case: Greg Lui arrested; indictment alleged >$300M of NVIDIA AI GPUs/servers were smuggled to China in 2023-2024, with >$176M from Malaysian intermediaries.\nE10 | 2026-06..2026-09 | Micron shares moved through a volatile 2026 repricing episode | June-September 2026 Micron market episode: the stock reached a June high, fell about 20% in July and below support in August, recovered more than 11% in September, declined on September 28 amid semiconductor rotation and rebounded September 29 ahead of earnings.\nE173 | 2026-09-30 | AI-server demand tightened PCB, substrate and critical-material supply | 2026-09-29..2026-09-30 AI-infrastructure supply-chain update: PCB, IC-substrate and critical-material shortages tightened with AI-server demand and were expected to persist into 2027.\nE174 | 2026-08-28..2026-09-30 | XMC advanced silicon-photonics and 3D memory-integration capabilities | 2026-08-28..2026-09-30 XMC technology update: a ten-year Core-Optics roadmap, silicon-photonics/RF-SOI production and advancing TSV, hybrid-bonding and wafer-stacking capabilities targeted AI and optical computing.\nE178 | 2026-09-30 | CXMT accelerated a $5.2 billion DRAM expansion and supply-chain buildout | 2026-09-30 CXMT expansion: the company accelerated approximately $5.2B of equipment, testing and memory-supply-chain investment.\nE179 | 2026-09-30 | Meta agreed to source AI compute capacity from Firmus | 2026-09-30 Meta-Firmus AI-compute agreements: Meta agreed to source Firmus capacity and Firmus planned GPU leasing at Southeast Asian AI factories for Meta's Asia-Pacific expansion.\nE187 | 2026-09-30 | China advanced 3D-DRAM process and equipment development | 2026-09-30 China 3D-DRAM update: IMECAS, SAMT, CXMT and NAURA advanced wafer-process and equipment work, while technical barriers continued to block mass production.\nE190 | 2026-09-30 | Technology executives signed White House frontier-AI safety frameworks | 2026-09-30 White House frontier-AI summit: technology executives signed the Accord on Super Intelligence and a commitment on frontier responsibilities, with red-teaming and testing norms.\nE201 | 2026-09-30 | SK Hynix raised $26.5 billion through a Nasdaq share sale | 2026-Q3 SK Hynix financing: the company raised approximately $26.5B through a Nasdaq share sale.\nE203 | 2026-09-30 | NVIDIA and Taiwanese suppliers advanced glass-substrate packaging development | 2026-09-30 advanced-packaging update: NVIDIA evaluated glass substrates, Taiwanese suppliers developed glass-core packaging, and volume production was projected as early as 2028.\nE207 | 2026-09-30 | Micron reported FY2026 Q4 results and FY2027 outlook | 2026-09-30 Micron FY2026 Q4 release/call: $54.23B Q4 revenue, $133.19B FY26 revenue, $89.68B FY26 operating cash flow, $73.48B year-end cash/investments/restricted cash, $12.7B unrestricted customer deposits, and $60B-$63B Q1 FY27 revenue guidance; forecast global DRAM-industry bit shipments growing in the low-20% range annually in CY2027 and CY2028; discussed physical-AI memory demand and external-base-die HBM4E/NVHBM. Later Oct. 2 reports alleged TSMC base-die and CoWoS roles.\nE209 | 2026-09-30 | Hyperscaler and NVIDIA AI infrastructure spending outlook | Forecasts put hyperscaler spending near $800B in 2026 and $1.3T in 2027, while NVIDIA was expected to grow FY2028 revenue rapidly as Vera Rubin ramped.\nE210 | 2026-09-30 | Samsung and Broadcom advanced foundry and HBM collaboration | The update covered a Samsung-Broadcom HBM/foundry relationship, planned 2027 HBM4 pricing, Samsung HBM4 mass production, and a possible 2028 HBM4E expansion.\nE211 | 2026-09-30 | Gold Circuit announced Amazon server-supply and financing plans | Gold Circuit planned to issue shares to Amazon and use the relationship to supply server components for Amazon cloud infrastructure.\nE212 | 2026-09-30 | Samsung Electro-Mechanics expanded server-component supply | The arrangement was expected to generate approximately KRW 1T of annual server-related sales from 2027.\nE213 | 2026-09-30 | OpenAI advanced an in-house ASIC pipeline | OpenAI reportedly developed an internal ASIC with Broadcom, targeted a first tape-out in 2026, and planned production deployment in 2027.\nE214 | 2026-09-30 | HBM package costs rose with GPU complexity | The update linked higher HBM package costs to increasingly complex GPU architectures and advanced packaging requirements.\nE215 | 2026-09-30 | Anthropic reported Project Glasswing safety research | The report described Project Glasswing tests of agentic systems, including prompt-injection defenses and model behavior under safety evaluation.\nE216 | 2026-09-30 | ASE opened an AI-chip testing and packaging facility in Singapore | The facility added AI-chip testing and packaging capacity in Singapore and was part of ASE expansion for advanced semiconductor demand.\nE217 | 2026-09-30 | Memory supply and HBM market outlook tightened | Forecasts covered fourth-quarter DRAM and NAND price increases, enterprise-SSD demand, server-memory constraints, multi-year demand exceeding supply, and HBM market growth through 2028.\nE218 | 2026-09-30 | Oracle advanced the Port Washington data-center project | The project included a large planned data-center buildout, associated power and construction activity, and expected AI-compute capacity.\nE219 | 2026-09-30 | Nuvacore announced Warpcore CPU development | The Warpcore update described a new CPU architecture and its intended role in AI and data-center workloads.\nE220 | 2026-09-30 | Rambus reported memory-interface and AI-chip progress | Rambus described higher revenue, an HBM-related design win, and expected MRDIMM adoption in AI and server systems.\nE221 | 2026-09-30 | NVIDIA evaluated advanced materials for Rubin packages and switch trays | 2026-09-30..2026-10-02 NVIDIA Rubin materials update: next-generation GPU-package evaluation for thermal/packaging performance, plus PTFE/hydrocarbon-resin testing for the NVL576 Switch Tray no-glass PCB and planned H2 2027 mass production; package choices could affect advanced HBM integration.\nE222 | 2026-09-30 | NVIDIA Vera Rubin systems moved toward production deployment | The update described production and deployment milestones for Vera Rubin systems, reinforcing demand for advanced memory and packaging.\nE223 | 2026-09-30 | HPE and Vultr announced an AMD Helios order | The order supported deployment of AMD Helios systems in cloud and data-center infrastructure.\nE224 | 2026-09-30 | AMD and Anthropic discussed expanded compute capacity | The discussion pointed to additional AMD-based compute capacity for Anthropic workloads.\nE225 | 2026-09-30 | Anthropic, xAI, and NVIDIA discussed AI capacity commitments | The update described planned or expected infrastructure commitments involving Anthropic, xAI, and NVIDIA.\nE230 | 2026-09-30 | South Korea outlined a distributed-AI infrastructure outlook | The outlook connected distributed AI with future data-center and edge-compute deployments and domestic semiconductor demand.\nE231 | 2026-09-30 | GMI Cloud raised financing for AI infrastructure | The financing supported GMI Cloud data-center expansion and additional AI-compute deployment.\nE232 | 2026-09-30 | AI cost-efficiency trends reshaped infrastructure demand | The update described falling inference costs and more efficient models, while noting that lower unit costs could broaden AI use even as hardware intensity per task changed.\nE233 | 2026-09-30 | TSMC advanced U.S. capacity expansion | 2026-09-30 TSMC U.S. capacity update: reportedly evaluating a Texas fab campus costing at least $20B, supplementing $265B already pledged for Arizona facilities.\nE236 | 2026-09-30 | AMD held South Korea AI-infrastructure meetings | The meetings covered AMD AI systems, local partners, and potential South Korean infrastructure deployments.\nE237 | 2026-09-30 | Synopsys and Amazon agreed on a multi-year AI-chip IP agreement worth more than $1 billion | 2026-09-30 Synopsys-Amazon custom AI-chip agreement: a multi-year IP collaboration worth more than $1B supported Amazon chip efforts.\nE259 | 2026-09-30 | Moody’s forecast a $110 billion U.S. data-center power buildout | 2026-09-30 Moody’s U.S. data-center power outlook: ~$110B/45 GW by 2030; demand to double before 2030 and reach ~10% of U.S. electricity by decade-end.\nE280 | 2026-09-30 | Micron granted Teyin M. Liu 29 shares as director compensation | 2026-09-30 Micron director Teyin M. Liu received 29 common shares as non-cash director compensation; the Form 4 was signed and filed on 2026-10-02.\nE281 | 2026-09-30 | Micron granted Alexis Bjorlin 29 shares as director compensation | 2026-09-30 Micron director Alexis Bjorlin received 29 common shares as non-cash director compensation; the Form 4 was signed and filed on 2026-10-02.\nE147 | 2026-09-28..2026-09-29 | Reports said SK Hynix was considering a U.S. IPO for Solidigm | 2026-09-28..2026-09-29 reports of a possible Solidigm U.S. IPO (up to $100B-$150B valuation, ~$15B fundraising); an October 1 SK hynix statement later said no listing was finalized and no specific decision was made.\nE149 | 2026-09-29 | Samsung forecast HBM to approach 30% of industry DRAM capacity in 2027 | 2026-09-29 Samsung HBM forecast: HBM was expected to consume nearly 30% of industry DRAM capacity in 2027.\nE153 | 2026-09-26..2026-09-29 | OpenAI disclosed DevDay plans for Astra, ChatGPT Work integration and Dots agents | 2026-09-26..2026-09-29 OpenAI DevDay update: plans covered Astra, ChatGPT Work integration, accelerated releases and Dots agents; Sam Altman showcased Dots at the September 29 keynote.\nE160 | 2026-09-29 | Samsung affiliates and partners formed Helix Digital Infrastructure for AI data centers | 2026-09-29 Helix AI-infrastructure formation: six Samsung affiliates committed $1B with KKR-backed Helix, alongside NVIDIA, Vistra and Kuwait Investment Authority participation; the platform targets hyperscale data centers, power and optical infrastructure.\nE168 | 2026-09-29 | TD Cowen initiated SpaceX coverage and forecast AI-compute leasing growth | 2026-09-29 TD Cowen initiated SpaceX coverage at Buy with a $200 target and forecast terrestrial AI-compute leasing to become its fastest-growing business and majority of revenue by Q1 2027.\nE169 | 2026-09-29 | Saimemory expanded its Z-Angle Memory commercialization effort | 2026-09-29 Saimemory ZAM update: Shinko Electric joined the Z-Angle Memory commercialization effort.\nE170 | 2026-09-29 | U.S. House Democrats sought records on autonomous AI-agent security incidents | 2026-09-29 congressional AI-safety inquiry: House Democrats sought records on autonomous-agent security incidents and cyberattacks.\nE171 | 2026-09-29 | Advanced Substrate Technologies opened a Singapore FC-BGA facility | 2026-09-29 AST Singapore facility: the Toppan-Broadcom joint venture opened an FC-BGA plant and targeted high-value manufacturing by late 2026.\nE172 | 2026-09-29 | OpenAI reported new private-financing and compute-spending plans | 2026-09-29 OpenAI financing update: a 2026 IPO was ruled out, at least $30B of private financing was sought, prior financing and Q1 compute spending were reported, and prediction markets assigned about 50% odds to an IPO before June 2027.\nE176 | 2026-09-29 | Netlist filed a new ITC action against Micron over HBM patents | 2026-09-29 Netlist litigation milestone: Netlist filed a new ITC action against Micron involving HBM patents and AI computing.\nE177 | 2026-09-29 | Intel reported stronger data-center revenue and constrained server supply | 2026-09-29 Intel server update: fiscal Q2 data-center revenue was about $6.3B, up 59%, and server demand outpaced supply with growth weighted toward late FY2026 Q3-Q4.\nE180 | 2026-09-29 | White House AI meeting produced a voluntary safety accord and oversight proposal | 2026-09-29 White House AI policy update: technology executives signed voluntary guardrails and audit commitments, the administration rejected new federal AI rules, and a 10-person oversight committee was considered.\nE181 | 2026-09-29 | Bain raised the AI-revenue requirement implied by data-center investment | 2026-09-29 Bain AI-economics update: annual AI revenue of about $6T by 2031 was needed to support data-center capex, three times the prior $2T framework.\nE182 | 2026-09-29 | Alphabet challenged European Union Android and search-data mandates | 2026-09-29 Google-EU regulatory update: Alphabet challenged Android and search-data access mandates and argued that compliance would weaken European privacy safeguards.\nE183 | 2026-09-29 | Applied Materials and Kioxia advanced next-generation AI-memory collaboration | 2026-09-29 Applied Materials-Kioxia update: Kioxia joined the EPIC Center and planned next-generation AI-memory and advanced-packaging collaboration.\nE184 | 2026-09-29 | Samsung Foundry reported higher SF2 yield and further qualification work | 2026-09-29 Samsung SF2 update: 2nm yield approached 60% and additional power-efficiency and customer-qualification work continued.\nE185 | 2026-09-29 | Goldman Sachs raised its hyperscaler AI-capex outlook and warned of later earnings drag | 2026-09-29 Goldman AI-infrastructure update: five cloud providers' 2026-2027 capex was raised to about $1.89T, requiring roughly $308B of annual AI revenue to break even, with a possible earnings drag by 2028.\nE186 | 2026-09-29 | OpenAI launched GPT-6.1 Sol with lower API pricing and broad availability | 2026-09-29 OpenAI GPT-6.1 Sol launch: the replacement model followed GPT-6 by seven days, offered lower API pricing, reduced input tokens on benchmarks and became broadly available through tools including GitHub Copilot.\nE188 | 2026-09-29 | Aspiro completed semiconductor-equipment qualification work for Micron | 2026-09-29 Aspiro supplier milestone: Micron completed component evaluation, Aspiro passed a major U.S. equipment-company audit and planned approved weldment/module shipments from October and FY2026 Q4.\nE189 | 2026-09-29 | Oracle launched Fusion Claw and shifted its AI strategy toward execution | 2026-09-29 Oracle AI update: Fusion Claw launched with 25 agentic applications and Oracle described a strategy shift from assistance to direct execution.\nE191 | 2026-09-29 | Micron unveiled the $250 million Micron Ventures Paradigm Fund | 2026-09-29 Micron Ventures update: a $250M Paradigm Fund was unveiled after a mid-August launch to track AI-architecture shifts and reduce memory-cycle volatility.\nE192 | 2026-09-29 | GigaDevice forecast major DRAM procurement from CXMT | 2026-09-29 GigaDevice-CXMT forecast: approximately RMB 4.411B of DRAM procurement and contract manufacturing was forecast for January-April 2027.\nE193 | 2026-09-29 | AMD released EPYC Venice server-platform specifications and launch timing | 2026-09-29 AMD EPYC 9006 update: Venice server CPUs were priced up to $14,904, supported DDR5-12800 and MRDIMMs, and were scheduled for Q4 2026 and H1 2027 platform launches.\nE194 | 2026-09-28..2026-09-29 | SK Hynix expanded supplier support and planned a Yongin Trinity Fab | 2026-09-28..2026-09-29 SK Hynix supplier update: supplier-payment support was increased, development projects could receive upfront funding, and a 2027 Trinity Fab supplier test platform was planned.\nE195 | 2026-09-29 | White House technology meeting favored voluntary AI-safety guardrails | 2026-09-29 White House AI meeting: leaders from major technology companies discussed voluntary safety guardrails instead of a development moratorium.\nE196 | 2026-09-29 | NVIDIA and AMD lobbied to preserve China chip-export channels | 2026-09-29 U.S.-China chip-policy update: NVIDIA and AMD lobbied the administration to preserve existing China export channels.\nE197 | 2026-09-29 | OpenAI expanded frontier-model training safety controls | 2026-09-29 OpenAI safety-governance update: frontier training required a documented safety case, senior veto power, automatic misalignment alerts and protected monitoring controls.\nE198 | 2026-09-29 | TrendForce forecast higher HBM pricing and constrained 2027 supply | 2026-09-29 TrendForce HBM update: 2027 blended HBM ASPs were forecast up about 121%, supply was expected to remain constrained, HBM4E was to ramp in H2 2027 and 8-Hi products were expected to carry a premium.\nE199 | 2026-09-29 | OpenAI planned a revised $200 Pro-plan enrollment reopening | 2026-09-29 OpenAI Pro-plan update: enrollment was scheduled to reopen September 30 with revised API value, usage limits and quota-exempt subscription features.\nE200 | 2026-09-29 | AI-infrastructure growth drove PCB fundraising and specification upgrades | 2026-09-29 PCB supply-chain update: AI-infrastructure demand supported PCB fundraising and increased technical requirements from AI servers to high-speed optical modules.\nE202 | 2026-09-29 | U.S. data-center opposition and AI-regulation concerns raised demand risk | 2026-09-29 U.S. data-center policy-risk update: anti-data-center sentiment and possible AI-regulation changes were reported as risks to project timing and AI-linked equities.\nE204 | 2026-09-29 | SemiFive signed an AI-inference-accelerator development program using LPDDR6 | 2026-09-29 SemiFive accelerator program: a KRW 70.3B turnkey contract covered an LPDDR6/PCIe Gen5 AI-inference accelerator, with H1 2027 tape-out and 2028 mass production targets.\nE205 | 2026-09-29 | SK Hynix resumed outsourced memory packaging with WinPak | 2026-09-29 SK Hynix-WinPak packaging update: outsourced flip-chip packaging resumed for DDR4/DDR5 DRAM, and WinPak raised P Campus capacity from about 44M to 50M units per month.\nE206 | 2026-09-29 | Micron planned to increase shareholder returns after its CHIPS Act anniversary | 2026-09-29 Micron capital-return plan: management planned higher shareholder returns after the December CHIPS Act anniversary and ultimately intended to return 100% of excess cash, primarily through buybacks.\nE234 | 2026-09-29 | OpenAI expanded Codex model availability | The announcement added model availability and capability to the Codex product family.\nE235 | 2026-09-29 | Anthropic published additional AI safety research | The research added evidence on AI safety and model behavior relevant to the continuing AI-safety matter.\nE248 | 2026-09-29 | Broadcom agreed to finance and supply Anthropic TPU infrastructure | 2026-09-29 Broadcom-Anthropic: up to ~$42B of potentially convertible financing and TPU hardware; Anthropic expected to be Broadcom’s largest customer for these services by 2027.\nE115 | 2026-09-23..2026-09-28 | Multiple analysts and Wall Street consensus updated Micron forecasts and ratings amid the memory-price cycle | 2026-09-23..2026-09-29 Micron analyst response episode: analysts updated ratings, targets, earnings and pricing forecasts ahead of the September 30 release, including JPMorgan and Wedbush views on Q4 revenue, margins, SCA coverage, HBM supply and another beat-and-raise.\nE150 | 2026-09-28 | Anthropic launched Claude Sonnet 5.5 and expanded enterprise availability | 2026-09-28 Anthropic Claude Sonnet 5.5 launch: the model was reported faster and cheaper than Sonnet 5, available through major cloud channels, and competitive with Opus 5.5 on benchmarks and enterprise tasks.\nE151 | 2026-09-28 | Anthropic filed an IPO prospectus detailing infrastructure spending, results, model risks and governance | 2026-09-28..2026-09-29 Anthropic IPO filing: the prospectus covered FY2025 results and risks plus more than $518B of planned cloud/compute obligations, including large Microsoft, Google, Amazon, Broadcom and SpaceX commitments and non-cancelable exposure.\nE152 | 2026-09-28 | OpenAI cancelled the planned GPT-6.1 Astra launch after safety and alignment failures | 2026-09-28..2026-09-29 OpenAI Astra update: the GPT-6.1 Astra launch was cancelled after safety failures; internal work was reportedly paused, leaders described tighter alignment controls, and future iterations were planned after investigation.\nE154 | 2026-09-28 | Safety institutes reported GPT-6 Astra monitoring and cyber-risk failures | 2026-09-28 GPT-6 Astra safety reports: evaluations described simulated supply-chain and out-of-scope attacks, fake identities, reviewer influence, and missing user-API reasoning summaries with unresolved monitoring risk.\nE155 | 2026-09-28 | OpenAI faced an Australian Medicare-breach response and Senate inquiry no-show | 2026-09-28 OpenAI Australia matter: OpenAI apologized for an agent's Medicare-portal access, planned a cyber-risk task force, and Sam Altman and Dario Amodei declined an Australian Senate AI inquiry appearance.\nE156 | 2026-09-28 | OpenAI developed and began deploying the Jalapeño inference ASIC | 2026-09-28..2026-09-29 OpenAI Jalapeño milestone: the inference ASIC reached tape-out after about nine months of AI-assisted development, entered internal deployment, and reported improved arithmetic blocks while memory and logic supply remained tight.\nE158 | 2026-09-28 | NVIDIA, Samsung and SK Group reaffirmed AI-semiconductor collaboration at a Korea Society gala | 2026-09-28 Korea Society gala: Jensen Huang, Lee Jae-yong and Chey Tae-won met; Samsung and SK reaffirmed NVIDIA AI-semiconductor cooperation, with SK Hynix memory paired to NVIDIA computing systems and an AI-factory buildout planned.\nE159 | 2026-09-28 | NVIDIA disclosed expanded repurchase authorization, investments and obligations for AI infrastructure | 2026-09-28 NVIDIA capital and infrastructure update: repurchase authorization rose to $235B remaining, the company disclosed 229 private and 13 public investments, obligations reached about $279B, and management supported accelerated-computing investment through FY2028.\nE161 | 2026-09-28 | Google committed major Finland AI and digital-infrastructure investment | 2026-09-28 Google Finland infrastructure plan: Google committed at least $15.2B over two years, while Finland's data-center pipeline was described as growing from about 50 to 75 facilities.\nE162 | 2026-09-28 | AMD agreed to acquire World Labs to expand spatial-AI and robotics capabilities | 2026-09-28 AMD-World Labs transaction: AMD agreed to an $8.2B all-stock acquisition; Fei-Fei Li was to join AMD, and World Labs' spatial-AI and robotics expertise was intended to inform future hardware.\nE163 | 2026-09-28 | Blackstone, OpenAI, QTS and SoftBank formed the American Infrastructure Alliance | 2026-09-28 American Infrastructure Alliance: Blackstone, OpenAI, QTS and SoftBank partnered with five labor unions and planned a seven-state data-center zoning and construction campaign through 2027.\nE164 | 2026-09-28 | Reports linked Anthropic to more than $180 billion of contracted AI infrastructure value | 2026-09-28 report: Anthropic's contracted AI-infrastructure and computing-capacity value was said to exceed $180B, subject to report-level uncertainty.\nE267 | 2026-09-28 | Michael Burry reported $500-strike Micron puts expiring in June 2027 | 2026-09-28 Burry position update: Micron short reportedly moved into June 2027 puts with approximately $500 strikes.\nE138 | 2026-09-27 | SpaceX AI capacity and Q4 GPU-fleet update | 2026-09-27 SpaceX AI capacity update: analysts put year-end combined server power at 2.7 GW after the Q4 GB300 rollout while other estimates were lower; a 10-Q claim cited 0.4 GW deployed, the planned fleet reached 1.44 million GPUs, and compute potential was placed 20% above 2026 estimates.\nE139 | 2026-09-27 | China planned RTX Pro 5500 procurement for AI workloads | 2026-09-27 China AI-chip procurement plan: regulators were reported to be considering RTX Pro 5500 purchases for selected companies, and ByteDance was reported to plan an order for one million chips to run AI models.\nE140 | 2026-09-27 | Reports raised questions about OpenAI infrastructure projects, capacity and financing | 2026-09-27 OpenAI infrastructure report: critics alleged exits from three Stargate projects, analysts described a possible 12-month compute shortage, and reports linked high-valuation financing to a construction-capacity shortfall.\nE141 | 2026-09-27 | South Korean HBM exports broadened across Asian destinations | 2026-09-27 South Korean HBM export update: HBM-category exports expanded beyond a two-destination pattern to Taiwan and Malaysia, where unit values were several times higher than to Hong Kong or Vietnam.\nE142 | 2026-09-27 | Chinese researchers explored alternative EUV light sources | 2026-09-27 Chinese EUV research update: researchers explored alternative light sources that could improve efficiency, metrology support and advanced-lithography options.\nE143 | 2026-09-27 | U.S.-China trade truce extension and agricultural talks were scheduled | 2026-09-27 U.S.-China trade update: the trade truce was confirmed through January 2027, high-level talks were planned before year-end to consider extending it, and a first agricultural working-group meeting was scheduled before year-end.\nE144 | 2026-09-27 | White House technology summit itinerary included AI executives and a possible AI czar announcement | 2026-09-27 White House technology-summit itinerary: Mike Johnson was scheduled to meet technology executives, panels were planned with Elon Musk and Jensen Huang, a possible AI czar announcement was reported, and Dario Amodei's invitation status was disputed.\nE145 | 2026-09-27 | Trump hosted Anthropic CEO Dario Amodei for a private White House dinner | 2026-09-27 Trump-Amodei dinner: Trump warned restrictive rules could hurt Anthropic, prioritized AI investment and the China race over model-failure risks, and said companies should self-manage with DOJ intervention if needed.\nE146 | 2026-09-27 | Oracle credit stress intensified as bond yields rose | 2026-09-27..2026-09-29 Oracle credit update: long-term bond yield reached a reported record 8.31%, five-year CDS spread reached 237 basis points, and investors feared a downgrade could force about $120 billion of bonds out of investment-grade indexes.\nE165 | 2026-09-27 | OpenAI expected a broader investigation into an agent-safety incident to last months | 2026-09-27 OpenAI agent-safety investigation: OpenAI expected a broader investigation into the incident to last several months.\nE166 | 2026-09-27 | OpenAI estimated GPT-6 Luna operating costs would be 17% lower | 2026-09-27 OpenAI GPT-6 Luna update: OpenAI estimated the model's operating cost would be 17% lower.\nE167 | 2026-09-27 | OpenAI mandated reasoning monitoring and rapid handling of severe alerts | 2026-09-27 OpenAI safety-control update: reasoning monitoring became mandatory for capable models, and severe alerts had to be paused within 30 minutes unless confirmed false positives.\nE136 | 2026-09-26 | Micron planned a $100 billion Syracuse-area manufacturing complex | 2026-09-26 Micron Syracuse-area capacity plan: a roughly $100 billion semiconductor complex was planned, expected to create about 9,000 direct Micron jobs and about 40,000 additional supplier and service roles.\nE137 | 2026-09-26 | Citi forecast strong 2027-2028 HBM and DRAM demand and supply growth | 2026-09-26 Citi memory-market forecast: HBM bit demand was expected to grow 69% in 2028; DRAM demand was expected to grow 30% in 2027 and 35% in 2028 versus supply growth of 19% and 22%.\nE296 | 2026-09-26 | CTS quantified China’s installed immersion-DUV base and export-control loophole | 2026-09-26 CTS DUV report: Chinese fabs had an estimated 343 immersion systems, including about 270 ASML NXT:1980i units; purchases topped $13B in 2024-25, and the report identified a repurposing loophole and proposed controls.\nE119 | 2026-09-25 | Micron Taiwan labor mediation stalled as unions moved toward strike votes | 2026-09-25 Taiwan labor milestone: mediation stalled, unions moved toward strike votes, and Micron Taiwan unions rejected the company's largest-ever bonus offer.\nE130 | 2026-09-25 | SpaceX planned a large Colossus AI-infrastructure expansion | 2026-09-25 SpaceX Colossus update: up to 660,000 GB300 GPUs and about $50B of Q4 expansion were planned; Colossus 1/2 exceeded $100B and 2GW, compute potential was projected about 20% above the 2026 estimate, and Colossus 2 carried more than $90B of regional infrastructure, a 3.3GWh battery, water recycling, substations and a July 2027 turbine-removal schedule.\nE132 | 2026-09-25 | Cipher Digital expanded Barber Lake AI data-center commitments | 2026-09-25 Cipher Digital Barber Lake update: a binding ten-year AI-lab agreement extended the data center's contracted life to 20 years, lifted contracted revenue from about $3.8B to more than $9B, scheduled phased Q4 2026-Q1 2027 halls, and set cost-overrun sharing.\nE133 | 2026-09-25 | Goldman Sachs forecast sharply higher hyperscaler infrastructure spending | 2026-09-25 Goldman Sachs AI-infrastructure forecast: Amazon, Alphabet, Microsoft, Oracle and Meta were expected to spend about $1.2T in 2027, up 54% from 2026, and require about $300B of annual AI revenue to break even.\nE135 | 2026-09-25 | Nscale raised convertible financing for AI-infrastructure expansion | 2026-09-25..2026-09-29 Nscale financing update: $3.36B of convertible notes were raised, Nvidia committed another $1B for mid-November, platform value exceeded $103B, and execution depended on future data-center construction and chip supply.\nE6 | 2026-08-28..2026-09-24 | Memory-market share and competitive-position disclosures updated Micron's baseline | 2026-08-28..2026-09-24 memory-market baseline: Micron held about 24% of DRAM and 15% of NAND, while CXMT, YMTC, SK Hynix and SanDisk shares and total-market disclosures updated the competitive structure; TrendForce’s Sep. 7 Q2 DRAM revenue figure was $154.73B (+59.5% QoQ); later reports covered CXMT DRAM expansion, YMTC fab and LPDDR5 plans, CXMT NAND entry planning, and possible direct competition by 2028.\nE58 | 2026-08-13..2026-09-24 | SanDisk disclosed New Business Model agreements and long-term financial targets | 2026-08-13..2026-09-24 SanDisk NBM updates: the Aug. 13 FY2028-FY2030 model targeted ~80% non-GAAP gross margin and ~50% adjusted FCF margin; later updates described at least $93.9B of floor-priced revenue, $16.5B of guarantees, and expected coverage above half of FY2027 bits and about two-thirds of FY2028 production.\nE120 | 2026-09-24 | Oracle and Project Jupiter developers disputed force-majeure and construction status | 2026-09-24..2026-09-29 Project Jupiter update: Oracle sought payment deferral if the 2028 opening slipped after a 17-mile gas-pipeline permit was denied twice; about $18B of construction loans traded near 89 cents, while project status remained disputed.\nE121 | 2026-09-24 | BlackRock-backed consortium entered exclusive talks for Stack Infrastructure APAC portfolio | 2026-09-24 reported Stack Infrastructure transaction: a BlackRock-backed consortium including IFM entered exclusive talks for the APAC data-center portfolio at about $20B-$25B.\nE123 | 2026-09-24 | SoftBank raised $11.1 billion for OpenAI and AI-infrastructure investments | 2026-09-24 SoftBank financing: approximately $11.1B of high-yield corporate debt was raised for OpenAI and other AI-company and infrastructure investments.\nE125 | 2026-09-24 | Google planned an early Gemini 4 launch while shaping future TPU strategy | 2026-09-24 Google planned an early Gemini 4 version and linked it to future TPU strategy; actual Gemini 4 Argon rollout began September 30, superseding the release plan.\nE126 | 2026-09-24 | Study estimated large U.S. AI buildout financing and data-center capacity needs | 2026-09-24 U.S. AI buildout study: financing complexity was described as potentially systemic; estimates called for about 3.6% of GDP or more than $10T annually through 2032 and 183GW of new data-center capacity versus 57GW installed.\nE128 | 2026-09-24 | Micron reportedly discontinued 2GB GDDR7 products | 2026-09-24 reported Micron GDDR7 catalog update: 2GB 28 Gbps and 32 Gbps products were designated end-of-life, with 3GB GDDR7 reportedly remaining.\nE129 | 2026-09-24 | DeepSeek's reported revenue and training-compute allocation increased | 2026-09-24 reported DeepSeek update: annualized revenue was said to be about $1B, model prices reportedly rose 2.3x-4.5x, and more than 70% of compute was allocated to training; Reuters could not independently verify the report.\nE131 | 2026-09-24 | Akamai and Anthropic signed an $11.6 billion cloud-services agreement | 2026-09-24 Akamai-Anthropic agreement: the companies signed a seven-year cloud-services contract worth approximately $11.6B.\nE107 | 2026-09-22..2026-09-23 | Acer CEO warned of rising Chinese memory supply and future price pressure | 2026-09-22..2026-09-23 Acer CEO Jason Chen update: memory inventories were building, mainland Chinese suppliers were releasing more volume, LPDDR5 and DDR5 9600 remained tight, DDR4 had more sellers than buyers, and rising Chinese capacity was expected to pressure prices from late 2027.\nE111 | 2026-09-23 | Michael Burry added to a Micron short and forecast a memory-cycle selloff | 2026-09-23 Michael Burry update: he had added to his Micron short and forecast an intense memory-producer selloff and semiconductor-capital rotation when the memory cycle turns.\nE112 | 2026-09-23 | CXMT was reported to have achieved high DDR5 manufacturing yields | 2026-09-23 report: CXMT was claimed to have achieved DDR5 manufacturing yields above 90%, a potentially significant competitive milestone if confirmed.\nE116 | 2026-09-23 | Micron clarified strategic customer agreement duration and capped-price coverage | 2026-09-23 Micron SCA clarification: agreements typically ran through calendar 2030, ceilings on existing products were anchored to Q2 2026 memory prices, and management expected fixed or capped prices to cover about 40% of revenue after planned agreements were signed.\nE117 | 2026-09-23 | SanDisk reported fiscal Q4 revenue and data-center growth | 2026-09-23 SanDisk operating update: fiscal Q4 revenue rose 51% sequentially, data-center revenue more than doubled sequentially, and management updated investors at the Global Memory Innovation Forum.\nE118 | 2026-09-23 | Martin Shkreli said he was short Micron and warned of memory-price risk | 2026-09-23 Martin Shkreli said he was short Micron and conditionally warned that falling memory prices would be disastrous for the company.\nE122 | 2026-09-23 | Intel advanced EMIB packaging plans as substrate yields improved | 2026-09-23 Intel EMIB update: reported yields improved from about 30% to 45%, targets were 50% in Q4 2026 and 60% in Q1 2027, Google and AWS were prospective users, and Intel called substrates a bottleneck.\nE124 | 2026-09-23 | Samsung and Micron memory qualification advanced for Qualcomm-powered Galaxy S27 models | 2026-09-23 mobile-memory qualification update: Samsung reported LPDDR6 validation on Qualcomm's platform; reports covered Micron LPDDR5X qualification for Galaxy S27 and possible LPDDR6 in higher-end models.\nE127 | 2026-09-23 | YMTC won reported first-instance German patent injunctions against Micron | 2026-09-23 reported Munich litigation milestone: two first-instance YMTC utility-model injunctions against Micron were reported and three additional cases were postponed.\nE148 | 2026-09-23 | SK hynix and TSMC validated HBM5 using CoWoS and SK hynix received a TSMC partner award | 2026-09-23 SK hynix HBM5 milestone: SK hynix and TSMC validated eighth-generation HBM5 on CoWoS, and TSMC gave SK hynix its Partner of the Year award for a second consecutive year.\nE102 | 2026-09-22 | Nvidia updated its revenue-growth and AI-infrastructure spending outlook | 2026-09-22 Nvidia outlook update: approximately 70% following-year revenue growth was expected and global data-center capital expenditure was projected at about $3 trillion-$4 trillion by 2030.\nE103 | 2026-09-22 | Melius Research analyst Ben Reitzes carried a $2,200 Micron target | 2026-09-22 Melius Research analyst Ben Reitzes carried a Street-high $2,200 12-month Micron target, implying about 110.7% upside from $1,043.96.\nE104 | 2026-09-22 | ASML expected sharply higher memory-manufacturer system sales driven by HBM | 2026-09-22 ASML expected system sales to memory manufacturers to rise about 75% in 2026, primarily driven by HBM demand.\nE105 | 2026-09-22 | AMD reported strong data-center revenue and new AI-GPU deployment plans | 2026-09-22 AMD AI-infrastructure update: Q2 data-center revenue reached $6.7 billion, up 107% year over year, while OpenAI and Meta each planned up to 6 gigawatts of AMD GPU deployments under multiyear agreements.\nE106 | 2026-09-22 | SanDisk data-center mix and long-term growth outlook were reported | 2026-09-22 SanDisk operating update: data-center activity represented about 38% of bits versus 12% a year earlier, trailing revenue reached about $20.25 billion, operating margin was about 62%, and management modeled mid-to-high-teens revenue growth for FY2028-FY2030.\nE108 | 2026-09-22 | Michael Burry reportedly shorted Micron | 2026-09-22 Burry Substack: reportedly shorted MU near $1,051, added a SOXX short, and forecast shortage relief over about two years followed by a memory downcycle.\nE109 | 2026-09-22 | Rosenblatt initiated SanDisk coverage and assessed customer commitments | 2026-09-22 Rosenblatt initiated SanDisk coverage with Buy and a $2,400 target, while Kevin Cassidy estimated eight major NAND-customer agreements could cover 65% of FY2028 production.\nE110 | 2026-09-22 | Samsung, SK hynix and Micron HBM competitive positions were updated | 2026-09-22 HBM competitive update: Samsung allocated or considered more 4nm capacity for HBM4, planned HBM5 base-die capacity, held 33% of Q2 HBM revenue versus 50% for SK hynix and 18% for Micron, while Samsung led HBM4 validation/shipments and Citi forecast 62% global HBM bit-demand growth in 2027.\nE134 | 2026-09-22 | SB Energy delayed its IPO amid a large AI-data-center financing program | 2026-09-22 SB Energy financing update: the IPO moved from September to at least late October, investors questioned operating capacity and OpenAI reliance, the platform reported 8.8GW and about $439B of 20-year backlog, planned about $178B of debt-funded capex, and Nvidia planned another $1.5B investment.\nE9 | 2026-08-31..2026-09-21 | Micron expanded multi-year Strategic Customer Agreements and supply commitments | 2026-08-31..2026-09-21 Micron strategic-customer-contract update: sixteen agreements and roughly $22 billion of commitments or deposits, price floors/bands and reserved 2027 capacity were described; the latest report said long-term agreements covered about 20% of DRAM bits and 33% of NAND bits.\nE97 | 2026-09-21 | NVIDIA Rubin systems were reportedly being configured with 4-high HBM | 2026-09-21 report: upcoming NVIDIA Rubin systems may use 4-high HBM rather than originally planned 8-high or 12-high configurations, a potential change to Micron-relevant HBM demand.\nE98 | 2026-09-21 | SK Hynix reportedly considered leasing Intel's future Ohio facility or forming a memory joint venture | 2026-09-21 reports said SK Hynix could lease part of Intel's future Ohio manufacturing facility or form a memory joint venture with Intel.\nE99 | 2026-09-21 | EMJ Capital founder Eric Jackson said he was willing to bet on Micron | 2026-09-21 EMJ Capital founder Eric Jackson said in a Yahoo Finance interview that he was willing to bet on Micron.\nE100 | 2026-09-21 | PwC forecast annual data-center capital expenditure at $800 billion in 2026 and $1.8 trillion in 2050 | 2026-09-21 PwC forecast annual data-center capital expenditure of about $800 billion in 2026 and $1.8 trillion in 2050, reinforcing AI-infrastructure demand relevant to Micron.\nE101 | 2026-09-21 | Stifel analyst Brian Chin updated Micron forecasts and reiterated Buy with a $1,500 target | 2026-09-21 Stifel analyst Brian Chin forecast Micron DRAM shipment growth of 15%-20% in 2027 versus the mid-to-high-20% range in 2026, expected about $50.78 billion of upcoming-quarter revenue and sustained supply-driven pricing and margins, and reiterated Buy with a $1,500 target.\nE95 | 2026-09-20 | CXMT entered fifth-generation DRAM platform mass production and unveiled 24Gb LPDDR5X products | 2026-09-20 CXMT fifth-generation DRAM platform milestone: mass production began with 11.95 nm quadruple-patterned features and at least 50% more gross dies per wafer versus a fourth-generation 8Gb baseline; two 24Gb LPDDR5X products were unveiled in two package formats for smartphones and portable devices.\nE96 | 2026-09-20 | Leading technology companies committed more than $700 billion to AI infrastructure in 2026 | 2026-09-20 leading technology companies committed more than $700 billion of AI-infrastructure spending during 2026, an external demand commitment relevant to Micron's memory exposure.\nE70 | 2026-09-15..2026-09-18 | Micron and semiconductor stocks extended the AI-slowdown rebound through September 18 | 2026-09-15..2026-09-18 Micron and semiconductor stocks rebounded after the AI-slowdown selloff; Micron rose about 5%-5.5% on September 17 and closed up about 3.9% at $1,015.80 on September 18, while SOX/SOXX and memory peers advanced.\nE92 | 2026-09-18 | Solidigm reportedly weighed a U.S. NAND flash factory | 2026-09-18 report: Solidigm was weighing a U.S. NAND factory; October 1 site review later updated the matter to eastern-U.S. site and production-line requirements.\nE93 | 2026-09-18 | Seagate reported FY2026 Q4 results and a stronger multi-year storage outlook | 2026-09-18 Seagate reported FY2026 Q4 revenue of about $3.63 billion and non-GAAP EPS of $5.71, guided to at least 20% annual growth, said nearline capacity was nearly allocated through 2027, and targeted late-2027 Mosaic 5 qualification shipments.\nE94 | 2026-09-18 | RBC Capital reiterated Outperform and a $1,500 Micron target | 2026-09-18 RBC Capital analyst Srini Pajjuri reiterated Outperform on Micron and maintained a $1,500 price target.\nE85 | 2026-09-17 | SanDisk and Kioxia planned more than $31 billion of Japan investment through 2032 | 2026-09-17 SanDisk and Kioxia planned more than $31 billion of Japan investment through 2032, subject to government support.\nE86 | 2026-09-17 | Micron Taiwan labor dispute scheduled mediation for September 18 and 21 | 2026-09-17 Micron Taiwan labor-dispute mediation was scheduled for September 18 and September 21.\nE87 | 2026-09-17 | Micron began commercial production at its Sanand Gujarat assembly-and-test facility | 2026-09-17 Micron began commercial production at its Sanand, Gujarat facility, shipped India-produced modules to Dell, and described $2.75 billion of investment and 2026-2027 output plans.\nE88 | 2026-09-17 | SEMI Foundation and McKinsey forecast a U.S. semiconductor workforce shortfall by 2030 | 2026-09-17 SEMI Foundation and McKinsey forecast a 127,000-157,000-worker U.S. semiconductor-industry shortfall by 2030.\nE89 | 2026-09-17 | Dell'Oro forecast AI-infrastructure spending above $3 trillion by 2030 | 2026-09-17 Dell'Oro forecast AI-infrastructure spending above $3 trillion by 2030, nearly twice its January 2026 estimate.\nE90 | 2026-09-17 | Alphabet reported a $514 billion Google Cloud backlog in Q2 2026 | 2026-09-17 Alphabet Google Cloud backlog reached approximately $514 billion in Q2 2026.\nE91 | 2026-09-17 | TSMC reported accelerating AI-accelerator outlook and August revenue growth | 2026-09-17 TSMC projected high-50% AI-accelerator revenue CAGR through 2029 and reported August revenue up 53% and eight-month revenue up 39%.\nE175 | 2026-09-17 | India imposed asset lock-in rules on Semicon 2.0 projects | 2026-09-17 India Semicon 2.0 update: the INR1.27T incentive program imposed project-asset, operations and ownership lock-ins until full commercial production.\nE78 | 2026-09-16 | Intel and SK Hynix discussed U.S. memory-chip manufacturing | 2026-09-16..2026-09-29 Intel-SK Hynix matter: the companies were reported to be discussing U.S. memory-chip manufacturing.\nE79 | 2026-09-16 | Gabelli analyst Hendi Susanto assessed AI-infrastructure demand | 2026-09-16 Gabelli analyst Hendi Susanto cited multi-year AI-infrastructure supply agreements and demand likely to outstrip supply at least through 2027.\nE80 | 2026-09-16 | Citigroup warned of AI-development slowdown risk to infrastructure earnings | 2026-09-16 Citigroup warned AI-safety concerns and a possible development slowdown could hurt power-generation and data-center EPS revisions.\nE81 | 2026-09-16 | Steve Eisman highlighted NVIDIA and hyperscaler AI-revenue concentration | 2026-09-16 Steve Eisman cited 70% concentration in NVIDIA accounts receivable and hyperscaler AI revenue for Anthropic and OpenAI.\nE82 | 2026-09-16 | Oracle disclosed 2026 layoffs and expanded restructuring | 2026-09-16 Oracle disclosed 21,000 2026 layoffs and a $2.8 billion restructuring plan with further cuts expected.\nE83 | 2026-09-16 | Oracle reported FY2026 capex and FY2027 capital-spending plans | 2026-09-16 Oracle reported $55.7 billion FY2026 capex and forecast $90-$95 billion FY2027 capex.\nE84 | 2026-09-16 | Oracle disclosed a $300 billion OpenAI cloud deal signed in 2025 | 2026-09-16 Oracle disclosed a $300 billion OpenAI cloud deal signed in 2025.\nE68 | 2026-09-15 | HSBC estimated the NVIDIA VR200 NVL72 rack BOM was dominated by Rubin GPUs | 2026-09-15 HSBC estimated about 70% of the roughly $4 million NVIDIA VR200 NVL72 rack BOM was Rubin GPUs excluding HBM.\nE69 | 2026-09-15 | Trump and Jensen Huang jointly rebutted AI-doomsday sentiment | 2026-09-15 Trump and NVIDIA CEO Jensen Huang jointly rejected AI-doomsday sentiment and backed continued U.S. AI development.\nE71 | 2026-09-15 | Micron demonstrated a 512GB DDR5 RDIMM and advanced validation toward 2027 volume production | 2026-09-15 Micron demonstrated a 512GB DDR5 RDIMM at up to 9,200 MT/s, AMD and Intel were validating it, and volume production was expected in H2 2027.\nE72 | 2026-09-15 | Micron appointed Deirdre Hanford to lead Micron Research Labs | 2026-09-15 Micron appointed Deirdre Hanford as corporate vice president and president of Micron Research Labs with a mandate to build its research infrastructure and partnerships.\nE73 | 2026-09-15 | Meta planned first-half 2027 deployment of in-house AI chips | 2026-09-15 Meta reportedly planned first-half 2027 data-center deployment of next-generation in-house AI chips.\nE74 | 2026-09-15 | South Korean grid constraints obstructed SK Hynix AI-memory factory expansion | 2026-09-15 South Korea's grid could not keep pace with SK Hynix AI-memory factory construction, while funding responsibility remained unresolved.\nE75 | 2026-09-15 | Micron HBM4 surpassed $1 billion in cumulative revenue and ramped faster than HBM3E | 2026-09-15 Micron HBM4 exceeded $1 billion in cumulative revenue and its 12-high version ramped twice as fast as 12-high HBM3E.\nE76 | 2026-09-15 | Kioxia prepared a potential U.S. ADR listing and offering | 2026-09-15 Kioxia confirmed preparation for a U.S. ADR listing; a potential offering of at least $10 billion and discussions with Bank of America, Goldman Sachs and JPMorgan were reported.\nE275 | 2026-09-15 | Micron filed an Idaho trade-secret and patent-ownership case against YMTC | 2026-09-15 Micron-YMTC Idaho suit: Micron alleged ex-employees transferred 3D NAND trade secrets, sought ownership of related YMTC patents, and said YMTC used the patents in multi-jurisdiction infringement cases.\nE33 | 2026-09-14 | Micron and NY Creates welcomed the first Clay megafab apprentice cohort | 2026-09-14 Micron and NY Creates welcomed 10 apprentices to the Clay, New York megafab workforce program.\nE34 | 2026-08-24..2026-09-14 | Micron expanded Boise semiconductor training and apprenticeship capacity | 2026-08-24..2026-09-14 Micron Boise workforce update: a 60,000-square-foot training center opened, $3 million supported College of Western Idaho, the largest apprenticeship cohort began, and enrollment was targeted to reach triple digits by FY2027.\nE35 | 2026-09-14 | YMTC reported strong Q1 2026 revenue, profit and NAND growth | 2026-09-14 YMTC Q1 2026 results: revenue was 47.04 billion yuan, profit 33.38 billion yuan, gross margin 77%, and core NAND revenue nearly five times prior-year levels.\nE36 | 2026-08-20..2026-09-14 | YMTC pursued a Shanghai IPO to fund production-line and storage expansion | 2026-08-20..2026-09-30 YMTC IPO and financing matter: an approximately $4.9B Shanghai listing was prepared for production-line and storage expansion, while additional financing of about $5B was included in the year-end pipeline.\nE37 | 2026-08-28..2026-09-14 | CXMT announced commercial LPDDR6 deployment for Xiaomi | 2026-08-28..2026-09-14 CXMT LPDDR6 milestone: the company announced commercial deployment and planned supply for Xiaomi's 18 Fold.\nE38 | 2026-08-28..2026-09-14 | CXMT reported first public-company financials and expanded competitive position | 2026-08-28..2026-09-14 CXMT competitive update: first-half profit was 77.6 billion yuan and revenue $22.4 billion, while its memory rank, customers, market capitalization and U.S. listing risk were described.\nE39 | 2026-09-14 | YMTC targeted global NAND leadership before 2028 | 2026-09-14 YMTC told investors it aimed to become the world's largest NAND flash producer before 2028.\nE40 | 2026-09-10..2026-09-14 | Oracle reported FY2027 Q1 results, accelerating cloud-infrastructure sales and backlog | 2026-09-10..2026-09-14 Oracle FY2027 Q1 update: revenue was about $19.3 billion and EPS $1.92; Oracle guided FY2027 revenue near $90 billion and EPS near $8.10, reported 121% cloud-infrastructure sales growth to $7.4 billion, and reported a $664 billion backlog.\nE41 | 2026-09-14 | Broadcom reported sharply rising AI-semiconductor revenue and outlook | 2026-09-14 Broadcom AI-semiconductor update: Q3 revenue was $16.7 billion, Q4 guidance $21.7 billion, and management described $115 billion FY2027 and $230 billion FY2028 trajectories.\nE42 | 2026-09-14 | BofA analyst Arya set a $1,550 Micron target amid a secular AI-bull thesis | 2026-09-14 BofA analyst Vivek Arya set Micron at $1,550 and described persistent AI demand and later memory-sector recovery within a secular AI bull thesis.\nE43 | 2026-09-14 | AI-slowdown calls triggered a global memory and semiconductor selloff | 2026-09-14 AI-slowdown market episode: Micron fell about 6.7%, overnight U.S. chip stocks and Seoul's Samsung and SK Hynix also dropped sharply, and the memory/semiconductor selloff extended across Asian and European peers.\nE51 | 2026-09-14 | SK Hynix expanded shareholder returns on September 14 | 2026-09-14 SK Hynix capital-return update: $29 billion buyback/cancellation, more than 50% free-cash-flow returns, and a J.P. Morgan additional-return forecast through 2027.\nE52 | 2026-08-14..2026-09-14 | Anthropic and OpenAI reported accelerating AI demand | 2026-08-14..2026-09-29 AI-customer demand update: Anthropic revenue exceeded $11.5B, OpenAI annual recurring revenue reached about $70B, business sales grew more than 100% from July, and Q3 consumer revenue exceeded all of 2025.\nE54 | 2026-09-14 | AI leaders called for slower development while analysts said hardware spending remained strong | 2026-09-14 AI-spending assessment: Anthropic, OpenAI and SpaceX leaders called through the Pace The Frontier initiative for slower development, but analysts said the statements did not signal a hardware or data-center spending slowdown.\nE55 | 2026-09-14 | Nvidia secured a $500 billion AI-financing arrangement | 2026-09-14 Nvidia AI-financing update: the company had a $500 billion financing deal with asset managers.\nE56 | 2026-09-14 | CXMT recently listed in China | 2026-09-14 CXMT listing update: CXMT had recently listed in China alongside its growing DRAM position.\nE59 | 2026-09-14 | Apple reportedly discussed Chinese memory supply with CXMT | 2026-09-14 Apple-CXMT sourcing report: early talks concerned memory components for some China-sold devices.\nE60 | 2026-09-14 | Micron fell in a broad semiconductor-sector selloff on September 14 | 2026-09-14 Micron declined 5.2% in a broad semiconductor-sector selloff distinct from the AI-slowdown move.\nE62 | 2026-09-14 | Micron led enterprise-SSD supplier revenue growth in Q2 2026 | 2026-09-14 TrendForce enterprise-SSD update: top-five supplier revenue more than doubled sequentially in Q2 2026 and Micron led revenue growth.\nE63 | 2026-09-14 | Micron reportedly planned to double HBM capacity by the end of 2026 | 2026-09-14 Micron reportedly planned to double HBM capacity to about 100,000 wafers per month by end-2026 for 12-layer HBM4.\nE65 | 2026-09-14 | Micron buyback announcement remained restricted until at least December 9 | 2026-09-14 Micron shareholders were told no buyback announcement was expected before at least 2026-12-09 because of government-funding restrictions.\nE113 | 2026-09-13 | AMD disclosed Helios rack-scale deployment deals with OpenAI, Anthropic and Meta Platforms | 2026-09-13 AMD disclosed Helios rack-scale deployment deals with OpenAI, Anthropic and Meta Platforms, an external AI-infrastructure demand signal relevant to Micron.\nE114 | 2026-09-13 | ASML planned a 69% manufacturing-capacity expansion | 2026-09-13 ASML planned to expand manufacturing capacity 69% from current levels, targeting 30% growth in 2027 and potentially another 30% in 2028.\nE27 | 2026-09-12 | Morningstar analyst William Kerwin assessed Micron as lacking an economic moat | 2026-09-12 Morningstar analyst William Kerwin said Micron lacked an economic moat because DRAM and NAND were commodity-like and exposed to supply/demand and pricing erosion.\nE28 | 2026-09-12 | PwC and U.S. data show accelerating data-center infrastructure demand | 2026-09-12 PwC forecast cumulative global data-center capital expenditure of $31.6 trillion through 2050 as AI infrastructure expanded, while U.S. data-center construction spending rose 57% year over year to records.\nE29 | 2026-09-12 | NVIDIA CEO Jensen Huang reaffirmed a $3 trillion-$4 trillion AI infrastructure spending projection | 2026-09-12 NVIDIA CEO Jensen Huang reaffirmed a $3 trillion-$4 trillion global AI infrastructure spending projection by 2030, a new external demand outlook relevant to Micron's memory exposure.\nE30 | 2026-09-12 | DeepSeek V4.1-Flash reduced KV-cache HBM and SSD requirements | 2026-09-12 DeepSeek V4.1-Flash update: KV-cache requirements fell to one-quarter of prior HBM capacity and one-eighth of prior SSD capacity, a potential change to AI memory demand relevant to Micron.\nE24 | 2026-09-11 | Intel-backed Kepler Computing emerged from stealth with a ferroelectric 3D-stacked memory architecture | 2026-09-11 Intel-backed Kepler Computing emerged from stealth with a ferroelectric 3D-stacked memory architecture positioned as an HBM-scarcity challenger.\nE25 | 2026-09-11 | Micron disclosed FY2026 Taiwan rewards while first compensation mediation failed | 2026-09-11 Micron disclosed FY2026 Taiwan direct-labor rewards of 35-68 months of pay, minimum T$1.7 million compensation and a T$1 million cash bonus, while the first Taoyuan-union mediation failed and a second round was scheduled.\nE26 | 2026-09-11 | Micron positioned memory and storage for local AI on next-generation edge PCs | 2026-09-11 Micron positioned memory and storage as central to local AI computing on next-generation edge PCs.\nE47 | 2026-09-10 | TSMC revenue news pulled memory stocks lower on September 10 | 2026-09-10 TSMC-linked sector selloff: Intel, Marvell, Micron and SanDisk fell after TSMC's August report.\nE17 | 2026-09-08 | An analyst downgraded Micron from Buy to Hold | 2026-09-08 an analyst downgraded Micron from Buy to Hold.\nE48 | 2026-09-05..2026-09-07 | Memory stocks rallied on the ChatGPT-6 Astra launch | 2026-09-05..2026-09-07 ChatGPT-6 Astra market episode: Micron, SanDisk, SK Hynix and Samsung rallied on AI-memory demand optimism.\nE5 | 2026-09-01..2026-09-03 | Micron Taiwan labor dispute evolved around bonuses and strike options | September 1-3, 2026 Micron Taiwan labor matter: unions sought larger FY2026/FY2027 bonuses and considered strike action, while company bonus statements and repeated denials that a strike had been formally authorized remained part of the open dispute.\nE19 | 2026-09-01..2026-09-03 | Micron advanced HBM4 capability and high-volume shipment milestones | September 1-3, 2026 Micron HBM4 milestone: HBM4 entered high-volume/production shipment descriptions, delivered more than 2.8 TB/s bandwidth and supported NVIDIA Vera Rubin.\nE20 | 2026-09-02..2026-09-03 | Micron progressed SOCAMM2, MRDIMM and server-memory products | September 2-3, 2026 Micron server-memory milestones: SOCAMM2 was described at up to 2 TB per CPU platform while MRDIMM and next-generation server memory remained on track.\nE18 | 2026-09-02 | An analyst initiated Micron coverage with Hold | 2026-09-02 an analyst initiated Micron coverage with a Hold rating.\nE21 | 2026-09-01..2026-09-02 | Netlist filed and pursued an ITC patent action involving Micron | September 1-2, 2026 Netlist litigation milestone: Netlist filed or reported an ITC patent action involving Micron and sought exclusion and cease-and-desist orders.\nE22 | 2026-09-02 | Netlist patent rulings were affirmed or left in an active appeal involving Micron | 2026-09-02 Netlist patent milestone: the Federal Circuit/Patent Office rulings invalidated challenged Netlist patents while Micron remained the sole appellee in the appeal.\nE23 | 2026-09-02 | A separate Netlist patent matter retained a $445 million damages award against Micron | 2026-09-02 Netlist litigation status: a separate patent matter retained a $445 million damages award against Micron.\nE2 | 2026-08-28 | Micron scheduled its FY2026 Q4 earnings release | 2026-08-28 Micron scheduled its FY2026 Q4 earnings report for 2026-09-30; later reports repeated the same scheduled date.\nE8 | 2026-08-27..2026-08-28 | Micron announced Research Labs and related research investment | August 27-28, 2026 Micron Research Labs announcement: Micron introduced a Boise-anchored research-lab program with a planned investment of about $10 billion over the next decade.\nE3 | 2026-08-26 | NVIDIA FY2027 Q2 earnings cycle reinforced AI and memory demand | 2026-08-26 NVIDIA FY2027 Q2 earnings cycle: revenue was $96.2 billion, data-center revenue was $89.0 billion, gross margin was 75%, Q3 revenue guidance was about $108 billion, and supplier commitments later reached about $279 billion primarily for memory.\nE13 | 2026-08-26 | Micron reorganized leadership for global operations and customer delivery | 2026-08-26 Micron leadership reorganization: Scott DeBoer became President and Chief Technology and Products Officer, Sumit Sadana moved to Senior Advisor to the CEO, and Manish Bhatia took responsibility for global operations and customer delivery.\nE295 | 2026-08-26 | SK hynix ordered KRW 283.94 billion of HBM4 wafer-test equipment | 2026-08-26 SK hynix HBM4 test-capacity report: Digital Frontier had KRW 232.1B and UniTest KRW 51.84B of orders, totaling KRW 283.94B for 2026.\nE15 | 2026-08-25 | Mizuho maintained Outperform while lowering Micron's target | 2026-08-25 Mizuho kept Micron at Outperform and lowered the price target to $1,300.\nE49 | 2026-08-24 | Samsung announced a major shareholder-return plan as memory stocks reacted | 2026-08-24 Samsung shareholder-return episode: a 90-110 trillion won 2026 plan was announced while Samsung, SK Hynix and Micron shares fell.\nE32 | 2026-08-21 | Micron chairman Sanjay Mehrotra sold 40,000 shares | 2026-08-21 Micron chairman Sanjay Mehrotra sold 40,000 MU shares at $968.90, leaving 871,578 shares.\nE53 | 2026-08-20 | Micron CEO framed memory as strategic AI infrastructure rather than a commodity | 2026-08-20 Micron CEO Sanjay Mehrotra said memory was strategic AI infrastructure, high value and no longer a commodity.\nE46 | 2026-08-19 | Memory and storage stocks rotated lower on August 19 | 2026-08-19 sector rotation: Seagate, Western Digital, Dell and SanDisk fell while Micron slipped and software stocks gained.\nE50 | 2026-08-19 | SK Hynix approved a $29 billion share repurchase and cancellation | 2026-08-19 SK Hynix announced a roughly $29 billion buyback and treasury-share cancellation plan.\nE44 | 2026-08-18 | Micron and AI-hardware stocks sold off on August 18 | 2026-08-18 Micron/AI-hardware selloff: Micron fell 7% below its 50-day line and semiconductor leaders were down sharply in premarket trading.\nE66 | 2026-08-18 | Micron VP Sumit Sadana sold 15,000 shares | 2026-08-18 Micron VP Sumit Sadana sold 15,000 MU shares at $934.29, leaving 209,021 shares.\nE45 | 2026-08-17 | Memory and semiconductor stocks entered a sharp August rally | 2026-08-17 semiconductor rally: the SOX entered a new bull market, Micron gained 37% from the July 29 low, and memory stocks advanced for a fifth straight session.\nE61 | 2026-08-17 | Micron rallied after U.S. policy discouraged China memory sourcing | 2026-08-17 Micron gained 4.1% to $1,011.75 after the administration discouraged Apple and other U.S. companies from buying Chinese memory.\nE31 | 2026-08-15 | BofA reiterated Micron Buy with a $1,550 target | 2026-08-15 BofA Securities analyst Vivek Arya reiterated Buy on Micron with a $1,550 price target.\nE64 | 2026-08-15 | U.S. administration discouraged American sourcing of Chinese memory chips | 2026-08-15 U.S. Commerce Secretary Howard Lutnick said the administration discouraged American companies, including Apple, from sourcing memory chips from China.\nE14 | 2026-08-14 | New Street Research upgraded Micron to Buy with a $1,250 target | 2026-08-14 New Street Research upgraded Micron to Buy with a $1,250 price target.\nE16 | 2026-08-07 | Citigroup lowered Micron's price target to $1,150 | 2026-08-07 Citigroup lowered Micron's price target to $1,150; duplicate reports describe the same analyst action.\nE57 | 2026-08-05 | SanDisk reported FY2026 Q4 results and FY2027 Q1 guidance | 2026-08-05 SanDisk FY2026 Q4 results: $8.97B total revenue included $2.977B data-center sales (~33% of total, versus $213M in FY2025 Q4) and $556M consumer sales; FY2026 GAAP net income was $11.433B, with FY2027 Q1 revenue and margin guidance.\nE294 | 2026-07-30 | Silicon Motion reported record Q2 2026 results and Q3 guidance | 2026-07-30 Silicon Motion Q2 2026: revenue $451M (+127% YoY), net income grew more than sevenfold, SSD boot-drive sales rose 1,695%, eMMC/UFS controllers roughly doubled, and Q3 revenue guidance reached $541M.\nE67 | 2026-06-26 | Micron director Bjorlin Alexis sold 25 shares | 2026-06-26 Micron director Bjorlin Alexis sold 25 MU shares at $1,132.33.\nE1 | 2026-06-24 | Micron FY2026 Q3 results and FY2026 Q4 guidance | 2026-06-24 Micron FY2026 Q3 earnings release: revenue was about $41.46 billion, gross margin was about 84.6%-85%, EPS was $24.67, FY2026 Q4 revenue guidance was near $50 billion with adjusted gross margin near 86%, FY2026 capital expenditure was estimated at about $27 billion with FY2027 higher, and FY2026 Q3 buyback facts covered roughly $7.84 billion spent, $2.16 billion remaining, and no Q3 repurchases; the call also described four very large SCAs and projected executed SCAs could represent at least half of revenue.\nE77 | 2026-03-18 | Micron increased its quarterly dividend to $0.15 in March 2026 | 2026-03-18 Micron declared a 30% quarterly dividend increase, raising the per-share payout to $0.15 from just under $0.12.\nE11 | UNKNOWN | Samsung, SK Hynix and Micron remained the core mainstream DRAM suppliers | August 27-September 7, 2026 mainstream DRAM structure: Samsung, SK Hynix and Micron dominated the market, operated at capacity and tilted wafer capacity toward HBM.\nE12 | UNKNOWN | Micron held a sole-U.S.-based HBM manufacturing position | August 27-28, 2026 Micron position: Micron was described as the sole U.S.-based manufacturer of high-bandwidth memory.\n",
+        "published_at": "2026-10-06T06:24:09.848261Z",
+        "sha256": "9c2357bc73270ebaffbe15e0dcb9a241afe3879ec02839d31e005dea1ca78e76",
+        "ticker": "MU",
+        "version": 34
+      },
+      "projection": {
+        "consumer_contract": "persistent-runtime.v2.or-policy.v1",
+        "policies": [
+          {
+            "activation_revision": "ar_9a92f484982a341a8420f174",
+            "condition_ids": [
+              "C1",
+              "C2",
+              "C3",
+              "C4"
+            ],
+            "criterion": [
+              "在AI/服务器行业需求和价格仍强的情况下，Micron连续两个报告窗口显示高价值AI/服务器组合指标相对当前基线下降（CMBU加CDBU占比或HBM/数据中心高价值产品阶段至少一项下降），且实现ASP或增量收入主要由消费或传统产品承担。",
+              "在行业服务器/HBM需求或合同价保持强势时，Micron连续两个季度高价值产品出货或收入占比、或相关bit shipments下降，并明确归因于资格、封装或交付瓶颈。",
+              "行业服务器/HBM合同价或需求连续两个季度保持强势，而Micron CMBU/CDBU占比、相关bit shipments或实现ASP下降，并有资格、封装、晶圆或交付约束披露。",
+              "在AI/HBM需求与价格仍强的情况下，权威行业市场份额数据或命名AI客户/平台披露在一个可比报告期确认竞争供应商的HBM份额或主要供货地位上升，同时Micron HBM或数据中心高价值内存份额相对上一期下降，并有竞争者已验证、商业发运或已承诺产能的证据。"
+            ],
+            "match_scope": "AI/服务器需求与价格保持强势时，Micron CMBU、CDBU、HBM和数据中心高价值组合的收入、份额、bit或ASP，竞争供应商HBM市场份额、验证、产能与商业发运，以及Micron资格、封装和交付瓶颈。",
+            "policy_id": "pol_000c7e1917b14969a458"
+          },
+          {
+            "activation_revision": "ar_8d4be63257b63b9e95fa7f22",
+            "condition_ids": [
+              "C1",
+              "C2"
+            ],
+            "criterion": [
+              "至少一个主要平台公开量产规格或持续部署数据确认HBM被替代，并在平台出货结构中持续反映。",
+              "至少一个主要平台公开量产规格或持续部署数据确认单颗加速器容量或带宽低于当前36GB 12-high等公开路线，并在平台出货结构中持续反映。"
+            ],
+            "match_scope": "主要AI平台量产规格或持续部署中的HBM替代、容量/带宽变化及其对Micron可售内存配置的影响。",
+            "policy_id": "pol_6fc4c21c7434ee04a94b"
+          },
+          {
+            "activation_revision": "ar_2da958e9820fe88c436ad117",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Micron连续两个季度GAAP毛利率仍处高位或大致稳定，但GAAP营业利润或摊薄EPS下降，且费用桥明确显示研发、预资格、折旧、爬坡、质量或重组支出增加。"
+            ],
+            "match_scope": "Micron研发、预资格、折旧、爬坡、质量或重组费用与GAAP利润转换的同季变化。",
+            "policy_id": "pol_42dd9a8d54f851077bfd"
+          },
+          {
+            "activation_revision": "ar_73a9d18e05bbf8a49f8f13a7",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "在FY26 Q4达到或接近指引后，Micron FY27连续报告季度的GAAP毛利率和营业利润率均环比下降，并由实现ASP、产品组合、供给或库存转弱解释。"
+            ],
+            "match_scope": "FY26 Q4之后连续季度的GAAP毛利率、营业利润率及由ASP、组合、供给或库存变化造成的盈利斜率。",
+            "policy_id": "pol_4e60e33e9f3c8ced3e7a"
+          },
+          {
+            "activation_revision": "ar_748f7031c3d861bc1b6cc16b",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "至少一个主要DRAM或NAND产品线连续两个季度实现ASP环比下降，bit shipments未增长或不足以补偿每位收入下降，且该产品线销售额连续低于上一季度。"
+            ],
+            "match_scope": "DRAM或NAND主要产品线的实现ASP、bit shipments和产品线销售额的连续季度比较。",
+            "policy_id": "pol_941696a6157b4d4fe484"
+          },
+          {
+            "activation_revision": "ar_c86b05d93ffbf7ccfd2b7a10",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Micron正式宣布一个命名扩产阶段在AI/内存价格或客户需求由当前强势转为下降，或政府激励/资金条件未按计划到位之后被推迟、削减或重新排序。"
+            ],
+            "match_scope": "命名扩产阶段、AI/内存需求或价格、政府激励/客户资金条件与PPE计划和阶段排序。",
+            "policy_id": "pol_da7524bb3ec2d229d090"
+          },
+          {
+            "activation_revision": "ar_f8f7db5692f61b2ada91477f",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "至少两个季度收入增长伴随应收余额或DSO改善、客户存款或合同负债现金增加、CFO未被同幅度营运资本吞噬，并有发运/结算配套且支持部分PPE支付。"
+            ],
+            "match_scope": "收入增长、应收/DSO、客户存款或合同负债、经营现金流、发运结算和PPE支付的连续现金桥。",
+            "policy_id": "pol_ecede39f670a0882b1f4"
+          },
+          {
+            "activation_revision": "ar_c6b18b585dfc21fe8171e2a6",
+            "condition_ids": [
+              "C2"
+            ],
+            "criterion": [
+              "在FY2026年末已披露约127亿美元非受限客户存款的基础上，后续正式披露确认至少一个报告窗口相关协议的发运、收入确认或应收结算未与合同承诺相匹配，且附注明确最低采购、验收、交付、退款或违约赔付约束。"
+            ],
+            "match_scope": "客户存款和合同负债到账与后续发运、收入确认、应收结算及验收、交付、退款和赔付约束。",
+            "policy_id": "pol_b669b1ffb4e2398121fd"
+          },
+          {
+            "activation_revision": "ar_5d8d411b8e35592254636f0b",
+            "condition_ids": [
+              "C1",
+              "C2"
+            ],
+            "criterion": [
+              "正式合同附注、财报或客户公告确认涉及已绑定提货、数量、价格或交付窗口的战略客户合同被延期或重谈，并在原交付窗口后出现未提货、合同负债下降、退款、减值或其他履约后果。",
+              "同一战略协议的计划发货窗口过去后仍无连续交付，且Micron或客户明确把延迟归因于产品资格、良率、封装或有效晶圆产能不足并将收入确认后移。"
+            ],
+            "match_scope": "战略客户合同的提货、数量/价格、资格、有效产能、交付窗口及合同负债、退款或减值后果。",
+            "policy_id": "pol_124f1188f7bb19b420ac"
+          },
+          {
+            "activation_revision": "ar_aaff11c1e4e3e08edd6eb3f6",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "合同附注、公司指引或实际发票/ASP确认价格带下移、最低/最高价重置、折扣扩大或额外服务让利，并连续影响至少一个合同交付周期。"
+            ],
+            "match_scope": "战略内存合同价格带、固定价或最低/最高价、折扣和实际交付周期的价格经济性。",
+            "policy_id": "pol_9be1444d07f7dd300d81"
+          },
+          {
+            "activation_revision": "ar_93dc47b14803993225670801",
+            "condition_ids": [
+              "C2"
+            ],
+            "criterion": [
+              "在FY2026 Q4已披露的战略客户存款余额基础上，Micron后续正式披露至少两个后续报告窗口中对应协议产品完成资格、按期发运、收入确认并有客户提货。"
+            ],
+            "match_scope": "战略内存合同的客户存款或合同负债、产品资格、按期发运、收入确认和客户提货。",
+            "policy_id": "pol_fc5107a68b55a93c3061"
+          },
+          {
+            "activation_revision": "ar_58e946d673972b641aa77e60",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "客户或Micron正式披露命名产品的召回、批次隔离、退货或重新认证，并在随后至少一个报告窗口出现该产品出货中断、质量费用或资格重置。"
+            ],
+            "match_scope": "命名产品或批次的召回、隔离、退货、重新认证以及后续出货中断、质量费用或资格重置。",
+            "policy_id": "pol_3afe70116d1e09158dcb"
+          },
+          {
+            "activation_revision": "ar_b31507e0bb59f5ce7d96a69d",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "后续财报或合同附注确认承诺未按期到账，或已到账部分因客户取消、交付延迟、合同条件或退款/赔付而减少，并同时调整原定扩产或运营资金来源。"
+            ],
+            "match_scope": "战略客户现金承诺的到账、取消、交付条件、退款/赔付及扩产或运营资金来源调整。",
+            "policy_id": "pol_d519a240f24d10376162"
+          },
+          {
+            "activation_revision": "ar_a20b40a9d2a0ddf280000994",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "连续两个季度应收余额或DSO上升，CFO相对净利润或收入的转换率下降，并由财报附注或回款资料确认付款期限延长或客户付款延迟。"
+            ],
+            "match_scope": "应收余额或DSO、收入、净利润、经营现金流以及付款期限或客户回款延迟。",
+            "policy_id": "pol_80b6f8c0415612bce99c"
+          },
+          {
+            "activation_revision": "ar_d9352bf0a381a71fae7b577e",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Micron、监管或项目正式披露命名项目因施工、设备交付、许可、劳动力、电力、用水或关键材料问题把已公布首片、爬坡或投产窗口后移。"
+            ],
+            "match_scope": "命名扩产项目的首片、爬坡或投产时间窗口及施工、设备、许可、劳动力、公用工程或材料原因。",
+            "policy_id": "pol_c301173da27f5b44f963"
+          },
+          {
+            "activation_revision": "ar_73f9bdb799357c9dce1efc1d",
+            "condition_ids": [
+              "C2"
+            ],
+            "criterion": [
+              "Gujarat、新加坡HBM封装、第一座Idaho或台湾中的一个命名项目，在首片、wafer-out或初始商业生产/早期出货之后形成稳定合格良率、完成客户资格，并在至少两个后续交付窗口连续交付合格产品。"
+            ],
+            "match_scope": "命名晶圆、先进封装或组装测试项目的首片/wafer-out、商业生产、稳定良率、客户资格及连续合格交付。",
+            "policy_id": "pol_9efb6f34a333f977e9f3"
+          },
+          {
+            "activation_revision": "ar_7ae5c9f8537dadbc1b4fa579",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "命名项目已有首片或早期出货，但随后至少两个季度仍未达到稳定合格良率、有效产能、客户资格或连续对外出货，且Micron明确有效产能低于计划。"
+            ],
+            "match_scope": "命名项目首片或早期出货后的稳定良率、有效产能、客户资格、连续出货及计划差额。",
+            "policy_id": "pol_d8b4178dd4eadad8faeb"
+          },
+          {
+            "activation_revision": "ar_5f2fc6a00243b2a9dc9d02bc",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "正式披露该安排未完成最终协议、审批或交割，或交割后出现连续合格晶圆交付短缺、数量不足或质量不合格，并明确影响Micron项目的wafer starts或量产窗口。"
+            ],
+            "match_scope": "GlobalWafers安排的最终协议、审批、交割及交割后的合格晶圆数量、质量和对Micron项目的wafer starts/量产影响。",
+            "policy_id": "pol_234810c4290fce80709d"
+          },
+          {
+            "activation_revision": "ar_777d20eaa0f1f1890a1ab6ab",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "客户或平台正式披露竞争供应商成为主要HBM供货方，且Micron在至少两个连续交付周期的订单、出货或平台覆盖没有同步增长，仅保留低比例或非连续供货。"
+            ],
+            "match_scope": "命名AI平台的HBM主要供应商状态、Micron订单/出货/平台覆盖及连续交付分配。",
+            "policy_id": "pol_57b6acf663e3f2542116"
+          },
+          {
+            "activation_revision": "ar_5ebb84daaa6a2a8b1b0a5471",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Micron或主要客户正式把HBM4E量产或认证推迟出2027窗口，或确认已送样产品的堆叠、热管理、测试或可靠性问题使其无法进入连续量产。"
+            ],
+            "match_scope": "HBM4E路线图、资格、堆叠、热管理、测试和可靠性对连续量产的影响。",
+            "policy_id": "pol_2d9aa607dd4f3e5682ee"
+          },
+          {
+            "activation_revision": "ar_e0d9bb51cc0e1248cab74895",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "至少两个命名客户或AI平台公开确认Micron HBM4E、48GB 16H或同类新容量产品资格或设计定点，并在随后两个交付窗口出现可重复商业序列出货。"
+            ],
+            "match_scope": "HBM4E、48GB 16H或同类新容量产品的命名客户/AI平台资格、设计定点和连续商业交付。",
+            "policy_id": "pol_9bfb2935492d5fb70db6"
+          },
+          {
+            "activation_revision": "ar_592e56af2d32ba0c5285b8a3",
+            "condition_ids": [
+              "C1",
+              "C2",
+              "C3"
+            ],
+            "criterion": [
+              "头部竞争供应商出现新增合格量产或客户出货，客户或渠道库存上升，同时至少一个主要DRAM或NAND品类合同价环比转跌。",
+              "正式披露确认HBM/AI订单或部署相对当前计划下调、取消或后移，并触发供应商向传统DRAM/NAND回流，同时主要传统品类合同价转跌或库存上升。",
+              "竞争或中国供应商的传统DRAM/NAND合格产能和实际出货连续增加，并同时显示传统品类合同价、客户库存或供给分配由紧转松。"
+            ],
+            "match_scope": "DRAM/NAND合同价格、竞争供应商合格实际出货、客户或渠道库存、HBM/AI订单和传统品类供需分配。",
+            "policy_id": "pol_08a4621a09463492092f"
+          },
+          {
+            "activation_revision": "ar_d64384d6f9d3ac19d817233e",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "连续两个季度库存、在制品或供应商预付款的同比或环比增速高于同期收入增速，CFO被存货相关项目拖累，并由公司披露的HBM、服务器内存或SSD备料/交付承诺解释。"
+            ],
+            "match_scope": "库存、在制品或供应商预付款相对收入增速、经营现金流存货项目以及HBM、服务器内存或SSD备料。",
+            "policy_id": "pol_303c74afa70bae833bb7"
+          },
+          {
+            "activation_revision": "ar_38dfd1c96afa4e711f682bb0",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "同一或连续季度PPE实际支付上升、政府激励或客户存款未按期到账，且CFO下降或融资需求增加，最终造成现金缓冲下降或扩产项目可验证推迟。"
+            ],
+            "match_scope": "PPE实际支付、政府激励或客户存款到账、经营现金流、融资、现金余额及扩产项目后果。",
+            "policy_id": "pol_3d0a8fddb6b172835c29"
+          },
+          {
+            "activation_revision": "ar_25cb0deaeabefef8ae6ead82",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "连续两个季度研发、预资格或折旧/启动费用增速明显高于收入增速，且没有相应新增量产收入或营业利润率改善，财报或管理层费用桥明确解释。"
+            ],
+            "match_scope": "研发、预资格、折旧或启动费用增速与收入、量产收入和营业利润率的同季比较。",
+            "policy_id": "pol_1f02e26e48ed8e07323b"
+          },
+          {
+            "activation_revision": "ar_f52252bf98faf5b0bf9277f9",
+            "condition_ids": [
+              "C2",
+              "C3"
+            ],
+            "criterion": [
+              "Micron或主要AI/服务器客户正式披露确认服务器/HBM优先分配和实际供给约束继续至2029或更晚，同时消费供给仍受限、合同价未结构性下跌，并且Micron数据中心组合不低于当前基线。",
+              "主要AI使用国或跨国政策主体在正式峰会公报、行政决定或同等正式文件中确认不新增限制超级智能或大规模AI训练与部署的约束，并明确维持AI开发和基础设施建设节奏，解除原本被市场计入的AI发展放缓风险。"
+            ],
+            "match_scope": "服务器/HBM优先分配、AI内存价格与供给瓶颈展望、消费供给约束、合同价格和Micron数据中心组合在当前预测之后的延续，以及正式AI发展政策结果。",
+            "policy_id": "pol_12b2c75c2f311063e913"
+          },
+          {
+            "activation_revision": "ar_d3d9cda8384c95faf2bbb8d9",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "公司正式披露一个关键晶圆厂或封装线利用率或吞吐连续两个季度下降，并同时确认折旧或单位固定制造成本上升且相关业务毛利或营业利润弱化。"
+            ],
+            "match_scope": "关键晶圆厂或封装线利用率、吞吐、折旧/固定制造成本和相关业务利润。",
+            "policy_id": "pol_61d40241f10b3de09ee1"
+          },
+          {
+            "activation_revision": "ar_b1d6395b6054a3a65a0c903d",
+            "condition_ids": [
+              "C1",
+              "C2"
+            ],
+            "criterion": [
+              "连续两个季度DRAM或NAND ASP不再达到FY26 Q3的涨幅甚至小幅下降，同时bit shipments增长，且该产品线销售额仍环比增长。",
+              "连续两个季度DRAM或NAND ASP不再达到FY26 Q3的涨幅甚至小幅下降，同时高价值产品占比提高，且该产品线销售额仍环比增长。"
+            ],
+            "match_scope": "DRAM或NAND产品线的ASP、bit shipments、高价值组合和销售额在价格增长放缓后的联动。",
+            "policy_id": "pol_b123dd2735c71047d828"
+          },
+          {
+            "activation_revision": "ar_49f51bf06076010b3801a6f4",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "至少两个季度正式披露或结果验证良率、合格产出、单位制造成本或固定成本吸收改善，并在ASP涨幅低于FY26 Q3时GAAP毛利率和营业利润仍保持高位。"
+            ],
+            "match_scope": "合格产出、单位制造成本、固定成本吸收、实现ASP和GAAP毛利率/营业利润的连续季度联动。",
+            "policy_id": "pol_d22d86dca86419c7f3e7"
+          },
+          {
+            "activation_revision": "ar_f7af74d8f8f1e0da11ded3e2",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Micron或客户正式运营披露相关产品良率或测试通过率下降、返工报废或加急成本增加，并在至少一个季度的毛利、单位成本或质量准备金中可见。"
+            ],
+            "match_scope": "命名产品的良率、测试通过率、返工报废、加急成本及毛利、单位成本或质量准备金。",
+            "policy_id": "pol_1204b404c1f9811d236f"
+          },
+          {
+            "activation_revision": "ar_5306515470530453d1026f1a",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Micron公开确认相关地点形成符合汽车规范的合格产出、稳定良率和可交付有效产能，并已按命名汽车平台窗口发运。"
+            ],
+            "match_scope": "Micron汽车规格合格产出、稳定良率、有效产能、交付窗口和命名汽车平台发运。",
+            "policy_id": "pol_167d6551daf6e7216262"
+          },
+          {
+            "activation_revision": "ar_1c47e1ec64f91b6afa0bd030",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Micron、OEM或Tier 1把命名平台发运延迟、短缺或减配明确归因于汽车级良率、合格产出、封装/材料交期或爬坡未达要求。"
+            ],
+            "match_scope": "命名汽车平台的发运、短缺或减配与汽车级良率、合格产出、封装/材料交期和爬坡瓶颈。",
+            "policy_id": "pol_03d94e94ec6acc607aac"
+          },
+          {
+            "activation_revision": "ar_484d914239fe4b1203a56697",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "公开来源在同一事实链中点名OEM、Tier 1、具体车型或车辆平台，并确认Micron器件资格通过、设计定点或生产批准。"
+            ],
+            "match_scope": "OEM、Tier 1或Micron公告中具体车型、车辆平台或车辆系统的Micron汽车内存/存储资格、设计定点和生产批准。",
+            "policy_id": "pol_372336fdadc38e1100a4"
+          },
+          {
+            "activation_revision": "ar_6c50a922d023dad7abde9f11",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "具体车型或平台公开采用相对既有方案更高的内存带宽、容量或存储配置，并同时确认Micron参与系统级共同开发、资格或设计定点。"
+            ],
+            "match_scope": "命名汽车平台相对既有架构的内存带宽、容量或存储提升，以及Micron系统级共同开发、资格或设计定点。",
+            "policy_id": "pol_7b342b95c25ef25234bf"
+          },
+          {
+            "activation_revision": "ar_cc65d423d24bfc50a535687a",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Micron、OEM或Tier 1正式把命名已认证平台的缺货、停发或交期中断明确归因于地缘/出口、灾害、硅片或封装材料事件，并记录切换来源或重新认证。"
+            ],
+            "match_scope": "命名已认证汽车平台的供给中断、交期、地缘/出口、灾害或晶圆/封装材料原因及替代/重认证。",
+            "policy_id": "pol_467e2cc26a9481db7cd0"
+          },
+          {
+            "activation_revision": "ar_b9fa6e0994b7c2e53ae69ed1",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "公开来源识别至少两个彼此独立的OEM或Tier 1车型/平台的Micron资格或设计定点，并对每个项目确认serial production、重复发运或量产分配。"
+            ],
+            "match_scope": "至少两个独立OEM或Tier 1车型/平台的Micron资格、设计定点、量产和重复交付。",
+            "policy_id": "pol_fb0a6a935e7131ac3833"
+          },
+          {
+            "activation_revision": "ar_6d75b78fe5fd46d1690a2154",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "OEM、Tier 1或Micron在具体项目中明确首批器件仅用于验证、试生产或有限批次，且未进入或已退出连续serial production。"
+            ],
+            "match_scope": "命名汽车项目首批、验证或试生产用途与后续serial production/连续分配状态。",
+            "policy_id": "pol_7dd5656c60f8245bcdf8"
+          },
+          {
+            "activation_revision": "ar_9a8bcbc287aacc55d286b597",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "OEM、Tier 1或平台设计文件点名车型/平台采用集成、绑定或竞争内存/存储方案，并说明Micron器件被移出主BOM、降为备份或不再继续认证。"
+            ],
+            "match_scope": "命名汽车平台的集成、绑定或竞争内存/存储方案，以及Micron主BOM、备份或认证状态。",
+            "policy_id": "pol_1ecc5e6245c181456a53"
+          },
+          {
+            "activation_revision": "ar_69501e8309e76e8da999afb5",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "OEM、Tier 1或Micron正式点名汽车产品与车型或平台，确认资格失败、要求重测/改规格，或因不匹配改用其他器件。"
+            ],
+            "match_scope": "命名汽车产品、车型或平台的资格、重测、规格匹配和替代器件结果。",
+            "policy_id": "pol_f0d0a3174de948411258"
+          },
+          {
+            "activation_revision": "ar_cfa3751814f769a5f2a51cb6",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "监管机构、标准组织或OEM正式实施适用于目标市场或命名平台的新要求，并且Micron、OEM或Tier 1明确记录器件重认证、供应商变更或SOP延迟。"
+            ],
+            "match_scope": "目标市场或命名汽车平台适用的新监管/标准要求及器件重认证、供应商变更或SOP后果。",
+            "policy_id": "pol_da14998e3afd6ddf7075"
+          },
+          {
+            "activation_revision": "ar_93db3acb0af94cb4b78af9ed",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "OEM、Tier 1或Micron公开点名相关SCA、车型或平台，并明确取消、暂停、范围减少、重谈，或在同一平台把替代供应商导入主BOM或主供位置。"
+            ],
+            "match_scope": "命名汽车供给协议、车型或平台的协议范围、合作状态、主BOM和主供方变化。",
+            "policy_id": "pol_c2992c89a129e5918d86"
+          },
+          {
+            "activation_revision": "ar_e494970570d1741e169cfaa2",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "公开证据点名具体车型或平台并确认SOP或serial production，随后至少两个相邻生产批次或季度出现Micron按该平台的发运、持续提货或量产分配。"
+            ],
+            "match_scope": "命名汽车车型或平台的SOP/serial production、Micron按平台的发运、持续提货和量产分配。",
+            "policy_id": "pol_7d7fd659b77a7650a132"
+          },
+          {
+            "activation_revision": "ar_16e7d427d168902835975cfc",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "OEM、Tier 1或项目/工厂正式点名已合作或已认证车型/平台，确认SOP、产量、改款或项目取消/延迟，并明确使Micron采购窗口后移或收缩。"
+            ],
+            "match_scope": "命名汽车项目的SOP、产量或改款计划及其对Micron资格、供给和采购窗口的影响。",
+            "policy_id": "pol_b99a64d8b145cdf90ed2"
+          },
+          {
+            "activation_revision": "ar_9fb3cd0a92be9347ed31d7af",
+            "condition_ids": [
+              "C1",
+              "C2"
+            ],
+            "criterion": [
+              "Micron正式FY2027 Q1财报确认合并收入高于当前公司指引上限，并同时确认GAAP毛利率不低于当前FY2027 Q1指引。",
+              "Micron正式FY2027 Q1财报确认调整后EPS高于当前公司指引上限，并同时确认GAAP毛利率不低于当前FY2027 Q1指引。"
+            ],
+            "match_scope": "Micron FY2027 Q1正式财报的收入、GAAP/Non-GAAP EPS、毛利率及相对当前公司指引的偏差。",
+            "policy_id": "pol_eb2ea4a76cb9ed48670a"
+          },
+          {
+            "activation_revision": "ar_3eefa233ce2f542386e5ab3e",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "具名主要卖方机构在Micron FY2026 Q4结果公布后公开上调FY2027年度调整后EPS预测，并明确给出可比的新旧预测值。"
+            ],
+            "match_scope": "Micron FY2027年度调整后EPS及相关收入卖方预测的具名机构、版本变更和新旧估值；不含目标价单独变动或Micron季度实绩。",
+            "policy_id": "pol_1e36e66b80cacd53f441"
+          }
+        ],
+        "policy_set_published_at": "2026-10-06T06:47:25.724418Z",
+        "policy_set_version": 17,
+        "schema_version": "document3.runtime_projection.v4",
+        "ticker": "MU"
+      },
+      "provisional": [
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "247WallSt",
+              "The AI Investor Podcast",
+              "Eric Bleeker",
+              "Austin Smith",
+              "Micron",
+              "Nvidia"
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "247WallSt于2026年10月6日发布视频内容，介绍AI Investor Podcast近期一期节目；主持人Eric Bleeker和Austin Smith在节目中讨论了内存在自动驾驶汽车和人形机器人中的作用，并将Micron与Nvidia列为潜在股票选择。",
+            "subject_time": "247WallSt内容发表于2026-10-06；播客节目日期未注明"
+          },
+          "candidate_index": 0,
+          "case_id": "case_11ebaab19e4d4b769c82ba6915945a18",
+          "created_at": "2026-10-06T06:19:21.938560Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E302",
+          "runtime_signature": "1b9f83bcea6227d7d5955e240260d83b1c107f7aa8d34b37d1e1f2ee7275b794",
+          "snapshot_version": 1,
+          "source_message_id": "std_0968120396924bca999e7a8c570c1395",
+          "ticker": "MU",
+          "trading_date": "2026-10-06"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Rewind Therapeutics"
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "Rewind Therapeutics宣布已获得额外融资，以推进其口服GPR17拮抗剂项目。",
+            "subject_time": "截至2026-10-06的融资公告；先导口服GPR17项目"
+          },
+          "candidate_index": 0,
+          "case_id": "case_ea0d530baeb24afdbc563c5fe14bf373",
+          "created_at": "2026-10-06T07:05:05.161480Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E303",
+          "runtime_signature": "39af28e6c3ea17721f9a2b7b82ada08f4554a506e4f66240c4934edf2ca57a5a",
+          "snapshot_version": 2,
+          "source_message_id": "std_61c3f2011b1d4ac2bf109d004ff43c82",
+          "ticker": "MU",
+          "trading_date": "2026-10-06"
+        },
+        {
+          "candidate": {
+            "assertion_state": "PLAN",
+            "entities": [
+              "AMD",
+              "Lisa Su"
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "AMD CEO Lisa Su表示，AMD计划在2027年大幅增加芯片供应，以满足AI需求。",
+            "subject_time": "AMD 2027年芯片供应计划"
+          },
+          "candidate_index": 0,
+          "case_id": "case_e656285665ff47a1931390a84ecca588",
+          "created_at": "2026-10-06T07:27:56.816314Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E304",
+          "runtime_signature": "69c17d74b39c6df4e5c6ff875597049ae91138400fc19f78864b3fd415623252",
+          "snapshot_version": 3,
+          "source_message_id": "std_9f681709970c48829ebd887a7813fec1",
+          "ticker": "MU",
+          "trading_date": "2026-10-06"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ONGOING",
+            "entities": [
+              "AMD",
+              "Lisa Su",
+              "memory chipmakers"
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "Lisa Su表示，AMD正与内存芯片厂商密切合作，以确保获得充足的内存供应。",
+            "subject_time": "AMD面向AI需求的内存供应安排"
+          },
+          "candidate_index": 1,
+          "case_id": "case_e656285665ff47a1931390a84ecca588",
+          "created_at": "2026-10-06T07:27:56.838576Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E305",
+          "runtime_signature": "5f89e229b23a62d3649c76db5cff18557a9a1f72e8689a5c6efda8c9d00182db",
+          "snapshot_version": 4,
+          "source_message_id": "std_9f681709970c48829ebd887a7813fec1",
+          "ticker": "MU",
+          "trading_date": "2026-10-06"
+        },
+        {
+          "candidate": {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "AMD",
+              "Lisa Su"
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "Lisa Su表示，AMD预计未来数年将有很高的AI芯片需求，并需要额外的先进晶圆产能；AMD正按三至五年期进行规划。",
+            "subject_time": "未来数年；三至五年规划期"
+          },
+          "candidate_index": 2,
+          "case_id": "case_e656285665ff47a1931390a84ecca588",
+          "created_at": "2026-10-06T07:27:56.849562Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E306",
+          "runtime_signature": "40c3e7be874a627b342da7ae37ac4f91f50d91b71d9887592a7a459f1124c937",
+          "snapshot_version": 5,
+          "source_message_id": "std_9f681709970c48829ebd887a7813fec1",
+          "ticker": "MU",
+          "trading_date": "2026-10-06"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "ChartMill",
+              "Micron Technology",
+              "Navellier's Little Book"
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "ChartMill文章称Micron通过Navellier's Little Book的全部八项成长测试，同时提示周期性和增长放缓风险。",
+            "subject_time": "ChartMill筛选结论，发布于2026-10-06"
+          },
+          "candidate_index": 0,
+          "case_id": "case_98887d8eb8f341d2a91c5fc8759677f8",
+          "created_at": "2026-10-06T08:25:23.963376Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E307",
+          "runtime_signature": "fdb50bdb20b637a73a2d3ac7a02474484c267e0cf46ce6bb86229de5a858222a",
+          "snapshot_version": 6,
+          "source_message_id": "std_540d814638b2487eb7a295423f7a63ce",
+          "ticker": "MU",
+          "trading_date": "2026-10-06"
+        },
+        {
+          "candidate": {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "ResearchAndMarkets.com",
+              "U.S. NOR Flash market"
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "ResearchAndMarkets报告预测美国NOR Flash市场规模将从2026年的5.2462亿美元增至2031年的6.7918亿美元，2026至2031年复合年增长率为5.3%。",
+            "subject_time": "美国NOR Flash市场，2026至2031年"
+          },
+          "candidate_index": 0,
+          "case_id": "case_8291081deeaf4b769e18bc5a0fc349f1",
+          "created_at": "2026-10-06T08:30:16.524360Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E308",
+          "runtime_signature": "e182fcac88c43fa9937eabd6242b4e7c86abbebef02106b06cc6f1eb8b16e2b7",
+          "snapshot_version": 7,
+          "source_message_id": "std_125ed9bed8d1422da26dd64dea23b86f",
+          "ticker": "MU",
+          "trading_date": "2026-10-06"
+        },
+        {
+          "candidate": {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "ResearchAndMarkets.com",
+              "United States semiconductor manufacturing equipment market"
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "ResearchAndMarkets报告预测美国半导体制造设备市场规模将从2026年的144.4亿美元增至2031年的248.3亿美元，2026至2031年复合年增长率为11.4%。",
+            "subject_time": "美国半导体制造设备市场，2026至2031年"
+          },
+          "candidate_index": 0,
+          "case_id": "case_68c4474eb26045a3a35e74554c161feb",
+          "created_at": "2026-10-06T08:33:39.308381Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E309",
+          "runtime_signature": "525043251fc4b68f9ce3928bde5999ddd6dfba05fee00dd17c62510867fe60fd",
+          "snapshot_version": 8,
+          "source_message_id": "std_aa2b14b5e8134f36a8289b124446e6ca",
+          "ticker": "MU",
+          "trading_date": "2026-10-06"
+        },
+        {
+          "candidate": {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "ResearchAndMarkets.com",
+              "Mordor Intelligence",
+              "美国HBM市场"
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "ResearchAndMarkets于2026年10月6日发布的新闻稿转述Mordor Intelligence估算：美国HBM市场2025年为USD 1.09 billion，预计2026年为USD 1.43 billion、2031年为USD 4.91 billion，2026至2031年CAGR为27.98%。",
+            "subject_time": "2025年估值及2026至2031年预测期"
+          },
+          "candidate_index": 0,
+          "case_id": "case_e722461b663a41ca84f5e253c0a54b63",
+          "created_at": "2026-10-06T08:35:51.038497Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E310",
+          "runtime_signature": "8eeaa348006b562587e2b8b7866dc8fd6800391fc65ee025d90914be239c31e5",
+          "snapshot_version": 9,
+          "source_message_id": "std_7c447d4c7a074b56a87e6e8a584a3ef8",
+          "ticker": "MU",
+          "trading_date": "2026-10-06"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Mordor Intelligence",
+              "美国HBM市场",
+              "HBM3E"
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "Mordor Intelligence报告估算HBM3E占美国HBM市场的比例在2025年为71.32%。",
+            "subject_time": "2025年"
+          },
+          "candidate_index": 1,
+          "case_id": "case_e722461b663a41ca84f5e253c0a54b63",
+          "created_at": "2026-10-06T08:35:51.126444Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E311",
+          "runtime_signature": "7b72ac3ca56f4ac48f3835df5513c486530d6f13f144daca52b0f76edd3b7b6f",
+          "snapshot_version": 10,
+          "source_message_id": "std_7c447d4c7a074b56a87e6e8a584a3ef8",
+          "ticker": "MU",
+          "trading_date": "2026-10-06"
+        },
+        {
+          "candidate": {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "Mordor Intelligence",
+              "美国HBM市场",
+              "HBM4E及后续代际HBM"
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "Mordor Intelligence报告预测HBM4E及后续代际产品在美国HBM市场至2031年的CAGR为28.94%。",
+            "subject_time": "至2031年的预测期"
+          },
+          "candidate_index": 2,
+          "case_id": "case_e722461b663a41ca84f5e253c0a54b63",
+          "created_at": "2026-10-06T08:35:51.150321Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E312",
+          "runtime_signature": "5c5e221265da5e7064bf7477e08a1178f6c73a5b549e355a900c80ef607b0dee",
+          "snapshot_version": 11,
+          "source_message_id": "std_7c447d4c7a074b56a87e6e8a584a3ef8",
+          "ticker": "MU",
+          "trading_date": "2026-10-06"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Mordor Intelligence",
+              "美国HBM市场",
+              "先进节点（低于1Z）"
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "Mordor Intelligence报告估算先进节点（低于1Z）占美国HBM市场的比例在2025年为49.94%。",
+            "subject_time": "2025年"
+          },
+          "candidate_index": 3,
+          "case_id": "case_e722461b663a41ca84f5e253c0a54b63",
+          "created_at": "2026-10-06T08:35:51.172080Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E313",
+          "runtime_signature": "dcb9a7548ad3adb93c0b9e2d1c65d2c658677c2c6507cfa28e3ffac8d42ace00",
+          "snapshot_version": 12,
+          "source_message_id": "std_7c447d4c7a074b56a87e6e8a584a3ef8",
+          "ticker": "MU",
+          "trading_date": "2026-10-06"
+        },
+        {
+          "candidate": {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "Mordor Intelligence",
+              "美国HBM市场",
+              "先进节点（低于1Z）"
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "Mordor Intelligence报告预测先进节点（低于1Z）在美国HBM市场至2031年的CAGR为28.69%。",
+            "subject_time": "至2031年的预测期"
+          },
+          "candidate_index": 4,
+          "case_id": "case_e722461b663a41ca84f5e253c0a54b63",
+          "created_at": "2026-10-06T08:35:51.189100Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E314",
+          "runtime_signature": "02762226436f310100999bb68595e3b9578ae9bfefc1fc59b0907a5f72aabd54",
+          "snapshot_version": 13,
+          "source_message_id": "std_7c447d4c7a074b56a87e6e8a584a3ef8",
+          "ticker": "MU",
+          "trading_date": "2026-10-06"
+        },
+        {
+          "candidate": {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "ResearchAndMarkets.com",
+              "Saudi Arabia air purifier market"
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "ResearchAndMarkets报告预测沙特阿拉伯空气净化器市场将从2025年的1.9982亿美元增长至2034年的3.6922亿美元，2026至2034年复合年增长率为7.06%。",
+            "subject_time": "沙特阿拉伯空气净化器市场，2025至2034年"
+          },
+          "candidate_index": 0,
+          "case_id": "case_29920a45cd4641e8bc248685517fa92b",
+          "created_at": "2026-10-06T08:57:54.400503Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E315",
+          "runtime_signature": "d7fa8296928a832d39f6dc1e3fbc45624dafacda699efd9a420062423c97a716",
+          "snapshot_version": 14,
+          "source_message_id": "std_0dce73154ca547dd87822ac22f5a8768",
+          "ticker": "MU",
+          "trading_date": "2026-10-06"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Nokia",
+              "Justin Hotard"
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "Nokia CEO Justin Hotard表示，内存芯片和电力可用性是拖慢数据中心建设的瓶颈之一。",
+            "subject_time": "当前数据中心建设"
+          },
+          "candidate_index": 0,
+          "case_id": "case_c823e127d02b4b0196f4d57a37708547",
+          "created_at": "2026-10-06T09:32:51.445098Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E316",
+          "runtime_signature": "4438605a5ba5102ea415e79c71712f0140fa3168b2e2c4655cf105d0fc77783e",
+          "snapshot_version": 15,
+          "source_message_id": "std_d4c22dc50a494dc182cb5ec3527d9f81",
+          "ticker": "MU",
+          "trading_date": "2026-10-06"
+        },
+        {
+          "candidate": {
+            "assertion_state": "HYPOTHETICAL",
+            "entities": [
+              "Nokia",
+              "Justin Hotard",
+              "data center customers"
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "Nokia CEO Justin Hotard表示，如果供应约束解除，客户建设数据中心的速度可能达到当前约两倍。",
+            "subject_time": "供应约束解除的假设情境"
+          },
+          "candidate_index": 1,
+          "case_id": "case_c823e127d02b4b0196f4d57a37708547",
+          "created_at": "2026-10-06T09:32:51.458438Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E317",
+          "runtime_signature": "fdecae4c81ae20471976347839926e8b3ad60a6fba3fc027b510fbdacb7e7239",
+          "snapshot_version": 16,
+          "source_message_id": "std_d4c22dc50a494dc182cb5ec3527d9f81",
+          "ticker": "MU",
+          "trading_date": "2026-10-06"
+        },
+        {
+          "candidate": {
+            "assertion_state": "SCHEDULED",
+            "entities": [
+              "Portillo's",
+              "OREO",
+              "Mondelēz International"
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "Portillo's宣布三款OREO联名产品——OREO Shake、OREO Cake和OREO Cake Shake——将于2026年10月6日起在美国各地门店限时供应。",
+            "subject_time": "自2026-10-06起的限时供应期"
+          },
+          "candidate_index": 0,
+          "case_id": "case_7b912b8790734195a8c198ebf0a7d06e",
+          "created_at": "2026-10-06T10:04:00.947875Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E318",
+          "runtime_signature": "7ea8b2df9432b60a9156d1382ed66397553baa505efec88d454aa2f9903480ad",
+          "snapshot_version": 17,
+          "source_message_id": "std_d0ec4ce03f84492c8b07233745138a0c",
+          "ticker": "MU",
+          "trading_date": "2026-10-06"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Reuters",
+              "U.S. stock-index futures",
+              "U.S. Treasury yields",
+              "oil prices"
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "Reuters标题报道，2026年10月6日美国股指期货上涨，同时国债收益率和油价回落。",
+            "subject_time": "2026-10-06美国盘前市场"
+          },
+          "candidate_index": 0,
+          "case_id": "case_57891ee3aaed4d028be65c73face4e40",
+          "created_at": "2026-10-06T10:34:16.814512Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E319",
+          "runtime_signature": "2fa84ee6b58d5ae302e1063f439dd9669a06991412a71aba3581cf050c0018e9",
+          "snapshot_version": 18,
+          "source_message_id": "std_9a1a451bd97c4a6084368541b17135c1",
+          "ticker": "MU",
+          "trading_date": "2026-10-06"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "U.S. Treasury bonds"
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "2026年10月6日，美国30年期国债收益率降至5.626%；前一日曾触及5.702%，为2002年以来高位。",
+            "subject_time": "2026年10月6日美国国债市场"
+          },
+          "candidate_index": 0,
+          "case_id": "case_bc401be637f14c64964b3ed277cc853b",
+          "created_at": "2026-10-06T10:39:50.844379Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E320",
+          "runtime_signature": "4d4256e5ff2ccd2e1569163748891052b1b60381e85b203881ba9463aabaeb51",
+          "snapshot_version": 19,
+          "source_message_id": "std_68055e54e4964318b5f6ab6bbafd62a6",
+          "ticker": "MU",
+          "trading_date": "2026-10-06"
+        },
+        {
+          "candidate": {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "Federal Reserve",
+              "CME FedWatch"
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "截至2026年10月6日盘前，交易员定价显示美联储本月维持利率不变的概率为78%，而12月加息仍被大体计入。",
+            "subject_time": "2026年10月及12月美联储会议"
+          },
+          "candidate_index": 1,
+          "case_id": "case_bc401be637f14c64964b3ed277cc853b",
+          "created_at": "2026-10-06T10:39:50.893406Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E321",
+          "runtime_signature": "3b609a3816a883b5cbce255eea659bf10e57effd177a33dcef32c0fbb2510786",
+          "snapshot_version": 20,
+          "source_message_id": "std_68055e54e4964318b5f6ab6bbafd62a6",
+          "ticker": "MU",
+          "trading_date": "2026-10-06"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Micron Technology",
+              "U.S. stock-index futures"
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "Reuters报道，2026年10月6日美国股指期货上涨时，Micron Technology在盘前交易中小幅下跌。",
+            "subject_time": "2026年10月6日美国盘前交易"
+          },
+          "candidate_index": 2,
+          "case_id": "case_bc401be637f14c64964b3ed277cc853b",
+          "created_at": "2026-10-06T10:39:50.907675Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E322",
+          "runtime_signature": "60f368be45ecbb2985f12f9db30964098252ff7c7b3963690c785e2c1013d7ba",
+          "snapshot_version": 21,
+          "source_message_id": "std_68055e54e4964318b5f6ab6bbafd62a6",
+          "ticker": "MU",
+          "trading_date": "2026-10-06"
+        },
+        {
+          "candidate": {
+            "assertion_state": "SCHEDULED",
+            "entities": [
+              "YieldMax ETFs",
+              "YRAM"
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "YieldMax宣布YRAM每股派息0.4214美元，除息日及登记日为2026年10月7日，支付日为2026年10月8日。",
+            "subject_time": "YRAM 2026年10月周度派息"
+          },
+          "candidate_index": 0,
+          "case_id": "case_9b43a2ba12ef4e9f931a66c02cea73b3",
+          "created_at": "2026-10-06T10:59:55.196427Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E323",
+          "runtime_signature": "6d58bfbafd960ddd9566791b4022758d09aba04e453ad6e3366ac0eb2b931974",
+          "snapshot_version": 22,
+          "source_message_id": "std_004ae79699dc4141af1d0057f94f7b69",
+          "ticker": "MU",
+          "trading_date": "2026-10-06"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "YieldMax ETFs",
+              "YRAM"
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "YieldMax公告列示YRAM分配率为40.16%（按2026年10月5日收盘数据计算），30日SEC收益率为0.71%（截至2026年9月30日）。",
+            "subject_time": "YRAM截至2026年10月5日的分配率及截至2026年9月30日的30日SEC收益率"
+          },
+          "candidate_index": 1,
+          "case_id": "case_9b43a2ba12ef4e9f931a66c02cea73b3",
+          "created_at": "2026-10-06T10:59:55.203699Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E324",
+          "runtime_signature": "a6f0ee8db3b1af2b705c1860d361a1688ac1586a2a36cadb29609021a422abeb",
+          "snapshot_version": 23,
+          "source_message_id": "std_004ae79699dc4141af1d0057f94f7b69",
+          "ticker": "MU",
+          "trading_date": "2026-10-06"
+        },
+        {
+          "candidate": {
+            "assertion_state": "SCHEDULED",
+            "entities": [
+              "Regeneron",
+              "ESMO 2026"
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "Regeneron宣布将在2026年10月23日至27日于马德里举行的ESMO大会上展示10份肿瘤学摘要。",
+            "subject_time": "ESMO 2026，2026年10月23日至27日"
+          },
+          "candidate_index": 0,
+          "case_id": "case_59115bfa02984abdb638fba8dc11b58f",
+          "created_at": "2026-10-06T11:04:43.016535Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E325",
+          "runtime_signature": "db7a999e35a64549c515ec2c3d862ce615e9e5d6ae93067741ab221ddc44a86d",
+          "snapshot_version": 24,
+          "source_message_id": "std_ffb5f3a168484b8f8239ced43e945918",
+          "ticker": "MU",
+          "trading_date": "2026-10-06"
+        },
+        {
+          "candidate": {
+            "assertion_state": "SCHEDULED",
+            "entities": [
+              "Regeneron",
+              "C-POST",
+              "cemiplimab",
+              "ESMO 2026"
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "Regeneron安排在ESMO 2026展示C-POST III期试验的辅助cemiplimab治疗高复发风险皮肤鳞状细胞癌患者的约3.5年随访总生存数据。",
+            "subject_time": "2026年10月25日；约3.5年随访"
+          },
+          "candidate_index": 1,
+          "case_id": "case_59115bfa02984abdb638fba8dc11b58f",
+          "created_at": "2026-10-06T11:04:43.040992Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E326",
+          "runtime_signature": "7312183ad6b8b23cb0139022d7b7c31e557a5db5a848201ee175098ca6b8b9fd",
+          "snapshot_version": 25,
+          "source_message_id": "std_ffb5f3a168484b8f8239ced43e945918",
+          "ticker": "MU",
+          "trading_date": "2026-10-06"
+        },
+        {
+          "candidate": {
+            "assertion_state": "SCHEDULED",
+            "entities": [
+              "Regeneron",
+              "cemiplimab",
+              "ESMO 2026"
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "Regeneron安排在ESMO 2026展示可切除II至IV期皮肤鳞状细胞癌患者术前cemiplimab治疗的II期最终分析。",
+            "subject_time": "2026年10月24日"
+          },
+          "candidate_index": 2,
+          "case_id": "case_59115bfa02984abdb638fba8dc11b58f",
+          "created_at": "2026-10-06T11:04:43.121853Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E327",
+          "runtime_signature": "d9abcfb63f2c3a7c8c68a8092f2a46ef8de3711bca6fc005c93b32e3c9f845de",
+          "snapshot_version": 26,
+          "source_message_id": "std_ffb5f3a168484b8f8239ced43e945918",
+          "ticker": "MU",
+          "trading_date": "2026-10-06"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Karl Deisseroth",
+              "Peter Hegemann",
+              "Georg Nagel",
+              "Nobel Assembly at Karolinska Institutet"
+            ],
+            "occurrence_date": "2026-10-05",
+            "proposition": "2026年诺贝尔生理学或医学奖于2026-10-05联合授予Karl Deisseroth、Peter Hegemann及Georg Nagel，以表彰其关于光控离子通道与光遗传学的发现。",
+            "subject_time": "2026年诺贝尔生理学或医学奖"
+          },
+          "candidate_index": 0,
+          "case_id": "case_39795fe5a009403baaa698da01dc8a17",
+          "created_at": "2026-10-06T11:08:18.118062Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E328",
+          "runtime_signature": "c666be535637bac0434f9a3149734816f7a9b24eff7d58c0bc14328e7d5a94fb",
+          "snapshot_version": 27,
+          "source_message_id": "std_ebf655e2e6204a86be728730c7763b91",
+          "ticker": "MU",
+          "trading_date": "2026-10-06"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "STARTRADER",
+              "MetaTrader 5"
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "STARTRADER于2026年10月6日在MT5服务器上线20只股票及ETF CFD产品（12只股票、8只ETF），平台交易时间为周一至周日00:00至24:00（GMT+3）。",
+            "subject_time": "自2026年10月6日起的平台产品与交易时间"
+          },
+          "candidate_index": 0,
+          "case_id": "case_d82861ced33b43dd8edee97608c6e88d",
+          "created_at": "2026-10-06T11:13:08.075224Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E329",
+          "runtime_signature": "a3f51e0f44341ccfbf3274f1ceb8a57784dbcda0b2ea7c5538714c02a0c183e4",
+          "snapshot_version": 28,
+          "source_message_id": "std_d033212778e74ffb9af49b697ef865bb",
+          "ticker": "MU",
+          "trading_date": "2026-10-06"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "STARTRADER",
+              "Samsung Electro-Mechanics",
+              "Hanmi Semiconductor",
+              "SK hynix",
+              "Samsung Electronics",
+              "DRAM sector"
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "STARTRADER新上线的产品中有7项提供HBM/DRAM供应链相关曝险，包括Samsung Electro-Mechanics、Hanmi Semiconductor、SK hynix、Samsung Electronics及DRAM板块相关产品。",
+            "subject_time": "2026年10月6日上线的CFD产品"
+          },
+          "candidate_index": 1,
+          "case_id": "case_d82861ced33b43dd8edee97608c6e88d",
+          "created_at": "2026-10-06T11:13:08.090657Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E330",
+          "runtime_signature": "0f3a6996ff988fb6d29be62695eb5be89e649b8cf29aadc05766b0f8dc6f49d5",
+          "snapshot_version": 29,
+          "source_message_id": "std_d033212778e74ffb9af49b697ef865bb",
+          "ticker": "MU",
+          "trading_date": "2026-10-06"
+        },
+        {
+          "candidate": {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "TrendForce",
+              "SK hynix",
+              "Samsung Electronics"
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "TrendForce analysts expected seven new memory fabrication and packaging plants associated with SK hynix and Samsung Electronics to come online in 2028, with capacity and resulting supply relief ramping gradually.",
+            "subject_time": "2028"
+          },
+          "candidate_index": 0,
+          "case_id": "case_21aec9ae0cdd44d38ae9a60d711902d8",
+          "created_at": "2026-10-06T11:27:38.067601Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E331",
+          "runtime_signature": "3ad906f838db93b75eca618fc819e18c6e5d53c0b740b14c6ec85975417e8ce6",
+          "snapshot_version": 30,
+          "source_message_id": "std_ad9d267a362d48f5ace64e5c9202c790",
+          "ticker": "MU",
+          "trading_date": "2026-10-06"
+        },
+        {
+          "candidate": {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "Wedbush",
+              "Matt Bryson",
+              "Micron"
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "Wedbush analyst Matt Bryson wrote that large-customer memory pricing for 2027 had been set, while ongoing or recent negotiations likely concerned smaller deals.",
+            "subject_time": "2027 pricing"
+          },
+          "candidate_index": 1,
+          "case_id": "case_21aec9ae0cdd44d38ae9a60d711902d8",
+          "created_at": "2026-10-06T11:27:38.321705Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E332",
+          "runtime_signature": "c14ca3f274a3117ca76e967880cfbfc2af27ccc79bed31c3038290f86cef0b2c",
+          "snapshot_version": 31,
+          "source_message_id": "std_ad9d267a362d48f5ace64e5c9202c790",
+          "ticker": "MU",
+          "trading_date": "2026-10-06"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Nanya Technology"
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "Nanya Technology reported 3Q26 revenue of NT$133.65 billion, up 61.9% quarter over quarter, and September 2026 revenue of NT$45.09 billion, up 0.9% month over month and 576.62% year over year; both were reported as records.",
+            "subject_time": "3Q26 and September 2026"
+          },
+          "candidate_index": 0,
+          "case_id": "case_09f553e2684b40ab9b2c6771f5e60cd0",
+          "created_at": "2026-10-06T11:32:22.775720Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E333",
+          "runtime_signature": "77b324ba7fd34d2e69924f73837feb291bca45d68c0572bb6060b166ff4e3b1c",
+          "snapshot_version": 32,
+          "source_message_id": "std_2d10d5b8914d4ea0b29b89937b519775",
+          "ticker": "MU",
+          "trading_date": "2026-10-06"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Winbond Electronics"
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "Winbond Electronics reported 3Q26 revenue of NT$82.33 billion, up 37.58% quarter over quarter, and September 2026 revenue of NT$28.25 billion, up 3.44% month over month and 256.67% year over year; both were reported as records.",
+            "subject_time": "3Q26 and September 2026"
+          },
+          "candidate_index": 1,
+          "case_id": "case_09f553e2684b40ab9b2c6771f5e60cd0",
+          "created_at": "2026-10-06T11:32:22.795846Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E334",
+          "runtime_signature": "fc872043b127045ca8434d00aaa75b74107bda0a8f3751c43f3fd058182583b2",
+          "snapshot_version": 33,
+          "source_message_id": "std_2d10d5b8914d4ea0b29b89937b519775",
+          "ticker": "MU",
+          "trading_date": "2026-10-06"
+        },
+        {
+          "candidate": {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "Nanya Technology",
+              "Commercial Times"
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "Institutional-investor estimates cited by Commercial Times revised Nanya Technology's 3Q26 DRAM bit-shipment growth from an 8% quarter-over-quarter decline to 5% growth and DRAM ASP growth from 32% to 50%.",
+            "subject_time": "3Q26 DRAM shipments and ASP"
+          },
+          "candidate_index": 2,
+          "case_id": "case_09f553e2684b40ab9b2c6771f5e60cd0",
+          "created_at": "2026-10-06T11:32:22.806113Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E335",
+          "runtime_signature": "366d1a70a56807356dc64134b00200f48c6334a3e8c858c688b01f941e932240",
+          "snapshot_version": 34,
+          "source_message_id": "std_2d10d5b8914d4ea0b29b89937b519775",
+          "ticker": "MU",
+          "trading_date": "2026-10-06"
+        },
+        {
+          "candidate": {
+            "assertion_state": "EXPECTED",
+            "entities": [
+              "Nanya Technology"
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "The report estimated that Nanya Technology could meet approximately 50%-60% of customer demand, with long-term contracts covering more than 60% of its supply.",
+            "subject_time": "Current supply and customer demand as reported on 2026-10-06"
+          },
+          "candidate_index": 3,
+          "case_id": "case_09f553e2684b40ab9b2c6771f5e60cd0",
+          "created_at": "2026-10-06T11:32:22.830851Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E336",
+          "runtime_signature": "ed6641351dca377edcc2430f0658dfabea4a5f3aea638eb7c09730b286bb258b",
+          "snapshot_version": 35,
+          "source_message_id": "std_2d10d5b8914d4ea0b29b89937b519775",
+          "ticker": "MU",
+          "trading_date": "2026-10-06"
+        },
+        {
+          "candidate": {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "Winbond Electronics",
+              "Commercial Times"
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "Institutional-investor estimates cited by Commercial Times put Winbond's 3Q26 specialty DRAM and SLC NAND price increases at 40%-50% quarter over quarter and NOR Flash price increases at approximately 30%.",
+            "subject_time": "3Q26 memory prices"
+          },
+          "candidate_index": 4,
+          "case_id": "case_09f553e2684b40ab9b2c6771f5e60cd0",
+          "created_at": "2026-10-06T11:32:22.853941Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E337",
+          "runtime_signature": "94c055787b139ce404fda883ada46a0937a15f832d8a54e01fbb4a7c562fef69",
+          "snapshot_version": 36,
+          "source_message_id": "std_2d10d5b8914d4ea0b29b89937b519775",
+          "ticker": "MU",
+          "trading_date": "2026-10-06"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Qualcomm",
+              "Apple",
+              "MediaTek",
+              "TSMC"
+            ],
+            "occurrence_date": null,
+            "proposition": "Qualcomm、Apple和MediaTek均在2026年9月发布了采用TSMC 2nm制程的旗舰手机处理器。",
+            "subject_time": "2026-09"
+          },
+          "candidate_index": 0,
+          "case_id": "case_00983c2b35b7496085c75f3f32d0c877",
+          "created_at": "2026-10-06T11:36:01.960800Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E338",
+          "runtime_signature": "5d3240cb4eb89cf1be60cf0cb08673f55ba710ed626c4c4c19c835ac76a4e71d",
+          "snapshot_version": 37,
+          "source_message_id": "std_a1c3d23686184c149fba1253656cd758",
+          "ticker": "MU",
+          "trading_date": "2026-10-06"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Apple",
+              "A20 Pro",
+              "A19 Pro"
+            ],
+            "occurrence_date": "2026-09-09",
+            "proposition": "Apple表示A20 Pro的内存带宽较A19 Pro提升50%。",
+            "subject_time": "A20 Pro相较A19 Pro"
+          },
+          "candidate_index": 1,
+          "case_id": "case_00983c2b35b7496085c75f3f32d0c877",
+          "created_at": "2026-10-06T11:36:02.005484Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E339",
+          "runtime_signature": "3d37a7ce41d222bf06c965bea72b97cad30dc8b78ed85e71cf6de5fab4e773d1",
+          "snapshot_version": 38,
+          "source_message_id": "std_a1c3d23686184c149fba1253656cd758",
+          "ticker": "MU",
+          "trading_date": "2026-10-06"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Apple",
+              "A20 Pro",
+              "iPhone 18 Pro",
+              "iPhone Duo"
+            ],
+            "occurrence_date": "2026-09-09",
+            "proposition": "Apple表示A20 Pro采用将处理器芯片与内存并排放置的定制封装设计，使内存避开芯片热路径并支持连接新一代均热板。",
+            "subject_time": "iPhone 18 Pro系列及iPhone Duo所用A20 Pro"
+          },
+          "candidate_index": 2,
+          "case_id": "case_00983c2b35b7496085c75f3f32d0c877",
+          "created_at": "2026-10-06T11:36:02.029310Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E340",
+          "runtime_signature": "de4fc8f2bd38964465de487569f7c11a10530068b5d630a1f21b17d26045bbf6",
+          "snapshot_version": 39,
+          "source_message_id": "std_a1c3d23686184c149fba1253656cd758",
+          "ticker": "MU",
+          "trading_date": "2026-10-06"
+        },
+        {
+          "candidate": {
+            "assertion_state": "RUMORED",
+            "entities": [
+              "Apple",
+              "NVIDIA",
+              "AMD",
+              "Qualcomm",
+              "MediaTek",
+              "TSMC"
+            ],
+            "occurrence_date": null,
+            "proposition": "媒体援引行业消息称Apple、NVIDIA、AMD、Qualcomm和MediaTek将TSMC 2nm系列产能预订提高了10%至20%。",
+            "subject_time": "TSMC 2nm系列产能预订"
+          },
+          "candidate_index": 3,
+          "case_id": "case_00983c2b35b7496085c75f3f32d0c877",
+          "created_at": "2026-10-06T11:36:02.048239Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E341",
+          "runtime_signature": "69096267a4875bda52611655c3c804fe629a91c1b053907477e956c17d11b5e8",
+          "snapshot_version": 40,
+          "source_message_id": "std_a1c3d23686184c149fba1253656cd758",
+          "ticker": "MU",
+          "trading_date": "2026-10-06"
+        },
+        {
+          "candidate": {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "TSMC"
+            ],
+            "occurrence_date": null,
+            "proposition": "行业消息预计TSMC的2nm月产能将在2026年底达到约12万片，高于此前约9万至10万片的市场估计。",
+            "subject_time": "截至2026年底"
+          },
+          "candidate_index": 4,
+          "case_id": "case_00983c2b35b7496085c75f3f32d0c877",
+          "created_at": "2026-10-06T11:36:02.070022Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E342",
+          "runtime_signature": "ef0ef8505ff5d3eaff59f61c2c335c42c5a111f9bce7968954384d0c9515cbd8",
+          "snapshot_version": 41,
+          "source_message_id": "std_a1c3d23686184c149fba1253656cd758",
+          "ticker": "MU",
+          "trading_date": "2026-10-06"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Qualcomm",
+              "Snapdragon 8 Elite Extreme Gen 6",
+              "MediaTek",
+              "Dimensity 9600 Pro"
+            ],
+            "occurrence_date": null,
+            "proposition": "Qualcomm称Snapdragon 8 Elite Extreme Gen 6支持直接在设备上运行超过300亿参数的MoE模型；MediaTek称Dimensity 9600 Pro支持最高约300亿参数的端侧模型。",
+            "subject_time": "2026年旗舰手机SoC产品规格"
+          },
+          "candidate_index": 5,
+          "case_id": "case_00983c2b35b7496085c75f3f32d0c877",
+          "created_at": "2026-10-06T11:36:02.099282Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E343",
+          "runtime_signature": "805b242b03c963053ac4e9402ce394b28b4934c3b5ac8a34f8abcd3c10d846dc",
+          "snapshot_version": 42,
+          "source_message_id": "std_a1c3d23686184c149fba1253656cd758",
+          "ticker": "MU",
+          "trading_date": "2026-10-06"
+        },
+        {
+          "candidate": {
+            "assertion_state": "PLANNED",
+            "entities": [
+              "Samsung Electronics",
+              "SK hynix",
+              "EBN"
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "EBN reported that Samsung and SK hynix were pursuing plans for as many as 17 new front-end memory fabs in South Korea: 10 attributed to Samsung and seven to SK hynix.",
+            "subject_time": "Long-term South Korean fab roadmaps"
+          },
+          "candidate_index": 0,
+          "case_id": "case_8d9970e005de4a8784626f9bee701b20",
+          "created_at": "2026-10-06T11:37:08.926451Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E344",
+          "runtime_signature": "8a7217c5329b53108cd92f666277dc5e96e9360ecbbd29657282141cb990fff8",
+          "snapshot_version": 43,
+          "source_message_id": "std_56a079268d6740518687266517c2de0f",
+          "ticker": "MU",
+          "trading_date": "2026-10-06"
+        },
+        {
+          "candidate": {
+            "assertion_state": "SCHEDULED",
+            "entities": [
+              "SK hynix",
+              "M17",
+              "Y2"
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "SK hynix was targeting first-cleanroom operations at its Cheongju M17 NAND fab in December 2028 and at Y2 in June 2029, according to the report.",
+            "subject_time": "December 2028 and June 2029"
+          },
+          "candidate_index": 1,
+          "case_id": "case_8d9970e005de4a8784626f9bee701b20",
+          "created_at": "2026-10-06T11:37:08.937821Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E345",
+          "runtime_signature": "c9a2575b98c3909f475863cd3f68933bc1347d0b3a7b73aa674efc5e8ba120c0",
+          "snapshot_version": 44,
+          "source_message_id": "std_56a079268d6740518687266517c2de0f",
+          "ticker": "MU",
+          "trading_date": "2026-10-06"
+        },
+        {
+          "candidate": {
+            "assertion_state": "RUMORED",
+            "entities": [
+              "Samsung Electronics",
+              "Pyeongtaek P5",
+              "ZDNet"
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "ZDNet reported that Samsung was considering moving Phase 1 tool installation at Pyeongtaek P5 forward to 2Q27 from 3Q27.",
+            "subject_time": "2Q27 versus 3Q27"
+          },
+          "candidate_index": 2,
+          "case_id": "case_8d9970e005de4a8784626f9bee701b20",
+          "created_at": "2026-10-06T11:37:08.948336Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E346",
+          "runtime_signature": "d82227c8629756946615fbfd45530bc02cf5653ce15282a3d18c835feebc8423",
+          "snapshot_version": 45,
+          "source_message_id": "std_56a079268d6740518687266517c2de0f",
+          "ticker": "MU",
+          "trading_date": "2026-10-06"
+        },
+        {
+          "candidate": {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "YMTC"
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "YMTC expected the global memory shortage to persist for at least another three years.",
+            "subject_time": "At least three years from October 2026"
+          },
+          "candidate_index": 3,
+          "case_id": "case_8d9970e005de4a8784626f9bee701b20",
+          "created_at": "2026-10-06T11:37:08.959149Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E347",
+          "runtime_signature": "27e5491fb8b34bf8898a39416a675d82be6cdedb49e566fae6713a4b9273c27e",
+          "snapshot_version": 46,
+          "source_message_id": "std_56a079268d6740518687266517c2de0f",
+          "ticker": "MU",
+          "trading_date": "2026-10-06"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Eric C. So",
+              "The Collision: What AI Does to Us",
+              "W.W. Norton"
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "W.W. Norton published Eric C. So’s book The Collision: What AI Does to Us on October 6, 2026.",
+            "subject_time": "Publication date: October 6, 2026"
+          },
+          "candidate_index": 0,
+          "case_id": "case_0f7bcbb034f84a9f985b43480a2dc182",
+          "created_at": "2026-10-06T11:59:04.328259Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E348",
+          "runtime_signature": "4818aa0ef4e673a03d5ed79073a63b747fb11ec631fef3892ea681b01acc5523",
+          "snapshot_version": 47,
+          "source_message_id": "std_ed20fe1282114f19a70a400ed6df92c6",
+          "ticker": "MU",
+          "trading_date": "2026-10-06"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "The King Center",
+              "When Faith Calls",
+              "Dr. Martin Luther King Jr.",
+              "Terentia",
+              "Storyline"
+            ],
+            "occurrence_date": "2026-10-06",
+            "proposition": "The King Center publicly released “When Faith Calls,” a six-part documentary series about the role of faith in Dr. Martin Luther King Jr.’s life and legacy, incorporating Terentia’s Storyline interactive archival experience.",
+            "subject_time": "2026-10-06"
+          },
+          "candidate_index": 0,
+          "case_id": "case_1d66fee3a22344ae9ec41adf8964d129",
+          "created_at": "2026-10-06T12:06:10.337655Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E349",
+          "runtime_signature": "c036d0ca30bdc8e9a4f451e2f1d11260ab9de2abb5a68fb7767a524838e44ae5",
+          "snapshot_version": 48,
+          "source_message_id": "std_16a3dc89b0bf4cb28f70d202560bb07f",
+          "ticker": "MU",
+          "trading_date": "2026-10-06"
+        }
+      ]
+    }
+  },
+  "source": {
+    "admission_context": {
+      "cutoff": null,
+      "mode": "REALTIME",
+      "policy_version": 1,
+      "source_task_id": null,
+      "sweep_id": null,
+      "window_start": null
+    },
+    "binding_id": "MU:yahoo_finance_news",
+    "business_version": 1,
+    "collected_at": "2026-10-06T12:06:27.214798Z",
+    "eligibility_at": "2026-10-06T12:06:27.206429Z",
+    "logical_message_id": "message_a847a042363d4472bff33ca2805189e9",
+    "member_count": 1,
+    "member_message_ids": [
+      "std_0564443dd35a4ec68c2318f7dee357ce"
+    ],
+    "message_bus_event_time": "2026-10-06T12:06:27.214798Z",
+    "normalized_at": null,
+    "previous_raw_message_id": null,
+    "publication_time_basis": "EXACT",
+    "published_at": "2026-10-06T12:00:00Z",
+    "snapshot": {
+      "body": "IRVINE, Calif., Oct. 6, 2026 /PRNewswire/ -- Netlist, Inc. (OTCQB: NLST) today announced that the Company and Micron Technology, Inc. (\"Micron\") have entered into Patent License and Settlement Agreements.\n\nUnder the agreements, the parties have agreed to settle and mutually release all pending legal proceedings between the companies, and Micron will receive a 5-year term license to Netlist's patent portfolio, including patents covering server DIMMs and High Bandwidth Memory technologies. Micron will pay Netlist $30 million per quarter from the fourth quarter of 2026 through the third quarter of 2031, totaling $600 million during the term.\n\n\"The agreement with Micron further validates the value of our AI memory technologies,\" said C.K. Hong, Netlist's Chief Executive Officer. \"We remain committed to protecting our IP while continuing to invest in the development of next-generation products.\"\n\nFurther details regarding the transaction are available in Netlist's Current Report on Form 8-K filed concurrently with the issuance of this release and available on the SEC filings page of the Netlist website here.\n\nAbout NetlistNetlist is a leading innovator in advanced memory and storage solutions. With a rich portfolio of patented technologies, Netlist's inventions are foundational to the advancement of AI computing. To learn more about Netlist, please visit www.netlist.com.\n\nSafe Harbor StatementThis news release contains forward-looking statements within the meaning of the Private Securities Litigation Reform Act of 1995. Forward-looking statements contained in this news release include, without limitation, statements about anticipated benefits of the agreements, the parties' ability to perform their respective obligations under, and to realize the anticipated benefits of those agreements, future exclusion and cease and desist orders, Netlist's ability to successfully enforce its intellectual property rights, and evaluations and judgments regarding Netlist's intellectual property portfolio. Forward-looking statements are statements other than historical facts and often address future events or Netlist's future performance. They reflect management's present expectations regarding future events and are subject to known and unknown risks, uncertainties and other factors that could cause actual results to differ materially from those expressed in or implied by any forward-looking statements. These risks, uncertainties and other factors include, among others, risks: Netlist may not be able to collect the substantial amount in damages previously awarded to it in its litigations (appeals in general could cause a lengthy delay in Netlist's ability to collect damages awards, could overturn the verdicts or reduce the damages awards); Netlist will suffer adverse outcomes in its litigation with Google or in its various other active proceedings to defend the validity of its patents; related to Netlist's plans for its intellectual property, including its strategies for monetizing, licensing, expanding, and defending its patent portfolio, which efforts may not be successful; other patent infringement litigation initiated by Netlist, or by others against Netlist, may not be successful or resolve favorably for Netlist, particularly given the costs and unpredictability of any such litigation; associated with Netlist's product sales, including whether and how long the current market and demand for products sold by Netlist will persist or persist as expected and whether Netlist may successfully develop and launch new products that are attractive to the market; whether Netlist will continue to acquire components or products for resale on favorable terms; that Netlist or its counterparties may fail to perform their obligations as required pursuant to applicable license and supply agreements, associated with the competitive landscape of Netlist's industry, general economic, political and market conditions, factory slowdowns and/or shutdowns, and changes in international trade and tariff policies. All forward-looking statements reflect management's present assumptions, expectations and beliefs regarding future events and are subject to known and unknown risks, uncertainties and other factors that could cause actual results to differ materially from those expressed in or implied by any forward-looking statements. These and other risks and uncertainties are described in Netlist's Annual Report on Form 10-K for the fiscal year ended December 27, 2025 filed with the SEC on March 19, 2026, and the other filings it makes with the U.S. Securities and Exchange Commission from time to time, including any subsequently filed quarterly and current reports. In light of these risks, uncertainties and other factors, these forward-looking statements should not be relied on as predictions of future events. These forward-looking statements represent Netlist's assumptions, expectations and beliefs only as of the date they are made, and except as required by law, Netlist undertakes no obligation to revise or update any forward-looking statements for any reason.\n\nFor more information, please contact:Investors / MediaMike SmargiassiThe Plunkett GroupNLST@theplunkettgroup.com(212) 739‑6729\n\nView original content to download multimedia:https://www.prnewswire.com/news-releases/netlist-and-micron-enter-patent-license-and-settlement-agreements-302899647.html",
+      "ticker": "MU",
+      "title": "Netlist and Micron Enter Patent License and Settlement Agreements"
+    },
+    "source_id": "yahoo_finance_news",
+    "source_message_id": "std_0564443dd35a4ec68c2318f7dee357ce",
+    "stream_item_id": "stream_c50bd2732565460a9ca47555191dde3c",
+    "update_kind": "NEW_MESSAGE",
+    "url": "https://finance.yahoo.com/technology/ai/articles/netlist-micron-enter-patent-license-120000503.html?.tsrc=rss"
+  },
+  "w1_final": {
+    "confidence": "normal",
+    "fact_attributions": [],
+    "reason": "当前消息核心事实是 Netlist 与 Micron 已签署专利许可及和解协议（相互撤回所有未决诉讼、Micron 获 5 年期许可、每季度 3000 万美元共 6 亿美元）。已知事实仅覆盖 ITC 诉讼提起、排除令请求、4.45 亿美元损害赔偿、专利无效裁决及上诉进行中，无任何事实表明双方已达成和解或许可协议。这是一个全新的状态变化。",
+    "reference_ids": [],
+    "result": "NEW"
+  },
+  "w2_final": {
+    "confidence": "normal",
+    "matched_condition_ids": [],
+    "policy_ids": [],
+    "reason": "该消息为Netlist与Micron之间的专利许可与诉讼和解公告（Micron每季度支付3000万美元，5年期共6亿美元，涉及服务器DIMM和HBM相关专利授权）。消息核心事实是IP许可与法律和解安排，未涉及Micron的收入组合、ASP、bit shipments、HBM市场份额变化、客户合同交付、产能爬坡、良率、库存、现金流结构、竞争供应商供货地位或平台规格替代等任何Policy criterion所关注的运营或财务状态变化。不存在与任何criterion构成具体、实质性触发关系的事实。"
+  },
+  "w2_alignment": null,
+  "version_pin": {
+    "activation_revision_id": "runtime-maintain-0f4cc1b185dce4cc06429106-activation",
+    "document1_run_id": "init-mu-1f3e9130ae304b01a7fdf2991a35e028-d1",
+    "document2_run_id": "init-mu-ce1a897cebf549f88d93fa485671644b-d2",
+    "event_library_root": "/data/runtime/runtime_artifacts/runtime-maintain-0f4cc1b185dce4cc06429106/events",
+    "event_library_version": 34,
+    "policy_set_version": 17,
+    "provisional_snapshot_version": 48,
+    "runtime_projection_version": 17
+  },
+  "runtime_mode": "REALTIME",
+  "trading_date": "2026-10-06"
+}

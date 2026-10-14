@@ -1,0 +1,21 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-24T20:34:11.715953Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "No independently authored contemporaneous report with a publication time verified at or before the cutoff was located. Same-day coverage lacking a verifiable time was not treated as pre-cutoff evidence.",
+    "The release stated that complete voting results would be reported in a Form 8-K. Exact per-proposal counts and the filing’s publication time were not verified as available before the cutoff."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

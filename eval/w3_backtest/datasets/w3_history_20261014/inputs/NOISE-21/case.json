@@ -1,0 +1,2299 @@
+{
+  "schema_version": "w3-backtest.case.v1",
+  "case_key": "NOISE-21",
+  "group": "noise",
+  "original_case_id": "case_74936c05acbb422e80705909c2c83522",
+  "ticker": "BE",
+  "evidence_cutoff_at": "2026-10-09T14:23:08.207529Z",
+  "cutoff_basis": "original_worker_started_at",
+  "research_key": "b9f7583629eee79e9697",
+  "research_path": "research/b9f7583629eee79e9697",
+  "original_case": {
+    "case_id": "case_74936c05acbb422e80705909c2c83522",
+    "trading_date": "2026-10-09",
+    "source": {
+      "admission_context": {
+        "cutoff": null,
+        "mode": "REALTIME",
+        "policy_version": 1,
+        "source_task_id": null,
+        "sweep_id": null,
+        "window_start": null
+      },
+      "binding_id": "BE:google_news_search_rss",
+      "business_version": 1,
+      "collected_at": "2026-10-09T14:22:39.442927Z",
+      "eligibility_at": "2026-10-09T14:22:39.438049Z",
+      "logical_message_id": "message_4d8879de3c8b45baa6d2b7fa1cfbeb17",
+      "member_count": 1,
+      "member_message_ids": [
+        "std_271392586ed7473db5651d54b20180f0"
+      ],
+      "message_bus_event_time": "2026-10-09T14:22:39.442927Z",
+      "normalized_at": null,
+      "previous_raw_message_id": null,
+      "publication_time_basis": "EXACT",
+      "published_at": "2026-10-09T14:13:00Z",
+      "snapshot": {
+        "body": "“The 12 Mireo Plus H trains will make up Romania’s first hydrogen-powered train fleet, based on our reliable Mireo platform and the successful deployment of this technology in Germany,” he added.\n\nThe planned Romanian fleet brings together the Mireo train platform and Ballard’s rail fuel cell technology for a passenger service deployment beyond the platform’s existing German market.\n\nFuel cell supply partnership expands\n\nThe latest order builds on a multi-year supply commitment established between Ballard and Siemens Mobility in 2022. It deepens that relationship as Siemens expands its hydrogen rail fleet.\n\nBallard said the project draws on the performance of earlier Mireo Plus H deployments in Germany, including the use of its fuel cell technology in demanding rail operations.\n\n“We are grateful for our partnership with Siemens Mobility and their passionate commitment to expanding zero-emission rail technology across Europe. Together, we are innovating and delivering clean transport solutions that are leading the industry,” said Marty Neese, CEO of Ballard Power Systems, following the announcement of the 24-module order.",
+        "ticker": "BE",
+        "title": "200 kW fuel cell modules to power 12 hydrogen passenger trains - Interesting Engineering"
+      },
+      "source_id": "google_news_search_rss",
+      "source_message_id": "std_271392586ed7473db5651d54b20180f0",
+      "stream_item_id": "stream_134364ff7066414390ac8ae612193ab1",
+      "update_kind": "NEW_MESSAGE",
+      "url": "https://interestingengineering.com/transportation/hydrogen-powered-train-fuel-cell-module"
+    },
+    "version_pin": {
+      "activation_revision_id": "runtime-maintain-01457190b58d5b20897d0330-activation",
+      "document1_run_id": "init-be-788adefdd31844d98a907468b883176d-d1",
+      "document2_run_id": "init-be-788adefdd31844d98a907468b883176d-d2",
+      "event_library_root": "/data/runtime/runtime_artifacts/runtime-maintain-01457190b58d5b20897d0330/events",
+      "event_library_version": 21,
+      "policy_set_version": 15,
+      "provisional_snapshot_version": 27,
+      "runtime_projection_version": 15
+    },
+    "runtime_mode": "REALTIME",
+    "closed_cycle_id": null,
+    "w1_final": {
+      "confidence": "normal",
+      "fact_attributions": [],
+      "reason": "本轮未加载任何 canonical 或 provisional Event/Fact。当前消息的核心事实——罗马尼亚首支氢动力列车车队（12列 Mireo Plus H）采用 Ballard 24 模块燃料电池订单、将 Mireo 平台氢燃料技术从德国市场扩展至客运服务——无任何已知事实覆盖。",
+      "reference_ids": [],
+      "result": "NEW"
+    },
+    "w1_extraction": null,
+    "w2_final": {
+      "confidence": "normal",
+      "matched_condition_ids": [],
+      "policy_ids": [],
+      "reason": "消息内容为Ballard与Siemens Mobility在罗马尼亚氢燃料电池列车 fleet 的订单合作，涉及主体（Ballard、Siemens）、产品（Mireo Plus H列车、PEM燃料电池）和应用场景（轨道交通）均不在本组Policy的覆盖范围内。所有Policy围绕Bloom Energy的Project Jupiter、Energy Server、Electrolyzer及相关客户/财务/制造体系；消息中不存在与任何criterion有直接、实质性触发关系的具体事实，仅存在'氢燃料电池'这一宽泛主题重合，不构成Candidate召回理由。"
+    },
+    "created_at": "2026-10-09T14:22:40.463033Z",
+    "frozen_inputs": {
+      "index": {
+        "contract_version": "known-event-index-v2",
+        "known_event_index": "E99 | 2026-10-08 | SK Eternix and Mastern signed an MOU for a Korean fuel-cell data-center model | On 2026-10-08, SK Eternix and Mastern signed an MOU for a Korean hyperscale AI data-center model using on-site fuel cells and PPAs; SK Eternix would build and supply, while Mastern would arrange sites, permits, design, financing and tenants. No named project, capacity, schedule or Bloom order was disclosed.\nE106 | 2026-10-08 | Voltus raised $225 million and targeted a 20 GW platform by 2030 | On 2026-10-08, Voltus announced a $225 million Series D and an expected 20 GW platform by 2030, with PJM and MISO BYOC programs.\nE97 | 2026-10-07 | McKinsey partner described a persistent data-center power gap and hybrid supply strategy | Data Center Knowledge published Sam DeFabrizio’s 2026-10-07 comments: McKinsey scenarios showed supply below data-center IT demand through 2030, and more than 60% of operators used or favored a mix of on-site generation and grid access.\nE98 | 2026-10-07 | Bernstein reiterated its Bloom Energy rating citing utility demand | On 2026-10-07, Bernstein reiterated its Bloom Energy rating and cited utility demand.\nE85 | 2026-10-06 | Alabama PSC adopted procedures for reviewing large-data-center electricity contracts | On 2026-10-06, Alabama’s PSC adopted large-data-center electricity-contract review procedures: a 90-day vote-or-deemed-approved deadline, public summaries, confidential contract details, and no public hearing.\nE87 | 2026-10-06 | NVIDIA reported broad development of 800-VDC-compatible data-center products | On 2026-10-06, NVIDIA reportedly said more than 80 equipment manufacturers and infrastructure companies were developing products compatible with 800-VDC specifications.\nE90 | 2026-10-06 | Google and Constellation agreed to approximately 3.6 GW of long-term PJM power supply | On 2026-10-06, Google and Constellation announced 20-year and 15-year PJM power agreements covering 890 MW of added nuclear capacity and 2,700 MW of fleet supply, about 3.6 GW total.\nE91 | 2026-10-06 | Bloom Energy shares rose as much as 4% after the Google–Constellation power announcement | On 2026-10-06, Bloom Energy shares rose as much as 4% in a power-stock rally following Google and Constellation’s announcement.\nE94 | 2026-10-06 | UBS raised its Bloom Energy target to $350 while maintaining Buy | UBS raised Bloom Energy’s target from $325 to $350 on 2026-10-06 and kept Buy.\nE95 | 2026-10-06 | Morgan Stanley updated its U.S. data-center power-gap and Bloom fuel-cell supply outlook | Morgan Stanley’s 2026-10-06 outlook raised 2028 U.S. data-center incremental demand from 68 GW to about 97 GW; estimated a 57 GW initial gap and 32 GW net gap after mitigations; forecast about 19 GW of on-site gas generation and about 6 GW of Bloom fuel-cell supply; and raised Vera Rubin/Rubin Ultra rack power assumptions.\nE103 | 2026-10-06 | Fit Energy planned a Newport Township data center using FuelCell Energy natural-gas fuel cells | By 2026-10-06, Fit Energy planned a Newport Township data center using FuelCell Energy natural-gas fuel cells; zoning was approved, other engineering and permits remained underway, and capacity and delivery timing were not disclosed.\nE79 | 2026-10-05 | Bloom Energy confirmed a Gainesville tour stop for October 10 | On 2026-10-05, Bloom Energy scheduled a Gainesville, Florida tour stop for 2026-10-10.\nE80 | 2026-10-05 | ResearchAndMarkets.com forecast Americas data-center colocation growth | On 2026-10-05, ResearchAndMarkets.com forecast 12.13% CAGR for the Americas data-center colocation market from 2025–2031 and about 8,141 MW of new power capacity by 2031.\nE82 | 2026-10-05 | Alabama PSC scheduled review of large-data-center contract procedures for October 6 | On 2026-10-05, Alabama’s PSC scheduled review of large-data-center electricity-contract procedures for 2026-10-06.\nE83 | 2026-10-05 | Wärtsilä, Schneider Electric and Stanley Consultants launched Generator-to-Chip for U.S. data centers | On 2026-10-05, Wärtsilä, Schneider Electric and Stanley Consultants launched a U.S. data-center Generator-to-Chip offer combining modular engine power, electrical infrastructure and project execution.\nE84 | 2026-10-05 | Goldman Sachs forecast rapid U.S. data-center power-demand and capacity growth through 2027 | On 2026-10-05, Goldman Sachs forecast U.S. data-center power demand growth of 12 GW in 2026 and 17 GW in 2027 (+38% each year), with capacity reaching 64 GW and 90 GW by end-2026 and end-2027.\nE88 | 2026-10-05 | TD Cowen adjusted its Bloom Energy rating to Hold | On 2026-10-05, TD Cowen adjusted its Bloom Energy rating to Hold.\nE101 | 2026-10-05 | Infineon completed its C2i Semiconductors acquisition and integrated the team into Power Systems | On 2026-10-05, Infineon completed its planned acquisition of C2i Semiconductors, whose AI-data-center power-control team joined Infineon’s Power Systems division.\nE71 | 2026-10-03 | Project Jupiter update said fuel-cell air permits remained pending and pipeline delays pushed expected operation to February 2027 | On 2026-10-03, Project Jupiter’s Bloom fuel-cell air-quality permit was still pending, while permitting obstacles delayed its natural-gas pipeline and pushed the expected operation date to February 2027.\nE67 | 2026-10-02 | Stakeholders took opposing positions on PJM’s IRAS and Large Load Registry proposals | On 2026-10-02, Rep. Frank Pallone sought cost-allocation changes to PJM’s proposals, the Data Center Coalition opposed or urged delay, Google warned of effects on customer self-build and supported interruptible service, and PJM defended the proposals.\nE69 | 2026-10-02 | Bloom Energy shares closed at $289.15, up 4.17%, on October 2, 2026 | On 2026-10-02, Bloom Energy shares closed at $289.15, up 4.17% from $277.58; an intraday report cited about $286.80, while a separate report attributed the move to data-center/on-site-power sector rotation rather than new company news.\nE77 | 2026-10-02 | RBC reiterated Outperform and a $335 price target on Bloom Energy | On 2026-10-02, Royal Bank of Canada reiterated Outperform and a $335 price target on Bloom Energy, unchanged from its prior recommendation.\nE56 | 2026-10-01 | Enerflex contracted to deliver approximately 450 MW of gas-fired power units for a North American data center | On 2026-10-01, Enerflex won an approximately 450 MW behind-the-meter gas-generation equipment contract for a North American data center, with deliveries scheduled to start in 2027.\nE57 | 2026-10-01 | Pennsylvania PUC advanced emergency load-curtailment proposals affecting new data-center loads | On 2026-10-01, the Pennsylvania PUC voted 4–0 to seek comment on emergency curtailment proposals for new large loads, including data centers, while considering a critical-load exemption.\nE58 | 2026-10-01 | Barclays raised its Bloom Energy price target to $308 while maintaining Equal Weight | On 2026-10-01, Barclays raised its Bloom Energy target from $276 to $308 and kept Equal Weight.\nE59 | 2026-10-01 | Bloom Energy officer Aman Joshi filed a resale notice and sold 8,437 restricted shares | On 2026-10-01, Bloom Energy CCO Aman Joshi filed Form 144 for 8,437 restricted shares and sold 8,437 shares under a trading plan at a $277.17 weighted-average price.\nE60 | 2026-10-01 | Bloom Energy CEO said shipped units can be redirected as he reiterated guidance and manufacturing capacity | On 2026-10-01, Bloom Energy CEO K.R. Sridhar discussed Project Jupiter risks, the ability to redirect units in transit, current- and next-year guidance, and manufacturing capacity.\nE63 | 2026-10-01 | Virginia energy plan prioritized noncombustion bridge resources and modeled flexible gas capacity | On 2026-10-01, Virginia’s energy plan favored fuel cells and other noncombustion bridge resources when lower-emissions options cannot meet near-term reliability needs, and modeled up to 5 GW of optional noncombustion gas capacity from 2029 without a purchase or deployment commitment.\nE81 | 2026-10-01 | Alabama large-data-center law took effect, subjecting qualifying contracts to PSC review | On 2026-10-01, Alabama’s large-data-center law took effect, requiring PSC review of electricity-service contracts for qualifying customers with at least 150 MW of projected peak demand on contiguous parcels.\nE89 | 2026-10-01 | Enerflex authorized an approximately $85 million Engineered Systems expansion | On 2026-10-01, Enerflex authorized about $85 million to expand Engineered Systems facilities and capabilities, with most spending expected in 2027.\nE54 | 2026-09-30 | FERC directed PJM to suspend and revise backstop procurement and data-center cost allocation | On 2026-09-30, FERC directed PJM to postpone and revise its backstop procurement proposal for five months, shift related costs toward large data-center users, improve load forecasts, and address a reported PJM power-supply shortfall of more than 6,800 MW.\nE55 | 2026-09-30 | Plug Power signed a 280 MW electrolyzer supply agreement with Arcadia eFuels for Project ENDOR | On 2026-09-30, Plug Power signed a 280 MW Project ENDOR electrolyzer agreement with Arcadia eFuels in Denmark, received preferred-supplier status for four additional projects representing more than 1 GW of potential capacity, and was tied to a planned 110-ton-per-day renewable-hydrogen-to-sustainable-aviation-fuel project.\nE62 | 2026-09-30 | Moody’s projected substantial U.S. data-center power demand growth through 2030 | On 2026-09-30, Moody’s forecast $110 billion and 45 GW of new U.S. data-center power capacity by 2030, with demand doubling and potentially reaching 10% of U.S. electricity by decade’s end.\nE92 | 2026-09-30 | ERCOT reported 2026 year-to-date load and clean-power generation growth | On 2026-09-30, ERCOT reported January–September 2026 load growth of about 4%, clean generation growth above 11%, solar growth of about 26%, wind growth above 8%, and fossil-generation growth below 1%.\nE93 | 2026-09-30 | PJM reported 2026 year-to-date clean-generation and power-demand growth | On 2026-09-30, PJM reported January–September clean-generation growth of about 2.5%, demand growth of about 1.2%, and fossil-generation growth of about 0.4%.\nE96 | 2026-09-30 | McKinsey published its 2026 Global Energy Perspective data-center demand forecast | McKinsey Global Energy Perspective 2026, “Continued Momentum,” forecast OECD-market data-center electricity demand to grow at a 24% CAGR through 2030; published 2026-09-30.\nE43 | 2026-09-29 | Analysts responded to Bloom Energy's Fremont expansion with mixed ratings and higher targets | On 2026-09-29, RBC reiterated Outperform at $335, Jefferies raised its target from $229 to $264 with Hold, and Evercore ISI raised its target from $295 to $350 with Outperform, amid Bloom Energy's Fremont expansion.\nE46 | 2026-09-29 | Bloom Energy shares rose during the September 29, 2026 trading session | On 2026-09-29, Bloom Energy shares rose approximately 2% in early premarket trading and 13.39% to $298.08 during the session.\nE47 | 2026-09-29 | Bloom Energy purchased a 158,000-square-foot Fremont facility and planned an automated factory conversion | Bloom Energy purchased a 158,000-square-foot Fremont facility on 2026-09-29; on 2026-09-30, media reported a plan to convert it into an automated manufacturing factory.\nE49 | 2026-09-29 | U.S. behind-the-meter power updates highlighted gas-generation lead times and alternative load-growth routes | On 2026-09-29, Enverus estimated 29.6 GW of U.S. behind-the-meter gas generation through 2030, gas-turbine lead times ranged from two to six years, and RMI said alternatives could meet nearly all near-term load growth.\nE50 | 2026-09-29 | Crusoe procured behind-the-meter gas generation for U.S. data centers | On 2026-09-29, Crusoe ordered 29 GE Vernova 35 MW aeroderivative turbines and approximately 750 MW of Bergen reciprocating engines for U.S. data-center generation.\nE51 | 2026-09-29 | GE Vernova and Siemens Energy planned U.S. gas-turbine manufacturing expansion | On 2026-09-29, GE Vernova planned $160 million of Greenville expansion and 650 hires, while Siemens Energy planned to restart its Charlotte factory by 2028.\nE52 | 2026-09-29 | Nebius agreed to purchase up to $2.6 billion of Bloom Energy fuel-cell systems | On 2026-09-29, Nebius agreed to buy up to $2.6 billion of Bloom Energy fuel-cell systems in three 10-year phases, with 328 MW expected online in 2026.\nE53 | 2026-09-29 | Oracle credit markets priced record yields and downgrade risk | On 2026-09-29, Oracle long-term bond yields reached 8.31%, five-year CDS reached 237 basis points, and markets priced growing downgrade risk with implications for Project Jupiter financing.\nE44 | 2026-09-28 | Bloom Energy shares fell in a September 28 market episode amid peer declines and momentum unwinding | On 2026-09-28, Bloom Energy shares fell 7.44%–8% alongside peer declines; a report attributed the move to momentum unwinding after a reported 22% one-month gain rather than a new company announcement.\nE45 | 2026-09-28 | SBS Law offered Bloom Energy investors a lead-plaintiff opportunity in the securities-fraud lawsuit | On 2026-09-28, SBS Law offered Bloom Energy investors an opportunity to seek lead-plaint status in the securities-fraud lawsuit.\nE48 | 2026-09-28 | Ameren Missouri proposed 500 MW of natural-gas fuel cells by 2030 in its 20-year resource plan | On 2026-09-28, Ameren Missouri’s 20-year resource plan proposed 500 MW of natural-gas fuel cells by 2030.\nE70 | 2026-09-28 | Bloom Energy became the Philadelphia 76ers’ jersey patch partner | On 2026-09-28, Bloom Energy became the 76ers’ official 2026–27 jersey-patch partner, including jerseys worn by LeBron James, and the Delaware Blue Coats’ jersey sponsor; the multi-year deal was reported above $30 million annually (second-highest NBA patch deal) and included a seven-figure community investment.\nE39 | 2026-09-27 | Ceres Power reported a financing, solid-oxide platform launch, partnerships, and 2026 revenue guidance | On 2026-09-27, Ceres Power completed an oversubscribed £102.6 million raise, reported £172 million of cash and short-term investments, launched Ceres Endura, reported partnerships with Centrica, Doosan, Delta, Weichai, Denso, Thermax, and Shell, and guided to about £45 million of contracted 2026 revenue before additional deals.\nE33 | 2026-09-25 | Morgan Stanley reiterated an Overweight Bloom Energy rating and $310 target after the Project Jupiter notice | On 2026-09-25, Morgan Stanley analyst David Arcaro reiterated Overweight with a $310 target for Bloom Energy and said Project Jupiter was excluded from FY2026 guidance and posed no current-year risk.\nE34 | 2026-09-25 | Bloom Energy shares rose sharply on 2026-09-25 | On 2026-09-25, Bloom Energy shares rose 8.5% to $289.49 and were reported up 9.5% during the session, making the stock the S&P 500's best performer.\nE37 | 2026-09-25 | Bloom Energy donated $10,000 to Alpha Fire Company during an ESPN College Campus Tour stop | On 2026-09-25, Bloom Energy donated $10,000 to Alpha Fire Company during an ESPN College Campus Tour stop.\nE40 | 2026-09-25 | Atlas Energy Solutions executed a Caterpillar-linked 328 MW generating-capacity purchase agreement | On 2026-09-25, Atlas Energy Solutions executed a Caterpillar-linked purchase agreement for 328 MW of generating capacity for deliveries scheduled in 2027.\nE31 | 2026-09-24 | Oracle issued a Project Jupiter force-majeure notice citing a natural-gas pipeline delay | On 2026-09-24, Oracle issued a Project Jupiter force-majeure notice citing delay in the natural-gas pipeline intended to supply Bloom Energy fuel cells; reports also cited permitting denials, water-rights, financing and possible schedule delays, while Oracle and Blue Owl said the project or commitments remained on track and Bloom reaffirmed its 2.4 GW contract.\nE32 | 2026-09-24 | Bloom Energy shares fell in a fuel-cell stock selloff attributed to higher Treasury yields | On 2026-09-24, Bloom Energy shares fell about 8% in a fuel-cell stock selloff; a report attributed the move to higher Treasury yields pressuring clean-energy financing.\nE74 | 2026-09-24 | Bloom Energy described fuel-cell direct-DC architecture and AI load-following for 800-VDC data centers | On 2026-09-24, Bloom Energy described fuel cells as naturally compatible with 800-VDC data-center power, supercapacitors on a fuel-cell DC bus for AI GPU load swings, and whitepaper AI load-following tests; it cited 6–8%+ efficiency gains and repeated the 1-GW model of $3.6 billion (27%) lower non-compute capital costs and $5.5 billion (9%) lower five-year TCO.\nE66 | 2026-09-23 | Goldman Sachs raised its global data-center behind-the-meter generation forecast to 67 GW | On 2026-09-23, Goldman Sachs raised its global data-center behind-the-meter generation forecast from 40 GW to 67 GW by 2030, or about 25% of data-center power demand.\nE30 | 2026-09-22 | Bloom Energy was added to two indexes and removed from a Russell small-cap benchmark | On 2026-09-22, Bloom Energy was added to the FTSE All-World and S&P 500 Equal Weighted indexes and removed from a Russell small-cap benchmark in the September 2026 reshuffle.\nE27 | 2026-09-21 | Bloom Energy scheduled its Q3 2026 earnings release | On 2026-09-21, Bloom Energy announced Q3 2026 earnings for after market hours on 2026-10-27.\nE28 | 2026-09-21 | Bloom Energy shares rose in premarket trading on the S&P 500 effective date | On 2026-09-21, Bloom Energy shares rose more than 3% in premarket trading around its S&P 500 inclusion.\nE29 | 2026-09-21 | Brookfield and Bloom Energy proceeded with $6.4 billion data-center financing | On 2026-09-21, Brookfield and Bloom Energy proceeded with a $6.4 billion data-center financing package covering Meta, American Tower, Equinix, and CoreWeave projects.\nE61 | 2026-09-21 | Kodiak contracted to supply 76 MW of behind-the-meter gas power to a West Texas data center | On 2026-09-21, Kodiak agreed to provide 76 MW of behind-the-meter gas baseload power for six years to an unnamed West Texas data center supported by an unnamed investment-grade hyperscaler and GPU designer.\nE78 | 2026-09-21 | Texas Governor Greg Abbott directed TCEQ to pause new data-center permits pending ERCOT audit | On 2026-09-21, Texas Governor Greg Abbott directed TCEQ to pause new data-center permits until ERCOT completes an audit.\nE26 | 2026-09-20 | Substation-transformer lead times exceeded 160 weeks | On 2026-09-20, an industry disclosure said substation-transformer lead times exceeded 160 weeks, constraining data-center power infrastructure.\nE23 | 2026-09-10..2026-09-19 | Brookfield continued reporting a $25 billion Bloom Energy AI-infrastructure funding partnership | From 2026-09-10 through 2026-09-19, Brookfield was described as funding Bloom Energy development and deployment through a $25 billion AI-infrastructure partnership.\nE14 | 2026-09-08..2026-09-18 | Analysts responded to Bloom Energy project and delivery developments in a September episode | During 2026-09-08–09-18, UBS raised its target to $325, Clear Street to $330, Mizuho to $351 from $242, RBC maintained Outperform at $335, Stone Fox upgraded, BMO assigned Market Perform at $227, and Mizuho cited projects and delivery visibility.\nE25 | 2026-09-18 | U.S. Army awarded conditional leases to the Indelible-Bloom coalition | On 2026-09-18, the U.S. Army awarded conditional long-term leases to the Indelible-Bloom coalition; initial operating capability was targeted for 2030 or earlier.\nE24 | 2026-09-16..2026-09-17 | Ratepayer data-center subsidy episode drew political opposition as Bloom shares rose | On 2026-09-16–17, a ratepayer/data-center subsidy episode included Senator Gabe Evans opposing ratepayer subsidies and Bloom shares rising more than 3% overnight.\nE35 | 2026-09-16 | Faruqi & Faruqi reminded Bloom Energy investors of the September 28 lead-plaintiff deadline | On 2026-09-16, Faruqi & Faruqi reminded Bloom Energy investors of the September 28, 2026 lead-plaintiff filing deadline in the securities class action.\nE38 | 2026-09-16 | TrendForce forecast AI-server share and a global data-center power gap | On 2026-09-16, TrendForce forecast AI servers at about 33.4% of 2026 global data-center electricity demand capacity and a roughly 268 GW 2030 nominal gap between 490.7 GW of demand and 222.6 GW of available grid capacity.\nE72 | 2026-09-16 | Bloom Energy chief accounting officer Maciej Kurzymski sold 2,295 shares | On 2026-09-16, Bloom Energy CAO Maciej Kurzymski sold 2,295 shares at $268.42 average for about $616,024, leaving 77,391 shares.\nE73 | 2026-09-16 | Bloom Energy published an 800-VDC report modeling AI data-center cost savings | On 2026-09-16, Bloom Energy published an 800-VDC AI data-center report modeling $3.6 billion (27%) lower non-compute capital costs and $5.5 billion (9%) lower five-year total cost of ownership for a 1-GW site versus traditional AC.\nE104 | 2026-09-16 | Google, NVIDIA and Emerald AI launched an alliance to promote flexible data centers | On 2026-09-16, Google, NVIDIA and Emerald AI launched the AI Energy Management Alliance to promote flexible data-center deployment.\nE16 | 2026-09-09..2026-09-15 | Bloom Energy disclosed Oracle and Nebius data-center deployment and contracted-capacity updates | During 2026-09-09–09-15, Bloom described major Oracle/Nebius deals, Oracle data-center fuel-cell deployment, and 1.2 GW of contracted capacity being deployed across U.S. projects.\nE12 | 2026-09-08..2026-09-10 | Bloom Energy disclosed hyperscaler validation and AI-data-center demand | From 2026-09-08 through 2026-09-10, Bloom Energy reported validation by more than a dozen AI-focused operators, high product demand, and a standard on-site-power role for AI data centers.\nE22 | 2026-09-10 | Bloom Energy described Power Connect deployment-time benefits | On 2026-09-10, Bloom Energy described Power Connect and related on-site deployment claims including a three-month minimum and potential installation-time reduction above 40%.\nE15 | 2026-09-09 | Securities class action alleged misleading Bloom Energy investor statements | On 2026-09-09, a Bloom Energy securities class action alleged false or misleading statements by Bloom and executives and stated a 2025-02-27–2026-07-08 class period.\nE17 | 2026-09-09 | Bloom Energy said backlog growth outpaced revenue and would last many years | On 2026-09-09, Bloom Energy said its backlog was growing much faster than revenue and would last for many years.\nE18 | 2026-09-09 | Bloom Energy said one-third of deployed backlog was allocated to data centers | On 2026-09-09, approximately one-third of Bloom Energy deployed backlog was allocated to data centers.\nE19 | 2026-09-09 | Bloom Energy estimated recurring fuel-cell shipping capacity | On 2026-09-09, Bloom Energy estimated recurring fuel-cell shipping capacity of 3.25 MW every 1–2 days.\nE20 | 2026-09-09 | Gas-turbine supply was reported as sold out for three to four years | On 2026-09-09, gas turbines were reported as sold out for three to four years, constraining an alternative power route for Bloom-related projects.\nE21 | 2026-09-09 | Bloom Energy planned to double factory capacity by year-end 2026 | On 2026-09-09, Bloom Energy planned to double factory capacity by year-end 2026 through approximately $100 million of investment.\nE10 | 2026-09-04..2026-09-08 | Bloom Energy shares rallied after the S&P 500 inclusion announcement | From 2026-09-04 through 2026-09-08, Bloom Energy shares rose after the S&P 500 inclusion announcement, including a 7.35% close on Sep 4 and roughly 9%–10.9% gains on Sep 8.\nE11 | 2026-09-08 | Bloom Energy reported August AI-infrastructure customer and contracted-capacity growth | In a 2026-09-08 disclosure about August 2026, Bloom Energy reported nearly two dozen AI-infrastructure customers and about 250 MW of contracted capacity.\nE13 | 2026-09-08 | Bloom Energy disclosed a 55-day Oracle AI-data-center deployment | On 2026-09-08, Bloom Energy disclosed a 55-day Oracle AI-data-center fuel-cell deployment made in 2024.\nE9 | 2026-09-04 | S&P Dow Jones announced Bloom Energy's S&P 500 inclusion | On 2026-09-04, S&P Dow Jones announced Bloom Energy would join the S&P 500 before trading began on 2026-09-21.\nE100 | 2026-08-26 | Georgia Power reported approval of a 3.2 GW OpenAI service contract with up to 1 GW of flexible demand response | On 2026-08-26, Georgia Power said its approved 25-year supply agreement for OpenAI’s Effingham County project covers 3.2 GW of new load and permits up to 1 GW of demand response during high-demand periods.\nE105 | 2026-08-26 | EPRI survey estimated 10%–30% peak-power reduction potential across data-center types | EPRI’s 2026-08-26 global data-center survey reported peak-power reduction potential of about 10%–30%, depending on facility type, with some hyperscalers higher.\nE41 | 2026-08-24 | Infineon planned to acquire C2i Semiconductors for AI-data-center power applications | On 2026-08-24, Infineon planned to acquire C2i Semiconductors, which develops software-defined multiphase controllers and smart power stages for AI data centers, with expected closing in 2026-Q3.\nE8 | 2026-08-19 | Bloom Energy introduced Power Connect | On 2026-08-19, Bloom Energy introduced Power Connect as a factory-integrated on-site power deployment system.\nE36 | 2026-07-30 | Mizuho upgraded Bloom Energy to Outperform and saw 48% upside | On 2026-07-30, Mizuho upgraded Bloom Energy to Outperform and saw 48% upside for the stock.\nE76 | 2026-07-29 | MTAR Technologies reported Q1 FY2027 results and supplier-capacity indicators | In its July 29, 2026 Q1 FY2027 results and July 30 conference call, MTAR Technologies reported revenue of ₹360.7 crore (+130.4% YoY), ₹2,895.1 crore of quarterly orders including ₹504 crore for Kaiga 5&6, and a ₹5,143.3 crore order book as of 2026-06-30 (66.7% fuel cells/hydel/other clean energy; 13.3% civil nuclear); management guided for 80% FY2027 revenue growth with 24% ±100bp EBITDA margin and said products introduced in the previous four to five years exceeded 25% of revenue.\nE6 | 2026-07-28 | Bloom Energy reported Q2 2026 results, raised FY2026 guidance, and described customer approvals | On 2026-07-28, Bloom Energy reported Q2 2026 revenue up 165.5% year over year, adjusted EPS of $0.78 vs. $0.39 consensus, about $935 million of power-equipment sales with 37.2% gross margin, GAAP operating income of $182 million, approximately $494 million of remaining performance obligations, FY2026 revenue guidance of $3.9–$4.2 billion, non-GAAP operating-income guidance of $800–$900 million and adjusted EPS guidance of $2.55–$2.85; management said major U.S. hyperscalers and more than ten neocloud, AI-lab and hosting operators had approved the Energy Server.\nE7 | 2026-07-28 | Paul Pelosi disclosed additional Bloom Energy purchases on July 28 | On 2026-07-28, Paul Pelosi disclosed buying 5,000 Bloom Energy shares and 100 $100-strike calls expiring 2027-06-17.\nE5 | 2026-07-24 | Paul Pelosi disclosed Bloom Energy purchases on July 24 | On 2026-07-24, Paul Pelosi disclosed buying 10,000 Bloom Energy shares and 100 $100-strike calls expiring 2027-06-17.\nE4 | 2026-07-20 | Financial institutions announced $1.7 billion Nebius financing for Bloom Energy fuel cells | On 2026-07-20, IDF, Oaktree, MUFG, and Morgan Stanley announced $1.7 billion of Nebius AI-infrastructure project investment for Bloom Energy fuel cells.\nE102 | 2026-07-09 | Siemens and FuelCell Energy signed an MOU for large fuel-cell and integrated microgrid projects | On 2026-07-09, Siemens and FuelCell Energy signed an MOU for Siemens EBOP systems on FuelCell Energy installations supporting projects above 100 MW and for integrated fuel-cell, storage and microgrid systems; no specific customer or project was disclosed.\nE75 | 2026-07-07 | ICRA reported Bloom Energy remained MTAR Technologies’ largest revenue customer | On 2026-07-07, ICRA’s MTAR Technologies rating assessment reported Bloom Energy contributed more than 55% of MTAR revenue, down from more than 70% in FY2025; MTAR is a Bloom fuel-cell supplier.\nE3 | 2026-06-30 | Brookfield expanded Bloom Energy project-financing framework to $25 billion | On 2026-06-30, Brookfield expanded the Bloom Energy project-financing framework from $5 billion to $25 billion.\nE42 | 2026-05-18 | NextEra Energy and Dominion Energy proposed a combination to accelerate AI-data-center power projects | On 2026-05-18, NextEra Energy and Dominion Energy proposed a combination intended to accelerate generation and transmission projects for AI data centers after closing.\nE2 | 2026-04-13 | Bloom Energy and Oracle expanded their fuel-cell master-services partnership | On 2026-04-13, Bloom Energy expanded its Oracle partnership through a master-services agreement for up to 2.8 GW of fuel-cell capacity.\nE1 | 2025-12-31 | Bloom Energy reported its 2025 year-end $20 billion order backlog | On 2025-12-31, Bloom Energy reported a $20 billion backlog, including $14 billion from future services revenue.\nE65 | 2025-10-28 | Bloom Energy shares rose about 10% after Q3 2025 earnings | On 2025-10-28, Bloom Energy shares rose about 10% after the Q3 2025 earnings report.\nE86 | 2025-07-28 | Doosan began mass production of Ceres solid-oxide fuel-cell stacks at a 50-MW-per-year Korean plant | On 2025-07-28, Doosan began mass production using Ceres Power solid-oxide technology at a dedicated Korean plant reported to have 50 MW of annual capacity.\nE64 | 2025-07-10 | SK ecoplant sold 10 million Bloom Energy shares in a $276 million block trade | On 2025-07-10, SK ecoplant sold 10 million Bloom Energy Class A shares at $27.60 per share in a $276 million block trade.\nE68 | 2025-06-30 | Senate bill text set a 2028 construction-start cutoff for the Section 45V clean-hydrogen credit | On 2025-06-30, Senate bill text set a January 1, 2028 construction-start cutoff for Section 45V clean-hydrogen credit eligibility.\n",
+        "published_at": "2026-10-09T06:20:46.238468Z",
+        "sha256": "07bd06243b0e7b855e5a7c06ed3dc9b86ea65facd973c5144ab941426ceb74fa",
+        "ticker": "BE",
+        "version": 21
+      },
+      "projection": {
+        "consumer_contract": "persistent-runtime.v2.or-policy.v1",
+        "policies": [
+          {
+            "activation_revision": "ar_32728d5db4752dd19a20bf53",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "有权机构最终拒绝Project Jupiter空气许可，或施加会削减已公布容量、限制运营时段/排放或实质后移项目排期的条件。"
+            ],
+            "match_scope": "Project Jupiter空气许可的NMED最终命令、听证决定、法院裁判、许可条件、容量、工时、排放限制及项目排期消息。",
+            "policy_id": "pol_3a5092f395a4deb27eda"
+          },
+          {
+            "activation_revision": "ar_c038ad383d3f8fdb5c22523c",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Project Jupiter正式互联协议仅允许低于已公布设计的firm load，或规定分阶段送电、强制削减等条件，使全部设计容量不能按原窗口使用。"
+            ],
+            "match_scope": "Project Jupiter互联研究、执行协议、送电阶段、firm MW、强制削减、注册/建模要求及utility或ISO/RTO运营决定。",
+            "policy_id": "pol_c76a98154cb93c99f2b3"
+          },
+          {
+            "activation_revision": "ar_7d1b1ce21ad8ce80cbfa2660",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "最终计算负载规则被明确适用于Project Jupiter，并要求重新研究、重新注册、削减方案或拒绝，使原运营日期后移或可用容量受限。"
+            ],
+            "match_scope": "NERC/FERC计算负载标准、utility或RTO tariff与Project Jupiter适用决定、重新研究/注册、削减方案、容量限制和原新里程碑消息。",
+            "policy_id": "pol_2e4afd79099a019c1035"
+          },
+          {
+            "activation_revision": "ar_cc487c571fbfa74f35379e20",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Project Jupiter水资源或相关环境授权被最终拒绝、发回并要求重做关键审查，或被施加会改变项目容量、用水或排期的实质条件。"
+            ],
+            "match_scope": "Project Jupiter水资源及相关环境许可、法院或行政机关的拒绝/发回、用水量、监测条件、容量和工期变化消息。",
+            "policy_id": "pol_ca948f34c6e570aeb623"
+          },
+          {
+            "activation_revision": "ar_ae9bc5f3e2506a3656460893",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "具约束力的社区和解或地方决定削减Project Jupiter容量或运营时段，增加会改变设计的排放/水/噪声限制，或实质推迟关键里程碑。"
+            ],
+            "match_scope": "Project Jupiter社区和解、地方/州docket、法院同意令、异议解决、容量、运营时段、排放、水、噪声、监测及排期条件消息。",
+            "policy_id": "pol_5dbc8dfe4d036fa20076"
+          },
+          {
+            "activation_revision": "ar_d70c478d1513dee25053dcb3",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Project Jupiter所需关键电网设备无法按原计划到货或安装，并因此使具名送电或运营里程碑后移。"
+            ],
+            "match_scope": "Project Jupiter变压器、switchgear、substation等设备的采购、交期、安装，以及utility或sponsor披露的原新送电/运营里程碑。",
+            "policy_id": "pol_7e9d1763c8439ef528e6"
+          },
+          {
+            "activation_revision": "ar_c1abcbf295d95d01b4e9b35b",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Project Jupiter正式采用与当前方案实质不同的燃料、grid/storage hybrid、分阶段微电网或容量设计，使原2.45GW配置、时间表或Bloom角色不再适用。"
+            ],
+            "match_scope": "Oracle、BorderPlex、Bloom、utility或项目sponsor对Project Jupiter燃料、grid/storage hybrid、微电网phasing、容量、许可路径、Bloom角色和新里程碑的正式设计文件。",
+            "policy_id": "pol_d165605147f93e18782d"
+          },
+          {
+            "activation_revision": "ar_1619266f132d82df96691777",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Project Jupiter sponsor确认所需空气、水/环境、可用燃料路线和互联/运营决定均已取得，并公布已绑定的Bloom-powered建设或送电范围与日期。"
+            ],
+            "match_scope": "Project Jupiter sponsor对空气、水/环境、燃料路线、互联/运营协议等主要门槛的综合确认，以及Bloom-powered可执行建设范围、容量、开工或送电排期消息。",
+            "policy_id": "pol_b737f591c416ec2b6b0f"
+          },
+          {
+            "activation_revision": "ar_5088b66140494cc1cc4d0dc7",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "新的最终环境规则被主管机关明确适用于Project Jupiter或一个具名同类大型负荷项目，并要求新增许可、排放/碳控制、用水限制或监测，使现有设计或日期必须改变。"
+            ],
+            "match_scope": "新的累计排放、碳管理、水资源或环境监测最终规则、法院先例及其对Project Jupiter或具名同类大型负荷项目的适用、许可、设计、容量和日期后果。",
+            "policy_id": "pol_4ab3d28642eae5d67866"
+          },
+          {
+            "activation_revision": "ar_8cf50de428da5e322298e6a9",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "同一认证EPC在已完成一个项目后，第二个大型Energy Server项目也在计划窗口内commission并正式handover，且无material unresolved rework。"
+            ],
+            "match_scope": "认证EPC、客户与Bloom围绕“认证EPC重复交付能力”的确认、否定和接近边界的进展消息；主要披露路径包括客户、EPC或项目业主的handover公告。",
+            "policy_id": "pol_8a55115eb0e4e5539c3c"
+          },
+          {
+            "activation_revision": "ar_734626e13390c74f0141089f",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "具名承诺项目因EPC staffing/sequence或电气、燃气、handoff scope未闭合而错过明确里程碑，并发生EPC replacement、责任回收或material rework。"
+            ],
+            "match_scope": "认证EPC、客户或Bloom围绕“EPC capacity与scope handoff”的确认、否定和接近边界的进展消息；主要披露路径包括项目更新、change order或索赔文件。",
+            "policy_id": "pol_278d77371f8c7f651782"
+          },
+          {
+            "activation_revision": "ar_5c2988953fa2f85ff762a1af",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "具名承诺项目因permit suspension/denial、interconnection或fuel readiness失败而暂停field work或无法energize，并公布新commissioning date、scope cut或cancel。"
+            ],
+            "match_scope": "监管者、utility、fuel provider或项目业主围绕“承诺后permit/interconnection/fuel gate”的确认、否定和接近边界的进展消息；主要披露路径包括项目业主、utility或监管项目记录。",
+            "policy_id": "pol_9795c572511e9fcc514e"
+          },
+          {
+            "activation_revision": "ar_f1c7b0520326e5f02d477550",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "final requirement通过change order适用于具名承诺项目，新增controls/equipment或operating restriction并重置acceptance日期或scope。"
+            ],
+            "match_scope": "监管者、utility、客户或EPC围绕“现场设计与acceptance path”的确认、否定和接近边界的进展消息；主要披露路径包括utility/regulator决定、客户/EPC change order。",
+            "policy_id": "pol_9528ce08bd6f74eeeb43"
+          },
+          {
+            "activation_revision": "ar_627f901fc25e2506e6f85754",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "具名承诺site的transformer、switchgear、gas或其他BOP item无法按原日期到货，并导致installation/commissioning重排、暂停或临时电源。"
+            ],
+            "match_scope": "EPC、utility、supplier或项目业主围绕“现场BOP component与安装序列”的确认、否定和接近边界的进展消息；主要披露路径包括项目/EPC进度或supplier notice。",
+            "policy_id": "pol_8b7ce115803d44cd93fd"
+          },
+          {
+            "activation_revision": "ar_b7af7937ffe42cdd2419bbfd",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "具名site未通过关键性能或安全测试，客户正式withholds sign-off、提出dispute/LD claim或把acceptance推迟至少一个报告季度。"
+            ],
+            "match_scope": "客户、EPC或Bloom围绕“output/efficiency/sync/safety测试与sign-off”的确认、否定和接近边界的进展消息；主要披露路径包括客户/EPC测试记录、项目filing。",
+            "policy_id": "pol_7907c287701789eed085"
+          },
+          {
+            "activation_revision": "ar_a6c569244593ce0821744813",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "具名项目披露实际accepted/energized MW低于committed MW，并对余额作出defer、resize、cancel或新completion window。"
+            ],
+            "match_scope": "客户或项目业主围绕“accepted MW与remaining committed scope”的确认、否定和接近边界的进展消息；主要披露路径包括客户公告、change order或filing。",
+            "policy_id": "pol_87c09ed122db2d699296"
+          },
+          {
+            "activation_revision": "ar_ffefbac900a03c2b603460ef",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "已accept/energize的具名项目相关receivable或contract asset越过明确付款周期，并进入dispute/default、material term extension或loss provision。"
+            ],
+            "match_scope": "客户与Bloom财务方围绕“acceptance-linked receivable/contract asset”的确认、否定和接近边界的进展消息；主要披露路径包括filing、客户付款/争议记录。",
+            "policy_id": "pol_7000e8ba25cf2afb2e18"
+          },
+          {
+            "activation_revision": "ar_123e5f11216214deefb87a55",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "一组consult-only项目披露Bloom support、engineering、warranty/guarantee和pricing后net contribution为负或低于同口径full-scope cohort。"
+            ],
+            "match_scope": "Bloom、EPC与客户围绕“delivery-model project contribution”的确认、否定和接近边界的进展消息；主要披露路径包括项目/segment economics disclosure。",
+            "policy_id": "pol_09deb9d01b2e04296002"
+          },
+          {
+            "activation_revision": "ar_eb705e5a4bee8db9da0c2bc4",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "定义清晰的accepted project cohort披露units/MW、各方scope、field/warranty cost、positive net contribution，并在计划周期内收回deposits/contract assets。"
+            ],
+            "match_scope": "Bloom、EPC与客户围绕“accepted cohort net economics与cash cycle”的确认、否定和接近边界的进展消息；主要披露路径包括filing或项目经济披露。",
+            "policy_id": "pol_e044c770cd3a9959b2cb"
+          },
+          {
+            "activation_revision": "ar_03c6d97e6fd39d65450286ca",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "一次披露给出至少两个Power Connect商业项目及可比conventional baseline，显示installation/commissioning duration下降且rework/acceptance failure rate未恶化。"
+            ],
+            "match_scope": "客户、EPC与Bloom围绕“Power Connect installation/commissioning duration”的确认、否定和接近边界的进展消息；主要披露路径包括客户/EPC project comparison。",
+            "policy_id": "pol_a0affa1a14504bcbf651"
+          },
+          {
+            "activation_revision": "ar_6f55d46d2dedf3d31836a6a4",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "一份项目/质量披露确认至少两个Power Connect sites出现同类interface defect，并造成field change order、rework或acceptance delay。"
+            ],
+            "match_scope": "客户、EPC或Bloom围绕“Power Connect interface quality”的确认、否定和接近边界的进展消息；主要披露路径包括质量bulletin、EPC/customer project record。",
+            "policy_id": "pol_05cfd885850f209621b2"
+          },
+          {
+            "activation_revision": "ar_9d22959c095659885b35379a",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "一次fleet disclosure给出至少两个连续期间的older cohort availability、output/efficiency、degradation与forced outage，并均在合同/O&M assumptions内。"
+            ],
+            "match_scope": "Bloom service与客户围绕“age-cohort availability/degradation”的确认、否定和接近边界的进展消息；主要披露路径包括fleet KPI或customer operating report。",
+            "policy_id": "pol_355081774feba6a0a124"
+          },
+          {
+            "activation_revision": "ar_1103f459b6e55f4bfc6eb933",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "具名age/product vintage的output或availability低于其service assumption，并出现重复stack/system replacements或forced outages高于披露pattern。"
+            ],
+            "match_scope": "Bloom service或客户围绕“vintage output/availability与stack failure”的确认、否定和接近边界的进展消息；主要披露路径包括fleet/customer service report。",
+            "policy_id": "pol_141996351344d7308747"
+          },
+          {
+            "activation_revision": "ar_39722988f19972b669726410",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "跨至少两个AI sites披露显著不同的utilization/cycling/thermal/fuel regime，并显示availability/degradation/repair明显差于同龄legacy cohort。"
+            ],
+            "match_scope": "AI客户与Bloom service围绕“duty-cycle-specific degradation”的确认、否定和接近边界的进展消息；主要披露路径包括customer/fleet operating study。",
+            "policy_id": "pol_08b02839d96b1a9e816f"
+          },
+          {
+            "activation_revision": "ar_9fb3dc37db8a1978ad1c59a5",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "material expiring cohort续约并披露covered MW、scope、price/escalator，续约后service revenue/MW与margin稳定或上升。"
+            ],
+            "match_scope": "客户与Bloom service围绕“O&M renewal、price与revenue/MW”的确认、否定和接近边界的进展消息；主要披露路径包括O&M contract或segment disclosure。",
+            "policy_id": "pol_951bf518834d0e2e9c06"
+          },
+          {
+            "activation_revision": "ar_e6e1cb5b6161cf395e6d455e",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "material customer/cohort正式non-renew、insource或降价缩scope，同时文件确认Bloom仍保留warranty/performance obligations。"
+            ],
+            "match_scope": "客户与Bloom service围绕“O&M retention与residual obligations”的确认、否定和接近边界的进展消息；主要披露路径包括customer/O&M contract or filing。",
+            "policy_id": "pol_d8f7b01198e8d6630545"
+          },
+          {
+            "activation_revision": "ar_6d7dbbadae52973f46244a44",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "multi-site operating data显示repair backlog或MTTR上升，明确归因parts或qualified technicians不足，并使fleet availability/guarantee performance下降。"
+            ],
+            "match_scope": "Bloom service network与suppliers围绕“MTTR、repair backlog和availability”的确认、否定和接近边界的进展消息；主要披露路径包括service KPI、filing或customer records。",
+            "policy_id": "pol_e06f2c751963e422b486"
+          },
+          {
+            "activation_revision": "ar_a8ef1a6cfff5bb747afc1ca1",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "一次service disclosure对至少两个aging cohorts给出intervention前后MTTR或cost/MW下降及post-repair availability上升。"
+            ],
+            "match_scope": "Bloom regional service network围绕“maintenance process economics”的确认、否定和接近边界的进展消息；主要披露路径包括service program KPI disclosure。",
+            "policy_id": "pol_ff1a45e77717e15d9090"
+          },
+          {
+            "activation_revision": "ar_10c704e8722d5eb9d903dc5f",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "一次披露提供至少两个连续期间的claims/payments per serviced MW下降、对应availability/efficiency改善，并确认不是portfolio runoff。"
+            ],
+            "match_scope": "Bloom service/finance围绕“claims/payment per serviced MW”的确认、否定和接近边界的进展消息；主要披露路径包括service/guarantee KPI disclosure。",
+            "policy_id": "pol_a137dd0b7e021fa2e942"
+          },
+          {
+            "activation_revision": "ar_b8675878221c9ceb219fd40c",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "具名cyber/software/control/monitoring incident使多个Energy Server sites derate/disconnect，并披露restoration interval与repair/guarantee/service cost。"
+            ],
+            "match_scope": "Bloom、客户或regulator围绕“remote monitoring/control availability”的确认、否定和接近边界的进展消息；主要披露路径包括incident notice、customer/regulator report。",
+            "policy_id": "pol_6c47fe06b2df461860fd"
+          },
+          {
+            "activation_revision": "ar_f1f35cf09da468aaef8231d4",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "utility/customer/Bloom把regional cohort的derate/outage/claim明确归因fuel quality、pressure或pipeline interruption，并披露affected MW与recovery。"
+            ],
+            "match_scope": "utility、pipeline、客户或Bloom围绕“regional fuel quality/pressure与fleet output”的确认、否定和接近边界的进展消息；主要披露路径包括utility/customer/operator disclosure。",
+            "policy_id": "pol_5e49ffd780a9389c9a71"
+          },
+          {
+            "activation_revision": "ar_a4e641d6008a83ea667512a0",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "同一披露显示installed MW增速超过O&M-covered MW或service revenue，并归因bundled、warranty-only、customer-managed或low-price scope，同时service margin下降。"
+            ],
+            "match_scope": "Bloom service与客户围绕“service coverage mix与revenue/MW”的确认、否定和接近边界的进展消息；主要披露路径包括segment/service mix disclosure。",
+            "policy_id": "pol_30a22314a064d4c8cd6d"
+          },
+          {
+            "activation_revision": "ar_650e891d80ee9e656a6c5a14",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "一个具名近期Energy Server交付或fleet vintage的normalized repairs、replacements、guarantee claims/payments或accruals显著上升，并产生material service/field cost或margin影响。"
+            ],
+            "match_scope": "Bloom service、客户或insurer；Bloom service/finance与客户围绕“recent delivery vintage early-life claims；realized guarantee exposure”的确认、否定和接近边界的进展消息；主要披露路径包括service/warranty filing或customer disclosure。；warranty/guarantee filing。",
+            "policy_id": "pol_e1968c74acd0a09a1199"
+          },
+          {
+            "activation_revision": "ar_7ff18ecc0914048b09b4ed1e",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Across one or more subsequent reporting quarters, newly imposed tariffs, commodity or freight costs, labor costs, or supplier price resets rise while fixed-price Energy Server projects or customer negotiations prevent Bloom from passing the increase through."
+            ],
+            "match_scope": "Bloom、客户、供应商及制造/财务管理层围绕“Recurring tariff-and-input pass-through failure”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+            "policy_id": "pol_e6bd171b6be8e915fd82"
+          },
+          {
+            "activation_revision": "ar_dfca94b4feb3a74b4d1b5f05",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Fremont and Delmarva expansion and supplier qualification produce sustained qualified Energy Server throughput with lower recurring material, labor, rework, and freight cost across several quarters."
+            ],
+            "match_scope": "Bloom、客户、供应商及制造/财务管理层围绕“Qualified scale delivers repeatable product-cost step-down”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+            "policy_id": "pol_26f8286632a439db9490"
+          },
+          {
+            "activation_revision": "ar_fb8b7c12c932bf327f66f5ef",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "A rapid production ramp produces abnormal defect, rework, field-failure, warranty, recall, or performance-guarantee charges in newly delivered Energy Server cohorts."
+            ],
+            "match_scope": "Bloom、客户、供应商及制造/财务管理层围绕“Ramp-quality and warranty failure”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+            "policy_id": "pol_43cab16bca794991c1e6"
+          },
+          {
+            "activation_revision": "ar_6c343bcaab7a489c92459751",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "As large-load deployments mature, a larger share of recognized revenue comes from installation, service, electricity, or other lower-margin obligations before high-margin Energy Server product revenue is recognized."
+            ],
+            "match_scope": "Bloom、客户、供应商及制造/财务管理层围绕“Lower-margin project-recognition mix”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+            "policy_id": "pol_bc194d73d970fa06f21e"
+          },
+          {
+            "activation_revision": "ar_04c6faf60346daa6e8707e23",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Customers or channel partners obtain lower Energy Server prices, discounts, or more onerous performance guarantees as grid upgrades, gas turbines, storage, engines, or other firm-power alternatives become more available."
+            ],
+            "match_scope": "Bloom、客户、供应商及制造/财务管理层围绕“Competitive price compression”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+            "policy_id": "pol_dee1b188f54a25371ae2"
+          },
+          {
+            "activation_revision": "ar_c116c6fb0b95735fa92500a1",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "A single-source or long-lead component qualification failure, geopolitical or trade disruption, or supplier outage interrupts production and forces expensive substitutions, expediting, or air freight."
+            ],
+            "match_scope": "Bloom、客户、供应商及制造/财务管理层围绕“Supply-chain interruption and expedited-cost shock”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+            "policy_id": "pol_1f91dbe60dc2c1dec9de"
+          },
+          {
+            "activation_revision": "ar_da1feb486aed985eeebca4f3",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Revenue and product gross profit continue to grow across successive quarters while expansion, engineering, certification, regulatory-support, and corporate operating expenses grow more slowly on both GAAP and comparable non-GAAP bases."
+            ],
+            "match_scope": "Bloom管理层、监管/诉讼主体及渠道伙伴围绕“Multi-quarter operating leverage confirmation”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+            "policy_id": "pol_918e9ee408c338cf70f7"
+          },
+          {
+            "activation_revision": "ar_704e05df46118a999585121a",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Engineering, certification, permitting, regulatory support, field enablement, hiring, or customer-specific integration costs grow faster than gross profit as large-load deployments expand."
+            ],
+            "match_scope": "Bloom管理层、监管/诉讼主体及渠道伙伴围绕“Project-support costs outrun gross-profit growth”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+            "policy_id": "pol_db14bc639b66728460b1"
+          },
+          {
+            "activation_revision": "ar_00118d1146adb745a865376d",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Future filings disclose that stock compensation, retention, certification, regulatory, restructuring, or other items excluded from non-GAAP operating income recur at a material level as the business scales."
+            ],
+            "match_scope": "Bloom管理层、监管/诉讼主体及渠道伙伴围绕“Recurring exclusions revealed in the non-GAAP bridge”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+            "policy_id": "pol_3eef45858410553f2f96"
+          },
+          {
+            "activation_revision": "ar_b792e7583601c7a976dc542e",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "A product-safety, environmental, regulatory, litigation, or disclosure event causes Bloom to add a material operating workforce, investigation, legal reserve, remediation program, or customer-support burden."
+            ],
+            "match_scope": "Bloom管理层、监管/诉讼主体及渠道伙伴围绕“Compliance, safety, litigation, or recall cost shock”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+            "policy_id": "pol_0501bfd5e078d97cc592"
+          },
+          {
+            "activation_revision": "ar_958968f0224096284221ffee",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Bloom commits to a major new product, software, service, international, carbon-management, or manufacturing capability and materially increases engineering, sales, or corporate headcount before associated revenue arrives."
+            ],
+            "match_scope": "Bloom管理层、监管/诉讼主体及渠道伙伴围绕“Strategic capability build resets the expense base”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+            "policy_id": "pol_fd1220b434d9d2d17275"
+          },
+          {
+            "activation_revision": "ar_e2b2c90bbaddc11f945e1f8a",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Certified installers, utility channels, financing partners, or standardized deployment systems absorb more qualification, sales, installation-support, or project-management work, reducing Bloom's recurring operating cost per deployment."
+            ],
+            "match_scope": "Bloom管理层、监管/诉讼主体及渠道伙伴围绕“Channelized delivery lowers recurring operating burden”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+            "policy_id": "pol_e334bf9b374d107b2943"
+          },
+          {
+            "activation_revision": "ar_13e1e40da23b67bd47d32243",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Across successive quarters, funded and permitted projects for multiple customers ship, reach customer acceptance, and generate recognized revenue without one customer or project dominating the period."
+            ],
+            "match_scope": "Bloom、客户、项目伙伴及服务客户围绕“Diversified accepted-deployment cadence”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+            "policy_id": "pol_45a7e767c31ef6513035"
+          },
+          {
+            "activation_revision": "ar_0d8828753960b5dab50d1256",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "One or two large projects complete or recognize revenue unusually early, followed by a subsequent quarter in which replacement shipments, acceptances, or funded backlog do not sustain the prior run rate."
+            ],
+            "match_scope": "Bloom、客户、项目伙伴及服务客户围绕“Post-pull-forward revenue gap”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+            "policy_id": "pol_97c655358cbadef286da"
+          },
+          {
+            "activation_revision": "ar_01df679398b7ab527cf2e58d",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Several large-load projects remain technically selected but experience a synchronized delay in permits, interconnection, customer financing, installation, or final acceptance."
+            ],
+            "match_scope": "Bloom、客户、项目伙伴及服务客户围绕“Permit, financing, or acceptance bottleneck cluster”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+            "policy_id": "pol_358b18ca588879801d4d"
+          },
+          {
+            "activation_revision": "ar_e65cc0215030264e1ee48cff",
+            "condition_ids": [
+              "C2",
+              "C3"
+            ],
+            "criterion": [
+              "A major customer, developer, or infrastructure partner cancels, defers, materially downsizes, or renegotiates an Energy Server deployment or its binding payment or acceptance terms after qualification or framework announcement.",
+              "具名Bloom大型负荷项目的客户、开发商或基础设施伙伴在正式披露中移除关键交付/开发伙伴，并因项目未按计划投运而启动或拟启动付款、融资或合同保护，实质提高Bloom部署延期或回款风险。"
+            ],
+            "match_scope": "Bloom、客户、项目开发商及基础设施伙伴围绕已确认Energy Server部署的取消、延期、关键合作方变化、融资/付款或验收条款，以及正式财报、guidance、合同、交易或监管消息和同口径比较值接近边界的更新。",
+            "policy_id": "pol_b88a58def59b82c29eb5"
+          },
+          {
+            "activation_revision": "ar_68693f8b9e0024ba62bf6bf8",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Availability, degradation, repair, replacement, warranty, or performance-guarantee claims rise materially across the installed Energy Server fleet as the deployment base ages or expands."
+            ],
+            "match_scope": "Bloom、客户、项目伙伴及服务客户围绕“Installed-fleet performance burden escalates”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+            "policy_id": "pol_63cd99fd73d6a00ab832"
+          },
+          {
+            "activation_revision": "ar_20de24040e402396d4fff970",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Gas-turbine or engine slots, grid interconnection, natural-gas infrastructure, storage, or other firm-power alternatives become available earlier, cheaper, or more acceptable to large-load customers, displacing planned Bloom deployments."
+            ],
+            "match_scope": "Bloom、客户、项目伙伴及服务客户围绕“Alternative firm-power supply closes the opportunity window”的正式财报、guidance、合同、交易或监管消息；以及燃机/发动机、grid interconnection、natural-gas infrastructure、storage等替代路线的可用性、交付窗口、项目选择和同口径比较值接近边界的更新。",
+            "policy_id": "pol_5e8a9f112a05f0479677"
+          },
+          {
+            "activation_revision": "ar_000ee327a7f28a43679f159b",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Industrial, healthcare, semiconductor, food, utility, or other C&I deployments and recurring service contracts begin contributing a stable replacement stream as data-center project timing varies."
+            ],
+            "match_scope": "Bloom、客户、项目伙伴及服务客户围绕“C&I and service diversification extends the earnings base”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+            "policy_id": "pol_803b5e9ad89fba5ead04"
+          },
+          {
+            "activation_revision": "ar_52b0d17b14bdfcaab95064f8",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Customer deposits or deferred revenue decline or are refunded while receivables and contract assets continue to rise because billing, collection, installation, or acceptance lags."
+            ],
+            "match_scope": "Bloom、客户、供应商及项目融资方围绕“Deposits reverse while receivables and contract assets expand”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+            "policy_id": "pol_b22b4958ebaa7208247c"
+          },
+          {
+            "activation_revision": "ar_6e3804a6dbba5848d8030770",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Supplier payment terms normalize or vendors demand earlier cash while inventory built for demand remains unconsumed or is converted more slowly than planned."
+            ],
+            "match_scope": "Bloom、客户、供应商及项目融资方围绕“Supplier-payment catch-up and inventory unwind”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+            "policy_id": "pol_801f4a5c0c647a8119f6"
+          },
+          {
+            "activation_revision": "ar_5c07b9402a901a50016bf5d8",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "After the current project ramp, customer deposits, receivables, contract assets, inventory, and supplier payments stabilize and operating cash flow remains positive across successive periods without a comparable one-off advance or payable build."
+            ],
+            "match_scope": "Bloom、客户、供应商及项目融资方围绕“Normalized working-capital conversion becomes repeatably positive”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+            "policy_id": "pol_ed26aa0aaa2c250760e7"
+          },
+          {
+            "activation_revision": "ar_0647c0870d4efb6b73c2b345",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "A larger share of deployments uses PPA, lease, capacity, or third-party-financed structures that recognize economic activity before Bloom collects the related cash or leave Bloom carrying receivables and contract assets."
+            ],
+            "match_scope": "Bloom、客户、供应商及项目融资方围绕“Long-dated PPA or lease billing shifts cash beyond recognition”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+            "policy_id": "pol_26bece4c08cfbaa5027e"
+          },
+          {
+            "activation_revision": "ar_5998ddec8539a8f20899228c",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "A customer or project developer cancels, delays, or renegotiates a deployment and Bloom must refund deposits, settle disputed milestones, or absorb unrecovered project costs."
+            ],
+            "match_scope": "Bloom、客户、供应商及项目融资方围绕“Project cancellation triggers deposit return or cash dispute”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+            "policy_id": "pol_3472bf9374c2ab5c4697"
+          },
+          {
+            "activation_revision": "ar_4dfe457c04f31bec885e9ec9",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "A tariff, geopolitical disruption, or long-lead shortage causes Bloom to prepay suppliers, purchase scarce components, or build inventory materially ahead of accepted shipments."
+            ],
+            "match_scope": "Bloom、客户、供应商及项目融资方围绕“Supply shock forces cash prepayment and stockpiling”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+            "policy_id": "pol_c6292d35ffedc2889ad1"
+          },
+          {
+            "activation_revision": "ar_6f54b72a65ac1080804ae464",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Performance-guarantee, warranty, repair, replacement, or customer-remediation payments rise as the installed fleet expands and consume operating cash independently of new-project billing."
+            ],
+            "match_scope": "Bloom、客户、供应商及项目融资方围绕“Warranty and guarantee cash claims consume operations”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+            "policy_id": "pol_151d3764f0a68ca1d1f3"
+          },
+          {
+            "activation_revision": "ar_c013e5dc8a68b53edebd9034",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Fremont and Delmarva expansion reaches qualified effective Energy Server throughput near the planned target without material cost overrun, while operating cash and existing liquidity fund the build-out."
+            ],
+            "match_scope": "Bloom、投资者、债权人、项目融资方及供应商围绕“Capacity expansion reaches qualified output within funding plan”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+            "policy_id": "pol_b2475a5727c6b73f0d18"
+          },
+          {
+            "activation_revision": "ar_afb43d221d35ad1514bcabed",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Fremont or Delmarva expansion is delayed, costs more than planned, produces lower qualified yield than nominal capacity, or allocates shared solid-oxide resources away from Energy Server."
+            ],
+            "match_scope": "Bloom、投资者、债权人、项目融资方及供应商围绕“Nominal capacity misses or overruns qualified output”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+            "policy_id": "pol_0068aa482ba81ee4be16"
+          },
+          {
+            "activation_revision": "ar_b746141a44f5ccc782f004e8",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Working-capital needs, PP&E spending, guarantee obligations, or project delays consume cash faster than operating cash is generated and Bloom must draw financing, refinance recourse debt, or reduce planned expansion."
+            ],
+            "match_scope": "Bloom、投资者、债权人、项目融资方及供应商围绕“Liquidity buffer is consumed by growth timing”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+            "policy_id": "pol_14def55a1205537e8001"
+          },
+          {
+            "activation_revision": "ar_60c1964e23f5a5cb59d8a770",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Diversified customer, utility-channel, or infrastructure-partner project financings close, fund deployments, and provide deposits or allocated commitments without Bloom carrying the full project capital requirement."
+            ],
+            "match_scope": "Bloom、投资者、债权人、项目融资方及供应商围绕“Project financing closes and transfers capital burden”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+            "policy_id": "pol_a0833a0dc2ee614eda49"
+          },
+          {
+            "activation_revision": "ar_2456d5dfedb40b793bf09e39",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "A utility channel, infrastructure partner, or lender withdraws, delays, reprices, or materially narrows a financing or procurement framework before projects are funded."
+            ],
+            "match_scope": "Bloom、投资者、债权人、项目融资方及供应商围绕“Channel or lender risk-off blocks conditional projects”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+            "policy_id": "pol_f57ed873d70e720a39ef"
+          },
+          {
+            "activation_revision": "ar_218f430e36dd6bdbd1d7ef45",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Bloom funds the expansion or project gap through new debt, equity, convertible, warrant-linked, or receivables financing on materially more expensive, restrictive, or dilutive terms than existing resources."
+            ],
+            "match_scope": "Bloom、投资者、债权人、项目融资方及供应商围绕“Unfavorable external funding increases recourse and dilution”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+            "policy_id": "pol_8eb8c8d7f871f916e144"
+          },
+          {
+            "activation_revision": "ar_02e5788da9dd600f8998335c",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Commodity, tariff, logistics, labor, or component scarcity forces materially higher PP&E, inventory, supplier prepayment, or project-support spending during the capacity ramp."
+            ],
+            "match_scope": "Bloom、投资者、债权人、项目融资方及供应商围绕“Input inflation or trade disruption expands capital needs”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+            "policy_id": "pol_70aa679c6e946788a85e"
+          },
+          {
+            "activation_revision": "ar_a16df89a51b62e66b2e17eb8",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Convertible settlement, warrant exercise, equity compensation, or new share issuance causes fully diluted shares to grow faster than after-tax operating profit across subsequent reporting periods."
+            ],
+            "match_scope": "Bloom、资本工具持有人、投资者及监管披露主体围绕“Dilution outruns operating-profit growth”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+            "policy_id": "pol_1475d176bab2ca0a1f8a"
+          },
+          {
+            "activation_revision": "ar_16e6e90f5bab5352dd6898bc",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Bloom settles, repurchases, cash-settles, retires, or renegotiates a convertible, warrant, or similar capital instrument so that fully diluted share growth is materially below the current implied path."
+            ],
+            "match_scope": "Bloom、资本工具持有人、投资者及监管披露主体围绕“Capital-instrument settlement caps future dilution”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+            "policy_id": "pol_e240a7c0240aa9108fe0"
+          },
+          {
+            "activation_revision": "ar_cc3b0365bd54c1042d39f7e9",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "A complete period-by-period reconciliation shows that stock compensation, capital-instrument effects, interest, or other excluded items recur at a material level and that fully diluted non-GAAP EPS materially overstates comparable GAAP diluted EPS."
+            ],
+            "match_scope": "Bloom、资本工具持有人、投资者及监管披露主体围绕“Non-GAAP EPS bridge reveals recurring dilution or cost exclusions”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+            "policy_id": "pol_f496b27d05ce9dc7e1dc"
+          },
+          {
+            "activation_revision": "ar_62630399f28c95cbaa1a9924",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Cash is deployed into inventory, PP&E, projects, or a settlement and/or market rates fall, while debt refinancing or new funding increases interest expense."
+            ],
+            "match_scope": "Bloom、资本工具持有人、投资者及监管披露主体围绕“Cash deployment removes interest-income support”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+            "policy_id": "pol_a04975497ca673433fe6"
+          },
+          {
+            "activation_revision": "ar_add250bec2b11ef0e42476e7",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Operating income, net income, and diluted EPS remain positive across successive quarters while diluted shares stabilize and the GAAP-to-non-GAAP bridge becomes transparent and nonrecurring adjustments decline."
+            ],
+            "match_scope": "Bloom、资本工具持有人、投资者及监管披露主体围绕“Sustained GAAP earnings with a stable denominator”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+            "policy_id": "pol_caaff5930c8550b9d0c8"
+          },
+          {
+            "activation_revision": "ar_81354e3aafe533a2aa65ac68",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Bloom funds capacity or project working capital through a primary equity issue, equity-linked financing, acquisition consideration, or warrant package that materially increases fully diluted shares."
+            ],
+            "match_scope": "Bloom、资本工具持有人、投资者及监管披露主体围绕“Growth financing creates a new dilutive denominator”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+            "policy_id": "pol_a221049976820948e33e"
+          },
+          {
+            "activation_revision": "ar_4ae5939b101a028889d10728",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "A litigation settlement, tax assessment, impairment, debt extinguishment, restructuring, warranty, or other non-operating charge materially reduces GAAP net income or diluted EPS during the operating ramp."
+            ],
+            "match_scope": "Bloom、资本工具持有人、投资者及监管披露主体围绕“One-time charge interrupts GAAP per-share durability”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+            "policy_id": "pol_20f98581448992eb753e"
+          },
+          {
+            "activation_revision": "ar_7246ddf4dd0dea66ea442ea5",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Bloom uses excess cash or an asset-finance or strategic transaction to repurchase, retire, or otherwise reduce common-share and equity-linked dilution while maintaining the operating investment plan."
+            ],
+            "match_scope": "Bloom、资本工具持有人、投资者及监管披露主体围绕“Share repurchase or retirement improves per-share conversion”的正式财报、guidance、合同、交易或监管消息，以及同口径比较值接近边界的更新。",
+            "policy_id": "pol_940f8e7f33d3c629d201"
+          },
+          {
+            "activation_revision": "ar_5c89f9b9022c90b256fc1e90",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Bloom or customers publish operating data from at least two distinct electrolyzer sites showing sustained output, availability, efficiency and degradation through customer acceptance."
+            ],
+            "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘multi-site commercial SOEC operating validation’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+            "policy_id": "pol_2161be3422140573eb73"
+          },
+          {
+            "activation_revision": "ar_ea3420d3ba28376bd049fe84",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "A customer or independent test reports material degradation, outage, derating, maintenance burden or redesign at a Bloom installation, delaying qualification or acceptance."
+            ],
+            "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘commercial SOEC durability or availability failure’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+            "policy_id": "pol_ef7ac5cf53516fd8ac1f"
+          },
+          {
+            "activation_revision": "ar_c51eb21c64e5c70fa5ca4fc5",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "A named customer signs a binding purchase order or supply contract specifically for Bloom Electrolyzer equipment at a named project, with capacity and delivery or acceptance terms."
+            ],
+            "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘first product-specific electrolyzer purchase order’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+            "policy_id": "pol_d568425669087bb49265"
+          },
+          {
+            "activation_revision": "ar_1ae76c0923a35cf1a95d43b9",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "After a first product-specific Bloom electrolyzer installation is accepted, the original or another customer places an additional product-specific order or expansion."
+            ],
+            "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘repeat electrolyzer order after accepted installation’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+            "policy_id": "pol_de3bcdc40d2887167af1"
+          },
+          {
+            "activation_revision": "ar_281f6a673d822bc1d3e2e92e",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "A named hydrogen end user signs a binding long-term offtake or take-or-pay agreement for a Bloom electrolyzer project with volume, term, price or pricing basis and delivery terms."
+            ],
+            "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘binding hydrogen offtake with financeable terms’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+            "policy_id": "pol_df372642af0a50604849"
+          },
+          {
+            "activation_revision": "ar_0c3deef089dd4ebf168ea0ac",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "A named hydrogen offtaker cancels, defers, materially reduces or reprices committed volume before FID or stable operation."
+            ],
+            "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘offtake withdrawal or project volume reduction’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+            "policy_id": "pol_5dad38296e3815cb8589"
+          },
+          {
+            "activation_revision": "ar_0672feba8bcad07fd6a10d2c",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "A named Bloom electrolyzer project obtains required permits, power, steam and water arrangements, interconnection approvals and hydrogen-handling permissions, then starts construction."
+            ],
+            "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘hydrogen project permitting and physical-gate clearance’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+            "policy_id": "pol_638bb2429b4c5bf0bc40"
+          },
+          {
+            "activation_revision": "ar_09c166c68ee5afcfebc1a779",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "A named Bloom electrolyzer project reaches FID or financial close with committed capital identifying the Bloom equipment scope."
+            ],
+            "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘project finance close for electrolyzer deployment’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+            "policy_id": "pol_2e6ccf717d91e09a3ed3"
+          },
+          {
+            "activation_revision": "ar_1d48e3bd85fc058921601dc0",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "A proposed Bloom electrolyzer project misses FID or loses committed financing and is formally deferred or cancelled."
+            ],
+            "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘project finance or FID failure’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+            "policy_id": "pol_f71b83e8fd3c390a0db2"
+          },
+          {
+            "activation_revision": "ar_6361d7900a6c6e2d5b01acf4",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "After a product or offtake commitment, a project is delayed or cancelled by a permit, interconnection, water, storage, transport, pipeline or handling constraint."
+            ],
+            "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘site-level permitting or hydrogen-logistics blocker after commitment’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+            "policy_id": "pol_a9730a5901aebd5fb372"
+          },
+          {
+            "activation_revision": "ar_e3c998f825f6048e280f82f5",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "A named Bloom electrolyzer project receives a final tax-credit, grant, carbon-intensity, certification or other policy-eligibility determination needed for its economics."
+            ],
+            "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘project-specific clean-hydrogen policy qualification’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+            "policy_id": "pol_ea1d0121261716234de6"
+          },
+          {
+            "activation_revision": "ar_332e75577504db56f9159a7a",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "A policy, carbon-intensity rule, tax-credit interpretation, grant decision or permitting regime removes eligibility or makes a target Bloom project uneconomic."
+            ],
+            "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘policy withdrawal or hydrogen-project ineligibility’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+            "policy_id": "pol_5f3e8b21afc39234791d"
+          },
+          {
+            "activation_revision": "ar_b39186de07a5ac8c96102659",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "After factory expansion or process qualification, Bloom discloses product-specific qualified electrolyzer capacity, a production schedule or reservation and a shipment or committed slot for a named project."
+            ],
+            "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘qualified electrolyzer capacity reservation’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+            "policy_id": "pol_1893774589773bcf01cd"
+          },
+          {
+            "activation_revision": "ar_e413ffdde26c4ae85904df07",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Bloom discloses that Energy Server demand, backlog, components or production priority consumes qualified shared-platform slots and defers or limits electrolyzer production or delivery."
+            ],
+            "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘Energy Server priority crowds out electrolyzer allocation’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+            "policy_id": "pol_35d0508e4119f9bf8ed8"
+          },
+          {
+            "activation_revision": "ar_2e946ce3357a0767e917a09e",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Factory expansion meets or misses its nominal milestone while qualification, yield, component supply or supplier execution leaves qualified electrolyzer output below target or delays the expansion."
+            ],
+            "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘nominal shared-capacity expansion misses qualified electrolyzer output’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+            "policy_id": "pol_64abee84ce56b124da4d"
+          },
+          {
+            "activation_revision": "ar_66273ec29680206ac0de9d87",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "A named project discloses contracted low-carbon electricity and usable steam or waste heat and reports measured utilization, energy use, carbon intensity and delivered-hydrogen economics accepted by the offtaker."
+            ],
+            "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘project energy-input economics validate SOEC route’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+            "policy_id": "pol_7ac7e1c95cb2f29a1910"
+          },
+          {
+            "activation_revision": "ar_81664ee9dc79439ea8c4ee9e",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "A Bloom hydrogen project finds that electricity, steam, waste heat, water, utilization, carbon intensity or delivered cost fails requirements and is resized, paused or switched."
+            ],
+            "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘energy-input economics fail or route switches’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+            "policy_id": "pol_5690a43f58df04dc5ada"
+          },
+          {
+            "activation_revision": "ar_51fe9f17e0b4ff67d6f0f538",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "A named project awards comparable electrolyzer scope to PEM, alkaline, AEM or another route after technical, cost, availability or policy evaluation."
+            ],
+            "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘competing electrolyzer technology captures a comparable project’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+            "policy_id": "pol_b77c772d57e6ec02a4d2"
+          },
+          {
+            "activation_revision": "ar_acd265f0edbe303bec6aa483",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "A competing hydrogen-production or supply pathway achieves a recognized step-change and becomes the stated design standard across multiple new projects."
+            ],
+            "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘alternative-hydrogen breakthrough resets customer standard’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+            "policy_id": "pol_169ccb6876427855fe52"
+          },
+          {
+            "activation_revision": "ar_2dc030097a208d0d1d3be0bc",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "A major intended hydrogen end user changes its process, feedstock or energy strategy and removes or replaces the hydrogen demand supporting a Bloom project."
+            ],
+            "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘hydrogen end-user substitutes away from the use case’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+            "policy_id": "pol_bab586f7f7d386c09af1"
+          },
+          {
+            "activation_revision": "ar_cb50f674b6d8ca273429bbb4",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "A customer or partner proceeds with hydrogen production but owns and operates the electrolyzer, licenses or sources Bloom stacks/components, or uses a joint venture instead of buying complete Bloom systems."
+            ],
+            "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘customer or partner internalizes electrolyzer ownership’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+            "policy_id": "pol_d6aad606407bed0fddb6"
+          },
+          {
+            "activation_revision": "ar_cb14c4e3cf3b850336d1992f",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "A hydrogen or electrolyzer safety incident, code change or regulator determination imposes new design, monitoring, separation or permitting requirements that force redesign or pause."
+            ],
+            "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘hydrogen safety incident triggers redesign or stricter permitting’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+            "policy_id": "pol_9fb0dc74548c12d759e8"
+          },
+          {
+            "activation_revision": "ar_de2afd1a9b1c3e3f81e81940",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Bloom or a hydrogen partner pauses, exits, sells or redirects the Electrolyzer program, resources, manufacturing slots or pipeline toward Energy Server or another product."
+            ],
+            "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘strategic pause or capacity reallocation away from Electrolyzer’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+            "policy_id": "pol_112267e1bc7a06080fc5"
+          },
+          {
+            "activation_revision": "ar_dd0b2d0dbea8f767896dcda4",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "A flagship demonstration or first commercial site operates acceptably, but no additional product-specific order, FID or commissioned site follows during the medium-term window."
+            ],
+            "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘successful flagship remains a one-off’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+            "policy_id": "pol_f38281a8adc6a31a862f"
+          },
+          {
+            "activation_revision": "ar_a13a90079ae53c17612bf7f4",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "A hydrogen hub, pipeline, storage, industrial cluster or shared steam and power arrangement becomes operational and enables several Bloom-linked offtake or FID decisions."
+            ],
+            "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘hydrogen hub or logistics network unlocks multiple projects’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+            "policy_id": "pol_aa43cd0fa14a74a6bc97"
+          },
+          {
+            "activation_revision": "ar_a00a2d9e8e9394fee6f479ff",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "A qualified project reaches offtake and financing readiness but misses its policy construction window because shared-component, qualification or Energy Server-priority delays postpone Bloom delivery."
+            ],
+            "match_scope": "仅匹配Bloom Electrolyzer及与其直接相关的具名客户、项目、offtaker、融资方、供应链或主管机构对‘policy-window and shared-capacity interaction misses deployment’的可核验披露；不把非绑定意向、共享平台总目标或未归因行业变化视为命中。",
+            "policy_id": "pol_428d5b23a0332143d4e7"
+          },
+          {
+            "activation_revision": "ar_c6844708b6fd82d9a9803a35",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "一个已使用Bloom的重要大型负荷客户确认第二个站点或实质扩容的Energy Server完成性能测试、正式验收并投入运行。"
+            ],
+            "match_scope": "大型负荷客户的第二站点、扩容、续购、性能测试、正式验收、交接和投运消息；覆盖客户、项目业主及独立EPC对同一重复部署的确认或否定。",
+            "policy_id": "pol_86684679566a07753117"
+          },
+          {
+            "activation_revision": "ar_c239453829273c00935b013f",
+            "condition_ids": [
+              "C3"
+            ],
+            "criterion": [
+              "除已确认的Oracle、Nebius等锚定客户外，另一此前未确认的重要AI或数据中心客户授予Bloom具名项目的绑定订单或等效客户指令，并披露容量与部署时间表。"
+            ],
+            "match_scope": "此前未确认且不属于已确认锚定客户（包括Oracle、Nebius）的hyperscaler、neocloud、AI实验室或托管客户对Bloom的具名采购、项目授予、容量、取消条款和部署排期消息。",
+            "policy_id": "pol_36b5ed507595cdea3382"
+          },
+          {
+            "activation_revision": "ar_1aa7c03eafbd700c8b9946f8",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "一个重要非AI关键负载客户作出至少两个站点或批次的绑定Bloom选择，且首站已正式验收运营。"
+            ],
+            "match_scope": "半导体、制药、先进制造、公用事业及其他关键基础设施的Bloom多站点采购、重复批次、首站验收和运营消息。",
+            "policy_id": "pol_6b1eaa76a5f8541ce0de"
+          },
+          {
+            "activation_revision": "ar_b1c3596ea816dce56925cb69",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "一个重要大型负荷项目的Bloom容量在该项目此前披露的电网或替代供电可用日期之前完成客户验收并运营。"
+            ],
+            "match_scope": "客户、项目业主或EPC披露Bloom投运/验收日期，并与同项目此前公布的公用电网或替代供电可用日期比较的消息。",
+            "policy_id": "pol_78cdbe998178fbdb9b50"
+          },
+          {
+            "activation_revision": "ar_e9d3a09eacbb4b3837f8cfb1",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "已验证或已签约的锚定大型负荷客户取消Bloom项目，或正式削减其承诺容量。"
+            ],
+            "match_scope": "已验证或已签约锚定客户的取消、容量缩减、合同修订、交付承诺和替代计划消息。",
+            "policy_id": "pol_c6f78f9f2be8ff1d1ee8"
+          },
+          {
+            "activation_revision": "ar_6befb193b8cc22496952b1d9",
+            "condition_ids": [
+              "C2"
+            ],
+            "criterion": [
+              "一个重大锚定项目把正式开发、完工、送电、commissioning、验收或交接从已公布窗口推迟至少一个报告季度，或撤回该日期并确认Bloom部署或验收仍未完成。"
+            ],
+            "match_scope": "锚定项目的原开发、完工、送电、commissioning、验收/交接日期、新日期、撤回排期、现场准备和未验收状态消息。",
+            "policy_id": "pol_af4c18c9797e6d5a513f"
+          },
+          {
+            "activation_revision": "ar_9cdf75794737e63da03ac4d3",
+            "condition_ids": [
+              "C1",
+              "C2"
+            ],
+            "criterion": [
+              "已安装的Bloom系统未通过客户验收或性能测试，并需重大整改、更换或备用供电，使交接至少推迟一个报告季度。",
+              "一个重要客户确认Bloom未满足其明确的负载或运营要求，并暂停重复采购、撤回资格或要求重大重新设计。"
+            ],
+            "match_scope": "大型负荷项目的验收测试、负载画像、可用率、排放、水、维护要求、重大整改、资格撤回和重复采购暂停消息。",
+            "policy_id": "pol_64ddbb92504f20c42bb8"
+          },
+          {
+            "activation_revision": "ar_a78b87a412947a48dd2f79ec",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "重大渠道框架被正式改为第三方持有的部署，且终端客户选择或分配被明确为可选、未指定或可无罚退出。"
+            ],
+            "match_scope": "大型utility、融资方、SPV或渠道伙伴披露资产所有人、终端客户分配、退出权、条件性和客户验收状态的消息。",
+            "policy_id": "pol_885744b0d9ea3875d304"
+          },
+          {
+            "activation_revision": "ar_5bb6216be436bae455a84587",
+            "condition_ids": [
+              "C1",
+              "C2"
+            ],
+            "criterion": [
+              "一个重要大型负荷客户正式指定Bloom为优选或标准供应商，并同步授予重复站点、扩容或续购。",
+              "客户或独立采购记录以同口径量化Bloom相对至少一条可用替代路线的优势，并据此作出多站点标准化或续购。"
+            ],
+            "match_scope": "客户采购标准、优选供应商名录、路线量化比较、多站点授予、扩容和续购消息；包括独立受托比较所证明的同一采购决定。",
+            "policy_id": "pol_2989e6aab161e793083a"
+          },
+          {
+            "activation_revision": "ar_0fd56fa25b4158d6fbf10184",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "一个具名重大项目因电网或燃机可用日期晚于负载需求窗口，正式选择Bloom作为按期主供路线并授予实质容量或可执行扩容。"
+            ],
+            "match_scope": "具名客户或项目业主将电网/燃机延误与Bloom主供选择、容量、需求日期及可执行扩容直接关联的消息。区域电网采购或监管行动仅作为项目背景；单独的区域暂停、规则进展或供给缺口不构成触发。",
+            "policy_id": "pol_6d497580e0f6e14ff711"
+          },
+          {
+            "activation_revision": "ar_1b1376d2a044d88a89bce56f",
+            "condition_ids": [
+              "C1",
+              "C2",
+              "C3"
+            ],
+            "criterion": [
+              "已验证或使用Bloom的客户把可比新增负载授予可交付替代路线，并明确Bloom未续、被削减或被排除。",
+              "一个锚定客户的最终供电架构把Bloom限定为桥接、备用或少数容量，并把大部分新增firm-power MW授予其他路线。",
+              "支配性utility、融资平台或采购渠道采用优先/排他竞争技术，并把具名重要项目群分配给该路线、排除Bloom。"
+            ],
+            "match_scope": "既有Bloom客户或关键渠道的新增负载路线选择、混合架构容量分配、优先/排他采购标准、Bloom削减或排除消息。",
+            "policy_id": "pol_fe399d4f61fe7299fc90"
+          },
+          {
+            "activation_revision": "ar_3601da2d134093555033e433",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "正式生效的监管或费率制度导致一个具名大型负荷项目迁移、取消、实质延期或改用Bloom不受益的供电路线。"
+            ],
+            "match_scope": "数据中心辖区的生效法规、费率、许可或成本分摊制度及其PSC/utility监管程序（包括大型负荷电力服务合同审查），以及PJM等电网采购/监管程序与具名客户的迁移、取消、实质延期或供电路线变化消息。",
+            "policy_id": "pol_6dcd55a9faeb41870d86"
+          },
+          {
+            "activation_revision": "ar_ff33a1fbe40e78fa3515d413",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "此前非主流的firm-power架构在具名数据中心按所需负载画像可靠商运并验收，且获得同一客户第二站点或实质扩容。"
+            ],
+            "match_scope": "先进核能、微堆、长时储能、800VDC原生电源等新型架构在数据中心的商运验收、负载画像、第二站点和扩容奖项消息。",
+            "policy_id": "pol_34fd912e41e5ef4f7cb7"
+          },
+          {
+            "activation_revision": "ar_0dc155f9737845892ca051e8",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "独立数据以同一定义客户群和MW口径列出最近两个采购周期的路线分配，并显示Bloom每期均为少数且没有客户优选或标准身份。"
+            ],
+            "match_scope": "独立采购数据库、行业顾问或客户联盟发布的大型负荷路线组合、周期、MW分母、Bloom占比和优选身份消息。",
+            "policy_id": "pol_4ac9db3f20dd55d2ffce"
+          },
+          {
+            "activation_revision": "ar_7f17e5a7919250037bdb675e",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "最终计算负载可靠性要求使一个具名项目的电网送电日从原计划实质后移。"
+            ],
+            "match_scope": "最终计算负载可靠性要求、具名项目原计划送电日及规则导致的新送电日或条件日期消息。",
+            "policy_id": "pol_1cbfa69142c426bc0275"
+          },
+          {
+            "activation_revision": "ar_4dbaa72cb34381e22c68b5f5",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "关键变压器或其他电网设备未按期到货，并使一个具名大型负荷项目错过原送电里程碑。"
+            ],
+            "match_scope": "关键变压器等电网设备的项目级到货状态、原送电里程碑及新日期消息。",
+            "policy_id": "pol_698b1648f0911ec91a16"
+          },
+          {
+            "activation_revision": "ar_7a56a6950b072b0f5c79ef8a",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "预留燃机或发动机在Bloom相关负荷区按客户所需日期交付、并网并商业运行。"
+            ],
+            "match_scope": "Bloom相关负荷区small/medium-frame燃机、航改型燃机或往复式发动机的预留、交付、并网、可用MW、商业运行日和客户需求日消息。",
+            "policy_id": "pol_392b8f242b54614b6429"
+          },
+          {
+            "activation_revision": "ar_eb1b9c6781442847d8200e6f",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "一个具名数据中心在其现场替代方案可用日前取得合同firm grid容量并实际送电。"
+            ],
+            "match_scope": "具名数据中心firm grid合同容量、实际送电日、需求日及现场替代方案可用日消息。",
+            "policy_id": "pol_cae046b5c5cfefdd95ce"
+          },
+          {
+            "activation_revision": "ar_67eee563c7fc9daa6fb28b57",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "本地管道已投入服务，并向具名大型负荷区提供覆盖客户需求窗口的firm gas transport容量。"
+            ],
+            "match_scope": "Bloom相关负荷区本地管线在役日、firm transport容量和客户需求窗口消息。",
+            "policy_id": "pol_f37f3977c21ff5d79db8"
+          },
+          {
+            "activation_revision": "ar_53b80d4a694fb00f67269fb5",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "非燃气混合配置在具名大型负荷项目跨所需峰值和夜间周期可靠商运并验收，且获得扩容或第二站点。"
+            ],
+            "match_scope": "具名大型负荷非燃气混合配置跨峰值/夜间运行、客户验收和扩容或第二站点消息。",
+            "policy_id": "pol_e16fc8402cb307b95835"
+          },
+          {
+            "activation_revision": "ar_6d39e71f2b965e89fe87d17d",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "最终生效的市场规则或费率使具名大型负荷项目签订不晚于其需求日开始的可执行firm grid服务合同。"
+            ],
+            "match_scope": "最终生效的电网市场规则、费率或backstop采购/成本分摊安排及其促成的具名项目firm MW、服务日与需求日消息；也覆盖FERC/PJM对上述安排的正式批准、暂停、修订及后续落地。",
+            "policy_id": "pol_9b7af3b3194022fbee4f"
+          },
+          {
+            "activation_revision": "ar_0980e8242e8918f131db069f",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "一个新型低碳firm-power项目取得全部关键最终许可和绑定大型负荷客户授予，并进入已动工或主要设备不可撤销采购阶段。"
+            ],
+            "match_scope": "具名低碳firm-power项目的最终许可、绑定客户/MW、不可逆建设里程碑和交付窗口消息。",
+            "policy_id": "pol_ef69ddf0e00aa6ef3c46"
+          },
+          {
+            "activation_revision": "ar_2c1a2b428321d8bb03b7a5ee",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Fremont或Delmarva在至少两个连续可比周期披露Energy Server合格释放量，且最新周期达到该设施生产计划并可供出货。"
+            ],
+            "match_scope": "Fremont或Delmarva的设施购买/commissioning、Energy Server合格释放units/MW、生产计划达成、连续周期run-rate和可供出货状态消息。",
+            "policy_id": "pol_1ab64bb336f6624cd158"
+          },
+          {
+            "activation_revision": "ar_3fb3753287a7d611907441fc",
+            "condition_ids": [
+              "C1",
+              "C2"
+            ],
+            "criterion": [
+              "扩产里程碑已到或名义产能已安装，但合格Energy Server释放量低于明确生产计划，并归因于commissioning、utilization、qualification或产品分配约束。",
+              "关键制造、维护、工程、认证或trained-shift人员不足，使Fremont或Delmarva错过明确commissioning、班次或合格释放窗口。"
+            ],
+            "match_scope": "Fremont/Delmarva扩产里程碑、installed capacity、commissioning、班次人员、内部释放计划、合格Energy Server输出与日期偏差消息。",
+            "policy_id": "pol_a59e4ace72f858b7376f"
+          },
+          {
+            "activation_revision": "ar_60e008a2016fd47e9d260bad",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "此前单一或有限来源的关键Energy Server投入新增production-qualified供应商，并形成含明确产能/最小量与交期的经常性供货安排。"
+            ],
+            "match_scope": "Bloom及供应商对关键单一/有限来源组件的production qualification、长期采购、最小量、产能、交期和Energy Server适用配置消息。",
+            "policy_id": "pol_f7ea29c640ae1f23c289"
+          },
+          {
+            "activation_revision": "ar_102af4b8a99a78f991e1c4cb",
+            "condition_ids": [
+              "C1",
+              "C2"
+            ],
+            "criterion": [
+              "新增或替代关键供应商被拒绝或暂停production qualification，并因此推迟Energy Server排产或减少合格释放。",
+              "关键Energy Server投入发生外部限制或不可用，并穿透库存缓冲，造成产线停顿、生产重排、缓冲耗尽或产品级释放延误。"
+            ],
+            "match_scope": "关键组件替代来源qualification、生产lot拒绝/隔离、外部短缺/限制、库存覆盖、产线停顿、排产重排和合格释放后果消息。",
+            "policy_id": "pol_af07aa0520150a26feae"
+          },
+          {
+            "activation_revision": "ar_b785f34beb96fe8e825d2089",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "扩产设施至少两个连续可比周期的Energy Server数据表明产量上升时合格释放率未恶化，且没有重大factory-quality hold。"
+            ],
+            "match_scope": "扩产设施的Energy Server produced/released units或MW、first-pass release、rework/defect、quality hold及连续周期放量趋势消息。",
+            "policy_id": "pol_d70cf7e8afa3fb1542aa"
+          },
+          {
+            "activation_revision": "ar_ed8fb02ec1b40f01411e5c95",
+            "condition_ids": [
+              "C1",
+              "C2"
+            ],
+            "criterion": [
+              "重复工厂缺陷或认证不合规使明确Energy Server lot/units进入shipment hold、返工、召回、替换或临时停线。",
+              "最终外部标准或重大客户架构要求迫使Energy Server/Power Connect实质重设计或重新认证，并触发production hold、line split、rework或release delay。"
+            ],
+            "match_scope": "Energy Server重复缺陷、电气/stack安全、认证不合规、新标准或客户架构要求、生产hold、返工、line split和release延期消息。",
+            "policy_id": "pol_5cb306ceafdd2ba18058"
+          },
+          {
+            "activation_revision": "ar_e08161fd2f0f4277d38f99e7",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "至少两个连续可比周期显示Energy Server release-to-shipment lead time下降，同时最新周期合格出货量和按期率保持或改善。"
+            ],
+            "match_scope": "Energy Server release-to-shipment天数、合格units/MW、schedule adherence、backlog aging及连续可比周期的制造物流KPI消息。",
+            "policy_id": "pol_a1ac8ecde84b58a1edd8"
+          },
+          {
+            "activation_revision": "ar_10e9e16ad19c974f2fe78de9",
+            "condition_ids": [
+              "C1",
+              "C2"
+            ],
+            "criterion": [
+              "Energy Server factory-release backlog age或shipment window恶化，且公司明确归因于生产、供应商、质量或工厂排程而非客户site。",
+              "Energy Server生产release需求超过当前qualified factory run-rate，并触发allocation/rationing或factory lead time延长。"
+            ],
+            "match_scope": "Energy Server factory backlog age、release-to-shipment窗口、expedite、allocation/rationing、qualified run-rate、release demand与工厂归因消息。",
+            "policy_id": "pol_9517f0b4bb86ec1b3936"
+          },
+          {
+            "activation_revision": "ar_1742a2a9a4b309ecca3794bc",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "重大Electrolyzer项目获得受约束的共享line time、组件或qualified capacity，并使Energy Server释放量下降、排期后移或lead time增加。"
+            ],
+            "match_scope": "Bloom共享固体氧化物line time、关键组件、qualified capacity及Energy Server与Electrolyzer之间的产品级allocation、release和lead-time消息。",
+            "policy_id": "pol_8c11f99b5787c1a44430"
+          },
+          {
+            "activation_revision": "ar_ff98284862ba42313804b646",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "重大Electrolyzer或hydrogen计划暂停、取消或降级后，Bloom正式把相关共享资源转给Energy Server并量化新增可用MW或提前后的release window。"
+            ],
+            "match_scope": "Electrolyzer/hydrogen项目暂停、取消或降级，以及Bloom对共享line time、组件、qualified MW和Energy Server release window的重分配消息。",
+            "policy_id": "pol_1776bba20482825ce8a1"
+          },
+          {
+            "activation_revision": "ar_b415976b5e6fd659ab73a1d2",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "新的factory-integrated Energy Server配置完成production qualification，并相对旧配置量化减少integration/test/rework步骤或factory release time。"
+            ],
+            "match_scope": "Power Connect、800VDC-native等Energy Server配置的production qualification、qualified-for-shipment状态、integration/test/rework步骤和factory release time比较消息。",
+            "policy_id": "pol_76dd876f8d8af9c3d02f"
+          },
+          {
+            "activation_revision": "ar_1113ebc144751a4d968db1a2",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "Fremont或Delmarva因非计划事件关闭或关键line停机，跨过至少一个明确生产窗口，并造成合格Energy Server输出减少或转移。"
+            ],
+            "match_scope": "Fremont或Delmarva的火灾、自然灾害、utility failure、cyber incident、设施关闭、line downtime、生产窗口及合格输出转移/减少消息。",
+            "policy_id": "pol_90de2b493c9bd31aebc7"
+          },
+          {
+            "activation_revision": "ar_7dbb6b0da8b1ec9c839ab45c",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "产品或客户规格变化使Energy Server关键库存/WIP不能用于当前qualified build，并产生material write-down、rework或disposal及release延期。"
+            ],
+            "match_scope": "Energy Server库存/WIP因产品revision、product mix、客户规格或取消导致的reserve、write-down、rework、disposal及release影响消息。",
+            "policy_id": "pol_8ffc76471b1c39816531"
+          },
+          {
+            "activation_revision": "ar_ae3f389bf5bf6ffbcdd75e37",
+            "condition_ids": [
+              "C1"
+            ],
+            "criterion": [
+              "合作制造方的特定Energy Server配置完成Bloom production qualification，并取得量化units/MW及首个release window的可执行产能承诺。"
+            ],
+            "match_scope": "Bloom与contract/regional manufacturing partner的Energy Server配置、quality qualification、承诺units/MW、首个release window和合格释放消息。",
+            "policy_id": "pol_643e8d1a999ed551cbe2"
+          },
+          {
+            "activation_revision": "ar_a7099d4e892da3666db21ae5",
+            "condition_ids": [
+              "C1",
+              "C2",
+              "C4"
+            ],
+            "criterion": [
+              "主要超大规模云厂商把目标年度合计AI资本开支上调至显著高于当前共识的水平，并明确该上修对应新增或加速的数据中心建设与现场firm-power需求。",
+              "大型AI计算运营方把未来云、计算与基础设施承诺的总额或不可取消比例上调至显著高于当前基线，并明确这些承诺对应新增或加速的数据中心与现场firm-power需求。",
+              "AI计算运营方的同一产品世代或可比新一代服务器/加速器机架功率需求相对最新同口径市场基线进一步上修，并明确扩大数据中心现场firm-power需求。"
+            ],
+            "match_scope": "主要超大规模云厂商和AI计算运营方的AI资本开支预测、不可取消计算承诺、服务器机架功耗、公司guidance及其对数据中心建设和现场firm-power需求的修订消息。",
+            "policy_id": "pol_b6eb54be9d4d509c8c80"
+          }
+        ],
+        "policy_set_published_at": "2026-10-09T06:27:42.285111Z",
+        "policy_set_version": 15,
+        "schema_version": "document3.runtime_projection.v4",
+        "ticker": "BE"
+      },
+      "provisional": [
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Kodiak Gas Services",
+              "未具名西德克萨斯数据中心运营商"
+            ],
+            "occurrence_date": "2026-09-21",
+            "proposition": "Kodiak Gas Services宣布签订一项为期六年的协议，为一处未具名的西德克萨斯数据中心提供76MW表后基荷电力容量及配套设备，拟部署约40台天然气往复式发电机组。",
+            "subject_time": "六年协议期限"
+          },
+          "candidate_index": 0,
+          "case_id": "case_b8165e8f4cf54feb95b87cd4e8102a44",
+          "created_at": "2026-10-09T07:15:59.011551Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E107",
+          "runtime_signature": "2cfa42211d126c6e82d1bf6f45485a4813882736541c408a5b83e6e5eb390d3e",
+          "snapshot_version": 1,
+          "source_message_id": "std_a51acc1231c44a2b96f33a9fc41d465e",
+          "ticker": "BE",
+          "trading_date": "2026-10-09"
+        },
+        {
+          "candidate": {
+            "assertion_state": "EXPECTED",
+            "entities": [
+              "Kodiak Gas Services",
+              "未具名西德克萨斯数据中心运营商"
+            ],
+            "occurrence_date": "2026-09-21",
+            "proposition": "Kodiak Gas Services表示，预计该数据中心项目的电力设备部署于2026年第四季度开始，并延续至2027年第一季度。",
+            "subject_time": "2026年第四季度至2027年第一季度"
+          },
+          "candidate_index": 1,
+          "case_id": "case_b8165e8f4cf54feb95b87cd4e8102a44",
+          "created_at": "2026-10-09T07:15:59.019286Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E108",
+          "runtime_signature": "2e5142eda7de9d4956c6d352adde679ca13b0afe8fa967bd09b1330491cbd7d6",
+          "snapshot_version": 2,
+          "source_message_id": "std_a51acc1231c44a2b96f33a9fc41d465e",
+          "ticker": "BE",
+          "trading_date": "2026-10-09"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "GovCon Wire",
+              "美国能源部"
+            ],
+            "occurrence_date": "2026-10-09",
+            "proposition": "GovCon Wire于2026年10月9日发布标题为“Can the Grid Keep Up With AI? Inside DOE’s Data Center Power Push”的报道，将美国能源部描述为正在推进数据中心供电举措；当前消息快照未提供具体措施、规模或实施变化。",
+            "subject_time": null
+          },
+          "candidate_index": 0,
+          "case_id": "case_450b9bdcf55341aaabc7d3be5a50b258",
+          "created_at": "2026-10-09T09:53:06.570608Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E109",
+          "runtime_signature": "1c24b605e22c0eb786cf2aafbfbfbe19fba3953f74830841281ace46a9a4654a",
+          "snapshot_version": 3,
+          "source_message_id": "std_5993fa21145540b181c585b3000e5bd0",
+          "ticker": "BE",
+          "trading_date": "2026-10-09"
+        },
+        {
+          "candidate": {
+            "assertion_state": "EXPECTED",
+            "entities": [
+              "TrendForce",
+              "VCSEL NPO"
+            ],
+            "occurrence_date": "2026-10-08",
+            "proposition": "TrendForce预计多种基于VCSEL的近封装光学（NPO）方案将于2027至2028年推出。",
+            "subject_time": "2027—2028年"
+          },
+          "candidate_index": 0,
+          "case_id": "case_306c2ab0a94e470d9bbc3d769d2076d8",
+          "created_at": "2026-10-09T10:32:03.416203Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E110",
+          "runtime_signature": "b747f056b048ba2046c70a757ab93acf20ba6670a664ef46628c23efd77dec2f",
+          "snapshot_version": 4,
+          "source_message_id": "std_31d48c0069db464ab6e24a0a4f95449a",
+          "ticker": "BE",
+          "trading_date": "2026-10-09"
+        },
+        {
+          "candidate": {
+            "assertion_state": "FORECAST",
+            "entities": [
+              "TrendForce",
+              "VCSEL"
+            ],
+            "occurrence_date": "2026-10-08",
+            "proposition": "TrendForce预测VCSEL市场需求量到2031年将达到6.5亿颗，2025至2031年复合年增长率为38%。",
+            "subject_time": "2025—2031年；2031年"
+          },
+          "candidate_index": 1,
+          "case_id": "case_306c2ab0a94e470d9bbc3d769d2076d8",
+          "created_at": "2026-10-09T10:32:03.440045Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E111",
+          "runtime_signature": "dff70f4f16e8db2f5e63c9327c91827b77a985d67815cad1ea13f7716b1e0022",
+          "snapshot_version": 5,
+          "source_message_id": "std_31d48c0069db464ab6e24a0a4f95449a",
+          "ticker": "BE",
+          "trading_date": "2026-10-09"
+        },
+        {
+          "candidate": {
+            "assertion_state": "EXPECTED",
+            "entities": [
+              "TrendForce",
+              "AI数据中心",
+              "VCSEL NPO",
+              "Micro LED CPO"
+            ],
+            "occurrence_date": "2026-10-08",
+            "proposition": "TrendForce认为传输速率进入1.6 Tbps时代时，铜缆信号衰减预计将加速数据中心短距离传输转向光互连，包括VCSEL NPO和Micro LED CPO。",
+            "subject_time": "传输速率进入1.6 Tbps时代"
+          },
+          "candidate_index": 2,
+          "case_id": "case_306c2ab0a94e470d9bbc3d769d2076d8",
+          "created_at": "2026-10-09T10:32:03.456527Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E112",
+          "runtime_signature": "4a6ca0ea78d4fd300ebe93d4ee4ba838dd0ea0142749318cec0631a5ad5e02d8",
+          "snapshot_version": 6,
+          "source_message_id": "std_31d48c0069db464ab6e24a0a4f95449a",
+          "ticker": "BE",
+          "trading_date": "2026-10-09"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Corvus Energy",
+              "BYD"
+            ],
+            "occurrence_date": null,
+            "proposition": "Corvus Energy与BYD共同开发了使用BYD磷酸铁锂电芯的Blue Whale NxtGen Power ESS。",
+            "subject_time": null
+          },
+          "candidate_index": 0,
+          "case_id": "case_5b60f590b6c84dfa9c83cdb629f252af",
+          "created_at": "2026-10-09T11:06:55.186929Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E113",
+          "runtime_signature": "ba8512959000b9094898c5dcf1a548f51c818a2969b6de7fbbd953137a1bf3b4",
+          "snapshot_version": 7,
+          "source_message_id": "std_25be7e5c7c4c46b7bf240e625234b911",
+          "ticker": "BE",
+          "trading_date": "2026-10-09"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "EnerVenue",
+              "中国武进"
+            ],
+            "occurrence_date": null,
+            "proposition": "EnerVenue已在中国武进的工厂开始生产水系金属电池，产品模块容量最高可达1 MWh，面向陆上及海事应用。",
+            "subject_time": null
+          },
+          "candidate_index": 1,
+          "case_id": "case_5b60f590b6c84dfa9c83cdb629f252af",
+          "created_at": "2026-10-09T11:06:55.201065Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E114",
+          "runtime_signature": "39feac8f4ad5263be0c54224d58948b920a942dce32d0a3f51d2716554a86c15",
+          "snapshot_version": 8,
+          "source_message_id": "std_25be7e5c7c4c46b7bf240e625234b911",
+          "ticker": "BE",
+          "trading_date": "2026-10-09"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Lehmann Marine",
+              "Sunlight Group",
+              "Xanthi",
+              "Hittfeld"
+            ],
+            "occurrence_date": null,
+            "proposition": "Lehmann Marine在希腊Xanthi投产专用生产线并扩建德国Hittfeld设施；其自动化生产线的海事储能系统年产能最高为300 MWh。",
+            "subject_time": null
+          },
+          "candidate_index": 2,
+          "case_id": "case_5b60f590b6c84dfa9c83cdb629f252af",
+          "created_at": "2026-10-09T11:06:55.214377Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E115",
+          "runtime_signature": "bcca46102c3a5a26606e79488765e441b732761c43630c53b3c926c9b3771ddc",
+          "snapshot_version": 9,
+          "source_message_id": "std_25be7e5c7c4c46b7bf240e625234b911",
+          "ticker": "BE",
+          "trading_date": "2026-10-09"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Echandia",
+              "印度拖船"
+            ],
+            "occurrence_date": null,
+            "proposition": "Echandia开发了基于锂钛氧化物技术的Core海事电池系统，并已获得为印度在建拖船供货的订单。",
+            "subject_time": null
+          },
+          "candidate_index": 3,
+          "case_id": "case_5b60f590b6c84dfa9c83cdb629f252af",
+          "created_at": "2026-10-09T11:06:55.227653Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E116",
+          "runtime_signature": "39b158c908ef9015a6fc26fe5be4b118e46678c2434d6fd9ec9bb497b4a1427a",
+          "snapshot_version": 10,
+          "source_message_id": "std_25be7e5c7c4c46b7bf240e625234b911",
+          "ticker": "BE",
+          "trading_date": "2026-10-09"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Yanmar Power Solutions",
+              "Yanmar Holdings",
+              "DNV"
+            ],
+            "occurrence_date": null,
+            "proposition": "Yanmar Power Solutions的GH-FC系列海事氢燃料电池系统获得DNV型式认可。",
+            "subject_time": null
+          },
+          "candidate_index": 4,
+          "case_id": "case_5b60f590b6c84dfa9c83cdb629f252af",
+          "created_at": "2026-10-09T11:06:55.247479Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E117",
+          "runtime_signature": "847b77cf45bfa76da8af62f2259e1c57ea51d6a5faf64cdb14e0cdfbf277f07a",
+          "snapshot_version": 11,
+          "source_message_id": "std_25be7e5c7c4c46b7bf240e625234b911",
+          "ticker": "BE",
+          "trading_date": "2026-10-09"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "XMax Inc.",
+              "Hexa Creation Inc."
+            ],
+            "occurrence_date": "2026-10-09",
+            "proposition": "XMax Inc.宣布已签署最终股权购买协议，拟收购Hexa Creation Inc.全部已发行股份；公告未称收购已完成。",
+            "subject_time": null
+          },
+          "candidate_index": 0,
+          "case_id": "case_45c0450f1b4a4a5489b2e6a5ab8eed74",
+          "created_at": "2026-10-09T12:04:18.013898Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E118",
+          "runtime_signature": "2885e056dae1edc97a0b6b213fa3bd32a832bd1a80134b5be0472b352cf5037d",
+          "snapshot_version": 12,
+          "source_message_id": "std_edc4af37c7df49c19a5bfe6fb9cff3be",
+          "ticker": "BE",
+          "trading_date": "2026-10-09"
+        },
+        {
+          "candidate": {
+            "assertion_state": "PLAN",
+            "entities": [
+              "Hexa Creation Inc."
+            ],
+            "occurrence_date": "2026-10-09",
+            "proposition": "Hexa Creation的技术路线以面向高电压、高功率应用的原生1200V垂直GaN沟槽MOSFET为核心，并将AI数据中心电力基础设施列为目标应用。",
+            "subject_time": null
+          },
+          "candidate_index": 1,
+          "case_id": "case_45c0450f1b4a4a5489b2e6a5ab8eed74",
+          "created_at": "2026-10-09T12:04:18.022067Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E119",
+          "runtime_signature": "d71b27846c7fcdc1676d41b1b278acb089412a23104eae592cde21e9211a8ee7",
+          "snapshot_version": 13,
+          "source_message_id": "std_edc4af37c7df49c19a5bfe6fb9cff3be",
+          "ticker": "BE",
+          "trading_date": "2026-10-09"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Hexa Creation Inc."
+            ],
+            "occurrence_date": null,
+            "proposition": "Hexa Creation持有美国一所公立大学相关专利及知识产权的独家许可，以支持其高电压垂直GaN技术平台。",
+            "subject_time": null
+          },
+          "candidate_index": 2,
+          "case_id": "case_45c0450f1b4a4a5489b2e6a5ab8eed74",
+          "created_at": "2026-10-09T12:04:18.028478Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E120",
+          "runtime_signature": "27b4e86948e675c0356a63461c3184be1742228c4519d2eedec866b7f96ef3a6",
+          "snapshot_version": 14,
+          "source_message_id": "std_edc4af37c7df49c19a5bfe6fb9cff3be",
+          "ticker": "BE",
+          "trading_date": "2026-10-09"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "USDA",
+              "Rural Energy for America Program (REAP)"
+            ],
+            "occurrence_date": "2026-10-02",
+            "proposition": "USDA发布REAP规则，要求农户完成能源项目并证明一年能源节省后才能申请资金；新要求定于2026-10-16生效。",
+            "subject_time": "规则生效日：2026-10-16"
+          },
+          "candidate_index": 0,
+          "case_id": "case_5b9664408ffa49d6802bce73a9aa4316",
+          "created_at": "2026-10-09T12:13:39.421523Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E121",
+          "runtime_signature": "93fb7abbb6466848d100c7b54e35edc05fcc580d573d3bc199f9e08599c18091",
+          "snapshot_version": 15,
+          "source_message_id": "std_277b230f09a446f2a7afe8fa71cf0571",
+          "ticker": "BE",
+          "trading_date": "2026-10-09"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Reuters/Ipsos",
+              "美国选民",
+              "特朗普政府",
+              "美国国会",
+              "AI公司"
+            ],
+            "occurrence_date": "2026-10-09",
+            "proposition": "Reuters于2026年10月9日报道称，一项新的Reuters/Ipsos民调显示，多数美国选民认为特朗普政府、国会和AI公司对AI风险重视不足。",
+            "subject_time": null
+          },
+          "candidate_index": 0,
+          "case_id": "case_f349977212834c53ac1ca40113089341",
+          "created_at": "2026-10-09T12:15:04.391146Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E122",
+          "runtime_signature": "515a896af5785c57778a8deb455afcf7d93b2a355629cfed1f2bb90f2b662439",
+          "snapshot_version": 16,
+          "source_message_id": "std_5a78b1f1be0348e39ce4735266bff69a",
+          "ticker": "BE",
+          "trading_date": "2026-10-09"
+        },
+        {
+          "candidate": {
+            "assertion_state": "RUMOR",
+            "entities": [
+              "Goldman Sachs",
+              "John Waldron",
+              "Denis Coleman",
+              "Ashok Varadhan"
+            ],
+            "occurrence_date": "2026-10-09",
+            "proposition": "Reuters reported that two people familiar with the matter identified Denis Coleman and Ashok Varadhan among possible candidates to replace John Waldron as Goldman Sachs COO if Waldron later becomes CEO; the report said no formal succession process had begun.",
+            "subject_time": "Possible future Goldman COO succession, conditional on Waldron becoming CEO"
+          },
+          "candidate_index": 0,
+          "case_id": "case_0613d3c81bb8478d86860f0fbfbcc0cd",
+          "created_at": "2026-10-09T12:15:33.763183Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E123",
+          "runtime_signature": "df457fa5f42e4873ce2693b8f62504adf3c5768cf60fe1c32804818078988f82",
+          "snapshot_version": 17,
+          "source_message_id": "std_56d228a637744e3b80547c8ac6111000",
+          "ticker": "BE",
+          "trading_date": "2026-10-09"
+        },
+        {
+          "candidate": {
+            "assertion_state": "DENIAL",
+            "entities": [
+              "Goldman Sachs",
+              "Tony Fratto",
+              "John Waldron"
+            ],
+            "occurrence_date": "2026-10-09",
+            "proposition": "Goldman Sachs communications head Tony Fratto characterized the internal succession discussion as speculation that did not reflect real facts at the firm.",
+            "subject_time": "Goldman succession discussion as of 2026-10-09"
+          },
+          "candidate_index": 1,
+          "case_id": "case_0613d3c81bb8478d86860f0fbfbcc0cd",
+          "created_at": "2026-10-09T12:15:33.781620Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E124",
+          "runtime_signature": "007290bdf6f8f593b1e855fe6c680a949d87468dbf33e297086e25057fe4da55",
+          "snapshot_version": 18,
+          "source_message_id": "std_56d228a637744e3b80547c8ac6111000",
+          "ticker": "BE",
+          "trading_date": "2026-10-09"
+        },
+        {
+          "candidate": {
+            "assertion_state": "RUMORED",
+            "entities": [
+              "Apple",
+              "iPhone 18 Pro",
+              "iPhone 18 Pro Max",
+              "Nikkei Asia",
+              "Reuters"
+            ],
+            "occurrence_date": null,
+            "proposition": "Nikkei Asia报道称，Apple已要求部分供应商将iPhone 18 Pro及iPhone 18 Pro Max的2026年10月组件订单较最初要求至少削减15%；Reuters称无法立即核实该报道。",
+            "subject_time": "2026年10月组件订单"
+          },
+          "candidate_index": 0,
+          "case_id": "case_9e5c301f0dc74a248e89e6786185debd",
+          "created_at": "2026-10-09T12:15:50.628418Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E125",
+          "runtime_signature": "053f274707b987ddead652e40d7cf5bdf3f043efe4298cc102e756e56b1ff9ab",
+          "snapshot_version": 19,
+          "source_message_id": "std_54c5f746e2574a48865dc182028ced1b",
+          "ticker": "BE",
+          "trading_date": "2026-10-09"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Bloom Energy",
+              "Lang & Schwarz"
+            ],
+            "occurrence_date": "2026-10-09",
+            "proposition": "Bloom Energy在Lang & Schwarz于2026年10月9日14:59 CEST的报价为247.50欧元，较前一收盘价249.50欧元下跌0.80%。",
+            "subject_time": "2026-10-09 14:59 CEST"
+          },
+          "candidate_index": 0,
+          "case_id": "case_30b9824313744eeebf26406effc55842",
+          "created_at": "2026-10-09T13:11:17.859568Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E126",
+          "runtime_signature": "58bc5772c28bfb47e6340610bd14b4906531b9ceb8dacd4bd62a063e2f84c0f7",
+          "snapshot_version": 20,
+          "source_message_id": "std_0d738368de944aa4a7050cea8ffa0dcd",
+          "ticker": "BE",
+          "trading_date": "2026-10-09"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "T5 Data Centers",
+              "Fairfax County",
+              "Project Charlie"
+            ],
+            "occurrence_date": null,
+            "proposition": "T5 Data Centers于2026年9月中旬向Fairfax County提交特别例外申请，拟在Chantilly建设312,000平方英尺的Project Charlie数据中心。",
+            "subject_time": "申请于2026年9月中旬提交；项目拟建，未披露投运时间"
+          },
+          "candidate_index": 0,
+          "case_id": "case_a1b3e960b8a7424d82c19fd968512427",
+          "created_at": "2026-10-09T13:23:16.397214Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E127",
+          "runtime_signature": "ee1f3526b6180994c04ac64e8bffa61f95071b4119d15e5fc7b0c850f56d5634",
+          "snapshot_version": 21,
+          "source_message_id": "std_a66c54cd2cb245c88a58422017eefe99",
+          "ticker": "BE",
+          "trading_date": "2026-10-09"
+        },
+        {
+          "candidate": {
+            "assertion_state": "PLAN",
+            "entities": [
+              "T5 Data Centers",
+              "Project Charlie",
+              "Washington Gas",
+              "Dominion Energy"
+            ],
+            "occurrence_date": null,
+            "proposition": "Project Charlie申请文件提出以约48MW天然气燃料电池提供基荷，并由Dominion Energy电网补充最多27MW。",
+            "subject_time": "拟议项目供电配置；未披露投运时间"
+          },
+          "candidate_index": 1,
+          "case_id": "case_a1b3e960b8a7424d82c19fd968512427",
+          "created_at": "2026-10-09T13:23:16.408106Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E128",
+          "runtime_signature": "538423eedac706dcb3383a70b012cbbac98e9627ff8dc4fe3dcef73cfb1cfd98",
+          "snapshot_version": 22,
+          "source_message_id": "std_a66c54cd2cb245c88a58422017eefe99",
+          "ticker": "BE",
+          "trading_date": "2026-10-09"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ONGOING",
+            "entities": [
+              "Intergovernmental Panel on Climate Change",
+              "IPCC成员"
+            ],
+            "occurrence_date": null,
+            "proposition": "截至Reuters报道时，IPCC成员对下一份气候科学评估报告的发布时间表仍未达成一致，相关讨论已持续近三年。",
+            "subject_time": "IPCC下一份气候科学评估报告的发布时间表"
+          },
+          "candidate_index": 0,
+          "case_id": "case_19ed6d99849a4bc2a6d2221baba7998e",
+          "created_at": "2026-10-09T13:27:19.038450Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E129",
+          "runtime_signature": "2457957b04159967ccfbbcb1dd1b64212f54e0b186b234fccf180000dbfa28e3",
+          "snapshot_version": 23,
+          "source_message_id": "std_92573aca28c04f989b3c3a16a1824cec",
+          "ticker": "BE",
+          "trading_date": "2026-10-09"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "美国",
+              "可再生能源发电",
+              "数据中心"
+            ],
+            "occurrence_date": null,
+            "proposition": "Reuters气候通讯称，美国创纪录的可再生能源发电帮助承担了数据中心和空调新增负荷中的很大部分；报道未给出具体测量期间或数值。",
+            "subject_time": "近期美国电力负荷；具体统计期间未说明"
+          },
+          "candidate_index": 1,
+          "case_id": "case_19ed6d99849a4bc2a6d2221baba7998e",
+          "created_at": "2026-10-09T13:27:19.051472Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E130",
+          "runtime_signature": "f8ae4f86b94e7a9d2c95e96881d211d3d4e80cde4bf2fc974faeae81ac963d59",
+          "snapshot_version": 24,
+          "source_message_id": "std_92573aca28c04f989b3c3a16a1824cec",
+          "ticker": "BE",
+          "trading_date": "2026-10-09"
+        },
+        {
+          "candidate": {
+            "assertion_state": "ACTUAL",
+            "entities": [
+              "Bazan Group",
+              "ALLENBUS",
+              "Marcopolo",
+              "以色列"
+            ],
+            "occurrence_date": "2026-10-08",
+            "proposition": "2026年10月8日，以色列首辆氢燃料电池城际公交Audace 1050交付给Bazan Group；车型由ALLENBUS与Marcopolo提供。",
+            "subject_time": "交付及试点启动阶段"
+          },
+          "candidate_index": 0,
+          "case_id": "case_e959b0cac5bf45349b1b7011216f617a",
+          "created_at": "2026-10-09T13:47:01.507802Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E131",
+          "runtime_signature": "6de74a3cfc74f7bd43cd680cd7b399993efe7923407e7f910bd33aaad72f44ad",
+          "snapshot_version": 25,
+          "source_message_id": "std_5db0b56476464a4c8d33c7204cf02d91",
+          "ticker": "BE",
+          "trading_date": "2026-10-09"
+        },
+        {
+          "candidate": {
+            "assertion_state": "PLAN",
+            "entities": [
+              "Bazan Group",
+              "以色列能源与基础设施部",
+              "Nahariya"
+            ],
+            "occurrence_date": "2026-10-08",
+            "proposition": "Bazan Group计划将该氢燃料电池公交用于接送员工往返Nahariya与其炼油厂，并使用Bazan生产的氢气。",
+            "subject_time": "后续试点运营；具体开始日期未披露"
+          },
+          "candidate_index": 1,
+          "case_id": "case_e959b0cac5bf45349b1b7011216f617a",
+          "created_at": "2026-10-09T13:47:01.523639Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E132",
+          "runtime_signature": "8c1118b6e4b579b88d15903f9d4f2cb926204444adf942883a7cf403d0b19057",
+          "snapshot_version": 26,
+          "source_message_id": "std_5db0b56476464a4c8d33c7204cf02d91",
+          "ticker": "BE",
+          "trading_date": "2026-10-09"
+        },
+        {
+          "candidate": {
+            "assertion_state": "RUMORED",
+            "entities": [
+              "Broadcom",
+              "OpenAI"
+            ],
+            "occurrence_date": "2026-10-08",
+            "proposition": "据报道，Broadcom就安排债务融资以帮助OpenAI购买双方共同开发的定制AI芯片进行了初步讨论；不同报道估计金额约为300亿美元至超过500亿美元，尚未启动正式融资流程且金额可能变化。",
+            "subject_time": "OpenAI后续定制AI芯片采购融资；金额及时间未确定"
+          },
+          "candidate_index": 0,
+          "case_id": "case_02ce313b252e47498f35e239baea4a66",
+          "created_at": "2026-10-09T13:56:39.095040Z",
+          "originating_node": "W3",
+          "provisional_event_id": "E133",
+          "runtime_signature": "4083e2c4144f3e4be76e0d262ca42225c9c3c5dcbd3d3f2d012da0dc04aaa08d",
+          "snapshot_version": 27,
+          "source_message_id": "std_fe3bef2e98904bc3ae2769a6c4f9aed9",
+          "ticker": "BE",
+          "trading_date": "2026-10-09"
+        }
+      ]
+    }
+  },
+  "source": {
+    "admission_context": {
+      "cutoff": null,
+      "mode": "REALTIME",
+      "policy_version": 1,
+      "source_task_id": null,
+      "sweep_id": null,
+      "window_start": null
+    },
+    "binding_id": "BE:google_news_search_rss",
+    "business_version": 1,
+    "collected_at": "2026-10-09T14:22:39.442927Z",
+    "eligibility_at": "2026-10-09T14:22:39.438049Z",
+    "logical_message_id": "message_4d8879de3c8b45baa6d2b7fa1cfbeb17",
+    "member_count": 1,
+    "member_message_ids": [
+      "std_271392586ed7473db5651d54b20180f0"
+    ],
+    "message_bus_event_time": "2026-10-09T14:22:39.442927Z",
+    "normalized_at": null,
+    "previous_raw_message_id": null,
+    "publication_time_basis": "EXACT",
+    "published_at": "2026-10-09T14:13:00Z",
+    "snapshot": {
+      "body": "“The 12 Mireo Plus H trains will make up Romania’s first hydrogen-powered train fleet, based on our reliable Mireo platform and the successful deployment of this technology in Germany,” he added.\n\nThe planned Romanian fleet brings together the Mireo train platform and Ballard’s rail fuel cell technology for a passenger service deployment beyond the platform’s existing German market.\n\nFuel cell supply partnership expands\n\nThe latest order builds on a multi-year supply commitment established between Ballard and Siemens Mobility in 2022. It deepens that relationship as Siemens expands its hydrogen rail fleet.\n\nBallard said the project draws on the performance of earlier Mireo Plus H deployments in Germany, including the use of its fuel cell technology in demanding rail operations.\n\n“We are grateful for our partnership with Siemens Mobility and their passionate commitment to expanding zero-emission rail technology across Europe. Together, we are innovating and delivering clean transport solutions that are leading the industry,” said Marty Neese, CEO of Ballard Power Systems, following the announcement of the 24-module order.",
+      "ticker": "BE",
+      "title": "200 kW fuel cell modules to power 12 hydrogen passenger trains - Interesting Engineering"
+    },
+    "source_id": "google_news_search_rss",
+    "source_message_id": "std_271392586ed7473db5651d54b20180f0",
+    "stream_item_id": "stream_134364ff7066414390ac8ae612193ab1",
+    "update_kind": "NEW_MESSAGE",
+    "url": "https://interestingengineering.com/transportation/hydrogen-powered-train-fuel-cell-module"
+  },
+  "w1_final": {
+    "confidence": "normal",
+    "fact_attributions": [],
+    "reason": "本轮未加载任何 canonical 或 provisional Event/Fact。当前消息的核心事实——罗马尼亚首支氢动力列车车队（12列 Mireo Plus H）采用 Ballard 24 模块燃料电池订单、将 Mireo 平台氢燃料技术从德国市场扩展至客运服务——无任何已知事实覆盖。",
+    "reference_ids": [],
+    "result": "NEW"
+  },
+  "w2_final": {
+    "confidence": "normal",
+    "matched_condition_ids": [],
+    "policy_ids": [],
+    "reason": "消息内容为Ballard与Siemens Mobility在罗马尼亚氢燃料电池列车 fleet 的订单合作，涉及主体（Ballard、Siemens）、产品（Mireo Plus H列车、PEM燃料电池）和应用场景（轨道交通）均不在本组Policy的覆盖范围内。所有Policy围绕Bloom Energy的Project Jupiter、Energy Server、Electrolyzer及相关客户/财务/制造体系；消息中不存在与任何criterion有直接、实质性触发关系的具体事实，仅存在'氢燃料电池'这一宽泛主题重合，不构成Candidate召回理由。"
+  },
+  "w2_alignment": null,
+  "version_pin": {
+    "activation_revision_id": "runtime-maintain-01457190b58d5b20897d0330-activation",
+    "document1_run_id": "init-be-788adefdd31844d98a907468b883176d-d1",
+    "document2_run_id": "init-be-788adefdd31844d98a907468b883176d-d2",
+    "event_library_root": "/data/runtime/runtime_artifacts/runtime-maintain-01457190b58d5b20897d0330/events",
+    "event_library_version": 21,
+    "policy_set_version": 15,
+    "provisional_snapshot_version": 27,
+    "runtime_projection_version": 15
+  },
+  "runtime_mode": "REALTIME",
+  "trading_date": "2026-10-09"
+}

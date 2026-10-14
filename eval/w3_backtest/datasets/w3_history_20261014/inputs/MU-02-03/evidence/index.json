@@ -1,0 +1,23 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-29T14:46:20.403687Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "No official OpenAI filing, company confirmation, realized full-year revenue, or expense/profit breakdown supporting the near-$70B run-rate claim was located before cutoff.",
+    "No independently sourced confirmation of the Sep. 29 figure before cutoff was verified; the Bloomberg search result is downstream of Axios, and the full page could not be checked.",
+    "No direct link from this report to Micron memory orders, memory content, supplier allocation, or a Micron operating metric was found.",
+    "No separate same-day Micron or memory-market development was independently verified in this focused search."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

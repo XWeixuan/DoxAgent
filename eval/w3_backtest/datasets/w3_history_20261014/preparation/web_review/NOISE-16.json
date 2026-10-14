@@ -1,0 +1,149 @@
+{
+  "case_key": "NOISE-16",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-09-27T09:31:04.173668Z",
+  "reviewed_at": "2026-10-13T22:58:32.932680Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 6,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a13774-1861-7343-84bc-2d594a4ad284",
+    "turn_id": "01a13774-186f-76a2-929f-c601d03aa655",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 72448,
+        "inputTokens": 76214,
+        "outputTokens": 8242,
+        "reasoningOutputTokens": 6791,
+        "totalTokens": 84456
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 344320,
+        "inputTokens": 412463,
+        "outputTokens": 11389,
+        "reasoningOutputTokens": 9495,
+        "totalTokens": 423852
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "b4b937edbd48492ceb5b11dc469cbb95da6f2b3b5413ce3200e12408b726bcbb",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://www.on3.com/rivals/news/intel-where-things-stand-with-texas-and-a-blue-chip-target-on-defense/",
+      "title": "Intel: Where things stand with Texas and a blue-chip target on defense",
+      "published_at": "2026-09-26T15:56:48Z",
+      "time_precision": "EXACT",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn0search0",
+        "turn1view0"
+      ],
+      "source_call_ids": [
+        "exec-3736e40d-a57b-457d-99ac-552367773372",
+        "exec-c36c42ca-795f-4c1d-b914-9c6960a6f3f4"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://www.aol.com/articles/texas-football-leading-several-2028-232109000.html",
+      "title": "Texas football leading for several 2028 blue-chip prospects",
+      "published_at": "2026-09-09T23:21:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn3search8"
+      ],
+      "source_call_ids": [
+        "exec-afb1f856-c3bc-4cad-9e80-83ceff7d316d"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://www.texasfootball.com/articles/article/default.aspx?url=2026%2F02%2F27%2Fclass-of-2028-150-sophomores-to-know-in-txhsfb-recruiting",
+      "title": "Class of 2028: 150 Sophomores to Know in TXHSFB Recruiting",
+      "published_at": "2026-02-27",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn4search0"
+      ],
+      "source_call_ids": [
+        "exec-72886aaa-d0aa-4f92-9c4d-06aa25a0d577"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "The accessible On3/Rivals material is categorized as football recruiting and identifies David Dotson, a Rivals300 EDGE recruit, in its subhead. The title’s “Intel” is therefore used in the recruiting-news context in the visible passage; no Intel Corporation fact is present in the accessible material.",
+      "source_urls": [
+        "https://www.on3.com/rivals/news/intel-where-things-stand-with-texas-and-a-blue-chip-target-on-defense/"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-26T15:56:48Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The full article body was inaccessible; the actual recruiting update and the time of any underlying event remain unknown."
+    },
+    {
+      "observation": "Before the September 26 headline, an AOL-hosted FSU Wire article described Dotson as a Texas priority, attributing that recruiting information to Sam Spiegelman of Rivals.",
+      "source_urls": [
+        "https://www.aol.com/articles/texas-football-leading-several-2028-232109000.html"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-09T23:21:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This is prior context, not independent confirmation of the later article’s specific undisclosed update; the report attributes its information to Rivals."
+    },
+    {
+      "observation": "Dave Campbell’s Texas Football’s earlier class-of-2028 list identifies David Dotson as a Humble Atascocita defensive end, providing independent recruiting-context identification before the cutoff.",
+      "source_urls": [
+        "https://www.texasfootball.com/articles/article/default.aspx?url=2026%2F02%2F27%2Fclass-of-2028-150-sophomores-to-know-in-txhsfb-recruiting"
+      ],
+      "event_time": null,
+      "publication_time": "2026-02-27",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The list does not establish a Texas recruiting decision or any Intel Corporation connection."
+    }
+  ],
+  "gaps": [
+    "The full September 26 On3 article body was unavailable; the underlying recruiting claim, event time, and any firsthand source or details cannot be checked.",
+    "No dated archived pre-cutoff snapshots or revision history were surfaced for these pages, so their currently visible text is not independently verified as a pre-cutoff snapshot.",
+    "No material, independently verified pre-cutoff counterpoint or update to the September 26 recruiting report was located; the AOL/FSU Wire item is prior context and attributes its recruiting information to Rivals."
+  ],
+  "research_notes": "The supplied item’s On3/Rivals headline uses “Intel” in a football-recruiting context: the visible page labels it “Rivals Football Recruiting,” names Sam Spiegelman, and describes fresh intel about EDGE David Dotson after time around the Longhorns. The full article body was not available in the opened page, so the underlying new recruiting fact and its event time cannot be verified. Supplied source metadata gives publication time 2026-09-26T15:56:48Z; the live page displays 09/26/26. Earlier reporting had already described Dotson as a Texas priority, but attributed that account to Rivals, so it is not independent corroboration of the September 26 article’s undisclosed details. The accessible evidence does not establish an Intel Corporation event or operational fact. No dated pre-cutoff archive or material pre-cutoff counterpoint to the September 26 article was verified."
+}

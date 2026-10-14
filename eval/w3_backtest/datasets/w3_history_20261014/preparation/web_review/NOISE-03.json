@@ -1,0 +1,318 @@
+{
+  "case_key": "NOISE-03",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-09-23T00:08:00.174647Z",
+  "reviewed_at": "2026-10-13T22:58:32.373138Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 6,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a1376b-4679-78b1-b7b0-5cbf8893bd85",
+    "turn_id": "01a1376b-4687-7423-8fa2-1b235c054e74",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 90880,
+        "inputTokens": 99872,
+        "outputTokens": 22558,
+        "reasoningOutputTokens": 18310,
+        "totalTokens": 122430
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 413952,
+        "inputTokens": 507115,
+        "outputTokens": 26634,
+        "reasoningOutputTokens": 21694,
+        "totalTokens": 533749
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "fd9205690323e52acebeaf2063ca874b7ff0ad58858016ec5b7bdf0b18455e45",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://www.fool.com/coverage/better-buy/2026/09/22/asml-vs-intel-ai-chip-stock-better-buy-2026/",
+      "title": "ASML vs. Intel: Which AI Chip Stock Is a Better Buy in 2026?",
+      "published_at": "2026-09-22T23:55:01Z",
+      "time_precision": "EXACT",
+      "updated_at": "2026-09-22 7:35 PM EST (as displayed; timezone abbreviation unresolved)",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn0search0"
+      ],
+      "source_call_ids": [
+        "exec-3fae2d7f-bb7c-4e1e-bd6e-a82ba77ac2f6"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://www.investor.asml.com/news-releases/news-release-details/q4-2025-financial-results",
+      "title": "ASML reports €32.7 billion total net sales and €9.6 billion net income in 2025",
+      "published_at": "2026-01-28 07:00 (source display; timezone not stated)",
+      "time_precision": "HOUR",
+      "updated_at": null,
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn0search2"
+      ],
+      "source_call_ids": [
+        "exec-3fae2d7f-bb7c-4e1e-bd6e-a82ba77ac2f6"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://apnews.com/article/446babea4e88330a7c493412644fa3f3",
+      "title": "ASML made record $11.5 billion profit in 2025 thanks to AI-driven demand, plans to cut 1,700 jobs",
+      "published_at": "2026-01-28T09:15:20Z",
+      "time_precision": "EXACT",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0news32"
+      ],
+      "source_call_ids": [
+        "exec-3fae2d7f-bb7c-4e1e-bd6e-a82ba77ac2f6"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://www.asml.com/investors/annual-report/2025",
+      "title": "ASML 2025 Annual Report",
+      "published_at": "2026-02-25",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn2search2",
+        "turn3search4",
+        "turn3search14"
+      ],
+      "source_call_ids": [
+        "exec-9f436242-9606-4280-a504-4888a08c1696",
+        "exec-bbe74016-56f2-49fd-b4e9-c36b6c5e49e7"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S5",
+      "url": "https://investor.asml.com/news-releases/news-release-details/q1-2026-financial-results",
+      "title": "ASML reports €8.8 billion total net sales and €2.8 billion net income in Q1 2026",
+      "published_at": "2026-04-15 07:00 (source display; timezone not stated)",
+      "time_precision": "HOUR",
+      "updated_at": null,
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn2search0"
+      ],
+      "source_call_ids": [
+        "exec-9f436242-9606-4280-a504-4888a08c1696"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S6",
+      "url": "https://investor.asml.com/news-releases/news-release-details/q2-2026-financial-results",
+      "title": "ASML reports €9.3 billion total net sales and €2.9 billion net income in Q2 2026",
+      "published_at": "2026-07-15 08:00 (source display; timezone not stated)",
+      "time_precision": "HOUR",
+      "updated_at": null,
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn0search1"
+      ],
+      "source_call_ids": [
+        "exec-3fae2d7f-bb7c-4e1e-bd6e-a82ba77ac2f6"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S7",
+      "url": "https://www.investing.com/news/stock-market-news/asml-tops-q2-estimates-on-ai-chip-demand-4792151",
+      "title": "ASML capacity upgrade soothes AI chip bottleneck fears",
+      "published_at": "2026-07-15",
+      "time_precision": "DAY",
+      "updated_at": "2026-07-15",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "BEFORE_CUTOFF",
+      "content_state": "UPDATED",
+      "decision": "KEEP",
+      "reason": "The supplied publication and revision times do not exceed the case cutoff.",
+      "source_result_refs": [
+        "turn2search10"
+      ],
+      "source_call_ids": [
+        "exec-9f436242-9606-4280-a504-4888a08c1696"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S8",
+      "url": "https://www.intc.com/filings-reports/annual-reports/content/0000050863-26-000011/0000050863-26-000011.pdf",
+      "title": "Intel Corporation 2025 Form 10-K",
+      "published_at": "2026-01-23",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn3search12"
+      ],
+      "source_call_ids": [
+        "exec-bbe74016-56f2-49fd-b4e9-c36b6c5e49e7"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S9",
+      "url": "https://www.sec.gov/Archives/edgar/data/50863/000005086326000155/q226earningsrelease.htm",
+      "title": "Intel Reports Second-Quarter 2026 Financial Results",
+      "published_at": "2026-07-23",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search7"
+      ],
+      "source_call_ids": [
+        "exec-3fae2d7f-bb7c-4e1e-bd6e-a82ba77ac2f6"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S10",
+      "url": "https://www.sec.gov/Archives/edgar/data/50863/000005086326000157/intc-20260627.htm",
+      "title": "Intel Corporation Form 10-Q for quarter ended June 27, 2026",
+      "published_at": "2026-07-24",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn3search3"
+      ],
+      "source_call_ids": [
+        "exec-bbe74016-56f2-49fd-b4e9-c36b6c5e49e7"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "The case record gives the Motley Fool message publication time as 2026-09-22T23:55:01Z, before cutoff by 12m59s. The live article page displays an update stamp of Sep. 22, 2026 at 7:35 PM EST, but its timezone is ambiguous and no dated pre-cutoff snapshot was verified; therefore the current article body is not established as cutoff content.",
+      "source_urls": [
+        "https://www.fool.com/coverage/better-buy/2026/09/22/asml-vs-intel-ai-chip-stock-better-buy-2026/"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-22T23:55:01Z per supplied case metadata; live page update stamp has unresolved timezone",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The publication event is pre-cutoff, but the page’s revision/content state at cutoff is unknown. Do not use the current page’s embedded market data or claims as verified pre-cutoff text."
+    },
+    {
+      "observation": "ASML’s FY2025 results and initial FY2026 sales outlook were public by Jan. 28: the company reported €32.7 billion in net sales, €9.6 billion in net income, and an initial €34–39 billion outlook. AP’s same-day report also noted a planned workforce reduction of about 1,700 and export-control context.",
+      "source_urls": [
+        "https://www.investor.asml.com/news-releases/news-release-details/q4-2025-financial-results",
+        "https://apnews.com/article/446babea4e88330a7c493412644fa3f3",
+        "https://www.asml.com/investors/annual-report/2025"
+      ],
+      "event_time": "FY2025; company results disclosed 2026-01-28",
+      "publication_time": "2026-01-28 (ASML source listing shows 07:00 without timezone; AP report timestamp 09:15:20Z)",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The company reports primary figures in euros; dollar conversions depend on exchange-rate convention. AP’s workforce and export-control context does not alter the company’s reported financial values."
+    },
+    {
+      "observation": "The public guidance baseline changed in two steps: ASML set 2026 net-sales guidance at €34–39 billion in January, raised it to €36–40 billion in April, then to €43–45 billion in July. The July release also reported Q2 sales of €9.326 billion and 54.0% gross margin; Reuters reported the July change as the second increase of the year.",
+      "source_urls": [
+        "https://www.investor.asml.com/news-releases/news-release-details/q4-2025-financial-results",
+        "https://investor.asml.com/news-releases/news-release-details/q1-2026-financial-results",
+        "https://investor.asml.com/news-releases/news-release-details/q2-2026-financial-results",
+        "https://www.investing.com/news/stock-market-news/asml-tops-q2-estimates-on-ai-chip-demand-4792151"
+      ],
+      "event_time": "2026-01-28; 2026-04-15; 2026-07-15",
+      "publication_time": "2026-01-28; 2026-04-15; 2026-07-15",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "ASML’s April release said its guidance range accommodated potential outcomes of ongoing export-control discussions. Sales guidance and capacity plans are forward-looking; they are not realized results."
+    },
+    {
+      "observation": "Intel’s FY2025 Form 10-K reported revenue of $52.9 billion and a net loss attributable to Intel of $267 million. These full-year figures were publicly available well before the September case message.",
+      "source_urls": [
+        "https://www.intc.com/filings-reports/annual-reports/content/0000050863-26-000011/0000050863-26-000011.pdf"
+      ],
+      "event_time": "Intel FY2025 ended 2025-12-27",
+      "publication_time": "2026-01-23",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This annual filing supports revenue and net-loss figures; the specific free-cash-flow and stock-based-compensation percentages in the article were not independently verified in the retrieved passages."
+    },
+    {
+      "observation": "Intel’s July Q2 release reported revenue up 25% year over year and GAAP gross margin of 40.4% versus 27.5%; the next-day 10-Q showed Foundry revenue was $5.765 billion, including $293 million external revenue, and the segment had a $2.089 billion operating loss. The 10-Q also attributed client revenue growth partly to higher ASPs while client volume was down 8%, and noted supply constraints.",
+      "source_urls": [
+        "https://www.sec.gov/Archives/edgar/data/50863/000005086326000155/q226earningsrelease.htm",
+        "https://www.sec.gov/Archives/edgar/data/50863/000005086326000157/intc-20260627.htm"
+      ],
+      "event_time": "Intel Q2 2026, ended 2026-06-27",
+      "publication_time": "2026-07-23 earnings release; 2026-07-24 Form 10-Q",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "These figures separate company-wide growth from Foundry’s external revenue and loss, and identify price/mix and supply effects; they do not establish the cause of the Q2 GAAP net loss."
+    }
+  ],
+  "gaps": [
+    "No archived or otherwise dated pre-cutoff snapshot verifies the exact Motley Fool article body at the cutoff; the live page’s update timestamp is timezone-ambiguous.",
+    "The article’s stated Intel FY2025 free cash flow and stock-based-compensation share of operating cash flow were not independently checked against the filing passages retrieved.",
+    "The article’s explanation of Intel’s Q2 GAAP loss as a non-cash accounting effect related to government-held shares was not independently verified in the retrieved primary passages.",
+    "No independent contemporaneous Intel Q2 report was retrieved in the selected results; Intel’s release and next-day Form 10-Q were verified.",
+    "The article’s valuation multiples, price performance, current quote widgets, and other price-based statements were excluded; exact consensus expectations preceding ASML’s revisions were not collected."
+  ],
+  "research_notes": "Cutoff: 2026-09-23T00:08:00.174647Z. The case record timestamps the Motley Fool message at 2026-09-22T23:55:01Z, 12m59s before cutoff. The live page displays an “Updated Sep 22, 2026 at 7:35PM EST” stamp, whose timezone is ambiguous; no dated pre-cutoff snapshot was found, so its current body is not treated as cutoff-verified. The underlying factual timeline is supported by earlier primary disclosures: ASML’s FY2025 results and initial FY2026 guidance, its April and July guidance revisions, and Intel’s FY2025 and Q2 2026 results. Reuters provided same-day independent coverage of ASML’s July revision. Intel’s Q2 10-Q supplies material detail on segment mix, limited external Foundry revenue, and supply constraints. Prices, valuation comparisons, post-cutoff coverage, and the article’s investment conclusion are excluded."
+}

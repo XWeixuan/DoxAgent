@@ -1,0 +1,23 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-10-07T07:47:40.120901Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "The original Musk X post was not directly retrievable; its exact posting time and a dated pre-cutoff snapshot remain unverified.",
+    "The October 2 Culpium item is identified through October 3 coverage, but its original text, exact publication time, and pre-cutoff snapshot were not retrieved.",
+    "No retrieved pre-cutoff source specifies binding Intel or TSMC obligations, 14A production quantities, capacity allocation, a signed sublease, or a production schedule.",
+    "The retrieved evidence does not establish whether TSMC issued a response by the cutoff."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

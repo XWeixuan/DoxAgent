@@ -1,0 +1,178 @@
+{
+  "case_key": "NOISE-05",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-10-07T09:04:00.845088Z",
+  "reviewed_at": "2026-10-13T22:58:32.447257Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 6,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a1376b-ce9e-7481-ab37-e40286db869d",
+    "turn_id": "01a1376b-ceb5-7201-b38d-10ba3e5c9961",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 85760,
+        "inputTokens": 95319,
+        "outputTokens": 10675,
+        "reasoningOutputTokens": 8427,
+        "totalTokens": 105994
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 403712,
+        "inputTokens": 492343,
+        "outputTokens": 17449,
+        "reasoningOutputTokens": 14522,
+        "totalTokens": 509792
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "6610c98672a658df77650a67de85dd6a7978ca45557b7bc0d81d87ad76c20c7d",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://www.culpium.com/p/exclusive-tsmc-exploring-plans-to",
+      "title": "Exclusive: TSMC Exploring Plans to Work With Elon Musk’s Terafab",
+      "published_at": "2026-10-02",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn1search0"
+      ],
+      "source_call_ids": [
+        "exec-e0155568-b17a-4ba6-89b7-d599566dd9fe"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://www.culpium.com/p/elon-musk-confirms-tsmc-terafab-talks?action=share",
+      "title": "Elon Musk Confirms TSMC-Terafab Talks",
+      "published_at": "2026-10-03",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn5search4"
+      ],
+      "source_call_ids": [
+        "exec-cc2306dc-a2f9-4379-abed-bb2c770a0950"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://www.newsquawk.com/headlines/elon-musk-responds-to-speculation-that-tsmc-2330-tt-is-exploring-a-role-in-terafab-by-saying-that-we-will-build-and-run-the-fab-let-there-be-zero-doubt-about-that-adds-that-maybe-tsmc-subleases-part-of-the-terafab-if-they-want-but-nothing-more",
+      "title": "Elon Musk responds to speculation about TSMC’s role in Terafab",
+      "published_at": "2026-10-07T06:58:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search2"
+      ],
+      "source_call_ids": [
+        "exec-c0029b1e-7c32-4137-8983-f22bbff3088f"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://www.benzinga.com/markets/tech/26/10/62210012/intel-ceo-lip-bu-tan-says-company-will-keep-working-on-terafab-elon-musk-confirms-tsmc-may-only-sublease-part-of-the-fab-not-own-it",
+      "title": "Intel CEO Lip-Bu Tan Says Company Will Keep Working on Terafab — Elon Musk Confirms TSMC May Only Sublease Part of the Fab, Not Own It",
+      "published_at": "2026-10-07T09:02:08Z",
+      "time_precision": "EXACT",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn2search2"
+      ],
+      "source_call_ids": [
+        "exec-e812f51a-2991-4412-b712-e6cb6442e416"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "On Oct. 2, Culpium reported that TSMC was exploring possible ways to work with Terafab on its Texas factories. This was the earliest traceable public report found here, not an announced agreement.",
+      "source_urls": [
+        "https://www.culpium.com/p/exclusive-tsmc-exploring-plans-to"
+      ],
+      "event_time": null,
+      "publication_time": "2026-10-02",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The report cited sources and provided no signed terms, assigned operating role, production volume, or commitment."
+    },
+    {
+      "observation": "Culpium’s Oct. 3 follow-up reported Musk describing the TSMC contact as discussions only, while leaving open that something might come of them. This qualified the earlier exploration report without confirming a deal.",
+      "source_urls": [
+        "https://www.culpium.com/p/exclusive-tsmc-exploring-plans-to",
+        "https://www.culpium.com/p/elon-musk-confirms-tsmc-terafab-talks?action=share"
+      ],
+      "event_time": "2026-10-03",
+      "publication_time": "2026-10-03",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The exact X-post time and timezone were not verified; the reported wording does not identify agreed terms or a selected partner."
+    },
+    {
+      "observation": "Newsquawk’s feed carried Musk’s Oct. 7 statement that his companies would build and run the fab and that TSMC might sublease part. The page records the feed item at 06:38 UTC and publication at 06:58 UTC.",
+      "source_urls": [
+        "https://www.newsquawk.com/headlines/elon-musk-responds-to-speculation-that-tsmc-2330-tt-is-exploring-a-role-in-terafab-by-saying-that-we-will-build-and-run-the-fab-let-there-be-zero-doubt-about-that-adds-that-maybe-tsmc-subleases-part-of-the-terafab-if-they-want-but-nothing-more"
+      ],
+      "event_time": null,
+      "publication_time": "2026-10-07T06:58:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This is a news relay, not the original X post. A possible sublease is not evidence that one was agreed, and the statement gives no Intel production scope."
+    },
+    {
+      "observation": "A Benzinga article snapshot published at 09:02:08Z reported Tan saying Intel would continue involvement, attributing the statement to Bloomberg. This was within the cutoff window.",
+      "source_urls": [
+        "https://www.benzinga.com/markets/tech/26/10/62210012/intel-ceo-lip-bu-tan-says-company-will-keep-working-on-terafab-elon-musk-confirms-tsmc-may-only-sublease-part-of-the-fab-not-own-it"
+      ],
+      "event_time": null,
+      "publication_time": "2026-10-07T09:02:08Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The statement confirms continued involvement only at a general level; the snapshot gives no scope, binding obligation, node allocation, customer quantity, or production schedule."
+    }
+  ],
+  "gaps": [
+    "The original Musk X post and exact post time were not directly retrieved. Newsquawk establishes that the statement was in its feed by 06:38 UTC, but not the original post’s exact time.",
+    "The original Bloomberg Tan-interview report was not directly verified. The cutoff-safe source in this record is Benzinga’s pre-cutoff snapshot, which attributes Tan’s statement to Bloomberg.",
+    "The reviewed sources do not establish whether TSMC actually subleased space, the precise Intel role, a node-level agreement, a binding production booking, or associated volumes and timing; no direct TSMC statement was found in this focused search."
+  ],
+  "research_notes": "Cutoff used: 2026-10-07T09:04:00.845088Z. The pre-event record in this focused search is an Oct. 2 report that TSMC was exploring a role, followed by Musk describing the contact as discussions only on Oct. 3. On Oct. 7, a time-stamped Newsquawk item relayed Musk’s statement that his companies would build and run the fab, with only a possible TSMC sublease; a pre-cutoff Benzinga snapshot reported Intel CEO Lip-Bu Tan saying Intel would continue involvement. These reports clarify public statements but do not establish project terms or binding production commitments. The original Bloomberg Tan-interview report and Musk’s original X post were not directly verified; that limitation is noted below. No post-cutoff reporting or market reaction is used."
+}

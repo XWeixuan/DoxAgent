@@ -1,0 +1,234 @@
+{
+  "case_key": "NOISE-17",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-10-03T02:26:30.921846Z",
+  "reviewed_at": "2026-10-13T22:58:32.984220Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 5,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a13774-7ed3-74c3-8a2e-6c7bdb83ba36",
+    "turn_id": "01a13774-7ee1-71b0-9c3a-c22f5c88510b",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 73472,
+        "inputTokens": 84323,
+        "outputTokens": 15546,
+        "reasoningOutputTokens": 12356,
+        "totalTokens": 99869
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 284160,
+        "inputTokens": 359911,
+        "outputTokens": 21648,
+        "reasoningOutputTokens": 17929,
+        "totalTokens": 381559
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "53dec2ef5d41d741828e4144a45d4542ef72fa13cf0261400975c2600abe6510",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://www.fool.com/investing/2026/10/02/bloom-energy-trades-at-a-380x-pe-ratio-heres-what/",
+      "title": "Bloom Energy Trades at a 380x P/E Ratio. Here's What Has to Go Right to Justify That.",
+      "published_at": "2026-10-03T02:21:12Z",
+      "time_precision": "EXACT",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search0"
+      ],
+      "source_call_ids": [
+        "exec-c8f0aa54-4583-4e18-b9b5-651c4195caef"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://www.sec.gov/Archives/edgar/data/1664703/000162828026005798/ex991_q42025financialresul.htm",
+      "title": "Bloom Energy Reports Fourth Quarter and Full Year 2025 Financial Results",
+      "published_at": "2026-02-05",
+      "time_precision": "DAY",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search1"
+      ],
+      "source_call_ids": [
+        "exec-c8f0aa54-4583-4e18-b9b5-651c4195caef"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://www.sec.gov/Archives/edgar/data/1664703/000162828026005798/q4-2025xsupplementalxdec.htm",
+      "title": "Q4 2025 Supplemental Deck",
+      "published_at": "2026-02-05",
+      "time_precision": "DAY",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search2"
+      ],
+      "source_call_ids": [
+        "exec-c8f0aa54-4583-4e18-b9b5-651c4195caef"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://www.sec.gov/Archives/edgar/data/1664703/000162828026050150/ex991_q226financialresults.htm",
+      "title": "Bloom Energy Reports Record Second Quarter 2026 Financial Results and Raises Full Year 2026 Guidance",
+      "published_at": "2026-07-28",
+      "time_precision": "DAY",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn1search0",
+        "turn1search2"
+      ],
+      "source_call_ids": [
+        "exec-eec782fa-8779-49ac-9381-098f2c489296"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S5",
+      "url": "https://www.axios.com/2026/02/06/bloom-energy-ai-data-centers-nvidia",
+      "title": "In the AI Boom, This Energy Company Is Suddenly Flying High",
+      "published_at": "2026-02-06T10:00:07Z",
+      "time_precision": "EXACT",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn2news26"
+      ],
+      "source_call_ids": [
+        "exec-eccf3337-eb32-4277-a10f-b0ef7024b87a"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S6",
+      "url": "https://techcrunch.com/2026/09/24/oracle-sends-force-majeure-notice-on-its-new-mexico-stargate-data-center/",
+      "title": "Oracle Sends Force Majeure Notice on Its New Mexico Stargate Data Center",
+      "published_at": "2026-09-24T11:11-07:00",
+      "time_precision": "MINUTE",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn2search1"
+      ],
+      "source_call_ids": [
+        "exec-eccf3337-eb32-4277-a10f-b0ef7024b87a"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "The target article is commentary published near the cutoff, not a new company disclosure. Its cited 2025 backlog and Q2 EPS figures had been publicly reported earlier; its valuation framing and claim that backlog likely continued to grow in 2026 are not issuer updates.",
+      "source_urls": [
+        "https://www.fool.com/investing/2026/10/02/bloom-energy-trades-at-a-380x-pe-ratio-heres-what/",
+        "https://www.sec.gov/Archives/edgar/data/1664703/000162828026005798/ex991_q42025financialresul.htm",
+        "https://www.sec.gov/Archives/edgar/data/1664703/000162828026050150/ex991_q226financialresults.htm"
+      ],
+      "event_time": null,
+      "publication_time": "2026-10-03T02:21:12Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The live page's article dateline and the supplied RSS publication time differ by several minutes; the supplied capture predates cutoff. The article's P/E and annualization are author calculations, not independently verified here."
+    },
+    {
+      "observation": "The underlying backlog disclosure is dated Feb. 5, 2026, with the reported 2025 backlog measured at year-end. The release gives about $20 billion total and $6 billion product backlog; the supplemental deck gives $14 billion service backlog and prior-year product/service figures of $2.5 billion/$9.6 billion. The displayed product figures imply about a 140% increase; the release's '~2.5x' is a rounded ratio description.",
+      "source_urls": [
+        "https://www.sec.gov/Archives/edgar/data/1664703/000162828026005798/ex991_q42025financialresul.htm",
+        "https://www.sec.gov/Archives/edgar/data/1664703/000162828026005798/q4-2025xsupplementalxdec.htm",
+        "https://www.fool.com/investing/2026/10/02/bloom-energy-trades-at-a-380x-pe-ratio-heres-what/"
+      ],
+      "event_time": "2025-12-31",
+      "publication_time": "2026-02-05",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The approximate percentage comparison is arithmetic from rounded company figures. Service backlog includes future service revenue and contracts may be terminated annually for convenience; backlog is not the same as recognized revenue."
+    },
+    {
+      "observation": "The company's July 28 Q2 release reports diluted GAAP EPS of $0.62 versus diluted non-GAAP EPS of $0.78, and raises 2026 revenue guidance to $3.9–$4.2 billion. The article's roughly $0.60 quarterly EPS is close to the GAAP figure; annualizing it is the author's calculation, not company guidance.",
+      "source_urls": [
+        "https://www.sec.gov/Archives/edgar/data/1664703/000162828026050150/ex991_q226financialresults.htm",
+        "https://www.fool.com/investing/2026/10/02/bloom-energy-trades-at-a-380x-pe-ratio-heres-what/"
+      ],
+      "event_time": "2026-06-30",
+      "publication_time": "2026-07-28",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The release reports one quarter and a full-year guidance range; neither establishes the result for the full 2026 calendar year."
+    },
+    {
+      "observation": "Independent Axios coverage on Feb. 6, immediately after the annual release, had already connected Bloom's growth narrative to AI power demand and faster on-site deployment while also reporting analyst concerns about competition, supply, and valuation. The AI-demand framing in the Oct. 2 commentary was therefore not newly disseminated there.",
+      "source_urls": [
+        "https://www.axios.com/2026/02/06/bloom-energy-ai-data-centers-nvidia"
+      ],
+      "event_time": "2026-02-05",
+      "publication_time": "2026-02-06T10:00:07Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This is secondary coverage and market framing, not a project-level measure of Bloom backlog conversion or customer acceptance."
+    },
+    {
+      "observation": "A material pre-cutoff counterpoint to broad AI-power optimism was reported Sept. 24: Oracle sent a force-majeure notice related to Project Jupiter; the report also described a pipeline delay and a pending air-quality permit for Bloom's planned fuel-cell system. Oracle said the project remained on schedule and Blue Owl said financial commitments were unchanged.",
+      "source_urls": [
+        "https://techcrunch.com/2026/09/24/oracle-sends-force-majeure-notice-on-its-new-mexico-stargate-data-center/"
+      ],
+      "event_time": "2026-09-24",
+      "publication_time": "2026-09-24T11:11-07:00",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "TechCrunch attributes the first report to Bloomberg. This coverage does not establish a Bloom cancellation, backlog reduction, or revenue/collection change; the underlying notice and permit docket were not checked."
+    }
+  ],
+  "gaps": [
+    "No official post-February backlog update was verified. The target article's suggestion that backlog likely continued to grow in 2026 remains author speculation in the sources reviewed.",
+    "The target article's 380x P/E and valuation arithmetic were not independently reconstructed from point-in-time market data; current live-page quote widgets were excluded.",
+    "The article page has no verified update-history or archive record in this research. The pre-cutoff supplied copy is used; the live page's Oct. 2 10:15 PM EST dateline is not reconciled to the supplied RSS timestamp.",
+    "The original Bloomberg Project Jupiter report and primary force-majeure notice or relevant state permit docket were not retrieved; TechCrunch provides contemporaneous reporting and quotes Oracle and Blue Owl."
+  ],
+  "research_notes": "Focused on the article's public factual anchors, their original disclosure dates, and a material pre-cutoff project update. The target article is valuation commentary, not an issuer announcement. Its supplied text was captured at 2026-10-03T02:24:38.383206Z, before the 2026-10-03T02:26:30.921846Z cutoff; current dynamic quote widgets and post-cutoff material are excluded. The live article page displays Oct. 2 at 10:15 PM EST, while the supplied RSS message gives 02:21:12Z on Oct. 3; the exact first-publication discrepancy is unresolved, but both precede the cutoff."
+}

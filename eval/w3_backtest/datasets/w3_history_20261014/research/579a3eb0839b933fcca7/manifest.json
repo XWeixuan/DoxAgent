@@ -1,0 +1,14 @@
+{
+  "research_key": "579a3eb0839b933fcca7",
+  "ticker": "MU",
+  "version_pin": {
+    "activation_revision_id": "runtime-maintain-fedfe6e2b88b9772b52f7e70-activation",
+    "document1_run_id": "init-mu-1f3e9130ae304b01a7fdf2991a35e028-d1",
+    "document2_run_id": "init-mu-ce1a897cebf549f88d93fa485671644b-d2",
+    "event_library_root": "/data/runtime/runtime_artifacts/runtime-maintain-fedfe6e2b88b9772b52f7e70/events",
+    "event_library_version": 12,
+    "policy_set_version": 7,
+    "provisional_snapshot_version": 5,
+    "runtime_projection_version": 7
+  }
+}

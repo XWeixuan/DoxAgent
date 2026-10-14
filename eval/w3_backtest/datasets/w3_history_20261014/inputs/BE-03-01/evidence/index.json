@@ -1,0 +1,24 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-29T15:00:18.122882Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "No pre-cutoff company transaction filing or property instrument was located to resolve whether the 158,000-square-foot facility was purchased or leased, when the transaction closed, or its cost and operational timetable.",
+    "No source establishes installed equipment, qualified capacity, utilization, incremental annual production, shipped or accepted MW, or customer contracts attributable to the new facility.",
+    "Ameren’s 500-MW fuel-cell item is a non-binding IRP planning figure; vendor selection, procurement, project financing, approvals, and implementation timing remain unestablished.",
+    "The available analyst statements are not a timestamped sell-side consensus or forecast-revision series; the supplied research context says such data were unavailable.",
+    "Project Jupiter reporting left route attribution and project-specific operational consequences unresolved; Oracle and Blue Owl statements in the same report limited the inference of a project cancellation or committed financing change."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

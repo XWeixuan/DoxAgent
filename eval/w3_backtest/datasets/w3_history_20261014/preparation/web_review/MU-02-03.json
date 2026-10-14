@@ -1,0 +1,181 @@
+{
+  "case_key": "MU-02-03",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-09-29T14:46:20.403687Z",
+  "reviewed_at": "2026-10-13T22:58:31.965893Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 6,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a1375d-cc4c-73c1-8cb2-6320f53ee216",
+    "turn_id": "01a1375d-cc5c-7402-b979-6fc2d7b65a6d",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 80640,
+        "inputTokens": 88231,
+        "outputTokens": 10668,
+        "reasoningOutputTokens": 8466,
+        "totalTokens": 98899
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 370944,
+        "inputTokens": 453766,
+        "outputTokens": 18370,
+        "reasoningOutputTokens": 15737,
+        "totalTokens": 472136
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "f17e98486fc3e42d8af7940d39b496d0e9b83bbc780849f923b3b7fbd7219a4c",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://www.axios.com/2026/09/29/scoop-openais-annual-recurring-revenue-nears-70b",
+      "title": "Scoop: OpenAI's annual recurring revenue nears $70B",
+      "published_at": "2026-09-29T14:15:40Z",
+      "time_precision": "EXACT",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn5news12",
+        "turn3search2"
+      ],
+      "source_call_ids": [
+        "exec-9a5853c2-8e14-4d64-8a54-ad07d69ece65",
+        "exec-e6a3ceac-e5fd-49da-8584-25ff236a6553"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://news.bloomberglaw.com/artificial-intelligence/openais-revenue-run-rate-tops-40-billion-ahead-of-ipo",
+      "title": "OpenAI’s Revenue Run Rate Tops $40 Billion Ahead of IPO",
+      "published_at": "2026-08-13T21:36:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn3search3"
+      ],
+      "source_call_ids": [
+        "exec-9a5853c2-8e14-4d64-8a54-ad07d69ece65"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://www.axios.com/2026/09/03/anthropic-and-openais-revenue-chasm-explained",
+      "title": "Anthropic and OpenAI's revenue chasm, explained",
+      "published_at": "2026-09-03",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn3news29"
+      ],
+      "source_call_ids": [
+        "exec-9a5853c2-8e14-4d64-8a54-ad07d69ece65"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://bloomberg.com/news/articles/2026-09-29/openai-s-annualized-revenue-nears-70-billion-axios-says",
+      "title": "OpenAI’s Annualized Revenue Nears $70 Billion, Axios Says",
+      "published_at": "2026-09-29T14:41:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn3search0"
+      ],
+      "source_call_ids": [
+        "exec-9a5853c2-8e14-4d64-8a54-ad07d69ece65"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "Axios reported from unnamed sources that OpenAI's annualized run rate was nearing $70B, up more than 70% since Q3 began; business-to-business revenue had more than doubled since July, and Q3 consumer revenue additions exceeded those for all of 2025.",
+      "source_urls": [
+        "https://www.axios.com/2026/09/29/scoop-openais-annual-recurring-revenue-nears-70b"
+      ],
+      "event_time": "Q3 2026 through Sep. 29, 2026; the report does not specify the exact measurement date",
+      "publication_time": "2026-09-29T14:15:40Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This is an anonymous-source report of a run rate, not reported full-year revenue or a company filing. Axios said it did not have OpenAI expense details."
+    },
+    {
+      "observation": "Before the new report, Bloomberg Law had reported an OpenAI annualized run rate above $40B; Axios's Sep. 3 context also cited an above-$40B figure and warned that OpenAI and Anthropic revenue comparisons were affected by differing treatment of cloud-partner sales.",
+      "source_urls": [
+        "https://news.bloomberglaw.com/artificial-intelligence/openais-revenue-run-rate-tops-40-billion-ahead-of-ipo",
+        "https://www.axios.com/2026/09/03/anthropic-and-openais-revenue-chasm-explained"
+      ],
+      "event_time": "Prior reporting in August and September 2026; underlying run-rate measurement dates are not specified precisely",
+      "publication_time": "2026-08-13T21:36:00Z; 2026-09-03",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The earlier figures were also reported run rates, not audited results; the different accounting treatment cautions against treating headline comparisons as directly equivalent."
+    },
+    {
+      "observation": "A Bloomberg search result indicates near-cutoff pickup of the Axios report at approximately 14:41 UTC, but its headline explicitly credits Axios and does not establish independent sourcing.",
+      "source_urls": [
+        "https://bloomberg.com/news/articles/2026-09-29/openai-s-annualized-revenue-nears-70-billion-axios-says"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-29T14:41:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The page fetch was restricted and no dated pre-cutoff snapshot or update history was verified; use only as a search-result dissemination trace."
+    },
+    {
+      "observation": "Inference from the report's scope: this is an AI-services revenue and enterprise-adoption signal, not a disclosed Micron result or a direct fact about memory purchases, HBM/DRAM content, or hardware spending.",
+      "source_urls": [
+        "https://www.axios.com/2026/09/29/scoop-openais-annual-recurring-revenue-nears-70b"
+      ],
+      "event_time": "2026-09-29",
+      "publication_time": "2026-09-29T14:15:40Z",
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "The report does not identify Micron or quantify an effect on memory demand."
+    }
+  ],
+  "gaps": [
+    "No official OpenAI filing, company confirmation, realized full-year revenue, or expense/profit breakdown supporting the near-$70B run-rate claim was located before cutoff.",
+    "No independently sourced confirmation of the Sep. 29 figure before cutoff was verified; the Bloomberg search result is downstream of Axios, and the full page could not be checked.",
+    "No direct link from this report to Micron memory orders, memory content, supplier allocation, or a Micron operating metric was found.",
+    "No separate same-day Micron or memory-market development was independently verified in this focused search."
+  ],
+  "research_notes": "The earliest traceable public report located is Axios on Sep. 29 at 14:15:40 UTC, before the 14:46:20 UTC cutoff. The supplied feed item’s timestamp (14:43:04 UTC) is later and appears to restate that report. Bloomberg search metadata shows a Sep. 29 item at 14:41 UTC, but its headline attributes the report to Axios; it is a dissemination trace, not independent confirmation. The reported figure is an annualized run rate sourced to unnamed people, not an official OpenAI financial disclosure. Prior reporting placed OpenAI above a $40B annualized run rate and cautioned that comparisons with Anthropic were affected by different cloud-partner revenue accounting. No direct Micron, memory procurement, or hardware-spending fact was identified in the triggering report."
+}

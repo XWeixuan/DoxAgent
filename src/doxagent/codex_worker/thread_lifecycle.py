@@ -16,8 +16,9 @@ class _WireResponse(BaseModel):
 class AppServerThreads:
     """Use the public SDK transport for methods missing from its flat API."""
 
-    def __init__(self):
+    def __init__(self, config=None):
         self.client = None
+        self.config = config
         self.lock = asyncio.Lock()
 
     async def request(self, method, params):
@@ -29,7 +30,11 @@ class AppServerThreads:
             if self.client is None:
                 from openai_codex.async_client import AsyncCodexClient
 
-                client = AsyncCodexClient()
+                client = (
+                    AsyncCodexClient(self.config)
+                    if getattr(self, "config", None) is not None
+                    else AsyncCodexClient()
+                )
                 try:
                     await client.start()
                     await client.initialize()

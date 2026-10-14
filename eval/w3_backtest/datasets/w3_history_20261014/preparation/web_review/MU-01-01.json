@@ -1,0 +1,263 @@
+{
+  "case_key": "MU-01-01",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-09-22T09:11:21.068320Z",
+  "reviewed_at": "2026-10-13T22:58:31.740027Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 6,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a1375a-22b7-7801-ab47-6c0f4629ea2e",
+    "turn_id": "01a1375a-22c6-7723-9376-bdd108297445",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 85760,
+        "inputTokens": 93443,
+        "outputTokens": 21178,
+        "reasoningOutputTokens": 17924,
+        "totalTokens": 114621
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 378368,
+        "inputTokens": 475994,
+        "outputTokens": 26124,
+        "reasoningOutputTokens": 22282,
+        "totalTokens": 502118
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "8f9464c9abc17bafbdbb8ba70d667f9c953e0fc48dfe93b3c00d1aeca8746b47",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://www.digitimes.com/news/a20260908VL205/samsung-hbm4-capacity-4nm-hbm.html",
+      "title": "Samsung allocates more than half of 4nm foundry capacity to HBM4",
+      "published_at": "2026-09-08T11:56:00",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn2search7"
+      ],
+      "source_call_ids": [
+        "exec-7decaef6-a185-47e7-826b-ce1a9804f535"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://www.mt.co.kr/industry/2026/09/22/2026092119545912109",
+      "title": "HBM에 웃는 파운드리… 삼성, 4나노 증설 채비",
+      "published_at": "2026-09-22T04:00:00+09:00",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn2search2",
+        "turn5search3"
+      ],
+      "source_call_ids": [
+        "exec-7decaef6-a185-47e7-826b-ce1a9804f535",
+        "exec-a6858716-d931-4680-ac24-6e2a5f66e0ac"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://www.mt.co.kr/en/industry/2026/09/21/2026092114333425215",
+      "title": "Samsung Foundry Smiles Amid HBM Boom…Preparing to Expand Advanced Process Production Capacity",
+      "published_at": null,
+      "time_precision": "UNKNOWN",
+      "updated_at": null,
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn5search2"
+      ],
+      "source_call_ids": [
+        "exec-a6858716-d931-4680-ac24-6e2a5f66e0ac"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://stocktwits.com/news-articles/markets/equity/samsung-reportedly-ramps-4nm-capacity-for-memory-chips-stepping-up-competition-with-sk-hynix-micron/cZMP1yjRBeg",
+      "title": "Samsung Reportedly Ramps 4nm Capacity For Memory Chips, Stepping Up Competition With SK Hynix, Micron",
+      "published_at": "2026-09-22T09:00:04Z",
+      "time_precision": "EXACT",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn5search0"
+      ],
+      "source_call_ids": [
+        "exec-a6858716-d931-4680-ac24-6e2a5f66e0ac"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S5",
+      "url": "https://en.sedaily.com/finance/2026/09/03/samsung-doubles-hbm-market-share-to-33-percent-narrowing",
+      "title": "Samsung's HBM Market Share Jumps to 33%, Narrowing Gap With SK hynix",
+      "published_at": "2026-09-03T16:37:36+09:00",
+      "time_precision": "EXACT",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search4"
+      ],
+      "source_call_ids": [
+        "exec-80ba1038-c25a-49bf-b126-e63a06493bce"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S6",
+      "url": "https://news.samsung.com/global/samsung-ships-industry-first-commercial-hbm4-with-ultimate-performance-for-ai-computing",
+      "title": "Samsung Ships Industry-First Commercial HBM4 With Ultimate Performance for AI Computing",
+      "published_at": "2026-02-12",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn2search3"
+      ],
+      "source_call_ids": [
+        "exec-7decaef6-a185-47e7-826b-ce1a9804f535"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S7",
+      "url": "https://en.sedaily.com/finance/2026/09/20/samsung-hits-80-percent-yield-on-hbm4-shifts-focus-to-volume",
+      "title": "Samsung Locks In HBM4 Yields, Prepares Volume Push",
+      "published_at": "2026-09-20T18:01:34+09:00",
+      "time_precision": "EXACT",
+      "updated_at": "2026-09-20T23:34:44+09:00",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "BEFORE_CUTOFF",
+      "content_state": "UPDATED",
+      "decision": "KEEP",
+      "reason": "The supplied publication and revision times do not exceed the case cutoff.",
+      "source_result_refs": [
+        "turn2search10"
+      ],
+      "source_call_ids": [
+        "exec-7decaef6-a185-47e7-826b-ce1a9804f535"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "DIGITIMES had already published the more-than-half 4nm allocation claim on Sep. 8, so that specific claim was not first publicly reported on Sep. 22. Its full report is paywalled, and the actual internal allocation date is not established.",
+      "source_urls": [
+        "https://www.digitimes.com/news/a20260908VL205/samsung-hbm4-capacity-4nm-hbm.html"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-08T11:56:00 (timezone not stated)",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "Only the dated title and lead are accessible; full sourcing and any subsequent change to the allocation are unknown."
+    },
+    {
+      "observation": "MoneyToday’s Sep. 22 Korean report says Samsung’s 4nm lines were fully utilized and it was reviewing expansion; it repeats the reported allocation claim. The report attributes the information to industry sources rather than presenting a Samsung disclosure.",
+      "source_urls": [
+        "https://www.mt.co.kr/industry/2026/09/22/2026092119545912109",
+        "https://www.digitimes.com/news/a20260908VL205/samsung-hbm4-capacity-4nm-hbm.html"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-22T04:00:00+09:00",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The date of any internal decision is unknown. The earlier MoneyToday English-edition search result may affect first-publication chronology, but was not verified."
+    },
+    {
+      "observation": "Stocktwits relayed the MoneyToday report at 09:00:04Z on Sep. 22, before cutoff, and repeated Q2 HBM revenue-share figures. The article also included forecasts; these are not realized supply or revenue outcomes.",
+      "source_urls": [
+        "https://stocktwits.com/news-articles/markets/equity/samsung-reportedly-ramps-4nm-capacity-for-memory-chips-stepping-up-competition-with-sk-hynix-micron/cZMP1yjRBeg",
+        "https://en.sedaily.com/finance/2026/09/03/samsung-doubles-hbm-market-share-to-33-percent-narrowing"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-22T09:00:04Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This is secondary coverage of the capacity claim; no issuer confirmation of the >50% figure or an approved expansion is provided."
+    },
+    {
+      "observation": "Seoul Economic Daily reported Counterpoint’s Q2 HBM revenue shares as Samsung 33%, SK hynix 50%, and Micron 18%, with Samsung up from 21% in Q1 and Micron down from 21%. This share update was public before Sep. 22.",
+      "source_urls": [
+        "https://en.sedaily.com/finance/2026/09/03/samsung-doubles-hbm-market-share-to-33-percent-narrowing"
+      ],
+      "event_time": "Q2 2026",
+      "publication_time": "2026-09-03T16:37:36+09:00",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "These are HBM revenue shares, not unit shipments, capacity shares, or Micron’s internal product mix; the article says most HBM revenue still came from HBM3E."
+    },
+    {
+      "observation": "Samsung’s Feb. 12 release had already said HBM4 commercial mass production and shipments had started, that the product used a 4nm logic base die, and that the company was expanding HBM4 capacity. This is the pre-event company-stated baseline.",
+      "source_urls": [
+        "https://news.samsung.com/global/samsung-ships-industry-first-commercial-hbm4-with-ultimate-performance-for-ai-computing"
+      ],
+      "event_time": null,
+      "publication_time": "2026-02-12",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The release contains company claims and broad capacity intentions; it does not verify the later press-reported 4nm utilization, allocation percentage, or expansion decision."
+    },
+    {
+      "observation": "A Sep. 20 Seoul Economic Daily update reported rising HBM4 yields and higher planned HBM output, but also said HBM4E mass-production timing could depend on customer qualification and demand. The figures were reported industry estimates or projections.",
+      "source_urls": [
+        "https://en.sedaily.com/finance/2026/09/20/samsung-hits-80-percent-yield-on-hbm4-shifts-focus-to-volume"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-20T23:34:44+09:00",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The report does not establish realized future output or confirmed HBM4E qualification; underlying sources are described as industry sources."
+    }
+  ],
+  "gaps": [
+    "The possible MoneyToday English-edition page with a URL path dated 2026/09/21 was not opened; the earliest verified report of the 4nm expansion review, as distinct from the allocation claim, is therefore unresolved.",
+    "DIGITIMES’s Sep. 8 article is paywalled; its underlying sources and complete text could not be checked.",
+    "No opened official Samsung source confirmed the >50% 4nm allocation, an approved expansion, or exact added capacity.",
+    "The Counterpoint source page’s data table was not captured directly; Q2 share figures here are verified through contemporaneous Seoul Economic Daily coverage attributing them to Counterpoint.",
+    "The supplied leads about NVIDIA Rubin memory configuration and potential competitor capacity were not independently verified in this six-call search and are not used as established counterevidence."
+  ],
+  "research_notes": "Cutoff: 2026-09-22T09:11:21.068320Z. The earliest clearly dated, accessible report found for the claim that over half of Samsung Foundry’s 4nm capacity was allocated to HBM4 base dies is DIGITIMES on Sep. 8; its full article is paywalled. MoneyToday’s opened Korean report, published Sep. 22 at 04:00 KST (Sep. 21 19:00Z), separately reports full utilization and a review of 4nm capacity expansion, attributing the information to industry sources. A search result surfaced a possible earlier English MoneyToday version, but its publication time and content were not verified. Stocktwits disseminated its report at 09:00:04Z, before the cutoff.\n\nPrior context: Samsung’s Feb. 12 company release said HBM4 mass production and commercial shipments had begun, identified a 4nm logic base die, and described capacity expansion plans. Counterpoint’s Q2 HBM revenue-share figures were already reported by Seoul Economic Daily on Sep. 3: Samsung 33%, SK hynix 50%, and Micron 18%. These are market-level revenue shares, not shipment shares or Micron’s internal product mix. The new Sep. 22 reporting adds a claim of full 4nm utilization and expansion review; it does not establish an approved expansion, an actual capacity figure, or an issuer-confirmed allocation. The separate Sep. 20 report gives context on reported HBM4 yield/output expectations while noting HBM4E timing depends on customer qualification and demand. No later coverage or market reaction is used."
+}

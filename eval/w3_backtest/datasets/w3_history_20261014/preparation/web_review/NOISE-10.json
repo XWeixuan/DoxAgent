@@ -1,0 +1,159 @@
+{
+  "case_key": "NOISE-10",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-10-02T03:42:16.305681Z",
+  "reviewed_at": "2026-10-13T22:58:32.692077Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 6,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a1376f-7e0c-7e02-b59b-e2f32f326a04",
+    "turn_id": "01a1376f-7e26-71e3-9389-e03e86db69ea",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 78592,
+        "inputTokens": 88175,
+        "outputTokens": 12095,
+        "reasoningOutputTokens": 10086,
+        "totalTokens": 100270
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 358912,
+        "inputTokens": 449774,
+        "outputTokens": 14671,
+        "reasoningOutputTokens": 12126,
+        "totalTokens": 464445
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "e80755d2cf1abb5ecf39bd9664df6dae1025e4028215acd28d1b7ed7a46f086c",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://www.digitimes.com/newsshow/article.asp?datePublish=2026%2F10%2F02&pages=pd&seq=215",
+      "title": "DIGITIMES Insight: Intel, TSMC, Samsung converge on backside power — packaging becomes the next divide",
+      "published_at": "2026-10-02T03:21:00Z",
+      "time_precision": "EXACT",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn0search0",
+        "turn0search2"
+      ],
+      "source_call_ids": [
+        "exec-c8730bc1-99cd-43b7-8fc5-d1d4aef70e93"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://community.intel.com/t5/Blogs/Intel-Foundry/Systems-Foundry-for-the-AI-Era/VLSI-2026-Intel-18A-Platform-Momentum-from-Devices-to-Routed/post/1751150",
+      "title": "VLSI 2026: Intel 18A Platform Momentum from Devices to Routed Designs",
+      "published_at": "2026-06-16 13:58 (page local time; timezone unspecified)",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn1search1"
+      ],
+      "source_call_ids": [
+        "exec-b5992879-bcd1-42d8-b410-d046ab1edb6d"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://www.trendforce.com/presscenter/news/20260918-13241.html",
+      "title": "AI Chip Packaging Pushes Beyond Reticle Limits, with CoWoS-L Set to Remain the Mainstream Advanced Packaging Solution Through 2028, Says TrendForce",
+      "published_at": "2026-09-18",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn3search0"
+      ],
+      "source_call_ids": [
+        "exec-c8d5c421-7f7c-4d56-bba1-bd3c08d87abb"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "The DIGITIMES report was publicly timestamped at 03:21Z on October 2, 21 minutes before cutoff. The supplied captured excerpt was collected at 03:40:26Z, 1 minute 50 seconds before cutoff.",
+      "source_urls": [
+        "https://www.digitimes.com/newsshow/article.asp?datePublish=2026%2F10%2F02&pages=pd&seq=215"
+      ],
+      "event_time": null,
+      "publication_time": "2026-10-02T03:21:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The accessible live article is paywalled and no revision history was available. The verified pre-cutoff material is the supplied captured excerpt, not the full article."
+    },
+    {
+      "observation": "The report gives a forward-looking Rubin Ultra-class power range for 2027 and an Intel Foundry-attributed 1kW-to-5kW PDN loss scenario. It presents these as industry and package-level information, not as a Micron-specific product or operating result.",
+      "source_urls": [
+        "https://www.digitimes.com/newsshow/article.asp?datePublish=2026%2F10%2F02&pages=pd&seq=215"
+      ],
+      "event_time": null,
+      "publication_time": "2026-10-02T03:21:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The Rubin Ultra figure is a future expectation, not a measurement of a shipped product. The accessible source does not expose the underlying Intel calculation or its assumptions, and no independent report reproducing the numerical estimate was located."
+    },
+    {
+      "observation": "Before the DIGITIMES article, Intel had publicly described die-level backside-power benefits in Intel 18A designs, including reduced routing congestion and voltage droop. This supports the general technical mechanism but does not verify the article’s package-level loss scenario.",
+      "source_urls": [
+        "https://community.intel.com/t5/Blogs/Intel-Foundry/Systems-Foundry-for-the-AI-Era/VLSI-2026-Intel-18A-Platform-Momentum-from-Devices-to-Routed/post/1751150"
+      ],
+      "event_time": null,
+      "publication_time": "2026-06-16 13:58 (page local time; timezone unspecified)",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "These are company-reported results for specific Intel designs and processes, not independent verification or a general estimate for accelerator-package power delivery."
+    },
+    {
+      "observation": "TrendForce’s pre-cutoff view was that CoWoS-L would remain the mainstream AI-chip packaging technology through 2028 despite EMIB-T competition, which limits any inference that packaging adoption was already shifting broadly.",
+      "source_urls": [
+        "https://www.trendforce.com/presscenter/news/20260918-13241.html"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-18",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "TrendForce addresses package integration technologies, not backside power architecture, so it does not directly confirm or contradict the reported PDN-loss calculation."
+    }
+  ],
+  "gaps": [
+    "No accessible original Intel Foundry slide, paper, or calculation supporting the 89W-to-2,222W loss estimate was located.",
+    "No independent contemporaneous report located within the search limit replicated the specific package-power or I²R-loss figures.",
+    "The source does not specify the assumptions behind the Rubin Ultra-class 3,500–4,000W projection or establish that it was a measured, finalized product specification.",
+    "No Micron-specific adoption, design, customer, or financial consequence is established by the material reviewed."
+  ],
+  "research_notes": "Cutoff: 2026-10-02T03:42:16.305681Z. The earliest traceable public report located is the DIGITIMES article, timestamped 2026-10-02 11:21 in Taiwan (03:21Z); the supplied source capture at 03:40:26Z is also pre-cutoff. Its visible article page is paywalled, and no revision history or accessible original Intel calculation was found. Prior context: Intel had already reported die-level PowerVia results; the new item adds an Intel-attributed package-level loss estimate and a forward-looking Rubin Ultra power range. TrendForce provides a counterpoint on packaging adoption, but addresses a different technology axis. The material is industry-level and does not identify Micron products, customers, or financial metrics. No later market reaction or prices used."
+}

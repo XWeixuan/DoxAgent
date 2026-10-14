@@ -1,0 +1,27 @@
+{
+  "cases": 73,
+  "succeeded": 71,
+  "run_failures": 2,
+  "trade_decision_missing": 0,
+  "conditional_gold": 7,
+  "scored": 37,
+  "correct": 33,
+  "accuracy": 0.8918918918918919,
+  "wrong_trades": 2,
+  "missed_opportunities": 2,
+  "wrong_directions": 0,
+  "technical_errors": 0,
+  "operations_succeeded": 71,
+  "labelled_no_trade_denominator": 34,
+  "labelled_trade_denominator": 3,
+  "unlabelled": 29,
+  "unlabelled_decisions": 29,
+  "unlabelled_directions": {
+    "LONG": 3,
+    "SHORT": 0,
+    "NO_TRADE": 26
+  },
+  "unlabelled_trade_rate": 0.10344827586206896,
+  "wrong_trade_rate": 0.058823529411764705,
+  "missed_opportunity_rate": 0.6666666666666666
+}

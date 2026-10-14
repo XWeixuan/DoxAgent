@@ -1,0 +1,269 @@
+{
+  "case_key": "INTC-01-03",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-09-30T09:35:04.587315Z",
+  "reviewed_at": "2026-10-13T22:58:31.580327Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 6,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a13754-1d1c-7c31-8209-666542205d72",
+    "turn_id": "01a13754-1daf-79a2-9bdf-f4a3201e7ae7",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 85760,
+        "inputTokens": 93848,
+        "outputTokens": 16404,
+        "reasoningOutputTokens": 13332,
+        "totalTokens": 110252
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 382464,
+        "inputTokens": 480126,
+        "outputTokens": 19969,
+        "reasoningOutputTokens": 16176,
+        "totalTokens": 500095
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "1e4947acd471ecf214a5a32d727c78e7784b36a3dbf62a2c4f8368bd6fabc9d3",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://www.digitaltoday.co.kr/news/articleView.html?idxno=703310",
+      "title": "HBM4로 적자 줄이는 삼성 파운드리…흑자 전환은 언제?",
+      "published_at": "2026-09-28T22:30:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn3search0"
+      ],
+      "source_call_ids": [
+        "exec-4a1adfbe-d755-407c-b9b0-76698ce72a63"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://www.trendforce.com/news/2026/09/30/news-samsung-foundry-loss-reportedly-seen-shrinking-42-yoy-in-2026-as-hbm4-base-die-4nm-demand-rises",
+      "title": "[News] Samsung Foundry Loss Reportedly Seen Shrinking 42% YoY in 2026 as HBM4 Base-Die 4nm Demand Rises",
+      "published_at": "2026-09-30T04:00:00Z",
+      "time_precision": "EXACT",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search2"
+      ],
+      "source_call_ids": [
+        "exec-6ad3bd85-db82-4e71-9876-7ab26b7efb7c"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://news.samsung.com/global/samsung-ships-industry-first-commercial-hbm4-with-ultimate-performance-for-ai-computing",
+      "title": "Samsung Ships Industry-First Commercial HBM4 With Ultimate Performance for AI Computing",
+      "published_at": "2026-02-12",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search0"
+      ],
+      "source_call_ids": [
+        "exec-6ad3bd85-db82-4e71-9876-7ab26b7efb7c"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://news.samsung.com/global/samsung-electronics-announces-second-quarter-2026-results",
+      "title": "Samsung Electronics Announces Second Quarter 2026 Results",
+      "published_at": "2026-07-30",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn1search2"
+      ],
+      "source_call_ids": [
+        "exec-0213eecd-0cf9-4905-867b-88fa2d50a4a3"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S5",
+      "url": "https://zdnet.co.kr/view/?no=20260907110055",
+      "title": "삼성 파운드리, HBM4 확대 총력…4나노 캐파 절반이 '베이스 다이'",
+      "published_at": "2026-09-07T05:27:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": "2026-09-07T11:44:00Z",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "BEFORE_CUTOFF",
+      "content_state": "UPDATED",
+      "decision": "KEEP",
+      "reason": "The supplied publication and revision times do not exceed the case cutoff.",
+      "source_result_refs": [
+        "turn2search4"
+      ],
+      "source_call_ids": [
+        "exec-2d31775a-6cf0-4a89-9826-d8315c847054"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S6",
+      "url": "https://ibiz.inews24.com/view/mcmd/2009542",
+      "title": "퀄컴과 길어진 협상…HBM4가 바꾼 삼성전자 파운드리 셈법",
+      "published_at": "2026-09-28T06:43:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn2search6"
+      ],
+      "source_call_ids": [
+        "exec-2d31775a-6cf0-4a89-9826-d8315c847054"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S7",
+      "url": "https://news.samsung.com/global/samsung-electronics-and-broadcom-expand-strategic-collaboration-across-memory-and-foundry-technologies",
+      "title": "Samsung Electronics and Broadcom Expand Strategic Collaboration Across Memory and Foundry Technologies",
+      "published_at": "2026-07-25",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn1search0"
+      ],
+      "source_call_ids": [
+        "exec-0213eecd-0cf9-4905-867b-88fa2d50a4a3"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "Samsung announced HBM4 mass production and commercial shipments on Feb. 12, using 1c DRAM and a 4nm logic base die. This established the manufacturing link later cited between HBM4 sales growth and Foundry activity.",
+      "source_urls": [
+        "https://news.samsung.com/global/samsung-ships-industry-first-commercial-hbm4-with-ultimate-performance-for-ai-computing"
+      ],
+      "event_time": "2026-02-12",
+      "publication_time": "2026-02-12",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The announcement confirms production and process configuration, but does not quantify HBM4 units or Foundry segment profit contribution."
+    },
+    {
+      "observation": "On July 25 Samsung and Broadcom announced an MOU covering expanded memory and Foundry collaboration estimated above $200 billion through 2030.",
+      "source_urls": [
+        "https://news.samsung.com/global/samsung-electronics-and-broadcom-expand-strategic-collaboration-across-memory-and-foundry-technologies"
+      ],
+      "event_time": "2026-07-25",
+      "publication_time": "2026-07-25",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The release describes an MOU and collaboration estimate; it does not disclose a completed production order with specified volume."
+    },
+    {
+      "observation": "In its July 30 Q2 results release, Samsung said Foundry earnings improved before incentive-related provisions, driven by HBM base-die demand and strong U.S. customer orders; it also cited 2nm HPC engagements and an H2 double-digit revenue-growth target.",
+      "source_urls": [
+        "https://news.samsung.com/global/samsung-electronics-announces-second-quarter-2026-results"
+      ],
+      "event_time": "2026-06-30",
+      "publication_time": "2026-07-30",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This was company commentary on Q2 and outlook, not a realized Q3 result or a standalone disclosed loss figure."
+    },
+    {
+      "observation": "ZDNet Korea reported on Sep. 7 that more than half of Samsung’s 4nm capacity was allocated to HBM4 base dies, citing industry sources, and repeated the HBM4 growth outlook.",
+      "source_urls": [
+        "https://zdnet.co.kr/view/?no=20260907110055"
+      ],
+      "event_time": "2026-09-07",
+      "publication_time": "2026-09-07T05:27:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "Capacity share was attributed to unnamed industry sources; Samsung did not disclose the figure in the cited material."
+    },
+    {
+      "observation": "iNews24 reported that some advanced-process prices had reportedly risen 10–15%, while Samsung’s Qualcomm 2nm negotiations remained unresolved over terms.",
+      "source_urls": [
+        "https://ibiz.inews24.com/view/mcmd/2009542"
+      ],
+      "event_time": "2026-09-28",
+      "publication_time": "2026-09-28T06:43:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "Pricing claims were attributed to industry reporting, and the article described no completed Qualcomm production contract."
+    },
+    {
+      "observation": "Digital Today is the earliest traceable public report in this search of the Q3 Foundry/System LSI loss estimate, dated Sep. 29 at 07:30 KST. It attributed forecasts of KRW 777 billion Q3 loss and KRW 3.921 trillion FY2026 loss to Kiwoom Securities; the article’s HBM4 revenue outlook was later summarized by TrendForce before cutoff.",
+      "source_urls": [
+        "https://www.digitaltoday.co.kr/news/articleView.html?idxno=703310",
+        "https://www.trendforce.com/news/2026/09/30/news-samsung-foundry-loss-reportedly-seen-shrinking-42-yoy-in-2026-as-hbm4-base-die-4nm-demand-rises"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-28T22:30:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "These are analyst estimates and expectations, not actual Q3 results. Digital Today’s current English page shows a post-cutoff update; its exact pre-cutoff text is not verified independently of the dated TrendForce copy."
+    },
+    {
+      "observation": "TrendForce’s Sep. 30 report, published at 04:00Z and captured before cutoff, disseminated Digital Today’s account internationally. It repeated the forecast that Q3 HBM4 sales would exceed three times QoQ and that HBM4 would exceed 60% of H2 HBM revenue; it also noted that internal memory demand alone had not filled Foundry capacity and further improvement depended on external advanced-node orders.",
+      "source_urls": [
+        "https://www.trendforce.com/news/2026/09/30/news-samsung-foundry-loss-reportedly-seen-shrinking-42-yoy-in-2026-as-hbm4-base-die-4nm-demand-rises"
+      ],
+      "event_time": null,
+      "publication_time": "2026-09-30T04:00:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The report relayed forecasts, not realized quarter results; its own account identifies external orders as necessary for further improvement."
+    }
+  ],
+  "gaps": [
+    "No Q3 realized Foundry/System LSI loss result is established by these pre-cutoff sources; the KRW 777 billion figure is attributed to a securities analyst estimate.",
+    "No pre-cutoff archived snapshot of Digital Today’s original page was verified. Its original publication time is traceable, but current-page wording should not be treated as a dated pre-cutoff snapshot; relevant claims are included only where reproduced in the TrendForce copy captured before cutoff.",
+    "The 10–15% advanced-process price increase and Qualcomm negotiation status are media reports, not an official price schedule or disclosed completed order.",
+    "The reviewed material concerns Samsung Foundry and does not establish an Intel-specific customer commitment, cancellation, allocation shift, shipment change, or cost impact."
+  ],
+  "research_notes": "Cutoff: 2026-09-30T09:35:04.587315Z. The earliest traceable report of the Q3 Foundry-loss estimate in this focused search is Digital Today, dated 2026-09-29 07:30 KST; TrendForce disseminated a summary at 04:00Z on Sep. 30, before cutoff. Samsung’s prior disclosures established HBM4 production using a 4nm logic base die and said Q2 Foundry earnings improved before incentive-related provisions, citing HBM base-die demand and U.S. customer orders. The new report added Kiwoom Securities estimates and linked expected HBM4 growth to additional Foundry revenue; these were forecasts, not Q3 results. Counterpoints include reporting that internal memory demand alone may not fill Foundry capacity, unresolved Qualcomm 2nm negotiations, and external orders still being important to further improvement. Digital Today’s current English page shows an Oct. 14 update, with no verified pre-cutoff snapshot; its detailed claims are therefore treated as pre-cutoff only where they also appear in the TrendForce copy captured at 09:31:47Z. Reviewed material concerns Samsung, not a verified Intel customer, order, shipment, or cost change."
+}

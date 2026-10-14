@@ -1,0 +1,2959 @@
+{
+  "schema_version": "document2.v2",
+  "workflow_version": "codex_document2_v1",
+  "document2_run_id": "init-mu-ce1a897cebf549f88d93fa485671644b-d2",
+  "ticker": "MU",
+  "as_of": "2026-09-09T12:54:48Z",
+  "source_global_run_id": "init-mu-1f3e9130ae304b01a7fdf2991a35e028-d1",
+  "input_manifest": {
+    "global_research": {
+      "status": "AVAILABLE",
+      "artifact_ids": [
+        "a39678487e8649e08236f0bfa8f765dc",
+        "2f42aa10c32347a398f3ee14d2e34532",
+        "9280f7d7b29e47988a42abd4e1c4c138",
+        "48db6d0c4c864d99b69b3bb83cc7ad71",
+        "381a9b2fcec04ddca568d6573106491a"
+      ],
+      "workspace_paths": [
+        "artifacts/c1/init-72ee3eb1d0af45f0a5fcc62cd40b93f0/report.md",
+        "artifacts/c3/init-60683824fe444a028de17d1758eb9cd4/report.md",
+        "artifacts/c5/init-efa691b71bdc45bc8208e393e972e4e8/report.md",
+        "context/ca/hc-14bfee7335e82fc743db5f75.json"
+      ],
+      "source_run_id": "init-mu-1f3e9130ae304b01a7fdf2991a35e028-d1",
+      "as_of": "2026-09-10T11:58:45.519080Z",
+      "warning": "requested Document2 as_of preceded the pinned Global Research publication; publication is not evidence time; the requested research cutoff is preserved",
+      "metadata": {
+        "requested_as_of": "2026-09-09T12:54:48+00:00",
+        "effective_research_cutoff_at": "2026-09-09T12:54:48+00:00"
+      }
+    },
+    "narrative_research": {
+      "status": "UNAVAILABLE",
+      "artifact_ids": [],
+      "workspace_paths": [],
+      "source_run_id": null,
+      "as_of": null,
+      "warning": "DoxAtlas returned HTTP 502.",
+      "metadata": {}
+    },
+    "event_library": {
+      "status": "AVAILABLE",
+      "artifact_ids": [],
+      "workspace_paths": [],
+      "source_run_id": "event-library:MU:v1",
+      "as_of": "2026-09-10T16:10:06.233479Z",
+      "warning": null,
+      "metadata": {
+        "interface_version": "event-library-read-v2",
+        "read_only": true,
+        "version": 1,
+        "sha256": "5c3a78c0184da137cc48b6e50b2f957197405d773380b45ee3e1d8b53296b0c5",
+        "view": "REFERENCE_VIEW",
+        "content_type": "text/markdown; charset=utf-8",
+        "contract_version": "reference-view-md-v4"
+      }
+    }
+  },
+  "shells": [
+    {
+      "shell_id": "AI与服务器内存商业兑现",
+      "core_question": "Micron能否把AI/服务器内存需求、产品与战略客户兑现，经由行业供需与分配、定价、制造效率、扩产和营运资本，转化为FY26 Q4至FY27及以后可持续的收入、盈利与经营现金流，而非周期峰值？",
+      "boundary_rule": "本Shell覆盖同一条AI/服务器内存商业—制造—现金价值传导链：行业供需和服务器/消费分配影响HBM、DRAM/NAND的采用与定价，再经合同履约、制造效率、扩产和营运资本传到收入、盈利和现金。各Unit共享产品路线图、客户/平台、周期状态、项目里程碑与财务事件，但更新路径分别是盈利持续性、公司实现的ASP/位出货/组合、产品资格与多平台出货、行业分配机制、合同商业兑现、制造成本/良率、扩产项目和经营现金转换。美国扩产与GlobalWafers安排作为扩产Unit的实现因素或潜在缺口，融资、资本开支回报和估值/股价仅作证据，不另设Unit；汽车OEM/Tier 1车型认证和量产交付属于不同客户生态与事件链，置于独立Shell。",
+      "units": [
+        {
+          "expectation_id": "AI内存盈利持续性",
+          "proposition": "AI/服务器内存驱动的盈利改善将在FY26 Q4后延续至FY27，形成可重复的经营盈利平台而非单纯周期峰值；其与公开基线及当前价格的关系须由估计修订和实际季度结果逐步验证。",
+          "horizon": "FY26 Q4至FY27，延伸至随后数个季度的盈利验证期",
+          "state": {
+            "parameters": [
+              {
+                "parameter_id": "合并季度收入",
+                "definition": "Micron合并单季度GAAP收入，以报告货币计；保持单季期间和合并口径，便于与相邻报告季度比较，不与年度收入或卖方估计混用。",
+                "value_type": "NUMBER"
+              },
+              {
+                "parameter_id": "合并季度GAAP毛利率",
+                "definition": "Micron合并单季度GAAP毛利率；保持合并、单季和GAAP口径，不与非GAAP毛利率或业务单元营业利润率混用。",
+                "value_type": "NUMBER"
+              },
+              {
+                "parameter_id": "合并季度GAAP摊薄每股收益",
+                "definition": "Micron合并单季度GAAP摊薄EPS，以每股报告货币计；保持单季度和GAAP口径，不与非GAAP EPS混用。",
+                "value_type": "NUMBER"
+              },
+              {
+                "parameter_id": "FY26 Q4管理层收入指引",
+                "definition": "Micron管理层针对FY26 Q4合并收入的正式指引区间，保持FY26财季和报告货币口径。",
+                "value_type": "RANGE"
+              },
+              {
+                "parameter_id": "FY26 Q4管理层GAAP毛利率指引",
+                "definition": "Micron管理层针对FY26 Q4合并GAAP毛利率的正式指引点估计；不含非GAAP调整。",
+                "value_type": "NUMBER"
+              },
+              {
+                "parameter_id": "FY26 Q4管理层GAAP摊薄每股收益指引",
+                "definition": "Micron管理层针对FY26 Q4合并GAAP摊薄EPS的正式指引区间；不与非GAAP EPS混用。",
+                "value_type": "RANGE"
+              }
+            ],
+            "values": [
+              {
+                "state_value_id": "合并季度收入—实际—FY26 Q3",
+                "parameter_id": "合并季度收入",
+                "source_role": "ACTUAL",
+                "value": {
+                  "number": 41.456,
+                  "unit": "USD_BILLIONS"
+                },
+                "previous_value": {
+                  "number": 23.86,
+                  "unit": "USD_BILLIONS"
+                },
+                "time_scope": "FY26 Q3单季度（截至2026-05-28；比较FY26 Q2）",
+                "as_of": "2026-06-25（报告发布；财务期末2026-05-28）",
+                "citation": [
+                  "【cite:O1】",
+                  "【cite:O2】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "合并季度GAAP毛利率—实际—FY26 Q3",
+                "parameter_id": "合并季度GAAP毛利率",
+                "source_role": "ACTUAL",
+                "value": {
+                  "number": 85.0,
+                  "unit": "PERCENT_GAAP"
+                },
+                "previous_value": {
+                  "number": 74.0,
+                  "unit": "PERCENT_GAAP"
+                },
+                "time_scope": "FY26 Q3单季度（截至2026-05-28；比较FY26 Q2）",
+                "as_of": "2026-06-25（报告发布；财务期末2026-05-28）",
+                "citation": [
+                  "【cite:O1】",
+                  "【cite:O2】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "合并季度GAAP摊薄每股收益—实际—FY26 Q3",
+                "parameter_id": "合并季度GAAP摊薄每股收益",
+                "source_role": "ACTUAL",
+                "value": {
+                  "number": 24.67,
+                  "unit": "USD_PER_DILUTED_SHARE"
+                },
+                "previous_value": {
+                  "number": 12.07,
+                  "unit": "USD_PER_DILUTED_SHARE"
+                },
+                "time_scope": "FY26 Q3单季度（截至2026-05-28；比较FY26 Q2）",
+                "as_of": "2026-06-25（报告发布；财务期末2026-05-28）",
+                "citation": [
+                  "【cite:O3】",
+                  "【cite:O1】",
+                  "【cite:O2】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "FY26 Q4管理层收入指引—当前区间",
+                "parameter_id": "FY26 Q4管理层收入指引",
+                "source_role": "MANAGEMENT",
+                "value": {
+                  "lower": 49.0,
+                  "upper": 51.0,
+                  "unit": "USD_BILLIONS"
+                },
+                "previous_value": null,
+                "time_scope": "FY26 Q4单季度",
+                "as_of": "2026-06-24",
+                "citation": [
+                  "【cite:O2】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "FY26 Q4管理层GAAP毛利率指引—当前点估计",
+                "parameter_id": "FY26 Q4管理层GAAP毛利率指引",
+                "source_role": "MANAGEMENT",
+                "value": {
+                  "number": 86.0,
+                  "unit": "PERCENT_GAAP"
+                },
+                "previous_value": null,
+                "time_scope": "FY26 Q4单季度",
+                "as_of": "2026-06-24",
+                "citation": [
+                  "【cite:O2】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "FY26 Q4管理层GAAP摊薄每股收益指引—当前区间",
+                "parameter_id": "FY26 Q4管理层GAAP摊薄每股收益指引",
+                "source_role": "MANAGEMENT",
+                "value": {
+                  "lower": 29.73,
+                  "upper": 31.73,
+                  "unit": "USD_PER_DILUTED_SHARE"
+                },
+                "previous_value": null,
+                "time_scope": "FY26 Q4单季度",
+                "as_of": "2026-06-24",
+                "citation": [
+                  "【cite:O2】"
+                ],
+                "validity_state": "CURRENT"
+              }
+            ]
+          },
+          "realization_factors": [
+            {
+              "factor_id": "AI服务器需求与高价值分配持续",
+              "condition": "AI/服务器内存需求及服务器优先的供给分配能否在FY26 Q4至FY27继续支撑DRAM/NAND价格、位出货和数据中心组合？",
+              "structural_role": "REQUIRED",
+              "current_status": "FY26 Q3 DRAM与NAND销售环比分别增长67%和99%，主要由高ASP与较小的位出货增长驱动；公司将AI数据中心需求超过供给作为背景。行业研究支持服务器优先、消费端承压，但需求持续期、库存和供给反应尚未验证。",
+              "impact": "这是盈利持续性的上游必要条件：需求与分配先决定可售位数、实现ASP和组合，才传到收入及毛利；若HBM/服务器需求转弱、客户库存累积或供给回流，价格和组合可能先于数量补偿而反转。",
+              "citation": [
+                "【cite:O1】",
+                "【cite:O4】",
+                "【cite:O5】"
+              ],
+              "observability": {
+                "match_condition": "连续季度观察Micron DRAM/NAND ASP、bit shipments、CMBU/CDBU与MCBU组合，以及行业合同价、服务器/消费库存；需求和高价值分配持续且价格/位出货未结构性反转时确认。"
+              }
+            },
+            {
+              "factor_id": "ASP组合到利润的可重复转换",
+              "condition": "FY26 Q3由ASP、有利组合、执行和制造成本下降共同形成的高毛利能否在后续季度重复，而不是一次性价格峰值？",
+              "structural_role": "REQUIRED",
+              "current_status": "FY26 Q3 GAAP毛利率为85%（FY26 Q2为74%），公司说明改善主要来自售价，并受有利组合、强执行和制造成本下降支持；产品级成本与利润桥未披露，FY26 Q4约86%的指引仍是前瞻指引。",
+              "impact": "该机制把实现ASP/位出货转换为营业利润，区分可重复的平台与周期峰值；即使收入增长，低利用率、良率/返工、组合恶化或研发和爬坡费用也可削弱利润转换。",
+              "citation": [
+                "【cite:O1】",
+                "【cite:O2】"
+              ],
+              "observability": {
+                "match_condition": "后续季度GAAP毛利率和营业利润与ASP、bit shipments、产品组合、单位成本、良率及研发投入同步改善并保持时确认；若价格仍强但利润率因成本/组合恶化下降则更新。"
+              }
+            },
+            {
+              "factor_id": "战略内存协议履约形成盈利可见度",
+              "condition": "战略客户多年期协议能否从take-or-pay承诺和价格区间转为按期资格、提货、发运及收入确认？",
+              "structural_role": "REQUIRED",
+              "current_status": "公司披露多年期take-or-pay、特定数量及多数固定价或价格上下限，相关协议承诺约220亿美元、现金存款承诺约180亿美元；各协议对应的客户、产品、发货、收入确认和实际到账尚未逐项验证。",
+              "impact": "合同履约可降低现货暴露并延长可见盈利期限，但价格上限可能限制高价期弹性；若资格、产能或客户提货延迟，名义承诺不能替代可确认收入。",
+              "citation": [
+                "【cite:O1】",
+                "【cite:O6】"
+              ],
+              "observability": {
+                "match_condition": "后续申报同时显示客户存款/合同负债、合同产品资格、按约发运、收入确认和客户回款；若仅有承诺而无交付或出现延期则更新。"
+              }
+            },
+            {
+              "factor_id": "新增晶圆与先进封装形成可交付供给",
+              "condition": "扩产与先进封装项目能否按期完成设备、良率、资格和爬坡，使新增供给在价格周期转变前可销售并服务于FY27以后？",
+              "structural_role": "REQUIRED",
+              "current_status": "公司给出新加坡HBM封装、Gujarat、台湾、新加坡NAND、Idaho和纽约等分阶段计划；Manassas已开始1-alpha制造、Clay已进入垂直施工，但稳定合格产量、有效产能和客户出货尚未被这些里程碑证明。",
+              "impact": "新增合格供给是把AI需求转成持续出货和盈利容量的必要执行链；建设、设备、良率或认证延误会阻断传导，过快扩供或价格回落又会削弱新增产能的利润贡献。",
+              "citation": [
+                "【cite:O7】",
+                "【cite:O1】",
+                "【cite:O8】",
+                "【cite:O9】"
+              ],
+              "observability": {
+                "match_condition": "按项目观察设备安装、首片/wafer-out、合格良率、先进封装产出、客户资格及连续交付，而不是仅观察投资公告。"
+              }
+            }
+          ],
+          "potential_gaps": [
+            {
+              "gap_id": "FY26 Q4实际结果低于管理层指引下限",
+              "possible_occurrence": "在FY26 Q4正式业绩披露中，合并收入低于当前490亿美元指引下限，且GAAP毛利率明显低于约86%或GAAP摊薄EPS低于29.73美元。",
+              "derivation": "FY26 Q3收入和毛利率的跃升主要由ASP、组合和供给约束共同驱动，管理层对FY26 Q4给出的收入490–510亿美元、GAAP毛利率约86%和GAAP摊薄EPS 29.73–31.73美元仍是前瞻指引。若ASP、位出货或组合在季度内反转，强劲的Q3结果可能无法穿越Q4；这是从当前价格主导的改善到短期峰值的可识别路径，而不是对结果的预测。",
+              "citation": [
+                "【cite:O1】",
+                "【cite:O2】",
+                "【cite:O10】"
+              ],
+              "expected_revision": "将本Unit从“FY26 Q4后盈利平台延续”的基线下调为Q4已出现兑现缺口，并下修FY27收入、毛利率和EPS的持续性假设。该事件只证明当前指引未达成，不单独证明AI内存需求永久逆转或市场定价必然如何变化。",
+              "recognition_criteria": "以正式FY26 Q4财报为准：收入低于490亿美元，并且GAAP毛利率较约86%出现明显缺口或GAAP摊薄EPS低于29.73美元；仅单项小幅四舍五入差异不单独认定。"
+            },
+            {
+              "gap_id": "FY26 Q4达标后FY27盈利率连续回落",
+              "possible_occurrence": "FY26 Q4达到或接近管理层指引后，FY27随后至少两个报告季度的合并GAAP毛利率和营业利润率连续下降，且公司或财务桥显示ASP、组合或供给条件转弱。",
+              "derivation": "Q3 GAAP毛利率已从74%升至85%，Q4约86%的指引和公开FY27高盈利基线都建立在高价与高价值组合可以延续的条件上；但当前披露没有产品级成本桥或长期ASP序列。因而存在“Q4兑现、FY27回归周期”的时间错配路径。",
+              "citation": [
+                "【cite:O1】",
+                "【cite:O2】",
+                "【cite:O10】",
+                "【cite:O11】"
+              ],
+              "expected_revision": "把高毛利从可重复经营平台改写为短期峰值或过渡期，并缩短盈利持续性判断的有效期限；FY27利润率、营业利润和EPS路径需要重新估计。即使收入仍增长，也不能再以Q4毛利率外推FY27。",
+              "recognition_criteria": "FY27连续两个已报告季度的GAAP毛利率和营业利润率均低于前一季度，且同时出现实现ASP/产品组合下行或公司明确说明价格、供给或库存是原因；单季波动不认定。"
+            },
+            {
+              "gap_id": "高毛利被研发折旧和爬坡费用侵蚀",
+              "possible_occurrence": "FY27收入和合并GAAP毛利率仍处高位，但研发、预资格、折旧、爬坡、质量或重组等GAAP费用上升，使合并营业利润或摊薄EPS连续弱于此前盈利趋势。",
+              "derivation": "公司将Q3毛利改善归因于售价、有利组合、强执行和制造成本下降，同时研发费用同比增加36%；FY26 Q4又给出较高的运营费用预期。随着HBM资格、扩产和多平台导入推进，费用可能先于可销售产出发生，形成毛利到营业利润的断裂。",
+              "citation": [
+                "【cite:O1】",
+                "【cite:O2】",
+                "【cite:O12】"
+              ],
+              "expected_revision": "下调“高毛利必然转为可重复经营盈利”的假设，改为区分毛利平台与营业利润/EPS转换；本Unit的盈利持续性减弱，但该事件不否定上游AI需求或产品资格本身。",
+              "recognition_criteria": "连续两个季度出现合并GAAP毛利率大致稳定而营业利润或GAAP摊薄EPS下降，并由费用、折旧、预资格或爬坡项目的披露/现金支出桥接解释。"
+            },
+            {
+              "gap_id": "AI需求延续但Micron高价值组合份额转弱",
+              "possible_occurrence": "AI/服务器终端需求继续增长，但Micron的CMBU/CDBU或HBM等高价值产品收入占比在FY27连续下降，增量收入主要来自低ASP、消费或传统产品。",
+              "derivation": "FY26 Q3数据中心相关业务约占合并收入61%，当前高ASP和组合是利润改善的重要解释；然而高价值产品资格、封装能力和客户分配尚未按平台完全验证。行业需求持续并不保证Micron捕获同样的产品组合，受益者可能转移到竞争供应商或低价值产品。",
+              "citation": [
+                "【cite:O1】",
+                "【cite:O13】",
+                "【cite:O12】",
+                "【cite:O14】"
+              ],
+              "expected_revision": "把“AI需求持续→Micron高利润持续”的传导拆开，降低ASP、毛利率和EPS的持续性假设，并把受益者/产品组合重新分配给更低价值或其他供应商。该事件不等同于AI行业需求下降。",
+              "recognition_criteria": "连续两个季度披露的CMBU+CDBU收入占比或HBM/数据中心高价值产品阶段明显走弱，同时公司组合或实现ASP显示增长由消费/传统产品承担；仅业务单元绝对收入波动不够。"
+            },
+            {
+              "gap_id": "AI计算架构降低单位工作负载内存需求",
+              "possible_occurrence": "主要云服务商或加速器平台采用新的内存、封装或计算架构，使单位AI训练或推理工作负载所需的HBM/DRAM/NAND容量或带宽低于现有产品路线假设。",
+              "derivation": "当前模型把AI数据中心扩张、HBM/AI平台协作和高价值内存需求作为盈利持续性的上游基础，但现有产品合作只说明路线和导入，不锁定未来每个工作负载的内存含量。若计算效率、压缩、片上存储或替代架构改变“算力增长到内存位数”的映射，即使AI资本开支继续增加，Micron的位需求也可能脱钩。",
+              "citation": [
+                "【cite:O1】",
+                "【cite:O15】",
+                "【cite:O12】"
+              ],
+              "expected_revision": "下调AI需求转为Micron可售位数、ASP和FY27盈利的转换系数，重新评估持续期和规模；资格通过或客户协作仍可存在，但不能再据此推断同等幅度的收入和利润。",
+              "recognition_criteria": "出现多个主要平台的公开架构/部署证据或客户技术披露，且随后按平台的内存容量/带宽需求或Micron相关bit shipments相对AI工作负载明显下降；单一产品规格变化不认定为结构性事件。"
+            }
+          ]
+        },
+        {
+          "expectation_id": "DRAM与NAND实现定价和产品组合",
+          "proposition": "AI数据中心需求下，Micron实现的DRAM/NAND ASP、位出货和产品组合将支撑高毛利、收入和每股收益路径，避免经营结果在FY26 Q4至FY27结构性回落。",
+          "horizon": "FY26 Q4至FY27的产品与财务结果周期",
+          "state": {
+            "parameters": [
+              {
+                "parameter_id": "FY26 Q3 DRAM实现ASP环比变化",
+                "definition": "Micron报告的DRAM实现平均售价相对上一季度的变化区间；保持公司实现ASP、DRAM产品范围和季度环比口径，不等同于行业合同价。",
+                "value_type": "RANGE"
+              },
+              {
+                "parameter_id": "FY26 Q3 NAND实现ASP环比变化",
+                "definition": "Micron报告的NAND实现平均售价相对上一季度的变化区间；保持公司实现ASP、NAND产品范围和季度环比口径，不等同于行业合同价。",
+                "value_type": "RANGE"
+              },
+              {
+                "parameter_id": "FY26 Q3 DRAM位出货环比变化",
+                "definition": "Micron报告的DRAM bit shipments相对上一季度的变化区间；保持DRAM产品范围和季度环比口径，不把收入增长当作位出货增长。",
+                "value_type": "RANGE"
+              },
+              {
+                "parameter_id": "FY26 Q3 NAND位出货环比变化",
+                "definition": "Micron报告的NAND bit shipments相对上一季度的变化区间；保持NAND产品范围和季度环比口径，不把收入增长当作位出货增长。",
+                "value_type": "RANGE"
+              },
+              {
+                "parameter_id": "FY26 Q3 DRAM销售环比变化",
+                "definition": "Micron DRAM产品销售额相对上一季度的报告变化；保持单季度和DRAM产品口径，不与实现ASP或行业合同价混用。",
+                "value_type": "NUMBER"
+              },
+              {
+                "parameter_id": "FY26 Q3 NAND销售环比变化",
+                "definition": "Micron NAND产品销售额相对上一季度的报告变化；保持单季度和NAND产品口径，不与实现ASP或行业合同价混用。",
+                "value_type": "NUMBER"
+              },
+              {
+                "parameter_id": "最新报告季度数据中心业务收入占比",
+                "definition": "最新报告季度CMBU与CDBU合计收入占Micron合并收入的比例，按已报告业务单元收入计算；不代表外部市场份额。",
+                "value_type": "NUMBER"
+              },
+              {
+                "parameter_id": "FY26 Q4管理层收入指引",
+                "definition": "Micron管理层针对FY26 Q4合并收入的正式指引区间，保持FY26财季和报告货币口径。",
+                "value_type": "RANGE"
+              },
+              {
+                "parameter_id": "FY26 Q4管理层GAAP毛利率指引",
+                "definition": "Micron管理层针对FY26 Q4合并GAAP毛利率的正式指引点估计；不含非GAAP调整。",
+                "value_type": "NUMBER"
+              }
+            ],
+            "values": [
+              {
+                "state_value_id": "FY26 Q3 DRAM实现ASP环比变化—实际低60%区间",
+                "parameter_id": "FY26 Q3 DRAM实现ASP环比变化",
+                "source_role": "ACTUAL",
+                "value": {
+                  "lower": 60.0,
+                  "upper": 69.0,
+                  "unit": "PERCENT_QOQ"
+                },
+                "previous_value": null,
+                "time_scope": "FY26 Q3相对FY26 Q2",
+                "as_of": "2026-06-25（报告发布；财务期末2026-05-28）",
+                "citation": [
+                  "【cite:O1】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "FY26 Q3 NAND实现ASP环比变化—实际中80%区间",
+                "parameter_id": "FY26 Q3 NAND实现ASP环比变化",
+                "source_role": "ACTUAL",
+                "value": {
+                  "lower": 80.0,
+                  "upper": 89.0,
+                  "unit": "PERCENT_QOQ"
+                },
+                "previous_value": null,
+                "time_scope": "FY26 Q3相对FY26 Q2",
+                "as_of": "2026-06-25（报告发布；财务期末2026-05-28）",
+                "citation": [
+                  "【cite:O1】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "FY26 Q3 DRAM位出货环比变化—实际低个位数",
+                "parameter_id": "FY26 Q3 DRAM位出货环比变化",
+                "source_role": "ACTUAL",
+                "value": {
+                  "lower": 1.0,
+                  "upper": 4.0,
+                  "unit": "PERCENT_QOQ"
+                },
+                "previous_value": null,
+                "time_scope": "FY26 Q3相对FY26 Q2",
+                "as_of": "2026-06-25（报告发布；财务期末2026-05-28）",
+                "citation": [
+                  "【cite:O1】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "FY26 Q3 NAND位出货环比变化—实际中个位数",
+                "parameter_id": "FY26 Q3 NAND位出货环比变化",
+                "source_role": "ACTUAL",
+                "value": {
+                  "lower": 4.0,
+                  "upper": 6.0,
+                  "unit": "PERCENT_QOQ"
+                },
+                "previous_value": null,
+                "time_scope": "FY26 Q3相对FY26 Q2",
+                "as_of": "2026-06-25（报告发布；财务期末2026-05-28）",
+                "citation": [
+                  "【cite:O1】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "FY26 Q3 DRAM销售环比变化—实际",
+                "parameter_id": "FY26 Q3 DRAM销售环比变化",
+                "source_role": "ACTUAL",
+                "value": {
+                  "number": 67.0,
+                  "unit": "PERCENT_QOQ"
+                },
+                "previous_value": null,
+                "time_scope": "FY26 Q3相对FY26 Q2",
+                "as_of": "2026-06-25（报告发布；财务期末2026-05-28）",
+                "citation": [
+                  "【cite:O1】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "FY26 Q3 NAND销售环比变化—实际",
+                "parameter_id": "FY26 Q3 NAND销售环比变化",
+                "source_role": "ACTUAL",
+                "value": {
+                  "number": 99.0,
+                  "unit": "PERCENT_QOQ"
+                },
+                "previous_value": null,
+                "time_scope": "FY26 Q3相对FY26 Q2",
+                "as_of": "2026-06-25（报告发布；财务期末2026-05-28）",
+                "citation": [
+                  "【cite:O1】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "最新报告季度数据中心业务收入占比—CMBU加CDBU",
+                "parameter_id": "最新报告季度数据中心业务收入占比",
+                "source_role": "ACTUAL",
+                "value": {
+                  "number": 61.0,
+                  "unit": "PERCENT_OF_CONSOLIDATED_REVENUE"
+                },
+                "previous_value": null,
+                "time_scope": "FY26 Q3单季度（CMBU+CDBU收入/合并收入，约值）",
+                "as_of": "2026-06-25（报告发布；财务期末2026-05-28）",
+                "citation": [
+                  "【cite:O1】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "FY26 Q4管理层收入指引—产品财务锚点",
+                "parameter_id": "FY26 Q4管理层收入指引",
+                "source_role": "MANAGEMENT",
+                "value": {
+                  "lower": 49.0,
+                  "upper": 51.0,
+                  "unit": "USD_BILLIONS"
+                },
+                "previous_value": null,
+                "time_scope": "FY26 Q4单季度",
+                "as_of": "2026-06-24",
+                "citation": [
+                  "【cite:O2】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "FY26 Q4管理层GAAP毛利率指引—产品财务锚点",
+                "parameter_id": "FY26 Q4管理层GAAP毛利率指引",
+                "source_role": "MANAGEMENT",
+                "value": {
+                  "number": 86.0,
+                  "unit": "PERCENT_GAAP"
+                },
+                "previous_value": null,
+                "time_scope": "FY26 Q4单季度",
+                "as_of": "2026-06-24",
+                "citation": [
+                  "【cite:O2】"
+                ],
+                "validity_state": "CURRENT"
+              }
+            ]
+          },
+          "realization_factors": [
+            {
+              "factor_id": "DRAM与NAND实现ASP和位出货联动",
+              "condition": "Micron能否在FY26 Q4至FY27同时维持DRAM/NAND实现ASP与可增长的位出货，使销售增长不依赖单季价格跳升？",
+              "structural_role": "REQUIRED",
+              "current_status": "FY26 Q3 DRAM实现ASP环比处于低60%区间、位出货为低个位数，销售增长67%；NAND实现ASP环比处于中80%区间、位出货为中个位数，销售增长99%。这证明当前结果强，但不能证明后续联合持续性。",
+              "impact": "ASP决定每位收入、bit shipments决定数量；两者需经产品组合共同传到收入和毛利。若ASP回落而位出货未能补偿，或需求/供给导致数量受限，收入和EPS路径会弱于当前季度。",
+              "citation": [
+                "【cite:O1】"
+              ],
+              "observability": {
+                "match_condition": "逐季度对比DRAM/NAND实现ASP、bit shipments、销售额和组合；ASP放缓但位出货/组合补偿并维持收入时确认，ASP下跌且数量无补偿时更新。"
+              }
+            },
+            {
+              "factor_id": "数据中心与高价值产品组合保持",
+              "condition": "CMBU/CDBU及HBM、服务器内存和数据中心SSD的出货组合能否继续占据足够比重，抵消消费端产品的价格和位出货压力？",
+              "structural_role": "MODIFIER",
+              "current_status": "FY26 Q3 CMBU与CDBU合计约占合并收入61%，数据中心业务增速较快；HBM4、SOCAMM2、PCIe Gen6 SSD处于高量生产/出货阶段，但MCBU仍有较低位出货和消费端承压，长期组合尚未验证。",
+              "impact": "高价值组合可提高实现ASP和毛利并改变DRAM/NAND收入构成，但不等同于公司获得行业全部需求；资格、封装和客户分配不足会使组合回落。",
+              "citation": [
+                "【cite:O1】",
+                "【cite:O13】",
+                "【cite:O12】",
+                "【cite:O14】"
+              ],
+              "observability": {
+                "match_condition": "观察CMBU/CDBU占比、HBM/DDR5/SSD产品阶段、MCBU位出货和各类ASP/毛利；高价值组合持续扩大并支持利润时确认，消费回流或mix恶化时更新。"
+              }
+            },
+            {
+              "factor_id": "高价值产品资格与合格供给规模化",
+              "condition": "高ASP产品能否从样品/平台导入转为足够的合格量产和连续出货，而不被晶圆、封装、良率或认证瓶颈限制？",
+              "structural_role": "REQUIRED",
+              "current_status": "HBM4主客户平台已有高量出货，HBM4 48GB 16H及256GB DDR5 RDIMM仍以资格样品为主，SOCAMM2和PCIe Gen6 SSD已披露高量生产；按客户的合格产量、重复订单和稳定有效产能未披露。",
+              "impact": "资格与合格量产是把产品组合意图转成可售bit shipments的执行门；若只能样品化或先进封装/良率不足，ASP上行无法扩大为收入和EPS，客户也可能改用竞争供应商。",
+              "citation": [
+                "【cite:O13】",
+                "【cite:O12】",
+                "【cite:O1】"
+              ],
+              "observability": {
+                "match_condition": "出现按客户/平台的资格通过、合格wafer-out、封装产出、连续序列出货和实际bit shipments时确认规模化；资格延期或重复出货缺失时更新。"
+              }
+            },
+            {
+              "factor_id": "竞争供给与终端价格弹性约束实现ASP",
+              "condition": "竞争对手增供及PC/手机等终端对高价格的需求弹性是否会把Micron实现ASP和产品组合推回周期性下行？",
+              "structural_role": "BLOCKER",
+              "current_status": "TrendForce判断3Q26服务器需求支持DRAM/NAND但高价格压制PC/手机，预计行业合同价仍上涨但增幅放缓；Samsung已宣布HBM4量产出货、SK hynix已发送HBM4E样品，Micron市场份额与客户库存未披露。",
+              "impact": "行业供给释放、替代供应商资格成功或消费端需求收缩会先压低合同价和实现ASP，再通过库存、利用率和组合压低收入/毛利。",
+              "citation": [
+                "【cite:O4】",
+                "【cite:O5】",
+                "【cite:O16】",
+                "【cite:O17】",
+                "【cite:O18】"
+              ],
+              "observability": {
+                "match_condition": "跟踪行业合同价、竞争对手量产/出货、客户与渠道库存、Micron实现ASP、bit shipments和组合；竞争供给/库存积累伴随ASP和组合下行时确认阻断。"
+              }
+            }
+          ],
+          "potential_gaps": [
+            {
+              "gap_id": "实现ASP连续回落且位出货无法补偿",
+              "possible_occurrence": "FY26 Q4至FY27，DRAM或NAND实现ASP连续下降，位出货持平或下降，相应产品销售额连续弱于上一季度。",
+              "derivation": "FY26 Q3 DRAM和NAND销售环比分别增长67%和99%，但ASP增幅显著高于低个位数或中个位数位出货增长；这使当前收入路径对价格高度敏感。若供给释放、客户库存或终端弹性先压低ASP而数量没有补偿，产品财务路径会从价格驱动转为量价双弱。",
+              "citation": [
+                "【cite:O1】",
+                "【cite:O4】",
+                "【cite:O5】"
+              ],
+              "expected_revision": "下调DRAM/NAND实现ASP、销售额和EPS路径，确认当前高增长不能用单季价格外推；若只有一个产品线或一个季度反转，修订限于该产品/期间，不推断全公司长期需求消失。",
+              "recognition_criteria": "至少一个主要产品线连续两个季度实现ASP环比下降，且同期bit shipments未增长或不足以抵消每位收入下降，销售额也连续低于上一季度；行业合同价转跌可作为辅助而非必要条件。"
+            },
+            {
+              "gap_id": "位出货和高价值组合抵消温和降价",
+              "possible_occurrence": "ASP增速较FY26 Q3显著放缓或出现小幅下降，但DRAM/NAND位出货、HBM/服务器内存和数据中心SSD组合同步扩大，销售额在连续季度保持增长。",
+              "derivation": "Q3增长主要由ASP驱动，而公司已有HBM、SOCAMM2和PCIe Gen6 SSD等高价值产品处于量产或出货阶段；未来供给和资格若改善，数量与组合可能替代部分价格涨幅。这是当前“价格峰值”之外的正向量价路径。",
+              "citation": [
+                "【cite:O1】",
+                "【cite:O13】",
+                "【cite:O12】",
+                "【cite:O14】"
+              ],
+              "expected_revision": "上调产品Unit中数量、组合和收入持续性的权重，允许ASP正常化而不把它自动视为周期反转；但仍不能由销售额增长单独证明长期毛利率或现金转换。",
+              "recognition_criteria": "连续两个季度披露的DRAM/NAND bit shipments增长或高价值产品占比提高，且实现ASP不再大幅上升时销售额仍环比增长；必须同时观察数量/组合和销售额，不能只看收入。"
+            },
+            {
+              "gap_id": "竞争供给释放造成行业价格冲击",
+              "possible_occurrence": "Samsung、SK hynix或其他供应商完成高带宽或传统内存新增量产/客户认证，叠加渠道或客户库存上升，令DRAM/NAND行业合同价转跌。",
+              "derivation": "当前行业研究仍支持服务器优先但预计价格涨幅放缓，竞争状态显示Samsung已有HBM4出货、SK hynix已有HBM4E样品；若竞争供给比Micron的需求增长更快，行业价格会先于公司位出货调整。该候选覆盖供给释放和竞争获益者转移的组合路径。",
+              "citation": [
+                "【cite:O4】",
+                "【cite:O5】",
+                "【cite:O16】",
+                "【cite:O17】",
+                "【cite:O18】"
+              ],
+              "expected_revision": "下调行业合同价、Micron实现ASP和高毛利组合的路径，并重新评估FY27产品收入与EPS；竞争对手放量本身不证明Micron完全失去资格，只证明当前实现ASP假设需要重估。",
+              "recognition_criteria": "行业合同价至少一个主要品类转为环比下降，同时出现竞争供应商新增合格供给/出货和客户或渠道库存上升中的至少一项；单一供应商样品不够。"
+            },
+            {
+              "gap_id": "高价引发消费端库存和数量修正",
+              "possible_occurrence": "PC、手机或企业存储客户因内存价格持续高企而削减配置、延后采购或消化渠道库存，传统DRAM/NAND位出货明显低于原计划。",
+              "derivation": "行业研究已指出高价格压制PC/手机需求，且当前数据中心优先分配使消费端承压；若价格弹性通过库存链条放大，Micron的MCBU或NAND数量可能下滑，即使服务器需求仍强。该路径不同于单纯合同价变化，重点是终端数量和组合。",
+              "citation": [
+                "【cite:O4】",
+                "【cite:O5】",
+                "【cite:O1】"
+              ],
+              "expected_revision": "下调消费/传统产品位出货和组合，对公司总收入、ASP和毛利率的影响按数据中心占比重新加权；不能把消费端收缩直接等同于AI服务器需求也已转弱。",
+              "recognition_criteria": "连续一个以上季度出现客户/渠道库存上升或采购削减，并伴随MCBU或NAND/传统DRAM bit shipments同比或环比转负；仅终端媒体担忧不认定。"
+            },
+            {
+              "gap_id": "AI服务器需求强但Micron高价值产品未能规模化",
+              "possible_occurrence": "AI服务器和HBM行业需求继续增长，但Micron的HBM、服务器DRAM或数据中心SSD资格/封装瓶颈使高价值产品在总出货中的占比下降。",
+              "derivation": "行业服务器优先分配只决定上游紧张，不保证Micron捕获；当前HBM4主客户已有高量出货，但其他容量产品仍处于资格样品，按客户的合格量产和连续订单未披露。因而存在“行业需求强、公司实现ASP/组合不随之上升”的接口缺口。",
+              "citation": [
+                "【cite:O1】",
+                "【cite:O13】",
+                "【cite:O12】",
+                "【cite:O5】"
+              ],
+              "expected_revision": "下调Micron产品组合、实现ASP和毛利的高价值捕获假设，同时保留行业需求强的状态；若瓶颈只在某一平台，修订限于该平台而非全部DRAM/NAND。",
+              "recognition_criteria": "连续两个季度行业服务器/HBM需求或价格保持强势，但Micron高价值产品出货/收入占比或相关bit shipments下降，并有资格、封装或交付限制的公司证据。"
+            }
+          ]
+        },
+        {
+          "expectation_id": "HBM与AI平台商业采用",
+          "proposition": "HBM4及AI平台产品的资格样品和高量生产将转化为多个客户或平台的认证、持续序列商业出货与重复分配；合同数量、提货、收入确认和回款不属于本Unit。",
+          "horizon": "从当前产品导入到2027年及后续平台生命周期",
+          "state": {
+            "parameters": [
+              {
+                "parameter_id": "HBM4主客户平台商业阶段",
+                "definition": "Micron HBM4在已披露主客户或平台上的最高已实现阶段；保持样品、资格、量产和出货层级可比，不把阶段换算为订单、份额或收入。",
+                "value_type": "STAGE"
+              },
+              {
+                "parameter_id": "HBM4 36GB 12H与Vera Rubin供应阶段",
+                "definition": "Micron HBM4 36GB 12H及其面向NVIDIA Vera Rubin设计的产品阶段；保持特定规格和平台范围，不外推最终客户采购量。",
+                "value_type": "STAGE"
+              },
+              {
+                "parameter_id": "HBM4 48GB 16H客户资格阶段",
+                "definition": "Micron HBM4 48GB 16H产品向客户资格评估推进的阶段；保持特定规格和资格状态，不与量产或商业出货混用。",
+                "value_type": "STAGE"
+              },
+              {
+                "parameter_id": "AI平台化内存与SSD生产出货阶段",
+                "definition": "Micron面向AI/HPC平台的SOCAMM2、PCIe Gen6 SSD和大容量QLC SSD所处的生产或商业出货阶段；不推断客户规模或持续ASP。",
+                "value_type": "STAGE"
+              },
+              {
+                "parameter_id": "HBM4E量产时间",
+                "definition": "Micron HBM4E进入量产的公司路线图时间窗口；保持calendar-year窗口，不把计划当作已实现产量。",
+                "value_type": "TIME"
+              },
+              {
+                "parameter_id": "多客户多平台持续序列出货阶段",
+                "definition": "Micron HBM4及AI平台产品跨多个客户或平台的连续序列商业出货状态；区分单一主平台高量出货、资格样品和跨平台重复供货。",
+                "value_type": "STAGE"
+              },
+              {
+                "parameter_id": "AI客户架构与供给协作阶段",
+                "definition": "命名AI客户与Micron围绕AI内存/存储架构、供需和战略投资的协作阶段；保持协作与实际发货的边界。",
+                "value_type": "STAGE"
+              },
+              {
+                "parameter_id": "HBM4竞争商业化阶段",
+                "definition": "主要竞争供应商在HBM4/HBM4E上的已披露商业化阶段；用于观察行业竞争与客户资格压力，不转换为市场份额。",
+                "value_type": "STAGE"
+              }
+            ],
+            "values": [
+              {
+                "state_value_id": "HBM4主客户平台商业阶段—高量出货与多客户样品",
+                "parameter_id": "HBM4主客户平台商业阶段",
+                "source_role": "ACTUAL",
+                "value": {
+                  "stage": "面向主客户平台高量出货；多个终端客户并行处于资格样品阶段"
+                },
+                "previous_value": {
+                  "stage": "2025年披露的HBM4样品/资格推进阶段"
+                },
+                "time_scope": "2026年Q3产品与客户导入状态",
+                "as_of": "2026-06-25（FY26 Q3披露）",
+                "citation": [
+                  "【cite:O13】",
+                  "【cite:O12】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "HBM4 36GB 12H与Vera Rubin供应阶段—高量生产",
+                "parameter_id": "HBM4 36GB 12H与Vera Rubin供应阶段",
+                "source_role": "ACTUAL",
+                "value": {
+                  "stage": "高量生产/出货，产品面向NVIDIA Vera Rubin设计"
+                },
+                "previous_value": null,
+                "time_scope": "当前AI/HPC平台产品导入期",
+                "as_of": "2026-03（公司产品披露月份；具体日未标明）",
+                "citation": [
+                  "【cite:O12】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "HBM4 48GB 16H客户资格阶段—样品",
+                "parameter_id": "HBM4 48GB 16H客户资格阶段",
+                "source_role": "ACTUAL",
+                "value": {
+                  "stage": "已向客户送出资格样品"
+                },
+                "previous_value": null,
+                "time_scope": "当前HBM4产品资格期",
+                "as_of": "2026-06-25（FY26 Q3披露）",
+                "citation": [
+                  "【cite:O12】",
+                  "【cite:O13】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "AI平台化内存与SSD生产出货阶段—高量生产与商业出货",
+                "parameter_id": "AI平台化内存与SSD生产出货阶段",
+                "source_role": "ACTUAL",
+                "value": {
+                  "stage": "192GB SOCAMM2与PCIe Gen6 9650 SSD处于高量生产；245TB QLC SSD已开始商业出货"
+                },
+                "previous_value": null,
+                "time_scope": "当前AI/HPC产品导入期",
+                "as_of": "2026-06-25（FY26 Q3披露）",
+                "citation": [
+                  "【cite:O12】",
+                  "【cite:O14】",
+                  "【cite:O13】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "HBM4E量产时间—管理层路线图",
+                "parameter_id": "HBM4E量产时间",
+                "source_role": "MANAGEMENT",
+                "value": {
+                  "point": null,
+                  "start": "2027-01-01",
+                  "end": "2027-12-31",
+                  "precision": "calendar year 2027；公司预计量产"
+                },
+                "previous_value": null,
+                "time_scope": "calendar year 2027",
+                "as_of": "2026-06-25",
+                "citation": [
+                  "【cite:O13】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "多客户多平台持续序列出货阶段—尚未完整验证",
+                "parameter_id": "多客户多平台持续序列出货阶段",
+                "source_role": "ACTUAL",
+                "value": {
+                  "stage": "部分主客户平台已有高量出货；多终端客户的连续序列商业出货尚未披露"
+                },
+                "previous_value": null,
+                "time_scope": "截至FY26 Q3披露的产品商业化状态",
+                "as_of": "2026-06-25",
+                "citation": [
+                  "【cite:O13】",
+                  "【cite:O12】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "AI客户架构与供给协作阶段—Anthropic安排",
+                "parameter_id": "AI客户架构与供给协作阶段",
+                "source_role": "INDUSTRY_CHAIN",
+                "value": {
+                  "stage": "与Anthropic已进入AI内存/存储架构设计、供需协作与战略投资安排；数量和价格未披露"
+                },
+                "previous_value": null,
+                "time_scope": "多年期AI基础设施协作",
+                "as_of": "2026-06-22",
+                "citation": [
+                  "【cite:O15】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "HBM4竞争商业化阶段—Samsung与SK hynix",
+                "parameter_id": "HBM4竞争商业化阶段",
+                "source_role": "INDUSTRY_CHAIN",
+                "value": {
+                  "stage": "Samsung已宣布HBM4量产并向客户发货；SK hynix已向主要客户发送HBM4E样品"
+                },
+                "previous_value": null,
+                "time_scope": "2026年HBM4/HBM4E竞争产品阶段",
+                "as_of": "2026-06-18（截至该日已披露的竞争状态）",
+                "citation": [
+                  "【cite:O16】",
+                  "【cite:O17】"
+                ],
+                "validity_state": "CURRENT"
+              }
+            ]
+          },
+          "realization_factors": [
+            {
+              "factor_id": "HBM4资格向重复平台出货转换",
+              "condition": "HBM4及AI平台产品能否从主客户高量出货和多客户资格样品转为多个客户/平台的认证与连续序列商业出货？",
+              "structural_role": "REQUIRED",
+              "current_status": "HBM4面向主客户平台已高量出货，多个终端客户处于资格样品阶段；36GB 12H面向NVIDIA Vera Rubin设计已高量生产/出货，48GB 16H仍为资格样品，多客户连续出货尚未披露。",
+              "impact": "客户/平台资格是HBM商业采用的实际闸门，决定可分配产品能否重复供货；单一平台成功不能证明多客户覆盖、订单量或收入，资格延期会延迟或缩小采用。",
+              "citation": [
+                "【cite:O13】",
+                "【cite:O12】"
+              ],
+              "observability": {
+                "match_condition": "未来出现按客户/平台的资格通过、设计定点、连续序列出货和重复采购时确认跨平台采用；若仍为样品或仅单一平台出货则维持当前状态。"
+              }
+            },
+            {
+              "factor_id": "HBM先进封装与量产良率闸门",
+              "condition": "HBM先进封装、堆叠/测试和量产良率能否支持稳定节拍，而不是只支持单次样品或早期高量生产？",
+              "structural_role": "BLOCKER",
+              "current_status": "部分HBM及AI平台产品已披露高量生产，HBM4E预计2027年量产，新加坡先进封装预计2027年上半年扩大能力；按产品的良率、封装有效产能或HBM4E已实现量产未披露。",
+              "impact": "封装和良率是HBM从资格到重复供货的硬约束；产出不足会限制多平台分配、拉长认证和交付时间，使AI需求无法转换为Micron可交付份额。",
+              "citation": [
+                "【cite:O7】",
+                "【cite:O1】",
+                "【cite:O13】"
+              ],
+              "observability": {
+                "match_condition": "观察先进封装扩产、HBM4/HBM4E首批及连续出货、良率/测试通过率和季度有效产出；能力或良率延迟时维持瓶颈。"
+              }
+            },
+            {
+              "factor_id": "AI平台架构协作与竞争分配",
+              "condition": "AI客户/平台的架构协作能否转为Micron产品的多平台采用，同时抵御Samsung、SK hynix等竞争供应商的替代？",
+              "structural_role": "MODIFIER",
+              "current_status": "Micron与Anthropic已进入AI内存/存储架构、供需协作和战略投资安排，产品面向NVIDIA平台设计；数量、价格、最终认证和采购未披露，Samsung已有HBM4商业出货、SK hynix有HBM4E样品。",
+              "impact": "架构共验证可提高被选中和重复分配的概率并拓宽受益平台，但协作不是发货，竞争对手的认证/供给会改变客户分配、产品份额和采用节奏。",
+              "citation": [
+                "【cite:O15】",
+                "【cite:O12】",
+                "【cite:O16】",
+                "【cite:O17】"
+              ],
+              "observability": {
+                "match_condition": "出现命名平台认证、设计定点、客户部署、跨平台连续出货和竞争供给变化时更新采用广度；协作没有形成认证/出货或竞争替代增强则下调。"
+              }
+            }
+          ],
+          "potential_gaps": [
+            {
+              "gap_id": "HBM4E和新容量产品通过资格并进入多平台序列出货",
+              "possible_occurrence": "HBM4E量产后，HBM4 48GB 16H或其他AI平台内存产品通过至少两个客户/平台资格，并从样品转为连续序列商业出货。",
+              "derivation": "当前主客户平台已有HBM4高量出货，36GB 12H面向Vera Rubin已高量生产，48GB 16H仍为资格样品，HBM4E只是2027年路线图。若资格、封装和客户导入按期推进，当前单一/部分平台状态可扩大为多平台重复采用。",
+              "citation": [
+                "【cite:O13】",
+                "【cite:O12】",
+                "【cite:O7】"
+              ],
+              "expected_revision": "上调HBM/AI平台商业采用的广度、时间和重复性判断，将“样品/单一平台”更新为多平台序列出货；仍不等于合同数量、收入确认或回款已实现，后者留给合同Unit。",
+              "recognition_criteria": "至少两个命名客户或平台公开确认资格/设计定点，并在随后两个交付窗口出现可重复商业出货，而非仅送样、演示或单次高量生产。"
+            },
+            {
+              "gap_id": "HBM4E量产或先进封装可靠性延迟",
+              "possible_occurrence": "HBM4E量产时间晚于2027年路线图，或HBM堆叠、热管理、测试/可靠性问题使已送样产品无法按计划进入连续量产。",
+              "derivation": "HBM4E的时间仍是管理层路线图，按产品良率、封装有效产能和测试通过率未披露；新加坡先进封装也有后续扩能窗口。高带宽产品的技术导入可能在晶圆、封装或可靠性环节受阻，导致样品与商业供给之间出现时间缺口。",
+              "citation": [
+                "【cite:O13】",
+                "【cite:O7】",
+                "【cite:O1】"
+              ],
+              "expected_revision": "将HBM4E及相关AI平台的采用时间后移、规模下调，并降低多平台连续出货对FY27的贡献；其他已量产产品若未受影响，不把局部延迟扩大为全部AI产品失败。",
+              "recognition_criteria": "公司或客户明确将HBM4E量产/认证推迟出原路线图窗口，或连续交付中出现可靠性/测试失败、返工和有效产出不足；单次样品延期不够。"
+            },
+            {
+              "gap_id": "资格通过但重复分配转向竞争供应商",
+              "possible_occurrence": "Micron产品通过一个或多个AI平台资格，但客户在后续量产中提高Samsung、SK hynix或其他供应商的分配，Micron只保留低比例或非连续订单。",
+              "derivation": "当前Micron已有主客户平台高量出货和多客户样品，竞争对手同时推进HBM4/HBM4E量产或样品；资格本身不保证份额，客户可能以双供、价格、交付或良率重新分配。该事件直接检验“认证→重复分配”的中间步骤。",
+              "citation": [
+                "【cite:O13】",
+                "【cite:O16】",
+                "【cite:O17】",
+                "【cite:O12】"
+              ],
+              "expected_revision": "保留技术资格但下调多平台重复出货和Micron可捕获份额，重写受益者与时间路径；不把AI平台总需求下降归因给该事件。",
+              "recognition_criteria": "客户/平台公开或持续出货数据显示竞争供应商成为主要供货方，且Micron在至少两个交付周期的订单、出货或平台覆盖没有同步增长；单次双供不认定。"
+            },
+            {
+              "gap_id": "AI平台改用替代内存或降低HBM配置",
+              "possible_occurrence": "主要AI平台在下一代加速器或服务器架构中采用替代内存/封装方案，或降低单颗加速器的HBM堆叠容量与带宽配置。",
+              "derivation": "当前路线围绕HBM4、Vera Rubin和AI内存/存储架构协作展开，但架构合作不锁定最终部署形态；计算效率、片上缓存、CXL/分层内存或其他封装改进都可能改变HBM含量。该事件挑战“AI算力扩张必然带来HBM位数扩张”的模型。",
+              "citation": [
+                "【cite:O15】",
+                "【cite:O12】",
+                "【cite:O1】"
+              ],
+              "expected_revision": "下调HBM产品的单位平台需求、采用规模和平台生命周期预期，即使平台数量或AI算力仍增长；Micron仍可能在替代产品中供货，但原HBM4采用命题需缩小。",
+              "recognition_criteria": "至少一个主要平台公开量产规格或部署数据确认HBM容量/带宽较当前路线下降或被替代方案取代，并在Micron/行业出货结构中持续反映；单一技术演示不认定。"
+            },
+            {
+              "gap_id": "核心AI客户内化封装或延后平台部署",
+              "possible_occurrence": "一个主要AI客户将关键内存/封装环节内部化、改变供应链，或因平台部署延后而暂停原定的Micron产品导入。",
+              "derivation": "Micron与Anthropic等存在架构和供需协作安排，产品也面向NVIDIA平台设计，但客户身份、数量、价格和最终采购未披露；大型平台拥有重新设计、垂直整合和延迟部署的能力。该路径会使已投入的资格项目无法转为预期的重复平台。",
+              "citation": [
+                "【cite:O15】",
+                "【cite:O12】",
+                "【cite:O1】"
+              ],
+              "expected_revision": "下调受影响客户/平台的商业阶段和持续出货广度，重新评估多客户分散性；不得据此推断所有AI客户都会内化或整个市场需求消失。",
+              "recognition_criteria": "客户公开供应链/封装内化或平台延期决定，且随后至少一个原定产品资格、交付窗口或部署里程碑被取消、后移或替换。"
+            }
+          ]
+        },
+        {
+          "expectation_id": "服务器优先分配与内存行业供需",
+          "proposition": "服务器优先的DRAM/NAND产能分配与HBM需求将维持行业供需、合同价格和产品升级格局；若HBM需求转弱、消费端收缩、库存累积或供给释放，则传统产品回流和价格逆风将成为主要反转路径。",
+          "horizon": "FY26 Q4至FY27的内存行业周期与分配机制",
+          "state": {
+            "parameters": [
+              {
+                "parameter_id": "服务器优先内存分配证据状态",
+                "definition": "外部行业证据对AI/服务器相较PC和手机获得DRAM/NAND供给优先的当前支持状态；不等同于Micron单一客户订单。",
+                "value_type": "EVIDENCE"
+              },
+              {
+                "parameter_id": "3Q26传统DRAM行业合同价环比预测",
+                "definition": "TrendForce对3Q26 conventional DRAM合同价格相对上一季度的预测区间；保持行业合同价与季度环比口径，不与Micron实现ASP混用。",
+                "value_type": "RANGE"
+              },
+              {
+                "parameter_id": "3Q26 NAND Flash行业合同价环比预测",
+                "definition": "TrendForce对3Q26 NAND Flash合同价格相对上一季度的预测区间；保持行业合同价与季度环比口径，不与Micron实现ASP混用。",
+                "value_type": "RANGE"
+              },
+              {
+                "parameter_id": "Micron DRAM实现ASP同比变化",
+                "definition": "Micron报告的DRAM实现ASP相对上年同期的变化；保持前九个月、公司实现ASP和同比口径。",
+                "value_type": "NUMBER"
+              },
+              {
+                "parameter_id": "Micron NAND实现ASP同比变化",
+                "definition": "Micron报告的NAND实现ASP相对上年同期的变化；保持前九个月、公司实现ASP和同比口径。",
+                "value_type": "NUMBER"
+              },
+              {
+                "parameter_id": "最新报告季度数据中心业务收入占比",
+                "definition": "最新报告季度CMBU与CDBU合计收入占Micron合并收入的比例，按已报告业务单元收入计算；不代表外部市场份额。",
+                "value_type": "NUMBER"
+              },
+              {
+                "parameter_id": "HBM需求转弱与传统DRAM供给回流风险证据状态",
+                "definition": "公司对HBM需求转弱、供应回流传统DRAM并造成过剩的条件性风险证据状态；与当前服务器需求支持并列维护，不压缩为确定结论。",
+                "value_type": "EVIDENCE"
+              }
+            ],
+            "values": [
+              {
+                "state_value_id": "服务器优先内存分配证据—行业支持但消费端承压",
+                "parameter_id": "服务器优先内存分配证据状态",
+                "source_role": "INDUSTRY_CHAIN",
+                "value": {
+                  "stance": "SUPPORTING",
+                  "strength": "MODERATE"
+                },
+                "previous_value": null,
+                "time_scope": "3Q26行业供需与终端分配判断",
+                "as_of": "3Q26行业预测（原始发布时间及截至截止时点的历史版本未独立建立）",
+                "citation": [
+                  "【cite:O4】",
+                  "【cite:O5】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "3Q26传统DRAM行业合同价环比预测—13至18%",
+                "parameter_id": "3Q26传统DRAM行业合同价环比预测",
+                "source_role": "INDUSTRY_CHAIN",
+                "value": {
+                  "lower": 13.0,
+                  "upper": 18.0,
+                  "unit": "PERCENT_QOQ"
+                },
+                "previous_value": null,
+                "time_scope": "3Q26相对2Q26",
+                "as_of": "3Q26行业预测（原始发布时间未标明）",
+                "citation": [
+                  "【cite:O5】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "3Q26 NAND Flash行业合同价环比预测—10至15%",
+                "parameter_id": "3Q26 NAND Flash行业合同价环比预测",
+                "source_role": "INDUSTRY_CHAIN",
+                "value": {
+                  "lower": 10.0,
+                  "upper": 15.0,
+                  "unit": "PERCENT_QOQ"
+                },
+                "previous_value": null,
+                "time_scope": "3Q26相对2Q26",
+                "as_of": "3Q26行业预测（原始发布时间未标明）",
+                "citation": [
+                  "【cite:O5】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "Micron DRAM实现ASP同比变化—前九个月约140%",
+                "parameter_id": "Micron DRAM实现ASP同比变化",
+                "source_role": "ACTUAL",
+                "value": {
+                  "number": 140.0,
+                  "unit": "PERCENT_YOY"
+                },
+                "previous_value": null,
+                "time_scope": "FY26前九个月相对FY25前九个月",
+                "as_of": "2026-06-25（报告发布；财务期末2026-05-28）",
+                "citation": [
+                  "【cite:O19】",
+                  "【cite:O1】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "Micron NAND实现ASP同比变化—前九个月约130%",
+                "parameter_id": "Micron NAND实现ASP同比变化",
+                "source_role": "ACTUAL",
+                "value": {
+                  "number": 130.0,
+                  "unit": "PERCENT_YOY"
+                },
+                "previous_value": null,
+                "time_scope": "FY26前九个月相对FY25前九个月",
+                "as_of": "2026-06-25（报告发布；财务期末2026-05-28）",
+                "citation": [
+                  "【cite:O19】",
+                  "【cite:O1】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "最新报告季度数据中心业务收入占比—行业分配接口",
+                "parameter_id": "最新报告季度数据中心业务收入占比",
+                "source_role": "ACTUAL",
+                "value": {
+                  "number": 61.0,
+                  "unit": "PERCENT_OF_CONSOLIDATED_REVENUE"
+                },
+                "previous_value": null,
+                "time_scope": "FY26 Q3单季度（CMBU+CDBU收入/合并收入，约值）",
+                "as_of": "2026-06-25（报告发布；财务期末2026-05-28）",
+                "citation": [
+                  "【cite:O1】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "HBM需求转弱与传统DRAM供给回流风险—条件性混合证据",
+                "parameter_id": "HBM需求转弱与传统DRAM供给回流风险证据状态",
+                "source_role": "MANAGEMENT",
+                "value": {
+                  "stance": "MIXED",
+                  "strength": "MODERATE"
+                },
+                "previous_value": null,
+                "time_scope": "FY26 Q3风险披露与3Q26行业供需窗口",
+                "as_of": "2026-06-25",
+                "citation": [
+                  "【cite:O18】",
+                  "【cite:O5】"
+                ],
+                "validity_state": "CURRENT"
+              }
+            ]
+          },
+          "realization_factors": [
+            {
+              "factor_id": "AI服务器优先分配持续",
+              "condition": "AI训练/推理和数据中心需求是否足以使DRAM/NAND/HBM供给继续优先分配给服务器，而非转回PC/手机？",
+              "structural_role": "REQUIRED",
+              "current_status": "TrendForce对3Q26支持服务器优先、PC/手机受高价格压制的判断为中等强度外部证据；Micron Q3数据中心业务约占合并收入61%，但行业预测不是Micron单一客户订单或份额。",
+              "impact": "服务器优先先改变晶圆、封装、交期和行业合同价，再影响Micron的产品组合和可出货位数；若AI需求放缓，行业分配机制会反向改变并削弱当前价格格局。",
+              "citation": [
+                "【cite:O4】",
+                "【cite:O5】",
+                "【cite:O1】"
+              ],
+              "observability": {
+                "match_condition": "连续行业与公司数据显示服务器产品获得较高容量和交期优先、CMBU/CDBU占比及出货维持时确认；服务器需求或分配优势消退时更新。"
+              }
+            },
+            {
+              "factor_id": "HBM需求转弱与消费库存触发供给回流",
+              "condition": "HBM/AI需求转弱、PC/手机高价格收缩或渠道库存累积是否会把供给回流传统DRAM/NAND并造成价格逆风？",
+              "structural_role": "BLOCKER",
+              "current_status": "Micron风险披露明确存在HBM需求转弱后供应回到conventional DRAM而导致过剩的条件性路径；TrendForce指出消费端价格承受力下降，但没有统一有效产能、利用率或库存序列，当前证据是混合而非已发生反转。",
+              "impact": "这是行业供需命题的主要反转机制：回流和库存会压低合同价、利用率和传统产品组合，随后传到Micron实现ASP和盈利；未观察到库存不等于库存为零。",
+              "citation": [
+                "【cite:O18】",
+                "【cite:O5】",
+                "【cite:O4】"
+              ],
+              "observability": {
+                "match_condition": "出现HBM需求/订单削弱、传统DRAM/NAND有效供给增加、渠道库存上升、利用率下降及合同价转跌的组合信号时确认反转；仅有消费端压力时维持混合状态。"
+              }
+            },
+            {
+              "factor_id": "行业分配传导至Micron业务组合",
+              "condition": "行业服务器优先的分配是否实际传导为Micron CMBU/CDBU的可交付出货和产品组合，而非只停留在行业叙事？",
+              "structural_role": "MODIFIER",
+              "current_status": "Micron已披露CMBU/CDBU合计约占FY26 Q3收入61%，并有HBM、SOCAMM2和Gen6 SSD等平台产品阶段；按有效产能、利用率、客户库存和服务器/消费分配量未披露。",
+              "impact": "该接口决定行业供需改善由谁捕获及捕获多少；即使服务器行业紧张，Micron若受资格、封装或产能限制也不能等比例受益，消费回流也会改变其组合和价格。",
+              "citation": [
+                "【cite:O1】",
+                "【cite:O20】",
+                "【cite:O5】"
+              ],
+              "observability": {
+                "match_condition": "把CMBU/CDBU与MCBU的收入、bit shipments、产品组合、交期和有效利用率与行业分配变化对照；公司出货和组合随服务器优先同步时确认传导。"
+              }
+            }
+          ],
+          "potential_gaps": [
+            {
+              "gap_id": "服务器优先分配进一步强化并延长",
+              "possible_occurrence": "FY26 Q4至FY27，行业有效产能持续优先配置给AI服务器、HBM和数据中心SSD，传统消费端供给保持受限，行业合同价与服务器产品升级继续上行。",
+              "derivation": "当前行业证据支持服务器优先，Micron FY26 Q3 CMBU/CDBU约占合并收入61%，但供需、库存和有效产能序列仍不完整。若AI训练/推理需求继续快于增供，分配机制可能比当前基线更持久，并把价格上涨从短期冲击延长为行业周期。",
+              "citation": [
+                "【cite:O4】",
+                "【cite:O5】",
+                "【cite:O1】"
+              ],
+              "expected_revision": "上调服务器优先分配、行业价格和高价值产品组合的持续时间，并提高对Micron数据中心接口的正向权重；仍不能仅凭行业价格证明Micron获得全部增量或长期现金回报。",
+              "recognition_criteria": "连续两个行业/公司观察窗口同时显示服务器/HBM获得更短交期或更高容量优先、消费供给受限、合同价未结构性下跌，且Micron数据中心组合未同步恶化。"
+            },
+            {
+              "gap_id": "HBM订单削弱并触发传统供给回流",
+              "possible_occurrence": "AI/HBM需求或订单在FY27出现明显削弱，叠加PC/手机高价收缩或客户库存累积，行业供给回流传统DRAM/NAND。",
+              "derivation": "公司风险披露本身包含“HBM需求转弱后供应回到传统DRAM并造成过剩”的条件路径，行业研究也提示消费端价格承受力下降；当前尚未有统一库存和利用率序列，因此这是未实现但高影响的反转可能性。",
+              "citation": [
+                "【cite:O18】",
+                "【cite:O4】",
+                "【cite:O5】"
+              ],
+              "expected_revision": "把行业供需状态从服务器优先/紧平衡改为分配优势消退或传统产品过剩，继而下调合同价、Micron实现ASP和FY27产品组合；需按实际出现的需求、库存和供给信号更新，不把单一消费疲弱先验化为全面反转。",
+              "recognition_criteria": "出现HBM/AI客户订单削减或部署延后、传统DRAM/NAND有效供给增加、客户/渠道库存上升及行业合同价转跌中的至少三项组合信号。"
+            },
+            {
+              "gap_id": "竞争或中国成熟节点供给超预期释放",
+              "possible_occurrence": "竞争对手扩产、良率提升或中国供应商在传统DRAM/NAND市场的可用供给超出行业预期，令供需平衡提前转松。",
+              "derivation": "当前行业预测仍处于价格上涨但涨幅放缓的状态，竞争供应商已展示HBM4/HBM4E推进，公司的风险披露也承认供给反应可能改变周期。新增供给未必需要削弱AI需求，只要先进入传统产品或替代市场，就可能改变行业边际价格。",
+              "citation": [
+                "【cite:O18】",
+                "【cite:O5】",
+                "【cite:O16】",
+                "【cite:O17】"
+              ],
+              "expected_revision": "提前下调行业紧张持续期和传统产品价格，重估服务器优先分配能否抵消供给释放；Micron的产品资格和经营执行仍可成立，但行业层面的高价假设不再稳固。",
+              "recognition_criteria": "行业公开数据显示竞争/中国供应商的合格产能和出货连续增加，并同时观察到传统产品合同价、客户库存或供给分配由紧转松；公告产能而无可用出货不认定。"
+            },
+            {
+              "gap_id": "区域政策或出口限制打破统一行业分配",
+              "possible_occurrence": "新的出口限制、关税、制裁或区域化政策改变AI服务器与内存的跨境采购资格，使供给被迫在地区间重新路由并形成局部库存或短缺。",
+              "derivation": "当前价值链依赖多地区晶圆、封装、客户平台和跨境供应，供需判断假设行业供给可以按服务器优先分配；政策冲击可能同时改变可服务客户、运输和库存位置，进入现有需求—供给模型之外。",
+              "citation": [
+                "【cite:O21】",
+                "【cite:O1】",
+                "【cite:O7】"
+              ],
+              "expected_revision": "将行业供需和分配假设改为区域化情景，分别重估可供Micron销售的位数、客户组合和ASP；政策事件不自动证明全球需求变化，需区分需求损失与物流/合规转移。",
+              "recognition_criteria": "出现正式政策生效或客户合规通知，且导致跨境内存/服务器采购许可、交付路线或库存位置发生可验证变化，并持续影响至少一个报告季度。"
+            },
+            {
+              "gap_id": "行业价格强劲但Micron未捕获服务器优先红利",
+              "possible_occurrence": "行业服务器/HBM合同价和需求仍然强劲，但Micron因客户资格、先进封装、晶圆或交付能力不足，其数据中心出货和实现ASP明显落后于行业。",
+              "derivation": "行业分配是上游条件，不是Micron份额；公司当前已披露部分AI产品高量生产、部分产品仍为样品，且有效产能/客户份额未完整披露。若瓶颈落在Micron自身，行业叙事会与公司实现结果分叉。",
+              "citation": [
+                "【cite:O1】",
+                "【cite:O13】",
+                "【cite:O12】",
+                "【cite:O5】"
+              ],
+              "expected_revision": "下调“服务器优先→Micron产品组合改善”的传导系数，把问题定位为公司捕获和执行，而非行业需求；不应因为行业价格强就维持Micron收入或毛利率原假设。",
+              "recognition_criteria": "至少两个连续季度行业合同价/服务器需求维持强势，但Micron CMBU/CDBU占比、相关bit shipments或实现ASP下降，并有资格、封装或交付约束的公司证据。"
+            }
+          ]
+        },
+        {
+          "expectation_id": "战略内存合同商业兑现",
+          "proposition": "战略客户多年期take-or-pay及AI内存安排将通过存款到账、数量和价格条款可执行、按约提货与发运、收入确认和回款，形成FY27及以后可验证的多年度商业收入与现金兑现；它是盈利持续性的条件支撑，不等同于已确认收入。",
+          "horizon": "FY26 Q4起至FY27及以后合同履约、发运和回款周期",
+          "state": {
+            "parameters": [
+              {
+                "parameter_id": "战略客户协议结构与条款阶段",
+                "definition": "Micron已披露的多年期战略内存客户协议的合同结构阶段；保持take-or-pay、特定数量及固定价/价格上下限等条款层级，不把协议承诺当作已确认收入。",
+                "value_type": "STAGE"
+              },
+              {
+                "parameter_id": "战略客户协议财务承诺总额",
+                "definition": "截至公司披露时已达成战略客户协议对应的现金存款及相关财务承诺总额；保持承诺金额口径，不与已收现金或已确认收入混用。",
+                "value_type": "NUMBER"
+              },
+              {
+                "parameter_id": "战略客户协议现金存款承诺",
+                "definition": "截至公司披露时已达成战略客户协议对应的现金存款承诺金额；保持客户存款承诺口径，不与实际到账混用。",
+                "value_type": "NUMBER"
+              },
+              {
+                "parameter_id": "战略客户协议财务转换阶段",
+                "definition": "战略内存协议从条款/承诺转为实际存款到账、按约提货、发运、收入确认和回款的当前阶段；保持合同履约与财务确认边界。",
+                "value_type": "STAGE"
+              },
+              {
+                "parameter_id": "价格区间合同支持高毛利的管理层证据状态",
+                "definition": "管理层关于带价格区间的战略内存协议即使按底价仍支持高于历史峰值季度毛利率的证据状态；不把该表述当作已实现毛利。",
+                "value_type": "EVIDENCE"
+              }
+            ],
+            "values": [
+              {
+                "state_value_id": "战略客户协议结构与条款阶段—多年期take-or-pay",
+                "parameter_id": "战略客户协议结构与条款阶段",
+                "source_role": "ACTUAL",
+                "value": {
+                  "stage": "已披露多年期take-or-pay并绑定特定数量；多数协议含固定价或价格上下限"
+                },
+                "previous_value": null,
+                "time_scope": "多年期战略内存协议",
+                "as_of": "2026-06-24",
+                "citation": [
+                  "【cite:O1】",
+                  "【cite:O6】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "战略客户协议财务承诺总额—约220亿美元",
+                "parameter_id": "战略客户协议财务承诺总额",
+                "source_role": "ACTUAL",
+                "value": {
+                  "number": 22.0,
+                  "unit": "USD_BILLIONS"
+                },
+                "previous_value": null,
+                "time_scope": "截至披露时已达成协议的多年期承诺",
+                "as_of": "2026-06-24",
+                "citation": [
+                  "【cite:O1】",
+                  "【cite:O6】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "战略客户协议现金存款承诺—约180亿美元",
+                "parameter_id": "战略客户协议现金存款承诺",
+                "source_role": "ACTUAL",
+                "value": {
+                  "number": 18.0,
+                  "unit": "USD_BILLIONS"
+                },
+                "previous_value": null,
+                "time_scope": "截至披露时已达成协议的多年期承诺",
+                "as_of": "2026-06-24",
+                "citation": [
+                  "【cite:O1】",
+                  "【cite:O6】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "战略客户协议财务转换阶段—承诺已披露但逐项履约未验证",
+                "parameter_id": "战略客户协议财务转换阶段",
+                "source_role": "ACTUAL",
+                "value": {
+                  "stage": "合同承诺和存款规模已披露；各协议存款到账、按约提货、发运、收入确认及回款尚未逐项公开验证"
+                },
+                "previous_value": null,
+                "time_scope": "FY26 Q4起至FY27及以后合同履约周期",
+                "as_of": "2026-06-24",
+                "citation": [
+                  "【cite:O1】",
+                  "【cite:O6】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "价格区间合同支持高毛利—管理层正面但未实现验证",
+                "parameter_id": "价格区间合同支持高毛利的管理层证据状态",
+                "source_role": "MANAGEMENT",
+                "value": {
+                  "stance": "SUPPORTING",
+                  "strength": "MODERATE"
+                },
+                "previous_value": null,
+                "time_scope": "多年期价格区间协议的前瞻毛利假设",
+                "as_of": "2026-06-24",
+                "citation": [
+                  "【cite:O1】",
+                  "【cite:O6】"
+                ],
+                "validity_state": "CURRENT"
+              }
+            ]
+          },
+          "realization_factors": [
+            {
+              "factor_id": "take-or-pay量价条款可执行",
+              "condition": "战略客户的take-or-pay数量、固定价或价格上下限能否在需求变化时保持可执行并约束实际提货与价格？",
+              "structural_role": "REQUIRED",
+              "current_status": "公司披露多年期take-or-pay并绑定特定数量，多数协议含固定价或价格上下限，相关协议承诺约220亿美元、现金存款承诺约180亿美元；客户身份、逐项条款、价格上限作用和合同变更未完整披露。",
+              "impact": "可执行条款是把需求可见度转成可计划供给和收入的合同闸门；价格区间减少现货波动但可能限制上行，若客户不提货、条款受条件约束或集中度过高，商业兑现弱于名义承诺。",
+              "citation": [
+                "【cite:O1】",
+                "【cite:O6】"
+              ],
+              "observability": {
+                "match_condition": "后续合同附注确认合同负债、客户存款、价格带、交付义务和实际提货与回款与原承诺一致时确认；若修订、延期、取消或提货不足则更新。"
+              }
+            },
+            {
+              "factor_id": "产品资格与可交付产能支持合同发运",
+              "condition": "合同对应的HBM/DRAM/NAND产品能否完成客户资格并由有足够良率和封装能力的产线按期发运？",
+              "structural_role": "BLOCKER",
+              "current_status": "Micron已披露部分HBM4、AI平台产品高量生产/出货和其他产品资格样品，但战略协议未逐项披露对应产品、客户、数量和发货窗口；扩产与封装能力仍按里程碑推进。",
+              "impact": "资格、产能和发运是承诺转为收入确认的连续执行链；任一环节延迟都会使合同可见度留在未兑现状态，收入时点和客户回款后移。",
+              "citation": [
+                "【cite:O1】",
+                "【cite:O13】",
+                "【cite:O12】"
+              ],
+              "observability": {
+                "match_condition": "观察合同产品的资格通过、计划/实际发运、连续交付、收入确认和对应客户提货；合同仍无产品/数量或出现资格/产能延期时维持未验证。"
+              }
+            },
+            {
+              "factor_id": "客户存款与回款完成财务转换",
+              "condition": "客户存款承诺能否实际到账，并随发运和收入确认转为可收回现金，而非仅作为前置资金或合同负债？",
+              "structural_role": "REQUIRED",
+              "current_status": "管理层把约180亿美元现金存款承诺及客户存款列为扩产/运营资金来源，但没有逐项证明全部到账、对应交付义务、收入确认和回款节奏；应收账款已对经营现金流形成显著占用。",
+              "impact": "这决定合同商业兑现是否同时改善收入可见度和现金；存款可能受条件、交付或退款义务约束，未到账或回款慢会使合同无法支撑FY27以后现金兑现。",
+              "citation": [
+                "【cite:O1】",
+                "【cite:O6】",
+                "【cite:O2】"
+              ],
+              "observability": {
+                "match_condition": "后续资产负债表、合同负债/存款、发货、收入、应收回款和经营现金流能按期对接时确认；若存款未到账、收入未确认或回款延迟则更新。"
+              }
+            }
+          ],
+          "potential_gaps": [
+            {
+              "gap_id": "战略协议存款到账并按期转为多季度发运",
+              "possible_occurrence": "战略客户按协议支付现金存款并提取已约定的HBM/DRAM/NAND产品，Micron在FY26 Q4至FY27连续确认相关发运和收入。",
+              "derivation": "公司披露多年期take-or-pay、特定数量、固定价或价格上下限，以及约220亿美元承诺和约180亿美元现金存款承诺；但逐项到账、产品、客户和收入确认尚未验证。若资格、产能和提货同步，名义可见度可转成可观察的合同履约。",
+              "citation": [
+                "【cite:O1】",
+                "【cite:O6】",
+                "【cite:O13】"
+              ],
+              "expected_revision": "上调合同收入可见度、履约持续期和对盈利平台的支撑，把承诺从未验证阶段更新为部分已兑现；仍不能把已收存款或单次发运等同于全部多年期收入、毛利或终端需求已锁定。",
+              "recognition_criteria": "后续资产负债表/合同附注明确客户存款或合同负债到账，并在至少两个后续报告窗口同时出现合同产品资格、按期发运、收入确认和客户提货。"
+            },
+            {
+              "gap_id": "客户延迟提货并重谈或取消协议",
+              "possible_occurrence": "一个或多个战略客户因AI部署、库存或价格变化延迟提货、要求重谈数量/价格，或终止原定的部分take-or-pay安排。",
+              "derivation": "当前合同条款和金额由管理层披露，但客户身份、实际提货义务、集中度和条款例外未逐项公开；take-or-pay提供可见度却不能排除客户履约、破产、重组或合同修改风险。若需求变化先发生，承诺量可能不能按原时间表兑现。",
+              "citation": [
+                "【cite:O1】",
+                "【cite:O6】"
+              ],
+              "expected_revision": "下调合同数量转为FY27收入和现金的速度与确定性，并重新评估客户集中度、价格上限和可能的退款/合同负债；不能把一份协议变化外推为全部战略客户失败。",
+              "recognition_criteria": "正式公告、合同附注或财报显示提货/数量/价格被延期、取消或重谈，并在后续交付窗口出现未提货、合同负债下降或退款/减值等配套证据。"
+            },
+            {
+              "gap_id": "合同产品资格或产能延迟导致收入后移",
+              "possible_occurrence": "战略协议所对应的HBM/DRAM/NAND产品未在合同窗口完成资格，或晶圆/先进封装有效产能不足，导致约定发运被推迟。",
+              "derivation": "当前协议未按客户、产品、数量和发货窗口拆分；与此同时部分高价值产品仍为资格样品，扩产和先进封装按项目里程碑推进。合同可执行性因此依赖产品资格、良率和交付能力，而不是只依赖签约金额。",
+              "citation": [
+                "【cite:O1】",
+                "【cite:O13】",
+                "【cite:O12】",
+                "【cite:O7】"
+              ],
+              "expected_revision": "将合同从“可见收入”更新为“受资格/产能条件约束的潜在收入”，把确认时间后移并降低FY27盈利可见度；若仅单一产品延迟，其他合同部分仍需单独保留。",
+              "recognition_criteria": "同一协议的计划发货窗口过去后仍无连续交付，且公司/客户披露资格、良率、封装或供给为延期原因；仅项目时间表改变而没有合同发运影响不认定。"
+            },
+            {
+              "gap_id": "价格区间合同被重置为较低价格或让利",
+              "possible_occurrence": "战略客户通过合同重谈、价格上限触发或采购集中度谈判，把原固定价/价格区间重置为较低ASP，或要求额外折扣和服务让利。",
+              "derivation": "公司称多数协议含固定价或价格上下限，并预期即使按底价也有较高毛利；但价格区间的具体上限、成本承担和客户议价权未披露。若供给增加或客户双供，合同可见数量可能保留而利润弹性下降。",
+              "citation": [
+                "【cite:O1】",
+                "【cite:O6】",
+                "【cite:O16】"
+              ],
+              "expected_revision": "保留部分收入可见度但下调合同ASP、毛利率和EPS贡献，明确数量兑现不等于当前高毛利兑现；该事件不自动否定合同交付本身。",
+              "recognition_criteria": "合同附注、公司指引或实际发票/ASP显示价格带下移、折扣扩大或客户获得重谈条款，并连续影响至少一个交付周期。"
+            },
+            {
+              "gap_id": "客户存款到账但被交付义务和退款约束",
+              "possible_occurrence": "客户存款或合同负债增加，但因未交付、验收、退款权或违约赔付条款长期留存，未在相应期间转为收入和可自由支配的经营现金。",
+              "derivation": "管理层把约180亿美元现金存款承诺视为扩产和运营资金来源，但当前没有逐项证明到账、履约、收入确认和回款关系；合同存款可以改善时点流动性，也可能伴随严格交付义务。这个候选区分“现金收到”与“商业兑现完成”。",
+              "citation": [
+                "【cite:O1】",
+                "【cite:O6】",
+                "【cite:O2】"
+              ],
+              "expected_revision": "将合同对FY27收入和现金的支撑拆成受限资金/递延收入，降低其对可持续盈利的直接证明力；只有在交付和结算同时发生时才上调兑现判断。",
+              "recognition_criteria": "资产负债表显示存款/合同负债上升，但后续至少一个报告窗口收入确认、发运或应收结算没有相应增加，且附注披露验收、退款、交付或赔付义务。"
+            }
+          ]
+        },
+        {
+          "expectation_id": "制造效率与良率规模效应",
+          "proposition": "现有及成熟制造环节的效率、良率和规模效应将持续改善单位成本与收入到营业利润的转换，使利润率改善不只依赖短期ASP或产品组合。",
+          "horizon": "FY26 Q4至FY27的季度制造、成本和利润率验证期",
+          "state": {
+            "parameters": [
+              {
+                "parameter_id": "合并季度GAAP毛利率",
+                "definition": "Micron合并单季度GAAP毛利率；保持合并、单季和GAAP口径，不与非GAAP毛利率或业务单元营业利润率混用。",
+                "value_type": "NUMBER"
+              },
+              {
+                "parameter_id": "合并季度GAAP营业利润",
+                "definition": "Micron合并单季度GAAP营业利润，以报告货币计；保持单季与GAAP口径，不把营业利润金额当作营业利润率。",
+                "value_type": "NUMBER"
+              },
+              {
+                "parameter_id": "制造成本下降与强执行对毛利改善证据状态",
+                "definition": "公司关于制造成本下降和强执行支持最新季度毛利改善的可更新证据状态；不把公司归因当作产品级成本桥。",
+                "value_type": "EVIDENCE"
+              },
+              {
+                "parameter_id": "有利产品组合对毛利改善证据状态",
+                "definition": "公司关于有利产品组合支持最新季度毛利改善的可更新证据状态；保持组合归因与价格归因的区分。",
+                "value_type": "EVIDENCE"
+              },
+              {
+                "parameter_id": "FY26 Q3研发费用同比变化",
+                "definition": "Micron研发费用相对上年同期的报告变化；保持单季度同比口径，用于观察资格开发投入对利润转换的抵消或支持。",
+                "value_type": "NUMBER"
+              },
+              {
+                "parameter_id": "FY26 Q4管理层GAAP毛利率指引",
+                "definition": "Micron管理层针对FY26 Q4合并GAAP毛利率的正式指引点估计；不含非GAAP调整。",
+                "value_type": "NUMBER"
+              }
+            ],
+            "values": [
+              {
+                "state_value_id": "合并季度GAAP毛利率—制造效率验证锚点—FY26 Q3",
+                "parameter_id": "合并季度GAAP毛利率",
+                "source_role": "ACTUAL",
+                "value": {
+                  "number": 85.0,
+                  "unit": "PERCENT_GAAP"
+                },
+                "previous_value": {
+                  "number": 74.0,
+                  "unit": "PERCENT_GAAP"
+                },
+                "time_scope": "FY26 Q3单季度（截至2026-05-28；比较FY26 Q2）",
+                "as_of": "2026-06-25（报告发布；财务期末2026-05-28）",
+                "citation": [
+                  "【cite:O1】",
+                  "【cite:O2】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "合并季度GAAP营业利润—实际—FY26 Q3",
+                "parameter_id": "合并季度GAAP营业利润",
+                "source_role": "ACTUAL",
+                "value": {
+                  "number": 33.318,
+                  "unit": "USD_BILLIONS"
+                },
+                "previous_value": {
+                  "number": 16.135,
+                  "unit": "USD_BILLIONS"
+                },
+                "time_scope": "FY26 Q3单季度（截至2026-05-28；比较FY26 Q2）",
+                "as_of": "2026-06-25（报告发布；财务期末2026-05-28）",
+                "citation": [
+                  "【cite:O1】",
+                  "【cite:O2】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "制造成本下降与强执行—公司归因证据",
+                "parameter_id": "制造成本下降与强执行对毛利改善证据状态",
+                "source_role": "ACTUAL",
+                "value": {
+                  "stance": "SUPPORTING",
+                  "strength": "MODERATE"
+                },
+                "previous_value": null,
+                "time_scope": "FY26 Q3毛利改善归因",
+                "as_of": "2026-06-25",
+                "citation": [
+                  "【cite:O1】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "有利产品组合—公司归因证据",
+                "parameter_id": "有利产品组合对毛利改善证据状态",
+                "source_role": "ACTUAL",
+                "value": {
+                  "stance": "SUPPORTING",
+                  "strength": "MODERATE"
+                },
+                "previous_value": null,
+                "time_scope": "FY26 Q3毛利改善归因",
+                "as_of": "2026-06-25",
+                "citation": [
+                  "【cite:O1】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "FY26 Q3研发费用同比变化—开发与预资格投入",
+                "parameter_id": "FY26 Q3研发费用同比变化",
+                "source_role": "ACTUAL",
+                "value": {
+                  "number": 36.0,
+                  "unit": "PERCENT_YOY"
+                },
+                "previous_value": null,
+                "time_scope": "FY26 Q3相对FY25 Q3",
+                "as_of": "2026-06-25",
+                "citation": [
+                  "【cite:O1】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "FY26 Q4管理层GAAP毛利率指引—效率验证锚点",
+                "parameter_id": "FY26 Q4管理层GAAP毛利率指引",
+                "source_role": "MANAGEMENT",
+                "value": {
+                  "number": 86.0,
+                  "unit": "PERCENT_GAAP"
+                },
+                "previous_value": null,
+                "time_scope": "FY26 Q4单季度",
+                "as_of": "2026-06-24",
+                "citation": [
+                  "【cite:O2】"
+                ],
+                "validity_state": "CURRENT"
+              }
+            ]
+          },
+          "realization_factors": [
+            {
+              "factor_id": "稳定良率与单位制造成本下降",
+              "condition": "制造成本下降和良率改善能否在成熟及量产环节重复，使单位成本继续下降而不依赖短期ASP？",
+              "structural_role": "REQUIRED",
+              "current_status": "公司将FY26 Q3毛利改善部分归因于强执行和制造成本下降，合并GAAP毛利率升至85%；但没有按产品披露良率、单位成本、返工或成本桥，当前支持为方向性而非充分量化验证。",
+              "impact": "良率、吞吐和单位成本把可售bit shipments转换为毛利和营业利润，是价格之外的核心路径；若收益不可重复，ASP回落时利润率会更快压缩。",
+              "citation": [
+                "【cite:O1】"
+              ],
+              "observability": {
+                "match_condition": "连续季度显示单位成本、良率、合格产出和折旧吸收改善，并与GAAP毛利率/营业利润同步时确认；成本或良率恶化时更新。"
+              }
+            },
+            {
+              "factor_id": "量产规模吸收固定制造成本",
+              "condition": "成熟和新增产线能否达到足够利用率与稳定吞吐，以把固定制造、折旧和封装成本摊薄？",
+              "structural_role": "MODIFIER",
+              "current_status": "FY26 Q3利润率显著改善且公司继续扩大PPE投入，但未提供统一工厂利用率、有效产能或产品级折旧吸收序列；扩产项目仍存在设备、良率和需求错配风险。",
+              "impact": "规模效应改变利润率和现金转换效率，不单独决定是否有需求；低利用率、爬坡或需求回落会抬高单位成本，抵消ASP和有利组合带来的增量利润。",
+              "citation": [
+                "【cite:O1】",
+                "【cite:O18】"
+              ],
+              "observability": {
+                "match_condition": "观察各制造节点利用率、wafer starts/wafer-out、封装吞吐、单位折旧/制造成本和业务单元毛利；产量增加且单位固定成本下降时确认。"
+              }
+            },
+            {
+              "factor_id": "产品组合与资格研发投入的利润权衡",
+              "condition": "高价值产品组合和技术资格投入带来的长期毛利改善，能否超过其研发、预资格晶圆和导入期成本？",
+              "structural_role": "MODIFIER",
+              "current_status": "公司称FY26 Q3有利组合支持毛利改善，同时研发费用同比增加36%，主要因开发/预资格晶圆量和员工薪酬上升；产品级组合利润贡献和资格转量产效率尚未披露。",
+              "impact": "组合可提高每位收入和毛利，但研发与预资格支出可能先压低营业利润，资格失败或导入延迟会使成本先发生而收入后移。",
+              "citation": [
+                "【cite:O1】",
+                "【cite:O13】"
+              ],
+              "observability": {
+                "match_condition": "将产品/业务单元组合、研发/预资格投入、资格通过、单位成本和毛利桥联动观察；高价值产品连续量产且增量利润覆盖投入时确认。"
+              }
+            }
+          ],
+          "potential_gaps": [
+            {
+              "gap_id": "良率和单位成本改善在ASP放缓时仍延续",
+              "possible_occurrence": "FY27制造良率、吞吐和单位成本连续改善，固定制造成本吸收增强，即使DRAM/NAND ASP增速放缓，GAAP毛利率和营业利润仍保持高位。",
+              "derivation": "公司把Q3毛利改善部分归因于强执行和制造成本下降，但尚无产品级成本桥或良率序列；高价之外若效率收益得到连续验证，就能支持利润改善并非纯价格峰值。扩产和高价值产品量产提供了学习曲线和规模效应的可能路径。",
+              "citation": [
+                "【cite:O1】",
+                "【cite:O13】",
+                "【cite:O12】"
+              ],
+              "expected_revision": "上调制造效率对利润持续性的贡献，降低对ASP持续大涨的依赖；仍不能由公司级毛利改善单独推断每个工厂或产品的单位成本都下降。",
+              "recognition_criteria": "至少两个季度同时披露或可由结果验证良率/合格产出、单位制造成本或固定成本吸收改善，并与GAAP毛利率/营业利润同步，且ASP不再是唯一上行来源。"
+            },
+            {
+              "gap_id": "良率返工和质量成本反转",
+              "possible_occurrence": "HBM、先进封装或成熟DRAM/NAND量产中出现良率下降、返工、报废、测试失败或加急交付，单位制造成本上升。",
+              "derivation": "当前成本下降和执行改善只有方向性证据，产品级良率、返工和成本桥未披露；同时高价值产品、预资格和封装复杂度在增加。工艺爬坡或质量事件可能使当前效率收益反转，即使产品ASP仍高。",
+              "citation": [
+                "【cite:O1】",
+                "【cite:O13】",
+                "【cite:O12】"
+              ],
+              "expected_revision": "下调单位成本、毛利率和营业利润转换，重新区分ASP收益与制造效率收益；若影响局限于某一产品，不能外推为全公司制造体系失效。",
+              "recognition_criteria": "连续报告或公司运营披露显示相关产品良率/测试通过率下降、报废返工增加或质量准备金/加急成本上升，并在至少一个季度毛利或单位成本中可见。"
+            },
+            {
+              "gap_id": "利用率不足导致固定成本无法摊薄",
+              "possible_occurrence": "需求、产品组合或扩产节奏变化使一个或多个晶圆厂/封装线的利用率和吞吐下降，新增折旧与固定制造成本未被可售位数吸收。",
+              "derivation": "公司继续扩大PPE并推进多地项目，但没有统一有效产能、利用率或产品级折旧吸收序列；行业风险披露也承认需求与供给可能错配。低利用率是价格和组合之外的利润反转机制。",
+              "citation": [
+                "【cite:O1】",
+                "【cite:O18】",
+                "【cite:O7】"
+              ],
+              "expected_revision": "下调规模效应和毛利持续性，增加扩产后折旧/固定成本对营业利润的负面权重；项目仍可能按时完成，但其单位经济性和FY27利润贡献需要重新估计。",
+              "recognition_criteria": "连续两个季度某业务单元或项目出现利用率/吞吐下降、折旧或单位固定成本上升，并与毛利率/营业利润弱化相符；单一短期停机不认定结构性缺口。"
+            },
+            {
+              "gap_id": "研发预资格与折旧先于收入增长",
+              "possible_occurrence": "HBM4E、多平台资格和新工厂爬坡使研发、预资格晶圆、设备折旧和启动费用增速超过新增商业收入，营业利润率低于毛利率所暗示的转换水平。",
+              "derivation": "FY26 Q3研发费用同比增加36%，主要与开发/预资格晶圆和员工薪酬有关；扩产计划还会带来新设备和爬坡费用。即使ASP和毛利率保持，费用时点也可能延迟规模效应兑现。",
+              "citation": [
+                "【cite:O1】",
+                "【cite:O13】",
+                "【cite:O7】"
+              ],
+              "expected_revision": "把高毛利到营业利润的时滞拉长，降低FY27营业利润和EPS的可重复性判断；不能因此否定长期产品路线，只说明经济收益晚于投入。",
+              "recognition_criteria": "连续两个季度研发/预资格或折旧/启动费用同比增长明显高于收入增长，且没有相应的新增量产收入或营业利润率改善，需有财报或管理层费用桥支持。"
+            },
+            {
+              "gap_id": "客户质量事件迫使产品重新认证",
+              "possible_occurrence": "已量产的HBM、服务器内存或SSD出现客户现场可靠性/质量问题，触发退货、批次隔离、重新认证或大规模加急替换。",
+              "derivation": "当前商业化判断依赖产品资格、测试通过和连续序列出货，但公开资料没有逐客户质量和现场失效率序列；高复杂度堆叠/封装的质量事件可以在量产后才暴露。该事件会同时改变良率、成本、客户资格和有效供给。",
+              "citation": [
+                "【cite:O13】",
+                "【cite:O12】",
+                "【cite:O14】"
+              ],
+              "expected_revision": "下调受影响产品的可交付量、单位利润和客户重复采购，并延长重新认证时滞；不能仅凭没有公开质量事件就把可靠性视为已证实。",
+              "recognition_criteria": "客户或公司正式披露召回/批次隔离/退货/重新认证，且随后至少一个报告窗口出现相关产品出货中断、质量费用或资格重置。"
+            }
+          ]
+        },
+        {
+          "expectation_id": "晶圆与先进封装扩产兑现",
+          "proposition": "晶圆与HBM先进封装扩产将按项目里程碑完成认证、投产和良率爬坡，形成合格且可交付的新增DRAM/HBM供给；美国项目和GlobalWafers原生硅安排是该路径的实现因素，而非独立的产能或现金回报Unit。",
+          "horizon": "2026年至2028年及以后分阶段的项目与供给兑现周期",
+          "state": {
+            "parameters": [
+              {
+                "parameter_id": "Manassas 1-alpha DRAM制造阶段",
+                "definition": "Micron Manassas设施1-alpha DRAM制造的已实现阶段；保持制造启动、合格产出和稳定有效产能的层级区分。",
+                "value_type": "STAGE"
+              },
+              {
+                "parameter_id": "Clay New York晶圆厂建设阶段",
+                "definition": "Micron Clay, New York晶圆厂建设的已实现项目阶段；保持实体施工里程碑与未来晶圆产出的区分。",
+                "value_type": "STAGE"
+              },
+              {
+                "parameter_id": "Gujarat组装测试设施爬坡时间",
+                "definition": "Micron Gujarat组装与测试设施开始爬坡生产的公司时间窗口；保持calendar-year窗口，不把计划视为已实现产能。",
+                "value_type": "TIME"
+              },
+              {
+                "parameter_id": "新加坡HBM先进封装扩能时间",
+                "definition": "Micron新加坡HBM先进封装设施开始有意义地扩大整体先进封装能力的公司时间窗口。",
+                "value_type": "TIME"
+              },
+              {
+                "parameter_id": "第一座爱达荷晶圆厂首片DRAM时间",
+                "definition": "Micron第一座爱达荷晶圆厂实现首片DRAM晶圆产出的公司时间窗口。",
+                "value_type": "TIME"
+              },
+              {
+                "parameter_id": "台湾苗栗铜锣工厂有意义出货时间",
+                "definition": "Micron收购的台湾苗栗铜锣晶圆厂开始实现有意义产品出货的公司时间窗口。",
+                "value_type": "TIME"
+              },
+              {
+                "parameter_id": "新加坡NAND新增设施投入运行时间",
+                "definition": "Micron新加坡既有NAND园区新增先进晶圆厂设施投入运行并提供额外洁净室空间的公司时间窗口。",
+                "value_type": "TIME"
+              },
+              {
+                "parameter_id": "第二座爱达荷晶圆厂首片晶圆时间",
+                "definition": "Micron第二座爱达荷晶圆厂实现首片晶圆产出的公司时间窗口。",
+                "value_type": "TIME"
+              },
+              {
+                "parameter_id": "纽约首座晶圆厂开始供货时间",
+                "definition": "Micron纽约首座晶圆厂开始提供产品供应的公司时间窗口。",
+                "value_type": "TIME"
+              },
+              {
+                "parameter_id": "GlobalWafers 300mm原生硅供应安排阶段",
+                "definition": "Micron与GlobalWafers围绕300mm原生硅晶圆融资和长期供应安排的当前交易阶段；保持拟议安排与已交割、已交付材料的区分。",
+                "value_type": "STAGE"
+              },
+              {
+                "parameter_id": "FY26净政府激励后PPE资本开支计划",
+                "definition": "Micron管理层对FY26扣除政府激励后的PPE资本开支估计；保持年度计划口径，不与已支付PPE现金流混用。",
+                "value_type": "NUMBER"
+              }
+            ],
+            "values": [
+              {
+                "state_value_id": "Manassas 1-alpha DRAM制造阶段—已启动",
+                "parameter_id": "Manassas 1-alpha DRAM制造阶段",
+                "source_role": "ACTUAL",
+                "value": {
+                  "stage": "已开始1-alpha DRAM制造；公司称当地DDR4 wafer supply将增至原来的四倍，但稳定合格产量和有效产能尚未验证"
+                },
+                "previous_value": null,
+                "time_scope": "2026年美国DRAM制造扩供阶段",
+                "as_of": "2026-05（公司披露月份；具体日未标明）",
+                "citation": [
+                  "【cite:O8】",
+                  "【cite:O18】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "Clay New York晶圆厂建设阶段—首轮混凝土浇筑",
+                "parameter_id": "Clay New York晶圆厂建设阶段",
+                "source_role": "ACTUAL",
+                "value": {
+                  "stage": "已完成首轮混凝土浇筑并进入垂直施工；晶圆产出、设备安装和良率尚未验证"
+                },
+                "previous_value": null,
+                "time_scope": "2026年至2035年的美国扩产项目",
+                "as_of": "2026-07-09",
+                "citation": [
+                  "【cite:O9】",
+                  "【cite:O18】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "Gujarat组装测试设施爬坡时间—2026年",
+                "parameter_id": "Gujarat组装测试设施爬坡时间",
+                "source_role": "MANAGEMENT",
+                "value": {
+                  "point": null,
+                  "start": "2026-01-01",
+                  "end": "2026-12-31",
+                  "precision": "calendar year 2026；具体日期未披露"
+                },
+                "previous_value": null,
+                "time_scope": "calendar year 2026",
+                "as_of": "2026-06-25",
+                "citation": [
+                  "【cite:O7】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "新加坡HBM先进封装扩能时间—2027年上半年",
+                "parameter_id": "新加坡HBM先进封装扩能时间",
+                "source_role": "MANAGEMENT",
+                "value": {
+                  "point": null,
+                  "start": "2027-01-01",
+                  "end": "2027-06-30",
+                  "precision": "first half of calendar 2027"
+                },
+                "previous_value": null,
+                "time_scope": "calendar year 2027上半年",
+                "as_of": "2026-06-25",
+                "citation": [
+                  "【cite:O7】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "第一座爱达荷晶圆厂首片DRAM时间—2027年中",
+                "parameter_id": "第一座爱达荷晶圆厂首片DRAM时间",
+                "source_role": "MANAGEMENT",
+                "value": {
+                  "point": "mid-calendar 2027",
+                  "start": null,
+                  "end": null,
+                  "precision": "公司披露的calendar year 2027年中窗口"
+                },
+                "previous_value": null,
+                "time_scope": "calendar year 2027年中",
+                "as_of": "2026-06-25",
+                "citation": [
+                  "【cite:O7】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "台湾苗栗铜锣工厂有意义出货时间—2027年中",
+                "parameter_id": "台湾苗栗铜锣工厂有意义出货时间",
+                "source_role": "MANAGEMENT",
+                "value": {
+                  "point": "mid-calendar 2027",
+                  "start": null,
+                  "end": null,
+                  "precision": "公司披露的calendar year 2027年中窗口"
+                },
+                "previous_value": null,
+                "time_scope": "calendar year 2027年中",
+                "as_of": "2026-06-25",
+                "citation": [
+                  "【cite:O7】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "新加坡NAND新增设施投入运行时间—2028年下半年",
+                "parameter_id": "新加坡NAND新增设施投入运行时间",
+                "source_role": "MANAGEMENT",
+                "value": {
+                  "point": null,
+                  "start": "2028-07-01",
+                  "end": "2028-12-31",
+                  "precision": "second half of calendar 2028"
+                },
+                "previous_value": null,
+                "time_scope": "calendar year 2028下半年",
+                "as_of": "2026-06-25",
+                "citation": [
+                  "【cite:O7】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "第二座爱达荷晶圆厂首片晶圆时间—2028年末",
+                "parameter_id": "第二座爱达荷晶圆厂首片晶圆时间",
+                "source_role": "MANAGEMENT",
+                "value": {
+                  "point": "late calendar 2028",
+                  "start": null,
+                  "end": null,
+                  "precision": "公司披露的calendar year 2028末窗口"
+                },
+                "previous_value": null,
+                "time_scope": "calendar year 2028年末",
+                "as_of": "2026-06-25",
+                "citation": [
+                  "【cite:O7】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "纽约首座晶圆厂开始供货时间—2030年及以后",
+                "parameter_id": "纽约首座晶圆厂开始供货时间",
+                "source_role": "MANAGEMENT",
+                "value": {
+                  "point": "2030 and after",
+                  "start": null,
+                  "end": null,
+                  "precision": "公司披露的2030年及以后窗口"
+                },
+                "previous_value": null,
+                "time_scope": "2030年及以后",
+                "as_of": "2026-06-25",
+                "citation": [
+                  "【cite:O7】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "GlobalWafers 300mm原生硅供应安排阶段—拟议待交割",
+                "parameter_id": "GlobalWafers 300mm原生硅供应安排阶段",
+                "source_role": "INDUSTRY_CHAIN",
+                "value": {
+                  "stage": "Micron拟提供5亿美元战略融资并拟订10年供货安排；仍待最终协议、惯常审批和交割条件"
+                },
+                "previous_value": null,
+                "time_scope": "待定的美国300mm原生硅供应安排",
+                "as_of": "2026-07-09",
+                "citation": [
+                  "【cite:O22】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "FY26净政府激励后PPE资本开支计划—约270亿美元",
+                "parameter_id": "FY26净政府激励后PPE资本开支计划",
+                "source_role": "MANAGEMENT",
+                "value": {
+                  "number": 27.0,
+                  "unit": "USD_BILLIONS"
+                },
+                "previous_value": null,
+                "time_scope": "FY26全年",
+                "as_of": "2026-06-24",
+                "citation": [
+                  "【cite:O1】",
+                  "【cite:O2】"
+                ],
+                "validity_state": "CURRENT"
+              }
+            ]
+          },
+          "realization_factors": [
+            {
+              "factor_id": "Manassas从制造启动到合格产出",
+              "condition": "Manassas已启动的1-alpha DRAM制造能否形成稳定、合格、可交付的wafer-out和有效产能？",
+              "structural_role": "REQUIRED",
+              "current_status": "公司已披露Manassas开始1-alpha DRAM制造，并称当地DDR4 wafer supply将增至原来的四倍；这证明制造启动方向，不证明稳定良率、可销售合格产量、满负荷有效产能或客户出货。",
+              "impact": "只有合格产出、良率和客户出货成立，制造启动才能转为新增可交付供给；设备、材料、劳动力或工艺爬坡延迟会阻断传导。",
+              "citation": [
+                "【cite:O8】",
+                "【cite:O18】"
+              ],
+              "observability": {
+                "match_condition": "出现合格wafer-out、良率、利用率、连续对客户出货和实际供给量时确认；只有制造公告而无合格产出时维持未验证。"
+              }
+            },
+            {
+              "factor_id": "晶圆厂与HBM封装项目里程碑转有效供给",
+              "condition": "Idaho、Clay New York、Gujarat、台湾及新加坡封装/NAND项目能否从建设/计划按期推进到首片、量产、良率和客户资格？",
+              "structural_role": "REQUIRED",
+              "current_status": "公司列示Gujarat 2026年爬坡、新加坡HBM封装2027年上半年、首座Idaho 2027年中、台湾铜锣2027年中及后续项目时间窗；Clay已首轮浇筑并进入垂直施工，但设备、首片、良率和客户出货仍未验证。",
+              "impact": "建设里程碑只是产能链前段；有效供给还需设备安装、工艺稳定、封装能力、资格和需求同步，延期会错过需求窗口，价格回落会减弱新增产能经济性。",
+              "citation": [
+                "【cite:O7】",
+                "【cite:O1】",
+                "【cite:O9】"
+              ],
+              "observability": {
+                "match_condition": "逐项目匹配设备安装、首片/wafer-out、合格量产、封装吞吐、良率、客户资格与连续交付；仅施工或时间表变化不等于有效产能。"
+              }
+            },
+            {
+              "factor_id": "GlobalWafers原生硅安排完成并交付",
+              "condition": "GlobalWafers 300mm原生硅融资与长期供货安排能否完成最终协议、审批/交割并形成合格晶圆实际交付？",
+              "structural_role": "BLOCKER",
+              "current_status": "Micron拟提供约5亿美元战略融资并拟订10年供货安排，但交易仍待最终协议、审批和交割条件；没有交易完成、工厂投产或向Micron交付晶圆的证据。",
+              "impact": "该输入机制影响美国晶圆供给韧性和扩产交期，但安排本身不是新增有效产能；未完成或材料质量/良率不达标会限制fab爬坡。",
+              "citation": [
+                "【cite:O22】",
+                "【cite:O18】"
+              ],
+              "observability": {
+                "match_condition": "出现最终协议、交割、GlobalWafers合格生产和向Micron的实际晶圆交付/质量数据时确认；若审批、建设、良率或交付延期则维持阻断。"
+              }
+            },
+            {
+              "factor_id": "资本开支与政府激励支持项目完工",
+              "condition": "高额PPE资本开支、政府激励和可用资金能否按项目节奏到位而不迫使扩产延期或缩减？",
+              "structural_role": "MODIFIER",
+              "current_status": "管理层预计FY26净政府激励后PPE资本开支约270亿美元，FY26前九个月已支付196.02亿美元，并把现金流、客户存款、激励和融资列为资金来源；激励条件、支出节奏和回报仍未完全验证。",
+              "impact": "资金和激励改变项目完成时间、资本负担与扩产节奏，不等同于产能回报；激励延迟/追回、采购或融资受限会推迟设备和产出，需求转弱则会造成产能与回报错配。",
+              "citation": [
+                "【cite:O1】",
+                "【cite:O2】",
+                "【cite:O6】"
+              ],
+              "observability": {
+                "match_condition": "观察PPE支付、采购义务、激励到账与合规、客户存款/融资及项目资本化进度是否匹配；资金受限或项目削减时更新。"
+              }
+            }
+          ],
+          "potential_gaps": [
+            {
+              "gap_id": "多地扩产里程碑按期转为合格供给",
+              "possible_occurrence": "Gujarat、新加坡HBM封装、第一座Idaho或台湾项目在其披露窗口内完成设备/首片、良率和客户资格，并开始连续交付合格产品。",
+              "derivation": "当前项目状态从建设、制造启动到管理层时间窗口不等，已有Manassas 1-alpha制造和Clay首轮混凝土但没有稳定有效产能；若多个项目按期完成从首片到量产的完整链条，供给瓶颈可转成实际可售位数。",
+              "citation": [
+                "【cite:O7】",
+                "【cite:O8】",
+                "【cite:O9】",
+                "【cite:O1】"
+              ],
+              "expected_revision": "上调新增DRAM/HBM可交付供给的时间和规模，更新扩产Unit从“计划/建设”到“合格量产/连续交付”；仍不能单凭首片或公告推断收入、利润或资本回报已经实现。",
+              "recognition_criteria": "具体项目出现设备安装/首片或wafer-out、稳定合格良率、封装吞吐、客户资格和至少连续两个交付窗口，而不是只有施工、融资或投资公告。"
+            },
+            {
+              "gap_id": "建设设备或公用工程延误推迟首片",
+              "possible_occurrence": "一个或多个晶圆厂或先进封装项目因施工、设备交付、许可、劳动力、电力、用水或材料问题，错过已披露的首片/爬坡窗口。",
+              "derivation": "项目时间表跨越2026—2030+，当前Clay只有垂直施工，其他项目也以计划窗口为主；多地区扩产依赖设备、公用工程和供应链的共同执行。建设里程碑与有效供给之间存在尚未验证的时间链。",
+              "citation": [
+                "【cite:O7】",
+                "【cite:O8】",
+                "【cite:O9】",
+                "【cite:O21】"
+              ],
+              "expected_revision": "将受影响项目的供给时间后移，并下调FY27及以后可交付位数；未受影响项目仍需保留，不能把单个工厂延误等同于全公司扩产失败。",
+              "recognition_criteria": "公司或监管/项目披露将首片、爬坡或投产窗口明确后移，且原因指向设备、施工、公用工程、许可或关键材料；仅市场传闻不认定。"
+            },
+            {
+              "gap_id": "首片完成但良率和客户资格无法规模化",
+              "possible_occurrence": "新厂或封装线完成首片/早期出货，但在随后多个季度未能达到稳定良率、有效产能或客户资格，合格供给仍低于计划。",
+              "derivation": "Manassas和Clay的当前里程碑已证明启动/施工而非稳定产量；HBM和先进产品还需封装、测试和客户认证。首片成功可能与经济可交付量之间存在长爬坡，尤其当需求窗口和技术节点同时变化时。",
+              "citation": [
+                "【cite:O8】",
+                "【cite:O9】",
+                "【cite:O7】",
+                "【cite:O13】"
+              ],
+              "expected_revision": "保留项目完成但下调有效供给、连续交付和FY27收入贡献，延长爬坡时间并增加单位成本/现金占用；不把一次性wafer-out当成量产兑现。",
+              "recognition_criteria": "项目有首片或试产记录，但随后至少两个季度没有稳定合格良率、客户资格或连续对外出货，或公司明确将有效产能低于设计产能。"
+            },
+            {
+              "gap_id": "GlobalWafers原生硅安排未完成或交付不达标",
+              "possible_occurrence": "Micron与GlobalWafers的300mm原生硅安排未能完成最终协议、审批或交割，或交割后合格晶圆交付时间、数量或质量低于计划。",
+              "derivation": "当前安排仍是拟议融资和十年供货，等待最终协议、审批和交割条件；它被设计为美国扩产的材料保障，但尚无实际交付数据。交易失败、延期或材料良率不足都可能成为晶圆爬坡的外部阻断点。",
+              "citation": [
+                "【cite:O22】",
+                "【cite:O18】"
+              ],
+              "expected_revision": "下调美国扩产的材料保障和交付时点，必要时提高替代供应或项目延误假设；该事件不直接证明所有扩产项目取消，也不等同于资本开支回报失败。",
+              "recognition_criteria": "正式披露交易未交割/条件失效，或交割后出现连续交付短缺、规格/质量不合格并影响Micron项目的wafer starts或量产窗口。"
+            },
+            {
+              "gap_id": "需求或激励错配迫使扩产阶段化和现金优先",
+              "possible_occurrence": "在新增产能形成合格供给前，AI/内存价格或客户需求显著转弱，或政府激励/资金条件未按计划到位，Micron推迟、缩减或重新排序一个或多个扩产阶段。",
+              "derivation": "FY26净政府激励后PPE计划约270亿美元，前九个月已支付196.02亿美元，项目回收还要经过多年建设和爬坡；公司也把客户存款、激励和融资列为资金来源。高资本强度与周期转折、激励条件之间存在交互错配路径。",
+              "citation": [
+                "【cite:O1】",
+                "【cite:O2】",
+                "【cite:O6】",
+                "【cite:O5】"
+              ],
+              "expected_revision": "下调新增有效供给的时间/规模，并把资本开支与需求周期错配纳入扩产Unit；若只是项目顺序变化而最终供给未变，修订应限于时间而非直接判定长期能力消失。",
+              "recognition_criteria": "公司明确削减/延期资本计划或项目阶段，且同时出现需求/价格走弱、激励延迟/追回或资金约束中的至少一项；单季PPE波动不认定。"
+            }
+          ]
+        },
+        {
+          "expectation_id": "经营现金流与营运资本转换",
+          "proposition": "AI内存带来的收入和利润增长将通过应收账款回款与客户存款结算转化为可持续经营现金流，营运资本占用是该转换能否成立的主要验证路径。",
+          "horizon": "FY26 Q4至FY27及随后扩产周期的季度现金转换",
+          "state": {
+            "parameters": [
+              {
+                "parameter_id": "FY26前九个月经营现金流",
+                "definition": "Micron FY26前九个月GAAP经营活动现金流；保持九个月累计和报告货币口径，便于与上年同期比较。",
+                "value_type": "NUMBER"
+              },
+              {
+                "parameter_id": "FY26前九个月PPE资本开支",
+                "definition": "Micron FY26前九个月支付的PPE资本开支；保持九个月累计和报告货币口径，不与管理层全年计划混用。",
+                "value_type": "NUMBER"
+              },
+              {
+                "parameter_id": "FY26前九个月应收账款变动现金流影响",
+                "definition": "Micron FY26前九个月现金流量表中应收账款变动对经营现金流的影响；保持现金流影响的正负号，不把收入确认当作回款。",
+                "value_type": "NUMBER"
+              },
+              {
+                "parameter_id": "最新资产负债表现金及市场化投资",
+                "definition": "Micron在最新报告资产负债表日的现金及市场化投资余额；保持流动性余额口径，不等同于自由现金流或净债务。",
+                "value_type": "NUMBER"
+              },
+              {
+                "parameter_id": "FY26前九个月融资活动净现金流",
+                "definition": "Micron FY26前九个月融资活动产生的净现金流；用于观察经营现金转换之外的资金安排，不与经营现金流混用。",
+                "value_type": "NUMBER"
+              },
+              {
+                "parameter_id": "客户存款作为资金来源证据状态",
+                "definition": "管理层将战略客户存款列为扩产和运营资金来源的当前证据状态；保持资金来源表述与实际到账、交付义务的区分。",
+                "value_type": "EVIDENCE"
+              },
+              {
+                "parameter_id": "经营现金转换质量证据状态",
+                "definition": "最新九个月已实现经营现金流、应收账款占用和PPE支付共同反映的现金转换质量状态；不替代未经统一口径的自由现金流或ROIC。",
+                "value_type": "EVIDENCE"
+              }
+            ],
+            "values": [
+              {
+                "state_value_id": "FY26前九个月经营现金流—实际457.02亿美元",
+                "parameter_id": "FY26前九个月经营现金流",
+                "source_role": "ACTUAL",
+                "value": {
+                  "number": 45.702,
+                  "unit": "USD_BILLIONS"
+                },
+                "previous_value": {
+                  "number": 11.795,
+                  "unit": "USD_BILLIONS"
+                },
+                "time_scope": "FY26前九个月（比较FY25前九个月）",
+                "as_of": "2026-06-25（报告发布；财务期末2026-05-28）",
+                "citation": [
+                  "【cite:O1】",
+                  "【cite:O2】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "FY26前九个月PPE资本开支—实际196.02亿美元",
+                "parameter_id": "FY26前九个月PPE资本开支",
+                "source_role": "ACTUAL",
+                "value": {
+                  "number": 19.602,
+                  "unit": "USD_BILLIONS"
+                },
+                "previous_value": {
+                  "number": 10.199,
+                  "unit": "USD_BILLIONS"
+                },
+                "time_scope": "FY26前九个月（比较FY25前九个月）",
+                "as_of": "2026-06-25（报告发布；财务期末2026-05-28）",
+                "citation": [
+                  "【cite:O1】",
+                  "【cite:O2】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "FY26前九个月应收账款变动—经营现金流流出约199.53亿美元",
+                "parameter_id": "FY26前九个月应收账款变动现金流影响",
+                "source_role": "ACTUAL",
+                "value": {
+                  "number": -19.953,
+                  "unit": "USD_BILLIONS"
+                },
+                "previous_value": null,
+                "time_scope": "FY26前九个月",
+                "as_of": "2026-06-25（报告发布；财务期末2026-05-28）",
+                "citation": [
+                  "【cite:O2】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "最新资产负债表现金及市场化投资—约301.3亿美元",
+                "parameter_id": "最新资产负债表现金及市场化投资",
+                "source_role": "ACTUAL",
+                "value": {
+                  "number": 30.13,
+                  "unit": "USD_BILLIONS"
+                },
+                "previous_value": {
+                  "number": 11.94,
+                  "unit": "USD_BILLIONS"
+                },
+                "time_scope": "截至2026-05-28的最新报告资产负债表日（比较2025-08-28）",
+                "as_of": "2026-06-25",
+                "citation": [
+                  "【cite:O1】",
+                  "【cite:O2】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "FY26前九个月融资活动净现金流—净流出约106.46亿美元",
+                "parameter_id": "FY26前九个月融资活动净现金流",
+                "source_role": "ACTUAL",
+                "value": {
+                  "number": -10.646,
+                  "unit": "USD_BILLIONS"
+                },
+                "previous_value": null,
+                "time_scope": "FY26前九个月",
+                "as_of": "2026-06-25（报告发布；财务期末2026-05-28）",
+                "citation": [
+                  "【cite:O2】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "客户存款作为资金来源—管理层支持但到账未逐项验证",
+                "parameter_id": "客户存款作为资金来源证据状态",
+                "source_role": "MANAGEMENT",
+                "value": {
+                  "stance": "SUPPORTING",
+                  "strength": "MODERATE"
+                },
+                "previous_value": null,
+                "time_scope": "FY26 Q4及未来至少12个月资金安排",
+                "as_of": "2026-06-24",
+                "citation": [
+                  "【cite:O1】",
+                  "【cite:O6】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "经营现金转换质量—利润强但应收与PPE形成混合压力",
+                "parameter_id": "经营现金转换质量证据状态",
+                "source_role": "ACTUAL",
+                "value": {
+                  "stance": "MIXED",
+                  "strength": "MODERATE"
+                },
+                "previous_value": null,
+                "time_scope": "FY26前九个月经营现金流与现金用途",
+                "as_of": "2026-06-25（报告发布；财务期末2026-05-28）",
+                "citation": [
+                  "【cite:O1】",
+                  "【cite:O2】"
+                ],
+                "validity_state": "CURRENT"
+              }
+            ]
+          },
+          "realization_factors": [
+            {
+              "factor_id": "应收账款按期回款",
+              "condition": "收入和利润增长能否在合同结算周期内转为应收账款回款，而不是持续占用经营现金？",
+              "structural_role": "REQUIRED",
+              "current_status": "FY26前九个月经营现金流为457.02亿美元，但应收账款变动造成约199.53亿美元现金流出；回款周期、客户信用和后续季度收款改善尚未验证，利润到现金的转换为混合状态。",
+              "impact": "应收回款是收入确认到经营现金流之间的必要转换环节；增长越快而回款越慢，营运资本占用越大，可能迫使融资或削弱扩产资金。",
+              "citation": [
+                "【cite:O2】",
+                "【cite:O1】"
+              ],
+              "observability": {
+                "match_condition": "连续季度观察应收余额/回款、经营现金流和收入的对应关系；应收增长放缓且回款转入现金时确认改善，DSO上升或CFO脱离利润时更新。"
+              }
+            },
+            {
+              "factor_id": "客户存款按合同结算并完成收入现金转换",
+              "condition": "战略客户存款能否实际到账，并在履约、发运和收入确认后按合同结算，而不是仅作为未履约资金来源？",
+              "structural_role": "REQUIRED",
+              "current_status": "管理层将客户存款列为未来至少12个月扩产和运营资金来源，协议相关现金存款承诺约180亿美元；未逐项验证到账、合同负债、交付义务、收入确认和回款时点。",
+              "impact": "客户存款可前置缓解营运资本和外部融资压力，但受交付、退款和合同条件约束；若未到账或履约延迟，不能把承诺额当作可持续经营现金流。",
+              "citation": [
+                "【cite:O1】",
+                "【cite:O6】"
+              ],
+              "observability": {
+                "match_condition": "后续资产负债表和现金流显示客户存款/合同负债增加，并与发运、收入确认、应收回款和经营现金流按期结算时确认；未到账或履约延迟时更新。"
+              }
+            },
+            {
+              "factor_id": "扩产资本支付与激励到账不挤压经营现金",
+              "condition": "PPE扩产支出、政府激励和其他融资安排的时点能否让经营现金流在FY27及以后覆盖运营与投资现金需求？",
+              "structural_role": "BLOCKER",
+              "current_status": "FY26前九个月PPE支付196.02亿美元、融资活动净现金流约为负106.46亿美元，现金及市场化投资约301.3亿美元；管理层给出FY26净激励后PPE计划约270亿美元，但现金流仍受高资本开支、激励条件和回款时点牵制。",
+              "impact": "资本支付先消耗现金，激励到账和新增产能收益滞后；若应收占用、项目支出或激励延迟同时发生，经营现金流质量和扩产能力会被压缩，不能仅凭高CFO推断自由现金流或ROIC。",
+              "citation": [
+                "【cite:O1】",
+                "【cite:O2】"
+              ],
+              "observability": {
+                "match_condition": "把CFO、应收回款、PPE实际支付、激励到账、客户存款、现金余额和融资安排放在同一季度序列中；现金挤压或项目延迟时更新。"
+              }
+            }
+          ],
+          "potential_gaps": [
+            {
+              "gap_id": "回款和客户存款同步改善并覆盖扩产现金需求",
+              "possible_occurrence": "FY26 Q4至FY27，应收账款按期回收、战略客户存款到账并按合同结算，经营现金流随收入/利润增长而增加，同时支持部分PPE支付。",
+              "derivation": "FY26前九个月经营现金流为457.02亿美元，但应收账款变动造成约199.53亿美元流出；管理层又把客户存款、经营现金流和激励列为未来资金来源。若应收占用收窄且存款真实到账，当前“利润强但现金转换混合”的状态可能改善。",
+              "citation": [
+                "【cite:O1】",
+                "【cite:O2】",
+                "【cite:O6】"
+              ],
+              "expected_revision": "上调收入/利润到经营现金流的转换质量和扩产资金自给能力，降低外部融资依赖；仍不能只用CFO上升证明标准化自由现金流、ROIC或所有客户承诺已兑现。",
+              "recognition_criteria": "至少两个季度收入增长伴随应收余额/DSO改善、客户存款或合同负债现金增加、CFO未被同幅度营运资本吞噬，并有实际发运/结算配套。"
+            },
+            {
+              "gap_id": "应收账款周期拉长使利润脱离现金",
+              "possible_occurrence": "客户因高价格、集中度或采购周期变化延长付款期限，Micron应收账款和DSO继续上升，经营现金流连续低于利润增长。",
+              "derivation": "FY26前九个月应收变动已造成约199.53亿美元经营现金流流出，且回款周期、客户信用和合同结算尚未逐项验证；高速收入增长会放大营运资本占用。该事件直接检验收入确认到现金回收的必经环节。",
+              "citation": [
+                "【cite:O2】",
+                "【cite:O1】"
+              ],
+              "expected_revision": "下调经营现金流可持续性和扩产资金覆盖程度，增加融资或项目时点风险；损益表收入仍可成立，但不能把已确认收入当作已收现金。",
+              "recognition_criteria": "连续两个季度应收余额/DSO上升，CFO相对净利润或收入的转换率下降，并由财报附注或回款数据支持客户付款延迟；单季应收季节性变化不够。"
+            },
+            {
+              "gap_id": "客户存款延迟或退款导致前置现金失效",
+              "possible_occurrence": "已披露的客户现金存款承诺未按时到账，或已到账部分因交付延迟、合同条件、客户取消或退款要求而不能持续作为扩产和运营资金。",
+              "derivation": "管理层披露约180亿美元现金存款承诺，但尚未逐项验证到账、合同负债、交付义务和退款条件；合同Unit的财务可见度因此不能直接当作现金流事实。若存款链断裂，扩产资金将更多依赖CFO、激励或融资。",
+              "citation": [
+                "【cite:O1】",
+                "【cite:O6】",
+                "【cite:O2】"
+              ],
+              "expected_revision": "下调客户存款对经营现金和资本支付的支撑，增加现金缺口、融资或项目延期假设；不把单一客户的退款直接外推为全部合同存款失效。",
+              "recognition_criteria": "后续财报/合同附注显示承诺未到账、合同负债减少或退款/赔付增加，并同时出现原定项目资金来源调整或交付延迟。"
+            },
+            {
+              "gap_id": "库存和在制品吸收现金而应收正常",
+              "possible_occurrence": "为保障HBM、服务器内存或SSD交付，Micron提前采购晶圆、封装材料或建立在制品/成品库存，库存和供应商预付款在FY27显著增加。",
+              "derivation": "当前研究聚焦应收和PPE，未建立统一库存序列，但高需求、先进封装爬坡和客户交付承诺会诱发前置备料；这提供了一个不依赖客户拖欠、却能压低CFO的营运资本路径。",
+              "citation": [
+                "【cite:O1】",
+                "【cite:O13】",
+                "【cite:O12】"
+              ],
+              "expected_revision": "下调经营现金流转换质量，即使应收回款正常；若库存随后转为交付和现金，应把影响限定为时点错配，否则需下调产能投入的现金回报速度。",
+              "recognition_criteria": "至少两个季度库存/在制品或供应商预付款增长明显快于收入，CFO被存货相关项目拖累，并出现对应产品备料、交付承诺或后续去库存证据。"
+            },
+            {
+              "gap_id": "PPE支付和激励时点造成现金挤压",
+              "possible_occurrence": "扩产PPE支付在政府激励或客户存款到账前加速，经营现金流无法覆盖运营与投资需求，Micron增加融资、削减现金缓冲或推迟项目。",
+              "derivation": "FY26前九个月PPE支付196.02亿美元、融资活动净流出约106.46亿美元，管理层全年净激励后PPE计划约270亿美元；激励、回款和新增产能收益存在时滞。需求或回款任何一项延误，都可能让高利润未能转成可用现金。",
+              "citation": [
+                "【cite:O1】",
+                "【cite:O2】",
+                "【cite:O6】"
+              ],
+              "expected_revision": "下调FY27及以后经营现金流的可支配程度，增加融资成本、项目延误和资本回报不确定性；不能用资产负债表现金余额单独排除现金转换压力。",
+              "recognition_criteria": "同一或连续季度出现PPE实际支付上升、激励/客户存款未按期到账、CFO下降或融资需求增加，并导致现金余额/项目计划发生可验证变化。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "shell_id": "汽车内存平台认证与量产供给",
+      "core_question": "Micron能否把GM、Ford及Tier 1汽车战略合作，从资格协作推进为具体车型或平台认证、持续量产分配和可验证的长期汽车内存供给？",
+      "boundary_rule": "该Shell仅研究汽车OEM/Tier 1客户生态中的车型与平台生命周期、资格认证、持续量产和按平台交付。虽然共享Micron的基础制造能力，但不共享AI/服务器需求状态、客户决策者、资格节奏或主要未来事件；将其并入AI内存Shell会混淆两条实现链。当前缺乏对应的价格反应、订单规模或卖方盈利贡献锚点，因此本Shell是独立的长期研究上下文和潜在业务选项，不代表该汽车路径已被当前市场定价或属于FY26 Q4/FY27 AI盈利基线。",
+      "units": [
+        {
+          "expectation_id": "汽车内存平台认证与量产分配",
+          "proposition": "GM、Ford及Tier 1合作将从供给可见性与资格协作推进至具体车型或平台认证，并形成持续量产分配和可验证的长期汽车内存供给。",
+          "horizon": "从车型或平台开发、资格认证到持续量产的多年汽车业务周期",
+          "state": {
+            "parameters": [
+              {
+                "parameter_id": "汽车SCA供给与需求可见性",
+                "definition": "公开可验证的汽车OEM/Tier 1战略客户协议对生产计划、未来内存/存储需求、供给与定价可见性的支持程度；不把可见性等同于订单数量、收入或量产分配。",
+                "value_type": "EVIDENCE"
+              },
+              {
+                "parameter_id": "汽车OEM与Tier 1战略协议及资格协作阶段",
+                "definition": "按OEM、Tier 1或生态伙伴记录Micron汽车内存/存储战略协议从供给可见性、产品定义与系统优化到资格协作、车型定点和持续量产的阶段；协议本身不等同于具体车型订单或收入。",
+                "value_type": "STAGE"
+              },
+              {
+                "parameter_id": "汽车内存与存储产品商业化阶段",
+                "definition": "按已披露汽车内存/存储产品族记录从汽车产品就绪、送样/客户资格、首批量出货到连续量产供给的最高公开产品阶段；产品阶段不替代具体车型认证或跨平台持续分配。",
+                "value_type": "STAGE"
+              },
+              {
+                "parameter_id": "汽车车型与平台资格认证阶段",
+                "definition": "按具体车型或平台记录Micron目标器件从产品定义和系统优化到车型/系统资格、设计定点的阶段；只有公开可验证的车型或平台资格证据才推进该阶段，SCA或一般产品样品不作替代。",
+                "value_type": "STAGE"
+              },
+              {
+                "parameter_id": "汽车平台量产分配与连续交付阶段",
+                "definition": "按车型或平台记录汽车内存/存储的serial production定点、量产分配和连续交付状态；单次首批量出货不视为跨车型长期供给。",
+                "value_type": "STAGE"
+              },
+              {
+                "parameter_id": "汽车供给能力与制造准备阶段",
+                "definition": "记录Micron为汽车内存/存储形成可交付供给的制造、产能和资格准备，从产能计划或制造启动到合格产出、有效产能及按平台交付；投资或施工里程碑不替代有效产能。",
+                "value_type": "STAGE"
+              }
+            ],
+            "values": [
+              {
+                "state_value_id": "汽车SCA供给可见性_行业伙伴行为",
+                "parameter_id": "汽车SCA供给与需求可见性",
+                "source_role": "INDUSTRY_CHAIN",
+                "value": {
+                  "stance": "SUPPORTING",
+                  "strength": "MODERATE"
+                },
+                "previous_value": null,
+                "time_scope": "截至2026-07-16已披露的GM、Ford及Tier 1/生态伙伴战略客户协议",
+                "as_of": "2026-07-16",
+                "citation": [
+                  "【cite:O23】",
+                  "【cite:O24】",
+                  "【cite:O25】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "汽车SCA供给可见性_管理层表述",
+                "parameter_id": "汽车SCA供给与需求可见性",
+                "source_role": "MANAGEMENT",
+                "value": {
+                  "stance": "SUPPORTING",
+                  "strength": "MODERATE"
+                },
+                "previous_value": null,
+                "time_scope": "长期汽车战略客户协议的生产规划与供给协作周期",
+                "as_of": "2026-07-16",
+                "citation": [
+                  "【cite:O25】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "GM长期战略客户协议阶段",
+                "parameter_id": "汽车OEM与Tier 1战略协议及资格协作阶段",
+                "source_role": "INDUSTRY_CHAIN",
+                "value": {
+                  "stage": "长期战略客户协议已签署，进入下一代车辆产品定义、系统优化和先进内存资格协作；具体车型认证、数量和量产分配未公开"
+                },
+                "previous_value": null,
+                "time_scope": "GM下一代车辆平台的长期合作周期",
+                "as_of": "2026-07-01",
+                "citation": [
+                  "【cite:O23】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "Ford长期战略客户协议阶段",
+                "parameter_id": "汽车OEM与Tier 1战略协议及资格协作阶段",
+                "source_role": "INDUSTRY_CHAIN",
+                "value": {
+                  "stage": "长期战略客户协议已签署，面向下一代车辆生产开展内存/存储供给协作，并关联汽车内存产出与Manassas扩张；具体车型认证、数量和量产分配未公开"
+                },
+                "previous_value": null,
+                "time_scope": "Ford下一代车辆生产的长期合作周期",
+                "as_of": "2026-07-06",
+                "citation": [
+                  "【cite:O24】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "Tier1生态战略客户协议阶段",
+                "parameter_id": "汽车OEM与Tier 1战略协议及资格协作阶段",
+                "source_role": "INDUSTRY_CHAIN",
+                "value": {
+                  "stage": "与Qualcomm、Visteon、HARMAN、JOYNEXT、DENSO、Astemo及Hyundai Mobis的战略客户协议已披露，覆盖未来车辆平台生产规划、技术开发、认证和制造能力协作；具体车型、数量和serial production未公开"
+                },
+                "previous_value": null,
+                "time_scope": "Tier 1与汽车生态伙伴未来车辆平台合作周期",
+                "as_of": "2026-07-16",
+                "citation": [
+                  "【cite:O25】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "汽车客户合作推进计划",
+                "parameter_id": "汽车OEM与Tier 1战略协议及资格协作阶段",
+                "source_role": "MANAGEMENT",
+                "value": {
+                  "stage": "公司计划继续围绕下一代车辆开展产品定义、系统优化、先进技术认证及制造能力协作；未给出车型量产承诺"
+                },
+                "previous_value": null,
+                "time_scope": "待定的下一代车辆平台合作周期",
+                "as_of": "2026-07-16",
+                "citation": [
+                  "【cite:O23】",
+                  "【cite:O24】",
+                  "【cite:O25】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "汽车1-gamma LPDDR5产品阶段",
+                "parameter_id": "汽车内存与存储产品商业化阶段",
+                "source_role": "ACTUAL",
+                "value": {
+                  "stage": "已达到汽车产品就绪并完成送样，处于客户/平台资格前置阶段；连续跨平台供货未公开"
+                },
+                "previous_value": null,
+                "time_scope": "2026年汽车LPDDR5产品导入周期",
+                "as_of": "2026-06-24",
+                "citation": [
+                  "【cite:O26】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "汽车1-gamma DDR5产品阶段",
+                "parameter_id": "汽车内存与存储产品商业化阶段",
+                "source_role": "ACTUAL",
+                "value": {
+                  "stage": "首批样品已送至robotaxi客户，处于客户/平台验证阶段；serial production未公开"
+                },
+                "previous_value": null,
+                "time_scope": "2026年汽车DDR5产品导入周期",
+                "as_of": "2026-06-24",
+                "citation": [
+                  "【cite:O26】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "G9 UFS4.1汽车NAND产品阶段",
+                "parameter_id": "汽车内存与存储产品商业化阶段",
+                "source_role": "ACTUAL",
+                "value": {
+                  "stage": "已首批量出货，进入初始商业交付阶段；多个车型或平台的连续分配未公开"
+                },
+                "previous_value": null,
+                "time_scope": "2026年G9 UFS4.1汽车NAND导入周期",
+                "as_of": "2026-06-24",
+                "citation": [
+                  "【cite:O26】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "具体车型或平台资格认证状态_研究截止日",
+                "parameter_id": "汽车车型与平台资格认证阶段",
+                "source_role": "ACTUAL",
+                "value": {
+                  "stage": "公开证据仍停留在供给协作、产品送样/初始出货和一般资格协作前置阶段；截至研究截止日未有具体车型或平台完成认证或设计定点的可验证披露"
+                },
+                "previous_value": null,
+                "time_scope": "截至2026-09-09的公开车型/平台认证状态",
+                "as_of": "2026-09-09",
+                "citation": [
+                  "【cite:O26】",
+                  "【cite:O23】",
+                  "【cite:O24】",
+                  "【cite:O25】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "汽车平台量产分配与连续交付状态_研究截止日",
+                "parameter_id": "汽车平台量产分配与连续交付阶段",
+                "source_role": "ACTUAL",
+                "value": {
+                  "stage": "尚未公开按车型或平台进入serial production、持续量产分配或连续交付；已有UFS 4.1首批量出货，但不足以证明长期平台供给"
+                },
+                "previous_value": null,
+                "time_scope": "截至2026-09-09的汽车车型/平台量产与交付状态",
+                "as_of": "2026-09-09",
+                "citation": [
+                  "【cite:O26】",
+                  "【cite:O23】",
+                  "【cite:O24】",
+                  "【cite:O25】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "Manassas汽车相关制造启动状态",
+                "parameter_id": "汽车供给能力与制造准备阶段",
+                "source_role": "ACTUAL",
+                "value": {
+                  "stage": "Manassas已开始1-alpha DRAM制造；该制造启动与汽车内存供给扩张被关联披露，但汽车专属合格产出、良率、有效产能和平台交付尚未验证"
+                },
+                "previous_value": null,
+                "time_scope": "2026年Manassas制造启动及汽车供给准备周期",
+                "as_of": "2026-05",
+                "citation": [
+                  "【cite:O27】",
+                  "【cite:O24】"
+                ],
+                "validity_state": "CURRENT"
+              },
+              {
+                "state_value_id": "汽车供给与制造能力推进计划",
+                "parameter_id": "汽车供给能力与制造准备阶段",
+                "source_role": "MANAGEMENT",
+                "value": {
+                  "stage": "公司将汽车内存产出、Manassas扩张及战略客户协议支持的制造能力投入纳入长期供给计划；面向GM、Ford及Tier 1的可交付容量和时点未给出"
+                },
+                "previous_value": null,
+                "time_scope": "下一代车辆的长期供给与制造能力周期",
+                "as_of": "2026-07-16",
+                "citation": [
+                  "【cite:O24】",
+                  "【cite:O25】"
+                ],
+                "validity_state": "CURRENT"
+              }
+            ]
+          },
+          "realization_factors": [
+            {
+              "factor_id": "OEM与Tier 1战略合作转化为具体平台入口",
+              "condition": "GM、Ford及Tier 1/生态伙伴的战略客户协议能否把生产规划、需求与供给可见性转化为具体车型或平台的共同开发、资格窗口和可执行的供给安排",
+              "structural_role": "REQUIRED",
+              "current_status": "截至研究截止日，GM、Ford以及Qualcomm、Visteon、HARMAN、JOYNEXT、DENSO、Astemo和Hyundai Mobis等生态伙伴的SCA已披露，覆盖下一代车辆的产品定义、系统优化、生产规划、资格协作和制造能力投入；但未见公开可验证的车型/平台、数量、价格、交付窗口或量产分配，SCA仍是客户入口与供给可见性而非订单或量产证明。",
+              "impact": "该机制把客户协作接入具体车型平台，并决定资格资源和供给规划能否继续向前；若合作停留在一般性SCA，产品送样不能进入平台认证和分配，核心限制仍是命名车型/平台及其资格与供给条款。",
+              "citation": [
+                "【cite:O23】",
+                "【cite:O24】",
+                "【cite:O25】"
+              ],
+              "observability": {
+                "match_condition": "公开披露具体车型、平台或车辆系统的共同开发/设计定点、资格窗口、供给条款或明确的延期、取消和替代供应商决定。"
+              }
+            },
+            {
+              "factor_id": "汽车产品的车型与系统资格及设计定点",
+              "condition": "汽车LPDDR5、DDR5、UFS 4.1或后续器件能否在目标车型/平台完成车辆或系统级可靠性、性能和生命周期要求的验证，并获得设计定点",
+              "structural_role": "REQUIRED",
+              "current_status": "LPDDR5已达到汽车产品就绪并送样，DDR5样品已送至robotaxi客户，UFS 4.1已首批量出货；这些证据证明产品已进入客户/平台验证或初始交付，但截至研究截止日未见具体车型或平台完成认证、设计定点的可验证披露，产品就绪不等于车辆采用。",
+              "impact": "车型/系统资格是从产品能力到客户采用的技术执行闸门，决定器件能否被纳入具体平台并进入后续量产；资格失败、重测或规格变更会延迟或把价值转给替代供应商，当前剩余限制是车辆级认证而非一般产品样品。",
+              "citation": [
+                "【cite:O26】",
+                "【cite:O23】",
+                "【cite:O25】"
+              ],
+              "observability": {
+                "match_condition": "出现按车型、平台或Tier 1系统标识的资格通过、设计定点/生产批准和导入公告，或出现资格失败、重测、规格变更或改用其他供应商的明确证据。"
+              }
+            },
+            {
+              "factor_id": "汽车合格产出与可交付制造能力",
+              "condition": "Micron能否以稳定良率、足够有效产能和可接受交期持续生产符合汽车平台要求的合格内存/存储器件，并支持已获资格的平台分配",
+              "structural_role": "REQUIRED",
+              "current_status": "Manassas已开始1-alpha DRAM制造，且与汽车内存产出和扩张计划关联；但截至研究截止日未验证汽车专属合格产出、良率、有效产能、先进封装/材料交期或按平台交付，制造启动和投资/施工里程碑不能替代有效供给。",
+              "impact": "合格产出和交付能力决定已认证平台能否按时获得足量器件，是资格之后的供给瓶颈；良率、产能或关键投入不足会使量产分配延迟、缩小或转向其他供应商，当前限制是汽车级稳定产出与交期而非名义制造启动。",
+              "citation": [
+                "【cite:O27】",
+                "【cite:O24】",
+                "【cite:O28】"
+              ],
+              "observability": {
+                "match_condition": "公开出现汽车级合格wafer-out/封装产出、良率、有效产能、交期或按平台发运的连续证据；反向更新包括持续短缺、爬坡延期、材料/封装约束或未达汽车规格。"
+              }
+            },
+            {
+              "factor_id": "车型量产分配与连续交付的重复性",
+              "condition": "至少一个已识别的车型或平台能否进入serial production，并获得跨多个生产周期可重复的量产分配和连续汽车内存交付",
+              "structural_role": "REQUIRED",
+              "current_status": "截至研究截止日，未见公开按车型或平台进入serial production、持续量产分配或连续交付；UFS 4.1已有首批量出货，但LPDDR5/DDR5仍处于送样或验证阶段，首批出货不足以证明长期平台供给。",
+              "impact": "这是把SCA、车型资格和合格产能转化为本Unit终端结果的直接闸门；单次样品或首批商业出货只能证明一次性交付，不能证明跨周期、跨平台的重复性，当前限制是可验证的serial production和持续发运。",
+              "citation": [
+                "【cite:O26】",
+                "【cite:O23】",
+                "【cite:O24】",
+                "【cite:O25】"
+              ],
+              "observability": {
+                "match_condition": "公开披露具体车型/平台的SOP或serial production定点，并随后出现按该平台的连续季度/批次发运、量产分配或客户持续提货；反向更新包括去分配、停产、取消或交付中断。"
+              }
+            },
+            {
+              "factor_id": "汽车平台生命周期与替代供应商分配",
+              "condition": "目标车型/平台的生产爬坡和生命周期能否维持足够的内存需求，并使Micron在客户的多源采购与替代供应商竞争中保有持续分配",
+              "structural_role": "MODIFIER",
+              "current_status": "汽车平台具有多年生命周期，SCA意在支持下一代车辆生产规划和供给保障；但当前未公开对应车型、生产量、SOP时点、生命周期采购窗口或Micron相对份额，也未公开替代供应和客户在产量变化时的分配规则。",
+              "impact": "该机制主要改变量产启动时间、持续供给规模和受益供应商，而不替代资格或合格产出的必要条件；车型延期、汽车产量收缩、平台改款或客户转向第二供应商都可压低或延后Micron分配，即使技术资格已经取得。",
+              "citation": [
+                "【cite:O23】",
+                "【cite:O24】",
+                "【cite:O25】"
+              ],
+              "observability": {
+                "match_condition": "公开出现车型SOP与产量爬坡/生命周期采购计划、按平台的Micron分配或多源份额；反向更新包括平台延期、产量削减、替代供应商导入、改款切换或SCA范围收缩。"
+              }
+            }
+          ],
+          "potential_gaps": [
+            {
+              "gap_id": "具体车型或平台获得Micron器件设计定点",
+              "possible_occurrence": "GM、Ford或已披露Tier 1公开确认某一具体车型、车辆平台或车辆系统通过Micron汽车内存/存储器件的资格验证并取得设计定点或生产批准。",
+              "derivation": "当前GM、Ford及多家Tier 1/生态伙伴的协议已进入产品定义、系统优化和供给协作，但截至研究截止日未公开命名车型、平台或设计定点；LPDDR5仍为送样、DDR5为客户验证、UFS 4.1为首批量出货。由此可推导出，现有客户入口和产品准备可能继续向具体平台资格与设计批准推进，但这一推导不把一般SCA、产品就绪或样品当成已经发生的定点。",
+              "citation": [
+                "【cite:O23】",
+                "【cite:O24】",
+                "【cite:O25】",
+                "【cite:O26】"
+              ],
+              "expected_revision": "将本Unit从一般供给可见性和资格前置阶段上修为至少一个已识别平台完成认证/设计导入，增强长期汽车供给路径的可支持性；但单独的设计定点不证明serial production、量产数量、持续提货或Micron份额，除非后续出现连续交付。",
+              "recognition_criteria": "公开来源同时点名GM、Ford或Tier 1、具体车型/平台/车辆系统以及资格通过、设计定点或生产批准；仅有SCA、产品宣传、送样或未命名的客户认证不算匹配。"
+            },
+            {
+              "gap_id": "汽车器件资格失败或被要求重测",
+              "possible_occurrence": "某一已披露汽车产品或客户项目在车辆或系统资格中失败、被要求重测/改规格，或因可靠性、性能、功耗或接口不匹配而改用其他器件。",
+              "derivation": "当前汽车LPDDR5、DDR5和UFS 4.1分别处于送样、平台验证或初始商业出货阶段，尚无具体车型或平台的公开认证；汽车采用仍需车辆/系统级可靠性、性能和生命周期验证。因而，测试失败、重测或规格变更是从当前前置阶段走向延迟或替代路径的可行未来发展，不能据此声称已有失败。",
+              "citation": [
+                "【cite:O26】",
+                "【cite:O23】",
+                "【cite:O25】"
+              ],
+              "expected_revision": "对受影响的产品—平台路径下调资格成立度并将量产时间后移，必要时把预期受益者改为替代供应商；一个器件或项目的失败只修正对应路径，不自动否定Micron全部汽车产品或其他客户合作。",
+              "recognition_criteria": "OEM、Tier 1或Micron公开点名目标产品/车型/平台并明确资格失败、重测、规格不匹配、设计变更或替代器件导入；一般性的汽车认证难度或未披露进展不算匹配。"
+            },
+            {
+              "gap_id": "单一车型平台进入连续量产交付",
+              "possible_occurrence": "至少一个公开命名的车型或平台进入SOP/serial production，并在随后多个生产批次或季度持续接收Micron汽车内存/存储器件。",
+              "derivation": "现有公开状态已包含UFS 4.1首批量出货以及GM、Ford和Tier 1的长期协作，但明确缺少按车型/平台的serial production和连续交付证据；首批出货不能替代重复性。由此，未来出现命名平台SOP并持续发运，是把当前产品阶段和客户入口转化为本Unit终端结果的直接可能路径。",
+              "citation": [
+                "【cite:O26】",
+                "【cite:O23】",
+                "【cite:O24】",
+                "【cite:O25】"
+              ],
+              "expected_revision": "将本Unit从可能的客户入口上修为至少一个平台已进入可验证的量产分配和连续供应，显著提高长期供给命题的支持度；但一个平台的连续交付不证明跨平台扩张、全部SCA兑现或全生命周期数量。",
+              "recognition_criteria": "公开证据点名具体车型/平台并确认SOP或serial production，且随后至少两个相邻生产批次或季度出现Micron按该平台的发运、持续提货或量产分配；单次样品或首批出货不算匹配。"
+            },
+            {
+              "gap_id": "多OEM或多平台重复导入Micron",
+              "possible_occurrence": "Micron在两个或以上彼此独立的OEM/Tier 1车型或平台获得资格/设计定点，并在各自生产周期保持可重复的分配或交付。",
+              "derivation": "当前SCA网络已覆盖GM、Ford和多家Tier 1/生态伙伴，但披露没有把协议映射到具体车型、数量或serial production；产品阶段也仍混合于送样、验证和首批出货。即使单一平台成功，可能仍是孤立项目，因此多平台、跨合作方的重复导入构成独立的更广泛修正路径。",
+              "citation": [
+                "【cite:O23】",
+                "【cite:O24】",
+                "【cite:O25】",
+                "【cite:O26】"
+              ],
+              "expected_revision": "把预期从单一平台可能转化上修为OEM/Tier 1生态中可重复的多平台采用和供给覆盖，降低对单一项目的依赖；仍不能由平台数量推导精确数量、相对份额、价格或所有协议的履约程度。",
+              "recognition_criteria": "公开来源识别至少两个相互独立的车型/平台及其Micron资格或设计定点，并对每个项目给出serial production、重复发运或量产分配证据；仅再次列举多个SCA合作方不算匹配。"
+            },
+            {
+              "gap_id": "汽车SCA范围收缩或替代供应商进入",
+              "possible_occurrence": "GM、Ford或已披露Tier 1对与Micron的SCA或目标项目公开缩小范围、暂停/取消，或在同一车型/平台明确导入替代内存/存储供应商。",
+              "derivation": "现有SCA提升生产计划和供给可见性，但没有公开数量、车型、价格或交付窗口；汽车客户仍可能采用多源采购，当前因素也把替代供应商列为持续分配的变数。因此，客户对协议范围或供应商组合采取与当前合作推进不同的行动，仍是可行且能改变本Unit的未来事件。",
+              "citation": [
+                "【cite:O23】",
+                "【cite:O24】",
+                "【cite:O25】"
+              ],
+              "expected_revision": "下调受影响客户/项目的供给可见性及进入量产分配的预期，并把预期收益部分转移到替代供应商或未定状态；单一协议的收缩不等同于所有汽车SCA或全部产品被取消。",
+              "recognition_criteria": "OEM、Tier 1或Micron的公开文件点名相关协议、车型/平台并明确取消、暂停、范围减少、重新谈判或替代供应商的决定；泛化的多源采购描述或分析师猜测不算匹配。"
+            },
+            {
+              "gap_id": "目标车型SOP或产量计划延迟收缩",
+              "possible_occurrence": "已取得Micron资格或正在合作的目标车型/平台的SOP被推迟、项目被取消或改款，或OEM公开下调其量产计划，使原定采购窗口后移或收缩。",
+              "derivation": "汽车平台虽具有多年生命周期，但当前未公开对应车型、SOP时点、生产量或生命周期采购窗口；SCA只证明合作入口，不证明量产节奏。平台开发、工厂排产或车型策略发生改变，可能在技术资格不变的情况下改变Micron的量产时点和可持续分配。",
+              "citation": [
+                "【cite:O23】",
+                "【cite:O24】",
+                "【cite:O25】"
+              ],
+              "expected_revision": "将受影响项目的量产启动和持续供给时间后移，或缩小其预期分配；若只是排产延迟，保留技术资格状态，不把时间修正误写成产品资格失败，也不以整个汽车市场单一季度变化替代项目级证据。",
+              "recognition_criteria": "OEM、Tier 1或项目/工厂正式披露并点名目标车型或平台的SOP、产量、改款或项目状态发生实质延迟、取消或下调，且能与Micron供给窗口或已认证器件关联；宏观汽车销量变化但无项目关联不算匹配。"
+            },
+            {
+              "gap_id": "汽车级制造能力形成并按平台供货",
+              "possible_occurrence": "Micron公开确认Manassas或相关汽车供给制造/封装地点已形成符合汽车规范的合格产出、稳定良率和可交付有效产能，并开始按平台窗口供货。",
+              "derivation": "Manassas已开始1-alpha DRAM制造，且与汽车内存产出和扩张关联披露，但当前没有汽车专属合格产出、良率、有效产能或平台交付证据；制造启动和投资里程碑不足以证明可交付供给。若后续出现合格产出、良率和可用产能的公开验证并接上平台供货，制造准备这一必要闸门可能向前推进。",
+              "citation": [
+                "【cite:O27】",
+                "【cite:O24】",
+                "【cite:O28】"
+              ],
+              "expected_revision": "将供给能力状态从制造启动/计划上修为已展示汽车级合格产出和可交付能力，降低按期供货的制造不确定性；但这只验证供应侧闸门，不证明车型资格、serial production、连续分配或客户需求规模。",
+              "recognition_criteria": "公开证据同时给出汽车级合格wafer-out或封装产出，以及良率、有效产能或交期，并将其与目标汽车平台/客户供货联系；施工、设备采购或一般DRAM制造启动不算匹配。"
+            },
+            {
+              "gap_id": "汽车级良率或交付爬坡未达要求",
+              "possible_occurrence": "Micron面向目标车型的汽车级产出、良率、封装/材料供给或交期爬坡未达平台要求，并出现与该平台相联系的发运延迟、短缺或分配缩减。",
+              "derivation": "现有制造证据只到Manassas 1-alpha启动，汽车专属合格产出、有效产能、关键材料/封装交期和按平台发运尚未验证；公司风险边界也包含制造、供应商和爬坡约束。因此，内部良率或投入瓶颈使已合作或已认证平台无法按窗口获得足量器件，是不同于客户资格失败的供应执行下行路径。",
+              "citation": [
+                "【cite:O27】",
+                "【cite:O24】",
+                "【cite:O28】"
+              ],
+              "expected_revision": "下调汽车供给能力和资格后量产转换的可实现度，延后或缩小受影响平台的持续分配，即便其技术资格仍有效；不要把一次短缺外推为所有制造地点或所有汽车产品永久失效。",
+              "recognition_criteria": "Micron、OEM或Tier 1公开将目标平台的交付延迟/短缺/减配与汽车级良率、合格产出、封装或材料交期不足联系，或明确承认爬坡未达平台要求；一般性的产能风险提示不算匹配。"
+            },
+            {
+              "gap_id": "高内存汽车架构带来Micron系统级导入",
+              "possible_occurrence": "GM、Ford或Tier 1公开把软件定义车辆、ADAS/车载AI或robotaxi平台的更高内存带宽、容量或存储配置纳入新车型架构，并选择Micron参与系统级共同开发、资格或设计定点。",
+              "derivation": "行业研究将更智能、软件定义车辆与汽车内存需求联系起来，现有SCA也覆盖产品定义和系统级优化；LPDDR5、DDR5及UFS 4.1已提供产品前置基础。由这些已知能力和客户协作方向向外推导，平台架构升级可能使内存/存储在车辆系统中的技术角色和配置深度超过当前仅有产品阶段的表达；这是可能性推演，不是对客户路线图的断言。",
+              "citation": [
+                "【cite:O23】",
+                "【cite:O24】",
+                "【cite:O25】",
+                "【cite:O26】"
+              ],
+              "expected_revision": "上修本Unit对平台技术深度、单平台器件配置或潜在导入范围的判断，并把系统级共开发视为更强的资格路径；但架构需求或共同开发本身仍不证明SOP、持续交付或每车用量。",
+              "recognition_criteria": "公开资料点名具体车型/平台并说明相对既有方案的内存带宽、容量、存储或系统要求提升，同时确认Micron参与该平台的系统共开发、资格或设计定点；泛泛的智能汽车宣传不算匹配。"
+            },
+            {
+              "gap_id": "平台架构改用集成或竞争内存方案",
+              "possible_occurrence": "OEM或Tier 1在目标平台的架构或BOM决策中公开采用与SoC/模块绑定的集成内存、不同存储架构或竞争供应商整体方案，并将原拟Micron器件排除或降为备用。",
+              "derivation": "汽车导入需要系统级优化和严格资格，当前公开证据尚未达到具体平台定点；客户的架构选择、模块捆绑或供应商组合可能因此改变器件入口，而不必表现为Micron产品本身失败。该事件挑战“协议与产品阶段自然进入平台”的当前因果模型，代表技术/受益方转移的独立路径。",
+              "citation": [
+                "【cite:O26】",
+                "【cite:O23】",
+                "【cite:O25】"
+              ],
+              "expected_revision": "对受影响平台下调Micron成为主供方并进入持续分配的预期，即使Micron产品仍满足一般汽车规格；将其状态改为未采用或备用，不能由一个平台的架构选择推断所有客户都转向集成或竞争方案。",
+              "recognition_criteria": "OEM、Tier 1或平台设计文件明确点名该车型/平台采用集成/绑定/竞争内存或存储方案，并说明Micron器件被移出主BOM、降为备份或不再继续认证；仅有竞争对手产品公告不算匹配。"
+            },
+            {
+              "gap_id": "关键材料或地缘事件中断汽车供给",
+              "possible_occurrence": "因地缘政治或出口限制、自然灾害，或关键硅片/封装材料供应中断，Micron或OEM公开披露已认证平台的汽车级器件交付中断并需切换来源或重新认证。",
+              "derivation": "Micron的汽车供给依赖跨地点制造、封装以及外部材料/服务；Manassas扩产和GlobalWafers拟议的原生硅安排都说明投入保障仍是未来变量，且现有状态没有平台级持续交付缓冲。由此，外部冲击可以在产品资格和客户意愿不变时直接破坏交付连续性，是区别于内部良率不足和客户主动换供方的模型外风险。",
+              "citation": [
+                "【cite:O28】",
+                "【cite:O29】",
+                "【cite:O27】",
+                "【cite:O24】"
+              ],
+              "expected_revision": "将受影响平台的连续供给判断下调并把交付窗口、替代来源资格和恢复时间重新打开；事件本身不证明Micron永久退出，若后续完成替代认证，应只修正受影响的时间段和平台。",
+              "recognition_criteria": "Micron、OEM或Tier 1的正式披露把某一汽车平台的缺货、停发或交期中断明确归因于地缘/出口、灾害、硅片或封装材料事件，并记录切换来源或重新认证；一般风险因素文字不算匹配。"
+            },
+            {
+              "gap_id": "汽车监管或标准变化触发重新认证",
+              "possible_occurrence": "目标市场新的汽车功能安全、网络安全、供应链追溯或本地化要求正式生效，促使目标平台对Micron器件重新认证、变更供应来源或推迟SOP。",
+              "derivation": "当前汽车器件仍处于客户/平台验证前后，且OEM与Tier 1协议覆盖系统协作、认证和制造能力；严格的车辆级要求意味着外部规则变化可能改变资格门槛或供给来源。虽然当前材料没有预言特定规则，未来规则正式落地并作用于命名平台仍是可能的制度性跳变，足以挑战按现有规格继续导入的假设。",
+              "citation": [
+                "【cite:O26】",
+                "【cite:O25】",
+                "【cite:O28】"
+              ],
+              "expected_revision": "若新要求使当前器件需重测或改变来源，将受影响平台的资格确定性和量产时间后移；若Micron通过新增要求，更新应限于资格条件改善，不能由规则生效本身推断连续分配。",
+              "recognition_criteria": "监管机构、标准组织或OEM正式发布并实施适用于目标市场/平台的新要求，且Micron、OEM或Tier 1明确记录由此产生的器件重认证、供应商变更或SOP延迟；仅有政策讨论或一般合规声明不算匹配。"
+            },
+            {
+              "gap_id": "初始汽车出货停留为一次性导入",
+              "possible_occurrence": "在G9 UFS 4.1或未来汽车项目出现首批/试生产供货后，OEM或Tier 1公开确认该器件仅用于验证或有限批次，未进入或退出连续serial production。",
+              "derivation": "G9 UFS 4.1已经有首批量出货，但截至研究截止日没有多个车型/平台的持续分配；LPDDR5和DDR5甚至仍处于送样或验证阶段。首批商业交付可能证明一次性交付而非长期平台采用，因此“已出货但未规模化”是与资格失败、协议取消不同的非扩展路径。",
+              "citation": [
+                "【cite:O26】",
+                "【cite:O23】",
+                "【cite:O24】",
+                "【cite:O25】"
+              ],
+              "expected_revision": "将相关产品或平台从初始商业化阶段回调为一次性/有限批次导入，削弱其对持续汽车供给命题的支持并延后规模化判断；不得因一个项目未扩展而否定其他平台的资格或交付。",
+              "recognition_criteria": "OEM、Tier 1或Micron明确说明对应器件仅为验证/试生产/有限批次，或正式确认其在首批交付后未进入/已退出serial production，且该信息与具体项目相连；单纯未发现后续公告不算匹配。"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "shell_outcomes": [
+    {
+      "shell_id": "AI与服务器内存商业兑现",
+      "status": "completed",
+      "artifact_id": "becb3879c33c4ac3acd023ece23769b7",
+      "failed_stage": null,
+      "failure_kind": null,
+      "error_code": null,
+      "error": null,
+      "seed": {
+        "shell_id": "AI与服务器内存商业兑现",
+        "core_question": "Micron能否把AI/服务器内存需求、产品与战略客户兑现，经由行业供需与分配、定价、制造效率、扩产和营运资本，转化为FY26 Q4至FY27及以后可持续的收入、盈利与经营现金流，而非周期峰值？",
+        "boundary_rule": "本Shell覆盖同一条AI/服务器内存商业—制造—现金价值传导链：行业供需和服务器/消费分配影响HBM、DRAM/NAND的采用与定价，再经合同履约、制造效率、扩产和营运资本传到收入、盈利和现金。各Unit共享产品路线图、客户/平台、周期状态、项目里程碑与财务事件，但更新路径分别是盈利持续性、公司实现的ASP/位出货/组合、产品资格与多平台出货、行业分配机制、合同商业兑现、制造成本/良率、扩产项目和经营现金转换。美国扩产与GlobalWafers安排作为扩产Unit的实现因素或潜在缺口，融资、资本开支回报和估值/股价仅作证据，不另设Unit；汽车OEM/Tier 1车型认证和量产交付属于不同客户生态与事件链，置于独立Shell。",
+        "units": [
+          {
+            "expectation_id": "AI内存盈利持续性",
+            "proposition": "AI/服务器内存驱动的盈利改善将在FY26 Q4后延续至FY27，形成可重复的经营盈利平台而非单纯周期峰值；其与公开基线及当前价格的关系须由估计修订和实际季度结果逐步验证。",
+            "horizon": "FY26 Q4至FY27，延伸至随后数个季度的盈利验证期"
+          },
+          {
+            "expectation_id": "DRAM与NAND实现定价和产品组合",
+            "proposition": "AI数据中心需求下，Micron实现的DRAM/NAND ASP、位出货和产品组合将支撑高毛利、收入和每股收益路径，避免经营结果在FY26 Q4至FY27结构性回落。",
+            "horizon": "FY26 Q4至FY27的产品与财务结果周期"
+          },
+          {
+            "expectation_id": "HBM与AI平台商业采用",
+            "proposition": "HBM4及AI平台产品的资格样品和高量生产将转化为多个客户或平台的认证、持续序列商业出货与重复分配；合同数量、提货、收入确认和回款不属于本Unit。",
+            "horizon": "从当前产品导入到2027年及后续平台生命周期"
+          },
+          {
+            "expectation_id": "服务器优先分配与内存行业供需",
+            "proposition": "服务器优先的DRAM/NAND产能分配与HBM需求将维持行业供需、合同价格和产品升级格局；若HBM需求转弱、消费端收缩、库存累积或供给释放，则传统产品回流和价格逆风将成为主要反转路径。",
+            "horizon": "FY26 Q4至FY27的内存行业周期与分配机制"
+          },
+          {
+            "expectation_id": "战略内存合同商业兑现",
+            "proposition": "战略客户多年期take-or-pay及AI内存安排将通过存款到账、数量和价格条款可执行、按约提货与发运、收入确认和回款，形成FY27及以后可验证的多年度商业收入与现金兑现；它是盈利持续性的条件支撑，不等同于已确认收入。",
+            "horizon": "FY26 Q4起至FY27及以后合同履约、发运和回款周期"
+          },
+          {
+            "expectation_id": "制造效率与良率规模效应",
+            "proposition": "现有及成熟制造环节的效率、良率和规模效应将持续改善单位成本与收入到营业利润的转换，使利润率改善不只依赖短期ASP或产品组合。",
+            "horizon": "FY26 Q4至FY27的季度制造、成本和利润率验证期"
+          },
+          {
+            "expectation_id": "晶圆与先进封装扩产兑现",
+            "proposition": "晶圆与HBM先进封装扩产将按项目里程碑完成认证、投产和良率爬坡，形成合格且可交付的新增DRAM/HBM供给；美国项目和GlobalWafers原生硅安排是该路径的实现因素，而非独立的产能或现金回报Unit。",
+            "horizon": "2026年至2028年及以后分阶段的项目与供给兑现周期"
+          },
+          {
+            "expectation_id": "经营现金流与营运资本转换",
+            "proposition": "AI内存带来的收入和利润增长将通过应收账款回款与客户存款结算转化为可持续经营现金流，营运资本占用是该转换能否成立的主要验证路径。",
+            "horizon": "FY26 Q4至FY27及随后扩产周期的季度现金转换"
+          }
+        ]
+      }
+    },
+    {
+      "shell_id": "汽车内存平台认证与量产供给",
+      "status": "completed",
+      "artifact_id": "f59565a1628c4dd194beb767d7f8f2c7",
+      "failed_stage": null,
+      "failure_kind": null,
+      "error_code": null,
+      "error": null,
+      "seed": {
+        "shell_id": "汽车内存平台认证与量产供给",
+        "core_question": "Micron能否把GM、Ford及Tier 1汽车战略合作，从资格协作推进为具体车型或平台认证、持续量产分配和可验证的长期汽车内存供给？",
+        "boundary_rule": "该Shell仅研究汽车OEM/Tier 1客户生态中的车型与平台生命周期、资格认证、持续量产和按平台交付。虽然共享Micron的基础制造能力，但不共享AI/服务器需求状态、客户决策者、资格节奏或主要未来事件；将其并入AI内存Shell会混淆两条实现链。当前缺乏对应的价格反应、订单规模或卖方盈利贡献锚点，因此本Shell是独立的长期研究上下文和潜在业务选项，不代表该汽车路径已被当前市场定价或属于FY26 Q4/FY27 AI盈利基线。",
+        "units": [
+          {
+            "expectation_id": "汽车内存平台认证与量产分配",
+            "proposition": "GM、Ford及Tier 1合作将从供给可见性与资格协作推进至具体车型或平台认证，并形成持续量产分配和可验证的长期汽车内存供给。",
+            "horizon": "从车型或平台开发、资格认证到持续量产的多年汽车业务周期"
+          }
+        ]
+      }
+    }
+  ]
+}

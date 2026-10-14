@@ -1,0 +1,23 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-30T04:47:21.648615Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "The precise time when Investor Day speakers first stated the 2030 financial assumptions is not established by a timestamped pre-cutoff transcript; 18:30Z is the earliest exact-time issuer release found, not proof that the figures were first spoken then.",
+    "No company-issued single-point total-revenue target of exactly $11B was located in the deck; the reported range is a calculation from the stated 2026E revenue and CAGR.",
+    "The reviewed sources do not establish broad sell-side consensus for the 2030 model or validate the targets independently.",
+    "No Bloom-specific customer, project, order, or deployment connection was found in this onsemi event."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

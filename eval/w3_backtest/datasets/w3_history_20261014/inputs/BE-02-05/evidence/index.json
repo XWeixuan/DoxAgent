@@ -1,0 +1,23 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-29T13:07:39.544424Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "No independent pre-cutoff bond-trade or CDS data source was located for the 91-cent mark, 7.55% yield, 230-basis-point spread, or CDS levels; the Reuters column does not identify its data provider or quote time.",
+    "The supplied message metadata gives a date-precision 16:00Z value, while Boursorama’s timestamped Reuters syndication copy shows 15:00:58 Paris time. The Reuters-native page was inaccessible; the original-wire timestamp is therefore not independently verified.",
+    "The 2025 S&P rating report’s 2.064-GW project scope and the Reuters column’s 5-GW compute/$50-billion description were not reconciled.",
+    "The reported one-year Jupiter delay remained attributed to an unnamed source, while Oracle and Blue Owl publicly stated that the project remained on schedule and commitments were unchanged. No project-specific revised Bloom scope, commissioning, or acceptance evidence was found."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

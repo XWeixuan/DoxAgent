@@ -1,0 +1,178 @@
+{
+  "case_key": "RKLB-01-04",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-09-24T20:35:07.133243Z",
+  "reviewed_at": "2026-10-13T22:58:33.401775Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 5,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a13767-47ba-7213-98bc-ca2b9205be03",
+    "turn_id": "01a13767-47c8-7c12-8e73-ff7388ff176d",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 76544,
+        "inputTokens": 79223,
+        "outputTokens": 12116,
+        "reasoningOutputTokens": 10285,
+        "totalTokens": 91339
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 297728,
+        "inputTokens": 378619,
+        "outputTokens": 14811,
+        "reasoningOutputTokens": 12509,
+        "totalTokens": 393430
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "055118da7decba798246effbe4bdfa7f6664c568c72e00cffc6de946e6d42c07",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://www.prnewswire.com/news-releases/iridium-stockholders-approve-acquisition-by-rocket-lab-302889586.html",
+      "title": "Iridium Stockholders Approve Acquisition by Rocket Lab",
+      "published_at": "2026-09-24T20:30:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn1search2"
+      ],
+      "source_call_ids": [
+        "exec-e47878f2-b063-4bf1-8832-ed136debce3e"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://investors.rocketlabcorp.com/news-releases/news-release-details/iridium-stockholders-approve-acquisition-rocket-lab",
+      "title": "Iridium Stockholders Approve Acquisition by Rocket Lab",
+      "published_at": "2026-09-24T20:30:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search0"
+      ],
+      "source_call_ids": [
+        "exec-4782e348-fee4-4c49-9a8b-10afdeb86b8c"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://investors.rocketlabcorp.com/static-files/2dea13f3-cb94-41c9-b211-325e51e17887",
+      "title": "Form S-4/A for Rocket Lab Corp filed 08/24/2026",
+      "published_at": "2026-08-24",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search13"
+      ],
+      "source_call_ids": [
+        "exec-4782e348-fee4-4c49-9a8b-10afdeb86b8c"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://investors.rocketlabcorp.com/news-releases/news-release-details/rocket-lab-corporation-announces-progress-iridium-acquisition",
+      "title": "Rocket Lab Corporation Announces Progress on Iridium Acquisition: HSR Period Lapses; Form S-4 Filed; FCC Applications Filed; Capital Strategy Underway",
+      "published_at": "2026-08-13",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn3search2"
+      ],
+      "source_call_ids": [
+        "exec-d08bbc98-b07e-46e8-abf9-aed8dbd229d6"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "Before the vote, the proxy scheduled Iridium’s virtual special meeting for 8:30 a.m. ET on Sep. 24, 2026, and stated that stockholder adoption of the merger agreement was required for completion.",
+      "source_urls": [
+        "https://investors.rocketlabcorp.com/static-files/2dea13f3-cb94-41c9-b211-325e51e17887"
+      ],
+      "event_time": "2026-09-24T12:30:00Z",
+      "publication_time": "2026-08-24",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This was a scheduled meeting and an unmet condition in the pre-event proxy; it does not establish the vote outcome."
+    },
+    {
+      "observation": "The joint company release reports that Iridium stockholders adopted the merger agreement at the special meeting on Sep. 24; approximately 99.6% of votes cast favored it, representing approximately 81.0% of shares entitled to vote.",
+      "source_urls": [
+        "https://www.prnewswire.com/news-releases/iridium-stockholders-approve-acquisition-by-rocket-lab-302889586.html",
+        "https://investors.rocketlabcorp.com/news-releases/news-release-details/iridium-stockholders-approve-acquisition-rocket-lab"
+      ],
+      "event_time": "2026-09-24",
+      "publication_time": "2026-09-24T20:30:00Z",
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "The release gives approximate percentages and says complete voting results would be reported in an 8-K; the announcement does not timestamp when during the meeting the result was reached."
+    },
+    {
+      "observation": "The same Sep. 24 release says the transaction is expected to close by mid-2027, subject to remaining required regulatory approvals and other customary closing conditions; the shareholder vote was not described as closing the transaction.",
+      "source_urls": [
+        "https://www.prnewswire.com/news-releases/iridium-stockholders-approve-acquisition-by-rocket-lab-302889586.html"
+      ],
+      "event_time": "2026-09-24",
+      "publication_time": "2026-09-24T20:30:00Z",
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "This is the companies’ stated expectation, not confirmation that the remaining approvals or other closing conditions will be satisfied."
+    },
+    {
+      "observation": "A pre-cutoff Rocket Lab update said the HSR waiting period expired Aug. 12 and that FCC applications seeking consent to transfer Iridium licenses and authorizations had been filed Aug. 10.",
+      "source_urls": [
+        "https://investors.rocketlabcorp.com/news-releases/news-release-details/rocket-lab-corporation-announces-progress-iridium-acquisition"
+      ],
+      "event_time": null,
+      "publication_time": "2026-08-13",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The FCC filing records an application, not a decision. The Sep. 24 release continued to make closing subject to remaining required regulatory approvals."
+    }
+  ],
+  "gaps": [
+    "No independent contemporaneous report with a publication time demonstrably before cutoff was verified. A Sep. 24 Light Reading item surfaced, but it is dated only to the day, labels itself “#pressrelease,” and substantially republishes the company release, so its pre-cutoff availability and independent corroboration are not established.",
+    "The exact time the stockholder vote was completed is not stated in the release; the event is therefore recorded at date precision, separately from the 16:30 ET publication time.",
+    "An SEC 8-K search result contains detailed vote counts, but its acceptance time was not verified as before cutoff; it is not used for those details."
+  ],
+  "research_notes": "Cutoff: 2026-09-24T20:35:07.133243Z. The earliest time-stamped public item located is the companies’ joint release, distributed by PR Newswire at 16:30 ET (20:30Z), about five minutes before cutoff. The pre-meeting proxy had scheduled the vote for 8:30 a.m. ET on September 24 and identified stockholder adoption as a completion condition. The release reports adoption, but also says closing remains expected by mid-2027 subject to required regulatory approvals and customary conditions. No post-cutoff coverage or market reaction is used."
+}

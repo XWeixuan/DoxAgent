@@ -1,0 +1,1106 @@
+{
+  "recent_trade_intents": [
+    {
+      "message": {
+        "title": "Dash for small gas turbines set to impact data center costs",
+        "body": "September 28 - Demand for small open cycle and aeroderivative gas turbines has jumped as large data center developers increasingly seek behind-the-meter (BTM) generation and avoid long lead times for larger gas turbine units.\n\nSome 29.6 GW of behind-the-meter (BTM) gas generation will be added in the U.S. through 2030 and data centers will account for ​roughly 88% of demand, according to Enverus Intelligence Research. Data center developers are prioritizing faster development and are often willing to pay higher power prices to avoid grid ‌connection delays.\n\nSoaring demand and a shortage of manufacturing capacity for larger gas turbines has led to rising costs and long lead times. Small gas turbines include aeroderivative turbines derived from aircraft engines, industrial gas turbines and microturbines. Many large-scale data center developers have opted for aeroderivatives as they offer rapid deployment and modular installation.\n\nLead times for large combined cycle gas turbine (CCGT) plants can stretch up to six years while small or medium frame turbines can be delivered within two years and aeroderivatives ​in around 40 months, according to Enverus. Suppliers include GE Vernova, Siemens Energy and Mitsubishi Power for large-frame turbines; GE Vernova, Siemens Energy and Baker Hughes for aeroderivatives; and Caterpillar, Wartsila and ​Innio Jenbacher for reciprocating engines.\n\nSmaller turbines also have lower capital costs then larger units and can be installed incrementally in line with data center expansions.\n\n“We’ve secured ⁠turbine supply through direct partnerships with turbine and equipment manufacturers including GE Vernova and Bergen,” John Adams, SVP, Power Infrastructure at AI infrastructure company Crusoe, told Reuters Events.\n\nCrusoe has ordered 29 GE Vernova 35 ​MW aeroderivative gas turbines in a move towards BTM generation at U.S. data centers, including ten units for its Abilene, Texas campus. In June, Crusoe agreed to procure around 750 MW of Bergen reciprocating gas engines ​for on-site generation at multiple U.S. data-center sites.\n\nCHART: US oil or gas-fired powergen in advanced development, by supplier\n\n(Sample, August 2026)\n\nSiemens Energy has seen rising demand across its gas turbine range, Matt Neal, President of Siemens Energy North America, told Reuters Events.\n\n\"Some customers buy several smaller turbines for earlier availability, flexibility and redundancy,\" Neal said.\n\n“As a general rule, the larger ​a machine is, the longer it takes to manufacture and install,\" he said.\n\nCost equation\n\nA shortage in manufacturing has driven up the cost of new large CCGT units.\n\nIn one example, Duke Indiana has estimated the ​cost of its planned 1.5 GW Cayuga CCGT project at $3.3 billion, some $900 million more than it assumed for new gas-fired capacity in general in 2024.\n\nJoin 1,500+ senior decision-makers across energy and finance at Reuters Events Energy LIVE 2026.\n\nWhile large ‌CCGTs have ⁠higher capital costs than smaller turbines they are more efficient, offering lower average costs over the lifetime of the plant.\n\nCapital costs per unit of electricity can be up to 50% higher for smaller turbines, Bobby Noble, Senior Program Manager, Gas Turbines & Emerging Fuels at the Electric Power Research Institute (EPRI), told Reuters Events.\n\n\"The upfront cost of purchasing, installing and maintaining these technologies must be weighed against the cost per MWh over the plant’s lifetime,” Dan O’Beirne, Interim Project Manager, Global Oil & Gas Plant Tracker at Global Energy Monitor, said.\n\nLarge CCGTs also have lower greenhouse gas emissions per MWh because smaller open-cycle units have “lower firing temperatures and no ​heat recovery system,” he said.\n\nMeanwhile, turbine manufacturers are ​expanding U.S. production capacity for larger turbine models ⁠which will start to curb cost increases and shorten lead times.\n\nGE Vernova is investing $160 million to expand its Greenville, South Carolina factory by 2028, adding 650 workers, while Siemens Energy is restarting its factory in Charlotte, North Carolina by 2028.\n\nExpanded U.S. manufacturing capacity will help some developers switch from buying turbines from overseas ​and avoid import tariffs and steel duties, Heather Leahey, principal analyst at Enverus, said.\n\nFuture value\n\nSome data center developers are installing small gas-fired or hybrid BTM ​power solutions to provide near-term ⁠load until larger permanent power solutions are built or a grid connection becomes available. On-site generation assets can be used to support the data center and local grid needs in the future.\n\nLarger and newer gas-fired turbines are \"more suited to eventually become a merchant grid asset” because lower marginal costs mean they retain more value, Jack Painter, Vice President at consultancy Capstone, told Reuters Events.\n\n“Developers also care about the emissions profile, given that some of the ⁠final customers care ​about it,” he said.\n\nFor exclusive energy insights, sign up to our newsletter.\n\nUtilities and large customers could look to alternative sources to ​gas turbines that can be deployed incrementally, such as virtual power plants, batteries, repowering with clean power assets and hybrid resources, as well as grid enhancements and energy efficiency savings, Mark Dyson, Managing Director at Electricity at research group Rocky Mountain Institute (RMI), told ​Reuters Events.\n\n“Near-term alternatives could meet nearly all projected near-term U.S. load growth, while reducing exposure to turbine shortages and avoiding some of the reliability and affordability risks associated with waiting for new gas generation,\" he said.",
+        "source_name": "reuters",
+        "published_at": "2026-09-29"
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": []
+      },
+      "w2": {
+        "policy_hit": false,
+        "policy_related": false,
+        "policy_ids": [],
+        "hit_condition_ids": [],
+        "matched_condition_ids": []
+      },
+      "w3_decision": {
+        "novelty": {
+          "reason": "Reference View covered severe large-turbine and transformer supply constraints, but not the emerging small-turbine and reciprocating-engine route, its quantified 29.6 GW BTM buildout, or the named Crusoe procurement commitments.",
+          "reference_ids": [
+            "E20",
+            "E26"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "The message does not satisfy the existing alternative-firm-power Policies because it does not identify a Bloom-associated project switching routes or a commercially operating alternative on a required schedule. It is nevertheless relevant as an uncovered upstream change to the alternative-supply window."
+        },
+        "expert_trade": {
+          "direction": "SHORT",
+          "evaluated": true,
+          "expectation_delta": "The report moves alternative gas power from a general reservation signal toward a sizeable, modular, faster-deploying route: approximately 29.6 GW of U.S. BTM gas additions through 2030, 88% tied to data centers, small or medium turbines deliverable within two years, aeroderivatives in roughly 40 months, and named Crusoe purchases of 29 GE Vernova units plus about 750 MW of Bergen engines. This shortens the expected duration of Bloom’s time-to-power advantage and raises the probability that future load is allocated to gas alternatives.",
+          "prior_expectation": "BE’s opportunity window relied on grid and large-gas-turbine delivery constraints, with gas turbines previously described as sold out for three to four years and reservations not yet equivalent to local operating capacity. Bloom had customer validation and contracted/deploying capacity, but future share depended on alternatives remaining unavailable on required schedules.",
+          "reason": "TRADE/SHORT: the path is alternative availability → customer firm-power route selection → lower future Bloom share and replacement-pipeline duration. The scale, delivery timing, named orders, and planned U.S. manufacturing expansion are material to BE’s core AI-power thesis even without a current Bloom project cancellation. No commercial operation or Bloom-associated project switch limits magnitude, while higher lifetime cost and emissions preserve some Bloom opportunity.",
+          "trade": true
+        }
+      },
+      "direction": "SHORT",
+      "initiated_at": "2026-09-29T09:28:16.519846+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    },
+    {
+      "message": {
+        "title": "Anthropic Locked Into $518B of Compute Deals, 80% Non-Cancelable",
+        "body": "← Back to live feed · 1 stories across 1 day\nTuesday, Sep 29, 2026\n1 story1 Anthropic Locked Into $518B of Compute Deals, 80% Non-Cancelable↩︎ AI Sep 28, 7:16 PM EDT 182/87 \n Anthropic is locked into more than $518 billion of cloud, compute and infrastructure spending over 10 years with six partners, and about 80% of the total is non-cancelable or payable regardless of usage, its IPO filing shows. The commitments include $252 billion in non-cancelable compute obligations across Microsoft, Google and Amazon, and $161.2 billion in Broadcom TPU leases that are largely non-cancelable.\nThe company also agreed to pay SpaceX up to $84.5 billion through 2029 for Nvidia-based compute, nearly double the roughly $45 billion cap SpaceX disclosed in May, The Information reported. Most of the SpaceX spending can be canceled with 90 days' notice, unlike the bulk of the buildout.\nThe obligations are more than 100 times Anthropic's 2025 revenue of $4.59 billion and roughly 25 times the $20.28 billion in cash, cash equivalents and short-term investments it held at year-end. The company posted an $8.06 billion operating loss in 2025, and its $41.97 billion net loss included about $34 billion in non-cash charges tied to the rising value of financing that could convert into shares. Its two largest customers accounted for 24% of revenue, and Anthropic warned that many of its largest clients are not locked into long-term contracts and could reduce or stop spending, even as it cannot cancel most of its own compute bill. Google and Amazon, both major investors in Anthropic, supply much of the infrastructure behind Claude. The IPO could value the company above $2 trillion.",
+        "source_name": "huggingnews.com",
+        "published_at": "2026-09-29T18:10:19.614000Z"
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": [
+          "E82"
+        ]
+      },
+      "w2": {
+        "policy_hit": false,
+        "policy_related": false,
+        "policy_ids": [],
+        "hit_condition_ids": [],
+        "matched_condition_ids": []
+      },
+      "w3_decision": {
+        "novelty": {
+          "reason": "E82 covered Anthropic's approximately $518 billion aggregate cloud, compute, and infrastructure obligations, but not the newly disclosed approximately 80% non-cancelable share, partner-level allocations, expanded SpaceX commitment, or the associated financial and customer-concentration risks.",
+          "reference_ids": [
+            "E82"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "No Policy applies: the message concerns Anthropic's compute commitments and IPO financial disclosures, without identifying a Bloom Energy project, power procurement, accepted MW, permit, interconnection, delivery, manufacturing, service, or financial event."
+        },
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "The filing indicates that approximately 80% of Anthropic's ten-year cloud, compute, and infrastructure commitments are non-cancelable or payable regardless of usage, including large Microsoft, Google, Amazon, and Broadcom commitments, while the SpaceX ceiling has risen to $84.5 billion through 2029. This raises the expected duration and certainty of the AI compute buildout and the associated pool of data-center power demand, although it does not assign any MW or revenue to Bloom.",
+          "prior_expectation": "The aggregate $518 billion Anthropic obligation was already known, but its cancellation status and partner-level duration were not. BE's pre-event AI-demand baseline still required compute growth to convert into durable data-center power demand and customer-accepted Bloom deployments.",
+          "reason": "TRADE LONG: the non-cancelable share is a material certainty and duration upgrade to the AI infrastructure demand variable, with a clear path from committed compute capacity to data-center electricity needs and potential onsite firm-power deployments in BE's qualified market. The absence of a Bloom-specific award, competing power routes, Anthropic's $8.06 billion operating loss, and customer concentration cap conviction but do not erase the positive demand signal.",
+          "trade": true
+        }
+      },
+      "direction": "LONG",
+      "initiated_at": "2026-09-29T18:20:15.533110+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    },
+    {
+      "message": {
+        "title": "Oracle Bonds Hit Record 8.31% Yield on $120B Junk Downgrade Risk",
+        "body": "← Back to live feed · 1 stories across 1 day\nTuesday, Sep 29, 2026\n1 story1 Oracle Bonds Hit Record 8.31% Yield on $120B Junk Downgrade Risk↩︎ AI Sep 24, 2:13 PM EDT 82/44 \n Credit markets are increasingly pricing in a downgrade to junk status for Oracle, a move that would automatically remove $120B of the company's bonds from investment grade indexes. Long-term bond yields climbed to a new record of 8.31% this week, while five-year credit default swaps hit record highs of 237 basis points. Such a downgrade would expand the total junk bond market by roughly 10%. Simultaneously, $18B in construction loans tied to the company's Project Jupiter facility are now trading at approximately 89 cents on the dollar.\nThe escalation in borrowing costs follows Oracle's decision to issue a force majeure notice to Blue Owl Capital, the developer of its New Mexico AI data center built for OpenAI. Oracle is seeking the right to defer lease payments if the site misses its 2028 opening after state officials twice denied permits for a 17 mile gas pipeline required for power. S&P currently rates the company's debt at BBB-, one notch above junk. Morgan Stanley noted that this credit stress is putting other AI infrastructure debt under scrutiny, potentially raising financing costs for other hyperscalers.",
+        "source_name": "huggingnews.com",
+        "published_at": "2026-09-29T16:25:49.485000Z"
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": [
+          "E31"
+        ]
+      },
+      "w2": {
+        "policy_hit": true,
+        "policy_related": false,
+        "policy_ids": [
+          "pol_7b7ccfd2cb4eecfb6a8f",
+          "pol_82afe9ef8746239e0beb"
+        ],
+        "hit_condition_ids": [
+          {
+            "condition_ids": [
+              "C1"
+            ],
+            "policy_id": "pol_7b7ccfd2cb4eecfb6a8f"
+          },
+          {
+            "condition_ids": [
+              "C1"
+            ],
+            "policy_id": "pol_82afe9ef8746239e0beb"
+          }
+        ],
+        "matched_condition_ids": []
+      },
+      "w3_decision": null,
+      "direction": "SHORT",
+      "initiated_at": "2026-09-29T16:29:44.297634+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    },
+    {
+      "message": {
+        "title": "Why Bloom Energy and AI Stocks Rise Even as OpenAI Safety Concerns Persist -- Barrons.com",
+        "body": "By Callum Keown and Kit Norton The stock market doesn't like to dwell on artificial-intelligence safety fears too long. That's a good thing. After OpenAI's decision to pause the training of its latest AI models sparked a sharp selloff Monday, investors might've expected the worst Tuesday after it scrapped the launch of one altogether. But investors would've been wrong, and pleasantly so with several AI-related stocks booking substantial advances. Bloom Energy, the supplier of power solutions for data centers, rose 14% to $300.13 and was one of the best-performing stocks in the S&P 500 for the trading session. That's quite the reversal in fortunes after Bloom Energy fell nearly 9% and was the S&P 500's worst performer on Monday. One of the reasons for the sharp jump in the stock was that Fremont, Calif., home to Bloom Energy's current manufacturing site, said on LinkedIn that the company has purchased a 158,000-square-foot facility to expand its operations. Morgan Stanley analyst David Arcaro said in a research note it's an indication of \"continued strong demand\" for Bloom Energy. \"Bloom has been very thoughtful about its intention to expand capacity, only committing to do so when demand requires it. We think the purchase of a new facility would represent another signal that the company is seeing strong customer demand and the need to accelerate its expansion plans,\" Arcaro said. The analyst also noted that Ameren Corp., through its regulated electric utility in Missouri, late Monday recommended adding 500 megawatts of natural gas fuel cells through 2030. \"We would expect this to be an opportunity for Bloom, notably fairly near-term and within the baseline recommendation from AEE,\" Arcaro said. Along with Bloom Energy stock, AI infrastructure provider Vertiv Holdings and memory chip maker Micron rose 3.5% and 2.5%, respectively. The tech-heavy Nasdaq Composite was up 0.2%, outperforming S&P 500 and Dow Jones Industrial Average. There isn't much room for nuance when it comes to knee-jerk stock market reactions. Both OpenAI developments are giving off the same signal-a threat to the assumption that the AI boom will continue to grow at a rapid pace. The necessary damage was done Monday in response to that signal. There's also a buzz ahead of OpenAI's developer conference later on Tuesday. A flurry of announcements could boost AI-related stocks. The 2026 DevDay will kick off with a keynote by CEO Sam Altman at 1 p.m. Eastern time. It's also worth noting that the ChatGPT maker said it has other new models coming soon that do meet the safety bar. \"For anything regarding safety and alignment, there's a trade off. You really do need to find what's the right line between staying within scope, but also avoiding laziness in terms of how the model actually pursues tasks even when it hits friction,\" OpenAI's head of safety systems Saachi Jain said in an emailed statement to Barron's. She added that the GPT-6.1 Astra model \"didn't quite meet the bar\" in terms of staying within scope and authorization and how it communicates back to the user. Write to Callum Keown at callum.keown@dowjones.com and Kit Norton at kit.norton@barrons.com This content was created by Barron's, which is operated by Dow Jones & Co. Barron's is published independently from Dow Jones Newswires and The Wall Street Journal. (END) Dow Jones Newswires September 29, 2026 10:56 ET (14:56 GMT) Copyright (c) 2026 Dow Jones & Company, Inc. The statements in this document shall not be considered as an objective or independent explanation of the matters. Please note that this document (a) has not been prepared in accordance with legal requirements designed to promote the independence of investment research, and (b) is not subject to any prohibition on dealing ahead of the dissemination or publication of investment research.",
+        "source_name": "interactivebrokers.com",
+        "published_at": "2026-09-29T14:56:00Z"
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": [
+          "E21"
+        ]
+      },
+      "w2": {
+        "policy_hit": false,
+        "policy_related": false,
+        "policy_ids": [],
+        "hit_condition_ids": [],
+        "matched_condition_ids": []
+      },
+      "w3_decision": {
+        "novelty": {
+          "reason": "E21 recorded Bloom Energy's plan to double factory capacity by year-end 2026, but this message adds the executed purchase of a 158,000-square-foot Fremont facility for expansion. It also adds Ameren's recommendation to add 500 MW of natural-gas fuel cells through 2030, a new named utility demand opportunity.",
+          "reference_ids": [
+            "E21"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "No current Policy is matched. The facility purchase does not disclose qualified Energy Server units, MW throughput, production run-rate, or shipment availability, and Ameren's recommendation is not a binding order, allocation, or acceptance milestone. The facts therefore do not satisfy the relevant manufacturing or customer-adoption trigger boundaries."
+        },
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "Bloom has moved from a stated expansion plan to an executed purchase of a 158,000-square-foot Fremont facility, increasing the probability and potential timing of additional capacity. Ameren's recommendation to add 500 MW of natural-gas fuel cells through 2030 adds a named utility demand pipeline. Together these improve capacity and demand visibility, although they do not yet establish qualified output, a binding order, or recognized revenue.",
+          "prior_expectation": "Before publication, BE's baseline included management's plan to double factory capacity by year-end 2026 with approximately $100 million of investment, but that plan remained unexecuted and qualified throughput, shipments, and customer acceptance were unproven. AI-data-center demand was strong, yet no specific Ameren 500 MW opportunity was established in the operating baseline. FY2026 guidance remained $3.9-$4.2 billion of revenue with value realization dependent on capacity and project conversion.",
+          "reason": "TRADE—LONG. The facility purchase is a concrete capital commitment that advances the capacity path, while the Ameren recommendation provides a potentially material utility opportunity. The transmission from facility expansion to qualified output and from utility recommendation to future fuel-cell orders is directionally clear. Missing qualification, exact capacity, and binding-contract evidence limit confidence and expected magnitude, but do not remove the positive expectation gap.",
+          "trade": true
+        }
+      },
+      "direction": "LONG",
+      "initiated_at": "2026-09-29T15:01:50.506090+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    },
+    {
+      "message": {
+        "title": "US Cloud Giants Boost AI Capex Outlook 66% to $1.89 Trillion",
+        "body": "← Back to live feed · 1 stories across 1 day\nTuesday, Sep 29, 2026\n1 story1 US Cloud Giants Boost AI Capex Outlook 66% to $1.89 Trillion↩︎ AI Sep 25, 8:18 AM EDT 29/15 \n The five largest U.S. cloud providers have accelerated their AI buildout plans, adding roughly $750 billion to their combined investment forecasts for 2026 and 2027. Alphabet and Amazon lead the ramp, with combined projections for the period reaching $507 billion and $505 billion, respectively, according to Goldman Sachs strategists. Estimates for Microsoft, Meta and Oracle also rose to $373 billion, $333 billion and $174 billion, bringing the two-year total to $1.89 trillion, a 66% increase since the start of 2026.\nThis spending surge creates a monetization gap, as the group requires roughly $308 billion in annual AI revenue to break even on the capex. Current AI revenues are estimated at $183 billion, with two-thirds provided by Anthropic and OpenAI, according to analyst Ed Zitron. Goldman warns that AI investment may transition from an earnings tailwind in 2026 to a marginal drag by 2028 as equipment depreciation charges rise. The risk is further compounded by high customer concentration, with the top 10% of AI firms accounting for 99.5% of model-serving spend.",
+        "source_name": "huggingnews.com",
+        "published_at": "2026-09-29T16:27:24.496000Z"
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": []
+      },
+      "w2": {
+        "policy_hit": false,
+        "policy_related": false,
+        "policy_ids": [],
+        "hit_condition_ids": [],
+        "matched_condition_ids": []
+      },
+      "w3_decision": {
+        "novelty": {
+          "reason": "No existing Event or Fact covers the reported 66% upward revision in the five largest U.S. cloud providers' 2026-2027 AI capital-expenditure outlook, the $308 billion annual break-even revenue estimate versus $183 billion of current AI revenue, or the associated 2028 depreciation and concentration warnings.",
+          "reference_ids": [],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "No Policy applies: the message is a macro cloud-capex and AI-economics update with no Bloom-specific order, project, customer acceptance, permit, interconnection, fuel, manufacturing, service, or financial observation."
+        },
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "Goldman estimates add approximately $750 billion to the five largest U.S. cloud providers' 2026-2027 AI-capex outlook, reaching $1.89 trillion, a 66% increase from the start of 2026. This raises the expected scale and persistence of power-intensive data-center demand and the opportunity for onsite firm-power deployments, including Bloom's Oracle-linked channel, but does not yet create committed Bloom MW or revenue.",
+          "prior_expectation": "AI and data-center demand was already expected to support Bloom's growth, with FY2026 guidance and approximately 1.2 GW of contracted and deploying capacity providing a baseline. However, there was no quantified new revision of the major cloud providers' spending base, and customer-accepted Bloom MW remained uncertain.",
+          "reason": "TRADE LONG: this is a large quantified upward revision to the spending base of the hyperscalers that drive Bloom's addressable AI-power market, with a clear path from cloud capex to data-center load, time-to-power constraints, onsite generation demand, and potential Bloom deployments. The AI monetization gap, 2028 depreciation risk, competing gas/grid routes, high valuation, and absence of a new Bloom order limit conviction and magnitude but do not negate the positive near- to medium-term expectation delta.",
+          "trade": true
+        }
+      },
+      "direction": "LONG",
+      "initiated_at": "2026-09-29T16:35:41.408788+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    },
+    {
+      "message": {
+        "title": "온세미, 2030년 매출 110억달러 목표…자동차 넘어 AI 데이터센터로",
+        "body": "미국 반도체 기업 온세미가 자동차를 넘어 인공지능(AI) 데이터센터와 피지컬 AI로 사업 영역을 확장해 2030년 매출 110억달러에 도전한다.\n\n자동차용 전력반도체와 센서에서 쌓은 기술을 AI 데이터센터와 로봇 등에 적용해 큰 폭의 성장세를 달성하겠다고 밝혔다.\n\n온세미는 지난 16일(현지시간) 미국 뉴욕에서 열린 '인베스터 데이 2026'에서 이 같은 중장기 성장 전략을 공개했다. 회사는 올해 예상 매출 65억달러를 기준으로 2030년까지 연평균 12~14% 성장을 목표로 제시했다. 이를 적용하면 2030년 매출은 102억~110억달러가 된다.\n\n수익성도 끌어올린다. 2030년 영업이익률 목표는 38%로 제시했다. 올해 예상치는 21.9%다.\n\nAI 데이터센터 사업이 성장을 견인할 것으로 내다봤다. 온세미는 이 분야 매출이 올해 5억달러를 넘고 2030년 25억달러 이상으로 늘어날 것으로 예상했다. AI 가속기 성능이 높아지면서 서버 랙 하나의 전력 소비는 현재 100~120kW 수준에서 메가와트(MW)급으로 커질 것으로 전망했다. 이에 따라 랙 하나에 들어가는 온세미 전력반도체는 금액 기준 약 1만5000달러에서 11만5000달러 이상으로 늘어날 것으로 봤다. 온세미는 실리콘(Si)과 실리콘카바이드(SiC), 질화갈륨(GaN) 전력반도체로 이 시장을 공략한다.\n\n자동차 사업은 2030년까지 연평균 9% 성장을 전망했다. 전동화와 자율주행, 소프트웨어중심차량(SDV) 확산으로 차량 한 대당 온세미 반도체 탑재 금액이 최대 2000달러까지 늘어날 수 있다고 내다봤다. SiC 전력반도체는 세대마다 성능을 약 25%씩 높일 계획이라고 했다. 1000V급 전기차 배터리에 대응해 1400V 제품까지 라인업을 늘린다.\n\n패키징 기술도 강화한다. 임베디드 파워 플랫폼(EPP)은 전력반도체 칩 여러 개를 하나의 구조 안에 묻어 넣는 패키징 기술이다. 온세미는 기존 인버터보다 전력밀도를 최대 4배 높일 수 있다고 설명했다. 일본 스바루가 차세대 전기차 적용을 위해 이 기술을 평가하고 있다.\n\n센서 제품군의 경우 기존 이미지센서와 초음파센서, 유도식 센서에 간접 비행시간측정(iToF) 센서와 단파장적외선(SWIR) 센서를 더한다. 자율주행차에 들어가는 센서의 종류와 수가 늘어나는 데 대응한다.\n\n산업 분야는 2030년까지 연평균 10% 성장을 목표로 제시했다. 로봇과 드론 등 피지컬 AI를 새 성장 분야로 꼽았다. 온세미는 자동차를 제외한 피지컬 AI 시장에서 2030년 60억달러의 사업 기회를 예상했다. 휴머노이드 로봇 한 대에 들어가는 온세미 반도체는 약 900달러 규모로 추산했다. 온세미는 지난 6월 터치 컨트롤러와 엣지 AI 반도체 업체 시냅틱스를 약 70억달러 규모에 인수하기로 합의했다. 시냅틱스 기술을 더해 피지컬 AI 시장을 공략할 계획이다. 거래는 2027년 중반 완료될 예정이다.\n\n수디르 고팔스와미(Sudhir Gopalswamy) 온세미 아날로그 혼합신호 및 지능형 센싱 그룹 사장은 \"피지컬 AI는 여러 측면에서 자율주행차의 자연스러운 확장이라고 볼 수 있다\"며 \"기계의 자율성이 높아질수록 더 많은 센싱과 전력 관리, 구동 기술이 요구된다\"고 말했다.\n\n하산 엘 쿠리(Hassane El-Khoury) 온세미 최고경영자(CEO)는 \"전력은 이들 시장 전반의 공통분모가 됐다\"고 말했다.",
+        "source_name": "thelec.kr",
+        "published_at": "2026-09-30T04:36:13Z"
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": []
+      },
+      "w2": {
+        "policy_hit": false,
+        "policy_related": false,
+        "policy_ids": [],
+        "hit_condition_ids": [],
+        "matched_condition_ids": []
+      },
+      "w3_decision": {
+        "novelty": {
+          "reason": "No loaded Event or Fact covers onsemi's newly disclosed 2030 revenue and margin targets, AI-data-center growth forecast, rack-level power-consumption outlook, or physical-AI expansion strategy.",
+          "reference_ids": [],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "No Policy applies: the message concerns onsemi's semiconductor strategy and industry forecasts, without a Bloom Energy project, customer commitment, permit, interconnection, delivery, acceptance, manufacturing, service, or financial event."
+        },
+        "expert_trade": {
+          "direction": "LONG",
+          "evaluated": true,
+          "expectation_delta": "Onsemi expects AI-data-center revenue to rise from more than $500 million in 2026 to at least $2.5 billion by 2030 and projects server-rack power consumption to rise from roughly 100–120 kW to megawatt scale. This increases confidence in the scale and persistence of physical AI power demand and the addressable need for onsite firm power, although it does not assign share or orders to Bloom.",
+          "prior_expectation": "AI-data-center demand was already a BE growth driver, but the pre-event baseline lacked a new independent supplier forecast quantifying both the rise in rack-level power intensity and the associated value of power components. BE still required customer deployments and accepted MW to convert that market into revenue.",
+          "reason": "TRADE LONG: the forecast is a quantified, physically grounded upgrade to the AI-power demand variable, with a clear path from higher rack loads to data-center electricity constraints and potential Bloom Energy Server deployments. The long horizon, onsemi-specific source, competing power routes, and absence of a BE award limit conviction, but the positive market-size and intensity delta is material.",
+          "trade": true
+        }
+      },
+      "direction": "LONG",
+      "initiated_at": "2026-09-30T04:48:39.613547+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    },
+    {
+      "message": {
+        "title": "Nebius Stock Is Soaring. A Partnership With Bloom Energy Solves This AI Dilemma.",
+        "body": "Key Points\n\nNebius Group will use Bloom Energy’s fuel-cell systems to power its data centers, with 328 megawatts operational this year.\n\nNebius will pay up to $2.6 billion over the term of the agreement, which is expected to come on in three phases, each with a supply term of 10 years.\n\nThe partnership addresses AI’s high power demand, using ‘behind-the-meter’ systems to reduce grid dependence for data centers.\n\nArtificial-intelligence cloud provider Nebius Group is turning to fuel-cell maker Bloom Energy as tech companies look for alternatives to local electrical grids to help power their data centers.\n\nBloom Energy’s fuel-cell systems, which generate electricity without combustion, will provide electricity for Nebius, with 328 megawatts of installed capacity expected to be operational this year. Nebius will pay up to $2.6 billion over the term of the agreement, which is expected to come on in three phases, each with a supply term of 10 years.\n\nShares of Nebius rose 15% Thursday, having soared 407% over the last 12 months. Bloom Energy stock, which is up more than 1,400% in the last year, rose 10%. Bloom Energy jumped 8% on Wednesday, when the $2.6 billion figure first was released.\n\nThe Barron's Daily\n\nFree Weekly Newsletter\n\nA morning briefing on what you need to know in the day ahead, including exclusive commentary from Barron's and MarketWatch writers.\n\nElectricity remains one of the most sought-after resources in AI, particularly for so-called neoclouds like Nebius. The neocloud model depends on building out and powering data centers as quickly as possible for customers in need of compute capacity.\n\nBloom Energy’s on-site systems will be “behind-the-meter,” meaning they aren’t dependent on power from the larger electrical grid. This setup reduces Nebius’ dependence on building new grid transmissions and shortens the timeline to power its facilities, the company said.\n\n“Power remains a key constraint for AI infrastructure build-outs, ” said Andrey Korolenko, chief product and infrastructure officer at Nebius. Bloom Energy’s fuel cells, he added, offer clean power “on the timelines our customers need, with the availability AI workloads require.”\n\nBloom Energy stock has surged on this kind of AI demand. Since 2024, the company has notched new or expanded deals with neocloud competitor CoreWeave, cloud giant Oracle, and electricity generator American Electric Power.\n\nAdvertisement - Scroll to Continue\n\nAfter multiple years of losses, Bloom Energy is on track to earn net income of $475 million in 2026, analysts forecast. Wall Street expects that figure to rise to over $1.2 billion in 2027 and $2.1 billion in 2028.\n\nWrite to Nate Wolf at nate.wolf@barrons.comExternal link\n\nCopyright ©2026 Dow Jones & Company, Inc. All Rights Reserved. 87990cbe856818d5eddac44c7b1cdeb8\n\nWhat to Read Next\n\nFed’s Musalem Says Central Bank Must Explain Policies—or Risk Volatility\n\nSt. Louis Fed President Alberto Musalem says the central bank should explain how it determines policy decisions rather than reduce communications.\n\n2 Reasons Oracle Stock Is on Pace to Snap a 4-Day Losing Streak\n\nOracle stock rises and is on pace to snap a four-day losing streak on two AI-related announcements.\n\nINVESTOR CIRCLE\n\nBulls Retake Control of Five Below: Chart of the Day\n\nThe stock can gain 35% by the middle of 2027, judging by technical indicators.\n\nThe 10-Year Yield Is Surging Toward 6%—and You Should Be Very Nervous\n\n“Higher for longer” is set to be a fact of life for financial markets well into the end of the decade—and probably for a lot longer.\n\nChina Unveils Stimulus as Its Economy Sputters. Investors Are Still Wary.\n\nPantheon Macro described the move as the largest stimulus in two years.\n\nIovance Stock Surges as Strong Melanoma Drug Demand Drives Growth\n\nIovance Biotherapeutics raised its fiscal-year guidance on Tuesday.\n\nThe Great AI Dilemma: How to Invest When Extinction Warnings Meet Market Highs\n\nAI fears mean investors need to use all the risk management tools at their disposal.",
+        "source_name": "barrons",
+        "published_at": null
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": [
+          "E16"
+        ]
+      },
+      "w2": {
+        "policy_hit": true,
+        "policy_related": false,
+        "policy_ids": [
+          "pol_36b5ed507595cdea3382"
+        ],
+        "hit_condition_ids": [
+          {
+            "condition_ids": [
+              "C2"
+            ],
+            "policy_id": "pol_36b5ed507595cdea3382"
+          }
+        ],
+        "matched_condition_ids": []
+      },
+      "w3_decision": null,
+      "direction": "LONG",
+      "initiated_at": "2026-09-29T18:55:07.957469+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    },
+    {
+      "message": {
+        "title": "Are AI credit cracks a warning, or a 'buy' signal?",
+        "body": "ORLANDO, Florida, Sept 29 (Reuters) - \"Hyperion\" and \"Beignet\" are two words many investors may not be familiar with. But they could soon become symbolic of the excesses of the borrowing and spending binge driving the record-breaking US artificial intelligence build-out.\n\n\"Hyperion\" is the name of Meta Platforms' (META.O) AI data center facility under construction in Richland ​Parish, Louisiana. It is the Facebook owner’s largest data center project with 5 gigawatts of compute capacity, and has absorbed more than $50 billion in investment.\n\nBonds sold last year ‌to fund the project were issued through a joint venture in a vehicle called \"Beignet Investor,\" named after the famous New Orleans pastry.\n\nAs Meta's stake is a minority one at 20%, the project's liabilities are off-balance sheet, just like some $3 trillion of other financing and leasing structures that Nvidia (NVDA.O), Broadcom (AVGO.O) and hyperscalers such as Amazon (AMZN.O) and Alphabet (GOOGL.O) are keeping off their balance sheets, according to Morgan Stanley.\n\nThe Beignet bonds – $27 billion of 6.581% senior secured notes maturing in 2049 – were given ​an A+ credit rating at issuance by S&P Global. However, the ratings agency also warned that \"substantial credit risk\" could pass to Meta during both the facility’s construction and operation phases.\n\nThat risk ​may be materializing, as the price of these bonds is now sliding fast. On Monday, they traded at 91 cents on the dollar, pushing the ⁠yield as high as 7.55%. That's around 230 basis points above Treasuries, a wider spread than the 185 bps at launch, but narrower than the record-wide 255 bps in July. So, no cause ​for panic, but it is one of many signs that cracks may be beginning to appear in parts of the AI financing edifice.\n\nCredit default swap (CDS) rates, the cost of insuring against default, for firms in ​the AI ecosystem also appear to be ringing alarm bells. Meta’s on Monday climbed above July's peak and is close to 100 basis points – and most of Big Tech's CDS are also now at record levels.\n\nOn top of this, Oracle (ORCL.N) only a few days ago declared a \"force majeure\" notice citing potential delays in securing power for an AI data center in New Mexico, which could now be delayed by up to a year. Coincidentally, one of the ​other backers in Project Jupiter is again Blue Owl.\n\nOf course, Meta and its peers are highly unlikely to default or go bust given the strength of their underlying businesses. This begs the question: is the ​current selloff in these companies' debt logical given the scale of borrowing relative to expected revenue, or are these bonds a “screaming buy”?\n\nWhere you fall on that question – as ever with the AI story – boils down to ‌whether you ⁠believe the returns will eventually outstrip the outlay, and how long you are prepared to wait.\n\nThe enormous investments in the AI buildout are well-documented by now. Estimates vary, but around $1 trillion in AI capital expenditure (capex) is expected this year and around $1.2 trillion set for next year, with economists at Oxford Economics tallying up cumulative projected AI investment of around $3.8 trillion from 2024 to 2028. A significant portion of this is now being debt-financed, as tech firms have burned through their large cash piles.\n\nGiven these eye-popping outlays, analysts at Goldman Sachs estimate that the hyperscalers will need to generate annual AI revenues of roughly $300 billion ​in the next few years to break even. ​Assuming hyperscalers are targeting a return on investment ⁠of 15%-20%, they would need to make $570-$800 billion of additional profit, Oxford Economics reckons.\n\n\"This is hard to square with our estimates of the additional GDP that AI will create,\" the firm’s economists wrote last week. They estimate AI will boost US GDP by $850 billion by 2032. So, at a 15% return ​on investment, the hyperscalers – just a handful of firms – would need to capture around two-thirds of this additional GDP, or almost all of it ​if we assume a 20% ⁠rate of return.\n\nAs Oxford Economics noted, \"This seems very unlikely.\"\n\nMeanwhile, AI borrowing and investing continues. Hyperscalers have issued around $250 billion of debt this year, and that total is expected to rise sharply next year, even as the cost of doing so also keeps increasing. The Federal Reserve has started to hike its policy rate, and Treasury yields are currently the highest since before the global financial crisis. The interest burden on hyperscalers' borrowings – ⁠both on- and ​off-balance sheet – is getting heavier.\n\nHow heavy is too heavy? The fate of Meta’s “deep-fried” debt deal could offer some clues.\n\n(The opinions ​expressed here are those of the author, a columnist for Reuters)\n\nEnjoying this column? Check out Reuters Open Interest (ROI), your essential new source for global financial commentary. Follow ROI on LinkedIn, and X.\n\nAnd listen to the Morning Bid daily podcast on Apple, ​Spotify, or the Reuters app. Subscribe to hear Reuters journalists discuss the biggest news in markets and finance seven days a week.",
+        "source_name": "reuters",
+        "published_at": "2026-09-29"
+      },
+      "w1": {
+        "result": "NEW",
+        "reference_ids": []
+      },
+      "w2": {
+        "policy_hit": false,
+        "policy_related": false,
+        "policy_ids": [],
+        "hit_condition_ids": [],
+        "matched_condition_ids": []
+      },
+      "w3_decision": {
+        "novelty": {
+          "reason": "E16 already recorded Oracle's New Mexico data-center relationship with Bloom Energy, including Bloom's commitment to provide power within 90 days. This message adds the previously unrecorded Oracle force-majeure notice citing power-procurement risk and a potential delay of up to one year, alongside new AI-credit stress indicators.",
+          "reference_ids": [
+            "E16"
+          ],
+          "result": "NEW"
+        },
+        "policy": {
+          "matched_condition_ids": [],
+          "policy_ids": [],
+          "reason": "No current Policy is matched. The Oracle notice uses conditional language about potential power delays and does not confirm a new commissioning date, cancellation, scope reduction, or Bloom-specific contract change required by the relevant trigger boundaries. The credit-market observations likewise do not satisfy a Bloom project criterion."
+        },
+        "expert_trade": {
+          "direction": "SHORT",
+          "evaluated": true,
+          "expectation_delta": "Oracle has now issued a force-majeure notice citing potential delays in securing power for a New Mexico AI data center, with the facility potentially delayed by up to one year. Relative to the prior 90-day Bloom deployment expectation, this materially lowers the near-term probability and timing of Oracle/Bloom delivery, acceptance, and revenue recognition. The notice does not establish permanent volume loss, and the article does not name Bloom, but the same-customer and New Mexico context makes the timing shock directly relevant; worsening AI-project credit conditions add financing risk.",
+          "prior_expectation": "Immediately before publication, the relevant BE baseline included Oracle using Bloom fuel cells at its New Mexico data center and Bloom's stated commitment to provide power within 90 days. BE's high FY2026 outlook and valuation required AI and large-load projects to convert into delivered and accepted MW, revenue, and cash flow on relatively near-term schedules, even though exact acceptance timing remained uncertain.",
+          "reason": "TRADE—SHORT. A direct hyperscaler force-majeure warning creates a non-trivial negative timing surprise against BE's near-term AI deployment and acceptance assumptions. Delayed project realization affects revenue, cash conversion, and the duration supporting BE's valuation. Conditional wording and some uncertainty over exact project identity reduce conviction, but do not eliminate the directional expectation gap.",
+          "trade": true
+        }
+      },
+      "direction": "SHORT",
+      "initiated_at": "2026-09-29T13:10:15.461558+00:00",
+      "execution": {
+        "status": "UNKNOWN",
+        "basis": "No timestamped execution transition reconstructed"
+      }
+    }
+  ],
+  "history_matches": [
+    {
+      "events": [],
+      "policies": []
+    },
+    {
+      "events": [],
+      "policies": []
+    },
+    {
+      "events": [],
+      "policies": [
+        "pol_7b7ccfd2cb4eecfb6a8f",
+        "pol_82afe9ef8746239e0beb"
+      ]
+    },
+    {
+      "events": [],
+      "policies": []
+    },
+    {
+      "events": [],
+      "policies": []
+    },
+    {
+      "events": [],
+      "policies": []
+    },
+    {
+      "events": [],
+      "policies": [
+        "pol_36b5ed507595cdea3382"
+      ]
+    },
+    {
+      "events": [],
+      "policies": []
+    }
+  ],
+  "watches": [],
+  "pins": [],
+  "policy_consumptions": [],
+  "provisional": [
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "E-mini S&P 500 futures",
+          "Nasdaq-100 mini futures",
+          "U.S. stock market"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "E-mini S&P 500 futures were up approximately 0.01% and Nasdaq-100 mini futures were up approximately 0.2% in U.S. morning trading on September 30, 2026.",
+        "subject_time": "September 30, 2026 U.S. premarket"
+      },
+      "candidate_index": 0,
+      "case_id": "case_e280f54bd0d549b895505d6fa2073c38",
+      "created_at": "2026-09-30T08:34:00.516821Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E54",
+      "runtime_signature": "2de44ff68cb4b4a53b471981f804b9ffca11dd138ee60f0dba411136815920f1",
+      "snapshot_version": 1,
+      "source_message_id": "std_30bbaa675a8b49e49f115e3972e52c58",
+      "ticker": "BE",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "United Kingdom",
+          "Consumer borrowing"
+        ],
+        "occurrence_date": "2026-08-31",
+        "proposition": "UK consumer borrowing was approximately £2.5 billion in August 2026.",
+        "subject_time": "August 2026"
+      },
+      "candidate_index": 1,
+      "case_id": "case_e280f54bd0d549b895505d6fa2073c38",
+      "created_at": "2026-09-30T08:34:00.546390Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E55",
+      "runtime_signature": "d374602c7671b9a956f6498dcb154e153de3487fb805c86ff21c76470a313927",
+      "snapshot_version": 2,
+      "source_message_id": "std_30bbaa675a8b49e49f115e3972e52c58",
+      "ticker": "BE",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Spain",
+          "Inflation"
+        ],
+        "occurrence_date": null,
+        "proposition": "Spain's inflation was reported at 4.9% in the September 30, 2026 morning market update.",
+        "subject_time": "September 30, 2026 morning market update"
+      },
+      "candidate_index": 2,
+      "case_id": "case_e280f54bd0d549b895505d6fa2073c38",
+      "created_at": "2026-09-30T08:34:00.563695Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E56",
+      "runtime_signature": "3826c62003572427ac21c18a7affcfed7353360bf9f14d8cfbc38bd00a2d5cbc",
+      "snapshot_version": 3,
+      "source_message_id": "std_30bbaa675a8b49e49f115e3972e52c58",
+      "ticker": "BE",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Anthropic",
+          "Amazon",
+          "Alphabet",
+          "Google"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Anthropic routed 47% of its sales to customers through Amazon and Alphabet's Google in 2025, compared with 32% in 2024 and 11% in 2023.",
+        "subject_time": "FY2025"
+      },
+      "candidate_index": 0,
+      "case_id": "case_068006335eb549ac9519e5fa6166a4e8",
+      "created_at": "2026-09-30T08:44:04.089737Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E57",
+      "runtime_signature": "76f0baea162deae131ebf23f18041ee3ba36e2ed006d34d1f06da2d9d6232629",
+      "snapshot_version": 4,
+      "source_message_id": "std_1086459900bf46b9b29ed1654b4d2269",
+      "ticker": "BE",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Anthropic",
+          "AI infrastructure",
+          "Cloud computing"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Anthropic's IPO filing disclosed at least $518 billion of cloud, compute, and infrastructure commitments over ten years with six partners, with approximately 80% non-cancelable or payable regardless of usage.",
+        "subject_time": "The next ten years"
+      },
+      "candidate_index": 1,
+      "case_id": "case_068006335eb549ac9519e5fa6166a4e8",
+      "created_at": "2026-09-30T08:44:04.096559Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E58",
+      "runtime_signature": "507bffc6e6c891b29118beec2966f666fd926e576ba197b3a645108c2052e18c",
+      "snapshot_version": 5,
+      "source_message_id": "std_1086459900bf46b9b29ed1654b4d2269",
+      "ticker": "BE",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Anthropic",
+          "Google",
+          "Amazon",
+          "Microsoft"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Anthropic disclosed long-term infrastructure service obligations of at least $111.1 billion with Google, $110 billion with Amazon, and $31.4 billion with Microsoft, regardless of usage.",
+        "subject_time": "The next seven to ten years"
+      },
+      "candidate_index": 2,
+      "case_id": "case_068006335eb549ac9519e5fa6166a4e8",
+      "created_at": "2026-09-30T08:44:04.103370Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E59",
+      "runtime_signature": "42d5fd6174e33a1ac19d5459a14b82bfacd371367f27df2ce239a3f0a9ea92ba",
+      "snapshot_version": 6,
+      "source_message_id": "std_1086459900bf46b9b29ed1654b4d2269",
+      "ticker": "BE",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Anthropic",
+          "Broadcom"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Anthropic disclosed approximately $161.2 billion in largely non-cancelable Broadcom-related equipment lease obligations.",
+        "subject_time": "Long-term infrastructure commitments"
+      },
+      "candidate_index": 3,
+      "case_id": "case_068006335eb549ac9519e5fa6166a4e8",
+      "created_at": "2026-09-30T08:44:04.109694Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E60",
+      "runtime_signature": "af3054af48319d08628fbdbbbf79b50e9ac6ca57c430c4a2838368dbbba71ddb",
+      "snapshot_version": 7,
+      "source_message_id": "std_1086459900bf46b9b29ed1654b4d2269",
+      "ticker": "BE",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Anthropic",
+          "xAI",
+          "NVIDIA"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Anthropic has agreements with xAI that could result in up to $84.5 billion of spending on NVIDIA-based computing capacity through 2029, with most commitments cancelable on 90 days' notice.",
+        "subject_time": "Through 2029"
+      },
+      "candidate_index": 4,
+      "case_id": "case_068006335eb549ac9519e5fa6166a4e8",
+      "created_at": "2026-09-30T08:44:04.117158Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E61",
+      "runtime_signature": "1eb8408f53c341e28ac16a996f2fc1084132d198efbe144eaa844ab07e71c7a1",
+      "snapshot_version": 8,
+      "source_message_id": "std_1086459900bf46b9b29ed1654b4d2269",
+      "ticker": "BE",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "EXPECTED",
+        "entities": [
+          "Anthropic",
+          "AMD"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "AMD is expected to supply Anthropic with more than $20 billion of AI computing capacity.",
+        "subject_time": "Long-term AI infrastructure buildout"
+      },
+      "candidate_index": 5,
+      "case_id": "case_068006335eb549ac9519e5fa6166a4e8",
+      "created_at": "2026-09-30T08:44:04.124374Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E62",
+      "runtime_signature": "1092dcc5fb36475351d28c1cdd197089da54d9aacc874df96fd4fcb212fc1670",
+      "snapshot_version": 9,
+      "source_message_id": "std_1086459900bf46b9b29ed1654b4d2269",
+      "ticker": "BE",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "GUIDANCE",
+        "entities": [
+          "Brookfield Infrastructure Partners"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Brookfield Infrastructure Partners said it expects its growth rate to accelerate as contributions from its organic backlog, recent investments, and capital recycling build.",
+        "subject_time": "Forward growth outlook"
+      },
+      "candidate_index": 0,
+      "case_id": "case_cd032a6a840e4a55b8e68d6634a82974",
+      "created_at": "2026-09-30T11:16:31.224199Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E63",
+      "runtime_signature": "293f62b2cf11577e7c3f0443b6ea10c6ded5e8eb5d115788fdf220f3fdc3b592",
+      "snapshot_version": 10,
+      "source_message_id": "std_83a183b8da794fc69b924f601a589028",
+      "ticker": "BE",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "GUIDANCE",
+        "entities": [
+          "Brookfield Infrastructure Partners"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Brookfield Infrastructure Partners targets approximately 10% funds-from-operations growth.",
+        "subject_time": "Forward outlook"
+      },
+      "candidate_index": 1,
+      "case_id": "case_cd032a6a840e4a55b8e68d6634a82974",
+      "created_at": "2026-09-30T11:16:31.255463Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E64",
+      "runtime_signature": "76de4b7764d13fc700388d5057dd0f1f5842cba162ce793b6743ff1d04486c54",
+      "snapshot_version": 11,
+      "source_message_id": "std_83a183b8da794fc69b924f601a589028",
+      "ticker": "BE",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Bloom Energy",
+          "Navellier's Little Book"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Bloom Energy passed Navellier's Little Book growth screen based on an assessment of strong earnings, sales, margins, and cash flow.",
+        "subject_time": "September 30, 2026 screening"
+      },
+      "candidate_index": 0,
+      "case_id": "case_08480c54694b42ae91e7710504ee3ce0",
+      "created_at": "2026-09-30T11:34:48.102336Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E65",
+      "runtime_signature": "1f4679bce62b9226601f0ffea56736df382729f0e058626c680daf1bb0425a95",
+      "snapshot_version": 12,
+      "source_message_id": "std_01565cc67baf4ba485be395878a8a5b6",
+      "ticker": "BE",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Bloom Energy",
+          "AI-related stocks",
+          "U.S. Treasury yields"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Bloom Energy and other AI-related stocks were reported as shrugging off pressure from rising Treasury yields on September 30, 2026.",
+        "subject_time": "September 30, 2026 trading session"
+      },
+      "candidate_index": 0,
+      "case_id": "case_a02f0f7649384951928ab2e26f5544ea",
+      "created_at": "2026-09-30T12:16:11.176048Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E66",
+      "runtime_signature": "966b6f7c10428a730da306fc8217570944e0989ac9336080d233b8e78bf7b80c",
+      "snapshot_version": 13,
+      "source_message_id": "std_df5968b2abed4a9e9e38159ca5f69871",
+      "ticker": "BE",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Wisconsin regulators",
+          "Oracle",
+          "Port Washington",
+          "High-voltage electricity connection"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Wisconsin regulatory officials restarted review of the high-voltage electricity connection required for Oracle's 1.3 GW Port Washington server hub.",
+        "subject_time": "Port Washington electricity connection review"
+      },
+      "candidate_index": 0,
+      "case_id": "case_b212174cf71747e5a7259797a9e0e604",
+      "created_at": "2026-09-30T13:07:33.448688Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E67",
+      "runtime_signature": "c28e198e6e1360a48920efef4ed9d4f83c535ae5a720c115fc094ad29f156995",
+      "snapshot_version": 14,
+      "source_message_id": "std_597373d2f3f545efbe48be8e5c47fca1",
+      "ticker": "BE",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "Aterio",
+          "Oracle",
+          "Port Washington"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Aterio assessed that Oracle's 1.3 GW Port Washington facility faces a material risk of missing its delivery target for the second half of 2027.",
+        "subject_time": "Second half of 2027"
+      },
+      "candidate_index": 1,
+      "case_id": "case_b212174cf71747e5a7259797a9e0e604",
+      "created_at": "2026-09-30T13:07:33.518549Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E68",
+      "runtime_signature": "61f100d1776982fadf3b78e75bdb625cc7aca0fe6be1f7c6eaa7c8c1d0e10d88",
+      "snapshot_version": 15,
+      "source_message_id": "std_597373d2f3f545efbe48be8e5c47fca1",
+      "ticker": "BE",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "Aterio",
+          "Oracle",
+          "Port Washington"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Aterio projected partial power for Oracle's Port Washington facility in December 2027 and customer-load ramping beginning in the first quarter of 2028.",
+        "subject_time": "December 2027 and first quarter of 2028"
+      },
+      "candidate_index": 2,
+      "case_id": "case_b212174cf71747e5a7259797a9e0e604",
+      "created_at": "2026-09-30T13:07:33.541499Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E69",
+      "runtime_signature": "c8e996a355777d0e42e935f7db0c234a7213d9f1239483395152b8896b743029",
+      "snapshot_version": 16,
+      "source_message_id": "std_597373d2f3f545efbe48be8e5c47fca1",
+      "ticker": "BE",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "FORECAST",
+        "entities": [
+          "Aterio",
+          "Oracle",
+          "Port Washington"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Aterio projected that Oracle's Port Washington facility would not reach full 1.3 GW capacity until October 2028.",
+        "subject_time": "October 2028"
+      },
+      "candidate_index": 3,
+      "case_id": "case_b212174cf71747e5a7259797a9e0e604",
+      "created_at": "2026-09-30T13:07:33.601438Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E70",
+      "runtime_signature": "f3fc79af4405cf45655a5d4cbf3a2bb3c9cd84459365e18754bb9da32fc72147",
+      "snapshot_version": 17,
+      "source_message_id": "std_597373d2f3f545efbe48be8e5c47fca1",
+      "ticker": "BE",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "EXPECTED",
+        "entities": [
+          "Wisconsin Public Service Commission",
+          "Oracle",
+          "Port Washington"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "The Wisconsin Public Service Commission is expected to issue a completeness decision on the Port Washington connection application around October 19, 2026.",
+        "subject_time": "Around October 19, 2026"
+      },
+      "candidate_index": 4,
+      "case_id": "case_b212174cf71747e5a7259797a9e0e604",
+      "created_at": "2026-09-30T13:07:33.617989Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E71",
+      "runtime_signature": "a1002e85860237a88ebcd59d7fda740255844b82edf7a4acb06ec4650c2ba7d2",
+      "snapshot_version": 18,
+      "source_message_id": "std_597373d2f3f545efbe48be8e5c47fca1",
+      "ticker": "BE",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Donald Trump",
+          "U.S. federal agencies",
+          "Super Intelligence",
+          "Artificial Intelligence"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "President Donald Trump signed a directive requiring federal agencies, to the maximum extent permitted by law, to use “Super Intelligence” and “SI” instead of “Artificial Intelligence” and “AI.”",
+        "subject_time": "Federal agency usage after September 30, 2026"
+      },
+      "candidate_index": 0,
+      "case_id": "case_c726a48c165843cda6367bade011bea1",
+      "created_at": "2026-09-30T13:16:00.088556Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E72",
+      "runtime_signature": "cc301c5120068e6a78f7af355703c5baa9a2b7a8160acefb71bc3a03c468c9bb",
+      "snapshot_version": 19,
+      "source_message_id": "std_d331ae65a244479caae475079716fe8b",
+      "ticker": "BE",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Plug Power",
+          "Arcadia eFuels",
+          "Project ENDOR",
+          "Port of Vordingborg",
+          "Denmark"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Plug Power signed a 280 MW electrolyzer supply agreement with Arcadia eFuels for Project ENDOR at the Port of Vordingborg in Denmark, with deliveries beginning after notice to proceed.",
+        "subject_time": "Project ENDOR delivery after notice to proceed"
+      },
+      "candidate_index": 0,
+      "case_id": "case_88d6ad20d9d34b4e8665c03b896e5614",
+      "created_at": "2026-09-30T15:25:00.394923Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E73",
+      "runtime_signature": "a4ac34476e6198c2b8719b27de1e9e2d3e6c532827a2f30efec703c6df9248f5",
+      "snapshot_version": 20,
+      "source_message_id": "std_c361d1c345ef45d7b9f5873a1f0b4c32",
+      "ticker": "BE",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Arcadia eFuels",
+          "Plug Power",
+          "Electrolyzers"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Arcadia eFuels designated Plug Power as preferred electrolyzer supplier for four additional projects representing more than 1 GW of potential capacity and received priority access to Plug Power's manufacturing capacity as those projects advance.",
+        "subject_time": "Future Arcadia projects"
+      },
+      "candidate_index": 1,
+      "case_id": "case_88d6ad20d9d34b4e8665c03b896e5614",
+      "created_at": "2026-09-30T15:25:00.424395Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E74",
+      "runtime_signature": "ea2b976b6294c7309ab1f5b71ecce2c5b0e9f3d942f6bc0f34e9c33dacebeaf6",
+      "snapshot_version": 21,
+      "source_message_id": "std_c361d1c345ef45d7b9f5873a1f0b4c32",
+      "ticker": "BE",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "PLANNED",
+        "entities": [
+          "Project ENDOR",
+          "Arcadia eFuels",
+          "Renewable hydrogen",
+          "Sustainable aviation fuel"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Project ENDOR is designed to produce approximately 110 tons of renewable hydrogen per day using renewable grid electricity and captured carbon dioxide to make sustainable aviation fuel.",
+        "subject_time": "Project ENDOR planned operation"
+      },
+      "candidate_index": 2,
+      "case_id": "case_88d6ad20d9d34b4e8665c03b896e5614",
+      "created_at": "2026-09-30T15:25:00.433927Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E75",
+      "runtime_signature": "42f2a4166d44ffb7cdfb243e840d7781e5baf34768015a9b713518c5a27f5be4",
+      "snapshot_version": 22,
+      "source_message_id": "std_c361d1c345ef45d7b9f5873a1f0b4c32",
+      "ticker": "BE",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Bloom Energy",
+          "Plug Power"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Bloom Energy shares fell approximately 3% to $281.56 while Plug Power shares rose approximately 4% to $1.99 on September 30, 2026.",
+        "subject_time": "September 30, 2026 trading session"
+      },
+      "candidate_index": 3,
+      "case_id": "case_88d6ad20d9d34b4e8665c03b896e5614",
+      "created_at": "2026-09-30T15:25:00.443214Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E76",
+      "runtime_signature": "e9622213081b8afe5d43e808529a98eedb57c5aa1a83a647f25150142b2a2dd0",
+      "snapshot_version": 23,
+      "source_message_id": "std_c361d1c345ef45d7b9f5873a1f0b4c32",
+      "ticker": "BE",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "EXPECTED",
+        "entities": [
+          "U.S. Senate",
+          "Data centers",
+          "Data-center costs"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "The U.S. Senate was reported as set to block a bill addressing data-center costs.",
+        "subject_time": "September 30, 2026 legislative process"
+      },
+      "candidate_index": 0,
+      "case_id": "case_a02035573ab345b19f114bc842822108",
+      "created_at": "2026-09-30T17:50:19.675094Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E77",
+      "runtime_signature": "429ce5dcf1466478ad19e1307572c63494e20d00058bb41a18a7db3db5c01316",
+      "snapshot_version": 24,
+      "source_message_id": "std_0a38f3abd9ab40bd8c0e7f1b1d53f2c5",
+      "ticker": "BE",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Accelevation",
+          "ACCV",
+          "U.S. IPO market"
+        ],
+        "occurrence_date": "2026-09-29",
+        "proposition": "Accelevation and selling shareholders raised approximately $540 million in a U.S. IPO after selling about 30 million shares at $18 each, below the marketed range of $20 to $24.",
+        "subject_time": "September 29, 2026 IPO pricing"
+      },
+      "candidate_index": 0,
+      "case_id": "case_8972014f634c4c4faaa67c4c7a4fb18e",
+      "created_at": "2026-09-30T17:50:56.949569Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E78",
+      "runtime_signature": "fcff9866bd7329ae6812464ab626278a3d119be62c181d0a86752f42d2b99c39",
+      "snapshot_version": 25,
+      "source_message_id": "std_2afd98ad8ff64484890e2b9e63561431",
+      "ticker": "BE",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Accelevation",
+          "ACCV",
+          "Nasdaq"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Accelevation shares opened at $17.55, approximately 2.5% below the $18 IPO price, giving the company a Nasdaq debut valuation of approximately $3.92 billion.",
+        "subject_time": "September 30, 2026 Nasdaq debut"
+      },
+      "candidate_index": 1,
+      "case_id": "case_8972014f634c4c4faaa67c4c7a4fb18e",
+      "created_at": "2026-09-30T17:50:56.966763Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E79",
+      "runtime_signature": "057c7ae5a09363090e7203a510382bb2c04249430263fceefd1b3998cfdb0f6b",
+      "snapshot_version": 26,
+      "source_message_id": "std_2afd98ad8ff64484890e2b9e63561431",
+      "ticker": "BE",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Accelevation",
+          "Data centers"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "Accelevation provides power distribution, cooling, structural systems, and installation services for data centers.",
+        "subject_time": null
+      },
+      "candidate_index": 2,
+      "case_id": "case_8972014f634c4c4faaa67c4c7a4fb18e",
+      "created_at": "2026-09-30T17:50:56.989284Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E80",
+      "runtime_signature": "5a5ebe36c5ee1628afddc315cf3315284d7bae099f66f81d8f3c0fb1d5c5e3de",
+      "snapshot_version": 27,
+      "source_message_id": "std_2afd98ad8ff64484890e2b9e63561431",
+      "ticker": "BE",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Bloom Energy",
+          "StockStory"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "StockStory identified Bloom Energy as a growth stock to watch.",
+        "subject_time": "September 30, 2026 recommendation"
+      },
+      "candidate_index": 0,
+      "case_id": "case_91529d9db0d243efad1e4449d6650e32",
+      "created_at": "2026-09-30T17:58:19.734909Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E81",
+      "runtime_signature": "7d6a261b81cd07faa0e36fd305af68506dc0e557ac540862a57ed215749f4021",
+      "snapshot_version": 28,
+      "source_message_id": "std_2c190656c41c465fa06a334eeb146f07",
+      "ticker": "BE",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Bloom Energy"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "The article reported Bloom Energy one-year revenue growth of approximately 91% and two-year annualized revenue growth of approximately 53.1%.",
+        "subject_time": null
+      },
+      "candidate_index": 1,
+      "case_id": "case_91529d9db0d243efad1e4449d6650e32",
+      "created_at": "2026-09-30T17:58:19.741910Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E82",
+      "runtime_signature": "ffce88ff0e58d45b98fc5ddbe39f7792258084d810832f5726c2198e05b5ce7e",
+      "snapshot_version": 29,
+      "source_message_id": "std_2c190656c41c465fa06a334eeb146f07",
+      "ticker": "BE",
+      "trading_date": "2026-09-30"
+    },
+    {
+      "candidate": {
+        "assertion_state": "ACTUAL",
+        "entities": [
+          "Bloom Energy"
+        ],
+        "occurrence_date": "2026-09-30",
+        "proposition": "The article reported Bloom Energy trading at approximately $294.25 per share and 74.4 times forward earnings.",
+        "subject_time": "September 30, 2026 market valuation"
+      },
+      "candidate_index": 2,
+      "case_id": "case_91529d9db0d243efad1e4449d6650e32",
+      "created_at": "2026-09-30T17:58:19.748041Z",
+      "originating_node": "W3",
+      "provisional_event_id": "E83",
+      "runtime_signature": "55895e38f878be89596bf2a3d6220ea9185d4f43d029b93c1c5d6414e670b3f0",
+      "snapshot_version": 30,
+      "source_message_id": "std_2c190656c41c465fa06a334eeb146f07",
+      "ticker": "BE",
+      "trading_date": "2026-09-30"
+    }
+  ],
+  "limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "global_state": {
+    "watches": [],
+    "pins": []
+  },
+  "event_details": {
+    "requested_event_ids": [],
+    "canonical_events": [],
+    "provisional_events": [],
+    "missing_event_ids": []
+  }
+}

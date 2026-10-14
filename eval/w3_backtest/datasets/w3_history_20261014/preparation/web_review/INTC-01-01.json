@@ -1,0 +1,225 @@
+{
+  "case_key": "INTC-01-01",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-09-22T15:38:58.981441Z",
+  "reviewed_at": "2026-10-13T22:58:31.551094Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 5,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a13754-1d10-7a23-b867-ccf8cd807eb9",
+    "turn_id": "01a13754-1db1-7862-84b8-a726401b5d1d",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 76544,
+        "inputTokens": 87462,
+        "outputTokens": 8415,
+        "reasoningOutputTokens": 5737,
+        "totalTokens": 95877
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 300800,
+        "inputTokens": 390224,
+        "outputTokens": 18516,
+        "reasoningOutputTokens": 15341,
+        "totalTokens": 408740
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "fcbbf7e92439863397160666d24ebd8bfad39bda306d6cd4d9fcf4543507a8cc",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://www.intel.com/content/www/us/en/newsroom/news/client-computing/googlebook-launches-with-intel-core-ultra-series-3-processors.html",
+      "title": "Googlebook Launches with Intel Core Ultra Series 3 Processors",
+      "published_at": "2026-09-21",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn1search1",
+        "turn3search1"
+      ],
+      "source_call_ids": [
+        "exec-44a20198-02e6-47d6-b112-a0838151d804",
+        "exec-a6a3c8dd-f3e5-46ae-9f4b-63c69e15df46"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://blog.google/products-and-platforms/devices/googlebook/first-look-googlebook/",
+      "title": "Googlebook is raising the bar for premium laptops",
+      "published_at": "2026-09-21",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search2"
+      ],
+      "source_call_ids": [
+        "exec-95d6001e-5039-4540-aa55-5871599e8ad0"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://www.asus.com/us/news/asus-googlebook-14/",
+      "title": "New ASUS Googlebook 14 Available for Pre-Order",
+      "published_at": "2026-09-21",
+      "time_precision": "DAY",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search1"
+      ],
+      "source_call_ids": [
+        "exec-95d6001e-5039-4540-aa55-5871599e8ad0"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://9to5google.com/2026/06/04/googlebook-devices-intel-snapdragon-mediatek/",
+      "title": "The first Googlebook devices surface with Intel, Snapdragon",
+      "published_at": "2026-06-04T08:35:00-07:00",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn0search4"
+      ],
+      "source_call_ids": [
+        "exec-95d6001e-5039-4540-aa55-5871599e8ad0"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S5",
+      "url": "https://www.publicnow.com/view/CF95CB184F3AE1165728DF443AABC6C5F29CAB08",
+      "title": "Googlebook Launches with Intel Core Ultra Series 3 Processors",
+      "published_at": "2026-09-21T16:09:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn3search7"
+      ],
+      "source_call_ids": [
+        "exec-a6a3c8dd-f3e5-46ae-9f4b-63c69e15df46"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S6",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/intels-core-ultra-expansion-googlebook-152200497.html",
+      "title": "Can Intel's Core Ultra Expansion With Googlebook Benefit the Stock?",
+      "published_at": "2026-09-22T15:22:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn3search0",
+        "turn1search0"
+      ],
+      "source_call_ids": [
+        "exec-44a20198-02e6-47d6-b112-a0838151d804",
+        "exec-a6a3c8dd-f3e5-46ae-9f4b-63c69e15df46"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "Intel's September 21 announcement specified Core Ultra Series 3 Googlebook devices from Acer, ASUS, and Lenovo. Intel described the processors as built on 18A and stated that availability was scheduled to begin October 5 in selected markets.",
+      "source_urls": [
+        "https://www.intel.com/content/www/us/en/newsroom/news/client-computing/googlebook-launches-with-intel-core-ultra-series-3-processors.html"
+      ],
+      "event_time": "2026-09-21",
+      "publication_time": "2026-09-21",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The announcement is product-launch information and a future availability schedule, not evidence that devices had shipped or sold by cutoff; it gives no unit or repeat-order figures."
+    },
+    {
+      "observation": "Before the September announcement, a June 4 report described Googlebook plans involving Intel, Snapdragon, and MediaTek chipsets, but said model and launch allocation remained unclear. On September 21, Google described Intel and Snapdragon options across five models, and ASUS named one Intel-powered model. These materials add model-level specificity while showing the platform was not Intel-exclusive.",
+      "source_urls": [
+        "https://9to5google.com/2026/06/04/googlebook-devices-intel-snapdragon-mediatek/",
+        "https://blog.google/products-and-platforms/devices/googlebook/first-look-googlebook/",
+        "https://www.asus.com/us/news/asus-googlebook-14/",
+        "https://www.intel.com/content/www/us/en/newsroom/news/client-computing/googlebook-launches-with-intel-core-ultra-series-3-processors.html"
+      ],
+      "event_time": null,
+      "publication_time": "2026-06-04",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "Google, ASUS, and Intel pages are all dated September 21 without clock times; their exact intraday sequence cannot be established."
+    },
+    {
+      "observation": "The Yahoo Finance/Zacks article was published at 15:22Z on September 22, approximately 17 minutes before cutoff, and summarized the named Intel-powered lineup. The supplied capture at 15:34:51Z confirms the article text was available before cutoff.",
+      "source_urls": [
+        "https://finance.yahoo.com/markets/stocks/articles/intels-core-ultra-expansion-googlebook-152200497.html",
+        "https://www.zacks.com/stock/news/2993832/can-intels-core-ultra-expansion-with-googlebook-benefit-the-stock"
+      ],
+      "event_time": "2026-09-21",
+      "publication_time": "2026-09-22T15:22:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This is secondary coverage, not the original product disclosure, and the captured article does not document customer purchase quantities, actual sell-through, or repeated production orders."
+    },
+    {
+      "observation": "Intel's search-indexed syndication record reports distribution at 16:09Z on September 21, but it could not be opened. It is a timing clue, not a verified basis for ranking the Intel release ahead of other September 21 announcements.",
+      "source_urls": [
+        "https://www.publicnow.com/view/CF95CB184F3AE1165728DF443AABC6C5F29CAB08"
+      ],
+      "event_time": "2026-09-21",
+      "publication_time": "2026-09-21T16:09:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The distribution timestamp comes from a search result; source-page access failed, and it does not establish the first public disclosure."
+    }
+  ],
+  "gaps": [
+    "Exact publication times and same-day ordering for the September 21 Intel, Google, and ASUS announcements were not established.",
+    "The selected pre-cutoff materials do not establish actual device shipments, sales-through, unit volumes, production purchase commitments, repeat orders, or customer-level demand.",
+    "Intel's stated October 5 availability date is after the evidence cutoff; actual availability cannot be inferred from that announcement."
+  ],
+  "research_notes": "Cutoff: 2026-09-22T15:38:58.981441Z. The earliest located pre-cutoff context is a June 4 report describing Googlebook chipset partners and device codenames, while launch-model allocation remained uncertain. First-party announcements dated September 21 then identified Intel-powered models and Google described Intel and Snapdragon processor options. The Intel, Google, and ASUS pages do not provide clock times, so their order within September 21 cannot be established. A Publicnow search result reports Intel-release syndication at 16:09Z that day, but the page could not be opened and this does not establish first public appearance. The Yahoo Finance/Zacks article appeared September 22 at 15:22Z; the supplied capture at 15:34:51Z is before cutoff. The collected materials establish product announcements and scheduled availability, not actual shipments, sales-through, unit volumes, paid production commitments, or repeat orders. No post-cutoff reviews, market reactions, or prices are used."
+}

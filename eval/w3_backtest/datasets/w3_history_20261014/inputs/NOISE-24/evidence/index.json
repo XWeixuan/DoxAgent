@@ -1,0 +1,23 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-10-08T14:04:40.055895Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "No independent, time-verified report of the museum release before the cutoff was established. The same-day XRMust article has only a date and largely repeats the announcement.",
+    "The release's statement of current Quest availability was not independently confirmed by a store listing or other timestamped source available by the cutoff.",
+    "No separate pre-launch expectation or dated pre-cutoff snapshot was verified; the prior-access baseline comes from the release's own description.",
+    "The Yonhap page surfaced as a recast with an 08:14 timestamp, but no pre-cutoff archived version or initial dispatch time was verified; its added context was therefore not used."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

@@ -1,0 +1,179 @@
+{
+  "case_key": "MU-01-02",
+  "collection_prompt_version": "w3-web-evidence-v2-focused",
+  "evidence_cutoff_at": "2026-09-24T17:02:40.928304Z",
+  "reviewed_at": "2026-10-13T22:58:31.780210Z",
+  "search_call_budget": {
+    "maximum": 6,
+    "actual": 6,
+    "exceeded": false
+  },
+  "model_audit": {
+    "requested_model": "gpt-6-luna",
+    "thread_model": "gpt-6-luna",
+    "turn_model": "gpt-6-luna",
+    "effort": "max",
+    "thread_configuration_readback": {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    "thread_id": "01a1375a-64fc-7bf0-8996-cd3f12dd3da5",
+    "turn_id": "01a1375a-6512-74c2-994d-0ac35f709cab",
+    "status": "completed",
+    "usage": {
+      "last": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 87808,
+        "inputTokens": 94305,
+        "outputTokens": 7169,
+        "reasoningOutputTokens": 5178,
+        "totalTokens": 101474
+      },
+      "modelContextWindow": 258400,
+      "total": {
+        "cacheWriteInputTokens": 0,
+        "cachedInputTokens": 382464,
+        "inputTokens": 481057,
+        "outputTokens": 18650,
+        "reasoningOutputTokens": 16017,
+        "totalTokens": 499707
+      }
+    },
+    "prompt_version": "w3-web-evidence-v2-focused",
+    "input_fingerprint": "8761c4db3fbed72f2a99f7a551e92603dd3c13af0cac00785f540bb4c98c6d29",
+    "ephemeral_thread": true
+  },
+  "review_policy": "Known post-cutoff publication/update is dropped; unresolved publication or revision time is kept only with UNKNOWN. DAY or UNKNOWN publication precision is compared by calendar date; a same-day value remains UNKNOWN.",
+  "source_decisions": [
+    {
+      "source_id": "S1",
+      "url": "https://truthsocial.com/@realDonaldTrump/117325763597478758",
+      "title": "Truth Social post: A big day with President Xi of China",
+      "published_at": "2026-09-24T11:24:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": null,
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn3search0"
+      ],
+      "source_call_ids": [
+        "exec-5faa187f-088b-4dcd-b604-9d31a44fa545"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S2",
+      "url": "https://www.axios.com/2026/09/23/ai-leaders-un-security-council-global-safeguards",
+      "title": "\"We have a choice\": AI leaders sound alarm at UN",
+      "published_at": "2026-09-23T20:50:26Z",
+      "time_precision": "EXACT",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn2search4"
+      ],
+      "source_call_ids": [
+        "exec-9af6ada6-deb2-4984-9793-f3a0c21964b0"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S3",
+      "url": "https://www.afp.com/en/us-china-must-ensure-ai-develops-under-human-control-xi",
+      "title": "US, China must ensure AI develops under 'human control:' Xi",
+      "published_at": "2026-09-24T16:52:00Z",
+      "time_precision": "MINUTE",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "BEFORE_CUTOFF",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "ORIGINAL",
+      "decision": "KEEP",
+      "reason": "Publication is before cutoff and no later update is indicated; no separate revision timestamp was exposed.",
+      "source_result_refs": [
+        "turn2search2"
+      ],
+      "source_call_ids": [
+        "exec-9af6ada6-deb2-4984-9793-f3a0c21964b0"
+      ],
+      "source_link_method": "RESULT_REF"
+    },
+    {
+      "source_id": "S4",
+      "url": "https://huggingnews.com/ai/trump-and-xi-reject-ai-slowdowns-to-preserve-development-pace-c7dbb134",
+      "title": "Trump and Xi Reject AI Slowdowns to Preserve Development Pace",
+      "published_at": "UNKNOWN",
+      "time_precision": "UNKNOWN",
+      "updated_at": "UNKNOWN",
+      "publication_cutoff_status": "UNKNOWN",
+      "update_cutoff_status": "UNKNOWN",
+      "content_state": "UNKNOWN",
+      "decision": "KEEP_UNKNOWN",
+      "reason": "Publication or revision timing cannot be fully established; retain only as explicitly uncertain evidence.",
+      "source_result_refs": [
+        "turn3search1"
+      ],
+      "source_call_ids": [
+        "exec-5faa187f-088b-4dcd-b604-9d31a44fa545"
+      ],
+      "source_link_method": "RESULT_REF"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "At 11:24Z on September 24, before the meeting, Trump publicly signaled a status-quo position on AI and described DOJ oversight as the U.S. guardrail.",
+      "source_urls": [
+        "https://truthsocial.com/@realDonaldTrump/117325763597478758",
+        "https://www.presidency.ucsb.edu/documents/truth-social-posts-september-24-2026"
+      ],
+      "event_time": "2026-09-24T11:24:00Z",
+      "publication_time": "2026-09-24T11:24:00Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "This is Trump’s statement of position before the meeting; it does not establish that Xi agreed to a formal bilateral policy outcome."
+    },
+    {
+      "observation": "The prior-day public context included AI executives calling for global cooperation and safeguards, while Axios also reported Trump had vowed not to hamper AI development.",
+      "source_urls": [
+        "https://www.axios.com/2026/09/23/ai-leaders-un-security-council-global-safeguards"
+      ],
+      "event_time": "2026-09-23",
+      "publication_time": "2026-09-23T20:50:26Z",
+      "time_status": "BEFORE_CUTOFF",
+      "counterpoint_or_limit": "The contrast describes public positions and expectations; it does not show what was decided in private talks."
+    },
+    {
+      "observation": "AFP’s September 24 report said Xi emphasized responsibility to develop and manage AI for good, with its headline describing an under-human-control position.",
+      "source_urls": [
+        "https://www.afp.com/en/us-china-must-ensure-ai-develops-under-human-control-xi"
+      ],
+      "event_time": "2026-09-24",
+      "publication_time": "2026-09-24T16:52:00Z",
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "The report supports Xi’s public framing, but does not establish a new rule, formal agreement, or rejection of every possible safeguard."
+    },
+    {
+      "observation": "HuggingNews claims the countries decided against new limits and discussed an incident-alert channel; the version and exact publication time are uncertain, and the claim was not corroborated by a pre-cutoff primary agreement in the sources reviewed.",
+      "source_urls": [
+        "https://huggingnews.com/ai/trump-and-xi-reject-ai-slowdowns-to-preserve-development-pace-c7dbb134"
+      ],
+      "event_time": "2026-09-24",
+      "publication_time": "UNKNOWN",
+      "time_status": "UNKNOWN",
+      "counterpoint_or_limit": "The supplied feed record was collected at 16:56Z, before cutoff, but the feed’s 16:40Z publication metadata conflicts with the page’s 7:26 a.m. EDT label; collection before cutoff does not verify the page’s current text as a pre-cutoff snapshot."
+    }
+  ],
+  "gaps": [
+    "No pre-cutoff official joint readout or primary document was located confirming that both leaders agreed against new AI limits.",
+    "Whether officials discussed an incident-alert channel, and the scope or status of any such discussion by cutoff, remains unverified.",
+    "The exact first-publication time and pre-cutoff text version of the HuggingNews item remain unresolved.",
+    "The reviewed event evidence does not establish a direct Micron product, supply, financial, or customer impact."
+  ],
+  "research_notes": "Cutoff: 2026-09-24T17:02:40.928304Z. The clearest traceable disclosure is Trump’s dated pre-meeting Truth Social post at 11:24Z. Pre-event coverage documented AI leaders’ calls for safeguards alongside Trump’s already stated opposition to hampering development. AFP reported Xi’s human-control framing at 16:52Z, before cutoff. The supplied HuggingNews item claims a bilateral decision against new limits and discussion of an incident channel, but I found no pre-cutoff primary agreement confirming those claims. Its page shows an earlier version, and its displayed 7:26 a.m. EDT time conflicts with the supplied feed metadata of 16:40Z; its version and first-publication time therefore remain unverified. No Micron-specific operating or financial facts were found in this event evidence."
+}

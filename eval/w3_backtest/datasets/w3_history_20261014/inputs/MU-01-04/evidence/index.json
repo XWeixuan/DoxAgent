@@ -1,0 +1,23 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-25T05:53:12.170085Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "No independently verified, pre-cutoff report corroborating the GPU counts or schedule was found within the search limit.",
+    "The source passage does not identify GPU supplier contracts, memory/HBM supplier allocation, or memory content per accelerator; it does not establish a direct Micron link.",
+    "The Minihard location and reported deployment cost figures in the supplied news item are not substantiated by the Musk post or the cited June prospectus.",
+    "The exact pre-cutoff version and publication/revision time of the HuggingNews article remain unverified."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}

@@ -1,0 +1,23 @@
+{
+  "schema_version": "w3-backtest.evidence.v1",
+  "cutoff_at": "2026-09-30T09:16:50.129146Z",
+  "web_search": {
+    "path": "web_search.jsonl",
+    "availability": "AVAILABLE"
+  },
+  "prices": {
+    "ten_minute_path": "price_10m.json",
+    "daily_path": "price_daily.json",
+    "availability": "AVAILABLE"
+  },
+  "web_gaps": [
+    "The relevant paragraph in the September 29 primary report was not exposed in the retrieved PDF text; exact original wording and any named locations remain unverified.",
+    "DigiTimes’ remaining article text is paywalled, limiting verification of its support for the footprint claim and the distinction between core R&D and other overseas R&D.",
+    "No pre-cutoff independent report located in this collection repeated the specific three-continent claim.",
+    "The supplied statement contains no Micron-specific facility, product, capacity, shipment, customer, or financial detail."
+  ],
+  "historical_state_limitations": [
+    "Legacy dataset has no PIN; unavailable historical WATCH/consumption kept empty, not populated from current state."
+  ],
+  "instruction": "Precollected historical evidence. Read files; do not call Web or IBKR."
+}
