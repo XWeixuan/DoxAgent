@@ -1492,3 +1492,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-14 消息源/登录维护修复：用户恢复SSH后重新核实六固定出口均READY，不按旧全代理故障默认换IP。将维护窗口创建与导航解耦，网络失败保留人工会话，修复Identity锁预算与结构化错误；桌面只关闭自有Viewer，真实xRDP两Identity窗口/Viewer/取消通过。延期复用既有PollState错误/重试字段并同步API/前端，不扩持久化schema。Hugging/Yahoo增加批准DE+TR传输后备，Yahoo确定404设600秒endpoint circuit；Globe官方RSS显式同feed浏览器后备覆盖403/断连且共用30秒，实测20条及两篇FULL。新增root-only双订阅候选小时刷新，实际订阅仍STALE、不改活跃Chrome绑定。以现行镜像窄发布Site Access/Bus/API/Web，15文件hash核验，Supervisor/Profile/Enrichment/Projector保留；Reuters/Investing挑战、DIGITIMES会员权限、BE IR拒绝、IBKR Gateway4002缺失仍需后续处理，未宣称全源/长期恢复。实现、真实验收、回归、限制及回滚见 docs/message-source-login-repair-20261014.md；未git提交或push。
 
 2026-10-14 W3 IBKR外显收窄与K线能力补齐（本地）：对照当前skill的重定价完成态核验，仅向W3授权/外显ibkr.market_history，移除其他7个IBKR工具（历史工具内部解析合约，无需独立contract_search），其他节点能力不受影响。现有MCP历史工具补10min粒度、duration及end_datetime参数；未显式给结束时点时使用任务cutoff_at，保留旧period/bar调用及无cutoff直接调用的默认行为，新增查询参数进入观测envelope。补齐DataExecutionCore的W3角色映射，避免授权后执行KeyError。35项工具/权限/IBKR/MCP回归及Ruff通过；通过模拟会话验证W3到IBKR历史查询完整链路，未改prompt/skill、未调用真实IBKR或部署生产。
+
+2026-10-12 · 重写项目 README，新增可互相切换的中英文版本，围绕项目定位、主要能力、预期驱动的业务闭环与整体架构展开，并提供产品说明和运行指南入口；仅更新文档。
