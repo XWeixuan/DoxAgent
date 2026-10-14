@@ -451,12 +451,19 @@ class SiteLoginApp:
         self._run(lambda: call_admin(arguments), self._verified)
 
     def _verified(self, payload: dict[str, Any]) -> None:
+        if payload.get("closed") is False:
+            messagebox.showwarning(
+                "Challenge Not Verified",
+                str(payload.get("message") or "Keep the browser open and complete the challenge."),
+            )
+            self._recover()
+            return
         self._stop_owned_viewer()
         self.session = None
         self._render_session()
         message = str(payload.get("message") or "Verification completed.")
         state = str(payload.get("auth_state") or "UNKNOWN")
-        if state == "VALID":
+        if state == "VALID" or payload.get("reason") == "public_access_ready":
             messagebox.showinfo("Login Verified", message)
         elif state == "ENTITLEMENT_MISSING":
             messagebox.showwarning("No Subscription Access", message)

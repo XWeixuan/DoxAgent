@@ -581,7 +581,8 @@ def command_verify(
                 raise failure
             profile = result.get("profile", {})
             state = (result.get("auth") or {}).get("auth_state") or profile.get("auth_state")
-            if state != "VALID" or not profile.get("challenge_verified"):
+            public_ready = result.get("reason") == "public_access_ready"
+            if (state != "VALID" and not public_ready) or not profile.get("challenge_verified"):
                 return {
                     "ok": True,
                     "profile_id": profile_id,

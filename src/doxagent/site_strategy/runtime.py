@@ -118,6 +118,22 @@ class OwnerFileLock:
             self._stream = None
 
 
+def clear_profile_runtime_links(directory: Path) -> None:
+    """Clear only ephemeral Chrome links after acquiring the Profile writer lock.
+
+    Container replacement changes the hostname and /tmp namespace. Chrome treats
+    the old hostname in SingletonLock as a remote live owner instead of recovering
+    it. The application flock, not that stale link, is the writer authority.
+    Validate the whole set before removing anything; never delete ordinary files.
+    """
+    paths = [directory / name for name in ("SingletonLock", "SingletonSocket", "SingletonCookie")]
+    if any(path.exists() and not path.is_symlink() for path in paths):
+        raise RuntimeError("profile_busy_unknown_singleton")
+    for path in paths:
+        if path.is_symlink():
+            path.unlink()
+
+
 @dataclass
 class _BrowserEntry:
     profile: BrowserProfile
@@ -611,6 +627,7 @@ class PersistentBrowserPool:
             profile_lock.acquire()
             context: Any | None = None
             try:
+                clear_profile_runtime_links(directory)
                 context = await self._playwright.chromium.launch_persistent_context(
                     str(directory),
                     headless=self.headless,
@@ -1117,11 +1134,39 @@ class SiteAccessRuntime:
                         provenance=lease.provenance,
                     )
                 if request.recipe_ref == "builtin:reuters_search@1":
-                    rows = await capture_reuters_search(
-                        page,
-                        str(request.recipe_parameters["query"]),
-                        int(request.recipe_parameters.get("offset", 0)),
-                    )
+                    try:
+                        rows = await capture_reuters_search(
+                            page,
+                            str(request.recipe_parameters["query"]),
+                            int(request.recipe_parameters.get("offset", 0)),
+                        )
+                    except Exception as exc:
+                        html = getattr(exc, "response_body", "")
+                        if not html and identity.runtime_kind is BrowserRuntimeKind.EXTERNAL_CHROME:
+                            try:
+                                html = await page.content()
+                            except Exception:
+                                html = ""
+                        if (
+                            identity.runtime_kind is not BrowserRuntimeKind.EXTERNAL_CHROME
+                            or not html
+                            or inspect_html(html, page.url, "").access_reason
+                            != "challenge_required"
+                        ):
+                            raise
+                        token = await self._retain_challenge(
+                            lease, page, gate, identity, resolved.site_id, request.url
+                        )
+                        retained = True
+                        return RuntimeResponse(
+                            int(getattr(exc, "status_code", 0) or 0),
+                            page.url,
+                            getattr(exc, "response_headers", {}),
+                            body=html,
+                            provenance=lease.provenance,
+                            challenge_token=token,
+                            challenge_target_id=gate.root_target_id,
+                        )
                     return RuntimeResponse(
                         200,
                         page.url,
@@ -1246,18 +1291,8 @@ class SiteAccessRuntime:
                 )
                 token = uuid4().hex if challenge else None
                 if token is not None:
-                    # The user now owns this tab. Drop document interception and
-                    # popup instrumentation while they resolve the challenge.
-                    await gate.close()
-                    self._maintenance_pages[token] = _MaintenancePage(
-                        lease,
-                        page,
-                        gate,
-                        identity.profile_id,
-                        identity.identity_id,
-                        resolved.site_id,
-                        request.url,
-                        navigation_state="READY",
+                    token = await self._retain_challenge(
+                        lease, page, gate, identity, resolved.site_id, request.url
                     )
                     retained = True
                 return RuntimeResponse(
@@ -1275,6 +1310,31 @@ class SiteAccessRuntime:
         finally:
             if not retained:
                 await lease.__aexit__(None, None, None)
+
+    async def _retain_challenge(
+        self,
+        lease: Any,
+        page: Any,
+        gate: Any,
+        identity: BrowserIdentitySpec,
+        site_id: str,
+        url: str,
+    ) -> str:
+        # One path for ordinary documents and recipes: preserve the actual tab,
+        # remove navigation instrumentation, and let the service pause its identity.
+        token = uuid4().hex
+        await gate.close()
+        self._maintenance_pages[token] = _MaintenancePage(
+            lease,
+            page,
+            gate,
+            identity.profile_id,
+            identity.identity_id,
+            site_id,
+            url,
+            navigation_state="READY",
+        )
+        return token
 
     async def reset_egress(self, egress_id: str) -> None:
         stale = [key for key in self._http_sessions if key[1] == egress_id]

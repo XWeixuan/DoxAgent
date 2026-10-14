@@ -2213,7 +2213,9 @@ class SiteStrategyService:
             }
         )
         self.repository.save_profile(updated)
-        if profile.challenge_url is not None and state is AuthState.VALID:
+        if profile.challenge_url is not None and (
+            state is AuthState.VALID or reason == "public_access_ready"
+        ):
             updated = updated.model_copy(update={"challenge_verified": True})
             self.repository.save_profile(updated)
         identity_runtime = self.repository.get_identity_runtime(identity_id)
@@ -2446,6 +2448,16 @@ def classify_exception(exc: Exception) -> tuple[FailureCategory, str]:
         )
     name = type(exc).__name__.casefold()
     message = str(exc).casefold()
+    if any(
+        marker in message
+        for marker in (
+            "profile_busy_unknown_singleton",
+            "processsingleton",
+            "profile appears to be in use",
+            "writer lock is already held",
+        )
+    ):
+        return FailureCategory.RUNTIME_UNAVAILABLE, "browser_profile_busy"
     net_error = re.search(r"(?:net::)?ERR_[A-Z_]+", str(exc))
     if net_error:
         return FailureCategory.TRANSIENT_TRANSPORT, net_error.group(0)
