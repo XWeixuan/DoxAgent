@@ -1536,3 +1536,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-15 持久化运行实时并发修复：每ticker CASE准入4→6，W1/W2改为每ticker懒创建12 worker池（6 W1+6 W2），移除全ticker两线程瓶颈；容量与准入共享常量。补lane排队/执行耗时日志（无正文/提示词），实时Case关闭排空后再关闭lane池，CLOSED/sweep顺序、冻结输入、模型/重试/路由不变。新增多ticker真实模型入口并发、慢ticker隔离、准入释放、失败重试、关闭竞争及诊断异常回归；验证与标准MAIN生产发布记录见docs/persistent-runtime-concurrency-deployment-20261015.md。
 
 2026-10-15 MAIN消息源重部署修复：Managed Playwright取得Profile独占锁后安全处理跨容器遗留Singleton链接，普通文件拒绝且不碰Cookie；真实headed Chromium隔离A/B复现旧hostname拒绝启动、恢复后正常启动关闭。Reuters专用搜索recipe挑战异常接入原页保留/共享Identity暂停，不再finally销毁人工挑战现场；公开站点public_access_ready可完成challenge验证但不冒充订阅VALID，桥接与GUI保持失败会话/Viewer并正确显示公开成功。浏览器Profile冲突独立归类为runtime。只涉及Site Access及桌面桥接，不改BE IR、IBKR交易组件、站点轮询频率或Chrome身份；根因/验证见 docs/message-source-main-redeployment-repair-20261015.md，生产发布另记实际回执。
+
+2026-10-15 Site Access正式镜像权限补修：首轮main-02f85ad0启动暴露root:root/0640源码无法由UID10001导入，已仅回滚Site Access及本轮发布变量，未动Chrome Supervisor/Profile。Dockerfile.v2规范构建内应用代码/提示词/合同树可读权限，Site Access构建阶段实际降权导入CLI；消除Docker COPY继承宿主检出权限造成的同commit不可复现问题。后续以新main标签和独立r2回执发布，不以旧基础镜像注入单文件冒充正式构建成功。

@@ -45,3 +45,13 @@ UTC21:15:46有PROFILE_VERIFIED/public_access_ready，21:16仍有真实browser成
 - 生产验收结果另存本次release回执；不以离线测试或镜像健康宣称网站实际恢复。
 
 Chromium机制依据：[process_singleton_posix.cc](https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/browser/process_singleton_posix.cc)。只使用官方实现核对hostname/进程锁行为，没有采用stealth、随机指纹或验证码绕过。
+
+## 6. 首次正式发布暴露的镜像权限问题
+
+`main-02f85ad0`首次切换后，UID10001在导入client.py时PermissionError，已立即仅回滚Site Access与本轮四个发布环境值，Chrome Supervisor不变。该错误不在之前沿旧系统镜像注入runtime.py的隔离A/B覆盖范围内；后者只证明锁机制，不等于完整新镜像已可用。
+
+实测新镜像client.py为root:root/0640，runtime.py为0644。Git仅记录普通/可执行模式，不记录这些细分读权限；Docker COPY保留检出目录的权限，不同检出/运维umask可产生不可由服务UID读取的源码。于是同一commit也可能因宿主检出权限产生功能不同的镜像。
+
+修复进入正式Dockerfile.v2：只对构建内应用src/prompts/api_contract树补a+rX及项目元数据可读，不触碰生产卷、Profile、配置secret。Site Access Dockerfile增加构建期setpriv为UID10001实际导入CLI，失败即不能完成镜像构建。再次发布使用新的MAIN标签和独立r2回执，不覆盖首轮失败/回滚材料。
+
+本地定向回归最终80 passed、3 skipped，Ruff/diff检查通过。发布健康检查不再替代非root导入及实际消息采集验收。
