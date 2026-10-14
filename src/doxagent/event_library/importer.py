@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import warnings
 
@@ -84,7 +85,7 @@ class RevisionBundleImporter:
         if not outcome.publishable or outcome.normalized_bundle is None:
             codes = ", ".join(issue.code for issue in outcome.issues) or "UNKNOWN"
             raise ValueError(f"Revision Bundle is not publishable: {codes}")
-        diagnostics = self._diagnostic_payload(loaded)
+        diagnostics = self._diagnostic_payload(loaded, outcome)
         result = self._repository.publish_bundle(
             outcome.normalized_bundle,
             source_bundle=loaded.bundle,
@@ -92,15 +93,18 @@ class RevisionBundleImporter:
             frozen_as_of=(None if context is None else context.frozen_as_of),
         )
         self._persist_reference_delta(result)
-        self._persist_import_diagnostics(loaded, result.published_library_version)
+        self._persist_import_diagnostics(loaded, result.published_library_version, outcome)
         return result, outcome
 
     def _persist_import_diagnostics(
-        self, loaded: TolerantBundleLoadResult, published_version: int
+        self,
+        loaded: TolerantBundleLoadResult,
+        published_version: int,
+        outcome: BundleValidationOutcome,
     ) -> None:
         if loaded.raw_bundle_hash is None:
             return
-        payload = self._diagnostic_payload(loaded)
+        payload = self._diagnostic_payload(loaded, outcome)
         assert payload is not None
         payload["published_library_version"] = published_version
         path = (
@@ -112,6 +116,10 @@ class RevisionBundleImporter:
         )
         try:
             path.parent.mkdir(parents=True, exist_ok=True)
+            if outcome.normalized_bundle is not None:
+                path.with_suffix(".effective.json").write_text(
+                    self._effective_json(outcome), encoding="utf-8"
+                )
             path.write_text(
                 json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
                 encoding="utf-8",
@@ -124,11 +132,31 @@ class RevisionBundleImporter:
             )
 
     @staticmethod
-    def _diagnostic_payload(loaded: TolerantBundleLoadResult) -> dict[str, object] | None:
+    def _effective_json(outcome: BundleValidationOutcome) -> str:
+        assert outcome.normalized_bundle is not None
+        return (
+            json.dumps(
+                outcome.normalized_bundle.model_dump(mode="json"),
+                ensure_ascii=False,
+                sort_keys=True,
+                indent=2,
+            )
+            + "\n"
+        )
+
+    @staticmethod
+    def _diagnostic_payload(
+        loaded: TolerantBundleLoadResult, outcome: BundleValidationOutcome
+    ) -> dict[str, object] | None:
         if loaded.raw_bundle_hash is None:
             return None
         return {
             "raw_bundle_hash": loaded.raw_bundle_hash,
+            "effective_bundle_hash": hashlib.sha256(
+                RevisionBundleImporter._effective_json(outcome).encode("utf-8")
+            ).hexdigest(),
+            "validation_status": outcome.status.value,
+            "validation_issues": [issue.model_dump(mode="json") for issue in outcome.issues],
             "normalization_actions": loaded.normalization_actions,
             "rejected_records": loaded.rejected_records,
             "recovered_delta_ids": loaded.recovered_delta_ids,

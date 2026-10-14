@@ -20,6 +20,7 @@ services:
       args:
         BASE_IMAGE: ${DOXAGENT_V2_IMAGE:-doxagent-v2:server}
         GOOGLE_CHROME_VERSION: ${DOXAGENT_GOOGLE_CHROME_VERSION:-153.0.8010.52-1}
+        DOXAGENT_BUILD_COMMIT: ${DOXAGENT_BUILD_COMMIT:-unversioned}
     image: ${DOXAGENT_CHROME_SUPERVISOR_IMAGE:-doxagent-chrome-supervisor:server}
     mem_limit: 5g
     memswap_limit: 6g
@@ -87,6 +88,8 @@ services:
     image: ${DOXAGENT_V2_IMAGE:-doxagent-v2:server}
   v2-message-bus:
     <<: *cgroup-boundary
+    environment:
+      DOXAGENT_MESSAGE_BUS_V2_YAHOO_HTTP_ROUTES: '["de-standard-1","tr-standard-1"]'
     extra_hosts: ["host.docker.internal:host-gateway"]
     mem_limit: 15g
     memswap_limit: 16g

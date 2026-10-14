@@ -3,6 +3,6 @@ FROM ${DOXAGENT_BASE_IMAGE}
 
 # The agent/verification job uses the candidate checkout through PYTHONPATH and needs the
 # repository's locked development test tools. Authentication is mounted at runtime, never baked in.
-RUN --mount=type=cache,target=/root/.cache/uv uv sync --frozen --group dev
+RUN --mount=type=cache,target=/root/.cache/uv uv sync --frozen --group dev --inexact && uv pip install --python /app/.venv/bin/python protobuf==5.29.5 && uv pip check --python /app/.venv/bin/python
 ENV CODEX_HOME=/var/lib/doxagent/initialization-repair/codex-home
 CMD ["doxagent-initialization-repair", "--help"]

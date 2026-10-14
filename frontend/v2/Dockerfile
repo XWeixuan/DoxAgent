@@ -8,6 +8,8 @@ COPY frontend/v2/ ./
 RUN corepack pnpm build
 
 FROM nginx:1.28-alpine
+ARG DOXAGENT_BUILD_COMMIT=unversioned
+LABEL org.opencontainers.image.revision=${DOXAGENT_BUILD_COMMIT}
 COPY frontend/v2/deploy/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/frontend/v2/dist /usr/share/nginx/html
 EXPOSE 80

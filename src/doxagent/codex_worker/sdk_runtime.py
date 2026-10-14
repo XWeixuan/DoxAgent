@@ -406,7 +406,12 @@ class OpenAICodexRuntime:
                     ),
                     "mcp_servers.data.enabled_tools": enabled_mcp_tools,
                     "mcp_servers.data.required": not isinstance(request.node, CodexD2Node),
-                    "mcp_servers.data.startup_timeout_sec": 20,
+                    # Preserve recovered maintenance cold starts and the deployed W3 budget.
+                    "mcp_servers.data.startup_timeout_sec": (
+                        90 if request.node == CodexPersistentRuntimeNode.W3
+                        else 60 if str(request.node) in {"event_library_o2_maintain", "d3_o3_maintain"}
+                        else 20
+                    ),
                     "mcp_servers.data.tool_timeout_sec": 120,
                 }
             )

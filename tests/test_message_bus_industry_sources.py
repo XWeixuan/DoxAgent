@@ -108,7 +108,7 @@ def test_barrons_ticker_excludes_ibd_and_unscoped_other_publishers() -> None:
       <a href="https://www.wsj.com/articles/unrelated-123">Unscoped WSJ link</a>
       <h2>OTHER DOW JONES</h2>
       <article><a href="https://www.wsj.com/articles/memory-chip-news-123">
-      Memory chip production news</a></article>
+      Memory chip production news</a><time datetime="2026-09-23T14:00:00Z"/></article>
       <article><a href="https://www.investors.com/news/ibd-chip-story/">
       Investor's Business Daily story</a></article>
     </main></html>"""
@@ -132,7 +132,7 @@ def test_barrons_ticker_uses_rendered_news_card_without_main() -> None:
     <html><title>MU Stock News</title><div id="__next">
       <div data-id="News_index"><h2>news</h2><div>
         <a href="https://www.barrons.com/articles/micron-results-123">
-        Micron reports stronger memory revenue</a></div></div>
+        Micron reports stronger memory revenue</a><time datetime="2026-09-23T15:00:00Z"/></div></div>
       <footer><a href="https://www.barrons.com/articles/barrons-investor-circle-introduction-stock-picks-af5a365b">
       Investor Circle</a></footer></div></html>"""
     rows = parse_barrons_ticker_listing(html, ticker="MU", now=NOW)
@@ -269,3 +269,15 @@ def test_cjk_article_identity_and_source_language_registry() -> None:
     assert sites["digitimes"].auth.body_requirement == "inherit"
     assert sites["digitimes"].auth.crawler_requirement == "none"
     assert sites["huggingnews"].access.combinations[0].egress_id == "de-standard-1"
+
+
+def test_barrons_ticker_unwrapped_undated_cards_are_not_new() -> None:
+    html = """
+    <html><title>MU Stock News</title><main>
+      <div><a href="https://www.barrons.com/articles/old-micron-123">
+      Historical Micron article without a publication time</a></div>
+      <h2>OTHER DOW JONES</h2>
+      <div><a href="https://www.marketwatch.com/story/old-memory-news-123">
+      Historical MarketWatch story without a publication time</a></div>
+    </main></html>"""
+    assert parse_barrons_ticker_listing(html, ticker="MU", now=NOW) == []

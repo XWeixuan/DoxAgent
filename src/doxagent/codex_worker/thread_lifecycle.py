@@ -21,26 +21,39 @@ class AppServerThreads:
         self.lock = asyncio.Lock()
 
     async def request(self, method, params):
-        if self.client is None:
-            async with self.lock:
-                if self.client is None:
-                    from openai_codex.async_client import AsyncCodexClient
+        # Fork loads the new thread and owns its writer until this app-server
+        # exits. The execution capsule must acquire that writer on resume.
+        # Serialize lifecycle RPCs so releasing a Fork cannot close a client
+        # that another concurrent lifecycle request is still using.
+        async with self.lock:
+            if self.client is None:
+                from openai_codex.async_client import AsyncCodexClient
 
-                    client = AsyncCodexClient()
-                    try:
-                        await client.start()
-                        await client.initialize()
-                    except BaseException:
-                        await client.close()
-                        raise
-                    self.client = client
-        response = await self.client.request(method, params, response_model=_WireResponse)
-        return response.model_dump(mode="json")
+                client = AsyncCodexClient()
+                try:
+                    await client.start()
+                    await client.initialize()
+                except BaseException:
+                    await client.close()
+                    raise
+                self.client = client
+            try:
+                response = await self.client.request(method, params, response_model=_WireResponse)
+                return response.model_dump(mode="json")
+            finally:
+                if method == "thread/fork":
+                    # Also release after a lost response: the persisted child
+                    # can be recovered by thread/list without retaining a lock.
+                    await self._close_client()
+
+    async def _close_client(self):
+        if self.client is not None:
+            client, self.client = self.client, None
+            await client.close()
 
     async def close(self):
-        if self.client is not None:
-            await self.client.close()
-            self.client = None
+        async with self.lock:
+            await self._close_client()
 
 
 class WorkerThreadLifecycle:

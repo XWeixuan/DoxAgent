@@ -40,3 +40,10 @@ references/
 /.test-tmp/
 /.pytest-codex*/
 /%SystemDrive%/
+
+# Production build context excludes runtime secrets and reproducible evidence.
+eval/
+exports/
+deploy/secrets/
+/.codex/
+/.aws/

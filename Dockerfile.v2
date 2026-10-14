@@ -1,3 +1,5 @@
+ARG IBKR_SDK_SOURCE_IMAGE=doxagent-ibapi:approved-7d361219
+FROM ${IBKR_SDK_SOURCE_IMAGE} AS approved_ibapi
 # Production backend and Codex worker share one immutable application image.
 FROM ghcr.io/astral-sh/uv:0.8.14-python3.11-bookworm-slim
 ARG DOXAGENT_BUILD_COMMIT=unversioned
@@ -20,13 +22,11 @@ COPY src ./src
 RUN uv sync --frozen --no-group dev
 ARG IBKR_TWS_API_VERSION=1049.02
 ARG IBKR_TWS_API_SHA256=d1878128eb725bf744ab796f0ad518b915f2fce0f2c4ab3b9476f8a7fcf7649a
-RUN curl -fsSL "https://interactivebrokers.github.io/downloads/twsapi_macunix.${IBKR_TWS_API_VERSION}.zip" \
-        -o /tmp/twsapi.zip \
-    && echo "${IBKR_TWS_API_SHA256}  /tmp/twsapi.zip" | sha256sum -c - \
-    && python -m zipfile -e /tmp/twsapi.zip /tmp/twsapi \
-    && uv pip install --python /app/.venv/bin/python /tmp/twsapi/IBJts/source/pythonclient \
-    && uv pip check --python /app/.venv/bin/python \
-    && rm -rf /tmp/twsapi /tmp/twsapi.zip
+# The pinned upstream archive is unavailable; retain the approved official package.
+COPY --from=approved_ibapi /app/.venv/lib/python3.11/site-packages/ibapi /app/.venv/lib/python3.11/site-packages/ibapi
+COPY --from=approved_ibapi /app/.venv/lib/python3.11/site-packages/ibapi-10.49.2.dist-info /app/.venv/lib/python3.11/site-packages/ibapi-10.49.2.dist-info
+RUN uv pip install --python /app/.venv/bin/python protobuf==5.29.5 \
+    && uv pip check --python /app/.venv/bin/python
 COPY prompts ./prompts
 COPY dev_plan/workflow_v2/api_contract ./dev_plan/workflow_v2/api_contract
 CMD ["python", "-m", "doxagent.production_v2", "check"]

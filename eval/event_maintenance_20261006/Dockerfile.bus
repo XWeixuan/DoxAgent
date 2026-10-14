@@ -1,0 +1,4 @@
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE}
+USER root
+COPY src/doxagent/persistent_runtime_v2/bus_orchestration.py /app/src/doxagent/persistent_runtime_v2/bus_orchestration.py

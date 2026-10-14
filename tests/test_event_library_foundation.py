@@ -457,7 +457,8 @@ def test_validator_localizes_missing_delta_and_atomic_publish_rolls_back(tmp_pat
     assert published.published_library_version == 1
     assert repeated.published_library_version == 1
     assert published_outcome.status is ValidationStatus.PARTIAL
-    assert repeated_outcome.status is ValidationStatus.PASS
+    assert repeated_outcome.status is ValidationStatus.PARTIAL
+    assert repeated_outcome.normalized_bundle == published_outcome.normalized_bundle
 
 
 def test_stale_base_is_a_hard_validation_failure(tmp_path: Path) -> None:
