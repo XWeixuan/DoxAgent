@@ -49,6 +49,7 @@ class MaintenancePhaseFailure(RuntimeError):
 
 class RuntimeJournal:
     VERSION = 1
+    CASE_CONCURRENCY_PER_TICKER = 6
 
     def __init__(
         self,
@@ -242,7 +243,10 @@ class RuntimeJournal:
                 return None
             if row["status"] == "RUNNING" and row["lease_until"] > now.isoformat():
                 return None
-            cap = {"SWEEP": 1, "MAINTENANCE": 1, "SELECTION": 1, "CASE": 4}.get(row["kind"])
+            cap = {
+                "SWEEP": 1, "MAINTENANCE": 1, "SELECTION": 1,
+                "CASE": self.CASE_CONCURRENCY_PER_TICKER,
+            }.get(row["kind"])
             if (
                 cap
                 and db.execute(

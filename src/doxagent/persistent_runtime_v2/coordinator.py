@@ -5,7 +5,6 @@ remain queryable and are never prerequisites of unrelated future days.
 """
 
 from __future__ import annotations
-from doxagent.workflows.codex_document3.consumer_contracts import parse_runtime_projection, RuntimePolicyProjectionV5, PolicyDetailSnapshotV3
 
 import asyncio
 from collections.abc import Callable
@@ -16,6 +15,9 @@ from typing import Any
 from doxagent.message_bus_v2.schema import MaterializedStreamItem, MaterializedStreamMember
 from doxagent.semantic_clock import boundary, semantic_day
 from doxagent.v2_control.repository import ControlError, ControlRepository
+from doxagent.workflows.codex_document3.consumer_contracts import (
+    parse_runtime_projection,
+)
 
 from .calendar import MarketCalendar
 from .fencing import write_scope
@@ -496,7 +498,6 @@ class RuntimeCoordinator:
             frozen = self.journal.get("sweep_bundle", inputs["sweep_id"])
             if frozen:
                 from doxagent.event_library.provider import KnownEventIndexSnapshot
-                from doxagent.workflows.codex_document3.schema import RuntimePolicyProjection
 
                 from .providers import RuntimeInputSnapshot
 
@@ -916,4 +917,5 @@ class RuntimeCoordinator:
     def close(self) -> None:
         self._closed = True
         for pool in (self._realtime, self._background, self._sweeps, self._effects, self._delivery):
-            pool.shutdown(wait=False, cancel_futures=True)
+            # Drain real-time Cases before service.close shuts their lane pools.
+            pool.shutdown(wait=pool is self._realtime, cancel_futures=True)

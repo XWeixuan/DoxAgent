@@ -65,6 +65,10 @@ def main():
     args = parser.parse_args()
     if not 0.1 <= args.interval <= 60 or not 1 <= args.limit <= 500:
         parser.error("interval must be 0.1..60 and limit 1..500")
+    logging.basicConfig(
+        level=logging.WARNING, format="%(asctime)s %(levelname)s %(name)s %(message)s",
+    )
+    logging.getLogger("doxagent.persistent_runtime_v2.service").setLevel(logging.INFO)
     stop = Event()
     for sig in (signal.SIGINT, signal.SIGTERM):
         signal.signal(sig, lambda *_: stop.set())

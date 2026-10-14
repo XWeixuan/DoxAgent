@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import json
+import logging
 import time
 from collections.abc import Callable
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import asdict
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -93,6 +94,7 @@ if TYPE_CHECKING:
     from .projection import RuntimeV2ProjectionOutbox
 
 T = TypeVar("T", bound=BaseModel)
+_LOGGER = logging.getLogger(__name__)
 _EASTERN = ZoneInfo("America/New_York")
 
 
@@ -292,7 +294,9 @@ class PersistentRuntimeV2Service:
         self._w3_agent = w3_agent
         self._w3_v4_execution = None
         self._w3_lease_seconds = w3_lease_seconds
-        self._hot_executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="prv2-hot")
+        self._hot_executors: dict[str, ThreadPoolExecutor] = {}
+        self._hot_executors_lock = Lock()
+        self._hot_executors_closed = False
         self._effect_executor = ThreadPoolExecutor(
             max_workers=2,
             thread_name_prefix="prv2-effect",
@@ -315,7 +319,11 @@ class PersistentRuntimeV2Service:
         self._closed = True
         if self.coordinator:
             self.coordinator.close()
-        self._hot_executor.shutdown(wait=True, cancel_futures=False)
+        with self._hot_executors_lock:
+            self._hot_executors_closed = True
+            hot_executors = list(self._hot_executors.values())
+        for executor in hot_executors:
+            executor.shutdown(wait=True, cancel_futures=False)
         self._effect_executor.shutdown(wait=True, cancel_futures=False)
         while True:
             with self._w3_threads_lock:
@@ -326,6 +334,67 @@ class PersistentRuntimeV2Service:
                 thread.join()
         if self._w3_agent is not None:
             self._w3_agent.close()
+
+    def _submit_hot_lanes(
+        self, case: RuntimeCase, index: KnownEventIndexSnapshot,
+        projection: RuntimePolicyProjection,
+    ) -> tuple[Future[Any], Future[Any]]:
+        # Both submissions are atomic with respect to pool shutdown. In-flight
+        # Cases can still submit while coordinator.close drains their tasks.
+        with self._hot_executors_lock:
+            if self._hot_executors_closed:
+                raise RuntimeError("Runtime hot lane pools are closed")
+            executor = self._hot_executors.get(case.ticker)
+            if executor is None:
+                executor = ThreadPoolExecutor(
+                    max_workers=2 * RuntimeJournal.CASE_CONCURRENCY_PER_TICKER,
+                    thread_name_prefix=f"prv2-hot-{case.ticker}",
+                )
+                self._hot_executors[case.ticker] = executor
+            submitted = perf_counter()
+            return (
+                executor.submit(
+                    self._run_hot_lane, case, "W1", submitted,
+                    lambda: self._run_w1_hot(case, index),
+                ),
+                executor.submit(
+                    self._run_hot_lane, case, "W2", submitted,
+                    lambda: self._run_w2_hot(case, projection),
+                ),
+            )
+
+    def _run_hot_lane(
+        self, case: RuntimeCase, lane: str, submitted: float, run: Callable[[], Any],
+    ) -> Any:
+        started = perf_counter()
+        queue_wait_ms = round((started - submitted) * 1000)
+        self._log_hot_lane(case, lane, "STARTED", queue_wait_ms, 0)
+        status = "FAILED"
+        try:
+            result = run()
+            status = "SUCCEEDED"
+            return result
+        finally:
+            self._log_hot_lane(
+                case, lane, status, queue_wait_ms, round((perf_counter() - started) * 1000),
+            )
+
+    @staticmethod
+    def _log_hot_lane(
+        case: RuntimeCase, lane: str, status: str, queue_wait_ms: int, lane_elapsed_ms: int,
+    ) -> None:
+        try:
+            _LOGGER.info(
+                "runtime_hot_lane case_id=%s ticker=%s lane=%s status=%s "
+                "queue_wait_ms=%d lane_elapsed_ms=%d",
+                case.case_id, case.ticker, lane, status, queue_wait_ms, lane_elapsed_ms,
+                extra={"case_id": case.case_id, "ticker": case.ticker, "lane": lane,
+                       "status": status, "queue_wait_ms": queue_wait_ms,
+                       "lane_elapsed_ms": lane_elapsed_ms},
+            )
+        except Exception:
+            # Diagnostics must not prevent dispatch or mask a business failure.
+            pass
 
     def execute_message(
         self,
@@ -595,8 +664,7 @@ class PersistentRuntimeV2Service:
                 else:
                     w2_r1, w2_final, w2_response_id = self._run_w2_hot(case, projection)
             else:
-                w1_future = self._hot_executor.submit(self._run_w1_hot, case, index)
-                w2_future = self._hot_executor.submit(self._run_w2_hot, case, projection)
+                w1_future, w2_future = self._submit_hot_lanes(case, index, projection)
                 w1_r1, w1_final, w1_response_id = w1_future.result()
                 w2_r1, w2_final, w2_response_id = w2_future.result()
             case.w1_round1, case.w1_final = w1_r1, w1_final
