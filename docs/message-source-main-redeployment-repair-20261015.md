@@ -55,3 +55,15 @@ Chromium机制依据：[process_singleton_posix.cc](https://chromium.googlesourc
 修复进入正式Dockerfile.v2：只对构建内应用src/prompts/api_contract树补a+rX及项目元数据可读，不触碰生产卷、Profile、配置secret。Site Access Dockerfile增加构建期setpriv为UID10001实际导入CLI，失败即不能完成镜像构建。再次发布使用新的MAIN标签和独立r2回执，不覆盖首轮失败/回滚材料。
 
 本地定向回归最终80 passed、3 skipped，Ruff/diff检查通过。发布健康检查不再替代非root导入及实际消息采集验收。
+
+## 7. 生产复验发现的第二层External故障与延迟challenge
+
+正式r2镜像main-483d4771成功发布，仅Site Access容器更换，Supervisor与其他容器ID不变。TrendForce两个入口、GlobeNewswire两个入口恢复自然轮询；次日UTC05:31—05:32的独立正文canary：Barron's两篇FULL（3859/5874字符）、TrendForce News两篇FULL（4342/3134）、Press两篇FULL（2550/6082）、Globe RSS两篇FULL（6207/6856）。DIGITIMES列表200/11条，两篇正文均subscription_required，不把列表可用冒充付费正文已可用。
+
+Investing/InvestorsHub还共同依赖public-markets-nl。旧Chrome主PID164运行约10.5小时、累计CPU约6小时，HTTP调试元数据正常且仅一个about:blank页面，Playwright却在WebSocket connected后connect_over_cdp超时。说明不是调试端口拒绝、tab堆积或网站登录请求失败，而是实例CDP接入/初始化不再可用。没有足够证据断言Chrome内部具体哪个函数产生忙循环。
+
+通过现有owner的identity:drain仅对该Identity执行SIGTERM并等正常退出，返回stopped=true；未强杀或复制/清空Profile。原Profile重新启动后CPU降到正常范围，CDP接入成功，InvestorsHub再次产生实际文章，Investing推进至article-item等待超时。因此当前Investing至少是复合问题，不能用重启成功宣称已恢复。
+
+补修：connect_over_cdp故障单独归为RUNTIME_UNAVAILABLE/browser_cdp_attach_failed，不再误记为网站网络并立即重复访问；所有External页面/recipe异常在关闭前有限时观察实际文档，若是延迟出现的challenge则保留原页交人工，否则原异常继续传播并记录无秘密的文档类型/字节数诊断。该路径统一替代Reuters局部catch，覆盖Investing初始commit后出现challenge的漏洞。不增加自动强杀或跨Identity重启。
+
+Reuters真实搜索probe仍401/challenge，原页已保留。Registry以revision9→10审计提交取消长期401、不能使用浏览器Cookie的HTTP_PUBLIC正文后备，仅保留browser/reader，减少无效拒绝流量；不是盲清认证状态。此为生产Registry配置，与源码commit区分记录。

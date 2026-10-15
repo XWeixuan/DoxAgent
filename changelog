@@ -1538,3 +1538,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-15 MAIN消息源重部署修复：Managed Playwright取得Profile独占锁后安全处理跨容器遗留Singleton链接，普通文件拒绝且不碰Cookie；真实headed Chromium隔离A/B复现旧hostname拒绝启动、恢复后正常启动关闭。Reuters专用搜索recipe挑战异常接入原页保留/共享Identity暂停，不再finally销毁人工挑战现场；公开站点public_access_ready可完成challenge验证但不冒充订阅VALID，桥接与GUI保持失败会话/Viewer并正确显示公开成功。浏览器Profile冲突独立归类为runtime。只涉及Site Access及桌面桥接，不改BE IR、IBKR交易组件、站点轮询频率或Chrome身份；根因/验证见 docs/message-source-main-redeployment-repair-20261015.md，生产发布另记实际回执。
 
 2026-10-15 Site Access正式镜像权限补修：首轮main-02f85ad0启动暴露root:root/0640源码无法由UID10001导入，已仅回滚Site Access及本轮发布变量，未动Chrome Supervisor/Profile。Dockerfile.v2规范构建内应用代码/提示词/合同树可读权限，Site Access构建阶段实际降权导入CLI；消除Docker COPY继承宿主检出权限造成的同commit不可复现问题。后续以新main标签和独立r2回执发布，不以旧基础镜像注入单文件冒充正式构建成功。
+
+2026-10-15 External复合故障补修：public-markets-nl旧Chrome端口存活但CDP接入超时，经单Identity正常drain保留Profile后恢复接入；此阶段故障独立归类browser_cdp_attach_failed，避免误报网站网络及即时重试。External全部recipe/selector异常在清理前有限时识别延迟challenge并保留原页，不仅覆盖Reuters；非challenge保持原异常并记录无秘密文档诊断。新增延迟challenge/正常文档失败/attach分类回归；正文实测与尚需人工事项见同日消息源根因记录。

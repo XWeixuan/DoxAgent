@@ -1113,6 +1113,7 @@ class SiteAccessRuntime:
         page = await lease.__aenter__()
         gate = _DocumentNavigationGate(page, self.resolver, resolved, lease.browser_cdp)
         retained = False
+        response = None
         try:
             try:
                 await gate.start()
@@ -1134,39 +1135,11 @@ class SiteAccessRuntime:
                         provenance=lease.provenance,
                     )
                 if request.recipe_ref == "builtin:reuters_search@1":
-                    try:
-                        rows = await capture_reuters_search(
-                            page,
-                            str(request.recipe_parameters["query"]),
-                            int(request.recipe_parameters.get("offset", 0)),
-                        )
-                    except Exception as exc:
-                        html = getattr(exc, "response_body", "")
-                        if not html and identity.runtime_kind is BrowserRuntimeKind.EXTERNAL_CHROME:
-                            try:
-                                html = await page.content()
-                            except Exception:
-                                html = ""
-                        if (
-                            identity.runtime_kind is not BrowserRuntimeKind.EXTERNAL_CHROME
-                            or not html
-                            or inspect_html(html, page.url, "").access_reason
-                            != "challenge_required"
-                        ):
-                            raise
-                        token = await self._retain_challenge(
-                            lease, page, gate, identity, resolved.site_id, request.url
-                        )
-                        retained = True
-                        return RuntimeResponse(
-                            int(getattr(exc, "status_code", 0) or 0),
-                            page.url,
-                            getattr(exc, "response_headers", {}),
-                            body=html,
-                            provenance=lease.provenance,
-                            challenge_token=token,
-                            challenge_target_id=gate.root_target_id,
-                        )
+                    rows = await capture_reuters_search(
+                        page,
+                        str(request.recipe_parameters["query"]),
+                        int(request.recipe_parameters.get("offset", 0)),
+                    )
                     return RuntimeResponse(
                         200,
                         page.url,
@@ -1304,6 +1277,47 @@ class SiteAccessRuntime:
                     challenge_token=token,
                     challenge_target_id=gate.root_target_id if challenge else None,
                 )
+            except Exception as exc:
+                # A native redirect/late WAF document may replace the initial
+                # commit while a recipe or content selector is still waiting.
+                # Inspect before cleanup; do not retry/close a human challenge.
+                if identity.runtime_kind is BrowserRuntimeKind.EXTERNAL_CHROME:
+                    html = getattr(exc, "response_body", "")
+                    if not html:
+                        try:
+                            async with asyncio.timeout(3):
+                                html = await page.content()
+                        except Exception:
+                            html = ""
+                    inspection = inspect_html(html, page.url, "") if html else None
+                    if inspection and inspection.access_reason == "challenge_required":
+                        token = await self._retain_challenge(
+                            lease, page, gate, identity, resolved.site_id, request.url
+                        )
+                        retained = True
+                        return RuntimeResponse(
+                            int(
+                                getattr(exc, "status_code", 0)
+                                or (response.status if response is not None else 0)
+                            ),
+                            page.url,
+                            getattr(exc, "response_headers", {}),
+                            body=html,
+                            provenance=lease.provenance,
+                            challenge_token=token,
+                            challenge_target_id=gate.root_target_id,
+                        )
+                    logger.warning(
+                        "browser document failure site=%s identity=%s html_bytes=%s "
+                        "page_kind=%s access_reason=%s error=%s",
+                        resolved.site_id,
+                        identity.identity_id,
+                        len(html.encode("utf-8")),
+                        getattr(inspection, "page_kind", "unknown"),
+                        getattr(inspection, "access_reason", None),
+                        type(exc).__name__,
+                    )
+                raise
             finally:
                 if not retained:
                     await gate.close()

@@ -2448,6 +2448,8 @@ def classify_exception(exc: Exception) -> tuple[FailureCategory, str]:
         )
     name = type(exc).__name__.casefold()
     message = str(exc).casefold()
+    if "browsertype.connect_over_cdp" in message:
+        return FailureCategory.RUNTIME_UNAVAILABLE, "browser_cdp_attach_failed"
     if any(
         marker in message
         for marker in (

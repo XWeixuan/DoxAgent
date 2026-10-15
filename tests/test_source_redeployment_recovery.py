@@ -93,6 +93,84 @@ def test_profile_lock_failure_is_runtime_not_network():
     assert reason == "browser_profile_busy"
 
 
+def test_cdp_attach_timeout_is_not_a_website_network_retry():
+    from doxagent.site_strategy.service import classify_exception
+
+    category, reason = classify_exception(
+        TimeoutError("BrowserType.connect_over_cdp: Timeout 20000ms exceeded. <ws connected>")
+    )
+    assert category.value == "RUNTIME_UNAVAILABLE"
+    assert reason == "browser_cdp_attach_failed"
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("late_challenge", [True, False])
+async def test_investing_selector_failure_inspects_document_before_cleanup(
+    monkeypatch, late_challenge
+):
+    monkeypatch.setattr(module, "public_url", AsyncMock())
+    url = "https://www.investing.com/equities/intel-corp-news"
+    final = (
+        "<html><title>Verify you are human</title></html>"
+        if late_challenge
+        else "<html><h1>Intel news</h1></html>"
+    )
+    response = SimpleNamespace(status=200, all_headers=AsyncMock(return_value={}))
+    locator = SimpleNamespace(wait_for=AsyncMock(side_effect=TimeoutError("selector timed out")))
+    page = SimpleNamespace(
+        url=url,
+        goto=AsyncMock(return_value=response),
+        content=AsyncMock(side_effect=["<html></html>", final]),
+        locator=lambda _: SimpleNamespace(first=locator),
+    )
+    lease = SimpleNamespace(
+        __aenter__=AsyncMock(return_value=page),
+        __aexit__=AsyncMock(),
+        provenance=SimpleNamespace(instance_id="instance"),
+        browser_cdp=object(),
+    )
+    gate = SimpleNamespace(
+        start=AsyncMock(), close=AsyncMock(), root_target_id="original", blocked=[]
+    )
+    monkeypatch.setattr(module, "_DocumentNavigationGate", lambda *args: gate)
+    monkeypatch.setattr(
+        module, "wait_for_native_document_redirect", AsyncMock(return_value=response)
+    )
+    runtime = module.SiteAccessRuntime.__new__(module.SiteAccessRuntime)
+    runtime._maintenance_pages = {}
+    runtime.resolver = object()
+    runtime.browser_runtimes = SimpleNamespace(page=AsyncMock(return_value=lease))
+    runtime.repository = SimpleNamespace(
+        get_identity_runtime=lambda _: SimpleNamespace(
+            instance_id="instance", operational_state=IdentityOperationalState.AVAILABLE
+        )
+    )
+    identity = BrowserIdentitySpec(
+        identity_id="public",
+        profile_id="public",
+        egress_id="proxy",
+        runtime_kind=BrowserRuntimeKind.EXTERNAL_CHROME,
+    )
+    request = AccessRequest(
+        operation_id="late", url=url, purpose=SitePurpose.CRAWLER, mode=AccessMode.BROWSER
+    )
+    if late_challenge:
+        result = await runtime._browser(
+            request, SimpleNamespace(site_id="investing"), identity, object()
+        )
+        assert result.challenge_token in runtime._maintenance_pages
+        assert result.body == final and result.status_code == 200
+        lease.__aexit__.assert_not_awaited()
+    else:
+        with pytest.raises(TimeoutError, match="selector"):
+            await runtime._browser(
+                request, SimpleNamespace(site_id="investing"), identity, object()
+            )
+        assert not runtime._maintenance_pages
+        lease.__aexit__.assert_awaited_once()
+    gate.close.assert_awaited_once()
+
+
 @pytest.mark.asyncio
 @pytest.mark.parametrize("has_error_document", [True, False])
 async def test_reuters_recipe_challenge_preserves_original_page(monkeypatch, has_error_document):
