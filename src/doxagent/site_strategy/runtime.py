@@ -928,6 +928,10 @@ class MaintenanceOpenError(RuntimeError):
         super().__init__(f"maintenance_open_failed:{stage}")
 
 
+class _BrowserContentNotReady(RuntimeError):
+    """The document arrived, but the expected publisher content did not."""
+
+
 class SiteAccessRuntime:
     def __init__(
         self,
@@ -1224,15 +1228,20 @@ class SiteAccessRuntime:
                             # document so quality/auth checks report a paywall,
                             # not a misleading normal-template selector timeout.
                             selector = "#articleTitle, #article-paywall"
-                    await page.locator(selector).first.wait_for(
-                        state=(
-                            "attached"
-                            if resolved.site_id == "investorshub"
-                            and request.purpose.value != "CRAWLER"
-                            else "visible"
-                        ),
-                        timeout=min(request.remaining_budget_ms, 15_000),
-                    )
+                    try:
+                        await page.locator(selector).first.wait_for(
+                            state=(
+                                "attached"
+                                if resolved.site_id == "investorshub"
+                                and request.purpose.value != "CRAWLER"
+                                else "visible"
+                            ),
+                            timeout=min(request.remaining_budget_ms, 15_000),
+                        )
+                    except Exception as exc:
+                        if "timeout" not in type(exc).__name__.casefold():
+                            raise
+                        raise _BrowserContentNotReady("browser_content_not_ready") from exc
                 if request.recipe_ref == "builtin:barrons_ticker@1" and not initial_challenge:
                     html = await _capture_barrons_ticker_cards(page)
                     return RuntimeResponse(
@@ -1317,6 +1326,17 @@ class SiteAccessRuntime:
                         getattr(inspection, "access_reason", None),
                         type(exc).__name__,
                     )
+                    if isinstance(exc, _BrowserContentNotReady):
+                        return RuntimeResponse(
+                            response.status if response is not None else 0,
+                            page.url,
+                            {},
+                            body=html
+                            if len(html.encode("utf-8")) <= request.max_response_bytes
+                            else "",
+                            reason="browser_content_not_ready",
+                            provenance=lease.provenance,
+                        )
                 raise
             finally:
                 if not retained:

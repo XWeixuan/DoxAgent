@@ -104,6 +104,28 @@ def test_cdp_attach_timeout_is_not_a_website_network_retry():
 
 
 @pytest.mark.asyncio
+async def test_content_readiness_failure_does_not_repeat_browser_visit(service):
+    request = AccessRequest(
+        operation_id="content-once",
+        url="https://www.reuters.com/news/test",
+        purpose=SitePurpose.BODY,
+        mode=AccessMode.BROWSER,
+    )
+    resolved = service.resolve(request.url)
+    combination = resolved.access.combinations[0]
+    profile = service.repository.get_profile(combination.profile_id)
+    egress = service.repository.get_egress(combination.egress_id)
+    service.runtime.execute = AsyncMock(
+        return_value=module.RuntimeResponse(
+            200, request.url, {}, "<html>Not ready</html>", reason="browser_content_not_ready"
+        )
+    )
+    _, category, reason, _ = await service._attempt(request, resolved, combination, profile, egress)
+    assert category.value == "EXTRACTION_ERROR" and reason == "browser_content_not_ready"
+    service.runtime.execute.assert_awaited_once()
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize("late_challenge", [True, False])
 async def test_investing_selector_failure_inspects_document_before_cleanup(
     monkeypatch, late_challenge
@@ -162,10 +184,14 @@ async def test_investing_selector_failure_inspects_document_before_cleanup(
         assert result.body == final and result.status_code == 200
         lease.__aexit__.assert_not_awaited()
     else:
-        with pytest.raises(TimeoutError, match="selector"):
-            await runtime._browser(
-                request, SimpleNamespace(site_id="investing"), identity, object()
-            )
+        result = await runtime._browser(
+            request, SimpleNamespace(site_id="investing"), identity, object()
+        )
+        from doxagent.site_strategy.service import classify_response
+
+        category, reason = classify_response(result)
+        assert category.value == "EXTRACTION_ERROR" and reason == "browser_content_not_ready"
+        assert result.body == final
         assert not runtime._maintenance_pages
         lease.__aexit__.assert_awaited_once()
     gate.close.assert_awaited_once()
