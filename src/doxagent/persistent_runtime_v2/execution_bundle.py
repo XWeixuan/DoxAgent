@@ -19,6 +19,7 @@ class ExecutionBundles:
         assets: dict[str, str] | None = None,
         orchestration_revision: int | None = None,
         w3_contract_version: str | None = None,
+        w2_contract_version: str | None = None,
         activate: bool = True,
     ) -> str:
         value: dict[str, Any] = {
@@ -59,6 +60,17 @@ class ExecutionBundles:
                 w3_asset_layout="agents-skill.v1",
                 w3_trade_schema=strict_json_schema(W3TradeDecision.model_json_schema()),
                 w3_operations_schema=strict_json_schema(W3OperationsResult.model_json_schema()),
+            )
+        if w2_contract_version is not None:
+            from .schema import W2NovelFactAlignmentResultV2, W2PolicyAssessmentResultV2
+            from .w2_alignment import W2_CONTRACT
+            if w2_contract_version != W2_CONTRACT or not prompts.w2_r3:
+                raise ValueError("Unsupported W2 alignment contract")
+            r2 = W2PolicyAssessmentResultV2.model_json_schema()
+            r3 = W2NovelFactAlignmentResultV2.model_json_schema()
+            value.setdefault("contracts", {}).update(
+                w2_contract_version=W2_CONTRACT, w2_r2_schema=r2, w2_r3_schema=r3,
+                w2_r2_schema_hash=digest(r2), w2_r3_schema_hash=digest(r3),
             )
         identity = self.journal.freeze(value)
         if activate:
@@ -107,6 +119,7 @@ class ExecutionBundles:
         return self.publish(
             prompts, assets={**previous, **assets}, orchestration_revision=revision,
             w3_contract_version=manifest.get("w3_contract_version"),
+            w2_contract_version=manifest.get("w2_contract_version"),
             activate=manifest.get("activate", True),
         )
 

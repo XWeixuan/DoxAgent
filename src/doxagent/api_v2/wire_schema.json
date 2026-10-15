@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "source_sha256": "7ec7e86b7741c6abcf37a144e949fbe96cf5178e0d8590cb95c8d3b45b487ca5",
+  "source_sha256": "c5c57257274995e093c9d62646d820917ced526d1c9cdb040bda99866b884949",
   "$defs": {
     "Id": {
       "type": "string"
@@ -8758,8 +8758,40 @@
             },
             {
               "const": "NOT_RECORDED"
+            },
+            {
+              "const": "UNAVAILABLE"
             }
           ]
+        },
+        "error": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "related_policy_results": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "policy_id": {
+                "$ref": "#/$defs/Id"
+              },
+              "is_new": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "policy_id",
+              "is_new"
+            ],
+            "additionalProperties": false
+          }
         },
         "not_executed_reason": {
           "anyOf": [

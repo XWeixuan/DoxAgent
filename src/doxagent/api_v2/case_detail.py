@@ -9,8 +9,6 @@ from fastapi import FastAPI, Request
 
 from doxagent.persistent_runtime_v2.router import alignment_flags
 from doxagent.persistent_runtime_v2.schema import (
-    W2NovelFactAlignmentResult,
-    W2PolicyAssessmentResult,
     normalize_w2_result,
 )
 
@@ -50,6 +48,7 @@ def install(app: FastAPI) -> None:
         )
         referenced = set(recall.get("candidate_policy_ids", []))
         referenced.update((case.get("w2_final") or {}).get("policy_ids", []))
+        referenced.update((case.get("w2_final") or {}).get("related_policy_ids", []))
         for field in ("hit_condition_ids", "matched_condition_ids"):
             referenced.update(g["policy_id"] for g in (case.get("w2_final") or {}).get(field, []))
         referenced.update(((case.get("w3_result") or {}).get("policy") or {}).get("policy_ids", []))
@@ -114,6 +113,9 @@ def install(app: FastAPI) -> None:
                 "w1_final",
                 "w1_extraction",
                 "w2_alignment",
+                "w2_alignment_status",
+                "w2_alignment_error",
+                "w2_contract_version",
                 "first_round_tags",
                 "orchestration_revision",
                 "w2_final",
@@ -338,16 +340,20 @@ def install(app: FastAPI) -> None:
             if any(g["node"] == "W2" and g["round"] == "R3" for g in groups)
             else "PENDING"
         )
+        from doxagent.persistent_runtime_v2.w2_alignment import alignment_result, assessment
+        if case.get("w2_alignment_status") == "UNAVAILABLE":
+            alignment_status = "UNAVAILABLE"
         flags = (
             alignment_flags(
-                W2PolicyAssessmentResult.model_validate(w2),
-                W2NovelFactAlignmentResult.model_validate(alignment),
+                assessment(w2),
+                alignment_result(alignment),
             )
             if alignment is not None and w2
             else (False, False)
         )
         alignment_view = {
             "status": alignment_status,
+            "error": case.get("w2_alignment_error"),
             "not_executed_reason": no_r3
             if alignment_status in {"NOT_RECORDED", "NOT_EXECUTED"}
             else None,
@@ -361,6 +367,7 @@ def install(app: FastAPI) -> None:
                 else "NOT_PRODUCED"
             ),
             "condition_results": (alignment or {}).get("condition_results", []),
+            "related_policy_results": (alignment or {}).get("related_policy_results", []),
         }
 
         def rounds(node, skipped=False, empty_recall=False):
@@ -412,9 +419,9 @@ def install(app: FastAPI) -> None:
             else None
         )
         related_result = {
-            "policy_ids": list(
+            "policy_ids": (w2 or {}).get("related_policy_ids", list(
                 dict.fromkeys(g["policy_id"] for g in (w2 or {}).get("matched_condition_ids", []))
-            ),
+            )),
             "matched_condition_ids": (w2 or {}).get("matched_condition_ids", []),
         }
         related_policies = policies(related_result) if w2 and modern else []

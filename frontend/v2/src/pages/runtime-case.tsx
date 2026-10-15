@@ -216,6 +216,7 @@ export default function CaseDetails({
                           RUNNING: "执行中",
                           SUCCEEDED: "已完成",
                           FAILED: "失败",
+                          UNAVAILABLE: "对齐不可用，已交由 W3 研判",
                           NOT_EXECUTED: "未执行",
                           NOT_RECORDED: "历史未记录",
                         }[d.w2.data.novel_fact_alignment.status]
@@ -228,6 +229,16 @@ export default function CaseDetails({
                           {r.is_new ? "TRUE" : "FALSE"}
                         </p>
                       ),
+                    )}
+                    {d.w2.data.novel_fact_alignment.related_policy_results?.map(
+                      (r) => (
+                        <p key={r.policy_id}>
+                          {r.policy_id} · {r.is_new ? "TRUE" : "FALSE"}
+                        </p>
+                      ),
+                    )}
+                    {d.w2.data.novel_fact_alignment.error && (
+                      <p>{d.w2.data.novel_fact_alignment.error}</p>
                     )}
                   </section>
                 )}

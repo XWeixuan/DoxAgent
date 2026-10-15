@@ -6,7 +6,7 @@ import json
 import logging
 import time
 from collections.abc import Callable
-from concurrent.futures import Future, ThreadPoolExecutor
+from concurrent.futures import CancelledError, Future, ThreadPoolExecutor
 from dataclasses import asdict
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -15,7 +15,7 @@ from time import perf_counter
 from typing import TYPE_CHECKING, Any, Literal, TypeVar
 from zoneinfo import ZoneInfo
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
 from doxagent.event_library.contracts import CanonicalEvent
 from doxagent.event_library.provider import KnownEventIndexSnapshot
@@ -38,7 +38,7 @@ from doxagent.workflows.codex_document3.schema import (
 
 from . import policy_consumption
 from .execution_bundle import ExecutionBundles
-from .journal import RuntimeJournal, digest
+from .journal import LeaseLost, RuntimeJournal, digest
 from .prompts import RuntimeV2PromptSet
 from .providers import RuntimeInputSnapshot, RuntimeKnownEventProvider, RuntimePolicyProvider
 from .repository import PersistentRuntimeV2Repository
@@ -67,7 +67,9 @@ from .schema import (
     W1NoveltyVerdict,
     W1Round1Result,
     W2NovelFactAlignmentResult,
+    W2NovelFactAlignmentResultV2,
     W2PolicyAssessmentResult,
+    W2PolicyAssessmentResultV2,
     W2PolicyResult,
     W2Round1RecallResult,
     W3CaseResult,
@@ -78,7 +80,6 @@ from .schema import (
     W3RouteCase,
     W3ThreadKind,
     new_runtime_v2_id,
-    normalize_w2_result,
     utc_now,
 )
 from .transport import (
@@ -88,6 +89,7 @@ from .transport import (
     RuntimeResponsesResult,
     _cache_optimized_input,
 )
+from .w2_alignment import W2_CONTRACT, assessment, validate_alignment
 from .w3 import W3Agent, W3Error
 
 if TYPE_CHECKING:
@@ -272,7 +274,9 @@ class PersistentRuntimeV2Service:
         w3_lease_seconds: int = 1200,
         input_snapshot_loader: Callable[[str], RuntimeInputSnapshot | None] | None = None,
         journal: RuntimeJournal | None = None,
+        w2_contract_version: str | None = None,
     ) -> None:
+        self.w2_contract_version = w2_contract_version
         self.repository = repository
         self.responses = responses
         self.known_events = known_events
@@ -476,6 +480,7 @@ class PersistentRuntimeV2Service:
             ),
             status=RuntimeCaseStatus.RUNNING,
         )
+        case.w2_contract_version = self.w2_contract_version
         provisional = self._visible_provisional(case)
         case.frozen_inputs = {
             "index": index.model_dump(mode="json"),
@@ -485,7 +490,12 @@ class PersistentRuntimeV2Service:
         }
         if case.execution_bundle_id and self.execution_bundles:
             bundle = self.execution_bundles.get(case.execution_bundle_id)
+            case.w2_contract_version = bundle.get("contracts", {}).get("w2_contract_version")
             case.frozen_inputs["prompts"] = bundle["prompts"]
+            if case.w2_contract_version:
+                case.frozen_inputs["w2_contracts"] = {
+                    k: v for k, v in bundle["contracts"].items() if k.startswith("w2_")
+                }
             case.frozen_inputs["w3_assets"] = bundle["assets"]
             case.orchestration_revision = bundle.get("orchestration_revision", 1)
             case.w3_contract_version = bundle.get("contracts", {}).get("w3_contract_version")
@@ -675,8 +685,21 @@ class PersistentRuntimeV2Service:
                 and (w2_final.policy_hit or w2_final.policy_related)
             ):
                 self.repository.save_case(case)
-                case.w2_alignment, _ = self._run_w2_r3(case, w1_final, w2_response_id)
-        except ControlError:
+                try:
+                    case.w2_alignment, _ = self._run_w2_r3(case, w1_final, w2_response_id)
+                    if case.w2_contract_version == W2_CONTRACT:
+                        case.w2_alignment_status, case.w2_alignment_error = "COMPLETE", None
+                except RuntimeResponsesError as exc:
+                    if case.w2_contract_version != W2_CONTRACT or exc.code not in {
+                        "structured_output_validation_failed", "semantic_output_validation_failed",
+                        "empty_structured_output",
+                    }:
+                        raise
+                    case.w2_alignment = None
+                    case.w2_alignment_status = "UNAVAILABLE"
+                    case.w2_alignment_error = f"{exc.code}: {exc}"
+                    self.repository.save_case(case)
+        except (ControlError, LeaseLost, CancelledError):
             raise
         except Exception as exc:
             return self._fail_case(case, exc)
@@ -685,6 +708,8 @@ class PersistentRuntimeV2Service:
         route = route_runtime_case(
             w1_final, w2_final, case.w2_alignment,
             w3_contract_version=case.w3_contract_version,
+            w2_contract_version=case.w2_contract_version,
+            alignment_unavailable=case.w2_alignment_status == "UNAVAILABLE",
         )
         if case.orchestration_revision >= 3 and self.journal:
             from .policy_watch import freeze_followup
@@ -695,7 +720,8 @@ class PersistentRuntimeV2Service:
                 route = RuntimeRouteDecision(
                     primary_route=RuntimePrimaryRoute.W3,
                     side_effects=[RuntimeSideEffect.ROUTE_TO_W3],
-                    reason="POLICY_WATCH_FOLLOWUP:" + ",".join(v["policy_id"] for v in followup),
+                    reason="POLICY_WATCH_FOLLOWUP:" + ",".join(v["policy_id"] for v in followup)
+                    + ";" + route.reason,
                 )
         adjudicated = case.model_copy(
             update={
@@ -904,10 +930,22 @@ class PersistentRuntimeV2Service:
         requested_ids = set(details.requested_policy_ids)
 
         def validate_r2(value: W2PolicyResult | W2PolicyAssessmentResult) -> None:
-            if not set(value.policy_ids).issubset(requested_ids):
+            ids = set(value.policy_ids) | set(getattr(value, "related_policy_ids", []))
+            if not ids.issubset(requested_ids):
                 raise RuntimeSemanticOutputError(
                     "W2 R2 returned a Policy ID that was not selected in R1"
                 )
+
+            if case.w2_contract_version == W2_CONTRACT:
+                by_policy = {p.policy_id: set(p.condition_ids) for p in projection.policies}
+                for group in value.hit_condition_ids:
+                    if (
+                        group.policy_id not in requested_ids
+                        or not set(group.condition_ids).issubset(
+                            by_policy.get(group.policy_id, set())
+                        )
+                    ):
+                        raise RuntimeSemanticOutputError("HIT Condition outside candidate Policy")
 
         r2, r2_response_id = self._call_with_retry(
             case=case,
@@ -938,7 +976,9 @@ class PersistentRuntimeV2Service:
                     ),
                 },
             },
-            output_model=W2PolicyAssessmentResult
+            output_model=W2PolicyAssessmentResultV2
+            if case.w2_contract_version == W2_CONTRACT
+            else W2PolicyAssessmentResult
             if case.orchestration_revision >= 2
             else W2PolicyResult,
             schema_name="w2_policy_result",
@@ -946,7 +986,9 @@ class PersistentRuntimeV2Service:
             previous_response_id=r1_response_id,
             validate=validate_r2,
         )
-        r2 = W2PolicyAssessmentResult.model_validate(normalize_w2_result(r2))
+        r2 = assessment(r2)
+        if case.w2_contract_version == W2_CONTRACT:
+            return r1, r2, r2_response_id
         if isinstance(projection, RuntimePolicyProjectionV5):
             return r1, self._sanitize_condition_attribution(r2, projection), r2_response_id
         current_projection = self._without_consumed_policies(projection)
@@ -973,14 +1015,23 @@ class PersistentRuntimeV2Service:
     def _run_w2_r3(
         self, case: RuntimeCase, w1_final: W1NoveltyResult, w2_response_id: str
     ) -> tuple[W2NovelFactAlignmentResult, str]:
+        modern = case.w2_contract_version == W2_CONTRACT
+        def validate(value):
+            try:
+                validate_alignment(case.w2_final, value)
+            except ValueError as exc:
+                raise RuntimeSemanticOutputError(str(exc)) from exc
+
         return self._call_with_retry(
             case=case,
             lane="W2",
             round_name="R3",
             round_prompt=self.prompts.w2_r3 or "",
-            payload={"w1_r2_reason": w1_final.reason},
-            output_model=W2NovelFactAlignmentResult,
+            payload={"w1_r2_reason": w1_final.reason,
+                     **({"w2_r2": case.w2_final.model_dump(mode="json")} if modern else {})},
+            output_model=W2NovelFactAlignmentResultV2 if modern else W2NovelFactAlignmentResult,
             schema_name="w2_novel_fact_alignment_result",
+            validate=validate if modern else None,
             previous_response_id=w2_response_id,
             inherit_context=True,
         )
@@ -1081,7 +1132,26 @@ class PersistentRuntimeV2Service:
                     and isinstance(persisted_output.get("policy_ids"), list)
                 ):
                     persisted_output = {"candidate_policy_ids": persisted_output["policy_ids"][:3]}
-                return output_model.model_validate(persisted_output), turn.response_id or ""
+                try:
+                    value = output_model.model_validate(persisted_output)
+                    if validate is not None and output_model in {
+                        W2PolicyAssessmentResultV2, W2NovelFactAlignmentResultV2,
+                    }:
+                        validate(value)
+                    return value, turn.response_id or ""
+                except (ValidationError, RuntimeSemanticOutputError) as exc:
+                    raise RuntimeResponsesError(
+                        "semantic_output_validation_failed", str(exc), retryable=False,
+                    ) from exc
+        if output_model in {W2PolicyAssessmentResultV2, W2NovelFactAlignmentResultV2}:
+            key = "w2_r2_schema_hash" if round_name == "R2" else "w2_r3_schema_hash"
+            expected = case.frozen_inputs.get("w2_contracts", {}).get(key)
+            if expected and expected != digest(output_model.model_json_schema()):
+                raise RuntimeResponsesError(
+                    "round_schema_incompatible",
+                    "Frozen W2 contract schema changed",
+                    retryable=False,
+                )
         prompt_set = RuntimeV2PromptSet(**case.frozen_inputs.get("prompts", asdict(self.prompts)))
         frozen_round_prompt = getattr(prompt_set, f"{lane.lower()}_{round_name.lower()}")
         if lane == "W1" and round_name == "R3":
@@ -1198,6 +1268,9 @@ class PersistentRuntimeV2Service:
                         },
                     )
                 )
+                if output_model in {W2PolicyAssessmentResultV2, W2NovelFactAlignmentResultV2}:
+                    from dataclasses import replace
+                    result = replace(result, value=output_model.model_validate(result.value))
                 if validate is not None:
                     validate(result.value)
                 self._record_success_turn(
@@ -1211,6 +1284,10 @@ class PersistentRuntimeV2Service:
                     context_mode=context_mode,
                 )
                 return result.value, result.response_id
+            except ValidationError as exc:
+                error = RuntimeResponsesError(
+                    "structured_output_validation_failed", str(exc), retryable=True,
+                )
             except RuntimeSemanticOutputError as exc:
                 error = RuntimeResponsesError(
                     "semantic_output_validation_failed",
@@ -1390,6 +1467,9 @@ class PersistentRuntimeV2Service:
                 route_reason=case.route.reason,
                 mode=self._w3_mode(case),
                 w2_alignment=case.w2_alignment,
+                w2_contract_version=case.w2_contract_version,
+                w2_alignment_status=case.w2_alignment_status,
+                w2_alignment_error=case.w2_alignment_error,
                 first_round_tags=case.first_round_tags,
                 orchestration_revision=case.orchestration_revision,
             )

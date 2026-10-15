@@ -6,7 +6,7 @@ import hashlib
 import json
 from datetime import UTC, date, datetime
 from enum import StrEnum
-from typing import Annotated, Any, Final, Literal
+from typing import Annotated, Any, ClassVar, Final, Literal
 from uuid import uuid4
 
 from pydantic import (
@@ -394,6 +394,30 @@ class W2PolicyAssessmentResult(RuntimeV2Model):
     reason: str = Field(min_length=1, max_length=1000)
 
 
+
+class W2PolicyAssessmentResultV2(W2PolicyAssessmentResult):
+    """Policy-level RELATED identities; v1 remains an immutable read contract."""
+    matched_condition_ids: ClassVar[list[W2MatchedConditions]] = []
+    related_policy_ids: list[str] = Field(max_length=3)
+
+    @model_validator(mode="after")
+    def consistent_identities(self):
+        hit_ids = set(self.policy_ids)
+        condition_policies = {g.policy_id for g in self.hit_condition_ids}
+        if any(not g.condition_ids for g in self.hit_condition_ids):
+            raise ValueError("HIT Condition groups must not be empty")
+        related = set(self.related_policy_ids)
+        if self.policy_hit != bool(hit_ids) or hit_ids != condition_policies:
+            raise ValueError("HIT requires exactly its Policy IDs and nonempty HIT Conditions")
+        if self.policy_related != bool(related):
+            raise ValueError("RELATED requires related_policy_ids")
+        if hit_ids & related:
+            raise ValueError("A HIT Policy cannot also be a pure RELATED Policy")
+        if len(hit_ids) != len(self.policy_ids) or len(related) != len(self.related_policy_ids):
+            raise ValueError("Policy identities must be unique")
+        return self
+
+
 def normalize_w2_result(value: Any) -> Any:
     """Read v1 receipts without weakening the v2 provider output contract."""
     if isinstance(value, W2PolicyAssessmentResult) or value is None:
@@ -418,6 +442,16 @@ class W2ConditionNovelty(RuntimeV2Model):
 
 class W2NovelFactAlignmentResult(RuntimeV2Model):
     condition_results: list[W2ConditionNovelty]
+
+
+
+class W2RelatedPolicyNovelty(RuntimeV2Model):
+    policy_id: str = Field(min_length=1)
+    is_new: StrictBool
+
+
+class W2NovelFactAlignmentResultV2(W2NovelFactAlignmentResult):
+    related_policy_results: list[W2RelatedPolicyNovelty]
 
 
 class FirstRoundTag(StrEnum):
@@ -513,7 +547,10 @@ class RuntimeCase(RuntimeV2Model):
     w3_operations_error: str | None = None
     decision_completed_at: datetime | None = None
     orchestration_revision: Literal[1, 2, 3] = 1
-    w2_alignment: W2NovelFactAlignmentResult | None = None
+    w2_contract_version: Literal["persistent-runtime.w2.v2"] | None = None
+    w2_alignment: W2NovelFactAlignmentResultV2 | W2NovelFactAlignmentResult | None = None
+    w2_alignment_status: Literal["COMPLETE", "UNAVAILABLE"] | None = None
+    w2_alignment_error: str | None = None
     first_round_tags: list[FirstRoundTag] = Field(default_factory=list)
     completed_at: datetime | None = None
     time_semantics_version: int = 1
@@ -535,7 +572,7 @@ class RuntimeCase(RuntimeV2Model):
     w1_final: W1NoveltyResult | None = None
     w1_extraction: W1FactExtractionResult | None = None
     w2_round1: W2Round1RecallResult | None = None
-    w2_final: W2PolicyAssessmentResult | None = None
+    w2_final: W2PolicyAssessmentResultV2 | W2PolicyAssessmentResult | None = None
     route: RuntimeRouteDecision | None = None
     resolved_route: RuntimeRouteDecision | None = None
     w3_result: W3CaseResultV3 | W3CaseResult | None = None
@@ -613,7 +650,10 @@ class TradeRecord(RuntimeV2Model):
     policy_set_version: int = Field(ge=1)
     decision: PolicyDecision
     w1_result: W1NoveltyResult
-    w2_result: Annotated[W2PolicyAssessmentResult, BeforeValidator(normalize_w2_result)]
+    w2_result: Annotated[
+        W2PolicyAssessmentResultV2 | W2PolicyAssessmentResult,
+        BeforeValidator(normalize_w2_result),
+    ]
     w3_result: W3CaseResultV3 | W3CaseResult | None = None
     daily_status: DailyRecordStatus = DailyRecordStatus.PENDING
     created_at: datetime = Field(default_factory=utc_now)
@@ -862,14 +902,20 @@ class W3RouteCase(RuntimeV2Model):
     operations_result: JsonObject | None = None
     operations_status: str | None = None
     orchestration_revision: Literal[1, 2, 3] = 1
-    w2_alignment: W2NovelFactAlignmentResult | None = None
+    w2_contract_version: Literal["persistent-runtime.w2.v2"] | None = None
+    w2_alignment: W2NovelFactAlignmentResultV2 | W2NovelFactAlignmentResult | None = None
+    w2_alignment_status: Literal["COMPLETE", "UNAVAILABLE"] | None = None
+    w2_alignment_error: str | None = None
     first_round_tags: list[FirstRoundTag] = Field(default_factory=list)
     w3_case_id: str = Field(default_factory=lambda: new_runtime_v2_id("w3"))
     case_id: str
     ticker: str
     source: SourceMessageEnvelope
     w1_final: W1NoveltyResult
-    w2_final: Annotated[W2PolicyAssessmentResult, BeforeValidator(normalize_w2_result)]
+    w2_final: Annotated[
+        W2PolicyAssessmentResultV2 | W2PolicyAssessmentResult,
+        BeforeValidator(normalize_w2_result),
+    ]
     event_library_version: int = Field(ge=1)
     policy_set_version: int = Field(ge=1)
     route_reason: str

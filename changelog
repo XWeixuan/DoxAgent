@@ -1546,3 +1546,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-15 Investing ticker身份误拒绝修复：整页text_content连接标题及相邻节点，导致正确RKLB/BE页面因News后词边界消失被错误拒绝；改为逐个instrument h1/h2标题fullmatch ticker+News，排除article内部标题。新增四ticker相邻节点复现及错误标的/推荐标题拒绝测试；仅更新消息总线，不重建Site Access/Chrome/Profile。
 
 2026-10-15 消息源修复验收收尾：origin/main代码正式镜像上线Site Access c9e321d9及Message Bus 6a3e19ba，源码哈希与Git一致；其余容器/Reuters维护会话保持。105项定向测试通过、3跳过，10篇正文FULL。记录最终非全绿截面、Reuters再次challenge、DIGITIMES真实订阅墙及Investing/DIGITIMES偶发DOM/加载超时，不将短期恢复冒充长期稳定；证据见docs/message-source-main-redeployment-repair-20261015.md及eval/message_source_repair_20261015/production-acceptance.json。
+
+2026-10-16 W2 Policy级RELATED及R3完整覆盖修复：新增版本化R2/R3身份Schema，输出契约/覆盖异常沿用修复重试、耗尽后保留NEW进入W3；仅完整全false归档。冻结提示词与Schema，新旧Case分版本读取；同步W3队列/WATCH/历史关联、API及前端展示。用户已完成的W2 R2/R3提示词同批发布。详见docs/w2-policy-alignment-v2-release-20261016.md。

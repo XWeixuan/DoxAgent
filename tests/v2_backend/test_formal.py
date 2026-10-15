@@ -144,7 +144,9 @@ def test_runtime_noop_activation_inherits_base_policy_run(tmp_path):
     )
 
 
-@pytest.mark.parametrize("attribution_recorded", [False, True, "resolved", "r3", "native", "v4"])
+@pytest.mark.parametrize("attribution_recorded", [
+    False, True, "resolved", "r3", "native", "v4", "r3_policy", "r3_unavailable",
+])
 def test_formal_activation_indexes_exact_documents_policy_and_library(
     tmp_path, attribution_recorded, monkeypatch
 ):
@@ -342,7 +344,7 @@ def test_formal_activation_indexes_exact_documents_policy_and_library(
             reference_ids=[event_id],
             fact_attributions=[{"event_id": event_id, "fact_ids": [expected_fact]}],
         )
-    if attribution_recorded == "r3":
+    if attribution_recorded in {"r3", "r3_policy", "r3_unavailable"}:
         policy_record = next(r for r in records if r["kind"] == "policy_detail")
         policy_id = policy_record["data"]["summary"]["policy_id"]
         condition_id = policy_record["data"]["policy"]["activation_conditions"][0]["condition_id"]
@@ -354,6 +356,20 @@ def test_formal_activation_indexes_exact_documents_policy_and_library(
                               "reason": "Related fact", "confidence": "normal"},
                     w2_alignment={"condition_results": [
                         {"condition_ids": [f"{policy_id}/{condition_id}"], "is_new": True}]})
+        if attribution_recorded != "r3":
+            case["w2_contract_version"] = "persistent-runtime.w2.v2"
+            case["w2_final"].pop("matched_condition_ids")
+            case["w2_final"]["related_policy_ids"] = [policy_id]
+            case["w2_alignment"] = {
+                "condition_results": [],
+                "related_policy_results": [{"policy_id": policy_id, "is_new": True}],
+            }
+            case["w2_alignment_status"] = "COMPLETE"
+        if attribution_recorded == "r3_unavailable":
+            case["w2_alignment"] = None
+            case["w2_alignment_status"] = "UNAVAILABLE"
+            case["w2_alignment_error"] = "semantic_output_validation_failed: missing Policy"
+            case["route"] = {"primary_route": "W3", "side_effects": [], "reason": "fallback"}
     if attribution_recorded == "v4":
         case.update(
             orchestration_revision=3, w3_contract_version="persistent-runtime.w3.v4",
@@ -420,6 +436,18 @@ def test_formal_activation_indexes_exact_documents_policy_and_library(
         assert data["document2"]["value"]["content_sha256"] == d2.sha256
         assert data["w1"]["data"]["reasoning"]["data"]["content_id"]
         assert "New facts" not in response.text
+        if attribution_recorded in {"r3_policy", "r3_unavailable"}:
+            aligned = data["w2"]["data"]["novel_fact_alignment"]
+            assert data["w2"]["data"]["related_policies"][0]["policy_id"] == policy_id
+            assert data["w2"]["data"]["related_policies"][0]["condition_ids"] == []
+            if attribution_recorded == "r3_unavailable":
+                assert aligned["status"] == "UNAVAILABLE" and aligned["error"]
+                assert aligned["policy_fact_novelty"]["value"] is None
+            else:
+                assert aligned["status"] == "SUCCEEDED"
+                assert aligned["related_policy_results"] == [
+                    {"policy_id": policy_id, "is_new": True},
+                ]
         if attribution_recorded == "r3":
             assert data["w1"]["data"]["extraction"]["data"] == {"capture_mode": "NEW_CAPTURE", "candidate_count": 1}
             assert data["w2"]["data"]["policy_related"]["value"] is True

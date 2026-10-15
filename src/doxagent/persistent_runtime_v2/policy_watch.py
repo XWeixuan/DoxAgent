@@ -8,6 +8,7 @@ from doxagent.semantic_clock import boundary
 
 from .journal import encode
 from .policy_consumption import get_value, put_value
+from .w2_alignment import related_ids
 
 
 def watch_snapshot(db, ticker, now):
@@ -25,7 +26,7 @@ def apply_v4_actions(db, *, case, result, frozen, now):
 
     known = {p["policy_id"] for p in case.frozen_inputs["projection"]["policies"]}
     related = set(case.w2_final.policy_ids if case.w2_final.policy_hit else [])
-    related.update(g.policy_id for g in case.w2_final.matched_condition_ids)
+    related.update(related_ids(case.w2_final))
     related.update(result.policy.policy_ids)
     visible = {r["policy_id"]: r for r in frozen.get("watch_rows", [])}
     cancelled = {a.policy_id for a in result.watch_actions if a.action == "CANCEL"}
@@ -81,7 +82,7 @@ def freeze_followup(db, case, now):
     w2 = case.w2_final
     ids = set(w2.policy_ids if w2 and w2.policy_hit else [])
     if w2:
-        ids.update(g.policy_id for g in w2.matched_condition_ids)
+        ids.update(related_ids(w2))
     rows = []
     for pid in sorted(ids):
         value = get_value(db, "policy_watch", encode([case.ticker, pid]))
@@ -101,7 +102,7 @@ def apply_actions(db, *, case, result, now):
     w2 = case.w2_final
     related = set(w2.policy_ids if w2 and w2.policy_hit else [])
     if w2:
-        related.update(g.policy_id for g in w2.matched_condition_ids)
+        related.update(related_ids(w2))
     selected = result.policy_execution.selected_condition if result.policy_execution else None
     no_trade = selected is None and not result.expert_trade.trade
     frozen = {v["policy_id"]: v for v in case.frozen_inputs.get("policy_watch_followup", [])}

@@ -238,10 +238,13 @@ def build_persistent_runtime_v2_service(
                 "codex_provider": settings.codex_model_provider,
             }
         )
+        from .w2_alignment import W2_CONTRACT
+
         ExecutionBundles(journal).publish(
             RuntimeV2PromptSet.load(Path(settings.persistent_runtime_v2_prompt_root)),
             assets=assets,
             orchestration_revision=3,
+            w2_contract_version=W2_CONTRACT,
             w3_contract_version=W3_CONTRACT if settings.persistent_runtime_v2_w3_enabled else None,
         )
     service = PersistentRuntimeV2Service(

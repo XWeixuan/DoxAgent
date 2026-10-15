@@ -10,11 +10,12 @@ from .journal import encode
 from .message_pin import active_states, message_content, pin_snapshot
 from .policy_consumption import put_value
 from .policy_watch import watch_snapshot
+from .w2_alignment import related_ids
 
 
 def policy_associations(w2):
     hit = list(w2.policy_ids) if w2.policy_hit else []
-    related = [g.policy_id for g in w2.matched_condition_ids] if w2.policy_related else []
+    related = related_ids(w2) if w2.policy_related else []
     return list(dict.fromkeys(hit + related))
 
 
@@ -252,6 +253,7 @@ def history_payload(journal, repository, case, membership):
                         for k in (
                             "policy_hit",
                             "policy_related",
+                            "related_policy_ids",
                             "policy_ids",
                             "hit_condition_ids",
                             "matched_condition_ids",
@@ -388,6 +390,12 @@ def build_case_payload(case, context, *, events, history, labels, state, journal
 
         hit, related = alignment_flags(case.w2_final, case.w2_alignment)
         payload["alignment"] = dict(hit_has_new_fact=hit, related_has_new_fact=related)
+    if case.w2_contract_version:
+        payload["alignment"] = dict(
+            status=case.w2_alignment_status,
+            error=case.w2_alignment_error,
+            **(payload.get("alignment") or {}),
+        )
     if replay:
         payload["cutoff_at"] = replay["cutoff_at"]
         payload.pop("ibkr_history", None)

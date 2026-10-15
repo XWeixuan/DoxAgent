@@ -738,7 +738,9 @@ export interface W1Detail {
 }
 export interface ConditionNovelty { condition_ids: Id[]; is_new: boolean }
 export interface W2NovelFactAlignmentDetail {
-  status: "PENDING" | "RUNNING" | "SUCCEEDED" | "FAILED" | "NOT_EXECUTED" | "NOT_RECORDED";
+  status: "PENDING" | "RUNNING" | "SUCCEEDED" | "FAILED" | "NOT_EXECUTED" | "NOT_RECORDED" | "UNAVAILABLE";
+  error?: string | null;
+  related_policy_results?: { policy_id: Id; is_new: boolean }[];
   not_executed_reason: RuntimeRound["not_executed_reason"];
   policy_fact_novelty: Value<"NEW" | "OLD">;
   condition_results: ConditionNovelty[];
