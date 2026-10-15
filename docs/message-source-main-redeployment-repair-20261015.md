@@ -77,3 +77,9 @@ r3发布后Investing实际Intel列表已200且等到article-item，MU也自然�
 这两个站点CRAWLER队列容忍从短窗口调为25秒（仍受每请求总预算、Identity单并发与60秒轮询约束），减少正常正文操作期间的不必要延期。不增加Chrome或并发，不改全局预算框架。持续超出容量仍应明确延期，不能承诺无限吞吐。
 
 DIGITIMES另以现有owner唯一请求检查实际HTML：主Profile digitimes-nl-1的#content只有318字符/1段，明确含The article requires paid subscription，Members only弹层也要求paid subscribers。不是仅凭错误码推测，也不是把隐藏导航登录链接误判为正文；需要人工在这个主Profile核实登录/订阅权限。
+
+## 9. Investing ticker身份误拒绝：整页文本的伪词边界
+
+最终自然验收又出现RKLB/BE的investing_ticker_identity_mismatch；相同配置URL通过现有owner却返回正确Rocket Lab Corp (RKLB)、RKLB News及10条新闻。精确重现发现：_text(root)内部text_content()直接连接相邻DOM文本，`</h2><p>Find ...`形成`RKLB NewsFind ...`，原整页正则的News后word boundary不存在。标题前相邻节点也能消除ticker前边界。页面排版/React hydration的DOM差异会令同一正确页面时好时坏，与IP及登录无关。
+
+修复为对h1/h2标题节点分别fullmatch ticker+News，排除article中的推荐标题；没有放宽成整页任意ticker出现即接受。四个ticker的无分隔相邻节点badcase均覆盖，另验证错误instrument标题和article中的伪MU News不能通过。仅消息总线容器需要这项新代码，Site Access保持r4镜像、不再重建Chrome或打断维护。

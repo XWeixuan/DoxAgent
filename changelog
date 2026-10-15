@@ -1542,3 +1542,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-15 External复合故障补修：public-markets-nl旧Chrome端口存活但CDP接入超时，经单Identity正常drain保留Profile后恢复接入；此阶段故障独立归类browser_cdp_attach_failed，避免误报网站网络及即时重试。External全部recipe/selector异常在清理前有限时识别延迟challenge并保留原页，不仅覆盖Reuters；非challenge保持原异常并记录无秘密文档诊断。新增延迟challenge/正常文档失败/attach分类回归；正文实测与尚需人工事项见同日消息源根因记录。
 
 2026-10-15 共享Identity排队窄修：InvestorsHub/Investing已收到页面但专用内容selector超时，不再作为网络异常立即重复访问；返回EXTRACTION_ERROR/browser_content_not_ready及有限文档证据，仍优先保留真实challenge原页，不伪造成功。配合两个站点25秒crawler排队容忍，保持单并发和60秒轮询。现场另确认DIGITIMES主Profile正文为真实付费墙，而非parser猜测；新增一次访问不重试回归。
+
+2026-10-15 Investing ticker身份误拒绝修复：整页text_content连接标题及相邻节点，导致正确RKLB/BE页面因News后词边界消失被错误拒绝；改为逐个instrument h1/h2标题fullmatch ticker+News，排除article内部标题。新增四ticker相邻节点复现及错误标的/推荐标题拒绝测试；仅更新消息总线，不重建Site Access/Chrome/Profile。

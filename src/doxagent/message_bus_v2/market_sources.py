@@ -230,8 +230,13 @@ class MarketTickerAdapter:
                 raise RuntimeError("investorshub_ticker_identity_mismatch")
             messages = parse_investorshub(html, ticker=context.ticker, now=context.requested_at)
         else:
-            if not re.search(
-                rf"\b{re.escape(context.ticker)} News\b", _text(H.fromstring(html)), re.I
+            # text_content() joins adjacent DOM nodes without separators:
+            # </h2><p>Find ... becomes "RKLB NewsFind ...". Check the
+            # instrument heading itself, not word boundaries in the whole page.
+            headings = H.fromstring(html).xpath('//h1|//h2[not(ancestor::article)]')
+            if not any(
+                re.fullmatch(rf"{re.escape(context.ticker)}\s*News", _text(node), re.I)
+                for node in headings
             ):
                 raise RuntimeError("investing_ticker_identity_mismatch")
             messages = parse_investing(html, ticker=context.ticker, now=context.requested_at)

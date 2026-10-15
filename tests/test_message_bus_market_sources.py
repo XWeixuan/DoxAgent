@@ -132,6 +132,44 @@ async def test_ticker_locator_uses_current_ticker_and_rejects_cross_site():
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("ticker", ["BE", "RKLB", "INTC", "MU"])
+async def test_investing_identity_heading_survives_adjacent_dom_text(ticker):
+    import re
+
+    from lxml import html as H
+
+    from doxagent.message_bus_v2.industry_sources import _text
+
+    doc = INV.replace(
+        "<h1>MU News</h1>", f"<div>Intro</div><h2>{ticker} News</h2><p>Find the latest news</p>"
+    )
+    assert not re.search(rf"\b{ticker} News\b", _text(H.fromstring(doc)))
+
+    class Browser:
+        async def get(self, url, **kwargs):
+            return 200, url, {}, doc
+
+    result = await MarketTickerAdapter(Browser(), "investing").poll(
+        context("investing_ticker_news", ticker=ticker)
+    )
+    assert len(result.messages) == 1
+
+
+@pytest.mark.asyncio
+async def test_investing_rejects_wrong_instrument_and_article_heading_decoy():
+    doc = INV.replace("<h1>MU News</h1>", "<h2>INTC News</h2>").replace(
+        "<p>Chip demand summary.</p>", "<h2>MU News</h2><p>Chip demand summary.</p>"
+    )
+
+    class Browser:
+        async def get(self, url, **kwargs):
+            return 200, url, {}, doc
+
+    with pytest.raises(RuntimeError, match="investing_ticker_identity_mismatch"):
+        await MarketTickerAdapter(Browser(), "investing").poll(context("investing_ticker_news"))
+
+
+@pytest.mark.asyncio
 async def test_search_queries_isolated_failure_and_recovery_checkpoint():
     calls = []
 
@@ -207,7 +245,7 @@ def test_investing_pro_paywall_is_not_a_full_article():
     inspected = inspect_html(
         '<div><header><h1 id="articleTitle">Micron analyst rating update</h1></header>'
         '<div id="article-paywall">Already a subscriber? Sign In</div></div>'
-        '<article><p>Unrelated sidebar recommendations.</p></article>',
+        "<article><p>Unrelated sidebar recommendations.</p></article>",
         "https://www.investing.com/news/pro/micron-123",
         "Micron analyst rating update",
         strategy_parameters={"body_xpath": ['//*[@id="articleTitle"]/../..']},
