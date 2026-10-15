@@ -1,0 +1,675 @@
+{
+  "at": "2026-10-15T06:15:00.476007+00:00",
+  "releases": {
+    "r4": {
+      "commit": "c9e321d92f438763e697dab515e21cbeffdcd8ea",
+      "source_sha256": "b55d71c288f38a76b67a5cf7f22463279d5e5ea20f36d2f42943d16467ace165",
+      "backend_image": "doxagent-v2:main-c9e321d9",
+      "site_image": "doxagent-site-access:main-c9e321d9",
+      "at": "2026-10-15T05:59:30.602865+00:00",
+      "unrelated_containers_unchanged": true
+    },
+    "r5": {
+      "commit": "6a3e19badf17fd91c4213cf9986a02ea160404a3",
+      "source_sha256": "a6f7b48200fa573eae0a5310e416372cd8e29df76520edf63c04dc2d1b27f69d",
+      "backend_image": "doxagent-v2:main-6a3e19ba",
+      "site_image": null,
+      "at": "2026-10-15T06:10:57.594146+00:00",
+      "started_at": "2026-10-15T06:09:03.842638556Z",
+      "unrelated_containers_unchanged": true,
+      "maintenance_session_unchanged": true,
+      "readiness": "real_post_restart_poll",
+      "fresh_successful_bindings": [
+        "MU:benzinga_news",
+        "MU:finnhub_company_news",
+        "MU:tikhub_x_user_posts",
+        "MU:ibkr_news",
+        "MU:yahoo_finance_news",
+        "RKLB:benzinga_news",
+        "RKLB:finnhub_company_news",
+        "RKLB:ibkr_news",
+        "RKLB:yahoo_finance_news",
+        "BE:benzinga_news",
+        "BE:finnhub_company_news",
+        "BE:ibkr_news",
+        "BE:yahoo_finance_news",
+        "INTC:benzinga_news",
+        "INTC:finnhub_company_news",
+        "INTC:ibkr_news",
+        "INTC:newswire_rss",
+        "INTC:yahoo_finance_news",
+        "BE:barrons_ticker_news",
+        "INTC:barrons_ticker_news",
+        "MU:barrons_ticker_news",
+        "BE:digitimes_semiconductors",
+        "INTC:digitimes_semiconductors",
+        "MU:digitimes_semiconductors",
+        "BE:etnews_rss",
+        "INTC:etnews_rss",
+        "MU:etnews_rss",
+        "BE:digitimes_tw_rss",
+        "INTC:digitimes_tw_rss",
+        "MU:digitimes_tw_rss",
+        "BE:thelec_semiconductors_rss",
+        "INTC:thelec_semiconductors_rss",
+        "MU:thelec_semiconductors_rss",
+        "BE:huggingnews_rss",
+        "INTC:huggingnews_rss",
+        "MU:huggingnews_rss",
+        "BE:trendforce_news",
+        "INTC:trendforce_news",
+        "MU:trendforce_news",
+        "BE:tomshardware_rss",
+        "INTC:tomshardware_rss",
+        "MU:tomshardware_rss",
+        "BE:trendforce_press_releases",
+        "INTC:trendforce_press_releases",
+        "MU:trendforce_press_releases",
+        "BE:globenewswire_search",
+        "INTC:globenewswire_search",
+        "MU:globenewswire_search",
+        "MU:investing_ticker_news",
+        "BE:investorshub_ticker_news",
+        "INTC:investorshub_ticker_news",
+        "RKLB:globenewswire_search",
+        "RKLB:investorshub_ticker_news",
+        "BE:globenewswire_semiconductors_rss",
+        "INTC:globenewswire_semiconductors_rss",
+        "MU:globenewswire_semiconductors_rss"
+      ]
+    }
+  },
+  "tests": {
+    "passed": 105,
+    "skipped": 3,
+    "failed": 0
+  },
+  "source_states": {
+    "benzinga_news": [
+      {
+        "binding_id": "MU:benzinga_news",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:14:02.633261Z",
+        "last_success_at": "2026-10-15T06:14:02.633261Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      },
+      {
+        "binding_id": "RKLB:benzinga_news",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:14:24.055274Z",
+        "last_success_at": "2026-10-15T06:14:24.055274Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      },
+      {
+        "binding_id": "BE:benzinga_news",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:14:31.132196Z",
+        "last_success_at": "2026-10-15T06:14:31.132196Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      },
+      {
+        "binding_id": "INTC:benzinga_news",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:14:47.537074Z",
+        "last_success_at": "2026-10-15T06:14:47.537074Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      }
+    ],
+    "finnhub_company_news": [
+      {
+        "binding_id": "MU:finnhub_company_news",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:14:02.633261Z",
+        "last_success_at": "2026-10-15T06:14:02.633261Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      },
+      {
+        "binding_id": "RKLB:finnhub_company_news",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:14:24.055274Z",
+        "last_success_at": "2026-10-15T06:14:24.055274Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      },
+      {
+        "binding_id": "BE:finnhub_company_news",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:14:31.132196Z",
+        "last_success_at": "2026-10-15T06:14:31.132196Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      },
+      {
+        "binding_id": "INTC:finnhub_company_news",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:14:47.537074Z",
+        "last_success_at": "2026-10-15T06:14:47.537074Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      }
+    ],
+    "tikhub_x_user_posts": [
+      {
+        "binding_id": "MU:tikhub_x_user_posts",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:10:09.420299Z",
+        "last_success_at": "2026-10-15T06:10:09.420299Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      }
+    ],
+    "ibkr_news": [
+      {
+        "binding_id": "MU:ibkr_news",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:14:02.633261Z",
+        "last_success_at": "2026-10-15T06:14:02.633261Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      },
+      {
+        "binding_id": "RKLB:ibkr_news",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:14:24.055274Z",
+        "last_success_at": "2026-10-15T06:14:24.055274Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      },
+      {
+        "binding_id": "BE:ibkr_news",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:14:31.132196Z",
+        "last_success_at": "2026-10-15T06:14:31.132196Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      },
+      {
+        "binding_id": "INTC:ibkr_news",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:14:47.537074Z",
+        "last_success_at": "2026-10-15T06:14:47.537074Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      }
+    ],
+    "reuters_site_search": [
+      {
+        "binding_id": "MU:reuters_site_search",
+        "status": "failed",
+        "last_attempt_at": "2026-10-15T06:14:02.633261Z",
+        "last_success_at": "2026-10-14T21:15:07.117200Z",
+        "last_error_code": "search_query_failed",
+        "consecutive_failures": 536
+      },
+      {
+        "binding_id": "RKLB:reuters_site_search",
+        "status": "failed",
+        "last_attempt_at": "2026-10-15T06:14:24.055274Z",
+        "last_success_at": "2026-10-14T21:15:38.023694Z",
+        "last_error_code": "search_query_failed",
+        "consecutive_failures": 539
+      },
+      {
+        "binding_id": "BE:reuters_site_search",
+        "status": "failed",
+        "last_attempt_at": "2026-10-15T06:14:31.132196Z",
+        "last_success_at": "2026-10-14T13:29:37.201732Z",
+        "last_error_code": "search_query_failed",
+        "consecutive_failures": 950
+      },
+      {
+        "binding_id": "INTC:reuters_site_search",
+        "status": "failed",
+        "last_attempt_at": "2026-10-15T06:14:47.537074Z",
+        "last_success_at": "2026-10-14T05:40:47.361158Z",
+        "last_error_code": "search_query_failed",
+        "consecutive_failures": 1417
+      }
+    ],
+    "yahoo_finance_news": [
+      {
+        "binding_id": "MU:yahoo_finance_news",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:14:02.633261Z",
+        "last_success_at": "2026-10-15T06:14:02.633261Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      },
+      {
+        "binding_id": "RKLB:yahoo_finance_news",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:14:24.055274Z",
+        "last_success_at": "2026-10-15T06:14:24.055274Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      },
+      {
+        "binding_id": "BE:yahoo_finance_news",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:14:31.132196Z",
+        "last_success_at": "2026-10-15T06:14:31.132196Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      },
+      {
+        "binding_id": "INTC:yahoo_finance_news",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:14:47.537074Z",
+        "last_success_at": "2026-10-15T06:14:47.537074Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      }
+    ],
+    "google_news_search_rss": [
+      {
+        "binding_id": "BE:google_news_search_rss",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:08:31.515764Z",
+        "last_success_at": "2026-10-15T06:08:31.515764Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      },
+      {
+        "binding_id": "INTC:google_news_search_rss",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:08:09.122814Z",
+        "last_success_at": "2026-10-15T06:08:09.122814Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      }
+    ],
+    "newswire_rss": [
+      {
+        "binding_id": "BE:newswire_rss",
+        "status": "failed",
+        "last_attempt_at": "2026-10-15T06:14:31.132196Z",
+        "last_success_at": null,
+        "last_error_code": "HTTPStatusError",
+        "consecutive_failures": 24797
+      },
+      {
+        "binding_id": "INTC:newswire_rss",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:14:02.633261Z",
+        "last_success_at": "2026-10-15T06:14:02.633261Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      }
+    ],
+    "barrons_ticker_news": [
+      {
+        "binding_id": "BE:barrons_ticker_news",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:13:18.189431Z",
+        "last_success_at": "2026-10-15T06:13:18.189431Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      },
+      {
+        "binding_id": "INTC:barrons_ticker_news",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:13:33.873016Z",
+        "last_success_at": "2026-10-15T06:13:33.873016Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      },
+      {
+        "binding_id": "MU:barrons_ticker_news",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:12:25.267863Z",
+        "last_success_at": "2026-10-15T06:12:25.267863Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      },
+      {
+        "binding_id": "RKLB:barrons_ticker_news",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:12:45.166884Z",
+        "last_success_at": "2026-10-15T06:12:45.166884Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      }
+    ],
+    "digitimes_semiconductors": [
+      {
+        "binding_id": "BE:digitimes_semiconductors",
+        "status": "failed",
+        "last_attempt_at": "2026-10-15T06:14:02.633261Z",
+        "last_success_at": "2026-10-15T06:13:02.578566Z",
+        "last_error_code": "SiteAccessError",
+        "consecutive_failures": 1
+      },
+      {
+        "binding_id": "INTC:digitimes_semiconductors",
+        "status": "failed",
+        "last_attempt_at": "2026-10-15T06:14:02.633261Z",
+        "last_success_at": "2026-10-15T06:13:02.578566Z",
+        "last_error_code": "SiteAccessError",
+        "consecutive_failures": 1
+      },
+      {
+        "binding_id": "MU:digitimes_semiconductors",
+        "status": "failed",
+        "last_attempt_at": "2026-10-15T06:14:02.633261Z",
+        "last_success_at": "2026-10-15T06:13:02.578566Z",
+        "last_error_code": "SiteAccessError",
+        "consecutive_failures": 1
+      }
+    ],
+    "etnews_rss": [
+      {
+        "binding_id": "BE:etnews_rss",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:14:02.633261Z",
+        "last_success_at": "2026-10-15T06:14:02.633261Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      },
+      {
+        "binding_id": "INTC:etnews_rss",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:14:02.633261Z",
+        "last_success_at": "2026-10-15T06:14:02.633261Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      },
+      {
+        "binding_id": "MU:etnews_rss",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:14:02.633261Z",
+        "last_success_at": "2026-10-15T06:14:02.633261Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      }
+    ],
+    "digitimes_tw_rss": [
+      {
+        "binding_id": "BE:digitimes_tw_rss",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:14:02.633261Z",
+        "last_success_at": "2026-10-15T06:14:02.633261Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      },
+      {
+        "binding_id": "INTC:digitimes_tw_rss",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:14:02.633261Z",
+        "last_success_at": "2026-10-15T06:14:02.633261Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      },
+      {
+        "binding_id": "MU:digitimes_tw_rss",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:14:02.633261Z",
+        "last_success_at": "2026-10-15T06:14:02.633261Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      }
+    ],
+    "thelec_semiconductors_rss": [
+      {
+        "binding_id": "BE:thelec_semiconductors_rss",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:14:02.633261Z",
+        "last_success_at": "2026-10-15T06:14:02.633261Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      },
+      {
+        "binding_id": "INTC:thelec_semiconductors_rss",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:14:02.633261Z",
+        "last_success_at": "2026-10-15T06:14:02.633261Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      },
+      {
+        "binding_id": "MU:thelec_semiconductors_rss",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:14:02.633261Z",
+        "last_success_at": "2026-10-15T06:14:02.633261Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      }
+    ],
+    "huggingnews_rss": [
+      {
+        "binding_id": "BE:huggingnews_rss",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:14:02.633261Z",
+        "last_success_at": "2026-10-15T06:14:02.633261Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      },
+      {
+        "binding_id": "INTC:huggingnews_rss",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:14:02.633261Z",
+        "last_success_at": "2026-10-15T06:14:02.633261Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      },
+      {
+        "binding_id": "MU:huggingnews_rss",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:14:02.633261Z",
+        "last_success_at": "2026-10-15T06:14:02.633261Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      }
+    ],
+    "trendforce_news": [
+      {
+        "binding_id": "BE:trendforce_news",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:14:02.633261Z",
+        "last_success_at": "2026-10-15T06:14:02.633261Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      },
+      {
+        "binding_id": "INTC:trendforce_news",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:14:02.633261Z",
+        "last_success_at": "2026-10-15T06:14:02.633261Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      },
+      {
+        "binding_id": "MU:trendforce_news",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:14:02.633261Z",
+        "last_success_at": "2026-10-15T06:14:02.633261Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      }
+    ],
+    "tomshardware_rss": [
+      {
+        "binding_id": "BE:tomshardware_rss",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:14:02.633261Z",
+        "last_success_at": "2026-10-15T06:14:02.633261Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      },
+      {
+        "binding_id": "INTC:tomshardware_rss",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:14:02.633261Z",
+        "last_success_at": "2026-10-15T06:14:02.633261Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      },
+      {
+        "binding_id": "MU:tomshardware_rss",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:14:02.633261Z",
+        "last_success_at": "2026-10-15T06:14:02.633261Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      }
+    ],
+    "trendforce_press_releases": [
+      {
+        "binding_id": "BE:trendforce_press_releases",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:14:02.633261Z",
+        "last_success_at": "2026-10-15T06:14:02.633261Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      },
+      {
+        "binding_id": "INTC:trendforce_press_releases",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:14:02.633261Z",
+        "last_success_at": "2026-10-15T06:14:02.633261Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      },
+      {
+        "binding_id": "MU:trendforce_press_releases",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:14:02.633261Z",
+        "last_success_at": "2026-10-15T06:14:02.633261Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      }
+    ],
+    "globenewswire_search": [
+      {
+        "binding_id": "BE:globenewswire_search",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:14:07.628787Z",
+        "last_success_at": "2026-10-15T06:14:07.628787Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      },
+      {
+        "binding_id": "INTC:globenewswire_search",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:13:43.820871Z",
+        "last_success_at": "2026-10-15T06:13:43.820871Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      },
+      {
+        "binding_id": "MU:globenewswire_search",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:13:38.936366Z",
+        "last_success_at": "2026-10-15T06:13:38.936366Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      },
+      {
+        "binding_id": "RKLB:globenewswire_search",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:13:52.568430Z",
+        "last_success_at": "2026-10-15T06:13:52.568430Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      }
+    ],
+    "investing_ticker_news": [
+      {
+        "binding_id": "BE:investing_ticker_news",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:12:18.740298Z",
+        "last_success_at": "2026-10-15T06:12:18.740298Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      },
+      {
+        "binding_id": "INTC:investing_ticker_news",
+        "status": "failed",
+        "last_attempt_at": "2026-10-15T06:13:29.994810Z",
+        "last_success_at": "2026-10-15T06:11:52.926851Z",
+        "last_error_code": "SiteAccessError",
+        "consecutive_failures": 1
+      },
+      {
+        "binding_id": "MU:investing_ticker_news",
+        "status": "failed",
+        "last_attempt_at": "2026-10-15T06:12:57.887153Z",
+        "last_success_at": "2026-10-15T06:11:31.255333Z",
+        "last_error_code": "SiteAccessError",
+        "consecutive_failures": 1
+      },
+      {
+        "binding_id": "RKLB:investing_ticker_news",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:12:31.086621Z",
+        "last_success_at": "2026-10-15T06:12:31.086621Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      }
+    ],
+    "investorshub_ticker_news": [
+      {
+        "binding_id": "BE:investorshub_ticker_news",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:12:36.002257Z",
+        "last_success_at": "2026-10-15T06:12:36.002257Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      },
+      {
+        "binding_id": "INTC:investorshub_ticker_news",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:13:29.994810Z",
+        "last_success_at": "2026-10-15T06:13:29.994810Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      },
+      {
+        "binding_id": "MU:investorshub_ticker_news",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:13:18.189431Z",
+        "last_success_at": "2026-10-15T06:13:18.189431Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      },
+      {
+        "binding_id": "RKLB:investorshub_ticker_news",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:12:25.267863Z",
+        "last_success_at": "2026-10-15T06:12:25.267863Z",
+        "last_error_code": null,
+        "consecutive_failures": 0
+      }
+    ],
+    "globenewswire_semiconductors_rss": [
+      {
+        "binding_id": "BE:globenewswire_semiconductors_rss",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:13:02.578566Z",
+        "last_success_at": "2026-10-15T06:13:02.578566Z",
+        "last_error_code": "SOURCE_DEFERRED:site_queue_timeout",
+        "consecutive_failures": 0
+      },
+      {
+        "binding_id": "INTC:globenewswire_semiconductors_rss",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:13:02.578566Z",
+        "last_success_at": "2026-10-15T06:13:02.578566Z",
+        "last_error_code": "SOURCE_DEFERRED:site_queue_timeout",
+        "consecutive_failures": 0
+      },
+      {
+        "binding_id": "MU:globenewswire_semiconductors_rss",
+        "status": "succeeded",
+        "last_attempt_at": "2026-10-15T06:13:02.578566Z",
+        "last_success_at": "2026-10-15T06:13:02.578566Z",
+        "last_error_code": "SOURCE_DEFERRED:site_queue_timeout",
+        "consecutive_failures": 0
+      }
+    ]
+  }
+}

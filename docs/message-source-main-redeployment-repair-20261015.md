@@ -83,3 +83,25 @@ DIGITIMES另以现有owner唯一请求检查实际HTML：主Profile digitimes-nl
 最终自然验收又出现RKLB/BE的investing_ticker_identity_mismatch；相同配置URL通过现有owner却返回正确Rocket Lab Corp (RKLB)、RKLB News及10条新闻。精确重现发现：_text(root)内部text_content()直接连接相邻DOM文本，`</h2><p>Find ...`形成`RKLB NewsFind ...`，原整页正则的News后word boundary不存在。标题前相邻节点也能消除ticker前边界。页面排版/React hydration的DOM差异会令同一正确页面时好时坏，与IP及登录无关。
 
 修复为对h1/h2标题节点分别fullmatch ticker+News，排除article中的推荐标题；没有放宽成整页任意ticker出现即接受。四个ticker的无分隔相邻节点badcase均覆盖，另验证错误instrument标题和article中的伪MU News不能通过。仅消息总线容器需要这项新代码，Site Access保持r4镜像、不再重建Chrome或打断维护。
+
+## 10. 正式交付与验收边界
+
+- 所有应用补丁均已进入origin/main：02f85ad0、483d4771、fcc4f70a、c9e321d9、6a3e19ba，无远端源码overlay或未归并修复分支。最后的文档/证据提交不要求重新构建应用。
+- Site Access：UTC10/15 05:59:30发布main-c9e321d9，镜像sha256:82631bf715fba6438bbbf4fea2602cf4038a5be35b85a54c0e71f173ea8cba43，Docker健康检查通过。运行runtime.py/service.py哈希分别b48250dfb40a60ae86ebe4e3302e1558e3aaa7e62271ebba391416710d05e8a8、24ca200aa35343c67a2c8d8741f5648651af58126b6a998235e2b6b9db272e38，与Git blob一致。
+- 消息总线：UTC06:09:03启动main-6a3e19ba，镜像sha256:ed7ae68d05b9d7cc491e1f764cd98ed216d68185a7e1a102dc80a46bcaea47de，market_sources.py哈希dcbe207a273a1a49f51906f0cfb39e4fd7f5122247646ea75ce5289818304c27与Git一致。该worker本来没有Docker Healthcheck，首次验收脚本误等healthy标记；已改以Running/零重启/无OOM且启动后新发生的真实成功轮询验收，不重启或回滚正常worker。
+- r4/r5公开发布记录位于服务器/var/lib/doxagent/source-redeployment-20261015，各自包含精确commit、git archive SHA、镜像、前后容器ID。r5核对除消息总线外所有容器ID不变，Reuters维护会话保持不变。Chrome Supervisor全程未重启；只有故障public-markets-nl实例执行过一次保留Profile的正常drain。
+- 定向回归最终105 passed、3 skipped；Ruff及diff检查通过。正文实测共10篇FULL：Barron's 2、TrendForce News 2、Press 2、GlobeNewswire 2、InvestorsHub 1、Investing 1。Investing实际文章Intel live levels为2751字符，不是用ticker列表页HTTP200代替正文验收。上述canary没有向message bus发布测试消息。
+- 生产配置变更仅Reuters body access_order（revision9→10）、InvestorsHub crawler队列10秒→25秒（12→13）、Investing同项（13→14）；没有修改60秒轮询、单Identity并发、监测词、相关性或时效性窗口。
+- 清理仅本轮无容器引用的失败02f85ad0镜像两项（约2.08GiB），及超过1小时未使用的构建缓存（Docker报告9.232GB）；保留可用镜像/回滚集、业务库、登录Profile及源码，失败镜像可由对应commit重建。最后构建后系统约26GiB可用，发布前20GiB门槛通过。
+
+人工事项：Reuters digitimes-de-1原challenge已保留并在两轮Site Access更新后通过宿主桥接recover接回；session READY、VNC仅127.0.0.1:5900，桌面打开工具即可继续。DIGITIMES English需在digitimes-nl-1核实登录和订阅权限，不能把历史VALID当作当前可读证明。BE官方IR RSS按要求不处理；IBKR自然轮询已恢复，本轮没有改交易/Gateway组件。
+
+仍需明确的限制：Chrome旧实例的CDP初始化不可用已实证并恢复，但未取得足以定位Chrome原生忙循环具体函数的证据；不宣称已永久消除该类原生故障。Investing偶发真实DOM未就绪会准确返回browser_content_not_ready，由下一轮正常采集再试，不再立即重复网络访问；25秒队列仍可能在单并发身份负载超额时延期，不承诺无限容量或零challenge。本文区分已修复的确定性代码缺陷、已恢复的实例和仍需人工/长期观察的部分。
+
+### UTC06:15最终截面（不挑选全绿瞬间）
+
+验收回执：eval/message_source_repair_20261015/production-acceptance.json；测试明细tests-r5.xml。
+
+TrendForce两个入口、GlobeNewswire两个入口、Barron's、InvestorsHub以及其他RSS/API均有发布后自然成功记录；Investing四个ticker也都已在新消息总线启动后成功过，RKLB从10/6以来无成功的状态恢复。但该截面Investing MU/INTC各有一次browser_content_not_ready，DIGITIMES列表共享采集恰有一次TimeoutError（上一分钟成功）。Reuters四个ticker仍由真实challenge门控，BE IR 403按要求留置。因此不能汇报“当前所有消息源全部稳定全绿”。
+
+同时宿主机load average为11.72/14.14/14.54，短采样CPU idle约6%—18%，内存available约5.5GiB、没有这些容器的OOM证据。CPU竞争与长页面加载会放大DOM等待/单Identity排队，但不足以断言每次Timeout都只有这一原因。本轮没有越界停业务agent或改其他并发配置；余下偶发等待需要在正常负载下继续观察，不能靠延长所有超时或重复重启掩盖。

@@ -1544,3 +1544,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-15 共享Identity排队窄修：InvestorsHub/Investing已收到页面但专用内容selector超时，不再作为网络异常立即重复访问；返回EXTRACTION_ERROR/browser_content_not_ready及有限文档证据，仍优先保留真实challenge原页，不伪造成功。配合两个站点25秒crawler排队容忍，保持单并发和60秒轮询。现场另确认DIGITIMES主Profile正文为真实付费墙，而非parser猜测；新增一次访问不重试回归。
 
 2026-10-15 Investing ticker身份误拒绝修复：整页text_content连接标题及相邻节点，导致正确RKLB/BE页面因News后词边界消失被错误拒绝；改为逐个instrument h1/h2标题fullmatch ticker+News，排除article内部标题。新增四ticker相邻节点复现及错误标的/推荐标题拒绝测试；仅更新消息总线，不重建Site Access/Chrome/Profile。
+
+2026-10-15 消息源修复验收收尾：origin/main代码正式镜像上线Site Access c9e321d9及Message Bus 6a3e19ba，源码哈希与Git一致；其余容器/Reuters维护会话保持。105项定向测试通过、3跳过，10篇正文FULL。记录最终非全绿截面、Reuters再次challenge、DIGITIMES真实订阅墙及Investing/DIGITIMES偶发DOM/加载超时，不将短期恢复冒充长期稳定；证据见docs/message-source-main-redeployment-repair-20261015.md及eval/message_source_repair_20261015/production-acceptance.json。
