@@ -71,6 +71,37 @@ def test_historical_datetime_accepts_rfc2822_provider_timestamp() -> None:
 
 
 @pytest.mark.asyncio
+async def test_historical_loader_requests_and_admits_exact_21_day_window(tmp_path: Path) -> None:
+    as_of = datetime(2026, 10, 17, 12, tzinfo=UTC)
+    start = as_of - timedelta(days=21)
+    published_times = [as_of - timedelta(days=20), start, start - timedelta(seconds=1)]
+    rows = []
+    for index, published in enumerate(published_times):
+        row = _row(index, as_of=as_of)
+        rows.append(row.model_copy(update={
+            "source_published_at": published,
+            "raw_payload": {**row.raw_payload, "created": published.isoformat()},
+        }))
+
+    class WindowProvider(FakeHistoricalProvider):
+        def fetch(self, *, ticker, window_start, window_end):
+            assert ticker == "AMD"
+            assert window_start == start
+            assert window_end == as_of
+            return super().fetch(ticker=ticker, window_start=window_start, window_end=window_end)
+
+    loader = HistoricalNewsLoader(
+        staging=HistoricalStagingRepository(tmp_path / "staging.sqlite3"),
+        providers=[WindowProvider(rows)],
+    )
+    selected, report = await loader.load(market="US", ticker="AMD", as_of=as_of)
+    assert report.window_start == start
+    assert report.window_end == as_of
+    assert {source.published_at for source in selected} == set(published_times[:2])
+    assert report.rejected_counts["outside_window_or_missing_time"] == 1
+
+
+@pytest.mark.asyncio
 async def test_historical_loader_isolated_deduped_and_stably_stratified(tmp_path: Path) -> None:
     as_of = datetime(2026, 8, 24, tzinfo=UTC)
     rows = [_row(index, as_of=as_of) for index in range(510)]

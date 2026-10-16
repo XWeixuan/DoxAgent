@@ -1562,3 +1562,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-17 W2R1时效优化：新增按轮次冻结的模型/effort/timeout配置；新Case W2R1使用百炼deepseek-v4.1-flash low、180秒，W1R1/W2R3保持原模型改low，其余轮次保持原设置。DeepSeek使用JSON object结构化输出并保留原Schema校验及纠错重试，成功/失败回执记录实际模型、推理强度、传输格式与超时；旧Case/旧回执保持兼容。125项相关回归通过；本条提交仅含本轮实现，不包含其他会话的未提交提示词/Worker修改。
 
 2026-10-17 W2R1低推理配置生产生效：实现00acd74a已push并按标准Dockerfile从提交源码完整构建，仅替换Scheduler。五份部署源码与Git blob一致；隔离百炼实调12.858秒，生产新Case W2R1 DeepSeek low/180秒成功（12.144秒）、W1R1 Qwen low成功、W1R2仍medium。W2R3配置/回归已验证，首个自然Case无候选故未实际执行R3。仅回收本轮两个精确构建上下文缓存约1.094GB，磁盘剩约1.4GB。发布回执：docs/w2r1-deepseek-low-release-20261017.md。
+
+2026-10-17 CDECR初始化历史窗口：将统一HistoricalNewsLoader的回溯周期从14天延长至21天，常规初始化与预构建共用；保持Finnhub/Benzinga来源、研究截止时间和最多500篇筛选上限不变。新增精确21天请求/准入边界回归，历史抓取相关7项测试通过。

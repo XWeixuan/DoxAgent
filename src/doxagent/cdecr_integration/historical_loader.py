@@ -1,4 +1,4 @@
-"""Isolated 14-day historical news staging, qualification, deduplication, and sampling."""
+"""Isolated 21-day historical news staging, qualification, deduplication, and sampling."""
 
 from __future__ import annotations
 
@@ -464,7 +464,7 @@ class HistoricalNewsLoader:
             raise ValueError("as_of must be timezone-aware")
         normalized_ticker = ticker.strip().upper()
         window_end = as_of.astimezone(UTC)
-        window_start = window_end - timedelta(days=14)
+        window_start = window_end - timedelta(days=21)
         fetched: list[tuple[str, FetchedExternalMessage]] = []
         provider_counts: Counter[str] = Counter()
         provider_failures = 0
