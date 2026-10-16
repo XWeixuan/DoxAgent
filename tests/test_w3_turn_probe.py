@@ -297,3 +297,67 @@ def test_continuation_inherits_business_and_does_not_store_body():
     value = project_native(rows, "thread", "turn")
     assert value["tools"][1]["continuation_of_call_id"] == "a"
     assert value["tools"][1]["business_labels"] == ["WEB_RESEARCH"]
+
+
+@pytest.mark.asyncio
+async def test_observation_reference_survives_durable_index_and_ack(tmp_path):
+    import asyncio
+
+    from doxagent.codex_worker.jobs import WorkerJobManager
+    from doxagent.codex_worker.sdk_runtime import WorkerTurnResult
+    from doxagent.codex_worker.workspace_store import LocalWorkspaceStore
+    from tests.test_worker_resource_budget import Runtime, request
+
+    class Observed(Runtime):
+        async def run(self):
+            return WorkerTurnResult(
+                "thread",
+                "turn",
+                "completed",
+                "{}",
+                observation={"receipt": "w3-observation/receipts/test.json"},
+            )
+
+    manager = WorkerJobManager(Observed(), LocalWorkspaceStore(tmp_path))
+    try:
+        req = request(task_phase="w3_template")
+        job = await manager.submit(req)
+        for _ in range(200):
+            await asyncio.sleep(0.01)
+            job = manager.get(job.job_id)
+            if job.status == "succeeded":
+                break
+        assert job.status == "succeeded"
+        saved = manager.store.get(job.job_id)
+        assert saved.resource_receipt["w3_observation"]["receipt"].endswith("test.json")
+        assert manager.store.acknowledge(job.job_id).resource_receipt["w3_observation"]
+    finally:
+        await manager.close()
+
+
+def test_result_recovery_preserves_observation_reference(tmp_path):
+    from doxagent.codex_worker.job_store import JobStore
+    from doxagent.codex_worker.jobs import WorkerJobManager
+    from doxagent.codex_worker.result_receipt import commit, receipt_path
+    from doxagent.codex_worker.schema import WorkerJob
+    from doxagent.codex_worker.workspace_store import LocalWorkspaceStore
+    from tests.test_worker_resource_budget import Runtime, request
+
+    req = request(task_phase="trade_decision")
+    store = JobStore(tmp_path)
+    store.save(
+        WorkerJob(job_id="job", run_id=req.run_id, attempt_id=req.attempt_id, status="running"), req
+    )
+    commit(
+        receipt_path(tmp_path, req),
+        {
+            "thread_id": "thread",
+            "turn_id": "turn",
+            "status": "completed",
+            "final_response": "{}",
+            "telemetry": None,
+            "observation": {"receipt": "w3-observation/receipts/test.json"},
+        },
+    )
+    manager = WorkerJobManager(Runtime(), LocalWorkspaceStore(tmp_path))
+    assert manager.get("job").resource_receipt["w3_observation"]["receipt"].endswith("test.json")

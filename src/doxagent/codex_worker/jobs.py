@@ -398,6 +398,7 @@ class WorkerJobManager:
                     }
                 else:
                     finish["error_code"] = "WORKER_INFRA_RECOVERY_EXHAUSTED"
+            observation = finish.pop("w3_observation", None)
             await self._update(
                 job_id,
                 **finish,
@@ -407,6 +408,7 @@ class WorkerJobManager:
                 else "CLEANUP_QUARANTINED",
                 resource_receipt={
                     **current.resource_receipt,
+                    **({"w3_observation": observation} if observation is not None else {}),
                     "cleanup_ms": int((time.monotonic() - cleanup_started) * 1000),
                 },
             )
@@ -593,8 +595,6 @@ class WorkerJobManager:
             )
             phase = "RUN_TURN"
             result = await asyncio.wait_for(handle.run(), timeout=request.timeout_seconds)
-            if getattr(result, "observation", None) is not None:
-                self._jobs[job_id].resource_receipt["w3_observation"] = result.observation
             telemetry = result.telemetry
             if telemetry is not None:
                 telemetry = telemetry.model_copy(
@@ -610,6 +610,7 @@ class WorkerJobManager:
                     error_code="CODEX_TURN_FAILED",
                     error_message=result.error_message or result.status,
                     telemetry=telemetry,
+                    w3_observation=getattr(result, "observation", None),
                 )
                 return
             await self._finish(
@@ -619,6 +620,7 @@ class WorkerJobManager:
                 turn_id=result.turn_id,
                 final_response=result.final_response,
                 telemetry=telemetry,
+                w3_observation=getattr(result, "observation", None),
             )
         except asyncio.CancelledError:
             active_handle = self._handles.get(job_id)
@@ -752,6 +754,14 @@ class WorkerJobManager:
                             "error_code": None if success else "CODEX_TURN_FAILED",
                             "error_message": result.get("error_message"),
                             "finished_at": utc_now(),
+                            "resource_receipt": {
+                                **job.resource_receipt,
+                                **(
+                                    {"w3_observation": result["observation"]}
+                                    if result.get("observation") is not None
+                                    else {}
+                                ),
+                            },
                             "telemetry": WorkerTurnTelemetry.model_validate(result["telemetry"])
                             if result.get("telemetry")
                             else None,

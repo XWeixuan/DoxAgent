@@ -1554,3 +1554,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-16 W3确定性耗时与Fork恢复统一修复：移除每Case全历史Event同步，新增版本化研究/Reference/公共指令Pack及本地私有绑定，Template与研究解绑并后台预热；实现原operation表上的prepare/GET恢复协议、同Capsule Fork与首轮执行、旧canonical兼容、有限时独立生命周期RPC和分批异步清理。W3 SDK/MCP使用窄工具注册，移除隐式全量factory导入与IBKR socket工具无用途HTTP初始化；签名scope文件刷新attempt/cutoff/观察目录。Effect提交后合并唤醒独立执行器，修正主Case/route/stage/API/流程图失败状态；提供保留原Effect/child/pin的历史恢复工具，回测接入同协议并冻结编排代码指纹。204项相关测试通过；远端12 Case模拟SDK链路非SDK p90=4.225秒，真实热Capsule+MCP准备3.176秒（零模型turn/券商调用）。本轮未push/build/deploy，38条生产历史Case未实际恢复；真实生产SLO待部署后验收。实现记录：docs/w3_deterministic_latency_repair_receipt_20261016.md。
 
 2026-10-17 W3 SDK交易turn观测：增加可热启停、自动到期与14天/数量/容量留存控制的独立回执；结合SDK item起止与一次原生rollout投影，保存逐response上下文增长、缓存、工具返回字节、轮次间隔、业务多标签、研究资源/来源域名、重复调用与错误候选；复用MCP Observation provider时间，不新增模型调用或更改prompt/业务schema。222项相关回归通过，本轮8项新探针测试通过。发布记录见docs/w3-sdk-turn-observation-20261017.md。
+
+2026-10-17 W3自然流量验收补修：修复JobIndex读出副本的原地修改导致观测引用未持久化，引用改随原终态提交保存，并从已落盘结果恢复；新增持久化/ACK及重启接回2项回归，41项Worker/探针/usage相关复测通过。独立自然流量回执此前已完整保存，业务决策不受影响。
