@@ -3,8 +3,10 @@
 ## Purpose and mental model
 
 Turn independently discovered economic subjects into a provisional research topology for Domain
-Review. Make two separate decisions: which subjects deserve independent Unit-level maintenance,
-and which retained subjects should share one bounded O1 research context.
+Review, concentrating research on what can materially change this ticker's economic value and
+valuation expectations. Coverage concerns consequential subjects and transmission routes, not equal
+representation of every business activity. Make two separate decisions: which subjects deserve
+independent Unit-level maintenance, and which themes warrant a dedicated Shell and shared O1 context.
 
 A Unit is a durable economic subject worth forming and revising expectations about. A Shell is a
 bounded shared research context. This stage establishes objects and research ownership; O1 later
@@ -57,6 +59,40 @@ of the actual demand base, business exposure, and scope behind those names. They
 describe a wider and narrower object, or warrant separate maintained views. Matching today's
 validation path would not resolve that choice.
 
+## Calibrate economic significance for this ticker
+
+Before deciding granularity, form a concise working view of what underpins the ticker's value:
+its existing earnings and cash engines, the major future changes that could alter their scale or
+duration, and the dependencies or risks that could invalidate that outlook. Use candidate scope and
+why_material together with available research. Consult relevant C1/C3/C5 passages when current
+financial weight and forward valuation relevance point in different directions or a candidate's
+company-level consequence is unclear. This is a structural judgment, not a new output or a
+requirement to complete detailed valuation or O1's materiality research.
+
+For a subject, ask what a plausible favorable or adverse change would revise at ticker level, not
+merely whether the subject itself could change. Compare that consequence with the ticker's other
+main drivers; generic financial relevance does not establish equal research weight. Consider the
+scope of the impact, how much value the company could capture or lose, and whether the subject
+controls a critical constraint or strategic option. A small revenue contribution can matter greatly
+to future growth or severe downside exposure; a large business can remain essential through cash
+generation and risk even when it is not the current headline. Judge the causal importance and plausible scale of revision, without requiring
+standalone financial disclosure, precise probabilities, or proof that the outcome will occur.
+
+Read available market narratives as expectations about business outcomes: which assumptions about adoption,
+competitive position, profitability, growth duration, or funding explain why the ticker is valued
+as it is? Distinguish supported market interpretations from company aspirations or analyst conjecture.
+Attention and source frequency alone do not establish importance. Preserve economically consequential
+changes that could challenge or replace the current narrative, including external developments not
+already emphasized by it; do not restrict coverage to what is popular or apparently unpriced today.
+
+Let this comparison determine resolution. Central themes deserve enough breadth and differentiation
+to cover distinct material outcomes and their internal, industry, and wider external drivers.
+Supporting subjects may remain bounded dimensions of those objects; less consequential businesses
+do not need the same granularity merely because they have distinct products, actors, or regulations.
+A supporting object may remain a separate Unit when that preserves a worthwhile judgment within a
+shared Shell. Coverage is complete when important routes to value revision have a research home,
+not when every business object, geography, or specialist discipline has its own label.
+
 ## Decide provisional Unit status
 
 Retain a candidate when it identifies one coherent, durable subject whose future materially matters
@@ -73,8 +109,12 @@ independent variation to justify separate maintenance.
 
 Place a candidate in `unassigned_candidates` when it is better understood as a reported event,
 State-like variable, realization mechanism, narrow occurrence, measurement task, or umbrella theme
-too broad for one maintained object. Explain the actual mismatch with independent maintenance;
-uncertainty or incomplete measurement alone is not that mismatch.
+too broad for one maintained object. A well-defined business subject can also have too little
+ticker-level consequence to justify independent maintenance. Explain whether its useful contribution
+belongs within a named retained object or is immaterial enough to omit from the topology; claim
+absorption only where the retained scope supports it, otherwise surface the needed adjustment.
+Preserve the candidate record in either case. Uncertainty or incomplete measurement alone is not
+a reason for demotion.
 
 When records appear to describe the same eventual Unit, first distinguish their shared economic
 subject from any materially different research responsibility carried by one record. Then retain
@@ -99,6 +139,12 @@ specific issue in a warning for the next stages.
 
 ## Build shared research contexts
 
+Before drawing precise ownership boundaries, establish which proposed themes are important enough
+to warrant a full O1 research line and downstream D3 expansion. A distinct specialist context is
+not sufficient: the group's shared core must carry consequential ticker-level economics, valuation
+expectations, or critical dependencies. Assess this at Shell level; not every supporting Unit needs
+equal importance. Several peripheral subjects do not become a central theme merely by being bundled.
+
 After identifying provisional Units, ask what persistent research they repeatedly reuse: business
 and market background, core actors and counterparties, operating or industry knowledge, recurring
 datasets and evidence sources, competitive or regulatory environments, and relationships needed
@@ -120,12 +166,15 @@ across its Units, not a chain of pairwise overlaps:
   other background, does not establish one common research context for A, B, and C.
 - **Independent Units can share a Shell.** Separate updates do not require separate research owners.
 
-A single-Unit Shell is valid but exceptional. First examine natural adjacent Shells: can the Unit
-remain independently maintained there while reusing their main research context? Prefer that
-placement when it preserves depth and meaningful distinctions. Keep a separate Shell when the
-Unit's main research needs warrant a distinct context that those adjacent Shells cannot provide
-without diluting research. This is a placement test, not a reason to discard the Unit or force it
-into an unrelated domain.
+A single-Unit Shell is valid but exceptional. Its subject must warrant Shell-level importance as
+well as a distinct context. First examine natural adjacent Shells: can the Unit remain independently
+maintained there while reusing their main research context? A secondary subject may receive bounded
+complementary treatment in the most relevant Shell when its effect on that Shell's core is clear;
+local specialist differences do not require a separate owner. Keep a separate Shell when its
+consequence for the ticker and genuinely distinct research needs both justify it. If significance
+is too limited, reconsider Unit-level maintenance rather than create a Shell solely because the
+subject fits no precise category. Preserve useful coverage without forcing unrelated core systems
+together or creating a miscellaneous domain.
 
 Before accepting the topology, describe internally in one sentence the long-lived Research Owner
 implied by each Shell: what it must keep understanding, researching, and updating. Compare those
@@ -196,11 +245,12 @@ Finish with four checks:
    references preserved and concrete reasons for unassigned records. For overlap dispositions,
    confirm that any materially distinct research responsibility in the unassigned record is either
    represented in the retained topology or explicitly surfaced for the next stage.
-2. **Unit quality:** Retained subjects are durable, material, independently maintainable objects
-   at useful granularity, rather than events, mechanisms, or company-wide themes.
-3. **Shell coherence:** Each Shell gives one O1 a recognizable shared body of persistent research
-   in which all included subjects can be studied deeply. Complete the 6+ Unit Boundary Challenge
-   where applicable.
+2. **Unit quality:** Retained subjects are durable, independently maintainable objects whose
+   granularity reflects their ticker-level consequence, rather than events, mechanisms, or
+   company-wide themes. Core internal and external revision routes remain covered.
+3. **Shell coherence:** Each Shell has both a consequential economic center for this ticker and
+   a recognizable shared research core. Depth is concentrated where changes matter most, without
+   equally expanding every supporting topic. Complete the 6+ Unit Boundary Challenge where applicable.
 4. **Boundary quality:** Compare the proposed research owners across the whole topology. Single-Unit
    Shells have a substantive reason for separation; shared research has not been fragmented, and
    largely independent systems have not been combined merely to reduce Shell count.

@@ -61,6 +61,12 @@ review to arrive before making the best supported decision.
 
 ## Resolve Units and Shells globally
 
+First recover the ticker-level priorities from candidate scope and why_material, review reasoning,
+and common context: which subjects anchor its economics, forward valuation expectations, or critical
+risks? Judge proposed additions and separations against that view, not just against whether a domain
+expert can describe a distinct subject. Preserve material internal and external revision routes
+without assigning every reviewed topic the same structural weight.
+
 First settle the maintained objects:
 
 1. **Identify the durable subject.** Combine candidate scope, economic materiality, unassigned
@@ -87,8 +93,11 @@ suggest artificial fragmentation.
 
 Judge grouping as a whole. Pairwise context overlap is not transitive, and economic transmission
 can cross Shell boundaries. Distinct outcomes or update events can coexist in one shared research
-context; causal connection alone does not require one Shell. A single-Unit Shell is valid when its
-subject warrants a distinct context.
+context; causal connection alone does not require one Shell. Every separate Shell must warrant a
+full research context through both ticker-level importance and research usefulness. A single-Unit
+Shell needs both, not merely a unique specialty. Place useful secondary coverage with the most
+relevant core where its economic contribution is clear, or leave immaterial detail out; lack of a
+perfect specialist match does not require another Shell.
 
 Apply consequential changes globally. A split, merger, move, recovery, or removal can change
 neighboring membership, scope, and boundaries. Recheck those relationships and relevant unassigned
@@ -140,9 +149,10 @@ Read the rebuilt topology as O1's future research frame, using five connected te
    an unforeseen material catalyst enter without redesigning their identities?
 3. **Multi-path researchability:** Can each Unit accommodate several States, mechanisms, and
    revision paths rather than one preselected realization chain?
-4. **Granularity balance:** Are internal details and external business changes treated at levels
-   appropriate to their economic significance and independent revisions? Look for both unnecessary
-   micro-Units and large objects that bury distinct maintained judgments.
+4. **Granularity balance:** Does resolution follow relative importance to this ticker? Preserve
+   the breadth and distinct revision routes of central themes; keep supporting topics proportionate
+   rather than equally decomposing every business. Check for peripheral specialties promoted into
+   full research domains as well as broad objects that bury material judgments.
 5. **Shell research coherence:** Can one O1 deeply maintain each shared research system, with clear
    adjacent ownership and room for cross-Shell transmission? Check broad Shells for distinct systems
    and nearby Shells for duplicated context.
