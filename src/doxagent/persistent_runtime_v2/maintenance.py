@@ -144,8 +144,11 @@ class RuntimeMaintenance:
             task["ticker"],
             int(event_ref["version"]),
         )
-        self.journal.set("w3_library_lineage", str(candidate_root),
-                         self.journal.get("w3_library_lineage", str(source_root), str(source_root)))
+        self.journal.set(
+            "w3_library_lineage",
+            str(candidate_root),
+            self.journal.get("w3_library_lineage", str(source_root), str(source_root)),
+        )
         worker = (
             self.worker_factory()
             if self.worker_factory
@@ -449,6 +452,8 @@ class RuntimeMaintenance:
                 metadata=metadata,
             )
             self._admit(revision)
+            if self.runtime.coordinator is not None:
+                self.runtime.coordinator._public_next[task["ticker"]] = 0
             self.journal.set("visibility", task["ticker"], {"day": metadata["visibility_day"]})
             self._consume(task, frame)
             return {"revision_id": revision["revision_id"]}

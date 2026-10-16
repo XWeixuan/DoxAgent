@@ -6,6 +6,8 @@ import json
 from datetime import timedelta
 from uuid import uuid4
 
+from doxagent.w3_timing import observed, span
+
 from .fencing import assert_write_lease
 from .journal import encode
 
@@ -51,6 +53,7 @@ class W3ThreadRegistry:
             value[key] = json.loads(value[key]) if value[key] else None
         return value
 
+    @observed("stage.begin")
     def begin_stage(self, case_id, phase, *, thread_id=None, input_refs=None):
         with self.journal.transaction() as db:
             assert_write_lease(db)
@@ -66,7 +69,10 @@ class W3ThreadRegistry:
                     self.journal.clock().isoformat(),
                 ),
             )
-        return self.stage(case_id, phase)
+        result = self.stage(case_id, phase)
+        with span("stage.accepted", accepted_at=result["accepted_at"], status=result["status"]):
+            pass
+        return result
 
     def save_result(self, case_id, phase, result, *, thread_id, worker_job_id=None):
         payload = result.model_dump(mode="json") if hasattr(result, "model_dump") else result

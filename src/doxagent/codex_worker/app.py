@@ -18,8 +18,11 @@ from doxagent.codex_runtime.errors import CodexRuntimeError
 from doxagent.codex_worker.io_budget import DiskBudget, blocking
 from doxagent.codex_worker.jobs import QueueHighWatermark, WorkerJobManager
 from doxagent.codex_worker.schema import (
+    CaseMaterializeRequest,
+    ResearchPackRequest,
     TemplateRegisterRequest,
     ThreadForkRequest,
+    W3PrepareRequest,
     WorkerJob,
     WorkerRunRequest,
     WorkspaceFileResponse,
@@ -151,6 +154,41 @@ def create_worker_app(
             raise HTTPException(
                 status_code=403, detail={"code": exc.code, "message": str(exc)}
             ) from exc
+
+    @app.post("/v1/research-packs/{pack_id}", dependencies=[Depends(require_service_auth)])
+    async def research_pack(pack_id: str, request: ResearchPackRequest):
+        try:
+            await disk.run(workspaces.ensure_research_pack, pack_id, request.files)
+            return {"ready": True}
+        except FileNotFoundError as exc:
+            raise HTTPException(404, "pack not installed") from exc
+
+    @app.post("/v1/workspaces/{run_id}/materialize", dependencies=[Depends(require_service_auth)])
+    async def materialize(
+        run_id: str,
+        request: CaseMaterializeRequest,
+        x_workspace_capability: str | None = Header(default=None),
+    ):
+        require_capability(run_id, "write", x_workspace_capability)
+        try:
+            await disk.run(workspaces.materialize_case, run_id, request.packs, request.files)
+        except FileNotFoundError as exc:
+            raise HTTPException(409, "research_pack_missing") from exc
+        return {"ready": True}
+
+    @app.post("/v1/w3/prepare", dependencies=[Depends(require_service_auth)])
+    async def prepare_w3(request: W3PrepareRequest):
+        try:
+            return await jobs.thread_lifecycle.prepare(request)
+        except ValueError as exc:
+            raise HTTPException(409, str(exc)) from exc
+
+    @app.get("/v1/w3/operations/{operation_key:path}", dependencies=[Depends(require_service_auth)])
+    async def w3_operation(operation_key: str):
+        value = jobs.thread_lifecycle.operation(operation_key)
+        if value is None:
+            raise HTTPException(404, "operation not found")
+        return value
 
     @app.post(
         "/v1/workspaces/{run_id}/snapshots/{snapshot_id}",

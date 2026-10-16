@@ -115,6 +115,7 @@ from doxagent.tools.providers.yfinance import (
     YFinanceSellSideConsensusClient,
 )
 from doxagent.tools.registry import ToolDescriptor, ToolRegistry
+from doxagent.tools.w3_factory import HISTORY_SPEC, history_descriptor
 
 _INDEXED_OBSERVATION_TOOLS = {
     "sec.company_facts_and_filings",
@@ -495,15 +496,7 @@ _HORIZONTAL_TOOL_SPECS: dict[str, tuple[str, list[str], str]] = {
         ["symbol", "conid", "fields"],
         "Collect available bid, ask, last, OHLC, size, and volume snapshot fields without trading.",
     ),
-    "ibkr.market_history": (
-        "Read IBKR historical trade bars. Use bar=10min or 1d; outside_rth=true includes "
-        "extended hours. Optional duration uses IBKR units (e.g. 7200 S, 2 D); "
-        "end_datetime uses IBKR UTC format YYYYMMDD HH:MM:SS UTC, defaulting to the "
-        "task cutoff when available. The stock contract is resolved internally.",
-        ["symbol", "conid", "period", "bar", "outside_rth", "duration", "end_datetime"],
-        "Collect compact auditable OHLCV history; no option, rate, or valuation "
-        "derivation is performed.",
-    ),
+    "ibkr.market_history": HISTORY_SPEC,
     "ibkr.trade_tape": (
         "Capture bounded raw trade ticks through the official local IBKR TWS socket API.",
         ["symbol", "conid", "duration_seconds", "max_events"],
@@ -1269,34 +1262,62 @@ _CRAWLER_INPUT_FIELDS: dict[str, list[str]] = {
     "crawler_plane.list": [],
     "crawler_plane.get": ["crawler_id"],
     "crawler_plane.create_version": [
-        "crawler_id", "version", "base_version", "entrypoint", "parameter_schema",
+        "crawler_id",
+        "version",
+        "base_version",
+        "entrypoint",
+        "parameter_schema",
         "checkpoint_schema_version",
     ],
     "crawler_plane.certify": ["crawler_id", "version"],
     "crawler_plane.promote": ["crawler_id", "version", "checkpoint_action"],
     "crawler_plane.rollback": ["crawler_id", "version"],
     "crawler_plane.execute": [
-        "crawler_id", "ticker", "binding_id", "source_id", "source_parameters",
-        "poll_run_id", "network_mode", "cassette_ref", "version", "commit_checkpoint",
-        "checkpoint_override", "preserve_response_bodies",
+        "crawler_id",
+        "ticker",
+        "binding_id",
+        "source_id",
+        "source_parameters",
+        "poll_run_id",
+        "network_mode",
+        "cassette_ref",
+        "version",
+        "commit_checkpoint",
+        "checkpoint_override",
+        "preserve_response_bodies",
     ],
     "crawler_plane.live_probe": [
-        "crawler_id", "version", "ticker", "parameters", "baseline_cassette_ref",
+        "crawler_id",
+        "version",
+        "ticker",
+        "parameters",
+        "baseline_cassette_ref",
     ],
     "crawler_plane.get_execution": ["execution_id"],
     "crawler_plane.get_cassette": ["cassette_id", "cassette_ref"],
     "crawler_plane.list_alerts": ["crawler_id", "open_only"],
     "crawler_plane.update_alert_policy": [
-        "crawler_id", "source_id", "alert_type", "enabled", "threshold", "window",
+        "crawler_id",
+        "source_id",
+        "alert_type",
+        "enabled",
+        "threshold",
+        "window",
     ],
     "crawler_plane.resolve_alert": ["alert_id"],
     "crawler_plane.list_retries": ["crawler_id", "binding_id", "status", "limit"],
     "crawler_plane.resolve_retry": ["retry_id"],
     "crawler_plane.reactivate_retry": ["retry_id"],
     "crawler_plane.register_source": [
-        "source_id", "display_name", "crawler_id", "parameter_schema",
-        "default_parameters", "default_polling_config", "default_streaming_config",
-        "scheduler_group", "scheduler_constraints",
+        "source_id",
+        "display_name",
+        "crawler_id",
+        "parameter_schema",
+        "default_parameters",
+        "default_polling_config",
+        "default_streaming_config",
+        "scheduler_group",
+        "scheduler_constraints",
     ],
     "crawler_plane.add_regression": ["execution_id"],
 }
@@ -1337,7 +1358,9 @@ def default_real_tool_registry(settings: DoxAgentSettings | None = None) -> Tool
     registry = ToolRegistry()
 
     def register(name: str, client: ToolClient) -> None:
-        descriptor = _DESCRIPTORS[name]
+        descriptor = (
+            history_descriptor(resolved) if name == "ibkr.market_history" else _DESCRIPTORS[name]
+        )
         if name.startswith("ibkr."):
             enabled = resolved.ibkr_tws_enabled
             descriptor = descriptor.model_copy(

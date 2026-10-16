@@ -29,6 +29,14 @@ class WorkerUnavailable(CodexRuntimeError):
     retryable = True
 
 
+class W3PreparationError(CodexRuntimeError):
+    def __init__(self, code: str, message: str):
+        super().__init__(message)
+        self.code = code
+        self.w3_step = "PREPARE"
+        self.retryable = code == "w3_prepare_pending"
+
+
 class InfrastructureRecoveryExhausted(CodexRuntimeError):
     code = "WORKER_INFRA_RECOVERY_EXHAUSTED"
     scope = "infrastructure"

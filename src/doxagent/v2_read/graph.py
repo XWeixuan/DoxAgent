@@ -20,8 +20,13 @@ NODES = (
     "TRADE_NOT_EXECUTED",
 )
 RESULTS = (
-    "ARCHIVE", "EVENT_DISCOVERY", "BADCASE", "TRADE_INTENT",
-    "FAILURE", "TRADE_EXECUTION", "TRADE_NOT_EXECUTED",
+    "ARCHIVE",
+    "EVENT_DISCOVERY",
+    "BADCASE",
+    "TRADE_INTENT",
+    "FAILURE",
+    "TRADE_EXECUTION",
+    "TRADE_NOT_EXECUTED",
 )
 
 
@@ -43,21 +48,37 @@ def project(
             turns[item["id"]] = item["data"]
     with store.connect() as db:
         executions = {
-            row[0]: json.loads(row[1]) for row in db.execute(
+            row[0]: json.loads(row[1])
+            for row in db.execute(
                 "SELECT id,payload FROM object_current WHERE kind='execution' AND ticker=? "
-                "AND parent=? AND valid_to IS NULL", (ticker, identity),
+                "AND parent=? AND valid_to IS NULL",
+                (ticker, identity),
             )
         }
     for item in incoming:
-        if item["kind"] == "execution" and item["ticker"] == ticker and item.get("parent") == identity:
+        if (
+            item["kind"] == "execution"
+            and item["ticker"] == ticker
+            and item.get("parent") == identity
+        ):
             if item.get("data") is None:
                 executions.pop(item["id"], None)
             else:
                 executions[item["id"]] = item["data"]
     prior = store.get("graph_case", ticker, identity) or {"nodes": [], "edges": []}
-    tag_nodes = set(summary.get("first_round_tags", [])) & {"FIRST_ROUND_TRADE", "POLICY_RELATED_EVENT"}
+    native = store.get("native:runtime_v2_cases", ticker, identity) or {}
+    for item in incoming:
+        if item["kind"] == "native:runtime_v2_cases" and item["id"] == identity:
+            native = item["data"] or {}
+    tag_nodes = set(summary.get("first_round_tags", [])) & {
+        "FIRST_ROUND_TRADE",
+        "POLICY_RELATED_EVENT",
+    }
     nodes = {"SOURCE", *(r for r in summary["results"] if r in NODES), *tag_nodes}
     nodes.update(turn["node_id"] for turn in turns.values())
+    execution = native.get("frozen_inputs", {}).get("w3_execution_state", {})
+    if summary.get("initial_route") == "W3" and execution.get("phase") == "trade_decision":
+        nodes.add("W3")
     edges = set()
     if "W1" in nodes:
         edges.add(("SOURCE", "W1"))
@@ -84,7 +105,7 @@ def project(
             if "TRADE_INTENT" in nodes:
                 edges.add(("TRADE_INTENT", result))
             continue
-        if summary["w3_status"] == "RESOLVED" and "W3" in nodes:
+        if summary["w3_status"] in {"RESOLVED", "FAILED", "FAILED_RETRYABLE"} and "W3" in nodes:
             origin = "W3"
         elif result == "EVENT_DISCOVERY" and "W1" in nodes:
             origin = "W1"
@@ -93,10 +114,6 @@ def project(
         if result != "TRADE_INTENT" or origin == "W3":
             edges.add((origin, result))
     records, counts = [], []
-    native = store.get("native:runtime_v2_cases", ticker, identity) or {}
-    for item in incoming:
-        if item["kind"] == "native:runtime_v2_cases" and item["id"] == identity:
-            native = item["data"] or {}
     for node in set(prior["nodes"]) | nodes:
         selected = [t for t in turns.values() if t["node_id"] == node]
         completed = [t["timing"]["completed_at"]["value"] for t in selected]
@@ -113,7 +130,8 @@ def project(
         if not final and not (node == "W3" and native.get("w3_result")):
             elapsed = None
         failed = (
-            node == "FAILURE"
+            (node == "W3" and summary["w3_status"] in {"FAILED", "FAILED_RETRYABLE"})
+            or node == "FAILURE"
             and node in nodes
             or (
                 summary["status"] in {"FAILED", "UNAVAILABLE"}
@@ -138,9 +156,9 @@ def project(
             evidence = [
                 item.get(field, {}).get("value")
                 for item in executions.values()
-                if node == "TRADE_INTENT" or item.get("execution_state") == (
-                    "EXECUTED" if node == "TRADE_EXECUTION" else "NOT_EXECUTED"
-                )
+                if node == "TRADE_INTENT"
+                or item.get("execution_state")
+                == ("EXECUTED" if node == "TRADE_EXECUTION" else "NOT_EXECUTED")
             ]
             # A terminal unsent intent may have no durable terminal timestamp.
             latest = max((value for value in evidence if value), default=None)

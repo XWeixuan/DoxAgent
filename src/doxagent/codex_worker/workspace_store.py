@@ -43,6 +43,12 @@ class LocalWorkspaceStore:
         self.root = Path(root).resolve()
         self.root.mkdir(parents=True, exist_ok=True)
         self._lock = threading.RLock()
+        self._pack_locks = {}
+        self._materialize_locks = {}
+
+    def _named_lock(self, locks, key):
+        with self._lock:
+            return locks.setdefault(key, threading.RLock())
 
     def ensure_run(self, run_id: str) -> Path:
         run_root = self._run_root(run_id)
@@ -50,6 +56,72 @@ class LocalWorkspaceStore:
             for name in ("context", "attempts", "artifacts", "audit", "published"):
                 (run_root / name).mkdir(parents=True, exist_ok=True)
         return run_root
+
+    def ensure_research_pack(self, pack_id: str, files: dict[str, str] | None = None) -> None:
+        if not re.fullmatch(r"[a-f0-9]{64}", pack_id):
+            raise InvalidWorkspacePath("invalid research pack identity")
+        destination = self.root / ".w3-packs" / pack_id
+        with self._named_lock(self._pack_locks, pack_id):
+            if (destination / "manifest.json").is_file():
+                if files is not None:
+                    supplied = {
+                        name: hashlib.sha256(content.encode("utf-8")).hexdigest()
+                        for name, content in files.items()
+                    }
+                    if supplied != json.loads(
+                        (destination / "manifest.json").read_text(encoding="utf-8")
+                    ):
+                        raise AttemptConflict("research pack identity changed content")
+                return
+            if files is None:
+                raise FileNotFoundError(pack_id)
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            with tempfile.TemporaryDirectory(prefix=".install-", dir=destination.parent) as temp:
+                staging = Path(temp) / "pack"
+                staging.mkdir()
+                manifest = {}
+                for name, content in files.items():
+                    parts = PurePosixPath(name).parts
+                    if (
+                        not parts
+                        or name.startswith("/")
+                        or ".." in parts
+                        or "\\" in name
+                        or ":" in name
+                    ):
+                        raise InvalidWorkspacePath("invalid pack file path")
+                    target = staging / "files" / name
+                    target.parent.mkdir(parents=True, exist_ok=True)
+                    raw = content.encode("utf-8")
+                    self._atomic_write(target, raw)
+                    manifest[name] = hashlib.sha256(raw).hexdigest()
+                self._atomic_write(staging / "manifest.json", json.dumps(manifest).encode())
+                os.replace(staging, destination)
+
+    def materialize_case(self, run_id: str, packs: dict[str, str], files: dict[str, str]) -> None:
+        run = self.ensure_run(run_id)
+        with self._named_lock(self._materialize_locks, run_id):
+            for prefix, pack_id in packs.items():
+                self.ensure_research_pack(pack_id)
+                source = self.root / ".w3-packs" / pack_id
+                marker_id = hashlib.sha256(prefix.encode()).hexdigest()
+                marker = run / "audit" / ("pack-" + marker_id + ".json")
+                if marker.is_file():
+                    if json.loads(marker.read_text(encoding="utf-8")) != pack_id:
+                        raise AttemptConflict("workspace pack binding changed")
+                    continue
+                manifest = json.loads((source / "manifest.json").read_text(encoding="utf-8"))
+                for name in manifest:
+                    target = self._resolve(run_id, prefix.rstrip("/") + "/" + name, for_write=True)
+                    raw = (source / "files" / name).read_bytes()
+                    if target.exists() and target.read_bytes() != raw:
+                        raise ImmutableWorkspacePath("pack target already has different content")
+                    target.parent.mkdir(parents=True, exist_ok=True)
+                    if not target.exists():
+                        self._atomic_write(target, raw)
+                self._atomic_write(marker, json.dumps(pack_id).encode())
+            for name, content in files.items():
+                self.write_text(run_id, name, content)
 
     def snapshot(self, run_id: str, snapshot_id: str) -> None:
         """Immutable pre-node copy, outside the agent-visible workspace."""
@@ -299,7 +371,7 @@ class LocalWorkspaceStore:
         target = self._run_root(run_id)
         if not run_id.startswith("w3-case-") or target.parent != self.root.resolve():
             raise InvalidWorkspacePath("not a dedicated W3 Case workspace")
-        with self._lock:
+        with self._named_lock(self._materialize_locks, run_id):
             if target.is_symlink():
                 raise InvalidWorkspacePath("W3 workspace cannot be a symlink")
             if target.exists():

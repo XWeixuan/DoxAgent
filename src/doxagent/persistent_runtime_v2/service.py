@@ -296,6 +296,9 @@ class PersistentRuntimeV2Service:
         self._dispatch_effects = dispatch_effects
         self._projection_outbox = projection_outbox
         self._w3_agent = w3_agent
+        bind_repository = getattr(w3_agent, "bind_case_repository", None)
+        if bind_repository:
+            bind_repository(self.repository)
         self._w3_v4_execution = None
         self._w3_lease_seconds = w3_lease_seconds
         self._hot_executors: dict[str, ThreadPoolExecutor] = {}
@@ -744,7 +747,7 @@ class PersistentRuntimeV2Service:
         )
         self._enqueue_route_effects(adjudicated, w1_response_id)
         if self._dispatch_effects:
-            self._effect_executor.submit(self.dispatch_pending_effects, limit=20)
+            self._wake_effects()
         return adjudicated
 
     def _run_w1_hot(
@@ -1496,17 +1499,35 @@ class PersistentRuntimeV2Service:
             for effect in self.repository.claim_effects(limit=limit)
         )
 
+    def _wake_effects(self):
+        if self.coordinator is not None:
+            self.coordinator.wake_effects()
+        elif self._dispatch_effects:
+            self._effect_executor.submit(self.dispatch_pending_effects, limit=20)
+
     def dispatch_pending_effects(self, *, limit: int = 20) -> int:
         """Dispatch W3 without a global pool; ticker slots provide the sole cap."""
 
+        claim_at = utc_now()
+        claim_started = perf_counter()
+        effects = self.repository.claim_effects(limit=limit)
+        claim_ms = round((perf_counter() - claim_started) * 1000, 3)
         dispatched = 0
-        for effect in self.repository.claim_effects(limit=limit):
+        for effect in sorted(effects, key=lambda value: value.effect_type not in {
+            RuntimeSideEffect.ROUTE_TO_W3, RuntimeSideEffect.W3_POST_DECISION,
+        }):
             if effect.effect_type in {
                 RuntimeSideEffect.ROUTE_TO_W3, RuntimeSideEffect.W3_POST_DECISION,
             }:
                 thread = Thread(
                     target=self._run_w3_effect_thread,
-                    args=(effect,),
+                    args=(effect, {
+                        "effect_claim_started_at": claim_at.isoformat(),
+                        "effect_claim_elapsed_ms": claim_ms,
+                        "effect_claim_batch_size": len(effects),
+                        "effect_dispatched_at": utc_now().isoformat(),
+                        "dispatch_monotonic": perf_counter(),
+                    }),
                     name=f"prv2-w3-{effect.case_id[-8:]}",
                     daemon=False,
                 )
@@ -1518,14 +1539,22 @@ class PersistentRuntimeV2Service:
                 dispatched += self._process_claimed_effect(effect)
         return dispatched
 
-    def _run_w3_effect_thread(self, effect: RuntimeEffect) -> None:
+    def _run_w3_effect_thread(
+        self, effect: RuntimeEffect, dispatch_timing: dict[str, Any] | None = None,
+    ) -> None:
+        timing = dict(dispatch_timing or {})
+        dispatched = timing.pop("dispatch_monotonic", None)
+        if dispatched is not None:
+            timing["effect_thread_start_ms"] = round((perf_counter() - dispatched) * 1000, 3)
         try:
-            self._process_claimed_effect(effect)
+            self._process_claimed_effect(effect, dispatch_timing=timing)
         finally:
             with self._w3_threads_lock:
                 self._w3_threads.discard(current_thread())
 
-    def _process_claimed_effect(self, effect: RuntimeEffect) -> int:
+    def _process_claimed_effect(
+        self, effect: RuntimeEffect, *, dispatch_timing: dict[str, Any] | None = None,
+    ) -> int:
         if self.journal and effect.effect_type is RuntimeSideEffect.ROUTE_TO_W3:
             case = self.repository.get_case(effect.case_id)
             if (
@@ -1549,7 +1578,15 @@ class PersistentRuntimeV2Service:
 
             renew = getattr(self.repository, "renew_effect", lambda value: None)
             with heartbeat(lambda: renew(effect)), write_scope("effect", effect, utc_now):
-                self._execute_effect(effect)
+                if self.journal and effect.effect_type in {
+                    RuntimeSideEffect.ROUTE_TO_W3, RuntimeSideEffect.W3_POST_DECISION,
+                }:
+                    from doxagent.w3_timing import effect_trace
+
+                    with effect_trace(effect, self.journal, **(dispatch_timing or {})):
+                        self._execute_effect(effect)
+                else:
+                    self._execute_effect(effect)
         except Exception as exc:
             from .journal import LeaseLost
 
@@ -1565,11 +1602,11 @@ class PersistentRuntimeV2Service:
                     )
                 )
                 return 0
-            if getattr(exc, "code", None) == "w3_template_initializing":
+            if getattr(exc, "code", None) in {"w3_template_initializing", "w3_prepare_pending"}:
                 self.repository.save_effect(effect.model_copy(update=dict(
                     status=RuntimeEffectStatus.PENDING_RETRY,
                     available_at=utc_now() + timedelta(seconds=5),
-                    last_error="W3 template initialization is active",
+                    last_error=str(exc) or type(exc).__name__,
                 )))
                 return 0
             next_attempt = effect.attempt_count + 1
@@ -2167,7 +2204,7 @@ class PersistentRuntimeV2Service:
                 update={
                     "status": (W3CaseStatus.FAILED_RETRYABLE if retryable else W3CaseStatus.FAILED),
                     "error_code": getattr(exc, "code", type(exc).__name__),
-                    "error_message": str(exc)[:1000],
+                    "error_message": (str(exc) or type(exc).__name__)[:1000],
                     "updated_at": utc_now(),
                 }
             )
@@ -2304,7 +2341,7 @@ class PersistentRuntimeV2Service:
                     else RuntimeTechnicalStatus.FAILED
                 ),
                 "error_code": getattr(exc, "code", type(exc).__name__),
-                "error_message": str(exc)[:1000],
+                "error_message": (str(exc) or type(exc).__name__)[:1000],
                 "completed_at": case.completed_at or utc_now(),
                 "updated_at": utc_now(),
             }

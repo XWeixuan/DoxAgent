@@ -13,6 +13,7 @@ from typing import Any
 from uuid import uuid4
 
 from doxagent.codex_runtime.schema import CodexAgentRole, ResearchLane
+from doxagent.w3_timing import observed, span
 
 from .process_tree import owned_processes, signal_owned, terminate_owned
 from .result_receipt import receipt_path
@@ -39,7 +40,10 @@ class Capsule:
         self._log: Any = None
         self._stderr_task: asyncio.Task[None] | None = None
         self.stderr_bytes = 0
+        self.startup_timing: dict[str, Any] | None = None
+        self.prepared = False
 
+    @observed("capsule.spawn")
     async def launch(self) -> None:
         directory = self.root / "capsules" / self.identity
         directory.mkdir(parents=True)
@@ -72,6 +76,7 @@ class Capsule:
             ),
             encoding="utf-8",
         )
+        await asyncio.wait_for(self.receive(), 30)
 
     async def _drain_stderr(self) -> None:
         assert self.process is not None and self.process.stderr is not None
@@ -114,7 +119,7 @@ class Capsule:
             if self.process.returncode is None:
                 try:
                     await self.send({"type": "close"})
-                    await asyncio.wait_for(self.process.wait(), 10)
+                    await asyncio.wait_for(self.process.wait(), 5)
                 except (TimeoutError, BrokenPipeError, ConnectionError):
                     pass
             try:
@@ -137,6 +142,8 @@ class CapsuleRuntime:
         self.active: dict[str, Capsule] = {}
         self._lock = asyncio.Lock()
         self.receipt_callback: Any = None
+        self._warming: set[asyncio.Task] = set()
+        self._warm_next_at = 0.0
 
     async def recover(self) -> None:
         import signal
@@ -169,6 +176,10 @@ class CapsuleRuntime:
                 if match is not None:
                     match.busy = True
                     return match
+            unbound = next((c for c in idle if c.thread_id is None and c.healthy), None)
+            if unbound is not None:
+                unbound.busy = True
+                return unbound
             capsule = Capsule(self.root)
             self.pool.append(capsule)
         try:
@@ -180,18 +191,79 @@ class CapsuleRuntime:
             raise
         return capsule
 
+    def can_start_warm(self, thread_id):
+        return bool(
+            thread_id
+            and any(c.thread_id == thread_id and not c.busy and c.healthy for c in self.pool)
+        )
+
+    async def warm(self, target: int, gate=None, interval_seconds: float = 2.0) -> None:
+        now = time.monotonic()
+        if now < self._warm_next_at:
+            return
+        idle = sum(not c.busy and c.thread_id is None for c in self.pool)
+        self._warm_next_at = now + interval_seconds
+        for _ in range(max(0, target - idle - len(self._warming))):
+            task = asyncio.create_task(self._warm_one(gate))
+            self._warming.add(task)
+            task.add_done_callback(self._warming.discard)
+
+    async def _warm_one(self, gate):
+        capsule = Capsule(self.root)
+        self.pool.append(capsule)
+        try:
+            if gate is not None:
+                async with gate:
+                    await capsule.launch()
+            else:
+                await capsule.launch()
+            capsule.healthy, capsule.busy = True, False
+            capsule.idle_at = time.monotonic()
+        except BaseException:
+            self._warm_next_at = time.monotonic() + 30
+            await capsule.close()
+            self.pool.remove(capsule)
+
+    async def prepare_fork(self, request, cwd, parent_thread_id):
+        capsule = await self._take(None)
+        try:
+            await capsule.send(
+                {
+                    "type": "prepare_fork",
+                    "request": request.model_dump(mode="json"),
+                    "cwd": str(cwd),
+                    "parent_thread_id": parent_thread_id,
+                    "timing_directory": str(self.root / "boundary-timing"),
+                }
+            )
+            ready = await asyncio.wait_for(capsule.receive(), 15)
+            capsule.thread_id = ready["thread_id"]
+            capsule.prepared = True
+            capsule.healthy, capsule.busy = True, False
+            capsule.idle_at = time.monotonic()
+            return capsule.thread_id
+        except BaseException:
+            await capsule.close()
+            self.pool.remove(capsule)
+            raise
+
     async def release_thread(self, thread_id: str) -> None:
         async with self._lock:
-            for capsule in list(self.pool):
-                if capsule.thread_id == thread_id:
-                    if capsule.busy:
-                        raise ValueError("cannot release an active thread capsule")
-                    await capsule.close()
-                    self.pool.remove(capsule)
+            selected = [c for c in self.pool if c.thread_id == thread_id]
+            if any(c.busy for c in selected):
+                raise ValueError("cannot release an active thread capsule")
+            for capsule in selected:
+                capsule.busy = True
+        for capsule in selected:
+            await capsule.close()
+            self.pool.remove(capsule)
 
     async def start(self, request: WorkerRunRequest, cwd: Path) -> Capsule:
-        capsule = await self._take(request.thread_id)
+        with span("capsule.acquire"):
+            capsule = await self._take(request.thread_id)
+        capsule.prepared = False
         self.active[self.key(request)] = capsule
+        boot_already_ready = capsule.healthy
         capsule.healthy = False
         await capsule.send(
             {
@@ -208,6 +280,9 @@ class CapsuleRuntime:
                 if self.receipt_callback is not None:
                     await self.receipt_callback(request, capsule.thread_id, capsule.turn_id)
             if data["type"] == "started":
+                capsule.startup_timing = data.get("startup_timing")
+                if capsule.startup_timing is not None:
+                    capsule.startup_timing["boot_already_ready"] = boot_already_ready
                 return capsule
 
     async def release(self, request: WorkerRunRequest) -> None:
@@ -229,14 +304,25 @@ class CapsuleRuntime:
         self.active.pop(self.key(request), None)
 
     async def reap_idle(self, *, all_idle: bool = False) -> int:
-        reclaimed = 0
         async with self._lock:
-            for capsule in list(self.pool):
-                if not capsule.busy and (all_idle or time.monotonic() - capsule.idle_at >= 30):
-                    await capsule.close()
-                    self.pool.remove(capsule)
-                    reclaimed += 1
-        return reclaimed
+            selected = [
+                c
+                for c in self.pool
+                if not c.busy
+                and (
+                    all_idle
+                    or (
+                        c.thread_id is not None
+                        and time.monotonic() - c.idle_at >= (300 if c.prepared else 30)
+                    )
+                )
+            ]
+            for capsule in selected:
+                capsule.busy = True
+        for capsule in selected:
+            await capsule.close()
+            self.pool.remove(capsule)
+        return len(selected)
 
     async def probe(self) -> dict[str, object]:
         capsule = await self._take(None)
@@ -248,6 +334,9 @@ class CapsuleRuntime:
             self.pool.remove(capsule)
 
     async def close(self) -> None:
+        for task in list(self._warming):
+            task.cancel()
+        await asyncio.gather(*list(self._warming), return_exceptions=True)
         for capsule in list(self.pool):
             await capsule.close()
             self.pool.remove(capsule)

@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 
 from doxagent.codex_worker.schema import ThreadForkRequest
+from doxagent.w3_timing import observed
 from doxagent.workflows.codex_document3.schema import PolicyDecision
 
 from . import policy_consumption
@@ -24,6 +25,7 @@ from .schema import (
 )
 from .trade_output import TradeOutputService
 from .w3 import W3Error
+from .w3_assets import instruction_assets, research_assets
 from .w3_context import (
     build_case_payload,
     case_labels,
@@ -33,10 +35,10 @@ from .w3_context import (
     history_payload,
     policy_associations,
     resolve_event_subjects,
+    sync_event_links,
 )
 from .w3_contracts import OPERATIONS_PHASE, TRADE_PHASE, W3OperationsResult, W3TradeDecision
 from .w3_models import execution_profile
-from .w3_research_assets import derive_research_assets
 from .w3_threads import W3ThreadRegistry
 
 
@@ -52,6 +54,80 @@ class W3Execution:
     def agent(self):
         return self.service._w3_agent
 
+    def prepare_public(self, ticker):
+        """Publication/startup preparation, never a business Case or trade turn."""
+        from types import SimpleNamespace
+
+        from .schema import RuntimeVersionPin
+
+        active = self.journal.get("execution", "active")
+        if not active or not self.service.input_snapshot_loader:
+            return
+        bundle = self.service.execution_bundles.get(active)
+        assets = instruction_assets(bundle["assets"])
+        if "w3/AGENTS.md" not in assets:
+            return
+        snapshot = self.service.input_snapshot_loader(ticker)
+        pin = RuntimeVersionPin(
+            event_library_root=snapshot.event_library_root,
+            document1_run_id=snapshot.document1_run_id,
+            document2_run_id=snapshot.document2_run_id,
+            event_library_version=snapshot.index.version,
+            policy_set_version=snapshot.projection.policy_set_version,
+            runtime_projection_version=snapshot.projection.policy_set_version,
+            provisional_snapshot_version=0,
+        )
+        identity = digest([active, pin.model_dump(mode="json"), "instructions-only-v1"])
+        if self.journal.get("w3_public_preparation", ticker) == identity:
+            return
+        asset_case = SimpleNamespace(ticker=ticker, version_pin=pin, frozen_inputs={})
+        self.agent.prepare_public_assets(asset_case)
+        initializing = False
+        for model, effort in (("gpt-6-luna", "max"), ("gpt-6-sol", "medium")):
+            profile = dict(
+                model=model, effort=effort, provider=getattr(self.agent, "_model_provider", None)
+            )
+            case = SimpleNamespace(
+                ticker=ticker,
+                case_id="public-" + ticker + "-" + digest(profile)[:16],
+                version_pin=pin,
+                source=SimpleNamespace(message_bus_event_time=self.journal.clock()),
+                frozen_inputs=dict(
+                    w3_assets=assets,
+                    w3_contracts=bundle.get("contracts", {}),
+                    w3_execution_profile=profile,
+                ),
+            )
+            environment = self.agent.environment
+            capabilities = (
+                [environment.web_search_mode, environment.compatibility()]
+                if environment.mode != "PRODUCTION"
+                else [
+                    "live",
+                    {"read_only": True, "data_mcp_enabled": True, "allow_subagents": False},
+                ]
+            )
+            compatibility = digest(
+                [assets, profile, *capabilities, "persistent-runtime.w3.v4", "instructions-only-v1"]
+            )
+            key = digest([ticker, compatibility, "instructions-only-v1"])
+            template, acquired = self.registry.template(ticker, key, compatibility)
+            if template["status"] != "READY":
+                if not acquired:
+                    initializing = True
+                    continue
+                if self.service.coordinator is not None:
+                    self.service.coordinator._background.submit(
+                        self._initialize_template, case, template
+                    )
+                    initializing = True
+                else:
+                    self._initialize_template(case, template)
+        sync_event_links(self.journal, ticker, pin.event_library_root, pin.event_library_version)
+        if not initializing:
+            self.journal.set("w3_public_preparation", ticker, identity)
+
+    @observed("case.events")
     def _events(self, case):
         from .service import _w1_canonical_event_business_payload, _w1_provisional_business_payload
 
@@ -78,21 +154,59 @@ class W3Execution:
             selected.append(row)
         return selected
 
-    def _thread(self, case, context, research):
+    def _initialize_template(self, case, template):
+        try:
+            _, job = self.agent.run_phase(
+                case=case,
+                record=template,
+                phase="w3_template",
+                payload=dict(
+                    ticker=case.ticker,
+                    template_format="instructions-only-v1",
+                ),
+                context=None,
+                research=None,
+            )
+            self.agent.register_template(job.job_id)
+            self.registry.ready_template(
+                template["record_id"], job.thread_id, template["lease_token"]
+            )
+            self._ack(job.job_id)
+            template["thread_id"] = job.thread_id
+        except BaseException as exc:
+            exc.w3_step = "TEMPLATE_INIT"
+            with self.journal.transaction() as db:
+                db.execute(
+                    "UPDATE runtime_v2_w3_threads SET status='FAILED',lease_until=NULL "
+                    "WHERE record_id=? AND lease_token=?",
+                    (template["record_id"], template["lease_token"]),
+                )
+            raise
+        return template
+
+    @observed("case.thread_prepare")
+    def _thread(self, case, context, research, event_keys=None):
         owned = self.registry.owned(case.case_id)
+        stage = self.registry.stage(case.case_id, TRADE_PHASE)
+        record_id = (stage.get("input_refs") or {}).get("record_id")
+        if owned is None and record_id:
+            with self.journal.transaction() as db:
+                row = db.execute(
+                    "SELECT * FROM runtime_v2_w3_threads WHERE record_id=?", (record_id,)
+                ).fetchone()
+                if row is None or row["owner_case_id"] not in {None, case.case_id}:
+                    raise W3Error(
+                        "w3_prepare_identity_conflict", "Original Case record unavailable"
+                    )
+                db.execute(
+                    "UPDATE runtime_v2_w3_threads SET owner_case_id=? WHERE record_id=?",
+                    (case.case_id, record_id),
+                )
+                owned = dict(row)
+                owned["owner_case_id"] = case.case_id
         accepted_at = datetime.fromisoformat(
             self.registry.stage(case.case_id, TRADE_PHASE)["accepted_at"]
         )
-        with self.journal.transaction(write=False) as db:
-            subjects = [
-                r[0]
-                for r in db.execute(
-                    "SELECT DISTINCT subject_key FROM runtime_v2_w3_thread_links "
-                    "WHERE ticker=? AND link_kind='EVENT'",
-                    (case.ticker,),
-                )
-            ]
-        resolve_event_subjects(self.journal, case, subjects)
         profile = execution_profile(
             case,
             model=getattr(self.agent, "_model", "gpt-6-luna"),
@@ -108,10 +222,11 @@ class W3Execution:
         )
         compatibility = digest(
             [
-                case.frozen_inputs["w3_assets"],
+                instruction_assets(case.frozen_inputs["w3_assets"]),
                 profile,
                 *capabilities,
                 "persistent-runtime.w3.v4",
+                "instructions-only-v1",
             ]
         )
         if owned is None:
@@ -120,46 +235,26 @@ class W3Execution:
                 case_id=case.case_id,
                 compatibility=compatibility,
                 policy_ids=policy_associations(case.w2_final),
-                event_keys=resolve_event_subjects(
+                event_keys=event_keys
+                if event_keys is not None
+                else resolve_event_subjects(
                     self.journal, case, event_matches(case.model_dump(mode="json"))
                 ),
                 accepted_at=accepted_at,
             )
         if owned is None:
-            template_key = digest([case.ticker, compatibility, research[0]])
+            template_key = digest([case.ticker, compatibility, "instructions-only-v1"])
             template, acquired = self.registry.template(case.ticker, template_key, compatibility)
             if template["status"] != "READY":
                 if not acquired:
                     raise W3Error(
                         "w3_template_initializing", "W3 template initialization is active"
                     )
-                try:
-                    _, job = self.agent.run_phase(
-                        case=case,
-                        record=template,
-                        phase="w3_template",
-                        payload=dict(
-                            ticker=case.ticker,
-                            research_index=research[2],
-                            contexts=context.context_cutoffs,
-                        ),
-                        context=context,
-                        research=research,
-                    )
-                    self.agent.register_template(job.job_id)
-                    self.registry.ready_template(
-                        template["record_id"], job.thread_id, template["lease_token"]
-                    )
-                    self._ack(job.job_id)
-                    template["thread_id"] = job.thread_id
-                except BaseException:
-                    with self.journal.transaction() as db:
-                        db.execute(
-                            "UPDATE runtime_v2_w3_threads SET status='FAILED',lease_until=NULL "
-                            "WHERE record_id=? AND lease_token=?",
-                            (template["record_id"], template["lease_token"]),
-                        )
-                    raise
+                coordinator = self.service.coordinator
+                if coordinator is not None and getattr(self.agent, "supports_prepare", False):
+                    coordinator._background.submit(self._initialize_template, case, template)
+                    raise W3Error("w3_template_initializing", "Public Template is being prepared")
+                self._initialize_template(case, template)
             owned = self.registry.create_case(
                 ticker=case.ticker,
                 case_id=case.case_id,
@@ -167,7 +262,14 @@ class W3Execution:
                 parent_id=template["thread_id"],
                 accepted_at=accepted_at,
             )
-        if not owned["thread_id"]:
+        refs = self.registry.stage(case.case_id, TRADE_PHASE).get("input_refs") or {}
+        refs.update(record_id=owned["record_id"], operation_key="w3-fork:" + owned["record_id"])
+        with self.journal.transaction() as db:
+            db.execute(
+                "UPDATE runtime_v2_w3_stages SET input_refs=? WHERE case_id=? AND phase=?",
+                (encode(refs), case.case_id, TRADE_PHASE),
+            )
+        if not owned["thread_id"] and not getattr(self.agent, "supports_prepare", False):
             child = self.agent.fork_thread(
                 ThreadForkRequest(
                     parent_thread_id=owned["parent_id"],
@@ -182,6 +284,7 @@ class W3Execution:
         self.registry.link(owned, "POLICY", policy_associations(case.w2_final), case.case_id)
         return owned
 
+    @observed("case.trade")
     def trade(self, case):
         stage = self.registry.begin_stage(case.case_id, TRADE_PHASE)
         if stage["status"] == "COMMITTED":
@@ -201,8 +304,11 @@ class W3Execution:
                     )
                     policy_consumption.put_value(db, "w3_global_input", case.case_id, saved_state)
             context = self.agent.prepare_case(case)
-            research = derive_research_assets(context, policy_origins=context.policy_origins)
-            record = self._thread(case, context, research)
+            research = research_assets(context, self.journal)
+            event_keys = resolve_event_subjects(
+                self.journal, case, event_matches(case.model_dump(mode="json"))
+            )
+            record = self._thread(case, context, research, event_keys)
             history, matches = history_payload(
                 self.journal, self.service.repository, case, membership
             )
@@ -212,7 +318,9 @@ class W3Execution:
             labels = case_labels(
                 case,
                 history_matches=matches,
-                event_keys=resolve_event_subjects(
+                event_keys=event_keys
+                if event_keys is not None
+                else resolve_event_subjects(
                     self.journal, case, event_matches(case.model_dump(mode="json"))
                 ),
                 watch_followup=bool(case.frozen_inputs.get("policy_watch_followup")),
@@ -282,6 +390,7 @@ class W3Execution:
             self._enqueue_in_transaction(db, operations)
         self.service.repository.save_case(case)
         self._sync_route_case(case, record)
+        self.service._wake_effects()
 
     def _trade_record(self, case, decision):
         if decision.decision == "NO_TRADE":
@@ -353,6 +462,7 @@ class W3Execution:
             override = "SELECTED_CONDITION_INVALID"
         return trade, override
 
+    @observed("case.operations")
     def operations(self, case):
         trade_stage = self.registry.stage(case.case_id, TRADE_PHASE)
         if not trade_stage or trade_stage["status"] != "COMMITTED":
@@ -628,6 +738,7 @@ class W3Execution:
         from datetime import timedelta
 
         failed = False
+        cursor = self.journal.get("w3_housekeeping", "cursor", "")
         # Prove old thread ownership with both a Runtime W3 Case and a Worker receipt.
         with self.journal.transaction(write=False) as db:
             legacy = db.execute(
@@ -640,7 +751,7 @@ class W3Execution:
                 "json_extract(c.payload_json,'$.thread_id') "
                 "WHERE json_extract(c.payload_json,'$.thread_id') IS NOT NULL "
                 "AND NOT EXISTS(SELECT 1 FROM runtime_v2_w3_threads t "
-                "WHERE t.thread_id=json_extract(c.payload_json,'$.thread_id'))"
+                "WHERE t.thread_id=json_extract(c.payload_json,'$.thread_id')) LIMIT 20"
             ).fetchall()
         for thread_id, ticker, job_id, workspace in legacy:
             try:
@@ -669,14 +780,15 @@ class W3Execution:
                 for row in db.execute(
                     "SELECT * FROM runtime_v2_w3_threads WHERE kind IN ('CASE','LEGACY_CASE') "
                     "AND status IN ('ACTIVE','DELETING') "
-                    "AND (expires_at<=? OR owner_case_id IS NOT NULL)",
-                    (now.isoformat(),),
+                    "AND (expires_at<=? OR owner_case_id IS NOT NULL) "
+                    "AND record_id>? ORDER BY record_id LIMIT 20",
+                    (now.isoformat(), cursor),
                 )
             ]
             acknowledgements = [
                 r[0]
                 for r in db.execute(
-                    "SELECT key FROM runtime_values WHERE namespace='w3_ack_pending'"
+                    "SELECT key FROM runtime_values WHERE namespace='w3_ack_pending' LIMIT 20"
                 )
             ]
         for job_id in acknowledgements:
@@ -731,23 +843,42 @@ class W3Execution:
                         "UPDATE runtime_v2_w3_threads SET error=? WHERE record_id=?",
                         (str(exc)[:1000], record["record_id"]),
                     )
+        more = len(rows) == 20 or len(legacy) == 20 or len(acknowledgements) == 20
         self.journal.set(
-            "w3_housekeeping", "next_at", (now + timedelta(hours=1 if failed else 24)).isoformat()
+            "w3_housekeeping", "cursor", rows[-1]["record_id"] if len(rows) == 20 else ""
         )
+        delay = timedelta(seconds=5) if more else timedelta(hours=1 if failed else 24)
+        self.journal.set("w3_housekeeping", "next_at", (now + delay).isoformat())
 
     def record_failure(self, case_id, phase, exc, *, retryable):
         case = self.service.repository.get_case(case_id)
+        code = getattr(exc, "code", type(exc).__name__)
+        step = getattr(exc, "w3_step", None) or "DISPATCH"
+        message = f"{phase}/{step}: {str(exc) or type(exc).__name__}"[:1000]
         with self.journal.transaction() as db:
             db.execute(
                 "UPDATE runtime_v2_w3_stages SET status=CASE "
                 "WHEN ?=0 THEN 'FAILED' WHEN result_json IS NULL THEN 'PENDING' "
                 "ELSE 'RESULT_SAVED' END,error=? WHERE case_id=? AND phase=?",
-                (int(retryable), str(exc)[:1000], case_id, phase),
+                (int(retryable), message, case_id, phase),
             )
+        if case:
+            case.updated_at = self.journal.clock()
+        if case and phase == TRADE_PHASE:
+            case.error_code, case.error_message = code, message
+            case.frozen_inputs["w3_execution_state"] = dict(
+                status="FAILED_RETRYABLE" if retryable else "FAILED",
+                phase=phase,
+                step=step,
+                operation=(self.registry.stage(case_id, phase) or {}).get("input_refs"),
+            )
+            self.service.repository.save_case(case)
+            self.service._project_terminal(case)
         if phase == OPERATIONS_PHASE and case:
             case.w3_operations_status = "PENDING_RETRY" if retryable else "FAILED"
-            case.w3_operations_error = str(exc)[:1000]
+            case.w3_operations_error = message
             self.service.repository.save_case(case)
+            self.service._project_terminal(case)
             owned = self.registry.owned(case_id)
             if owned:
                 self._sync_route_case(case, owned)

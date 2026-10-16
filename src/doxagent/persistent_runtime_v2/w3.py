@@ -28,6 +28,7 @@ from doxagent.codex_runtime.schema import (
 )
 from doxagent.codex_worker.schema import WorkerRunRequest
 from doxagent.event_library.provider import PublishedEventLibraryReader
+from doxagent.w3_timing import measured, observed, span
 from doxagent.workflows.codex_document2.schema import (
     Document2Bundle,
     Document2Document,
@@ -79,10 +80,11 @@ class W3ExecutionEnvironment:
 
 
 class W3Error(RuntimeError):
-    def __init__(self, code: str, message: str, *, invalid_thread: bool = False) -> None:
+    def __init__(self, code: str, message: str, *, invalid_thread: bool = False, step=None) -> None:
         super().__init__(message)
         self.code = code
         self.invalid_thread = invalid_thread
+        self.w3_step = step
 
 
 class W3PreparedContext(BaseModel):
@@ -94,6 +96,9 @@ class W3PreparedContext(BaseModel):
     policy_set: PolicySetV3 | PolicySet
     reference_view: str = Field(min_length=1)
     document2_publication_state: str
+    research_identity: str | None = None
+    reference_identity: str | None = None
+    reference_event_ids: frozenset[str] | None = None
     original_document2: str | None = None
     original_policy_set: str | None = None
     context_cutoffs: dict[str, str | None] = Field(default_factory=dict)
@@ -145,8 +150,46 @@ class PublishedW3ContextProvider:
             OrderedDict()
         )
         self._context_cache_lock = threading.RLock()
+        self._load_locks = {}
+        self._research_bases = OrderedDict()
+        self._reference_cache = OrderedDict()
 
+    @observed("context.published_load")
     async def load(self, case: RuntimeCase) -> W3PreparedContext:
+        pin = case.version_pin
+        key = (
+            case.ticker,
+            pin.document1_run_id,
+            pin.document2_run_id,
+            pin.event_library_root,
+            pin.policy_set_version,
+        )
+        async with self._load_locks.setdefault(key, asyncio.Lock()):
+            return await self._load(case)
+
+    def _reference(self, case):
+        key = (
+            case.version_pin.event_library_root,
+            case.ticker,
+            case.version_pin.event_library_version,
+        )
+        if key not in self._reference_cache:
+            reader = (
+                PublishedEventLibraryReader(case.version_pin.event_library_root)
+                if case.version_pin.event_library_root
+                else self._events
+            )
+            view = reader.reference_view(
+                case.ticker, version=case.version_pin.event_library_version
+            )
+            if view is None or not view.reference_view.strip():
+                raise W3Error("w3_reference_view_unavailable", "Pinned Reference View unavailable")
+            self._reference_cache[key] = view
+            while len(self._reference_cache) > self._context_cache_size:
+                self._reference_cache.popitem(last=False)
+        return self._reference_cache[key]
+
+    async def _load(self, case: RuntimeCase) -> W3PreparedContext:
         if case.version_pin.document2_run_id:
             pinned = self._runtime.get_bundle(case.version_pin.document2_run_id)
             if not isinstance(pinned, Document2Bundle) or pinned.ticker.upper() != case.ticker:
@@ -166,8 +209,30 @@ class PublishedW3ContextProvider:
             case.version_pin.policy_set_version,
         )
         cached = self._cached_context(cache_key)
+        with span("context.cache_lookup", hit=cached is not None):
+            pass
         if cached is not None:
             return self._without_consumed_policies(cached)
+        base_key = (*cache_key[:3], cache_key[4])
+        base = self._research_bases.get(base_key)
+        if base is not None:
+            from .journal import digest
+
+            reference = self._reference(case)
+            prepared = base.model_copy(
+                update={
+                    "version_pin": base.version_pin.model_copy(
+                        update={"event_library_version": reference.version}
+                    ),
+                    "reference_view": reference.reference_view,
+                    "reference_identity": digest(
+                        ["w3-reference-v1", reference.version, reference.reference_view]
+                    ),
+                    "reference_event_ids": frozenset(_EVENT_ID.findall(reference.reference_view)),
+                }
+            )
+            self._cache_context(cache_key, prepared)
+            return self._without_consumed_policies(prepared)
         d2_published = self._runtime.get_published_document(
             d2_bundle.run_id,
             d2_bundle.handoff.document2_artifact_id,
@@ -209,20 +274,7 @@ class PublishedW3ContextProvider:
                 "w3_policy_set_unavailable",
                 "Version-pinned full PolicySet is unavailable",
             )
-        events = (
-            PublishedEventLibraryReader(case.version_pin.event_library_root)
-            if case.version_pin.event_library_root
-            else self._events
-        )
-        reference = events.reference_view(
-            case.ticker,
-            version=case.version_pin.event_library_version,
-        )
-        if reference is None or not reference.reference_view.strip():
-            raise W3Error(
-                "w3_reference_view_unavailable",
-                "Version-pinned Reference View is unavailable",
-            )
+        reference = self._reference(case)
 
         origins = {}
         original_policy = policy_set.model_dump_json()
@@ -254,7 +306,23 @@ class PublishedW3ContextProvider:
                     published = self._runtime.get_published_document(row[0], artifact.artifact_id)
                     if published:
                         original_policy = (await self._read_published(published)).decode("utf-8")
+        from .journal import digest
+
         prepared = W3PreparedContext(
+            reference_identity=digest(
+                ["w3-reference-v1", reference.version, reference.reference_view]
+            ),
+            reference_event_ids=frozenset(_EVENT_ID.findall(reference.reference_view)),
+            research_identity=digest(
+                [
+                    "w3-research-pack-v1",
+                    case.ticker,
+                    d1_published.sha256,
+                    d2_published.sha256,
+                    original_policy,
+                    origins,
+                ]
+            ),
             version_pin=W3ContextVersionPin(
                 document1_run_id=d1_bundle.run_id,
                 document2_run_id=d2_bundle.run_id,
@@ -278,6 +346,9 @@ class PublishedW3ContextProvider:
                 "Reference View": None,
             },
         )
+        self._research_bases[base_key] = prepared
+        while len(self._research_bases) > self._context_cache_size:
+            self._research_bases.popitem(last=False)
         self._cache_context(cache_key, prepared)
         return self._without_consumed_policies(prepared)
 
@@ -287,7 +358,7 @@ class PublishedW3ContextProvider:
             or not policy_consumption.POLICY_AUTO_FREEZE_ENABLED
             or self._policy_consumption is None
         ):
-            return context.model_copy(deep=True)
+            return context.model_copy()
         projection = self._policies.get_projection(
             context.policy_set.ticker,
             context.policy_set.policy_set_version,
@@ -309,7 +380,7 @@ class PublishedW3ContextProvider:
             if (policy.policy_id, revision_by_policy.get(policy.policy_id, "")) not in consumed
         ]
         return context.model_copy(
-            deep=True,
+            deep=False,
             update={"policy_set": context.policy_set.model_copy(update={"policies": active})},
         )
 
@@ -325,7 +396,7 @@ class PublishedW3ContextProvider:
             if value is None:
                 return None
             self._context_cache.move_to_end(key)
-            return value.model_copy(deep=True)
+            return value.model_copy()
 
     def _cache_context(
         self,
@@ -333,11 +404,12 @@ class PublishedW3ContextProvider:
         value: W3PreparedContext,
     ) -> None:
         with self._context_cache_lock:
-            self._context_cache[key] = value.model_copy(deep=True)
+            self._context_cache[key] = value.model_copy()
             self._context_cache.move_to_end(key)
             while len(self._context_cache) > self._context_cache_size:
                 self._context_cache.popitem(last=False)
 
+    @observed("context.published_read")
     async def _read_published(self, value: PublishedDocument) -> bytes:
         if value.content_text is not None:
             content = value.content_text.encode("utf-8")
@@ -375,6 +447,7 @@ class CodexW3AgentRunner:
         environment: W3ExecutionEnvironment | None = None,
     ) -> None:
         self._worker = worker
+        self._case_repository = None
         self.environment = environment or W3ExecutionEnvironment()
         self._journal = journal
         self._workspace = workspace
@@ -405,6 +478,9 @@ class CodexW3AgentRunner:
         asyncio.set_event_loop(self._loop)
         self._loop.run_forever()
 
+    def bind_case_repository(self, repository):
+        self._case_repository = repository
+
     def _wait_v4(self, coroutine):
         if self._closed:
             raise W3Error("w3_runner_closed", "W3 runner is closed")
@@ -412,16 +488,55 @@ class CodexW3AgentRunner:
             timeout=self._timeout_seconds + 90
         )
 
-    def prepare_case(self, case):
-        return self._wait_v4(self._prepare_v4(case))
+    def prepare_public_assets(self, case):
+        async def prepare():
+            from .w3_assets import research_assets
 
+            context = await self._context.load(case)
+            research = research_assets(context, self._journal)
+            if hasattr(self._workspace, "ensure_research_pack"):
+                await self._workspace.ensure_research_pack(research[0], research[1])
+                from .journal import digest
+
+                reference = context.reference_identity or digest(
+                    [
+                        "w3-reference-v1",
+                        context.version_pin.event_library_version,
+                        context.reference_view,
+                    ]
+                )
+                await self._workspace.ensure_research_pack(
+                    reference, {"reference_view.md": context.reference_view}
+                )
+
+        return self._wait_v4(prepare())
+
+    @observed("context.prepare")
+    def prepare_case(self, case):
+        try:
+            return self._wait_v4(self._prepare_v4(case))
+        except Exception as exc:
+            exc.w3_step = "CONTEXT"
+            raise
+
+    @observed("context.load_and_provisional")
     async def _prepare_v4(self, case):
         context = await self._context.load(case)
         provisional = case.frozen_inputs.get("provisional", [])
         if provisional:
             reference = context.reference_view + "\n\n## Prior known Runtime provisional facts\n"
             reference += json.dumps(provisional, ensure_ascii=False, indent=2)
-            context = context.model_copy(update={"reference_view": reference})
+            from .journal import digest
+
+            context = context.model_copy(
+                update={
+                    "reference_view": reference,
+                    "reference_identity": digest(
+                        ["w3-reference-v1", context.version_pin.event_library_version, reference]
+                    ),
+                    "reference_event_ids": frozenset(_EVENT_ID.findall(reference)),
+                }
+            )
         return context
 
     def register_template(self, job_id):
@@ -430,6 +545,14 @@ class CodexW3AgentRunner:
     def register_legacy_thread(self, job_id):
         return self._wait_v4(self._worker.register_legacy_thread(job_id))
 
+    def prepare_thread(self, request):
+        return self._wait_v4(self._worker.prepare_thread(request))
+
+    @property
+    def supports_prepare(self):
+        return hasattr(self._worker, "prepare_thread")
+
+    @observed("thread.fork_roundtrip")
     def fork_thread(self, request):
         return self._wait_v4(self._worker.fork_thread(request))
 
@@ -454,7 +577,18 @@ class CodexW3AgentRunner:
             )
         )
 
-    async def _run_phase(self, *, case, record, phase, payload, context=None, research=None):
+    @observed("phase.materialize_and_model")
+    async def _run_phase(self, **kwargs):
+        try:
+            return await self._run_phase_materialized(**kwargs)
+        except Exception as exc:
+            if not getattr(exc, "w3_step", None):
+                exc.w3_step = "MATERIALIZE"
+            raise
+
+    async def _run_phase_materialized(
+        self, *, case, record, phase, payload, context=None, research=None
+    ):
         from .journal import digest
         from .w3_contracts import (
             OPERATIONS_PHASE,
@@ -469,25 +603,53 @@ class CodexW3AgentRunner:
         run_id = record["workspace"]
         attempt_id = case.case_id[-24:] + "-" + phase
         case_root = f"attempts/{attempt_id}"
+        batch = hasattr(self._workspace, "materialize_case")
+        files, packs = {}, {}
+
+        async def write(run, path, content):
+            if batch:
+                files[path] = content
+            else:
+                await self._workspace.write_text(run, path, content)
+
         single_skill = "w3/AGENTS.md" in assets
         skill_path = "skills/skill.md" if single_skill else "skills/w3.md"
-        await self._workspace.write_text(
-            run_id, "AGENTS.md", assets["w3/AGENTS.md" if single_skill else "w3/agent.md"]
-        )
-        await self._workspace.write_text(run_id, skill_path, assets["w3/" + skill_path])
-        if research is not None and not self._journal.get(
-            "w3_workspace_assets", digest([run_id, research[0]])
-        ):
-            asset_key, files, _ = research
-            for path, content in files.items():
-                await self._workspace.write_text(
-                    run_id, f"context/research/{asset_key}/{path}", content
-                )
-            self._journal.set("w3_workspace_assets", digest([run_id, asset_key]), True)
+        instructions = {
+            "AGENTS.md": assets["w3/AGENTS.md" if single_skill else "w3/agent.md"],
+            skill_path: assets["w3/" + skill_path],
+        }
+        if batch:
+            instruction_pack = digest(["w3-instructions-v1", instructions])
+            await self._workspace.ensure_research_pack(instruction_pack, instructions)
+            packs["."] = instruction_pack
+        else:
+            for path, content in instructions.items():
+                await write(run_id, path, content)
+        if research is not None and phase != "w3_template":
+            asset_key, research_files, _ = research
+            if batch:
+                await self._workspace.ensure_research_pack(asset_key, research_files)
+                packs[f"context/research/{asset_key}"] = asset_key
+            elif not self._journal.get("w3_workspace_assets", digest([run_id, asset_key])):
+                for path, content in research_files.items():
+                    await write(run_id, f"context/research/{asset_key}/{path}", content)
+                self._journal.set("w3_workspace_assets", digest([run_id, asset_key]), True)
+        reference_pack = ""
         if context is not None and phase != "w3_template":
-            await self._workspace.write_text(
-                run_id, f"{case_root}/reference_view.md", context.reference_view
-            )
+            if batch and phase != OPERATIONS_PHASE:
+                reference_pack = context.reference_identity or digest(
+                    [
+                        "w3-reference-v1",
+                        context.version_pin.event_library_version,
+                        context.reference_view,
+                    ]
+                )
+                await self._workspace.ensure_research_pack(
+                    reference_pack, {"reference_view.md": context.reference_view}
+                )
+                packs[f"{case_root}"] = reference_pack
+            else:
+                await write(run_id, f"{case_root}/reference_view.md", context.reference_view)
         if phase == "w3_template":
             schema = {
                 "type": "object",
@@ -519,13 +681,13 @@ class CodexW3AgentRunner:
                 evidence_root = f"{case_root}/evidence"
                 if phase != OPERATIONS_PHASE:
                     for name, content in replay.get("evidence_files", {}).items():
-                        await self._workspace.write_text(run_id, f"{evidence_root}/{name}", content)
+                        await write(run_id, f"{evidence_root}/{name}", content)
                 else:
                     evidence_root = f"attempts/{case.case_id[-24:]}-trade_decision/evidence"
                 task["evidence"] = dict(root=evidence_root, index=f"{evidence_root}/index.json")
                 if replay.get("policy_execution_view"):
                     view_path = f"{case_root}/policy_execution_view.json"
-                    await self._workspace.write_text(
+                    await write(
                         run_id,
                         view_path,
                         json.dumps(replay["policy_execution_view"], ensure_ascii=False, indent=2),
@@ -550,14 +712,14 @@ class CodexW3AgentRunner:
             task.update(paths)
             if phase == "w3_template":
                 task["instruction"] = (
-                    "Initialize the shared instructions and research index only. "
+                    "Initialize the shared AGENTS.md and unique skill only. "
                     "Do not evaluate a message, research a trade, or perform operations. "
                     'Return {"ready": true} under output_schema.'
                 )
-        await self._workspace.write_text(
+        await write(
             run_id, f"{case_root}/task.json", json.dumps(task, ensure_ascii=False, indent=2)
         )
-        await self._workspace.write_text(
+        await write(
             run_id,
             f"{case_root}/output_schema.json",
             json.dumps(schema, ensure_ascii=False, indent=2),
@@ -592,47 +754,138 @@ class CodexW3AgentRunner:
             provider=self._model_provider,
             override=self._execution_model_override,
         )
+        if batch:
+            if phase != "w3_template":
+                files[f"{case_root}/audit/w3_identity.json"] = json.dumps(
+                    {"case_id": case.case_id, "ticker": case.ticker, "phase": phase,
+                     "context_version_pin": context.version_pin.model_dump(mode="json")
+                     if context else None}, separators=(",", ":")
+                )
+            await self._workspace.materialize_case(run_id, packs, files)
+        if (
+            phase == "trade_decision"
+            and not record.get("thread_id")
+            and hasattr(self._worker, "prepare_thread")
+        ):
+            from doxagent.codex_worker.schema import W3PrepareRequest
+
+            from .w3_threads import W3ThreadRegistry
+
+            cutoff = (
+                datetime.fromisoformat(case.frozen_inputs["w3_replay"]["cutoff_at"])
+                if self.environment.mode == "OFFLINE_REPLAY"
+                else case.source.message_bus_event_time
+            )
+            request = W3PrepareRequest(
+                operation_key="w3-fork:" + record["record_id"],
+                record_id=record["record_id"],
+                source_case_id=case.case_id,
+                parent_thread_id=record["parent_id"],
+                run_id=run_id,
+                attempt_id=attempt_id,
+                research_pack_id=research[0] if research else "",
+                reference_pack_id=reference_pack,
+                case_overlay_sha=digest(files or payload),
+                cutoff_at=cutoff,
+                profile={
+                    **profile,
+                    "ticker": case.ticker,
+                    "data_mcp_enabled": str(self.environment.data_mcp_enabled).lower(),
+                    "web_search_mode": self.environment.web_search_mode,
+                    "timeout_seconds": str(self._timeout_seconds),
+                },
+            )
+            registry = W3ThreadRegistry(self._journal)
+            stage = registry.stage(case.case_id, phase)
+            refs = stage.get("input_refs") or {}
+            saved = refs.get("prepare_request")
+            if saved:
+                request = W3PrepareRequest.model_validate(saved)
+            else:
+                refs.update(
+                    record_id=record["record_id"],
+                    operation_key=request.operation_key,
+                    prepare_request=request.model_dump(mode="json"),
+                )
+                with self._journal.transaction() as db:
+                    db.execute(
+                        "UPDATE runtime_v2_w3_stages SET input_refs=? WHERE case_id=? AND phase=?",
+                        (json.dumps(refs), case.case_id, phase),
+                    )
+            prepared = await self._worker.prepare_thread(request)
+            record["thread_id"] = prepared["thread_id"]
+            registry.set_thread(record["record_id"], record["thread_id"])
+
+        def observe_job(job):
+            if (
+                phase != "trade_decision"
+                or job.status not in {"queued", "running"}
+                or self._case_repository is None
+            ):
+                return
+            case.error_code = case.error_message = None
+            case.updated_at = self._journal.clock()
+            case.frozen_inputs["w3_execution_state"] = dict(
+                status="RUNNING" if job.status == "running" else "PENDING",
+                phase=phase,
+                step=job.execution_phase,
+                worker_job_id=job.job_id,
+            )
+            self._case_repository.save_case(case)
+
         worker = ReceiptWorker(
             self._worker,
             self._journal,
             record["record_id"] if phase == "w3_template" else case.case_id,
             case_id=None if phase == "w3_template" else case.case_id,
-            source_case_id=case.case_id if phase == "w3_template" else None,
+            source_case_id=case.case_id
+            if phase == "w3_template" and not case.case_id.startswith("public-")
+            else None,
+            on_update=observe_job if phase == "trade_decision" else None,
             replace_failed_model=bool(self._execution_model_override)
             and "w3_execution_profile" not in case.frozen_inputs,
         )
-        job = await worker.run(
-            WorkerRunRequest(
-                workflow_version=CODEX_PERSISTENT_RUNTIME_W3_WORKFLOW_VERSION,
-                research_lane=ResearchLane.PERSISTENT_RUNTIME,
-                run_id=run_id,
-                ticker=case.ticker,
-                node=CodexPersistentRuntimeNode.W3,
-                agent_role=CodexPersistentRuntimeAgentRole.W3,
-                attempt_id=attempt_id,
-                cutoff_at=datetime.fromisoformat(case.frozen_inputs["w3_replay"]["cutoff_at"])
-                if self.environment.mode == "OFFLINE_REPLAY"
-                else case.source.message_bus_event_time,
-                prompt=prompt,
-                output_schema=schema,
-                thread_id=record.get("thread_id"),
-                task_phase=phase,
-                web_search_mode=self.environment.web_search_mode,
-                read_only=True,
-                data_mcp_enabled=self.environment.data_mcp_enabled,
-                allow_subagents=False,
-                max_subagents=0,
-                timeout_seconds=self._timeout_seconds,
-                model=profile["model"],
-                model_provider=profile["provider"],
-                effort=profile["effort"],
-                execution_lane="background"
-                if phase in {"w3_template", OPERATIONS_PHASE}
-                else "realtime",
-            )
+        job = await measured(
+            "worker.roundtrip." + phase,
+            worker.run(
+                WorkerRunRequest(
+                    workflow_version=CODEX_PERSISTENT_RUNTIME_W3_WORKFLOW_VERSION,
+                    research_lane=ResearchLane.PERSISTENT_RUNTIME,
+                    run_id=run_id,
+                    ticker=case.ticker,
+                    node=CodexPersistentRuntimeNode.W3,
+                    agent_role=CodexPersistentRuntimeAgentRole.W3,
+                    attempt_id=attempt_id,
+                    cutoff_at=datetime.fromisoformat(case.frozen_inputs["w3_replay"]["cutoff_at"])
+                    if self.environment.mode == "OFFLINE_REPLAY"
+                    else case.source.message_bus_event_time,
+                    prompt=prompt,
+                    output_schema=schema,
+                    thread_id=record.get("thread_id"),
+                    task_phase=phase,
+                    web_search_mode="disabled"
+                    if phase == "w3_template"
+                    else self.environment.web_search_mode,
+                    read_only=True,
+                    data_mcp_enabled=False
+                    if phase == "w3_template"
+                    else self.environment.data_mcp_enabled,
+                    allow_subagents=False,
+                    max_subagents=0,
+                    timeout_seconds=self._timeout_seconds,
+                    model=profile["model"],
+                    model_provider=profile["provider"],
+                    effort=profile["effort"],
+                    execution_lane="background"
+                    if phase in {"w3_template", OPERATIONS_PHASE}
+                    else "realtime",
+                )
+            ),
         )
         if job.status != "succeeded" or not job.final_response or not job.thread_id:
-            raise W3Error(job.error_code or "w3_phase_failed", job.error_message or job.status)
+            raise W3Error(
+                job.error_code or "w3_phase_failed", job.error_message or job.status, step="MODEL"
+            )
         try:
             if phase == "w3_template":
                 if json.loads(job.final_response) != {"ready": True}:
@@ -658,7 +911,11 @@ class CodexW3AgentRunner:
                             raise ValueError(
                                 "final Condition attribution is outside the frozen PolicySet"
                             )
-                    event_ids = set(_EVENT_ID.findall(context.reference_view))
+                    event_ids = (
+                        set(context.reference_event_ids)
+                        if context.reference_event_ids is not None
+                        else set(_EVENT_ID.findall(context.reference_view))
+                    )
                     if not set(result.novelty.reference_ids).issubset(event_ids):
                         raise ValueError(
                             "novelty references must be present in the pinned Reference View"
@@ -669,7 +926,7 @@ class CodexW3AgentRunner:
                     raise ValueError("selected Condition must be present in the frozen PolicySet")
         except (ValueError, ValidationError) as exc:
             worker.reject_output(str(exc))
-            raise W3Error("w3_phase_output_invalid", str(exc)[:4000]) from exc
+            raise W3Error("w3_phase_output_invalid", str(exc)[:4000], step="VALIDATE") from exc
         return result, job
 
     def run(
@@ -708,7 +965,17 @@ class CodexW3AgentRunner:
                     + json.dumps(item["candidate"], ensure_ascii=False)
                     + "\n"
                 )
-            context = context.model_copy(update={"reference_view": reference})
+            from .journal import digest
+
+            context = context.model_copy(
+                update={
+                    "reference_view": reference,
+                    "reference_identity": digest(
+                        ["w3-reference-v1", context.version_pin.event_library_version, reference]
+                    ),
+                    "reference_event_ids": frozenset(_EVENT_ID.findall(reference)),
+                }
+            )
         if slot.kind is W3ThreadKind.MAIN:
             run_id = f"{self._workspace_namespace}-{case.ticker.lower()}-main"
         else:
@@ -935,7 +1202,11 @@ class CodexW3AgentRunner:
                     "w3_condition_reference_invalid",
                     "Selected Condition is outside the pinned Policy",
                 )
-        event_ids = set(_EVENT_ID.findall(context.reference_view))
+        event_ids = (
+            set(context.reference_event_ids)
+            if context.reference_event_ids is not None
+            else set(_EVENT_ID.findall(context.reference_view))
+        )
         if not set(result.novelty.reference_ids).issubset(event_ids):
             raise W3Error(
                 "w3_event_reference_invalid",

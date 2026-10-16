@@ -19,6 +19,12 @@ class LocalWorkspaceClient:
     def __init__(self, store: LocalWorkspaceStore) -> None:
         self.store = store
 
+    async def ensure_research_pack(self, pack_id, files):
+        await asyncio.to_thread(self.store.ensure_research_pack, pack_id, files)
+
+    async def materialize_case(self, run_id, packs, files):
+        await asyncio.to_thread(self.store.materialize_case, run_id, packs, files)
+
     async def write_text(
         self, run_id: str, relative_path: str, content: str
     ) -> WorkspaceFileResponse:
@@ -66,6 +72,27 @@ class EmbeddedCodexWorkerClient:
 
     async def fork_thread(self, request):
         return await self.manager.thread_lifecycle.fork(request)
+
+    async def get_thread_operation(self, key):
+        return self.manager.thread_lifecycle.operation(key)
+
+    async def prepare_thread(self, request):
+        from doxagent.codex_runtime.errors import W3PreparationError
+
+        value = await self.manager.thread_lifecycle.prepare(request)
+        for _ in range(300):
+            if value["status"] == "COMPLETED":
+                return value
+            if value["status"] == "FAILED":
+                raise W3PreparationError(
+                    value.get("error_code") or "w3_prepare_failed",
+                    value.get("error_message") or "W3 prepare failed",
+                )
+            if value.get("step") == "RECONCILING":
+                await self.manager.thread_lifecycle.prepare(request)
+            await asyncio.sleep(self.poll_seconds)
+            value = self.manager.thread_lifecycle.operation(request.operation_key)
+        raise W3PreparationError("w3_prepare_pending", "Preparation is in progress")
 
     async def thread_status(self, thread_id):
         return await self.manager.thread_lifecycle.status(thread_id)

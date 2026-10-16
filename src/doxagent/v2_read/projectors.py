@@ -84,11 +84,13 @@ class DomainProjectors:
         if snapshot is not None:
             return snapshot.get("source_name") or (
                 resolve_source_name(url=source.get("url"))
-                if source.get("member_count", 1) <= 1 else None
+                if source.get("member_count", 1) <= 1
+                else None
             )
         return source.get("source_name") or resolve_source_name(
             publisher_name=source.get("publisher_name") or source.get("source"),
-            resolved_domain=source.get("resolved_domain"), url=source.get("url"),
+            resolved_domain=source.get("resolved_domain"),
+            url=source.get("url"),
         )
 
     def source_label(self, source: dict[str, Any]) -> dict[str, Any]:
@@ -423,10 +425,18 @@ class DomainProjectors:
             records.extend(hits)
             metrics.extend(counts)
         elif table == "runtime_values" and row["namespace"] == "worker_invocations":
-            template_source = value.get("source_case_id") if value.get("task_phase") == "w3_template" else None
-            if template_source and not self.store.get("business_provenance", ticker, template_source):
+            template_source = (
+                value.get("source_case_id") if value.get("task_phase") == "w3_template" else None
+            )
+            if template_source and not self.store.get(
+                "business_provenance", ticker, template_source
+            ):
                 raise ValueError("PROVENANCE_UNVERIFIED")
-            if not value.get("case_id") and value.get("control_epoch") is None and not template_source:
+            if (
+                not value.get("case_id")
+                and value.get("control_epoch") is None
+                and not template_source
+            ):
                 raise ValueError("PROVENANCE_UNVERIFIED")
             if value.get("case_id") and not self.store.get(
                 "business_provenance", ticker, value["case_id"]
@@ -600,6 +610,20 @@ class DomainProjectors:
         if final:
             w1, w2 = final.get("novelty", w1), final.get("policy", w2)
         pending = initial == "W3" and not resolved
+        execution = value.get("frozen_inputs", {}).get("w3_execution_state", {})
+        w3_status = (
+            "RESOLVED"
+            if final or decision
+            else "FAILED"
+            if pending and value["status"] in {"FAILED", "UNAVAILABLE"}
+            else execution.get("status")
+            if pending and execution.get("status")
+            else "FAILED_RETRYABLE"
+            if pending and value.get("error_code")
+            else "PENDING"
+            if pending
+            else None
+        )
         old = self.store.get("case", ticker, value["case_id"])
         settled = value["status"] in {"COMPLETED", "FAILED", "UNAVAILABLE"}
         completed = value.get("completed_at")
@@ -636,7 +660,7 @@ class DomainProjectors:
             else missing(),
             "initial_route": initial,
             "resolved_route": resolved,
-            "w3_status": "RESOLVED" if final or decision else "PENDING" if pending else None,
+            "w3_status": w3_status,
             "final_novelty": available(w1["result"]) if w1 and not pending else missing(),
             "final_policy_hit": available(w2.get("policy_hit", bool(w2["policy_ids"])))
             if w2 and not pending
@@ -723,7 +747,10 @@ class DomainProjectors:
                 "NOT_PROCESSED"
                 if not summary
                 else "FAILED"
-                if summary["status"] in {"FAILED", "UNAVAILABLE"}
+                if (
+                    summary["status"] in {"FAILED", "UNAVAILABLE"}
+                    or summary["w3_status"] in {"FAILED", "FAILED_RETRYABLE"}
+                )
                 else "W3_PENDING"
                 if summary["w3_status"] == "PENDING"
                 else summary["resolved_route"] or summary["initial_route"] or "NOT_PROCESSED"

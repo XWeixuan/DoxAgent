@@ -1,6 +1,11 @@
 """Attempt-scoped low-level MCP 2.0 stdio server for semantic data tools."""
+# ruff: noqa: E402 -- The bootstrap clock must precede third-party imports.
 
 from __future__ import annotations
+
+import time
+
+_IMPORT_STARTED = time.perf_counter_ns()
 
 import asyncio
 import json
@@ -29,16 +34,14 @@ from doxagent.data_runtime.policy import (
     DataCapabilityCodec,
     DataToolPolicyRegistry,
 )
+from doxagent.mcp.data_names import GUIDE_TOOL_NAME, READ_TOOL_NAME, VALIDATE_CITATIONS_TOOL_NAME
 from doxagent.observations.kernel import ObservationKernel
 from doxagent.observations.projection import observation_projection
 from doxagent.observations.store import AttemptObservationStore
 from doxagent.settings import DoxAgentSettings
-from doxagent.tools.factory import default_real_tool_registry
 
-GUIDE_TOOL_NAME = "data_tool_guide"
-READ_TOOL_NAME = "data_read_observation"
-VALIDATE_CITATIONS_TOOL_NAME = "data_validate_citations"
 _CITATION_ALIAS = re.compile(r"【cite:(O[1-9]\d*)】")
+_IMPORT_READY = time.perf_counter_ns()
 
 
 class DataMcpApplication:
@@ -50,6 +53,8 @@ class DataMcpApplication:
         control_root: Path,
         settings: DoxAgentSettings | None = None,
     ) -> None:
+        self._run_root = run_root
+        self._settings = settings
         resolved_run_root = run_root.resolve()
         if resolved_run_root.name == claims.run_id:
             expected_control_root = (
@@ -70,7 +75,11 @@ class DataMcpApplication:
             raise ValueError("Data MCP cwd does not match capability run_id")
         if control_root.resolve() != expected_control_root:
             raise ValueError("Data MCP control root does not match attempt scope")
-        tools = default_real_tool_registry(settings or DoxAgentSettings())
+        if str(claims.node_id) == "persistent_runtime_w3":
+            from doxagent.tools.w3_factory import w3_tool_registry as factory
+        else:
+            from doxagent.tools.factory import default_real_tool_registry as factory
+        tools = factory(settings or DoxAgentSettings())
         contracts = build_data_tool_contracts(tools)
         policy = DataToolPolicyRegistry()
         effective = policy.effective_tools(claims).intersection(tools.names())
@@ -103,6 +112,29 @@ class DataMcpApplication:
         )
         self.guide = DataToolGuide(contracts)
         self.catalog_path = self._write_catalog(resolved_run_root)
+
+    def refresh_scope(self):
+        scope_file = os.environ.get("DOXAGENT_DATA_MCP_SCOPE_FILE")
+        if not scope_file or str(self.claims.node_id) != "persistent_runtime_w3":
+            return self
+        raw = json.loads(Path(scope_file).read_text(encoding="utf-8"))
+        claims = DataCapabilityCodec.verify(
+            raw["capability"], public_key=_required_env("DOXAGENT_DATA_MCP_PUBLIC_KEY")
+        )
+        if claims.run_id != self.claims.run_id or str(claims.node_id) != "persistent_runtime_w3":
+            raise ValueError("W3 MCP scope cannot change run or node")
+        if (
+            claims.node_attempt_id == self.claims.node_attempt_id
+            and claims.cutoff_at == self.claims.cutoff_at
+        ):
+            return self
+        root = self._run_root.resolve()
+        return DataMcpApplication(
+            claims=claims,
+            run_root=root,
+            settings=self._settings,
+            control_root=root.parent / ".control" / claims.run_id / claims.node_attempt_id,
+        )
 
     def exposed_contracts(self) -> list[DataToolContract]:
         return [
@@ -148,6 +180,8 @@ def build_server(application: DataMcpApplication) -> Server:
         _context: Any,
         _params: types.PaginatedRequestParams | None,
     ) -> types.ListToolsResult:
+        nonlocal application
+        application = application.refresh_scope()
         tools = [
             types.Tool(
                 name=GUIDE_TOOL_NAME,
@@ -231,6 +265,8 @@ def build_server(application: DataMcpApplication) -> Server:
         _context: Any,
         params: types.CallToolRequestParams,
     ) -> types.CallToolResult:
+        nonlocal application
+        application = application.refresh_scope()
         arguments = params.arguments or {}
         if params.name == GUIDE_TOOL_NAME:
             task = arguments.get("task")
@@ -337,12 +373,32 @@ def main() -> None:
     public_key = _required_env("DOXAGENT_DATA_MCP_PUBLIC_KEY")
     control_root = Path(_required_env("DOXAGENT_OBSERVATION_CONTROL_ROOT"))
     claims = DataCapabilityCodec.verify(token, public_key=public_key)
+    construct_started = time.perf_counter_ns()
     application = DataMcpApplication(
         claims=claims,
         run_root=_resolve_capability_root(Path.cwd(), claims),
         control_root=control_root,
     )
+    construct_ready = time.perf_counter_ns()
     server = build_server(application)
+    if str(claims.node_id) == "persistent_runtime_w3":
+        try:
+            (control_root / "mcp_bootstrap_timing.json").write_text(
+                json.dumps(
+                    dict(
+                        schema_version="w3-mcp-bootstrap-v1",
+                        implementation="w3-lite-v1",
+                        run_id=claims.run_id,
+                        attempt_id=claims.node_attempt_id,
+                        module_import_ms=(_IMPORT_READY - _IMPORT_STARTED) / 1e6,
+                        application_ms=(construct_ready - construct_started) / 1e6,
+                        server_build_ms=(time.perf_counter_ns() - construct_ready) / 1e6,
+                    )
+                ),
+                encoding="utf-8",
+            )
+        except OSError:
+            pass  # Diagnostics cannot fail or retry a business turn.
 
     async def run() -> None:
         async with stdio_server() as (read_stream, write_stream):

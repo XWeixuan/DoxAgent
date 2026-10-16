@@ -8,6 +8,8 @@ import re
 from collections import OrderedDict
 from threading import RLock
 
+from doxagent.w3_timing import observed
+
 from .journal import digest
 
 _cache = OrderedDict()
@@ -52,6 +54,7 @@ def natural_chapters(text):
     return parts
 
 
+@observed("research.derive")
 def derive_research_assets(context, *, policy_origins=None):
     """Return immutable file content and a compact index, without summaries."""
     d2 = context.document2.model_dump(mode="json")

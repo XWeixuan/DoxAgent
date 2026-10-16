@@ -78,7 +78,16 @@ class DataExecutionCore:
         self._observations = observations
 
     def execute(self, canonical_tool_id: str, arguments: dict[str, Any]) -> DataMcpResult:
-        contract = self._contracts.require(canonical_tool_id)
+        contract = self._contracts.get(canonical_tool_id)
+        if contract is None:
+            from types import SimpleNamespace
+
+            denied = SimpleNamespace(
+                canonical_tool_id=canonical_tool_id,
+                source_name="unregistered",
+                contract_version="1.0",
+            )
+            return self._denied(denied, "tool_not_allowed", "tool is outside attempt capability")
         if canonical_tool_id not in self._context.enabled_tool_ids:
             return self._denied(contract, "tool_not_allowed", "tool is outside attempt capability")
         if not contract.read_only:

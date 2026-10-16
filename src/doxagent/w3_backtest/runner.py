@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import re
@@ -141,6 +142,9 @@ class _ReplayRuntime:
 
     def __getattr__(self, name):
         return getattr(self.runtime, name)
+
+    async def prepare_fork(self, request, cwd, parent_thread_id):
+        return await self.runtime.prepare_fork(request, cwd, parent_thread_id)
 
     async def start(self, request, cwd):
         identities = []
@@ -340,20 +344,49 @@ class ReplayRunner:
         }
         window_path = dataset / "research" / "execution_window.json"
         window = _read(window_path) if window_path.exists() else {}
+        source_root = Path(__file__).resolve().parents[1]
+        code_files = (
+            list((source_root / "persistent_runtime_v2").glob("w3*.py"))
+            + [
+                source_root / "persistent_runtime_v2" / name
+                for name in ("service.py", "worker_receipts.py", "trade_output.py")
+            ]
+            + list((source_root / "codex_worker").glob("*.py"))
+            + [Path(__file__)]
+        )
+        code_identity = {
+            str(p.relative_to(source_root)): hashlib.sha256(p.read_bytes()).hexdigest()
+            for p in sorted(code_files)
+        }
         fingerprint = digest(
-            [raw, historical, d1, d2, d3, reference, known_index, assets, evidence, window]
+            [
+                raw,
+                historical,
+                d1,
+                d2,
+                d3,
+                reference,
+                known_index,
+                assets,
+                evidence,
+                window,
+                code_identity,
+            ]
         )
         root = run_root / "cases" / case_key
         root.mkdir(parents=True, exist_ok=True)
         marker_path = root / "replay_manifest.json"
         if marker_path.is_file() and _read(marker_path)["input_fingerprint"] != fingerprint:
-            raise ValueError("Inputs or prompts changed; create a new run instead of resuming")
+            raise ValueError(
+                "Inputs, prompts or orchestration changed; create a new run instead of resuming"
+            )
         _write(
             marker_path,
             dict(
                 case_key=case_key,
                 original_case_id=original_id,
                 input_fingerprint=fingerprint,
+                orchestration_fingerprint=digest(code_identity),
                 cutoff_at=cutoff.isoformat(),
                 environment=W3ExecutionEnvironment.offline().compatibility(),
             ),

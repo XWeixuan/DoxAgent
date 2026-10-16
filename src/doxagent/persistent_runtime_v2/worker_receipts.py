@@ -23,6 +23,7 @@ class ReceiptWorker:
         replace_failed_model: bool = False,
         recover_timeouts: bool = False,
         recover_artifacts: bool = False,
+        on_update=None,
     ) -> None:
         self.worker, self.journal, self.scope = worker, journal, scope
         self.case_id = case_id
@@ -31,6 +32,7 @@ class ReceiptWorker:
         self.replace_failed_model = replace_failed_model
         self.recover_timeouts = recover_timeouts
         self.recover_artifacts = recover_artifacts
+        self.on_update = on_update
 
     def __getattr__(self, name: str) -> Any:
         return getattr(self.worker, name)
@@ -40,8 +42,7 @@ class ReceiptWorker:
         phase = (
             request.task_phase
             if request.task_phase is not None
-            else
-            "maintain"
+            else "maintain"
             if str(request.node) == "d3_o3_maintain"
             else "case"
             if str(request.node) == "persistent_runtime_w3"
@@ -62,7 +63,8 @@ class ReceiptWorker:
                     f"runtime-worker:{self.scope}:{request.run_id}:{request.node}:{previous}"
                 )
                 timeout = self._recovery_timeout(
-                    request.timeout_seconds, self.journal.get("worker_receipts", prior_identity),
+                    request.timeout_seconds,
+                    self.journal.get("worker_receipts", prior_identity),
                 )
                 request = request.model_copy(update={"timeout_seconds": timeout})
             frozen = request.model_copy(update={"idempotency_key": digest(identity)}).model_dump(
@@ -102,7 +104,15 @@ class ReceiptWorker:
 
         ControlRepository(self.journal).dispatch(frozen["idempotency_key"], request.ticker)
         dispatched_request = WorkerRunRequest.model_validate(frozen)
-        job = await self.worker.run(dispatched_request)
+        try:
+            if self.on_update is not None and hasattr(self.worker, "run_with_observer"):
+                job = await self.worker.run_with_observer(dispatched_request, self.on_update)
+            else:
+                job = await self.worker.run(dispatched_request)
+        except Exception as exc:
+            if str(request.node) == "persistent_runtime_w3":
+                exc.w3_step = "MODEL"
+            raise
         self.journal.set(
             "worker_invocations",
             job.job_id,
@@ -128,14 +138,19 @@ class ReceiptWorker:
         return WorkerJob.model_validate(job)
 
     async def _recover_o3_patch(
-        self, identity: str, request: dict[str, Any], job: WorkerJob,
+        self,
+        identity: str,
+        request: dict[str, Any],
+        job: WorkerJob,
     ) -> bool:
         if (
-            not self.recover_artifacts or request["node"] != "d3_o3_maintain"
+            not self.recover_artifacts
+            or request["node"] != "d3_o3_maintain"
             # v2.1 owns its validated output collection and immutable snapshots.
             or "completed" in request.get("output_schema", {}).get("properties", {})
             or str(job.status) != "succeeded"
-            or job.run_id != request["run_id"] or job.attempt_id != request["attempt_id"]
+            or job.run_id != request["run_id"]
+            or job.attempt_id != request["attempt_id"]
         ):
             return False
         target = "output/work/policy_patch.json"
@@ -161,11 +176,17 @@ class ReceiptWorker:
             return False
         content = patch.model_dump_json(indent=2)
         await self.worker.write_text(request["run_id"], target, content)
-        self.journal.set("worker_artifact_recovery", identity, {
-            "job_id": job.job_id, "source": source, "target": target,
-            "source_sha256": hashlib.sha256((response.content or "").encode()).hexdigest(),
-            "target_sha256": hashlib.sha256(content.encode()).hexdigest(),
-        })
+        self.journal.set(
+            "worker_artifact_recovery",
+            identity,
+            {
+                "job_id": job.job_id,
+                "source": source,
+                "target": target,
+                "source_sha256": hashlib.sha256((response.content or "").encode()).hexdigest(),
+                "target_sha256": hashlib.sha256(content.encode()).hexdigest(),
+            },
+        )
         return True
 
     def reject_output(self, reason: str) -> None:
@@ -173,7 +194,9 @@ class ReceiptWorker:
 
     def _recovery_timeout(self, seconds: int, receipt: dict[str, Any] | None) -> int:
         if (
-            self.recover_timeouts and receipt and receipt.get("status") == "failed"
+            self.recover_timeouts
+            and receipt
+            and receipt.get("status") == "failed"
             and receipt.get("error_code") == "CODEX_TURN_TIMEOUT"
             and not receipt.get("cleanup_error")
         ):

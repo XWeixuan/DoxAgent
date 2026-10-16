@@ -33,6 +33,31 @@ class TemplateRegisterRequest(WorkerModel):
     job_id: str
 
 
+class ResearchPackRequest(WorkerModel):
+    files: dict[str, str] | None = None
+
+
+class CaseMaterializeRequest(WorkerModel):
+    packs: dict[str, str] = Field(default_factory=dict)
+    files: dict[str, str] = Field(default_factory=dict)
+
+
+class W3PrepareRequest(WorkerModel):
+    operation_key: str = Field(min_length=1, max_length=512)
+    record_id: str
+    source_case_id: str
+    parent_thread_id: str
+    run_id: str
+    attempt_id: str
+    phase: Literal["trade_decision"] = "trade_decision"
+    research_pack_id: str
+    reference_pack_id: str
+    case_overlay_sha: str
+    profile: dict[str, str | None]
+    capability_contract_version: str = "instructions-only-v1"
+    cutoff_at: datetime
+
+
 class WorkspaceWriteRequest(WorkerModel):
     content: str
     expected_sha256: str | None = None

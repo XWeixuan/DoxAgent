@@ -7,7 +7,7 @@ import json
 import os
 import sqlite3
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any, Protocol
 from uuid import uuid4
@@ -27,9 +27,9 @@ from doxagent.codex_worker.telemetry import project_turn_telemetry
 from doxagent.codex_worker.turn_usage import read_turn_usage, rollout_path
 from doxagent.data_runtime.contracts import build_data_tool_contracts
 from doxagent.data_runtime.policy import DataCapabilityCodec, DataToolPolicyRegistry
-from doxagent.mcp.data_server import GUIDE_TOOL_NAME, READ_TOOL_NAME
+from doxagent.mcp.data_names import GUIDE_TOOL_NAME, READ_TOOL_NAME
 from doxagent.settings import DoxAgentSettings
-from doxagent.tools.factory import default_real_tool_registry
+from doxagent.w3_timing import measured
 from doxagent.workflows.codex_monitoring_o4.capability import (
     ALL_O4_TOOLS,
     TOOLS_BY_NODE,
@@ -45,6 +45,7 @@ class WorkerTurnResult:
     final_response: str | None
     error_message: str | None = None
     telemetry: WorkerTurnTelemetry | None = None
+    observation: dict[str, Any] | None = None
 
 
 class TurnHandle(Protocol):
@@ -57,14 +58,25 @@ class CodexExecutionRuntime(Protocol):
 
 
 class _SdkTurnHandle:
-    def __init__(self, *, thread_id: str, handle: Any, audit_path: Path | None = None,
-                 codex_home: Path | None = None) -> None:
+    def __init__(
+        self,
+        *,
+        thread_id: str,
+        handle: Any,
+        audit_path: Path | None = None,
+        codex_home: Path | None = None,
+        request: WorkerRunRequest | None = None,
+        cwd: Path | None = None,
+    ) -> None:
         self._thread_id = thread_id
         self.thread_id = thread_id
         self.turn_id = getattr(handle, "id", None)
         self._handle = handle
         self._audit_path = audit_path
         self._codex_home = codex_home
+        self._probe_request = request
+        self._probe_cwd = cwd
+        self._turn_probe = None
 
     async def _complete_usage(self, telemetry: WorkerTurnTelemetry, turn_id: str) -> None:
         if self._codex_home is None:
@@ -92,7 +104,31 @@ class _SdkTurnHandle:
 
     async def run(self) -> WorkerTurnResult:
         if self._audit_path is not None and hasattr(self._handle, "stream"):
-            return await self._stream()
+            from doxagent.codex_worker.w3_turn_probe import TurnProbe
+
+            try:
+                if self._probe_cwd is not None:
+                    self._turn_probe = await asyncio.to_thread(
+                        TurnProbe.create,
+                        self._probe_cwd,
+                        self._probe_request,
+                        self.thread_id,
+                        self.turn_id,
+                    )
+            except Exception:
+                # Optional observation must never fail a business turn.
+                self._turn_probe = None
+            probe_status = "interrupted_or_stream_failed"
+            observation = None
+            try:
+                result = await self._stream()
+                probe_status = result.status
+            finally:
+                if self._turn_probe is not None:
+                    observation = await asyncio.to_thread(
+                        self._turn_probe.finish, self._codex_home, probe_status
+                    )
+            return replace(result, observation=observation)
         result = await self._handle.run()
         error = getattr(result, "error", None)
         error_message = str(error) if error is not None else None
@@ -134,6 +170,11 @@ class _SdkTurnHandle:
         with self._audit_path.open("a", encoding="utf-8") as audit:
             async for notification in self._handle.stream():
                 payload = notification.payload
+                if self._turn_probe is not None:
+                    try:
+                        self._turn_probe.observe(payload)
+                    except Exception:
+                        pass
                 if (
                     isinstance(payload, ItemCompletedNotification)
                     and payload.turn_id == self.turn_id
@@ -213,10 +254,12 @@ class OpenAICodexRuntime:
         sandbox_override: Sandbox | None = None,
     ) -> None:
         self._settings = settings or DoxAgentSettings()
-        self._client = AsyncCodex(config or CodexConfig(client_name="doxagent-codex-worker"))
+        self._config = config or CodexConfig(client_name="doxagent-codex-worker")
+        self._client = AsyncCodex(self._config)
         self._codex_home = Path(
             ((config.env or {}).get("CODEX_HOME") if config else None)
-            or os.environ.get("CODEX_HOME") or Path.home() / ".codex"
+            or os.environ.get("CODEX_HOME")
+            or Path.home() / ".codex"
         )
         self.receipt_callback: Any = None
         self._reasoning_summary = reasoning_summary
@@ -229,7 +272,9 @@ class OpenAICodexRuntime:
         self._data_capabilities = DataCapabilityCodec(secret)
         self._o4_capabilities = O4OperationCapabilityCodec(secret)
         self._data_policy = DataToolPolicyRegistry()
-        self._data_contracts = build_data_tool_contracts(default_real_tool_registry(self._settings))
+        self._data_contracts = None
+        self._contract_node = None
+        self._prepared_thread = None
         self._container_isolated = (
             container_isolated
             if container_isolated is not None
@@ -255,10 +300,25 @@ class OpenAICodexRuntime:
         await self._client.close()
 
     async def start(self, request: WorkerRunRequest, cwd: Path) -> TurnHandle:
+        return await self._start(request, cwd)
+
+    async def prepare_fork(
+        self, request: WorkerRunRequest, cwd: Path, parent_thread_id: str
+    ) -> str:
+        try:
+            return await self._start(request, cwd, prepare_parent=parent_thread_id)
+        except BaseException:
+            await asyncio.wait_for(self._client.close(), 5)
+            self._client = AsyncCodex(self._config)
+            self._prepared_thread = None
+            raise
+
+    async def _start(self, request: WorkerRunRequest, cwd: Path, *, prepare_parent=None):
         requested_model = request.model
         execution_model = (
             request.model or self._settings.codex_model
-            if self._preserve_requested_model or (
+            if self._preserve_requested_model
+            or (
                 request.node == CodexPersistentRuntimeNode.W3
                 and request.model in {"gpt-6-sol", "gpt-6-luna"}
             )
@@ -362,6 +422,14 @@ class OpenAICodexRuntime:
             )
 
         if request.data_mcp_enabled:
+            contract_node = "w3" if request.node == CodexPersistentRuntimeNode.W3 else "default"
+            if self._contract_node != contract_node:
+                if contract_node == "w3":
+                    from doxagent.tools.w3_factory import w3_tool_registry as factory
+                else:
+                    from doxagent.tools.factory import default_real_tool_registry as factory
+                self._data_contracts = build_data_tool_contracts(factory(self._settings))
+                self._contract_node = contract_node
             sdk_config["mcp_servers.data.enabled"] = True
             allowed_data_tools = self._data_policy.allowed_tools(request.node, request.agent_role)
             capability = self._data_capabilities.issue(
@@ -376,6 +444,10 @@ class OpenAICodexRuntime:
                 enabled_tool_ids=allowed_data_tools,
                 ttl_seconds=request.timeout_seconds + 300,
             )
+            if request.node == CodexPersistentRuntimeNode.W3:
+                scope_file = control_root.parent / "w3-data-scope.json"
+                _write_atomic_text(scope_file, json.dumps({"capability": capability}))
+                sdk_config["mcp_servers.data.env.DOXAGENT_DATA_MCP_SCOPE_FILE"] = str(scope_file)
             enabled_mcp_tools = [GUIDE_TOOL_NAME, READ_TOOL_NAME]
             enabled_mcp_tools.extend(
                 contract.mcp_name
@@ -497,61 +569,105 @@ class OpenAICodexRuntime:
             sdk_config["web_search"] = request.web_search_mode
         elif request.read_only and not request.data_mcp_enabled:
             sdk_config["web_search"] = "disabled"
-        if request.thread_id:
-            thread = await self._client.thread_resume(
-                request.thread_id,
-                cwd=str(cwd),
-                model=request.model,
-                model_provider=request.model_provider,
-                sandbox=sandbox,
-                approval_mode=ApprovalMode.deny_all,
-                config=sdk_config,
+        scope = (
+            str(cwd),
+            request.attempt_id,
+            request.cutoff_at.isoformat(),
+            request.model,
+            request.model_provider,
+            request.effort,
+            request.data_mcp_enabled,
+            request.web_search_mode,
+        )
+        if prepare_parent is not None:
+            thread = await measured(
+                "sdk.thread_fork",
+                asyncio.wait_for(
+                    self._client.thread_fork(
+                        prepare_parent,
+                        cwd=str(cwd),
+                        model=request.model,
+                        model_provider=request.model_provider,
+                        sandbox=sandbox,
+                        approval_mode=ApprovalMode.deny_all,
+                        config=sdk_config,
+                    ),
+                    10,
+                ),
+            )
+            self._prepared_thread = (thread, scope, sdk_config)
+            return thread.id
+        prepared = self._prepared_thread
+        if prepared and prepared[0].id == request.thread_id and prepared[1] == scope:
+            thread, _, sdk_config = prepared
+            self._prepared_thread = None
+        elif request.thread_id:
+            thread = await measured(
+                "sdk.thread_resume",
+                self._client.thread_resume(
+                    request.thread_id,
+                    cwd=str(cwd),
+                    model=request.model,
+                    model_provider=request.model_provider,
+                    sandbox=sandbox,
+                    approval_mode=ApprovalMode.deny_all,
+                    config=sdk_config,
+                ),
             )
         else:
-            thread = await self._client.thread_start(
-                cwd=str(cwd),
-                model=request.model,
-                model_provider=request.model_provider,
-                sandbox=sandbox,
-                approval_mode=ApprovalMode.deny_all,
-                config=sdk_config,
-                base_instructions=(
-                    (
-                        "Work inside the current run workspace. For O4 operational turns, direct "
-                        "file writes are additionally allowed only below "
-                        f"{self._settings.crawler_plane_root}/working; never write releases or "
-                        "control-plane databases directly. "
-                        if request.o4_operations_enabled
-                        else "Work only inside the current run workspace and preserve workspace "
-                        "audit boundaries. "
-                    )
-                    + "Read the attempt-local AGENTS.md and task.json named in the turn before "
-                    "acting, then follow their file paths. Use configured MCP tools only within "
-                    "their granted capability. "
-                    f"Never spawn more than {request.max_subagents} subagents."
+            thread = await measured(
+                "sdk.thread_start",
+                self._client.thread_start(
+                    cwd=str(cwd),
+                    model=request.model,
+                    model_provider=request.model_provider,
+                    sandbox=sandbox,
+                    approval_mode=ApprovalMode.deny_all,
+                    config=sdk_config,
+                    base_instructions=(
+                        (
+                            "Work inside the current run workspace. For O4 operational "
+                            "turns, direct "
+                            "file writes are additionally allowed only below "
+                            f"{self._settings.crawler_plane_root}/working; never write releases or "
+                            "control-plane databases directly. "
+                            if request.o4_operations_enabled
+                            else "Work only inside the current run workspace and preserve "
+                            "workspace "
+                            "audit boundaries. "
+                        )
+                        + "Read the attempt-local AGENTS.md and task.json named in the turn before "
+                        "acting, then follow their file paths. Use configured MCP tools only "
+                        "within "
+                        "their granted capability. "
+                        f"Never spawn more than {request.max_subagents} subagents."
+                    ),
                 ),
             )
         if self.receipt_callback is not None:
             self.receipt_callback(thread.id, None)
-        handle = await thread.turn(
-            request.prompt,
-            cwd=str(cwd),
-            effort=ReasoningEffort(request.effort),
-            model=request.model,
-            sandbox=sandbox,
-            approval_mode=ApprovalMode.deny_all,
-            # The Codex structured-output API requires a top-level object.
-            # Markdown-only C4 network-build keeps its string contract in the
-            # workspace and validates the returned text in NodeRunner instead.
-            **(
-                {"output_schema": request.output_schema}
-                if request.output_schema.get("type") == "object"
-                else {}
-            ),
-            **(
-                {"summary": ReasoningSummary(self._reasoning_summary)}
-                if self._reasoning_summary
-                else {}
+        handle = await measured(
+            "sdk.turn_start",
+            thread.turn(
+                request.prompt,
+                cwd=str(cwd),
+                effort=ReasoningEffort(request.effort),
+                model=request.model,
+                sandbox=sandbox,
+                approval_mode=ApprovalMode.deny_all,
+                # The Codex structured-output API requires a top-level object.
+                # Markdown-only C4 network-build keeps its string contract in the
+                # workspace and validates the returned text in NodeRunner instead.
+                **(
+                    {"output_schema": request.output_schema}
+                    if request.output_schema.get("type") == "object"
+                    else {}
+                ),
+                **(
+                    {"summary": ReasoningSummary(self._reasoning_summary)}
+                    if self._reasoning_summary
+                    else {}
+                ),
             ),
         )
         await asyncio.sleep(0)
@@ -562,6 +678,8 @@ class OpenAICodexRuntime:
             handle=handle,
             audit_path=cwd / "attempts" / request.attempt_id / "audit" / "sdk_loop.jsonl",
             codex_home=self._codex_home,
+            request=request,
+            cwd=cwd,
         )
 
 

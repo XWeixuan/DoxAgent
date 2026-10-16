@@ -172,9 +172,11 @@ class DataToolPolicyRegistry:
         self._by_role[CodexEventLibraryAgentRole.O2] = frozenset()
         self._by_role[CodexD3AgentRole.O3] = self._by_role[CodexD2AgentRole.O1]
         # W3 only checks historical price repricing; history resolves its own contract.
-        self._by_role[CodexPersistentRuntimeAgentRole.W3] = frozenset({
-            "ibkr.market_history",
-        })
+        self._by_role[CodexPersistentRuntimeAgentRole.W3] = frozenset(
+            {
+                "ibkr.market_history",
+            }
+        )
         legacy_o4_tools = self._by_role[CodexAgentRole.C5]
         self._by_node: dict[CodexResearchNode, frozenset[str]] = {
             CodexD1Node.O4_A: legacy_o4_tools,
@@ -191,6 +193,11 @@ class DataToolPolicyRegistry:
             CodexD3Node.O3_POLICY_COMPILE: frozenset(),
             CodexD3Node.O3_PLANNING: frozenset(),
         }
+        self._v21_loaded = False
+
+    def _ensure_v21_tools(self):
+        if self._v21_loaded:
+            return
         # Metadata only: no provider calls or runtime clients are constructed.
         from doxagent.tools.factory import _DESCRIPTORS
 
@@ -205,12 +212,16 @@ class DataToolPolicyRegistry:
         for node in (CodexD3Node.O3_DISCOVERY, CodexD3Node.O3_BUILD, CodexD3Node.O3_INTEGRATION):
             self._by_node[node] = v21_tools
 
+        self._v21_loaded = True
+
     def allowed_tools(
         self, node: CodexResearchNode, role: CodexResearchAgentRole
     ) -> frozenset[str]:
         expected = _ROLE_BY_NODE.get(node)
         if expected is None or expected is not role:
             return frozenset()
+        if node in {CodexD3Node.O3_DISCOVERY, CodexD3Node.O3_BUILD, CodexD3Node.O3_INTEGRATION}:
+            self._ensure_v21_tools()
         maximum = self._by_node.get(node, self._by_role.get(role, frozenset()))
         return maximum.difference(_NODE_TOOL_EXCLUSIONS.get(node, frozenset()))
 

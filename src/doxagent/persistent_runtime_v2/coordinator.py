@@ -10,6 +10,8 @@ import asyncio
 from collections.abc import Callable
 from concurrent.futures import Future, ThreadPoolExecutor
 from datetime import date, datetime, timedelta
+from threading import Lock
+from time import perf_counter
 from typing import Any
 
 from doxagent.message_bus_v2.schema import MaterializedStreamItem, MaterializedStreamMember
@@ -48,17 +50,21 @@ class RuntimeCoordinator:
         # admission pools.  Their generous bounds keep the intended 15-25 ticker
         # workload away from an artificial 4/2 workflow gate.
         self._realtime = ThreadPoolExecutor(max_workers=64, thread_name_prefix="runtime-case")
-        self._background = ThreadPoolExecutor(
-            max_workers=32, thread_name_prefix="runtime-maintain"
-        )
+        self._background = ThreadPoolExecutor(max_workers=32, thread_name_prefix="runtime-maintain")
         self._sweeps = ThreadPoolExecutor(max_workers=32, thread_name_prefix="runtime-sweep")
         self._futures: dict[str, Future[Any]] = {}
         self._closed = False
         self._effects = ThreadPoolExecutor(max_workers=1, thread_name_prefix="runtime-effects")
         self._effect_future: Future[Any] | None = None
+        self._effect_lock = Lock()
+        self._effect_requested = False
+        self._effect_enqueued_at = 0.0
         self._delivery = ThreadPoolExecutor(max_workers=1, thread_name_prefix="runtime-delivery")
         self._delivery_future: Future[Any] | None = None
         self._w3_maintenance_future: Future[Any] | None = None
+        self._public_futures = {}
+        self._public_next = {}
+        self._public_bundle = {}
 
     def mode(self, ticker: str, now: datetime | None = None) -> tuple[str, str | None]:
         at = now or self.journal.clock()
@@ -304,20 +310,37 @@ class RuntimeCoordinator:
     def tick(self, ticker: str) -> None:
         if self._closed or self.journal.get("pause", ticker):
             return
+        self.wake_effects()
         try:
             self.reconcile(ticker)
         except Exception as exc:
             self.journal.gap(f"calendar:{ticker}", ticker, "CALENDAR_UNAVAILABLE", str(exc))
-        if self._effect_future is None or self._effect_future.done():
-            if self._effect_future is not None:
-                try:
-                    self._effect_future.result()
-                except Exception as exc:
-                    self.journal.gap("effects-pump", ticker, type(exc).__name__, str(exc)[:1000])
-            self._effect_future = self._effects.submit(self._pump_effects)
+        if getattr(self.runtime, "_w3_agent", None) is not None and hasattr(
+            self.runtime._w3_agent, "prepare_public_assets"
+        ):
+            now = perf_counter()
+            previous = self._public_futures.get(ticker)
+            active_bundle = self.journal.get("execution", "active")
+            if self._public_bundle.get(ticker) != active_bundle:
+                self._public_next[ticker] = 0
+                self._public_bundle[ticker] = active_bundle
+            if now >= self._public_next.get(ticker, 0) and (previous is None or previous.done()):
+
+                def prepare_public():
+                    try:
+                        self.runtime._v4_execution().prepare_public(ticker)
+                    except Exception as exc:
+                        self.journal.gap(
+                            "w3-public-prepare", ticker, type(exc).__name__, str(exc)[:1000]
+                        )
+
+                self._public_futures[ticker] = self._background.submit(prepare_public)
+                self._public_next[ticker] = now + 30
         maintenance = getattr(self.runtime, "maintain_w3_threads", None)
-        if maintenance and getattr(self.runtime, "_w3_agent", None) is not None and (
-            self._w3_maintenance_future is None or self._w3_maintenance_future.done()
+        if (
+            maintenance
+            and getattr(self.runtime, "_w3_agent", None) is not None
+            and (self._w3_maintenance_future is None or self._w3_maintenance_future.done())
         ):
             if self._w3_maintenance_future is not None:
                 try:
@@ -379,7 +402,9 @@ class RuntimeCoordinator:
                 else (self._sweeps if kind == "SWEEP" else self._background)
             )
             lease = self.journal.claim(
-                task["id"], seconds=120, prepare_inputs=self.prepare_case_inputs,
+                task["id"],
+                seconds=120,
+                prepare_inputs=self.prepare_case_inputs,
             )
             if lease:
                 self._futures[task["id"]] = pool.submit(self._execute, lease)
@@ -391,6 +416,7 @@ class RuntimeCoordinator:
                 return True
         cutoff = datetime.fromisoformat(task["inputs"]["cutoff"])
         from .bounded_inputs import unfinished as scope_unfinished
+
         unfinished = scope_unfinished(self.runtime.repository, self.journal, task)
         waiting = unfinished and self.journal.clock() < cutoff + timedelta(hours=1)
         if unfinished and not waiting:
@@ -435,6 +461,7 @@ class RuntimeCoordinator:
 
     def _execute(self, task: dict[str, Any]) -> None:
         from .heartbeat import heartbeat
+
         with heartbeat(lambda: self.journal.renew(task)):
             self._execute_owned(task)
 
@@ -602,7 +629,8 @@ class RuntimeCoordinator:
                     source.published_at,
                     context,
                     datetime.fromisoformat(item["inputs"]["admitted_at"])
-                    if context.mode == "REALTIME" else self.journal.clock(),
+                    if context.mode == "REALTIME"
+                    else self.journal.clock(),
                     source.publication_time_basis,
                 )
                 if reason:
@@ -865,8 +893,38 @@ class RuntimeCoordinator:
                 ((self.journal.clock() + timedelta(seconds=5)).isoformat(), task["id"]),
             )
 
+    def wake_effects(self) -> None:
+        with self._effect_lock:
+            if self._closed:
+                return
+            self._effect_requested = True
+            if self._effect_future is None or self._effect_future.done():
+                self._effect_enqueued_at = perf_counter()
+                self._effect_future = self._effects.submit(self._pump_effects)
+
     def _pump_effects(self) -> None:
-        self.runtime.dispatch_pending_effects(limit=20)
+        try:
+            while True:
+                with self._effect_lock:
+                    self._effect_requested = False
+                from doxagent.w3_timing import BoundaryTrace, save_trace
+
+                trace = BoundaryTrace(
+                    plane="effect_pump",
+                    queue_wait_ms=round((perf_counter() - self._effect_enqueued_at) * 1000, 3),
+                )
+                with trace.activate():
+                    count = self.runtime.dispatch_pending_effects(limit=20)
+                if count:
+                    save_trace(trace, self.journal.path.parent / "boundary-timing")
+                with self._effect_lock:
+                    if not self._effect_requested and count < 20:
+                        self._effect_future = None
+                        return
+        except Exception as exc:
+            self.journal.gap("effects-pump", "", type(exc).__name__, str(exc)[:1000])
+            with self._effect_lock:
+                self._effect_future = None
 
     def _pump_delivery(self) -> None:
         from doxagent.trade_execution.intake import ExecutionIntake

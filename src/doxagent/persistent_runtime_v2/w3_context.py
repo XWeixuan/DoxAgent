@@ -6,6 +6,8 @@ import hashlib
 import json
 from datetime import UTC, datetime, timedelta
 
+from doxagent.w3_timing import observed
+
 from .journal import encode
 from .message_pin import active_states, message_content, pin_snapshot
 from .policy_consumption import put_value
@@ -41,49 +43,81 @@ def event_matches(source_case, *, root=None):
     return keys
 
 
+@observed("thread.resolve_event_subjects")
 def resolve_event_subjects(journal, case, keys):
-    """Keep provisional identities distinct until a formal mapping is visible."""
+    """Resolve only requested identities at the pinned version, in one write batch."""
     from doxagent.event_library.provider import PublishedEventLibraryReader
 
     root = case.version_pin.event_library_root
-    if not root:
+    if not root or not keys:
         return keys
+    version = case.version_pin.event_library_version
     reader = PublishedEventLibraryReader(root)
     lineage = journal.get("w3_library_lineage", root, root)
-    resolved = []
-    for key in keys:
+    resolved, aliases, additions = [], [], []
+    for key in dict.fromkeys(keys):
         value = json.loads(key)
         if journal.get("w3_library_lineage", value[0], value[0]) != lineage:
             resolved.append(key)
             continue
-        target = reader.resolve_runtime_subject(
-            case.ticker,
-            version=case.version_pin.event_library_version,
-            **(
-                dict(source_message_id=value[2], candidate_index=value[3])
-                if value[1] == "atomic"
-                else dict(event_id=value[2])
-            ),
-        )
-        if target:
-            canonical = encode([lineage, "event", target])
-            with journal.transaction() as db:
-                db.execute(
-                    "INSERT OR IGNORE INTO runtime_v2_w3_thread_links "
-                    "SELECT record_id,ticker,link_kind,?,source_case_id "
-                    "FROM runtime_v2_w3_thread_links "
-                    "WHERE ticker=? AND link_kind='EVENT' AND subject_key=?",
-                    (canonical, case.ticker, key),
-                )
-            resolved.append(canonical)
-        else:
-            resolved.append(key)
+        cache_key = encode([lineage, root, case.ticker, version, "mapping-v1", key])
+        canonical = journal.get("w3_subject_resolution", cache_key)
+        if canonical is None:
+            target = reader.resolve_runtime_subject(
+                case.ticker,
+                version=version,
+                **(
+                    dict(source_message_id=value[2], candidate_index=value[3])
+                    if value[1] == "atomic"
+                    else dict(event_id=value[2])
+                ),
+            )
+            canonical = encode([lineage, "event", target]) if target else key
+            additions.append((cache_key, encode(canonical)))
+        if canonical != key:
+            aliases.append((canonical, case.ticker, key, journal.clock().isoformat()))
+        resolved.append(canonical)
+    if aliases:
+        with journal.transaction(write=False) as db:
+            aliases = [
+                row
+                for row in aliases
+                if db.execute(
+                    "SELECT 1 FROM runtime_v2_w3_thread_links l JOIN runtime_v2_w3_threads t "
+                    "ON t.record_id=l.record_id WHERE l.ticker=? AND l.subject_key=? "
+                    "AND l.link_kind='EVENT' AND t.status='ACTIVE' AND t.expires_at>? "
+                    "AND NOT EXISTS(SELECT 1 FROM runtime_v2_w3_thread_links c "
+                    "WHERE c.record_id=l.record_id AND c.link_kind='EVENT' "
+                    "AND c.subject_key=?) LIMIT 1",
+                    (row[1], row[2], row[3], row[0]),
+                ).fetchone()
+            ]
+    if additions or aliases:
+        with journal.transaction() as db:
+            db.executemany(
+                "INSERT OR IGNORE INTO runtime_values(namespace,key,payload) "
+                "VALUES('w3_subject_resolution',?,?)",
+                additions,
+            )
+            db.executemany(
+                "INSERT OR IGNORE INTO runtime_v2_w3_thread_links "
+                "SELECT l.record_id,l.ticker,l.link_kind,?,l.source_case_id "
+                "FROM runtime_v2_w3_thread_links l JOIN runtime_v2_w3_threads t "
+                "ON t.record_id=l.record_id WHERE l.ticker=? AND l.link_kind='EVENT' "
+                "AND l.subject_key=? AND t.kind='CASE' AND t.status='ACTIVE' "
+                "AND t.expires_at>?",
+                aliases,
+            )
     return list(dict.fromkeys(resolved))
 
 
 def sync_event_links(journal, ticker, root, version):
     from types import SimpleNamespace
 
+    lineage = journal.get("w3_library_lineage", root, root)
+    watermark = encode([lineage, ticker, version, "mapping-v1"])
+    if journal.get("w3_mapping_watermark", watermark):
+        return
     with journal.transaction(write=False) as db:
         if not db.execute(
             "SELECT 1 FROM sqlite_master WHERE name='runtime_v2_w3_thread_links'"
@@ -92,9 +126,11 @@ def sync_event_links(journal, ticker, root, version):
         subjects = [
             r[0]
             for r in db.execute(
-                "SELECT DISTINCT subject_key FROM runtime_v2_w3_thread_links "
-                "WHERE ticker=? AND link_kind='EVENT'",
-                (ticker,),
+                "SELECT DISTINCT l.subject_key FROM runtime_v2_w3_thread_links l "
+                "JOIN runtime_v2_w3_threads t ON t.record_id=l.record_id "
+                "WHERE l.ticker=? AND l.link_kind='EVENT' AND t.kind='CASE' "
+                "AND t.status='ACTIVE' AND t.expires_at>?",
+                (ticker, journal.clock().isoformat()),
             )
         ]
     case = SimpleNamespace(
@@ -102,6 +138,7 @@ def sync_event_links(journal, ticker, root, version):
         version_pin=SimpleNamespace(event_library_root=root, event_library_version=version),
     )
     resolve_event_subjects(journal, case, subjects)
+    journal.set("w3_mapping_watermark", watermark, True)
 
 
 def actual_policy_hits(value):
@@ -146,6 +183,7 @@ def case_labels(case, *, history_matches, watch_followup, event_keys=None):
     return dict(case_type=main, additional_tags=tags)
 
 
+@observed("history.global_snapshot")
 def global_snapshot(db, ticker, now):
     return dict(
         ticker=ticker,
@@ -180,6 +218,7 @@ def _execution_snapshot(db, identity, value, released):
     )
 
 
+@observed("history.membership")
 def freeze_history(journal, case, accepted_at):
     identity = case.case_id
     saved = journal.get("w3_history_members", identity)
@@ -219,6 +258,7 @@ def freeze_history(journal, case, accepted_at):
     return saved
 
 
+@observed("history.payload")
 def history_payload(journal, repository, case, membership):
     items, matches = [], []
     frozen = journal.get("w3_history_matches", case.case_id)
@@ -332,6 +372,7 @@ def trading_context(case, journal=None):
     return value
 
 
+@observed("case.payload")
 def build_case_payload(case, context, *, events, history, labels, state, journal=None):
     w1 = case.w1_final.model_dump(mode="json")
     w1.pop("reference_ids", None)

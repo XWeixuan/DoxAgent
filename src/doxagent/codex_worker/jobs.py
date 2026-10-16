@@ -25,6 +25,7 @@ from doxagent.codex_worker.schema import (
 from doxagent.codex_worker.sdk_runtime import CodexExecutionRuntime, TurnHandle
 from doxagent.codex_worker.workspace_store import LocalWorkspaceStore
 from doxagent.resource_safety import SafetyLevel, SafetyStateReader
+from doxagent.w3_timing import BoundaryTrace, save_trace, snapshot_current, span
 
 
 def _execution_lane(request: WorkerRunRequest) -> str:
@@ -182,6 +183,7 @@ class WorkerJobManager:
             self._probe_active = quarantined
 
     async def _dispatch_loop(self) -> None:
+        observation_gc_at = 0.0
         if not self._processes_recovered:
             recover = getattr(self._runtime, "recover", None)
             if recover is not None:
@@ -189,6 +191,11 @@ class WorkerJobManager:
             self._processes_recovered = True
             self._recover_snapshots()  # Completions may commit during old-process cleanup.
         while not self._closed:
+            if time.monotonic() >= observation_gc_at:
+                from .w3_turn_probe import maintenance
+
+                await asyncio.to_thread(maintenance, self.store.root)
+                observation_gc_at = time.monotonic() + 3600
             snapshot = self.safety.read()
             self.store.metadata(
                 "safety",
@@ -216,9 +223,11 @@ class WorkerJobManager:
                     measure = getattr(self._runtime, "memory_for", lambda _request: 0)
                     victim = max(
                         candidates,
-                        key=lambda key: measure(self.store.request(key))
-                        if self.store.request(key) is not None
-                        else 0,
+                        key=lambda key: (
+                            measure(self.store.request(key))
+                            if self.store.request(key) is not None
+                            else 0
+                        ),
                     )
                     self._critical_intervened = True
                     self._forced_reason[victim] = "WORKER_RESOURCE_CRITICAL"
@@ -226,6 +235,9 @@ class WorkerJobManager:
             reap = getattr(self._runtime, "reap_idle", None)
             if reap is not None:
                 await reap(all_idle=snapshot.level is not SafetyLevel.NORMAL)
+            warm = getattr(self._runtime, "warm", None)
+            if warm is not None and snapshot.level is SafetyLevel.NORMAL:
+                await warm(self.launch_wave_size, self._startup, self.launch_interval_seconds)
             self._schedule()
             await asyncio.sleep(0.25)
 
@@ -233,8 +245,6 @@ class WorkerJobManager:
         if self._closed or not self._processes_recovered:
             return
         now = time.monotonic()
-        if now < self._next_launch_at:
-            return
         snapshot = self.safety.read()
         realtime = self.store.queued(lane="realtime")
         background = self.store.queued(lane="background")
@@ -264,8 +274,6 @@ class WorkerJobManager:
             max(0, self.startup_concurrency - len(self._starting)),
         )
         for job_id in queued:
-            if launched >= wave_size:
-                break
             if job_id in self._tasks:
                 continue
             job = self._jobs[job_id]
@@ -273,6 +281,13 @@ class WorkerJobManager:
                 continue
             request = self.store.request(job_id)
             if request is None:
+                continue
+            warm = str(request.node) == "persistent_runtime_w3" and getattr(
+                self._runtime,
+                "can_start_warm",
+                lambda _: False,
+            )(request.thread_id)
+            if not warm and (launched >= wave_size or now < self._next_launch_at):
                 continue
             effective_subagents = (
                 min(self.subagents, request.max_subagents) if request.allow_subagents else 0
@@ -310,7 +325,7 @@ class WorkerJobManager:
             self._tasks[job_id] = task
             self._starting.add(job_id)
             task.add_done_callback(partial(self._task_done, job_id))
-            launched += 1
+            launched += int(not warm)
         if launched:
             self._next_launch_at = now + self.launch_interval_seconds
 
@@ -501,13 +516,33 @@ class WorkerJobManager:
                     )
 
     async def _run(self, job_id: str, request: WorkerRunRequest) -> None:
+        if str(request.node) != "persistent_runtime_w3":
+            return await self._run_observed(job_id, request)
+        trace = BoundaryTrace(
+            job_id=job_id,
+            run_id=request.run_id,
+            attempt_id=request.attempt_id,
+            phase=request.task_phase,
+            worker_generation=self.generation,
+            worker_queue_to_run_ms=max(
+                0, round((utc_now() - self._jobs[job_id].created_at).total_seconds() * 1000, 3)
+            ),
+        )
+        with trace.activate():
+            try:
+                return await self._run_observed(job_id, request)
+            finally:
+                save_trace(trace, self.store.root / "boundary-timing")
+
+    async def _run_observed(self, job_id: str, request: WorkerRunRequest) -> None:
         job = self._jobs[job_id]
         started = time.monotonic()
         phase = "START_THREAD"
         try:
-            attempt_root = await blocking(
-                self._workspaces.ensure_attempt, request.run_id, request.attempt_id
-            )
+            with span("worker.ensure_attempt"):
+                attempt_root = await blocking(
+                    self._workspaces.ensure_attempt, request.run_id, request.attempt_id
+                )
             run_root = attempt_root.parents[1]
             await self._update(
                 job_id,
@@ -520,11 +555,16 @@ class WorkerJobManager:
             phase = "START_THREAD"
             cold_start_started = time.monotonic()
             try:
-                async with self._startup:
-                    handle = await asyncio.wait_for(
-                        self._runtime.start(request, run_root),
-                        timeout=min(120, request.timeout_seconds),
-                    )
+                with span("worker.startup_wait"):
+                    await self._startup.acquire()
+                try:
+                    with span("worker.runtime_start"):
+                        handle = await asyncio.wait_for(
+                            self._runtime.start(request, run_root),
+                            timeout=min(120, request.timeout_seconds),
+                        )
+                finally:
+                    self._startup.release()
             finally:
                 self._starting.discard(job_id)
             self._handles[job_id] = handle
@@ -541,10 +581,20 @@ class WorkerJobManager:
                     "queue_wait_ms": max(
                         0, int((utc_now() - job.created_at).total_seconds() * 1000)
                     ),
+                    **(
+                        {
+                            "startup_timing": snapshot_current(),
+                            "capsule_startup_timing": getattr(handle, "startup_timing", None),
+                        }
+                        if str(request.node) == "persistent_runtime_w3"
+                        else {}
+                    ),
                 },
             )
             phase = "RUN_TURN"
             result = await asyncio.wait_for(handle.run(), timeout=request.timeout_seconds)
+            if getattr(result, "observation", None) is not None:
+                self._jobs[job_id].resource_receipt["w3_observation"] = result.observation
             telemetry = result.telemetry
             if telemetry is not None:
                 telemetry = telemetry.model_copy(
@@ -660,6 +710,7 @@ class WorkerJobManager:
             "job_status": job.status,
             "thread_id": job.thread_id,
             "turn_id": job.turn_id,
+            "w3_observation": job.resource_receipt.get("w3_observation"),
             **telemetry.model_dump(mode="json", exclude={"events"}),
             "validation": {
                 "schema": "pending",

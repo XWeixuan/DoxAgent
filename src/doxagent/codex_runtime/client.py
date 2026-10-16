@@ -21,6 +21,7 @@ from doxagent.codex_worker.schema import (
     WorkspaceInventory,
 )
 from doxagent.observations.models import PersistedObservation
+from doxagent.w3_timing import observed, span
 
 
 class CodexWorkerClient(Protocol):
@@ -49,6 +50,93 @@ class WorkspaceClient(Protocol):
 
 
 class HttpCodexWorkerClient:
+    async def get_thread_operation(self, key):
+        from urllib.parse import quote
+
+        response = await self._client.get("/v1/w3/operations/" + quote(key, safe=""))
+        response.raise_for_status()
+        return response.json()
+
+    async def ensure_research_pack(self, pack_id: str, files: dict[str, str]) -> None:
+        import asyncio
+
+        if not hasattr(self, "_installed_packs"):
+            self._installed_packs, self._pack_locks = set(), {}
+        async with self._pack_locks.setdefault(pack_id, asyncio.Lock()):
+            if pack_id in self._installed_packs:
+                return
+            response = await self._client.post(f"/v1/research-packs/{pack_id}", json={})
+            if response.status_code == 404:
+                response = await self._client.post(
+                    f"/v1/research-packs/{pack_id}", json={"files": files}
+                )
+            response.raise_for_status()
+            self._installed_packs.add(pack_id)
+
+    async def materialize_case(self, run_id: str, packs: dict, files: dict) -> None:
+        response = await self._request(
+            "POST",
+            f"/v1/workspaces/{run_id}/materialize",
+            run_id=run_id,
+            operation="write",
+            json={"packs": packs, "files": files},
+        )
+        if response.status_code == 409 and response.json().get("detail") == "research_pack_missing":
+            from doxagent.codex_runtime.errors import W3PreparationError
+
+            self._installed_packs.difference_update(packs.values())
+            raise W3PreparationError(
+                "w3_prepare_pending", "Worker needs the pinned Pack reinstalled"
+            )
+        response.raise_for_status()
+
+    async def prepare_thread(self, request) -> dict:
+        from doxagent.codex_runtime.errors import W3PreparationError
+
+        try:
+            return await self._prepare_thread(request)
+        except httpx.TransportError as exc:
+            raise W3PreparationError(
+                "w3_prepare_pending", "Worker prepare status temporarily unavailable"
+            ) from exc
+
+    async def _prepare_thread(self, request) -> dict:
+        import asyncio
+        from urllib.parse import quote
+
+        from doxagent.codex_runtime.errors import W3PreparationError
+
+        url = "/v1/w3/operations/" + quote(request.operation_key, safe="")
+        # Always query first after re-entry, including a prior POST timeout.
+        response = await self._client.get(url)
+        if response.status_code != 404:
+            response.raise_for_status()
+        try:
+            response = await self._client.post(
+                "/v1/w3/prepare", json=request.model_dump(mode="json")
+            )
+        except httpx.TransportError:
+            response = await self._client.get(url)
+        response.raise_for_status()
+        for _ in range(120):
+            value = response.json()
+            if value["status"] == "COMPLETED":
+                return value
+            if value["status"] == "FAILED":
+                raise W3PreparationError(
+                    value.get("error_code") or "w3_prepare_failed",
+                    value.get("error_message") or "W3 prepare failed",
+                )
+            if value.get("step") == "RECONCILING":
+                response = await self._client.post(
+                    "/v1/w3/prepare", json=request.model_dump(mode="json")
+                )
+                response.raise_for_status()
+            await asyncio.sleep(0.25)
+            response = await self._client.get(url)
+            response.raise_for_status()
+        raise W3PreparationError("w3_prepare_pending", "W3 durable preparation is in progress")
+
     async def register_template(self, job_id: str) -> dict:
         response = await self._client.post("/v1/threads/register-template", json={"job_id": job_id})
         response.raise_for_status()
@@ -59,6 +147,7 @@ class HttpCodexWorkerClient:
         response.raise_for_status()
         return response.json()
 
+    @observed("thread.fork_http")
     async def fork_thread(self, request) -> dict:
         response = await self._client.post("/v1/threads/fork", json=request.model_dump(mode="json"))
         response.raise_for_status()
@@ -97,17 +186,23 @@ class HttpCodexWorkerClient:
         self._capabilities = CapabilityTokenCodec(capability_secret) if capability_secret else None
         self._poll_seconds = poll_seconds
         self._workspace_options = ContextVar("workspace_request_options", default=(None, None))
+        self._installed_packs = set()
+        self._pack_locks = {}
 
     def workspace_view(self, *, transport_attempts=1):
         return WorkspaceHttpView(self, transport_attempts)
 
-    async def run(self, request: WorkerRunRequest) -> WorkerJob:
+    async def run_with_observer(self, request, observer):
+        return await self.run(request, on_update=observer)
+
+    async def run(self, request: WorkerRunRequest, *, on_update=None) -> WorkerJob:
         job: WorkerJob | None = None
         original_request = request
         request = request.model_copy(
             update={"idempotency_key": request.idempotency_key or uuid4().hex}
         )
         unavailable_since: float | None = None
+        observed_status = None
         try:
             while job is None or job.status in {"queued", "running"}:
                 try:
@@ -122,9 +217,20 @@ class HttpCodexWorkerClient:
                         continue
                     response.raise_for_status()
                     job = WorkerJob.model_validate(response.json())
+                    current_status = (job.job_id, job.status, job.execution_phase)
+                    if on_update is not None and current_status != observed_status:
+                        on_update(job)
+                        observed_status = current_status
                     unavailable_since = None
                     if job.status in {"queued", "running"}:
-                        await asyncio.sleep(self._poll_seconds)
+                        # W3's trade commit is latency-sensitive; retain the
+                        # configured polling policy for other workflow nodes.
+                        interval = (
+                            min(self._poll_seconds, 0.1)
+                            if str(request.node) == "persistent_runtime_w3"
+                            else self._poll_seconds
+                        )
+                        await asyncio.sleep(interval)
                 except (httpx.TransportError, httpx.HTTPStatusError) as exc:
                     if isinstance(exc, httpx.HTTPStatusError) and exc.response.status_code < 500:
                         raise
@@ -171,13 +277,14 @@ class HttpCodexWorkerClient:
         relative_path: str,
         content: str,
     ) -> WorkspaceFileResponse:
-        response = await self._request(
-            "PUT",
-            f"/v1/workspaces/{run_id}/files/{relative_path}",
-            run_id=run_id,
-            operation="write",
-            json={"content": content},
-        )
+        with span("workspace.write_http", files=1, bytes=len(content.encode())):
+            response = await self._request(
+                "PUT",
+                f"/v1/workspaces/{run_id}/files/{relative_path}",
+                run_id=run_id,
+                operation="write",
+                json={"content": content},
+            )
         return WorkspaceFileResponse.model_validate(response.json())
 
     async def read_text(self, run_id: str, relative_path: str) -> WorkspaceFileResponse:
@@ -356,6 +463,12 @@ class WorkspaceHttpView:
             return await method(*args, **kwargs)
         finally:
             self.client._workspace_options.reset(token)
+
+    async def ensure_research_pack(self, *args, **kwargs):
+        return await self._call(self.client.ensure_research_pack, *args, **kwargs)
+
+    async def materialize_case(self, *args, **kwargs):
+        return await self._call(self.client.materialize_case, *args, **kwargs)
 
     async def read_text(self, *args, **kwargs):
         return await self._call(self.client.read_text, *args, **kwargs)

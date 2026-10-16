@@ -121,16 +121,21 @@ class RuntimeJournal:
         started = time.monotonic()
         acquired = None
         primary_code = None
-        db = sqlite3.connect(self.path, timeout=self.busy_timeout_seconds)
+        from doxagent.w3_timing import span
+
+        with span("journal.connect"):
+            db = sqlite3.connect(self.path, timeout=self.busy_timeout_seconds)
         db.row_factory = self.content.row
         try:
-            if write:
-                db.execute("PRAGMA journal_mode=WAL")
-                db.execute("PRAGMA synchronous=FULL")
-            db.execute("BEGIN IMMEDIATE" if write else "BEGIN")
+            with span("journal.begin", write=write):
+                if write:
+                    db.execute("PRAGMA journal_mode=WAL")
+                    db.execute("PRAGMA synchronous=FULL")
+                db.execute("BEGIN IMMEDIATE" if write else "BEGIN")
             acquired = time.monotonic()
             yield db
-            db.commit()
+            with span("journal.commit", write=write):
+                db.commit()
         except BaseException as exc:
             primary_code = getattr(exc, "sqlite_errorcode", 0) & 255
             db.rollback()

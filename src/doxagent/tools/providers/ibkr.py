@@ -72,7 +72,11 @@ class _IbkrClient(BaseRealToolClient):
         *,
         session_factory: SessionFactory | None = None,
     ) -> None:
-        super().__init__(settings, cache)
+        # These tools exclusively use the official TWS socket session below.
+        # An HTTPX client/CA load serves no call path in any IBKR tool.
+        self.settings = settings
+        self.cache = cache or TTLCache()
+        self.client = None
         self._session_factory = session_factory or IbkrTwsSession
 
     @contextmanager
