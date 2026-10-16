@@ -1,0 +1,195 @@
+[
+  {
+    "CreatedAt": "2026-10-16 17:56:40.845468891 +0000 UTC",
+    "Description": "[stage-1 10/14] COPY --from=approved_ibapi /app/.venv/lib/python3.11/site-packages/ibapi-10.49.2.dist-info /app/.venv/lib/python3.11/site-packages/ibapi-10.49.2.dist-info",
+    "ID": "ce9fpu9rxmhevo500xxqbnaic",
+    "LastUsedAt": "16 minutes ago",
+    "Mutable": false,
+    "Parents": [
+      "jbs3jqw6rn3nzd42zrubu4itg"
+    ],
+    "Reclaimable": true,
+    "Shared": false,
+    "Size": "110.3kB",
+    "Type": "regular",
+    "UsageCount": 1
+  },
+  {
+    "CreatedAt": "2026-10-16 17:55:22.091630123 +0000 UTC",
+    "Description": "[stage-1  4/14] COPY pyproject.toml uv.lock README.md ./",
+    "ID": "v4s4lz07gs5rkjl36z5e2j40o",
+    "LastUsedAt": "16 minutes ago",
+    "Mutable": false,
+    "Parents": [
+      "mccvm3feqidgeqg3m88m4zj2n"
+    ],
+    "Reclaimable": true,
+    "Shared": false,
+    "Size": "535kB",
+    "Type": "regular",
+    "UsageCount": 1
+  },
+  {
+    "CreatedAt": "2026-10-16 17:56:41.738288619 +0000 UTC",
+    "Description": "[stage-1 13/14] COPY dev_plan/workflow_v2/api_contract ./dev_plan/workflow_v2/api_contract",
+    "ID": "vm1kt9zm2uanbt8zbhnui7ing",
+    "LastUsedAt": "16 minutes ago",
+    "Mutable": false,
+    "Parents": [
+      "xsaoy79ucwd18y125y86c794e"
+    ],
+    "Reclaimable": true,
+    "Shared": false,
+    "Size": "734.2kB",
+    "Type": "regular",
+    "UsageCount": 1
+  },
+  {
+    "CreatedAt": "2026-10-16 17:56:41.699220999 +0000 UTC",
+    "Description": "[stage-1 12/14] COPY prompts ./prompts",
+    "ID": "xsaoy79ucwd18y125y86c794e",
+    "LastUsedAt": "16 minutes ago",
+    "Mutable": false,
+    "Parents": [
+      "q8iky9gty0hd9y2fekxvufata"
+    ],
+    "Reclaimable": true,
+    "Shared": false,
+    "Size": "1.705MB",
+    "Type": "regular",
+    "UsageCount": 1
+  },
+  {
+    "CreatedAt": "2026-10-16 17:56:40.808813822 +0000 UTC",
+    "Description": "[stage-1  9/14] COPY --from=approved_ibapi /app/.venv/lib/python3.11/site-packages/ibapi /app/.venv/lib/python3.11/site-packages/ibapi",
+    "ID": "jbs3jqw6rn3nzd42zrubu4itg",
+    "LastUsedAt": "16 minutes ago",
+    "Mutable": false,
+    "Parents": [
+      "klefkn2v6cd190j4fgijh5nvt"
+    ],
+    "Reclaimable": true,
+    "Shared": false,
+    "Size": "1.911MB",
+    "Type": "regular",
+    "UsageCount": 1
+  },
+  {
+    "CreatedAt": "2026-10-16 17:56:40.650362577 +0000 UTC",
+    "Description": "mount / from exec /bin/sh -c uv sync --frozen --no-group dev",
+    "ID": "klefkn2v6cd190j4fgijh5nvt",
+    "LastUsedAt": "16 minutes ago",
+    "Mutable": false,
+    "Parents": [
+      "ybbkeuupvyigz5polwoxekxm1"
+    ],
+    "Reclaimable": true,
+    "Shared": false,
+    "Size": "3.177MB",
+    "Type": "regular",
+    "UsageCount": 1
+  },
+  {
+    "CreatedAt": "2026-10-16 17:56:41.599356842 +0000 UTC",
+    "Description": "mount / from exec /bin/sh -c uv pip install --python /app/.venv/bin/python protobuf==5.29.5     && uv pip check --python /app/.venv/bin/python",
+    "ID": "q8iky9gty0hd9y2fekxvufata",
+    "LastUsedAt": "16 minutes ago",
+    "Mutable": false,
+    "Parents": [
+      "ce9fpu9rxmhevo500xxqbnaic"
+    ],
+    "Reclaimable": true,
+    "Shared": false,
+    "Size": "5.421MB",
+    "Type": "regular",
+    "UsageCount": 1
+  },
+  {
+    "CreatedAt": "2026-10-16 17:55:22.013843926 +0000 UTC",
+    "Description": "mount / from exec /bin/sh -c sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources     && printf 'Acquire::Retries \"3\";\\n' > /etc/apt/apt.conf.d/80-retries     && apt-get update && apt-get install -y --no-install-recommends ca-certificates curl git     && rm -rf /var/lib/apt/lists/*",
+    "ID": "mccvm3feqidgeqg3m88m4zj2n",
+    "LastUsedAt": "16 minutes ago",
+    "Mutable": false,
+    "Parents": [
+      "c80yewkm1r6a0efo6hmtl6xzb"
+    ],
+    "Reclaimable": true,
+    "Shared": false,
+    "Size": "136.9MB",
+    "Type": "regular",
+    "UsageCount": 1
+  },
+  {
+    "CreatedAt": "2026-10-16 17:56:43.870949231 +0000 UTC",
+    "Description": "mount / from exec /bin/sh -c chmod -R a+rX /app/src /app/prompts /app/dev_plan     && chmod a+r /app/pyproject.toml /app/uv.lock /app/README.md",
+    "ID": "nwzb3l0x1d2du7c0p8osgkd1g",
+    "LastUsedAt": "16 minutes ago",
+    "Mutable": false,
+    "Parents": [
+      "vm1kt9zm2uanbt8zbhnui7ing"
+    ],
+    "Reclaimable": true,
+    "Shared": false,
+    "Size": "208.2MB",
+    "Type": "regular",
+    "UsageCount": 1
+  },
+  {
+    "CreatedAt": "2026-10-16 17:56:37.041215326 +0000 UTC",
+    "Description": "[stage-1  7/14] COPY src ./src",
+    "ID": "ybbkeuupvyigz5polwoxekxm1",
+    "LastUsedAt": "16 minutes ago",
+    "Mutable": false,
+    "Parents": [
+      "zkttz2h6nhtelqwvxlbqgyw5n"
+    ],
+    "Reclaimable": true,
+    "Shared": false,
+    "Size": "230MB",
+    "Type": "regular",
+    "UsageCount": 1
+  },
+  {
+    "CreatedAt": "2026-10-16 17:55:01.97523565 +0000 UTC",
+    "Description": "copy /context /",
+    "ID": "yvfed11y00kyp86rhwvzm77wm",
+    "LastUsedAt": "16 minutes ago",
+    "Mutable": true,
+    "Parents": null,
+    "Reclaimable": true,
+    "Shared": false,
+    "Size": "556.4MB",
+    "Type": "regular",
+    "UsageCount": 1
+  },
+  {
+    "CreatedAt": "2026-10-16 17:55:26.939309378 +0000 UTC",
+    "Description": "mount / from exec /bin/sh -c uv sync --frozen --no-install-project --no-group dev",
+    "ID": "wwyucuadbxjr86pify3r4svcy",
+    "LastUsedAt": "16 minutes ago",
+    "Mutable": false,
+    "Parents": [
+      "v4s4lz07gs5rkjl36z5e2j40o"
+    ],
+    "Reclaimable": true,
+    "Shared": false,
+    "Size": "1.12GB",
+    "Type": "regular",
+    "UsageCount": 1
+  },
+  {
+    "CreatedAt": "2026-10-16 17:56:36.248303547 +0000 UTC",
+    "Description": "mount / from exec /bin/sh -c playwright install --with-deps chromium",
+    "ID": "zkttz2h6nhtelqwvxlbqgyw5n",
+    "LastUsedAt": "16 minutes ago",
+    "Mutable": false,
+    "Parents": [
+      "wwyucuadbxjr86pify3r4svcy"
+    ],
+    "Reclaimable": true,
+    "Shared": false,
+    "Size": "1.46GB",
+    "Type": "regular",
+    "UsageCount": 1
+  }
+]

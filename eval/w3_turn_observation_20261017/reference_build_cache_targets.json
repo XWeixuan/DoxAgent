@@ -1,0 +1,208 @@
+[
+  {
+    "CreatedAt": "2026-10-16 18:13:35.815336228 +0000 UTC",
+    "Description": "[stage-1 10/14] COPY --from=approved_ibapi /app/.venv/lib/python3.11/site-packages/ibapi-10.49.2.dist-info /app/.venv/lib/python3.11/site-packages/ibapi-10.49.2.dist-info",
+    "ID": "fmwu6gbwn2li7j1tjzxhja505",
+    "LastUsedAt": "",
+    "Mutable": false,
+    "Parents": [
+      "r0i2l71yrcpltu4fbom9xinmb"
+    ],
+    "Reclaimable": false,
+    "Shared": false,
+    "Size": "110.3kB",
+    "Type": "regular",
+    "UsageCount": 0
+  },
+  {
+    "CreatedAt": "2026-10-16 18:12:11.143225702 +0000 UTC",
+    "Description": "[stage-1  4/14] COPY pyproject.toml uv.lock README.md ./",
+    "ID": "af2pu6das4c9p6bck7sspw1u4",
+    "LastUsedAt": "",
+    "Mutable": false,
+    "Parents": [
+      "044wwycahy3vhodo72yxhf2av"
+    ],
+    "Reclaimable": false,
+    "Shared": false,
+    "Size": "535kB",
+    "Type": "regular",
+    "UsageCount": 0
+  },
+  {
+    "CreatedAt": "2026-10-16 18:13:36.656759889 +0000 UTC",
+    "Description": "[stage-1 13/14] COPY dev_plan/workflow_v2/api_contract ./dev_plan/workflow_v2/api_contract",
+    "ID": "ew371qt4y3nr0b01mx9y2d0c8",
+    "LastUsedAt": "",
+    "Mutable": false,
+    "Parents": [
+      "rgatvkrr0prgi02hf3dvw4x9d"
+    ],
+    "Reclaimable": false,
+    "Shared": false,
+    "Size": "734.3kB",
+    "Type": "regular",
+    "UsageCount": 0
+  },
+  {
+    "CreatedAt": "2026-10-16 18:13:36.62991109 +0000 UTC",
+    "Description": "[stage-1 12/14] COPY prompts ./prompts",
+    "ID": "rgatvkrr0prgi02hf3dvw4x9d",
+    "LastUsedAt": "",
+    "Mutable": false,
+    "Parents": [
+      "n0med1er7mfm0vdk3wacvs8cc"
+    ],
+    "Reclaimable": false,
+    "Shared": false,
+    "Size": "1.705MB",
+    "Type": "regular",
+    "UsageCount": 0
+  },
+  {
+    "CreatedAt": "2026-10-16 18:13:35.778855019 +0000 UTC",
+    "Description": "[stage-1  9/14] COPY --from=approved_ibapi /app/.venv/lib/python3.11/site-packages/ibapi /app/.venv/lib/python3.11/site-packages/ibapi",
+    "ID": "r0i2l71yrcpltu4fbom9xinmb",
+    "LastUsedAt": "",
+    "Mutable": false,
+    "Parents": [
+      "g5ih3746yf08rl4pxegqhzqhf"
+    ],
+    "Reclaimable": false,
+    "Shared": false,
+    "Size": "1.911MB",
+    "Type": "regular",
+    "UsageCount": 0
+  },
+  {
+    "CreatedAt": "2026-10-16 18:13:35.571860119 +0000 UTC",
+    "Description": "mount / from exec /bin/sh -c uv sync --frozen --no-group dev",
+    "ID": "g5ih3746yf08rl4pxegqhzqhf",
+    "LastUsedAt": "",
+    "Mutable": false,
+    "Parents": [
+      "fsdigrwnghk4stk9pf3336w9n"
+    ],
+    "Reclaimable": false,
+    "Shared": false,
+    "Size": "3.176MB",
+    "Type": "regular",
+    "UsageCount": 0
+  },
+  {
+    "CreatedAt": "2026-10-16 18:13:36.556272487 +0000 UTC",
+    "Description": "mount / from exec /bin/sh -c uv pip install --python /app/.venv/bin/python protobuf==5.29.5     && uv pip check --python /app/.venv/bin/python",
+    "ID": "n0med1er7mfm0vdk3wacvs8cc",
+    "LastUsedAt": "",
+    "Mutable": false,
+    "Parents": [
+      "fmwu6gbwn2li7j1tjzxhja505"
+    ],
+    "Reclaimable": false,
+    "Shared": false,
+    "Size": "5.421MB",
+    "Type": "regular",
+    "UsageCount": 0
+  },
+  {
+    "CreatedAt": "2026-10-16 18:12:10.914469413 +0000 UTC",
+    "Description": "mount / from exec /bin/sh -c sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources     && printf 'Acquire::Retries \"3\";\\n' > /etc/apt/apt.conf.d/80-retries     && apt-get update && apt-get install -y --no-install-recommends ca-certificates curl git     && rm -rf /var/lib/apt/lists/*",
+    "ID": "044wwycahy3vhodo72yxhf2av",
+    "LastUsedAt": "",
+    "Mutable": false,
+    "Parents": [
+      "c80yewkm1r6a0efo6hmtl6xzb"
+    ],
+    "Reclaimable": false,
+    "Shared": false,
+    "Size": "136.9MB",
+    "Type": "regular",
+    "UsageCount": 0
+  },
+  {
+    "CreatedAt": "2026-10-16 18:13:38.569946367 +0000 UTC",
+    "Description": "mount / from exec /bin/sh -c chmod -R a+rX /app/src /app/prompts /app/dev_plan     && chmod a+r /app/pyproject.toml /app/uv.lock /app/README.md",
+    "ID": "1ot0ge7n7rstjl3xgbzofnryt",
+    "LastUsedAt": "",
+    "Mutable": false,
+    "Parents": [
+      "ew371qt4y3nr0b01mx9y2d0c8"
+    ],
+    "Reclaimable": false,
+    "Shared": false,
+    "Size": "208.2MB",
+    "Type": "regular",
+    "UsageCount": 0
+  },
+  {
+    "CreatedAt": "2026-10-16 18:13:31.799853239 +0000 UTC",
+    "Description": "[stage-1  7/14] COPY src ./src",
+    "ID": "fsdigrwnghk4stk9pf3336w9n",
+    "LastUsedAt": "",
+    "Mutable": false,
+    "Parents": [
+      "39kaodaqiumltnnvi405382g7"
+    ],
+    "Reclaimable": false,
+    "Shared": false,
+    "Size": "230.1MB",
+    "Type": "regular",
+    "UsageCount": 0
+  },
+  {
+    "CreatedAt": "2026-10-16 18:11:50.094329725 +0000 UTC",
+    "Description": "http url http://buildkit-session/iobh099jrvjpehocotnzxdzea",
+    "ID": "vs83hptku08uo13mbpb39xtp5",
+    "LastUsedAt": "",
+    "Mutable": false,
+    "Parents": null,
+    "Reclaimable": false,
+    "Shared": false,
+    "Size": "537.4MB",
+    "Type": "regular",
+    "UsageCount": 0
+  },
+  {
+    "CreatedAt": "2026-10-16 18:11:51.789522489 +0000 UTC",
+    "Description": "copy /context /",
+    "ID": "wluj3hvwo56idy0rvtz1ot8ae",
+    "LastUsedAt": "",
+    "Mutable": false,
+    "Parents": null,
+    "Reclaimable": false,
+    "Shared": false,
+    "Size": "556.5MB",
+    "Type": "regular",
+    "UsageCount": 0
+  },
+  {
+    "CreatedAt": "2026-10-16 18:12:15.456347767 +0000 UTC",
+    "Description": "mount / from exec /bin/sh -c uv sync --frozen --no-install-project --no-group dev",
+    "ID": "vnznyejf05vlp513xd2wvcmck",
+    "LastUsedAt": "",
+    "Mutable": false,
+    "Parents": [
+      "af2pu6das4c9p6bck7sspw1u4"
+    ],
+    "Reclaimable": false,
+    "Shared": false,
+    "Size": "1.12GB",
+    "Type": "regular",
+    "UsageCount": 0
+  },
+  {
+    "CreatedAt": "2026-10-16 18:13:30.983805075 +0000 UTC",
+    "Description": "mount / from exec /bin/sh -c playwright install --with-deps chromium",
+    "ID": "39kaodaqiumltnnvi405382g7",
+    "LastUsedAt": "",
+    "Mutable": false,
+    "Parents": [
+      "vnznyejf05vlp513xd2wvcmck"
+    ],
+    "Reclaimable": false,
+    "Shared": false,
+    "Size": "1.46GB",
+    "Type": "regular",
+    "UsageCount": 0
+  }
+]
