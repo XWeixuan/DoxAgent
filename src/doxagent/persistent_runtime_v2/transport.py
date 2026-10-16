@@ -42,6 +42,7 @@ class RuntimeResponsesRequest(Generic[T]):
     schema_name: str
     model: str | None = None
     reasoning_effort: str | None = None
+    timeout_seconds: float | None = None
     cache_context_keys: tuple[str, ...] = ()
     previous_response_id: str | None = None
     inherit_context: bool = False
@@ -83,6 +84,8 @@ class BailianRuntimeResponsesClient:
         reasoning_effort: str = "medium",
         timeout_seconds: float = 120.0,
         session_cache: bool = False,
+        w2_r1_model: str = "deepseek-v4.1-flash",
+        w2_r1_timeout_seconds: float = 180.0,
         client: OpenAI | None = None,
     ) -> None:
         if not api_key and client is None:
@@ -93,12 +96,28 @@ class BailianRuntimeResponsesClient:
         self.reasoning_effort = reasoning_effort
         self.timeout_seconds = timeout_seconds
         self.session_cache = session_cache
+        self.w2_r1_model = w2_r1_model
+        self.w2_r1_timeout_seconds = w2_r1_timeout_seconds
         self._client = client or OpenAI(
             api_key=api_key,
             base_url=base_url,
             timeout=timeout_seconds,
             max_retries=0,
         )
+
+    def model_settings(self) -> dict[str, Any]:
+        """Freeze per-round settings with the execution bundle, before admission."""
+        return {
+            "w12_model": self.model,
+            "w12_effort": self.reasoning_effort,
+            "w12_timeout_seconds": self.timeout_seconds,
+            "rounds": {
+                "W1:R1": {"reasoning_effort": "low"},
+                "W2:R1": {"model": self.w2_r1_model, "reasoning_effort": "low",
+                          "timeout_seconds": self.w2_r1_timeout_seconds},
+                "W2:R3": {"reasoning_effort": "low"},
+            },
+        }
 
     def complete(self, request: RuntimeResponsesRequest[T]) -> RuntimeResponsesResult[T]:
         started = perf_counter()
@@ -137,6 +156,16 @@ class BailianRuntimeResponsesClient:
             "store": True,
             "metadata": request.metadata,
         }
+        if (request.model or self.model) == "deepseek-v4.1-flash":
+            # Bailian DeepSeek supports JSON object, not Qwen's strict schema mode.
+            # The same schema remains in instructions and local validation/retry.
+            kwargs["text"] = {"format": {"type": "json_object"}}
+            kwargs["instructions"] += (
+                "\nOnly keys in properties are output fields; schema keywords such as "
+                "additionalProperties, required and $defs are not output fields."
+            )
+        if request.timeout_seconds is not None:
+            kwargs["timeout"] = request.timeout_seconds
         if request.replay_parent is not None:
             parent_input, parent_output = request.replay_parent
             kwargs["input"] = [

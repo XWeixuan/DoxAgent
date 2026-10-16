@@ -1558,3 +1558,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-17 W3自然流量验收补修：修复JobIndex读出副本的原地修改导致观测引用未持久化，引用改随原终态提交保存，并从已落盘结果恢复；新增持久化/ACK及重启接回2项回归，41项Worker/探针/usage相关复测通过。独立自然流量回执此前已完整保存，业务决策不受影响。
 
 2026-10-17 W3观测正式发布验收：main初版a3713de3、引用补修3c30365a均标准完整构建并发布Worker/Scheduler/API/Projector；保留其他容器、业务数据及原历史失败Case。自然流量5个OPEN交易turn已完整采集，8–13轮、约72–125秒，投影32–113毫秒；修正版自然样本引用ACK后仍保留，4份关键源码与提交一致，服务健康/零重启。按精确ID回收本轮两个构建的可回收非共享缓存，保留镜像/卷，可用空间恢复约6.4GiB。探针截止北京时间10:00:54不变，已安排达到20个覆盖HIT/非HIT或截止后停采汇总。详见docs/w3-sdk-turn-observation-20261017.md及eval/w3_turn_observation_20261017。
+
+2026-10-17 W2R1时效优化：新增按轮次冻结的模型/effort/timeout配置；新Case W2R1使用百炼deepseek-v4.1-flash low、180秒，W1R1/W2R3保持原模型改low，其余轮次保持原设置。DeepSeek使用JSON object结构化输出并保留原Schema校验及纠错重试，成功/失败回执记录实际模型、推理强度、传输格式与超时；旧Case/旧回执保持兼容。125项相关回归通过；本条提交仅含本轮实现，不包含其他会话的未提交提示词/Worker修改。

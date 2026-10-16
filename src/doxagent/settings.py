@@ -843,6 +843,14 @@ class DoxAgentSettings(BaseSettings):
         gt=0,
         validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_TIMEOUT_SECONDS",
     )
+    persistent_runtime_v2_w2_r1_model: str = Field(
+        default="deepseek-v4.1-flash",
+        validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_W2_R1_MODEL",
+    )
+    persistent_runtime_v2_w2_r1_timeout_seconds: float = Field(
+        default=180.0, gt=0,
+        validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_W2_R1_TIMEOUT_SECONDS",
+    )
     persistent_runtime_v2_retry_attempts: int = Field(
         default=1,
         ge=0,

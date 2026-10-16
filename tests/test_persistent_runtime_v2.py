@@ -1052,6 +1052,79 @@ class _RawOutputOpenAIClient:
         )()
 
 
+@pytest.mark.parametrize("lane,round_name,model,effort,timeout", [
+    ("W1", "R1", "qwen3.8-flash", "low", 120),
+    ("W1", "R2", "qwen3.8-flash", "medium", 120),
+    ("W1", "R3", "qwen3.8-flash", "medium", 120),
+    ("W2", "R1", "deepseek-v4.1-flash", "low", 180),
+    ("W2", "R2", "qwen3.8-flash", "medium", 120),
+    ("W2", "R3", "qwen3.8-flash", "low", 120),
+])
+def test_round_settings_are_frozen_and_old_cases_keep_original_settings(
+    lane: str, round_name: str, model: str, effort: str, timeout: float,
+) -> None:
+    transport = BailianRuntimeResponsesClient(api_key="", base_url="https://example.invalid",
+                                             client=cast(Any, _OpenAIClient()))
+    responses = _FakeResponses()
+    responses.model_settings = transport.model_settings  # type: ignore[attr-defined]
+    repository = InMemoryPersistentRuntimeV2Repository()
+    service = PersistentRuntimeV2Service(repository=repository, responses=responses,
+        known_events=_FakeKnownEvents(), policies=_FakePolicies(), dispatch_effects=False)
+    case = service.execute_message(_source())
+    config = service._round_model_settings(case, lane, round_name)
+    assert (config["model"], config["reasoning_effort"], config["timeout_seconds"]) == (model, effort, timeout)
+    for request in responses.calls:
+        if request.output_model is W1Round1Result:
+            assert (request.model,request.reasoning_effort,request.timeout_seconds)==("qwen3.8-flash","low",120)
+    turns = repository.list_turns(case.case_id)
+    assert next(t for t in turns if t.lane=="W1" and t.round_name=="R1").reasoning_effort=="low"
+    # Changing a later process's defaults must not mutate frozen settings.
+    responses.model = "changed-default"
+    assert service._round_model_settings(case,lane,round_name)==config
+    case.frozen_inputs["models"]={"w12_model":"qwen3.8-flash","w12_effort":"medium"}
+    old=service._round_model_settings(case,lane,round_name)
+    assert old["model"]=="qwen3.8-flash" and old["reasoning_effort"]=="medium"
+
+
+@pytest.mark.parametrize("valid", [True, False])
+def test_deepseek_json_object_preserves_schema_validation_and_timeout(valid: bool) -> None:
+    class Endpoint:
+        def create(self, **kwargs):
+            self.kwargs=kwargs
+            return type("Response",(),{"id":"resp-ds", "usage":_Usage(), "output_text":
+                '{"candidate_policy_ids":[],"reason":"No match"}' if valid else
+                '{"candidate_policy_ids":[],"reason":"No match","additionalProperties":false}'})()
+    endpoint=Endpoint()
+    client=BailianRuntimeResponsesClient(api_key="",base_url="https://example.invalid",
+        client=cast(Any,type("Client",(),{"responses":endpoint})()))
+    request=RuntimeResponsesRequest(instructions="JSON recall",payload={"source_message":{"title":"x"}},
+        output_model=W2Round1RecallResult,schema_name="w2_round1_recall_result",
+        model="deepseek-v4.1-flash",reasoning_effort="low",timeout_seconds=180)
+    if valid:
+        assert client.complete(request).value.candidate_policy_ids==[]
+    else:
+        with pytest.raises(RuntimeResponsesError) as caught:client.complete(request)
+        assert caught.value.retryable and caught.value.code=="structured_output_validation_failed"
+        assert caught.value.usage["raw_output"].endswith('false}')
+    assert endpoint.kwargs["text"]=={"format":{"type":"json_object"}}
+    assert endpoint.kwargs["timeout"]==180 and endpoint.kwargs["reasoning"]=={"effort":"low"}
+    assert "candidate_policy_ids" in endpoint.kwargs["instructions"]
+    assert "previous_response_id" not in endpoint.kwargs
+
+
+def test_failed_round_receipt_records_actual_frozen_model_settings() -> None:
+    responses=_RetryingW1Responses(10)
+    responses.model_settings=lambda: {"w12_model":responses.model,"w12_effort":"medium",
+        "rounds":{"W1:R1":{"reasoning_effort":"low","timeout_seconds":180}}}  # type: ignore[attr-defined]
+    repository=InMemoryPersistentRuntimeV2Repository()
+    service=PersistentRuntimeV2Service(repository=repository,responses=responses,
+        known_events=_FakeKnownEvents(),policies=_FakePolicies(),dispatch_effects=False,
+        retry_delays_seconds=(0,),sleep=lambda _:None)
+    case=service.execute_message(_source())
+    turns=[t for t in repository.list_turns(case.case_id) if t.lane=="W1"]
+    assert turns and all(t.reasoning_effort=="low" and t.timeout_seconds==180 for t in turns)
+
+
 def test_bailian_transport_uses_readonly_prefix_and_implicit_cache() -> None:
     fake = _OpenAIClient()
     client = BailianRuntimeResponsesClient(

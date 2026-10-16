@@ -505,8 +505,9 @@ class RuntimeModelTurn(RuntimeV2Model):
     previous_response_id: str | None = None
     model: str
     provider: Literal["bailian"] = "bailian"
-    reasoning_effort: Literal["medium"] = "medium"
-    transport: Literal["responses_json_schema"] = "responses_json_schema"
+    reasoning_effort: Literal["low", "medium"] = "medium"
+    transport: Literal["responses_json_schema", "responses_json_object"] = "responses_json_schema"
+    timeout_seconds: float | None = Field(default=None, gt=0)
     input_tokens: int | None = Field(default=None, ge=0)
     output_tokens: int | None = Field(default=None, ge=0)
     reasoning_tokens: int | None = Field(default=None, ge=0)

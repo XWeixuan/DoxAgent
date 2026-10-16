@@ -587,7 +587,9 @@ class PersistentRuntimeV2Service:
 
             case.frozen_inputs["models"] = json.loads(models)
         else:
-            case.frozen_inputs["models"] = {
+            case.frozen_inputs["models"] = self.responses.model_settings() if hasattr(
+                self.responses, "model_settings"
+            ) else {
                 "w12_model": self.responses.model,
                 "w12_effort": getattr(self.responses, "reasoning_effort", "medium"),
             }
@@ -1106,6 +1108,23 @@ class PersistentRuntimeV2Service:
             }
         )
 
+    def _round_model_settings(self, case: RuntimeCase, lane: str, round_name: str) -> dict[str, Any]:
+        models = case.frozen_inputs.get("models", {})
+        settings = {
+            "model": models.get("w12_model", self.responses.model),
+            "reasoning_effort": models.get("w12_effort", "medium"),
+            "timeout_seconds": models.get(
+                "w12_timeout_seconds", getattr(self.responses, "timeout_seconds", 120.0)
+            ),
+        }
+        # Old Cases without a per-round manifest keep their original model/effort.
+        settings.update(models.get("rounds", {}).get(f"{lane}:{round_name}", {}))
+        settings["transport"] = (
+            "responses_json_object" if settings["model"] == "deepseek-v4.1-flash"
+            else "responses_json_schema"
+        )
+        return settings
+
     def _call_with_retry(
         self,
         *,
@@ -1121,6 +1140,7 @@ class PersistentRuntimeV2Service:
         inherit_context: bool = False,
         validate: Callable[[T], None] | None = None,
     ) -> tuple[T, str]:
+        model_settings = self._round_model_settings(case, lane, round_name)
         turns = [
             turn
             for turn in self.repository.list_turns(case.case_id)
@@ -1252,8 +1272,9 @@ class PersistentRuntimeV2Service:
                 replay_parent = self._parent_replay(case, lane) if recovery else None
                 result = self.responses.complete(
                     RuntimeResponsesRequest(
-                        model=case.frozen_inputs.get("models", {}).get("w12_model"),
-                        reasoning_effort=case.frozen_inputs.get("models", {}).get("w12_effort"),
+                        model=model_settings["model"],
+                        reasoning_effort=model_settings["reasoning_effort"],
+                        timeout_seconds=model_settings["timeout_seconds"],
                         instructions=frozen["instructions"]
                         + (_retry_correction_context(last_error) if last_error else ""),
                         payload=payload,
@@ -1315,9 +1336,7 @@ class PersistentRuntimeV2Service:
                         else RuntimeTechnicalStatus.FAILED
                     ),
                     previous_response_id=previous_response_id,
-                    model=case.frozen_inputs.get("models", {}).get(
-                        "w12_model", self.responses.model
-                    ),
+                    **model_settings,
                     latency_ms=round((perf_counter() - started) * 1000),
                     started_at=started_at,
                     finished_at=utc_now(),
@@ -1419,7 +1438,7 @@ class PersistentRuntimeV2Service:
                 context_mode=context_mode,
                 response_id=result.response_id,
                 previous_response_id=previous_response_id,
-                model=case.frozen_inputs.get("models", {}).get("w12_model", self.responses.model),
+                **self._round_model_settings(case, lane, round_name),
                 input_tokens=result.input_tokens,
                 output_tokens=result.output_tokens,
                 reasoning_tokens=result.reasoning_tokens,

@@ -111,10 +111,12 @@ def build_persistent_runtime_v2_service(
         reasoning_effort=settings.persistent_runtime_v2_reasoning_effort,
         timeout_seconds=settings.persistent_runtime_v2_timeout_seconds,
         session_cache=settings.persistent_runtime_v2_session_cache_enabled,
+        w2_r1_model=settings.persistent_runtime_v2_w2_r1_model,
+        w2_r1_timeout_seconds=settings.persistent_runtime_v2_w2_r1_timeout_seconds,
     )
     logger.info(
-        "Persistent Runtime V2 model transport configured: timeout_seconds=%s automatic_retries=%s",
-        settings.persistent_runtime_v2_timeout_seconds,
+        "Persistent Runtime V2 model transport configured: rounds=%s automatic_retries=%s",
+        responses.model_settings(),
         settings.persistent_runtime_v2_retry_attempts,
     )
     projection_outbox = None
@@ -229,8 +231,7 @@ def build_persistent_runtime_v2_service(
             )
         assets["runtime_models.json"] = json.dumps(
             {
-                "w12_model": responses.model,
-                "w12_effort": responses.reasoning_effort,
+                **responses.model_settings(),
                 "w3_model": settings.persistent_runtime_v2_w3_model,
                 "w3_effort": settings.persistent_runtime_v2_w3_reasoning_effort,
                 "codex_model": settings.codex_model,
