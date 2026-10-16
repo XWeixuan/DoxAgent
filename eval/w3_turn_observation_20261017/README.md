@@ -1,6 +1,6 @@
 # W3 SDK turn 观测发布与自然流量验收
 
-代码 release：`a3713de3d9f63405587751df44af87f4e788587a`。
+初版 release：`a3713de3d9f63405587751df44af87f4e788587a`；最终生产代码 release：`3c30365a0586959f632d1a62041d2b6ccdd7ea0c`。补修的存储/ACK及结果恢复由41项相关复测和新版本自然Case的ACK后引用确认。
 
 - `tests.txt`：222 项相关回归。
 - `parser_benchmark.json`：只验证现有 34 份轨迹 fixture 的投影，不调用模型、不重放业务；最大 3.954 ms、紧凑原生投影最大 31,435 字节。真实生产端到端开销以自然回执为准。
@@ -15,3 +15,5 @@
 远端私有发布目录：`/var/lib/doxagent/w3-turn-observation-20261017`。生产独立回执目录：`/data/workspaces/w3-observation/receipts`。
 
 采集从北京时间 2026-10-17 02:00:54 开始，至当天 10:00:54 自动停止。探针有效开关及容量上限见 `control.json`；可以随时 disable，不需要重启。已设置同会话 15 分钟一次的采集验收；达到 20 条完整、同时覆盖 HIT/非 HIT，或截止后关闭并汇总。其余时期保持安静，不人为补样本。
+
+后续自动采集验收的 automation id 为 `w3`（应用自动化，不是业务 Thread）。导出 report 后统一保留一个结尾换行，避免生成器 print 增加空白行。
