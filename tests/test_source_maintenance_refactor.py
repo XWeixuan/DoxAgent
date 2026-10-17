@@ -247,6 +247,36 @@ def _load_desktop(name):
     return module
 
 
+def test_inventory_does_not_report_stale_credentials_as_valid(seeded, tmp_path):
+    from doxagent.site_strategy.maintenance import MaintenanceController
+    from doxagent.site_strategy.schema import SiteIdentityAuth
+
+    repository, service = seeded
+    plan = migration_plan(repository)
+    apply_migration(
+        repository,
+        plan,
+        expected_revision=plan["expected_revision"],
+        backup_path=tmp_path / "before.sqlite3",
+    )
+    scope = GovernanceRepository(repository).get_scope("source:trendforce_news")
+    repository.save_site_identity_auth(
+        SiteIdentityAuth(
+            site_id=scope.owner_site_id,
+            identity_id=scope.primary_identity_id,
+            auth_state="VALID",
+            observed_session_revision=0,
+        )
+    )
+    runtime = repository.get_identity_runtime(scope.primary_identity_id)
+    repository.save_identity_runtime(
+        runtime.model_copy(update={"session_revision": 1}), expected_generation=runtime.generation
+    )
+    rows = MaintenanceController(service)._inventory()["profiles"]
+    row = next(r for r in rows if r["identity_id"] == scope.primary_identity_id)
+    assert row["auth_state"] == "REVERIFY_REQUIRED" and row["stored_auth_state"] == "VALID"
+
+
 def test_gui_unexpected_thread_error_always_reaches_main_thread_completion():
     module = _load_desktop("site-login-ui.py")
     app = object.__new__(module.SiteLoginApp)
@@ -647,6 +677,44 @@ async def test_cold_fallback_uses_formal_parser_then_sticky_activation(seeded, t
     )
     assert service.failover.usable(scope, scope.fallback_identity_id, SitePurpose.CRAWLER)
     assert service.failover.schedule(scope, SitePurpose.CRAWLER) is None
+
+
+@pytest.mark.asyncio
+async def test_body_cold_canary_can_use_the_primary_verified_article(seeded, tmp_path, monkeypatch):
+    from types import SimpleNamespace
+
+    from doxagent.site_strategy.runtime import RuntimeResponse
+    from doxagent.site_strategy.schema import SitePurpose
+
+    repository, service = seeded
+    plan = migration_plan(repository)
+    apply_migration(
+        repository,
+        plan,
+        expected_revision=plan["expected_revision"],
+        backup_path=tmp_path / "before.sqlite3",
+    )
+    store = GovernanceRepository(repository)
+    scope = store.get_scope("source:trendforce_news")
+    url = "https://www.trendforce.com/news/2026/10/17/verified-article/"
+    store.record_capability(scope, scope.primary_identity_id, "BODY", "FULL", url=url)
+
+    async def stop(*args, **kwargs):
+        return True
+
+    async def attempt(request, *args):
+        assert request.url == url
+        return RuntimeResponse(200, url, {}, body="capture", body_quality="FULL"), None, "ok", None
+
+    service.runtime.browser_runtimes.stop_identity = stop
+    monkeypatch.setattr(service, "_attempt", attempt)
+    monkeypatch.setattr(
+        "doxagent.site_strategy.failover.validate_capture",
+        lambda *a, **k: SimpleNamespace(body="FULL"),
+    )
+    result = await service.failover.activate(scope, SitePurpose.BODY)
+    assert result["ready"] is True
+    assert service.failover.usable(scope, scope.fallback_identity_id, SitePurpose.BODY)
 
 
 @pytest.mark.asyncio

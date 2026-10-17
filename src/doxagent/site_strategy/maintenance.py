@@ -12,7 +12,7 @@ from .governance_models import (
     MaintenanceSession,
 )
 from .governance_repository import GovernanceRepository, safe_display_url
-from .schema import utc_now
+from .schema import SitePurpose, utc_now
 
 
 class MaintenanceController:
@@ -155,8 +155,29 @@ class MaintenanceController:
                 if not profile or not egress:
                     continue
                 auth = repo.get_site_identity_auth(site_id, member)
+                epoch = repo.get_identity_runtime(member).session_revision
+                auth_display = (
+                    "REVERIFY_REQUIRED"
+                    if auth.auth_state.value == "VALID" and auth.observed_session_revision != epoch
+                    else auth.auth_state.value
+                )
                 health = runtime.combinations.get(member)
                 capabilities = health.capabilities if health else {}
+                cold_scope = next((s for s in scopes if s.scope_id == scope_id), None)
+
+                displays = {}
+                for purpose in (SitePurpose.CRAWLER, SitePurpose.BODY):
+                    evidence = capabilities.get(purpose.value, {})
+                    value = evidence.get("result", "NOT_TESTED")
+                    if (
+                        index
+                        and evidence
+                        and cold_scope
+                        and not self.service.failover.usable(cold_scope, member, purpose)
+                    ):
+                        value = f"{value} (cold-unverified)"
+                    displays[purpose] = value
+
                 rows.append(
                     {
                         "row_id": f"{scope_id}:{member}",
@@ -170,10 +191,8 @@ class MaintenanceController:
                         "profile_role": "primary" if index == 0 else "backup",
                         "priority": index,
                         "active": runtime.active_combination_id == member,
-                        "crawler_ready": capabilities.get("CRAWLER", {}).get(
-                            "result", "NOT_TESTED"
-                        ),
-                        "body_ready": capabilities.get("BODY", {}).get("result", "NOT_TESTED"),
+                        "crawler_ready": displays[SitePurpose.CRAWLER],
+                        "body_ready": displays[SitePurpose.BODY],
                         "combination_id": member,
                         "egress_id": egress.egress_id,
                         "egress_node": egress.node_ref,
@@ -182,7 +201,9 @@ class MaintenanceController:
                         "egress_status": egress.status,
                         "observed_ip": egress.observed_ip,
                         "observed_at": egress.observed_at,
-                        "auth_state": auth.auth_state.value,
+                        "auth_state": auth_display,
+                        "stored_auth_state": auth.auth_state.value,
+                        "credential_epoch": epoch,
                         "operational_state": profile.operational_state.value,
                         "verification_configured": bool(spec.auth.verification_url),
                         "verification_kind": spec.auth.verification_kind,

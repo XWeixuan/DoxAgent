@@ -23,6 +23,7 @@ def _files(root, *, deadline, limit=10000):
     """Do not follow symlinks/junction-like mount boundaries or scan unbounded trees."""
     result = []
     stack = [root]
+    complete = True
     device = root.stat().st_dev
     while stack and len(result) < limit and time.monotonic() < deadline:
         directory = stack.pop()
@@ -30,6 +31,7 @@ def _files(root, *, deadline, limit=10000):
             continue
         for child in directory.iterdir():
             if len(result) >= limit or time.monotonic() >= deadline:
+                complete = False
                 break
             info = child.lstat()
             if stat.S_ISLNK(info.st_mode):
@@ -38,7 +40,7 @@ def _files(root, *, deadline, limit=10000):
                 stack.append(child)
             elif stat.S_ISREG(info.st_mode):
                 result.append((child, info))
-    return result, not stack
+    return result, complete and not stack
 
 
 def _in_use(paths, deadline):
@@ -105,7 +107,7 @@ def maintain_profile(root, directory_key, *, allow_cache=False, seconds=1, now=N
                     # crosses filesystems; timeout leaves the lower-bound path.
                     usage = subprocess.check_output(
                         ["du", "-sb", "--one-file-system", "--", *map(str, cache_directories)],
-                        timeout=min(0.7, max(0.05, (deadline - time.monotonic()) / 3)),
+                        timeout=min(1.3, max(0.05, (deadline - time.monotonic()) * 0.7)),
                         stderr=subprocess.DEVNULL,
                     )
                     measured_total = sum(
@@ -113,7 +115,10 @@ def maintain_profile(root, directory_key, *, allow_cache=False, seconds=1, now=N
                     )
                 except (OSError, ValueError, subprocess.SubprocessError):
                     pass
-            scan_deadline = min(deadline - 0.1, time.monotonic() + min(0.7, seconds / 3))
+            scan_deadline = min(
+                deadline - 0.1,
+                time.monotonic() + min(0.25, max(0, deadline - time.monotonic()) / 3),
+            )
             for target in cache_directories:
                 entries, _ = _files(target, deadline=scan_deadline)
                 candidates.extend(entries)

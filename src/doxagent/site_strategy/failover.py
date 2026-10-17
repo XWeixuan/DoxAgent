@@ -163,6 +163,10 @@ class FailoverCoordinator:
         before = service.repository.get_runtime(f"scope:{scope.scope_id}")
         member = before.combinations.get(identity_id)
         last_url = member.capabilities.get("BODY", {}).get("last_url") if member else None
+        if not last_url:
+            primary_member = before.combinations.get(scope.primary_identity_id)
+            if primary_member:
+                last_url = primary_member.capabilities.get("BODY", {}).get("last_url")
         url = spec.auth.verification_url or scope.verification_plan.get("body_url") or last_url
         parameters = (
             scope.verification_plan.get("crawler")
