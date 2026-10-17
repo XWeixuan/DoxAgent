@@ -124,3 +124,38 @@ async def test_sdk_external_login_refresh_reads_current_snapshot(tmp_path):
     assert rpc._sync._approval_handler("item/commandExecution/requestApproval", {}) == {
         "decision": "decline"
     }
+
+
+def test_offline_startup_recovery_preserves_original_request_and_audits_failure(tmp_path):
+    from doxagent.codex_worker.job_store import JobStore
+    from doxagent.codex_worker.recover_startup import recover_startup
+    from doxagent.codex_worker.schema import WorkerJob
+
+    store = JobStore(tmp_path)
+    before = WorkerJob(
+        job_id="original-job",
+        run_id="original-owner",
+        attempt_id="original-attempt",
+        status="failed",
+        execution_phase="SETTLED",
+        infra_recovery_count=2,
+        error_code="WORKER_INFRA_RECOVERY_EXHAUSTED",
+        error_message="START_THREAD: required MCP handshake timeout",
+    )
+    store.save(before)
+    request = '{"idempotency_key":"original-frozen-identity","cutoff":"original"}'
+    with store.connect() as db:
+        db.execute("UPDATE jobs SET request=? WHERE id=?", (request, before.job_id))
+    resumed = recover_startup(store, before.job_id, reason="MCP cold startup repaired")
+    assert resumed.job_id == before.job_id
+    assert resumed.run_id == before.run_id
+    assert resumed.attempt_id == before.attempt_id
+    assert resumed.created_at == before.created_at
+    assert resumed.status == "queued"
+    with store.connect() as db:
+        assert db.execute("SELECT request FROM jobs").fetchone()[0] == request
+        event = json.loads(db.execute("SELECT payload FROM events").fetchone()[0])
+    assert event["payload"]["before"]["infra_recovery_count"] == 2
+    assert event["payload"]["preserved_request"] is True
+    with pytest.raises(ValueError, match="only a settled"):
+        recover_startup(store, before.job_id, reason="cannot duplicate a queued job")
