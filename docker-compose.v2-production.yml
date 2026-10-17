@@ -194,10 +194,12 @@ services:
   v2-initialization:
     <<: *backend
     command: [python, -m, doxagent.ticker_initialization.cli, worker]
+    secrets: [site_access_worker_token]
     depends_on:
       v2-migrate: {condition: service_completed_successfully}
       codex-worker: {condition: service_healthy}
       v2-cdecr-executor: {condition: service_healthy}
+      v2-site-access: {condition: service_healthy}
   v2-cdecr-executor:
     <<: *backend
     command: [python, -m, doxagent.ticker_initialization.cdecr_executor]

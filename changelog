@@ -1577,3 +1577,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 2026-10-18 COHR follow-up: dynamic plan expansion now reads NodeSpec fields only inside the write transaction; preserves frozen-spec and full dependency-graph validation without loading historical receipts.
 2026-10-18 COHR acceptance: Supplement resumed with four active model jobs; same lease token renewed beyond two minutes, zero restarts; 481 successful node payloads and original run/cutoff/execution identities preserved. Regression: 43 passed.
+
+2026-10-18 COHR/NBIS O4 recovery: initialization builds O4 in-process but lacked the Site Access worker secret mount. Declare secret and Site Access healthy dependency; extend deployment contract coverage (12 passed, 1 skipped). Applied production-only Compose overlay preserving image/env, authenticated resolve 200, resumed original O4 nodes through Control; all 544/967 successful node payloads and cutoffs preserved. Repaired Guardian bare-repository fetch refspec; audited NBIS operator takeover. See docs/cohr-nbis-o4-recovery-20261018.md.
