@@ -1575,3 +1575,4 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 2026-10-18 COHR supplement lease recovery: replace single-node full-history hydration with indexed lookup; filter top-level scheduling before expanding native receipts. Preserve lease fencing, original execution identities, frozen inputs and successful outputs. Covers native-content isolation and durable stage scheduling regressions.
 
+2026-10-18 COHR follow-up: dynamic plan expansion now reads NodeSpec fields only inside the write transaction; preserves frozen-spec and full dependency-graph validation without loading historical receipts.

@@ -40,6 +40,18 @@ def test_targeted_reads_do_not_expand_unrelated_child_receipts(tmp_path):
         repo.node(run.initialization_id, "d3.old")
     with pytest.raises(ContentUnavailable):
         repo.nodes(run.initialization_id)
+    lease = repo.claim("worker")
+    assert lease is not None
+    # Dynamic planning validates topology/inputs, never historical results.
+    repo.expand(lease, [NodeSpec(key="d3.new", block="D3", inputs={"managed_by": "d3"})])
+    assert repo.node(run.initialization_id, "d3.new").status == "PENDING"
+    repo.expand(lease, [NodeSpec(key="d3.new", block="D3", inputs={"managed_by": "d3"})])
+    from doxagent.ticker_initialization.schema import InitializationError
+
+    with pytest.raises(InitializationError, match="frozen node plan conflict"):
+        repo.expand(lease, [NodeSpec(key="d3.new", block="D3", inputs={"managed_by": "other"})])
+    with pytest.raises(ValueError, match="cyclic or missing"):
+        repo.expand(lease, [NodeSpec(key="d3.invalid", block="D3", dependencies=["missing"])])
 
 
 def test_root_selection_preserves_ownership_when_inputs_are_externalized(tmp_path):

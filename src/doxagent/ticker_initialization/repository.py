@@ -1474,9 +1474,13 @@ class InitializationRepository:
         with self._write() as db:
             self._fence(db, lease)
             existing = [
-                NodeRecord.model_validate_json(row[0])
+                NodeSpec.model_validate_json(row[0])
                 for row in db.execute(
-                    "SELECT payload FROM initialization_nodes WHERE run_id=?",
+                    "SELECT json_object('key',node_key,"
+                    "'block',json_extract(payload,'$.block'),"
+                    "'dependencies',json_extract(payload,'$.dependencies'),"
+                    "'inputs',json_extract(payload,'$.inputs')) AS payload "
+                    "FROM initialization_nodes WHERE run_id=?",
                     (lease.initialization_id,),
                 )
             ]
@@ -1484,40 +1488,16 @@ class InitializationRepository:
             for spec in plan:
                 old = by_key.get(spec.key)
                 if old is not None:
-                    old_spec = NodeSpec(
-                        **old.model_dump(
-                            include={
-                                "key",
-                                "block",
-                                "dependencies",
-                                "inputs",
-                            }
-                        )
-                    )
-                    if old_spec != spec:
+                    if old != spec:
                         raise InitializationError(f"frozen node plan conflict: {spec.key}")
                 else:
-                    by_key[spec.key] = NodeRecord(**spec.model_dump())
-            self._validate_plan(
-                [
-                    NodeSpec(
-                        **n.model_dump(
-                            include={
-                                "key",
-                                "block",
-                                "dependencies",
-                                "inputs",
-                            }
-                        )
-                    )
-                    for n in by_key.values()
-                ]
-            )
+                    by_key[spec.key] = spec
+            self._validate_plan(list(by_key.values()))
             added = [node for key, node in by_key.items() if key not in {n.key for n in existing}]
             if not added:
                 return
             for node in added:
-                self._save_node(db, lease.initialization_id, node)
+                self._save_node(db, lease.initialization_id, NodeRecord(**node.model_dump()))
             self._event(
                 db,
                 self._run(db, lease.initialization_id),
