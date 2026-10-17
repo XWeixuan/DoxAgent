@@ -1,0 +1,168 @@
+{
+  "as_of": "2026-10-17T02:49:17.947269+00:00",
+  "groups": [
+    {
+      "release": "3c30365a0586959f632d1a62041d2b6ccdd7ea0c",
+      "case_type": "OPEN_EVENT_EVALUATION",
+      "ticker": "BE",
+      "decision": "NO_TRADE",
+      "observation_status": "completed",
+      "count": 10,
+      "sdk_ms": {
+        "n": 10,
+        "p50": 67519,
+        "p90": 118068,
+        "max": 178349
+      },
+      "rounds": {
+        "n": 10,
+        "p50": 8,
+        "p90": 13,
+        "max": 15
+      }
+    },
+    {
+      "release": "3c30365a0586959f632d1a62041d2b6ccdd7ea0c",
+      "case_type": "OPEN_EVENT_EVALUATION",
+      "ticker": "INTC",
+      "decision": "NO_TRADE",
+      "observation_status": "completed",
+      "count": 21,
+      "sdk_ms": {
+        "n": 21,
+        "p50": 87633,
+        "p90": 143510,
+        "max": 203372
+      },
+      "rounds": {
+        "n": 21,
+        "p50": 7,
+        "p90": 13,
+        "max": 17
+      }
+    },
+    {
+      "release": "3c30365a0586959f632d1a62041d2b6ccdd7ea0c",
+      "case_type": "OPEN_EVENT_EVALUATION",
+      "ticker": "MU",
+      "decision": "NO_TRADE",
+      "observation_status": "completed",
+      "count": 10,
+      "sdk_ms": {
+        "n": 10,
+        "p50": 99757,
+        "p90": 127895,
+        "max": 136167
+      },
+      "rounds": {
+        "n": 10,
+        "p50": 9,
+        "p90": 13,
+        "max": 14
+      }
+    },
+    {
+      "release": "3c30365a0586959f632d1a62041d2b6ccdd7ea0c",
+      "case_type": "OPEN_EVENT_EVALUATION",
+      "ticker": "RKLB",
+      "decision": "NO_TRADE",
+      "observation_status": "completed",
+      "count": 4,
+      "sdk_ms": {
+        "n": 4,
+        "p50": 99877,
+        "p90": 153475,
+        "max": 153475
+      },
+      "rounds": {
+        "n": 4,
+        "p50": 10,
+        "p90": 12,
+        "max": 12
+      }
+    },
+    {
+      "release": "3c30365a0586959f632d1a62041d2b6ccdd7ea0c",
+      "case_type": "POLICY_RELATED_EVALUATION",
+      "ticker": "BE",
+      "decision": "NO_TRADE",
+      "observation_status": "completed",
+      "count": 1,
+      "sdk_ms": {
+        "n": 1,
+        "p50": 137610,
+        "p90": 137610,
+        "max": 137610
+      },
+      "rounds": {
+        "n": 1,
+        "p50": 13,
+        "p90": 13,
+        "max": 13
+      }
+    },
+    {
+      "release": "3c30365a0586959f632d1a62041d2b6ccdd7ea0c",
+      "case_type": "POLICY_RELATED_EVALUATION",
+      "ticker": "INTC",
+      "decision": "NO_TRADE",
+      "observation_status": "completed",
+      "count": 2,
+      "sdk_ms": {
+        "n": 2,
+        "p50": 126656,
+        "p90": 139081,
+        "max": 139081
+      },
+      "rounds": {
+        "n": 2,
+        "p50": 11,
+        "p90": 13,
+        "max": 13
+      }
+    },
+    {
+      "release": "3c30365a0586959f632d1a62041d2b6ccdd7ea0c",
+      "case_type": "POLICY_RELATED_EVALUATION",
+      "ticker": "MU",
+      "decision": "NO_TRADE",
+      "observation_status": "completed",
+      "count": 1,
+      "sdk_ms": {
+        "n": 1,
+        "p50": 115559,
+        "p90": 115559,
+        "max": 115559
+      },
+      "rounds": {
+        "n": 1,
+        "p50": 11,
+        "p90": 11,
+        "max": 11
+      }
+    },
+    {
+      "release": "a3713de3d9f63405587751df44af87f4e788587a",
+      "case_type": "OPEN_EVENT_EVALUATION",
+      "ticker": "INTC",
+      "decision": "NO_TRADE",
+      "observation_status": "completed",
+      "count": 4,
+      "sdk_ms": {
+        "n": 4,
+        "p50": 102900,
+        "p90": 125391,
+        "max": 125391
+      },
+      "rounds": {
+        "n": 4,
+        "p50": 10,
+        "p90": 13,
+        "max": 13
+      }
+    }
+  ],
+  "stop_condition_met": false,
+  "collection_ended": true,
+  "stop_reason": "deadline_reached_without_POLICY_HIT_REVIEW_or_trade_intent"
+}

@@ -1,5 +1,7 @@
 # W3 SDK turn 观测发布与自然流量验收
 
+本轮已结束：原定北京时间10:00:54自动停采、10:49:05显式关闭，automation `w3` 已暂停。最终53条全部完整，但0 HIT/0交易意图，按实际覆盖收尾。最终报告：[W3 SDK自然流量审查](../../docs/w3-sdk-turn-natural-flow-final-20261017.md)。
+
 初版 release：`a3713de3d9f63405587751df44af87f4e788587a`；最终生产代码 release：`3c30365a0586959f632d1a62041d2b6ccdd7ea0c`。补修的存储/ACK及结果恢复由41项相关复测和新版本自然Case的ACK后引用确认。
 
 - `tests.txt`：222 项相关回归。
@@ -14,6 +16,8 @@
 
 远端私有发布目录：`/var/lib/doxagent/w3-turn-observation-20261017`。生产独立回执目录：`/data/workspaces/w3-observation/receipts`。
 
-采集从北京时间 2026-10-17 02:00:54 开始，至当天 10:00:54 自动停止。探针有效开关及容量上限见 `control.json`；可以随时 disable，不需要重启。已设置同会话 15 分钟一次的采集验收；达到 20 条完整、同时覆盖 HIT/非 HIT，或截止后关闭并汇总。其余时期保持安静，不人为补样本。
+采集从北京时间 2026-10-17 02:00:54 开始，至当天 10:00:54 自动停止。探针有效开关及容量上限见 `control.json`；可以随时 disable，不需要重启。初始设置同会话15分钟一次的采集验收，结束时实际设置为120分钟一次，本轮保留该周期并暂停；检查间隔没有延长探针截止时间。原结束条件为20条完整且同时覆盖HIT/非HIT，或截止后按实际样本汇总；其余时期保持安静，不人为补样本。
 
 后续自动采集验收的 automation id 为 `w3`（应用自动化，不是业务 Thread）。导出 report 后统一保留一个结尾换行，避免生成器 print 增加空白行。
+
+最终新增产物：`analyze_final.py`纯本地复算；`analysis_summary.json`/`sample_coverage.json`分组及分布；`case_metrics.csv`53条、`round_metrics.csv`495轮；`window_job_coverage.json`覆盖核对；`probe_control_final.json`和`automation_final.json`关闭证据；`snapshots/`保留中间运行/partial与最终快照。分析不保留新增工具/网页正文，不修改原始回执为“修复后的历史”。

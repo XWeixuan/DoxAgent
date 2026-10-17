@@ -1564,3 +1564,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-17 W2R1低推理配置生产生效：实现00acd74a已push并按标准Dockerfile从提交源码完整构建，仅替换Scheduler。五份部署源码与Git blob一致；隔离百炼实调12.858秒，生产新Case W2R1 DeepSeek low/180秒成功（12.144秒）、W1R1 Qwen low成功、W1R2仍medium。W2R3配置/回归已验证，首个自然Case无候选故未实际执行R3。仅回收本轮两个精确构建上下文缓存约1.094GB，磁盘剩约1.4GB。发布回执：docs/w2r1-deepseek-low-release-20261017.md。
 
 2026-10-17 CDECR初始化历史窗口：将统一HistoricalNewsLoader的回溯周期从14天延长至21天，常规初始化与预构建共用；保持Finnhub/Benzinga来源、研究截止时间和最多500篇筛选上限不变。新增精确21天请求/准入边界回归，历史抓取相关7项测试通过。
+
+2026-10-17 [W3 natural-flow final] 自然流量观测按原截止时间结束，显式disable确认active=false并暂停w3自动化。留存53个完整Case/495个response/442批工具及中间partial快照；49 OPEN、4 RELATED、全部NO_TRADE，缺HIT/交易意图覆盖。SDK p90=139.081秒，同批Case创建至决策p90=287.757秒，整体150秒目标未达；53/53首批返回截断、51/53多批控制合同读取，确认双层截断/恢复补读及路径探索、业务研究扩张为下一轮重点。探针投影p90=214.801毫秒、独立回执约1.12MiB；保留逐轮token/缓存/输出字节及间隔，不将剩余区间称为纯推理。新增纯本地复算脚本、一致性核对及最终报告docs/w3-sdk-turn-natural-flow-final-20261017.md；仅提交数据/文档，不重放、不改交易逻辑、不重新部署，保留其他会话脏改动。

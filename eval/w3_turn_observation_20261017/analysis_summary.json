@@ -1,0 +1,789 @@
+{
+  "as_of": "2026-10-17T02:49:17.947269+00:00",
+  "percentile_definition": "nearest-rank ceil(n*p)",
+  "receipt_count": 53,
+  "unique_cases": 53,
+  "unique_turns": 53,
+  "complete": 53,
+  "statuses": {
+    "completed": 53
+  },
+  "job_statuses": {
+    "succeeded": 53
+  },
+  "case_statuses": {
+    "COMPLETED": 53
+  },
+  "case_types": {
+    "OPEN_EVENT_EVALUATION": 49,
+    "POLICY_RELATED_EVALUATION": 4
+  },
+  "decisions": {
+    "NO_TRADE": 53
+  },
+  "models": {
+    "gpt-6-luna/max": 53
+  },
+  "metrics": {
+    "sdk_ms": {
+      "n": 53,
+      "p50": 99757,
+      "p90": 139081,
+      "max": 203372
+    },
+    "tool_union_ms": {
+      "n": 53,
+      "p50": 12927.0,
+      "p90": 22311.0,
+      "max": 31955.0
+    },
+    "sdk_minus_observed_tools_ms": {
+      "n": 53,
+      "p50": 83663.0,
+      "p90": 120359.0,
+      "max": 171417.0
+    },
+    "rounds": {
+      "n": 53,
+      "p50": 9,
+      "p90": 13,
+      "max": 17
+    },
+    "tool_batches": {
+      "n": 53,
+      "p50": 8,
+      "p90": 12,
+      "max": 16
+    },
+    "first_input_tokens": {
+      "n": 53,
+      "p50": 46435,
+      "p90": 52781,
+      "max": 56356
+    },
+    "last_input_tokens": {
+      "n": 53,
+      "p50": 106221,
+      "p90": 141453,
+      "max": 169942
+    },
+    "input_growth_tokens": {
+      "n": 53,
+      "p50": 60983,
+      "p90": 95554,
+      "max": 122927
+    },
+    "last_uncached_input_tokens": {
+      "n": 53,
+      "p50": 7338,
+      "p90": 11088,
+      "max": 130172
+    },
+    "tool_output_bytes": {
+      "n": 53,
+      "p50": 190918,
+      "p90": 332100,
+      "max": 440136
+    },
+    "last_after_tool_gap_ms": {
+      "n": 53,
+      "p50": 23320.0,
+      "p90": 47621.0,
+      "max": 55912.0
+    },
+    "control_batches": {
+      "n": 53,
+      "p50": 2,
+      "p90": 3,
+      "max": 4
+    },
+    "control_batch_output_bytes": {
+      "n": 53,
+      "p50": 79723,
+      "p90": 99246,
+      "max": 127119
+    },
+    "navigation_batches": {
+      "n": 53,
+      "p50": 3,
+      "p90": 4,
+      "max": 6
+    },
+    "web_batches": {
+      "n": 53,
+      "p50": 4,
+      "p90": 6,
+      "max": 11
+    },
+    "projection_ms": {
+      "n": 53,
+      "p50": 61.613,
+      "p90": 214.801,
+      "max": 755.748
+    },
+    "case_to_decision_ms": {
+      "n": 53,
+      "p50": 173992.208,
+      "p90": 287757.374,
+      "max": 448989.952
+    },
+    "worker_runtime_start_ms": {
+      "n": 53,
+      "p50": 216,
+      "p90": 772,
+      "max": 6227
+    }
+  },
+  "groups": [
+    {
+      "release": "3c30365a0586959f632d1a62041d2b6ccdd7ea0c",
+      "case_type": "OPEN_EVENT_EVALUATION",
+      "ticker": "BE",
+      "decision": "NO_TRADE",
+      "observation_status": "completed",
+      "count": 10,
+      "sdk_ms": {
+        "n": 10,
+        "p50": 67519,
+        "p90": 118068,
+        "max": 178349
+      },
+      "rounds": {
+        "n": 10,
+        "p50": 8,
+        "p90": 13,
+        "max": 15
+      }
+    },
+    {
+      "release": "3c30365a0586959f632d1a62041d2b6ccdd7ea0c",
+      "case_type": "OPEN_EVENT_EVALUATION",
+      "ticker": "INTC",
+      "decision": "NO_TRADE",
+      "observation_status": "completed",
+      "count": 21,
+      "sdk_ms": {
+        "n": 21,
+        "p50": 87633,
+        "p90": 143510,
+        "max": 203372
+      },
+      "rounds": {
+        "n": 21,
+        "p50": 7,
+        "p90": 13,
+        "max": 17
+      }
+    },
+    {
+      "release": "3c30365a0586959f632d1a62041d2b6ccdd7ea0c",
+      "case_type": "OPEN_EVENT_EVALUATION",
+      "ticker": "MU",
+      "decision": "NO_TRADE",
+      "observation_status": "completed",
+      "count": 10,
+      "sdk_ms": {
+        "n": 10,
+        "p50": 99757,
+        "p90": 127895,
+        "max": 136167
+      },
+      "rounds": {
+        "n": 10,
+        "p50": 9,
+        "p90": 13,
+        "max": 14
+      }
+    },
+    {
+      "release": "3c30365a0586959f632d1a62041d2b6ccdd7ea0c",
+      "case_type": "OPEN_EVENT_EVALUATION",
+      "ticker": "RKLB",
+      "decision": "NO_TRADE",
+      "observation_status": "completed",
+      "count": 4,
+      "sdk_ms": {
+        "n": 4,
+        "p50": 99877,
+        "p90": 153475,
+        "max": 153475
+      },
+      "rounds": {
+        "n": 4,
+        "p50": 10,
+        "p90": 12,
+        "max": 12
+      }
+    },
+    {
+      "release": "3c30365a0586959f632d1a62041d2b6ccdd7ea0c",
+      "case_type": "POLICY_RELATED_EVALUATION",
+      "ticker": "BE",
+      "decision": "NO_TRADE",
+      "observation_status": "completed",
+      "count": 1,
+      "sdk_ms": {
+        "n": 1,
+        "p50": 137610,
+        "p90": 137610,
+        "max": 137610
+      },
+      "rounds": {
+        "n": 1,
+        "p50": 13,
+        "p90": 13,
+        "max": 13
+      }
+    },
+    {
+      "release": "3c30365a0586959f632d1a62041d2b6ccdd7ea0c",
+      "case_type": "POLICY_RELATED_EVALUATION",
+      "ticker": "INTC",
+      "decision": "NO_TRADE",
+      "observation_status": "completed",
+      "count": 2,
+      "sdk_ms": {
+        "n": 2,
+        "p50": 126656,
+        "p90": 139081,
+        "max": 139081
+      },
+      "rounds": {
+        "n": 2,
+        "p50": 11,
+        "p90": 13,
+        "max": 13
+      }
+    },
+    {
+      "release": "3c30365a0586959f632d1a62041d2b6ccdd7ea0c",
+      "case_type": "POLICY_RELATED_EVALUATION",
+      "ticker": "MU",
+      "decision": "NO_TRADE",
+      "observation_status": "completed",
+      "count": 1,
+      "sdk_ms": {
+        "n": 1,
+        "p50": 115559,
+        "p90": 115559,
+        "max": 115559
+      },
+      "rounds": {
+        "n": 1,
+        "p50": 11,
+        "p90": 11,
+        "max": 11
+      }
+    },
+    {
+      "release": "a3713de3d9f63405587751df44af87f4e788587a",
+      "case_type": "OPEN_EVENT_EVALUATION",
+      "ticker": "INTC",
+      "decision": "NO_TRADE",
+      "observation_status": "completed",
+      "count": 4,
+      "sdk_ms": {
+        "n": 4,
+        "p50": 102900,
+        "p90": 125391,
+        "max": 125391
+      },
+      "rounds": {
+        "n": 4,
+        "p50": 10,
+        "p90": 13,
+        "max": 13
+      }
+    }
+  ],
+  "business_labels_overlapping": {
+    "CAPABILITY_DISCOVERY": {
+      "cases": 4,
+      "batches": 5,
+      "output_bytes": 157236,
+      "per_matching_case_tool_union_ms": {
+        "n": 4,
+        "p50": 162.0,
+        "p90": 1321.0,
+        "max": 1321.0
+      }
+    },
+    "CONTROL_CONTRACT": {
+      "cases": 53,
+      "batches": 123,
+      "output_bytes": 4092167,
+      "per_matching_case_tool_union_ms": {
+        "n": 53,
+        "p50": 873.0,
+        "p90": 1643.0,
+        "max": 3179.0
+      }
+    },
+    "D1_RESEARCH": {
+      "cases": 43,
+      "batches": 73,
+      "output_bytes": 1447273,
+      "per_matching_case_tool_union_ms": {
+        "n": 43,
+        "p50": 503.0,
+        "p90": 1259.0,
+        "max": 2518.0
+      }
+    },
+    "D2_EXPECTATIONS": {
+      "cases": 27,
+      "batches": 63,
+      "output_bytes": 1255939,
+      "per_matching_case_tool_union_ms": {
+        "n": 27,
+        "p50": 676.0,
+        "p90": 1540.0,
+        "max": 3032.0
+      }
+    },
+    "D3_POLICY": {
+      "cases": 22,
+      "batches": 35,
+      "output_bytes": 699426,
+      "per_matching_case_tool_union_ms": {
+        "n": 22,
+        "p50": 367.0,
+        "p90": 1261.0,
+        "max": 3508.0
+      }
+    },
+    "EVENT_HISTORY": {
+      "cases": 53,
+      "batches": 134,
+      "output_bytes": 4025286,
+      "per_matching_case_tool_union_ms": {
+        "n": 53,
+        "p50": 939.0,
+        "p90": 1823.0,
+        "max": 4644.0
+      }
+    },
+    "MARKET_PRICE": {
+      "cases": 3,
+      "batches": 4,
+      "output_bytes": 142703,
+      "per_matching_case_tool_union_ms": {
+        "n": 3,
+        "p50": 180.0,
+        "p90": 2249.0,
+        "max": 2249.0
+      }
+    },
+    "OTHER_TOOL": {
+      "cases": 2,
+      "batches": 2,
+      "output_bytes": 45332,
+      "per_matching_case_tool_union_ms": {
+        "n": 2,
+        "p50": 318.0,
+        "p90": 536.0,
+        "max": 536.0
+      }
+    },
+    "RESEARCH_NAVIGATION": {
+      "cases": 53,
+      "batches": 148,
+      "output_bytes": 4537639,
+      "per_matching_case_tool_union_ms": {
+        "n": 53,
+        "p50": 1227.0,
+        "p90": 3833.0,
+        "max": 6540.0
+      }
+    },
+    "SOURCE_VERIFICATION": {
+      "cases": 5,
+      "batches": 7,
+      "output_bytes": 150217,
+      "per_matching_case_tool_union_ms": {
+        "n": 5,
+        "p50": 3491.0,
+        "p90": 7181.0,
+        "max": 7181.0
+      }
+    },
+    "WEB_RESEARCH": {
+      "cases": 53,
+      "batches": 213,
+      "output_bytes": 5042411,
+      "per_matching_case_tool_union_ms": {
+        "n": 53,
+        "p50": 11132.0,
+        "p90": 21215.0,
+        "max": 30896.0
+      }
+    }
+  },
+  "response_count": 495,
+  "tool_batches": 442,
+  "repeated_control_cases": 51,
+  "first_truncated_cases": 53,
+  "truncated_batches": 107,
+  "exact_repeat_candidate_cases": 0,
+  "error_marker_cases": 9,
+  "error_marker_batches": 10,
+  "compaction_cases": 0,
+  "sdk_compaction_cases": 0,
+  "explicit_layer_path_cases": {
+    "d1": 40,
+    "d2": 15,
+    "d3": 5
+  },
+  "provider_calls": 0,
+  "projection_fraction": {
+    "n": 53,
+    "p50": 0.000577,
+    "p90": 0.002074,
+    "max": 0.013965849872491408
+  },
+  "tool_fraction_total": 0.14648825725035505,
+  "descriptive_pearson_not_causal": {
+    "rounds": 0.8573,
+    "last_input_tokens": 0.8581,
+    "tool_output_bytes": 0.7966,
+    "web_batches": 0.7422
+  },
+  "last_cached_fraction": {
+    "n": 53,
+    "p50": 0.939564,
+    "p90": 0.980775,
+    "max": 0.9969984391883779
+  },
+  "last_gap_fraction": {
+    "n": 53,
+    "p50": 0.266,
+    "p90": 0.42,
+    "max": 0.5004976609933314
+  },
+  "raw_receipt_bytes": 1176363,
+  "sample_target_met": false,
+  "stop_reason": "deadline_reached_without_POLICY_HIT_REVIEW_or_trade_intent",
+  "negative_interval_cases": [],
+  "slowest": [
+    {
+      "case_id": "case_880362ec55f24b94a8aff6d4a3ab3f53",
+      "turn_id": "01a146e9-588f-7fa2-bbd7-f4eecc460116",
+      "release": "3c30365a0586959f632d1a62041d2b6ccdd7ea0c",
+      "ticker": "INTC",
+      "case_type": "OPEN_EVENT_EVALUATION",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "observation_status": "completed",
+      "job_status": "succeeded",
+      "case_status": "COMPLETED",
+      "decision": "NO_TRADE",
+      "complete": true,
+      "sdk_ms": 203372,
+      "observed_stream_ms": 203619.545,
+      "tool_union_ms": 31955.0,
+      "sdk_minus_observed_tools_ms": 171417.0,
+      "rounds": 17,
+      "tool_batches": 16,
+      "first_input_tokens": 47015,
+      "last_input_tokens": 169942,
+      "last_cached_input_tokens": 162560,
+      "last_uncached_input_tokens": 7382,
+      "input_growth_tokens": 122927,
+      "tool_output_bytes": 398794,
+      "last_after_tool_gap_ms": 15622.0,
+      "control_batches": 3,
+      "control_batch_output_bytes": 87053,
+      "navigation_batches": 3,
+      "web_batches": 11,
+      "first_output_truncated": true,
+      "truncated_batches": 1,
+      "exact_repeat_candidates": 0,
+      "error_marker_batches": 0,
+      "projection_ms": 124.436,
+      "case_to_decision_ms": 308002.517,
+      "worker_runtime_start_ms": 112,
+      "acknowledged": true,
+      "job_observation_reference": true
+    },
+    {
+      "case_id": "case_1d9322abccf04cff8a5c229e0fe444a4",
+      "turn_id": "01a146b2-a7c9-7bf2-9838-8155adf16e2d",
+      "release": "3c30365a0586959f632d1a62041d2b6ccdd7ea0c",
+      "ticker": "BE",
+      "case_type": "OPEN_EVENT_EVALUATION",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "observation_status": "completed",
+      "job_status": "succeeded",
+      "case_status": "COMPLETED",
+      "decision": "NO_TRADE",
+      "complete": true,
+      "sdk_ms": 178349,
+      "observed_stream_ms": 178117.905,
+      "tool_union_ms": 26598.0,
+      "sdk_minus_observed_tools_ms": 151751.0,
+      "rounds": 13,
+      "tool_batches": 12,
+      "first_input_tokens": 43819,
+      "last_input_tokens": 139373,
+      "last_cached_input_tokens": 138752,
+      "last_uncached_input_tokens": 621,
+      "input_growth_tokens": 95554,
+      "tool_output_bytes": 282504,
+      "last_after_tool_gap_ms": 30571.0,
+      "control_batches": 2,
+      "control_batch_output_bytes": 66846,
+      "navigation_batches": 2,
+      "web_batches": 9,
+      "first_output_truncated": true,
+      "truncated_batches": 1,
+      "exact_repeat_candidates": 0,
+      "error_marker_batches": 0,
+      "projection_ms": 44.231,
+      "case_to_decision_ms": 272608.337,
+      "worker_runtime_start_ms": 560,
+      "acknowledged": true,
+      "job_observation_reference": true
+    },
+    {
+      "case_id": "case_af16047a621149cd88b7bbd38888238a",
+      "turn_id": "01a14678-d13c-7c62-b30c-b360621b0d9c",
+      "release": "3c30365a0586959f632d1a62041d2b6ccdd7ea0c",
+      "ticker": "INTC",
+      "case_type": "OPEN_EVENT_EVALUATION",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "observation_status": "completed",
+      "job_status": "succeeded",
+      "case_status": "COMPLETED",
+      "decision": "NO_TRADE",
+      "complete": true,
+      "sdk_ms": 160100,
+      "observed_stream_ms": 160353.886,
+      "tool_union_ms": 20078.0,
+      "sdk_minus_observed_tools_ms": 140022.0,
+      "rounds": 12,
+      "tool_batches": 11,
+      "first_input_tokens": 46846,
+      "last_input_tokens": 154426,
+      "last_cached_input_tokens": 143488,
+      "last_uncached_input_tokens": 10938,
+      "input_growth_tokens": 107580,
+      "tool_output_bytes": 366707,
+      "last_after_tool_gap_ms": 55912.0,
+      "control_batches": 2,
+      "control_batch_output_bytes": 84829,
+      "navigation_batches": 4,
+      "web_batches": 5,
+      "first_output_truncated": true,
+      "truncated_batches": 3,
+      "exact_repeat_candidates": 0,
+      "error_marker_batches": 0,
+      "projection_ms": 214.801,
+      "case_to_decision_ms": 259264.56100000002,
+      "worker_runtime_start_ms": 216,
+      "acknowledged": true,
+      "job_observation_reference": true
+    },
+    {
+      "case_id": "case_ee5b5df9bc2a4453beade3f2856c23d3",
+      "turn_id": "01a14601-f9ba-7d42-bce3-297621acb949",
+      "release": "3c30365a0586959f632d1a62041d2b6ccdd7ea0c",
+      "ticker": "RKLB",
+      "case_type": "OPEN_EVENT_EVALUATION",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "observation_status": "completed",
+      "job_status": "succeeded",
+      "case_status": "COMPLETED",
+      "decision": "NO_TRADE",
+      "complete": true,
+      "sdk_ms": 153475,
+      "observed_stream_ms": 153542.102,
+      "tool_union_ms": 30369.0,
+      "sdk_minus_observed_tools_ms": 123106.0,
+      "rounds": 12,
+      "tool_batches": 11,
+      "first_input_tokens": 47428,
+      "last_input_tokens": 140102,
+      "last_cached_input_tokens": 133632,
+      "last_uncached_input_tokens": 6470,
+      "input_growth_tokens": 92674,
+      "tool_output_bytes": 332100,
+      "last_after_tool_gap_ms": 34199.0,
+      "control_batches": 2,
+      "control_batch_output_bytes": 84851,
+      "navigation_batches": 3,
+      "web_batches": 8,
+      "first_output_truncated": true,
+      "truncated_batches": 2,
+      "exact_repeat_candidates": 0,
+      "error_marker_batches": 0,
+      "projection_ms": 51.182,
+      "case_to_decision_ms": 264214.76999999996,
+      "worker_runtime_start_ms": 120,
+      "acknowledged": true,
+      "job_observation_reference": true
+    },
+    {
+      "case_id": "case_c4c4ec7e03104fb79e353ffa58fa465c",
+      "turn_id": "01a1464a-d876-7eb2-9932-e709042d17cf",
+      "release": "3c30365a0586959f632d1a62041d2b6ccdd7ea0c",
+      "ticker": "INTC",
+      "case_type": "OPEN_EVENT_EVALUATION",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "observation_status": "completed",
+      "job_status": "succeeded",
+      "case_status": "COMPLETED",
+      "decision": "NO_TRADE",
+      "complete": true,
+      "sdk_ms": 143510,
+      "observed_stream_ms": 143554.28,
+      "tool_union_ms": 17760.0,
+      "sdk_minus_observed_tools_ms": 125750.0,
+      "rounds": 14,
+      "tool_batches": 13,
+      "first_input_tokens": 46326,
+      "last_input_tokens": 138298,
+      "last_cached_input_tokens": 136448,
+      "last_uncached_input_tokens": 1850,
+      "input_growth_tokens": 91972,
+      "tool_output_bytes": 269130,
+      "last_after_tool_gap_ms": 41458.0,
+      "control_batches": 3,
+      "control_batch_output_bytes": 127119,
+      "navigation_batches": 6,
+      "web_batches": 6,
+      "first_output_truncated": true,
+      "truncated_batches": 3,
+      "exact_repeat_candidates": 0,
+      "error_marker_batches": 1,
+      "projection_ms": 61.613,
+      "case_to_decision_ms": 236274.99,
+      "worker_runtime_start_ms": 234,
+      "acknowledged": true,
+      "job_observation_reference": true
+    },
+    {
+      "case_id": "case_ae8fbb9f3d7e401490210ac8003ba0f7",
+      "turn_id": "01a14637-c3ed-7990-8364-9a97ce562e53",
+      "release": "3c30365a0586959f632d1a62041d2b6ccdd7ea0c",
+      "ticker": "INTC",
+      "case_type": "POLICY_RELATED_EVALUATION",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "observation_status": "completed",
+      "job_status": "succeeded",
+      "case_status": "COMPLETED",
+      "decision": "NO_TRADE",
+      "complete": true,
+      "sdk_ms": 139081,
+      "observed_stream_ms": 139189.005,
+      "tool_union_ms": 19695.0,
+      "sdk_minus_observed_tools_ms": 119386.0,
+      "rounds": 13,
+      "tool_batches": 12,
+      "first_input_tokens": 51558,
+      "last_input_tokens": 140019,
+      "last_cached_input_tokens": 139392,
+      "last_uncached_input_tokens": 627,
+      "input_growth_tokens": 88461,
+      "tool_output_bytes": 277337,
+      "last_after_tool_gap_ms": 47621.0,
+      "control_batches": 3,
+      "control_batch_output_bytes": 99246,
+      "navigation_batches": 2,
+      "web_batches": 6,
+      "first_output_truncated": true,
+      "truncated_batches": 2,
+      "exact_repeat_candidates": 0,
+      "error_marker_batches": 0,
+      "projection_ms": 72.134,
+      "case_to_decision_ms": 299968.27999999997,
+      "worker_runtime_start_ms": 92,
+      "acknowledged": true,
+      "job_observation_reference": true
+    },
+    {
+      "case_id": "case_8e57912272ea492f8f8b6dec6776dcc6",
+      "turn_id": "01a1461c-d1d8-77d0-88de-1494169cd02a",
+      "release": "3c30365a0586959f632d1a62041d2b6ccdd7ea0c",
+      "ticker": "BE",
+      "case_type": "POLICY_RELATED_EVALUATION",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "observation_status": "completed",
+      "job_status": "succeeded",
+      "case_status": "COMPLETED",
+      "decision": "NO_TRADE",
+      "complete": true,
+      "sdk_ms": 137610,
+      "observed_stream_ms": 137649.262,
+      "tool_union_ms": 21001.0,
+      "sdk_minus_observed_tools_ms": 116609.0,
+      "rounds": 13,
+      "tool_batches": 12,
+      "first_input_tokens": 48292,
+      "last_input_tokens": 146177,
+      "last_cached_input_tokens": 135552,
+      "last_uncached_input_tokens": 10625,
+      "input_growth_tokens": 97885,
+      "tool_output_bytes": 361775,
+      "last_after_tool_gap_ms": 36660.0,
+      "control_batches": 2,
+      "control_batch_output_bytes": 83303,
+      "navigation_batches": 3,
+      "web_batches": 6,
+      "first_output_truncated": true,
+      "truncated_batches": 4,
+      "exact_repeat_candidates": 0,
+      "error_marker_batches": 2,
+      "projection_ms": 37.424,
+      "case_to_decision_ms": 249965.601,
+      "worker_runtime_start_ms": 216,
+      "acknowledged": true,
+      "job_observation_reference": true
+    },
+    {
+      "case_id": "case_1be63a80d073435f95627d452d83c4dd",
+      "turn_id": "01a146ea-152e-7262-b330-982bb3bbadf0",
+      "release": "3c30365a0586959f632d1a62041d2b6ccdd7ea0c",
+      "ticker": "MU",
+      "case_type": "OPEN_EVENT_EVALUATION",
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "observation_status": "completed",
+      "job_status": "succeeded",
+      "case_status": "COMPLETED",
+      "decision": "NO_TRADE",
+      "complete": true,
+      "sdk_ms": 136167,
+      "observed_stream_ms": 136259.728,
+      "tool_union_ms": 15808.0,
+      "sdk_minus_observed_tools_ms": 120359.0,
+      "rounds": 14,
+      "tool_batches": 13,
+      "first_input_tokens": 52399,
+      "last_input_tokens": 153161,
+      "last_cached_input_tokens": 145536,
+      "last_uncached_input_tokens": 7625,
+      "input_growth_tokens": 100762,
+      "tool_output_bytes": 332977,
+      "last_after_tool_gap_ms": 25972.0,
+      "control_batches": 2,
+      "control_batch_output_bytes": 83680,
+      "navigation_batches": 6,
+      "web_batches": 4,
+      "first_output_truncated": true,
+      "truncated_batches": 4,
+      "exact_repeat_candidates": 0,
+      "error_marker_batches": 1,
+      "projection_ms": 64.405,
+      "case_to_decision_ms": 287757.374,
+      "worker_runtime_start_ms": 100,
+      "acknowledged": true,
+      "job_observation_reference": true
+    }
+  ]
+}

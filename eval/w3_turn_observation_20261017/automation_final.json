@@ -1,0 +1,7 @@
+{
+  "automation_id": "w3",
+  "name": "W3自然流量观测收集与关停",
+  "status": "PAUSED",
+  "target_thread_id": "01a143f1-fe6d-7b51-845b-fd0185a18b66",
+  "verified_at": "2026-10-17T03:09:52.592359+00:00"
+}
