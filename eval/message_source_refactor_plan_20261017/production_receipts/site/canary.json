@@ -1,0 +1,320 @@
+[
+  {
+    "scope": "source:barrons_ticker_news",
+    "bodies": [],
+    "disposition": "AUTH_REQUIRED",
+    "reason": "no_authenticated_profile_available",
+    "category": "AUTH_REQUIRED",
+    "task_id": "4a44142d4f4649b59e171f04fce4ff5a",
+    "identity": null,
+    "status": null,
+    "parsed_items": null
+  },
+  {
+    "scope": "source:digitimes_semiconductors",
+    "bodies": [
+      {
+        "url": "https://www.digitimes.com/news/a20261017VL200/fab-tsmc-chips-kumamoto-production.html",
+        "disposition": "AUTH_REQUIRED",
+        "reason": "subscription_required",
+        "publisher": "digitimes"
+      },
+      {
+        "url": "https://www.digitimes.com/news/a20261016PD244/taiwan-mask-acquisition-equipment-photomask-revenue.html",
+        "disposition": "AUTH_REQUIRED",
+        "reason": "subscription_required",
+        "publisher": "digitimes"
+      }
+    ],
+    "disposition": "SUCCESS",
+    "reason": "ok",
+    "category": null,
+    "task_id": null,
+    "identity": "digitimes-nl-1",
+    "status": 200,
+    "parsed_items": 11
+  },
+  {
+    "scope": "source:globenewswire_search",
+    "bodies": [
+      {
+        "url": "https://www.globenewswire.com/news-release/2026/10/16/3382504/0/en/nn-inc-enters-cable-assembly-harness-business.html",
+        "disposition": "SUCCESS",
+        "reason": "ok",
+        "publisher": "globenewswire",
+        "verification": {
+          "challenge": "CLEARED",
+          "authentication": "NOT_REQUIRED",
+          "crawler": "NOT_TESTED",
+          "body": "FULL",
+          "reason": "complete_article",
+          "health_applied": false,
+          "session_closed": false,
+          "cleanup_pending": false,
+          "challenge_task_id": null,
+          "verification_url": null,
+          "runtime_instance_id": null
+        }
+      },
+      {
+        "url": "https://www.globenewswire.com/news-release/2026/10/16/3382408/28124/en/global-emerging-memory-and-storage-technology-market-analysis-2026-2035-ai-and-hbm-demand-fuels-19-73-cagr-creating-a-44-61-billion-market-by-2035.html",
+        "disposition": "SUCCESS",
+        "reason": "ok",
+        "publisher": "globenewswire",
+        "verification": {
+          "challenge": "CLEARED",
+          "authentication": "NOT_REQUIRED",
+          "crawler": "NOT_TESTED",
+          "body": "FULL",
+          "reason": "complete_article",
+          "health_applied": false,
+          "session_closed": false,
+          "cleanup_pending": false,
+          "challenge_task_id": null,
+          "verification_url": null,
+          "runtime_instance_id": null
+        }
+      }
+    ],
+    "disposition": "SUCCESS",
+    "reason": "ok",
+    "category": null,
+    "task_id": null,
+    "identity": "globenewswire-1",
+    "status": 200,
+    "parsed_items": 10
+  },
+  {
+    "scope": "source:investing_ticker_news",
+    "bodies": [],
+    "disposition": "BUDGET_DEFERRED",
+    "reason": "fallback_activation_pending",
+    "category": "BUDGET_DEFERRED",
+    "task_id": "accc83eb90ea4fc482c8924dc09afd44",
+    "identity": null,
+    "status": null,
+    "parsed_items": null
+  },
+  {
+    "scope": "source:globenewswire_semiconductors_rss",
+    "bodies": [
+      {
+        "url": "https://www.globenewswire.com/news-release/2026/10/16/3382554/9885/en/silicon-motion-announces-annual-dividend-increase.html",
+        "disposition": "SUCCESS",
+        "reason": "ok",
+        "publisher": "globenewswire",
+        "verification": {
+          "challenge": "CLEARED",
+          "authentication": "NOT_REQUIRED",
+          "crawler": "NOT_TESTED",
+          "body": "FULL",
+          "reason": "complete_article",
+          "health_applied": false,
+          "session_closed": false,
+          "cleanup_pending": false,
+          "challenge_task_id": null,
+          "verification_url": null,
+          "runtime_instance_id": null
+        }
+      },
+      {
+        "url": "https://www.globenewswire.com/news-release/2026/10/16/3382500/0/en/poet-technologies-to-report-third-quarter-2026-financial-results-on-november-16.html",
+        "disposition": "SUCCESS",
+        "reason": "ok",
+        "publisher": "globenewswire",
+        "verification": {
+          "challenge": "CLEARED",
+          "authentication": "NOT_REQUIRED",
+          "crawler": "NOT_TESTED",
+          "body": "FULL",
+          "reason": "complete_article",
+          "health_applied": false,
+          "session_closed": false,
+          "cleanup_pending": false,
+          "challenge_task_id": null,
+          "verification_url": null,
+          "runtime_instance_id": null
+        }
+      }
+    ],
+    "disposition": "SUCCESS",
+    "reason": "ok",
+    "category": null,
+    "task_id": null,
+    "identity": "globe-rss-main",
+    "status": 200,
+    "parsed_items": 20
+  },
+  {
+    "scope": "source:reuters_site_search",
+    "bodies": [],
+    "disposition": "BUDGET_DEFERRED",
+    "reason": "fallback_activation_pending",
+    "category": "BUDGET_DEFERRED",
+    "task_id": "617d513d27c741ee88a646d7f1d0a9c1",
+    "identity": null,
+    "status": null,
+    "parsed_items": null
+  },
+  {
+    "scope": "source:trendforce_news",
+    "bodies": [
+      {
+        "url": "https://www.trendforce.com/news/2026/10/15/news-sk-hynix-reportedly-seeks-u-s-chip-tool-approval-for-china-expansion-to-fund-potential-u-s-nand-fab/",
+        "disposition": "SUCCESS",
+        "reason": "ok",
+        "publisher": "trendforce",
+        "verification": {
+          "challenge": "CLEARED",
+          "authentication": "NOT_REQUIRED",
+          "crawler": "NOT_TESTED",
+          "body": "FULL",
+          "reason": "complete_article",
+          "health_applied": false,
+          "session_closed": false,
+          "cleanup_pending": false,
+          "challenge_task_id": null,
+          "verification_url": null,
+          "runtime_instance_id": null
+        }
+      },
+      {
+        "url": "https://www.trendforce.com/news/2026/10/15/news-tsmc-lifts-2026-growth-forecast-to-44-eyes-record-4q-revenue-of-up-to-us54-3b-up-14-qoq/",
+        "disposition": "SUCCESS",
+        "reason": "ok",
+        "publisher": "trendforce",
+        "verification": {
+          "challenge": "CLEARED",
+          "authentication": "NOT_REQUIRED",
+          "crawler": "NOT_TESTED",
+          "body": "FULL",
+          "reason": "complete_article",
+          "health_applied": false,
+          "session_closed": false,
+          "cleanup_pending": false,
+          "challenge_task_id": null,
+          "verification_url": null,
+          "runtime_instance_id": null
+        }
+      }
+    ],
+    "disposition": "SUCCESS",
+    "reason": "ok",
+    "category": null,
+    "task_id": null,
+    "identity": "trendforce-1",
+    "status": 200,
+    "parsed_items": 7
+  },
+  {
+    "scope": "source:trendforce_press_releases",
+    "bodies": [
+      {
+        "url": "https://www.trendforce.com/presscenter/news/20261015-13273.html",
+        "disposition": "SUCCESS",
+        "reason": "ok",
+        "publisher": "trendforce",
+        "verification": {
+          "challenge": "CLEARED",
+          "authentication": "NOT_REQUIRED",
+          "crawler": "NOT_TESTED",
+          "body": "FULL",
+          "reason": "complete_article",
+          "health_applied": false,
+          "session_closed": false,
+          "cleanup_pending": false,
+          "challenge_task_id": null,
+          "verification_url": null,
+          "runtime_instance_id": null
+        }
+      },
+      {
+        "url": "https://www.trendforce.com/presscenter/news/20261014-13269.html",
+        "disposition": "SUCCESS",
+        "reason": "ok",
+        "publisher": "trendforce",
+        "verification": {
+          "challenge": "CLEARED",
+          "authentication": "NOT_REQUIRED",
+          "crawler": "NOT_TESTED",
+          "body": "FULL",
+          "reason": "complete_article",
+          "health_applied": false,
+          "session_closed": false,
+          "cleanup_pending": false,
+          "challenge_task_id": null,
+          "verification_url": null,
+          "runtime_instance_id": null
+        }
+      }
+    ],
+    "disposition": "SUCCESS",
+    "reason": "ok",
+    "category": null,
+    "task_id": null,
+    "identity": "trendforce-press-main",
+    "status": 200,
+    "parsed_items": 5
+  },
+  {
+    "scope": "source:investorshub_ticker_news",
+    "bodies": [
+      {
+        "url": "https://uk.advfn.com/market-news/article/24698/jpmorgan-sees-wider-corporate-earnings-growth-supporting-q3-equity-market-outlook",
+        "disposition": "SUCCESS",
+        "reason": "ok",
+        "publisher": "investorshub",
+        "verification": {
+          "challenge": "CLEARED",
+          "authentication": "UNKNOWN",
+          "crawler": "NOT_TESTED",
+          "body": "FULL",
+          "reason": "complete_article",
+          "health_applied": false,
+          "session_closed": false,
+          "cleanup_pending": false,
+          "challenge_task_id": null,
+          "verification_url": null,
+          "runtime_instance_id": null
+        }
+      },
+      {
+        "url": "https://investorshub.advfn.com/stock-market/NASDAQ/micron-technology-MU/stock-news/99504702/form-4-statement-of-changes-in-beneficial-owners",
+        "disposition": "SUCCESS",
+        "reason": "ok",
+        "publisher": "investorshub",
+        "verification": {
+          "challenge": "CLEARED",
+          "authentication": "UNKNOWN",
+          "crawler": "NOT_TESTED",
+          "body": "FULL",
+          "reason": "complete_article",
+          "health_applied": false,
+          "session_closed": false,
+          "cleanup_pending": false,
+          "challenge_task_id": null,
+          "verification_url": null,
+          "runtime_instance_id": null
+        }
+      }
+    ],
+    "disposition": "SUCCESS",
+    "reason": "ok",
+    "category": null,
+    "task_id": null,
+    "identity": "investorshub-main",
+    "status": 200,
+    "parsed_items": 14
+  },
+  {
+    "scope": "source:yahoo_finance_news",
+    "bodies": [],
+    "disposition": "CONTENT_ERROR",
+    "reason": "http_404:phase=page_js_fetch",
+    "category": "CONTENT_ERROR",
+    "task_id": null,
+    "identity": "yahoo-main",
+    "status": null,
+    "parsed_items": null
+  }
+]

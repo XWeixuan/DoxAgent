@@ -1588,3 +1588,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 - 2026-10-18: 修复付费备用身份双文章认证的维护会话自举闭环：首篇真实订阅正文验证成功后保留同一 LOGIN 会话，提示 Advanced URL 验证另一篇订阅文章，避免重新登录推进 credential epoch 而使首篇证明失效；满足两篇后正常精确收尾，不放松订阅证明。新增回归并保留 Challenge 独立完成语义。
 
 - 2026-10-18: 完善认证失效语义：能力fingerprint绑定凭据session_revision，显式登录先在同一事务推进epoch再写能力证明，避免新认证复用旧订阅样本，也避免首篇证明写入旧epoch；真实Repository回归覆盖同会话两篇只推进一次及新登录清除旧证明。
+
+- 2026-10-18: 消息源隔离重构发布收尾：main及生产19 scopes/37成员迁移，Site Access fe4a768b、采集/补全de00466f；Supervisor固定60ec5c5d保留Reuters原始Challenge，最终细化镜像已备但未替换。干净Git快照302 passed/1平台skip；生产Open/Verify自动收尾、原生Challenge Open/Later保页、公开源冷备接替与sticky复测通过。授权闲置构建缓存/旧日志清理后根盘约10.7GB，未删镜像/业务/Profile；人工待办、Yahoo旧端点404、剩余Supervisor发布和长期验收均记录于message_source_refactor_release_and_acceptance_20261018.md，不宣称全站恢复。

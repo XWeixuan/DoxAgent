@@ -1,0 +1,2297 @@
+{
+  "at": "2026-10-17T19:30:58.710194+00:00",
+  "root_available_bytes": 10731524096,
+  "containers": {
+    "doxagent-v2-v2-site-access-1": {
+      "id": "565034af6dc20cc12d1eb01071eae5cef94a82c3a5558a18b34c77e642e3e90e",
+      "image": "sha256:40682f8ae67e57f190b7cbcfe01fc15e3e761a334588bb44556d1b04053a906b",
+      "tag": "doxagent-site-access:main-fe4a768b",
+      "health": "healthy",
+      "memory_limit": 6442450944,
+      "pids_limit": 1024
+    },
+    "doxagent-v2-v2-content-enrichment-1": {
+      "id": "9377f90a6c9db4b72ee7659c5c04b594140bb7e247e0956b086b559cbe6b58db",
+      "image": "sha256:a6d0aa1df7dee1e48afbfb1551e47e4f0be47d7d052dc9eb262656878e9ce6dd",
+      "tag": "doxagent-v2:main-de00466f",
+      "health": null,
+      "memory_limit": 16106127360,
+      "pids_limit": 512
+    },
+    "doxagent-v2-v2-message-bus-1": {
+      "id": "3ce3205f231ca27090e45ce579bc3b3f11b1746b0e396b960e7265c933a372bf",
+      "image": "sha256:a6d0aa1df7dee1e48afbfb1551e47e4f0be47d7d052dc9eb262656878e9ce6dd",
+      "tag": "doxagent-v2:main-de00466f",
+      "health": null,
+      "memory_limit": 16106127360,
+      "pids_limit": 384
+    },
+    "doxagent-v2-v2-chrome-supervisor-1": {
+      "id": "07783e2a1fd3112e6f16b7969131b0290a8b7296280b87ed5f8e2a45670e5328",
+      "image": "sha256:bdcc5e0d7974264b632e8b016a303875313ed91ae809b6e3c0cc17d8e3b078a3",
+      "tag": "doxagent-chrome-supervisor:main-60ec5c5d",
+      "health": "healthy",
+      "memory_limit": 8589934592,
+      "pids_limit": 2304
+    },
+    "doxagent-v2-v2-initialization-1": {
+      "id": "3aec046ea8b29b8cd73c01092434d068ee0497e9a410b4e3eb5b2ec79d7a4684",
+      "image": "sha256:d821c406ccdeafb530b04b8b3f3f3c7e5f5b0ae30ce0d6ec2b6100c256b1de9c",
+      "tag": "doxagent-cohr-recovery:initialization-lease-f142e55c",
+      "health": null,
+      "memory_limit": 4294967296,
+      "pids_limit": 256
+    },
+    "doxagent-v2-initialization-guardian-1": {
+      "id": "198abf5e244f1bf2d3f70503e1c64f756c0815fc3488f878b490a6f74c500d08",
+      "image": "sha256:2f4721a92bfe33e02d9459ff4556694f7c2faf2472a80f80c5df1b4ef5ca01ae",
+      "tag": "doxagent-cohr-recovery:guardian-5c4b7dd5",
+      "health": null,
+      "memory_limit": 2147483648,
+      "pids_limit": 128
+    },
+    "doxagent-v2-codex-worker-1": {
+      "id": "a374becff424ef25c360983cd1c5699ee3c1893ce78e0b973594872b2b5ffbc8",
+      "image": "sha256:9b0f9eadec8e808ba8320d7efb5360e94f99a6c1e361e9f846126ca9138f602a",
+      "tag": "doxagent-cohr-recovery:worker-58078285",
+      "health": "healthy",
+      "memory_limit": 16106127360,
+      "pids_limit": 4096
+    },
+    "doxagent-v2-v2-scheduler-1": {
+      "id": "96350ff40d84742f665109a801ee0fd4e0e5d0074a4dde5d4b2c9487bc690fcf",
+      "image": "sha256:78a45d6b1d3f33ef1e71b19634abb1c8b666f32d9f4f91467bab73f75a214ca7",
+      "tag": "doxagent-v2:main-00acd74a",
+      "health": null,
+      "memory_limit": 16106127360,
+      "pids_limit": 384
+    },
+    "doxagent-v2-v2-projector-1": {
+      "id": "b4104141b066ab2d27a234862710a18b51ae0cd70d02b3e356f11cfcff10f4e7",
+      "image": "sha256:0db49675cec6abc52a0dc9624de10492af044b0a0a164755ab6f06de8b246be3",
+      "tag": "doxagent-v2:main-3c30365a",
+      "health": null,
+      "memory_limit": 16106127360,
+      "pids_limit": 64
+    },
+    "doxagent-v2-v2-api-1": {
+      "id": "1c1396afbb28d35fbd733d384abb2de5c11f136622fbe106dd9a6dd7440051f1",
+      "image": "sha256:0db49675cec6abc52a0dc9624de10492af044b0a0a164755ab6f06de8b246be3",
+      "tag": "doxagent-v2:main-3c30365a",
+      "health": "healthy",
+      "memory_limit": 16106127360,
+      "pids_limit": 512
+    },
+    "doxagent-v2-v2-web-1": {
+      "id": "9e36a71453ae5791825da554009bc118cc704334a6edf23930d505405136eeea",
+      "image": "sha256:ccc0b6ff869d10c383f2466cdf04faee9f9090bbffb6024bf7a4e0bf702fc882",
+      "tag": "doxagent-v2-web:main-e929134d",
+      "health": "healthy",
+      "memory_limit": 536870912,
+      "pids_limit": 64
+    },
+    "doxagent-v2-v2-cdecr-executor-1": {
+      "id": "d319151d8656d1fc0556ec2ccdedff41fc7bb3e1cfcea0ef1dfa8e070befb02a",
+      "image": "sha256:a19e4e9ae9211f589fc4a2b5492f39f364872834d5c347452f1c1b446bc2f70b",
+      "tag": "doxagent-v2:main-618fd9c5",
+      "health": "healthy",
+      "memory_limit": 6442450944,
+      "pids_limit": 512
+    },
+    "doxagent-v2-v2-o4-1": {
+      "id": "9fe361d2eb9a7b5ee2c5fdd20459c298eea5d9e8d248342d1e8d5bd2561c9b9c",
+      "image": "sha256:a19e4e9ae9211f589fc4a2b5492f39f364872834d5c347452f1c1b446bc2f70b",
+      "tag": "doxagent-v2:main-618fd9c5",
+      "health": null,
+      "memory_limit": 4294967296,
+      "pids_limit": 96
+    },
+    "doxagent-v2-v2-maintenance-1": {
+      "id": "20b8cfa89f6a4228678fb3ba971df6e2ebbc0d407c914b3ecc6f8bbb6579bb3c",
+      "image": "sha256:a19e4e9ae9211f589fc4a2b5492f39f364872834d5c347452f1c1b446bc2f70b",
+      "tag": "doxagent-v2:main-618fd9c5",
+      "health": null,
+      "memory_limit": 2147483648,
+      "pids_limit": 64
+    },
+    "doxagent-v2-v2-executor-1": {
+      "id": "84a8b3f327abd4bcb2b12b64ecda8d2ba22fca685547f98529bb574bdc42b468",
+      "image": "sha256:a19e4e9ae9211f589fc4a2b5492f39f364872834d5c347452f1c1b446bc2f70b",
+      "tag": "doxagent-v2:main-618fd9c5",
+      "health": null,
+      "memory_limit": 2147483648,
+      "pids_limit": 96
+    },
+    "doxagent-v2-v2-delivery-1": {
+      "id": "a3a2ba7007ead02ad8d08c553dbafa0498ff4bf94d057fd8f2dd243e82a0acbb",
+      "image": "sha256:a19e4e9ae9211f589fc4a2b5492f39f364872834d5c347452f1c1b446bc2f70b",
+      "tag": "doxagent-v2:main-618fd9c5",
+      "health": null,
+      "memory_limit": 2147483648,
+      "pids_limit": 64
+    },
+    "doxagent-v2-v2-transport-maintenance-1": {
+      "id": "afcaed42067e6a40da3f3c77b859545f81a342720e99a685507e8308ed88cf49",
+      "image": "sha256:a19e4e9ae9211f589fc4a2b5492f39f364872834d5c347452f1c1b446bc2f70b",
+      "tag": "doxagent-v2:main-618fd9c5",
+      "health": null,
+      "memory_limit": 2147483648,
+      "pids_limit": 64
+    },
+    "doxagent-v2-v2-control-1": {
+      "id": "7c73b2692fd0a2c34092810feddc063e516de3e34eac2faccf82fa0c27cebcbb",
+      "image": "sha256:a19e4e9ae9211f589fc4a2b5492f39f364872834d5c347452f1c1b446bc2f70b",
+      "tag": "doxagent-v2:main-618fd9c5",
+      "health": null,
+      "memory_limit": 2147483648,
+      "pids_limit": 64
+    }
+  },
+  "other_container_changes": [],
+  "source_maintenance_worker_running": false,
+  "source_provenance": {
+    "doxagent-v2-v2-chrome-supervisor-1": {
+      "checked": 797,
+      "mismatches": [],
+      "commit": "60ec5c5d67eb7f89fdc8edcf6fd38a616ae74847"
+    },
+    "doxagent-v2-v2-content-enrichment-1": {
+      "checked": 797,
+      "mismatches": [],
+      "commit": "de00466f551f0abf078b9fc8ed23c6ea382ef4a2"
+    },
+    "doxagent-v2-v2-message-bus-1": {
+      "checked": 797,
+      "mismatches": [],
+      "commit": "de00466f551f0abf078b9fc8ed23c6ea382ef4a2"
+    },
+    "doxagent-v2-v2-site-access-1": {
+      "checked": 797,
+      "mismatches": [],
+      "commit": "fe4a768bd61f3f32f819e04ae6cf1407a580d34e"
+    }
+  },
+  "untracked_application_files": [],
+  "bridge_inventory_seconds": {
+    "samples": [
+      0.7198505238629878,
+      0.9583537103608251,
+      1.167779847048223,
+      0.9333045203238726,
+      0.7358506363816559,
+      0.9490181598812342,
+      0.9499628720805049,
+      0.9593519931659102
+    ],
+    "median": 0.9494905159808695,
+    "p95_nearest_rank": 1.167779847048223
+  },
+  "desktop_not_in_docker_group": true,
+  "desktop_cannot_read_admin_token": true,
+  "desktop_cannot_write_docker_socket": true,
+  "installed_bridge_mode": "0o755",
+  "installed_bridge_uid": 0,
+  "vnc_listener": "State  Recv-Q Send-Q Local Address:Port Peer Address:Port\nLISTEN 0      4096       127.0.0.1:5900      0.0.0.0:*",
+  "scope_snapshot": [
+    {
+      "scope": {
+        "scope_id": "publisher:marketwatch",
+        "source_id": null,
+        "owner_site_id": "marketwatch",
+        "revision": 1,
+        "enabled": true,
+        "primary_identity_id": "marketwatch-main",
+        "fallback_identity_id": "marketwatch-backup",
+        "verification_plan": {
+          "network_redundancy": "IP_DISTINCT_SAME_REGION",
+          "fallback_state": "UNVERIFIED"
+        }
+      },
+      "active": "marketwatch-main",
+      "generation": 0,
+      "members": [
+        {
+          "identity_id": "marketwatch-main",
+          "profile_id": "marketwatch-main",
+          "runtime": "external_chrome",
+          "egress": "us-standard-5",
+          "ip": "205.198.126.113",
+          "country": "DE",
+          "auth": "UNKNOWN",
+          "operational_state": "AVAILABLE",
+          "capabilities": {}
+        },
+        {
+          "identity_id": "marketwatch-backup",
+          "profile_id": "marketwatch-backup",
+          "runtime": "external_chrome",
+          "egress": "jp-standard-6",
+          "ip": "205.198.126.114",
+          "country": "DE",
+          "auth": "UNKNOWN",
+          "operational_state": "AVAILABLE",
+          "capabilities": {}
+        }
+      ]
+    },
+    {
+      "scope": {
+        "scope_id": "publisher:seeking_alpha",
+        "source_id": null,
+        "owner_site_id": "seeking_alpha",
+        "revision": 1,
+        "enabled": true,
+        "primary_identity_id": "seeking-alpha-main",
+        "fallback_identity_id": null,
+        "verification_plan": {
+          "fallback_state": "UNPROVISIONED",
+          "network_redundancy": "NONE"
+        }
+      },
+      "active": "seeking-alpha-main",
+      "generation": 0,
+      "members": [
+        {
+          "identity_id": "seeking-alpha-main",
+          "profile_id": "seeking-alpha-main",
+          "runtime": "external_chrome",
+          "egress": "us-standard-5",
+          "ip": "205.198.126.113",
+          "country": "DE",
+          "auth": "VALID",
+          "operational_state": "AVAILABLE",
+          "capabilities": {}
+        }
+      ]
+    },
+    {
+      "scope": {
+        "scope_id": "publisher:wsj",
+        "source_id": null,
+        "owner_site_id": "wsj",
+        "revision": 1,
+        "enabled": true,
+        "primary_identity_id": "wsj-main",
+        "fallback_identity_id": "wsj-backup",
+        "verification_plan": {
+          "network_redundancy": "IP_DISTINCT_SAME_REGION",
+          "fallback_state": "UNVERIFIED"
+        }
+      },
+      "active": "wsj-main",
+      "generation": 0,
+      "members": [
+        {
+          "identity_id": "wsj-main",
+          "profile_id": "wsj-main",
+          "runtime": "external_chrome",
+          "egress": "us-standard-5",
+          "ip": "205.198.126.113",
+          "country": "DE",
+          "auth": "UNKNOWN",
+          "operational_state": "AVAILABLE",
+          "capabilities": {}
+        },
+        {
+          "identity_id": "wsj-backup",
+          "profile_id": "wsj-backup",
+          "runtime": "external_chrome",
+          "egress": "jp-standard-6",
+          "ip": "205.198.126.114",
+          "country": "DE",
+          "auth": "UNKNOWN",
+          "operational_state": "AVAILABLE",
+          "capabilities": {}
+        }
+      ]
+    },
+    {
+      "scope": {
+        "scope_id": "source:barrons_ticker_news",
+        "source_id": "barrons_ticker_news",
+        "owner_site_id": "barrons",
+        "revision": 1,
+        "enabled": true,
+        "primary_identity_id": "dowjones-main",
+        "fallback_identity_id": "dowjones-backup",
+        "verification_plan": {
+          "network_redundancy": "IP_DISTINCT_SAME_REGION",
+          "fallback_state": "UNVERIFIED",
+          "contract": "body_v2.2/listing_v1",
+          "default_publisher": true,
+          "crawler": {
+            "url": "https://www.barrons.com/market-data/stocks/MU",
+            "recipe_ref": "builtin:barrons_ticker@1",
+            "recipe_parameters": {
+              "ticker": "MU"
+            }
+          },
+          "body_url": "https://www.barrons.com/articles/annaly-capital-sports-mortgage-reit-dividend-stock-price-3972cdfb"
+        }
+      },
+      "active": "dowjones-main",
+      "generation": 0,
+      "members": [
+        {
+          "identity_id": "dowjones-main",
+          "profile_id": "dowjones-main",
+          "runtime": "external_chrome",
+          "egress": "us-standard-5",
+          "ip": "205.198.126.113",
+          "country": "DE",
+          "auth": "VALID",
+          "operational_state": "MAINTENANCE",
+          "capabilities": {}
+        },
+        {
+          "identity_id": "dowjones-backup",
+          "profile_id": "dowjones-backup",
+          "runtime": "external_chrome",
+          "egress": "jp-standard-6",
+          "ip": "205.198.126.114",
+          "country": "DE",
+          "auth": "UNKNOWN",
+          "operational_state": "AVAILABLE",
+          "capabilities": {}
+        }
+      ]
+    },
+    {
+      "scope": {
+        "scope_id": "source:ctee_semiconductor",
+        "source_id": "ctee_semiconductor",
+        "owner_site_id": "ctee",
+        "revision": 1,
+        "enabled": false,
+        "primary_identity_id": "ctee-1",
+        "fallback_identity_id": "ctee-source-backup",
+        "verification_plan": {
+          "network_redundancy": "IP_DISTINCT_SAME_REGION",
+          "fallback_state": "UNVERIFIED",
+          "contract": "body_v2.2/listing_v1",
+          "default_publisher": true,
+          "crawler": {
+            "url": "https://www.ctee.com.tw/industry/semi"
+          }
+        }
+      },
+      "active": "ctee-1",
+      "generation": 0,
+      "members": [
+        {
+          "identity_id": "ctee-1",
+          "profile_id": "ctee-1",
+          "runtime": "managed_playwright",
+          "egress": "jp-standard-6",
+          "ip": "205.198.126.114",
+          "country": "DE",
+          "auth": "UNKNOWN",
+          "operational_state": "AVAILABLE",
+          "capabilities": {}
+        },
+        {
+          "identity_id": "ctee-source-backup",
+          "profile_id": "ctee-source-backup",
+          "runtime": "managed_playwright",
+          "egress": "de-standard-1",
+          "ip": "205.198.126.113",
+          "country": "DE",
+          "auth": "UNKNOWN",
+          "operational_state": "AVAILABLE",
+          "capabilities": {}
+        }
+      ]
+    },
+    {
+      "scope": {
+        "scope_id": "source:digitimes_semiconductors",
+        "source_id": "digitimes_semiconductors",
+        "owner_site_id": "digitimes",
+        "revision": 1,
+        "enabled": true,
+        "primary_identity_id": "digitimes-nl-1",
+        "fallback_identity_id": "digitimes-en-backup",
+        "verification_plan": {
+          "network_redundancy": "IP_DISTINCT_SAME_REGION",
+          "fallback_state": "UNVERIFIED",
+          "contract": "body_v2.2/listing_v1",
+          "default_publisher": true,
+          "crawler": {
+            "url": "https://www.digitimes.com/topic/semiconductors/"
+          },
+          "body_url": "https://www.digitimes.com/news/a20260923VL216/absolics-testing-investment-glass-substrate-subsidiary.html"
+        }
+      },
+      "active": "digitimes-nl-1",
+      "generation": 1,
+      "members": [
+        {
+          "identity_id": "digitimes-nl-1",
+          "profile_id": "digitimes-nl-1",
+          "runtime": "external_chrome",
+          "egress": "nl-standard-2",
+          "ip": "205.198.126.114",
+          "country": "DE",
+          "auth": "VALID",
+          "operational_state": "AVAILABLE",
+          "capabilities": {
+            "CRAWLER": {
+              "result": "READY",
+              "checked_at": "2026-10-17T18:27:14.037505+00:00",
+              "fingerprint": "265809fa78f6e53cad02d4d1fd37c1aca289ce239b5f73f183128ee5994de7c8",
+              "instance_id": "e0dd8c4972b04e6b8810a8589d8ce5f8",
+              "article_samples": [],
+              "subscription_samples": [],
+              "last_url": "https://www.digitimes.com/topic/semiconductors/",
+              "state": "VERIFIED_WARM",
+              "contract": "body_v2.2/listing_v1",
+              "authenticated": true
+            },
+            "BODY": {
+              "result": "ENTITLEMENT_MISSING",
+              "checked_at": "2026-10-17T18:27:19.200423+00:00",
+              "fingerprint": "265809fa78f6e53cad02d4d1fd37c1aca289ce239b5f73f183128ee5994de7c8",
+              "instance_id": null,
+              "article_samples": [],
+              "subscription_samples": [],
+              "last_url": "https://www.digitimes.com/news/a20261016PD244/taiwan-mask-acquisition-equipment-photomask-revenue.html",
+              "state": "VERIFIED_WARM",
+              "contract": "body_v2.2/listing_v1",
+              "authenticated": true
+            }
+          }
+        },
+        {
+          "identity_id": "digitimes-en-backup",
+          "profile_id": "digitimes-en-backup",
+          "runtime": "external_chrome",
+          "egress": "de-standard-1",
+          "ip": "205.198.126.113",
+          "country": "DE",
+          "auth": "UNKNOWN",
+          "operational_state": "AVAILABLE",
+          "capabilities": {}
+        }
+      ]
+    },
+    {
+      "scope": {
+        "scope_id": "source:digitimes_tw_rss",
+        "source_id": "digitimes_tw_rss",
+        "owner_site_id": "digitimes_tw",
+        "revision": 1,
+        "enabled": true,
+        "primary_identity_id": "digitimes-tw-nl-1",
+        "fallback_identity_id": "digitimes-tw-backup",
+        "verification_plan": {
+          "network_redundancy": "IP_DISTINCT_SAME_REGION",
+          "fallback_state": "UNVERIFIED",
+          "contract": "body_v2.2/listing_v1",
+          "default_publisher": true,
+          "body_url": "https://www.digitimes.com.tw/tech/dt/n/shwnws.asp?id=0000769530_FJQ6EWDK21NANN1N332D5"
+        }
+      },
+      "active": "digitimes-tw-nl-1",
+      "generation": 0,
+      "members": [
+        {
+          "identity_id": "digitimes-tw-nl-1",
+          "profile_id": "digitimes-tw-nl-1",
+          "runtime": "managed_playwright",
+          "egress": "nl-standard-2",
+          "ip": "205.198.126.114",
+          "country": "DE",
+          "auth": "REAUTH_REQUIRED",
+          "operational_state": "AVAILABLE",
+          "capabilities": {}
+        },
+        {
+          "identity_id": "digitimes-tw-backup",
+          "profile_id": "digitimes-tw-backup",
+          "runtime": "managed_playwright",
+          "egress": "de-standard-1",
+          "ip": "205.198.126.113",
+          "country": "DE",
+          "auth": "UNKNOWN",
+          "operational_state": "AVAILABLE",
+          "capabilities": {}
+        }
+      ]
+    },
+    {
+      "scope": {
+        "scope_id": "source:etnews_rss",
+        "source_id": "etnews_rss",
+        "owner_site_id": "etnews",
+        "revision": 1,
+        "enabled": true,
+        "primary_identity_id": "etnews-1",
+        "fallback_identity_id": "etnews-source-backup",
+        "verification_plan": {
+          "network_redundancy": "NONE",
+          "fallback_state": "UNVERIFIED",
+          "contract": "body_v2.2/listing_v1",
+          "default_publisher": true
+        }
+      },
+      "active": "etnews-1",
+      "generation": 0,
+      "members": [
+        {
+          "identity_id": "etnews-1",
+          "profile_id": "etnews-1",
+          "runtime": "managed_playwright",
+          "egress": "server-direct",
+          "ip": "43.163.67.97",
+          "country": "SG",
+          "auth": "UNKNOWN",
+          "operational_state": "AVAILABLE",
+          "capabilities": {}
+        },
+        {
+          "identity_id": "etnews-source-backup",
+          "profile_id": "etnews-source-backup",
+          "runtime": "managed_playwright",
+          "egress": "server-direct",
+          "ip": "43.163.67.97",
+          "country": "SG",
+          "auth": "UNKNOWN",
+          "operational_state": "AVAILABLE",
+          "capabilities": {}
+        }
+      ]
+    },
+    {
+      "scope": {
+        "scope_id": "source:globenewswire_search",
+        "source_id": "globenewswire_search",
+        "owner_site_id": "globenewswire",
+        "revision": 1,
+        "enabled": true,
+        "primary_identity_id": "globenewswire-1",
+        "fallback_identity_id": "globe-search-backup",
+        "verification_plan": {
+          "network_redundancy": "NONE",
+          "fallback_state": "UNVERIFIED",
+          "contract": "body_v2.2/listing_v1",
+          "default_publisher": true,
+          "crawler": {
+            "url": "https://www.globenewswire.com/en/search/keyword/micron/load/more?page=1&pageSize=10"
+          }
+        }
+      },
+      "active": "globenewswire-1",
+      "generation": 5,
+      "members": [
+        {
+          "identity_id": "globenewswire-1",
+          "profile_id": "globenewswire-1",
+          "runtime": "managed_playwright",
+          "egress": "server-direct",
+          "ip": "43.163.67.97",
+          "country": "SG",
+          "auth": "UNKNOWN",
+          "operational_state": "AVAILABLE",
+          "capabilities": {
+            "CRAWLER": {
+              "result": "READY",
+              "checked_at": "2026-10-17T19:30:55.763990+00:00",
+              "fingerprint": "060966b1edcfed1e34bee8c563c2b04f0ea782bfa01b54bfd375d08770e2bdd3",
+              "instance_id": "managed:globenewswire-1:9b2fde3193924d6da075d18ceb430329",
+              "article_samples": [],
+              "subscription_samples": [],
+              "last_url": "https://www.globenewswire.com/en/search/keyword/micron/load/more",
+              "state": "VERIFIED_WARM",
+              "contract": "body_v2.2/listing_v1",
+              "authenticated": false
+            },
+            "BODY": {
+              "result": "FULL",
+              "checked_at": "2026-10-17T18:27:21.767005+00:00",
+              "fingerprint": "95c8b46ae26b31a3bdfba04645158fd155a0463f36701eb2c800039f6d5c9a42",
+              "instance_id": "managed:globenewswire-1:61d246d6355644e49e788ade29f3a110",
+              "article_samples": [
+                "91fe9b91fd9208f5dfdf468668476d3414658916eac1aa93567a5e00a5c3271c",
+                "74c3b4bf1e331102fd5082590965070b23680882dc5900e1a7924dc7741046a2"
+              ],
+              "subscription_samples": [],
+              "last_url": "https://www.globenewswire.com/news-release/2026/10/16/3382408/28124/en/global-emerging-memory-and-storage-technology-market-analysis-2026-2035-ai-and-hbm-demand-fuels-19-73-cagr-creating-a-44-61-billion-market-by-2035.html",
+              "state": "VERIFIED_WARM",
+              "contract": "body_v2.2/listing_v1",
+              "authenticated": false
+            }
+          }
+        },
+        {
+          "identity_id": "globe-search-backup",
+          "profile_id": "globe-search-backup",
+          "runtime": "managed_playwright",
+          "egress": "server-direct",
+          "ip": "43.163.67.97",
+          "country": "SG",
+          "auth": "UNKNOWN",
+          "operational_state": "AVAILABLE",
+          "capabilities": {
+            "BODY": {
+              "result": "FULL",
+              "checked_at": "2026-10-17T19:30:48.707749+00:00",
+              "fingerprint": "dc803b4e80dfaa443f0de473391ebd9064b503d87c72fb6e505e61f66004fa05",
+              "instance_id": "managed:globe-search-backup:6aa309dd7e464c92a0abd79bffa59112",
+              "article_samples": [
+                "74c3b4bf1e331102fd5082590965070b23680882dc5900e1a7924dc7741046a2",
+                "91fe9b91fd9208f5dfdf468668476d3414658916eac1aa93567a5e00a5c3271c"
+              ],
+              "subscription_samples": [],
+              "last_url": "https://www.globenewswire.com/news-release/2026/10/16/3382408/28124/en/global-emerging-memory-and-storage-technology-market-analysis-2026-2035-ai-and-hbm-demand-fuels-19-73-cagr-creating-a-44-61-billion-market-by-2035.html",
+              "state": "VERIFIED_COLD",
+              "contract": "body_v2.2/listing_v1",
+              "authenticated": false
+            },
+            "CRAWLER": {
+              "result": "READY",
+              "checked_at": "2026-10-17T19:30:50.050962+00:00",
+              "fingerprint": "dc803b4e80dfaa443f0de473391ebd9064b503d87c72fb6e505e61f66004fa05",
+              "instance_id": "managed:globe-search-backup:6aa309dd7e464c92a0abd79bffa59112",
+              "article_samples": [],
+              "subscription_samples": [],
+              "last_url": "https://www.globenewswire.com/en/search/keyword/micron/load/more",
+              "state": "VERIFIED_WARM",
+              "contract": "body_v2.2/listing_v1",
+              "authenticated": false
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scope": {
+        "scope_id": "source:globenewswire_semiconductors_rss",
+        "source_id": "globenewswire_semiconductors_rss",
+        "owner_site_id": "globenewswire",
+        "revision": 1,
+        "enabled": true,
+        "primary_identity_id": "globe-rss-main",
+        "fallback_identity_id": "globe-rss-backup",
+        "verification_plan": {
+          "network_redundancy": "NONE",
+          "fallback_state": "UNVERIFIED",
+          "contract": "body_v2.2/listing_v1",
+          "default_publisher": false,
+          "crawler": {
+            "url": "https://www.globenewswire.com/RssFeed/industry/9576-Semiconductors/feedTitle/GlobeNewswire%20-%20Industry%20News%20on%20Semiconductors"
+          }
+        }
+      },
+      "active": "globe-rss-main",
+      "generation": 5,
+      "members": [
+        {
+          "identity_id": "globe-rss-main",
+          "profile_id": "globe-rss-main",
+          "runtime": "managed_playwright",
+          "egress": "server-direct",
+          "ip": "43.163.67.97",
+          "country": "SG",
+          "auth": "UNKNOWN",
+          "operational_state": "AVAILABLE",
+          "capabilities": {
+            "CRAWLER": {
+              "result": "READY",
+              "authentication": "NOT_REQUIRED",
+              "fingerprint": "e805ccca22d1a6d8719da6d626717043ee508065ea414e8d3c6c713d65c70589",
+              "checked_at": "2026-10-17T19:30:32.638233+00:00",
+              "contract": "body_v2.2/listing_v1",
+              "article_samples": [],
+              "subscription_samples": [],
+              "instance_id": "managed:globe-rss-main:7e4080aa532f443487ff22f5f08beee6",
+              "last_url": "https://www.globenewswire.com/news-release/2026/10/16/3382554/9885/en/silicon-motion-announces-annual-dividend-increase.html",
+              "state": "VERIFIED_WARM"
+            },
+            "BODY": {
+              "result": "FULL",
+              "authentication": "NOT_REQUIRED",
+              "fingerprint": "e805ccca22d1a6d8719da6d626717043ee508065ea414e8d3c6c713d65c70589",
+              "checked_at": "2026-10-17T19:30:32.638233+00:00",
+              "contract": "body_v2.2/listing_v1",
+              "article_samples": [
+                "012a55f7ad006940d64f1722e16acbcbc601af255f18e03c7d4f1d338b03ad93"
+              ],
+              "subscription_samples": [],
+              "instance_id": "managed:globe-rss-main:7e4080aa532f443487ff22f5f08beee6",
+              "last_url": "https://www.globenewswire.com/news-release/2026/10/16/3382554/9885/en/silicon-motion-announces-annual-dividend-increase.html",
+              "state": "VERIFIED_WARM"
+            }
+          }
+        },
+        {
+          "identity_id": "globe-rss-backup",
+          "profile_id": "globe-rss-backup",
+          "runtime": "managed_playwright",
+          "egress": "server-direct",
+          "ip": "43.163.67.97",
+          "country": "SG",
+          "auth": "UNKNOWN",
+          "operational_state": "AVAILABLE",
+          "capabilities": {}
+        }
+      ]
+    },
+    {
+      "scope": {
+        "scope_id": "source:huggingnews_rss",
+        "source_id": "huggingnews_rss",
+        "owner_site_id": "huggingnews",
+        "revision": 1,
+        "enabled": true,
+        "primary_identity_id": "huggingnews-1",
+        "fallback_identity_id": "huggingnews-source-backup",
+        "verification_plan": {
+          "network_redundancy": "IP_DISTINCT_SAME_REGION",
+          "fallback_state": "UNVERIFIED",
+          "contract": "body_v2.2/listing_v1",
+          "default_publisher": true
+        }
+      },
+      "active": "huggingnews-1",
+      "generation": 0,
+      "members": [
+        {
+          "identity_id": "huggingnews-1",
+          "profile_id": "huggingnews-1",
+          "runtime": "managed_playwright",
+          "egress": "de-standard-1",
+          "ip": "205.198.126.113",
+          "country": "DE",
+          "auth": "UNKNOWN",
+          "operational_state": "AVAILABLE",
+          "capabilities": {}
+        },
+        {
+          "identity_id": "huggingnews-source-backup",
+          "profile_id": "huggingnews-source-backup",
+          "runtime": "managed_playwright",
+          "egress": "jp-standard-6",
+          "ip": "205.198.126.114",
+          "country": "DE",
+          "auth": "UNKNOWN",
+          "operational_state": "AVAILABLE",
+          "capabilities": {}
+        }
+      ]
+    },
+    {
+      "scope": {
+        "scope_id": "source:investing_ticker_news",
+        "source_id": "investing_ticker_news",
+        "owner_site_id": "investing",
+        "revision": 1,
+        "enabled": true,
+        "primary_identity_id": "public-markets-nl",
+        "fallback_identity_id": "investing-backup",
+        "verification_plan": {
+          "network_redundancy": "IP_DISTINCT_SAME_REGION",
+          "fallback_state": "UNVERIFIED",
+          "contract": "body_v2.2/listing_v1",
+          "default_publisher": true,
+          "crawler": {
+            "url": "https://www.investing.com/equities/micron-tech-news",
+            "recipe_parameters": {
+              "ticker": "MU"
+            }
+          },
+          "body_url": "https://www.investing.com/equities/intel-corp-news"
+        }
+      },
+      "active": "investing-backup",
+      "generation": 2,
+      "members": [
+        {
+          "identity_id": "public-markets-nl",
+          "profile_id": "public-markets-nl",
+          "runtime": "external_chrome",
+          "egress": "nl-standard-2",
+          "ip": "205.198.126.114",
+          "country": "DE",
+          "auth": "UNKNOWN",
+          "operational_state": "MAINTENANCE",
+          "capabilities": {}
+        },
+        {
+          "identity_id": "investing-backup",
+          "profile_id": "investing-backup",
+          "runtime": "external_chrome",
+          "egress": "de-standard-1",
+          "ip": "205.198.126.113",
+          "country": "DE",
+          "auth": "UNKNOWN",
+          "operational_state": "AVAILABLE",
+          "capabilities": {
+            "CRAWLER": {
+              "result": "READY",
+              "checked_at": "2026-10-17T18:27:40.901529+00:00",
+              "fingerprint": "e3294728fc2f9017c92695fe8464edf04b3579b5615bbdf4ec50a04bc858e6e6",
+              "instance_id": "e2bd0b825255448eb816a9620c91dda8",
+              "article_samples": [],
+              "subscription_samples": [],
+              "last_url": "https://www.investing.com/equities/micron-tech-news",
+              "state": "VERIFIED_COLD",
+              "contract": "body_v2.2/listing_v1",
+              "authenticated": false
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scope": {
+        "scope_id": "source:investorshub_ticker_news",
+        "source_id": "investorshub_ticker_news",
+        "owner_site_id": "investorshub",
+        "revision": 1,
+        "enabled": true,
+        "primary_identity_id": "investorshub-main",
+        "fallback_identity_id": "investorshub-backup",
+        "verification_plan": {
+          "network_redundancy": "IP_DISTINCT_SAME_REGION",
+          "fallback_state": "UNVERIFIED",
+          "contract": "body_v2.2/listing_v1",
+          "default_publisher": true,
+          "crawler": {
+            "url": "https://investorshub.advfn.com/stock-market/NASDAQ/MU/news",
+            "recipe_parameters": {
+              "ticker": "MU"
+            }
+          },
+          "body_url": "https://investorshub.advfn.com/stock-market/NYSE/BE/news"
+        }
+      },
+      "active": "investorshub-main",
+      "generation": 1,
+      "members": [
+        {
+          "identity_id": "investorshub-main",
+          "profile_id": "investorshub-main",
+          "runtime": "external_chrome",
+          "egress": "nl-standard-2",
+          "ip": "205.198.126.114",
+          "country": "DE",
+          "auth": "UNKNOWN",
+          "operational_state": "AVAILABLE",
+          "capabilities": {
+            "CRAWLER": {
+              "result": "READY",
+              "checked_at": "2026-10-17T18:27:50.305830+00:00",
+              "fingerprint": "2ff532ce7cd23a98c1b16a04354c77df5c672590e523df57eeb46f5338e92d1a",
+              "instance_id": "a835646fbeb74ccba0f6566ed5eef670",
+              "article_samples": [],
+              "subscription_samples": [],
+              "last_url": "https://investorshub.advfn.com/stock-market/NASDAQ/micron-technology-MU/news",
+              "state": "VERIFIED_WARM",
+              "contract": "body_v2.2/listing_v1",
+              "authenticated": false
+            },
+            "BODY": {
+              "result": "FULL",
+              "checked_at": "2026-10-17T18:28:13.231376+00:00",
+              "fingerprint": "2ff532ce7cd23a98c1b16a04354c77df5c672590e523df57eeb46f5338e92d1a",
+              "instance_id": "a835646fbeb74ccba0f6566ed5eef670",
+              "article_samples": [
+                "252b4a4fa5996526f104128276a48b6c7816612aa45e1fd0d299819e5c2e5422",
+                "a685ea14cdcd739892a85eb291ba2323417dae889414d61506c88470ce65cdeb"
+              ],
+              "subscription_samples": [],
+              "last_url": "https://investorshub.advfn.com/stock-market/NASDAQ/micron-technology-MU/stock-news/99504702/form-4-statement-of-changes-in-beneficial-owners",
+              "state": "VERIFIED_WARM",
+              "contract": "body_v2.2/listing_v1",
+              "authenticated": false
+            }
+          }
+        },
+        {
+          "identity_id": "investorshub-backup",
+          "profile_id": "investorshub-backup",
+          "runtime": "external_chrome",
+          "egress": "de-standard-1",
+          "ip": "205.198.126.113",
+          "country": "DE",
+          "auth": "UNKNOWN",
+          "operational_state": "AVAILABLE",
+          "capabilities": {}
+        }
+      ]
+    },
+    {
+      "scope": {
+        "scope_id": "source:reuters_site_search",
+        "source_id": "reuters_site_search",
+        "owner_site_id": "reuters",
+        "revision": 1,
+        "enabled": true,
+        "primary_identity_id": "digitimes-de-1",
+        "fallback_identity_id": "reuters-backup",
+        "verification_plan": {
+          "network_redundancy": "IP_DISTINCT_SAME_REGION",
+          "fallback_state": "UNVERIFIED",
+          "contract": "body_v2.2/listing_v1",
+          "default_publisher": true,
+          "crawler": {
+            "url": "https://www.reuters.com/site-search/?query=Micron",
+            "recipe_ref": "builtin:reuters_search@1",
+            "recipe_parameters": {
+              "query": "Micron"
+            }
+          },
+          "body_url": "https://www.reuters.com/site-search/?query=Micron&offset=0"
+        }
+      },
+      "active": "digitimes-de-1",
+      "generation": 1,
+      "members": [
+        {
+          "identity_id": "digitimes-de-1",
+          "profile_id": "digitimes-de-1",
+          "runtime": "external_chrome",
+          "egress": "de-standard-1",
+          "ip": "205.198.126.113",
+          "country": "DE",
+          "auth": "UNKNOWN",
+          "operational_state": "MAINTENANCE",
+          "capabilities": {}
+        },
+        {
+          "identity_id": "reuters-backup",
+          "profile_id": "reuters-backup",
+          "runtime": "external_chrome",
+          "egress": "jp-standard-6",
+          "ip": "205.198.126.114",
+          "country": "DE",
+          "auth": "UNKNOWN",
+          "operational_state": "MAINTENANCE",
+          "capabilities": {
+            "CRAWLER": {
+              "result": "ACCESS_CHALLENGE",
+              "checked_at": "2026-10-17T18:27:57.204605+00:00",
+              "fingerprint": "61c87aa4180cf75b78bc94a902b3cc46f2bb4d991506ab39f0786b2f48ad19a8",
+              "instance_id": null,
+              "article_samples": [],
+              "subscription_samples": [],
+              "last_url": "https://www.reuters.com/site-search/",
+              "state": "VERIFIED_WARM",
+              "contract": "body_v2.2/listing_v1",
+              "authenticated": false
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scope": {
+        "scope_id": "source:thelec_semiconductors_rss",
+        "source_id": "thelec_semiconductors_rss",
+        "owner_site_id": "thelec",
+        "revision": 1,
+        "enabled": true,
+        "primary_identity_id": "thelec-1",
+        "fallback_identity_id": "thelec-source-backup",
+        "verification_plan": {
+          "network_redundancy": "NONE",
+          "fallback_state": "UNVERIFIED",
+          "contract": "body_v2.2/listing_v1",
+          "default_publisher": true
+        }
+      },
+      "active": "thelec-1",
+      "generation": 0,
+      "members": [
+        {
+          "identity_id": "thelec-1",
+          "profile_id": "thelec-1",
+          "runtime": "managed_playwright",
+          "egress": "server-direct",
+          "ip": "43.163.67.97",
+          "country": "SG",
+          "auth": "UNKNOWN",
+          "operational_state": "AVAILABLE",
+          "capabilities": {}
+        },
+        {
+          "identity_id": "thelec-source-backup",
+          "profile_id": "thelec-source-backup",
+          "runtime": "managed_playwright",
+          "egress": "server-direct",
+          "ip": "43.163.67.97",
+          "country": "SG",
+          "auth": "UNKNOWN",
+          "operational_state": "AVAILABLE",
+          "capabilities": {}
+        }
+      ]
+    },
+    {
+      "scope": {
+        "scope_id": "source:tomshardware_rss",
+        "source_id": "tomshardware_rss",
+        "owner_site_id": "tomshardware",
+        "revision": 1,
+        "enabled": true,
+        "primary_identity_id": "tomshardware-1",
+        "fallback_identity_id": "tomshardware-source-backup",
+        "verification_plan": {
+          "network_redundancy": "NONE",
+          "fallback_state": "UNVERIFIED",
+          "contract": "body_v2.2/listing_v1",
+          "default_publisher": true
+        }
+      },
+      "active": "tomshardware-1",
+      "generation": 0,
+      "members": [
+        {
+          "identity_id": "tomshardware-1",
+          "profile_id": "tomshardware-1",
+          "runtime": "managed_playwright",
+          "egress": "server-direct",
+          "ip": "43.163.67.97",
+          "country": "SG",
+          "auth": "UNKNOWN",
+          "operational_state": "AVAILABLE",
+          "capabilities": {}
+        },
+        {
+          "identity_id": "tomshardware-source-backup",
+          "profile_id": "tomshardware-source-backup",
+          "runtime": "managed_playwright",
+          "egress": "server-direct",
+          "ip": "43.163.67.97",
+          "country": "SG",
+          "auth": "UNKNOWN",
+          "operational_state": "AVAILABLE",
+          "capabilities": {}
+        }
+      ]
+    },
+    {
+      "scope": {
+        "scope_id": "source:trendforce_news",
+        "source_id": "trendforce_news",
+        "owner_site_id": "trendforce",
+        "revision": 1,
+        "enabled": true,
+        "primary_identity_id": "trendforce-1",
+        "fallback_identity_id": "trendforce-news-backup",
+        "verification_plan": {
+          "network_redundancy": "NONE",
+          "fallback_state": "UNVERIFIED",
+          "contract": "body_v2.2/listing_v1",
+          "default_publisher": true,
+          "crawler": {
+            "url": "https://www.trendforce.com/news/"
+          }
+        }
+      },
+      "active": "trendforce-1",
+      "generation": 1,
+      "members": [
+        {
+          "identity_id": "trendforce-1",
+          "profile_id": "trendforce-1",
+          "runtime": "managed_playwright",
+          "egress": "server-direct",
+          "ip": "43.163.67.97",
+          "country": "SG",
+          "auth": "UNKNOWN",
+          "operational_state": "AVAILABLE",
+          "capabilities": {
+            "CRAWLER": {
+              "result": "READY",
+              "checked_at": "2026-10-17T18:27:51.751351+00:00",
+              "fingerprint": "af60eab176e1305f8ce74eb17d81342b9c2583975863552198b869223dd3f836",
+              "instance_id": "managed:trendforce-1:703bf48331d8468ebf0c547276af51c7",
+              "article_samples": [],
+              "subscription_samples": [],
+              "last_url": "https://www.trendforce.com/news/",
+              "state": "VERIFIED_WARM",
+              "contract": "body_v2.2/listing_v1",
+              "authenticated": false
+            },
+            "BODY": {
+              "result": "FULL",
+              "checked_at": "2026-10-17T18:27:55.728462+00:00",
+              "fingerprint": "af60eab176e1305f8ce74eb17d81342b9c2583975863552198b869223dd3f836",
+              "instance_id": "managed:trendforce-1:703bf48331d8468ebf0c547276af51c7",
+              "article_samples": [
+                "26c5836cd18e1379649ac0d68e2cc2124d2b10ef76acee3ceac401c6832ee079",
+                "5b9507ef34939bb86388aabeb1451a8e4b3109727ad4a3fe2b9a91506f478aba"
+              ],
+              "subscription_samples": [],
+              "last_url": "https://www.trendforce.com/news/2026/10/15/news-tsmc-lifts-2026-growth-forecast-to-44-eyes-record-4q-revenue-of-up-to-us54-3b-up-14-qoq/",
+              "state": "VERIFIED_WARM",
+              "contract": "body_v2.2/listing_v1",
+              "authenticated": false
+            }
+          }
+        },
+        {
+          "identity_id": "trendforce-news-backup",
+          "profile_id": "trendforce-news-backup",
+          "runtime": "managed_playwright",
+          "egress": "server-direct",
+          "ip": "43.163.67.97",
+          "country": "SG",
+          "auth": "UNKNOWN",
+          "operational_state": "AVAILABLE",
+          "capabilities": {}
+        }
+      ]
+    },
+    {
+      "scope": {
+        "scope_id": "source:trendforce_press_releases",
+        "source_id": "trendforce_press_releases",
+        "owner_site_id": "trendforce",
+        "revision": 1,
+        "enabled": true,
+        "primary_identity_id": "trendforce-press-main",
+        "fallback_identity_id": "trendforce-press-backup",
+        "verification_plan": {
+          "network_redundancy": "NONE",
+          "fallback_state": "UNVERIFIED",
+          "contract": "body_v2.2/listing_v1",
+          "default_publisher": false,
+          "crawler": {
+            "url": "https://www.trendforce.com/presscenter/news"
+          }
+        }
+      },
+      "active": "trendforce-press-main",
+      "generation": 1,
+      "members": [
+        {
+          "identity_id": "trendforce-press-main",
+          "profile_id": "trendforce-press-main",
+          "runtime": "managed_playwright",
+          "egress": "server-direct",
+          "ip": "43.163.67.97",
+          "country": "SG",
+          "auth": "UNKNOWN",
+          "operational_state": "AVAILABLE",
+          "capabilities": {
+            "CRAWLER": {
+              "result": "READY",
+              "checked_at": "2026-10-17T18:28:07.653270+00:00",
+              "fingerprint": "45c73d79527469307a506ff1efcd061b8a9612c4318ec98fce7a43a73239fb37",
+              "instance_id": "managed:trendforce-press-main:c3ac178cca0345a9ac70ba745eacb7f4",
+              "article_samples": [],
+              "subscription_samples": [],
+              "last_url": "https://www.trendforce.com/presscenter/news",
+              "state": "VERIFIED_WARM",
+              "contract": "body_v2.2/listing_v1",
+              "authenticated": false
+            },
+            "BODY": {
+              "result": "FULL",
+              "checked_at": "2026-10-17T18:28:12.538997+00:00",
+              "fingerprint": "45c73d79527469307a506ff1efcd061b8a9612c4318ec98fce7a43a73239fb37",
+              "instance_id": "managed:trendforce-press-main:c3ac178cca0345a9ac70ba745eacb7f4",
+              "article_samples": [
+                "7a58423c21c70174abc24aeb1355a9d59d29053f46735ba21633f87329b87d5b",
+                "956e7a998e5e5bd6b4f393662e3a749d1ac9878245f50eb055db206e58861f11"
+              ],
+              "subscription_samples": [],
+              "last_url": "https://www.trendforce.com/presscenter/news/20261014-13269.html",
+              "state": "VERIFIED_WARM",
+              "contract": "body_v2.2/listing_v1",
+              "authenticated": false
+            }
+          }
+        },
+        {
+          "identity_id": "trendforce-press-backup",
+          "profile_id": "trendforce-press-backup",
+          "runtime": "managed_playwright",
+          "egress": "server-direct",
+          "ip": "43.163.67.97",
+          "country": "SG",
+          "auth": "UNKNOWN",
+          "operational_state": "AVAILABLE",
+          "capabilities": {}
+        }
+      ]
+    },
+    {
+      "scope": {
+        "scope_id": "source:yahoo_finance_news",
+        "source_id": "yahoo_finance_news",
+        "owner_site_id": "yahoo_finance",
+        "revision": 1,
+        "enabled": true,
+        "primary_identity_id": "yahoo-main",
+        "fallback_identity_id": "yahoo-backup",
+        "verification_plan": {
+          "network_redundancy": "IP_DISTINCT_SAME_REGION",
+          "fallback_state": "UNVERIFIED",
+          "contract": "body_v2.2/listing_v1",
+          "default_publisher": true,
+          "crawler": {
+            "url": "https://finance.yahoo.com/quote/MU/news/",
+            "recipe_ref": "builtin:yahoo_latest_news@1",
+            "recipe_parameters": {
+              "ticker": "MU"
+            }
+          }
+        }
+      },
+      "active": "yahoo-main",
+      "generation": 0,
+      "members": [
+        {
+          "identity_id": "yahoo-main",
+          "profile_id": "yahoo-main",
+          "runtime": "external_chrome",
+          "egress": "jp-standard-6",
+          "ip": "205.198.126.114",
+          "country": "DE",
+          "auth": "UNKNOWN",
+          "operational_state": "AVAILABLE",
+          "capabilities": {
+            "CRAWLER": {
+              "result": "CONTENT_ERROR",
+              "checked_at": "2026-10-17T18:28:47.127655+00:00",
+              "fingerprint": "e32c940170801a1989d66c6b821dcfc3f9a7f34ceb502be83e0333c844e30828",
+              "instance_id": null,
+              "article_samples": [],
+              "subscription_samples": [],
+              "last_url": "https://finance.yahoo.com/quote/MU/news/",
+              "state": "VERIFIED_WARM",
+              "contract": "body_v2.2/listing_v1",
+              "authenticated": false
+            }
+          }
+        },
+        {
+          "identity_id": "yahoo-backup",
+          "profile_id": "yahoo-backup",
+          "runtime": "external_chrome",
+          "egress": "us-standard-5",
+          "ip": "205.198.126.113",
+          "country": "DE",
+          "auth": "UNKNOWN",
+          "operational_state": "AVAILABLE",
+          "capabilities": {}
+        }
+      ]
+    }
+  ],
+  "poll_snapshot": [
+    {
+      "binding_id": "MU:benzinga_news",
+      "source_id": "benzinga_news",
+      "status": "succeeded",
+      "last_success_at": "2026-10-17T05:59:02.068960Z",
+      "last_error_code": null,
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "MU:finnhub_company_news",
+      "source_id": "finnhub_company_news",
+      "status": "succeeded",
+      "last_success_at": "2026-10-17T05:59:02.068960Z",
+      "last_error_code": null,
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "MU:tikhub_x_user_posts",
+      "source_id": "tikhub_x_user_posts",
+      "status": "succeeded",
+      "last_success_at": "2026-10-17T05:50:05.686250Z",
+      "last_error_code": null,
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "MU:ibkr_news",
+      "source_id": "ibkr_news",
+      "status": "succeeded",
+      "last_success_at": "2026-10-17T05:59:02.068960Z",
+      "last_error_code": null,
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "MU:reuters_site_search",
+      "source_id": "reuters_site_search",
+      "status": "failed",
+      "last_success_at": "2026-10-14T21:15:07.117200Z",
+      "last_error_code": "search_query_failed",
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "MU:yahoo_finance_news",
+      "source_id": "yahoo_finance_news",
+      "status": "succeeded",
+      "last_success_at": "2026-10-17T05:58:29.831372Z",
+      "last_error_code": null,
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "RKLB:benzinga_news",
+      "source_id": "benzinga_news",
+      "status": "succeeded",
+      "last_success_at": "2026-10-17T05:59:17.793492Z",
+      "last_error_code": null,
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "RKLB:finnhub_company_news",
+      "source_id": "finnhub_company_news",
+      "status": "succeeded",
+      "last_success_at": "2026-10-17T05:59:17.793492Z",
+      "last_error_code": null,
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "RKLB:ibkr_news",
+      "source_id": "ibkr_news",
+      "status": "succeeded",
+      "last_success_at": "2026-10-17T05:59:17.793492Z",
+      "last_error_code": null,
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "RKLB:reuters_site_search",
+      "source_id": "reuters_site_search",
+      "status": "failed",
+      "last_success_at": "2026-10-14T21:15:38.023694Z",
+      "last_error_code": "search_query_failed",
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "RKLB:yahoo_finance_news",
+      "source_id": "yahoo_finance_news",
+      "status": "succeeded",
+      "last_success_at": "2026-10-17T05:58:29.831372Z",
+      "last_error_code": null,
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "BE:benzinga_news",
+      "source_id": "benzinga_news",
+      "status": "succeeded",
+      "last_success_at": "2026-10-17T05:59:33.300949Z",
+      "last_error_code": null,
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "BE:finnhub_company_news",
+      "source_id": "finnhub_company_news",
+      "status": "succeeded",
+      "last_success_at": "2026-10-17T05:59:33.300949Z",
+      "last_error_code": null,
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "BE:google_news_search_rss",
+      "source_id": "google_news_search_rss",
+      "status": "succeeded",
+      "last_success_at": "2026-10-17T05:59:33.300949Z",
+      "last_error_code": null,
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "BE:ibkr_news",
+      "source_id": "ibkr_news",
+      "status": "succeeded",
+      "last_success_at": "2026-10-17T05:59:33.300949Z",
+      "last_error_code": null,
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "BE:newswire_rss",
+      "source_id": "newswire_rss",
+      "status": "failed",
+      "last_success_at": null,
+      "last_error_code": "HTTPStatusError",
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "BE:reuters_site_search",
+      "source_id": "reuters_site_search",
+      "status": "failed",
+      "last_success_at": "2026-10-14T13:29:37.201732Z",
+      "last_error_code": "search_query_failed",
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "BE:yahoo_finance_news",
+      "source_id": "yahoo_finance_news",
+      "status": "succeeded",
+      "last_success_at": "2026-10-17T05:58:25.930198Z",
+      "last_error_code": null,
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "INTC:benzinga_news",
+      "source_id": "benzinga_news",
+      "status": "succeeded",
+      "last_success_at": "2026-10-17T05:59:47.401257Z",
+      "last_error_code": null,
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "INTC:finnhub_company_news",
+      "source_id": "finnhub_company_news",
+      "status": "succeeded",
+      "last_success_at": "2026-10-17T05:59:47.401257Z",
+      "last_error_code": null,
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "INTC:google_news_search_rss",
+      "source_id": "google_news_search_rss",
+      "status": "succeeded",
+      "last_success_at": "2026-10-17T05:59:02.068960Z",
+      "last_error_code": null,
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "INTC:ibkr_news",
+      "source_id": "ibkr_news",
+      "status": "succeeded",
+      "last_success_at": "2026-10-17T05:59:47.401257Z",
+      "last_error_code": null,
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "INTC:newswire_rss",
+      "source_id": "newswire_rss",
+      "status": "succeeded",
+      "last_success_at": "2026-10-17T05:59:02.068960Z",
+      "last_error_code": null,
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "INTC:reuters_site_search",
+      "source_id": "reuters_site_search",
+      "status": "failed",
+      "last_success_at": "2026-10-14T05:40:47.361158Z",
+      "last_error_code": "search_query_failed",
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "INTC:yahoo_finance_news",
+      "source_id": "yahoo_finance_news",
+      "status": "succeeded",
+      "last_success_at": "2026-10-17T05:58:29.831372Z",
+      "last_error_code": null,
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "BE:barrons_ticker_news",
+      "source_id": "barrons_ticker_news",
+      "status": "failed",
+      "last_success_at": "2026-10-15T10:04:21.277140Z",
+      "last_error_code": "SiteAccessError",
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "INTC:barrons_ticker_news",
+      "source_id": "barrons_ticker_news",
+      "status": "failed",
+      "last_success_at": "2026-10-15T10:04:49.827758Z",
+      "last_error_code": "SiteAccessError",
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "MU:barrons_ticker_news",
+      "source_id": "barrons_ticker_news",
+      "status": "failed",
+      "last_success_at": "2026-10-15T10:05:09.904810Z",
+      "last_error_code": "SiteAccessError",
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "RKLB:barrons_ticker_news",
+      "source_id": "barrons_ticker_news",
+      "status": "failed",
+      "last_success_at": "2026-10-15T10:04:26.174339Z",
+      "last_error_code": "SiteAccessError",
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "BE:digitimes_semiconductors",
+      "source_id": "digitimes_semiconductors",
+      "status": "failed",
+      "last_success_at": "2026-10-16T06:44:00.450160Z",
+      "last_error_code": "SiteAccessError",
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "INTC:digitimes_semiconductors",
+      "source_id": "digitimes_semiconductors",
+      "status": "failed",
+      "last_success_at": "2026-10-16T06:44:00.450160Z",
+      "last_error_code": "SiteAccessError",
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "MU:digitimes_semiconductors",
+      "source_id": "digitimes_semiconductors",
+      "status": "failed",
+      "last_success_at": "2026-10-16T06:44:00.450160Z",
+      "last_error_code": "SiteAccessError",
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "BE:etnews_rss",
+      "source_id": "etnews_rss",
+      "status": "succeeded",
+      "last_success_at": "2026-10-17T05:59:02.068960Z",
+      "last_error_code": null,
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "INTC:etnews_rss",
+      "source_id": "etnews_rss",
+      "status": "succeeded",
+      "last_success_at": "2026-10-17T05:59:02.068960Z",
+      "last_error_code": null,
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "MU:etnews_rss",
+      "source_id": "etnews_rss",
+      "status": "succeeded",
+      "last_success_at": "2026-10-17T05:59:02.068960Z",
+      "last_error_code": null,
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "BE:digitimes_tw_rss",
+      "source_id": "digitimes_tw_rss",
+      "status": "succeeded",
+      "last_success_at": "2026-10-17T05:59:02.068960Z",
+      "last_error_code": null,
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "INTC:digitimes_tw_rss",
+      "source_id": "digitimes_tw_rss",
+      "status": "succeeded",
+      "last_success_at": "2026-10-17T05:59:02.068960Z",
+      "last_error_code": null,
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "MU:digitimes_tw_rss",
+      "source_id": "digitimes_tw_rss",
+      "status": "succeeded",
+      "last_success_at": "2026-10-17T05:59:02.068960Z",
+      "last_error_code": null,
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "BE:thelec_semiconductors_rss",
+      "source_id": "thelec_semiconductors_rss",
+      "status": "succeeded",
+      "last_success_at": "2026-10-17T05:59:02.068960Z",
+      "last_error_code": null,
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "INTC:thelec_semiconductors_rss",
+      "source_id": "thelec_semiconductors_rss",
+      "status": "succeeded",
+      "last_success_at": "2026-10-17T05:59:02.068960Z",
+      "last_error_code": null,
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "MU:thelec_semiconductors_rss",
+      "source_id": "thelec_semiconductors_rss",
+      "status": "succeeded",
+      "last_success_at": "2026-10-17T05:59:02.068960Z",
+      "last_error_code": null,
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "BE:huggingnews_rss",
+      "source_id": "huggingnews_rss",
+      "status": "succeeded",
+      "last_success_at": "2026-10-17T05:59:02.068960Z",
+      "last_error_code": null,
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "INTC:huggingnews_rss",
+      "source_id": "huggingnews_rss",
+      "status": "succeeded",
+      "last_success_at": "2026-10-17T05:59:02.068960Z",
+      "last_error_code": null,
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "MU:huggingnews_rss",
+      "source_id": "huggingnews_rss",
+      "status": "succeeded",
+      "last_success_at": "2026-10-17T05:59:02.068960Z",
+      "last_error_code": null,
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "BE:trendforce_news",
+      "source_id": "trendforce_news",
+      "status": "succeeded",
+      "last_success_at": "2026-10-17T05:59:02.068960Z",
+      "last_error_code": null,
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "INTC:trendforce_news",
+      "source_id": "trendforce_news",
+      "status": "succeeded",
+      "last_success_at": "2026-10-17T05:59:02.068960Z",
+      "last_error_code": null,
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "MU:trendforce_news",
+      "source_id": "trendforce_news",
+      "status": "succeeded",
+      "last_success_at": "2026-10-17T05:59:02.068960Z",
+      "last_error_code": null,
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "BE:tomshardware_rss",
+      "source_id": "tomshardware_rss",
+      "status": "succeeded",
+      "last_success_at": "2026-10-17T05:59:02.068960Z",
+      "last_error_code": null,
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "INTC:tomshardware_rss",
+      "source_id": "tomshardware_rss",
+      "status": "succeeded",
+      "last_success_at": "2026-10-17T05:59:02.068960Z",
+      "last_error_code": null,
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "MU:tomshardware_rss",
+      "source_id": "tomshardware_rss",
+      "status": "succeeded",
+      "last_success_at": "2026-10-17T05:59:02.068960Z",
+      "last_error_code": null,
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "BE:trendforce_press_releases",
+      "source_id": "trendforce_press_releases",
+      "status": "succeeded",
+      "last_success_at": "2026-10-17T05:59:02.068960Z",
+      "last_error_code": null,
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "INTC:trendforce_press_releases",
+      "source_id": "trendforce_press_releases",
+      "status": "succeeded",
+      "last_success_at": "2026-10-17T05:59:02.068960Z",
+      "last_error_code": null,
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "MU:trendforce_press_releases",
+      "source_id": "trendforce_press_releases",
+      "status": "succeeded",
+      "last_success_at": "2026-10-17T05:59:02.068960Z",
+      "last_error_code": null,
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "BE:globenewswire_search",
+      "source_id": "globenewswire_search",
+      "status": "succeeded",
+      "last_success_at": "2026-10-17T05:59:14.567216Z",
+      "last_error_code": null,
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "INTC:globenewswire_search",
+      "source_id": "globenewswire_search",
+      "status": "succeeded",
+      "last_success_at": "2026-10-17T05:59:25.283654Z",
+      "last_error_code": null,
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "MU:globenewswire_search",
+      "source_id": "globenewswire_search",
+      "status": "succeeded",
+      "last_success_at": "2026-10-17T05:59:40.075220Z",
+      "last_error_code": null,
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "BE:investing_ticker_news",
+      "source_id": "investing_ticker_news",
+      "status": "failed",
+      "last_success_at": "2026-10-15T11:45:25.596779Z",
+      "last_error_code": "SiteAccessError",
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "INTC:investing_ticker_news",
+      "source_id": "investing_ticker_news",
+      "status": "failed",
+      "last_success_at": "2026-10-15T11:45:34.414703Z",
+      "last_error_code": "SiteAccessError",
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "MU:investing_ticker_news",
+      "source_id": "investing_ticker_news",
+      "status": "failed",
+      "last_success_at": "2026-10-15T11:45:19.742278Z",
+      "last_error_code": "SiteAccessError",
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "BE:investorshub_ticker_news",
+      "source_id": "investorshub_ticker_news",
+      "status": "failed",
+      "last_success_at": "2026-10-15T11:45:22.989021Z",
+      "last_error_code": "SOURCE_DEFERRED:egress_unavailable",
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "INTC:investorshub_ticker_news",
+      "source_id": "investorshub_ticker_news",
+      "status": "failed",
+      "last_success_at": "2026-10-15T11:45:31.134132Z",
+      "last_error_code": "SOURCE_DEFERRED:egress_unavailable",
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "MU:investorshub_ticker_news",
+      "source_id": "investorshub_ticker_news",
+      "status": "failed",
+      "last_success_at": "2026-10-15T11:45:42.566761Z",
+      "last_error_code": "SOURCE_DEFERRED:egress_unavailable",
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "RKLB:globenewswire_search",
+      "source_id": "globenewswire_search",
+      "status": "succeeded",
+      "last_success_at": "2026-10-17T05:59:53.882529Z",
+      "last_error_code": null,
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "RKLB:investing_ticker_news",
+      "source_id": "investing_ticker_news",
+      "status": "failed",
+      "last_success_at": "2026-10-15T11:44:55.697938Z",
+      "last_error_code": "SiteAccessError",
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "RKLB:investorshub_ticker_news",
+      "source_id": "investorshub_ticker_news",
+      "status": "failed",
+      "last_success_at": "2026-10-15T11:45:01.658538Z",
+      "last_error_code": "SOURCE_DEFERRED:egress_unavailable",
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "BE:globenewswire_semiconductors_rss",
+      "source_id": "globenewswire_semiconductors_rss",
+      "status": "succeeded",
+      "last_success_at": "2026-10-17T05:59:02.068960Z",
+      "last_error_code": null,
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "INTC:globenewswire_semiconductors_rss",
+      "source_id": "globenewswire_semiconductors_rss",
+      "status": "succeeded",
+      "last_success_at": "2026-10-17T05:59:02.068960Z",
+      "last_error_code": null,
+      "next_poll_at": null
+    },
+    {
+      "binding_id": "MU:globenewswire_semiconductors_rss",
+      "source_id": "globenewswire_semiconductors_rss",
+      "status": "succeeded",
+      "last_success_at": "2026-10-17T05:59:02.068960Z",
+      "last_error_code": null,
+      "next_poll_at": null
+    }
+  ],
+  "test_operations": [
+    {
+      "action": "OPEN_LOGIN",
+      "idempotency_key": "release-toolchain:3061b38fa2184dbea1fb2fecd1124425",
+      "scope_id": "source:globenewswire_semiconductors_rss",
+      "identity_id": "globe-rss-main",
+      "session_id": null,
+      "task_id": null,
+      "verification_url": null,
+      "confirm_discard": false,
+      "operation_id": "maintenance_op_edd1a1f6f72b48f88b8467e9f29450e5",
+      "state": "DONE",
+      "stage": "DONE",
+      "stage_started_at": "2026-10-17T18:35:38.836489Z",
+      "deadline_at": "2026-10-17T18:36:18.836451Z",
+      "result": {
+        "session_id": "maintenance_94fd0fffbd15487f90ef01ec37b84f17",
+        "identity_id": "globe-rss-main",
+        "stage": "VIEWER_READY",
+        "generation": 2,
+        "kind": "LOGIN",
+        "task_id": null,
+        "site_id": "globenewswire"
+      },
+      "error": null,
+      "updated_at": "2026-10-17T18:35:43.657206Z"
+    },
+    {
+      "action": "CLOSE_LOGIN",
+      "idempotency_key": "release-toolchain:d7e5c9638c12498f8025dd6668b3d66b",
+      "scope_id": null,
+      "identity_id": null,
+      "session_id": "maintenance_94fd0fffbd15487f90ef01ec37b84f17",
+      "task_id": null,
+      "verification_url": null,
+      "confirm_discard": false,
+      "operation_id": "maintenance_op_3f42c0bc72364f689704df8588fb6ac5",
+      "state": "DONE",
+      "stage": "DONE",
+      "stage_started_at": "2026-10-17T18:35:44.279783Z",
+      "deadline_at": "2026-10-17T18:35:54.279743Z",
+      "result": {
+        "session_closed": true
+      },
+      "error": null,
+      "updated_at": "2026-10-17T18:35:44.320854Z"
+    },
+    {
+      "action": "ACTIVATE_PRIMARY",
+      "idempotency_key": "release-restore:ad3ed5eca63341a78a891a2ef217b831",
+      "scope_id": "source:globenewswire_search",
+      "identity_id": null,
+      "session_id": null,
+      "task_id": null,
+      "verification_url": null,
+      "confirm_discard": false,
+      "operation_id": "maintenance_op_8bf2a28fce7e4db5b85b7324f697fcfd",
+      "state": "DONE",
+      "stage": "DONE",
+      "stage_started_at": "2026-10-17T18:42:07.234270Z",
+      "deadline_at": "2026-10-17T18:42:47.234233Z",
+      "result": {
+        "ready": true,
+        "identity_id": "globenewswire-1",
+        "active_role": "primary",
+        "canary": "CRAWLER"
+      },
+      "error": null,
+      "updated_at": "2026-10-17T18:42:11.781471Z"
+    },
+    {
+      "action": "OPEN_CHALLENGE",
+      "idempotency_key": "release-toolchain:8304f76bf5bb49caa40f0cc729b81340",
+      "scope_id": "source:reuters_site_search",
+      "identity_id": "reuters-backup",
+      "session_id": null,
+      "task_id": "challenge_a6e30ab46f2b43618ce7072241ad5757",
+      "verification_url": null,
+      "confirm_discard": false,
+      "operation_id": "maintenance_op_f9099beb18bb4d61863f4ca6ce5ef9bf",
+      "state": "FAILED",
+      "stage": "FAILED",
+      "stage_started_at": "2026-10-17T18:43:14.572998Z",
+      "deadline_at": "2026-10-17T18:43:54.572967Z",
+      "result": {},
+      "error": "IdentityOperationError: failed; inspect the session before retrying.",
+      "updated_at": "2026-10-17T18:43:20.449271Z"
+    },
+    {
+      "action": "OPEN_CHALLENGE",
+      "idempotency_key": "release-toolchain:cd85e8f541ba425780bf78797a587a7d",
+      "scope_id": "source:reuters_site_search",
+      "identity_id": "reuters-backup",
+      "session_id": null,
+      "task_id": "challenge_a6e30ab46f2b43618ce7072241ad5757",
+      "verification_url": null,
+      "confirm_discard": false,
+      "operation_id": "maintenance_op_9a24d5693b4a49209b709f47ea6e3222",
+      "state": "FAILED",
+      "stage": "FAILED",
+      "stage_started_at": "2026-10-17T18:45:39.983961Z",
+      "deadline_at": "2026-10-17T18:46:19.983922Z",
+      "result": {},
+      "error": "IdentityOperationError: failed; inspect the session before retrying.",
+      "updated_at": "2026-10-17T18:45:43.022285Z"
+    },
+    {
+      "action": "OPEN_CHALLENGE",
+      "idempotency_key": "release-toolchain:3073d46e172d438b87826506801c1b66",
+      "scope_id": "source:reuters_site_search",
+      "identity_id": "reuters-backup",
+      "session_id": null,
+      "task_id": "challenge_a6e30ab46f2b43618ce7072241ad5757",
+      "verification_url": null,
+      "confirm_discard": false,
+      "operation_id": "maintenance_op_98dfef01351946cabd99ef3b22271232",
+      "state": "DONE",
+      "stage": "DONE",
+      "stage_started_at": "2026-10-17T18:48:16.039107Z",
+      "deadline_at": "2026-10-17T18:48:56.039059Z",
+      "result": {
+        "session_id": "maintenance_87a741ac524242a692dc57b69f6cc0d7",
+        "stage": "VIEWER_READY",
+        "generation": 5,
+        "page_preserved": true,
+        "kind": "CHALLENGE",
+        "task_id": "challenge_a6e30ab46f2b43618ce7072241ad5757",
+        "identity_id": "reuters-backup"
+      },
+      "error": null,
+      "updated_at": "2026-10-17T18:48:19.476146Z"
+    },
+    {
+      "action": "RELEASE_VIEWER",
+      "idempotency_key": "release-toolchain:4ca65ba7f7384d92aa074914db2809c5",
+      "scope_id": null,
+      "identity_id": null,
+      "session_id": "maintenance_87a741ac524242a692dc57b69f6cc0d7",
+      "task_id": null,
+      "verification_url": null,
+      "confirm_discard": false,
+      "operation_id": "maintenance_op_53d21756520c4930a6d4cd74f950f521",
+      "state": "DONE",
+      "stage": "DONE",
+      "stage_started_at": "2026-10-17T18:48:19.748741Z",
+      "deadline_at": "2026-10-17T18:48:29.748692Z",
+      "result": {
+        "released": true,
+        "page_preserved": true
+      },
+      "error": null,
+      "updated_at": "2026-10-17T18:48:19.753528Z"
+    },
+    {
+      "action": "OPEN_LOGIN",
+      "idempotency_key": "release-toolchain:e4ea253d56a24cb08a5cc5858dbdc440",
+      "scope_id": "source:globenewswire_semiconductors_rss",
+      "identity_id": "globe-rss-main",
+      "session_id": null,
+      "task_id": null,
+      "verification_url": null,
+      "confirm_discard": false,
+      "operation_id": "maintenance_op_0beb29c83fa24455a6dc40070a367145",
+      "state": "DONE",
+      "stage": "DONE",
+      "stage_started_at": "2026-10-17T19:02:15.117149Z",
+      "deadline_at": "2026-10-17T19:02:55.117106Z",
+      "result": {
+        "session_id": "maintenance_045a4880d7dd486097e1e6b309cf682c",
+        "identity_id": "globe-rss-main",
+        "stage": "VIEWER_READY",
+        "generation": 2,
+        "kind": "LOGIN",
+        "task_id": null,
+        "site_id": "globenewswire"
+      },
+      "error": null,
+      "updated_at": "2026-10-17T19:02:19.060258Z"
+    },
+    {
+      "action": "VERIFY_LOGIN",
+      "idempotency_key": "release-toolchain:8bff8c4a8fb74603b3b80cc5622b87a0",
+      "scope_id": null,
+      "identity_id": null,
+      "session_id": "maintenance_045a4880d7dd486097e1e6b309cf682c",
+      "task_id": null,
+      "verification_url": null,
+      "confirm_discard": false,
+      "operation_id": "maintenance_op_9970ea2961e94d65985b8bf674ea6add",
+      "state": "FAILED",
+      "stage": "FAILED",
+      "stage_started_at": "2026-10-17T19:02:19.369908Z",
+      "deadline_at": "2026-10-17T19:03:04.369867Z",
+      "result": {},
+      "error": "Error: failed; inspect the preserved session before retrying.",
+      "updated_at": "2026-10-17T19:02:19.673048Z"
+    },
+    {
+      "action": "VERIFY_LOGIN",
+      "idempotency_key": "release-verify-retry:69d1c29c90224a7b99bc09468e78c2f0",
+      "scope_id": null,
+      "identity_id": null,
+      "session_id": "maintenance_045a4880d7dd486097e1e6b309cf682c",
+      "task_id": null,
+      "verification_url": null,
+      "confirm_discard": false,
+      "operation_id": "maintenance_op_5fb69c3d32b44ba88f2ae4b272d9f9a6",
+      "state": "DONE",
+      "stage": "DONE",
+      "stage_started_at": "2026-10-17T19:04:05.162242Z",
+      "deadline_at": "2026-10-17T19:04:50.162200Z",
+      "result": {
+        "challenge": "CLEARED",
+        "authentication": "NOT_REQUIRED",
+        "crawler": "READY",
+        "body": "FULL",
+        "reason": "complete_article",
+        "health_applied": true,
+        "session_closed": true,
+        "cleanup_pending": false,
+        "challenge_task_id": null,
+        "verification_url": "https://www.globenewswire.com/news-release/2026/10/16/3382554/9885/en/silicon-motion-announces-annual-dividend-increase.html",
+        "runtime_instance_id": "managed:globe-rss-main:c5fbb1a49cf04053abfbb2269a2330af"
+      },
+      "error": null,
+      "updated_at": "2026-10-17T19:04:11.839819Z"
+    },
+    {
+      "action": "OPEN_LOGIN",
+      "idempotency_key": "release-toolchain:9f401f4fc05f4f7b835cc5aa289f6961",
+      "scope_id": "source:globenewswire_semiconductors_rss",
+      "identity_id": "globe-rss-main",
+      "session_id": null,
+      "task_id": null,
+      "verification_url": null,
+      "confirm_discard": false,
+      "operation_id": "maintenance_op_cb91479b4ebd44d2a478cf3a3dbbceb2",
+      "state": "DONE",
+      "stage": "DONE",
+      "stage_started_at": "2026-10-17T19:07:29.731500Z",
+      "deadline_at": "2026-10-17T19:08:09.731455Z",
+      "result": {
+        "session_id": "maintenance_3eb5f3278dda4a43b5b2c592936de43c",
+        "identity_id": "globe-rss-main",
+        "stage": "VIEWER_READY",
+        "generation": 2,
+        "kind": "LOGIN",
+        "task_id": null,
+        "site_id": "globenewswire"
+      },
+      "error": null,
+      "updated_at": "2026-10-17T19:07:33.692327Z"
+    },
+    {
+      "action": "VERIFY_LOGIN",
+      "idempotency_key": "release-toolchain:d87909fc24b84937b92ee03770316544",
+      "scope_id": null,
+      "identity_id": null,
+      "session_id": "maintenance_3eb5f3278dda4a43b5b2c592936de43c",
+      "task_id": null,
+      "verification_url": null,
+      "confirm_discard": false,
+      "operation_id": "maintenance_op_49b7ce7b967b474b934ff78710ef340f",
+      "state": "DONE",
+      "stage": "DONE",
+      "stage_started_at": "2026-10-17T19:07:33.959603Z",
+      "deadline_at": "2026-10-17T19:08:18.959560Z",
+      "result": {
+        "challenge": "CLEARED",
+        "authentication": "NOT_REQUIRED",
+        "crawler": "READY",
+        "body": "FULL",
+        "reason": "complete_article",
+        "health_applied": true,
+        "session_closed": true,
+        "cleanup_pending": false,
+        "challenge_task_id": null,
+        "verification_url": "https://www.globenewswire.com/news-release/2026/10/16/3382554/9885/en/silicon-motion-announces-annual-dividend-increase.html",
+        "runtime_instance_id": "managed:globe-rss-main:db2feacab27c4a0384ba6f864bd07350"
+      },
+      "error": null,
+      "updated_at": "2026-10-17T19:07:41.520156Z"
+    },
+    {
+      "action": "OPEN_LOGIN",
+      "idempotency_key": "release-toolchain:eb4de2fd9ed54ddbb8fdfbdacf920d93",
+      "scope_id": "source:globenewswire_semiconductors_rss",
+      "identity_id": "globe-rss-main",
+      "session_id": null,
+      "task_id": null,
+      "verification_url": null,
+      "confirm_discard": false,
+      "operation_id": "maintenance_op_56bd41d71514471997e47b0ec3278591",
+      "state": "DONE",
+      "stage": "DONE",
+      "stage_started_at": "2026-10-17T19:26:05.714737Z",
+      "deadline_at": "2026-10-17T19:26:45.714687Z",
+      "result": {
+        "session_id": "maintenance_9a55ecd4b7bd48b39e0d0c0e27c01c1f",
+        "identity_id": "globe-rss-main",
+        "stage": "VIEWER_READY",
+        "generation": 2,
+        "kind": "LOGIN",
+        "task_id": null,
+        "site_id": "globenewswire"
+      },
+      "error": null,
+      "updated_at": "2026-10-17T19:26:09.569736Z"
+    },
+    {
+      "action": "VERIFY_LOGIN",
+      "idempotency_key": "release-toolchain:17bcb31e8a374c258d07b28f86b5516f",
+      "scope_id": null,
+      "identity_id": null,
+      "session_id": "maintenance_9a55ecd4b7bd48b39e0d0c0e27c01c1f",
+      "task_id": null,
+      "verification_url": null,
+      "confirm_discard": false,
+      "operation_id": "maintenance_op_0d01c4de937a413ab56e71044691b376",
+      "state": "DONE",
+      "stage": "DONE",
+      "stage_started_at": "2026-10-17T19:26:10.098075Z",
+      "deadline_at": "2026-10-17T19:26:55.098029Z",
+      "result": {
+        "challenge": "CLEARED",
+        "authentication": "NOT_REQUIRED",
+        "crawler": "READY",
+        "body": "FULL",
+        "reason": "complete_article",
+        "health_applied": true,
+        "session_closed": true,
+        "cleanup_pending": false,
+        "challenge_task_id": null,
+        "verification_url": "https://www.globenewswire.com/news-release/2026/10/16/3382554/9885/en/silicon-motion-announces-annual-dividend-increase.html",
+        "runtime_instance_id": "managed:globe-rss-main:5652bf3b767e4446a6908f357dd3de4c"
+      },
+      "error": null,
+      "updated_at": "2026-10-17T19:26:16.875097Z"
+    },
+    {
+      "action": "OPEN_CHALLENGE",
+      "idempotency_key": "release-toolchain:de8f809eb6704f31a2f7074236593b4b",
+      "scope_id": "source:reuters_site_search",
+      "identity_id": "reuters-backup",
+      "session_id": null,
+      "task_id": "challenge_a6e30ab46f2b43618ce7072241ad5757",
+      "verification_url": null,
+      "confirm_discard": false,
+      "operation_id": "maintenance_op_3aecbd23d22d44c78dd1986534666984",
+      "state": "DONE",
+      "stage": "DONE",
+      "stage_started_at": "2026-10-17T19:26:19.726666Z",
+      "deadline_at": "2026-10-17T19:26:59.726629Z",
+      "result": {
+        "session_id": "maintenance_87a741ac524242a692dc57b69f6cc0d7",
+        "stage": "VIEWER_READY",
+        "generation": 7,
+        "page_preserved": true,
+        "kind": "CHALLENGE",
+        "task_id": "challenge_a6e30ab46f2b43618ce7072241ad5757",
+        "identity_id": "reuters-backup"
+      },
+      "error": null,
+      "updated_at": "2026-10-17T19:26:23.452636Z"
+    },
+    {
+      "action": "RELEASE_VIEWER",
+      "idempotency_key": "release-toolchain:e85a84a7556346a1a25db9a5e28d087c",
+      "scope_id": null,
+      "identity_id": null,
+      "session_id": "maintenance_87a741ac524242a692dc57b69f6cc0d7",
+      "task_id": null,
+      "verification_url": null,
+      "confirm_discard": false,
+      "operation_id": "maintenance_op_55f5ed5553f6477991a04576836ed42f",
+      "state": "DONE",
+      "stage": "DONE",
+      "stage_started_at": "2026-10-17T19:26:23.969083Z",
+      "deadline_at": "2026-10-17T19:26:33.969029Z",
+      "result": {
+        "released": true,
+        "page_preserved": true
+      },
+      "error": null,
+      "updated_at": "2026-10-17T19:26:23.981742Z"
+    },
+    {
+      "action": "OPEN_LOGIN",
+      "idempotency_key": "release-toolchain:340b3d82574049b880ab7a6cf53b49d8",
+      "scope_id": "source:globenewswire_semiconductors_rss",
+      "identity_id": "globe-rss-main",
+      "session_id": null,
+      "task_id": null,
+      "verification_url": null,
+      "confirm_discard": false,
+      "operation_id": "maintenance_op_b069414c94334692a0c5e72da3172c39",
+      "state": "DONE",
+      "stage": "DONE",
+      "stage_started_at": "2026-10-17T19:30:17.216589Z",
+      "deadline_at": "2026-10-17T19:30:57.216541Z",
+      "result": {
+        "session_id": "maintenance_85201357acbe4b16b8a40ead1212125f",
+        "identity_id": "globe-rss-main",
+        "stage": "VIEWER_READY",
+        "generation": 2,
+        "kind": "LOGIN",
+        "task_id": null,
+        "site_id": "globenewswire"
+      },
+      "error": null,
+      "updated_at": "2026-10-17T19:30:22.823344Z"
+    },
+    {
+      "action": "VERIFY_LOGIN",
+      "idempotency_key": "release-toolchain:1a9de446d318463a8d390506d2994bbd",
+      "scope_id": null,
+      "identity_id": null,
+      "session_id": "maintenance_85201357acbe4b16b8a40ead1212125f",
+      "task_id": null,
+      "verification_url": null,
+      "confirm_discard": false,
+      "operation_id": "maintenance_op_8955872fe78e4e46b220727407d854ea",
+      "state": "DONE",
+      "stage": "DONE",
+      "stage_started_at": "2026-10-17T19:30:23.165406Z",
+      "deadline_at": "2026-10-17T19:31:08.165360Z",
+      "result": {
+        "challenge": "CLEARED",
+        "authentication": "NOT_REQUIRED",
+        "crawler": "READY",
+        "body": "FULL",
+        "reason": "complete_article",
+        "health_applied": true,
+        "session_closed": true,
+        "cleanup_pending": false,
+        "challenge_task_id": null,
+        "verification_url": "https://www.globenewswire.com/news-release/2026/10/16/3382554/9885/en/silicon-motion-announces-annual-dividend-increase.html",
+        "runtime_instance_id": "managed:globe-rss-main:7e4080aa532f443487ff22f5f08beee6"
+      },
+      "error": null,
+      "updated_at": "2026-10-17T19:30:32.717268Z"
+    },
+    {
+      "action": "ACTIVATE_PRIMARY",
+      "idempotency_key": "release-restore:475d7a7b046b4931bb86d32e2dbc2ba1",
+      "scope_id": "source:globenewswire_search",
+      "identity_id": null,
+      "session_id": null,
+      "task_id": null,
+      "verification_url": null,
+      "confirm_discard": false,
+      "operation_id": "maintenance_op_3f7e324f79f7424dbf2c443448a88a1c",
+      "state": "DONE",
+      "stage": "DONE",
+      "stage_started_at": "2026-10-17T19:30:50.131150Z",
+      "deadline_at": "2026-10-17T19:31:30.131110Z",
+      "result": {
+        "ready": true,
+        "identity_id": "globenewswire-1",
+        "active_role": "primary",
+        "canary": "CRAWLER"
+      },
+      "error": null,
+      "updated_at": "2026-10-17T19:30:55.767102Z"
+    }
+  ]
+}

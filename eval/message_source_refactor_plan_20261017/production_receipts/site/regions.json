@@ -1,0 +1,56 @@
+[
+  {
+    "egress_id": "de-standard-1",
+    "status": 200,
+    "result": {
+      "egress_id": "de-standard-1",
+      "observed_ip": "205.198.126.113",
+      "country_code": "DE"
+    }
+  },
+  {
+    "egress_id": "jp-standard-6",
+    "status": 200,
+    "result": {
+      "egress_id": "jp-standard-6",
+      "observed_ip": "205.198.126.114",
+      "country_code": "DE"
+    }
+  },
+  {
+    "egress_id": "nl-standard-2",
+    "status": 200,
+    "result": {
+      "egress_id": "nl-standard-2",
+      "observed_ip": "205.198.126.114",
+      "country_code": "DE"
+    }
+  },
+  {
+    "egress_id": "server-direct",
+    "status": 200,
+    "result": {
+      "egress_id": "server-direct",
+      "observed_ip": "43.163.67.97",
+      "country_code": "SG"
+    }
+  },
+  {
+    "egress_id": "tr-standard-1",
+    "status": 200,
+    "result": {
+      "egress_id": "tr-standard-1",
+      "observed_ip": "185.40.106.84",
+      "country_code": "TR"
+    }
+  },
+  {
+    "egress_id": "us-standard-5",
+    "status": 200,
+    "result": {
+      "egress_id": "us-standard-5",
+      "observed_ip": "205.198.126.113",
+      "country_code": "DE"
+    }
+  }
+]

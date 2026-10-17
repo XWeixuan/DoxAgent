@@ -1,6 +1,6 @@
 # 消息源隔离、主备与维护重构实施记录
 
-更新：2026-10-18。依据同目录 `message_source_isolation_failover_maintenance_refactor_implementation_plan_20261017.md`。软件验收、生产迁移、真实网站认证分开记录。
+更新：2026-10-18。依据同目录 `message_source_isolation_failover_maintenance_refactor_implementation_plan_20261017.md`。代码已推送 main，生产 Registry/控制/采集与补全客户端已更新；真实付费站点尚有人工待办。终态及保留现场导致的 Supervisor 细化部署待办见 [发布与验收记录](message_source_refactor_release_and_acceptance_20261018.md)。
 
 ## 已实施
 
@@ -16,16 +16,18 @@
 
 ## 验收
 
-- 最终扩大本地回归 **288 passed / 1 Windows symlink skip**，93秒；另有 curl_cffi Windows Proactor 提示。Ruff及本轮diff空白检查通过。
+- 最终功能提交fe4a768b干净Git快照回归 **302 passed / 1 Windows symlink skip**，100.93秒，不混入其它模块脏改动；产品Site包、桌面及本轮测试Ruff通过。此前工作树回归有curl_cffi Windows Proactor提示，最终干净快照无此警告。
 - 隔离 Linux 原生 Chrome153/CfT、本地不转发代理、临时独立 Profile 实测：Challenge 交接释放容量、控制重建保留人工原页、createTarget 丢响应通过 marker 找回、跨连接精确清理、独立正文验证、Supervisor 仅进程重启接管同 PID/UUID、正常冷启动 Cookie 保留、双轨独立驱动。
 - 真实测试暴露并修复：空 controller owner 被误拒；恢复 Challenge 错误要求 login_url；raw-CDP 清理后残留 disposed Page GUID 破坏恢复；恢复人工页错误占用业务 lease。
 - 合成页面验收不等于真实账号/订阅正文验收；生产主备状态需逐个报告，未登录备用不得列 READY。
 
 ## 授权与生产检查点
 
-用户已授权清理未使用 Docker build cache / 7天前 journal，不删镜像、容器、业务库、代码、Profile。实际释放缓存2.755GB、journal0，清理后根盘约3.6GiB，不适合完整重装依赖构建；只允许清单一致的有界依赖复用发布。
+用户已授权清理未使用 Docker build cache / 7天前 journal，不删镜像、容器、业务库、代码、Profile。后续完整清理闲置build cache报告逻辑19.17GB、journal0，根盘实际曾恢复约12GB、终态约11GB，仍不适合完整重装依赖构建；本轮采用清单一致、依赖DiffID核验的不可变源码发布。
 用户已授权冻结原 instance/target/Task 后升级 Supervisor 容器，保留 Profile/Cookie、丢页待办准确 TARGET_LOST。
-本记录检查点尚未完成正式提交、镜像发布、scope迁移和逐源自然周期验收，后续以发布收据补充，不冒充全部生产完成。
+正式main提交、镜像发布及19个scope/37个主备成员迁移完成；原生Supervisor升级一次后固定60ec5c5d保留新的Reuters原页。最终fe4a768b Supervisor细化镜像已构建但未部署；自然10周期及24–48h/7天长期验收未完成，不冒充全部站点恢复。
+
+TrendForce两入口、Globe两入口、InvestorsHub真实列表及两篇正文通过；Globe Search实际冷备接替、sticky、显式切回通过。桌面Open约4–6秒，公开源Verify约7–10秒并自动收尾；真实Reuters原页Open/Later保留target。Reuters/Investing/Barron's仍有人工Challenge，DIGITIMES英文待登录/阅读权限核验；Yahoo浏览器旧端点404为独立遗留，不是登录问题。详细清单见发布记录。
 
 ## 操作与长期验收
 
