@@ -1158,6 +1158,19 @@ class SiteStrategyService:
                             )
                         )
                     result = result.model_copy(update={"challenge_task_id": blocked_task.task_id})
+                    if (
+                        not result.attempts
+                        and result.disposition is AccessDisposition.AUTH_REQUIRED
+                    ):
+                        result = result.model_copy(
+                            update={
+                                "disposition": AccessDisposition.ACCESS_EXHAUSTED,
+                                "failure_category": FailureCategory.ACCESS_CHALLENGE,
+                                "reason_code": "challenge_target_lost"
+                                if blocked_task.state == "TARGET_LOST"
+                                else "human_challenge_required",
+                            }
+                        )
                     if result.attempts:
                         blocked_task = (
                             None  # Persist the initial real failure, not every later poll.

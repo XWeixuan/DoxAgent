@@ -278,6 +278,75 @@ def test_late_viewer_callback_requires_exact_current_session_generation():
 
 
 @pytest.mark.asyncio
+async def test_original_challenge_is_not_misreported_as_missing_backup_login(
+    seeded, tmp_path, monkeypatch
+):
+    from doxagent.site_strategy.governance_models import ChallengeTask
+    from doxagent.site_strategy.schema import AccessRequest, AccessResult
+
+    repository, service = seeded
+    plan = migration_plan(repository)
+    apply_migration(
+        repository,
+        plan,
+        expected_revision=plan["expected_revision"],
+        backup_path=tmp_path / "before.sqlite3",
+    )
+    store = GovernanceRepository(repository)
+    scope = store.get_scope("source:trendforce_news")
+    target = store.save_target(
+        OwnedBrowserTarget(
+            identity_id=scope.primary_identity_id,
+            browser_instance_id="gone",
+            worker_epoch=1,
+            target_id="original",
+            state="LIVE",
+        )
+    )
+    task = store.handoff_challenge(
+        ChallengeTask(
+            scope_id=scope.scope_id,
+            identity_id=scope.primary_identity_id,
+            site_id=scope.owner_site_id,
+            purpose="CRAWLER",
+            operation_id="poll",
+            original_url="https://www.trendforce.com/news/",
+            original_target_id="original",
+            browser_instance_id="gone",
+            allocation_id=target.allocation_id,
+            reason="challenge_required",
+        )
+    )
+    store.save_challenge(task.model_copy(update={"state": "TARGET_LOST"}))
+    request = AccessRequest(
+        operation_id="blocked",
+        purpose="CRAWLER",
+        mode="BROWSER",
+        url="https://www.trendforce.com/news/",
+        origin_scope_id=scope.scope_id,
+    )
+
+    async def missing_backup_login(request):
+        return AccessResult(
+            request_id=request.request_id,
+            operation_id=request.operation_id,
+            effective_scope_id=scope.scope_id,
+            runtime_key="scope:" + scope.scope_id,
+            site_id=scope.owner_site_id,
+            strategy_revision=1,
+            disposition="AUTH_REQUIRED",
+            failure_category="AUTH_REQUIRED",
+            reason_code="no_authenticated_profile_available",
+        )
+
+    monkeypatch.setattr(service, "_execute_deadlined", missing_backup_login)
+    result = await service.execute(request)
+    assert result.failure_category.value == "ACCESS_CHALLENGE"
+    assert result.reason_code == "challenge_target_lost"
+    assert result.challenge_task_id == task.task_id
+
+
+@pytest.mark.asyncio
 async def test_risk_does_not_activate_unverified_backup_or_accept_stale_success(seeded, tmp_path):
     from doxagent.site_strategy.schema import AccessCombination, AccessMode, FailureCategory
 

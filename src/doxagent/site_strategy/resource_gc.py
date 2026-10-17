@@ -2,6 +2,7 @@
 
 import os
 import stat
+import subprocess
 import time
 from pathlib import Path
 
@@ -88,16 +89,35 @@ def maintain_profile(root, directory_key, *, allow_cache=False, seconds=1, now=N
             if profile_browser_processes(directory):
                 return {"status": "live_writer", "deleted_bytes": 0}
             candidates = []
-            scan_deadline = min(deadline, time.monotonic() + min(1, seconds / 2))
+            cache_directories = []
             for parent in (directory, directory / "Default"):
                 if not parent.resolve().is_relative_to(directory):
                     continue
                 for name in sorted(CACHES, key=lambda value: (value != "Cache", value)):
                     target = parent / name
                     if target.is_dir() and not target.is_symlink():
-                        entries, _ = _files(target, deadline=scan_deadline)
-                        candidates.extend(entries)
-            total = sum(info.st_size for _, info in candidates)
+                        cache_directories.append(target)
+            measured_total = 0
+            if os.name == "posix" and cache_directories:
+                try:
+                    # Native traversal avoids spending the entire Python budget
+                    # stat-ing 100k tiny cache entries. Never follows symlinks or
+                    # crosses filesystems; timeout leaves the lower-bound path.
+                    usage = subprocess.check_output(
+                        ["du", "-sb", "--one-file-system", "--", *map(str, cache_directories)],
+                        timeout=min(0.7, max(0.05, (deadline - time.monotonic()) / 3)),
+                        stderr=subprocess.DEVNULL,
+                    )
+                    measured_total = sum(
+                        int(line.split(maxsplit=1)[0]) for line in usage.splitlines()
+                    )
+                except (OSError, ValueError, subprocess.SubprocessError):
+                    pass
+            scan_deadline = min(deadline - 0.1, time.monotonic() + min(0.7, seconds / 3))
+            for target in cache_directories:
+                entries, _ = _files(target, deadline=scan_deadline)
+                candidates.extend(entries)
+            total = max(measured_total, sum(info.st_size for _, info in candidates))
             # A bounded partial scan is a safe lower bound for regenerable
             # caches. Do not perpetually defer large trees, or spend the whole
             # budget scanning and leave no time for deleting known files.
