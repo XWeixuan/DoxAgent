@@ -148,6 +148,7 @@ def _backup_egress(repository, primary, preferred_id=None):
     for candidate in candidates:
         if (
             candidate.enabled
+            and candidate.node_ref != "DIRECT"
             and candidate.status == "READY"
             and candidate.observed_ip
             and current.observed_ip

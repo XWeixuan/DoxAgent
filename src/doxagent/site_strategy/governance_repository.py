@@ -173,6 +173,7 @@ class GovernanceRepository:
             if any(item is None for item in identities):
                 raise ValueError("scope references an unknown identity")
             primary = identities[0]
+            primary_egress = self.repository.get_egress(primary.egress_id)
             for identity in identities:
                 if identity.owner_scope_id not in (None, scope.scope_id):
                     raise ValueError("identity belongs to another scope")
@@ -188,6 +189,13 @@ class GovernanceRepository:
                     primary.access,
                 ):
                     raise ValueError("fallback must use the same runtime and environment")
+                egress = self.repository.get_egress(identity.egress_id)
+                if (
+                    primary_egress
+                    and egress
+                    and ((primary_egress.node_ref == "DIRECT") != (egress.node_ref == "DIRECT"))
+                ):
+                    raise ValueError("fallback must preserve the proxy/direct access class")
             if len({item.profile_id for item in identities}) != len(members):
                 raise ValueError("scope members must use independent profiles")
             for member in members:

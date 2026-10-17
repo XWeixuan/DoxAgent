@@ -118,6 +118,61 @@ class ScopeResolver:
         )
         if template is None:
             raise ValueError("publisher has no approved browser environment")
+        claimed = {
+            member
+            for scope in self.governance.list_scopes()
+            for member in (scope.primary_identity_id, scope.fallback_identity_id)
+            if member
+        }
+        references = {
+            spec.site_id
+            for head, spec in repository.list_active_strategies()
+            if head.enabled
+            and any(
+                (c.identity_id or c.profile_id) == template.identity_id
+                for c in spec.access.combinations
+            )
+        }
+        profile = repository.get_profile(template.profile_id)
+        if (
+            resolved.site_id != "generic"
+            and template.identity_id not in claimed
+            and references == {resolved.site_id}
+            and profile
+            and profile.site_id == resolved.site_id
+        ):
+            # A dedicated body-only publisher (e.g. Seeking Alpha) already owns
+            # its cookies. Do not silently replace it with an empty hashed Profile.
+            identity = template.model_copy(
+                update={
+                    "owner_scope_id": scope_id,
+                    "lifecycle": template.lifecycle.model_copy(
+                        update={
+                            "residency": BrowserResidency.ON_DEMAND,
+                            "idle_seconds": 600,
+                        }
+                    ),
+                }
+            )
+            repository.apply_identity(
+                identity, expected_revision=template.revision, actor="inherit-dedicated-publisher"
+            )
+            scope = self.governance.apply_scope(
+                SourceAccessScope(
+                    scope_id=scope_id,
+                    owner_site_id=resolved.site_id,
+                    primary_identity_id=identity.identity_id,
+                    verification_plan={
+                        "fallback_state": "UNPROVISIONED",
+                        "network_redundancy": "NONE",
+                    },
+                ),
+                None,
+            )
+            from .isolation_migration import import_legacy_state
+
+            import_legacy_state(repository, scope, {})
+            return scope
         suffix = hashlib.sha256(scope_id.encode()).hexdigest()[:16]
         identity_id = f"publisher-{suffix}"
         identity = template.model_copy(

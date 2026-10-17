@@ -2574,7 +2574,12 @@ class SiteStrategyService:
 
     async def verify_scope_session(self, session, *, article_url=None, stage=None):
         from .governance_repository import GovernanceRepository
-        from .verification import VerificationReport, validate_capture, validate_crawler_capture
+        from .verification import (
+            VerificationReport,
+            body_verification_url,
+            validate_capture,
+            validate_crawler_capture,
+        )
 
         store = GovernanceRepository(self.repository)
         scope = store.maintenance_scope(session.scope_id)
@@ -2585,10 +2590,8 @@ class SiteStrategyService:
             stage("CHECKING_CHALLENGE")
         original = await self.runtime.inspect_challenge(session.control_token)
         report = VerificationReport()
-        if (
-            inspect_html(original.body, original.final_url, "").access_reason
-            == "challenge_required"
-        ):
+        original_inspection = inspect_html(original.body, original.final_url, "")
+        if original_inspection.access_reason == "challenge_required":
             report.challenge = "BLOCKED"
             report.reason = "challenge_required"
             if session.kind == "LOGIN" and session.allocation_id and original.provenance:
@@ -2656,14 +2659,18 @@ class SiteStrategyService:
                             article_candidates.append(candidate)
         triggering = store.current_challenge(session.identity_id)
         trigger_url = (
-            triggering.original_url if triggering and triggering.purpose == "BODY" else None
+            triggering.original_url
+            if triggering
+            and triggering.purpose == "BODY"
+            and original_inspection.page_kind not in {"listing", "quote", "login"}
+            else None
         )
-        url = (
-            article_url
-            or trigger_url
-            or spec.auth.verification_url
-            or scope.verification_plan.get("body_url")
-            or (article_candidates[0] if article_candidates else None)
+        url = article_url or body_verification_url(
+            scope,
+            trigger_url,
+            spec.auth.verification_url,
+            scope.verification_plan.get("body_url"),
+            *article_candidates,
         )
         if url and time.monotonic() < deadline:
             if self.resolve(url).site_id != scope.owner_site_id:

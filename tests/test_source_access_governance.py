@@ -128,6 +128,47 @@ def registry(tmp_path):
     repository.close()
 
 
+def test_fallback_cannot_silently_change_proxy_access_to_direct(registry):
+    from doxagent.site_strategy.schema import ProxyEgress
+
+    repo = registry.repository
+    repo.upsert_egress(
+        ProxyEgress(
+            egress_id="direct",
+            node_ref="DIRECT",
+            node_fingerprint="direct",
+            endpoint="http://127.0.0.1:12348",
+            listener_port=12348,
+        )
+    )
+    repo.upsert_egress(
+        ProxyEgress(
+            egress_id="proxy",
+            node_ref="fixed",
+            node_fingerprint="fixed",
+            endpoint="http://127.0.0.1:12349",
+            listener_port=12349,
+        )
+    )
+    backup = repo.get_identity("backup")
+    repo.apply_identity(
+        backup.model_copy(update={"egress_id": "proxy"}),
+        expected_revision=backup.revision,
+        actor="test",
+    )
+    with pytest.raises(ValueError, match="proxy/direct"):
+        registry.apply_scope(
+            SourceAccessScope(
+                scope_id="source:news",
+                source_id="news",
+                owner_site_id="site",
+                primary_identity_id="primary",
+                fallback_identity_id="backup",
+            ),
+            None,
+        )
+
+
 def test_source_identity_cas_and_exclusive_ownership(registry):
     source = SourceAccessScope(
         scope_id="source:news",

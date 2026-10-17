@@ -247,6 +247,71 @@ def _load_desktop(name):
     return module
 
 
+def test_dedicated_body_publisher_inherits_profile_instead_of_losing_cookies(seeded, tmp_path):
+    from doxagent.site_strategy.scope import ScopeResolver
+
+    repository, service = seeded
+    plan = migration_plan(repository)
+    apply_migration(
+        repository,
+        plan,
+        expected_revision=plan["expected_revision"],
+        backup_path=tmp_path / "before.sqlite3",
+    )
+    spec = repository.get_strategy("seeking_alpha")
+    candidate = spec.access.combinations[0]
+    existing = repository.get_identity(candidate.identity_id or candidate.profile_id)
+    before = {p.profile_id for p in repository.list_profiles()}
+    resolved = service.resolve("https://seekingalpha.com/article/example")
+    inherited = ScopeResolver(repository).resolve(resolved, "source:google_news_search_rss")
+    assert inherited.access.combinations[0].identity_id == existing.identity_id
+    assert {p.profile_id for p in repository.list_profiles()} == before
+    assert repository.get_identity(existing.identity_id).lifecycle.residency.value == "on_demand"
+
+
+def test_body_verification_does_not_treat_legacy_search_page_as_an_article():
+    from types import SimpleNamespace
+
+    from doxagent.site_strategy.verification import body_verification_url
+
+    scope = SimpleNamespace(
+        verification_plan={"crawler": {"url": "https://www.reuters.com/site-search/?query=Micron"}}
+    )
+    article = "https://www.reuters.com/world/chip-story-2026-10-17/"
+    assert (
+        body_verification_url(scope, "https://www.reuters.com/site-search/?query=BE", article)
+        == article
+    )
+    assert body_verification_url(scope, "https://www.reuters.com/site-search/") is None
+
+
+@pytest.mark.asyncio
+async def test_verification_canary_shares_the_global_business_page_budget():
+    import asyncio
+    from types import SimpleNamespace
+
+    from doxagent.site_strategy.worker_runtime import WorkerSiteAccessRuntime
+
+    runtime = WorkerSiteAccessRuntime.__new__(WorkerSiteAccessRuntime)
+    runtime._business_slots = asyncio.Semaphore(1)
+    calls = []
+
+    async def command(*args, **kwargs):
+        calls.append(kwargs["timeout"])
+        return {"done": True}
+
+    runtime.workers = SimpleNamespace(command=command)
+    await runtime._business_slots.acquire()
+    task = asyncio.create_task(
+        runtime._verify_with_capacity(None, None, "verify", {"timeout_ms": 1000}, timeout=1)
+    )
+    await asyncio.sleep(0)
+    assert not calls
+    runtime._business_slots.release()
+    assert (await task)["done"] is True and len(calls) == 1
+    assert runtime._business_slots._value == 1
+
+
 def test_maintenance_control_failure_retains_only_safe_machine_reason():
     from doxagent.site_strategy.service import classify_exception
 

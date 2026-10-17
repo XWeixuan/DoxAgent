@@ -7,6 +7,18 @@ from urllib.parse import urlsplit
 from doxagent.content_enrichment.quality import choose_candidate, inspect_html
 
 
+def body_verification_url(scope, *candidates):
+    """Legacy verification URLs sometimes point at the collector's search page."""
+    listing = scope.verification_plan.get("crawler", {}).get("url")
+
+    def key(url):
+        parsed = urlsplit(url)
+        return parsed.hostname, parsed.path.rstrip("/") or "/"
+
+    listing_key = key(listing) if listing else None
+    return next((url for url in candidates if url and key(url) != listing_key), None)
+
+
 @dataclass
 class VerificationReport:
     challenge: str = "UNKNOWN"

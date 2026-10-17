@@ -8,7 +8,7 @@ from uuid import uuid4
 from .governance_models import MaintenanceOperation
 from .governance_repository import GovernanceRepository, capability_fingerprint
 from .schema import AccessCombination, AccessMode, AccessRequest, SitePurpose, utc_now
-from .verification import validate_capture, validate_crawler_capture
+from .verification import body_verification_url, validate_capture, validate_crawler_capture
 
 
 class FailoverCoordinator:
@@ -167,7 +167,9 @@ class FailoverCoordinator:
             primary_member = before.combinations.get(scope.primary_identity_id)
             if primary_member:
                 last_url = primary_member.capabilities.get("BODY", {}).get("last_url")
-        url = spec.auth.verification_url or scope.verification_plan.get("body_url") or last_url
+        url = body_verification_url(
+            scope, spec.auth.verification_url, scope.verification_plan.get("body_url"), last_url
+        )
         parameters = (
             scope.verification_plan.get("crawler")
             if purpose is SitePurpose.CRAWLER

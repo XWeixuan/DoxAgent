@@ -341,7 +341,7 @@ class WorkerSiteAccessRuntime(SiteAccessRuntime):
     async def verify_login(self, token, article_url, *, timeout_ms=30_000):
         _, identity, egress = self._binding(token)
         return decode_response(
-            await self.workers.command(
+            await self._verify_with_capacity(
                 identity,
                 egress,
                 "verify",
@@ -350,7 +350,7 @@ class WorkerSiteAccessRuntime(SiteAccessRuntime):
                     "url": article_url,
                     "timeout_ms": timeout_ms,
                 },
-                timeout=timeout_ms / 1000 + 3,
+                timeout=timeout_ms / 1000,
             )
         )
 
@@ -372,7 +372,7 @@ class WorkerSiteAccessRuntime(SiteAccessRuntime):
     async def verify_crawler(self, token, request):
         _, identity, egress = self._binding(token)
         return decode_response(
-            await self.workers.command(
+            await self._verify_with_capacity(
                 identity,
                 egress,
                 "verify",
@@ -383,6 +383,20 @@ class WorkerSiteAccessRuntime(SiteAccessRuntime):
                 timeout=request.remaining_budget_ms / 1000,
             )
         )
+
+    async def _verify_with_capacity(self, identity, egress, action, payload, *, timeout):
+        deadline = time.monotonic() + timeout
+        async with asyncio.timeout_at(deadline), self._business_slots:
+            remaining = max(0.001, deadline - time.monotonic())
+            payload = dict(payload)
+            if "timeout_ms" in payload:
+                payload["timeout_ms"] = max(1, int(remaining * 1000))
+            if "crawler_request" in payload:
+                payload["crawler_request"] = {
+                    **payload["crawler_request"],
+                    "remaining_budget_ms": max(1, int(remaining * 1000)),
+                }
+            return await self.workers.command(identity, egress, action, payload, timeout=remaining)
 
     async def close_login(self, token):
         _, identity, egress = self._binding(token)
