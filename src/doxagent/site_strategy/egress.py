@@ -42,7 +42,30 @@ async def probe_egress_region(repository, egress_id):
             except (httpx.HTTPError, ValueError):
                 continue
     if country is None:
-        raise ValueError("egress geography/IP observation unverified")
+        # Some fixed egresses can reach the business sites/ipify but reject
+        # geography hosts. Lookup metadata directly only AFTER verifying the
+        # current proxy exit. This is not a direct business traffic fallback.
+        async with httpx.AsyncClient(proxy=egress.endpoint, timeout=5) as client:
+            response = await client.get("https://api.ipify.org?format=json")
+            response.raise_for_status()
+            if response.json().get("ip") != egress.observed_ip:
+                raise ValueError("egress IP changed before geography lookup")
+        address = ip_address(egress.observed_ip)
+        if not address.is_global:
+            raise ValueError("geography lookup requires a public exit IP")
+        async with httpx.AsyncClient(timeout=5, trust_env=False) as client:
+            response = await client.get(f"https://ipwho.is/{address}")
+            response.raise_for_status()
+            payload = response.json()
+        observed_country = str(payload.get("country_code") or "").upper()
+        if (
+            payload.get("success") is False
+            or payload.get("ip") != egress.observed_ip
+            or len(observed_country) != 2
+            or not observed_country.isalpha()
+        ):
+            raise ValueError("egress geography/IP observation unverified")
+        country = observed_country
     with repository.transaction() as connection:
         connection.execute(
             "insert into egress_regions values(?,?,?,?) "

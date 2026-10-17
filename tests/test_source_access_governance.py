@@ -60,9 +60,55 @@ async def test_region_probe_has_bounded_independent_provider_and_requires_same_i
     result = await probe_egress_region(repo, "geo")
     assert result["country_code"] == "US" and len(calls) == 2
     observed["ip"] = "1.1.1.1"
-    with pytest.raises(ValueError, match="unverified"):
+    with pytest.raises(ValueError, match="IP changed"):
         await probe_egress_region(repo, "geo")
     assert registry.egress_region(egress) == "US"
+
+
+@pytest.mark.asyncio
+async def test_geography_host_unreachable_is_not_an_unverified_direct_traffic_route(
+    registry, monkeypatch
+):
+    from doxagent.site_strategy.egress import probe_egress_region
+    from doxagent.site_strategy.schema import ProxyEgress
+
+    egress = ProxyEgress(
+        egress_id="geo-direct",
+        listener_port=12347,
+        node_ref="fixed",
+        node_fingerprint="fixed",
+        endpoint="http://127.0.0.1:12347",
+        observed_ip="8.8.4.4",
+    )
+    registry.repository.upsert_egress(egress)
+    calls = []
+
+    class Client:
+        def __init__(self, **kwargs):
+            self.proxy = kwargs.get("proxy")
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *args):
+            pass
+
+        async def get(self, url):
+            calls.append((self.proxy, url))
+            if self.proxy and "ipify" not in url:
+                raise httpx.ConnectError("fixture geography host blocked")
+            return httpx.Response(
+                200,
+                json={"ip": "8.8.4.4", "country_code": "DE", "success": True},
+                request=httpx.Request("GET", url),
+            )
+
+    monkeypatch.setattr("doxagent.site_strategy.egress.httpx.AsyncClient", Client)
+    assert (await probe_egress_region(registry.repository, egress.egress_id))[
+        "country_code"
+    ] == "DE"
+    assert calls[-2] == (egress.endpoint, "https://api.ipify.org?format=json")
+    assert calls[-1] == (None, "https://ipwho.is/8.8.4.4")
 
 
 @pytest.fixture

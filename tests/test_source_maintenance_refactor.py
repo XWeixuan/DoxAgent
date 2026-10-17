@@ -34,6 +34,40 @@ def seeded(tmp_path):
     repository.close()
 
 
+def test_partial_large_cache_scan_can_reclaim_without_touching_cookie(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+
+    from doxagent.site_strategy import resource_gc
+
+    cache = tmp_path / "identity" / "Default" / "Cache"
+    cache.mkdir(parents=True)
+    cached = cache / "regenerable"
+    cached.write_bytes(b"fixture")
+    cookie = cache.parent / "Cookies"
+    cookie.write_bytes(b"keep")
+
+    class Lock:
+        def __init__(self, *args):
+            pass
+
+        def acquire(self):
+            pass
+
+        def release(self):
+            pass
+
+    monkeypatch.setattr(resource_gc, "OwnerFileLock", Lock)
+    monkeypatch.setattr("doxagent.site_strategy.runtime.profile_browser_processes", lambda _: [])
+    monkeypatch.setattr(
+        resource_gc,
+        "_files",
+        lambda *a, **k: ([(cached, SimpleNamespace(st_size=600 * 1024**2, st_mtime=0))], False),
+    )
+    result = resource_gc.maintain_profile(tmp_path, "identity", allow_cache=True)
+    assert result["deleted_bytes"] == 600 * 1024**2
+    assert not cached.exists() and cookie.read_bytes() == b"keep"
+
+
 def test_snapshot_batch_reuses_registry_excludes_cache_and_retains_two(seeded, tmp_path):
     repository, _ = seeded
     root = tmp_path / "profiles"

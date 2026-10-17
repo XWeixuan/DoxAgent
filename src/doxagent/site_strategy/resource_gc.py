@@ -88,18 +88,20 @@ def maintain_profile(root, directory_key, *, allow_cache=False, seconds=1, now=N
             if profile_browser_processes(directory):
                 return {"status": "live_writer", "deleted_bytes": 0}
             candidates = []
-            complete = True
+            scan_deadline = min(deadline, time.monotonic() + min(1, seconds / 2))
             for parent in (directory, directory / "Default"):
                 if not parent.resolve().is_relative_to(directory):
                     continue
-                for name in CACHES:
+                for name in sorted(CACHES, key=lambda value: (value != "Cache", value)):
                     target = parent / name
                     if target.is_dir() and not target.is_symlink():
-                        entries, scanned = _files(target, deadline=deadline)
+                        entries, _ = _files(target, deadline=scan_deadline)
                         candidates.extend(entries)
-                        complete = complete and scanned
             total = sum(info.st_size for _, info in candidates)
-            if complete and total > 512 * 1024**2:
+            # A bounded partial scan is a safe lower bound for regenerable
+            # caches. Do not perpetually defer large trees, or spend the whole
+            # budget scanning and leave no time for deleting known files.
+            if total > 512 * 1024**2:
                 for path, info in sorted(candidates, key=lambda item: item[1].st_mtime):
                     if total <= 256 * 1024**2 or time.monotonic() >= deadline:
                         break
