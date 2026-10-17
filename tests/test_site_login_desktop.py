@@ -30,6 +30,33 @@ def admin(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> ModuleType:
 
 def _inventory_responses(method: str, path: str, payload=None, *, timeout: int = 45):
     del method, payload, timeout
+    if path == "/v1/maintenance/inventory":
+        return {
+            "status": "READY",
+            "profiles": [
+                {
+                    "row_id": f"barrons-{n}",
+                    "profile_id": f"barrons-{n}",
+                    "identity_id": f"barrons-{n}",
+                    "site_id": "barrons",
+                    "site_name": "Barron's",
+                    "profile_role": role,
+                    "combination_id": f"barrons-{n}",
+                    "runtime_kind": "managed_playwright",
+                    "site_enabled": True,
+                    "egress_enabled": True,
+                    "egress_id": egress,
+                    "egress_node": "Test node",
+                    "auth_state": "VALID" if n == 1 else "UNKNOWN",
+                    "session_revision": 2 if n == 1 else 0,
+                    "verification_url": "https://www.barrons.com/articles/example",
+                }
+                for n, role, egress in [
+                    (1, "primary", "us-standard-5"),
+                    (2, "backup", "jp-standard-6"),
+                ]
+            ],
+        }
     if path == "/v1/sites":
         return [
             {
@@ -141,7 +168,7 @@ def test_open_selects_browser_before_checking_stale_viewer(admin, monkeypatch) -
     assert admin.command_open("barrons-1")["ok"]
 
 
-def test_verify_uses_registry_url_closes_session_and_reports_entitlement(
+def test_verify_uses_registry_url_preserves_session_and_reports_entitlement(
     admin, monkeypatch
 ) -> None:
     admin._write_session(
@@ -177,9 +204,9 @@ def test_verify_uses_registry_url_closes_session_and_reports_entitlement(
 
     assert result["auth_state"] == "ENTITLEMENT_MISSING"
     assert "account is valid" not in result["message"]
-    assert result["closed"] is True
-    assert not admin.SESSION_FILE.exists()
-    assert calls[-1][1] == "/v1/profiles/login:close"
+    assert result["closed"] is False
+    assert admin.SESSION_FILE.exists()  # Failed proof must preserve the maintenance scene.
+    assert all(path != "/v1/profiles/login:close" for _, path, _ in calls)
 
 
 def test_region_label_prefers_actual_node_country_over_stable_slot_name():
@@ -188,9 +215,14 @@ def test_region_label_prefers_actual_node_country_over_stable_slot_name():
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
-    assert module.region_label('us-standard-5', '🇳🇱 荷兰标准 IEPL 专线 2') == 'Netherlands (us-standard-5)'
-    assert module.region_label('jp-standard-6', '🇩🇪 德国标准 IEPL 专线 2') == 'Germany (jp-standard-6)'
-    assert module.region_label('de-standard-1', 'Legacy node') == 'Germany (de-standard-1)'
+    assert (
+        module.region_label("us-standard-5", "🇳🇱 荷兰标准 IEPL 专线 2")
+        == "Netherlands (us-standard-5)"
+    )
+    assert (
+        module.region_label("jp-standard-6", "🇩🇪 德国标准 IEPL 专线 2") == "Germany (jp-standard-6)"
+    )
+    assert module.region_label("de-standard-1", "Legacy node") == "Germany (de-standard-1)"
 
 
 @pytest.mark.parametrize(
@@ -209,9 +241,7 @@ def test_advanced_verification_url_requires_safe_https(admin, value: str) -> Non
 def test_desktop_files_keep_terminal_and_docker_access_disabled() -> None:
     root = Path(__file__).parents[1]
     desktop = (root / "deploy" / "doxagent-site-login.desktop").read_text(encoding="utf-8")
-    installer = (root / "deploy" / "install-site-login-desktop.sh").read_text(
-        encoding="utf-8"
-    )
+    installer = (root / "deploy" / "install-site-login-desktop.sh").read_text(encoding="utf-8")
     assert "Terminal=false" in desktop
     assert "usermod -aG docker" not in installer
     assert "NOPASSWD: /usr/local/sbin/doxagent-site-login-admin *" in installer

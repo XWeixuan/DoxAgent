@@ -22,9 +22,9 @@ services:
         GOOGLE_CHROME_VERSION: ${DOXAGENT_GOOGLE_CHROME_VERSION:-153.0.8010.52-1}
         DOXAGENT_BUILD_COMMIT: ${DOXAGENT_BUILD_COMMIT:-unversioned}
     image: ${DOXAGENT_CHROME_SUPERVISOR_IMAGE:-doxagent-chrome-supervisor:server}
-    mem_limit: 5g
-    memswap_limit: 6g
-    pids_limit: 1536
+    mem_limit: 8g
+    memswap_limit: 9g
+    pids_limit: 2304
   v2-migrate:
     <<: *cgroup-boundary
     mem_limit: 4g

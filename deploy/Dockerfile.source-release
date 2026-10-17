@@ -1,0 +1,50 @@
+# Bounded source-only release. The release operator MUST verify that pyproject,
+# uv.lock, browser release and installed dependency baseline are unchanged.
+# All three bases must be immutable image digests from the approved recovery set.
+# This builds immutable images from committed source, not a running-container overlay.
+ARG BACKEND_BASE
+ARG SITE_BASE
+ARG SUPERVISOR_BASE
+FROM ${BACKEND_BASE} AS backend
+USER root
+ARG DOXAGENT_BUILD_COMMIT
+ARG DOXAGENT_SOURCE_SHA256
+ENV DOXAGENT_BUILD_COMMIT=${DOXAGENT_BUILD_COMMIT}
+LABEL org.opencontainers.image.revision=${DOXAGENT_BUILD_COMMIT} \
+      doxagent.source.sha256=${DOXAGENT_SOURCE_SHA256}
+RUN rm -rf /app/src /app/prompts /app/dev_plan/api_contract /app/dev_plan/workflow_v2/api_contract
+COPY src /app/src
+COPY prompts /app/prompts
+COPY dev_plan/workflow_v2/api_contract /app/dev_plan/workflow_v2/api_contract
+COPY scripts/ops/migrate_source_access_scopes.py /app/scripts/ops/migrate_source_access_scopes.py
+RUN chmod -R a+rX /app/src /app/prompts /app/dev_plan /app/scripts
+
+FROM ${SITE_BASE} AS site
+USER root
+ARG DOXAGENT_BUILD_COMMIT
+ARG DOXAGENT_SOURCE_SHA256
+ENV DOXAGENT_BUILD_COMMIT=${DOXAGENT_BUILD_COMMIT}
+LABEL org.opencontainers.image.revision=${DOXAGENT_BUILD_COMMIT} \
+      doxagent.source.sha256=${DOXAGENT_SOURCE_SHA256}
+RUN rm -rf /app/src /app/prompts /app/dev_plan/workflow_v2/api_contract
+COPY --from=backend /app/src /app/src
+COPY --from=backend /app/prompts /app/prompts
+COPY --from=backend /app/dev_plan/workflow_v2/api_contract /app/dev_plan/workflow_v2/api_contract
+COPY --from=backend /app/scripts /app/scripts
+COPY deploy/site-access-entrypoint.sh /usr/local/bin/site-access-entrypoint
+COPY deploy/site-login-vnc-relay.py /usr/local/bin/site-login-vnc-relay.py
+RUN chmod 0755 /usr/local/bin/site-access-entrypoint /usr/local/bin/site-login-vnc-relay.py
+
+FROM ${SUPERVISOR_BASE} AS supervisor
+USER root
+ARG DOXAGENT_BUILD_COMMIT
+ARG DOXAGENT_SOURCE_SHA256
+ENV DOXAGENT_BUILD_COMMIT=${DOXAGENT_BUILD_COMMIT}
+LABEL org.opencontainers.image.revision=${DOXAGENT_BUILD_COMMIT} \
+      doxagent.source.sha256=${DOXAGENT_SOURCE_SHA256}
+RUN rm -rf /app/src /app/prompts /app/dev_plan/workflow_v2/api_contract
+COPY --from=backend /app/src /app/src
+COPY --from=backend /app/prompts /app/prompts
+COPY --from=backend /app/dev_plan/workflow_v2/api_contract /app/dev_plan/workflow_v2/api_contract
+COPY deploy/chrome-supervisor-entrypoint.sh /usr/local/bin/chrome-supervisor-entrypoint
+RUN chmod 0755 /usr/local/bin/chrome-supervisor-entrypoint

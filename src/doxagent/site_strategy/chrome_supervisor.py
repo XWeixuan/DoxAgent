@@ -11,7 +11,9 @@ import argparse
 import asyncio
 import contextlib
 import json
+import logging
 import os
+import re
 import signal
 import socket
 import urllib.request
@@ -20,8 +22,9 @@ from pathlib import Path
 from typing import Any, cast
 from uuid import uuid4
 
-from .runtime import OwnerFileLock
+from .runtime import OwnerFileLock, clear_profile_runtime_links
 from .schema import BrowserIdentitySpec, BrowserRuntimeKind, ProxyEgress
+from .supervisor_state import MissingProcess, process_record, validated_process
 
 APPROVED_RELEASES = {
     "google-chrome-153.0.8010.52": "/usr/bin/google-chrome-stable",
@@ -44,6 +47,7 @@ class ChromeInstance:
     profile_lock: OwnerFileLock
     websocket_url: str
     controller_id: str
+    controller_epoch: int = 0
 
 
 class ChromeSupervisor:
@@ -55,7 +59,7 @@ class ChromeSupervisor:
         port_start: int = 9222,
         port_end: int = 9279,
         display_start: int = 100,
-        max_instances: int = 6,
+        max_instances: int = 16,
     ) -> None:
         self.socket_path = socket_path
         self.profile_root = profile_root.resolve()
@@ -67,10 +71,17 @@ class ChromeSupervisor:
         self._locks: dict[str, asyncio.Lock] = {}
         self._server: asyncio.AbstractServer | None = None
         self._stopping = False
+        self._resource_task = None
+        self.resource_metrics = {}
+        self.manifest_root = socket_path.parent / "instances"
+        self._owner_lock = OwnerFileLock(socket_path.parent / ".supervisor-owner.lock")
 
     async def serve(self) -> None:
         self.profile_root.mkdir(parents=True, exist_ok=True)
         self.socket_path.parent.mkdir(parents=True, exist_ok=True)
+        self._owner_lock.acquire()
+        await self.adopt_existing()
+        self._resource_task = asyncio.create_task(self._resource_loop())
         with contextlib.suppress(FileNotFoundError):
             self.socket_path.unlink()
         unix_server_name = "start_unix_server"
@@ -82,6 +93,10 @@ class ChromeSupervisor:
 
     async def shutdown(self) -> None:
         self._stopping = True
+        if self._resource_task:
+            self._resource_task.cancel()
+            with contextlib.suppress(asyncio.CancelledError):
+                await self._resource_task
         if self._server is not None:
             self._server.close()
             await self._server.wait_closed()
@@ -91,6 +106,116 @@ class ChromeSupervisor:
                 await self.stop(identity_id, reason="supervisor_shutdown")
         with contextlib.suppress(FileNotFoundError):
             self.socket_path.unlink()
+        self._owner_lock.release()
+
+    def _persist_instance(self, instance):
+        self.manifest_root.mkdir(mode=0o700, parents=True, exist_ok=True)
+        data = {
+            "identity": instance.identity.model_dump(mode="json"),
+            "egress": instance.egress.model_dump(mode="json"),
+            "instance_id": instance.instance_id,
+            "generation": instance.generation,
+            "port": instance.port,
+            "display_number": instance.display_number,
+            "vnc_port": instance.vnc_port,
+            "websocket_url": instance.websocket_url,
+            "controller_id": instance.controller_id,
+            "controller_epoch": instance.controller_epoch,
+            "chrome": process_record(instance.chrome.pid),
+            "xvfb": process_record(instance.xvfb.pid),
+            "vnc": process_record(instance.vnc.pid),
+        }
+        path = self.manifest_root / f"{instance.identity.identity_id}.json"
+        temporary = path.with_suffix(".tmp")
+        descriptor = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+        with os.fdopen(descriptor, "w", encoding="utf-8") as stream:
+            json.dump(data, stream, sort_keys=True)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary, path)
+
+    async def adopt_existing(self):
+        if not self.manifest_root.exists():
+            return
+        for path in self.manifest_root.glob("*.json"):
+            profile_lock = None
+            try:
+                if (
+                    path.is_symlink()
+                    or path.stat().st_uid != os.getuid()
+                    or path.stat().st_mode & 0o022
+                ):
+                    raise RuntimeError("unsafe_instance_manifest")
+                data = json.loads(path.read_text())
+                identity = BrowserIdentitySpec.model_validate(data["identity"])
+                egress = ProxyEgress.model_validate(data["egress"])
+                if path.stem != identity.identity_id or identity.egress_id != egress.egress_id:
+                    raise RuntimeError("instance_manifest_binding_mismatch")
+                directory = (self.profile_root / identity.profile_id).resolve()
+                if (
+                    directory.parent != self.profile_root
+                    or identity.browser_release not in APPROVED_RELEASES
+                ):
+                    raise RuntimeError("instance_manifest_profile_mismatch")
+                port = int(data["port"])
+                if not self.port_start <= port <= self.port_end:
+                    raise RuntimeError("instance_manifest_port_mismatch")
+                chrome = validated_process(
+                    data["chrome"],
+                    required_arguments=[
+                        f"--user-data-dir={directory}",
+                        f"--remote-debugging-port={port}",
+                        f"--proxy-server={egress.endpoint}",
+                    ],
+                )
+                environment = dict(
+                    part.split("=", 1)
+                    for part in Path(f"/proc/{chrome.pid}/environ").read_text().split("\0")
+                    if "=" in part
+                )
+                os_locale = identity.environment.locale.replace("-", "_") + ".UTF-8"
+                if (
+                    environment.get("LANG") != os_locale
+                    or environment.get("LC_ALL") != os_locale
+                    or environment.get("TZ") != identity.environment.timezone_id
+                ):
+                    raise RuntimeError("instance_manifest_environment_mismatch")
+                xvfb = validated_process(
+                    data["xvfb"], required_arguments=[f":{data['display_number']}"]
+                )
+                try:
+                    vnc = validated_process(data["vnc"], required_arguments=[str(data["vnc_port"])])
+                except (RuntimeError, TypeError):
+                    vnc = (
+                        MissingProcess()
+                    )  # A dead Viewer must not invalidate live Chrome ownership.
+                websocket_url = await self._wait_for_cdp(port, chrome)
+                if websocket_url != data["websocket_url"]:
+                    raise RuntimeError("instance_manifest_cdp_mismatch")
+                profile_lock = OwnerFileLock(
+                    self.profile_root / ".profile-locks" / f"{identity.profile_id}.lock"
+                )
+                profile_lock.acquire()
+                self._instances[identity.identity_id] = ChromeInstance(
+                    identity=identity,
+                    egress=egress,
+                    instance_id=data["instance_id"],
+                    generation=data["generation"],
+                    port=port,
+                    display_number=data["display_number"],
+                    chrome=chrome,
+                    xvfb=xvfb,
+                    vnc=vnc,
+                    vnc_port=data["vnc_port"],
+                    websocket_url=websocket_url,
+                    controller_id=data["controller_id"],
+                    controller_epoch=data.get("controller_epoch", 0),
+                    profile_lock=profile_lock,
+                )
+            except Exception:
+                if profile_lock:
+                    profile_lock.release()
+                logging.getLogger(__name__).exception("instance adoption rejected: %s", path.name)
 
     async def _handle(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
         try:
@@ -134,18 +259,37 @@ class ChromeSupervisor:
             egress = ProxyEgress.model_validate(request.get("egress"))
             return self._describe(await self.ensure(identity, egress, owner_id=owner_id))
         identity_id = str(request.get("identity_id") or "")
-        if not identity_id:
+        if not re.fullmatch(r"[a-z0-9][a-z0-9_.-]{0,127}", identity_id):
             raise ValueError("invalid_identity_id")
         if command == "status":
             instance = self._instances.get(identity_id)
-            return (
-                self._describe(instance)
-                if instance
-                else {"identity_id": identity_id, "running": False}
-            )
+            if instance:
+                return self._describe(instance)
+            path = self.manifest_root / f"{identity_id}.json"
+            if path.exists():
+                try:
+                    manifest = json.loads(path.read_text())
+                    record = manifest.get("chrome")
+                    current = process_record(record["pid"]) if record else None
+                    missing = not current or current["start_time"] != record["start_time"]
+                    return {
+                        "identity_id": identity_id,
+                        "instance_id": manifest["instance_id"],
+                        "running": False,
+                        "known_missing": missing,
+                        "diagnostic": "instance_adoption_unverified",
+                    }
+                except Exception:
+                    return {
+                        "identity_id": identity_id,
+                        "running": False,
+                        "known_missing": False,
+                        "diagnostic": "instance_manifest_unreadable",
+                    }
+            return {"identity_id": identity_id, "running": False, "known_missing": True}
         if command == "stop":
             instance = self._instances.get(identity_id)
-            if instance and instance.controller_id != owner_id:
+            if instance and instance.controller_id and instance.controller_id != owner_id:
                 raise RuntimeError("controller_owner_mismatch")
             return {
                 "stopped": await self.stop(
@@ -156,19 +300,66 @@ class ChromeSupervisor:
             instance = self._instances.get(identity_id)
             if instance and instance.controller_id == owner_id:
                 instance.controller_id = ""
+                self._persist_instance(instance)
             return {"released": True}
+        if command == "claim_controller":
+            instance = self._instances.get(identity_id)
+            if instance is None:
+                return {"controller_epoch": 0}
+            expected = request.get("expected_epoch")
+            if instance.controller_epoch != expected or instance.controller_id not in {
+                "",
+                owner_id,
+            }:
+                raise RuntimeError("controller_epoch_conflict")
+            instance.controller_epoch += 1
+            instance.controller_id = owner_id
+            self._persist_instance(instance)
+            return {"controller_epoch": instance.controller_epoch}
         if command == "maintenance_select":
             instance = self._instances.get(identity_id)
             if instance is None or instance.chrome.returncode is not None:
                 raise RuntimeError("not_found")
             if instance.controller_id and instance.controller_id != owner_id:
                 raise RuntimeError("controller_owner_mismatch")
+            await self._ensure_viewer(instance)
             target = self.socket_path.parent / "vnc-target"
             temporary = target.with_suffix(".tmp")
             temporary.write_text(f"{instance.vnc_port}\n", encoding="ascii")
             os.replace(temporary, target)
             return {"selected": True, "vnc_port": instance.vnc_port}
         raise ValueError("unsupported_command")
+
+    async def _ensure_viewer(self, instance):
+        if instance.vnc.returncode is not None:
+            instance.vnc = await asyncio.create_subprocess_exec(
+                "/usr/bin/x11vnc",
+                "-display",
+                f":{instance.display_number}",
+                "-forever",
+                "-shared",
+                "-listen",
+                "127.0.0.1",
+                "-rfbport",
+                str(instance.vnc_port),
+                "-nopw",
+                stdout=asyncio.subprocess.DEVNULL,
+                stderr=asyncio.subprocess.DEVNULL,
+            )
+            self._persist_instance(instance)
+        for _ in range(10):
+            try:
+                async with asyncio.timeout(0.2):
+                    reader, writer = await asyncio.open_connection("127.0.0.1", instance.vnc_port)
+                    try:
+                        if await reader.readexactly(4) == b"RFB ":
+                            return
+                    finally:
+                        writer.close()
+                        await writer.wait_closed()
+            except (OSError, TimeoutError, asyncio.IncompleteReadError):
+                await asyncio.sleep(0.1)
+        raise RuntimeError("viewer_service_unavailable_chrome_preserved")
 
     async def ensure(
         self, identity: BrowserIdentitySpec, egress: ProxyEgress, *, owner_id: str
@@ -187,13 +378,32 @@ class ChromeSupervisor:
             existing = self._instances.get(identity.identity_id)
             if existing and existing.chrome.returncode is None:
                 if (
-                    existing.identity.revision != identity.revision
+                    existing.identity.model_dump(
+                        include={
+                            "runtime_kind",
+                            "profile_id",
+                            "egress_id",
+                            "environment",
+                            "browser_release",
+                        }
+                    )
+                    != identity.model_dump(
+                        include={
+                            "runtime_kind",
+                            "profile_id",
+                            "egress_id",
+                            "environment",
+                            "browser_release",
+                        }
+                    )
                     or existing.egress.generation != egress.generation
                 ):
                     raise RuntimeError("identity_busy_configuration_changed")
                 if existing.controller_id and existing.controller_id != owner_id:
                     raise RuntimeError("controller_owner_mismatch")
                 existing.controller_id = owner_id
+                existing.identity = identity
+                self._persist_instance(existing)
                 return existing
             if existing:
                 await self._finalize(existing)
@@ -214,7 +424,11 @@ class ChromeSupervisor:
                 profile_lock.acquire()
             except RuntimeError as exc:
                 raise RuntimeError("profile_busy") from exc
-            self._clear_runtime_singletons(directory)
+            try:
+                clear_profile_runtime_links(directory)
+            except BaseException:
+                profile_lock.release()
+                raise
             xvfb: asyncio.subprocess.Process | None = None
             chrome: asyncio.subprocess.Process | None = None
             vnc: asyncio.subprocess.Process | None = None
@@ -245,7 +459,22 @@ class ChromeSupervisor:
                     stdout=asyncio.subprocess.DEVNULL,
                     stderr=asyncio.subprocess.DEVNULL,
                 )
-                environment = os.environ.copy()
+                environment = {
+                    key: value
+                    for key, value in os.environ.items()
+                    if key
+                    in {
+                        "PATH",
+                        "USER",
+                        "LOGNAME",
+                        "XAUTHORITY",
+                        "XDG_RUNTIME_DIR",
+                        "TMPDIR",
+                        "TMP",
+                        "TEMP",
+                        "DBUS_SESSION_BUS_ADDRESS",
+                    }
+                }
                 os_locale = identity.environment.locale.replace("-", "_") + ".UTF-8"
                 environment.update(
                     {
@@ -266,6 +495,7 @@ class ChromeSupervisor:
                     f"--remote-debugging-port={port}",
                     "--no-first-run",
                     "--no-default-browser-check",
+                    "--disk-cache-size=268435456",
                     "about:blank",
                     env=environment,
                     stdout=asyncio.subprocess.DEVNULL,
@@ -303,6 +533,7 @@ class ChromeSupervisor:
                 controller_id=owner_id,
             )
             self._instances[identity.identity_id] = instance
+            self._persist_instance(instance)
             return instance
 
     async def stop(self, identity_id: str, *, reason: str) -> bool:
@@ -321,6 +552,7 @@ class ChromeSupervisor:
                     self._instances[identity_id] = instance
                     raise RuntimeError("chrome_unclean_shutdown") from exc
             await self._finalize(instance)
+            (self.manifest_root / f"{identity_id}.json").unlink(missing_ok=True)
             return True
 
     async def _finalize(self, instance: ChromeInstance) -> None:
@@ -334,6 +566,21 @@ class ChromeSupervisor:
                 await asyncio.wait_for(instance.xvfb.wait(), timeout=5)
         self._clear_runtime_singletons(self.profile_root / instance.identity.profile_id)
         instance.profile_lock.release()
+        from .resource_gc import maintain_profile
+
+        self.resource_metrics[instance.identity.identity_id] = await asyncio.to_thread(
+            maintain_profile, self.profile_root, instance.identity.profile_id, allow_cache=True
+        )
+
+    async def _resource_loop(self):
+        from .resource_gc import maintain_profile
+
+        while True:
+            await asyncio.sleep(600)
+            for instance in list(self._instances.values()):
+                self.resource_metrics[instance.identity.identity_id] = await asyncio.to_thread(
+                    maintain_profile, self.profile_root, instance.identity.profile_id
+                )
 
     @staticmethod
     def _clear_runtime_singletons(directory: Path) -> None:
@@ -391,9 +638,13 @@ class ChromeSupervisor:
                         return cast(dict[str, object], json.loads(response.read()))
 
                 payload = await asyncio.to_thread(load)
+                if payload.get("Browser") != "Chrome/153.0.8010.52":
+                    raise RuntimeError("chrome_release_mismatch")
                 websocket_url = str(payload.get("webSocketDebuggerUrl") or "")
                 if websocket_url.startswith(f"ws://127.0.0.1:{port}/devtools/browser/"):
                     return websocket_url
+            except RuntimeError:
+                raise
             except Exception:
                 pass
             await asyncio.sleep(0.1)
@@ -415,6 +666,7 @@ class ChromeSupervisor:
             "vnc_port": instance.vnc_port,
             "runtime_kind": BrowserRuntimeKind.EXTERNAL_CHROME.value,
             "profile_id": instance.identity.profile_id,
+            "controller_epoch": instance.controller_epoch,
             "egress_id": instance.egress.egress_id,
         }
 
@@ -425,13 +677,21 @@ async def _main(args: argparse.Namespace) -> None:
         profile_root=Path(args.profile_root),
         port_start=args.port_start,
         port_end=args.port_end,
+        max_instances=args.max_instances,
     )
     loop = asyncio.get_running_loop()
     stopped = asyncio.Event()
     for signum in (signal.SIGTERM, signal.SIGINT):
         loop.add_signal_handler(signum, stopped.set)
     task = asyncio.create_task(supervisor.serve())
-    await stopped.wait()
+    signal_wait = asyncio.create_task(stopped.wait())
+    done, _ = await asyncio.wait({task, signal_wait}, return_when=asyncio.FIRST_COMPLETED)
+    if task in done and not stopped.is_set():
+        signal_wait.cancel()
+        # Do not gracefully stop live Chrome when only its Python supervisor
+        # failed. The namespace wrapper restarts this controller for adoption.
+        task.result()
+        raise RuntimeError("supervisor_server_exited_unexpectedly")
     task.cancel()
     await asyncio.gather(task, return_exceptions=True)
     await supervisor.shutdown()
@@ -443,6 +703,11 @@ def main() -> None:
     parser.add_argument("--profile-root", required=True)
     parser.add_argument("--port-start", type=int, default=9222)
     parser.add_argument("--port-end", type=int, default=9279)
+    parser.add_argument(
+        "--max-instances",
+        type=int,
+        default=int(os.environ.get("DOXAGENT_CHROME_MAX_INSTANCES", "16")),
+    )
     asyncio.run(_main(parser.parse_args()))
 
 

@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Protocol
 
 import httpx
+from doxagent.site_strategy.scope import source_routed
 
 from doxagent.crawler_plane.assets import CrawlerAssetStore
 from doxagent.crawler_plane.health import CrawlerHealthService
@@ -268,6 +269,7 @@ class CrawlerPlaneService:
         )
         return restored
 
+    @source_routed
     async def execute(
         self,
         request: CrawlerExecutionRequest,

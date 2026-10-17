@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import hmac
 import sqlite3
 from collections.abc import AsyncIterator, Awaitable, Callable
@@ -10,11 +11,14 @@ from datetime import UTC, datetime, timedelta
 from typing import Annotated, Literal
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Query
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from doxagent.content_enrichment.quality import choose_candidate, inspect_html
 
 from .credentials import CredentialStore
+from .governance_models import MaintenanceCommand, SourceAccessScope
+from .maintenance import MaintenanceController
 from .runtime import MaintenanceOpenError
 from .schema import (
     AccessRequest,
@@ -43,6 +47,11 @@ class ApplyIdentityRequest(BaseModel):
     expected_revision: int | None = None
     actor: str = Field(default="admin", min_length=1, max_length=128)
     enabled: bool | None = None
+
+
+class ApplyScopeRequest(BaseModel):
+    spec: SourceAccessScope
+    expected_revision: int | None = None
 
 
 class RollbackRequest(BaseModel):
@@ -75,6 +84,7 @@ class IdentityAuthRequest(ProfileAuthRequest):
 
 class ProfileSnapshotRequest(BaseModel):
     browser_version: str = Field(min_length=1, max_length=64)
+    batch_id: str | None = Field(default=None, pattern=r"^[a-zA-Z0-9_.-]{1,128}$")
 
 
 class ProfileRestoreRequest(BaseModel):
@@ -120,13 +130,16 @@ def create_app(
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         await service.start()
+        await maintenance.start()
         try:
             yield
         finally:
+            await maintenance.close()
             if close_service:
                 await service.close()
 
     app = FastAPI(title="DoxAgent Site Access", version="1", lifespan=lifespan)
+    maintenance = MaintenanceController(service)
     if maintenance_token:
         from doxagent.source_maintenance.site_api import router
 
@@ -144,6 +157,48 @@ def create_app(
 
     worker = authorize(worker_token)
     admin = authorize(admin_token)
+
+    @app.get("/v2/scopes", dependencies=[Depends(admin)])
+    async def scopes():
+        return [scope.model_dump(mode="json") for scope in maintenance.store.list_scopes()]
+
+    @app.post("/v2/egresses/{egress_id}:region-probe", dependencies=[Depends(admin)])
+    async def region_probe(egress_id: str):
+        from .egress import probe_egress_region
+
+        try:
+            return await probe_egress_region(service.repository, egress_id)
+        except Exception as exc:
+            raise HTTPException(
+                status_code=409, detail="egress region could not be verified"
+            ) from exc
+
+    @app.post("/v2/scopes:apply", dependencies=[Depends(admin)])
+    async def apply_scope(request: ApplyScopeRequest):
+        scope = request.spec
+        try:
+            if service.repository.get_strategy(scope.owner_site_id) is None:
+                raise ValueError("unknown owner site")
+            previous = maintenance.store.get_scope(scope.scope_id)
+            if (
+                previous
+                and (previous.primary_identity_id, previous.fallback_identity_id)
+                != (scope.primary_identity_id, scope.fallback_identity_id)
+                and service._scope_inflight.get(f"scope:{scope.scope_id}", 0)
+            ):
+                raise ValueError(
+                    "scope has in-flight access; retry identity reassignment after drain"
+                )
+            for url in (
+                scope.verification_plan.get("body_url"),
+                scope.verification_plan.get("crawler", {}).get("url"),
+            ):
+                if url and service.resolver.resolve(url).site_id != scope.owner_site_id:
+                    raise ValueError("verification URL belongs to another site")
+            value = maintenance.store.apply_scope(scope, request.expected_revision)
+        except (ValueError, RuntimeError) as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+        return value.model_dump(mode="json")
 
     @app.get("/healthz")
     async def health() -> dict[str, str]:
@@ -175,6 +230,22 @@ def create_app(
     async def access_diagnostics() -> dict[str, object]:
         return service.access_diagnostics()
 
+    @app.get("/v2/diagnostics/failure-shapes", dependencies=[Depends(admin)])
+    async def failure_shapes(scope_id: str | None = None):
+        def read():
+            import json
+
+            with service.repository._lock:
+                rows = service.repository._connection.execute(
+                    "select * from access_failure_shapes "
+                    + ("where scope_id=? " if scope_id else "")
+                    + "order by last_seen desc limit 50",
+                    (scope_id,) if scope_id else (),
+                ).fetchall()
+            return [{**dict(row), "payload_json": json.loads(row["payload_json"])} for row in rows]
+
+        return await asyncio.to_thread(read)
+
     @app.get("/v1/diagnostics/candidates", dependencies=[Depends(admin)])
     async def effective_candidates(
         url: str, purpose: SitePurpose = SitePurpose.CRAWLER
@@ -197,8 +268,60 @@ def create_app(
         response_model=AccessResult,
         dependencies=[Depends(worker)],
     )
-    async def execute(request: AccessRequest) -> AccessResult:
-        return await service.execute(request)
+    async def execute(
+        request: AccessRequest,
+        x_site_access_protocol: Annotated[str | None, Header()] = None,
+    ):
+        result = await service.execute(request)
+        excluded = (
+            set()
+            if x_site_access_protocol == "2"
+            else {
+                "effective_scope_id",
+                "route_generation",
+                "challenge_task_id",
+            }
+        )
+        return JSONResponse(result.model_dump(mode="json", exclude=excluded))
+
+    @app.get("/v1/maintenance/inventory", dependencies=[Depends(admin)])
+    async def maintenance_inventory():
+        return maintenance.snapshot
+
+    @app.post("/v1/maintenance/operations", status_code=202, dependencies=[Depends(admin)])
+    async def maintenance_submit(command: MaintenanceCommand):
+        try:
+            return maintenance.submit(command).model_dump(mode="json")
+        except (ValueError, RuntimeError, sqlite3.IntegrityError) as exc:
+            raise HTTPException(status_code=409, detail="maintenance operation conflict") from exc
+
+    @app.get("/v1/maintenance/operations/{operation_id}", dependencies=[Depends(admin)])
+    async def maintenance_status(operation_id: str):
+        try:
+            async with asyncio.timeout(2):
+                operation = await asyncio.to_thread(maintenance.get_operation, operation_id)
+        except TimeoutError as exc:
+            raise HTTPException(status_code=503, detail="operation receipt unavailable") from exc
+        if not operation:
+            raise HTTPException(status_code=404, detail="maintenance operation not found")
+        return operation.model_dump(mode="json")
+
+    @app.post("/v1/maintenance/operations/{operation_id}:cancel", dependencies=[Depends(admin)])
+    async def maintenance_cancel(operation_id: str):
+        operation = maintenance.cancel(operation_id)
+        if not operation:
+            raise HTTPException(status_code=404, detail="maintenance operation not found")
+        return operation.model_dump(mode="json")
+
+    @app.get("/v1/challenges", dependencies=[Depends(admin)])
+    async def challenges(offset: int = Query(0, ge=0), limit: int = Query(100, ge=1, le=200)):
+        return [
+            item.model_dump(mode="json")
+            for item in maintenance.store.list_challenges(
+                offset=offset,
+                limit=limit,
+            )
+        ]
 
     @app.post("/v1/outcomes:batch", dependencies=[Depends(worker)])
     async def outcomes(request: OutcomesRequest) -> dict[str, int]:
@@ -279,7 +402,9 @@ def create_app(
 
     @app.get("/v1/combinations/{runtime_key:path}", dependencies=[Depends(admin)])
     async def combination_status(runtime_key: str) -> dict[str, object]:
-        return service.repository.get_runtime(runtime_key).model_dump(mode="json")
+        return service.repository.get_runtime(runtime_key).model_dump(
+            mode="json", exclude={"combinations": {"__all__": {"capabilities"}}}
+        )
 
     @app.post(
         "/v1/combinations/{runtime_key:path}/{combination_id}:activate",
@@ -290,6 +415,10 @@ def create_app(
         combination_id: str,
         request: ActivateCombinationRequest,
     ) -> dict[str, object]:
+        if runtime_key.startswith("scope:"):
+            raise HTTPException(
+                status_code=409, detail="use verified maintenance activation for source scopes"
+            )
         try:
             state = await service.health.activate(
                 runtime_key,
@@ -298,7 +427,9 @@ def create_app(
             )
         except RuntimeError as exc:
             raise HTTPException(status_code=409, detail=str(exc)) from exc
-        return state.model_dump(mode="json")
+        return state.model_dump(
+            mode="json", exclude={"combinations": {"__all__": {"capabilities"}}}
+        )
 
     @app.get("/v1/identities", dependencies=[Depends(admin)])
     async def identities() -> list[dict[str, object]]:
@@ -309,7 +440,7 @@ def create_app(
             values.append(
                 {
                     "head": head.model_dump(mode="json"),
-                    "spec": spec.model_dump(mode="json"),
+                    "spec": spec.model_dump(mode="json", exclude={"owner_scope_id"}),
                     "runtime": runtime.model_dump(mode="json"),
                     "site_auth": [item.model_dump(mode="json") for item in auth],
                 }
@@ -327,7 +458,7 @@ def create_app(
         except Exception as exc:
             runtime_status = {"running": False, "diagnostic": type(exc).__name__}
         return {
-            "spec": value.model_dump(mode="json"),
+            "spec": value.model_dump(mode="json", exclude={"owner_scope_id"}),
             "runtime": service.repository.get_identity_runtime(identity_id).model_dump(mode="json"),
             "live": runtime_status,
             "site_auth": [
@@ -359,7 +490,7 @@ def create_app(
             )
         except (ValueError, RuntimeError) as exc:
             raise HTTPException(status_code=409, detail=str(exc)) from exc
-        return value.model_dump(mode="json")
+        return value.model_dump(mode="json", exclude={"owner_scope_id"})
 
     @app.post("/v1/identities/{identity_id}:drain", dependencies=[Depends(admin)])
     async def drain_identity(identity_id: str) -> dict[str, object]:
@@ -374,7 +505,8 @@ def create_app(
         identity_id: str, request: IdentityLoginRequest
     ) -> dict[str, str]:
         try:
-            return await service.open_identity_login(request.site_id, identity_id)
+            result = await service.open_identity_login(request.site_id, identity_id)
+            return {key: value for key, value in result.items() if key != "viewer_ready"}
         except MaintenanceOpenError as exc:
             raise HTTPException(
                 status_code=503,
@@ -508,7 +640,7 @@ def create_app(
     async def snapshot_profile(profile_id: str, request: ProfileSnapshotRequest) -> dict[str, str]:
         try:
             return await service.snapshot_profile(
-                profile_id, browser_version=request.browser_version
+                profile_id, browser_version=request.browser_version, batch_id=request.batch_id
             )
         except KeyError as exc:
             raise HTTPException(status_code=404, detail="profile not found") from exc
@@ -527,7 +659,8 @@ def create_app(
     @app.post("/v1/profiles/{profile_id}/login:open", dependencies=[Depends(admin)])
     async def login_open(profile_id: str) -> dict[str, str]:
         try:
-            return await service.open_profile_login(profile_id)
+            result = await service.open_profile_login(profile_id)
+            return {key: value for key, value in result.items() if key != "viewer_ready"}
         except MaintenanceOpenError as exc:
             raise HTTPException(
                 status_code=503,

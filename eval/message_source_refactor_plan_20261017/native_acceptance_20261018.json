@@ -1,0 +1,14 @@
+{
+  "environment": "isolated Linux Chrome Supervisor temporary profiles and local fixture proxy",
+  "production_profiles_touched": false,
+  "real_login_test": false,
+  "worker_restart_preserves_original_and_unknown_target": true,
+  "lost_create_reply_reconciled": true,
+  "independent_body_verify_and_exact_cleanup": true,
+  "supervisor_process_adopts_same_native_chrome": true,
+  "cookie_persists_through_graceful_cold_start": true,
+  "managed_and_external_real_drivers_are_independent": true,
+  "regressions": {"passed": 288, "platform_skipped": 1},
+  "source_checkpoint": "D:/DoxAgentTmp/source-runtime-isolation-20261018-final.tar.gz",
+  "fixture_directory_auto_cleaned": "/tmp/doxagent-source-runtime-smoke-h2egu29z"
+}

@@ -15,6 +15,28 @@ from .repository import SiteStrategyRepository
 from .schema import ProxyEgress
 
 
+async def probe_egress_region(repository, egress_id):
+    """Record observed geography, never infer it from a historical slot/node name."""
+    egress = repository.get_egress(egress_id)
+    if not egress or not egress.observed_ip:
+        raise ValueError("egress IP must be verified first")
+    async with httpx.AsyncClient(proxy=egress.endpoint, timeout=5) as client:
+        response = await client.get("https://ifconfig.co/json")
+        response.raise_for_status()
+        payload = response.json()
+    country = str(payload.get("country_iso") or "").upper()
+    if payload.get("ip") != egress.observed_ip or len(country) != 2 or not country.isalpha():
+        raise ValueError("egress geography/IP observation mismatch")
+    with repository.transaction() as connection:
+        connection.execute(
+            "insert into egress_regions values(?,?,?,?) "
+            "on conflict(egress_id) do update set observed_ip=excluded.observed_ip, "
+            "country_code=excluded.country_code,observed_at=excluded.observed_at",
+            (egress_id, egress.observed_ip, country, datetime.now(UTC).isoformat()),
+        )
+    return {"egress_id": egress_id, "observed_ip": egress.observed_ip, "country_code": country}
+
+
 def render_fixed_listeners(config_text: str, egresses: list[ProxyEgress]) -> str:
     """Merge deterministic, fail-closed HTTP listeners into a subscription config.
 

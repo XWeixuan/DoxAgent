@@ -205,6 +205,11 @@ class CombinationHealthManager:
             state = self.repository.get_runtime(runtime_key)
             runtime = state.combinations.setdefault(combination_id, CombinationRuntime())
             runtime.last_success_at = utc_now()
+            if runtime_key.startswith("scope:") and assigned_generation != state.generation:
+                # A late pre-failure page cannot erase a newer challenge/cooldown
+                # or reopen the primary while a successor is being activated.
+                self.repository.save_runtime(state, expected_generation=state.generation)
+                return state
             if transport in {AccessMode.BROWSER, AccessMode.BROWSER_FETCH}:
                 runtime.probe_in_flight = False
                 runtime.state = "READY"
@@ -281,7 +286,8 @@ class CombinationHealthManager:
                     assigned_generation == state.generation
                     and state.active_combination_id == combination_id
                 ):
-                    state.active_combination_id = None
+                    if not runtime_key.startswith("scope:"):
+                        state.active_combination_id = None
                     state.generation += 1
             self.repository.save_runtime(state, expected_generation=prior)
             return state

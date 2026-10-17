@@ -140,6 +140,8 @@ def _trace(result: AccessResult, phase: str) -> dict[str, object]:
     return {
         "phase": phase,
         "site_id": result.site_id,
+        "origin_scope_id": result.effective_scope_id,
+        "route_generation": result.route_generation,
         "strategy_revision": result.strategy_revision,
         "strategy_ref": result.body_strategy_ref,
         "combination_id": result.combination_id,

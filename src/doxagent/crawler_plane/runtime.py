@@ -27,6 +27,7 @@ from doxagent.crawler_plane.schema import (
 from doxagent.crawler_plane.worker_runtime import worker_main
 from doxagent.site_strategy.client import SiteAccessClient, SiteAccessError
 from doxagent.site_strategy.schema import AccessMode, AccessRequest, SitePurpose
+from doxagent.site_strategy.scope import access_routing, current_routing
 
 RequestPermitFactory = Callable[[], AbstractAsyncContextManager[None]]
 
@@ -243,8 +244,15 @@ class ParentNetworkSession:
         self.artifacts: list[ExecutionArtifact] = []
         self.response_bytes = 0
         self._replay_index = 0
+        self.access_routing_context = current_routing()
 
     async def handle(self, op: str, payload: dict[str, Any]) -> dict[str, Any]:
+        if self.access_routing_context is not None:
+            with access_routing(self.access_routing_context):
+                return await self._handle_routed(op, payload)
+        return await self._handle_routed(op, payload)
+
+    async def _handle_routed(self, op: str, payload: dict[str, Any]) -> dict[str, Any]:
         if op == "artifact":
             content = payload.get("content", b"")
             raw = content if isinstance(content, bytes) else bytes(content)

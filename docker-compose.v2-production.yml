@@ -150,7 +150,7 @@ services:
     init: true
     restart: unless-stopped
     shm_size: 1g
-    pids_limit: 1536
+    pids_limit: 2304
     security_opt:
       - no-new-privileges:true
       - seccomp=/etc/doxagent/site-access-seccomp.json

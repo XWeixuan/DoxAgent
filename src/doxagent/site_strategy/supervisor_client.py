@@ -21,6 +21,7 @@ class SupervisorInstance:
     cdp_http_url: str
     cdp_websocket_url: str
     display: str
+    controller_epoch: int | None = None
 
 
 class ChromeSupervisorClient:
@@ -65,7 +66,8 @@ class ChromeSupervisorClient:
         response = await self._request(
             "ensure",
             {
-                "identity": identity.model_dump(mode="json"),
+                # Metadata is owner-only until the supervisor advertises v2.
+                "identity": identity.model_dump(mode="json", exclude={"owner_scope_id"}),
                 # Probe telemetry belongs to Site Access, not the supervisor
                 # wire contract. Older long-lived supervisors reject extra fields.
                 "egress": egress.model_dump(
@@ -87,7 +89,18 @@ class ChromeSupervisorClient:
             cdp_http_url=str(response["cdp_http_url"]),
             cdp_websocket_url=str(response["cdp_websocket_url"]),
             display=str(response["display"]),
+            controller_epoch=response.get("controller_epoch"),
         )
+
+    async def claim_controller(self, identity_id: str, *, expected_epoch: int) -> int:
+        response = await self._request(
+            "claim_controller",
+            {
+                "identity_id": identity_id,
+                "expected_epoch": expected_epoch,
+            },
+        )
+        return int(response["controller_epoch"])
 
     async def status(self, identity_id: str) -> dict[str, object]:
         return await self._request("status", {"identity_id": identity_id})

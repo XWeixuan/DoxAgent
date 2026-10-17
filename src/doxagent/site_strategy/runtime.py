@@ -11,7 +11,7 @@ import os
 import re
 import time
 from collections import OrderedDict
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 from urllib.parse import urljoin, urlsplit
@@ -59,6 +59,9 @@ class RuntimeResponse:
     provenance: RuntimeProvenance | None = None
     challenge_token: str | None = None
     challenge_target_id: str | None = None
+    challenge_cleared: bool | None = None
+    body_quality: str | None = None
+    subscription_verified: bool = False
 
 
 class OwnerFileLock:
@@ -118,6 +121,25 @@ class OwnerFileLock:
             self._stream = None
 
 
+def profile_browser_processes(directory: Path) -> list[dict]:
+    if os.name != "posix":
+        return []
+    from .supervisor_state import process_record
+
+    records = []
+    expected = f"--user-data-dir={directory.resolve()}"
+    for item in Path("/proc").iterdir():
+        if item.name.isdigit():
+            record = process_record(int(item.name))
+            if (
+                record
+                and expected in record["arguments"]
+                and not any(argument.startswith("--type=") for argument in record["arguments"])
+            ):
+                records.append(record)
+    return records
+
+
 def clear_profile_runtime_links(directory: Path) -> None:
     """Clear only ephemeral Chrome links after acquiring the Profile writer lock.
 
@@ -127,6 +149,21 @@ def clear_profile_runtime_links(directory: Path) -> None:
     Validate the whole set before removing anything; never delete ordinary files.
     """
     paths = [directory / name for name in ("SingletonLock", "SingletonSocket", "SingletonCookie")]
+    # A controller can die while its native Chrome survives. The application
+    # flock alone is therefore not proof that this directory has no writer.
+    if os.name == "posix":
+        expected = str(directory.resolve())
+        for proc in Path("/proc").iterdir():
+            if not proc.name.isdigit():
+                continue
+            try:
+                arguments = (proc / "cmdline").read_bytes().split(b"\0")
+            except (OSError, PermissionError):
+                continue
+            if any(
+                arg.decode(errors="replace") == f"--user-data-dir={expected}" for arg in arguments
+            ):
+                raise RuntimeError("profile_busy_live_chrome_writer")
     if any(path.exists() and not path.is_symlink() for path in paths):
         raise RuntimeError("profile_busy_unknown_singleton")
     for path in paths:
@@ -145,6 +182,7 @@ class _BrowserEntry:
     active_pages: int = 0
     pages_opened: int = 0
     closing: bool = False
+    instance_id: str = field(default_factory=lambda: uuid4().hex)
 
 
 @dataclass
@@ -226,11 +264,11 @@ class _RawBrowserCDP:
         finally:
             self._pending.pop(command_id, None)
 
-    async def close(self) -> None:
+    async def close(self, *, close_owned: bool = True) -> None:
         if self._socket is None:
             return
         try:
-            for target_id in tuple(self._owned_targets):
+            for target_id in tuple(self._owned_targets) if close_owned else ():
                 try:
                     await self.send("Target.closeTarget", {"targetId": target_id})
                     self._owned_targets.discard(target_id)
@@ -244,6 +282,10 @@ class _RawBrowserCDP:
             pass
         finally:
             await self._close_transport()
+
+    async def detach_transport(self) -> None:
+        """Disconnect control without asserting ownership of any live target."""
+        await self.close(close_owned=False)
 
     async def _close_transport(self) -> None:
         socket, self._socket = self._socket, None
@@ -406,6 +448,8 @@ class PersistentBrowserPool:
         self._profile_start_locks: dict[str, asyncio.Lock] = {}
         self._unclean_entries: list[_BrowserEntry] = []
         self._starting = 0
+        self.target_owner = None
+        self._identity_ids = {}
         self._playwright: Any | None = None
         self._owner_lock = OwnerFileLock(root / ".owner.lock")
         self._safety = SafetyStateReader(safety_path)
@@ -445,6 +489,10 @@ class PersistentBrowserPool:
                         f"playwright version mismatch: {installed} != {EXPECTED_PLAYWRIGHT_VERSION}"
                     )
                 self._playwright = await async_playwright().start()
+                observer = getattr(self, "control_observer", None)
+                if observer:
+                    process = self._playwright._impl_obj._connection._transport._proc
+                    await observer(process.pid)
                 executable = str(self._playwright.chromium.executable_path)
                 if f"chromium-{EXPECTED_CHROMIUM_REVISION}" not in executable.replace("\\", "/"):
                     raise RuntimeError(
@@ -515,7 +563,36 @@ class PersistentBrowserPool:
                 entry.active_pages += 1
                 entry.last_used = time.monotonic()
             try:
-                page = await entry.context.new_page()
+                if self.target_owner:
+                    identity_id = self._identity_ids.get(profile.profile_id, profile.profile_id)
+                    allocation = await self.target_owner.event(
+                        "allocate",
+                        {
+                            "identity_id": identity_id,
+                            "instance_id": f"managed:{identity_id}:{entry.instance_id}",
+                            "epoch": 0,
+                        },
+                    )
+                    marker = "about:blank#doxagent-" + allocation["allocation_id"]
+                    created = await entry.cdp.send(
+                        "Target.createTarget", {"url": marker, "background": True}
+                    )
+                    target_id = str(created["targetId"])
+                    entry.cdp._owned_targets.add(target_id)
+                    await self.target_owner.event(
+                        "bind",
+                        {"allocation_id": allocation["allocation_id"], "target_id": target_id},
+                    )
+                    while True:
+                        page = next((p for p in entry.context.pages if p.url == marker), None)
+                        if page is not None:
+                            break
+                        await asyncio.sleep(0.01)
+                    page._doxagent_target_id = target_id
+                    page._doxagent_allocation_id = allocation["allocation_id"]
+                    page._doxagent_target_owner = self.target_owner
+                else:
+                    page = await entry.context.new_page()
             except BaseException:
                 async with self._lock:
                     entry.active_pages -= 1
@@ -651,6 +728,7 @@ class PersistentBrowserPool:
                         "--force-webrtc-ip-handling-policy=disable_non_proxied_udp",
                         "--webrtc-ip-handling-policy=disable_non_proxied_udp",
                         "--remote-debugging-port=0",
+                        "--disk-cache-size=268435456",
                     ],
                 )
                 cdp = await self._connect_profile_cdp(directory)
@@ -730,9 +808,25 @@ class PersistentBrowserPool:
         directory = self.root / profile.directory_key
         manifest = directory / "doxagent-profile-manifest.json"
         temporary = manifest.with_suffix(".json.tmp")
+        previous = {}
+        try:
+            previous = json.loads(manifest.read_text(encoding="utf-8"))
+        except (FileNotFoundError, json.JSONDecodeError):
+            pass
+        connection = getattr(getattr(self._playwright, "_impl_obj", None), "_connection", None)
+        node = getattr(getattr(connection, "_transport", None), "_proc", None)
+        root = next(
+            (
+                p
+                for p in profile_browser_processes(directory)
+                if p["parent_pid"] == getattr(node, "pid", None)
+            ),
+            None,
+        )
         temporary.write_text(
             json.dumps(
                 {
+                    **previous,
                     "profile_id": profile.profile_id,
                     "site_id": profile.site_id,
                     "egress_id": egress.egress_id,
@@ -742,6 +836,8 @@ class PersistentBrowserPool:
                     "environment": profile.environment.model_dump(mode="json"),
                     "clean_shutdown": clean_shutdown,
                     "updated_at_epoch": time.time(),
+                    "chrome_process": root
+                    or (previous.get("chrome_process") if not clean_shutdown else None),
                 },
                 sort_keys=True,
             ),
@@ -753,10 +849,21 @@ class PersistentBrowserPool:
 async def _close_owned_page(page: Any, cdp: _RawBrowserCDP, *, timeout_seconds: float = 5) -> None:
     """Bound cleanup separately: cancellation does not bound awaited finally blocks."""
     target_id = getattr(page, "_doxagent_target_id", None)
+    owner = getattr(page, "_doxagent_target_owner", None)
+    allocation_id = getattr(page, "_doxagent_allocation_id", None)
+    if owner and allocation_id:
+        await owner.event("state", {"allocation_id": allocation_id, "state": "CLOSE_PENDING"})
     if target_id:
         # CDP does not wait for Playwright's unbounded abort acknowledgement.
-        await cdp.send("Target.closeTarget", {"targetId": target_id})
+        try:
+            await cdp.send("Target.closeTarget", {"targetId": target_id})
+        except Exception:
+            observed = await cdp.send("Target.getTargets")
+            if any(str(t["targetId"]) == target_id for t in observed["targetInfos"]):
+                raise
         getattr(cdp, "_owned_targets", set()).discard(target_id)
+        if owner and allocation_id:
+            await owner.event("state", {"allocation_id": allocation_id, "state": "CLOSED"})
         return
     try:
         async with asyncio.timeout(timeout_seconds):
@@ -781,6 +888,17 @@ class _PageLease:
 
     async def __aenter__(self) -> Any:
         return self.page
+
+    async def abandon(self) -> None:
+        """Transfer a live page to human ownership without retaining capacity."""
+        if self._closed:
+            return
+        self._closed = True
+        self.entry.cdp._owned_targets.discard(getattr(self.page, "_doxagent_target_id", None))
+        async with self.pool._lock:
+            self.entry.active_pages -= 1
+            self.entry.last_used = time.monotonic()
+        self.pool._page_slots.release()
 
     async def __aexit__(self, exc_type: Any, exc: Any, traceback: Any) -> None:
         if self._closed:
@@ -982,6 +1100,12 @@ class SiteAccessRuntime:
         )
         self._http_sessions: dict[tuple[str, str], Any] = {}
         self._maintenance_pages: dict[str, _MaintenancePage] = {}
+        from .targets import TargetOwner
+
+        self.target_owner = TargetOwner(repository)
+        self.browser_pool.target_owner = self.target_owner
+        if external is not None:
+            external.target_owner = self.target_owner
 
     async def close(self) -> None:
         for token, maintained in list(self._maintenance_pages.items()):
@@ -1118,6 +1242,46 @@ class SiteAccessRuntime:
         gate = _DocumentNavigationGate(page, self.resolver, resolved, lease.browser_cdp)
         retained = False
         response = None
+
+        async def recipe_capture(rows, metadata=None):
+            nonlocal retained
+            if gate.blocked:
+                return RuntimeResponse(
+                    0,
+                    request.url,
+                    {},
+                    redirect_url=gate.blocked[0],
+                    reason="cross_site_navigation",
+                    provenance=lease.provenance,
+                )
+            html = await page.content()
+            if inspect_html(html, page.url, "").access_reason == "challenge_required":
+                token = None
+                if not request.recipe_parameters.get("_maintenance_canary"):
+                    token = await self._retain_challenge(
+                        lease, page, gate, identity, resolved, request
+                    )
+                    retained = True
+                return RuntimeResponse(
+                    200,
+                    page.url,
+                    {},
+                    body=html,
+                    provenance=lease.provenance,
+                    challenge_token=token,
+                    challenge_target_id=getattr(
+                        page, "_doxagent_original_target_id", gate.root_target_id
+                    ),
+                )
+            return RuntimeResponse(
+                200,
+                page.url,
+                {},
+                body="",
+                recipe_result={"rows": rows, **({"metadata": metadata} if metadata else {})},
+                provenance=lease.provenance,
+            )
+
         try:
             try:
                 await gate.start()
@@ -1128,30 +1292,14 @@ class SiteAccessRuntime:
                         timeout_seconds=int(request.recipe_parameters.get("timeout_seconds", 20)),
                         snippet_count=int(request.recipe_parameters.get("snippet_count", 20)),
                     )
-                    return RuntimeResponse(
-                        200,
-                        str(metadata.get("page_url") or page.url or request.url),
-                        {},
-                        # The caller consumes only the parsed rows. Returning the
-                        # whole Yahoo page needlessly serializes megabytes per poll.
-                        body="",
-                        recipe_result={"rows": rows, "metadata": metadata},
-                        provenance=lease.provenance,
-                    )
+                    return await recipe_capture(rows, metadata)
                 if request.recipe_ref == "builtin:reuters_search@1":
                     rows = await capture_reuters_search(
                         page,
                         str(request.recipe_parameters["query"]),
                         int(request.recipe_parameters.get("offset", 0)),
                     )
-                    return RuntimeResponse(
-                        200,
-                        page.url,
-                        {},
-                        body=await page.content(),
-                        recipe_result={"rows": rows},
-                        provenance=lease.provenance,
-                    )
+                    return await recipe_capture(rows)
                 response = await page.goto(
                     request.url,
                     # These ad-heavy publishers can keep DOMContentLoaded pending
@@ -1183,9 +1331,7 @@ class SiteAccessRuntime:
                 headers = await response.all_headers() if response is not None else {}
                 initial_html = await page.content()
                 initial_challenge = (
-                    identity.runtime_kind is BrowserRuntimeKind.EXTERNAL_CHROME
-                    and inspect_html(initial_html, page.url, "").access_reason
-                    == "challenge_required"
+                    inspect_html(initial_html, page.url, "").access_reason == "challenge_required"
                 )
                 if (
                     not initial_challenge
@@ -1244,13 +1390,19 @@ class SiteAccessRuntime:
                         raise _BrowserContentNotReady("browser_content_not_ready") from exc
                 if request.recipe_ref == "builtin:barrons_ticker@1" and not initial_challenge:
                     html = await _capture_barrons_ticker_cards(page)
-                    return RuntimeResponse(
-                        int(status),
-                        page.url,
-                        _filtered_headers({str(k).lower(): str(v) for k, v in headers.items()}),
-                        body=html,
-                        provenance=lease.provenance,
-                    )
+                    native_html = await page.content()
+                    if (
+                        inspect_html(native_html, page.url, "").access_reason
+                        != "challenge_required"
+                    ):
+                        return RuntimeResponse(
+                            int(status),
+                            page.url,
+                            _filtered_headers({str(k).lower(): str(v) for k, v in headers.items()}),
+                            body=html,
+                            provenance=lease.provenance,
+                        )
+                    initial_challenge = True
                 if request.recipe_parameters.get("expand") and not initial_challenge:
                     await _expand_article(page)
                 wait_selector = request.recipe_parameters.get("wait_selector")
@@ -1267,14 +1419,15 @@ class SiteAccessRuntime:
                         reason="response_too_large",
                         provenance=lease.provenance,
                     )
-                challenge = (
-                    identity.runtime_kind is BrowserRuntimeKind.EXTERNAL_CHROME
-                    and inspect_html(html, page.url, "").access_reason == "challenge_required"
+                challenge = inspect_html(html, page.url, "").access_reason == "challenge_required"
+                token = (
+                    uuid4().hex
+                    if (challenge and not request.recipe_parameters.get("_maintenance_canary"))
+                    else None
                 )
-                token = uuid4().hex if challenge else None
                 if token is not None:
                     token = await self._retain_challenge(
-                        lease, page, gate, identity, resolved.site_id, request.url
+                        lease, page, gate, identity, resolved, request
                     )
                     retained = True
                 return RuntimeResponse(
@@ -1284,13 +1437,20 @@ class SiteAccessRuntime:
                     body=html,
                     provenance=lease.provenance,
                     challenge_token=token,
-                    challenge_target_id=gate.root_target_id if challenge else None,
+                    challenge_target_id=getattr(
+                        page, "_doxagent_original_target_id", gate.root_target_id
+                    )
+                    if challenge
+                    else None,
                 )
             except Exception as exc:
                 # A native redirect/late WAF document may replace the initial
                 # commit while a recipe or content selector is still waiting.
                 # Inspect before cleanup; do not retry/close a human challenge.
-                if identity.runtime_kind is BrowserRuntimeKind.EXTERNAL_CHROME:
+                if identity.runtime_kind in {
+                    BrowserRuntimeKind.EXTERNAL_CHROME,
+                    BrowserRuntimeKind.MANAGED_PLAYWRIGHT,
+                }:
                     html = getattr(exc, "response_body", "")
                     if not html:
                         try:
@@ -1299,9 +1459,13 @@ class SiteAccessRuntime:
                         except Exception:
                             html = ""
                     inspection = inspect_html(html, page.url, "") if html else None
-                    if inspection and inspection.access_reason == "challenge_required":
+                    if (
+                        inspection
+                        and inspection.access_reason == "challenge_required"
+                        and not request.recipe_parameters.get("_maintenance_canary")
+                    ):
                         token = await self._retain_challenge(
-                            lease, page, gate, identity, resolved.site_id, request.url
+                            lease, page, gate, identity, resolved, request
                         )
                         retained = True
                         return RuntimeResponse(
@@ -1314,7 +1478,9 @@ class SiteAccessRuntime:
                             body=html,
                             provenance=lease.provenance,
                             challenge_token=token,
-                            challenge_target_id=gate.root_target_id,
+                            challenge_target_id=getattr(
+                                page, "_doxagent_original_target_id", gate.root_target_id
+                            ),
                         )
                     logger.warning(
                         "browser document failure site=%s identity=%s html_bytes=%s "
@@ -1339,10 +1505,10 @@ class SiteAccessRuntime:
                         )
                 raise
             finally:
-                if not retained:
+                if not retained and not getattr(page, "_doxagent_handoff_pending", False):
                     await gate.close()
         finally:
-            if not retained:
+            if not retained and not getattr(page, "_doxagent_handoff_pending", False):
                 await lease.__aexit__(None, None, None)
 
     async def _retain_challenge(
@@ -1351,24 +1517,88 @@ class SiteAccessRuntime:
         page: Any,
         gate: Any,
         identity: BrowserIdentitySpec,
-        site_id: str,
-        url: str,
+        resolved: ResolvedSite,
+        request: AccessRequest,
     ) -> str:
         # One path for ordinary documents and recipes: preserve the actual tab,
         # remove navigation instrumentation, and let the service pause its identity.
-        token = uuid4().hex
-        await gate.close()
-        self._maintenance_pages[token] = _MaintenancePage(
-            lease,
-            page,
-            gate,
-            identity.profile_id,
-            identity.identity_id,
-            site_id,
-            url,
-            navigation_state="READY",
-        )
-        return token
+        from .governance_models import ChallengeTask
+
+        page._doxagent_handoff_pending = True
+
+        async def transfer():
+            allocation_id = getattr(page, "_doxagent_allocation_id", None)
+            if allocation_id is None:
+                target = await self.target_owner.event(
+                    "allocate",
+                    {
+                        "identity_id": identity.identity_id,
+                        "instance_id": lease.provenance.instance_id,
+                        "epoch": lease.provenance.generation,
+                    },
+                )
+                allocation_id = target["allocation_id"]
+                await self.target_owner.event(
+                    "bind",
+                    {
+                        "allocation_id": allocation_id,
+                        "target_id": gate.root_target_id,
+                    },
+                )
+            task = ChallengeTask.model_validate(
+                await self.target_owner.event(
+                    "handoff",
+                    ChallengeTask(
+                        scope_id=str(
+                            resolved.match_evidence.get("scope_id")
+                            or f"publisher:{resolved.site_id}"
+                        ),
+                        identity_id=identity.identity_id,
+                        site_id=resolved.site_id,
+                        purpose=request.purpose.value,
+                        operation_id=request.operation_id,
+                        combination_id=next(
+                            (
+                                c.combination_id
+                                for c in resolved.access.combinations
+                                if c.identity_id == identity.identity_id
+                            ),
+                            identity.identity_id,
+                        ),
+                        original_url=request.url,
+                        original_target_id=gate.root_target_id,
+                        browser_instance_id=lease.provenance.instance_id,
+                        allocation_id=allocation_id,
+                        reason="challenge_required",
+                    ).model_dump(mode="json"),
+                )
+            )
+            page._doxagent_challenge_task_id = task.task_id
+            token = task.task_id
+            page._doxagent_original_target_id = task.original_target_id
+            await gate.close()
+            if task.allocation_id != allocation_id:
+                await lease.__aexit__(None, None, None)
+                return token
+            self._maintenance_pages[token] = _MaintenancePage(
+                lease,
+                page,
+                gate,
+                identity.profile_id,
+                identity.identity_id,
+                resolved.site_id,
+                request.url,
+                navigation_state="READY",
+            )
+            await lease.abandon()
+            return token
+
+        transfer_task = asyncio.create_task(transfer(), name="challenge-ownership-transfer")
+        if not hasattr(self, "_ownership_transfers"):
+            self._ownership_transfers = set()
+        self._ownership_transfers.add(transfer_task)
+        transfer_task.add_done_callback(self._ownership_transfers.discard)
+        return await asyncio.shield(transfer_task)
 
     async def reset_egress(self, egress_id: str) -> None:
         stale = [key for key in self._http_sessions if key[1] == egress_id]
@@ -1431,8 +1661,6 @@ class SiteAccessRuntime:
                 stage = "navigation_gate"
                 gate = _DocumentNavigationGate(page, self.resolver, resolved, lease.browser_cdp)
                 await gate.start()
-                stage = "viewer_selection"
-                await self.browser_runtimes.select_maintenance(effective_identity)
         except BaseException as exc:
             try:
                 if gate is not None:
@@ -1444,6 +1672,17 @@ class SiteAccessRuntime:
                 raise
             raise MaintenanceOpenError(stage) from exc
         session_token = token or uuid4().hex
+        allocation_id = getattr(page, "_doxagent_allocation_id", None)
+        if allocation_id:
+            await self.target_owner.event(
+                "login",
+                {
+                    "allocation_id": allocation_id,
+                    "session_id": session_token,
+                    "site_id": target_site_id,
+                },
+            )
+        await lease.abandon()
         maintained = _MaintenancePage(
             lease,
             page,
@@ -1453,6 +1692,15 @@ class SiteAccessRuntime:
             target_site_id,
         )
         self._maintenance_pages[session_token] = maintained
+        viewer_ready = True
+        try:
+            async with asyncio.timeout(5):
+                await self.browser_runtimes.select_maintenance(effective_identity)
+                await lease.browser_cdp.send(
+                    "Target.activateTarget", {"targetId": gate.root_target_id}
+                )
+        except Exception:
+            viewer_ready = False  # The durable LOGIN page is not a disposable viewer connection.
         maintained.navigation_task = asyncio.create_task(
             self._navigate_maintenance(maintained, url), name="site-login-navigation"
         )
@@ -1462,6 +1710,10 @@ class SiteAccessRuntime:
             "identity_id": effective_identity.identity_id,
             "runtime_kind": effective_identity.runtime_kind.value,
             "navigation_state": maintained.navigation_state,
+            "target_id": gate.root_target_id or "",
+            "allocation_id": allocation_id or "",
+            "browser_instance_id": lease.provenance.instance_id,
+            "viewer_ready": viewer_ready,
         }
 
     async def _navigate_maintenance(self, maintained: _MaintenancePage, url: str) -> None:
@@ -1532,7 +1784,16 @@ class SiteAccessRuntime:
             or maintained.site_id != site_id
         ):
             raise ValueError("challenge session binding mismatch")
+        if profile.challenge_url:
+            maintained.challenge_url = profile.challenge_url
+            await maintained.gate.close()
         await self.browser_runtimes.select_maintenance(identity)
+        await maintained.lease.browser_cdp.send(
+            "Target.activateTarget",
+            {
+                "targetId": maintained.gate.root_target_id,
+            },
+        )
         return {
             "login_token": token,
             "url": maintained.page.url,
@@ -1577,9 +1838,32 @@ class SiteAccessRuntime:
         page = await lease.__aenter__()
         gate = _DocumentNavigationGate(page, self.resolver, resolved, lease.browser_cdp)
         try:
+            target_id = profile.challenge_target_id
+            records = await self.target_owner.event(
+                "list",
+                {
+                    "identity_id": identity.identity_id,
+                    "instance_id": lease.provenance.instance_id,
+                },
+            )
+            owned = next(
+                (
+                    r
+                    for r in records
+                    if r["target_id"] == target_id and r["owner_kind"] in {"CHALLENGE", "LOGIN"}
+                ),
+                None,
+            )
+            if not owned:
+                raise RuntimeError("exact_maintenance_target_ownership_required")
+            page._doxagent_target_id = target_id
+            page._doxagent_allocation_id = owned["allocation_id"]
+            page._doxagent_target_owner = self.target_owner
+            gate.root_target_id = target_id
             if profile.challenge_url is None:
                 await gate.start()
             await self.browser_runtimes.select_maintenance(identity)
+            await lease.browser_cdp.send("Target.activateTarget", {"targetId": target_id})
         except Exception:
             external_lease: Any = lease
             await external_lease.abandon()
@@ -1594,11 +1878,15 @@ class SiteAccessRuntime:
             challenge_url=profile.challenge_url,
             navigation_state="READY",
         )
+        await lease.abandon()
         return {
             "login_token": token,
             "url": page.url,
             "identity_id": identity.identity_id,
             "runtime_kind": identity.runtime_kind.value,
+            "target_id": target_id,
+            "allocation_id": owned["allocation_id"],
+            "browser_instance_id": lease.provenance.instance_id,
         }
 
     async def verify_login(
@@ -1608,44 +1896,92 @@ class SiteAccessRuntime:
         if maintained is None:
             raise KeyError(token)
         await public_url(article_url, trusted_proxy_dns=True)
-        if maintained.challenge_url and article_url != maintained.challenge_url:
-            raise ValueError("challenge verification must use the triggering article")
-        if maintained.challenge_url and (
-            urlsplit(maintained.page.url).path != urlsplit(article_url).path
-        ):
+        identity = self.repository.get_identity(maintained.identity_id)
+        if identity is None:
+            raise KeyError(maintained.identity_id)
+        resolved = self.resolver.resolve(article_url)
+        if resolved.site_id != maintained.site_id:
+            raise ValueError("verification URL belongs to another publisher")
+        original = inspect_html(await maintained.page.content(), maintained.page.url, "")
+        if original.access_reason == "challenge_required":
             return RuntimeResponse(
                 0,
                 maintained.page.url,
                 {},
+                reason="challenge_required",
                 body=await maintained.page.content(),
-                reason="challenge_article_not_open",
+                challenge_cleared=False,
             )
-        # Human challenge resolution often leaves the original article in this tab.
-        # Inspect it in place; a second programmatic navigation can retrigger WAF.
-        response = None
-        if not maintained.challenge_url:
-            response = await maintained.page.goto(
-                article_url, wait_until="domcontentloaded", timeout=timeout_ms
-            )
-        if maintained.gate.blocked:
-            return RuntimeResponse(
-                0,
-                article_url,
-                {},
-                redirect_url=maintained.gate.blocked[-1],
-                reason="cross_site_navigation",
-            )
-        status = response.status if response is not None else 200
-        headers = await response.all_headers() if response is not None else {}
+        # The original human tab is never navigated by verification. A separate,
+        # owned temporary target exercises the same body operation as production.
+        request = AccessRequest(
+            operation_id=f"maintenance-verify:{uuid4().hex}",
+            purpose="BODY",
+            url=article_url,
+            mode=AccessMode.BROWSER,
+            remaining_budget_ms=timeout_ms,
+            recipe_parameters={"_maintenance_canary": True},
+        )
+        response = await self._browser(
+            request,
+            resolved,
+            identity,
+            self.repository.get_egress(identity.egress_id),
+        )
+        recognized = original.page_kind in {"article", "listing", "quote"} or (
+            original.access_reason in {"subscription_required", "login_required"}
+        )
+        inspection = inspect_html(response.body, response.final_url, "")
+        response.challenge_cleared = recognized or (
+            response.status_code in range(200, 300)
+            and inspection.page_kind == "article"
+            and inspection.access_reason != "challenge_required"
+        )
+        return response
+
+    async def inspect_challenge(self, token: str) -> RuntimeResponse:
+        maintained = self._maintenance_pages.get(token)
+        if maintained is None:
+            raise KeyError(token)
+        html = await maintained.page.content()
+        info = inspect_html(html, maintained.page.url, "")
+        recognized = info.page_kind in {"article", "listing", "quote"} or info.access_reason in {
+            "subscription_required",
+            "login_required",
+        }
         return RuntimeResponse(
-            int(status),
+            0,
             maintained.page.url,
-            _filtered_headers({str(k).lower(): str(v) for k, v in headers.items()}),
-            body=await maintained.page.content(),
+            {},
+            body=html,
+            challenge_cleared=recognized,
+            reason=info.access_reason or "original_page_inspected",
+            provenance=maintained.lease.provenance,
+            challenge_target_id=maintained.gate.root_target_id,
+        )
+
+    async def verify_crawler(self, token: str, request: AccessRequest) -> RuntimeResponse:
+        maintained = self._maintenance_pages.get(token)
+        if maintained is None:
+            raise KeyError(token)
+        identity = self.repository.get_identity(maintained.identity_id)
+        resolved = self.resolver.resolve(request.url)
+        if resolved.site_id != maintained.site_id:
+            raise ValueError("crawler canary belongs to another site")
+        request = request.model_copy(
+            update={
+                "recipe_parameters": {
+                    **request.recipe_parameters,
+                    "_maintenance_canary": True,
+                }
+            }
+        )
+        return await self._browser(
+            request, resolved, identity, self.repository.get_egress(identity.egress_id)
         )
 
     async def close_login(self, token: str) -> str:
-        maintained = self._maintenance_pages.pop(token, None)
+        maintained = self._maintenance_pages.get(token)
         if maintained is None:
             raise KeyError(token)
         profile_id = maintained.profile_id
@@ -1653,7 +1989,11 @@ class SiteAccessRuntime:
         try:
             await maintained.gate.close()
         finally:
+            # A human page has already relinquished its business lease. Closing
+            # it is an explicit ownership operation, not another permit release.
+            await _close_owned_page(maintained.page, maintained.lease.browser_cdp)
             await maintained.lease.__aexit__(None, None, None)
+        self._maintenance_pages.pop(token, None)
         return profile_id
 
 

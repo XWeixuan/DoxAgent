@@ -22,6 +22,7 @@ def build_site_strategy_service(settings: DoxAgentSettings) -> SiteStrategyServi
         safety_path=settings.safety_state_path,
         supervisor_socket=settings.site_access_chrome_supervisor_socket,
         controller_id=settings.site_access_controller_id,
+        isolated_browser_workers=True,
     )
     bootstrap_seed(repository, service)
     return service

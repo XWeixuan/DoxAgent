@@ -216,7 +216,8 @@ async def test_yahoo_recipe_returns_rows_without_serializing_page_html(
     page = type("Page", (), {"url": url})()
 
     async def content():
-        raise AssertionError("Yahoo recipe must not read the full page")
+        # Inspect for a late challenge, but never serialize normal DOM in the receipt.
+        return "<html><title>Yahoo Finance</title></html>"
 
     page.content = content
 
@@ -363,7 +364,10 @@ async def test_external_challenge_retains_triggering_page_without_extra_clicks(
 
     class Lease:
         browser_cdp = object()
-        provenance = type("Provenance", (), {"instance_id": "chrome-1"})()
+        provenance = type("Provenance", (), {"instance_id": "chrome-1", "generation": 1})()
+
+        async def abandon(self):
+            calls.append("release-business-permit")
 
         async def __aenter__(self):
             return Page()
@@ -407,9 +411,9 @@ async def test_external_challenge_retains_triggering_page_without_extra_clicks(
     )
     assert result.challenge_token in service.runtime._maintenance_pages
     assert result.challenge_target_id == "target-1"
-    assert calls == ["gate-start", f"goto:{url}", "gate-close"]
+    assert calls == ["gate-start", f"goto:{url}", "gate-close", "release-business-permit"]
     state = await service.runtime.inspect_login(result.challenge_token)
     assert state["navigation_state"] == "READY"
     await service.runtime.verify_login(result.challenge_token, url)
-    assert calls == ["gate-start", f"goto:{url}", "gate-close"]
+    assert calls == ["gate-start", f"goto:{url}", "gate-close", "release-business-permit"]
     repository.close()

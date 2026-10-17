@@ -18,7 +18,7 @@ class _ManagedLease:
             identity_id=identity.identity_id,
             identity_revision=identity.revision,
             runtime_kind=BrowserRuntimeKind.MANAGED_PLAYWRIGHT,
-            instance_id=f"managed:{identity.identity_id}:{id(inner.entry)}",
+            instance_id=f"managed:{identity.identity_id}:{inner.entry.instance_id}",
             generation=inner.entry.egress.generation,
         )
 
@@ -27,6 +27,9 @@ class _ManagedLease:
 
     async def __aexit__(self, exc_type: Any, exc: Any, traceback: Any) -> None:
         await self.inner.__aexit__(exc_type, exc, traceback)
+
+    async def abandon(self) -> None:
+        await self.inner.abandon()
 
 
 class ManagedPlaywrightRuntime:
@@ -51,6 +54,8 @@ class ManagedPlaywrightRuntime:
         if profile is None:
             raise RuntimeError(f"browser_profile_missing:{identity.profile_id}")
         effective = profile.model_copy(update={"environment": identity.environment})
+        if hasattr(self.pool, "_identity_ids"):
+            self.pool._identity_ids[profile.profile_id] = identity.identity_id
         inner = await self.pool.page(
             effective, egress, max_context_pages=identity.lifecycle.max_context_pages
         )

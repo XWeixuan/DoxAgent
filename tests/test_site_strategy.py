@@ -577,7 +577,7 @@ async def test_profile_verification_uses_bound_browser_and_real_article(
     )
 
     assert profile.auth_state.value == "VALID"
-    assert profile.session_revision == 1
+    assert profile.session_revision == 0  # A read-only Verify is not a credential mutation.
     assert reason == "ok"
 
 

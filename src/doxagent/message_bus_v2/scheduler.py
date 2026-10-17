@@ -11,6 +11,8 @@ from contextlib import asynccontextmanager
 from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING
 
+from doxagent.site_strategy.scope import source_routed
+
 from .admission import AdmissionContext
 
 if TYPE_CHECKING:
@@ -254,6 +256,7 @@ class GlobalPollScheduler:
             for binding in bindings
         )
 
+    @source_routed
     async def _poll_distribution(
         self,
         source: SourceDefinition,
@@ -437,6 +440,7 @@ class GlobalPollScheduler:
                 "updated_at": utc_now(),
             }))
 
+    @source_routed
     async def _poll(
         self,
         source: SourceDefinition,
