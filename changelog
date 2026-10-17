@@ -1586,3 +1586,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-17 [W3 natural-flow final] 自然流量观测按原截止时间结束，显式disable确认active=false并暂停w3自动化。留存53个完整Case/495个response/442批工具及中间partial快照；49 OPEN、4 RELATED、全部NO_TRADE，缺HIT/交易意图覆盖。SDK p90=139.081秒，同批Case创建至决策p90=287.757秒，整体150秒目标未达；53/53首批返回截断、51/53多批控制合同读取，确认双层截断/恢复补读及路径探索、业务研究扩张为下一轮重点。探针投影p90=214.801毫秒、独立回执约1.12MiB；保留逐轮token/缓存/输出字节及间隔，不将剩余区间称为纯推理。新增纯本地复算脚本、一致性核对及最终报告docs/w3-sdk-turn-natural-flow-final-20261017.md；仅提交数据/文档，不重放、不改交易逻辑、不重新部署，保留其他会话脏改动。
 
 - 2026-10-18: 修复付费备用身份双文章认证的维护会话自举闭环：首篇真实订阅正文验证成功后保留同一 LOGIN 会话，提示 Advanced URL 验证另一篇订阅文章，避免重新登录推进 credential epoch 而使首篇证明失效；满足两篇后正常精确收尾，不放松订阅证明。新增回归并保留 Challenge 独立完成语义。
+
+- 2026-10-18: 完善认证失效语义：能力fingerprint绑定凭据session_revision，显式登录先在同一事务推进epoch再写能力证明，避免新认证复用旧订阅样本，也避免首篇证明写入旧epoch；真实Repository回归覆盖同会话两篇只推进一次及新登录清除旧证明。

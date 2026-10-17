@@ -75,6 +75,7 @@ def capability_fingerprint(repository, scope, identity, egress):
             scope.revision,
             site.revision if site else 0,
             scope.verification_plan.get("contract", "body_v2.2/listing_v1"),
+            repository.get_identity_runtime(identity.identity_id).session_revision,
         ]
     )
 
@@ -609,6 +610,21 @@ class GovernanceRepository:
                     raise RuntimeError("maintenance session changed during verification")
             identity = self.repository.get_identity(identity_id)
             egress = self.repository.get_egress(identity.egress_id)
+            runtime = self.repository.get_identity_runtime(identity_id)
+            if credential_change and session and not session.credential_event_committed:
+                runtime.session_revision += 1
+                runtime.generation += 1
+                connection.execute(
+                    "insert into identity_runtime values(?,?,?,?) "
+                    "on conflict(identity_id) do update set "
+                    "data_json=excluded.data_json,generation=excluded.generation,updated_at=excluded.updated_at",
+                    (identity_id, runtime.model_dump_json(), runtime.generation, now.isoformat()),
+                )
+                session = session.model_copy(update={"credential_event_committed": True})
+                connection.execute(
+                    "update maintenance_sessions set data_json=? where session_id=?",
+                    (session.model_dump_json(), session.session_id),
+                )
             fingerprint = capability_fingerprint(self.repository, scope, identity, egress)
             runtime_key = scope.verification_plan.get(
                 "legacy_runtime_key", f"scope:{scope.scope_id}"
@@ -689,21 +705,6 @@ class GovernanceRepository:
                 "data_json=excluded.data_json,generation=excluded.generation,updated_at=excluded.updated_at",
                 (state.runtime_key, state.model_dump_json(), state.generation, now.isoformat()),
             )
-            runtime = self.repository.get_identity_runtime(identity_id)
-            if credential_change and session and not session.credential_event_committed:
-                runtime.session_revision += 1
-                runtime.generation += 1
-                connection.execute(
-                    "insert into identity_runtime values(?,?,?,?) "
-                    "on conflict(identity_id) do update set "
-                    "data_json=excluded.data_json,generation=excluded.generation,updated_at=excluded.updated_at",
-                    (identity_id, runtime.model_dump_json(), runtime.generation, now.isoformat()),
-                )
-                session = session.model_copy(update={"credential_event_committed": True})
-                connection.execute(
-                    "update maintenance_sessions set data_json=? where session_id=?",
-                    (session.model_dump_json(), session.session_id),
-                )
             old_auth = self.repository.get_site_identity_auth(scope.owner_site_id, identity_id)
             auth_state = (
                 AuthState(report.authentication)

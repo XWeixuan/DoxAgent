@@ -789,6 +789,7 @@ async def test_paid_backup_keeps_same_login_session_until_second_subscription_pr
     from unittest.mock import AsyncMock
 
     from doxagent.site_strategy.governance_models import MaintenanceOperation
+    from doxagent.site_strategy.governance_repository import capability_fingerprint
     from doxagent.site_strategy.maintenance import MaintenanceController
     from doxagent.site_strategy.verification import VerificationReport
 
@@ -811,36 +812,52 @@ async def test_paid_backup_keeps_same_login_session_until_second_subscription_pr
             control_token="fixture-login",
         )
     )
-    monkeypatch.setattr(
-        service,
-        "verify_scope_session",
-        AsyncMock(
-            side_effect=lambda *a, **k: VerificationReport(
-                challenge="CLEARED", authentication="VALID", crawler="READY", body="FULL"
-            )
-        ),
-    )
+    initial_epoch = repository.get_identity_runtime(session.identity_id).session_revision
+
+    async def verify(current, *, article_url, stage):
+        return store.commit_verification(
+            scope,
+            current.identity_id,
+            VerificationReport(
+                challenge="CLEARED",
+                authentication="VALID",
+                crawler="READY",
+                body="FULL",
+                verification_url=article_url,
+            ),
+            session=current,
+            credential_change=True,
+        )
+
+    monkeypatch.setattr(service, "verify_scope_session", verify)
     close = AsyncMock()
     end = AsyncMock()
     monkeypatch.setattr(service.runtime, "close_login", close)
     monkeypatch.setattr(service.profile_use, "end_maintenance", end)
     controller = MaintenanceController(service)
     for number in (1, 2):
-        store.record_capability(
-            scope,
-            session.identity_id,
-            "BODY",
-            "FULL",
-            url=f"https://www.barrons.com/articles/paid-fixture-{number}",
-            subscription_verified=True,
-        )
         result = await controller._dispatch(
             MaintenanceOperation(
                 action="VERIFY_LOGIN",
                 idempotency_key=f"verify-{number}",
                 session_id=session.session_id,
+                verification_url=f"https://www.barrons.com/articles/paid-fixture-{number}",
                 deadline_at=utc_now() + timedelta(seconds=60),
             )
+        )
+        assert (
+            repository.get_identity_runtime(session.identity_id).session_revision
+            == initial_epoch + 1
+        )
+        proof = (
+            repository.get_runtime(f"scope:{scope.scope_id}")
+            .combinations[session.identity_id]
+            .capabilities["BODY"]
+        )
+        assert len(proof["subscription_samples"]) == number
+        identity = repository.get_identity(session.identity_id)
+        assert proof["fingerprint"] == capability_fingerprint(
+            repository, scope, identity, repository.get_egress(identity.egress_id)
         )
         if number == 1:
             assert result["reason"] == "second_subscription_article_required"
@@ -853,6 +870,31 @@ async def test_paid_backup_keeps_same_login_session_until_second_subscription_pr
             assert store.get_session(session.session_id).state == "CLOSED"
             close.assert_awaited_once_with(session.control_token)
             end.assert_awaited_once()
+
+    # A genuinely new login invalidates the earlier subscription proofs, while
+    # repeated verification within the same session must not advance the epoch.
+    new_login = store.save_session(
+        MaintenanceSession(
+            kind="LOGIN",
+            scope_id=scope.scope_id,
+            site_id=scope.owner_site_id,
+            identity_id=session.identity_id,
+            control_token="new-fixture-login",
+        )
+    )
+    await verify(
+        new_login, article_url="https://www.barrons.com/articles/new-login-proof", stage=None
+    )
+    latest = (
+        repository.get_runtime(f"scope:{scope.scope_id}")
+        .combinations[session.identity_id]
+        .capabilities["BODY"]
+    )
+    assert len(latest["subscription_samples"]) == 1
+    assert latest["fingerprint"] != proof["fingerprint"]
+    assert (
+        repository.get_identity_runtime(session.identity_id).session_revision == initial_epoch + 2
+    )
 
 
 @pytest.mark.asyncio
