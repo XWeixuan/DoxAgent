@@ -25,7 +25,9 @@ def main():
 
     assert run(["git", "rev-parse", "HEAD"]) == args.commit
     assert not run(["git", "status", "--porcelain", "--untracked-files=no"])
-    assert shutil.disk_usage("/").free >= 2.5 * 1024**3, "bounded_build_space_unavailable"
+    # This path copies source only (no apt/uv/browser installation). Preserve a
+    # separate 1.5GiB post-build floor and abort on real growth, not a full-build gate.
+    assert shutil.disk_usage("/").free >= 2 * 1024**3, "bounded_build_space_unavailable"
     containers = {
         "backend": "doxagent-v2-v2-message-bus-1",
         "site": "doxagent-v2-v2-site-access-1",
