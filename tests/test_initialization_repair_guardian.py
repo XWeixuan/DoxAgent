@@ -145,6 +145,27 @@ def test_missing_agent_auth_does_not_consume_node_budget(tmp_path):
     assert repairs.budgets(incident.incident_id) == []
 
 
+def test_agent_infra_exhaustion_settles_round_and_keeps_failure_log(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+
+    initialization, incident, repair_round = failed_incident(tmp_path)
+    guardian = guardian_for(tmp_path, initialization, ExitedDocker())
+    guardian.repairs.update_round(
+        repair_round.round_id, status=RoundStatus.AGENT_RUNNING,
+        payload={"agent_infra_retries": 2},
+    )
+    workspace = tmp_path / "worktree"
+    local_root = workspace / ".initialization-repair" / repair_round.round_id
+    local_root.mkdir(parents=True)
+    monkeypatch.setattr(guardian, "_workspace", lambda _: SimpleNamespace(path=workspace))
+    guardian._collect_agent(incident)
+    assert guardian.repairs.round(repair_round.round_id).status is RoundStatus.FAILED
+    assert guardian.repairs.get(incident.incident_id).status is IncidentStatus.HUMAN_REQUIRED
+    assert (local_root / "agent-infra-3.log").is_file()
+    assert guardian.repairs.issues()[0].kind == "agent_infrastructure_failure"
+    assert guardian.repairs.budgets(incident.incident_id)[0].rounds_started == 1
+
+
 class CDECRExecutorDocker:
     def __init__(self) -> None:
         self.spec: ContainerSpec | None = None

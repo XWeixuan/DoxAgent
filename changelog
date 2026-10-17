@@ -1569,3 +1569,6 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 2026-10-17 COHR initialization recovery: defer unused provider HTTP/TLS clients until first call; record Data MCP bootstrap timings and allow 60s for D3 startup; settle all D3 parallel siblings before propagating failure; let isolated Repair Agents use current access credentials from the canonical login owner without copying refresh tokens; preserve same-round infrastructure recovery, terminal state and failure logs. Original COHR run/cutoff and successful work are retained.
 
+
+2026-10-17 COHR production acceptance: deployed baseline-preserving Worker/Initialization/Guardian patches; original startup job fac614d1 succeeded at 19:00:29 CST with zero infrastructure retries; original run/cutoff, all 412 prior successful nodes and three successful Discovery jobs retained. Continued into D3 OPEN_DISCOVERY; full initialization not yet complete at receipt time. Added audited offline pre-thread job recovery and regression coverage.
+
