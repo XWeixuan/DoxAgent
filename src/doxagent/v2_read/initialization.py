@@ -37,10 +37,28 @@ def progress(store: ReadStore, run: dict[str, Any], incoming: dict[str, Any]) ->
     ticker, identity = run["ticker"], run["initialization_id"]
     groups: dict[str, dict[str, Any]] = {}
     for kind in ("native:initialization_nodes", "native:initialization_events"):
+        # Progress needs stage metadata, not historical prompts/worker receipts.
+        # Keep externalized result/event payload refs so their used fields still
+        # pass through the native-content integrity check.
+        projection = (
+            "json_object('key',json_extract(payload,'$.key'),"
+            "'block',json_extract(payload,'$.block'),"
+            "'status',json_extract(payload,'$.status'),'result',CASE WHEN "
+            "json_type(payload,'$.result.\"$doxagent_content_v1\"') IS NOT NULL "
+            "THEN json_extract(payload,'$.result') ELSE "
+            "json_object('quality_annotations',coalesce("
+            "json_extract(payload,'$.result.quality_annotations'),json('[]'))) END)"
+            if kind == "native:initialization_nodes"
+            else "json_object('kind',json_extract(payload,'$.kind'),"
+            "'created_at',json_extract(payload,'$.created_at'),'payload',CASE WHEN "
+            "json_type(payload,'$.payload.\"$doxagent_content_v1\"') IS NOT NULL "
+            "THEN json_extract(payload,'$.payload') ELSE "
+            "json_object('node',json_extract(payload,'$.payload.node')) END)"
+        )
         with store.connect() as db:
             rows = db.execute(
-                "SELECT id,payload FROM objects WHERE kind=? AND ticker=? AND parent=? "
-                "AND valid_to IS NULL",
+                f"SELECT id,{projection} AS payload FROM objects "
+                "WHERE kind=? AND ticker=? AND parent=? AND valid_to IS NULL",
                 (kind, ticker, identity),
             )
             groups[kind] = {r[0]: json.loads(r[1]) for r in rows}
