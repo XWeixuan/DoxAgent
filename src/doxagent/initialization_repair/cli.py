@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
+import os
 import time
 from pathlib import Path
 
@@ -32,6 +33,7 @@ def parser() -> argparse.ArgumentParser:
     guardian.add_argument("--production-container")
     guardian.add_argument("--agent-image")
     guardian.add_argument("--codex-auth-file", type=Path)
+    guardian.add_argument("--external-auth-source", type=Path)
     guardian.add_argument("--once", action="store_true")
 
     agent = commands.add_parser("agent")
@@ -44,11 +46,12 @@ def parser() -> argparse.ArgumentParser:
     agent.add_argument("--codex-home", required=True, type=Path)
     agent.add_argument("--thread-id")
     agent.add_argument("--developer-prompt", type=Path)
+    agent.add_argument("--external-auth-file", type=Path)
 
-    for name in ("status", "inspect", "adopt", "release", "issues"):
+    for name in ("status", "inspect", "adopt", "release", "retry-agent", "issues"):
         command = commands.add_parser(name)
         command.add_argument("--initialization-db", required=True, type=Path)
-        if name in {"inspect", "release"}:
+        if name in {"inspect", "release", "retry-agent"}:
             command.add_argument("--incident-id", required=True)
         if name == "adopt":
             command.add_argument("--initialization-id", required=True)
@@ -58,7 +61,7 @@ def parser() -> argparse.ArgumentParser:
             command.add_argument("--production-container")
             command.add_argument("--agent-image")
             command.add_argument("--codex-auth-file", type=Path)
-        if name == "release":
+        if name in {"release", "retry-agent"}:
             command.add_argument("--reason", required=True)
         if name == "issues":
             command.add_argument("--output", required=True, type=Path)
@@ -90,6 +93,14 @@ def _guardian(args: argparse.Namespace, settings: DoxAgentSettings) -> Guardian:
             )
         ),
         docker=DockerRuntime(settings.initialization_repair_docker_executable),
+        external_auth_source=(
+            getattr(args, "external_auth_source", None)
+            or (
+                Path(os.environ["DOXAGENT_INITIALIZATION_REPAIR_EXTERNAL_AUTH_SOURCE"])
+                if os.environ.get("DOXAGENT_INITIALIZATION_REPAIR_EXTERNAL_AUTH_SOURCE")
+                else None
+            )
+        ),
     )
 
 
@@ -100,6 +111,7 @@ async def _run_agent(args: argparse.Namespace) -> int:
     report, thread_id, turn_id = await RepairAgent(
         developer_prompt=developer_prompt,
         codex_home=args.codex_home,
+        external_auth_file=args.external_auth_file,
     ).run(
         incident_id=args.incident_id,
         round_id=args.round_id,
@@ -169,7 +181,7 @@ def main(argv: list[str] | None = None) -> int:
         )
     elif args.command == "adopt":
         print(_guardian(args, settings).adopt(args.initialization_id).model_dump_json(indent=2))
-    elif args.command == "release":
+    elif args.command in {"release", "retry-agent"}:
         incident = repairs.get(args.incident_id)
         if incident.current_round_id:
             docker = DockerRuntime(settings.initialization_repair_docker_executable)
@@ -178,7 +190,8 @@ def main(argv: list[str] | None = None) -> int:
                 state = docker.state(name)
                 if state is not None and state.status == "running":
                     raise ValueError(f"REPAIR_CONTAINER_ACTIVE:{name}")
-        print(repairs.release(args.incident_id, reason=args.reason).model_dump_json(indent=2))
+        action = repairs.release if args.command == "release" else repairs.retry_agent
+        print(action(args.incident_id, reason=args.reason).model_dump_json(indent=2))
     elif args.command == "issues":
         render_to(repairs, args.output)
         print(str(args.output.resolve()))

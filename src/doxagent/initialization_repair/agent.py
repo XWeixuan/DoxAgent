@@ -35,10 +35,12 @@ class RepairAgent:
         developer_prompt: Path,
         codex_home: Path,
         client: AsyncCodex | None = None,
+        external_auth_file: Path | None = None,
     ) -> None:
         self.developer_prompt = developer_prompt
         self.codex_home = codex_home
         self._provided_client = client
+        self.external_auth_file = external_auth_file
 
     async def run(
         self,
@@ -74,6 +76,10 @@ class RepairAgent:
                 developer_prompt=prompt,
             )
         async with AsyncCodex(config) as client:
+            if self.external_auth_file is not None:
+                from .auth import install_external_auth
+
+                await install_external_auth(client, self.external_auth_file)
             return await self._run_with_client(
                 client,
                 incident_id=incident_id,

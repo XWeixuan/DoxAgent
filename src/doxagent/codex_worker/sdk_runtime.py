@@ -485,7 +485,8 @@ class OpenAICodexRuntime:
                         90
                         if request.node == CodexPersistentRuntimeNode.W3
                         else 60
-                        if str(request.node) in {"event_library_o2_maintain", "d3_o3_maintain"}
+                        if isinstance(request.node, CodexD3Node)
+                        or str(request.node) == "event_library_o2_maintain"
                         else 20
                     ),
                     "mcp_servers.data.tool_timeout_sec": 120,

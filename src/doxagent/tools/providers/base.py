@@ -54,7 +54,23 @@ class BaseRealToolClient:
     ) -> None:
         self.settings = settings
         self.cache = cache or TTLCache()
-        self.client = client or httpx.Client(timeout=settings.tool_http_timeout_seconds)
+        self._client = client
+        self._client_lock = threading.Lock()
+
+    @property
+    def client(self) -> httpx.Client:
+        # Tool registration only needs descriptors. Creating every provider's TLS
+        # context here made each MCP cold start load the same CA bundle dozens
+        # of times before the initialize handshake could even begin.
+        if self._client is None:
+            with self._client_lock:
+                if self._client is None:
+                    self._client = httpx.Client(timeout=self.settings.tool_http_timeout_seconds)
+        return self._client
+
+    @client.setter
+    def client(self, value: httpx.Client | None) -> None:
+        self._client = value
 
     def _get_json(
         self,
