@@ -463,6 +463,7 @@ class MaintenanceController:
         if operation.action in {"VERIFY_LOGIN", "VERIFY_CHALLENGE"}:
             if not session:
                 raise KeyError("session")
+            scope = self.store.maintenance_scope(session.scope_id)
 
             def stage(value):
                 latest = self.operations.get(operation.operation_id, operation)
@@ -473,6 +474,31 @@ class MaintenanceController:
                 article_url=operation.verification_url,
                 stage=stage,
             )
+            spec = self.service.repository.get_strategy(scope.owner_site_id)
+            required = spec.auth.body_requirement
+            if required == "inherit":
+                required = spec.auth.requirement
+            if (
+                session.kind == "LOGIN"
+                and session.identity_id == scope.fallback_identity_id
+                and required == "required"
+                and report.authentication == "VALID"
+                and report.body in {"FULL", "SHORT_FULL"}
+            ):
+                member = self.service.repository.get_runtime(
+                    f"scope:{scope.scope_id}"
+                ).combinations.get(session.identity_id)
+                samples = (
+                    member.capabilities.get("BODY", {}).get("subscription_samples", [])
+                    if member
+                    else []
+                )
+                if len(samples) < 2:
+                    # A second LOGIN session would advance the credential epoch
+                    # and invalidate the first proof. Keep this same session for
+                    # the advanced second-article check; never weaken paid proof.
+                    report.reason = "second_subscription_article_required"
+                    return report.as_dict()
             # A cleared Challenge ends independently of entitlement/parser health.
             completed = report.challenge == "CLEARED" and (
                 session.kind == "CHALLENGE" or report.authentication in {"VALID", "NOT_REQUIRED"}

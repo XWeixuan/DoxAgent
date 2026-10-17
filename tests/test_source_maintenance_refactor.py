@@ -260,7 +260,8 @@ async def test_maintenance_inspection_waits_for_navigation_without_reload(seeded
             self.calls += 1
             if self.calls == 1:
                 raise RuntimeError(
-                    "Unable to retrieve content because the page is navigating and changing the content."
+                    "Unable to retrieve content because the page is navigating "
+                    "and changing the content."
                 )
             return "<article>stable original document</article>"
 
@@ -779,6 +780,79 @@ async def test_cold_fallback_uses_formal_parser_then_sticky_activation(seeded, t
     )
     assert service.failover.usable(scope, scope.fallback_identity_id, SitePurpose.CRAWLER)
     assert service.failover.schedule(scope, SitePurpose.CRAWLER) is None
+
+
+@pytest.mark.asyncio
+async def test_paid_backup_keeps_same_login_session_until_second_subscription_proof(
+    seeded, tmp_path, monkeypatch
+):
+    from unittest.mock import AsyncMock
+
+    from doxagent.site_strategy.governance_models import MaintenanceOperation
+    from doxagent.site_strategy.maintenance import MaintenanceController
+    from doxagent.site_strategy.verification import VerificationReport
+
+    repository, service = seeded
+    plan = migration_plan(repository)
+    apply_migration(
+        repository,
+        plan,
+        expected_revision=plan["expected_revision"],
+        backup_path=tmp_path / "before.sqlite3",
+    )
+    store = GovernanceRepository(repository)
+    scope = store.get_scope("source:barrons_ticker_news")
+    session = store.save_session(
+        MaintenanceSession(
+            kind="LOGIN",
+            scope_id=scope.scope_id,
+            site_id=scope.owner_site_id,
+            identity_id=scope.fallback_identity_id,
+            control_token="fixture-login",
+        )
+    )
+    monkeypatch.setattr(
+        service,
+        "verify_scope_session",
+        AsyncMock(
+            side_effect=lambda *a, **k: VerificationReport(
+                challenge="CLEARED", authentication="VALID", crawler="READY", body="FULL"
+            )
+        ),
+    )
+    close = AsyncMock()
+    end = AsyncMock()
+    monkeypatch.setattr(service.runtime, "close_login", close)
+    monkeypatch.setattr(service.profile_use, "end_maintenance", end)
+    controller = MaintenanceController(service)
+    for number in (1, 2):
+        store.record_capability(
+            scope,
+            session.identity_id,
+            "BODY",
+            "FULL",
+            url=f"https://www.barrons.com/articles/paid-fixture-{number}",
+            subscription_verified=True,
+        )
+        result = await controller._dispatch(
+            MaintenanceOperation(
+                action="VERIFY_LOGIN",
+                idempotency_key=f"verify-{number}",
+                session_id=session.session_id,
+                deadline_at=utc_now() + timedelta(seconds=60),
+            )
+        )
+        if number == 1:
+            assert result["reason"] == "second_subscription_article_required"
+            assert result["session_closed"] is False
+            assert store.get_session(session.session_id).state == "OPEN"
+            close.assert_not_awaited()
+            end.assert_not_awaited()
+        else:
+            assert result["session_closed"] is True
+            assert store.get_session(session.session_id).state == "CLOSED"
+            close.assert_awaited_once_with(session.control_token)
+            end.assert_awaited_once()
 
 
 @pytest.mark.asyncio

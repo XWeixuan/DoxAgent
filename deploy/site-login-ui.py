@@ -398,6 +398,11 @@ class SiteLoginApp:
             self.status_value.set(
                 result.get("error") or "Operation failed; original page preserved"
             )
+        elif details.get("reason") == "second_subscription_article_required":
+            self.status_value.set(
+                "First paid article verified. Keep this session open and use Advanced URL "
+                "to verify a different subscription article for the backup identity."
+            )
         elif details:
             self.status_value.set(json.dumps(details, ensure_ascii=True))
         self.refresh()
