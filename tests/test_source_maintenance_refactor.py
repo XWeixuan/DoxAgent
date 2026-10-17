@@ -247,6 +247,19 @@ def _load_desktop(name):
     return module
 
 
+def test_maintenance_control_failure_retains_only_safe_machine_reason():
+    from doxagent.site_strategy.service import classify_exception
+
+    assert (
+        classify_exception(RuntimeError("controller_epoch_conflict"))[1]
+        == "controller_epoch_conflict"
+    )
+    assert (
+        "secret"
+        not in classify_exception(RuntimeError("invalid_token=https://a.test/?secret=private"))[1]
+    )
+
+
 def test_inventory_does_not_report_stale_credentials_as_valid(seeded, tmp_path):
     from doxagent.site_strategy.maintenance import MaintenanceController
     from doxagent.site_strategy.schema import SiteIdentityAuth

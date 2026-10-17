@@ -3174,6 +3174,10 @@ def classify_exception(exc: Exception) -> tuple[FailureCategory, str]:
         )
     name = type(exc).__name__.casefold()
     message = str(exc).casefold()
+    if re.fullmatch(r"[a-z][a-z0-9_]{0,127}", message) and message.startswith(
+        ("original_", "exact_", "maintenance_", "controller_", "viewer_", "invalid_")
+    ):
+        return FailureCategory.RUNTIME_UNAVAILABLE, message
     if "exceeds frame" in message or "response exceeds frame budget" in message:
         return FailureCategory.CONTENT_ERROR, "ipc_response_too_large"
     if "no object with guid" in message:

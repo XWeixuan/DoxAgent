@@ -286,6 +286,9 @@ class MaintenanceController:
             self._update(operation, state="CANCELLED", stage="CANCELLED")
         except Exception as exc:
             lost = "target_lost" in str(exc) or "page is lost" in str(exc)
+            from .service import classify_exception
+
+            _, reason = classify_exception(exc)
             self._update(
                 operation,
                 state="FAILED",
@@ -293,7 +296,7 @@ class MaintenanceController:
                 error=(
                     "Original page is lost. Use Reopen Lost Page."
                     if lost
-                    else f"{type(exc).__name__}: failed; inspect the session before retrying."
+                    else f"{reason}: failed; inspect the preserved session before retrying."
                 ),
             )
 
