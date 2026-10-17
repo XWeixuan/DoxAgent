@@ -134,7 +134,7 @@ def _template(repository, site_id):
     raise ValueError(f"site {site_id} has no approved browser template")
 
 
-def _backup_egress(repository, primary):
+def _backup_egress(repository, primary, preferred_id=None):
     current = repository.get_egress(primary.egress_id)
     if current.node_ref == "DIRECT":
         return primary.egress_id, "NONE"
@@ -144,7 +144,8 @@ def _backup_egress(repository, primary):
     except Exception:
         current_region = None  # Preview against an old schema remains read-only.
     # Names/flags are hints, not verified geography.
-    for candidate in repository.list_egresses():
+    candidates = sorted(repository.list_egresses(), key=lambda e: e.egress_id != preferred_id)
+    for candidate in candidates:
         if (
             candidate.enabled
             and candidate.status == "READY"
@@ -195,7 +196,14 @@ def migration_plan(repository):
                 "owner_scope_id": scope_id,
             }
         )
-        egress_id, redundancy = _backup_egress(repository, primary)
+        existing_backup = repository.get_identity(backup_id)
+        egress_id, redundancy = _backup_egress(
+            repository, primary, existing_backup.egress_id if existing_backup else None
+        )
+        if existing_backup and existing_backup.egress_id != egress_id:
+            # Keep the old Profile binding/cookies immutable; provision the new
+            # independent route rather than silently rebinding an old identity.
+            backup_id += "-isolated"
         backup = repository.get_identity(backup_id) or primary.model_copy(
             update={
                 "identity_id": backup_id,

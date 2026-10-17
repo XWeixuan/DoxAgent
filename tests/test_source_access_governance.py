@@ -4,6 +4,7 @@ import asyncio
 from datetime import timedelta
 from types import SimpleNamespace
 
+import httpx
 import pytest
 
 from doxagent.site_strategy.governance_models import (
@@ -17,6 +18,51 @@ from doxagent.site_strategy.governance_repository import GovernanceRepository
 from doxagent.site_strategy.repository import SiteStrategyRepository
 from doxagent.site_strategy.schema import BrowserIdentitySpec, utc_now
 from doxagent.site_strategy.scope import current_routing, source_routed
+
+
+@pytest.mark.asyncio
+async def test_region_probe_has_bounded_independent_provider_and_requires_same_ip(
+    registry, monkeypatch
+):
+    from doxagent.site_strategy.egress import probe_egress_region
+    from doxagent.site_strategy.schema import ProxyEgress
+
+    repo = registry.repository
+    egress = ProxyEgress(
+        egress_id="geo",
+        listener_port=12345,
+        node_ref="fixed",
+        observed_ip="8.8.4.4",
+        endpoint="http://127.0.0.1:12345",
+        node_fingerprint="fixed",
+    )
+    repo.upsert_egress(egress)
+    calls = []
+    observed = {"ip": "8.8.4.4", "country_code": "US", "success": True}
+
+    class Client:
+        def __init__(self, **kwargs):
+            assert kwargs["proxy"] == egress.endpoint
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *args):
+            pass
+
+        async def get(self, url):
+            calls.append(url)
+            return httpx.Response(
+                403 if "ifconfig" in url else 200, json=observed, request=httpx.Request("GET", url)
+            )
+
+    monkeypatch.setattr("doxagent.site_strategy.egress.httpx.AsyncClient", Client)
+    result = await probe_egress_region(repo, "geo")
+    assert result["country_code"] == "US" and len(calls) == 2
+    observed["ip"] = "1.1.1.1"
+    with pytest.raises(ValueError, match="unverified"):
+        await probe_egress_region(repo, "geo")
+    assert registry.egress_region(egress) == "US"
 
 
 @pytest.fixture

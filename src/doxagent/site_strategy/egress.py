@@ -20,13 +20,29 @@ async def probe_egress_region(repository, egress_id):
     egress = repository.get_egress(egress_id)
     if not egress or not egress.observed_ip:
         raise ValueError("egress IP must be verified first")
+    country = None
     async with httpx.AsyncClient(proxy=egress.endpoint, timeout=5) as client:
-        response = await client.get("https://ifconfig.co/json")
-        response.raise_for_status()
-        payload = response.json()
-    country = str(payload.get("country_iso") or "").upper()
-    if payload.get("ip") != egress.observed_ip or len(country) != 2 or not country.isalpha():
-        raise ValueError("egress geography/IP observation mismatch")
+        for url, field in (
+            ("https://ifconfig.co/json", "country_iso"),
+            ("https://ipwho.is/", "country_code"),
+        ):
+            try:
+                response = await client.get(url)
+                response.raise_for_status()
+                payload = response.json()
+                observed_country = str(payload.get(field) or "").upper()
+                if (
+                    payload.get("success") is not False
+                    and payload.get("ip") == egress.observed_ip
+                    and len(observed_country) == 2
+                    and observed_country.isalpha()
+                ):
+                    country = observed_country
+                    break
+            except (httpx.HTTPError, ValueError):
+                continue
+    if country is None:
+        raise ValueError("egress geography/IP observation unverified")
     with repository.transaction() as connection:
         connection.execute(
             "insert into egress_regions values(?,?,?,?) "
