@@ -310,15 +310,26 @@ class InitializationRepository:
             raise KeyError(run_id)
         return RunRecord.model_validate_json(row[0])
 
-    def nodes(self, run_id: str) -> list[NodeRecord]:
+    def nodes(self, run_id: str, *, top_level_only: bool = False) -> list[NodeRecord]:
+        query = "SELECT payload FROM initialization_nodes WHERE run_id=?"
+        if top_level_only:
+            # Filter before the native-content row factory hydrates receipts.
+            # Scheduling roots must not materialize every historical child.
+            query += " AND COALESCE(json_extract(payload,'$.inputs.managed_by'),'')=''"
+        query += " ORDER BY rowid"
         with self._connection() as db:
-            return [
+            nodes = [
                 NodeRecord.model_validate_json(row[0])
-                for row in db.execute(
-                    "SELECT payload FROM initialization_nodes WHERE run_id=? ORDER BY rowid",
-                    (run_id,),
-                )
+                for row in db.execute(query, (run_id,))
             ]
+        # Large inputs may themselves be native-content references. Keep the
+        # original ownership semantics after hydrating those rare candidates.
+        return [n for n in nodes if not n.inputs.get("managed_by")] if top_level_only else nodes
+
+    def node(self, run_id: str, key: str) -> NodeRecord:
+        """Read one durable node without hydrating unrelated execution history."""
+        with self._connection() as db:
+            return self._node(db, run_id, key)
 
     @staticmethod
     def _node(db: sqlite3.Connection, run_id: str, key: str) -> NodeRecord:
