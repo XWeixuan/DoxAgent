@@ -1902,14 +1902,15 @@ class SiteAccessRuntime:
         resolved = self.resolver.resolve(article_url)
         if resolved.site_id != maintained.site_id:
             raise ValueError("verification URL belongs to another publisher")
-        original = inspect_html(await maintained.page.content(), maintained.page.url, "")
+        original_html = await self._maintenance_document(maintained)
+        original = inspect_html(original_html, maintained.page.url, "")
         if original.access_reason == "challenge_required":
             return RuntimeResponse(
                 0,
                 maintained.page.url,
                 {},
                 reason="challenge_required",
-                body=await maintained.page.content(),
+                body=original_html,
                 challenge_cleared=False,
             )
         # The original human tab is never navigated by verification. A separate,
@@ -1939,11 +1940,32 @@ class SiteAccessRuntime:
         )
         return response
 
+    async def _maintenance_document(self, maintained):
+        deadline = time.monotonic() + 3
+        while True:
+            try:
+                return await maintained.page.content()
+            except Exception as exc:
+                message = str(exc).lower()
+                if not any(
+                    marker in message
+                    for marker in (
+                        "page is navigating",
+                        "execution context was destroyed",
+                        "most likely because of a navigation",
+                        "no frame with given id",
+                    )
+                ):
+                    raise
+                if time.monotonic() >= deadline:
+                    raise RuntimeError("maintenance_document_still_navigating") from None
+                await asyncio.sleep(0.1)
+
     async def inspect_challenge(self, token: str) -> RuntimeResponse:
         maintained = self._maintenance_pages.get(token)
         if maintained is None:
             raise KeyError(token)
-        html = await maintained.page.content()
+        html = await self._maintenance_document(maintained)
         info = inspect_html(html, maintained.page.url, "")
         recognized = info.page_kind in {"article", "listing", "quote"} or info.access_reason in {
             "subscription_required",

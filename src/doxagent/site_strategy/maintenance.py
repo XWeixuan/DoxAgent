@@ -289,6 +289,7 @@ class MaintenanceController:
             from .service import classify_exception
 
             _, reason = classify_exception(exc)
+            latest = self.operations.get(operation.operation_id, operation)
             self._update(
                 operation,
                 state="FAILED",
@@ -296,7 +297,7 @@ class MaintenanceController:
                 error=(
                     "Original page is lost. Use Reopen Lost Page."
                     if lost
-                    else f"{reason}: failed; inspect the preserved session before retrying."
+                    else f"{reason} during {latest.stage}; inspect the preserved session."
                 ),
             )
 

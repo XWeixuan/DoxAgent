@@ -247,6 +247,30 @@ def _load_desktop(name):
     return module
 
 
+@pytest.mark.asyncio
+async def test_maintenance_inspection_waits_for_navigation_without_reload(seeded):
+    from types import SimpleNamespace
+
+    repository, service = seeded
+
+    class Page:
+        calls = 0
+
+        async def content(self):
+            self.calls += 1
+            if self.calls == 1:
+                raise RuntimeError(
+                    "Unable to retrieve content because the page is navigating and changing the content."
+                )
+            return "<article>stable original document</article>"
+
+    page = Page()
+    assert "stable original" in await service.runtime._maintenance_document(
+        SimpleNamespace(page=page)
+    )
+    assert page.calls == 2
+
+
 def test_dedicated_body_publisher_inherits_profile_instead_of_losing_cookies(seeded, tmp_path):
     from doxagent.site_strategy.scope import ScopeResolver
 
