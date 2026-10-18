@@ -32,9 +32,21 @@ class VerificationReport:
     challenge_task_id: str | None = None
     verification_url: str | None = None
     runtime_instance_id: str | None = None
+    crawler_reason: str | None = None
+    body_reason: str | None = None
+    original_page_kind: str | None = None
 
     def as_dict(self):
         return asdict(self)
+
+
+def verification_failure_reason(exc):
+    """Actionable bounded diagnostic, without exception URLs, tokens or HTML."""
+    match = re.search(r"(?:net::)?ERR_[A-Z_]+", str(exc))
+    if match:
+        return match.group(0)
+    code = getattr(exc, "reason_code", None)
+    return code if code and re.fullmatch(r"[A-Za-z0-9_:.-]{1,160}", code) else type(exc).__name__
 
 
 def validate_capture(

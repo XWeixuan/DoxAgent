@@ -241,6 +241,19 @@ class WorkerSiteAccessRuntime(SiteAccessRuntime):
     def _binding(self, token):
         binding = self._tokens.get(token)
         if binding is None:
+            from .governance_repository import GovernanceRepository
+
+            session = next(
+                (
+                    s
+                    for s in GovernanceRepository(self.repository).list_sessions()
+                    if s.control_token == token
+                ),
+                None,
+            )
+            if session:
+                binding = (session.site_id, session.identity_id)
+        if binding is None:
             profile = next(
                 (p for p in self.repository.list_profiles() if p.maintenance_session_id == token),
                 None,

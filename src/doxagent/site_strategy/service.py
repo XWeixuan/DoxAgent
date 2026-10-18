@@ -85,10 +85,15 @@ class ProfileUseCoordinator:
             self._challenge_profiles.clear()
             from .governance_repository import GovernanceRepository
 
-            sessions = GovernanceRepository(self.repository).list_sessions()
+            store = GovernanceRepository(self.repository)
+            sessions = store.list_sessions()
             session_profiles = {}
-            for session in sessions:
+            for session in sorted(sessions, key=lambda s: (s.state == "OPEN", s.updated_at)):
                 identity = self.repository.get_identity(session.identity_id)
+                if session.kind == "CHALLENGE":
+                    task = store.current_challenge(session.identity_id)
+                    if not task or session.task_id != task.task_id or task.state == "TARGET_LOST":
+                        continue  # Historical released sessions do not reclaim the Profile.
                 if identity and session.control_token:
                     session_profiles[identity.profile_id] = session
             external_profiles = {
@@ -256,24 +261,28 @@ class ProfileUseCoordinator:
             return session_id
 
     async def prepare_login(self, profile_id: str, identity_id: str) -> None:
-        """Retire only confirmed lost Challenge reservations, never a live human page."""
+        """Allocate an independent LOGIN page; a pending Task never becomes that page."""
         from .governance_repository import GovernanceRepository
 
         async with self._condition:
             store = GovernanceRepository(self.repository)
             task = store.current_challenge(identity_id)
-            if task and task.state != "TARGET_LOST":
-                raise ProfileUnavailableError("active_challenge_use_challenge_maintenance")
             for session in store.list_sessions():
                 if session.identity_id != identity_id or session.kind != "CHALLENGE":
                     continue
-                if task and session.task_id == task.task_id or not session.target_id:
+                if (
+                    task and task.state == "TARGET_LOST" and session.task_id == task.task_id
+                ) or not session.target_id:
                     store.save_session(session.model_copy(update={"state": "CLOSED"}))
             profile = self.repository.get_profile(profile_id)
             if task and profile and profile.maintenance_session_id:
                 if self._maintenance_profile not in {None, profile_id}:
                     raise ProfileUnavailableError("another_profile_is_in_maintenance")
-                await self._release_locked(profile_id, profile.maintenance_session_id)
+                # Release only the compatibility reservation, never the Challenge
+                # Task, durable target owner or released human session.
+                await self._release_locked(
+                    profile_id, profile.maintenance_session_id, preserve_challenge=False
+                )
 
     async def begin_challenge(
         self,
@@ -394,7 +403,9 @@ class ProfileUseCoordinator:
                 self._maintenance_profile = None
             self._condition.notify_all()
 
-    async def _release_locked(self, profile_id: str, session_id: str) -> None:
+    async def _release_locked(
+        self, profile_id: str, session_id: str, *, preserve_challenge=True
+    ) -> None:
         profile = self.repository.get_profile(profile_id)
         if profile is None or profile.maintenance_session_id != session_id:
             raise ProfileUnavailableError("invalid_maintenance_session")
@@ -417,6 +428,41 @@ class ProfileUseCoordinator:
         if self._maintenance_profile == profile_id:
             self._maintenance_profile = None
         self._challenge_profiles.discard(profile_id)
+        if preserve_challenge:
+            from .governance_repository import GovernanceRepository
+
+            store = GovernanceRepository(self.repository)
+            task = next(
+                (
+                    t
+                    for t in store.list_challenges()
+                    if (identity := self.repository.get_identity(t.identity_id))
+                    and identity.profile_id == profile_id
+                    and t.state != "TARGET_LOST"
+                ),
+                None,
+            )
+            if task:
+                retained = next(
+                    (s for s in store.list_sessions() if s.task_id == task.task_id), None
+                )
+                current = self.repository.get_profile(profile_id)
+                self.repository.save_profile(
+                    current.model_copy(
+                        update={
+                            "operational_state": ProfileOperationalState.MAINTENANCE,
+                            "maintenance_session_id": retained.control_token
+                            if retained
+                            else task.task_id,
+                            "challenge_url": task.original_url,
+                            "challenge_site_id": task.site_id,
+                            "challenge_identity_id": task.identity_id,
+                            "challenge_target_id": task.original_target_id,
+                            "challenge_verified": False,
+                        }
+                    )
+                )
+                self._challenge_profiles.add(profile_id)
         self._condition.notify_all()
 
     async def begin_shutdown(self) -> None:
@@ -2572,6 +2618,7 @@ class SiteStrategyService:
             body_verification_url,
             validate_capture,
             validate_crawler_capture,
+            verification_failure_reason,
         )
 
         store = GovernanceRepository(self.repository)
@@ -2584,6 +2631,7 @@ class SiteStrategyService:
         original = await self.runtime.inspect_challenge(session.control_token)
         report = VerificationReport()
         original_inspection = inspect_html(original.body, original.final_url, "")
+        report.original_page_kind = original_inspection.page_kind
         if original_inspection.access_reason == "challenge_required":
             report.challenge = "BLOCKED"
             report.reason = "challenge_required"
@@ -2632,11 +2680,19 @@ class SiteStrategyService:
                 mode=AccessMode.BROWSER,
                 remaining_budget_ms=max(1, int((deadline - time.monotonic()) * 1000)),
             )
-            capture = await self.runtime.verify_crawler(session.control_token, request)
             try:
+                capture = await self.runtime.verify_crawler(session.control_token, request)
                 ready = validate_crawler_capture(scope.source_id, capture, request)
-            except Exception:
+            except Exception as exc:
                 ready = False
+                report.crawler_reason = verification_failure_reason(exc)
+            else:
+                info = inspect_html(capture.body, capture.final_url, "")
+                report.crawler_reason = (
+                    "listing_contract_verified"
+                    if ready
+                    else info.access_reason or capture.reason or "listing_contract_not_satisfied"
+                )
             report.crawler = "READY" if ready else "CONTENT_ERROR"
             if ready:
                 report.challenge = "CLEARED"
@@ -2670,43 +2726,51 @@ class SiteStrategyService:
                 raise ValueError("verification article belongs to another publisher")
             if stage:
                 stage("CHECKING_BODY")
-            capture = await self.runtime.verify_login(
-                session.control_token,
-                url,
-                timeout_ms=max(1, int((deadline - time.monotonic()) * 1000)),
-            )
-            if capture.status_code in {404, 410} and not article_url:
-                replacement = next((u for u in article_candidates if u != url), None)
-                if replacement and time.monotonic() < deadline:
-                    url = replacement
-                    capture = await self.runtime.verify_login(
-                        session.control_token,
-                        url,
-                        timeout_ms=max(1, int((deadline - time.monotonic()) * 1000)),
-                    )
-            body = validate_capture(
-                capture,
-                self.resolve(url),
-                expected_subscription=(
-                    spec.auth.verification_kind == "subscription_article"
-                    and url == spec.auth.verification_url
-                ),
-            )
-            report.body, report.authentication, report.reason = (
-                body.body,
-                body.authentication,
-                body.reason,
-            )
-            from .governance_repository import safe_display_url
+            try:
+                capture = await self.runtime.verify_login(
+                    session.control_token,
+                    url,
+                    timeout_ms=max(1, int((deadline - time.monotonic()) * 1000)),
+                )
+                if capture.status_code in {404, 410} and not article_url:
+                    replacement = next((u for u in article_candidates if u != url), None)
+                    if replacement and time.monotonic() < deadline:
+                        url = replacement
+                        capture = await self.runtime.verify_login(
+                            session.control_token,
+                            url,
+                            timeout_ms=max(1, int((deadline - time.monotonic()) * 1000)),
+                        )
+                body = validate_capture(
+                    capture,
+                    self.resolve(url),
+                    expected_subscription=(
+                        spec.auth.verification_kind == "subscription_article"
+                        and url == spec.auth.verification_url
+                    ),
+                )
+                report.body, report.authentication, report.reason = (
+                    body.body,
+                    body.authentication,
+                    body.reason,
+                )
+                report.body_reason = body.reason
+                from .governance_repository import safe_display_url
 
-            report.verification_url = safe_display_url(capture.final_url)
-            report.runtime_instance_id = (
-                capture.provenance.instance_id if capture.provenance else None
-            )
-            if body.challenge == "CLEARED" or capture.challenge_cleared:
-                report.challenge = "CLEARED"
+                report.verification_url = safe_display_url(capture.final_url)
+                report.runtime_instance_id = (
+                    capture.provenance.instance_id if capture.provenance else None
+                )
+                if body.challenge == "CLEARED" or capture.challenge_cleared:
+                    report.challenge = "CLEARED"
+            except Exception as exc:
+                report.body = "CONTENT_ERROR"
+                report.body_reason = verification_failure_reason(exc)
+                report.reason = "body_check_failed"
         elif spec.auth.requirement == "none":
             report.authentication = "NOT_REQUIRED"
+        if report.challenge == "CLEARED" and report.reason == "not_tested":
+            report.reason = "challenge_cleared"
         if stage:
             stage("APPLYING_HEALTH")
         return store.commit_verification(
@@ -2735,7 +2799,17 @@ class SiteStrategyService:
         if egress is None or not egress.enabled:
             raise RuntimeError("bound egress is unavailable")
         stored_profile = self.repository.get_profile(identity.profile_id)
-        if stored_profile is not None and stored_profile.challenge_url is not None:
+        from .governance_repository import GovernanceRepository
+
+        store = GovernanceRepository(self.repository)
+        session = next((s for s in store.list_sessions() if s.control_token == login_token), None)
+        if session:
+            if session.identity_id != identity_id or session.site_id != site_id:
+                raise ValueError("maintenance session binding mismatch")
+            if target_id and target_id != session.target_id:
+                raise ValueError("maintenance target binding mismatch")
+            target_id = session.target_id
+        elif stored_profile is not None and stored_profile.challenge_url is not None:
             if stored_profile.maintenance_session_id != login_token:
                 raise ValueError("invalid challenge session")
             if (
@@ -2743,7 +2817,28 @@ class SiteStrategyService:
                 or stored_profile.challenge_identity_id != identity_id
             ):
                 raise ValueError("challenge session binding mismatch")
+        task = (
+            store.current_challenge(identity_id)
+            if session and session.kind == "CHALLENGE"
+            else None
+        )
+        if (
+            session
+            and session.kind == "CHALLENGE"
+            and (not task or task.task_id != session.task_id)
+        ):
+            raise ValueError("Challenge task is no longer current; refresh maintenance")
         profile = await self.profile_use.recover_maintenance(identity.profile_id, login_token)
+        if session:
+            profile = profile.model_copy(
+                update={
+                    "challenge_url": task.original_url if task else None,
+                    "challenge_site_id": task.site_id if task else None,
+                    "challenge_identity_id": task.identity_id if task else None,
+                    "challenge_target_id": session.target_id,
+                }
+            )
+            self.repository.save_profile(profile)
         if target_id:
             profile = profile.model_copy(update={"challenge_target_id": target_id})
         external = self.runtime.browser_runtimes.external
