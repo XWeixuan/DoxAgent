@@ -109,6 +109,13 @@ def collect(source, *, now=None, limit=32):
     root=source.path.parent.resolve();quarantine=root/'native-quarantine'
     with closing(source.connection(write=True)) as db,db:
         db.execute('BEGIN IMMEDIATE');migrate(db)
+        # A current-source snapshot can still read a formerly-current native
+        # hash after its business owner changes. CDC pins protect the bridge,
+        # not that older SQLite snapshot's files. Hold only this source's file
+        # exit for the existing bounded snapshot lease; transport keeps moving.
+        if db.execute("SELECT 1 FROM v2_source_consumers WHERE id LIKE 'snapshot:%' AND julianday(updated_at)>=julianday(?) LIMIT 1",((now-timedelta(hours=24)).isoformat(),)).fetchone():
+            report['deferred']='current-source-snapshot'
+            return report
         if not db.execute('SELECT 1 FROM v2_native_ref_scan LIMIT 1').fetchone() or db.execute('SELECT 1 FROM v2_native_ref_scan WHERE done=0 LIMIT 1').fetchone():return report
         candidates=db.execute("SELECT a.id FROM artifact a WHERE a.state='LIVE' AND a.codec='json-chunks-v1' AND a.location='native-files/'||substr(a.id,1,2)||'/'||a.id AND a.created_at<? AND NOT ("+protected+") LIMIT ?",((now-timedelta(days=7)).isoformat(),limit)).fetchall()
         for digest, in candidates:

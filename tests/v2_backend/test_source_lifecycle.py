@@ -167,3 +167,25 @@ def test_only_crashed_temporary_snapshot_consumers_expire(tmp_path):
     with closing(s.connection()) as db:
         ids={r[0] for r in db.execute('SELECT id FROM v2_source_consumers')}
     assert 'snapshot:crashed' not in ids and 'read:still-owned' in ids
+
+
+def test_source_snapshot_keeps_old_native_bytes_after_current_row_changes(tmp_path):
+    from doxagent.v2_read import source_native_gc as gc
+    s=fixture_source(tmp_path)
+    value={'binding_id':'big','content':'snapshot still reads this'*1000}
+    raw=s.content.encode(value)
+    with closing(s.connection(write=True)) as db,db:
+        db.execute("INSERT INTO poll_states VALUES('big','source','MU','succeeded','1',?)",(raw,))
+        db.execute("UPDATE poll_states SET data_json='{}' WHERE binding_id='big'")
+        old=(datetime.now(UTC)-timedelta(days=9)).isoformat()
+        db.execute('UPDATE v2_source_outbox SET recorded_at=?',(old,));db.execute('UPDATE artifact SET created_at=?',(old,))
+    s.acknowledge_exceptions('live',s.head(),[]);expire(s)
+    while not gc.reconcile(s,seconds=2)['ready']:pass
+    s.acknowledge_exceptions('snapshot:reader',s.head(),[])
+    assert gc.collect(s)['deferred']=='current-source-snapshot'
+    assert json.loads(s.content.text(raw))==value
+    # The regular live reader does not freeze native exit; a crashed snapshot
+    # also cannot keep it pinned after the existing 24h lease.
+    with closing(s.connection(write=True)) as db,db:
+        db.execute("UPDATE v2_source_consumers SET updated_at=? WHERE id='snapshot:reader'",((datetime.now(UTC)-timedelta(hours=25)).isoformat(),))
+    assert gc.collect(s)['quarantined']==1
