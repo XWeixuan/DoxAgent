@@ -6,7 +6,6 @@ events into a business source or re-executes a business effect.
 """
 from contextlib import ExitStack, closing, contextmanager
 from datetime import UTC, datetime, timedelta
-import hashlib
 import json
 import sys
 import time
@@ -67,7 +66,6 @@ def rebuild_current(sources, target, *, event_root=None, max_batches=10000):
     if target.exists():raise ValueError('current snapshot target must be new')
     store=SnapshotStore(target);store.migrate()
     bridge='snapshot:'+uuid4().hex
-    consumer='read:'+hashlib.sha256(str(target).encode()).hexdigest()[:24]
     report=dict(format='doxagent.current-source-rebuild.1',path=str(target),sources={},rows=0,gaps=[])
     lease_until=datetime.now(UTC)+timedelta(hours=24)
     report['bridge_expires_at']=instant(lease_until)
@@ -166,7 +164,7 @@ def rebuild_current(sources, target, *, event_root=None, max_batches=10000):
                                (gap['source'],'snapshot:'+gap['table']+':'+str(gap['rowid']),gap['reason']))
         # Read transactions ended; subsequent source changes remain bridged.
         store.defer_initialization_progress=False
-        worker=ProjectionWorker(store,sources,mapper)
+        worker=ProjectionWorker(store,sources,mapper,consumer_id=bridge)
         for _ in range(max_batches):
             if datetime.now(UTC)>=lease_until:raise TimeoutError('SOURCE_SNAPSHOT_BRIDGE_EXPIRED')
             worker.tick(limit=500)
@@ -179,15 +177,7 @@ def rebuild_current(sources, target, *, event_root=None, max_batches=10000):
         report['at']=instant(datetime.now(UTC));atomic_json(str(target)+'.current-snapshot.json',report)
         return report
     finally:
-        published=False
-        for alias in (target.parent/'active.json',target.parent.parent/'active.json'):
-            if alias.is_file():
-                value=json.loads(alias.read_text());selected=Path(value.get('path',''))
-                if not selected.is_absolute():selected=alias.parent/selected
-                published=published or value.get('format')=='doxagent.v2.read-alias.1' and selected.resolve()==target
-        for source in sources:
-            source.retire_consumer(bridge)
-            if not published:source.retire_consumer(consumer)
+        for source in sources:source.retire_consumer(bridge)
 
 
 RUNTIME_NAMESPACES=('trade_intents','trade_receipts','analysis_trade_decisions','candidates','worker_receipts',

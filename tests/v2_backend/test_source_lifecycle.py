@@ -79,7 +79,7 @@ def test_current_snapshot_rebuild_after_all_transport_expired(tmp_path):
     assert store.position('bus')==6
     assert store.get('native:poll_states','MU','0')['binding_id']=='0'
     with closing(s.connection()) as db:
-        assert not db.execute("SELECT 1 FROM v2_source_consumers WHERE id LIKE 'snapshot:%'").fetchone()
+        assert {r[0] for r in db.execute('SELECT id FROM v2_source_consumers')}=={'live'}
 
 
 def test_receipt_envelope_pins_nested_native_hash_and_delete_releases_owner(tmp_path):
