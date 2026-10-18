@@ -15,6 +15,7 @@ def migrate(db):
         'CREATE TABLE IF NOT EXISTS v2_transport_gc_state(kind TEXT PRIMARY KEY,cursor INTEGER NOT NULL DEFAULT 0,expired_floor INTEGER NOT NULL DEFAULT 0)',
         'CREATE TABLE IF NOT EXISTS v2_transport_files_exit(folder TEXT,digest TEXT,not_before REAL,PRIMARY KEY(folder,digest))',
         'CREATE TABLE IF NOT EXISTS v2_serving_business_facts(kind TEXT,ticker TEXT,id TEXT,payload TEXT NOT NULL,PRIMARY KEY(kind,ticker,id))',
+        'CREATE TABLE IF NOT EXISTS v2_serving_fact_owner(id INTEGER PRIMARY KEY CHECK(id=1),path TEXT NOT NULL)',
     ):
         db.execute(sql)
 
@@ -85,6 +86,10 @@ def sync_business_facts(source, store):
     their existing business repositories.
     """
     if source.source!='runtime':return
+    with closing(source.connection()) as db:
+        if not db.execute("SELECT 1 FROM sqlite_master WHERE name='v2_serving_fact_owner'").fetchone():return
+        owner=db.execute('SELECT path FROM v2_serving_fact_owner WHERE id=1').fetchone()
+        if not owner or owner[0]!=str(store.path):return
     from .repository import encode
     with store.connect() as read:
         seq=store.highwater(read)
@@ -124,6 +129,8 @@ def expire(source, *, now=None, limit=500):
     if not source.capture():raise ValueError('current source capture metadata required')
     with closing(source.connection(write=True)) as db, db:
         db.execute('BEGIN IMMEDIATE');migrate(db)
+        if source.source=='runtime' and not db.execute('SELECT 1 FROM v2_serving_fact_owner WHERE id=1').fetchone():
+            raise ValueError('active serving business-fact owner not registered')
         ack=db.execute('SELECT min(checkpoint) FROM v2_source_consumers').fetchone()[0]
         if ack is None:return report
         pin=db.execute('SELECT min(seq) FROM v2_source_pins').fetchone()[0]

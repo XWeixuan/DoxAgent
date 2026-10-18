@@ -325,6 +325,8 @@ def activate_alias(alias, target, sources):
         "cursor_policy": "RESET_OTHER_GENERATIONS",
     }
     atomic_json(alias, value)
+    for source in sources:
+        if hasattr(source,'claim_serving_facts'):source.claim_serving_facts(store.path)
     return value
 
 

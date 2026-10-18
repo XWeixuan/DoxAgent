@@ -402,6 +402,13 @@ class SourceOutbox:
         from .source_lifecycle import retire_consumer
         retire_consumer(self,consumer)
 
+    def claim_serving_facts(self, path):
+        if self.source!='runtime':return
+        from .source_lifecycle import migrate
+        with closing(self.connection(write=True)) as db,db:
+            db.execute('BEGIN IMMEDIATE');migrate(db)
+            db.execute('INSERT INTO v2_serving_fact_owner VALUES(1,?) ON CONFLICT(id) DO UPDATE SET path=excluded.path',(str(Path(path).resolve()),))
+
     def archive(self, checkpoint_database: Path, *, before: str, limit: int = 100) -> int:
         """Archive acknowledged transport rows behind a verified consistent source backup.
 

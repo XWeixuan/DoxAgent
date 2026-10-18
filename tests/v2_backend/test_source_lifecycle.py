@@ -82,6 +82,7 @@ def test_receipt_envelope_pins_nested_native_hash_and_delete_releases_owner(tmp_
 def test_small_business_fact_sync_preserves_settlement_and_withdrawal(tmp_path):
     s=fixture_source(tmp_path);s.source='runtime'
     store=ReadStore(tmp_path/'read'/'read.db');store.migrate()
+    s.claim_serving_facts(store.path)
     row=dict(kind='policy_hit_set',ticker='MU',id='case',data={'hits':{'P':{'ar':'r','occurred_at':'2026-10-10T12:00:00Z'}}})
     store.ingest('runtime','1',[row]);sync_business_facts(s,store)
     with closing(s.connection()) as db:
@@ -121,6 +122,7 @@ def test_source_native_exit_protects_exact_repair_and_resurrected_current(tmp_pa
 def test_snapshot_restores_old_business_rows_with_null_search_metadata(tmp_path):
     s=fixture_source(tmp_path);s=SourceOutbox(s.path,'runtime');s.migrate(('poll_states',))
     store=ReadStore(tmp_path/'old-read'/'read.db');store.migrate()
+    s.claim_serving_facts(store.path)
     record=dict(kind='policy_admission',ticker='MU',id='P:r',data={'first_activated_at':'2026-10-01T12:00:00Z','runtime_activation_id':'a'})
     store.ingest('r','1',[record])
     with store.connect(write=True) as db:db.execute("UPDATE object_current SET search_text=NULL WHERE kind='policy_admission'")
@@ -128,3 +130,13 @@ def test_snapshot_restores_old_business_rows_with_null_search_metadata(tmp_path)
     report=rebuild_current([s],tmp_path/'new-read'/'read.db')
     assert report['verified']
     assert ReadStore(report['path']).get('policy_admission','MU','P:r')==record['data']
+
+
+def test_shadow_generation_cannot_replace_canonical_business_facts(tmp_path):
+    s=fixture_source(tmp_path);s=SourceOutbox(s.path,'runtime');s.migrate(('poll_states',))
+    active=ReadStore(tmp_path/'active'/'read.db');active.migrate();s.claim_serving_facts(active.path)
+    fact=dict(kind='policy_hit_set',ticker='MU',id='c',data={'hits':{'P':{'ar':'r','occurred_at':'2026-10-01T12:00:00Z'}}})
+    active.ingest('r','1',[fact]);sync_business_facts(s,active)
+    shadow=ReadStore(tmp_path/'shadow'/'read.db');shadow.migrate();sync_business_facts(s,shadow)
+    with closing(s.connection()) as db:
+        assert db.execute("SELECT count(*) FROM v2_serving_business_facts WHERE kind='policy_hit_set'").fetchone()[0]==1
