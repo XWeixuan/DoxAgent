@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useRef } from "react";
 import type { Period } from "@contract";
+import { useViewRenewal } from "@/core/page-query";
 import { useRuntime } from "@/core/runtime";
 import { queryString, type Endpoints } from "@/core/api";
 import type { PendingCommand } from "@/core/operations";
@@ -215,6 +216,7 @@ export function useOverview(
       },
     });
   }
+  useViewRenewal(context.data?.data, refresh);
   const contextBlocked = !context.data && context.isError;
   return {
     context,

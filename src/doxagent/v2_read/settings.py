@@ -19,7 +19,9 @@ class Limits:
     detail_seconds: int = 5
     queue_seconds: int = 1
     cancel_grace_seconds: int = 1
-    mvcc_hours: int = 24
+    mvcc_hours: float = .5
+    view_minutes: int = 15
+    stream_minutes: int = 30
     diagnostic_days: int = 30
 
     @classmethod
@@ -32,6 +34,8 @@ class Limits:
             detail_seconds=integer("DETAIL_SECONDS", 5, 2, 10),
             queue_seconds=integer("QUEUE_SECONDS", 1, 1, 5),
             cancel_grace_seconds=integer("CANCEL_GRACE_SECONDS", 1, 1, 3),
-            mvcc_hours=integer("MVCC_HOURS", 24, 24, 168),
+            mvcc_hours=integer("STREAM_MINUTES", 30, 30, 120) / 60,
+            view_minutes=integer("VIEW_MINUTES", 15, 5, 30),
+            stream_minutes=integer("STREAM_MINUTES", 30, 30, 120),
             diagnostic_days=integer("DIAGNOSTIC_DAYS", 30, 30, 365),
         )

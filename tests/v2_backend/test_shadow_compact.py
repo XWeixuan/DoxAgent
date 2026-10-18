@@ -22,7 +22,7 @@ def test_streaming_shadow_preserves_ids_tokens_gaps_and_native_content(tmp_path)
         db.execute("INSERT INTO contributions(metric,ticker,entity,day,dimensions,value,valid_from) VALUES('cost','MU','e','2026-10-13','{\"scope\":\"research\"}','1',3)")
     target = tmp_path / 'shadow.db'
     report = build(source.path, target)
-    assert report['tables']['objects']['omitted'] == 0  # token at seq=2 needs the pre-image
+    assert report['tables']['object_history']['omitted'] == 0  # token at seq=2 needs the pre-image
     assert ReadStore(target).get('case','MU','case') == source.get('case','MU','case')
     with sqlite3.connect(target) as db:
         assert db.execute('SELECT id FROM generation').fetchone()[0] == generation
@@ -34,4 +34,4 @@ def test_streaming_shadow_preserves_ids_tokens_gaps_and_native_content(tmp_path)
     with sqlite3.connect(source.path) as db:
         db.execute('DELETE FROM views')
     second = build(source.path, tmp_path/'shadow2.db')
-    assert second['tables']['objects']['omitted'] == 1
+    assert second['tables']['object_history']['omitted'] == 1

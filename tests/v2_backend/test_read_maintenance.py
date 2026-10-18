@@ -17,12 +17,12 @@ def test_gc_retains_pinned_snapshot_and_expires_tokens_after_deletion(tmp_path):
         store.ingest(
             "runtime", str(n), [{**row, "data": {"n": n}}], at=(now - timedelta(days=4)).isoformat()
         )
-    collect(store, now=now + timedelta(hours=23))
+    collect(store, now=now + timedelta(minutes=14))
     assert store.get("case", "MU", "c", seq)["n"] == 1
-    assert store.token(token, "owner", view=True, now=now + timedelta(hours=23))["seq"] == seq
-    collect(store, now=now + timedelta(hours=25))
+    assert store.token(token, "owner", view=True, now=now + timedelta(minutes=14))["seq"] == seq
+    collect(store, now=now + timedelta(minutes=31))
     with pytest.raises(TimeoutError):
-        store.token(token, "owner", view=True, now=now + timedelta(hours=25))
+        store.token(token, "owner", view=True, now=now + timedelta(minutes=31))
     assert store.get("case", "MU", "c")["n"] == 3
 
 
@@ -39,7 +39,7 @@ def test_alias_adopts_new_generation_and_explicitly_resets_old_cursor(tmp_path):
         active.token(token, "owner")
 
 
-def test_runtime_gaps_preserve_business_but_do_not_pin_expired_bus_poll_versions(tmp_path):
+def test_source_gaps_retain_repair_coordinates_without_freezing_unrelated_history(tmp_path):
     store = ReadStore(tmp_path / "read.db")
     store.migrate()
     now = datetime.now(UTC)
@@ -54,13 +54,14 @@ def test_runtime_gaps_preserve_business_but_do_not_pin_expired_bus_poll_versions
         for coordinate in (1240145, 1240148, 1240191, 1240193):
             db.execute("INSERT INTO gaps(source,event,reason) VALUES('runtime',?,'PROVENANCE_UNVERIFIED')", (str(coordinate),))
     result = collect(store, now=now, budget=1)
-    assert result["policy"] == "BUS_POLL_ONLY"
-    assert result["deleted"]["objects"] == 3
+    assert not result["protected"]
+    assert len(result["repair_scope"]) == 4
+    assert result["deleted"]["object_history"] == 6
     with store.connect() as db:
         assert db.execute("SELECT count(*) FROM gaps").fetchone()[0] == 4
-        assert db.execute("SELECT count(*) FROM objects WHERE kind='case'").fetchone()[0] == 4
+        assert db.execute("SELECT count(*) FROM objects WHERE kind='case'").fetchone()[0] == 1
         assert db.execute("SELECT count(*) FROM objects WHERE kind='native:poll_states'").fetchone()[0] == 1
-    # A Bus repair protects those versions too.
+    # A Bus repair is another exact exception, not a global history hold.
     with store.connect(write=True) as db:
         db.execute("INSERT INTO gaps(source,event,reason) VALUES('bus','1','UNKNOWN')")
-    assert collect(store, now=now, budget=1)["policy"] == "PINNED"
+    assert len(collect(store, now=now, budget=1)["repair_scope"]) == 5

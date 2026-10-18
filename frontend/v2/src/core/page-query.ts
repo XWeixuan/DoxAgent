@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type {
   PageKind,
@@ -25,129 +26,114 @@ export function usePageContext(
         { signal },
       ),
   });
-  return {
-    ...result,
-    refetch: async () => {
-      const next = await api.request(
-        "ReadContext",
-        "/read-context" +
-          queryString({ ticker, page, period, refresh: "MANUAL" }),
-      );
-      const old = result.data?.data.view_id,
-        view = next.data.view_id;
-      const otherContexts = cache
-        .getQueryCache()
-        .findAll()
-        .filter(
-          (q) =>
-            q.isActive() &&
-            q.queryKey[0] === scope &&
-            q.queryKey[1] === ticker &&
-            q.queryKey[2] === page &&
-            q.queryKey[3] === "context" &&
-            q.queryKey[4] !== period,
-        );
-      const contextUpdates = await Promise.all(
-        otherContexts.map(async (q) => ({
-          key: q.queryKey,
-          old: (q.state.data as Response<ReadContext>).data.view_id,
-          data: await api.request(
-            "ReadContext",
-            "/read-context" +
-              queryString({
-                ticker,
-                page,
-                period: q.queryKey[4] as Period | undefined,
-                refresh: "MANUAL",
-              }),
-          ),
-        })),
-      );
-      const views = new Map<string, string>(old ? [[old, view]] : []);
-      for (const c of contextUpdates) views.set(c.old, c.data.data.view_id);
-      const active = cache
-        .getQueryCache()
-        .findAll()
-        .filter(
-          (q) =>
-            q.isActive() &&
-            q.queryKey[0] === scope &&
-            ["read", "pages"].includes(String(q.queryKey[1])) &&
-            !(
-              q.queryKey[1] === "pages" &&
-              (q.state.data as { pageParams?: unknown[] } | undefined)
-                ?.pageParams?.[0]
-            ) &&
-            String(q.queryKey[3]).startsWith(tickerPath(ticker) + "/"),
-        );
-      const reads = await Promise.all(
-        active.map(async (q) => {
-          const name = q.queryKey[2] as keyof Endpoints,
-            path = String(q.queryKey[3]);
-          const priorView = q.queryKey[4] as string | undefined;
-          const expected = priorView
-            ? (views.get(priorView) ?? priorView)
-            : undefined;
-          const updated =
-            priorView && expected !== priorView
-              ? path.replace(
-                  `view_id=${encodeURIComponent(priorView)}`,
-                  `view_id=${encodeURIComponent(expected!)}`,
-                )
-              : path;
-          if (q.queryKey[1] === "pages") {
-            const prior = q.state.data as
-              { pages: unknown[]; pageParams?: string[] } | undefined;
-            const pages = [],
-              pageParams = [];
-            let cursor: string | undefined = prior?.pageParams?.[0];
-            for (let i = 0; i < Math.max(1, prior?.pages.length ?? 1); i++) {
-              const response = await api.request(
-                name,
-                updated +
-                  (cursor
-                    ? `${updated.includes("?") ? "&" : "?"}cursor=${encodeURIComponent(cursor)}`
-                    : ""),
-                { view: expected },
-              );
-              pages.push(response);
-              pageParams.push(cursor);
-              const resource = response.data as unknown as Resource<
-                Record<string, unknown>
-              >;
-              const value = resource.data;
-              const page =
-                value &&
-                (("next_cursor" in value
-                  ? value
-                  : Object.values(value).find(
-                      (v) => v && typeof v === "object" && "next_cursor" in v,
-                    )) as { next_cursor?: string | null } | undefined);
-              cursor = page?.next_cursor ?? undefined;
-              if (!cursor) break;
-            }
-            return {
-              key: [scope, "pages", name, updated, expected],
-              data: { pages, pageParams },
-            };
-          }
-          const data = await api.request(name, updated, { view: expected });
-          return { key: [scope, "read", name, updated, expected], data };
-        }),
-      );
-      for (const item of reads) cache.setQueryData(item.key, item.data);
-      cache.setQueryData(key, next);
-      for (const c of contextUpdates) cache.setQueryData(c.key, c.data);
-      await cache.refetchQueries({
-        predicate: (q) =>
+  const refetch = async () => {
+    const before = cache.getQueryData(key);
+    const next = await api.request(
+      "ReadContext",
+      "/read-context" +
+        queryString({ ticker, page, period, refresh: "MANUAL" }),
+    );
+    const old = result.data?.data.view_id,
+      view = next.data.view_id;
+    const otherContexts = cache
+      .getQueryCache()
+      .findAll()
+      .filter(
+        (q) =>
           q.isActive() &&
           q.queryKey[0] === scope &&
-          q.queryKey[1] === "bus-minute" &&
-          q.queryKey[2] === ticker,
-      });
+          q.queryKey[1] === ticker &&
+          q.queryKey[2] === page &&
+          q.queryKey[3] === "context" &&
+          q.queryKey[4] !== period,
+      );
+    const contextUpdates = await Promise.all(
+      otherContexts.map(async (q) => ({
+        key: q.queryKey,
+        old: (q.state.data as Response<ReadContext>).data.view_id,
+        data: await api.request(
+          "ReadContext",
+          "/read-context" +
+            queryString({
+              ticker,
+              page,
+              period: q.queryKey[4] as Period | undefined,
+              refresh: "MANUAL",
+            }),
+        ),
+      })),
+    );
+    const views = new Map<string, string>(old ? [[old, view]] : []);
+    for (const c of contextUpdates) views.set(c.old, c.data.data.view_id);
+    const active = cache
+      .getQueryCache()
+      .findAll()
+      .filter(
+        (q) =>
+          q.isActive() &&
+          q.queryKey[0] === scope &&
+          ["read", "pages"].includes(String(q.queryKey[1])) &&
+          !(
+            q.queryKey[1] === "pages" &&
+            (q.state.data as { pageParams?: unknown[] } | undefined)
+              ?.pageParams?.[0]
+          ) &&
+          String(q.queryKey[3]).startsWith(tickerPath(ticker) + "/"),
+      );
+    const reads = await Promise.all(
+      active.map(async (q) => {
+        const name = q.queryKey[2] as keyof Endpoints,
+          path = String(q.queryKey[3]);
+        const priorView = q.queryKey[4] as string | undefined;
+        const expected = priorView
+          ? (views.get(priorView) ?? priorView)
+          : undefined;
+        const updated =
+          priorView && expected !== priorView
+            ? path.replace(
+                `view_id=${encodeURIComponent(priorView)}`,
+                `view_id=${encodeURIComponent(expected!)}`,
+              )
+            : path;
+        if (q.queryKey[1] === "pages") {
+          const pages = [],
+            pageParams = [];
+          // A new view starts at the first page, without old-view cursors.
+          const response = await api.request(name, updated, { view: expected });
+          pages.push(response);
+          pageParams.push(undefined);
+          return {
+            key: [scope, "pages", name, updated, expected],
+            data: { pages, pageParams },
+          };
+        }
+        const data = await api.request(name, updated, { view: expected });
+        return { key: [scope, "read", name, updated, expected], data };
+      }),
+    );
+    if (cache.getQueryData(key) !== before) return next;
+    if (
+      contextUpdates.some(
+        (c) =>
+          cache.getQueryData<Response<ReadContext>>(c.key)?.data.view_id !==
+          c.old,
+      )
+    )
       return next;
-    },
+    for (const item of reads) cache.setQueryData(item.key, item.data);
+    cache.setQueryData(key, next);
+    for (const c of contextUpdates) cache.setQueryData(c.key, c.data);
+    await cache.refetchQueries({
+      predicate: (q) =>
+        q.isActive() &&
+        q.queryKey[0] === scope &&
+        q.queryKey[1] === "bus-minute" &&
+        q.queryKey[2] === ticker,
+    });
+    return next;
   };
+  useViewRenewal(result.data?.data, refetch);
+  return { ...result, refetch };
 }
 export function useRead<K extends keyof Endpoints>(
   name: K,
@@ -173,3 +159,42 @@ export function unwrap<T>(response?: Response<Resource<T>>) {
 export const tickerPath = (ticker: string) =>
   `/tickers/${encodeURIComponent(ticker)}`;
 export const id = encodeURIComponent;
+
+export function useViewRenewal(
+  context: ReadContext | undefined,
+  renewView: () => Promise<unknown>,
+) {
+  const renewing = useRef(false);
+  const renewal = useRef(renewView);
+  renewal.current = renewView;
+  const expiry = context?.expires_at;
+  const viewId = context?.view_id;
+  useEffect(() => {
+    if (!expiry) return;
+    let timer: ReturnType<typeof setTimeout>;
+    let disposed = false;
+    const renew = async () => {
+      if (disposed || document.visibilityState === "hidden" || renewing.current)
+        return;
+      renewing.current = true;
+      try {
+        await renewal.current();
+      } catch {
+        if (!disposed) timer = setTimeout(renew, 30_000);
+      } finally {
+        renewing.current = false;
+      }
+    };
+    const remaining = () => Date.parse(expiry) - Date.now() - 60_000;
+    timer = setTimeout(renew, Math.max(1000, remaining()));
+    const visible = () => {
+      if (remaining() <= 0) void renew();
+    };
+    document.addEventListener("visibilitychange", visible);
+    return () => {
+      disposed = true;
+      clearTimeout(timer);
+      document.removeEventListener("visibilitychange", visible);
+    };
+  }, [expiry, viewId]);
+}

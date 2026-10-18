@@ -83,6 +83,11 @@ def backup_manifest(sources, destination, *, artifact_roots=()):
 
 def collect(store, *, now=None, limit=500, budget=.1, time_floor=None):
     """Keep all 24h views/cursors, including the pre-event image needed by REMOVE."""
+    with store.connect() as schema_db:
+        v4 = schema_db.execute("SELECT 1 FROM sqlite_master WHERE name='object_history'").fetchone()
+    if v4:
+        from .serving_gc import collect as collect_serving
+        return collect_serving(store,now=now,limit=limit,budget=budget,time_floor=time_floor)
     if not 1 <= limit <= 5000:
         raise ValueError("GC limit must be 1..5000")
     now = now or datetime.now(UTC)
@@ -304,7 +309,7 @@ def activate_alias(alias, target, sources):
     if not report_path.is_file():
         raise ValueError("verified rebuild report required")
     with store.connect() as db:
-        if db.execute("SELECT 1 FROM gaps LIMIT 1").fetchone():
+        if unaccepted_gaps(store, db):
             raise ValueError("source gaps prevent cutover")
         generation = db.execute("SELECT id FROM generation").fetchone()[0]
     report = json.loads(report_path.read_text(encoding="utf-8"))
@@ -330,7 +335,7 @@ def verify_shadow(store, sources):
     with store.connect() as db:
         if db.execute("PRAGMA integrity_check").fetchone()[0] != "ok":
             raise ValueError("read store integrity check failed")
-        if db.execute("SELECT 1 FROM gaps LIMIT 1").fetchone():
+        if unaccepted_gaps(store, db):
             raise ValueError("read store has unresolved gaps")
         report = {"format": "doxagent.v2.rebuild.1", "path": str(store.path),
                   "generation": db.execute("SELECT id FROM generation").fetchone()[0],
@@ -339,6 +344,23 @@ def verify_shadow(store, sources):
                   "objects_by_kind": dict(db.execute("SELECT kind,count(*) FROM objects WHERE valid_to IS NULL GROUP BY kind"))}
     atomic_json(str(store.path) + ".rebuild.json", report)
     return report
+
+
+def unaccepted_gaps(store, db):
+    """Only previously audited exceptions can cross a serving-generation reset.
+
+    They continue to mark coverage incomplete and remain repairable. This does
+    not convert an unverified event into a verified business event.
+    """
+    actual = {tuple(r) for r in db.execute('SELECT source,event,reason FROM gaps')}
+    report_path = Path(str(store.path)+'.serving.json')
+    if not report_path.is_file():
+        return actual
+    baseline = json.loads(report_path.read_text(encoding='utf-8'))
+    generation = db.execute('SELECT id FROM generation').fetchone()[0]
+    if baseline.get('generation') != generation or not baseline.get('verified'):
+        return actual
+    return actual - {tuple(r) for r in baseline.get('baseline_gaps',[])}
 
 
 def compact(source, target):
@@ -423,6 +445,13 @@ def run_gc(store, *, once=False, interval=15, budget=2):
                               "protected_sources": result.get("protected_sources"),
                               "policy": result.get("policy"),
                               "elapsed_seconds": time.monotonic() - started}), flush=True)
+            from .artifact_registry import collect_diagnostics
+            try:
+                files = collect_diagnostics(store, now=datetime.now(UTC), limit=25)
+                if files:
+                    print(json.dumps({'maintenance':'content-gc','quarantined':len(files)}),flush=True)
+            except (OSError, ValueError, sqlite3.OperationalError) as exc:
+                print(json.dumps({'maintenance':'content-gc','error':str(exc)}),flush=True)
             if once:
                 return
             time.sleep(interval)

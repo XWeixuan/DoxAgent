@@ -116,7 +116,7 @@ def install(app: FastAPI) -> None:
         with store.connect() as db:
             selected = [row[0] for row in db.execute(
                 "SELECT ticker FROM (SELECT ticker FROM object_current WHERE " + where +
-                " UNION ALL SELECT ticker FROM objects INDEXED BY history_recent WHERE " + where + " AND valid_to>?) ORDER BY ticker LIMIT ?",
+                " UNION ALL SELECT ticker FROM " + store.history_table + " INDEXED BY history_recent WHERE " + where + " AND valid_to>?) ORDER BY ticker LIMIT ?",
                 (*parameters, *parameters, view["seq"], limit + 1),
             )]
         from doxagent.v2_read.metrics import Metrics

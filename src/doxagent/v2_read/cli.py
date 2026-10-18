@@ -92,6 +92,7 @@ def main() -> None:
             "verify",
             "reproject-trade-outcomes",
             "policy-query-indexes",
+            "serving-generation",
         ),
     )
     parser.add_argument("--read-db", type=Path, default=Path(".tmp/v2_read.sqlite3"))
@@ -176,6 +177,11 @@ def main() -> None:
     elif args.command == "reproject-trade-outcomes":
         from .maintenance import reproject_trade_outcomes
         print(json.dumps(reproject_trade_outcomes(store, ticker=args.ticker, limit=args.limit)))
+    elif args.command == "serving-generation":
+        if not args.target:
+            parser.error('serving-generation requires --target in a new directory')
+        from .serving_generation import build
+        print(json.dumps(build(store.path, args.target)), flush=True)
     elif args.command == "compact":
         if not args.target:
             parser.error("compact requires --target with a new shadow database path")

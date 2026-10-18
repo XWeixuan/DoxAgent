@@ -1,6 +1,7 @@
 """Bounded Policy sets at one MVCC watermark; no per-Policy fact subqueries."""
 
 import json
+from doxagent.v2_read.serving_schema import history_relation
 
 
 def _scope(ticker, seq, days=None):
@@ -22,7 +23,7 @@ def _objects(db, ticker, seq, kind, columns, days=None, extra="", extra_args=())
     sql = f"SELECT {columns} FROM object_current WHERE {where}"
     if seq < highwater:
         sql += (
-            f" UNION ALL SELECT {columns} FROM objects INDEXED BY history_recent "
+            f" UNION ALL SELECT {columns} FROM {history_relation(db)} INDEXED BY history_recent "
             f"WHERE valid_to>? AND {where}"
         )
         args = [*args, seq, *args]
@@ -80,7 +81,7 @@ def _positive(db, ticker, seq, days):
     sql = f"SELECT {columns} FROM {current} WHERE {where}"
     highwater = int(db.execute("SELECT value FROM read_meta WHERE key='highwater'").fetchone()[0])
     if seq < highwater:
-        history = "contributions" + (
+        history = history_relation(db, "contributions") + (
             " INDEXED BY policy_positive_history" if "policy_positive_history" in indexes else ""
         )
         sql += (

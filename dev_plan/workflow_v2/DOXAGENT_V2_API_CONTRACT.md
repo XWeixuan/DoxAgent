@@ -118,7 +118,7 @@
 - 首屏摘要/列表每响应不超过 256 KiB（未压缩 JSON）；普通单对象结构化详情不超过 1 MiB；单个文本 chunk 不超过 128 KiB；SSE event 不超过 32 KiB；配置写请求不超过 64 KiB。超长内容按 chunk/分页继续，不截断且宣称完整。
 - 单个不可再分的结构化对象超过 1 MiB 时返回 413 与其已授权 content_id，可通过 `/contents/{content_id}` 按 chunk 完整读取 JSON，拼接完成后解析；列表给 ContentRef 及明确的 unavailable/size 状态，不删除该对象。
 - 增长型时间线、索引、source 列表、模型/节点筛选选项、attempt、Fill 和历史版本都分页。图的固定节点/边有界；不返回无限 Case 集合。`ALL` 也不解除分页。
-- view 与列表游标至少保留 24 小时；过期返回 410。指定历史 run/version 的内容不依赖过期 view，可重新按身份取得。详情不得借过期自动改读 current。
+- view 默认有效 15 分钟；所属列表游标不晚于 view 过期，独立 stream cursor 最长 30 分钟；过期仍返回 410。页面在到期前整体更新 view，只重新读取首屏和必要指标，已加载旧页按新 view 按需继续，不逐页重放。指定历史 run/version 的内容不依赖过期 view，可重新按身份取得。详情不得借过期自动改读 current。
 
 ## 3. 一致性、语义时间和指标合同
 
@@ -589,7 +589,7 @@ data: {"event_id":"…","stream_cursor":"…","view_id":"…","scope_key":"…",
 - 采用至少一次投递；客户端按 event_id 去重、按 revision 防止旧消息覆盖新消息。sequence 只在该流排序，不能转换为 JS 不安全整数或当作跨库业务版本。
 - 首次使用 baseline.stream_cursor；重连通过 Last-Event-ID，cursor query 只在首次设置。二者同时出现但不一致返回400。
 - cursor 固定 ticker、过滤条件（含 q）、period/view 的窗口边界、授权范围和流类型；修改筛选须获取该范围自己的基线，不沿用另一范围游标。
-- 服务端至少保留 24 小时可重放事件。保留期内无漏收；超过保留期明确 reset，不声称永远可恢复，也不让客户端无限尝试过期游标。
+- 服务端默认保留 30 分钟可重放事件。保留期内无漏收；超过保留期明确 reset，不声称永远可恢复，也不让客户端无限尝试过期游标。
 - MessageDelta 的 matches_scope 由服务端判断，支持完整正文关键词而不发送正文。新符合范围者 UPSERT；路由变化后不再符合者 REMOVE。Row 包含卡片摘要，禁止 body 文本/summary/reasoning。
 - 首屏移位不是筛选失配，不发送 REMOVE。增量按发生变化的稳定身份判断前后是否符合范围，覆盖已加载后续页中的身份和路由更新；不扫描/重发全列表。升级前采用首屏语义的旧 SSE 游标按 CURSOR_EXPIRED 失效，重新获取基线。
 - 超过单 SSE event 字节上限时 UPSERT 可以 row=null，只带已验证的身份、版本和 matches_scope，客户端最多按该单条身份补读摘要；REMOVE 的 row 必须为 null。不得以此为由重读列表。
@@ -730,7 +730,7 @@ Supabase 官方说明 Egress 包括数据库向连接客户端传出的数据，
 12. 02:00、DST、提前收市、休市、7/30有效交易日、ALL、窗口不足与上一值零：时间上下文和不可比原因一致。
 13. 同 Policy 跨 Shell：各相关 Shell可见、ALL只一条；Retire 后历史筛选仍可读最后 revision。
 14. Reference remove 在 current Canonical仍ACTIVE：Delta显示移除前内容，但不凭此计Canonical失效；from=to 的review变化不丢失。
-15. SSE 在基线与建连间有新增、重放重复、丢包/断档、24小时内重连、游标过期：分别无漏/幂等/局部重建；不全页拉取。
+15. SSE 在基线与建连间有新增、重放重复、丢包/断档、30分钟尾部内重连、游标过期：分别无漏/幂等/局部重建；不全页拉取。
 16. 分页中出现新消息与路由变化：旧快照翻页无重复错位；新首屏独立维护；不把旧 cursor 套到新筛选。
 17. 页面隐藏/返回、整分钟、人工刷新失败：遵守 §11.3，保留旧缓存，无 mount/focus 额外轮询。
 18. binding If-Match 过期、幂等重试、跨 ticker ID、source_version变更：412/相同结果/404/412；不修改全局 Source。

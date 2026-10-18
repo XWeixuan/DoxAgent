@@ -20,6 +20,6 @@ def test_case_loads_frozen_policy_details_once_and_keeps_first_match():
         records, contributions = project(store, case, {"final_policy_hit": {"value": True}},
             {"operation": "UPDATE", "recorded_at": "2026-10-13T00:00:00Z"})
     rows.assert_called_once_with(store, "policy_detail", "MU", "frozen")
-    assert len(records) == 262 and len(contributions) == 524
-    assert records[0]["data"]["ar"] == "r0"
-    assert {r["data"]["policy_id"] for r in records if r["data"]["hit"]} == {"p0", "p261"}
+    assert len(records) == 1 and len(contributions) == 2
+    assert records[0]["data"]["hits"]["p0"]["ar"] == "r0"
+    assert set(records[0]["data"]["hits"]) == {"p0", "p261"}
