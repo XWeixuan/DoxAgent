@@ -509,7 +509,9 @@ def release_components(root, state, repo, commit, components):
     if unknown:raise ValueError('unregistered components: '+','.join(sorted(unknown)))
     kinds={'v2-site-access':'site','v2-chrome-supervisor':'supervisor','v2-web':'web','initialization-guardian':'guardian'}
     selected={c:kinds.get(c,'backend') for c in components}
-    built=build(repo,commit,root,sorted(set(selected.values())))
+    build_kinds=set(selected.values())
+    if 'guardian' in build_kinds:build_kinds.add('repair-agent')
+    built=build(repo,commit,root,sorted(build_kinds))
     state=json.loads((root/'state.json').read_text())
     base=state.get('compose_base_command')
     if not base:
@@ -520,7 +522,9 @@ def release_components(root, state, repo, commit, components):
     manifest=dict(compose_command=base,commit=built['commit'],components={})
     for component,kind in selected.items():
         current=state['components'][component]['current']
-        candidate={**current.get('compose',{}),'image':built['images'][kind]['image']}
+        import copy
+        candidate={**copy.deepcopy(current.get('compose',{})),'image':built['images'][kind]['image']}
+        if kind=='guardian':candidate.setdefault('environment',{})['DOXAGENT_INITIALIZATION_REPAIR_AGENT_IMAGE']=built['images']['repair-agent']['tag']
         candidate['schema']=current.get('schema');manifest['components'][component]=candidate
     atomic(root/(built['commit']+'.release.json'),manifest)
     return deploy(root,state,manifest)
