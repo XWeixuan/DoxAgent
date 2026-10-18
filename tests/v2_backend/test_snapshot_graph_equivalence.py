@@ -65,3 +65,17 @@ def test_runtime_snapshot_settles_timing_after_native_turn_import(tmp_path,monke
             sample=db.execute("SELECT value FROM contributions_current WHERE metric='hot_path_samples' AND entity=?",(case.case_id,)).fetchone()
         assert sample[0]=='1'
     finally:runtime.close()
+
+
+@pytest.mark.parametrize('status',['COMPLETED','FAILED'])
+def test_final_snapshot_w3_timing_uses_terminal_attempts(tmp_path,status):
+    store=ReadStore(tmp_path/'read.db');store.migrate()
+    summary=dict(case_id='w3',results=['ARCHIVE'] if status=='COMPLETED' else ['FAILURE'],first_round_shape='PARALLEL',initial_route='W3',w3_status='RESOLVED' if status=='COMPLETED' else 'FAILED',status=status,semantic_day='2026-10-01',received_at='2026-10-01T10:00:00Z')
+    native=dict(case_id='w3',runtime_mode='REALTIME',status=status,trading_date='2026-10-01',source=dict(snapshot=dict(ticker='MU')))
+    store.ingest('snapshot','case-first',[dict(kind='case',ticker='MU',id='w3',data=summary),dict(kind='native:runtime_v2_cases',ticker='MU',id='w3',data=native)],contributions=w3_contributions(store,native))
+    attempt=dict(node_id='W3',round='AGENT',status='SUCCEEDED' if status=='COMPLETED' else 'FAILED',timing=dict(first_started_at=dict(value='2026-10-01T10:00:10Z'),completed_at=dict(value='2026-10-01T10:00:25Z')))
+    store.ingest('snapshot','attempt-later',[dict(kind='attempt',ticker='MU',id='w3-attempt',parent='w3',route='W3',data=attempt)])
+    settle_cases(store)
+    with store.connect() as db:
+        values=dict(db.execute("SELECT metric,value FROM contributions_current WHERE metric IN ('w3_seconds','w3_samples')"))
+    assert values=={'w3_seconds':'15.0','w3_samples':'1'}

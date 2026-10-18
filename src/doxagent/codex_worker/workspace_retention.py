@@ -52,10 +52,14 @@ def collect(workspaces,jobs,settings,*,now=None,limit=4,dry_run=False):
         for status,run,at,node,phase in rows:
             if not run:continue
             groups.setdefault(run,[]).append((status,at,node,phase))
-        for run,bundle in sorted(published.items()):
+        # A failed/cancelled run may never publish. Its terminal process inputs
+        # still have an exit; publication is authority for outputs, not a
+        # prerequisite for retiring unreferenced copies in input directories.
+        for run in sorted(groups):
             if len(report['runs'])>=limit:break
-            owners=groups.get(run,[]);directory=root/run
-            if not owners or not directory.is_dir() or directory.is_symlink():continue
+            bundle=published.get(run,{})
+            owners=groups[run];directory=root/run
+            if directory.resolve().parent!=root.resolve() or not directory.is_dir() or directory.is_symlink():continue
             if run.startswith(('w3-','persistent-runtime-w3-')) or any(node=='persistent_runtime_w3' or phase in {'w3_template','trade_decision','post_decision_operations'} for _,_,node,phase in owners):continue
             if any(run==h or run.startswith(h+'-') for h in held):continue
             if any(status not in {'succeeded','failed','cancelled'} or not at or now-datetime.fromisoformat(at)<timedelta(days=7 if status=='succeeded' else 14) for status,at,_,_ in owners):continue
@@ -66,15 +70,16 @@ def collect(workspaces,jobs,settings,*,now=None,limit=4,dry_run=False):
                 for owner,raw in evidence:
                     value=json.loads(raw)
                     retained.update(paths_in(value,root/owner,root))
-                # Publication hashes are the authority. A candidate release by
-                # itself is insufficient to retire an unfinished workflow.
+                # Published outputs must match their authority. Unpublished
+                # outputs/audit/Observation remain untouched; only terminal,
+                # unreferenced process inputs below are candidates.
                 for artifact in bundle.get('artifacts',[]):
                     path=(directory/artifact['relative_path']).resolve()
                     if not path.is_relative_to(directory.resolve()) or not path.is_file():raise ValueError('adopted artifact is missing')
                     with path.open('rb') as stream:digest=hashlib.file_digest(stream,'sha256').hexdigest()
                     if digest!=artifact['sha256']:raise ValueError('adopted artifact checksum mismatch')
                     artifacts.append(dict(path=artifact['relative_path'],sha256=digest));retained.add(path)
-                if not artifacts:continue
+                if run in published and not artifacts:continue
                 candidates=[]
                 for area in [directory/'context',*directory.glob('attempts/*/input')]:
                     if not area.is_dir() or area.is_symlink():continue
@@ -86,7 +91,7 @@ def collect(workspaces,jobs,settings,*,now=None,limit=4,dry_run=False):
                         if path.name in {'task.json','context.json','AGENTS.md','agent.md','skill.md','manifest.json'} or path.name.endswith(('.db','.sqlite','.sqlite3','-wal','-shm')):continue
                         candidates.append(path)
                 if opened_below(directory):continue
-                receipt=dict(run=run,publication=artifacts,retained_reference_files=len(retained),files=0,allocated=0,at=now.isoformat(),complete=False)
+                receipt=dict(run=run,publication=artifacts,retirement_basis='published' if run in published else 'terminal-unpublished-inputs',retained_reference_files=len(retained),files=0,allocated=0,at=now.isoformat(),complete=False)
                 if dry_run:
                     receipt.update(files=len(candidates),allocated=sum(getattr(p.stat(),'st_blocks',(p.stat().st_size+511)//512)*512 for p in candidates));report['runs'].append(receipt);continue
                 # Serialize with Worker submission metadata, then take its file

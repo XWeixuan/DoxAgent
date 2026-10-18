@@ -204,24 +204,30 @@ def compact_process(journal,runs,protected,now,*,limit=64):
     import hashlib
     changed=[]
     for run,info in runs.items():
-        if info['status']!='SUCCEEDED' or (now-datetime.fromisoformat(info['at'])).total_seconds()<7*86400:continue
+        if info['status'] not in {'SUCCEEDED','FAILED'}:continue
+        days=7 if info['status']=='SUCCEEDED' else 14
+        if (now-datetime.fromisoformat(info['at'])).total_seconds()<days*86400:continue
         if str(journal.path.resolve().parent/'runtime_artifacts'/run/'events') in protected:continue
+        def terminal(db):
+            task=db.execute('SELECT status,updated_at FROM runtime_tasks WHERE id=?',(info['task'],)).fetchone()
+            return task and task[0]==info['status'] and (now-datetime.fromisoformat(task[1])).total_seconds()>=days*86400
         # This is only the pre-O3 retry input. The delivered before/after
         # evidence remains in reference_deliveries and native version pins.
-        journal.delete('reference_baselines',info['task'])
+        with journal.transaction() as db:
+            if not terminal(db):continue
+            db.execute("DELETE FROM runtime_values WHERE namespace='reference_baselines' AND key=?",(info['task'],))
         prefix='runtime-worker:'+run+':'
         with journal.transaction(write=False) as db:
             keys=[r[0] for r in db.execute("SELECT key FROM runtime_values WHERE namespace='worker_requests' AND key>=? AND key<?",(prefix,prefix+'\uffff'))]
         for key in keys:
             if len(changed)>=limit:return changed
             request=journal.get('worker_requests',key);receipt=journal.get('worker_receipts',key)
-            if not request or request.get('retired_process') or request.get('task_phase') is not None:continue
-            if not receipt or receipt.get('status')!='succeeded':continue
+            if not request or request.get('retired_process') or request.get('task_phase') is not None or request.get('node')=='persistent_runtime_w3':continue
+            if not receipt or receipt.get('status') not in {'succeeded','failed','cancelled'}:continue
             compact={k:request[k] for k in ('run_id','attempt_id','idempotency_key','node','ticker','thread_id','workflow_version','model','model_provider','effort') if k in request}
             compact.update(retired_process=True,request_sha256=hashlib.sha256(json.dumps(request,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()).hexdigest())
             with journal.transaction() as db:
-                task=db.execute('SELECT status FROM runtime_tasks WHERE id=?',(info['task'],)).fetchone()
-                if not task or task[0]!='SUCCEEDED':continue
+                if not terminal(db):continue
                 payload=journal.content.encode(compact)
                 db.execute("UPDATE runtime_values SET payload=? WHERE namespace='worker_requests' AND key=?",(payload,key))
                 telemetry=receipt.get('telemetry')

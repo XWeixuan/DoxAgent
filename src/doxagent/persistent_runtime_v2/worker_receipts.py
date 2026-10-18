@@ -80,6 +80,8 @@ class ReceiptWorker:
                     if recovered:
                         self.journal.set("worker_rejected", identity, False)
                     return WorkerJob.model_validate(job)
+        if frozen.get('retired_process'):
+            raise ValueError('WORKER_REQUEST_RETIRED_REBUILD_FROM_PINNED_ARTIFACTS')
         if rejected or (receipt is not None and str(job.status) in {"failed", "cancelled"}):
             # Only a confirmed terminal failure may mint a new remote dispatch key.
             generation = self.journal.get("worker_generation", identity, 0) + 1
@@ -101,9 +103,6 @@ class ReceiptWorker:
             self.journal.set("worker_receipts", identity, None)
             self.journal.set("worker_rejected", identity, False)
         from doxagent.v2_control.repository import ControlRepository
-
-        if frozen.get('retired_process'):
-            raise ValueError('WORKER_REQUEST_RETIRED_REBUILD_FROM_PINNED_ARTIFACTS')
 
         ControlRepository(self.journal).dispatch(frozen["idempotency_key"], request.ticker)
         dispatched_request = WorkerRunRequest.model_validate(frozen)

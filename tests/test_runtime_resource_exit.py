@@ -51,3 +51,29 @@ def test_owner_retires_unreferenced_compacts_history_and_keeps_current_and_frame
     assert journal.get('reference_deliveries','delivered')['before']['events']==['delivered evidence']
     again=collect(journal,control,now=now,limit=10)
     assert again['compacted']==[] and again['retired']==[]
+
+
+def test_terminal_process_exit_includes_failed_owner_and_failed_retries(tmp_path):
+    from doxagent.persistent_runtime_v2.resource_gc import compact_process
+    now=datetime.now(UTC);old=now-timedelta(days=30)
+    journal=RuntimeJournal(tmp_path/'runtime.sqlite3',clock=lambda:old)
+    runs={};keys={}
+    for run,status,age,receipt,node in [('failed','FAILED',30,'failed','d3_o3_maintain'),('retry','SUCCEEDED',30,'cancelled','d3_o3_maintain'),('recent','FAILED',10,'failed','d3_o3_maintain'),('active','RUNNING',30,'failed','d3_o3_maintain'),('held','FAILED',30,'failed','d3_o3_maintain'),('w3','FAILED',30,'failed','persistent_runtime_w3')]:
+        at=(now-timedelta(days=age)).isoformat();journal.put_task(run,'MU','MAINTENANCE',{})
+        with journal.transaction() as db:db.execute('UPDATE runtime_tasks SET status=?,updated_at=? WHERE id=?',(status,at,run))
+        runs[run]=dict(task=run,status=status,at=at)
+        key='runtime-worker:'+run+':attempt:'+node+':maintain';keys[run]=key
+        journal.set('worker_requests',key,dict(run_id=run,attempt_id='a',node=node,task_phase=None,prompt='large process copy'*1000))
+        journal.set('worker_receipts',key,dict(status=receipt,final_response='unique final',error_code='recorded error',telemetry=dict(events=['verbose process'],usage={'total_tokens':3})))
+        journal.set('reference_baselines',run,{'large':'retry input'})
+    protected={str(journal.path.parent/'runtime_artifacts/held/events')}
+    changed=compact_process(journal,runs,protected,now)
+    assert set(changed)=={keys['failed'],keys['retry']}
+    for run in ('failed','retry'):
+        assert journal.get('worker_requests',keys[run])['retired_process']
+        receipt=journal.get('worker_receipts',keys[run])
+        assert receipt['error_code']=='recorded error' and receipt['final_response']=='unique final'
+        assert receipt['telemetry']==dict(events=[],usage={'total_tokens':3})
+    for run in ('recent','active','held','w3'):
+        assert 'prompt' in journal.get('worker_requests',keys[run])
+    assert compact_process(journal,runs,protected,now)==[]
