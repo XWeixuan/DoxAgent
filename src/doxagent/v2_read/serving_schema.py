@@ -52,6 +52,7 @@ def install(db):
         db.execute('CREATE TRIGGER '+relation+'_v4_delete INSTEAD OF DELETE ON '+relation+
                    ' BEGIN '+delete+' END')
     db.execute('DROP INDEX IF EXISTS objects_head')
+    upgrade(db)  # Physical history exists now, including its empty-head index.
     db.execute('CREATE INDEX IF NOT EXISTS history_expiry ON object_history(valid_to)')
     db.execute('CREATE INDEX IF NOT EXISTS current_case_fact ON object_current('
                "kind,ticker,parent,json_extract(payload,'$.fact.fact_id')) WHERE kind='fact'")
