@@ -53,7 +53,8 @@ def test_supervisor_owns_stable_network_namespace() -> None:
     ):
         assert "site_access_worker_token" in services[service_name]["secrets"]
         assert services[service_name]["depends_on"]["v2-site-access"] == {
-            "condition": "service_healthy"
+            "condition": "service_started"
+            if service_name == "v2-initialization" else "service_healthy"
         }
 
 

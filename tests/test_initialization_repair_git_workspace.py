@@ -42,3 +42,25 @@ def test_incident_worktree_and_branch_do_not_mutate_source_checkout(tmp_path):
     assert git("rev-parse", "HEAD", cwd=source) == revision
     assert git("status", "--porcelain", cwd=source) == ""
     assert manager.prepare("incident-1", revision).path == workspace.path
+
+    # The deployed hotfix branch can be created after the bare clone. A plain
+    # bare-repo fetch updates FETCH_HEAD only and used to miss this commit.
+    git("checkout", "-b", "codex/new-deployment", cwd=source)
+    (source / "tracked.txt").write_text("deployed\n", encoding="utf-8")
+    git("add", "tracked.txt", cwd=source)
+    git("-c", "user.name=Test", "-c", "user.email=test@example.invalid",
+        "commit", "-m", "deployment", cwd=source)
+    deployed = git("rev-parse", "HEAD", cwd=source)
+    git("checkout", "-", cwd=source)
+    next_workspace = manager.prepare("incident-2", deployed)
+    assert (next_workspace.path / "tracked.txt").read_text(encoding="utf-8") == "deployed\n"
+    assert git("rev-parse", "HEAD", cwd=source) == revision
+
+    # Retiring the source hotfix must prune only the remote-tracking ref, never
+    # the live incident branch or the commit needed by its worktree.
+    git("branch", "-D", "codex/new-deployment", cwd=source)
+    manager.ensure_mirror()
+    assert git("rev-parse", "HEAD", cwd=next_workspace.path) == deployed
+    assert git("rev-parse", "HEAD", cwd=workspace.path) == commit
+    assert git("--git-dir", str(manager.bare), "branch", "-r", "--list",
+               "origin/codex/new-deployment", cwd=source) == ""
