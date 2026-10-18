@@ -37,7 +37,12 @@ class FormalProjectors(DomainProjectors):
     def _library(self,root,ticker,version):
         path=Path(root).resolve()/'US'/ticker/'event_library.sqlite3'
         def stamp():
-            return tuple((p.stat().st_dev,p.stat().st_ino,p.stat().st_size,p.stat().st_mtime_ns) if p.exists() else None for p in (path,Path(str(path)+'-wal')))
+            result=[]
+            for p in (path,Path(str(path)+'-wal')):
+                try:info=p.stat()
+                except FileNotFoundError:result.append(None)
+                else:result.append((info.st_dev,info.st_ino,info.st_size,info.st_mtime_ns))
+            return tuple(result)
         key=(str(path),ticker,version);before=stamp()
         prior=self._materialized_libraries.get(key)
         if prior and prior[0]==before:
