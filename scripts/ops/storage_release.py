@@ -1,7 +1,8 @@
 """Host-owned builds, component releases and retryable resource retirement.
 
 Use the same reconcile-resources command after deploy and from the host timer.
-State contains image identities and ownership, never production credentials.
+Private state includes the selected Compose environment needed for rollback;
+printed build/reconcile/status receipts omit that environment.
 """
 from __future__ import annotations
 
@@ -31,6 +32,7 @@ def atomic(path, value):
     path = Path(path); path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_suffix(path.suffix+'.tmp')
     with tmp.open('w', encoding='utf-8') as f:
+        if os.name=='posix':os.fchmod(f.fileno(),0o600)
         json.dump(value,f,ensure_ascii=False,indent=2); f.write('\n'); f.flush(); os.fsync(f.fileno())
     tmp.replace(path)
 
