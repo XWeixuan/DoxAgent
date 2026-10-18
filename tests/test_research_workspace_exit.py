@@ -15,7 +15,7 @@ def test_published_inputs_exit_but_adopted_and_unique_evidence_and_w3_stay(tmp_p
     source=tmp_path/'research.db'
     with sqlite3.connect(source) as db:
         db.execute('CREATE TABLE codex_runtime_records(record_type,run_id,payload_json)')
-        for run in ('published','held','w3-template-old','corrupt'):
+        for run in ('published','runtime-maintain-old','held','w3-template-old','corrupt'):
             workspaces.write_text(run,'artifacts/final.md','result')
             workspaces.write_text(run,'context/reproducible.txt','old input copy')
             workspaces.write_text(run,'context/source.html','unique cited source')
@@ -29,7 +29,7 @@ def test_published_inputs_exit_but_adopted_and_unique_evidence_and_w3_stay(tmp_p
                 jobs.execute('INSERT INTO jobs(id,status,payload,request) VALUES(?,?,?,?)',(run,'succeeded',json.dumps(dict(run_id=run,finished_at=at)),json.dumps(dict(node='document3'))))
     monkeypatch.setattr(retention,'business_holds',lambda *a,**kw:{('run','held')})
     report=retention.collect(workspaces,SimpleNamespace(store=store),SimpleNamespace(codex_runtime_sqlite_path=source),now=now)
-    assert [r['run'] for r in report['runs']]==['published']
+    assert [r['run'] for r in report['runs']]==['published','runtime-maintain-old']
     assert report['errors'][0]['run']=='corrupt'
     assert not (workspaces.root/'published/context/reproducible.txt').exists()
     assert (workspaces.root/'published/context/source.html').read_text()=='unique cited source'

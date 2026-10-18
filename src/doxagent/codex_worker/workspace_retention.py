@@ -56,9 +56,9 @@ def collect(workspaces,jobs,settings,*,now=None,limit=4,dry_run=False):
             if len(report['runs'])>=limit:break
             owners=groups.get(run,[]);directory=root/run
             if not owners or not directory.is_dir() or directory.is_symlink():continue
-            if run.startswith(('w3-','runtime-')) or any(node=='persistent_runtime_w3' or phase in {'w3_template','trade_decision','post_decision_operations'} for _,_,node,phase in owners):continue
+            if run.startswith(('w3-','persistent-runtime-w3-')) or any(node=='persistent_runtime_w3' or phase in {'w3_template','trade_decision','post_decision_operations'} for _,_,node,phase in owners):continue
             if any(run==h or run.startswith(h+'-') for h in held):continue
-            if any(status not in {'succeeded','failed','cancelled'} or not at or now-datetime.fromisoformat(at)<timedelta(days=14) for status,at,_,_ in owners):continue
+            if any(status not in {'succeeded','failed','cancelled'} or not at or now-datetime.fromisoformat(at)<timedelta(days=7 if status=='succeeded' else 14) for status,at,_,_ in owners):continue
             marker=directory/'audit'/'retained-assets.json'
             if marker.is_file() and json.loads(marker.read_text()).get('complete'):continue
             try:

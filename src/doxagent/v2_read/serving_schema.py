@@ -82,6 +82,11 @@ def upgrade(db):
     """Small, explicit V4 DDL addition; no live table rewrite or index build."""
     db.execute('CREATE TABLE IF NOT EXISTS definition_exit(sha256 TEXT PRIMARY KEY)')
     db.execute('CREATE TABLE IF NOT EXISTS serving_content_exit(id TEXT PRIMARY KEY)')
+    db.execute('CREATE INDEX IF NOT EXISTS current_native_identity ON object_current(kind,id,ticker)')
+    if db.execute("SELECT 1 FROM sqlite_master WHERE name='object_history'").fetchone():
+        # Empty by V4's physical contract; keeps legacy head-only UNION queries
+        # from walking every historical payload while compatible callers retire.
+        db.execute('CREATE INDEX IF NOT EXISTS history_empty_heads ON object_history(kind,id,ticker) WHERE valid_to IS NULL')
     for table,column,queue in (('definition_ref','sha256','definition_exit'),
                                ('artifact_ref','artifact_id','serving_content_exit')):
         target_column='sha256' if table=='definition_ref' else 'id'

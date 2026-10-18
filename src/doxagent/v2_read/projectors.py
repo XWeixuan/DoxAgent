@@ -115,14 +115,14 @@ class DomainProjectors:
         elif table == "initialization_repair_rounds":
             with self.store.connect() as db:
                 found = db.execute(
-                    "SELECT ticker FROM objects "
+                    "SELECT ticker FROM object_current "
                     "WHERE kind='native:initialization_repair_incidents' "
                     "AND id=? AND valid_to IS NULL",
                     (value["incident_id"],),
                 ).fetchone()
                 if not found and event["operation"] == "DELETE":
                     found = db.execute(
-                        "SELECT ticker FROM objects "
+                        "SELECT ticker FROM object_current "
                         "WHERE kind='native:initialization_repair_rounds' "
                         "AND id=? AND valid_to IS NULL",
                         (value["round_id"],),
@@ -136,7 +136,7 @@ class DomainProjectors:
             else:
                 with self.store.connect() as db:
                     found = db.execute(
-                        "SELECT payload FROM objects WHERE kind='native:initialization_runs' "
+                        "SELECT payload FROM object_current WHERE kind='native:initialization_runs' "
                         "AND id=? AND valid_to IS NULL",
                         (row["run_id"],),
                     ).fetchone()
@@ -150,7 +150,7 @@ class DomainProjectors:
         if table == "runtime_v2_turns":
             with self.store.connect() as db:
                 found = db.execute(
-                    "SELECT ticker,payload FROM objects WHERE kind='native:runtime_v2_cases' "
+                    "SELECT ticker,payload FROM object_current WHERE kind='native:runtime_v2_cases' "
                     "AND id=? AND valid_to IS NULL",
                     (value["case_id"],),
                 ).fetchone()
@@ -762,7 +762,7 @@ class DomainProjectors:
         # stream_members has no ticker; the stream identity is indexed on publication.
         with self.store.connect() as db:
             row = db.execute(
-                "SELECT ticker,payload FROM objects WHERE kind='native:stream_items' "
+                "SELECT ticker,payload FROM object_current WHERE kind='native:stream_items' "
                 "AND id=? AND valid_to IS NULL",
                 (member["stream_item_id"],),
             ).fetchone()
