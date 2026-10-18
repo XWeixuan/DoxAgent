@@ -47,7 +47,8 @@ class GitWorkspaceManager:
             self._run(["git", "clone", "--bare", self.source_repository, str(self.bare)])
         elif not (self.bare / "HEAD").is_file():
             raise GitWorkspaceError("repair repository exists but is not a bare Git repository")
-        self._run(["git", "--git-dir", str(self.bare), "fetch", "--prune", "origin"])
+        self._run(["git", "--git-dir", str(self.bare), "fetch", "--prune", "origin",
+                   "+refs/heads/*:refs/remotes/origin/*"])
 
     def prepare(self, incident_id: str, source_revision: str) -> IncidentWorkspace:
         if not source_revision.strip() or source_revision == "unversioned":

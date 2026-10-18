@@ -400,7 +400,7 @@ def build(repo, commit, root, kinds, *, sdk='doxagent-ibapi:approved-7d361219',
             state.setdefault('candidates',[]).append(dict(image=image['Id'],expires=time.time()+48*3600))
             atomic(root/'state.json',state)
             atomic(root/(commit+'.build.json'),receipt)
-    receipt.update(finished=time.time(),source_tree=source_sha)
+    receipt.update(finished=time.time(),source_archive_sha256=source_sha)
     atomic(root/(commit+'.build.json'),receipt)
     return receipt
 

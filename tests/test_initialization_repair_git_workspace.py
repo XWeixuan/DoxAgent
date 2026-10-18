@@ -42,3 +42,15 @@ def test_incident_worktree_and_branch_do_not_mutate_source_checkout(tmp_path):
     assert git("rev-parse", "HEAD", cwd=source) == revision
     assert git("status", "--porcelain", cwd=source) == ""
     assert manager.prepare("incident-1", revision).path == workspace.path
+    assert manager.retire('incident-1')
+    assert not workspace.path.exists()
+    assert git('--git-dir',str(manager.bare),'rev-parse','codex/init-repair/incident-1',cwd=source)==commit
+    # Production can deploy an audited release branch before MAIN convergence.
+    git('checkout','-b','codex/new-release',cwd=source)
+    (source/'later.txt').write_text('new release')
+    git('add','later.txt',cwd=source)
+    git('-c','user.name=Test','-c','user.email=test@example.invalid','commit','-m','release',cwd=source)
+    later=git('rev-parse','HEAD',cwd=source)
+    next_workspace=manager.prepare('incident-2',later)
+    assert (next_workspace.path/'later.txt').read_text()=='new release'
+    assert git('--git-dir',str(manager.bare),'rev-parse','codex/init-repair/incident-1',cwd=source)==commit

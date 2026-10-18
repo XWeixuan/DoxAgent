@@ -60,6 +60,7 @@ class ReadStore:
 
     def __init__(self, path: str | Path) -> None:
         self.path = Path(path).resolve()
+        self._retirement_shapes={}
         if self.path.suffix == ".json":
             alias = json.loads(self.path.read_text(encoding="utf-8"))
             if alias.get("format") != "doxagent.v2.read-alias.1":
@@ -73,6 +74,21 @@ class ReadStore:
     def content_codec(self):
         from .native_content import NativeContent
         return NativeContent(self.path)
+
+    def close_current(self,db,base,where,args,seq):
+        """Move current once; never search technical history to close a head."""
+        if base not in self._retirement_shapes:
+            from .serving_schema import history_relation
+            history=history_relation(db,base)
+            columns=[r[1] for r in db.execute('PRAGMA table_info('+history+')')]
+            self._retirement_shapes[base]=(history,columns)
+        history,columns=self._retirement_shapes[base]
+        if history==base:
+            db.execute('UPDATE '+base+' SET valid_to=? WHERE '+where+' AND valid_to IS NULL',(seq,*args));return
+        current='object_current' if base=='objects' else base+'_current'
+        selected=','.join('?' if column=='valid_to' else column for column in columns)
+        db.execute('INSERT INTO '+history+'('+','.join(columns)+') SELECT '+selected+' FROM '+current+' WHERE '+where,(seq,*args))
+        db.execute('DELETE FROM '+current+' WHERE '+where,args)
 
     @contextmanager
     def connect(self, *, write: bool = False, timeout: float = 2) -> Iterator[sqlite3.Connection]:
@@ -430,11 +446,7 @@ class ReadStore:
                     for parent in ((old[2] if old else None), record.get("parent")):
                         if parent:
                             raw_links.add((ticker,parent))
-                db.execute(
-                    "UPDATE objects SET valid_to=? WHERE kind=? AND ticker=? AND id=? "
-                    "AND valid_to IS NULL",
-                    (seq, kind, ticker, identity),
-                )
+                if old:self.close_current(db,'objects','kind=? AND ticker=? AND id=?',(kind,ticker,identity),seq)
                 payload = record.get("data")
                 if payload is not None and kind == "message":
                     payload = {**payload, "row_revision": seq}
@@ -502,7 +514,7 @@ class ReadStore:
                         raise ValueError("conflicting contribution set")
                     if amount:
                         expected[member] = amount
-                old_values = db.execute("SELECT day,dimensions,value FROM contributions WHERE metric=? AND ticker=? AND entity=? AND valid_to IS NULL", base).fetchall()
+                old_values = db.execute("SELECT day,dimensions,value FROM contributions_current WHERE metric=? AND ticker=? AND entity=?", base).fetchall()
                 previous = {(row[0], row[1]): Decimal(row[2]) for row in old_values}
                 if previous == expected:
                     continue
@@ -512,7 +524,7 @@ class ReadStore:
                     for bucket_day in (day, "*"):
                         bucket = (base[0], base[1], bucket_day, dimensions)
                         deltas[bucket] = deltas.get(bucket, Decimal(0)) - amount
-                db.execute("UPDATE contributions SET valid_to=? WHERE metric=? AND ticker=? AND entity=? AND valid_to IS NULL", (seq, *base))
+                if old_values:self.close_current(db,'contributions','metric=? AND ticker=? AND entity=?',base,seq)
                 for (day, dimensions), amount in expected.items():
                     for bucket_day in (day, "*"):
                         bucket = (base[0], base[1], bucket_day, dimensions)
@@ -531,16 +543,12 @@ class ReadStore:
                 if not delta:
                     continue
                 old = db.execute(
-                    "SELECT value FROM metric_buckets WHERE metric=? AND ticker=? AND day=? "
-                    "AND dimensions=? AND valid_to IS NULL",
+                    "SELECT value FROM metric_buckets_current WHERE metric=? AND ticker=? AND day=? "
+                    "AND dimensions=?",
                     key,
                 ).fetchone()
                 value = (Decimal(old[0]) if old else Decimal(0)) + delta
-                db.execute(
-                    "UPDATE metric_buckets SET valid_to=? WHERE metric=? AND ticker=? AND day=? "
-                    "AND dimensions=? AND valid_to IS NULL",
-                    (seq, *key),
-                )
+                if old:self.close_current(db,'metric_buckets','metric=? AND ticker=? AND day=? AND dimensions=?',key,seq)
                 db.execute(
                     "INSERT INTO metric_buckets(metric,ticker,day,dimensions,value,valid_from,valid_to) VALUES(?,?,?,?,?,?,NULL)",
                     (*key, format(value, "f"), seq),
