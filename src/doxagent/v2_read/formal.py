@@ -32,6 +32,23 @@ class FormalProjectors(DomainProjectors):
         super().__init__(store)
         self.artifacts = ArtifactIndexer(store, research) if research else None
         self.event_root = event_root
+        self._materialized_libraries = {}
+
+    def _library(self,root,ticker,version):
+        path=Path(root).resolve()/'US'/ticker/'event_library.sqlite3'
+        def stamp():
+            return tuple((p.stat().st_dev,p.stat().st_ino,p.stat().st_size,p.stat().st_mtime_ns) if p.exists() else None for p in (path,Path(str(path)+'-wal')))
+        key=(str(path),ticker,version);before=stamp()
+        prior=self._materialized_libraries.get(key)
+        if prior and prior[0]==before:
+            reference=prior[1]
+            if self.store.get('library',ticker,reference['library_snapshot_id'])==reference:
+                return dict(reference),[]
+        reference,records=LibraryIndexer(root).index(ticker,version)
+        if before==stamp():
+            if len(self._materialized_libraries)>=256:self._materialized_libraries.pop(next(iter(self._materialized_libraries)))
+            self._materialized_libraries[key]=(before,dict(reference))
+        return reference,records
 
     def __call__(self, event: dict[str, Any]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
         records, metrics = super().__call__(event)
@@ -219,7 +236,7 @@ class FormalProjectors(DomainProjectors):
         root = refs["event_library"].get("root") or self.event_root
         if not root:
             raise ValueError("formal event source is not configured")
-        library, indexed = LibraryIndexer(root).index(ticker, refs["event_library"]["version"])
+        library, indexed = self._library(root,ticker,refs["event_library"]["version"])
         records.extend(indexed)
         run_id = self._policy_run_id(revision)
         bundle = self.artifacts.source.record("bundles", run_id, run_id)
