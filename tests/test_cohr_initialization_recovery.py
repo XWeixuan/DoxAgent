@@ -13,6 +13,7 @@ from doxagent.initialization_repair.auth import (
     access_credentials,
     install_external_auth,
     publish_access_credentials,
+    quarantine_legacy_refresh_auth,
 )
 from doxagent.settings import DoxAgentSettings
 from doxagent.tools.providers.base import BaseRealToolClient
@@ -98,6 +99,26 @@ def test_external_snapshot_has_no_refresh_token_and_follows_owner_rotation(tmp_p
     auth_file(source, expires=time.time() - 1)
     with pytest.raises(RuntimeError, match="expired"):
         access_credentials(source)
+
+
+def test_old_incident_refresh_copy_is_retained_outside_agent_mount(tmp_path):
+    source = tmp_path / "login-owner.json"
+    home = tmp_path / "incident" / "codex-home"
+    home.mkdir(parents=True)
+    auth_file(source)
+    auth_file(home / "auth.json")
+    original = source.read_bytes()
+    publish_access_credentials(source, home / "external-auth.json")
+    retired = quarantine_legacy_refresh_auth(home)
+    assert retired.parent == home.parent / "retired-auth"
+    assert "must-not-propagate" in retired.read_text()
+    assert not (home / "auth.json").exists()
+    assert source.read_bytes() == original
+    assert "refresh_token" not in (home / "external-auth.json").read_text()
+    assert quarantine_legacy_refresh_auth(home) is None
+    (home / "auth.json").write_text('{"auth_mode":"chatgptAuthTokens"}')
+    assert quarantine_legacy_refresh_auth(home) is None
+    assert (home / "auth.json").is_file()
 
 
 @pytest.mark.asyncio

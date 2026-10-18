@@ -6,6 +6,7 @@ import base64
 import json
 import time
 from pathlib import Path
+from uuid import uuid4
 
 
 def access_credentials(source: Path) -> dict[str, str]:
@@ -39,6 +40,24 @@ def publish_access_credentials(source: Path, target: Path) -> None:
     temporary.write_text(json.dumps(credentials), encoding="utf-8")
     temporary.chmod(0o600)
     temporary.replace(target)
+
+
+def quarantine_legacy_refresh_auth(code_home: Path) -> Path | None:
+    """Keep old copied refresh credentials outside the agent's mounted home."""
+    legacy = code_home / "auth.json"
+    if not legacy.is_file():
+        return None
+    data = json.loads(legacy.read_text(encoding="utf-8"))
+    if not data.get("tokens", data).get("refresh_token"):
+        return None
+    # Existing incidents may predate external login. Do not let their SDK
+    # discover the old login owner, even briefly, before external login starts.
+    retired = code_home.parent / "retired-auth"
+    retired.mkdir(mode=0o700, exist_ok=True)
+    target = retired / f"auth-{uuid4().hex}.json"
+    legacy.replace(target)
+    target.chmod(0o600)
+    return target
 
 
 async def install_external_auth(client, snapshot: Path) -> None:

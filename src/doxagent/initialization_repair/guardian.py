@@ -196,6 +196,10 @@ class Guardian:
         if self.external_auth_source is None and not incident_auth.is_file():
             shutil.copy2(self.codex_auth_file, incident_auth)
             incident_auth.chmod(0o600)
+        elif self.external_auth_source is not None:
+            from .auth import quarantine_legacy_refresh_auth
+
+            quarantine_legacy_refresh_auth(code_home)
         command = [
             "doxagent-initialization-repair",
             "agent",

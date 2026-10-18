@@ -35,3 +35,5 @@
 扩大回归的首次结果为 124 passed / 3 failed：两项旧 fixture 导入在干净 origin/main 上同样失败，已改为从实际生产模块导入；D1 旧断言还把当前 7 节点 DAG 当作 5 节点，已更新为七个节点各一次，并保持 assemble=1/publish=2 的恢复验收。修正后的 D1 用例已通过，D3 旧入口恢复用例也通过。另一次 MemoryError 的 D3 managed publication 用例独立复测通过（27.45 秒）；未据此修改生产业务逻辑。最终扩大回归仍在运行。
 
 部署追溯边界：后续存储发布的镜像标签与部分保留下来的 DOXAGENT_BUILD_COMMIT/DOXAGENT_SOURCE_SHA256 环境声明不同，已分别采集，未将任一旧环境字段冒充当前容器完整代码身份。Guardian 获取当前部署源仍按容器镜像标签和源 hash 校验；SNOW 历史节点 f142e55c 与后续 fe4a768b 的执行记录均保留。分支退役取镜像声明/环境声明/在途持久记录的保护并集，因此保守保留两个仍有运行链引用的本轮 refs。其他会话的部署身份整合不在本轮整体重建范围内。
+
+认证兼容性补齐：复核旧 incident 发现，在配置 external login 后，先前复制进 codex-home 的 auth.json 仍可能含 refresh token。新 `_start_agent` 在挂载 Agent 之前仅将这类旧文件原子移到 incident/retired-auth（Agent 挂载之外，私有权限），保留原件、不动 /data/codex-home 的登录所有者；不隔离当前 SDK 无 refresh token 的 external-token 状态。新增旧事件、原件保留、挂载边界和重复调用回归，认证/Guardian/Agent 组 17 passed，Ruff 通过。此兼容性改进随主线下次发布生效，不重新开启已 CANCELLED 的事件。
