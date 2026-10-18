@@ -1651,3 +1651,4 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 2026-10-19 closeout scope: native profiling confirmed repeated Library compilation across copied roots. Cross-root reuse would require a new persistent materialization authority; keep the existing correct version/identity behavior and bounded private bulk cache, without adding a new alias/cache lifecycle.
 `n2026-10-19 normalized Read writes: compare immutable definition references on unchanged Fact/Event/Policy upserts instead of repeatedly expanding their large definition bodies. Serving reads retain full definition/hash checks; native metadata is still decoded. No alias cache or new materialization authority.
+`n2026-10-19 storage-status is read-only and no longer takes the deployment writer lock; atomic release state and bounded read-only owner queries remain inspectable during an active build/release.

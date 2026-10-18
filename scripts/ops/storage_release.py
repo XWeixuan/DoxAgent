@@ -585,6 +585,10 @@ def main():
     parser.add_argument('--resume-dependencies',action='store_true',
                         help='resume a completed/cancelled dependency build from BuildKit cache; the write reserve still applies')
     args=parser.parse_args()
+    if args.command=='storage-status':
+        path=args.root/'state.json';state=json.loads(path.read_text()) if path.exists() else {}
+        print(json.dumps(dict(available_bytes=shutil.disk_usage('/').free,owners=owner_status(inspect_containers()),release=state.get('last_reconcile'),capacity_samples=str(args.root/'capacity')),ensure_ascii=False))
+        return  # Atomic state + read-only SQL do not need the deploy writer lock.
     with lock(args.root):
         path=args.root/'state.json'
         state=json.loads(path.read_text()) if path.exists() else {}
@@ -595,7 +599,6 @@ def main():
             if not args.commit:parser.error('release requires an exact commit')
             result=release_components(args.root,state,args.repo,args.commit,args.component)
         elif args.command=='prepare-inputs':result=prepare_inputs(args.root,state)
-        elif args.command=='storage-status':result=dict(available_bytes=shutil.disk_usage('/').free,owners=owner_status(inspect_containers()),release=state.get('last_reconcile'),capacity_samples=str(args.root/'capacity'))
         elif args.command=='bootstrap':
             if state:raise ValueError('release state already exists')
             state=json.loads(args.manifest.read_text())

@@ -1,6 +1,7 @@
 import importlib.util
 import json
 import subprocess
+import sys
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -9,6 +10,15 @@ import pytest
 
 spec=importlib.util.spec_from_file_location('storage_release',Path(__file__).parents[1]/'scripts/ops/storage_release.py')
 release=importlib.util.module_from_spec(spec);spec.loader.exec_module(release)
+
+
+def test_status_remains_readable_during_a_deploy_writer_lock(tmp_path,monkeypatch,capsys):
+    def writer_lock(*args):raise AssertionError('read-only status acquired the deploy lock')
+    monkeypatch.setattr(release,'lock',writer_lock)
+    monkeypatch.setattr(release,'inspect_containers',lambda:[])
+    monkeypatch.setattr(sys,'argv',['storage-release','storage-status','--root',str(tmp_path)])
+    release.main()
+    assert json.loads(capsys.readouterr().out)['owners']=={}
 
 
 def image(identity,tag):
