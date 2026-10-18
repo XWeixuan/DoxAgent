@@ -32,8 +32,13 @@
 生产特征复核：当前 initializer 已有三项定向读取及 settle_parallel；Worker 已有惰性 client 与 D3 启动预算；Guardian 已有 external_auth_source，并由后续部署包含显式全分支 fetch。本分支现在也持久包含该 fetch 修复，避免只靠生产配置。新的 recovery 日志命名改进尚未部署，本轮不为审计优化重启 SNOW 相关服务，后续从合并后的主线发布生效。
 
 
-扩大回归的首次结果为 124 passed / 3 failed：两项旧 fixture 导入在干净 origin/main 上同样失败，已改为从实际生产模块导入；D1 旧断言还把当前 7 节点 DAG 当作 5 节点，已更新为七个节点各一次，并保持 assemble=1/publish=2 的恢复验收。修正后的 D1 用例已通过，D3 旧入口恢复用例也通过。另一次 MemoryError 的 D3 managed publication 用例独立复测通过（27.45 秒）；未据此修改生产业务逻辑。最终扩大回归仍在运行。
+扩大回归的首次结果为 124 passed / 3 failed：两项旧 fixture 导入在干净 origin/main 上同样失败，已改为从实际生产模块导入；D1 旧断言还把当前 7 节点 DAG 当作 5 节点，已更新为七个节点各一次，并保持 assemble=1/publish=2 的恢复验收。修正后的 D1 用例已通过，D3 旧入口恢复用例也通过。另一次 MemoryError 的 D3 managed publication 用例独立复测通过（27.45 秒）；未据此修改生产业务逻辑。最终结果见下。
 
 部署追溯边界：后续存储发布的镜像标签与部分保留下来的 DOXAGENT_BUILD_COMMIT/DOXAGENT_SOURCE_SHA256 环境声明不同，已分别采集，未将任一旧环境字段冒充当前容器完整代码身份。Guardian 获取当前部署源仍按容器镜像标签和源 hash 校验；SNOW 历史节点 f142e55c 与后续 fe4a768b 的执行记录均保留。分支退役取镜像声明/环境声明/在途持久记录的保护并集，因此保守保留两个仍有运行链引用的本轮 refs。其他会话的部署身份整合不在本轮整体重建范围内。
 
 认证兼容性补齐：复核旧 incident 发现，在配置 external login 后，先前复制进 codex-home 的 auth.json 仍可能含 refresh token。新 `_start_agent` 在挂载 Agent 之前仅将这类旧文件原子移到 incident/retired-auth（Agent 挂载之外，私有权限），保留原件、不动 /data/codex-home 的登录所有者；不隔离当前 SDK 无 refresh token 的 external-token 状态。新增旧事件、原件保留、挂载边界和重复调用回归，认证/Guardian/Agent 组 17 passed，Ruff 通过。此兼容性改进随主线下次发布生效，不重新开启已 CANCELLED 的事件。
+
+
+最终测试验收：扩大组 270 passed / 2 failed / 1 skipped。两项失败分别为该批已加载的旧 D1 节点计数断言、以及既存 startup 集成 fixture 的 D2 provenance 不一致（D2 绑定 d1-mu，却激活 d1-new）；后一项也已在干净 origin/main 复现。修正测试导入/计数和 fixture 引用，不放宽生产 provenance 校验。最后针对两项失败及所有新增代码运行的收尾组为 **39 passed / 1 平台 skip**；SDK/Worker 资源预算组 **93 passed**，所有涉及 Python 文件 Ruff 与 git diff --check 通过。此前 MemoryError 在单例和第二次扩大组均未复现。上述测试组有重叠，不将它们相加冒充独立用例数。
+
+最终代码审查没有遗留的合并阻碍。新增生产改动仅为 Guardian 源码获取、重试审计、旧认证副本隔离和 initializer 的启动依赖；没有改变成功节点、研究质量门槛、cutoff、预算、交易绑定或激活 provenance 合同。
