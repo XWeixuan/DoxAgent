@@ -11,6 +11,10 @@ from doxagent.settings import DoxAgentSettings
 
 
 def paths(settings):
+    read=Path(os.environ['DOXAGENT_V2_READ_SQLITE_PATH'])
+    if read.is_absolute() and (read.suffix=='.json' or read.is_symlink()):
+        from doxagent.v2_read.repository import ReadStore
+        read=ReadStore(read).path
     return {
         "research": Path(settings.codex_runtime_sqlite_path),
         "initialization": Path(settings.ticker_initialization_control_path),
@@ -19,7 +23,7 @@ def paths(settings):
         "scheduler": Path(settings.runtime_scheduler_sqlite_path),
         "usage": Path(settings.model_usage_sqlite_path),
         "o4": Path(settings.codex_monitoring_o4_sqlite_path),
-        "read": Path(os.environ["DOXAGENT_V2_READ_SQLITE_PATH"]),
+        "read": read,
     }
 
 
@@ -105,9 +109,19 @@ def migrate(*, resume_backup=None):
     # repositories, backfill sources, or take another full database backup.
     import sqlite3
     from doxagent.v2_read.maintenance import atomic_json
-    marker = locations["read"].parent / "production-schema.json"
+    logical_read=Path(os.environ['DOXAGENT_V2_READ_SQLITE_PATH'])
+    marker = logical_read.parent / "production-schema.json"
     expected = {"version": "20260921-db-v4", "paths": {key: str(value) for key, value in locations.items()}}
-    if marker.is_file() and json.loads(marker.read_text(encoding="utf-8")) == expected and all(path.is_file() for path in locations.values()):
+    expected['paths']['read']=str(logical_read)  # Stable alias, not an expiring generation path.
+    previous=json.loads(marker.read_text(encoding='utf-8')) if marker.is_file() else None
+    compatible=previous==expected
+    if previous and previous.get('version')==expected['version']:
+        old_paths=previous.get('paths',{})
+        compatible=all(old_paths.get(k)==v for k,v in expected['paths'].items() if k!='read')
+        if compatible:
+            try:compatible=ReadStore(old_paths['read']).path==locations['read'].resolve()
+            except (OSError,ValueError,KeyError):compatible=False
+    if compatible and all(path.is_file() for path in locations.values()):
         with sqlite3.connect(locations["read"].resolve().as_uri() + "?mode=ro", uri=True) as db:
             if db.execute("SELECT version FROM schema_meta").fetchone()[0] == ReadStore.VERSION:
                 from doxagent.v2_read.artifact_registry import upgrade_native_trigger_conflicts
@@ -118,10 +132,17 @@ def migrate(*, resume_backup=None):
                         if name == "read":
                             from doxagent.v2_read.repository import migrate_case_evidence_indexes
                             migrate_case_evidence_indexes(native)
+                atomic_json(marker,expected)
                 print(json.dumps({"migrated": [], "schema_current": True}))
                 return
+    if locations['read'].is_file():
+        with sqlite3.connect(locations['read'].resolve().as_uri()+'?mode=ro',uri=True) as db:
+            if db.execute("SELECT 1 FROM sqlite_master WHERE name='schema_meta'").fetchone():
+                version=db.execute('SELECT version FROM schema_meta').fetchone()[0]
+                if version<ReadStore.VERSION and db.execute('SELECT 1 FROM objects LIMIT 1').fetchone():
+                    raise ValueError('populated legacy Read requires serving-generation before source migration backups')
     stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%S%fZ")
-    backup_parent = locations["read"].parent.parent / "backups"
+    backup_parent = logical_read.parent.parent / "backups"
     backup_root = Path(resume_backup).resolve(strict=True) if resume_backup else backup_parent / stamp
     if resume_backup and (backup_root.parent != backup_parent.resolve() or not backup_root.is_dir()):
         raise ValueError("resume backup must be an existing production backup directory")

@@ -109,7 +109,7 @@ def checkpointed_json(key: str, call: Callable[[], Any], *, max_retries: int = 1
         ],
     )
     while True:
-        previous = next(n for n in repo.nodes(parent.run.initialization_id) if n.key == key)
+        previous = repo.node(parent.run.initialization_id, key)
         if previous.status == "SUCCEEDED" and previous.result is not None:
             return previous.result.artifacts["return"]
         if previous.status == "RUNNING":
@@ -245,7 +245,7 @@ def durable(kind: str) -> Callable[[Callable[P, Awaitable[T]]], Callable[P, Awai
             )
             codec = _codec(kind, arguments)
             while True:
-                previous = next(n for n in repo.nodes(parent.run.initialization_id) if n.key == key)
+                previous = repo.node(parent.run.initialization_id, key)
                 if previous.status == "SUCCEEDED" and previous.result is not None:
                     payload = previous.receipt.get(
                         "decoded_return_v1", previous.result.artifacts["return"]
@@ -430,10 +430,11 @@ def settle_stage(
     key = parent.node.key + "." + node
     if durable_key:
         key += ":" + durable_key
-    child = next(
-        (n for n in parent.repository.nodes(parent.run.initialization_id) if n.key == key), None
-    )
-    if child is None or child.status != "RUNNING":
+    try:
+        child = parent.repository.node(parent.run.initialization_id, key)
+    except KeyError:
+        return
+    if child.status != "RUNNING":
         return
     if error is not None:
         parent.repository.fail(parent.lease, key, error)

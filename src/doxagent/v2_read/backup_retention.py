@@ -44,7 +44,17 @@ def complete_migration_backup(directory, originals):
     # Keep one compressed rollback set instead of leaving another full live-size DB.
     marker = directory / MARKER
     if not marker.exists():
-        receipt['databases'] = []
+        ledger_path=directory/'.compression-progress.json'
+        if ledger_path.exists():
+            ledger=json.loads(ledger_path.read_text(encoding='utf-8'))
+            if ledger.get('owner')!=OWNER or ledger.get('originals')!=sources:
+                raise ValueError('backup compression ownership differs')
+        else:
+            ledger=dict(owner=OWNER,originals=sources,databases=[],
+                        foreign_partials=[p.name for p in directory.glob('*.sqlite3.gz.partial')])
+            atomic_json(ledger_path,ledger)
+        receipt['databases'] = list(ledger['databases'])
+        verified_in_pass=set()
         created_partial = None
         try:
             for source in directory.glob('*.sqlite3'):
@@ -52,6 +62,20 @@ def complete_migration_backup(directory, originals):
                     raise ValueError('migration backup must not contain linked databases')
                 target = source.with_suffix(source.suffix+'.gz')
                 partial = target.with_suffix(target.suffix+'.partial')
+                if target.is_symlink():raise ValueError('linked compressed backup')
+                if partial.exists() and partial.name not in ledger['foreign_partials']:
+                    if partial.is_symlink():raise ValueError('linked backup compression staging')
+                    partial.unlink()  # This producer's interrupted partial, not a rollback.
+                if target.exists():
+                    # Crash after gzip rename, before source unlink/next DB.
+                    with source.open('rb') as original,gzip.open(target,'rb') as saved:
+                        digest=hashlib.file_digest(original,'sha256').hexdigest()
+                        if hashlib.file_digest(saved,'sha256').hexdigest()!=digest:
+                            raise ValueError('existing compressed snapshot differs')
+                    entry=dict(file=target.name,original_bytes=source.stat().st_size,sha256=digest)
+                    receipt['databases']=[v for v in receipt['databases'] if v['file']!=target.name]+[entry]
+                    ledger['databases']=receipt['databases'];atomic_json(ledger_path,ledger)
+                    verified_in_pass.add(target.name);source.unlink();continue
                 original_hash = hashlib.sha256()
                 with source.open('rb') as original, partial.open('xb') as raw:
                     created_partial = partial
@@ -70,9 +94,20 @@ def complete_migration_backup(directory, originals):
                     raise ValueError('compressed migration snapshot already exists')
                 partial.replace(target)
                 created_partial = None
-                receipt['databases'].append(dict(file=target.name, original_bytes=source.stat().st_size,
-                                                 sha256=original_hash.hexdigest()))
+                entry=dict(file=target.name,original_bytes=source.stat().st_size,sha256=original_hash.hexdigest())
+                receipt['databases']=[v for v in receipt['databases'] if v['file']!=target.name]+[entry]
+                ledger['databases']=receipt['databases'];atomic_json(ledger_path,ledger)
+                verified_in_pass.add(target.name)
                 source.unlink()
+            # Every already-compressed DB from an interrupted pass remains in
+            # the coherent manifest before the previous rollback set can exit.
+            for entry in receipt['databases']:
+                if entry['file'] in verified_in_pass:continue
+                saved_path=directory/entry['file']
+                if saved_path.parent!=directory or saved_path.is_symlink():raise ValueError('backup ledger path escaped owner')
+                with gzip.open(saved_path,'rb') as saved:
+                    if hashlib.file_digest(saved,'sha256').hexdigest()!=entry['sha256']:
+                        raise ValueError('resumed compressed backup checksum mismatch')
             atomic_json(marker, receipt)
         except (OSError, ValueError) as exc:
             if created_partial is not None:

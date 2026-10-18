@@ -72,6 +72,8 @@ def test_partial_deploy_keeps_accepted_component_and_rolls_back_failed_component
         raise AssertionError(command)
     monkeypatch.setattr(release.subprocess,'run',execute)
     monkeypatch.setattr(release,'run',output)
+    monkeypatch.setattr(release,'inspect_images',lambda:[])
+    monkeypatch.setattr(release,'inspect_containers',lambda:[])
     with pytest.raises(subprocess.CalledProcessError):release.deploy(tmp_path,state,manifest)
     saved=json.loads((tmp_path/'state.json').read_text())
     assert saved['components']['api']['current']['image']=='b'
@@ -84,3 +86,15 @@ def test_partial_deploy_keeps_accepted_component_and_rolls_back_failed_component
 
 def test_retirement_requires_bootstrapped_rollback_inventory(tmp_path):
     with pytest.raises(ValueError,match='bootstrap'):release.reconcile(tmp_path,{})
+
+
+def test_companion_exits_with_its_guardian_and_live_reference_survives_promotion():
+    state={'components':{'guardian':{'current':{'image':'g2'},'previous':{'image':'g1'}}},
+           'holds':[{'image':'a1','component':'guardian','release_image':'g1'}]}
+    images=[image('a2','doxagent-agent:current')]
+    containers=[{'Image':'g2','Config':{'Labels':{'com.docker.compose.service':'guardian'},'Env':['AGENT=doxagent-agent:current']}}]
+    release.record_live_references(state,images,containers)
+    release.promote(state,'guardian','g3',commit='g3')
+    protected=release.protected_images(state,images,[])
+    assert 'a2' in protected
+    assert 'a1' not in protected

@@ -24,6 +24,11 @@ def instant(at: datetime) -> str:
 
 def migrate_case_evidence_indexes(db) -> None:
     """Add display lookup indexes to an existing release without a full migration."""
+    relation=db.execute("SELECT type FROM sqlite_master WHERE name='objects'").fetchone()
+    if relation and relation[0]=='view':
+        from .serving_schema import upgrade
+        upgrade(db)
+        return  # V4 owns physical current/history lookup indexes, not view indexes.
     for name, fields, kind in (
         ("case_fact_evidence", "parent,json_extract(payload,'$.fact.fact_id'),valid_from", "fact"),
         ("case_policy_evidence", "parent,json_extract(payload,'$.summary.policy_id'),valid_from", "policy_detail"),

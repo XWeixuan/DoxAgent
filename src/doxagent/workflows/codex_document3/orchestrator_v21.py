@@ -44,6 +44,15 @@ from .validation_v21 import (
 )
 
 
+async def settle_parallel(*operations):
+    """Keep the owning transport alive until all started siblings have settled."""
+    results = await asyncio.gather(*operations, return_exceptions=True)
+    for result in results:
+        if isinstance(result, BaseException):
+            raise result
+    return results
+
+
 def batches(items, *, count=20, size=128 * 1024):
     current, total = [], 0
     for item in items:
@@ -690,7 +699,7 @@ class Document3OrchestratorV21:
                         f"{record.get('error', '')}"
                     )
 
-        await asyncio.gather(*(owner_queue(owner, waves) for owner, waves in queues.items()))
+        await settle_parallel(*(owner_queue(owner, waves) for owner, waves in queues.items()))
         results, paths, diagnostics = {}, [], [{"warning": e} for e in route_errors]
         for key in sorted(accepted):
             value = accepted[key]
@@ -792,7 +801,7 @@ class Document3OrchestratorV21:
 
             if "shell_discovery_input" not in run:
                 self.state.update(run_id, phase="SHELL_DISCOVERY")
-                await asyncio.gather(*(discovery(owner) for owner in shell_owners))
+                await settle_parallel(*(discovery(owner) for owner in shell_owners))
                 collected = self.collect_discovery_materials(run_id, shell_owners)
                 index_ref = "context/document3/v21/discovery_inputs/shells/index.json"
                 index = {
@@ -806,7 +815,7 @@ class Document3OrchestratorV21:
                 self.state.update(run_id, shell_discovery_input=shell_input, phase="OPEN_DISCOVERY")
             else:
                 shell_input = run["shell_discovery_input"]
-            await asyncio.gather(
+            await settle_parallel(
                 *(discovery(owner, shell_input=shell_input) for owner in open_owners)
             )
             collected = self.collect_discovery_materials(run_id, owners)

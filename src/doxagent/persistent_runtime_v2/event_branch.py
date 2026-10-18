@@ -46,9 +46,9 @@ def branch_library(source: Path,target: Path,ticker: str,base: int) -> EventLibr
             # leave the branch. Small last-application mappings retain dedup.
             copy('delta_batches','ticker=? AND published_version IS NULL AND base_version<=?',(ticker,base if head==base else base-1))
             copy('delta_items','batch_id IN (SELECT batch_id FROM main.delta_batches)')
-            if head==base:
-                copy('runtime_atomic_mappings','1')
-            db.execute("INSERT OR REPLACE INTO runtime_atomic_mappings SELECT i.runtime_scope,i.runtime_atomic_id,i.runtime_atomic_version,i.runtime_signature,i.resolution,i.target_event_no,i.target_fact_no,i.batch_id,b.updated_at FROM origin.delta_items i JOIN origin.delta_batches b ON b.batch_id=i.batch_id WHERE b.ticker=? AND b.published_version<=? AND NOT EXISTS(SELECT 1 FROM origin.delta_items n JOIN origin.delta_batches nb ON nb.batch_id=n.batch_id WHERE n.runtime_scope=i.runtime_scope AND n.runtime_atomic_id=i.runtime_atomic_id AND nb.published_version<=? AND (nb.published_version>b.published_version OR nb.published_version=b.published_version AND n.rowid>i.rowid))",(ticker,base,base))
+            from .retained_events import atomic_at
+            db.executemany('INSERT INTO runtime_atomic_mappings VALUES(?,?,?,?,?,?,?,?,?)',
+                           [tuple(row) for row in atomic_at(db,ticker,base)])
             # Replace generated target birth IDs with their exact source IDs.
             db.execute("UPDATE v2_native_identities SET provenance='PROVENANCE_UNVERIFIED'")
             db.execute("INSERT OR REPLACE INTO v2_native_identities SELECT s.* FROM origin.v2_native_identities s JOIN main.v2_native_identities t ON t.collection=s.collection AND t.native_key=s.native_key")

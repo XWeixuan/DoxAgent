@@ -11,8 +11,9 @@ RUN sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.l
     && printf 'Acquire::Retries "3";\n' > /etc/apt/apt.conf.d/80-retries \
     && apt-get update && apt-get install -y --no-install-recommends ca-certificates curl git \
     && rm -rf /var/lib/apt/lists/*
-COPY pyproject.toml uv.lock README.md ./
-RUN --mount=type=cache,target=/root/.cache/uv uv sync --frozen --no-install-project --no-group dev
+COPY pyproject.toml uv.lock ./
+RUN --mount=type=cache,target=/root/.cache/uv printf 'DoxAgent dependency metadata\n' > README.md \
+    && uv sync --frozen --no-install-project --no-group dev
 RUN playwright install --with-deps chromium
 ARG IBKR_TWS_API_VERSION=1049.02
 ARG IBKR_TWS_API_SHA256=d1878128eb725bf744ab796f0ad518b915f2fce0f2c4ab3b9476f8a7fcf7649a

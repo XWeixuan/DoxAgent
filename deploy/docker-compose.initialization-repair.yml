@@ -9,7 +9,7 @@ services:
       context: ..
       dockerfile: deploy/Dockerfile.initialization-guardian
       args:
-        DOXAGENT_BASE_IMAGE: ${DOXAGENT_V2_IMAGE:-doxagent-v2:production}
+        DOXAGENT_BASE_IMAGE: ${DOXAGENT_BACKEND_DEPS_IMAGE:-doxagent-deps:backend}
     restart: unless-stopped
     logging:
       driver: json-file

@@ -41,7 +41,7 @@ class NodeContext:
         replay = self.node.inputs.get("_replay_dependencies", {})
         if key in replay:
             return NodeResult.model_validate(replay[key])
-        node = next(n for n in self.repository.nodes(self.run.initialization_id) if n.key == key)
+        node = self.repository.node(self.run.initialization_id, key)
         if node.result is None:
             raise ValueError(f"dependency {key} has no result")
         return node.result
@@ -99,8 +99,7 @@ class InitializationWorker:
 
     async def _drive(self, lease: Lease) -> RunRecord:
         while True:
-            all_nodes = self.repository.nodes(lease.initialization_id)
-            nodes = [n for n in all_nodes if not n.inputs.get("managed_by")]
+            nodes = self.repository.nodes(lease.initialization_id, top_level_only=True)
             complete = {n.key for n in nodes if n.status == "SUCCEEDED"}
             if len(complete) == len(nodes):
                 for node in nodes:

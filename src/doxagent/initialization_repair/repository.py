@@ -449,6 +449,72 @@ class RepairRepository:
                         (budget.model_dump_json(), incident_id, key),
                     )
 
+    def retry_agent(self, incident_id: str, *, reason: str) -> RepairIncident:
+        """Reopen only an unexecuted infrastructure-failed round, preserving budget."""
+        if not reason.strip():
+            raise ValueError("retry reason required")
+        with self.initialization._write() as db:
+            row = db.execute(
+                "SELECT payload FROM initialization_repair_incidents WHERE id=?", (incident_id,)
+            ).fetchone()
+            if row is None:
+                raise KeyError(incident_id)
+            incident = self._incident(row)
+            if incident.status is not IncidentStatus.HUMAN_REQUIRED or not (
+                incident.last_error or ""
+            ).startswith("REPAIR_AGENT_INFRA_RETRIES_EXHAUSTED:"):
+                raise InitializationError("REPAIR_AGENT_RETRY_REQUIRES_INFRA_FAILURE")
+            run = self.initialization._run(db, incident.initialization_id)
+            if (
+                run.status is not RunStatus.FAILED
+                or db.execute(
+                    "SELECT 1 FROM ticker_operations WHERE ticker=?", (run.ticker,)
+                ).fetchone()
+            ):
+                raise InitializationError("REPAIR_EXECUTION_ACTIVE")
+            row = db.execute(
+                "SELECT payload FROM initialization_repair_rounds WHERE id=?",
+                (incident.current_round_id,),
+            ).fetchone()
+            if row is None:
+                raise InitializationError("REPAIR_ROUND_MISSING")
+            repair_round = self._round(row)
+            if (
+                repair_round.control_operation_id
+                or repair_round.image_id
+                or repair_round.executor_container
+            ):
+                raise InitializationError("REPAIR_ROUND_ALREADY_EXECUTABLE")
+            history = list(repair_round.payload.get("agent_recovery_history", []))
+            history.append(
+                {
+                    "reason": reason.strip(),
+                    "at": utc_now().isoformat(),
+                    "prior_error": incident.last_error,
+                    "prior_retries": repair_round.payload.get("agent_infra_retries", 0),
+                }
+            )
+            repair_round.payload.update(agent_recovery_history=history, agent_infra_retries=0)
+            repair_round.status = RoundStatus.STARTED
+            repair_round.updated_at = utc_now()
+            db.execute(
+                "UPDATE initialization_repair_rounds "
+                "SET status=?,updated_at=?,payload=? WHERE id=?",
+                (
+                    repair_round.status,
+                    repair_round.updated_at.isoformat(),
+                    repair_round.model_dump_json(),
+                    repair_round.round_id,
+                ),
+            )
+            incident.status, incident.phase, incident.last_error = (
+                IncidentStatus.ACTIVE,
+                IncidentPhase.CONTEXT,
+                None,
+            )
+            self._save_incident(db, incident)
+            return incident
+
     def release(self, incident_id: str, *, reason: str) -> RepairIncident:
         if not reason.strip():
             raise ValueError("release reason required")

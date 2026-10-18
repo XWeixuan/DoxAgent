@@ -10,13 +10,16 @@ RUN ln -sf /opt/google/chrome/google-chrome /usr/bin/google-chrome \
     && ln -sf /opt/google/chrome/google-chrome /usr/bin/google-chrome-stable \
     && test "$(/opt/google/chrome/chrome --version | awk '{print $3}')" = "${GOOGLE_CHROME_VERSION%-*}"
 ENV CHROME_BINARY=/usr/bin/google-chrome-stable
+FROM supervisor-deps AS source-files
+COPY src /source/src
+RUN rm -rf /source/src/cdecr/catalogs
 FROM supervisor-deps AS supervisor
 ARG DOXAGENT_BUILD_COMMIT=unversioned
 ARG DOXAGENT_SOURCE_SHA256=""
 ENV DOXAGENT_BUILD_COMMIT=${DOXAGENT_BUILD_COMMIT}
 LABEL org.opencontainers.image.revision=${DOXAGENT_BUILD_COMMIT} \
       doxagent.source.sha256=${DOXAGENT_SOURCE_SHA256} doxagent.owner=doxagent
-COPY src /app/src
+COPY --from=source-files /source/src /app/src
 COPY prompts /app/prompts
 COPY dev_plan/workflow_v2/api_contract /app/dev_plan/workflow_v2/api_contract
 COPY deploy/chrome-supervisor-entrypoint.sh /usr/local/bin/chrome-supervisor-entrypoint

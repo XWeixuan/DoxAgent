@@ -12,13 +12,16 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 ENV LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 HOME=/home/siteaccess
 
+FROM site-deps AS source-files
+COPY src /source/src
+RUN rm -rf /source/src/cdecr/catalogs
 FROM site-deps AS site
 ARG DOXAGENT_BUILD_COMMIT=unversioned
 ARG DOXAGENT_SOURCE_SHA256=""
 ENV DOXAGENT_BUILD_COMMIT=${DOXAGENT_BUILD_COMMIT}
 LABEL org.opencontainers.image.revision=${DOXAGENT_BUILD_COMMIT} \
       doxagent.source.sha256=${DOXAGENT_SOURCE_SHA256} doxagent.owner=doxagent
-COPY src /app/src
+COPY --from=source-files /source/src /app/src
 COPY prompts /app/prompts
 COPY dev_plan/workflow_v2/api_contract /app/dev_plan/workflow_v2/api_contract
 RUN find /app/src /app/prompts /app/dev_plan -type d ! -perm -005 -exec chmod a+rx {} + \

@@ -23,8 +23,11 @@ def closure(seeds, neighbours):
 def references(value):
     if isinstance(value,dict):
         for key,item in value.items():
-            if key in {'thread_id','parent_thread_id'} and isinstance(item,str):yield ('thread',item)
-            if key in {'run_id','workspace_run_id','initialization_id'} and isinstance(item,str):yield ('run',item)
+            if (key=='thread_id' or key.endswith('_thread_id')) and isinstance(item,str):yield ('thread',item)
+            if key.endswith('thread_ids') and isinstance(item,dict):
+                for identity in item.values():
+                    if isinstance(identity,str):yield ('thread',identity)
+            if key in {'run_id','workspace_run_id','o0_workspace_run_id','initialization_id'} and isinstance(item,str):yield ('run',item)
             yield from references(item)
     elif isinstance(value,list):
         for item in value:yield from references(item)
@@ -50,10 +53,14 @@ class TerminalSessions:
         protected.update(v for k,v in holds if k=='thread');runs.update(v for k,v in holds if k=='run')
         for path in self.paths:
             with closing(sqlite3.connect(path.resolve().as_uri()+'?mode=ro',uri=True)) as db:
-                rows=db.execute("SELECT id,status,json_extract(payload,'$.thread_id'),json_extract(request,'$.thread_id'),json_extract(payload,'$.run_id'),coalesce(json_extract(payload,'$.finished_at'),json_extract(payload,'$.updated_at')),json_extract(payload,'$.final_response') IS NOT NULL,json_extract(payload,'$.error_code') IS NOT NULL,json_extract(request,'$.task_phase') FROM jobs")
-                for job,status,thread,requested,run,at,output,error,phase in rows:
+                hold=db.execute("SELECT value FROM metadata WHERE key='thread_retention_holds'").fetchone()
+                for identity,value in (json.loads(hold[0]).items() if hold else ()):
+                    until=value.get('until')
+                    if value.get('reason') and (not until or datetime.fromisoformat(until)>now):protected.add(identity)
+                rows=db.execute("SELECT id,status,json_extract(payload,'$.thread_id'),json_extract(request,'$.thread_id'),json_extract(payload,'$.run_id'),coalesce(json_extract(payload,'$.finished_at'),json_extract(payload,'$.updated_at')),json_extract(payload,'$.final_response') IS NOT NULL,(json_extract(payload,'$.error_code') IS NOT NULL OR json_extract(payload,'$.error_message') IS NOT NULL),json_extract(request,'$.task_phase'),json_extract(request,'$.node') FROM jobs")
+                for job,status,thread,requested,run,at,output,error,phase,node in rows:
                     ids={x for x in (thread,requested) if x}
-                    w3=(run or '').startswith(('w3-case-','w3-template-')) or phase in {'w3_template','trade_decision','post_decision_operations'}
+                    w3=(run or '').startswith(('w3-case-','w3-template-')) or phase in {'w3_template','trade_decision','post_decision_operations'} or node=='persistent_runtime_w3'
                     age=(now-datetime.fromisoformat(at)).total_seconds() if at else -1
                     retained=any(run==r or (run or '').startswith(r+'-') for r in runs)
                     eligible=(status in {'succeeded','failed','cancelled'} and not w3 and not retained
@@ -180,10 +187,14 @@ class TerminalSessions:
 def business_holds(settings,*,now=None):
     """Continuable workflows protect their threads; published old runs do not."""
     from doxagent.v2_read.native_content import NativeContent
-    now=now or datetime.now(UTC);holds=set()
-    scopes=[(settings.codex_runtime_sqlite_path,"SELECT payload_json AS payload FROM codex_runtime_records WHERE record_type='checkpoints' AND updated_at>?",((now-timedelta(days=14)).isoformat(),)),
-            (settings.ticker_initialization_control_path,"SELECT payload FROM initialization_runs WHERE status NOT IN ('SUCCEEDED','FAILED','CANCELLED') OR json_extract(payload,'$.manual_resume_required')=1",()),
-            (settings.persistent_runtime_v2_sqlite_path,"SELECT inputs,receipt FROM runtime_tasks WHERE status IN ('PENDING','RUNNING','RETRY','WAITING')",())]
+    now=now or datetime.now(UTC);holds=set();published=set()
+    research=Path(settings.codex_runtime_sqlite_path)
+    if research.is_file():
+        with closing(sqlite3.connect(research.resolve().as_uri()+'?mode=ro',uri=True)) as db:
+            published={r[0] for r in db.execute("SELECT run_id FROM codex_runtime_records WHERE record_type='bundles' AND json_extract(payload_json,'$.status')='published'")}
+    scopes=[(settings.codex_runtime_sqlite_path,"SELECT c.payload_json AS payload FROM codex_runtime_records c WHERE c.record_type='checkpoints' AND c.updated_at>? AND NOT EXISTS(SELECT 1 FROM codex_runtime_records b WHERE b.record_type='bundles' AND b.run_id=c.run_id AND json_extract(b.payload_json,'$.status')='published')",((now-timedelta(days=14)).isoformat(),)),
+            (settings.ticker_initialization_control_path,"SELECT payload FROM initialization_runs WHERE json_extract(payload,'$.status') NOT IN ('SUCCEEDED','FAILED','CANCELLED') OR json_extract(payload,'$.manual_resume_required')=1",()),
+            (settings.persistent_runtime_v2_sqlite_path,"SELECT inputs,receipt FROM runtime_tasks WHERE status IN ('PENDING','RUNNING','HELD','RETRY','WAITING')",())]
     for path,sql,args in scopes:
         if not path or not Path(path).is_file():continue
         with closing(sqlite3.connect(Path(path).resolve().as_uri()+'?mode=ro',uri=True)) as db:
@@ -191,7 +202,9 @@ def business_holds(settings,*,now=None):
             for row in db.execute(sql,args):
                 for raw in row:
                     holds.update(references(json.loads(raw)))
-    return holds
+    # Artifact provenance is not a requirement to resume an upstream SDK session.
+    # Its immutable published output remains in Research, independently of JSONL.
+    return {(kind,value) for kind,value in holds if kind!='run' or value not in published}
 
 
 def main():

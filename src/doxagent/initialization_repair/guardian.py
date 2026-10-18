@@ -19,6 +19,7 @@ from .repository import RepairRepository
 from .schema import (
     IncidentPhase,
     IncidentStatus,
+    IssueEntry,
     RepairAgentReport,
     RepairIncident,
     RoundStatus,
@@ -44,6 +45,7 @@ class Guardian:
         codex_auth_file: Path | None = None,
         docker: DockerRuntime | None = None,
         workspaces: GitWorkspaceManager | None = None,
+        external_auth_source: Path | None = None,
     ) -> None:
         self.initialization = initialization
         self.repairs = RepairRepository(initialization)
@@ -55,6 +57,7 @@ class Guardian:
         self.docker = docker or DockerRuntime()
         self.workspaces = workspaces or GitWorkspaceManager(self.root, source_repository)
         self.issue_path = self.root / "init-issue.md"
+        self.external_auth_source = external_auth_source
 
     def initialize_watermark(self) -> datetime:
         path = self.root / "guardian-watermark.json"
@@ -104,6 +107,14 @@ class Guardian:
                     self.repairs.update_incident(incident.incident_id, last_error=str(exc)[:1000])
         for incident in self.repairs.incidents(include_terminal=False):
             try:
+                if self.external_auth_source is not None and incident.phase is IncidentPhase.CODING:
+                    try:
+                        self._publish_auth(incident)
+                    except (OSError, ValueError, RuntimeError) as exc:
+                        # Still collect an already-running agent's exit/report.
+                        self.repairs.update_incident(
+                            incident.incident_id, last_error=str(exc)[:1000]
+                        )
                 self._advance(incident)
             except Exception as exc:
                 self.repairs.update_incident(incident.incident_id, last_error=str(exc)[:1000])
@@ -157,7 +168,9 @@ class Guardian:
         return workspace
 
     def _start_agent(self, incident: RepairIncident, state_seq: int) -> None:
-        if not self.codex_auth_file.is_file() or self.codex_auth_file.stat().st_size == 0:
+        if self.external_auth_source is not None:
+            self._publish_auth(incident)
+        elif not self.codex_auth_file.is_file() or self.codex_auth_file.stat().st_size == 0:
             raise RuntimeError(
                 "repair Codex auth template is missing; provision the configured auth.json"
             )
@@ -180,7 +193,7 @@ class Guardian:
         code_home = self.root / "incidents" / incident.incident_id / "codex-home"
         code_home.mkdir(parents=True, exist_ok=True)
         incident_auth = code_home / "auth.json"
-        if not incident_auth.is_file():
+        if self.external_auth_source is None and not incident_auth.is_file():
             shutil.copy2(self.codex_auth_file, incident_auth)
             incident_auth.chmod(0o600)
         command = [
@@ -203,6 +216,8 @@ class Guardian:
         ]
         if incident.thread_id:
             command.extend(["--thread-id", incident.thread_id])
+        if self.external_auth_source is not None:
+            command.extend(["--external-auth-file", str(code_home / "external-auth.json")])
         try:
             state = self.docker.ensure_started(
                 ContainerSpec(
@@ -228,6 +243,15 @@ class Guardian:
             repair_round.round_id,
             status=RoundStatus.AGENT_RUNNING,
             agent_container=state.identity,
+        )
+
+    def _publish_auth(self, incident: RepairIncident) -> None:
+        from .auth import publish_access_credentials
+
+        assert self.external_auth_source is not None
+        publish_access_credentials(
+            self.external_auth_source,
+            self.root / "incidents" / incident.incident_id / "codex-home" / "external-auth.json",
         )
 
     def _collect_agent(self, incident: RepairIncident) -> None:
@@ -259,15 +283,40 @@ class Guardian:
         if state.status == "running":
             return
         log_path = local_root / "agent.log"
-        log_path.write_text(self.docker.logs(name)[-200_000:], encoding="utf-8")
+        log = self.docker.logs(name)[-200_000:]
+        log_path.write_text(log, encoding="utf-8")
         if state.exit_code != 0:
             payload = dict(repair_round.payload)
             raw_retries = payload.get("agent_infra_retries", 0)
             retries = (raw_retries if isinstance(raw_retries, int) else 0) + 1
             payload["agent_infra_retries"] = retries
+            (local_root / f"agent-infra-{retries}.log").write_text(log, encoding="utf-8")
             self.repairs.update_round(repair_round.round_id, payload=payload)
             self.docker.remove(name)
             if retries >= 3:
+                self.repairs.update_round(
+                    repair_round.round_id,
+                    status=RoundStatus.FAILED,
+                    exit_code=state.exit_code,
+                    result="REPAIR_AGENT_INFRA_RETRIES_EXHAUSTED",
+                )
+                self.repairs.add_issue(
+                    IssueEntry(
+                        entry_id=f"{repair_round.round_id}:agent-infra:{len(repair_round.thread_turn_ids)}",
+                        incident_id=incident.incident_id,
+                        round_id=repair_round.round_id,
+                        kind="agent_infrastructure_failure",
+                        content={
+                            "ticker": incident.ticker,
+                            "initialization_id": incident.initialization_id,
+                            "exit_code": state.exit_code,
+                            "retries": retries,
+                            "remaining_items": [
+                                "restore agent infrastructure and retry the same round"
+                            ],
+                        },
+                    )
+                )
                 self.repairs.update_incident(
                     incident.incident_id,
                     status=IncidentStatus.HUMAN_REQUIRED,

@@ -2,6 +2,8 @@
 ARG BACKEND_BASE
 ARG SITE_BASE
 ARG SUPERVISOR_BASE
+ARG GUARDIAN_BASE
+ARG REPAIR_AGENT_BASE
 FROM ${BACKEND_BASE} AS backend
 USER root
 ARG DOXAGENT_BUILD_COMMIT
@@ -50,3 +52,29 @@ COPY deploy/chrome-supervisor-entrypoint.sh /usr/local/bin/chrome-supervisor-ent
 RUN chmod 0755 /usr/local/bin/chrome-supervisor-entrypoint
 ENTRYPOINT ["/usr/local/bin/chrome-supervisor-entrypoint"]
 CMD ["python", "-m", "doxagent.site_strategy.chrome_supervisor", "--socket", "/run/doxagent-chrome/supervisor.sock", "--profile-root", "/site-data/profiles"]
+
+FROM ${GUARDIAN_BASE} AS guardian
+USER root
+ARG DOXAGENT_BUILD_COMMIT
+ARG DOXAGENT_SOURCE_SHA256
+ENV DOXAGENT_BUILD_COMMIT=${DOXAGENT_BUILD_COMMIT}
+LABEL org.opencontainers.image.revision=${DOXAGENT_BUILD_COMMIT} doxagent.source.sha256=${DOXAGENT_SOURCE_SHA256} doxagent.owner=doxagent doxagent.role=application
+COPY pyproject.toml uv.lock README.md /app/
+COPY src /app/src
+COPY prompts /app/prompts
+COPY dev_plan/workflow_v2/api_contract /app/dev_plan/workflow_v2/api_contract
+RUN uv pip install --no-deps --python /app/.venv/bin/python -e /app
+CMD ["doxagent-initialization-repair", "--help"]
+
+FROM ${REPAIR_AGENT_BASE} AS repair-agent
+USER root
+ARG DOXAGENT_BUILD_COMMIT
+ARG DOXAGENT_SOURCE_SHA256
+ENV DOXAGENT_BUILD_COMMIT=${DOXAGENT_BUILD_COMMIT} CODEX_HOME=/var/lib/doxagent/initialization-repair/codex-home
+LABEL org.opencontainers.image.revision=${DOXAGENT_BUILD_COMMIT} doxagent.source.sha256=${DOXAGENT_SOURCE_SHA256} doxagent.owner=doxagent doxagent.role=application
+COPY pyproject.toml uv.lock README.md /app/
+COPY src /app/src
+COPY prompts /app/prompts
+COPY dev_plan/workflow_v2/api_contract /app/dev_plan/workflow_v2/api_contract
+RUN uv pip install --no-deps --python /app/.venv/bin/python -e /app
+CMD ["doxagent-initialization-repair", "--help"]

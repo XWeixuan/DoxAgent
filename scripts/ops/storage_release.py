@@ -19,7 +19,8 @@ from pathlib import Path
 
 DEFAULT_ROOT = Path('/var/lib/doxagent/releases')
 REPOSITORIES = {'backend':'doxagent-v2','site':'doxagent-site-access',
-                'supervisor':'doxagent-chrome-supervisor','web':'doxagent-v2-web'}
+                'supervisor':'doxagent-chrome-supervisor','web':'doxagent-v2-web',
+                'guardian':'doxagent-initialization-guardian','repair-agent':'doxagent-initialization-repair-agent'}
 
 
 def run(args, **kwargs):
@@ -58,16 +59,48 @@ def image_index(images):
             [image['Id'],*(image.get('RepoTags') or []),*(image.get('RepoDigests') or [])]}
 
 
+def record_live_references(state, images, containers):
+    tags = {tag: image['Id'] for image in images for tag in image.get('RepoTags') or []}
+    for container in containers:
+        component = (container.get('Config',{}).get('Labels') or {}).get('com.docker.compose.service')
+        current = state.get('components',{}).get(component,{}).get('current')
+        if not current or current['image'] != container['Image']:continue
+        environment = '\n'.join(container['Config'].get('Env') or [])
+        current['references'] = sorted({identity for tag,identity in tags.items() if tag in environment})
+
+
+def capacity_snapshot(root, containers, *, now=None):
+    """One small host-owned daily sample; du counts hardlinks once per volume."""
+    if os.name != 'posix':return
+    now=now or time.time();directory=root/'capacity';directory.mkdir(exist_ok=True)
+    destination=directory/(datetime.fromtimestamp(now).strftime('%Y-%m-%d')+'.json')
+    if not destination.exists():
+        mounts={m['Source'] for c in containers for m in c.get('Mounts',[]) if m.get('Type')=='volume'}
+        targets=sorted(mounts | {str(root),'/var/lib/containerd'})
+        samples=[]
+        for target in targets:
+            if not Path(target).exists():continue
+            result=subprocess.run(['du','-x','-B1','-d1',target],capture_output=True,text=True,timeout=90)
+            samples.append(dict(path=target,entries=[dict(bytes=int(row.split('\t',1)[0]),path=row.split('\t',1)[1]) for row in result.stdout.splitlines() if '\t' in row],error=result.stderr[:500] or None))
+        atomic(destination,dict(at=now,root=dict(zip(('total','used','free'),shutil.disk_usage('/'))),volumes=samples))
+    for path in directory.glob('????-??-??.json'):
+        if now-path.stat().st_mtime>30*86400:path.unlink()
+
+
 def protected_images(state, images, containers, *, now=None):
     now = now or time.time(); index = image_index(images)
     protected = {c['Image'] for c in containers}
     for component in state.get('components',{}).values():
         # An old but still sole valid rollback never expires by calendar alone.
         for key in ('current','previous'):
-            if component.get(key): protected.add(index.get(component[key]['image'],component[key]['image']))
+            if component.get(key):
+                protected.add(index.get(component[key]['image'],component[key]['image']))
+                protected.update(component[key].get('references',[]))
     for deps in state.get('dependencies',{}).values():
         protected.add(index.get(deps['image'],deps['image']))
     for hold in state.get('holds',[]):
+        if hold.get('component') and hold.get('release_image') not in {v.get('image') for k,v in state.get('components',{}).get(hold['component'],{}).items() if k in ('current','previous')}:
+            continue
         if hold.get('until') is None or hold['until'] > now:
             protected.add(index.get(hold['image'],hold['image']))
     for candidate in state.get('candidates',[]):
@@ -100,6 +133,7 @@ def reconcile(root, state):
     if state.get('format') != 'doxagent.component-releases.1' or not state.get('components'):
         raise ValueError('bootstrap the audited component rollback inventory before retirement')
     images, containers = inspect_images(), inspect_containers()
+    record_live_references(state,images,containers)
     before = shutil.disk_usage('/').free
     report = dict(at=time.time(),available_before=before,retired=[],errors=[])
     processes=run(['ps','-eo','args'])
@@ -121,7 +155,8 @@ def reconcile(root, state):
     for image in images:
         tags = image.get('RepoTags') or []
         owned = [t for t in tags if t.split(':',1)[0].startswith('doxagent-')]
-        if image['Id'] in protected or not owned:
+        known=image['Id'] in state.get('owned_images',[])
+        if image['Id'] in protected or not owned and not (known and not tags):
             continue
         # Another owner (for example Guardian) may have just built its next
         # agent. Bootstrap explicitly takes over older known inventory; new
@@ -129,7 +164,7 @@ def reconcile(root, state):
         if image['Id'] not in state.get('owned_images',[]) and image.get('Created'):
             created=datetime.fromisoformat(image['Created'].replace('Z','+00:00')).timestamp()
             if time.time()-created < 48*3600:continue
-        for tag in owned:
+        for tag in owned or [image['Id']]:
             try:
                 subprocess.run(['docker','image','rm',tag],check=True,capture_output=True,text=True)
                 report['retired'].append(dict(tag=tag,image=image['Id']))
@@ -147,6 +182,13 @@ def reconcile(root, state):
                            check=True,capture_output=True,text=True)
     except subprocess.CalledProcessError as exc:
         report['errors'].append(dict(stage='build-cache',error=exc.stderr.strip()))
+    staging=root/'staging'
+    if staging.exists():
+        for path in staging.iterdir():
+            if path.is_dir() and not path.is_symlink() and re.fullmatch('[0-9a-f]{12}-.+',path.name) and time.time()-path.stat().st_mtime>48*3600:
+                shutil.rmtree(path)
+    try:capacity_snapshot(root,containers)
+    except (OSError,ValueError,subprocess.SubprocessError) as exc:report['capacity_error']=str(exc)[:250]
     report['available_after'] = shutil.disk_usage('/').free
     state['cleanup_pending'] = bool(report['errors']); state['last_reconcile'] = report
     atomic(root/'state.json',state); atomic(root/'last-reconcile.json',report)
@@ -186,9 +228,9 @@ def verify_dependency_image(tag, kind, manifests):
           "assert m.version('playwright')=='1.63.0';"
           "assert m.version('protobuf')=='5.29.5';import ibapi;"
           "print(json.dumps({n:hashlib.sha256((root/n).read_bytes()).hexdigest() "
-          "for n in ('pyproject.toml','uv.lock','README.md')}))")
+          "for n in ('pyproject.toml','uv.lock')}))")
     observed=json.loads(run(['docker','run','--rm','--network','none','--entrypoint','python',tag,'-c',code]))
-    return observed=={k:manifests[k] for k in ('pyproject.toml','uv.lock','README.md')}
+    return observed=={k:manifests[k] for k in ('pyproject.toml','uv.lock')}
 
 
 def build(repo, commit, root, kinds, *, sdk='doxagent-ibapi:approved-7d361219',
@@ -211,7 +253,7 @@ def build(repo, commit, root, kinds, *, sdk='doxagent-ibapi:approved-7d361219',
         source_sha=hashlib.sha256(run(['git','-C',str(repo),'rev-parse',commit+'^{tree}']).encode()).hexdigest()
         index=image_index(inspect_images())
         if sdk not in index or chrome not in index:raise ValueError('approved SDK/Chrome baseline unavailable')
-        dependency_inputs={n:hashlib.sha256((context/n).read_bytes()).hexdigest() for n in ('pyproject.toml','uv.lock','README.md')}
+        dependency_inputs={n:hashlib.sha256((context/n).read_bytes()).hexdigest() for n in ('pyproject.toml','uv.lock')}
         catalog_hash=hashlib.sha256()
         for path in sorted((context/'src/cdecr/catalogs').rglob('*')):
             if path.is_file():
@@ -222,9 +264,13 @@ def build(repo, commit, root, kinds, *, sdk='doxagent-ibapi:approved-7d361219',
         if 'backend' in kinds:required.add('backend')
         if set(kinds)&{'site','supervisor'}:required.update(('backend','site'))
         if 'supervisor' in kinds:required.add('supervisor')
+        if set(kinds)&{'guardian','repair-agent'}:required.add('backend')
+        required.update(set(kinds)&{'guardian','repair-agent'})
         dependencies={}
-        base_tag='ghcr.io/astral-sh/uv:0.8.14-python3.11-bookworm-slim'
-        base_pin=state.get('python_base_reference')
+        import re
+        base_tag=re.search(r'^ARG PYTHON_BASE_IMAGE=(.+)$',(context/'Dockerfile.v2').read_text(),re.M)[1].strip()
+        base_pin=state.get('base_pins',{}).get(base_tag)
+        if not base_pin and str(state.get('python_base_reference','')).startswith(base_tag+'@'):base_pin=state['python_base_reference']
         if not base_pin:
             import re
             metadata=run(['docker','buildx','imagetools','inspect',base_tag])
@@ -232,27 +278,44 @@ def build(repo, commit, root, kinds, *, sdk='doxagent-ibapi:approved-7d361219',
             if not match:raise ValueError('could not resolve Python dependency base digest')
             base_pin=base_tag+'@'+match[1]
             state['python_base_reference']=base_pin
+            state.setdefault('base_pins',{})[base_tag]=base_pin
             atomic(root/'state.json',state)
+        cli_pin=None
+        if 'guardian' in required:
+            cli_tag=re.search(r'^ARG DOCKER_CLI_IMAGE=(.+)$',(context/'deploy/Dockerfile.initialization-guardian').read_text(),re.M)[1].strip()
+            cli_pin=state.get('base_pins',{}).get(cli_tag)
+            if not cli_pin:
+                match=re.search(r'^Digest:\s+(sha256:[0-9a-f]{64})',run(['docker','buildx','imagetools','inspect',cli_tag]),re.M)
+                if not match:raise ValueError('Docker CLI dependency digest unavailable')
+                cli_pin=cli_tag+'@'+match[1];state.setdefault('base_pins',{})[cli_tag]=cli_pin;atomic(root/'state.json',state)
         for kind,dockerfile,target,base in (
             ('backend','Dockerfile.v2','backend-deps',None),
             ('site','deploy/Dockerfile.site-access','site-deps','backend'),
             ('supervisor','deploy/Dockerfile.chrome-supervisor','supervisor-deps','site'),
+            ('guardian','deploy/Dockerfile.initialization-guardian','guardian-deps','backend'),
+            ('repair-agent','deploy/Dockerfile.initialization-repair-agent','repair-agent-deps','backend'),
         ):
             if kind not in required:continue
             text=(context/dockerfile).read_text()
             # Everything before the app-stage boundary is a stable dependency.
             boundary={'backend':'FROM backend-deps AS backend','site':'FROM site-deps AS site',
-                      'supervisor':'FROM supervisor-deps AS supervisor'}[kind]
-            inputs=dict(manifests=dependency_inputs,dockerfile=text.split(boundary)[0],
-                        sdk=index[sdk],chrome=index[chrome],python_base=base_pin,base=dependencies.get(base))
+                      'supervisor':'FROM supervisor-deps AS supervisor','guardian':'FROM guardian-deps AS guardian',
+                      'repair-agent':'FROM repair-agent-deps AS repair-agent'}[kind]
+            if boundary+'\n' not in text:raise ValueError('commit does not declare stable dependency stages: '+dockerfile)
+            inputs=dict(manifests=dependency_inputs,dockerfile=text.split(boundary+'\n',1)[0],
+                        python_base=base_pin,base=dependencies.get(base))
+            if kind=='backend':inputs['sdk']=index[sdk]
+            if kind=='supervisor':inputs['chrome']=index[chrome]
+            if kind=='guardian':inputs['docker_cli']=cli_pin
             key=hashlib.sha256(json.dumps(inputs,sort_keys=True).encode()).hexdigest()[:20]
             tag='doxagent-deps:'+kind+'-'+key
             args=['docker','build','-f',dockerfile,'--target',target,'-t',tag,
                   '--label','doxagent.owner=doxagent','--label','doxagent.role=dependencies']
-            if base:args+=['--build-arg','BASE_IMAGE='+dependencies[base]['tag']]
+            if base:args+=['--build-arg',('DOXAGENT_BASE_IMAGE=' if kind in {'guardian','repair-agent'} else 'BASE_IMAGE=')+dependencies[base]['tag']]
             if kind=='backend':args+=['--build-arg','IBKR_SDK_SOURCE_IMAGE='+sdk]
             if kind=='supervisor':args+=['--build-arg','CHROME_RUNTIME_IMAGE='+chrome]
             if kind=='backend':args+=['--build-arg','PYTHON_BASE_IMAGE='+base_pin]
+            if kind=='guardian':args+=['--build-arg','DOCKER_CLI_IMAGE='+cli_pin]
             previous=state.get('dependencies',{}).get(kind)
             known=image_index(inspect_images())
             recorded=previous and previous.get('key')==key and known.get(tag)==previous['image']
@@ -283,7 +346,7 @@ def build(repo, commit, root, kinds, *, sdk='doxagent-ibapi:approved-7d361219',
                 args=['docker','build','-f','deploy/Dockerfile.source-release','--target',kind,
                       '-t',tag,'--build-arg','DOXAGENT_BUILD_COMMIT='+commit,
                       '--build-arg','DOXAGENT_SOURCE_SHA256='+source_sha]
-                for dep,arg in (('backend','BACKEND_BASE'),('site','SITE_BASE'),('supervisor','SUPERVISOR_BASE')):
+                for dep,arg in (('backend','BACKEND_BASE'),('site','SITE_BASE'),('supervisor','SUPERVISOR_BASE'),('guardian','GUARDIAN_BASE'),('repair-agent','REPAIR_AGENT_BASE')):
                     selected=dependencies.get(dep) or state['dependencies'].get(dep) or dependencies['backend']
                     args+=['--build-arg',arg+'='+selected['tag']]
                 args+=['.']
@@ -310,6 +373,7 @@ def deploy(root, state, manifest):
     configuration=json.loads(override.read_text()) if override.exists() else {'services':{}}
     command=[*base_command,'-f',str(override)]
     state['compose_commands']=[command]
+    state['compose_base_command']=base_command
     for component, candidate in manifest['components'].items():
         identity=run(['docker','image','inspect','--format','{{.Id}}',candidate['image']])
         state.setdefault('candidates',[]).append(dict(image=identity,expires=time.time()+48*3600))
@@ -341,6 +405,7 @@ def deploy(root, state, manifest):
             state['cleanup_pending']=True;atomic(root/'state.json',state)
             raise
         promote(state,component,identity,commit=commit,schema=candidate.get('schema'))
+        record_live_references(state,inspect_images(),inspect_containers())
         state['components'][component]['current']['compose']=new
         # This write is the recovery boundary: a crash before cleanup retains
         # both accepted versions and the timer can complete retirement later.
@@ -348,13 +413,87 @@ def deploy(root, state, manifest):
     return reconcile(root,state)
 
 
+def prepare_inputs(root, state):
+    """Reduce approved donors to their exact consumed trees, preserving bytes/modes."""
+    import tarfile
+    receipt=[]
+    inputs=(('ibapi','doxagent-ibapi:approved-7d361219',
+             ['/app/.venv/lib/python3.11/site-packages/ibapi','/app/.venv/lib/python3.11/site-packages/ibapi-10.49.2.dist-info']),
+            ('chrome','doxagent-chrome:approved-cc38be0a',['/opt/google/chrome']))
+    def manifest(container,path):
+        process=subprocess.Popen(['docker','cp',container+':'+path,'-'],stdout=subprocess.PIPE)
+        rows=[]
+        try:
+            with tarfile.open(fileobj=process.stdout,mode='r|') as archive:
+                for member in archive:
+                    digest=None
+                    if member.isfile():
+                        with archive.extractfile(member) as stream:digest=hashlib.file_digest(stream,'sha256').hexdigest()
+                    rows.append((member.name,member.type.decode(),member.mode,member.linkname,digest))
+        finally:process.stdout.close()
+        if process.wait():raise ValueError('approved donor content could not be read')
+        return sorted(rows)
+    for name,tag,paths in inputs:
+        old=json.loads(run(['docker','image','inspect',tag]))[0]
+        if (old['Config'].get('Labels') or {}).get('doxagent.role')=='approved-input':continue
+        candidate='doxagent-approved-inputs:'+name+'-'+old['Id'][7:19]
+        recipe='FROM '+tag+' AS donor\nFROM scratch\n'+''.join('COPY --from=donor '+p+' '+p+'\n' for p in paths)
+        with tempfile.TemporaryDirectory(prefix='approved-input-',dir=root) as temporary:
+            context=Path(temporary);(context/'Dockerfile').write_text(recipe)
+            guarded_build(['docker','build','-t',candidate,'--label','doxagent.owner=doxagent','--label','doxagent.role=approved-input','.'],cwd=context)
+        new=json.loads(run(['docker','image','inspect',candidate]))[0];containers=[]
+        try:
+            for image in (old['Id'],new['Id']):
+                containers.append(run(['docker','create','--label','doxagent.owner=doxagent','--label','doxagent.temporary=true',image,'/unexecuted']))
+            proof=[]
+            for path in paths:
+                original=manifest(containers[0],path);selected=manifest(containers[1],path)
+                if original!=selected:raise ValueError('minimal approved input differs: '+path)
+                proof.append(dict(path=path,entries=len(original),sha256=hashlib.sha256(json.dumps(original).encode()).hexdigest()))
+        finally:
+            for container in containers:subprocess.run(['docker','rm',container],check=True,capture_output=True)
+        item=dict(kind=name,old=old['Id'],image=new['Id'],proof=proof,at=time.time())
+        receipt.append(item);atomic(root/('approved-'+name+'.json'),item)
+        subprocess.run(['docker','tag',new['Id'],tag],check=True)
+        for hold in state.get('holds',[]):
+            if hold['image']==old['Id']:hold['image']=new['Id']
+        for identity in (old['Id'],new['Id']):
+            if identity not in state.setdefault('owned_images',[]):state['owned_images'].append(identity)
+        atomic(root/'state.json',state)
+    return receipt
+
+
+def release_components(root, state, repo, commit, components):
+    if not components:raise ValueError('release requires explicit --component selections')
+    unknown=set(components)-set(state.get('components',{}))
+    if unknown:raise ValueError('unregistered components: '+','.join(sorted(unknown)))
+    kinds={'v2-site-access':'site','v2-chrome-supervisor':'supervisor','v2-web':'web','initialization-guardian':'guardian'}
+    selected={c:kinds.get(c,'backend') for c in components}
+    built=build(repo,commit,root,sorted(set(selected.values())))
+    state=json.loads((root/'state.json').read_text())
+    base=state.get('compose_base_command')
+    if not base:
+        base=list(state['compose_commands'][0]);override=str(root/'compose.current.json')
+        if override in base:
+            i=base.index(override)
+            if i and base[i-1]=='-f':del base[i-1:i+1]
+    manifest=dict(compose_command=base,commit=built['commit'],components={})
+    for component,kind in selected.items():
+        current=state['components'][component]['current']
+        candidate={**current.get('compose',{}),'image':built['images'][kind]['image']}
+        candidate['schema']=current.get('schema');manifest['components'][component]=candidate
+    atomic(root/(built['commit']+'.release.json'),manifest)
+    return deploy(root,state,manifest)
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('command',choices=('build','deploy','reconcile-resources','bootstrap'))
+    parser.add_argument('command',choices=('build','deploy','release','prepare-inputs','reconcile-resources','bootstrap'))
     parser.add_argument('--root',type=Path,default=DEFAULT_ROOT)
     parser.add_argument('--repo',type=Path,default=Path.cwd())
     parser.add_argument('--commit')
     parser.add_argument('--kind',action='append',choices=tuple(REPOSITORIES))
+    parser.add_argument('--component',action='append')
     parser.add_argument('--manifest',type=Path)
     parser.add_argument('--resume-dependencies',action='store_true',
                         help='resume a completed/cancelled dependency build from BuildKit cache; the write reserve still applies')
@@ -365,6 +504,10 @@ def main():
         if args.command=='build':
             if not args.commit:parser.error('build requires an exact commit')
             result=build(args.repo,args.commit,args.root,args.kind or ['backend','site','supervisor'],resume_dependencies=args.resume_dependencies)
+        elif args.command=='release':
+            if not args.commit:parser.error('release requires an exact commit')
+            result=release_components(args.root,state,args.repo,args.commit,args.component)
+        elif args.command=='prepare-inputs':result=prepare_inputs(args.root,state)
         elif args.command=='bootstrap':
             if state:raise ValueError('release state already exists')
             state=json.loads(args.manifest.read_text())
