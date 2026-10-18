@@ -11,7 +11,8 @@ ENV DOXAGENT_BUILD_COMMIT=${REPAIR_COMMIT}
 RUN rm -rf /app/src/doxagent/site_strategy
 COPY src/doxagent/site_strategy /app/src/doxagent/site_strategy
 COPY src/doxagent/message_bus_v2/yahoo_sources.py /app/src/doxagent/message_bus_v2/yahoo_sources.py
+COPY src/doxagent/message_bus_v2/reuters_sources.py /app/src/doxagent/message_bus_v2/reuters_sources.py
 COPY src/doxagent/content_enrichment/quality.py /app/src/doxagent/content_enrichment/quality.py
 RUN find /app/src/doxagent/site_strategy -type d -exec chmod a+rx {} + \
     && find /app/src/doxagent/site_strategy -type f -exec chmod a+r {} + \
-    && chmod a+r /app/src/doxagent/message_bus_v2/yahoo_sources.py /app/src/doxagent/content_enrichment/quality.py
+    && chmod a+r /app/src/doxagent/message_bus_v2/yahoo_sources.py /app/src/doxagent/message_bus_v2/reuters_sources.py /app/src/doxagent/content_enrichment/quality.py

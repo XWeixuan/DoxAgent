@@ -15,10 +15,11 @@ ROOT = Path('/site-data/registry/site-maintenance-sessions-20261019')
 
 async def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('phase', choices=['login', 'verify'])
+    parser.add_argument('phase', choices=['login', 'verify', 'business'])
     args = parser.parse_args()
     token = Path('/run/doxagent-site-access/admin-token').read_text().strip()
     results = []
+    ROOT.mkdir(exist_ok=True)
     async with httpx.AsyncClient(base_url='http://127.0.0.1:8011',
             headers={'Authorization': 'Bearer ' + token}, timeout=60, trust_env=False) as admin:
         async def inventory():
@@ -43,6 +44,7 @@ async def main():
             row = {'action': action, 'state': op['state'], 'error': op.get('error'),
                    'result': op.get('result'), 'ack_seconds': ack, 'seconds': time.monotonic()-start}
             results.append(row)
+            (ROOT / ('acceptance.'+args.phase+'.json')).write_text(json.dumps(results,indent=2))
             print(json.dumps(row), flush=True)
             return row
 
@@ -88,6 +90,14 @@ async def main():
                     assert row['original_target_preserved']
                 results.append(row)
                 await operate('CLOSE_LOGIN', session_id=session_id)  # This canary's new LOGIN only.
+        elif args.phase == 'business':
+            opened = await operate('OPEN_LOGIN', scope_id='source:reuters_site_search', identity_id='digitimes-de-1')
+            assert opened['state'] == 'DONE'
+            await asyncio.sleep(3)
+            checked = await operate('VERIFY_LOGIN', session_id=opened['result']['session_id'])
+            assert checked['state'] == 'DONE', checked
+            assert checked['result']['crawler'] == 'READY', checked
+            assert checked['result']['body'] in ('FULL','SHORT_FULL'), checked
         else:
             task = next(t for t in inv['challenges'] if t['identity_id']=='digitimes-de-1')
             assert task['state'] != 'TARGET_LOST'

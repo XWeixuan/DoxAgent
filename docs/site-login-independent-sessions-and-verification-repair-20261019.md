@@ -28,3 +28,11 @@
 只从已提交代码构建窄 Site Access 镜像，覆盖 site_strategy 与本次正文分类文件，保留实际生产镜像的其余业务与依赖。更新 root 所有的桌面 GUI；不更换 Supervisor 镜像、不重建 Chrome、不复制账号或 Cookie。验证仍由人工完成 CAPTCHA/登录，本轮不自动求解。
 
 回归与生产验收记录在发布后追加；真实验收必须覆盖有未结清 Challenge 时新建普通登录、释放后跨源打开、原页引用保留，以及正常 Reuters 原页 Verify 的结构化结果，不能仅凭 VNC/RFB 连通宣称功能可用。
+
+### 第一轮生产验收及继续定位
+
+- Site 窄发布 `675ba1c5`，Supervisor 与其他服务容器 ID/镜像均不变。桌面 GUI root:root/0755；提交后版本经语法编译验证。
+- Reuters 与 Barron’s 原 Challenge 待办仍在时，新建独立 LOGIN 均成功，原 target 存在且与新登录 target 不同；WSJ 普通登录成功。首次约 6–9 秒，复用会话约 0.3–0.7 秒，API ACK 约 4–34ms；只关闭本轮验收新建的登录页。
+- Reuters 原 Challenge Verify 返回 DONE、CLEARED、原页 listing、旧会话 CLOSED，未再报笼统操作失败。认证 UNKNOWN，采集 CONTENT_ERROR/TimeoutError、正文 NOT_TESTED，如实保留业务未恢复事实。
+- 对本次 canary 进一步核实：新搜索页已有 459KB 正常 listing DOM，却因等待 DCL 超时被判失败。因此继续将 Reuters 搜索抓取改为 commit + 原生结果卡片/明确零结果就绪判定；Reuters 正文采用 commit + 真实正文段落/挑战文档就绪。资源照常加载，不拦截、不禁 cache/SW，不用空页面或 HTTP200 代替业务验收。
+- 辅助发布脚本曾因证据脚本命名为 inspect.py 而遮蔽 Python 标准库，首次发布在实际替换前中止；已改名并修正后成功发布，不隐瞒该部署工具问题。
