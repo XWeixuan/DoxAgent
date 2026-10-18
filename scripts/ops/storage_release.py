@@ -118,9 +118,49 @@ def capacity_snapshot(root, containers, *, now=None):
                 from types import SimpleNamespace
                 result=SimpleNamespace(stdout=(exc.stdout or b'').decode() if isinstance(exc.stdout,bytes) else exc.stdout or '',stderr='incomplete: daily scan time budget reached')
             samples.append(dict(path=target,entries=[dict(bytes=int(row.split('\t',1)[0]),path=row.split('\t',1)[1]) for row in result.stdout.splitlines() if '\t' in row],error=result.stderr[:500] or None))
-        atomic(destination,dict(at=now,root=dict(zip(('total','used','free'),shutil.disk_usage('/'))),volumes=samples))
+        atomic(destination,dict(at=now,root=dict(zip(('total','used','free'),shutil.disk_usage('/'))),volumes=samples,owners=owner_status(containers)))
     for path in directory.glob('????-??-??.json'):
         if now-path.stat().st_mtime>30*86400:path.unlink()
+
+
+def owner_status(containers):
+    """Read existing owner ledgers; never scan payloads or invent reclaim bytes."""
+    import sqlite3
+    result={}
+    mounts={m['Source'] for c in containers for m in c.get('Mounts',[]) if m.get('Destination')=='/data' and m.get('Type')=='volume'}
+    for root in sorted(mounts):
+        base=Path(root)
+        if not (base/'read/v2.sqlite3').is_file():continue
+        for name,relative in [('read','read/v2.sqlite3'),('research','research/research.sqlite3'),('initialization','initialization/control.sqlite3'),('bus','bus/bus.sqlite3'),('runtime','runtime/runtime.sqlite3')]:
+            path=base/relative
+            if not path.is_file():continue
+            entry=dict(database_bytes=path.stat().st_size,wal_bytes=Path(str(path)+'-wal').stat().st_size if Path(str(path)+'-wal').exists() else 0)
+            try:
+                with sqlite3.connect(path.resolve().as_uri()+'?mode=ro',uri=True,timeout=2) as db:
+                    deadline=time.monotonic()+3;db.set_progress_handler(lambda:time.monotonic()>deadline,10000)
+                    entry['reusable_page_bytes']=db.execute('PRAGMA freelist_count').fetchone()[0]*db.execute('PRAGMA page_size').fetchone()[0]
+                    tables={r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+                    if name=='read':
+                        entry['current_objects']=dict(db.execute('SELECT kind,count(*) FROM object_current GROUP BY kind'))
+                        entry['checkpoints']=list(db.execute('SELECT * FROM checkpoints'))
+                        entry['gaps']=db.execute('SELECT count(*) FROM gaps').fetchone()[0]
+                        entry['short_history_rows']=db.execute('SELECT count(*) FROM object_history').fetchone()[0]
+                        entry['generation']=db.execute('SELECT id FROM generation').fetchone()[0]
+                    elif 'v2_source_state' in tables:
+                        entry['state']=list(db.execute('SELECT * FROM v2_source_state'))
+                        entry['consumers']=list(db.execute('SELECT * FROM v2_source_consumers'))
+                        entry['legacy_pins']=list(db.execute('SELECT * FROM v2_source_pins'))
+                        if 'v2_source_exception_pins' in tables:entry['exception_pins']=list(db.execute('SELECT consumer,count(*) FROM v2_source_exception_pins GROUP BY consumer'))
+                        if 'v2_transport_gc_state' in tables:entry['transport_exit']=list(db.execute('SELECT * FROM v2_transport_gc_state'))
+                        if 'v2_native_ref_scan' in tables:entry['native_refs_pending']=list(db.execute('SELECT owner,cursor FROM v2_native_ref_scan WHERE done=0'))
+                    db.set_progress_handler(None,0)
+            except (OSError,sqlite3.Error) as exc:entry['error']=str(exc)[:200]
+            result[name]=entry
+        for name,relative in [('event','runtime/runtime_artifacts/last-resource-exit.json')]:
+            path=base/relative
+            if path.is_file():
+                value=json.loads(path.read_text());result[name]=dict(at=value.get('at'),retired=len(value.get('retired',[])),compacted=len(value.get('compacted',[])),skipped=value.get('skipped',[]))
+    return result
 
 
 def protected_images(state, images, containers, *, now=None):
@@ -534,7 +574,7 @@ def release_components(root, state, repo, commit, components):
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('command',choices=('build','deploy','release','prepare-inputs','reconcile-resources','bootstrap'))
+    parser.add_argument('command',choices=('build','deploy','release','prepare-inputs','reconcile-resources','bootstrap','storage-status'))
     parser.add_argument('--root',type=Path,default=DEFAULT_ROOT)
     parser.add_argument('--repo',type=Path,default=Path.cwd())
     parser.add_argument('--commit')
@@ -554,6 +594,7 @@ def main():
             if not args.commit:parser.error('release requires an exact commit')
             result=release_components(args.root,state,args.repo,args.commit,args.component)
         elif args.command=='prepare-inputs':result=prepare_inputs(args.root,state)
+        elif args.command=='storage-status':result=dict(available_bytes=shutil.disk_usage('/').free,owners=owner_status(inspect_containers()),release=state.get('last_reconcile'),capacity_samples=str(args.root/'capacity'))
         elif args.command=='bootstrap':
             if state:raise ValueError('release state already exists')
             state=json.loads(args.manifest.read_text())
