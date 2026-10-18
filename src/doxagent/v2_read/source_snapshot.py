@@ -5,7 +5,7 @@ the bridge from that snapshot to subsequent CDC. It never writes fake backfill
 events into a business source or re-executes a business effect.
 """
 from contextlib import ExitStack, closing, contextmanager
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 import hashlib
 import json
 import sys
@@ -69,6 +69,8 @@ def rebuild_current(sources, target, *, event_root=None, max_batches=10000):
     bridge='snapshot:'+uuid4().hex
     consumer='read:'+hashlib.sha256(str(target).encode()).hexdigest()[:24]
     report=dict(format='doxagent.current-source-rebuild.1',path=str(target),sources={},rows=0,gaps=[])
+    lease_until=datetime.now(UTC)+timedelta(hours=24)
+    report['bridge_expires_at']=instant(lease_until)
     research=next((PublishedArtifacts(s.path) for s in sources if s.source=='research'),None)
     mapper=FormalProjectors(store,research,event_root)
     opened={};deferred=[]
@@ -79,6 +81,7 @@ def rebuild_current(sources, target, *, event_root=None, max_batches=10000):
         return dict(source=source.source,table_name=table,entity_id=identity,operation='BACKFILL',
                     row=source.content.source_row(value),recorded_at=None,seq=report['sources'][source.source]['head'])
     def apply(source,db,table,row,*,control_seed=False):
+        if datetime.now(UTC)>=lease_until:raise TimeoutError('SOURCE_SNAPSHOT_BRIDGE_EXPIRED')
         e=event(source,db,table,row)
         records,counts=(DomainProjectors(store)(e) if control_seed else mapper(e))
         if control_seed:records=[r for r in records if r['kind'] in {'ticker','navigation'}]
@@ -165,6 +168,7 @@ def rebuild_current(sources, target, *, event_root=None, max_batches=10000):
         store.defer_initialization_progress=False
         worker=ProjectionWorker(store,sources,mapper)
         for _ in range(max_batches):
+            if datetime.now(UTC)>=lease_until:raise TimeoutError('SOURCE_SNAPSHOT_BRIDGE_EXPIRED')
             worker.tick(limit=500)
             if all(store.position(s.source)>=s.head() for s in sources):break
         else:raise TimeoutError('current snapshot catchup incomplete')
@@ -175,7 +179,15 @@ def rebuild_current(sources, target, *, event_root=None, max_batches=10000):
         report['at']=instant(datetime.now(UTC));atomic_json(str(target)+'.current-snapshot.json',report)
         return report
     finally:
-        for source in sources:source.retire_consumer(bridge)
+        published=False
+        for alias in (target.parent/'active.json',target.parent.parent/'active.json'):
+            if alias.is_file():
+                value=json.loads(alias.read_text());selected=Path(value.get('path',''))
+                if not selected.is_absolute():selected=alias.parent/selected
+                published=published or value.get('format')=='doxagent.v2.read-alias.1' and selected.resolve()==target
+        for source in sources:
+            source.retire_consumer(bridge)
+            if not published:source.retire_consumer(consumer)
 
 
 RUNTIME_NAMESPACES=('trade_intents','trade_receipts','analysis_trade_decisions','candidates','worker_receipts',

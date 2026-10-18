@@ -155,3 +155,15 @@ def test_shadow_generation_cannot_replace_canonical_business_facts(tmp_path):
     shadow=ReadStore(tmp_path/'shadow'/'read.db');shadow.migrate();sync_business_facts(s,shadow)
     with closing(s.connection()) as db:
         assert db.execute("SELECT count(*) FROM v2_serving_business_facts WHERE kind='policy_hit_set'").fetchone()[0]==1
+
+
+def test_only_crashed_temporary_snapshot_consumers_expire(tmp_path):
+    s=fixture_source(tmp_path);now=datetime.now(UTC)
+    s.acknowledge_exceptions('snapshot:crashed',0,[])
+    s.acknowledge_exceptions('read:still-owned',6,[])
+    with closing(s.connection(write=True)) as db,db:
+        db.execute("UPDATE v2_source_consumers SET updated_at=?",((now-timedelta(days=2)).isoformat(),))
+    expire(s,now=now)
+    with closing(s.connection()) as db:
+        ids={r[0] for r in db.execute('SELECT id FROM v2_source_consumers')}
+    assert 'snapshot:crashed' not in ids and 'read:still-owned' in ids

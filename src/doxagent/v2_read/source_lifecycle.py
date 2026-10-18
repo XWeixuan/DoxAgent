@@ -129,6 +129,14 @@ def expire(source, *, now=None, limit=500):
     if not source.capture():raise ValueError('current source capture metadata required')
     with closing(source.connection(write=True)) as db, db:
         db.execute('BEGIN IMMEDIATE');migrate(db)
+        # Only the temporary importer prefix has a bounded lease. A killed
+        # importer must not pin a suffix forever; ordinary Read consumers are
+        # retired explicitly by their generation owner.
+        stale=[r[0] for r in db.execute("SELECT id FROM v2_source_consumers WHERE id LIKE 'snapshot:%' AND julianday(updated_at)<julianday(?) LIMIT 32",((now-timedelta(hours=24)).isoformat(),))]
+        for consumer in stale:
+            db.execute('DELETE FROM v2_source_consumers WHERE id=?',(consumer,))
+            db.execute('DELETE FROM v2_source_exception_pins WHERE consumer=?',(consumer,))
+            db.execute('DELETE FROM v2_source_pins WHERE id=? OR id=?',(consumer,consumer+':repair'))
         if source.source=='runtime' and not db.execute('SELECT 1 FROM v2_serving_fact_owner WHERE id=1').fetchone():
             raise ValueError('active serving business-fact owner not registered')
         ack=db.execute('SELECT min(checkpoint) FROM v2_source_consumers').fetchone()[0]
