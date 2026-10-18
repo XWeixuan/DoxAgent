@@ -206,6 +206,11 @@ def create_app(
 
     @app.get("/readyz")
     async def ready() -> dict[str, object]:
+        from .network_binding import network_binding
+
+        binding = await network_binding(getattr(service.runtime, "supervisor_socket", None))
+        if not binding["ready"]:
+            raise HTTPException(status_code=503, detail=binding)
         storage = service.repository.storage.diagnostics()
         if storage["unavailable"]:
             raise HTTPException(

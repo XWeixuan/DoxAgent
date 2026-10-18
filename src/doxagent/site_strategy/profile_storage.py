@@ -210,6 +210,22 @@ class ProfileSnapshotManager:
         finally:
             lock.release()
 
+    def maintain(self) -> None:
+        """Reconcile missed create-time snapshot retention without touching live writers."""
+        for profile in self.repository.list_profiles():
+            if profile.maintenance_session_id:
+                continue
+            lock = OwnerFileLock(
+                self.profile_root / ".profile-locks" / f"{profile.directory_key}.lock"
+            )
+            try:
+                lock.acquire()
+                self._prune(profile.profile_id)
+            except RuntimeError:
+                continue
+            finally:
+                lock.release()
+
     def _prune(self, profile_id: str) -> None:
         manifests = sorted(
             self.snapshot_root.glob(f"{profile_id}-*.tar.json"),

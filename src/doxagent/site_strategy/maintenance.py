@@ -307,6 +307,8 @@ class MaintenanceController:
         session = self.store.get_session(operation.session_id) if operation.session_id else None
         if operation.action == "OPEN_LOGIN":
             if session:
+                if session.kind != "LOGIN":
+                    raise ValueError("Use Open Challenge for a Challenge session")
                 session = self.store.save_session(session.model_copy(update={"state": "OPEN"}))
                 try:
                     result = await self.service.recover_identity_login(
@@ -604,7 +606,11 @@ class MaintenanceController:
                                     reason="interrupted_explicit_reopen",
                                 ),
                             )
-                    self.store.save_session(reserved.model_copy(update={"state": "RELEASED"}))
+                    self.store.save_session(
+                        reserved.model_copy(
+                            update={"state": "RELEASED" if reserved.target_id else "CLOSED"}
+                        )
+                    )
                     raise
                 return {
                     "session_id": session.session_id,
@@ -662,7 +668,12 @@ class MaintenanceController:
                 )
             )
             try:
-                result = await self.service.open_identity_login(task.site_id, task.identity_id)
+                result = await self.service.recover_identity_login(
+                    task.site_id,
+                    task.identity_id,
+                    task.task_id,
+                    target_id=task.original_target_id,
+                )
             except BaseException:
                 self.store.save_session(reserved.model_copy(update={"state": "RELEASED"}))
                 raise

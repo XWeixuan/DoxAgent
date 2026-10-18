@@ -255,6 +255,26 @@ class ProfileUseCoordinator:
             )
             return session_id
 
+    async def prepare_login(self, profile_id: str, identity_id: str) -> None:
+        """Retire only confirmed lost Challenge reservations, never a live human page."""
+        from .governance_repository import GovernanceRepository
+
+        async with self._condition:
+            store = GovernanceRepository(self.repository)
+            task = store.current_challenge(identity_id)
+            if task and task.state != "TARGET_LOST":
+                raise ProfileUnavailableError("active_challenge_use_challenge_maintenance")
+            for session in store.list_sessions():
+                if session.identity_id != identity_id or session.kind != "CHALLENGE":
+                    continue
+                if task and session.task_id == task.task_id or not session.target_id:
+                    store.save_session(session.model_copy(update={"state": "CLOSED"}))
+            profile = self.repository.get_profile(profile_id)
+            if task and profile and profile.maintenance_session_id:
+                if self._maintenance_profile not in {None, profile_id}:
+                    raise ProfileUnavailableError("another_profile_is_in_maintenance")
+                await self._release_locked(profile_id, profile.maintenance_session_id)
+
     async def begin_challenge(
         self,
         profile_id: str,
@@ -497,14 +517,14 @@ class SiteStrategyService:
         from .resource_gc import maintain_profile
 
         root = self.runtime.browser_pool.root
-        for _, identity in self.repository.list_active_identities():
-            if identity.runtime_kind is not BrowserRuntimeKind.MANAGED_PLAYWRIGHT:
-                continue
-            profile = self.repository.get_profile(identity.profile_id)
-            if profile and not profile.maintenance_session_id:
+        # Preserve the production retention fix: retired identities still own
+        # profiles, and the shared owner lock fences both browser runtime types.
+        for profile in self.repository.list_profiles():
+            if not profile.maintenance_session_id:
                 await asyncio.to_thread(
                     maintain_profile, root, profile.directory_key, allow_cache=True
                 )
+        await asyncio.to_thread(self.profile_storage.maintain)
 
     async def _prewarm_identities(self) -> None:
         from .governance_repository import GovernanceRepository
@@ -2495,11 +2515,7 @@ class SiteStrategyService:
         spec = self.repository.get_strategy(site_id)
         if spec is None or not self._identity_belongs_to_site(site_id, identity_id):
             raise ValueError("identity is not referenced by the selected site")
-        url = (
-            (spec.auth.maintenance_url or spec.auth.login_url)
-            or profile.login_url
-            or profile.challenge_url
-        )
+        url = (spec.auth.maintenance_url or spec.auth.login_url) or profile.login_url
         if not url:
             from .governance_repository import GovernanceRepository
 
@@ -2514,30 +2530,7 @@ class SiteStrategyService:
             url = scope.verification_plan.get("crawler", {}).get("url") if scope else None
         if not url:
             raise ValueError("profile has no maintenance URL")
-        if profile.challenge_url is not None:
-            if profile.challenge_site_id != site_id or profile.challenge_identity_id != identity_id:
-                raise ValueError("challenge belongs to another site identity")
-            if not profile.maintenance_session_id:
-                raise RuntimeError("challenge session is missing")
-            await self.profile_use.assert_session(
-                profile.profile_id, profile.maintenance_session_id
-            )
-            await self.profile_use.recover_maintenance(
-                profile.profile_id, profile.maintenance_session_id
-            )
-            try:
-                return await self.runtime.adopt_challenge(
-                    profile,
-                    egress,
-                    identity=identity,
-                    site_id=site_id,
-                    token=profile.maintenance_session_id,
-                )
-            except BaseException:
-                await self.profile_use.release_viewer(
-                    profile.profile_id, profile.maintenance_session_id
-                )
-                raise
+        await self.profile_use.prepare_login(profile.profile_id, identity_id)
         session_id = await self.profile_use.begin_maintenance(
             profile.profile_id, session_id=control_token
         )

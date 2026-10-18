@@ -254,6 +254,8 @@ class ChromeSupervisor:
         owner_id = str(request.get("owner_id") or "")
         if not owner_id or len(owner_id) > 128:
             raise ValueError("invalid_owner_id")
+        if command == "health":
+            return {"ready": True, "network_namespace": os.readlink("/proc/self/ns/net")}
         if command == "ensure":
             identity = BrowserIdentitySpec.model_validate(request.get("identity"))
             egress = ProxyEgress.model_validate(request.get("egress"))

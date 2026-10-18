@@ -1,0 +1,10 @@
+[Unit]
+Description=Check native browser network binding every 30 seconds
+
+[Timer]
+OnBootSec=45
+OnUnitInactiveSec=30
+Unit=doxagent-site-access-network-guard.service
+
+[Install]
+WantedBy=timers.target
