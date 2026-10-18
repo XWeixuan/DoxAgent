@@ -137,6 +137,23 @@ def test_small_business_fact_sync_preserves_settlement_and_withdrawal(tmp_path):
     with closing(s.connection()) as db:assert not db.execute('SELECT 1 FROM v2_serving_business_facts').fetchone()
 
 
+def test_snapshot_preserves_retired_catalog_and_usage_after_process_exit(tmp_path):
+    s=fixture_source(tmp_path);s=SourceOutbox(s.path,'runtime');s.migrate(('poll_states',))
+    live=ReadStore(tmp_path/'live'/'read.db');live.migrate();s.claim_serving_facts(live.path)
+    catalog=dict(kind='policy_catalog',ticker='MU',id='old-policy',data={'lifecycle':'RETIRED','policy_id':'P'})
+    usage=dict(kind='usage',ticker='MU',id='call',day='2026-10-01',parent='completed-run',data={
+        'scope':'API','node':'D1','model':'qwen3.8-flash','provider':'bailian',
+        'timing':{'first_started_at':{'value':'2026-10-01T12:00:00Z'}},
+        'usage':{'input_tokens':100,'cached_input_tokens':0,'output_tokens':20},'coverage':'COMPLETE'})
+    live.ingest('fixture','facts',[catalog,usage]);sync_business_facts(s,live)
+    report=rebuild_current([s],tmp_path/'rebuilt'/'read.db')
+    target=ReadStore(report['path'])
+    assert target.get('policy_catalog','MU','old-policy')==catalog['data']
+    assert target.get('usage','MU','call')==usage['data']
+    with target.connect() as db:
+        assert db.execute("SELECT value FROM contributions_current WHERE metric='input_tokens' AND entity='call'").fetchone()[0]=='100'
+
+
 def test_source_native_exit_protects_exact_repair_and_resurrected_current(tmp_path):
     from doxagent.v2_read import source_native_gc as gc
     s=fixture_source(tmp_path)

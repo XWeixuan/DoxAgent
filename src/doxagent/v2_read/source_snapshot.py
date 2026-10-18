@@ -73,6 +73,32 @@ def settle_cases(store):
     return len(cases)
 
 
+def restore_business_facts(store, db):
+    """Restore compact historical settlements, catalogs and usage, not Context."""
+    from .usage import observations
+    count=0
+    for kind,ticker,identity,raw in db.execute('SELECT kind,ticker,id,payload FROM v2_serving_business_facts'):
+        value=json.loads(raw)
+        if kind.startswith('metric:'):
+            store.ingest('business-baseline',uuid4().hex,[],contributions=[value])
+        elif kind.startswith('field:'):
+            actual_kind=kind[6:];current=store.get(actual_kind,ticker,identity)
+            if current and current.get('runtime_activation_id')==value.get('runtime_activation_id'):
+                store.ingest('business-baseline',uuid4().hex,[dict(kind=actual_kind,ticker=ticker,id=identity,data={**current,**value})])
+        else:
+            value['sort']=value.pop('sort_key',value['id']);value['search']=value.pop('search_text','') or ''
+            counts=[]
+            if kind=='usage':
+                data=value['data']
+                dimensions={k:data[k] for k in ('scope','node','model','provider')}
+                started=(data.get('timing',{}).get('first_started_at') or {}).get('value')
+                counts=[dict(metric=name,ticker=ticker,entity=identity,day=value['day'],dimensions=dimensions,value=amount)
+                        for name,amount in observations(data['model'],data['provider'],data['scope'],started,data['usage']).items()]
+            store.ingest('business-baseline',uuid4().hex,[value],contributions=counts)
+        count+=1
+    return count
+
+
 def rebuild_current(sources, target, *, event_root=None, max_batches=10000):
     from .serving_generation import generation_target
     with generation_target(target) as target:
@@ -167,17 +193,7 @@ def _rebuild_current(sources, target, *, event_root=None, max_batches=10000):
                              [progress(store,run,{'kind':'snapshot-complete'})])
             if runtime:
                 source,db,_=runtime
-                for kind,ticker,identity,raw in db.execute('SELECT kind,ticker,id,payload FROM v2_serving_business_facts'):
-                    value=json.loads(raw)
-                    if kind.startswith('metric:'):
-                        store.ingest('business-baseline',uuid4().hex,[],contributions=[value])
-                    elif kind.startswith('field:'):
-                        actual_kind=kind[6:];current=store.get(actual_kind,ticker,identity)
-                        if current and current.get('runtime_activation_id')==value.get('runtime_activation_id'):
-                            store.ingest('business-baseline',uuid4().hex,[dict(kind=actual_kind,ticker=ticker,id=identity,data={**current,**value})])
-                    elif kind not in ('policy_hit_set','policy_admission'):
-                        value['sort']=value.pop('sort_key',value['id']);value['search']=value.pop('search_text','') or ''
-                        store.ingest('business-baseline',uuid4().hex,[value])
+                restore_business_facts(store,db)
             # All historical attempts/executions are now present. The target is
             # unpublished: only its final graph is observable.
             report['settled_cases']=settle_cases(store)

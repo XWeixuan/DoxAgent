@@ -74,7 +74,8 @@ def replace_packet_refs(db, owner, identity, packet):
                location='native-files/'+digest[:2]+'/'+digest,owner_type=owner,owner_id=str(identity))
 
 
-BUSINESS_FACT_KINDS=('policy_admission','policy_hit_set','policy_change','event_change','fact_change')
+BUSINESS_FACT_KINDS=('policy_admission','policy_hit_set','policy_change','event_change','fact_change',
+                     'policy_catalog','event_catalog','fact_catalog','usage')
 BUSINESS_FACT_METRICS=tuple(a+'_'+b for a in ('added','modified','retired') for b in ('events','facts'))
 
 
