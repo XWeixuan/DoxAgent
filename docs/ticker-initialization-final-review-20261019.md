@@ -42,3 +42,23 @@
 最终测试验收：扩大组 270 passed / 2 failed / 1 skipped。两项失败分别为该批已加载的旧 D1 节点计数断言、以及既存 startup 集成 fixture 的 D2 provenance 不一致（D2 绑定 d1-mu，却激活 d1-new）；后一项也已在干净 origin/main 复现。修正测试导入/计数和 fixture 引用，不放宽生产 provenance 校验。最后针对两项失败及所有新增代码运行的收尾组为 **39 passed / 1 平台 skip**；SDK/Worker 资源预算组 **93 passed**，所有涉及 Python 文件 Ruff 与 git diff --check 通过。此前 MemoryError 在单例和第二次扩大组均未复现。上述测试组有重叠，不将它们相加冒充独立用例数。
 
 最终代码审查没有遗留的合并阻碍。新增生产改动仅为 Guardian 源码获取、重试审计、旧认证副本隔离和 initializer 的启动依赖；没有改变成功节点、研究质量门槛、cutoff、预算、交易绑定或激活 provenance 合同。
+
+## 合并与退役验收（2026-10-19 04:43–04:45 CST）
+
+本分支在整合其他会话新提交后已于 `fe87e94e` 合入并推送 origin/main，随后 main 的 `9de580c9` 已确认包含该提交。基础代码审查、测试修正和新增优化均已进入主线；追加整合后的 Site Access/O4 联合回归 21 passed / 1 平台 skip。新增认证隔离/审计命名改进未借机替换生产容器，后续从主线发布；SNOW 在途初始化保持不动。
+
+主工作区只对 21 个有重叠的未提交路径做了有记录的临时保存和恢复；SDK 中未提交的 W3 改动经规范化 hash 核对与合并前一致，原有 changelog 所有段落保留，Git index 恢复原未暂存状态，无未解决冲突。其余会话继续写入的文件保留现场；可恢复 stash OID 与原始补丁保存在主工作区 eval/initialization_final_review_20261019，不把他人未提交内容纳入本轮 main 提交。
+
+生产 /home/ubuntu/doxagent 的 main 已快进同步。已删除本对话构造且无在途引用的 5 个部署分支：
+
+- codex/cohr-initialization-recovery
+- codex/cohr-recovery-agent
+- codex/cohr-recovery-guardian
+- codex/cohr-recovery-initialization
+- codex/cohr-recovery-worker
+
+另外删除 Guardian bare repository 中两个已 CANCELLED incident 的 codex/init-repair/repair-b0356020858e4d9ab620508917be81fd 与 codex/init-repair/repair-c814d8dc0f6a405c989b4e49f8dea1a4 分支；仅通过 Git 原子解除工作树 HEAD 的符号引用，完整保留取证文件及原索引状态，未执行 reset/目录删除。此前创建分支的精确 refs/commit 和经 git bundle verify 的 deployment.bundle / incident.bundle 保存在生产 /var/lib/doxagent/initialization-final-review-20261019（分别约 8 KB / 3 KB），足以恢复专有提交，不制造完整仓库副本。
+
+保留 codex/cohr-initialization-lease-recovery 和 codex/cohr-nbis-projection-recovery：SNOW 在途执行链仍引用 f142e55c，运行中投影服务仍声明 00983e64。其他会话的 storage/site/GPT6 等分支未动。GitHub origin 上本来没有本对话的 cohr 临时分支；清理对象为生产 checkout 与 Guardian bare repository 中的 refs。
+
+最终实测 SNOW 同一个 run/cutoff 继续 RUNNING/D3，state_seq 从 1122 推进到 1134，Worker 模型会话持续写入至 04:43:34 CST；COHR/NBIS/CEG/ONDS 保持 SUCCEEDED，CEG PAPER_TRADING。没有新建初始化、重置预算或重启服务。完整 before/after、删除 CAS 与 bundle hash 回执均在主工作区 eval/initialization_final_review_20261019。
