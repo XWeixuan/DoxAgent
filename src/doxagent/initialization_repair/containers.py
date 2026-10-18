@@ -251,6 +251,9 @@ class DockerRuntime:
             raise ContainerError("built candidate image labels do not match repair identity")
         return str(images[0]["Id"])
 
+    def incident_running(self, incident_id: str) -> bool:
+        return bool(self._run(['ps','-q','--filter','label=doxagent.repair.incident='+incident_id]).stdout.strip())
+
     def verify_image(
         self,
         reference: str,

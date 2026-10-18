@@ -59,14 +59,47 @@ def image_index(images):
             [image['Id'],*(image.get('RepoTags') or []),*(image.get('RepoDigests') or [])]}
 
 
+def template_references(container, images):
+    index=image_index(images);references=set()
+    def visit(value):
+        if isinstance(value,str) and value in index:references.add(index[value])
+        elif isinstance(value,dict):
+            for item in value.values():visit(item)
+        elif isinstance(value,list):
+            for item in value:visit(item)
+    for entry in container.get('Config',{}).get('Env') or []:
+        key,_,value=entry.partition('=')
+        # Compose interpolation metadata is inherited by every service but is
+        # not a runtime image dependency. Only actual creator/template inputs pin.
+        if 'TEMPLATE' not in key and key not in {'AGENT','DOXAGENT_INITIALIZATION_REPAIR_AGENT_IMAGE'}:continue
+        try:visit(json.loads(value))
+        except ValueError:visit(value)
+    return references
+
+
 def record_live_references(state, images, containers):
-    tags = {tag: image['Id'] for image in images for tag in image.get('RepoTags') or []}
     for container in containers:
         component = (container.get('Config',{}).get('Labels') or {}).get('com.docker.compose.service')
         current = state.get('components',{}).get(component,{}).get('current')
         if not current or current['image'] != container['Image']:continue
-        environment = '\n'.join(container['Config'].get('Env') or [])
-        current['references'] = sorted({identity for tag,identity in tags.items() if tag in environment})
+        current['references'] = sorted(template_references(container,images))
+
+
+def record_repair_references(state, containers):
+    import sqlite3
+    references=set()
+    for container in containers:
+        if (container.get('Config',{}).get('Labels') or {}).get('com.docker.compose.service')!='initialization-guardian':continue
+        command=container['Config'].get('Cmd') or []
+        if '--initialization-db' not in command:continue
+        target=command[command.index('--initialization-db')+1]
+        mount=next((m for m in container.get('Mounts',[]) if target.startswith(m['Destination'].rstrip('/')+'/')),None)
+        if mount is None:raise ValueError('Guardian repair DB mount could not be resolved')
+        path=Path(mount['Source'])/target[len(mount['Destination']):].lstrip('/')
+        with sqlite3.connect(path.resolve().as_uri()+'?mode=ro',uri=True,timeout=5) as db:
+            for image, in db.execute("SELECT json_extract(payload,'$.source_image_id') FROM initialization_repair_incidents WHERE status IN ('ACTIVE','HUMAN_REQUIRED') UNION SELECT json_extract(r.payload,'$.image_id') FROM initialization_repair_rounds r JOIN initialization_repair_incidents i ON i.id=r.incident_id WHERE i.status IN ('ACTIVE','HUMAN_REQUIRED')"):
+                if image:references.add(image)
+    state['repair_images']=sorted(references)
 
 
 def capacity_snapshot(root, containers, *, now=None):
@@ -80,7 +113,10 @@ def capacity_snapshot(root, containers, *, now=None):
         samples=[]
         for target in targets:
             if not Path(target).exists():continue
-            result=subprocess.run(['du','-x','-B1','-d1',target],capture_output=True,text=True,timeout=90)
+            try:result=subprocess.run(['du','-x','-B1','-d1',target],capture_output=True,text=True,timeout=240)
+            except subprocess.TimeoutExpired as exc:
+                from types import SimpleNamespace
+                result=SimpleNamespace(stdout=(exc.stdout or b'').decode() if isinstance(exc.stdout,bytes) else exc.stdout or '',stderr='incomplete: daily scan time budget reached')
             samples.append(dict(path=target,entries=[dict(bytes=int(row.split('\t',1)[0]),path=row.split('\t',1)[1]) for row in result.stdout.splitlines() if '\t' in row],error=result.stderr[:500] or None))
         atomic(destination,dict(at=now,root=dict(zip(('total','used','free'),shutil.disk_usage('/'))),volumes=samples))
     for path in directory.glob('????-??-??.json'):
@@ -90,6 +126,7 @@ def capacity_snapshot(root, containers, *, now=None):
 def protected_images(state, images, containers, *, now=None):
     now = now or time.time(); index = image_index(images)
     protected = {c['Image'] for c in containers}
+    protected.update(state.get('repair_images',[]))
     for component in state.get('components',{}).values():
         # An old but still sole valid rollback never expires by calendar alone.
         for key in ('current','previous'):
@@ -108,11 +145,8 @@ def protected_images(state, images, containers, *, now=None):
             protected.add(index.get(candidate['image'],candidate['image']))
     # Guardian/template images can be dormant. Resolve actual live environment,
     # including structured templates, without persisting or printing its values.
-    tags = {tag:image['Id'] for image in images for tag in image.get('RepoTags') or []}
     for container in containers:
-        environment = '\n'.join(container['Config'].get('Env') or [])
-        for tag, identity in tags.items():
-            if tag in environment: protected.add(identity)
+        protected.update(template_references(container,images))
     for configured in state.get('configured_images',[]):
         if configured in index: protected.add(index[configured])
     return protected
@@ -134,6 +168,7 @@ def reconcile(root, state):
         raise ValueError('bootstrap the audited component rollback inventory before retirement')
     images, containers = inspect_images(), inspect_containers()
     record_live_references(state,images,containers)
+    record_repair_references(state,containers)
     before = shutil.disk_usage('/').free
     report = dict(at=time.time(),available_before=before,retired=[],errors=[])
     processes=run(['ps','-eo','args'])
@@ -250,7 +285,12 @@ def build(repo, commit, root, kinds, *, sdk='doxagent-ibapi:approved-7d361219',
         finally:
             archive.stdout.close()
         if archive.wait()!=0:raise ValueError('committed build context unavailable')
-        source_sha=hashlib.sha256(run(['git','-C',str(repo),'rev-parse',commit+'^{tree}']).encode()).hexdigest()
+        # Guardian's existing source-identity contract hashes the full committed
+        # archive, independently of the smaller application build context.
+        archive=subprocess.Popen(['git','-C',str(repo),'archive','--format=tar',commit],stdout=subprocess.PIPE)
+        try:source_sha=hashlib.file_digest(archive.stdout,'sha256').hexdigest()
+        finally:archive.stdout.close()
+        if archive.wait():raise ValueError('committed source identity unavailable')
         index=image_index(inspect_images())
         if sdk not in index or chrome not in index:raise ValueError('approved SDK/Chrome baseline unavailable')
         dependency_inputs={n:hashlib.sha256((context/n).read_bytes()).hexdigest() for n in ('pyproject.toml','uv.lock')}

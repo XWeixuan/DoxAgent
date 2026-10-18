@@ -7,11 +7,18 @@ from pathlib import Path
 import shutil
 import sqlite3
 import time
+from functools import lru_cache
 
 from doxagent.trade_execution.worker import WriterLock
 from doxagent.v2_read.maintenance import atomic_json
 from doxagent.v2_read.native_content import NativeContent
 from .retained_events import build
+
+
+@lru_cache(maxsize=4096)
+def frame_owner(path, raw):
+    value=NativeContent(path).decode(json.loads(raw)) if raw else {}
+    return dict(run_id=value.get('run_id'),base=dict(artifacts=(value.get('base') or {}).get('artifacts',{})))
 
 
 def event_refs(value,ticker=None):
@@ -60,11 +67,16 @@ def referenced(journal,control_path,*,now=None):
                 if root and version is not None:
                     refs.setdefault(root,{}).setdefault(ticker,set()).add(int(version))
                     if status not in {'COMPLETED','FAILED','UNAVAILABLE'}:protected.add(root)
-        for task in db.execute("SELECT id,ticker,status,receipt,inputs,updated_at FROM runtime_tasks WHERE kind IN ('MAINTENANCE','DELIVERY','SELECTION')"):
-            identity,ticker,status,receipt,inputs,at=tuple(task);value=json.loads(receipt);frame=value.get('frame') or {};run=frame.get('run_id')
+        for task in db.execute("SELECT id,ticker,status,json_extract(receipt,'$.frame') AS frame_json,updated_at FROM runtime_tasks WHERE kind IN ('MAINTENANCE','DELIVERY','SELECTION')"):
+            identity,ticker,status,raw,at=tuple(task);frame=frame_owner(str(journal.path),raw);run=frame.get('run_id')
             age=(now-datetime.fromisoformat(at)).total_seconds()
             active=status in {'PENDING','RUNNING','HELD'} or status=='FAILED' and age<7*86400
-            add(value,ticker,active);add(json.loads(inputs),ticker,active)
+            # A completed frame is audit metadata. Published activations and
+            # Case version pins retain its valuable native history explicitly.
+            if active:
+                add(frame,ticker,True)
+                inputs=db.execute('SELECT inputs FROM runtime_tasks WHERE id=?',(identity,)).fetchone()[0]
+                add(json.loads(inputs),ticker,True)
             if run:
                 candidate=str(journal.path.resolve().parent/'runtime_artifacts'/run/'events')
                 if active:protected.add(candidate)

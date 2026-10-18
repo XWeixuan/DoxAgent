@@ -98,3 +98,22 @@ def test_companion_exits_with_its_guardian_and_live_reference_survives_promotion
     protected=release.protected_images(state,images,[])
     assert 'a2' in protected
     assert 'a1' not in protected
+
+
+def test_compose_interpolation_metadata_does_not_create_permanent_runtime_pins():
+    images=[image('old','doxagent-v2:old'),image('agent','doxagent-agent:current')]
+    container={'Image':'current','Config':{'Env':['DOXAGENT_V2_IMAGE=doxagent-v2:old','DOXAGENT_INITIALIZATION_REPAIR_AGENT_IMAGE=doxagent-agent:current']}}
+    assert release.protected_images({},images,[container])=={'current','agent'}
+
+
+def test_actual_unfinished_repair_image_refs_exit_after_incident_closes(tmp_path):
+    import sqlite3
+    path=tmp_path/'control.db'
+    with sqlite3.connect(path) as db:
+        db.executescript('CREATE TABLE initialization_repair_incidents(id,status,payload);CREATE TABLE initialization_repair_rounds(incident_id,payload);')
+        db.execute('INSERT INTO initialization_repair_incidents VALUES(?,?,?)',('repair','HUMAN_REQUIRED',json.dumps(dict(source_image_id='source'))))
+        db.execute('INSERT INTO initialization_repair_rounds VALUES(?,?)',('repair',json.dumps(dict(image_id='candidate'))))
+    container={'Config':{'Labels':{'com.docker.compose.service':'initialization-guardian'},'Cmd':['guardian','--initialization-db','/data/control.db']},'Mounts':[{'Source':str(tmp_path),'Destination':'/data'}]}
+    state={};release.record_repair_references(state,[container]);assert state['repair_images']==['candidate','source']
+    with sqlite3.connect(path) as db:db.execute("UPDATE initialization_repair_incidents SET status='SUCCEEDED'")
+    release.record_repair_references(state,[container]);assert not state['repair_images']
