@@ -89,6 +89,7 @@ def main():
     sources = [SourceOutbox(path, name) for name, path in (item.split('=', 1) for item in args.source)]
     for source in sources:
         source.migrate()  # Explicit owner startup migration, never an HTTP read.
+    capacity_at=0
     while True:
         started = time.monotonic()
         result = {}
@@ -108,6 +109,11 @@ def main():
                 if not changed:
                     break
             result[source.source] = dict(expired=count,error=error)
+            if source.source=='bus' and time.monotonic()>=capacity_at:
+                from .storage_status import capacity
+                try:result[source.source]['capacity']=capacity(source)
+                except (sqlite3.Error,OSError,ValueError) as exc:result[source.source]['capacity_error']=str(exc)[:200]
+                capacity_at=time.monotonic()+3600
             try:
                 from . import source_native_gc
                 refs=source_native_gc.reconcile(source)

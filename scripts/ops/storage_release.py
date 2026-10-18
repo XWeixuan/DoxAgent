@@ -361,6 +361,8 @@ def build(repo, commit, root, kinds, *, sdk='doxagent-ibapi:approved-7d361219',
             recorded=previous and previous.get('key')==key and known.get(tag)==previous['image']
             recovered=not recorded and tag in known and verify_dependency_image(tag,kind,dependency_inputs)
             if not recorded and not recovered:
+                if shutil.disk_usage('/').free<10*1024**3 and not resume_dependencies:
+                    raise OSError('less than 10 GiB available; defer a fresh large dependency build')
                 minimum=(1 if resume_dependencies else 8)*1024**3
                 if kind=='backend' and shutil.disk_usage('/').free < minimum:
                     raise OSError('insufficient dependency staging space; fresh build needs 8 GiB, explicit cached resume needs 1 GiB')
