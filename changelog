@@ -1596,3 +1596,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 - 2026-10-18 [storage release validation]: Host BuildKit treats bare sha256 image IDs in FROM as repository names; dependency stages now use verified local named references while receipts retain exact image IDs and diffIDs. No production deployment occurred during the failed first build.
 
 - 2026-10-18 [storage build staging]: Reserve 512 MiB for production writes and require 4 GiB for a fresh backend dependency build; reuse exact validated dependency receipts, pin the Python base digest, and build only requested dependency ancestors. Move stable CDECR catalogs out of ordinary source COPY so small code releases do not recopy 185 MiB. Failed build cache reclaimed; verified offline Read staging temporarily resides on D while current V3 serves.
+
+- 2026-10-18 [Read CAS exit]: Regenerable serving content may reacquire an owner after deletion/quarantine; scoped trigger repair restores LIVE state and GC checks its selected state before deleting a stale candidate. Regression covers reuse after deletion and pending quarantine, without weakening business/diagnostic holds.

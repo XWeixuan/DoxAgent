@@ -105,3 +105,24 @@ def test_serving_file_reclaimed_only_after_last_current_and_history_owner(tmp_pa
     collect_diagnostics(store,now=now)
     with store.connect() as db:
         assert db.execute('SELECT state FROM artifact WHERE id=?',(digest,)).fetchone()[0]=='DELETED'
+    store.ingest('s','5',[dict(kind='native:runtime_v2_turns',ticker='MU',id='3',data=blob)])
+    assert store.get('native:runtime_v2_turns','MU','3')==blob
+    with store.connect() as db:
+        assert db.execute('SELECT state FROM artifact WHERE id=?',(digest,)).fetchone()[0]=='LIVE'
+
+
+def test_regeneration_cancels_pending_quarantine_without_leaking_owners(tmp_path):
+    store=ReadStore(tmp_path/'read.db');store.migrate()
+    blob={'output':'x'*20000}
+    def change(n,data):
+        store.ingest('s',str(n),[dict(kind='native:runtime_v2_turns',ticker='MU',id='c',data=data)])
+    now=datetime.now(UTC)+timedelta(hours=1)
+    change(1,blob);change(2,None);collect(store,now=now,budget=2)
+    assert collect_diagnostics(store,now=now)
+    change(3,blob)
+    assert store.get('native:runtime_v2_turns','MU','c')==blob
+    change(4,None);collect(store,now=now,budget=2)
+    assert collect_diagnostics(store,now=now)
+    collect_diagnostics(store,now=now)
+    with store.connect() as db:
+        assert db.execute("SELECT count(*) FROM artifact WHERE state='DELETED'").fetchone()[0]==1

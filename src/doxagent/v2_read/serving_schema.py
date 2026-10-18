@@ -87,6 +87,11 @@ def upgrade(db):
         target_column='sha256' if table=='definition_ref' else 'id'
         db.execute('CREATE TRIGGER IF NOT EXISTS '+table+'_exit AFTER DELETE ON '+table+' BEGIN INSERT OR IGNORE INTO '+queue+' VALUES(OLD.'+column+'); END')
         db.execute('CREATE TRIGGER IF NOT EXISTS '+table+'_acquire AFTER INSERT ON '+table+' BEGIN DELETE FROM '+queue+' WHERE '+target_column+'=NEW.'+column+'; END')
+    if db.execute("SELECT 1 FROM sqlite_master WHERE name='object_history'").fetchone() and not db.execute("SELECT 1 FROM read_meta WHERE key='serving_native_reuse_v1'").fetchone():
+        from .artifact_registry import native_triggers
+        for table in ('object_current','object_history'):
+            native_triggers(db,table,['payload'],'json_array(NEW.kind,NEW.ticker,NEW.id,NEW.valid_from)',classification='SERVING')
+        db.execute("INSERT INTO read_meta VALUES('serving_native_reuse_v1','1')")
 
 
 DEFINITION_MARKER='$doxagent_definition_v4'

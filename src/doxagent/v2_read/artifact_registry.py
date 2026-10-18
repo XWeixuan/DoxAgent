@@ -41,12 +41,14 @@ def native_triggers(db, table, columns, identity, *, classification='BUSINESS'):
         db.execute("DROP TRIGGER "+quoted(name))
     assert classification in {'BUSINESS', 'SERVING'}
     old_identity=identity.replace('NEW.','OLD.')
+    conflict=("ON CONFLICT(id) DO UPDATE SET state='LIVE' WHERE artifact.class='SERVING'"
+              if classification=='SERVING' else 'ON CONFLICT DO NOTHING')
     hashes=' UNION '.join("SELECT value FROM json_tree(NEW."+quoted(c)+") WHERE key='$doxagent_content_v1'" for c in columns)
     for operation in ('INSERT','UPDATE'):
         event='UPDATE OF '+','.join(map(quoted,columns)) if operation=='UPDATE' else 'INSERT'
         clear=("DELETE FROM artifact_ref WHERE owner_type='"+table+"' AND owner_id="+old_identity+";") if operation=='UPDATE' else ''
         db.execute("CREATE TRIGGER "+quoted('v2_artifact_'+table+'_'+operation)+" AFTER "+event+" ON "+quoted(table)+" BEGIN "+clear+
-            "INSERT INTO artifact(id,sha256,size,codec,location,class,created_at) SELECT value,value,0,'json-chunks-v1','native-files/'||substr(value,1,2)||'/'||value,'"+classification+"',strftime('%Y-%m-%dT%H:%M:%fZ','now') FROM ("+hashes+") WHERE 1 ON CONFLICT DO NOTHING; "+
+            "INSERT INTO artifact(id,sha256,size,codec,location,class,created_at) SELECT value,value,0,'json-chunks-v1','native-files/'||substr(value,1,2)||'/'||value,'"+classification+"',strftime('%Y-%m-%dT%H:%M:%fZ','now') FROM ("+hashes+") WHERE 1 "+conflict+"; "+
             "INSERT INTO artifact_ref SELECT '"+table+"',"+identity+",value FROM ("+hashes+") WHERE 1 ON CONFLICT DO NOTHING; END")
     db.execute("CREATE TRIGGER "+quoted('v2_artifact_'+table+'_DELETE')+" AFTER DELETE ON "+quoted(table)+" BEGIN DELETE FROM artifact_ref WHERE owner_type='"+table+"' AND owner_id="+old_identity+"; END")
 
@@ -81,14 +83,17 @@ def collect_diagnostics(store, *, now, limit=10):
         db.execute("UPDATE artifact SET state='MARKED' WHERE id IN (SELECT id FROM artifact a WHERE class='DIAGNOSTIC' AND state='LIVE' AND created_at<? AND NOT ("+protected+") LIMIT ?)",
                    (instant(now-timedelta(days=Limits.load().diagnostic_days)),limit))
     with store.connect() as db:
-        candidates = db.execute("SELECT id,sha256,location,state FROM artifact WHERE class IN ('DIAGNOSTIC','SERVING') AND state IN ('MARKED','QUARANTINED','DELETING') LIMIT ?", (limit,)).fetchall()
+        candidates = db.execute("SELECT id,sha256,location,state,class FROM artifact WHERE class IN ('DIAGNOSTIC','SERVING') AND state IN ('MARKED','QUARANTINED','DELETING') LIMIT ?", (limit,)).fetchall()
     changed = []
-    for identity, digest, location, stage in candidates:
+    for identity, digest, location, stage, classification in candidates:
         source = (root / location).resolve()
         quarantine = root / "quarantine" / digest
         if not source.is_relative_to(root) or source == root or source.is_symlink():
             raise ValueError("artifact escaped owned storage")
         with store.connect(write=True, timeout=.05) as db:
+            current = db.execute('SELECT state FROM artifact WHERE id=?',(identity,)).fetchone()
+            if current is None or current[0] != stage:
+                continue
             if db.execute("SELECT 1 FROM artifact a WHERE a.id=? AND ("+protected+")", (identity,)).fetchone():
                 continue
             manifest = {"id": identity, "sha256": digest, "original": location, "quarantine": str(quarantine.relative_to(root))}
@@ -96,7 +101,13 @@ def collect_diagnostics(store, *, now, limit=10):
                 quarantine.parent.mkdir(exist_ok=True)
                 if source.exists():
                     if quarantine.exists():
-                        raise ValueError("quarantine collision")
+                        if classification != 'SERVING':
+                            raise ValueError("quarantine collision")
+                        # A regenerated CAS value can reacquire an owner while
+                        # the old unreferenced quarantine awaits its next pass.
+                        if quarantine.is_symlink() or quarantine.resolve().parent != (root/'quarantine').resolve():
+                            raise ValueError('quarantine escaped owned storage')
+                        shutil.rmtree(quarantine)
                     if source.is_file():
                         with source.open("rb") as stream:
                             if hashlib.file_digest(stream,"sha256").hexdigest() != digest:
