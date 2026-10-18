@@ -1,7 +1,8 @@
+ARG PYTHON_BASE_IMAGE=ghcr.io/astral-sh/uv:0.8.14-python3.11-bookworm-slim
 ARG IBKR_SDK_SOURCE_IMAGE=doxagent-ibapi:approved-7d361219
 FROM ${IBKR_SDK_SOURCE_IMAGE} AS approved_ibapi
 # Production backend and Codex worker share one immutable application image.
-FROM ghcr.io/astral-sh/uv:0.8.14-python3.11-bookworm-slim AS backend-deps
+FROM ${PYTHON_BASE_IMAGE} AS backend-deps
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 UV_LINK_MODE=copy \
     UV_PROJECT_ENVIRONMENT=/app/.venv PATH="/app/.venv/bin:$PATH" \
     PLAYWRIGHT_BROWSERS_PATH=/ms-playwright CODEX_HOME=/data/codex-home
@@ -21,6 +22,11 @@ COPY --from=approved_ibapi /app/.venv/lib/python3.11/site-packages/ibapi-10.49.2
 RUN uv pip install --python /app/.venv/bin/python protobuf==5.29.5 \
     && uv pip check --python /app/.venv/bin/python
 ENV PYTHONPATH=/app/src
+COPY src/cdecr/catalogs /app/src/cdecr/catalogs
+
+FROM backend-deps AS source-files
+COPY src /source/src
+RUN rm -rf /source/src/cdecr/catalogs
 
 FROM backend-deps AS backend
 ARG DOXAGENT_BUILD_COMMIT=unversioned
@@ -28,7 +34,7 @@ ARG DOXAGENT_SOURCE_SHA256=""
 ENV DOXAGENT_BUILD_COMMIT=${DOXAGENT_BUILD_COMMIT}
 LABEL org.opencontainers.image.revision=${DOXAGENT_BUILD_COMMIT} \
       doxagent.source.sha256=${DOXAGENT_SOURCE_SHA256}
-COPY src ./src
+COPY --from=source-files /source/src ./src
 COPY scripts/ops/migrate_source_access_scopes.py ./scripts/ops/migrate_source_access_scopes.py
 COPY README.md ./
 RUN --mount=type=cache,target=/root/.cache/uv uv pip install --no-deps --python /app/.venv/bin/python -e /app

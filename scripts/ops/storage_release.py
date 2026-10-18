@@ -153,6 +153,25 @@ def reconcile(root, state):
     return report
 
 
+def guarded_build(args, *, cwd):
+    import signal
+    if shutil.disk_usage('/').free < 512*1024**2:
+        raise OSError('build has less than 512 MiB writable reserve')
+    process=subprocess.Popen(args,cwd=cwd,start_new_session=True)
+    try:
+        while process.poll() is None:
+            if shutil.disk_usage('/').free < 512*1024**2:
+                os.killpg(process.pid,signal.SIGTERM)
+                process.wait(timeout=30)
+                raise OSError('build cancelled before consuming the production write reserve')
+            time.sleep(.5)
+        if process.returncode:raise subprocess.CalledProcessError(process.returncode,args)
+    except BaseException:
+        if process.poll() is None:
+            os.killpg(process.pid,signal.SIGTERM);process.wait(timeout=30)
+        raise
+
+
 def build(repo, commit, root, kinds, *, sdk='doxagent-ibapi:approved-7d361219',
           chrome='doxagent-chrome:approved-cc38be0a'):
     commit = run(['git','-C',str(repo),'rev-parse',commit+'^{commit}'])
@@ -174,18 +193,39 @@ def build(repo, commit, root, kinds, *, sdk='doxagent-ibapi:approved-7d361219',
         index=image_index(inspect_images())
         if sdk not in index or chrome not in index:raise ValueError('approved SDK/Chrome baseline unavailable')
         dependency_inputs={n:hashlib.sha256((context/n).read_bytes()).hexdigest() for n in ('pyproject.toml','uv.lock','README.md')}
+        catalog_hash=hashlib.sha256()
+        for path in sorted((context/'src/cdecr/catalogs').rglob('*')):
+            if path.is_file():
+                catalog_hash.update(path.relative_to(context/'src').as_posix().encode())
+                catalog_hash.update(hashlib.file_digest(path.open('rb'),'sha256').digest())
+        dependency_inputs['cdecr_catalogs']=catalog_hash.hexdigest()
+        required=set()
+        if 'backend' in kinds:required.add('backend')
+        if set(kinds)&{'site','supervisor'}:required.update(('backend','site'))
+        if 'supervisor' in kinds:required.add('supervisor')
         dependencies={}
+        base_tag='ghcr.io/astral-sh/uv:0.8.14-python3.11-bookworm-slim'
+        base_pin=state.get('python_base_reference')
+        if not base_pin:
+            import re
+            metadata=run(['docker','buildx','imagetools','inspect',base_tag])
+            match=re.search(r'^Digest:\s+(sha256:[0-9a-f]{64})',metadata,re.M)
+            if not match:raise ValueError('could not resolve Python dependency base digest')
+            base_pin=base_tag+'@'+match[1]
+            state['python_base_reference']=base_pin
+            atomic(root/'state.json',state)
         for kind,dockerfile,target,base in (
             ('backend','Dockerfile.v2','backend-deps',None),
             ('site','deploy/Dockerfile.site-access','site-deps','backend'),
             ('supervisor','deploy/Dockerfile.chrome-supervisor','supervisor-deps','site'),
         ):
+            if kind not in required:continue
             text=(context/dockerfile).read_text()
             # Everything before the app-stage boundary is a stable dependency.
             boundary={'backend':'FROM backend-deps AS backend','site':'FROM site-deps AS site',
                       'supervisor':'FROM supervisor-deps AS supervisor'}[kind]
             inputs=dict(manifests=dependency_inputs,dockerfile=text.split(boundary)[0],
-                        sdk=index[sdk],chrome=index[chrome],base=dependencies.get(base))
+                        sdk=index[sdk],chrome=index[chrome],python_base=base_pin,base=dependencies.get(base))
             key=hashlib.sha256(json.dumps(inputs,sort_keys=True).encode()).hexdigest()[:20]
             tag='doxagent-deps:'+kind+'-'+key
             args=['docker','build','-f',dockerfile,'--target',target,'-t',tag,
@@ -193,27 +233,39 @@ def build(repo, commit, root, kinds, *, sdk='doxagent-ibapi:approved-7d361219',
             if base:args+=['--build-arg','BASE_IMAGE='+dependencies[base]['tag']]
             if kind=='backend':args+=['--build-arg','IBKR_SDK_SOURCE_IMAGE='+sdk]
             if kind=='supervisor':args+=['--build-arg','CHROME_RUNTIME_IMAGE='+chrome]
-            subprocess.run([*args,'.'],cwd=context,check=True)
+            if kind=='backend':args+=['--build-arg','PYTHON_BASE_IMAGE='+base_pin]
+            previous=state.get('dependencies',{}).get(kind)
+            known=image_index(inspect_images())
+            if not previous or previous.get('key')!=key or known.get(tag)!=previous['image']:
+                if kind=='backend' and shutil.disk_usage('/').free < 4*1024**3:
+                    raise OSError('fresh backend dependencies require at least 4 GiB staging space')
+                guarded_build([*args,'.'],cwd=context)
             image=json.loads(run(['docker','image','inspect',tag]))[0]
             dependencies[kind]=dict(image=image['Id'],tag=tag,layers=image['RootFS']['Layers'],key=key)
             subprocess.run(['docker','tag',image['Id'],'doxagent-deps:'+kind],check=True)
+            state.setdefault('dependencies',{})[kind]=dependencies[kind]
+            atomic(root/'state.json',state)
         receipt['dependencies']=dependencies
-        state['dependencies']=dependencies
+        state.setdefault('dependencies',{}).update(dependencies)
         atomic(root/'state.json',state)
+        # Source files come only from the selected commit. Move stable catalogs
+        # out of the app COPY so a Python edit does not add another 185 MiB layer.
+        catalog=context/'src/cdecr/catalogs'
+        catalog.rename(context/'catalog-input')
         for kind in kinds:
             tag=REPOSITORIES[kind]+':storage-'+commit[:12]
             if kind=='web':
-                args=['docker','build','-f','frontend/v2/Dockerfile','-t',tag,'.']
+                args=['docker','build','-f','frontend/v2/Dockerfile','-t',tag,
+                      '--build-arg','DOXAGENT_BUILD_COMMIT='+commit,'.']
             else:
-                dockerfile={'backend':'Dockerfile.v2','site':'deploy/Dockerfile.site-access',
-                            'supervisor':'deploy/Dockerfile.chrome-supervisor'}[kind]
-                args=['docker','build','-f',dockerfile,'-t',tag,'--build-arg','DOXAGENT_BUILD_COMMIT='+commit,
+                args=['docker','build','-f','deploy/Dockerfile.source-release','--target',kind,
+                      '-t',tag,'--build-arg','DOXAGENT_BUILD_COMMIT='+commit,
                       '--build-arg','DOXAGENT_SOURCE_SHA256='+source_sha]
-                if kind=='backend':args+=['--build-arg','IBKR_SDK_SOURCE_IMAGE='+sdk]
-                else:args+=['--build-arg','BASE_IMAGE='+dependencies['backend' if kind=='site' else 'site']['tag']]
-                if kind=='supervisor':args+=['--build-arg','CHROME_RUNTIME_IMAGE='+chrome]
+                for dep,arg in (('backend','BACKEND_BASE'),('site','SITE_BASE'),('supervisor','SUPERVISOR_BASE')):
+                    selected=dependencies.get(dep) or state['dependencies'].get(dep) or dependencies['backend']
+                    args+=['--build-arg',arg+'='+selected['tag']]
                 args+=['.']
-            subprocess.run(args,cwd=context,check=True)
+            guarded_build(args,cwd=context)
             image=json.loads(run(['docker','image','inspect',tag]))[0]
             deps=dependencies.get(kind)
             if deps and image['RootFS']['Layers'][:len(deps['layers'])] != deps['layers']:

@@ -1,7 +1,4 @@
-# Bounded source-only release. The release operator MUST verify that pyproject,
-# uv.lock, browser release and installed dependency baseline are unchanged.
-# All three bases must be immutable image digests from the approved recovery set.
-# This builds immutable images from committed source, not a running-container overlay.
+# Application releases always start from a stable dependency image.
 ARG BACKEND_BASE
 ARG SITE_BASE
 ARG SUPERVISOR_BASE
@@ -11,14 +8,17 @@ ARG DOXAGENT_BUILD_COMMIT
 ARG DOXAGENT_SOURCE_SHA256
 ENV DOXAGENT_BUILD_COMMIT=${DOXAGENT_BUILD_COMMIT}
 LABEL org.opencontainers.image.revision=${DOXAGENT_BUILD_COMMIT} \
-      doxagent.source.sha256=${DOXAGENT_SOURCE_SHA256}
-RUN rm -rf /app/src /app/prompts /app/dev_plan/api_contract /app/dev_plan/workflow_v2/api_contract
+      doxagent.source.sha256=${DOXAGENT_SOURCE_SHA256} doxagent.owner=doxagent
+COPY pyproject.toml uv.lock README.md /app/
+# The release CLI places unchanged CDECR catalogs in the dependency stage.
 COPY src /app/src
 COPY prompts /app/prompts
 COPY dev_plan/workflow_v2/api_contract /app/dev_plan/workflow_v2/api_contract
 COPY scripts/ops/migrate_source_access_scopes.py /app/scripts/ops/migrate_source_access_scopes.py
+RUN --mount=type=cache,target=/root/.cache/uv uv pip install --no-deps --python /app/.venv/bin/python -e /app
 RUN find /app/src /app/prompts /app/dev_plan /app/scripts -type d ! -perm -005 -exec chmod a+rx {} + \
     && find /app/src /app/prompts /app/dev_plan /app/scripts -type f ! -perm -004 -exec chmod a+r {} +
+CMD ["python", "-m", "doxagent.production_v2", "check"]
 
 FROM ${SITE_BASE} AS site
 USER root
@@ -26,15 +26,15 @@ ARG DOXAGENT_BUILD_COMMIT
 ARG DOXAGENT_SOURCE_SHA256
 ENV DOXAGENT_BUILD_COMMIT=${DOXAGENT_BUILD_COMMIT}
 LABEL org.opencontainers.image.revision=${DOXAGENT_BUILD_COMMIT} \
-      doxagent.source.sha256=${DOXAGENT_SOURCE_SHA256}
-RUN rm -rf /app/src /app/prompts /app/dev_plan/workflow_v2/api_contract
-COPY --from=backend /app/src /app/src
-COPY --from=backend /app/prompts /app/prompts
-COPY --from=backend /app/dev_plan/workflow_v2/api_contract /app/dev_plan/workflow_v2/api_contract
-COPY --from=backend /app/scripts /app/scripts
+      doxagent.source.sha256=${DOXAGENT_SOURCE_SHA256} doxagent.owner=doxagent
+COPY src /app/src
+COPY prompts /app/prompts
+COPY dev_plan/workflow_v2/api_contract /app/dev_plan/workflow_v2/api_contract
 COPY deploy/site-access-entrypoint.sh /usr/local/bin/site-access-entrypoint
 COPY deploy/site-login-vnc-relay.py /usr/local/bin/site-login-vnc-relay.py
 RUN chmod 0755 /usr/local/bin/site-access-entrypoint /usr/local/bin/site-login-vnc-relay.py
+ENTRYPOINT ["/usr/local/bin/site-access-entrypoint"]
+CMD ["python", "-m", "doxagent.site_strategy.cli", "run-server", "--host", "0.0.0.0", "--port", "8011"]
 
 FROM ${SUPERVISOR_BASE} AS supervisor
 USER root
@@ -42,10 +42,11 @@ ARG DOXAGENT_BUILD_COMMIT
 ARG DOXAGENT_SOURCE_SHA256
 ENV DOXAGENT_BUILD_COMMIT=${DOXAGENT_BUILD_COMMIT}
 LABEL org.opencontainers.image.revision=${DOXAGENT_BUILD_COMMIT} \
-      doxagent.source.sha256=${DOXAGENT_SOURCE_SHA256}
-RUN rm -rf /app/src /app/prompts /app/dev_plan/workflow_v2/api_contract
-COPY --from=backend /app/src /app/src
-COPY --from=backend /app/prompts /app/prompts
-COPY --from=backend /app/dev_plan/workflow_v2/api_contract /app/dev_plan/workflow_v2/api_contract
+      doxagent.source.sha256=${DOXAGENT_SOURCE_SHA256} doxagent.owner=doxagent
+COPY src /app/src
+COPY prompts /app/prompts
+COPY dev_plan/workflow_v2/api_contract /app/dev_plan/workflow_v2/api_contract
 COPY deploy/chrome-supervisor-entrypoint.sh /usr/local/bin/chrome-supervisor-entrypoint
 RUN chmod 0755 /usr/local/bin/chrome-supervisor-entrypoint
+ENTRYPOINT ["/usr/local/bin/chrome-supervisor-entrypoint"]
+CMD ["python", "-m", "doxagent.site_strategy.chrome_supervisor", "--socket", "/run/doxagent-chrome/supervisor.sock", "--profile-root", "/site-data/profiles"]
