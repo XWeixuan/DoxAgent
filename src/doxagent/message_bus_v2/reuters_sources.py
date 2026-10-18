@@ -67,6 +67,7 @@ async def capture_reuters_search(page: Any, query: str, offset: int) -> list[dic
             .some(link => articlePath.test(link.getAttribute('href') || ''));
           return hasArticle || /Search results for[\s\S]*?\b0 results\b/i.test(body);
         }""",
+        polling=250,  # Native Chrome background tabs do not reliably run requestAnimationFrame.
         timeout=12_000,
     )
     rows = await page.evaluate(

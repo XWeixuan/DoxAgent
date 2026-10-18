@@ -1338,6 +1338,7 @@ class SiteAccessRuntime:
                           || /verify you are human|enable js|access is temporarily restricted/i
                             .test(document.body?.innerText || '')
                         )""",
+                        polling=250,
                         timeout=min(request.remaining_budget_ms, 12_000),
                     )
                 initial_html = await page.content()

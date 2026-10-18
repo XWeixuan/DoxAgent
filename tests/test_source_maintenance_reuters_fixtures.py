@@ -12,6 +12,7 @@ async def test_normal_article_and_true_empty_search_recipe():
         return SimpleNamespace(status=200)
 
     async def wait(*args, **kwargs):
+        assert kwargs["polling"] == 250  # Business target stays background; no rAF dependency.
         return None
 
     rows = [
