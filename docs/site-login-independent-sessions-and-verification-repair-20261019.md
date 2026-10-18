@@ -36,3 +36,9 @@
 - Reuters 原 Challenge Verify 返回 DONE、CLEARED、原页 listing、旧会话 CLOSED，未再报笼统操作失败。认证 UNKNOWN，采集 CONTENT_ERROR/TimeoutError、正文 NOT_TESTED，如实保留业务未恢复事实。
 - 对本次 canary 进一步核实：新搜索页已有 459KB 正常 listing DOM，却因等待 DCL 超时被判失败。因此继续将 Reuters 搜索抓取改为 commit + 原生结果卡片/明确零结果就绪判定；Reuters 正文采用 commit + 真实正文段落/挑战文档就绪。资源照常加载，不拦截、不禁 cache/SW，不用空页面或 HTTP200 代替业务验收。
 - 辅助发布脚本曾因证据脚本命名为 inspect.py 而遮蔽 Python 标准库，首次发布在实际替换前中止；已改名并修正后成功发布，不隐瞒该部署工具问题。
+
+### 原生后台标签的就绪机制差异
+
+仅改 commit 不足：Reuters 第二轮 canary 仍等待结果条件超时。原生 Chrome 以 background target 运行采集任务，不应依赖 `wait_for_function` 默认的 requestAnimationFrame 轮询；Managed 启动默认环境与普通 Chrome 在后台调度上存在差异。明确采用 250ms timer polling 后，同一身份、同一出口的真实 canary 已返回 CRAWLER READY，不改 UA、不切节点、不重建浏览器。
+
+随后正文 canary 在捕获 626KB 正常 article 文档后仍超时，暴露只等待 `<p>` 的过窄条件。改为实际 ArticleBody/itemprop/article 容器文本就绪；如果仅就绪事件/选择器超时，但已有 2xx article 文档且通过现有站点适配的 FULL/SHORT_FULL 校验，保留该真实正文。空壳、403、Challenge、截断付费文档不得由此成功。Verify 无论成功失败均记录脱敏后的验证文章 URL，以便再次定位，而非只有泛化的 TimeoutError。

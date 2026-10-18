@@ -1332,8 +1332,9 @@ class SiteAccessRuntime:
                 if resolved.site_id == "reuters" and status == 200:
                     await page.wait_for_function(
                         """() => Boolean(
-                          [...document.querySelectorAll('[data-testid="ArticleBody"] p, article p')]
-                            .some(p => (p.textContent || '').trim().length > 80)
+                          [...document.querySelectorAll(
+                            '[data-testid="ArticleBody"], [itemprop="articleBody"], article')]
+                            .some(node => (node.textContent || '').trim().length > 200)
                           || document.querySelector('iframe[src*="captcha-delivery.com"]')
                           || /verify you are human|enable js|access is temporarily restricted/i
                             .test(document.body?.innerText || '')
@@ -1471,6 +1472,22 @@ class SiteAccessRuntime:
                         except Exception:
                             html = ""
                     inspection = inspect_html(html, page.url, "") if html else None
+                    if (
+                        request.purpose.value == "BODY"
+                        and type(exc).__name__ == "TimeoutError"
+                        and response is not None
+                        and 200 <= response.status < 300
+                        and inspection
+                        and inspection.page_kind == "article"
+                        and inspection.access_reason != "challenge_required"
+                    ):
+                        from .verification import validate_capture
+
+                        captured = RuntimeResponse(
+                            response.status, page.url, {}, body=html, provenance=lease.provenance
+                        )
+                        if validate_capture(captured, resolved).body in {"FULL", "SHORT_FULL"}:
+                            return captured  # Real body proof, not an event/selector timeout.
                     if (
                         inspection
                         and inspection.access_reason == "challenge_required"

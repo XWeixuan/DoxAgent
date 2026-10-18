@@ -2726,6 +2726,9 @@ class SiteStrategyService:
                 raise ValueError("verification article belongs to another publisher")
             if stage:
                 stage("CHECKING_BODY")
+            from .governance_repository import safe_display_url
+
+            report.verification_url = safe_display_url(url)
             try:
                 capture = await self.runtime.verify_login(
                     session.control_token,
@@ -2755,8 +2758,6 @@ class SiteStrategyService:
                     body.reason,
                 )
                 report.body_reason = body.reason
-                from .governance_repository import safe_display_url
-
                 report.verification_url = safe_display_url(capture.final_url)
                 report.runtime_instance_id = (
                     capture.provenance.instance_id if capture.provenance else None
