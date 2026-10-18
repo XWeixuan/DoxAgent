@@ -14,11 +14,30 @@ from doxagent.v2_read.maintenance import atomic_json
 from doxagent.v2_read.native_content import NativeContent
 from .retained_events import build
 
+REFERENCE_OWNER_SQL="json_extract(payload,'$.event_library_root','$.root','$.ticker','$.status','$.event_library_version','$.version','$.before.version','$.after.version','$.before.\"$doxagent_content_v1\"','$.before.bytes','$.after.\"$doxagent_content_v1\"','$.after.bytes')"
+
+
+def migrate(journal):
+    with journal.transaction(write=False) as db:
+        if db.execute("SELECT 1 FROM sqlite_master WHERE name='runtime_reference_owner'").fetchone():return
+    with journal.transaction() as db:
+        db.execute('CREATE INDEX IF NOT EXISTS runtime_reference_owner ON runtime_values('+REFERENCE_OWNER_SQL+") WHERE namespace='reference_deliveries'")
+
 
 @lru_cache(maxsize=4096)
 def frame_owner(path, raw):
     value=NativeContent(path).decode(json.loads(raw)) if raw else {}
     return dict(run_id=value.get('run_id'),base=dict(artifacts=(value.get('base') or {}).get('artifacts',{})))
+
+
+@lru_cache(maxsize=4096)
+def activation_refs(path,ticker,raw):
+    return tuple(event_refs(NativeContent(path).decode(json.loads(raw)),ticker))
+
+
+@lru_cache(maxsize=4096)
+def snapshot_version(path,digest,size):
+    return NativeContent(path).decode({'$doxagent_content_v1':digest,'bytes':size})['version']
 
 
 def event_refs(value,ticker=None):
@@ -45,11 +64,15 @@ def referenced(journal,control_path,*,now=None):
         for root,symbol,version in event_refs(value,ticker):
             refs.setdefault(root,{}).setdefault(symbol,set()).add(version)
             if active:protected.add(root)
+    def activation(raw,ticker,active=False):
+        for root,symbol,version in activation_refs(str(control_path),ticker,raw):
+            refs.setdefault(root,{}).setdefault(symbol,set()).add(version)
+            if active:protected.add(root)
     with closing(sqlite3.connect(Path(control_path).resolve().as_uri()+'?mode=ro',uri=True)) as db:
         db.row_factory=NativeContent(control_path).row
         active={r[0] for r in db.execute('SELECT revision_id FROM ticker_active_revision')}
-        for revision,ticker,payload in db.execute('SELECT revision_id,ticker,payload FROM activation_revisions'):
-            add(json.loads(payload),ticker,revision in active)
+        for revision,ticker,payload in db.execute('SELECT revision_id,ticker,payload AS encoded_payload FROM activation_revisions'):
+            activation(payload,ticker,revision in active)
     with journal.transaction(write=False) as db:
         names={r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
         # Runtime control can be newer than the initialization pointer.
@@ -60,8 +83,8 @@ def referenced(journal,control_path,*,now=None):
                 if revision:
                     with closing(sqlite3.connect(Path(control_path).resolve().as_uri()+'?mode=ro',uri=True)) as c:
                         c.row_factory=NativeContent(control_path).row
-                        row=c.execute('SELECT payload FROM activation_revisions WHERE revision_id=?',(revision,)).fetchone()
-                        if row:add(json.loads(row[0]),ticker,True)
+                        row=c.execute('SELECT payload AS encoded_payload FROM activation_revisions WHERE revision_id=?',(revision,)).fetchone()
+                        if row:activation(row[0],ticker,True)
         if 'runtime_v2_cases' in names:
             for root,ticker,version,status in db.execute("SELECT json_extract(payload_json,'$.version_pin.event_library_root'),ticker,json_extract(payload_json,'$.version_pin.event_library_version'),status FROM runtime_v2_cases"):
                 if root and version is not None:
@@ -81,8 +104,16 @@ def referenced(journal,control_path,*,now=None):
                 candidate=str(journal.path.resolve().parent/'runtime_artifacts'/run/'events')
                 if active:protected.add(candidate)
                 runs[run]=dict(task=identity,status=status,at=at,active=active)
-        for key,payload in db.execute("SELECT key,payload FROM runtime_values WHERE namespace='reference_deliveries'"):
-            value=json.loads(payload);add(value,active=value.get('status') not in {'SUCCEEDED','FAILED'})
+        # Reference bodies can contain millions of Fact/rendered-text fields.
+        # Their physical dependency is the typed root and before/after version.
+        # Extract those scalars in SQLite, never recursively walk the full body.
+        indexed=' INDEXED BY runtime_reference_owner' if db.execute("SELECT 1 FROM sqlite_master WHERE name='runtime_reference_owner'").fetchone() else ''
+        for raw, in db.execute('SELECT '+REFERENCE_OWNER_SQL+' AS owner_json FROM runtime_values'+indexed+" WHERE namespace='reference_deliveries'"):
+            eroot,root,ticker,status,eversion,version,before,after,bhash,bsize,ahash,asize=json.loads(raw)
+            if before is None and bhash:before=snapshot_version(str(journal.path),bhash,bsize)
+            if after is None and ahash:after=snapshot_version(str(journal.path),ahash,asize)
+            add(dict(root=eroot or root,ticker=ticker,version=eversion if eversion is not None else version,
+                     before=dict(version=before),after=dict(version=after)),active=status not in {'SUCCEEDED','FAILED'})
         # w3_library_lineage is a logical identity alias, not a file dependency
         # (w3_context compares it as a string). Keep those small rows intact.
         # Live W3 stages can retain a Case whose general status already settled.
@@ -164,6 +195,9 @@ def compact_process(journal,runs,protected,now,*,limit=64):
     for run,info in runs.items():
         if info['status']!='SUCCEEDED' or (now-datetime.fromisoformat(info['at'])).total_seconds()<7*86400:continue
         if str(journal.path.resolve().parent/'runtime_artifacts'/run/'events') in protected:continue
+        # This is only the pre-O3 retry input. The delivered before/after
+        # evidence remains in reference_deliveries and native version pins.
+        journal.delete('reference_baselines',info['task'])
         prefix='runtime-worker:'+run+':'
         with journal.transaction(write=False) as db:
             keys=[r[0] for r in db.execute("SELECT key FROM runtime_values WHERE namespace='worker_requests' AND key>=? AND key<?",(prefix,prefix+'\uffff'))]
@@ -191,6 +225,7 @@ def collect(journal,control_path,*,now=None,limit=8,dry_run=False):
     now=now or journal.clock();root=journal.path.resolve().parent/'runtime_artifacts'
     report=dict(at=now.isoformat(),retired=[],compacted=[],skipped=[],available_before=shutil.disk_usage(root.parent).free)
     if not root.exists():return report
+    migrate(journal)
     with WriterLock(root/'resource-retirement'):
         refs,protected,runs=referenced(journal,control_path,now=now)
         for run in sorted(root.iterdir()):

@@ -35,6 +35,8 @@ def test_owner_retires_unreferenced_compacts_history_and_keeps_current_and_frame
     key='runtime-worker:runtime-maintain-old:runtime-maintain-old-o3:d3_o3_maintain:maintain'
     journal.set('worker_requests',key,dict(run_id='runtime-maintain-old-o3',attempt_id='a',node='d3_o3_maintain',prompt='p'*50000,task_phase=None))
     journal.set('worker_receipts',key,dict(status='succeeded',final_response='unique final',telemetry={'usage':{'total_tokens':1},'events':['technical log']}))
+    journal.set('reference_baselines','task-old',dict(version=1,events=['duplicate retry snapshot']))
+    journal.set('reference_deliveries','delivered',dict(root=str(roots['old']),ticker='MU',status='SUCCEEDED',before=dict(version=1,events=['delivered evidence']),after=dict(version=1)))
     original=EventLibraryRepository(roots['old']/'US/MU/event_library.sqlite3',read_only=True);before=snapshot_digest(original,'MU',1)
     report=collect(journal,control,now=now,limit=10)
     assert not roots['unused'].parent.exists()
@@ -45,5 +47,7 @@ def test_owner_retires_unreferenced_compacts_history_and_keeps_current_and_frame
     assert journal.get('worker_requests',key)['retired_process']
     final=journal.get('worker_receipts',key)
     assert final['final_response']=='unique final' and final['telemetry']['usage']=={'total_tokens':1}
+    assert journal.get('reference_baselines','task-old') is None
+    assert journal.get('reference_deliveries','delivered')['before']['events']==['delivered evidence']
     again=collect(journal,control,now=now,limit=10)
     assert again['compacted']==[] and again['retired']==[]
