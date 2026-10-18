@@ -41,3 +41,13 @@ def test_rewind_branch_keeps_original_revision_numbers_and_drops_future_state(tm
     with second._read() as db:
         assert db.execute('SELECT count(*) FROM canonical_event_revisions WHERE event_no=?',(original['event_no'],)).fetchone()[0]==1
         assert db.execute('SELECT revision_no FROM canonical_event_revisions WHERE event_no=?',(original['event_no'],)).fetchone()[0]==2
+
+
+def test_rewind_keeps_membership_at_its_inclusive_last_version(tmp_path):
+    source=EventLibraryRepository(tmp_path/'source.db');_publish_v1(source,tmp_path/'fixture')
+    with source._write() as db:
+        db.execute('UPDATE event_fact_memberships SET valid_to_version=1')
+        db.execute("INSERT INTO library_versions VALUES('MU',2,1,'[]','PUBLISHED','2026-01-02','2026-01-02T00:00:00+00:00')")
+        db.execute("UPDATE library_heads SET published_version=2 WHERE ticker='MU'")
+    target=branch_library(source.path,tmp_path/'branch'/'events.db','MU',1)
+    assert target.published_events('MU',1)==source.published_events('MU',1)

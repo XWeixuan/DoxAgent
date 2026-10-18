@@ -40,7 +40,7 @@ def branch_library(source: Path,target: Path,ticker: str,base: int) -> EventLibr
                     table='canonical_'+entity[:-1]+'_'+suffix
                     copy(table,'ticker=? AND library_version=(SELECT max(p.library_version) FROM origin.'+table+' p WHERE p.ticker=origin.'+table+'.ticker AND p.'+column+'=origin.'+table+'.'+column+' AND p.library_version<=?)',(ticker,base))
             for table in ('event_fact_memberships','event_relations'):
-                copy(table,'ticker=? AND valid_from_version<=? AND (valid_to_version IS NULL OR valid_to_version>?)',(ticker,base,base))
+                copy(table,'ticker=? AND valid_from_version<=? AND (valid_to_version IS NULL OR valid_to_version>=?)',(ticker,base,base))
                 db.execute('UPDATE '+table+' SET valid_to_version=NULL')
             # A current pending batch remains resumable; old published payloads
             # leave the branch. Small last-application mappings retain dedup.

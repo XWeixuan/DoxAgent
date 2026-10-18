@@ -42,7 +42,7 @@ def native_triggers(db, table, columns, identity, *, classification='BUSINESS'):
     assert classification in {'BUSINESS', 'SERVING'}
     old_identity=identity.replace('NEW.','OLD.')
     conflict=("ON CONFLICT(id) DO UPDATE SET state='LIVE' WHERE artifact.class='SERVING'"
-              if classification=='SERVING' else 'ON CONFLICT DO NOTHING')
+              if classification=='SERVING' else "ON CONFLICT(id) DO UPDATE SET state='LIVE' WHERE artifact.codec='json-chunks-v1' AND artifact.location='native-files/'||substr(excluded.id,1,2)||'/'||excluded.id")
     queries=["SELECT value FROM json_tree(NEW."+quoted(c)+") WHERE key='$doxagent_content_v1'" for c in columns]
     if table=='v2_source_receipts':
         # Capture serializes an entire SQL row; its JSON columns are strings in

@@ -58,7 +58,7 @@ def rebuild_current(sources, target, *, event_root=None, max_batches=10000):
                 if db.execute("SELECT 1 FROM sqlite_master WHERE name='v2_serving_business_facts'").fetchone():
                     seeds=[json.loads(r[0]) for r in db.execute("SELECT payload FROM v2_serving_business_facts WHERE kind IN ('policy_hit_set','policy_admission')")]
                     for value in seeds:
-                        value['sort']=value.pop('sort_key',value['id']);value['search']=value.pop('search_text','')
+                        value['sort']=value.pop('sort_key',value['id']);value['search']=value.pop('search_text','') or ''
                         store.ingest('business-baseline',uuid4().hex,[value])
                 for table in ('v2_business_imports','v2_analysis_admission','v2_ticker_control'):
                     if table not in tables:continue
@@ -100,7 +100,7 @@ def rebuild_current(sources, target, *, event_root=None, max_batches=10000):
                         if current and current.get('runtime_activation_id')==value.get('runtime_activation_id'):
                             store.ingest('business-baseline',uuid4().hex,[dict(kind=actual_kind,ticker=ticker,id=identity,data={**current,**value})])
                     elif kind not in ('policy_hit_set','policy_admission'):
-                        value['sort']=value.pop('sort_key',value['id']);value['search']=value.pop('search_text','')
+                        value['sort']=value.pop('sort_key',value['id']);value['search']=value.pop('search_text','') or ''
                         store.ingest('business-baseline',uuid4().hex,[value])
             with store.connect(write=True) as db:
                 for name,state in report['sources'].items():

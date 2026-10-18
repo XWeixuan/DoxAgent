@@ -54,7 +54,22 @@ class BaseRealToolClient:
     ) -> None:
         self.settings = settings
         self.cache = cache or TTLCache()
-        self.client = client or httpx.Client(timeout=settings.tool_http_timeout_seconds)
+        self._client = client
+        self._client_lock = threading.Lock()
+
+    @property
+    def client(self) -> httpx.Client:
+        # Preserve the deployed MCP cold-start fix: registration does not need
+        # to construct a TLS client for every registered provider.
+        if self._client is None:
+            with self._client_lock:
+                if self._client is None:
+                    self._client = httpx.Client(timeout=self.settings.tool_http_timeout_seconds)
+        return self._client
+
+    @client.setter
+    def client(self, value: httpx.Client | None) -> None:
+        self._client = value
 
     def _get_json(
         self,

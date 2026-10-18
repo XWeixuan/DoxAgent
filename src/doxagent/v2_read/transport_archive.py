@@ -108,6 +108,15 @@ def main():
                 if not changed:
                     break
             result[source.source] = dict(expired=count,error=error)
+            try:
+                from . import source_native_gc
+                refs=source_native_gc.reconcile(source)
+                result[source.source]['native_refs']=refs
+                if refs['ready']:
+                    result[source.source]['native_inventory']=source_native_gc.inventory(source)
+                    result[source.source]['native_exit']=source_native_gc.collect(source)
+            except (sqlite3.OperationalError,OSError,ValueError) as exc:
+                result[source.source]['native_error']=str(exc)
         print(json.dumps(dict(maintenance='transport_expiry', sources=result,
                               elapsed_seconds=time.monotonic() - started)), flush=True)
         if args.once:

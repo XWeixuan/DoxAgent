@@ -89,3 +89,42 @@ def test_small_business_fact_sync_preserves_settlement_and_withdrawal(tmp_path):
         assert value['data']==row['data']
     store.ingest('runtime','2',[{**row,'data':None}]);sync_business_facts(s,store)
     with closing(s.connection()) as db:assert not db.execute('SELECT 1 FROM v2_serving_business_facts').fetchone()
+
+
+def test_source_native_exit_protects_exact_repair_and_resurrected_current(tmp_path):
+    from doxagent.v2_read import source_native_gc as gc
+    s=fixture_source(tmp_path)
+    value={'binding_id':'big','nested':{'content':'x'*20000}}
+    raw=s.content.encode(value)
+    with closing(s.connection(write=True)) as db,db:
+        db.execute("INSERT INTO poll_states VALUES('big','source','MU','succeeded','1',?)",(raw,))
+        pin=db.execute('SELECT max(seq) FROM v2_source_outbox').fetchone()[0]
+        db.execute("UPDATE poll_states SET data_json='{}' WHERE binding_id='big'")
+        old=(datetime.now(UTC)-timedelta(days=9)).isoformat()
+        db.execute('UPDATE v2_source_outbox SET recorded_at=?',(old,));db.execute('UPDATE artifact SET created_at=?',(old,))
+    s.acknowledge_exceptions('live',s.head(),[pin]);expire(s)
+    assert not gc.reconcile(s,seconds=0)['ready']
+    assert gc.collect(s)['quarantined']==0
+    while not gc.reconcile(s,seconds=2)['ready']:pass
+    assert gc.collect(s)['quarantined']==0
+    s.acknowledge_exceptions('live',s.head(),[]);expire(s)
+    assert gc.collect(s)['quarantined']==1
+    raw=s.content.encode(value)
+    with closing(s.connection(write=True)) as db,db:
+        db.execute("UPDATE poll_states SET data_json=? WHERE binding_id='big'",(raw,))
+    assert gc.collect(s)['deleted']==0
+    assert s.content.source_row({'data_json':raw})['data_json']==json.dumps(value,ensure_ascii=False,sort_keys=True,separators=(',',':'))
+    with closing(s.connection()) as db:
+        assert db.execute("SELECT state FROM artifact WHERE codec='json-chunks-v1'").fetchone()[0]=='LIVE'
+
+
+def test_snapshot_restores_old_business_rows_with_null_search_metadata(tmp_path):
+    s=fixture_source(tmp_path);s=SourceOutbox(s.path,'runtime');s.migrate(('poll_states',))
+    store=ReadStore(tmp_path/'old-read'/'read.db');store.migrate()
+    record=dict(kind='policy_admission',ticker='MU',id='P:r',data={'first_activated_at':'2026-10-01T12:00:00Z','runtime_activation_id':'a'})
+    store.ingest('r','1',[record])
+    with store.connect(write=True) as db:db.execute("UPDATE object_current SET search_text=NULL WHERE kind='policy_admission'")
+    sync_business_facts(s,store)
+    report=rebuild_current([s],tmp_path/'new-read'/'read.db')
+    assert report['verified']
+    assert ReadStore(report['path']).get('policy_admission','MU','P:r')==record['data']
