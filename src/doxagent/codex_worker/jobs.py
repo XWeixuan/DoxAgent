@@ -176,6 +176,8 @@ class WorkerJobManager:
         from .workspace_retention import collect
         result=await self.session_retention.collect()
         result['workspaces']=await asyncio.to_thread(collect,self._workspaces,self,self._retention_settings)
+        from .snapshot_retention import collect as collect_snapshots
+        result['initialization_snapshots']=await asyncio.to_thread(collect_snapshots,self._workspaces,self,self._retention_settings)
         return result
 
     async def probe(self) -> dict[str, object]:

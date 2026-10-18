@@ -3,6 +3,7 @@ import hashlib
 import os
 from pathlib import Path
 import time
+import stat
 from uuid import uuid4
 
 
@@ -18,10 +19,12 @@ def digest(path):
     with Path(path).open('rb') as stream:return hashlib.file_digest(stream,'sha256').hexdigest()
 
 
-def adopt_file(source,destination,cache):
+def adopt_file(source,destination,cache,*,mode=0o600):
     source,destination,cache=map(Path,(source,destination,cache))
     if source.is_symlink() or destination.is_symlink():raise ValueError('linked adoption evidence input')
-    before=source.stat();sha=digest(source)
+    before=source.stat()
+    if not stat.S_ISREG(before.st_mode):raise ValueError('unsupported evidence file type')
+    sha=digest(source)
     if (source.stat().st_size,source.stat().st_mtime_ns)!=(before.st_size,before.st_mtime_ns):raise ValueError('adoption source changed')
     destination.parent.mkdir(parents=True,exist_ok=True);cache.mkdir(parents=True,exist_ok=True)
     if destination.exists():
@@ -31,7 +34,7 @@ def adopt_file(source,destination,cache):
     else:
         # Current archive producer creates private files independent of mutable
         # source workspaces. Do not hardlink the mutable source into the archive.
-        identity=f'{sha}-600-{os.getuid() if hasattr(os,"getuid") else 0}-{os.getgid() if hasattr(os,"getgid") else 0}'
+        identity=f'{sha}-{mode:o}-{os.getuid() if hasattr(os,"getuid") else 0}-{os.getgid() if hasattr(os,"getgid") else 0}'
     canonical=cache/identity
     if not canonical.exists():
         pending=cache/('.pending-'+uuid4().hex)
@@ -41,7 +44,7 @@ def adopt_file(source,destination,cache):
                 with source.open('rb') as incoming,pending.open('xb') as outgoing:
                     import shutil
                     shutil.copyfileobj(incoming,outgoing);outgoing.flush();os.fsync(outgoing.fileno())
-                pending.chmod(0o600)
+                pending.chmod(mode)
                 if digest(pending)!=sha:raise ValueError('adoption source changed during copy')
             try:link(pending,canonical)
             except FileExistsError:pass
