@@ -1307,7 +1307,7 @@ class SiteAccessRuntime:
                     # content we consume instead, without aborting any resources.
                     wait_until=(
                         "commit"
-                        if resolved.site_id in {"investorshub", "investing"}
+                        if resolved.site_id in {"investorshub", "investing", "reuters"}
                         else "domcontentloaded"
                     ),
                     timeout=min(request.remaining_budget_ms, 20_000),
@@ -1329,6 +1329,17 @@ class SiteAccessRuntime:
                     response = await wait_for_native_document_redirect(page, response)
                 status = response.status if response is not None else 200
                 headers = await response.all_headers() if response is not None else {}
+                if resolved.site_id == "reuters" and status == 200:
+                    await page.wait_for_function(
+                        """() => Boolean(
+                          [...document.querySelectorAll('[data-testid="ArticleBody"] p, article p')]
+                            .some(p => (p.textContent || '').trim().length > 80)
+                          || document.querySelector('iframe[src*="captcha-delivery.com"]')
+                          || /verify you are human|enable js|access is temporarily restricted/i
+                            .test(document.body?.innerText || '')
+                        )""",
+                        timeout=min(request.remaining_budget_ms, 12_000),
+                    )
                 initial_html = await page.content()
                 initial_challenge = (
                     inspect_html(initial_html, page.url, "").access_reason == "challenge_required"

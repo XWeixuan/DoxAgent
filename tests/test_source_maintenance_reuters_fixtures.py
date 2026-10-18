@@ -8,6 +8,7 @@ from doxagent.message_bus_v2.reuters_sources import capture_reuters_search
 @pytest.mark.asyncio
 async def test_normal_article_and_true_empty_search_recipe():
     async def goto(*args, **kwargs):
+        assert kwargs["wait_until"] == "commit"  # Native card readiness, never DCL.
         return SimpleNamespace(status=200)
 
     async def wait(*args, **kwargs):

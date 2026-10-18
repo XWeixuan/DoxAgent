@@ -564,6 +564,16 @@ class MaintenanceController:
                 # A replacement re-exercises the failed URL, not an unrelated login
                 # landing page. The predecessor records the lost original separately.
                 url = task.original_url or spec.auth.maintenance_url or spec.auth.login_url
+                from urllib.parse import urlsplit
+
+                task_scope = self.store.maintenance_scope(task.scope_id)
+                crawler_url = task_scope.verification_plan.get("crawler", {}).get("url")
+                if crawler_url and urlsplit(url).path.rstrip("/") == urlsplit(
+                    crawler_url
+                ).path.rstrip("/"):
+                    # Task display URLs intentionally exclude query strings.
+                    # Restore the registered public search query, not a blank search.
+                    url = crawler_url
                 reserved = self.store.save_session(
                     MaintenanceSession(
                         kind="CHALLENGE",
