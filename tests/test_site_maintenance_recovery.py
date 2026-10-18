@@ -213,3 +213,13 @@ async def test_readiness_fails_closed_on_wrong_supervisor_network(monkeypatch):
     )
     result = await network_binding("fixture.sock")
     assert not result["ready"] and result["reason"] == "supervisor_network_namespace_mismatch"
+
+
+async def test_focus_failure_does_not_reclassify_working_viewer_as_unavailable():
+    from types import SimpleNamespace
+
+    from doxagent.site_strategy.runtime import SiteAccessRuntime
+
+    cdp = SimpleNamespace(send=AsyncMock(side_effect=RuntimeError("focus temporarily unavailable")))
+    await SiteAccessRuntime._focus_maintenance_target(cdp, "exact-login-target")
+    cdp.send.assert_awaited_once_with("Target.activateTarget", {"targetId": "exact-login-target"})
