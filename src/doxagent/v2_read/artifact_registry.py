@@ -43,7 +43,12 @@ def native_triggers(db, table, columns, identity, *, classification='BUSINESS'):
     old_identity=identity.replace('NEW.','OLD.')
     conflict=("ON CONFLICT(id) DO UPDATE SET state='LIVE' WHERE artifact.class='SERVING'"
               if classification=='SERVING' else 'ON CONFLICT DO NOTHING')
-    hashes=' UNION '.join("SELECT value FROM json_tree(NEW."+quoted(c)+") WHERE key='$doxagent_content_v1'" for c in columns)
+    queries=["SELECT value FROM json_tree(NEW."+quoted(c)+") WHERE key='$doxagent_content_v1'" for c in columns]
+    if table=='v2_source_receipts':
+        # Capture serializes an entire SQL row; its JSON columns are strings in
+        # that envelope. json_tree of the outer envelope alone misses these refs.
+        queries.append("SELECT n.value FROM json_tree(NEW.payload) j JOIN json_tree(CASE WHEN j.type='text' AND j.key IN ('payload','payload_json','inputs','receipt','data_json') AND json_valid(j.value) THEN j.value ELSE '{}' END) n WHERE n.key='$doxagent_content_v1'")
+    hashes=' UNION '.join(queries)
     for operation in ('INSERT','UPDATE'):
         event='UPDATE OF '+','.join(map(quoted,columns)) if operation=='UPDATE' else 'INSERT'
         clear=("DELETE FROM artifact_ref WHERE owner_type='"+table+"' AND owner_id="+old_identity+";") if operation=='UPDATE' else ''

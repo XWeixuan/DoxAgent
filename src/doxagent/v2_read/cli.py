@@ -93,6 +93,7 @@ def main() -> None:
             "reproject-trade-outcomes",
             "policy-query-indexes",
             "serving-generation",
+            "current-snapshot",
         ),
     )
     parser.add_argument("--read-db", type=Path, default=Path(".tmp/v2_read.sqlite3"))
@@ -200,6 +201,10 @@ def main() -> None:
         if not sources:
             parser.error("rebuild requires explicit sources")
         print(json.dumps(rebuild(sources, args.read_db, event_root=args.event_root)))
+    elif args.command == 'current-snapshot':
+        if not sources:parser.error('current snapshot requires the complete source set')
+        from .source_snapshot import rebuild_current
+        print(json.dumps(rebuild_current(sources,args.read_db,event_root=args.event_root)))
     elif args.command == "switch":
         from .maintenance import activate_alias
 

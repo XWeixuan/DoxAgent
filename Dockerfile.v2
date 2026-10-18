@@ -43,6 +43,7 @@ COPY dev_plan/workflow_v2/api_contract ./dev_plan/workflow_v2/api_contract
 # A root checkout under umask 0077 can create 0600 files/0700 directories.
 # COPY preserves those host modes; the non-root browser owner must still import
 # the exact same committed application, independent of the release shell's umask.
-RUN chmod -R a+rX /app/src /app/prompts /app/dev_plan /app/scripts \
+RUN find /app/src /app/prompts /app/dev_plan /app/scripts -type d ! -perm -005 -exec chmod a+rx {} + \
+    && find /app/src /app/prompts /app/dev_plan /app/scripts -type f ! -perm -004 -exec chmod a+r {} + \
     && chmod a+r /app/pyproject.toml /app/uv.lock /app/README.md
 CMD ["python", "-m", "doxagent.production_v2", "check"]

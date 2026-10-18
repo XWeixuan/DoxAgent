@@ -615,6 +615,14 @@ class EventLibraryRepository:
                 """,
                 (runtime_scope, runtime_atomic_id),
             ).fetchone()
+            if row is None:
+                # Minimal branches retain the committed identity map instead of
+                # every old published Delta payload. Pending rows still win.
+                row = connection.execute(
+                    "SELECT runtime_atomic_version,runtime_signature FROM runtime_atomic_mappings "
+                    "WHERE runtime_scope=? AND runtime_atomic_id=?",
+                    (runtime_scope, runtime_atomic_id),
+                ).fetchone()
         if row is None:
             return None
         return int(row["runtime_atomic_version"]), str(row["runtime_signature"])

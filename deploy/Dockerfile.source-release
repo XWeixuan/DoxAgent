@@ -8,7 +8,7 @@ ARG DOXAGENT_BUILD_COMMIT
 ARG DOXAGENT_SOURCE_SHA256
 ENV DOXAGENT_BUILD_COMMIT=${DOXAGENT_BUILD_COMMIT}
 LABEL org.opencontainers.image.revision=${DOXAGENT_BUILD_COMMIT} \
-      doxagent.source.sha256=${DOXAGENT_SOURCE_SHA256} doxagent.owner=doxagent
+      doxagent.source.sha256=${DOXAGENT_SOURCE_SHA256} doxagent.owner=doxagent doxagent.role=application
 COPY pyproject.toml uv.lock README.md /app/
 # The release CLI places unchanged CDECR catalogs in the dependency stage.
 COPY src /app/src
@@ -26,7 +26,7 @@ ARG DOXAGENT_BUILD_COMMIT
 ARG DOXAGENT_SOURCE_SHA256
 ENV DOXAGENT_BUILD_COMMIT=${DOXAGENT_BUILD_COMMIT}
 LABEL org.opencontainers.image.revision=${DOXAGENT_BUILD_COMMIT} \
-      doxagent.source.sha256=${DOXAGENT_SOURCE_SHA256} doxagent.owner=doxagent
+      doxagent.source.sha256=${DOXAGENT_SOURCE_SHA256} doxagent.owner=doxagent doxagent.role=application
 COPY src /app/src
 COPY prompts /app/prompts
 COPY dev_plan/workflow_v2/api_contract /app/dev_plan/workflow_v2/api_contract
@@ -42,7 +42,7 @@ ARG DOXAGENT_BUILD_COMMIT
 ARG DOXAGENT_SOURCE_SHA256
 ENV DOXAGENT_BUILD_COMMIT=${DOXAGENT_BUILD_COMMIT}
 LABEL org.opencontainers.image.revision=${DOXAGENT_BUILD_COMMIT} \
-      doxagent.source.sha256=${DOXAGENT_SOURCE_SHA256} doxagent.owner=doxagent
+      doxagent.source.sha256=${DOXAGENT_SOURCE_SHA256} doxagent.owner=doxagent doxagent.role=application
 COPY src /app/src
 COPY prompts /app/prompts
 COPY dev_plan/workflow_v2/api_contract /app/dev_plan/workflow_v2/api_contract

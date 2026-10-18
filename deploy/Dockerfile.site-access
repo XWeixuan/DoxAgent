@@ -21,7 +21,8 @@ LABEL org.opencontainers.image.revision=${DOXAGENT_BUILD_COMMIT} \
 COPY src /app/src
 COPY prompts /app/prompts
 COPY dev_plan/workflow_v2/api_contract /app/dev_plan/workflow_v2/api_contract
-RUN chmod -R a+rX /app/src /app/prompts /app/dev_plan
+RUN find /app/src /app/prompts /app/dev_plan -type d ! -perm -005 -exec chmod a+rx {} + \
+    && find /app/src /app/prompts /app/dev_plan -type f ! -perm -004 -exec chmod a+r {} +
 COPY deploy/site-access-entrypoint.sh /usr/local/bin/site-access-entrypoint
 COPY deploy/site-login-vnc-relay.py /usr/local/bin/site-login-vnc-relay.py
 RUN chmod 0755 /usr/local/bin/site-access-entrypoint /usr/local/bin/site-login-vnc-relay.py

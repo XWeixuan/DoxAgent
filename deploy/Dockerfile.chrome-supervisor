@@ -20,7 +20,8 @@ COPY src /app/src
 COPY prompts /app/prompts
 COPY dev_plan/workflow_v2/api_contract /app/dev_plan/workflow_v2/api_contract
 COPY deploy/chrome-supervisor-entrypoint.sh /usr/local/bin/chrome-supervisor-entrypoint
-RUN chmod -R a+rX /app/src /app/prompts /app/dev_plan \
+RUN find /app/src /app/prompts /app/dev_plan -type d ! -perm -005 -exec chmod a+rx {} + \
+    && find /app/src /app/prompts /app/dev_plan -type f ! -perm -004 -exec chmod a+r {} + \
     && chmod 0755 /usr/local/bin/chrome-supervisor-entrypoint
 ENTRYPOINT ["/usr/local/bin/chrome-supervisor-entrypoint"]
 CMD ["python", "-m", "doxagent.site_strategy.chrome_supervisor", "--socket", "/run/doxagent-chrome/supervisor.sock", "--profile-root", "/site-data/profiles"]

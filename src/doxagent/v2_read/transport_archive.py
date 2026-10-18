@@ -1,4 +1,4 @@
-"""Bounded, compressed transport packs behind verified backups, ACKs and pins."""
+"""Bounded source transport maintenance; old acknowledged packets truly expire."""
 import argparse
 import functools
 import json
@@ -87,26 +87,28 @@ def main():
     parser.add_argument('--once', action='store_true')
     args = parser.parse_args()
     sources = [SourceOutbox(path, name) for name, path in (item.split('=', 1) for item in args.source)]
+    for source in sources:
+        source.migrate()  # Explicit owner startup migration, never an HTTP read.
     while True:
         started = time.monotonic()
         result = {}
         for source in sources:
             source_started = time.monotonic()
-            checkpoint = args.checkpoint_root / (source.source + '.sqlite3')
             count = 0
             error = None
-            while checkpoint.is_file() and time.monotonic() - source_started < 2 / max(1, len(sources)):
+            while time.monotonic() - source_started < 2 / max(1, len(sources)):
                 try:
-                    changed = archive(source, checkpoint)
+                    from .source_lifecycle import expire
+                    batch = expire(source,limit=64)
+                    changed = batch['expired']
                 except (sqlite3.OperationalError, OSError, ValueError) as exc:
                     error = str(exc)
                     break
                 count += changed
                 if not changed:
                     break
-            result[source.source] = dict(archived=count, error=error,
-                                         checkpoint_available=checkpoint.is_file())
-        print(json.dumps(dict(maintenance='transport_archive', sources=result,
+            result[source.source] = dict(expired=count,error=error)
+        print(json.dumps(dict(maintenance='transport_expiry', sources=result,
                               elapsed_seconds=time.monotonic() - started)), flush=True)
         if args.once:
             break

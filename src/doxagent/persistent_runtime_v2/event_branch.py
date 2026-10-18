@@ -1,102 +1,73 @@
-"""Copy-on-write Event Library branch: no half-published live head changes."""
-
+"""Isolated selected-version Event branches; no inherited CDC or process history."""
+import json
 import os
 import sqlite3
 from contextlib import closing
 from datetime import datetime
 from pathlib import Path
-
-from doxagent.event_library.reference_review import classify_review, event_review_anchor
+from doxagent.event_library.reference_review import classify_review,event_review_anchor
 from doxagent.event_library.repository import EventLibraryRepository
+from doxagent.trade_execution.worker import WriterLock
+from doxagent.v2_read.maintenance import atomic_json
 
 
-def branch_library(source: Path, target: Path, ticker: str, base: int) -> EventLibraryRepository:
-    if target.exists():
+def branch_library(source: Path,target: Path,ticker: str,base: int) -> EventLibraryRepository:
+    with WriterLock(target.with_suffix('.branch')):
+        if target.exists():return EventLibraryRepository(target)
+        target.parent.mkdir(parents=True,exist_ok=True)
+        staging=target.with_suffix('.preparing')
+        # Only an interrupted staging owned by this exact, OS-fenced branch.
+        for suffix in ('','-wal','-shm'):
+            Path(str(staging)+suffix).unlink(missing_ok=True)
+        helper=EventLibraryRepository(staging)
+        with closing(sqlite3.connect(staging.resolve().as_uri(),uri=True)) as db:
+            db.row_factory=sqlite3.Row
+            db.execute('ATTACH DATABASE ? AS origin',(source.resolve().as_uri()+'?mode=ro',))
+            db.execute('BEGIN IMMEDIATE')
+            version=db.execute('SELECT * FROM origin.library_versions WHERE ticker=? AND version=?',(ticker,base)).fetchone()
+            if version is None:raise ValueError('branch base publication unavailable')
+            head=db.execute('SELECT published_version FROM origin.library_heads WHERE ticker=?',(ticker,)).fetchone()[0]
+            def copy(table,where,args=()):
+                columns=','.join(r[1] for r in db.execute('PRAGMA main.table_info('+table+')'))
+                db.execute('INSERT INTO main.'+table+'('+columns+') SELECT '+columns+' FROM origin.'+table+' WHERE '+where,args)
+            copy('library_versions','ticker=? AND version=?',(ticker,base))
+            copy('library_heads','ticker=?',(ticker,))
+            db.execute('UPDATE library_heads SET published_version=? WHERE ticker=?',(base,ticker))
+            copy('id_counters','ticker=?',(ticker,))
+            for entity,column in (('events','event_no'),('facts','fact_no')):
+                copy('canonical_'+entity,'ticker=? AND created_version<=?',(ticker,base))
+                for suffix in ('revisions','states'):
+                    table='canonical_'+entity[:-1]+'_'+suffix
+                    copy(table,'ticker=? AND library_version=(SELECT max(p.library_version) FROM origin.'+table+' p WHERE p.ticker=origin.'+table+'.ticker AND p.'+column+'=origin.'+table+'.'+column+' AND p.library_version<=?)',(ticker,base))
+            for table in ('event_fact_memberships','event_relations'):
+                copy(table,'ticker=? AND valid_from_version<=? AND (valid_to_version IS NULL OR valid_to_version>?)',(ticker,base,base))
+                db.execute('UPDATE '+table+' SET valid_to_version=NULL')
+            # A current pending batch remains resumable; old published payloads
+            # leave the branch. Small last-application mappings retain dedup.
+            copy('delta_batches','ticker=? AND published_version IS NULL AND base_version<=?',(ticker,base if head==base else base-1))
+            copy('delta_items','batch_id IN (SELECT batch_id FROM main.delta_batches)')
+            if head==base:
+                copy('runtime_atomic_mappings','1')
+            db.execute("INSERT OR REPLACE INTO runtime_atomic_mappings SELECT i.runtime_scope,i.runtime_atomic_id,i.runtime_atomic_version,i.runtime_signature,i.resolution,i.target_event_no,i.target_fact_no,i.batch_id,b.updated_at FROM origin.delta_items i JOIN origin.delta_batches b ON b.batch_id=i.batch_id WHERE b.ticker=? AND b.published_version<=? AND NOT EXISTS(SELECT 1 FROM origin.delta_items n JOIN origin.delta_batches nb ON nb.batch_id=n.batch_id WHERE n.runtime_scope=i.runtime_scope AND n.runtime_atomic_id=i.runtime_atomic_id AND nb.published_version<=? AND (nb.published_version>b.published_version OR nb.published_version=b.published_version AND n.rowid>i.rowid))",(ticker,base,base))
+            # Replace generated target birth IDs with their exact source IDs.
+            db.execute("UPDATE v2_native_identities SET provenance='PROVENANCE_UNVERIFIED'")
+            db.execute("INSERT OR REPLACE INTO v2_native_identities SELECT s.* FROM origin.v2_native_identities s JOIN main.v2_native_identities t ON t.collection=s.collection AND t.native_key=s.native_key")
+            if head==base:
+                copy('reference_review_schedule','ticker=?',(ticker,))
+            else:
+                at=datetime.fromisoformat(version['published_at'])
+                for row in db.execute('SELECT event_no FROM canonical_events WHERE ticker=?',(ticker,)).fetchall():
+                    event=helper._event_from_connection(db,ticker,row[0],base)
+                    anchor=event_review_anchor(event)
+                    mode,reason,next_at=classify_review(anchor=anchor,as_of=at,include_in_reference_view=event.include_in_reference_view)
+                    helper._upsert_review_schedule(db,ticker=ticker,event_no=row[0],anchor=anchor,reviewed_at=at,next_at=next_at,mode=mode,reason=reason)
+            # Compare the complete selected native event representation, including
+            # fact membership/state. Birth/provenance rows were copied above.
+            original=EventLibraryRepository(source,read_only=True)
+            expected=[e.model_dump(mode='json') for e in original.published_events(ticker,base)]
+            actual=[helper._event_from_connection(db,ticker,r[0],base).model_dump(mode='json') for r in db.execute("SELECT e.event_no FROM canonical_events e JOIN canonical_event_states s USING(ticker,event_no) WHERE e.ticker=? AND s.status='ACTIVE' ORDER BY e.event_no",(ticker,)).fetchall()]
+            if expected!=actual:raise ValueError('selected Event snapshot differs')
+            db.commit();db.execute('PRAGMA wal_checkpoint(TRUNCATE)').fetchall()
+        os.replace(staging,target)
+        atomic_json(str(target)+'.branch.json',{'source':str(source.resolve()),'base_version':base,'ticker':ticker,'selected_event_count':len(actual),'format':'doxagent.minimal-event-branch.1'})
         return EventLibraryRepository(target)
-    target.parent.mkdir(parents=True, exist_ok=True)
-    staging = target.with_suffix(".preparing")
-    with closing(sqlite3.connect(f"{source.resolve().as_uri()}?mode=ro", uri=True)) as src:
-        with closing(sqlite3.connect(staging)) as dst:
-            src.backup(dst)
-    # Rewind only the isolated copy. Historical source revisions are never changed.
-    helper = EventLibraryRepository(staging)
-    with closing(sqlite3.connect(staging)) as db:
-        db.row_factory = sqlite3.Row
-        head = db.execute(
-            "SELECT published_version FROM library_heads WHERE ticker=?", (ticker,)
-        ).fetchone()[0]
-        version = db.execute(
-            "SELECT published_at FROM library_versions WHERE ticker=? AND version=?", (ticker, base)
-        ).fetchone()
-        if version is None:
-            raise ValueError("branch base publication unavailable")
-        for table in (
-            "canonical_event_revisions",
-            "canonical_event_states",
-            "canonical_fact_revisions",
-            "canonical_fact_states",
-        ):
-            db.execute(f"DELETE FROM {table} WHERE ticker=? AND library_version>?", (ticker, base))
-        for table in ("canonical_events", "canonical_facts"):
-            db.execute(f"DELETE FROM {table} WHERE ticker=? AND created_version>?", (ticker, base))
-        for table in ("event_fact_memberships", "event_relations"):
-            db.execute(
-                f"DELETE FROM {table} WHERE ticker=? AND valid_from_version>?", (ticker, base)
-            )
-            db.execute(
-                f"UPDATE {table} SET valid_to_version=NULL WHERE ticker=? AND valid_to_version>?",
-                (ticker, base),
-            )
-        db.execute("DELETE FROM library_versions WHERE ticker=? AND version>?", (ticker, base))
-        db.execute("UPDATE library_heads SET published_version=? WHERE ticker=?", (base, ticker))
-        future_batches = [
-            row[0]
-            for row in db.execute(
-                "SELECT batch_id FROM delta_batches WHERE ticker=? AND "
-                "(published_version>? OR base_version>=?)",
-                (ticker, base, base),
-            )
-        ]
-        if head == base:
-            future_batches = []  # Preserve still-pending work at the selected active head.
-        for batch in future_batches:
-            db.execute("DELETE FROM delta_items WHERE batch_id=?", (batch,))
-            db.execute("DELETE FROM runtime_atomic_mappings WHERE last_delta_batch=?", (batch,))
-            db.execute("DELETE FROM delta_batches WHERE batch_id=?", (batch,))
-        db.execute(
-            "DELETE FROM reference_view_deltas WHERE ticker=? AND to_library_version>?",
-            (ticker, base),
-        )
-        db.execute("DELETE FROM maintenance_runs WHERE ticker=?", (ticker,))
-        # Rebuild review scheduling from the selected canonical snapshot, not a future head.
-        if head != base:
-            at = datetime.fromisoformat(version[0])
-            db.execute("DELETE FROM reference_review_schedule WHERE ticker=?", (ticker,))
-            db.execute(
-                "DELETE FROM reference_review_history WHERE ticker=? AND reviewed_at>?",
-                (ticker, at.isoformat()),
-            )
-            for row in db.execute(
-                "SELECT event_no FROM canonical_events WHERE ticker=?", (ticker,)
-            ).fetchall():
-                event = helper._event_from_connection(db, ticker, row[0], base)
-                anchor = event_review_anchor(event)
-                mode, reason, next_at = classify_review(
-                    anchor=anchor,
-                    as_of=at,
-                    include_in_reference_view=event.include_in_reference_view,
-                )
-                helper._upsert_review_schedule(
-                    db,
-                    ticker=ticker,
-                    event_no=row[0],
-                    anchor=anchor,
-                    reviewed_at=at,
-                    next_at=next_at,
-                    mode=mode,
-                    reason=reason,
-                )
-        db.commit()
-        db.execute("PRAGMA wal_checkpoint(TRUNCATE)")
-    os.replace(staging, target)
-    return EventLibraryRepository(target)
