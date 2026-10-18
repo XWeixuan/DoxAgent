@@ -12,9 +12,16 @@ from doxagent.message_bus_v2.schema import RawMessageInput, utc_now
 @pytest.mark.asyncio
 async def test_jev_reads_keyed_noul_without_order_assumptions() -> None:
     def responder(request: httpx.Request) -> httpx.Response:
-        assert request.url.path == "/api/alpha/decisions"
+        assert str(request.url) == JevClient.URL
+        assert request.url.path == "/compatible-mode/v1/systemone"
+        assert request.headers["Authorization"] == "Bearer test-key"
         payload = __import__("json").loads(request.content)
+        assert payload["model"] == "decision-model-preview"
         assert set(payload["questions"]) == {"MU", "NVDA"}
+        assert payload["questions"]["MU"] == {
+            "type": "noul", "instructions": "Is this news relevant to MU?",
+            "criteria": {"true": "memory", "false": "other"},
+        }
         return httpx.Response(
             200,
             json={
@@ -73,8 +80,7 @@ async def test_partial_jev_answers_retry_only_missing_ticker_and_segment(monkeyp
         return None
 
     monkeypatch.setattr("doxagent.message_bus_v2.distribution.asyncio.sleep", no_delay)
-    worker = DistributionWorker.__new__(DistributionWorker)
-    worker.jev = PartialJev()
+    worker = DistributionWorker(None, None, None, jev=PartialJev())
     message = RawMessageInput(
         title="chip industry",
         body="A" * 20000,

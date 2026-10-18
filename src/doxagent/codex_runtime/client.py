@@ -50,6 +50,54 @@ class WorkspaceClient(Protocol):
 
 
 class HttpCodexWorkerClient:
+    async def start_w3_market(self, manifest):
+        response = await self._client.post("/v1/w3/market/start", json=manifest)
+        response.raise_for_status()
+
+    async def configure_w3_ready(self, config):
+        response = await self._client.post("/v1/w3/ready-slots/configure", json=config)
+        response.raise_for_status()
+        return response.json()
+
+    async def claim_w3_ready(self, request):
+        from doxagent.codex_runtime.errors import W3PreparationError
+
+        for _ in range(40):
+            response = await self._client.post("/v1/w3/ready-slots/claim", json=request)
+            if response.status_code == 409 and "not configured" in response.text:
+                raise W3PreparationError(
+                    "w3_ready_unconfigured",
+                    "Worker needs the existing public Template configuration",
+                )
+            response.raise_for_status()
+            result = response.json()
+            if result["status"] == "COMPLETED":
+                return result
+            if result.get("error"):
+                raise W3PreparationError("w3_ready_failed", result["error"])
+            await asyncio.sleep(0.1)
+        raise W3PreparationError(
+            "w3_prepare_pending", "Ready slot is preparing; retry the same binding"
+        )
+
+    async def prepare_w3_research(self, ticker, components):
+        response = await self._client.post(
+            "/v1/w3/research/prepare", json={"ticker": ticker, "components": components}
+        )
+        response.raise_for_status()
+        return response.json()["components"]
+
+    async def bind_w3_context(self, case_id, phase, manifest):
+        response = await self._client.post(
+            "/v1/w3/contexts", json={"case_id": case_id, "phase": phase, "manifest": manifest}
+        )
+        response.raise_for_status()
+        return response.json()
+
+    async def stop_w3_market(self, case_id):
+        response = await self._client.post("/v1/w3/market/stop", json={"case_id": case_id})
+        response.raise_for_status()
+
     async def get_thread_operation(self, key):
         from urllib.parse import quote
 

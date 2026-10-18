@@ -7,7 +7,9 @@ from doxagent.codex_worker.thread_lifecycle import AppServerThreads
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("lost_response", [False, True])
-async def test_fork_releases_writer_even_when_response_is_lost(monkeypatch, lost_response):
+async def test_lifecycle_reuses_successful_client_and_discards_lost_transport(
+    monkeypatch, lost_response
+):
     clients = []
 
     class Client:
@@ -38,13 +40,14 @@ async def test_fork_releases_writer_even_when_response_is_lost(monkeypatch, lost
                 await transport.request("thread/fork", {})
         else:
             assert (await transport.request("thread/fork", {}))["thread"]["id"] == "child"
-        assert clients[0].closed
-        assert transport.client is None
+        assert clients[0].closed is lost_response
+        assert (transport.client is None) is lost_response
         await transport.request("thread/list", {})
-        assert len(clients) == 2
-        assert clients[1].closed
+        assert len(clients) == (2 if lost_response else 1)
+        assert not clients[-1].closed
     finally:
         await transport.close()
+    assert all(c.closed for c in clients)
 
 
 @pytest.mark.asyncio
@@ -79,6 +82,7 @@ async def test_concurrent_lifecycle_call_cannot_use_client_being_closed(monkeypa
     fork = asyncio.create_task(transport.request("thread/fork", {}))
     await started.wait()
     await asyncio.gather(fork, transport.request("thread/list", {}))
-    assert events.count("close") == 2
+    assert events.count("close") == 0
     assert "thread/fork" in events and "thread/list" in events
     await transport.close()
+    assert events.count("close") == 1

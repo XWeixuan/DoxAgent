@@ -58,6 +58,7 @@ class ExecutionBundles:
             value.setdefault("contracts", {}).update(
                 w3_contract_version=W3_CONTRACT,
                 w3_asset_layout="agents-skill.v1",
+                w3_entry_version="w3-entry-v5",
                 w3_trade_schema=strict_json_schema(W3TradeDecision.model_json_schema()),
                 w3_operations_schema=strict_json_schema(W3OperationsResult.model_json_schema()),
             )

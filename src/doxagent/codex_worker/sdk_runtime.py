@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import json
 import os
 import sqlite3
@@ -269,17 +270,27 @@ class OpenAICodexRuntime:
         secret = capability_secret or self._settings.codex_capability_secret
         if not secret:
             raise ValueError("Codex worker Data MCP requires a capability secret")
+        import hmac
+
+        self._w3_mcp_token = hmac.new(
+            secret.encode(), b"w3-research-http-v2", hashlib.sha256
+        ).hexdigest()
         self._data_capabilities = DataCapabilityCodec(secret)
         self._o4_capabilities = O4OperationCapabilityCodec(secret)
         self._data_policy = DataToolPolicyRegistry()
         self._data_contracts = None
         self._contract_node = None
         self._prepared_thread = None
+        self._resident_thread = None
         self._container_isolated = (
             container_isolated
             if container_isolated is not None
             else os.environ.get("DOXAGENT_CODEX_CONTAINER_ISOLATION", "").lower() == "true"
         )
+
+    async def initialize(self) -> None:
+        """Start and initialize the real app-server, without a model turn."""
+        await measured("sdk.initialize", self._client.__aenter__())
 
     async def probe(self) -> dict[str, object]:
         """Read account/model readiness without returning identity or secrets."""
@@ -313,7 +324,14 @@ class OpenAICodexRuntime:
             self._prepared_thread = None
             raise
 
-    async def _start(self, request: WorkerRunRequest, cwd: Path, *, prepare_parent=None):
+    async def prepare_resume(self, request: WorkerRunRequest, cwd: Path) -> str:
+        if not request.thread_id:
+            raise ValueError("prepared Resume requires the recovered child identity")
+        return await self._start(request, cwd, prepare_existing=True)
+
+    async def _start(
+        self, request: WorkerRunRequest, cwd: Path, *, prepare_parent=None, prepare_existing=False
+    ):
         requested_model = request.model
         execution_model = (
             request.model or self._settings.codex_model
@@ -570,38 +588,82 @@ class OpenAICodexRuntime:
             sdk_config["web_search"] = request.web_search_mode
         elif request.read_only and not request.data_mcp_enabled:
             sdk_config["web_search"] = "disabled"
+        if request.research_assets_mcp_enabled:
+            if request.task_phase != "w3_template":
+                # Fork/Resume inherits the mother's AGENTS and Skill. Changing
+                # cwd must not auto-inject the same project contract again.
+                sdk_config["project_doc_max_bytes"] = 0
+            for disabled in ("data", "source_capture", "o4_operations", "d2_discovery"):
+                prefix = f"mcp_servers.{disabled}."
+                # Disabled stdio descriptors must not smuggle attempt-specific
+                # env/control paths back into the stable resident fingerprint.
+                sdk_config = {k: v for k, v in sdk_config.items() if not k.startswith(prefix)}
+                sdk_config[prefix + "enabled"] = False
+            sdk_config.update(
+                {
+                    "mcp_servers.w3_research.url": self._settings.w3_research_mcp_url,
+                    "mcp_servers.w3_research.http_headers.Authorization": "Bearer "
+                    + self._w3_mcp_token,
+                    "mcp_servers.w3_research.http_headers.X-W3-Capsule": os.environ.get(
+                        "DOXAGENT_CAPSULE_ID", "local"
+                    ),
+                    "mcp_servers.w3_research.required": True,
+                    "mcp_servers.w3_research.enabled": True,
+                    "mcp_servers.w3_research.enabled_tools": [
+                        "catalog",
+                        "search",
+                        "read",
+                        "market_view",
+                    ],
+                    "tool_output_token_limit": 8192,
+                }
+            )
+            for tool in ("catalog", "search", "read", "market_view"):
+                sdk_config[f"mcp_servers.w3_research.tools.{tool}.approval_mode"] = "approve"
+                sdk_config[f"mcp_servers.w3_research.tools.{tool}.output_token_limit"] = 8192
         scope = (
             str(cwd),
-            request.attempt_id,
-            request.cutoff_at.isoformat(),
+            None if request.w3_entry_version else request.attempt_id,
+            None if request.w3_entry_version else request.cutoff_at.isoformat(),
             request.model,
             request.model_provider,
             request.effort,
             request.data_mcp_enabled,
             request.web_search_mode,
+            request.research_assets_mcp_enabled,
+            request.w3_entry_version,
+            request.read_only,
+            str(sandbox),
+            json.dumps(sdk_config, sort_keys=True),
         )
         if prepare_parent is not None:
             thread = await measured(
                 "sdk.thread_fork",
-                asyncio.wait_for(
-                    self._client.thread_fork(
-                        prepare_parent,
-                        cwd=str(cwd),
-                        model=request.model,
-                        model_provider=request.model_provider,
-                        sandbox=sandbox,
-                        approval_mode=ApprovalMode.deny_all,
-                        config=sdk_config,
-                    ),
-                    10,
+                self._client.thread_fork(
+                    prepare_parent,
+                    cwd=str(cwd),
+                    model=request.model,
+                    model_provider=request.model_provider,
+                    sandbox=sandbox,
+                    approval_mode=ApprovalMode.deny_all,
+                    config=sdk_config,
+                    include_turns=False,
                 ),
             )
             self._prepared_thread = (thread, scope, sdk_config)
+            self._resident_thread = (thread, scope, sdk_config)
             return thread.id
         prepared = self._prepared_thread
         if prepared and prepared[0].id == request.thread_id and prepared[1] == scope:
             thread, _, sdk_config = prepared
             self._prepared_thread = None
+        elif (
+            request.w3_entry_version
+            and self._resident_thread
+            and self._resident_thread[0].id == request.thread_id
+            and self._resident_thread[1] == scope
+        ):
+            thread, _, sdk_config = self._resident_thread
         elif request.thread_id:
             thread = await measured(
                 "sdk.thread_resume",
@@ -637,16 +699,30 @@ class OpenAICodexRuntime:
                             "workspace "
                             "audit boundaries. "
                         )
-                        + "Read the attempt-local AGENTS.md and task.json named in the turn before "
-                        "acting, then follow their file paths. Use configured MCP tools only "
+                        + (
+                            "For W3 v5 the public AGENTS and unique Skill are inherited. "
+                            "The current user turn is the authoritative phase input. "
+                            "Do not reread contracts/task/schema unless a real version or "
+                            "input discrepancy requires it. "
+                            if request.w3_entry_version
+                            else "Read the attempt-local AGENTS.md and task.json named "
+                            "in the turn before acting, then follow their file paths. "
+                        )
+                        + "Use configured MCP tools only "
                         "within "
                         "their granted capability. "
                         f"Never spawn more than {request.max_subagents} subagents."
                     ),
                 ),
             )
+        if prepare_existing:
+            self._prepared_thread = (thread, scope, sdk_config)
+            self._resident_thread = (thread, scope, sdk_config)
+            return thread.id
         if self.receipt_callback is not None:
             self.receipt_callback(thread.id, None)
+        if request.w3_entry_version:
+            self._resident_thread = (thread, scope, sdk_config)
         handle = await measured(
             "sdk.turn_start",
             thread.turn(

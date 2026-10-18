@@ -45,7 +45,7 @@ class CaseMaterializeRequest(WorkerModel):
 class W3PrepareRequest(WorkerModel):
     operation_key: str = Field(min_length=1, max_length=512)
     record_id: str
-    source_case_id: str
+    source_case_id: str | None
     parent_thread_id: str
     run_id: str
     attempt_id: str
@@ -101,6 +101,8 @@ class WorkerRunRequest(WorkerModel):
     effort: Literal["low", "medium", "high", "xhigh", "max"] = "max"
     read_only: bool = False
     data_mcp_enabled: bool = True
+    research_assets_mcp_enabled: bool = False
+    w3_entry_version: str | None = None
     o4_operations_enabled: bool = False
     initialization_id: str | None = None
     idempotency_key: str | None = Field(default=None, min_length=1, max_length=512)

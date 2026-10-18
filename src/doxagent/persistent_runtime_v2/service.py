@@ -341,6 +341,9 @@ class PersistentRuntimeV2Service:
                 thread.join()
         if self._w3_agent is not None:
             self._w3_agent.close()
+        close_responses = getattr(self.responses, "close", None)
+        if close_responses is not None:
+            close_responses()
 
     def _submit_hot_lanes(
         self, case: RuntimeCase, index: KnownEventIndexSnapshot,
@@ -499,17 +502,21 @@ class PersistentRuntimeV2Service:
                 case.frozen_inputs["w2_contracts"] = {
                     k: v for k, v in bundle["contracts"].items() if k.startswith("w2_")
                 }
-            case.frozen_inputs["w3_assets"] = bundle["assets"]
+            w3_bundle_id = (self.journal.get("w3_entry_active", case.ticker)
+                            or self.journal.get("w3_entry", "previous")) if self.journal else None
+            w3_bundle = self.execution_bundles.get(w3_bundle_id) if w3_bundle_id else bundle
+            case.frozen_inputs["w3_execution_bundle_id"] = w3_bundle_id or case.execution_bundle_id
+            case.frozen_inputs["w3_assets"] = w3_bundle["assets"]
             case.orchestration_revision = bundle.get("orchestration_revision", 1)
-            case.w3_contract_version = bundle.get("contracts", {}).get("w3_contract_version")
+            case.w3_contract_version = w3_bundle.get("contracts", {}).get("w3_contract_version")
             if case.w3_contract_version:
                 case.frozen_inputs["w3_assets"] = {
-                    k: v for k, v in bundle["assets"].items()
+                    k: v for k, v in w3_bundle["assets"].items()
                     if (k in {"w3/AGENTS.md", "w3/skills/skill.md"}
-                        if bundle["contracts"].get("w3_asset_layout") == "agents-skill.v1"
+                        if w3_bundle["contracts"].get("w3_asset_layout") == "agents-skill.v1"
                         else k.startswith("w3/"))
                 }
-                case.frozen_inputs["w3_contracts"] = bundle["contracts"]
+                case.frozen_inputs["w3_contracts"] = w3_bundle["contracts"]
             if not isinstance(projection, RuntimePolicyProjectionV5):
                 case.orchestration_revision = min(case.orchestration_revision, 2)
         else:
@@ -1120,7 +1127,8 @@ class PersistentRuntimeV2Service:
         # Old Cases without a per-round manifest keep their original model/effort.
         settings.update(models.get("rounds", {}).get(f"{lane}:{round_name}", {}))
         settings["transport"] = (
-            "responses_json_object" if settings["model"] == "deepseek-v4.1-flash"
+            "chat_completions_json_schema" if settings.get("provider") == "openrouter"
+            else "responses_json_object" if settings["model"] == "deepseek-v4.1-flash"
             else "responses_json_schema"
         )
         return settings
@@ -1275,6 +1283,9 @@ class PersistentRuntimeV2Service:
                         model=model_settings["model"],
                         reasoning_effort=model_settings["reasoning_effort"],
                         timeout_seconds=model_settings["timeout_seconds"],
+                        provider=model_settings.get("provider", "bailian"),
+                        provider_endpoint=model_settings.get("provider_endpoint"),
+                        cache_ttl=model_settings.get("cache_ttl"),
                         instructions=frozen["instructions"]
                         + (_retry_correction_context(last_error) if last_error else ""),
                         payload=payload,
@@ -1349,6 +1360,9 @@ class PersistentRuntimeV2Service:
                     cached_input_tokens=result.cached_input_tokens
                     if result
                     else error.usage.get("cached_input_tokens"),
+                    cache_write_input_tokens=result.cache_write_input_tokens
+                    if result else error.usage.get("cache_write_input_tokens"),
+                    provider_usage=result.provider_usage if result else error.usage.get("provider_usage", {}),
                     response_id=result.response_id if result else error.usage.get("response_id"),
                     raw_output=result.raw_output if result else error.usage.get("raw_output"),
                     validation_warnings=(
@@ -1443,6 +1457,8 @@ class PersistentRuntimeV2Service:
                 output_tokens=result.output_tokens,
                 reasoning_tokens=result.reasoning_tokens,
                 cached_input_tokens=result.cached_input_tokens,
+                cache_write_input_tokens=result.cache_write_input_tokens,
+                provider_usage=result.provider_usage,
                 prefix_fingerprint=result.prefix_fingerprint,
                 latency_ms=result.latency_ms,
                 started_at=started_at,
@@ -1496,6 +1512,8 @@ class PersistentRuntimeV2Service:
                 orchestration_revision=case.orchestration_revision,
             )
         self.repository.save_case_with_effects(case, effects, w3_case)
+        if any(e.effect_type is RuntimeSideEffect.ROUTE_TO_W3 for e in effects) and hasattr(self._w3_agent, "queue_market"):
+            self._w3_agent.queue_market(case)
 
     @staticmethod
     def _w3_mode(case: RuntimeCase) -> W3Mode:
@@ -1555,7 +1573,11 @@ class PersistentRuntimeV2Service:
                 thread.start()
                 dispatched += 1
             else:
-                dispatched += self._process_claimed_effect(effect)
+                if self.coordinator is not None:
+                    self._effect_executor.submit(self._process_claimed_effect, effect)
+                    dispatched += 1
+                else:
+                    dispatched += self._process_claimed_effect(effect)
         return dispatched
 
     def _run_w3_effect_thread(

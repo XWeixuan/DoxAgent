@@ -35,7 +35,19 @@ async def main() -> None:
 
     runtime = OpenAICodexRuntime()
     runtime_ready = time.perf_counter_ns()
-    send({"type": "boot_ready"})
+    await runtime.initialize()
+    initialized_at = time.perf_counter_ns()
+    send(
+        {
+            "type": "boot_ready",
+            "state": "SDK_READY",
+            "timing": {
+                "process_ready_ms": (runtime_ready - boot_start) / 1e6,
+                "sdk_initialize_ms": (initialized_at - runtime_ready) / 1e6,
+                "sdk_ready_ms": (initialized_at - boot_start) / 1e6,
+            },
+        }
+    )
     used = False
     runtime.receipt_callback = lambda thread, turn: send(
         {"type": "identity", "thread_id": thread, "turn_id": turn}
@@ -94,7 +106,7 @@ async def main() -> None:
                 if task is not None and not task.done():
                     raise RuntimeError("capsule already executing")
                 task = asyncio.create_task(execute(payload))
-            elif payload["type"] == "prepare_fork":
+            elif payload["type"] in {"prepare_fork", "prepare_resume"}:
                 try:
                     from doxagent.w3_timing import save_trace
 
@@ -103,13 +115,32 @@ async def main() -> None:
                     )
                     try:
                         with trace.activate():
-                            thread_id = await runtime.prepare_fork(
-                                WorkerRunRequest.model_validate(payload["request"]),
-                                Path(payload["cwd"]),
-                                parent_thread_id=payload["parent_thread_id"],
-                            )
+                            request = WorkerRunRequest.model_validate(payload["request"])
+                            if payload["type"] == "prepare_fork":
+                                thread_id = await runtime.prepare_fork(
+                                    request,
+                                    Path(payload["cwd"]),
+                                    parent_thread_id=payload["parent_thread_id"],
+                                )
+                            else:
+                                thread_id = await runtime.prepare_resume(
+                                    request, Path(payload["cwd"])
+                                )
                     finally:
                         save_trace(trace, payload.get("timing_directory"))
+                    from .workspace_store import LocalWorkspaceStore
+
+                    if payload["type"] == "prepare_fork":
+                        LocalWorkspaceStore._atomic_write(
+                            Path(payload["cwd"]) / ".w3-fork-receipt.json",
+                            json.dumps(
+                                {
+                                    "thread_id": thread_id,
+                                    "parent_id": payload["parent_thread_id"],
+                                    "run_id": payload["request"]["run_id"],
+                                }
+                            ).encode(),
+                        )
                     send({"type": "ready", "thread_id": thread_id})
                 except Exception as exc:
                     send(

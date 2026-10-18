@@ -7,6 +7,8 @@ x-environment: &environment
   DOXAGENT_PERSISTENT_RUNTIME_V2_STORAGE_MODE: sqlite
   DOXAGENT_PERSISTENT_RUNTIME_V2_SQLITE_PATH: /data/runtime/runtime.sqlite3
   DOXAGENT_PERSISTENT_RUNTIME_V2_W3_ENABLED: "true"
+  DOXAGENT_PERSISTENT_RUNTIME_V2_W2_R1_MODEL: anthropic/claude-haiku-5.5
+  DOXAGENT_PERSISTENT_RUNTIME_V2_W2_R1_TIMEOUT_SECONDS: "180"
   DOXAGENT_CODEX_MODEL: gpt-6-luna
   DOXAGENT_PERSISTENT_RUNTIME_V2_W3_MODEL: gpt-6-luna
   DOXAGENT_PERSISTENT_RUNTIME_V2_MAINTENANCE_EXECUTION_MODEL_OVERRIDE: gpt-6-luna
@@ -219,7 +221,8 @@ services:
   v2-message-bus:
     environment:
       <<: *environment
-      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      DASHSCOPE_API_KEY: ${DASHSCOPE_API_KEY:-}
+      DOXAGENT_MESSAGE_BUS_DECISION_URL: ${DOXAGENT_MESSAGE_BUS_DECISION_URL:-https://trial.cn-beijing.maas.aliyuncs.com/compatible-mode/v1/systemone}
       DOXAGENT_MESSAGE_BUS_JEV_ENABLED: ${DOXAGENT_MESSAGE_BUS_JEV_ENABLED:-false}
     <<: *backend
     command: [python, -m, doxagent.message_bus_v2.cli, run-worker]

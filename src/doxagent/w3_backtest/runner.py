@@ -121,12 +121,107 @@ class _LocalWorker:
 
         self.client = EmbeddedCodexWorkerClient(manager)
         self.manager = manager
+        self.research = None
+        self.server = self.serving = self.mcp_context = None
+        self.ready_configs = {}
+
+    async def _ensure_research(self):
+        if self.research is not None:
+            return
+        import asyncio
+        import socket
+
+        import uvicorn
+
+        from doxagent.codex_worker.w3_market import W3MarketPreparer
+        from doxagent.mcp.w3_research_server import ResearchMcp
+        from doxagent.persistent_runtime_v2.w3_research_store import W3ResearchStore
+        from doxagent.settings import DoxAgentSettings
+
+        self.research = W3ResearchStore(self.manager.store.root)
+        await asyncio.to_thread(self.research.initialize)
+        settings = DoxAgentSettings(_env_file=None, ibkr_tws_enabled=False)
+        market = W3MarketPreparer(self.research, settings)
+        mcp = ResearchMcp(self.research, "w3-local-replay-only-no-mcp-capabilities", market)
+        self.mcp_context = mcp.manager.run()
+        await self.mcp_context.__aenter__()
+        sock = socket.socket()
+        sock.bind(("127.0.0.1", 0))
+        port = sock.getsockname()[1]
+        self.server = uvicorn.Server(
+            uvicorn.Config(mcp, host="127.0.0.1", port=port, lifespan="off", log_level="error")
+        )
+        self.serving = asyncio.create_task(self.server.serve(sockets=[sock]))
+        while not self.server.started:
+            await asyncio.sleep(0.01)
+        self.manager._runtime.runtime._settings.w3_research_mcp_url = f"http://127.0.0.1:{port}/"
+
+    async def prepare_w3_research(self, ticker, components):
+        import asyncio
+
+        await self._ensure_research()
+        return await asyncio.to_thread(self.research.install, components, ticker)
+
+    async def bind_w3_context(self, case_id, phase, manifest):
+        import asyncio
+
+        await self._ensure_research()
+        return await asyncio.to_thread(self.research.bind, case_id, phase, manifest)
+
+    async def start_w3_market(self, manifest):
+        if manifest.get("mode") != "OFFLINE_REPLAY":
+            raise ValueError("local replay cannot start live market preparation")
+
+    async def stop_w3_market(self, case_id):
+        pass
+
+    async def configure_w3_ready(self, config):
+        self.ready_configs[config["parent_thread_id"]] = config
+        return {"ready": True, "mode": "OFFLINE_REPLAY_SERIAL"}
+
+    async def claim_w3_ready(self, request):
+        from doxagent.codex_worker.schema import W3PrepareRequest
+        from doxagent.persistent_runtime_v2.w3_research_store import ENTRY
+
+        config = self.ready_configs[request["parent_thread_id"]]
+        run_id = "w3-ready-replay-" + request["record_id"]
+        self.manager._workspaces.materialize_case(run_id, {}, config["instructions"])
+        value = await self.client.prepare_thread(
+            W3PrepareRequest(
+                operation_key="w3-fork:" + request["record_id"],
+                record_id=request["record_id"],
+                source_case_id=request["case_id"],
+                parent_thread_id=request["parent_thread_id"],
+                run_id=run_id,
+                attempt_id="prepared",
+                research_pack_id="",
+                reference_pack_id="",
+                case_overlay_sha=digest(config["instructions"]),
+                cutoff_at=datetime.now(UTC),
+                capability_contract_version=ENTRY,
+                profile={
+                    **request["profile"],
+                    "ticker": "REPLAY",
+                    "data_mcp_enabled": "false",
+                    "research_assets_mcp_enabled": "true",
+                    "w3_entry_version": ENTRY,
+                    "web_search_mode": "disabled",
+                },
+            )
+        )
+        return {**value, "run_id": run_id}
 
     def __getattr__(self, name):
         return getattr(self.client, name)
 
     async def aclose(self):
-        await self.manager.close()
+        try:
+            await self.manager.close()
+        finally:
+            if self.server:
+                self.server.should_exit = True
+                await self.serving
+                await self.mcp_context.__aexit__(None, None, None)
 
 
 class _ReplayRuntime:
@@ -187,7 +282,6 @@ def local_worker(worker_root: Path):
     config = CodexConfig(
         env=env,
         config_overrides=(
-            "mcp_servers={}",
             'web_search="disabled"',
             "features.multi_agent=false",
             "features.apps=false",
@@ -395,6 +489,7 @@ class ReplayRunner:
         repository = SQLitePersistentRuntimeV2Repository(journal.path)
         case.frozen_inputs.update(
             w3_assets=assets,
+            w3_contracts={"w3_entry_version": "w3-entry-v5"},
             projection=view,
             policy_usage=usage,
             w3_replay=dict(

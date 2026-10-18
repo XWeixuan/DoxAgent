@@ -65,12 +65,16 @@ def test_factory_publishes_new_contract_from_current_prompt_directory(tmp_path):
         codex_runtime_sqlite_path=str(tmp_path / "research.db"),
         ticker_initialization_control_path=str(tmp_path / "control.db"),
         event_library_root=str(tmp_path / "events"),
-        dashscope_api_key="offline", codex_worker_bearer_token="offline",
+        dashscope_api_key="offline", openrouter_api_key="offline", codex_worker_bearer_token="offline",
         codex_capability_secret="x" * 32,
     )
     service = build_persistent_runtime_v2_service(settings)
     try:
         bundle = service.execution_bundles.get(service.journal.get("execution", "active"))
+        r1 = json.loads(bundle["assets"]["runtime_models.json"])["rounds"]["W2:R1"]
+        assert r1["model"] == "anthropic/claude-haiku-5.5"
+        assert r1["provider"] == "openrouter" and r1["reasoning_effort"] == "high"
+        assert r1["provider_endpoint"] == "google-vertex/global" and r1["cache_ttl"] == "1h"
         assert bundle["contracts"]["w3_contract_version"] == W3_CONTRACT
         assert bundle["contracts"]["w3_asset_layout"] == "agents-skill.v1"
         for name in ("AGENTS.md", "skills/skill.md", "skills/weekend_sweep.md"):

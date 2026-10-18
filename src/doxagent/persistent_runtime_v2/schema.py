@@ -504,14 +504,18 @@ class RuntimeModelTurn(RuntimeV2Model):
     response_id: str | None = None
     previous_response_id: str | None = None
     model: str
-    provider: Literal["bailian"] = "bailian"
-    reasoning_effort: Literal["low", "medium"] = "medium"
-    transport: Literal["responses_json_schema", "responses_json_object"] = "responses_json_schema"
+    provider: Literal["bailian", "openrouter"] = "bailian"
+    provider_endpoint: str | None = None
+    cache_ttl: Literal["1h"] | None = None
+    reasoning_effort: Literal["low", "medium", "high"] = "medium"
+    transport: Literal["responses_json_schema", "responses_json_object", "chat_completions_json_schema"] = "responses_json_schema"
     timeout_seconds: float | None = Field(default=None, gt=0)
     input_tokens: int | None = Field(default=None, ge=0)
     output_tokens: int | None = Field(default=None, ge=0)
     reasoning_tokens: int | None = Field(default=None, ge=0)
     cached_input_tokens: int | None = Field(default=None, ge=0)
+    cache_write_input_tokens: int | None = Field(default=None, ge=0)
+    provider_usage: JsonObject = Field(default_factory=dict)
     prefix_fingerprint: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
     latency_ms: int = Field(ge=0)
     output: JsonObject | None = None

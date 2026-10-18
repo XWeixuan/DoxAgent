@@ -39,6 +39,7 @@ from .w3_context import (
 )
 from .w3_contracts import OPERATIONS_PHASE, TRADE_PHASE, W3OperationsResult, W3TradeDecision
 from .w3_models import execution_profile
+from .w3_research_store import ENTRY
 from .w3_threads import W3ThreadRegistry
 
 
@@ -60,7 +61,7 @@ class W3Execution:
 
         from .schema import RuntimeVersionPin
 
-        active = self.journal.get("execution", "active")
+        active = self.journal.get("w3_entry", "pending") or self.journal.get("execution", "active")
         if not active or not self.service.input_snapshot_loader:
             return
         bundle = self.service.execution_bundles.get(active)
@@ -78,10 +79,18 @@ class W3Execution:
             provisional_snapshot_version=0,
         )
         identity = digest([active, pin.model_dump(mode="json"), "instructions-only-v1"])
-        if self.journal.get("w3_public_preparation", ticker) == identity:
+        new_public = bundle.get("contracts", {}).get("w3_entry_version") == ENTRY
+        if self.journal.get("w3_public_preparation", ticker) == identity and not new_public:
             return
-        asset_case = SimpleNamespace(ticker=ticker, version_pin=pin, frozen_inputs={})
-        self.agent.prepare_public_assets(asset_case)
+        asset_case = SimpleNamespace(
+            ticker=ticker,
+            version_pin=pin,
+            frozen_inputs=dict(w3_assets=assets, w3_contracts=bundle.get("contracts", {})),
+        )
+        from .w3 import research_pin_key
+
+        if not new_public or not self.journal.get("w3_research_v2", research_pin_key(asset_case)):
+            self.agent.prepare_public_assets(asset_case)
         initializing = False
         for model, effort in (("gpt-6-luna", "max"), ("gpt-6-sol", "medium")):
             profile = dict(
@@ -107,10 +116,11 @@ class W3Execution:
                     {"read_only": True, "data_mcp_enabled": True, "allow_subagents": False},
                 ]
             )
+            layout = ENTRY if new_public else "instructions-only-v1"
             compatibility = digest(
-                [assets, profile, *capabilities, "persistent-runtime.w3.v4", "instructions-only-v1"]
+                [assets, profile, *capabilities, "persistent-runtime.w3.v4", layout]
             )
-            key = digest([ticker, compatibility, "instructions-only-v1"])
+            key = digest([None if new_public else ticker, compatibility, layout])
             template, acquired = self.registry.template(ticker, key, compatibility)
             if template["status"] != "READY":
                 if not acquired:
@@ -123,9 +133,19 @@ class W3Execution:
                     initializing = True
                 else:
                     self._initialize_template(case, template)
+                    if new_public and hasattr(self.agent, "configure_ready"):
+                        prepared = self.agent.configure_ready(case, template)
+                        if prepared and not prepared.get("ready"):
+                            initializing = True
+            elif new_public and hasattr(self.agent, "configure_ready"):
+                prepared = self.agent.configure_ready(case, template)
+                if prepared and not prepared.get("ready"):
+                    initializing = True
         sync_event_links(self.journal, ticker, pin.event_library_root, pin.event_library_version)
         if not initializing:
             self.journal.set("w3_public_preparation", ticker, identity)
+            if new_public:
+                self.journal.set("w3_entry_active", ticker, active)
 
     @observed("case.events")
     def _events(self, case):
@@ -161,9 +181,10 @@ class W3Execution:
                 record=template,
                 phase="w3_template",
                 payload=dict(
-                    ticker=case.ticker,
                     template_format="instructions-only-v1",
-                ),
+                )
+                if not getattr(self.agent, "entry_enabled", lambda c: False)(case)
+                else dict(template_format=ENTRY),
                 context=None,
                 research=None,
             )
@@ -173,6 +194,10 @@ class W3Execution:
             )
             self._ack(job.job_id)
             template["thread_id"] = job.thread_id
+            if hasattr(self.agent, "configure_ready"):
+                self.agent.configure_ready(
+                    case, template, active_public=case.case_id.startswith("public-")
+                )
         except BaseException as exc:
             exc.w3_step = "TEMPLATE_INIT"
             with self.journal.transaction() as db:
@@ -214,6 +239,8 @@ class W3Execution:
             provider=getattr(self.agent, "_model_provider", None),
             override=getattr(self.agent, "_execution_model_override", None),
         )
+        new_entry = getattr(self.agent, "entry_enabled", lambda c: False)(case)
+        layout = ENTRY if new_entry else "instructions-only-v1"
         environment = getattr(self.agent, "environment", None)
         capabilities = (
             [environment.web_search_mode, environment.compatibility()]
@@ -226,7 +253,7 @@ class W3Execution:
                 profile,
                 *capabilities,
                 "persistent-runtime.w3.v4",
-                "instructions-only-v1",
+                layout,
             ]
         )
         if owned is None:
@@ -243,7 +270,7 @@ class W3Execution:
                 accepted_at=accepted_at,
             )
         if owned is None:
-            template_key = digest([case.ticker, compatibility, "instructions-only-v1"])
+            template_key = digest([None if new_entry else case.ticker, compatibility, layout])
             template, acquired = self.registry.template(case.ticker, template_key, compatibility)
             if template["status"] != "READY":
                 if not acquired:
@@ -282,6 +309,8 @@ class W3Execution:
             owned["thread_id"] = child["thread_id"]
             self.registry.set_thread(owned["record_id"], owned["thread_id"])
         self.registry.link(owned, "POLICY", policy_associations(case.w2_final), case.case_id)
+        if new_entry and not owned["thread_id"]:
+            self.agent.claim_ready(case, owned, profile)
         return owned
 
     @observed("case.trade")
@@ -292,6 +321,10 @@ class W3Execution:
             self._sync_route_case(case, {"thread_id": stage["thread_id"]})
             return
         if stage["result_json"] is None:
+            if hasattr(self.agent, "queue_market"):
+                self.agent.queue_market(case)
+            elif hasattr(self.agent, "start_market"):
+                self.agent.start_market(case)
             replay = case.frozen_inputs.get("w3_replay")
             membership = freeze_history(
                 self.journal, case, datetime.fromisoformat(stage["accepted_at"])
@@ -304,7 +337,8 @@ class W3Execution:
                     )
                     policy_consumption.put_value(db, "w3_global_input", case.case_id, saved_state)
             context = self.agent.prepare_case(case)
-            research = research_assets(context, self.journal)
+            new_entry = getattr(self.agent, "entry_enabled", lambda c: False)(case)
+            research = None if new_entry else research_assets(context, self.journal)
             event_keys = resolve_event_subjects(
                 self.journal, case, event_matches(case.model_dump(mode="json"))
             )
@@ -334,8 +368,9 @@ class W3Execution:
                 state=saved_state,
                 journal=self.journal,
             )
-            payload["research_path"] = "context/research/" + research[0]
-            self.journal.set("w3_case_research", case.case_id, payload["research_path"])
+            if research:
+                payload["research_path"] = "context/research/" + research[0]
+                self.journal.set("w3_case_research", case.case_id, payload["research_path"])
             decision, job = self.agent.run_phase(
                 case=case,
                 record=record,
@@ -388,9 +423,16 @@ class W3Execution:
             )
             self._save_case_in_transaction(db, case)
             self._enqueue_in_transaction(db, operations)
-        self.service.repository.save_case(case)
+        if not hasattr(self.service.repository, "path"):
+            self.service.repository.save_case(case)
         self._sync_route_case(case, record)
         self.service._wake_effects()
+        if getattr(self.agent, "entry_enabled", lambda c: False)(case):
+            # A failed stop notification is recovered by the prepared deadline.
+            try:
+                self.agent.stop_market(case.case_id)
+            except Exception as exc:
+                self.journal.gap("w3-market-stop", case.ticker, type(exc).__name__, str(exc))
 
     def _trade_record(self, case, decision):
         if decision.decision == "NO_TRADE":
@@ -883,6 +925,16 @@ class W3Execution:
             if owned:
                 self._sync_route_case(case, owned)
         if not retryable:
+            if phase == TRADE_PHASE and hasattr(self.agent, "stop_market"):
+                try:
+                    self.agent.stop_market(case_id)
+                except Exception as stop_error:
+                    self.journal.gap(
+                        "w3-market-stop",
+                        case.ticker if case else "",
+                        type(stop_error).__name__,
+                        str(stop_error),
+                    )
             owned = self.registry.owned(case_id)
             if owned:
                 try:

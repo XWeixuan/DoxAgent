@@ -48,6 +48,9 @@ class RuntimeResponsesRequest(Generic[T]):
     inherit_context: bool = False
     replay_parent: tuple[str, str] | None = None
     metadata: dict[str, str] = field(default_factory=dict)
+    provider: str = "bailian"
+    provider_endpoint: str | None = None
+    cache_ttl: str | None = None
 
 
 @dataclass(frozen=True)
@@ -62,6 +65,8 @@ class RuntimeResponsesResult(Generic[T]):
     prefix_fingerprint: str | None = None
     raw_output: str | None = None
     validation_warnings: tuple[str, ...] = ()
+    cache_write_input_tokens: int | None = None
+    provider_usage: dict[str, Any] = field(default_factory=dict)
 
 
 class RuntimeResponsesClient(Protocol):
