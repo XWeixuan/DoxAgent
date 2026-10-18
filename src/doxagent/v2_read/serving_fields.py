@@ -12,7 +12,7 @@ CONTROL={
     'te_lots','te_lot_adjustments',
 }
 CASE_FIELDS={
-    'case_id','version_pin','trading_date','w1_final','w1_extraction','w2_alignment',
+    'case_id','runtime_mode','version_pin','trading_date','w1_final','w1_extraction','w2_alignment',
     'w2_alignment_status','w2_alignment_error','w2_contract_version','first_round_tags',
     'orchestration_revision','w2_final','w2_round1','w2_skipped','w3_result',
     'w3_trade_decision','w3_operations_result','w3_operations_status','w3_operations_error',

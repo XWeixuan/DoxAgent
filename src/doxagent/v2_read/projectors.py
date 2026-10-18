@@ -584,7 +584,7 @@ class DomainProjectors:
                 summary = self.store.get("case", ticker, item["parent"])
                 if summary:
                     changed_cases[summary["case_id"]] = (ticker, summary)
-        if changed_cases:
+        if changed_cases and not getattr(self.store,'defer_graph_projection',False):
             from .graph import project
 
             for case_ticker, summary in changed_cases.values():

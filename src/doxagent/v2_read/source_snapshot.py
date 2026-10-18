@@ -24,6 +24,7 @@ class SnapshotStore(ReadStore):
     _depth=0
     _pending=0
     defer_initialization_progress=True
+    defer_graph_projection=True
 
     @contextmanager
     def importing(self):
@@ -54,6 +55,22 @@ class SnapshotStore(ReadStore):
         self._pending+=int(write)
         if self._depth==0 and self._pending>=500:
             db.commit();db.execute('BEGIN IMMEDIATE');self._pending=0
+
+
+def settle_cases(store):
+    """Settle derivatives only after all attempts/executions exist."""
+    from .graph import project as project_graph
+    from .runtime import hot_path_contributions,w3_contributions
+    with store.connect() as db:
+        cases=[(r[0],r[1],json.loads(r[2])) for r in db.execute("SELECT ticker,id,payload FROM object_current WHERE kind='case'")]
+    for ticker,identity,summary in cases:
+        records,counts=project_graph(store,ticker,summary,[])
+        native=store.get('native:runtime_v2_cases',ticker,identity)
+        if native:
+            counts.extend(hot_path_contributions(store,native))
+            counts.extend(w3_contributions(store,native))
+        store.ingest('business-baseline','settle:'+identity,records,contributions=counts)
+    return len(cases)
 
 
 def rebuild_current(sources, target, *, event_root=None, max_batches=10000):
@@ -155,6 +172,9 @@ def rebuild_current(sources, target, *, event_root=None, max_batches=10000):
                     elif kind not in ('policy_hit_set','policy_admission'):
                         value['sort']=value.pop('sort_key',value['id']);value['search']=value.pop('search_text','') or ''
                         store.ingest('business-baseline',uuid4().hex,[value])
+            # All historical attempts/executions are now present. The target is
+            # unpublished: only its final graph is observable.
+            report['settled_cases']=settle_cases(store)
             with store.connect(write=True) as db:
                 for name,state in report['sources'].items():
                     db.execute('INSERT OR REPLACE INTO source_epochs VALUES(?,?)',(name,state['epoch']))
@@ -164,6 +184,7 @@ def rebuild_current(sources, target, *, event_root=None, max_batches=10000):
                                (gap['source'],'snapshot:'+gap['table']+':'+str(gap['rowid']),gap['reason']))
         # Read transactions ended; subsequent source changes remain bridged.
         store.defer_initialization_progress=False
+        store.defer_graph_projection=False
         worker=ProjectionWorker(store,sources,mapper,consumer_id=bridge)
         for _ in range(max_batches):
             if datetime.now(UTC)>=lease_until:raise TimeoutError('SOURCE_SNAPSHOT_BRIDGE_EXPIRED')
