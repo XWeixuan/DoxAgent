@@ -16,6 +16,30 @@ def migrate(db):
     db.execute('CREATE TABLE IF NOT EXISTS v2_native_inventory(id INTEGER PRIMARY KEY CHECK(id=1),after_digest TEXT)')
 
 
+def orphan_refs(db,table,owner,keys,*,limit,started,seconds,packet=False):
+    """Page the existing owner index; look up bare primary keys, never N x N."""
+    scan='orphan:'+owner
+    cursor,done=db.execute('SELECT cursor,done FROM v2_native_ref_scan WHERE owner=?',(scan,)).fetchone()
+    if done:return 0
+    after=cursor[3:] if isinstance(cursor,str) and cursor.startswith('id:') else ''
+    rows=db.execute('SELECT DISTINCT owner_id FROM artifact_ref WHERE owner_type=? AND owner_id>? ORDER BY owner_id LIMIT ?',(owner,after,limit)).fetchall()
+    checked=0
+    for identity, in rows:
+        try:
+            values=[int(identity)] if packet or not keys else json.loads(identity)
+            if not isinstance(values,list) or len(values)!=max(1,len(keys)):raise ValueError('legacy owner identity')
+            predicate=' AND '.join(quoted(k)+' IS ?' for k in keys) if keys else 'rowid IS ?'
+            present=db.execute('SELECT 1 FROM '+quoted(table)+' WHERE '+predicate+' LIMIT 1',values).fetchone()
+        except (ValueError,TypeError,OverflowError):present=None
+        if not present:db.execute('DELETE FROM artifact_ref WHERE owner_type=? AND owner_id=?',(owner,identity))
+        after=identity;checked+=1
+        if time.monotonic()-started>=seconds:break
+    # Prefix prevents SQLite's INTEGER affinity converting numeric owner IDs;
+    # this phase's cursor is lexicographic, unlike the source-table row cursor.
+    db.execute('UPDATE v2_native_ref_scan SET cursor=?,done=? WHERE owner=?',('id:'+after,int(not rows),scan))
+    return checked
+
+
 def reconcile(source, *, limit=64, seconds=.3):
     """Repair old append-only owner refs before considering any source CAS file."""
     started=time.monotonic();report=dict(rows=0,owners=0,ready=False)
@@ -34,12 +58,17 @@ def reconcile(source, *, limit=64, seconds=.3):
                  ('v2_source_exception_receipts','transport_exception')) if table in names]
         # Register the complete work set before a time budget can yield. A
         # completed prefix is not proof that every owner has been reconciled.
+        owners=[t for t,_,_ in tables]+[owner for _,owner in packets]
         db.executemany('INSERT OR IGNORE INTO v2_native_ref_scan VALUES(?,0,0)',
-                       [(t,) for t,_,_ in tables]+[(owner,) for _,owner in packets])
+                       [(identity,) for owner in owners for identity in (owner,'orphan:'+owner)])
         for table,columns,keys in tables:
             db.execute('INSERT OR IGNORE INTO v2_native_ref_scan VALUES(?,0,0)',(table,))
             after,done=db.execute('SELECT cursor,done FROM v2_native_ref_scan WHERE owner=?',(table,)).fetchone()
-            if done:continue
+            if done:
+                checked=orphan_refs(db,table,table,keys,limit=limit,started=started,seconds=seconds)
+                report['orphan_owners']=report.get('orphan_owners',0)+checked
+                if checked and time.monotonic()-started>=seconds:break
+                continue
             rows=db.execute('SELECT rowid AS _native_rowid,* FROM '+quoted(table)+' WHERE rowid>? ORDER BY rowid LIMIT ?',(after,limit)).fetchall()
             for row in rows:
                 identity=json.dumps([row[k] for k in keys],separators=(',',':'),ensure_ascii=False) if keys else str(row['_native_rowid'])
@@ -47,10 +76,6 @@ def reconcile(source, *, limit=64, seconds=.3):
                 after=row['_native_rowid'];report['rows']+=1
                 if time.monotonic()-started>=seconds:break
             if not rows:
-                # Only known table owners are reconciled. Unknown/manual holds
-                # remain individual exceptions, never a global GC freeze.
-                identity=('json_array('+','.join('t.'+quoted(k) for k in keys)+')') if keys else 'CAST(t.rowid AS TEXT)'
-                db.execute('DELETE FROM artifact_ref WHERE owner_type=? AND NOT EXISTS(SELECT 1 FROM '+quoted(table)+' t WHERE '+identity+'=artifact_ref.owner_id)',(table,))
                 done=1;report['owners']+=1
             db.execute('UPDATE v2_native_ref_scan SET cursor=?,done=? WHERE owner=?',(after,done,table))
             if time.monotonic()-started>=seconds:break
@@ -59,7 +84,11 @@ def reconcile(source, *, limit=64, seconds=.3):
         for table,owner in packets:
             db.execute('INSERT OR IGNORE INTO v2_native_ref_scan VALUES(?,0,0)',(owner,))
             after,done=db.execute('SELECT cursor,done FROM v2_native_ref_scan WHERE owner=?',(owner,)).fetchone()
-            if done:continue
+            if done:
+                checked=orphan_refs(db,table,owner,['seq'],limit=limit,started=started,seconds=seconds,packet=True)
+                report['orphan_owners']=report.get('orphan_owners',0)+checked
+                if checked and time.monotonic()-started>=seconds:break
+                continue
             rows=db.execute('SELECT seq FROM '+table+' WHERE seq>? ORDER BY seq LIMIT ?',(after,limit)).fetchall()
             for seq, in rows:
                 raw=source.event(seq,decode=False)
@@ -67,7 +96,7 @@ def reconcile(source, *, limit=64, seconds=.3):
                 replace_packet_refs(db,owner,seq,raw);after=seq;report['rows']+=1
                 if time.monotonic()-started>=seconds:break
             if not rows:
-                db.execute('DELETE FROM artifact_ref WHERE owner_type=? AND NOT EXISTS(SELECT 1 FROM '+table+' t WHERE CAST(t.seq AS TEXT)=artifact_ref.owner_id)',(owner,));done=1
+                done=1
             db.execute('UPDATE v2_native_ref_scan SET cursor=?,done=? WHERE owner=?',(after,done,owner))
             if time.monotonic()-started>=seconds:break
         report['ready']=not db.execute('SELECT 1 FROM v2_native_ref_scan WHERE done=0 LIMIT 1').fetchone()

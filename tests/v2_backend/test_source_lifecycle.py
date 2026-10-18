@@ -228,3 +228,34 @@ def test_cli_sigterm_unwinds_new_snapshot_and_restores_signal_handler(tmp_path,m
     assert not target.parent.exists()
     with closing(s.connection()) as db:
         assert {r[0] for r in db.execute('SELECT id FROM v2_source_consumers')}=={'live'}
+
+
+def test_old_native_owner_refs_exit_in_bounded_pages_and_keep_external_and_current(tmp_path):
+    from doxagent.v2_read import source_native_gc as gc
+    from doxagent.v2_read.artifact_registry import retain
+    from doxagent.v2_read.native_content import MARKER
+    s=fixture_source(tmp_path)
+    orphan=json.loads(s.content.encode({'body':'x'*20000}))['body'][MARKER]
+    current={'binding_id':'0','body':'y'*20000};raw=s.content.encode(current)
+    with closing(s.connection(write=True)) as db,db:
+        db.execute("UPDATE poll_states SET data_json=? WHERE binding_id='0'",(raw,))
+        for n in range(10):
+            retain(db,orphan,orphan,20000,codec='json-chunks-v1',location='native-files/'+orphan[:2]+'/'+orphan,owner_type='poll_states',owner_id=json.dumps(['gone-'+str(n)]))
+        retain(db,orphan,orphan,20000,codec='json-chunks-v1',location='native-files/'+orphan[:2]+'/'+orphan,owner_type='external-recovery',owner_id='hold')
+        db.execute('UPDATE artifact SET created_at=?',((datetime.now(UTC)-timedelta(days=9)).isoformat(),))
+    steps=[]
+    for _ in range(100):
+        report=gc.reconcile(s,limit=2,seconds=2)
+        with closing(s.connection()) as db:
+            steps.append(db.execute("SELECT count(*) FROM artifact_ref WHERE owner_type='poll_states' AND owner_id LIKE '%gone-%'").fetchone()[0])
+        if report['ready']:break
+        assert gc.collect(s)['quarantined']==0
+    assert report['ready'] and steps[-1]==0
+    assert all(a-b<=2 for a,b in zip([10,*steps],steps))
+    with closing(s.connection()) as db:
+        assert db.execute("SELECT count(*) FROM artifact_ref WHERE owner_type='external-recovery'").fetchone()[0]==1
+        assert db.execute("SELECT count(*) FROM artifact_ref WHERE owner_type='poll_states' AND owner_id=?",(json.dumps(['0'],separators=(',',':')),)).fetchone()[0]==1
+    assert gc.collect(s)['quarantined']==0
+    with closing(s.connection(write=True)) as db,db:db.execute("DELETE FROM artifact_ref WHERE owner_type='external-recovery'")
+    assert gc.collect(s)['quarantined']==1
+    assert json.loads(s.content.text(raw))==current
