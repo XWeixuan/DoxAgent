@@ -185,7 +185,13 @@ def migrate(*, resume_backup=None):
                             if live.execute(sql).fetchone() != saved.execute(sql).fetchone():
                                 raise ValueError("resume backup source watermark changed: " + name)
                 else:
-                    backup(path, target)
+                    try:
+                        backup(path, target)
+                    except BaseException:
+                        # No domain migration has begun yet. This new stamp is
+                        # an incomplete set, not the previous coherent recovery.
+                        if backup_root.is_dir():shutil.rmtree(backup_root)
+                        raise
                 print(json.dumps({"backup_verified":name}),flush=True)
         SQLiteCodexRuntimeRepository(locations["research"])
         SQLiteDocument3PolicyRepository(locations["research"])
