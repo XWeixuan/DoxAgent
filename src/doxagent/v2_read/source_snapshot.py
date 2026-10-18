@@ -30,6 +30,9 @@ class SnapshotStore(ReadStore):
     def importing(self):
         with super().connect(write=True) as db:
             db.execute('PRAGMA busy_timeout=60000')
+            # Isolated bulk import only: SQLite's tiny default page cache spills
+            # the same index pages repeatedly while importing a Library snapshot.
+            db.execute('PRAGMA cache_size=-65536')
             self._import_db=db
             try:yield
             finally:self._import_db=None
