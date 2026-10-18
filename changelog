@@ -1600,3 +1600,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 - 2026-10-18 [Read CAS exit]: Regenerable serving content may reacquire an owner after deletion/quarantine; scoped trigger repair restores LIVE state and GC checks its selected state before deleting a stale candidate. Regression covers reuse after deletion and pending quarantine, without weakening business/diagnostic holds.
 
 - 2026-10-18 [release resume]: Add explicit cached dependency resume after a cancelled export; retain the 512 MiB runtime write reserve instead of treating an already-built dependency cache as a fresh installation. Retired reproducible inputs of terminal old isolated attempts; final outputs, request/control metadata and Observation databases remain.
+
+- 2026-10-18 [release recovery]: Recover an image exported just before the build client was cancelled: require dependency ownership, matching locked manifests, expected SDK/browser dependency versions and absence of application source, then register the exact image/diffIDs. Do not rerun full dependency installation solely because the post-export receipt was interrupted.

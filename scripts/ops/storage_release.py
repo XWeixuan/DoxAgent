@@ -172,6 +172,23 @@ def guarded_build(args, *, cwd):
         raise
 
 
+def verify_dependency_image(tag, kind, manifests):
+    info=json.loads(run(['docker','image','inspect',tag]))[0]
+    labels=info.get('Config',{}).get('Labels') or {}
+    if labels.get('doxagent.role')!='dependencies' or labels.get('doxagent.owner')!='doxagent':
+        return False
+    code=("import hashlib,importlib.metadata as m,json,pathlib,subprocess;"
+          "root=pathlib.Path('/app');assert not (root/'src/doxagent').exists();"
+          "assert m.version('openai-codex')=='0.159.3';"
+          "assert m.version('openai-codex-cli-bin')=='0.159.3';"
+          "assert m.version('playwright')=='1.63.0';"
+          "assert m.version('protobuf')=='5.29.5';import ibapi;"
+          "print(json.dumps({n:hashlib.sha256((root/n).read_bytes()).hexdigest() "
+          "for n in ('pyproject.toml','uv.lock','README.md')}))")
+    observed=json.loads(run(['docker','run','--rm','--network','none','--entrypoint','python',tag,'-c',code]))
+    return observed=={k:manifests[k] for k in ('pyproject.toml','uv.lock','README.md')}
+
+
 def build(repo, commit, root, kinds, *, sdk='doxagent-ibapi:approved-7d361219',
           chrome='doxagent-chrome:approved-cc38be0a', resume_dependencies=False):
     commit = run(['git','-C',str(repo),'rev-parse',commit+'^{commit}'])
@@ -236,7 +253,9 @@ def build(repo, commit, root, kinds, *, sdk='doxagent-ibapi:approved-7d361219',
             if kind=='backend':args+=['--build-arg','PYTHON_BASE_IMAGE='+base_pin]
             previous=state.get('dependencies',{}).get(kind)
             known=image_index(inspect_images())
-            if not previous or previous.get('key')!=key or known.get(tag)!=previous['image']:
+            recorded=previous and previous.get('key')==key and known.get(tag)==previous['image']
+            recovered=not recorded and tag in known and verify_dependency_image(tag,kind,dependency_inputs)
+            if not recorded and not recovered:
                 minimum=(1 if resume_dependencies else 4)*1024**3
                 if kind=='backend' and shutil.disk_usage('/').free < minimum:
                     raise OSError('insufficient dependency staging space; fresh build needs 4 GiB, explicit cached resume needs 1 GiB')
