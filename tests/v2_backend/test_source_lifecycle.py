@@ -189,3 +189,42 @@ def test_source_snapshot_keeps_old_native_bytes_after_current_row_changes(tmp_pa
     with closing(s.connection(write=True)) as db,db:
         db.execute("UPDATE v2_source_consumers SET updated_at=? WHERE id='snapshot:reader'",((datetime.now(UTC)-timedelta(hours=25)).isoformat(),))
     assert gc.collect(s)['quarantined']==1
+
+
+def test_failed_source_snapshot_removes_only_its_new_staging_and_consumer(tmp_path):
+    s=fixture_source(tmp_path)
+    # Capture still lists the table: a broken source fails inside the actual
+    # import, after target initialization and temporary consumer registration.
+    with closing(s.connection(write=True)) as db,db:db.execute('DROP TABLE poll_states')
+    s.acknowledge_exceptions('live',s.head(),[])
+    target=tmp_path/'failed-generation'/'read.db'
+    with pytest.raises(sqlite3.OperationalError,match='no such table'):
+        rebuild_current([s],target)
+    assert not target.parent.exists() and s.path.is_file()
+    with closing(s.connection()) as db:
+        assert {r[0] for r in db.execute('SELECT id FROM v2_source_consumers')}=={'live'}
+
+
+def test_source_snapshot_cannot_claim_a_shared_existing_directory(tmp_path):
+    s=fixture_source(tmp_path);parent=tmp_path/'shared';parent.mkdir()
+    original=parent/'business.txt';original.write_text('unique original')
+    with pytest.raises(ValueError,match='fresh dedicated directory'):
+        rebuild_current([s],parent/'new.db')
+    assert original.read_text()=='unique original'
+
+
+def test_cli_sigterm_unwinds_new_snapshot_and_restores_signal_handler(tmp_path,monkeypatch):
+    import signal,sys
+    from doxagent.v2_read.cli import main
+    from doxagent.v2_read.formal import FormalProjectors
+    s=fixture_source(tmp_path);s.acknowledge_exceptions('live',s.head(),[])
+    target=tmp_path/'terminated-generation'/'read.db';previous=signal.getsignal(signal.SIGTERM)
+    def terminate(*_):signal.raise_signal(signal.SIGTERM)
+    monkeypatch.setattr(FormalProjectors,'__call__',terminate)
+    monkeypatch.setattr(sys,'argv',['read','current-snapshot','--source','bus='+str(s.path),'--read-db',str(target)])
+    with pytest.raises(SystemExit) as stopped:main()
+    assert stopped.value.code==128+signal.SIGTERM
+    assert signal.getsignal(signal.SIGTERM)==previous
+    assert not target.parent.exists()
+    with closing(s.connection()) as db:
+        assert {r[0] for r in db.execute('SELECT id FROM v2_source_consumers')}=={'live'}

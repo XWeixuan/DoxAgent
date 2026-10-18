@@ -74,6 +74,12 @@ def settle_cases(store):
 
 
 def rebuild_current(sources, target, *, event_root=None, max_batches=10000):
+    from .serving_generation import generation_target
+    with generation_target(target) as target:
+        return _rebuild_current(sources,target,event_root=event_root,max_batches=max_batches)
+
+
+def _rebuild_current(sources, target, *, event_root=None, max_batches=10000):
     from .artifacts import PublishedArtifacts
     from .formal import FormalProjectors
     from .projectors import DomainProjectors

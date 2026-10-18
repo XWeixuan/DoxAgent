@@ -7,7 +7,7 @@ import json
 import sqlite3
 import time
 import os
-from contextlib import closing
+from contextlib import closing,contextmanager
 from uuid import uuid4
 from pathlib import Path
 
@@ -19,6 +19,17 @@ from .formal import FormalProjectors
 from .outbox import TABLES, SourceOutbox
 from .projector import ProjectionWorker
 from .repository import ReadStore
+
+
+@contextmanager
+def generation_termination():
+    """Let normal CLI termination unwind an unpublished generation build."""
+    import signal
+    previous=signal.getsignal(signal.SIGTERM)
+    def stop(signum,_frame):raise SystemExit(128+signum)
+    signal.signal(signal.SIGTERM,stop)
+    try:yield
+    finally:signal.signal(signal.SIGTERM,previous)
 
 
 def backup(source: Path, target: Path) -> None:
@@ -195,7 +206,8 @@ def main() -> None:
         if not args.target:
             parser.error('serving-generation requires --target in a new directory')
         from .serving_generation import build
-        print(json.dumps(build(store.path, args.target)), flush=True)
+        with generation_termination():
+            print(json.dumps(build(store.path, args.target)), flush=True)
     elif args.command == "compact":
         if not args.target:
             parser.error("compact requires --target with a new shadow database path")
@@ -217,7 +229,8 @@ def main() -> None:
     elif args.command == 'current-snapshot':
         if not sources:parser.error('current snapshot requires the complete source set')
         from .source_snapshot import rebuild_current
-        print(json.dumps(rebuild_current(sources,args.read_db,event_root=args.event_root)))
+        with generation_termination():
+            print(json.dumps(rebuild_current(sources,args.read_db,event_root=args.event_root)))
     elif args.command == "switch":
         from .maintenance import activate_alias
 

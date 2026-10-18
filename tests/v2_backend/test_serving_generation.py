@@ -1,6 +1,7 @@
 import json
 import sqlite3
 from datetime import UTC, datetime, timedelta
+import pytest
 
 from doxagent.v2_read.artifact_registry import collect_diagnostics
 from doxagent.v2_read.maintenance import collect
@@ -144,3 +145,17 @@ def test_definition_noop_compares_references_without_reloading_large_body(tmp_pa
     with store.connect() as db:
         assert db.execute('SELECT count(*) FROM object_history').fetchone()[0]==0
         assert db.execute('SELECT count(*) FROM definitions').fetchone()[0]==1
+
+
+def test_failed_generation_exits_staging_without_removing_source_content(tmp_path,monkeypatch):
+    from types import SimpleNamespace
+    from doxagent.v2_read import serving_generation
+    source=ReadStore(tmp_path/'source'/'read.db');source.migrate()
+    blob={'detail':'unique source'*3000}
+    source.ingest('fixture','1',[dict(kind='case',ticker='MU',id='case',data=blob)])
+    before=source.get('case','MU','case')
+    target=tmp_path/'failed-generation'/'read.db'
+    monkeypatch.setattr(serving_generation.shutil,'disk_usage',lambda *_:SimpleNamespace(free=0))
+    with pytest.raises(OSError,match='staging reserve'):build(source.path,target)
+    assert not target.parent.exists()
+    assert source.get('case','MU','case')==before

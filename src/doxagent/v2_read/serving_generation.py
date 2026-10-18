@@ -11,7 +11,7 @@ import shutil
 import sqlite3
 import time
 from collections import Counter, defaultdict
-from contextlib import closing
+from contextlib import closing,contextmanager
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -42,11 +42,28 @@ def normalize_hit_buckets(db, head):
                    "WHERE metric='policy_ar_hits' GROUP BY ticker,"+day+",json_extract(dimensions,'$.policy_id')",(head,))
 
 
-def build(source, target, *, reserve_bytes=256 * 1024**2):
-    source, target = Path(source).resolve(strict=True), Path(target).resolve()
+@contextmanager
+def generation_target(target):
+    """Own one fresh generation directory, including exception cleanup."""
+    target=Path(target).resolve()
     if target.exists() or target.parent.exists():
         raise ValueError('new generation requires a fresh dedicated directory')
     target.parent.mkdir(parents=True)
+    try:yield target
+    except BaseException:
+        # This directory did not exist before this build. Shared/live roots
+        # were rejected above; no production alias is changed by a builder.
+        shutil.rmtree(target.parent)
+        raise
+
+
+def build(source, target, *, reserve_bytes=256 * 1024**2):
+    source=Path(source).resolve(strict=True)
+    with generation_target(target) as target:
+        return _build(source,target,reserve_bytes=reserve_bytes)
+
+
+def _build(source,target,*,reserve_bytes):
     old_codec = NativeContent(source)
     store = ReadStore(target)
     store.migrate()
