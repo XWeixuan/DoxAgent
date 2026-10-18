@@ -1,0 +1,190 @@
+{
+  "login": [
+    {
+      "identity": "digitimes-de-1",
+      "open": {
+        "action": "OPEN_LOGIN",
+        "state": "DONE",
+        "result": {
+          "session_id": "maintenance_bd795c68944c40d395b3e47c210400ed",
+          "identity_id": "digitimes-de-1",
+          "stage": "VIEWER_READY",
+          "generation": 2,
+          "kind": "LOGIN",
+          "task_id": null,
+          "site_id": "reuters"
+        },
+        "error": null,
+        "ack_seconds": 0.00481802923604846,
+        "seconds": 5.851680472958833
+      },
+      "relay_target_matches_identity": true,
+      "viewer_rfb": "RFB ",
+      "close": {
+        "action": "CLOSE_LOGIN",
+        "state": "DONE",
+        "result": {
+          "session_closed": true
+        },
+        "error": null,
+        "ack_seconds": 0.006230943836271763,
+        "seconds": 0.6176561219617724
+      }
+    },
+    {
+      "identity": "reuters-backup",
+      "open": {
+        "action": "OPEN_LOGIN",
+        "state": "DONE",
+        "result": {
+          "session_id": "maintenance_87de643d56914bcdac6ae2bf1c0ff2b9",
+          "identity_id": "reuters-backup",
+          "stage": "VIEWER_READY",
+          "generation": 2,
+          "kind": "LOGIN",
+          "task_id": null,
+          "site_id": "reuters"
+        },
+        "error": null,
+        "ack_seconds": 0.010431981179863214,
+        "seconds": 6.8933930532075465
+      },
+      "relay_target_matches_identity": true,
+      "viewer_rfb": "RFB ",
+      "close": {
+        "action": "CLOSE_LOGIN",
+        "state": "DONE",
+        "result": {
+          "session_closed": true
+        },
+        "error": null,
+        "ack_seconds": 0.020702505949884653,
+        "seconds": 0.6274714809842408
+      }
+    }
+  ],
+  "reopen": [
+    {
+      "identity": "reuters-backup",
+      "old_task": "challenge_e43509657218485fb7f71611f724cd0f",
+      "open": {
+        "action": "REOPEN_LOST_CHALLENGE",
+        "state": "DONE",
+        "result": {
+          "session_id": "maintenance_5f4f8daa07d64675ad7e1dc35d2318da",
+          "stage": "VIEWER_READY",
+          "generation": 2,
+          "original_page_restored": false,
+          "replacement_task_id": "challenge_93f8b907faa14b088b97cf4eea019f48",
+          "kind": "CHALLENGE",
+          "task_id": "challenge_93f8b907faa14b088b97cf4eea019f48",
+          "identity_id": "reuters-backup"
+        },
+        "error": null,
+        "ack_seconds": 0.023437113966792822,
+        "seconds": 0.6366748819127679
+      },
+      "relay_target_matches_identity": true,
+      "viewer_rfb": "RFB ",
+      "later": {
+        "action": "RELEASE_VIEWER",
+        "state": "DONE",
+        "result": {
+          "released": true,
+          "page_preserved": true
+        },
+        "error": null,
+        "ack_seconds": 0.10844270931556821,
+        "seconds": 0.42320492025464773
+      },
+      "open_existing": {
+        "action": "OPEN_CHALLENGE",
+        "state": "DONE",
+        "result": {
+          "session_id": "maintenance_5f4f8daa07d64675ad7e1dc35d2318da",
+          "stage": "VIEWER_READY",
+          "generation": 4,
+          "page_preserved": true,
+          "kind": "CHALLENGE",
+          "task_id": "challenge_93f8b907faa14b088b97cf4eea019f48",
+          "identity_id": "reuters-backup"
+        },
+        "error": null,
+        "ack_seconds": 0.003730718046426773,
+        "seconds": 0.6846804446540773
+      },
+      "later_again": {
+        "action": "RELEASE_VIEWER",
+        "state": "DONE",
+        "result": {
+          "released": true,
+          "page_preserved": true
+        },
+        "error": null,
+        "ack_seconds": 0.028743835166096687,
+        "seconds": 0.36524451710283756
+      }
+    },
+    {
+      "identity": "digitimes-de-1",
+      "old_task": "challenge_2e357f4b95564e039aa3fa78f1d48c13",
+      "open": {
+        "action": "REOPEN_LOST_CHALLENGE",
+        "state": "DONE",
+        "result": {
+          "session_id": "maintenance_f57fd6cc4310461ab8a90061a30426b9",
+          "stage": "VIEWER_READY",
+          "generation": 2,
+          "original_page_restored": false,
+          "replacement_task_id": "challenge_ff2c1644e9aa421ea552e5b7392e8780",
+          "kind": "CHALLENGE",
+          "task_id": "challenge_ff2c1644e9aa421ea552e5b7392e8780",
+          "identity_id": "digitimes-de-1"
+        },
+        "error": null,
+        "ack_seconds": 0.009686033241450787,
+        "seconds": 0.9620800619013608
+      },
+      "relay_target_matches_identity": true,
+      "viewer_rfb": "RFB ",
+      "later": {
+        "action": "RELEASE_VIEWER",
+        "state": "DONE",
+        "result": {
+          "released": true,
+          "page_preserved": true
+        },
+        "error": null,
+        "ack_seconds": 0.01732647605240345,
+        "seconds": 0.33128931000828743
+      },
+      "open_existing": {
+        "action": "OPEN_CHALLENGE",
+        "state": "DONE",
+        "result": {
+          "session_id": "maintenance_f57fd6cc4310461ab8a90061a30426b9",
+          "stage": "VIEWER_READY",
+          "generation": 4,
+          "page_preserved": true,
+          "kind": "CHALLENGE",
+          "task_id": "challenge_ff2c1644e9aa421ea552e5b7392e8780",
+          "identity_id": "digitimes-de-1"
+        },
+        "error": null,
+        "ack_seconds": 0.006609107833355665,
+        "seconds": 0.6203723368234932
+      },
+      "later_again": {
+        "action": "RELEASE_VIEWER",
+        "state": "DONE",
+        "result": {
+          "released": true,
+          "page_preserved": true
+        },
+        "error": null,
+        "ack_seconds": 0.026116177905350924,
+        "seconds": 0.3311100108548999
+      }
+    }
+  ]
+}

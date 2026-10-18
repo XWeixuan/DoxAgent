@@ -211,16 +211,20 @@ class ProfileSnapshotManager:
             lock.release()
 
     def maintain(self) -> None:
-        """Compensate a missed create-time prune using the existing owner loop."""
+        """Reconcile missed create-time snapshot retention without touching live writers."""
         for profile in self.repository.list_profiles():
-            if profile.maintenance_session_id:continue
-            lock=OwnerFileLock(self.profile_root/'.profile-locks'/f'{profile.directory_key}.lock')
+            if profile.maintenance_session_id:
+                continue
+            lock = OwnerFileLock(
+                self.profile_root / ".profile-locks" / f"{profile.directory_key}.lock"
+            )
             try:
                 lock.acquire()
                 self._prune(profile.profile_id)
             except RuntimeError:
-                continue  # A browser/restore owns this profile; next pass retries.
-            finally:lock.release()
+                continue
+            finally:
+                lock.release()
 
     def _prune(self, profile_id: str) -> None:
         manifests = sorted(

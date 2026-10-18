@@ -1,0 +1,10 @@
+[Unit]
+Description=Reconcile Site Access with the current Chrome Supervisor network namespace
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /usr/local/sbin/doxagent-site-access-network-guard --repair
+TimeoutStartSec=240
+User=root

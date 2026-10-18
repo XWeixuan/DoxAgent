@@ -1,0 +1,16 @@
+# Narrow immutable repair over the exact currently deployed dependency/application base.
+ARG APPROVED_BASE
+FROM ${APPROVED_BASE}
+USER root
+ARG REPAIR_COMMIT
+ARG BASE_COMMIT
+LABEL org.opencontainers.image.revision=${REPAIR_COMMIT} \
+      doxagent.repair.base_revision=${BASE_COMMIT} \
+      doxagent.repair.scope="site_strategy,yahoo_sources"
+ENV DOXAGENT_BUILD_COMMIT=${REPAIR_COMMIT}
+RUN rm -rf /app/src/doxagent/site_strategy
+COPY src/doxagent/site_strategy /app/src/doxagent/site_strategy
+COPY src/doxagent/message_bus_v2/yahoo_sources.py /app/src/doxagent/message_bus_v2/yahoo_sources.py
+RUN find /app/src/doxagent/site_strategy -type d -exec chmod a+rx {} + \
+    && find /app/src/doxagent/site_strategy -type f -exec chmod a+r {} + \
+    && chmod a+r /app/src/doxagent/message_bus_v2/yahoo_sources.py

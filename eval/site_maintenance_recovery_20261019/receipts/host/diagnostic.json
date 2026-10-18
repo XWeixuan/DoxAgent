@@ -1,0 +1,596 @@
+{
+  "containers": [
+    {
+      "name": "/doxagent-v2-v2-site-access-1",
+      "id": "38be02ce16657cf1a1c4bf0e74f11d4dba74f61a92b5b4064405b2b3efae9dcf",
+      "image": "sha256:c375d685b97ee796a85a061b3b8ea0eca8c3829019ed45f36e1f3dae17dd9856",
+      "image_id": "sha256:c375d685b97ee796a85a061b3b8ea0eca8c3829019ed45f36e1f3dae17dd9856",
+      "network_mode": "container:e1e1730e43a1a1fe131df7cbe0f97ee2eac98a8b1eb144d410dc97efc0ade77f",
+      "namespace": "net:[4026532586]",
+      "started": "2026-10-18T18:18:34.842409173Z",
+      "health": "healthy",
+      "revision": "99d2da1dc9da7174e07d3e83069cd7e2526f0cba"
+    },
+    {
+      "name": "/doxagent-v2-v2-chrome-supervisor-1",
+      "id": "e1e1730e43a1a1fe131df7cbe0f97ee2eac98a8b1eb144d410dc97efc0ade77f",
+      "image": "sha256:c856a2383cc5698b2698167805f8e07ef5b7ee3b3e32f121c72405781a1c0023",
+      "image_id": "sha256:c856a2383cc5698b2698167805f8e07ef5b7ee3b3e32f121c72405781a1c0023",
+      "network_mode": "doxagent-v2_default",
+      "namespace": "net:[4026532586]",
+      "started": "2026-10-18T17:45:56.570312194Z",
+      "health": "healthy",
+      "revision": "99d2da1dc9da7174e07d3e83069cd7e2526f0cba"
+    }
+  ],
+  "tasks": [
+    {
+      "task_id": "617d513d27c741ee88a646d7f1d0a9c1",
+      "scope_id": "source:reuters_site_search",
+      "identity_id": "digitimes-de-1",
+      "site_id": "reuters",
+      "operation_id": "migration:publisher:reuters",
+      "browser_instance_id": "631b179effe047338dde0c7a086d9c3b",
+      "allocation_id": "allocation_f8e7ade1bd1e4ceaad1657a88cffef1a",
+      "state": "TARGET_LOST",
+      "reason": "legacy_target_confirmed",
+      "opened_at": "2026-10-17T18:13:42.475803Z"
+    },
+    {
+      "task_id": "4a44142d4f4649b59e171f04fce4ff5a",
+      "scope_id": "source:barrons_ticker_news",
+      "identity_id": "dowjones-main",
+      "site_id": "barrons",
+      "operation_id": "migration:publisher:barrons",
+      "browser_instance_id": "fb54853d158648a49b4e2ce44149d7d3",
+      "allocation_id": "allocation_99dfe7c239bf44b59be89d17e9fc20cd",
+      "state": "TARGET_LOST",
+      "reason": "legacy_target_presence_unverified",
+      "opened_at": "2026-10-17T18:13:42.488758Z"
+    },
+    {
+      "task_id": "accc83eb90ea4fc482c8924dc09afd44",
+      "scope_id": "source:investing_ticker_news",
+      "identity_id": "public-markets-nl",
+      "site_id": "investing",
+      "operation_id": "migration:publisher:investing",
+      "browser_instance_id": "8dec1d138c4549c3bd3461772376425b",
+      "allocation_id": "allocation_a652db5dbb2046c1896daff3f30d0ac5",
+      "state": "TARGET_LOST",
+      "reason": "legacy_target_presence_unverified",
+      "opened_at": "2026-10-17T18:13:42.499653Z"
+    },
+    {
+      "task_id": "challenge_a6e30ab46f2b43618ce7072241ad5757",
+      "scope_id": "source:reuters_site_search",
+      "identity_id": "reuters-backup",
+      "site_id": "reuters",
+      "operation_id": "cold-canary:accc9106022a45c78b5d0462d21b4035",
+      "browser_instance_id": "77d03ea0e6e94d0a98b723b2debf5bba",
+      "allocation_id": "allocation_32c5f9045d0a4f83bb24107d7c2cba3c",
+      "state": "TARGET_LOST",
+      "reason": "challenge_required",
+      "opened_at": "2026-10-17T18:27:57.189054Z"
+    },
+    {
+      "task_id": "challenge_71648fea7fab4c27a7c6ee6483d91664",
+      "scope_id": "source:investing_ticker_news",
+      "identity_id": "investing-backup",
+      "site_id": "investing",
+      "operation_id": "body:browser:7d346bcef2563999b202",
+      "browser_instance_id": "e2bd0b825255448eb816a9620c91dda8",
+      "allocation_id": "allocation_4c5eddc617b04de0909e27d4602597d0",
+      "state": "TARGET_LOST",
+      "reason": "challenge_required",
+      "opened_at": "2026-10-18T06:01:21.232574Z"
+    }
+  ],
+  "operations": [
+    {
+      "action": "ACTIVATE_FALLBACK",
+      "scope_id": "source:reuters_site_search",
+      "identity_id": "reuters-backup",
+      "session_id": null,
+      "task_id": null,
+      "operation_id": "maintenance_op_0182f11e7cb34cdfa52b6e9afb010237",
+      "state": "FAILED",
+      "stage": "DONE",
+      "error": null,
+      "updated_at": "2026-10-17T18:27:57.211871Z"
+    },
+    {
+      "action": "OPEN_CHALLENGE",
+      "scope_id": "source:reuters_site_search",
+      "identity_id": "reuters-backup",
+      "session_id": null,
+      "task_id": "challenge_a6e30ab46f2b43618ce7072241ad5757",
+      "operation_id": "maintenance_op_f9099beb18bb4d61863f4ca6ce5ef9bf",
+      "state": "FAILED",
+      "stage": "FAILED",
+      "error": "IdentityOperationError: failed; inspect the session before retrying.",
+      "updated_at": "2026-10-17T18:43:20.449271Z"
+    },
+    {
+      "action": "OPEN_CHALLENGE",
+      "scope_id": "source:reuters_site_search",
+      "identity_id": "reuters-backup",
+      "session_id": null,
+      "task_id": "challenge_a6e30ab46f2b43618ce7072241ad5757",
+      "operation_id": "maintenance_op_9a24d5693b4a49209b709f47ea6e3222",
+      "state": "FAILED",
+      "stage": "FAILED",
+      "error": "IdentityOperationError: failed; inspect the session before retrying.",
+      "updated_at": "2026-10-17T18:45:43.022285Z"
+    },
+    {
+      "action": "OPEN_CHALLENGE",
+      "scope_id": "source:reuters_site_search",
+      "identity_id": "reuters-backup",
+      "session_id": null,
+      "task_id": "challenge_a6e30ab46f2b43618ce7072241ad5757",
+      "operation_id": "maintenance_op_98dfef01351946cabd99ef3b22271232",
+      "state": "DONE",
+      "stage": "DONE",
+      "error": null,
+      "updated_at": "2026-10-17T18:48:19.476146Z"
+    },
+    {
+      "action": "OPEN_CHALLENGE",
+      "scope_id": "source:reuters_site_search",
+      "identity_id": "reuters-backup",
+      "session_id": null,
+      "task_id": "challenge_a6e30ab46f2b43618ce7072241ad5757",
+      "operation_id": "maintenance_op_3aecbd23d22d44c78dd1986534666984",
+      "state": "DONE",
+      "stage": "DONE",
+      "error": null,
+      "updated_at": "2026-10-17T19:26:23.452636Z"
+    },
+    {
+      "action": "OPEN_LOGIN",
+      "scope_id": "source:reuters_site_search",
+      "identity_id": "digitimes-de-1",
+      "session_id": null,
+      "task_id": null,
+      "operation_id": "maintenance_op_9281a470b09043349fbe0e7354194c59",
+      "state": "FAILED",
+      "stage": "FAILED",
+      "error": "Original page is lost. Use Reopen Lost Page.",
+      "updated_at": "2026-10-18T17:12:31.649588Z"
+    },
+    {
+      "action": "OPEN_LOGIN",
+      "scope_id": "source:reuters_site_search",
+      "identity_id": "digitimes-de-1",
+      "session_id": null,
+      "task_id": null,
+      "operation_id": "maintenance_op_edac770e9b394f85aca73925562df1b3",
+      "state": "FAILED",
+      "stage": "FAILED",
+      "error": "Original page is lost. Use Reopen Lost Page.",
+      "updated_at": "2026-10-18T17:13:09.144220Z"
+    },
+    {
+      "action": "OPEN_LOGIN",
+      "scope_id": "source:reuters_site_search",
+      "identity_id": "digitimes-de-1",
+      "session_id": null,
+      "task_id": null,
+      "operation_id": "maintenance_op_48e91ef0d6b64650a2130aca01f2323a",
+      "state": "FAILED",
+      "stage": "FAILED",
+      "error": "Original page is lost. Use Reopen Lost Page.",
+      "updated_at": "2026-10-18T18:02:04.353000Z"
+    }
+  ],
+  "profiles": [
+    {
+      "profile_id": "yahoo_finance-1",
+      "site_id": "yahoo_finance",
+      "operational_state": "AVAILABLE",
+      "updated_at": "2026-09-21T19:08:55.213156Z"
+    },
+    {
+      "profile_id": "yahoo_finance-2",
+      "site_id": "yahoo_finance",
+      "operational_state": "AVAILABLE",
+      "updated_at": "2026-09-20T21:22:58.727028Z"
+    },
+    {
+      "profile_id": "reuters-1",
+      "site_id": "reuters",
+      "operational_state": "AVAILABLE",
+      "challenge_identity_id": null,
+      "challenge_target_id": null,
+      "updated_at": "2026-10-14T16:53:06.278428Z"
+    },
+    {
+      "profile_id": "reuters-2",
+      "site_id": "reuters",
+      "operational_state": "AVAILABLE",
+      "challenge_identity_id": null,
+      "challenge_target_id": null,
+      "updated_at": "2026-10-06T10:09:55.729129Z"
+    },
+    {
+      "profile_id": "reuters-direct-1",
+      "site_id": "reuters",
+      "operational_state": "AVAILABLE",
+      "updated_at": "2026-09-21T19:08:50.860200Z"
+    },
+    {
+      "profile_id": "yahoo_finance-direct-1",
+      "site_id": "yahoo_finance",
+      "operational_state": "AVAILABLE",
+      "updated_at": "2026-09-21T19:08:55.454548Z"
+    },
+    {
+      "profile_id": "yahoo-main",
+      "site_id": "yahoo_finance",
+      "operational_state": "AVAILABLE",
+      "updated_at": "2026-09-22T09:02:32.100328Z"
+    },
+    {
+      "profile_id": "yahoo-backup",
+      "site_id": "yahoo_finance",
+      "operational_state": "AVAILABLE",
+      "challenge_identity_id": null,
+      "challenge_target_id": null,
+      "updated_at": "2026-09-22T09:02:32.103289Z"
+    },
+    {
+      "profile_id": "yahoo-tr-main",
+      "site_id": "yahoo_finance",
+      "operational_state": "AVAILABLE",
+      "challenge_identity_id": null,
+      "challenge_target_id": null,
+      "updated_at": "2026-09-23T19:33:24.914054Z"
+    },
+    {
+      "profile_id": "reuters-de2-1",
+      "site_id": "reuters",
+      "operational_state": "AVAILABLE",
+      "challenge_identity_id": null,
+      "challenge_target_id": null,
+      "updated_at": "2026-10-06T09:50:02.975369Z"
+    },
+    {
+      "profile_id": "reuters-tr1-1",
+      "site_id": "reuters",
+      "operational_state": "AVAILABLE",
+      "challenge_identity_id": null,
+      "challenge_target_id": null,
+      "updated_at": "2026-10-06T09:52:56.090004Z"
+    },
+    {
+      "profile_id": "reuters-backup",
+      "site_id": "reuters",
+      "operational_state": "MAINTENANCE",
+      "challenge_identity_id": "reuters-backup",
+      "challenge_target_id": "63913D08336CA62878B3320415447658",
+      "updated_at": "2026-10-17T19:26:19.735168Z"
+    },
+    {
+      "profile_id": "publisher-ad2ccd5708de9bbc",
+      "site_id": "yahoo_finance",
+      "operational_state": "AVAILABLE",
+      "challenge_identity_id": null,
+      "challenge_target_id": null,
+      "updated_at": "2026-10-18T06:00:26.335945Z"
+    }
+  ],
+  "yahoo_scopes": [
+    {
+      "scope_id": "source:yahoo_finance_news",
+      "source_id": "yahoo_finance_news",
+      "owner_site_id": "yahoo_finance",
+      "revision": 1,
+      "enabled": true,
+      "primary_identity_id": "yahoo-main",
+      "fallback_identity_id": "yahoo-backup",
+      "verification_plan": {
+        "network_redundancy": "IP_DISTINCT_SAME_REGION",
+        "fallback_state": "UNVERIFIED",
+        "contract": "body_v2.2/listing_v1",
+        "default_publisher": true,
+        "crawler": {
+          "url": "https://finance.yahoo.com/quote/MU/news/",
+          "recipe_ref": "builtin:yahoo_latest_news@1",
+          "recipe_parameters": {
+            "ticker": "MU"
+          }
+        }
+      }
+    },
+    {
+      "scope_id": "publisher:yahoo_finance",
+      "source_id": null,
+      "owner_site_id": "yahoo_finance",
+      "revision": 1,
+      "enabled": true,
+      "primary_identity_id": "publisher-ad2ccd5708de9bbc",
+      "fallback_identity_id": null,
+      "verification_plan": {
+        "fallback_state": "UNPROVISIONED",
+        "network_redundancy": "NONE"
+      }
+    },
+    {
+      "scope_id": "publisher:ca.finance.yahoo.com",
+      "source_id": null,
+      "owner_site_id": "generic",
+      "revision": 1,
+      "enabled": true,
+      "primary_identity_id": "publisher-b51f598a93fb6c2e",
+      "fallback_identity_id": null,
+      "verification_plan": {
+        "fallback_state": "UNPROVISIONED",
+        "network_redundancy": "NONE"
+      }
+    }
+  ],
+  "yahoo_identities": [
+    {
+      "access": {
+        "max_concurrency": 1,
+        "min_interval_ms": 3000
+      },
+      "browser_release": "playwright-cft-153",
+      "credential_ref": null,
+      "egress_id": "jp-standard-6",
+      "enabled": true,
+      "environment": {
+        "locale": "en-US",
+        "revision": 1,
+        "timezone_id": "Europe/Berlin",
+        "window_height": 1000,
+        "window_width": 1440
+      },
+      "identity_id": "yahoo_finance-1",
+      "lifecycle": {
+        "idle_seconds": 43200,
+        "max_context_pages": null,
+        "residency": "on_demand"
+      },
+      "profile_id": "yahoo_finance-1",
+      "revision": 2,
+      "runtime_kind": "managed_playwright"
+    },
+    {
+      "access": {
+        "max_concurrency": 1,
+        "min_interval_ms": 3000
+      },
+      "browser_release": "playwright-cft-153",
+      "credential_ref": null,
+      "egress_id": "us-standard-5",
+      "enabled": true,
+      "environment": {
+        "locale": "en-US",
+        "revision": 1,
+        "timezone_id": "Europe/Amsterdam",
+        "window_height": 1000,
+        "window_width": 1440
+      },
+      "identity_id": "yahoo_finance-2",
+      "lifecycle": {
+        "idle_seconds": 43200,
+        "max_context_pages": null,
+        "residency": "on_demand"
+      },
+      "profile_id": "yahoo_finance-2",
+      "revision": 2,
+      "runtime_kind": "managed_playwright"
+    },
+    {
+      "access": {
+        "max_concurrency": 1,
+        "min_interval_ms": 3000
+      },
+      "browser_release": "playwright-cft-153",
+      "credential_ref": null,
+      "egress_id": "server-direct",
+      "enabled": true,
+      "environment": {
+        "locale": "en-US",
+        "revision": 1,
+        "timezone_id": "Asia/Singapore",
+        "window_height": 1000,
+        "window_width": 1440
+      },
+      "identity_id": "yahoo_finance-direct-1",
+      "lifecycle": {
+        "idle_seconds": 43200,
+        "residency": "on_demand"
+      },
+      "profile_id": "yahoo_finance-direct-1",
+      "revision": 1,
+      "runtime_kind": "managed_playwright"
+    },
+    {
+      "access": {
+        "max_concurrency": 1,
+        "min_interval_ms": 3000
+      },
+      "browser_release": "google-chrome-153.0.8010.52",
+      "credential_ref": null,
+      "egress_id": "jp-standard-6",
+      "enabled": true,
+      "environment": {
+        "locale": "en-US",
+        "revision": 1,
+        "timezone_id": "Europe/Berlin",
+        "window_height": 1000,
+        "window_width": 1440
+      },
+      "identity_id": "yahoo-main",
+      "lifecycle": {
+        "idle_seconds": 43200,
+        "max_context_pages": null,
+        "residency": "always_on"
+      },
+      "profile_id": "yahoo-main",
+      "revision": 2,
+      "runtime_kind": "external_chrome"
+    },
+    {
+      "access": {
+        "max_concurrency": 1,
+        "min_interval_ms": 3000
+      },
+      "browser_release": "google-chrome-153.0.8010.52",
+      "credential_ref": null,
+      "egress_id": "us-standard-5",
+      "enabled": true,
+      "environment": {
+        "locale": "en-US",
+        "revision": 1,
+        "timezone_id": "Europe/Berlin",
+        "window_height": 1000,
+        "window_width": 1440
+      },
+      "identity_id": "yahoo-backup",
+      "lifecycle": {
+        "idle_seconds": 120,
+        "max_context_pages": null,
+        "residency": "on_demand"
+      },
+      "owner_scope_id": null,
+      "profile_id": "yahoo-backup",
+      "revision": 3,
+      "runtime_kind": "external_chrome"
+    },
+    {
+      "access": {
+        "max_concurrency": 1,
+        "min_interval_ms": 3000
+      },
+      "browser_release": "playwright-cft-153",
+      "credential_ref": null,
+      "egress_id": "tr-standard-1",
+      "enabled": true,
+      "environment": {
+        "locale": "en-US",
+        "revision": 1,
+        "timezone_id": "Europe/Istanbul",
+        "window_height": 1000,
+        "window_width": 1440
+      },
+      "identity_id": "yahoo-tr-main",
+      "lifecycle": {
+        "idle_seconds": 43200,
+        "max_context_pages": 200,
+        "residency": "on_demand"
+      },
+      "profile_id": "yahoo-tr-main",
+      "revision": 3,
+      "runtime_kind": "managed_playwright"
+    }
+  ],
+  "sessions": [
+    {
+      "session_id": "maintenance_9159297e270f4648af174db393c31a0a",
+      "kind": "CHALLENGE",
+      "scope_id": "source:reuters_site_search",
+      "identity_id": "digitimes-de-1",
+      "site_id": "reuters",
+      "task_id": "617d513d27c741ee88a646d7f1d0a9c1",
+      "allocation_id": "allocation_f8e7ade1bd1e4ceaad1657a88cffef1a",
+      "target_id": "0792950370097D14759B203E53807C1D",
+      "browser_instance_id": "631b179effe047338dde0c7a086d9c3b",
+      "state": "RELEASED",
+      "updated_at": "2026-10-17T18:26:49.150048Z"
+    },
+    {
+      "session_id": "maintenance_87a741ac524242a692dc57b69f6cc0d7",
+      "kind": "CHALLENGE",
+      "scope_id": "source:reuters_site_search",
+      "identity_id": "reuters-backup",
+      "site_id": "reuters",
+      "task_id": "challenge_a6e30ab46f2b43618ce7072241ad5757",
+      "allocation_id": "allocation_32c5f9045d0a4f83bb24107d7c2cba3c",
+      "target_id": "63913D08336CA62878B3320415447658",
+      "browser_instance_id": "77d03ea0e6e94d0a98b723b2debf5bba",
+      "state": "RELEASED",
+      "updated_at": "2026-10-17T19:26:23.980815Z"
+    },
+    {
+      "session_id": "maintenance_3ec1d5257ef44d79983d24c62f5ca38c",
+      "kind": "CHALLENGE",
+      "scope_id": "source:reuters_site_search",
+      "identity_id": "reuters-backup",
+      "site_id": "reuters",
+      "task_id": "challenge_3397d81b8c7c41e789898dd7ba5b961c",
+      "allocation_id": null,
+      "target_id": null,
+      "browser_instance_id": null,
+      "state": "RELEASED",
+      "updated_at": "2026-10-18T17:04:36.154667Z"
+    },
+    {
+      "session_id": "maintenance_d0368f58d7574fe6b49c3308ee73e27c",
+      "kind": "LOGIN",
+      "scope_id": "source:reuters_site_search",
+      "identity_id": "digitimes-de-1",
+      "site_id": "reuters",
+      "task_id": null,
+      "allocation_id": null,
+      "target_id": null,
+      "browser_instance_id": null,
+      "state": "CLOSED",
+      "updated_at": "2026-10-18T17:12:31.648490Z"
+    },
+    {
+      "session_id": "maintenance_d720d6f108674da38cc1bc1f32d3b55d",
+      "kind": "LOGIN",
+      "scope_id": "source:reuters_site_search",
+      "identity_id": "digitimes-de-1",
+      "site_id": "reuters",
+      "task_id": null,
+      "allocation_id": null,
+      "target_id": null,
+      "browser_instance_id": null,
+      "state": "CLOSED",
+      "updated_at": "2026-10-18T17:13:09.143792Z"
+    },
+    {
+      "session_id": "maintenance_afaac7c5bf8c41e2ba2ebe3b16d0e2e6",
+      "kind": "LOGIN",
+      "scope_id": "source:reuters_site_search",
+      "identity_id": "digitimes-de-1",
+      "site_id": "reuters",
+      "task_id": null,
+      "allocation_id": null,
+      "target_id": null,
+      "browser_instance_id": null,
+      "state": "CLOSED",
+      "updated_at": "2026-10-18T18:02:04.351989Z"
+    },
+    {
+      "session_id": "maintenance_4a0d401b04614ef88037ba819357247c",
+      "kind": "CHALLENGE",
+      "scope_id": "source:reuters_site_search",
+      "identity_id": "digitimes-de-1",
+      "site_id": "reuters",
+      "task_id": "challenge_1c40fd8cb50a4313973335cda8f8e8cf",
+      "allocation_id": null,
+      "target_id": null,
+      "browser_instance_id": null,
+      "state": "RELEASED",
+      "updated_at": "2026-10-18T18:04:48.930651Z"
+    },
+    {
+      "session_id": "maintenance_43694e55eb9a4f6190433bc55ea27d89",
+      "kind": "CHALLENGE",
+      "scope_id": "source:reuters_site_search",
+      "identity_id": "digitimes-de-1",
+      "site_id": "reuters",
+      "task_id": "challenge_20b4b3d240bc4e44ba310974f9494e75",
+      "allocation_id": null,
+      "target_id": null,
+      "browser_instance_id": null,
+      "state": "RELEASED",
+      "updated_at": "2026-10-18T18:04:55.815330Z"
+    }
+  ]
+}

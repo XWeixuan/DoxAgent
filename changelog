@@ -1650,11 +1650,28 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-19 Read isolated rebuild I/O: use a bounded 64 MiB SQLite page cache only in the unpublished bulk importer, avoiding repeated index-page spill with the small default cache; live API/Projector memory settings and business semantics unchanged.
 
 2026-10-19 closeout scope: native profiling confirmed repeated Library compilation across copied roots. Cross-root reuse would require a new persistent materialization authority; keep the existing correct version/identity behavior and bounded private bulk cache, without adding a new alias/cache lifecycle.
-`n2026-10-19 normalized Read writes: compare immutable definition references on unchanged Fact/Event/Policy upserts instead of repeatedly expanding their large definition bodies. Serving reads retain full definition/hash checks; native metadata is still decoded. No alias cache or new materialization authority.
-`n2026-10-19 storage-status is read-only and no longer takes the deployment writer lock; atomic release state and bounded read-only owner queries remain inspectable during an active build/release.
-`n2026-10-19 release state privacy: Compose rollback state can contain the actual selected environment; atomic state/manifests are owner-readable only on the host. Build/reconcile/status output omits environment values.
-`n2026-10-19 Source rebuild exit: temporary snapshot bridge prefix has a 24h lease and timed-out import aborts; regular Read consumers never expire by inactivity. Unpublished rebuild consumers exit on success/failure instead of permanently pinning transport; an already-published alias retains its active consumer.
-`n2026-10-19 snapshot catchup reuses its own leased snapshot consumer identity; it never registers a permanent read: consumer for an unpublished target. Finalization retires only the importer-owned bridge, leaving active Read ownership untouched.
-`n2026-10-19 Turn projection reads only the owning Case ticker for usage/attempt attribution instead of hydrating the complete native Case a second time. Graph/evidence reads retain their needed state; source/W3 data unchanged.
-`n2026-10-19 private snapshot bulk path defers Case graph recomputation until all attempts/executions are imported, then computes each final graph once. Live projection stays incremental; success/failure graph objects and metrics match incremental replay.
-`n2026-10-19 source snapshot timing correctness: recompute hot-path and W3 duration after all Turns/Worker attempts have imported. Preserve the tiny runtime_mode scalar needed by that calculation; final graph/timing equivalence tests cover successful and failed cases.
+
+2026-10-19 normalized Read writes: compare immutable definition references on unchanged Fact/Event/Policy upserts instead of repeatedly expanding their large definition bodies. Serving reads retain full definition/hash checks; native metadata is still decoded. No alias cache or new materialization authority.
+
+2026-10-19 storage-status is read-only and no longer takes the deployment writer lock; atomic release state and bounded read-only owner queries remain inspectable during an active build/release.
+
+2026-10-19 release state privacy: Compose rollback state can contain the actual selected environment; atomic state/manifests are owner-readable only on the host. Build/reconcile/status output omits environment values.
+
+2026-10-19 Source rebuild exit: temporary snapshot bridge prefix has a 24h lease and timed-out import aborts; regular Read consumers never expire by inactivity. Unpublished rebuild consumers exit on success/failure instead of permanently pinning transport; an already-published alias retains its active consumer.
+
+2026-10-19 snapshot catchup reuses its own leased snapshot consumer identity; it never registers a permanent read: consumer for an unpublished target. Finalization retires only the importer-owned bridge, leaving active Read ownership untouched.
+
+2026-10-19 Turn projection reads only the owning Case ticker for usage/attempt attribution instead of hydrating the complete native Case a second time. Graph/evidence reads retain their needed state; source/W3 data unchanged.
+
+2026-10-19 private snapshot bulk path defers Case graph recomputation until all attempts/executions are imported, then computes each final graph once. Live projection stays incremental; success/failure graph objects and metrics match incremental replay.
+
+2026-10-19 source snapshot timing correctness: recompute hot-path and W3 duration after all Turns/Worker attempts have imported. Preserve the tiny runtime_mode scalar needed by that calculation; final graph/timing equivalence tests cover successful and failed cases.
+- 2026-10-19: 修复普通登录被旧Challenge投影劫持：新LOGIN只新建页面，明确保护仍存活的Challenge；确认TARGET_LOST的旧维护占位可清退但不伪造解除，新登录遇Challenge建立关联新Task；无新target的失败Reopen会话关闭。新增Supervisor真实network namespace/readiness校验、只重绑Site Access且固定现行镜像的主机守护/安装入口。Yahoo恢复SSR卡片抓取，以文章JSON-LD精确发布时间和有界缓存替代失效NCP依赖，不伪造相对时间；保留生产99d2da1d已有冷Profile/快照retention修复。新增定向回归，部署及真实验收另记收据。
+
+- 2026-10-19: 维护Viewer收尾：RFB出口选择与Target.activateTarget焦点动作解耦，焦点暂不可用不再将健康Viewer误报不可用；焦点操作1秒有限等待、选择失败记录无秘密类型诊断。旧生命周期回归改走显式Challenge恢复接口，仍验证普通Login不会接管人工原页；补充焦点失败回归。
+
+- 2026-10-19: 查实Viewer额外误报：健康x11vnc的RFB首包实测可超过200ms，原10次快速中止探测会反复误判且保持旧relay目标。改为3次、单次1秒的有界真实RFB探测，保留失败及Chrome原页，增加延迟250ms真实TCP回归并开放固定viewer错误码；不以5900任意RFB响应冒充当前Identity绑定验收。
+
+- 2026-10-19: Site Login Maintenance/Yahoo生产收尾：Site与Supervisor已协调升级maintenance-b1f8237c，实际namespace与DNS/readyz通过，30秒网络绑定守护active；旧五个LOST任务均取得新关联原页和对应Identity Viewer，普通Reuters主备Login不再走旧页恢复。Yahoo MU/INTC/BE各12条及各两篇FULL正文通过，不发布测试旧文；45个修复范围源码逐容器hash零差异，干净Git回归342 passed/1平台skip。Profile/Cookie保留，无额外数据删除；其它业务容器/镜像不变，真实账号/Challenge仍由人工完成。详见docs/site-login-maintenance-and-yahoo-repair-20261019.md及脱敏收据。
+
+2026-10-19 storage closeout integration: merge committed Site maintenance/Yahoo recovery through d8a7fee9; preserve its native viewer/network behavior and storage cold-profile/snapshot owners together. Uncommitted primary workspace files are untouched.

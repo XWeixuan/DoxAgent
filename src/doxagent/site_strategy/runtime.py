@@ -1696,11 +1696,13 @@ class SiteAccessRuntime:
         try:
             async with asyncio.timeout(5):
                 await self.browser_runtimes.select_maintenance(effective_identity)
-                await lease.browser_cdp.send(
-                    "Target.activateTarget", {"targetId": gate.root_target_id}
-                )
-        except Exception:
+        except Exception as exc:
             viewer_ready = False  # The durable LOGIN page is not a disposable viewer connection.
+            logging.getLogger(__name__).warning(
+                "maintenance_viewer_select_failed error_type=%s", type(exc).__name__
+            )
+        if viewer_ready:
+            await self._focus_maintenance_target(lease.browser_cdp, gate.root_target_id)
         maintained.navigation_task = asyncio.create_task(
             self._navigate_maintenance(maintained, url), name="site-login-navigation"
         )
@@ -1788,11 +1790,8 @@ class SiteAccessRuntime:
             maintained.challenge_url = profile.challenge_url
             await maintained.gate.close()
         await self.browser_runtimes.select_maintenance(identity)
-        await maintained.lease.browser_cdp.send(
-            "Target.activateTarget",
-            {
-                "targetId": maintained.gate.root_target_id,
-            },
+        await self._focus_maintenance_target(
+            maintained.lease.browser_cdp, maintained.gate.root_target_id
         )
         return {
             "login_token": token,
@@ -1863,7 +1862,7 @@ class SiteAccessRuntime:
             if profile.challenge_url is None:
                 await gate.start()
             await self.browser_runtimes.select_maintenance(identity)
-            await lease.browser_cdp.send("Target.activateTarget", {"targetId": target_id})
+            await self._focus_maintenance_target(lease.browser_cdp, target_id)
         except Exception:
             external_lease: Any = lease
             await external_lease.abandon()
@@ -1888,6 +1887,18 @@ class SiteAccessRuntime:
             "allocation_id": owned["allocation_id"],
             "browser_instance_id": lease.provenance.instance_id,
         }
+
+    @staticmethod
+    async def _focus_maintenance_target(cdp, target_id):
+        # Selecting a verified RFB endpoint and focusing a tab are independent.
+        # A slow/rejected window-manager focus must not suppress a working Viewer.
+        try:
+            async with asyncio.timeout(1):
+                await cdp.send("Target.activateTarget", {"targetId": target_id})
+        except Exception as exc:
+            logging.getLogger(__name__).warning(
+                "maintenance_target_focus_pending error_type=%s", type(exc).__name__
+            )
 
     async def verify_login(
         self, token: str, article_url: str, *, timeout_ms: int = 30_000

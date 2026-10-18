@@ -358,7 +358,7 @@ class GovernanceRepository:
         """Task + ownership commit together, before a business permit is released."""
         with self.repository.transaction() as connection:
             existing = self.current_challenge(task.identity_id)
-            if existing:
+            if existing and existing.state != "TARGET_LOST":
                 return existing
             target = self.get_target(task.allocation_id)
             if target is None or (
@@ -368,6 +368,11 @@ class GovernanceRepository:
             ) != (task.identity_id, task.browser_instance_id, task.original_target_id):
                 raise ValueError("challenge does not own its original target")
             stored = task.model_copy(update={"original_url": safe_display_url(task.original_url)})
+            if existing:
+                self._write_task(
+                    connection, existing.model_copy(update={"superseded_by": stored.task_id})
+                )
+                stored = stored.model_copy(update={"predecessor_task_id": existing.task_id})
             self._write_target(
                 connection,
                 target.model_copy(
