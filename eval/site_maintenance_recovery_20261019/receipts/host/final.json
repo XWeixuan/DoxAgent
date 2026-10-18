@@ -1,0 +1,175 @@
+{
+  "containers": [
+    {
+      "name": "/doxagent-v2-v2-site-access-1",
+      "id": "d2926e1ae1bb046ac2beba539b59ad4b304bcb74aa3421b16e9342a929a5f518",
+      "image": "sha256:5aff62eadb2637bf58fba897e9769b34c29997877311bd7c7f721bb1d6fbd87f",
+      "tag": "doxagent-site-access:maintenance-b1f8237c",
+      "namespace": "net:[4026532496]",
+      "health": "healthy"
+    },
+    {
+      "name": "/doxagent-v2-v2-chrome-supervisor-1",
+      "id": "d148e850b214e8aeae2a70d24a108dc0811e08e2c457293f8f72797c173be1c0",
+      "image": "sha256:b26eb6f77b4bf8d61094dd0cdc869f7f5a2ce4d25c1403765d07c1725276934f",
+      "tag": "doxagent-chrome-supervisor:maintenance-b1f8237c",
+      "namespace": "net:[4026532496]",
+      "health": "healthy"
+    }
+  ],
+  "root_available_bytes": 44467392512,
+  "network_guard": {
+    "state": "READY",
+    "site_namespace": "net:[4026532496]",
+    "supervisor_namespace": "net:[4026532496]",
+    "bound_current_supervisor": true
+  },
+  "network_guard_timer": "active",
+  "source_provenance": [
+    {
+      "container": "doxagent-v2-v2-site-access-1",
+      "commit": "b1f8237c6dedd63cc5c2419811949886eda09c86",
+      "files": 45,
+      "mismatches": []
+    },
+    {
+      "container": "doxagent-v2-v2-chrome-supervisor-1",
+      "commit": "b1f8237c6dedd63cc5c2419811949886eda09c86",
+      "files": 45,
+      "mismatches": []
+    }
+  ],
+  "site_checks": {
+    "dns": {
+      "www.reuters.com": [
+        "13.35.163.110",
+        "13.35.163.18",
+        "13.35.163.60",
+        "13.35.163.71",
+        "2600:9000:20db:1000:15:5a3e:9d40:93a1",
+        "2600:9000:20db:2800:15:5a3e:9d40:93a1",
+        "2600:9000:20db:3000:15:5a3e:9d40:93a1",
+        "2600:9000:20db:3800:15:5a3e:9d40:93a1",
+        "2600:9000:20db:4c00:15:5a3e:9d40:93a1",
+        "2600:9000:20db:6c00:15:5a3e:9d40:93a1",
+        "2600:9000:20db:8200:15:5a3e:9d40:93a1",
+        "2600:9000:20db:ea00:15:5a3e:9d40:93a1"
+      ],
+      "finance.yahoo.com": [
+        "106.10.236.37",
+        "106.10.236.40",
+        "180.222.114.11",
+        "180.222.114.12",
+        "2406:2000:98:800::e5",
+        "2406:2000:98:800::e6",
+        "2406:2000:e4:1604::1000",
+        "2406:2000:e4:1604::1001"
+      ]
+    },
+    "readiness": {
+      "status": "ready",
+      "external_driver": {
+        "ready": true,
+        "mode": "identity_workers",
+        "workers": {
+          "investorshub-main": {
+            "pid": 24,
+            "epoch": 35,
+            "stage": "IDLE",
+            "alive": true,
+            "idle_seconds": 22.142995078116655,
+            "age_seconds": 305.25900499196723,
+            "node_rss": 137732096,
+            "high_rss_samples": 0
+          },
+          "yahoo-main": {
+            "pid": 205,
+            "epoch": 18455,
+            "stage": "IDLE",
+            "alive": true,
+            "idle_seconds": 22.124469480011612,
+            "age_seconds": 295.15792818227783,
+            "node_rss": 197611520,
+            "high_rss_samples": 0
+          },
+          "digitimes-de-1": {
+            "pid": 239,
+            "epoch": 16,
+            "stage": "IDLE",
+            "alive": true,
+            "idle_seconds": 241.79519113292918,
+            "age_seconds": 263.2072710772045,
+            "node_rss": 149671936,
+            "high_rss_samples": 0
+          },
+          "reuters-backup": {
+            "pid": 263,
+            "epoch": 8,
+            "stage": "IDLE",
+            "alive": true,
+            "idle_seconds": 244.26039873808622,
+            "age_seconds": 256.1421477040276,
+            "node_rss": 117612544,
+            "high_rss_samples": 0
+          },
+          "wsj-main": {
+            "pid": 317,
+            "epoch": 2,
+            "stage": "IDLE",
+            "alive": true,
+            "idle_seconds": 211.02858898509294,
+            "age_seconds": 220.75625760294497,
+            "node_rss": 140226560,
+            "high_rss_samples": 0
+          },
+          "investing-backup": {
+            "pid": 383,
+            "epoch": 21,
+            "stage": "IDLE",
+            "alive": true,
+            "idle_seconds": 124.2625641557388,
+            "age_seconds": 138.1461151447147,
+            "node_rss": 113197056,
+            "high_rss_samples": 0
+          },
+          "dowjones-main": {
+            "pid": 406,
+            "epoch": 14178,
+            "stage": "IDLE",
+            "alive": true,
+            "idle_seconds": 111.96248427731916,
+            "age_seconds": 122.98817470343783,
+            "node_rss": 148058112,
+            "high_rss_samples": 0
+          },
+          "public-markets-nl": {
+            "pid": 424,
+            "epoch": 15,
+            "stage": "IDLE",
+            "alive": true,
+            "idle_seconds": 92.57961281714961,
+            "age_seconds": 110.8992761769332,
+            "node_rss": 196136960,
+            "high_rss_samples": 0
+          }
+        }
+      },
+      "registry": true,
+      "storage": {
+        "state": "ready",
+        "unavailable": false,
+        "available_bytes": 44464906240,
+        "last_commit_at": "2026-10-18T18:52:13.148920+00:00",
+        "last_error": null
+      },
+      "browser_driver": true,
+      "accepting": true
+    }
+  },
+  "vnc_bindings": [
+    {
+      "HostIp": "127.0.0.1",
+      "HostPort": "5900"
+    }
+  ]
+}

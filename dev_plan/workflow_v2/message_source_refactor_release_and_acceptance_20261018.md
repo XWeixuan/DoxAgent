@@ -2,6 +2,8 @@
 
 日期：2026-10-18（北京时间；原始收据使用 UTC）。实施依据为同目录 `message_source_isolation_failover_maintenance_refactor_implementation_plan_20261017.md`。本记录区分代码完成、部署生效、真实业务验收和仍需人工处理的站点，不将服务健康或 HTTP 200 等同于全文可用。
 
+后续更新（2026-10-19）：本文保留18日检查点，不覆盖历史事实。Supervisor最终细化、维护入口/网络绑定/RFB修复及Yahoo列表与正文恢复已另行实施，当前状态见[19日恢复记录](../../docs/site-login-maintenance-and-yahoo-repair-20261019.md)。
+
 ## 1. 交付与发布边界
 
 重构代码已进入并推送 `origin/main`。生产 Registry 已迁移，Message Bus、正文补全、Site Access、桌面桥接和 GUI 已更新。Chrome Supervisor 已执行一次经授权的升级，Profile/Cookie 未迁移复制、未重建；之后为保留新产生的人工 Challenge 原页，固定运行 `main-60ec5c5d`，没有反复重建 Supervisor。

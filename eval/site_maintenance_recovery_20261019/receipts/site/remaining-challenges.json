@@ -1,0 +1,104 @@
+[
+  {
+    "identity": "investing-backup",
+    "old_task": "challenge_71648fea7fab4c27a7c6ee6483d91664",
+    "open": {
+      "action": "REOPEN_LOST_CHALLENGE",
+      "state": "DONE",
+      "result": {
+        "session_id": "maintenance_f07274bc8ddf495b8cf30b0c5c483f55",
+        "stage": "VIEWER_READY",
+        "generation": 2,
+        "original_page_restored": false,
+        "replacement_task_id": "challenge_566c68edae154c45a1d19210d89979c7",
+        "kind": "CHALLENGE",
+        "task_id": "challenge_566c68edae154c45a1d19210d89979c7",
+        "identity_id": "investing-backup"
+      },
+      "error": null,
+      "ack_seconds": 0.009696633089333773,
+      "seconds": 14.493240607902408
+    },
+    "relay_target_matches_identity": true,
+    "viewer_rfb": "RFB ",
+    "later": {
+      "action": "RELEASE_VIEWER",
+      "state": "DONE",
+      "result": {
+        "released": true,
+        "page_preserved": true
+      },
+      "error": null,
+      "ack_seconds": 0.007776590995490551,
+      "seconds": 0.3359724120236933
+    }
+  },
+  {
+    "identity": "dowjones-main",
+    "old_task": "4a44142d4f4649b59e171f04fce4ff5a",
+    "open": {
+      "action": "REOPEN_LOST_CHALLENGE",
+      "state": "DONE",
+      "result": {
+        "session_id": "maintenance_d11cdcf3818c4ce08e297fb839376bdd",
+        "stage": "VIEWER_READY",
+        "generation": 2,
+        "original_page_restored": false,
+        "replacement_task_id": "challenge_3e390d5d780b4ac6b3ad76cbec34e3f2",
+        "kind": "CHALLENGE",
+        "task_id": "challenge_3e390d5d780b4ac6b3ad76cbec34e3f2",
+        "identity_id": "dowjones-main"
+      },
+      "error": null,
+      "ack_seconds": 0.021723231300711632,
+      "seconds": 11.41126569500193
+    },
+    "relay_target_matches_identity": true,
+    "viewer_rfb": "RFB ",
+    "later": {
+      "action": "RELEASE_VIEWER",
+      "state": "DONE",
+      "result": {
+        "released": true,
+        "page_preserved": true
+      },
+      "error": null,
+      "ack_seconds": 0.0075921532697975636,
+      "seconds": 0.3245696700178087
+    }
+  },
+  {
+    "identity": "public-markets-nl",
+    "old_task": "accc83eb90ea4fc482c8924dc09afd44",
+    "open": {
+      "action": "REOPEN_LOST_CHALLENGE",
+      "state": "DONE",
+      "result": {
+        "session_id": "maintenance_9967daf41cbe43679b547c30885c2318",
+        "stage": "VIEWER_READY",
+        "generation": 2,
+        "original_page_restored": false,
+        "replacement_task_id": "challenge_8e97405fe53d48b3877c740b5aebbd41",
+        "kind": "CHALLENGE",
+        "task_id": "challenge_8e97405fe53d48b3877c740b5aebbd41",
+        "identity_id": "public-markets-nl"
+      },
+      "error": null,
+      "ack_seconds": 0.006603527814149857,
+      "seconds": 18.714873331598938
+    },
+    "relay_target_matches_identity": true,
+    "viewer_rfb": "RFB ",
+    "later": {
+      "action": "RELEASE_VIEWER",
+      "state": "DONE",
+      "result": {
+        "released": true,
+        "page_preserved": true
+      },
+      "error": null,
+      "ack_seconds": 0.05888785235583782,
+      "seconds": 0.3627398880198598
+    }
+  }
+]

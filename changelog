@@ -1596,3 +1596,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 - 2026-10-19: 维护Viewer收尾：RFB出口选择与Target.activateTarget焦点动作解耦，焦点暂不可用不再将健康Viewer误报不可用；焦点操作1秒有限等待、选择失败记录无秘密类型诊断。旧生命周期回归改走显式Challenge恢复接口，仍验证普通Login不会接管人工原页；补充焦点失败回归。
 
 - 2026-10-19: 查实Viewer额外误报：健康x11vnc的RFB首包实测可超过200ms，原10次快速中止探测会反复误判且保持旧relay目标。改为3次、单次1秒的有界真实RFB探测，保留失败及Chrome原页，增加延迟250ms真实TCP回归并开放固定viewer错误码；不以5900任意RFB响应冒充当前Identity绑定验收。
+
+- 2026-10-19: Site Login Maintenance/Yahoo生产收尾：Site与Supervisor已协调升级maintenance-b1f8237c，实际namespace与DNS/readyz通过，30秒网络绑定守护active；旧五个LOST任务均取得新关联原页和对应Identity Viewer，普通Reuters主备Login不再走旧页恢复。Yahoo MU/INTC/BE各12条及各两篇FULL正文通过，不发布测试旧文；45个修复范围源码逐容器hash零差异，干净Git回归342 passed/1平台skip。Profile/Cookie保留，无额外数据删除；其它业务容器/镜像不变，真实账号/Challenge仍由人工完成。详见docs/site-login-maintenance-and-yahoo-repair-20261019.md及脱敏收据。

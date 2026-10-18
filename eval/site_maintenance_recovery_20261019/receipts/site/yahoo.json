@@ -1,0 +1,182 @@
+[
+  {
+    "ticker": "MU",
+    "disposition": "SUCCESS",
+    "reason": "ok",
+    "identity": "yahoo-main",
+    "rows": 12,
+    "metadata": {
+      "capture_method": "ssr_dom_article_metadata",
+      "network_status": 200,
+      "endpoint": "ticker_news_dom",
+      "ticker": "MU",
+      "article_date_failures": 0,
+      "parsed_cards": 12,
+      "page_url": "https://finance.yahoo.com/quote/MU/latest-news/",
+      "elapsed_seconds": 8.274
+    },
+    "bodies": [
+      {
+        "url": "https://finance.yahoo.com/technology/articles/better-ai-chip-stock-taiwan-160400885.html",
+        "published_at": "2026-10-18T16:04:00+00:00",
+        "disposition": "SUCCESS",
+        "reason": "ok",
+        "identity": "yahoo-main",
+        "verification": {
+          "challenge": "CLEARED",
+          "authentication": "NOT_REQUIRED",
+          "crawler": "NOT_TESTED",
+          "body": "FULL",
+          "reason": "complete_article",
+          "health_applied": false,
+          "session_closed": false,
+          "cleanup_pending": false,
+          "challenge_task_id": null,
+          "verification_url": null,
+          "runtime_instance_id": null
+        }
+      },
+      {
+        "url": "https://finance.yahoo.com/markets/crypto/articles/ai-chip-bets-suffer-34m-165252079.html",
+        "published_at": "2026-10-18T16:52:52+00:00",
+        "disposition": "SUCCESS",
+        "reason": "ok",
+        "identity": "yahoo-main",
+        "verification": {
+          "challenge": "CLEARED",
+          "authentication": "NOT_REQUIRED",
+          "crawler": "NOT_TESTED",
+          "body": "FULL",
+          "reason": "complete_article",
+          "health_applied": false,
+          "session_closed": false,
+          "cleanup_pending": false,
+          "challenge_task_id": null,
+          "verification_url": null,
+          "runtime_instance_id": null
+        }
+      }
+    ],
+    "messages_published": 0
+  },
+  {
+    "ticker": "INTC",
+    "disposition": "SUCCESS",
+    "reason": "ok",
+    "identity": "yahoo-main",
+    "rows": 12,
+    "metadata": {
+      "capture_method": "ssr_dom_article_metadata",
+      "network_status": 200,
+      "endpoint": "ticker_news_dom",
+      "ticker": "INTC",
+      "article_date_failures": 0,
+      "parsed_cards": 12,
+      "page_url": "https://finance.yahoo.com/quote/INTC/latest-news/",
+      "elapsed_seconds": 8.751
+    },
+    "bodies": [
+      {
+        "url": "https://finance.yahoo.com/technology/articles/intel-intc-lands-major-customer-151209880.html",
+        "published_at": "2026-10-18T15:12:09+00:00",
+        "disposition": "SUCCESS",
+        "reason": "ok",
+        "identity": "yahoo-main",
+        "verification": {
+          "challenge": "CLEARED",
+          "authentication": "NOT_REQUIRED",
+          "crawler": "NOT_TESTED",
+          "body": "FULL",
+          "reason": "complete_article",
+          "health_applied": false,
+          "session_closed": false,
+          "cleanup_pending": false,
+          "challenge_task_id": null,
+          "verification_url": null,
+          "runtime_instance_id": null
+        }
+      },
+      {
+        "url": "https://finance.yahoo.com/markets/stocks/articles/jim-cramer-micron-mu-intel-185324932.html",
+        "published_at": "2026-10-17T18:53:24+00:00",
+        "disposition": "SUCCESS",
+        "reason": "ok",
+        "identity": "yahoo-main",
+        "verification": {
+          "challenge": "CLEARED",
+          "authentication": "NOT_REQUIRED",
+          "crawler": "NOT_TESTED",
+          "body": "FULL",
+          "reason": "complete_article",
+          "health_applied": false,
+          "session_closed": false,
+          "cleanup_pending": false,
+          "challenge_task_id": null,
+          "verification_url": null,
+          "runtime_instance_id": null
+        }
+      }
+    ],
+    "messages_published": 0
+  },
+  {
+    "ticker": "BE",
+    "disposition": "SUCCESS",
+    "reason": "ok",
+    "identity": "yahoo-main",
+    "rows": 12,
+    "metadata": {
+      "capture_method": "ssr_dom_article_metadata",
+      "network_status": 200,
+      "endpoint": "ticker_news_dom",
+      "ticker": "BE",
+      "article_date_failures": 0,
+      "parsed_cards": 12,
+      "page_url": "https://finance.yahoo.com/quote/BE/latest-news/",
+      "elapsed_seconds": 19.583
+    },
+    "bodies": [
+      {
+        "url": "https://finance.yahoo.com/markets/stocks/articles/bloom-energy-stock-fell-21-145152110.html",
+        "published_at": "2026-10-17T14:51:52+00:00",
+        "disposition": "SUCCESS",
+        "reason": "ok",
+        "identity": "yahoo-main",
+        "verification": {
+          "challenge": "CLEARED",
+          "authentication": "NOT_REQUIRED",
+          "crawler": "NOT_TESTED",
+          "body": "FULL",
+          "reason": "complete_article",
+          "health_applied": false,
+          "session_closed": false,
+          "cleanup_pending": false,
+          "challenge_task_id": null,
+          "verification_url": null,
+          "runtime_instance_id": null
+        }
+      },
+      {
+        "url": "https://finance.yahoo.com/energy/articles/bloom-energy-vs-constellation-energy-210701653.html",
+        "published_at": "2026-10-16T21:07:01+00:00",
+        "disposition": "SUCCESS",
+        "reason": "ok",
+        "identity": "yahoo-main",
+        "verification": {
+          "challenge": "CLEARED",
+          "authentication": "NOT_REQUIRED",
+          "crawler": "NOT_TESTED",
+          "body": "FULL",
+          "reason": "complete_article",
+          "health_applied": false,
+          "session_closed": false,
+          "cleanup_pending": false,
+          "challenge_task_id": null,
+          "verification_url": null,
+          "runtime_instance_id": null
+        }
+      }
+    ],
+    "messages_published": 0
+  }
+]
