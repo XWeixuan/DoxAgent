@@ -1628,14 +1628,25 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 - 2026-10-19 [bounded Runtime reference scan]: Real profiling found9.68million recursive visits per owner scan of large before/after Reference bodies. Read only the typed root/version scalars with a small covering expression index; cache immutable activation/frame references. Exit the successful7d pre-O3 retry baseline while keeping delivered before/after evidence and native version pins. Event/native owner tests5 passed; the old slow deep collector was stopped before continuing with the bounded scan.
 
 - 2026-10-19 [short retirement fence]: Final branch revalidation uses an exact target Case-root index and only active recovery frames, rather than re-reading every historical Case/task under the Runtime writer lock. Protect nonempty source WAL before filesystem publication. Native owner regression5 passed.
-`n2026-10-19 storage lifecycle: Initialization pre-node snapshots now share verified immutable content while forks remain private. Worker owns bounded terminal snapshot exit with current/previous/active-rerun protection and retirement identity fences; W3 materialization unchanged. Transport owner covers all four production sources. Existing snapshot migration and bulk historical cleanup deferred by user.
-`n2026-10-19 storage acceptance: transport owner emits bounded daily capacity samples (30d) and low-space/7d forecast alerts through existing Bus operational_alerts, with recovery resolution. Fresh large dependency builds defer below 10 GiB; normal business remains unaffected.
-`n2026-10-19 storage status: host release CLI adds read-only storage-status and daily source/Read owner summaries (current objects, short history, source ACK/pins/exit cursors, reusable pages, GC exceptions). Counts have a query budget; free pages are not reported as filesystem reclamation.
-`n2026-10-19 Read rebuild acceptance exposed cross-ticker native-ID head lookups scanning compatibility history per Turn. Projectors now read physical current tables; explicit V4 index migration covers native identity and makes legacy history head branch empty-index lookups. Business history and W3 inputs unchanged.
-`n2026-10-19 research input owner: published non-W3 Runtime research follows normal success7d/failure14d exit; no blanket runtime-* exclusion. Actual W3 job/node/phase/template trees stay protected; no historical batch invoked.
-`n2026-10-19 isolated source snapshot: wait through concurrent explicit staging-index DDL at batch reacquisition and emit per-table timing/count progress. Interrupted proof is not accepted; repeat on indexed physical-current implementation.
-`n2026-10-19 B1 completion: native backup contents now derive from the consistent backup SQL rows, transport packet references and real external holds; recursively verify reachable native objects instead of copying every orphan native manifest. Existing source/W3 files unchanged.
-`n2026-10-19 backup completion boundary: publish the DB filename only after referenced content verifies; failed own staging DB exits instead of appearing resumable. Shared content and previous coherent sets remain intact.
-`n2026-10-19 backup producer failure: before any domain migration begins, a failed fresh multi-database backup removes only its new incomplete timestamp set, including copied content; previous coherent recovery sets and explicit resume roots stay intact.
-`n2026-10-19 Read isolated rebuild I/O: use a bounded 64 MiB SQLite page cache only in the unpublished bulk importer, avoiding repeated index-page spill with the small default cache; live API/Projector memory settings and business semantics unchanged.
-`n2026-10-19 measured rebuild CPU: 189/249 samples in repeated Library indexing. Reuse only successfully committed materializations for the same native path/version and unchanged DB/WAL stamp (bounded 256 small references); changed sources and distinct native paths reindex, including changes outside the Known Index summary. No persistent cache or additional data copy.
+
+2026-10-19 storage lifecycle: Initialization pre-node snapshots now share verified immutable content while forks remain private. Worker owns bounded terminal snapshot exit with current/previous/active-rerun protection and retirement identity fences; W3 materialization unchanged. Transport owner covers all four production sources. Existing snapshot migration and bulk historical cleanup deferred by user.
+
+2026-10-19 storage acceptance: transport owner emits bounded daily capacity samples (30d) and low-space/7d forecast alerts through existing Bus operational_alerts, with recovery resolution. Fresh large dependency builds defer below 10 GiB; normal business remains unaffected.
+
+2026-10-19 storage status: host release CLI adds read-only storage-status and daily source/Read owner summaries (current objects, short history, source ACK/pins/exit cursors, reusable pages, GC exceptions). Counts have a query budget; free pages are not reported as filesystem reclamation.
+
+2026-10-19 Read rebuild acceptance exposed cross-ticker native-ID head lookups scanning compatibility history per Turn. Projectors now read physical current tables; explicit V4 index migration covers native identity and makes legacy history head branch empty-index lookups. Business history and W3 inputs unchanged.
+
+2026-10-19 research input owner: published non-W3 Runtime research follows normal success7d/failure14d exit; no blanket runtime-* exclusion. Actual W3 job/node/phase/template trees stay protected; no historical batch invoked.
+
+2026-10-19 isolated source snapshot: wait through concurrent explicit staging-index DDL at batch reacquisition and emit per-table timing/count progress. Interrupted proof is not accepted; repeat on indexed physical-current implementation.
+
+2026-10-19 B1 completion: native backup contents now derive from the consistent backup SQL rows, transport packet references and real external holds; recursively verify reachable native objects instead of copying every orphan native manifest. Existing source/W3 files unchanged.
+
+2026-10-19 backup completion boundary: publish the DB filename only after referenced content verifies; failed own staging DB exits instead of appearing resumable. Shared content and previous coherent sets remain intact.
+
+2026-10-19 backup producer failure: before any domain migration begins, a failed fresh multi-database backup removes only its new incomplete timestamp set, including copied content; previous coherent recovery sets and explicit resume roots stay intact.
+
+2026-10-19 Read isolated rebuild I/O: use a bounded 64 MiB SQLite page cache only in the unpublished bulk importer, avoiding repeated index-page spill with the small default cache; live API/Projector memory settings and business semantics unchanged.
+
+2026-10-19 closeout scope: native profiling confirmed repeated Library compilation across copied roots. Cross-root reuse would require a new persistent materialization authority; keep the existing correct version/identity behavior and bounded private bulk cache, without adding a new alias/cache lifecycle.
