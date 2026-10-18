@@ -6,6 +6,14 @@ import time
 from uuid import uuid4
 
 
+def native(path):
+    return '\\\\?\\'+str(Path(path).resolve()) if os.name=='nt' else str(path)
+
+
+def link(source,destination):
+    os.link(native(source),native(destination))
+
+
 def digest(path):
     with Path(path).open('rb') as stream:return hashlib.file_digest(stream,'sha256').hexdigest()
 
@@ -28,21 +36,21 @@ def adopt_file(source,destination,cache):
     if not canonical.exists():
         pending=cache/('.pending-'+uuid4().hex)
         try:
-            if destination.exists():os.link(destination,pending)
+            if destination.exists():link(destination,pending)
             else:
                 with source.open('rb') as incoming,pending.open('xb') as outgoing:
                     import shutil
                     shutil.copyfileobj(incoming,outgoing);outgoing.flush();os.fsync(outgoing.fileno())
                 pending.chmod(0o600)
                 if digest(pending)!=sha:raise ValueError('adoption source changed during copy')
-            try:os.link(pending,canonical)
+            try:link(pending,canonical)
             except FileExistsError:pass
         finally:pending.unlink(missing_ok=True)
     if canonical.is_symlink() or digest(canonical)!=sha:raise ValueError('immutable evidence cache corrupt')
     original=destination.stat() if destination.exists() else None
     if not original or (original.st_dev,original.st_ino)!=(canonical.stat().st_dev,canonical.stat().st_ino):
-        pending=destination.with_name('.evidence-'+uuid4().hex)
-        try:os.link(canonical,pending);os.replace(pending,destination)
+        pending=destination.with_name('.e-'+uuid4().hex[:20])
+        try:link(canonical,pending);os.replace(native(pending),native(destination))
         finally:pending.unlink(missing_ok=True)
     return dict(sha256=sha,reclaimed_allocated=(getattr(original,'st_blocks',0)*512 if original and original.st_nlink==1 else 0))
 
