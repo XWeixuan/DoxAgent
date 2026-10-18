@@ -35,6 +35,8 @@ def collect(workspaces,jobs,settings,*,now=None,limit=4,dry_run=False):
     now=now or datetime.now(UTC);report=dict(at=now.isoformat(),runs=[],errors=[])
     source=Path(settings.codex_runtime_sqlite_path)
     if not source.is_file():return report
+    from doxagent.codex_runtime.immutable_evidence import collect_unused
+    if not dry_run:report['unused_adoption_contents']=collect_unused(source.parent/'adoption-contents')
     root=workspaces.root
     with WriterLock(root/'workspace-retirement'):
         with closing(sqlite3.connect(source.resolve().as_uri()+'?mode=ro',uri=True)) as db:

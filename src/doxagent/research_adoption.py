@@ -187,14 +187,8 @@ def archive_evidence(spec, adoption_root):
                     continue
                 relative = source.relative_to(source_root)
                 destination = adoption_root / "source-workspaces" / relative
-                if not destination.exists():
-                    destination.parent.mkdir(parents=True, exist_ok=True)
-                    shutil.copyfile(source, destination)
-                if (
-                    hashlib.sha256(source.read_bytes()).digest()
-                    != hashlib.sha256(destination.read_bytes()).digest()
-                ):
-                    raise ValueError("source evidence copy changed")
+                from doxagent.codex_runtime.immutable_evidence import adopt_file
+                adopt_file(source,destination,adoption_root.parent.parent/'adoption-contents')
                 files.append(str(relative))
     return files
 
