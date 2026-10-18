@@ -150,13 +150,14 @@ class DomainProjectors:
         if table == "runtime_v2_turns":
             with self.store.connect() as db:
                 found = db.execute(
-                    "SELECT ticker,payload FROM object_current WHERE kind='native:runtime_v2_cases' "
+                    "SELECT ticker FROM object_current WHERE kind='native:runtime_v2_cases' "
                     "AND id=? AND valid_to IS NULL",
                     (value["case_id"],),
                 ).fetchone()
             if not found:
                 raise ValueError("turn Case must be indexed first")
-            ticker, related_case = found[0], json.loads(found[1])
+            ticker=found[0]
+            related_case={'source':{'snapshot':{'ticker':ticker}}}
         identity = next(
             (
                 value[key]
