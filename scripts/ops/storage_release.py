@@ -177,6 +177,8 @@ def verify_dependency_image(tag, kind, manifests):
     labels=info.get('Config',{}).get('Labels') or {}
     if labels.get('doxagent.role')!='dependencies' or labels.get('doxagent.owner')!='doxagent':
         return False
+    if shutil.disk_usage('/').free < info.get('Size',0)+512*1024**2:
+        raise OSError('recovering dependency image needs space for its first runtime unpack')
     code=("import hashlib,importlib.metadata as m,json,pathlib,subprocess;"
           "root=pathlib.Path('/app');assert not (root/'src/doxagent').exists();"
           "assert m.version('openai-codex')=='0.159.3';"
@@ -256,9 +258,9 @@ def build(repo, commit, root, kinds, *, sdk='doxagent-ibapi:approved-7d361219',
             recorded=previous and previous.get('key')==key and known.get(tag)==previous['image']
             recovered=not recorded and tag in known and verify_dependency_image(tag,kind,dependency_inputs)
             if not recorded and not recovered:
-                minimum=(1 if resume_dependencies else 4)*1024**3
+                minimum=(1 if resume_dependencies else 8)*1024**3
                 if kind=='backend' and shutil.disk_usage('/').free < minimum:
-                    raise OSError('insufficient dependency staging space; fresh build needs 4 GiB, explicit cached resume needs 1 GiB')
+                    raise OSError('insufficient dependency staging space; fresh build needs 8 GiB, explicit cached resume needs 1 GiB')
                 guarded_build([*args,'.'],cwd=context)
             image=json.loads(run(['docker','image','inspect',tag]))[0]
             dependencies[kind]=dict(image=image['Id'],tag=tag,layers=image['RootFS']['Layers'],key=key)
