@@ -246,6 +246,7 @@ class ChromeSupervisor:
             "controller_",
             "not_found",
             "supervisor_",
+            "viewer_",
         )
         return text if text.startswith(allowed) else type(exc).__name__
 
@@ -349,9 +350,12 @@ class ChromeSupervisor:
                 stderr=asyncio.subprocess.DEVNULL,
             )
             self._persist_instance(instance)
-        for _ in range(10):
+        # x11vnc serializes connection cleanup; observed healthy banners can
+        # exceed 200ms. Ten rapid aborted probes amplify that false-negative.
+        # A short bounded handshake budget is not a browser restart policy.
+        for _ in range(3):
             try:
-                async with asyncio.timeout(0.2):
+                async with asyncio.timeout(1):
                     reader, writer = await asyncio.open_connection("127.0.0.1", instance.vnc_port)
                     try:
                         if await reader.readexactly(4) == b"RFB ":

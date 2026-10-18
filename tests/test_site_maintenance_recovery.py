@@ -223,3 +223,24 @@ async def test_focus_failure_does_not_reclassify_working_viewer_as_unavailable()
     cdp = SimpleNamespace(send=AsyncMock(side_effect=RuntimeError("focus temporarily unavailable")))
     await SiteAccessRuntime._focus_maintenance_target(cdp, "exact-login-target")
     cdp.send.assert_awaited_once_with("Target.activateTarget", {"targetId": "exact-login-target"})
+
+
+async def test_healthy_delayed_rfb_banner_is_not_rejected_as_viewer_unavailable():
+    import asyncio
+    from types import SimpleNamespace
+
+    from doxagent.site_strategy.chrome_supervisor import ChromeSupervisor
+
+    async def peer(reader, writer):
+        await asyncio.sleep(0.25)
+        writer.write(b"RFB 003.008\n")
+        await writer.drain()
+        writer.close()
+        await writer.wait_closed()
+
+    server = await asyncio.start_server(peer, "127.0.0.1", 0)
+    async with server:
+        instance = SimpleNamespace(
+            vnc=SimpleNamespace(returncode=None), vnc_port=server.sockets[0].getsockname()[1]
+        )
+        await ChromeSupervisor._ensure_viewer(SimpleNamespace(), instance)
