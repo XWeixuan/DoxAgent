@@ -173,7 +173,7 @@ def guarded_build(args, *, cwd):
 
 
 def build(repo, commit, root, kinds, *, sdk='doxagent-ibapi:approved-7d361219',
-          chrome='doxagent-chrome:approved-cc38be0a'):
+          chrome='doxagent-chrome:approved-cc38be0a', resume_dependencies=False):
     commit = run(['git','-C',str(repo),'rev-parse',commit+'^{commit}'])
     state = json.loads((root/'state.json').read_text()) if (root/'state.json').exists() else {}
     receipt = dict(commit=commit,images={},dependencies={},started=time.time())
@@ -237,8 +237,9 @@ def build(repo, commit, root, kinds, *, sdk='doxagent-ibapi:approved-7d361219',
             previous=state.get('dependencies',{}).get(kind)
             known=image_index(inspect_images())
             if not previous or previous.get('key')!=key or known.get(tag)!=previous['image']:
-                if kind=='backend' and shutil.disk_usage('/').free < 4*1024**3:
-                    raise OSError('fresh backend dependencies require at least 4 GiB staging space')
+                minimum=(1 if resume_dependencies else 4)*1024**3
+                if kind=='backend' and shutil.disk_usage('/').free < minimum:
+                    raise OSError('insufficient dependency staging space; fresh build needs 4 GiB, explicit cached resume needs 1 GiB')
                 guarded_build([*args,'.'],cwd=context)
             image=json.loads(run(['docker','image','inspect',tag]))[0]
             dependencies[kind]=dict(image=image['Id'],tag=tag,layers=image['RootFS']['Layers'],key=key)
@@ -334,13 +335,15 @@ def main():
     parser.add_argument('--commit')
     parser.add_argument('--kind',action='append',choices=tuple(REPOSITORIES))
     parser.add_argument('--manifest',type=Path)
+    parser.add_argument('--resume-dependencies',action='store_true',
+                        help='resume a completed/cancelled dependency build from BuildKit cache; the write reserve still applies')
     args=parser.parse_args()
     with lock(args.root):
         path=args.root/'state.json'
         state=json.loads(path.read_text()) if path.exists() else {}
         if args.command=='build':
             if not args.commit:parser.error('build requires an exact commit')
-            result=build(args.repo,args.commit,args.root,args.kind or ['backend','site','supervisor'])
+            result=build(args.repo,args.commit,args.root,args.kind or ['backend','site','supervisor'],resume_dependencies=args.resume_dependencies)
         elif args.command=='bootstrap':
             if state:raise ValueError('release state already exists')
             state=json.loads(args.manifest.read_text())
