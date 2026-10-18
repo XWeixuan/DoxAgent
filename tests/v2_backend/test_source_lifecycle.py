@@ -8,6 +8,21 @@ from doxagent.v2_read.outbox import SourceOutbox
 from doxagent.v2_read.cli import backup
 from doxagent.v2_read.source_lifecycle import expire,sync_business_facts
 from doxagent.v2_read.source_snapshot import rebuild_current
+
+
+def test_snapshot_batch_preserves_successes_and_rolls_back_failed_row(tmp_path):
+    from doxagent.v2_read.source_snapshot import SnapshotStore
+    store=SnapshotStore(tmp_path/'read.db');store.migrate()
+    with store.importing():
+        for i in range(501):
+            store.ingest('test',str(i),[dict(kind='ticker',ticker='MU',id=str(i),data={'ticker':'MU'})])
+        try:
+            with store.connect(write=True) as db:
+                db.execute("DELETE FROM object_current")
+                raise ValueError('one malformed snapshot row')
+        except ValueError:pass
+        assert store.get('ticker','MU','0')
+    with store.connect() as db:assert db.execute('SELECT count(*) FROM object_current').fetchone()[0]==501
 from doxagent.v2_read.transport_archive import archive
 from doxagent.v2_read.repository import ReadStore
 

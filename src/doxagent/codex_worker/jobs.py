@@ -106,6 +106,7 @@ class WorkerJobManager:
 
         self.thread_lifecycle = WorkerThreadLifecycle(self, workspaces)
         self.session_retention = None
+        self._retention_settings=session_retention_settings
         self._session_gc_task = None
         if session_retention_settings is not None:
             from .session_retention import TerminalSessions,business_holds
@@ -149,6 +150,8 @@ class WorkerJobManager:
         self.thread_lifecycle.validate_run(request)
         if self.session_retention is not None:
             self.session_retention.validate_submit(request)
+            if (self._workspaces.root/request.run_id/'audit'/'retained-assets.json').is_file():
+                raise ValueError('PUBLISHED_WORKSPACE_INPUTS_RETIRED_CREATE_NEW_RUN')
         job = WorkerJob(
             job_id=job_id,
             run_id=request.run_id,
@@ -168,6 +171,12 @@ class WorkerJobManager:
     def start(self) -> None:
         if self._pump is None and not self._closed:
             self._pump = asyncio.create_task(self._dispatch_loop())
+
+    async def _collect_owned_resources(self):
+        from .workspace_retention import collect
+        result=await self.session_retention.collect()
+        result['workspaces']=await asyncio.to_thread(collect,self._workspaces,self,self._retention_settings)
+        return result
 
     async def probe(self) -> dict[str, object]:
         probe = getattr(self._runtime, "probe", None)
@@ -205,7 +214,7 @@ class WorkerJobManager:
                 if self._session_gc_task is not None:
                     try:self.store.metadata('session_retention',self._session_gc_task.result())
                     except Exception as exc:self.store.metadata('session_retention',{'error':str(exc)[:250]})
-                self._session_gc_task=asyncio.create_task(self.session_retention.collect())
+                self._session_gc_task=asyncio.create_task(self._collect_owned_resources())
                 session_gc_at=time.monotonic()+600
             if time.monotonic() >= observation_gc_at:
                 from .w3_turn_probe import maintenance

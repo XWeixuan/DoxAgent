@@ -322,7 +322,8 @@ class DomainProjectors:
                     record["data"] = {**row, "payload": value}
             from .initialization import progress
 
-            records.append(progress(self.store, initialization_run, record))
+            if not getattr(self.store,'defer_initialization_progress',False):
+                records.append(progress(self.store, initialization_run, record))
         if table == "source_definitions":
             record.update(ticker="", id=value["source_id"])
         elif table == "runtime_v2_policy_activations":

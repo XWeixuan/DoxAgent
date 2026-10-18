@@ -497,14 +497,14 @@ class SiteStrategyService:
         from .resource_gc import maintain_profile
 
         root = self.runtime.browser_pool.root
-        for _, identity in self.repository.list_active_identities():
-            if identity.runtime_kind is not BrowserRuntimeKind.MANAGED_PLAYWRIGHT:
-                continue
-            profile = self.repository.get_profile(identity.profile_id)
-            if profile and not profile.maintenance_session_id:
+        # Retired/cold identities still own a profile. The shared owner lock
+        # fences both Managed Playwright and external Chrome writers.
+        for profile in self.repository.list_profiles():
+            if not profile.maintenance_session_id:
                 await asyncio.to_thread(
                     maintain_profile, root, profile.directory_key, allow_cache=True
                 )
+        await asyncio.to_thread(self.profile_storage.maintain)
 
     async def _prewarm_identities(self) -> None:
         from .governance_repository import GovernanceRepository

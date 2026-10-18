@@ -4,7 +4,7 @@ Each source is read at a consistent SQLite snapshot; a temporary consumer pins
 the bridge from that snapshot to subsequent CDC. It never writes fake backfill
 events into a business source or re-executes a business effect.
 """
-from contextlib import ExitStack, closing
+from contextlib import ExitStack, closing, contextmanager
 from datetime import UTC, datetime
 import hashlib
 import json
@@ -16,6 +16,41 @@ from .repository import ReadStore, encode, instant
 from .source_lifecycle import BUSINESS_FACT_KINDS
 
 
+class SnapshotStore(ReadStore):
+    """Batch only a new, unpublished target; live readers retain normal commits."""
+    _import_db=None
+    _serial=0
+    _depth=0
+    _pending=0
+    defer_initialization_progress=True
+
+    @contextmanager
+    def importing(self):
+        with super().connect(write=True) as db:
+            self._import_db=db
+            try:yield
+            finally:self._import_db=None
+
+    @contextmanager
+    def connect(self, *, write=False, timeout=2):
+        db=self._import_db
+        if db is None:
+            with super().connect(write=write,timeout=timeout) as connection:yield connection
+            return
+        self._serial+=1;name='snapshot_'+str(self._serial);self._depth+=1
+        db.execute('SAVEPOINT '+name)
+        try:
+            yield db
+            db.execute('RELEASE '+name)
+        except BaseException:
+            db.execute('ROLLBACK TO '+name);db.execute('RELEASE '+name)
+            raise
+        finally:self._depth-=1
+        self._pending+=int(write)
+        if self._depth==0 and self._pending>=500:
+            db.commit();db.execute('BEGIN IMMEDIATE');self._pending=0
+
+
 def rebuild_current(sources, target, *, event_root=None, max_batches=10000):
     from .artifacts import PublishedArtifacts
     from .formal import FormalProjectors
@@ -24,7 +59,7 @@ def rebuild_current(sources, target, *, event_root=None, max_batches=10000):
     from .maintenance import atomic_json
     target=Path(target).resolve()
     if target.exists():raise ValueError('current snapshot target must be new')
-    store=ReadStore(target);store.migrate()
+    store=SnapshotStore(target);store.migrate()
     bridge='snapshot:'+uuid4().hex
     consumer='read:'+hashlib.sha256(str(target).encode()).hexdigest()[:24]
     report=dict(format='doxagent.current-source-rebuild.1',path=str(target),sources={},rows=0,gaps=[])
@@ -43,7 +78,7 @@ def rebuild_current(sources, target, *, event_root=None, max_batches=10000):
         if control_seed:records=[r for r in records if r['kind'] in {'ticker','navigation'}]
         store.ingest(source.source,'snapshot:'+('seed:' if control_seed else '')+table+':'+e['entity_id'],records,contributions=counts)
     try:
-        with ExitStack() as stack:
+        with ExitStack() as stack, store.importing():
             for source in sources:
                 source.acknowledge_exceptions(bridge,source.head(),[])
                 db=stack.enter_context(closing(source.connection()));db.execute('BEGIN')
@@ -89,6 +124,14 @@ def rebuild_current(sources, target, *, event_root=None, max_batches=10000):
                 if len(remaining)==len(deferred):break
                 deferred=remaining
             report['gaps']=[dict(source=n,table=t,rowid=r,reason=e) for n,t,r,e in deferred]
+            # Import the complete node/event ledger first. Recomputing its
+            # aggregate for every historical event makes a rebuild quadratic.
+            from .initialization import progress
+            with store.connect() as db:
+                runs=[json.loads(r[0]) for r in db.execute("SELECT payload FROM object_current WHERE kind='native:initialization_runs'")]
+            for run in runs:
+                store.ingest('business-baseline','progress:'+run['initialization_id'],
+                             [progress(store,run,{'kind':'snapshot-complete'})])
             if runtime:
                 source,db,_=runtime
                 for kind,ticker,identity,raw in db.execute('SELECT kind,ticker,id,payload FROM v2_serving_business_facts'):
@@ -110,6 +153,7 @@ def rebuild_current(sources, target, *, event_root=None, max_batches=10000):
                     db.execute('INSERT OR REPLACE INTO gaps(source,event,reason) VALUES(?,?,?)',
                                (gap['source'],'snapshot:'+gap['table']+':'+str(gap['rowid']),gap['reason']))
         # Read transactions ended; subsequent source changes remain bridged.
+        store.defer_initialization_progress=False
         worker=ProjectionWorker(store,sources,mapper)
         for _ in range(max_batches):
             worker.tick(limit=500)

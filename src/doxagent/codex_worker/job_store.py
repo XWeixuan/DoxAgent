@@ -54,6 +54,10 @@ class JobStore:
 
     def save(self, job: WorkerJob, request: WorkerRunRequest | None = None) -> None:
         with closing(self.connect()) as db, db:
+            db.execute('BEGIN IMMEDIATE')
+            if request is not None and not db.execute('SELECT 1 FROM jobs WHERE id=?',(job.job_id,)).fetchone():
+                if db.execute("SELECT 1 FROM metadata WHERE key=?",('workspace_retirement:'+request.run_id,)).fetchone():
+                    raise ValueError('PUBLISHED_WORKSPACE_INPUTS_RETIRED_CREATE_NEW_RUN')
             db.execute(
                 """INSERT INTO jobs(id,status,payload,request,priority) VALUES(?,?,?,?,?)
                 ON CONFLICT(id) DO UPDATE SET status=excluded.status,payload=excluded.payload,
