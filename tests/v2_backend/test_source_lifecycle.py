@@ -82,6 +82,36 @@ def test_current_snapshot_rebuild_after_all_transport_expired(tmp_path):
         assert {r[0] for r in db.execute('SELECT id FROM v2_source_consumers')}=={'live'}
 
 
+def test_bus_snapshot_rebuilds_message_search_from_thin_body_reference(tmp_path):
+    source_path=tmp_path/'bus.db'
+    at='2026-10-01T12:00:00Z'
+    body='证据'*30000+'needle-after-chunk-boundary'
+    rows={
+        'source_definitions':dict(source_id='news',display_name='News',kind='api'),
+        'standard_messages':dict(ticker='MU',standard_message_id='message',raw_message_id='raw',revision=1,
+            url='https://example.com/article',title='Article',source_id='news',binding_id='MU:news',
+            published_at=at,collected_at=at,normalized_at=at,body=body,metadata={'v2_control_origin':{'epoch':1}}),
+        'stream_items':dict(ticker='MU',stream_item_id='stream',published_at=at,stream_offset=1),
+        'stream_members':dict(stream_item_id='stream',standard_message_id='message',member_index=0),
+    }
+    with closing(sqlite3.connect(source_path)) as db,db:
+        for table,value in rows.items():
+            db.execute('CREATE TABLE '+table+'(id TEXT PRIMARY KEY,data_json TEXT)')
+            db.execute('INSERT INTO '+table+' VALUES(?,?)',('1',json.dumps(value)))
+    source=SourceOutbox(source_path,'bus');source.migrate(tuple(rows))
+    report=rebuild_current([source],tmp_path/'rebuilt'/'read.db')
+    assert report['verified'],report['gaps']
+    store=ReadStore(report['path'])
+    native=store.get('native:standard_messages','MU','message')
+    assert 'body' not in native and native['body_ref']['size_bytes']==len(body.encode())
+    message=store.get('message','MU','message')
+    assert message['body']==native['body_ref']
+    from doxagent.v2_read.projectors import DomainProjectors
+    assert DomainProjectors(store).message_search('MU',native)=='Article\n'+body
+    with store.connect() as db:
+        assert db.execute("SELECT search_text FROM object_current WHERE kind='message'").fetchone()[0]==('Article\n'+body).casefold()
+
+
 def test_receipt_envelope_pins_nested_native_hash_and_delete_releases_owner(tmp_path):
     s=fixture_source(tmp_path)
     native=s.content.encode({'binding_id':'big','nested':{'content':'x'*20000}})
