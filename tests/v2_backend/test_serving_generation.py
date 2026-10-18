@@ -126,3 +126,21 @@ def test_regeneration_cancels_pending_quarantine_without_leaking_owners(tmp_path
     collect_diagnostics(store,now=now)
     with store.connect() as db:
         assert db.execute("SELECT count(*) FROM artifact WHERE state='DELETED'").fetchone()[0]==1
+
+
+def test_definition_noop_compares_references_without_reloading_large_body(tmp_path,monkeypatch):
+    from doxagent.v2_read.native_content import NativeContent
+    from doxagent.v2_read.serving_schema import DEFINITION_MARKER
+    store=ReadStore(tmp_path/'read.db');store.migrate()
+    record=dict(kind='fact',ticker='MU',id='fact',data=dict(fact=dict(fact_id='F1',title='kept',body='x'*200000),observations=[{'note':'y'*200}]*300))
+    first=store.ingest('fixture','first',[record])
+    decode=NativeContent.decode
+    def guard(self,value,*,expand_definitions=True):
+        if isinstance(value,dict) and DEFINITION_MARKER in value and expand_definitions:
+            raise AssertionError('unchanged definition body should not be read by the writer')
+        return decode(self,value,expand_definitions=expand_definitions)
+    monkeypatch.setattr(NativeContent,'decode',guard)
+    assert store.ingest('fixture','same',[record])==first
+    with store.connect() as db:
+        assert db.execute('SELECT count(*) FROM object_history').fetchone()[0]==0
+        assert db.execute('SELECT count(*) FROM definitions').fetchone()[0]==1

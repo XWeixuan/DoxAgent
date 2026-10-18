@@ -388,6 +388,11 @@ class ReadStore:
             bus_members, raw_links, graph_cases = set(), set(), set()
             for ordinal, record in enumerate(records):
                 kind, ticker, identity = record["kind"], record["ticker"], record["id"]
+                payload=record.get('data')
+                normalized=kind in {'fact','event_detail','policy_detail'}
+                if normalized and payload is not None:
+                    from .serving_schema import normalize_definition
+                    payload=normalize_definition(db,kind,payload)
                 if position is not None:
                     last = db.execute(
                         "SELECT position FROM entity_watermarks WHERE source=? "
@@ -403,12 +408,13 @@ class ReadStore:
                         (source, kind, ticker, identity, position),
                     )
                 old = db.execute(
-                    "SELECT payload,sort_key,parent,day,source_id,route,search_text FROM object_current WHERE kind=? AND ticker=? AND id=? "
+                    "SELECT "+('payload AS persisted_json' if normalized else 'payload')+",sort_key,parent,day,source_id,route,search_text FROM object_current WHERE kind=? AND ticker=? AND id=? "
                     "AND valid_to IS NULL",
                     (kind, ticker, identity),
                 ).fetchone()
-                payload = record.get("data")
                 previous = json.loads(old[0]) if old else None
+                if normalized and previous is not None:
+                    previous=self.content_codec.decode(previous,expand_definitions=False)
                 comparable = dict(payload) if isinstance(payload, dict) else payload
                 if kind == "native:runtime_tasks":
                     for technical in ("lease_until", "updated_at"):
@@ -447,7 +453,6 @@ class ReadStore:
                         if parent:
                             raw_links.add((ticker,parent))
                 if old:self.close_current(db,'objects','kind=? AND ticker=? AND id=?',(kind,ticker,identity),seq)
-                payload = record.get("data")
                 if payload is not None and kind == "message":
                     payload = {**payload, "row_revision": seq}
                 elif payload is not None and kind == "case":
