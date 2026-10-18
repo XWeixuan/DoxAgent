@@ -190,9 +190,9 @@ def build(repo, commit, root, kinds, *, sdk='doxagent-ibapi:approved-7d361219',
             tag='doxagent-deps:'+kind+'-'+key
             args=['docker','build','-f',dockerfile,'--target',target,'-t',tag,
                   '--label','doxagent.owner=doxagent','--label','doxagent.role=dependencies']
-            if base:args+=['--build-arg','BASE_IMAGE='+dependencies[base]['image']]
-            if kind=='backend':args+=['--build-arg','IBKR_SDK_SOURCE_IMAGE='+index[sdk]]
-            if kind=='supervisor':args+=['--build-arg','CHROME_RUNTIME_IMAGE='+index[chrome]]
+            if base:args+=['--build-arg','BASE_IMAGE='+dependencies[base]['tag']]
+            if kind=='backend':args+=['--build-arg','IBKR_SDK_SOURCE_IMAGE='+sdk]
+            if kind=='supervisor':args+=['--build-arg','CHROME_RUNTIME_IMAGE='+chrome]
             subprocess.run([*args,'.'],cwd=context,check=True)
             image=json.loads(run(['docker','image','inspect',tag]))[0]
             dependencies[kind]=dict(image=image['Id'],tag=tag,layers=image['RootFS']['Layers'],key=key)
@@ -209,9 +209,9 @@ def build(repo, commit, root, kinds, *, sdk='doxagent-ibapi:approved-7d361219',
                             'supervisor':'deploy/Dockerfile.chrome-supervisor'}[kind]
                 args=['docker','build','-f',dockerfile,'-t',tag,'--build-arg','DOXAGENT_BUILD_COMMIT='+commit,
                       '--build-arg','DOXAGENT_SOURCE_SHA256='+source_sha]
-                if kind=='backend':args+=['--build-arg','IBKR_SDK_SOURCE_IMAGE='+index[sdk]]
-                else:args+=['--build-arg','BASE_IMAGE='+dependencies['backend' if kind=='site' else 'site']['image']]
-                if kind=='supervisor':args+=['--build-arg','CHROME_RUNTIME_IMAGE='+index[chrome]]
+                if kind=='backend':args+=['--build-arg','IBKR_SDK_SOURCE_IMAGE='+sdk]
+                else:args+=['--build-arg','BASE_IMAGE='+dependencies['backend' if kind=='site' else 'site']['tag']]
+                if kind=='supervisor':args+=['--build-arg','CHROME_RUNTIME_IMAGE='+chrome]
                 args+=['.']
             subprocess.run(args,cwd=context,check=True)
             image=json.loads(run(['docker','image','inspect',tag]))[0]
