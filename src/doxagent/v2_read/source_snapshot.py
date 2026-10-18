@@ -8,6 +8,8 @@ from contextlib import ExitStack, closing, contextmanager
 from datetime import UTC, datetime
 import hashlib
 import json
+import sys
+import time
 from pathlib import Path
 from uuid import uuid4
 
@@ -27,6 +29,7 @@ class SnapshotStore(ReadStore):
     @contextmanager
     def importing(self):
         with super().connect(write=True) as db:
+            db.execute('PRAGMA busy_timeout=60000')
             self._import_db=db
             try:yield
             finally:self._import_db=None
@@ -104,6 +107,7 @@ def rebuild_current(sources, target, *, event_root=None, max_batches=10000):
                 source,db,tables=opened[name]
                 for table in TABLES[name]:
                     if table not in tables:continue
+                    table_started=time.monotonic();table_rows=0
                     # Runtime process namespaces are filtered before loading large
                     # frozen inputs; the same whitelist as capture/backfill applies.
                     predicate=''
@@ -111,9 +115,11 @@ def rebuild_current(sources, target, *, event_root=None, max_batches=10000):
                         predicate=' WHERE namespace IN ('+','.join("'"+n+"'" for n in RUNTIME_NAMESPACES)+')'
                     for row in db.execute('SELECT rowid AS _snapshot_rowid,* FROM '+quoted(table)+predicate+' ORDER BY rowid'):
                         report['rows']+=1
+                        table_rows+=1
                         try:apply(source,db,table,row)
                         except (ValueError,KeyError,TypeError) as exc:
                             deferred.append((name,table,row['_snapshot_rowid'],str(exc)))
+                    print(json.dumps(dict(snapshot_source=name,table=table,rows=table_rows,seconds=round(time.monotonic()-table_started,2))),file=sys.stderr,flush=True)
             for _ in range(3):
                 remaining=[]
                 for name,table,rowid,_ in deferred:
