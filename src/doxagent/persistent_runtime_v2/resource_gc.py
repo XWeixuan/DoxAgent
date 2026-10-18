@@ -19,9 +19,13 @@ REFERENCE_OWNER_SQL="json_extract(payload,'$.event_library_root','$.root','$.tic
 
 def migrate(journal):
     with journal.transaction(write=False) as db:
-        if db.execute("SELECT 1 FROM sqlite_master WHERE name='runtime_reference_owner'").fetchone():return
+        names={r[0] for r in db.execute('SELECT name FROM sqlite_master')}
+        ready='runtime_reference_owner' in names and ('runtime_v2_cases' not in names or 'runtime_case_library_owner' in names)
+        if ready:return
     with journal.transaction() as db:
         db.execute('CREATE INDEX IF NOT EXISTS runtime_reference_owner ON runtime_values('+REFERENCE_OWNER_SQL+") WHERE namespace='reference_deliveries'")
+        if 'runtime_v2_cases' in names:
+            db.execute("CREATE INDEX IF NOT EXISTS runtime_case_library_owner ON runtime_v2_cases(json_extract(payload_json,'$.version_pin.event_library_root'))")
 
 
 @lru_cache(maxsize=4096)
@@ -58,14 +62,16 @@ def event_refs(value,ticker=None):
         for item in value:yield from event_refs(item,ticker)
 
 
-def referenced(journal,control_path,*,now=None):
+def referenced(journal,control_path,*,now=None,only_root=None):
     now=now or journal.clock();refs={};protected=set();runs={}
     def add(value,ticker=None,active=False):
         for root,symbol,version in event_refs(value,ticker):
+            if only_root is not None and root!=only_root:continue
             refs.setdefault(root,{}).setdefault(symbol,set()).add(version)
             if active:protected.add(root)
     def activation(raw,ticker,active=False):
         for root,symbol,version in activation_refs(str(control_path),ticker,raw):
+            if only_root is not None and root!=only_root:continue
             refs.setdefault(root,{}).setdefault(symbol,set()).add(version)
             if active:protected.add(root)
     with closing(sqlite3.connect(Path(control_path).resolve().as_uri()+'?mode=ro',uri=True)) as db:
@@ -86,11 +92,13 @@ def referenced(journal,control_path,*,now=None):
                         row=c.execute('SELECT payload AS encoded_payload FROM activation_revisions WHERE revision_id=?',(revision,)).fetchone()
                         if row:activation(row[0],ticker,True)
         if 'runtime_v2_cases' in names:
-            for root,ticker,version,status in db.execute("SELECT json_extract(payload_json,'$.version_pin.event_library_root'),ticker,json_extract(payload_json,'$.version_pin.event_library_version'),status FROM runtime_v2_cases"):
+            scope=" WHERE json_extract(payload_json,'$.version_pin.event_library_root')=?" if only_root is not None else ''
+            for root,ticker,version,status in db.execute("SELECT json_extract(payload_json,'$.version_pin.event_library_root'),ticker,json_extract(payload_json,'$.version_pin.event_library_version'),status FROM runtime_v2_cases"+scope,(only_root,) if scope else ()):
                 if root and version is not None:
                     refs.setdefault(root,{}).setdefault(ticker,set()).add(int(version))
                     if status not in {'COMPLETED','FAILED','UNAVAILABLE'}:protected.add(root)
-        for task in db.execute("SELECT id,ticker,status,json_extract(receipt,'$.frame') AS frame_json,updated_at FROM runtime_tasks WHERE kind IN ('MAINTENANCE','DELIVERY','SELECTION')"):
+        scope=" AND (status IN ('PENDING','RUNNING','HELD') OR (status='FAILED' AND updated_at>?))" if only_root is not None else ''
+        for task in db.execute("SELECT id,ticker,status,json_extract(receipt,'$.frame') AS frame_json,updated_at FROM runtime_tasks WHERE kind IN ('MAINTENANCE','DELIVERY','SELECTION')"+scope,((now-timedelta(days=7)).isoformat(),) if scope else ()):
             identity,ticker,status,raw,at=tuple(task);frame=frame_owner(str(journal.path),raw);run=frame.get('run_id')
             age=(now-datetime.fromisoformat(at)).total_seconds()
             active=status in {'PENDING','RUNNING','HELD'} or status=='FAILED' and age<7*86400
@@ -126,7 +134,7 @@ def referenced(journal,control_path,*,now=None):
             active=[r[0] for r in db.execute("SELECT json_extract(payload,'$.run_id') FROM jobs WHERE status IN ('queued','running')")]
         artifacts=journal.path.resolve().parent/'runtime_artifacts'
         if artifacts.exists():
-            for run in artifacts.iterdir():
+            for run in ([Path(only_root).parent] if only_root is not None else artifacts.iterdir()):
                 if any(value==run.name or (value or '').startswith(run.name+'-') for value in active):protected.add(str(run/'events'))
     return refs,protected,runs
 
@@ -176,12 +184,15 @@ def compact_one(journal,control_path,identity,run,path,versions,now):
             return (stat.st_size,stat.st_mtime_ns,(w.st_size,w.st_mtime_ns) if w and w.st_size else None)
         stat=fingerprint();proof=build(path,staging,ticker,versions)
         with journal.transaction() as db:
-            newrefs,newprotected,_=referenced(journal,control_path,now=now)
+            newrefs,newprotected,_=referenced(journal,control_path,now=now,only_root=identity)
             current=newrefs.get(identity,{}).get(ticker,set())|newrefs.get(identity,{}).get(None,set())
             if identity in newprotected or not (current-{0})<=set(proof['versions']) or opened_below(path) or fingerprint()!=stat:
                 staging.unlink(missing_ok=True);Path(str(staging)+'.native-retained.json').unlink(missing_ok=True);return None
             before=path.stat();size=getattr(before,'st_blocks',(before.st_size+511)//512)*512
             with staging.open('rb+') as stream:os.fsync(stream.fileno())
+            wal=Path(str(path)+'-wal')
+            if wal.exists() and wal.stat().st_size:
+                raise ValueError('immutable branch still has a committed WAL; checkpoint at its owner before retirement')
             os.replace(staging,path)
             for suffix in ('-wal','-shm'):Path(str(path)+suffix).unlink(missing_ok=True)
             proof.update(target=str(path),retired_allocated=size,retained_allocated=getattr(path.stat(),'st_blocks',(path.stat().st_size+511)//512)*512,at=now.isoformat())
@@ -246,7 +257,7 @@ def collect(journal,control_path,*,now=None,limit=8,dry_run=False):
                 # Admission and task-frame changes are fenced by the Runtime
                 # writer. Recheck current pointers before the actual exit.
                 with journal.transaction() as db:
-                    _refs,_protected,_runs=referenced(journal,control_path,now=now)
+                    _refs,_protected,_runs=referenced(journal,control_path,now=now,only_root=identity)
                     if identity in _refs or identity in _protected or opened_below(run):continue
                     size=allocated(run);shutil.rmtree(run)
                     receipt=dict(run=run.name,allocated=size,at=now.isoformat())

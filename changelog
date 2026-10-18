@@ -1626,3 +1626,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 - 2026-10-19 [one-command Guardian release]: Build and retarget the actual repair-agent companion with each Guardian release, deep-copying candidate environment so a previous accepted Guardian keeps its original companion binding. Release lifecycle tests8 passed.
 
 - 2026-10-19 [bounded Runtime reference scan]: Real profiling found9.68million recursive visits per owner scan of large before/after Reference bodies. Read only the typed root/version scalars with a small covering expression index; cache immutable activation/frame references. Exit the successful7d pre-O3 retry baseline while keeping delivered before/after evidence and native version pins. Event/native owner tests5 passed; the old slow deep collector was stopped before continuing with the bounded scan.
+
+- 2026-10-19 [short retirement fence]: Final branch revalidation uses an exact target Case-root index and only active recovery frames, rather than re-reading every historical Case/task under the Runtime writer lock. Protect nonempty source WAL before filesystem publication. Native owner regression5 passed.
