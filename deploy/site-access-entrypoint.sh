@@ -46,7 +46,9 @@ if [ "${DOXAGENT_SITE_ACCESS_BROWSER_HEADLESS:-true}" = "false" ]; then
     sleep 0.1
   done
   x11vnc -display "$DISPLAY" -forever -shared -listen 127.0.0.1 -rfbport 5910 -nopw &
-  printf '%s\n' 5910 > /run/doxagent-chrome/vnc-target
+  if [ ! -s /run/doxagent-chrome/vnc-target ]; then
+    printf '%s\n' 5910 > /run/doxagent-chrome/vnc-target
+  fi
   python /usr/local/bin/site-login-vnc-relay.py \
     --target-file /run/doxagent-chrome/vnc-target --port 5900 &
 fi

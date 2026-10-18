@@ -1,0 +1,68 @@
+{
+  "open": {
+    "operation": {
+      "action": "OPEN_LOGIN",
+      "idempotency_key": "release-toolchain:3061b38fa2184dbea1fb2fecd1124425",
+      "scope_id": "source:globenewswire_semiconductors_rss",
+      "identity_id": "globe-rss-main",
+      "session_id": null,
+      "task_id": null,
+      "verification_url": null,
+      "confirm_discard": false,
+      "operation_id": "maintenance_op_edd1a1f6f72b48f88b8467e9f29450e5",
+      "state": "DONE",
+      "stage": "DONE",
+      "stage_started_at": "2026-10-17T18:35:38.836489Z",
+      "deadline_at": "2026-10-17T18:36:18.836451Z",
+      "result": {
+        "session_id": "maintenance_94fd0fffbd15487f90ef01ec37b84f17",
+        "identity_id": "globe-rss-main",
+        "stage": "VIEWER_READY",
+        "generation": 2,
+        "kind": "LOGIN",
+        "task_id": null,
+        "site_id": "globenewswire"
+      },
+      "error": null,
+      "updated_at": "2026-10-17T18:35:43.657206Z"
+    },
+    "ack_seconds": 0.0051534720696508884,
+    "seconds": 5.183676090091467,
+    "stages": [
+      "STARTING_BROWSER",
+      "DONE"
+    ]
+  },
+  "real_login": false,
+  "original_tasks_before": 4,
+  "viewer_rfb": "RFB ",
+  "close": {
+    "operation": {
+      "action": "CLOSE_LOGIN",
+      "idempotency_key": "release-toolchain:d7e5c9638c12498f8025dd6668b3d66b",
+      "scope_id": null,
+      "identity_id": null,
+      "session_id": "maintenance_94fd0fffbd15487f90ef01ec37b84f17",
+      "task_id": null,
+      "verification_url": null,
+      "confirm_discard": false,
+      "operation_id": "maintenance_op_3f42c0bc72364f689704df8588fb6ac5",
+      "state": "DONE",
+      "stage": "DONE",
+      "stage_started_at": "2026-10-17T18:35:44.279783Z",
+      "deadline_at": "2026-10-17T18:35:54.279743Z",
+      "result": {
+        "session_closed": true
+      },
+      "error": null,
+      "updated_at": "2026-10-17T18:35:44.320854Z"
+    },
+    "ack_seconds": 0.0075045074336230755,
+    "seconds": 0.5286155682988465,
+    "stages": [
+      "STARTING_BROWSER",
+      "DONE"
+    ]
+  },
+  "original_task_refs_unchanged": true
+}

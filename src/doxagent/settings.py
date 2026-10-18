@@ -566,7 +566,7 @@ class DoxAgentSettings(BaseSettings):
         validation_alias="DOXAGENT_SITE_ACCESS_BROWSER_CHANNEL",
     )
     site_access_browser_max_processes: int = Field(
-        default=4,
+        default=8,
         ge=1,
         le=8,
         validation_alias="DOXAGENT_SITE_ACCESS_BROWSER_MAX_PROCESSES",

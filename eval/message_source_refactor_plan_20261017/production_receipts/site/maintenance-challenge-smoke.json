@@ -1,0 +1,70 @@
+{
+  "open": {
+    "operation": {
+      "action": "OPEN_CHALLENGE",
+      "idempotency_key": "release-toolchain:de8f809eb6704f31a2f7074236593b4b",
+      "scope_id": "source:reuters_site_search",
+      "identity_id": "reuters-backup",
+      "session_id": null,
+      "task_id": "challenge_a6e30ab46f2b43618ce7072241ad5757",
+      "verification_url": null,
+      "confirm_discard": false,
+      "operation_id": "maintenance_op_3aecbd23d22d44c78dd1986534666984",
+      "state": "DONE",
+      "stage": "DONE",
+      "stage_started_at": "2026-10-17T19:26:19.726666Z",
+      "deadline_at": "2026-10-17T19:26:59.726629Z",
+      "result": {
+        "session_id": "maintenance_87a741ac524242a692dc57b69f6cc0d7",
+        "stage": "VIEWER_READY",
+        "generation": 7,
+        "page_preserved": true,
+        "kind": "CHALLENGE",
+        "task_id": "challenge_a6e30ab46f2b43618ce7072241ad5757",
+        "identity_id": "reuters-backup"
+      },
+      "error": null,
+      "updated_at": "2026-10-17T19:26:23.452636Z"
+    },
+    "ack_seconds": 0.004980430938303471,
+    "seconds": 4.131825216114521,
+    "stages": [
+      "STARTING_BROWSER",
+      "DONE"
+    ]
+  },
+  "real_login": false,
+  "original_tasks_before": 4,
+  "viewer_rfb": "RFB ",
+  "close": {
+    "operation": {
+      "action": "RELEASE_VIEWER",
+      "idempotency_key": "release-toolchain:e85a84a7556346a1a25db9a5e28d087c",
+      "scope_id": null,
+      "identity_id": null,
+      "session_id": "maintenance_87a741ac524242a692dc57b69f6cc0d7",
+      "task_id": null,
+      "verification_url": null,
+      "confirm_discard": false,
+      "operation_id": "maintenance_op_55f5ed5553f6477991a04576836ed42f",
+      "state": "DONE",
+      "stage": "DONE",
+      "stage_started_at": "2026-10-17T19:26:23.969083Z",
+      "deadline_at": "2026-10-17T19:26:33.969029Z",
+      "result": {
+        "released": true,
+        "page_preserved": true
+      },
+      "error": null,
+      "updated_at": "2026-10-17T19:26:23.981742Z"
+    },
+    "ack_seconds": 0.006476481910794973,
+    "seconds": 0.5183820147067308,
+    "stages": [
+      "STARTING_BROWSER",
+      "DONE"
+    ]
+  },
+  "original_native_target_alive": true,
+  "original_task_refs_unchanged": true
+}

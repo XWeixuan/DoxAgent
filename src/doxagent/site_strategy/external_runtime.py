@@ -109,6 +109,7 @@ class ExternalChromeRuntime:
         self.rotation_paused = False
         self._rotation_due = False
         self._stopping = False
+        self.target_owner = None
         self.last_recovery_reason: str | None = None
         self._safety = SafetyStateReader(Path(safety_path) if safety_path else None)
 
@@ -180,6 +181,9 @@ class ExternalChromeRuntime:
         from playwright.async_api import async_playwright
 
         self._playwright = await async_playwright().start()
+        observer = getattr(self, "control_observer", None)
+        if observer:
+            await observer(self._driver_process().pid)
         self.driver_epoch += 1
         self._driver_started = time.monotonic()
         self._high_rss_samples = 0
@@ -199,22 +203,18 @@ class ExternalChromeRuntime:
         entries = list(self._entries.values())
         for entry in entries:
             try:
-                async with asyncio.timeout(6):
-                    if not self.driver_ready and not self.rotation_paused:
-                        for target_id in tuple(getattr(entry.cdp, "_policies", {})):
-                            await entry.cdp.send("Target.closeTarget", {"targetId": target_id})
+                # Durable ownership, not a stale connection/policy set, decides
+                # later BUSINESS cleanup. Never close human targets on detach.
+                detach = getattr(entry.cdp, "detach_transport", None)
+                if detach is not None:
+                    await detach()
+                else:
+                    await entry.cdp.close()  # Compatibility for non-browser test adapters.
             except Exception:
-                logger.warning(
-                    "external target cleanup failed identity=%s", entry.identity.identity_id
-                )
+                logger.exception("external raw CDP detach failed")
             finally:
-                try:
-                    await entry.cdp.close()
-                except Exception:
-                    logger.exception("external raw CDP close failed")
-                finally:
-                    if self._entries.get(entry.identity.identity_id) is entry:
-                        self._entries.pop(entry.identity.identity_id)
+                if self._entries.get(entry.identity.identity_id) is entry:
+                    self._entries.pop(entry.identity.identity_id)
         playwright, self._playwright = self._playwright, None
         if playwright is not None:
             try:
@@ -339,21 +339,25 @@ class ExternalChromeRuntime:
                     return entry
                 if entry.active_pages:
                     raise RuntimeError("external_identity_changed_while_busy")
-                await entry.cdp.close()
+                await entry.cdp.detach_transport()
                 self._entries.pop(identity.identity_id, None)
             assert self._playwright is not None
             if self._safety.read().level is not SafetyLevel.NORMAL:
                 raise RuntimeError("external_cold_start_deferred_resource_pressure")
             instance = await self.client.ensure(identity, egress)
+            if getattr(instance, "controller_epoch", None) is not None:
+                await self.client.claim_controller(
+                    identity.identity_id, expected_epoch=instance.controller_epoch
+                )
             browser = await self._playwright.chromium.connect_over_cdp(
-                instance.cdp_http_url, timeout=20_000
+                instance.cdp_http_url, timeout=20_000, no_defaults=True
             )
             if len(browser.contexts) != 1:
                 raise RuntimeError("external_chrome_default_context_missing")
             cdp = _RawBrowserCDP(instance.cdp_websocket_url)
             await cdp.start()
             if epoch != self.driver_epoch or not self.driver_ready:
-                await cdp.close()
+                await cdp.detach_transport()
                 raise RuntimeError("external_driver_epoch_changed")
             entry = _ExternalEntry(
                 identity=identity,
@@ -365,8 +369,50 @@ class ExternalChromeRuntime:
                 last_used=time.monotonic(),
                 driver_epoch=epoch,
             )
+            if self.target_owner:
+                await self._reconcile_targets(entry)
             self._entries[identity.identity_id] = entry
             return entry
+
+    async def _reconcile_targets(self, entry):
+        records = await self.target_owner.event(
+            "list",
+            {
+                "identity_id": entry.identity.identity_id,
+                "instance_id": entry.instance.instance_id,
+            },
+        )
+        targets = (await entry.cdp.send("Target.getTargets"))["targetInfos"]
+        live = {str(t["targetId"]): t for t in targets}
+        for record in records:
+            allocation_id = record["allocation_id"]
+            target_id = record["target_id"]
+            if not target_id:
+                marker = "about:blank#doxagent-" + allocation_id
+                target_id = next(
+                    (key for key, value in live.items() if value.get("url") == marker), None
+                )
+                if target_id:
+                    await self.target_owner.event(
+                        "bind", {"allocation_id": allocation_id, "target_id": target_id}
+                    )
+            if target_id not in live:
+                await self.target_owner.event(
+                    "state", {"allocation_id": allocation_id, "state": "LOST"}
+                )
+                continue
+            if record["owner_kind"] != "BUSINESS":
+                continue
+            await self.target_owner.event(
+                "state", {"allocation_id": allocation_id, "state": "CLOSE_PENDING"}
+            )
+            try:
+                await entry.cdp.send("Target.closeTarget", {"targetId": target_id})
+            except Exception as exc:
+                raise RuntimeError("owned_target_cleanup_pending") from exc
+            await self.target_owner.event(
+                "state", {"allocation_id": allocation_id, "state": "CLOSED"}
+            )
 
     async def page(
         self, identity: BrowserIdentitySpec, egress: ProxyEgress, *, deadline: float | None = None
@@ -397,11 +443,33 @@ class ExternalChromeRuntime:
             self._acquiring -= 1
 
     async def _create_owned_page(self, entry: _ExternalEntry) -> Any:
-        marker = "about:blank#doxagent-" + uuid4().hex
+        allocation = None
+        if self.target_owner:
+            allocation = await self.target_owner.event(
+                "allocate",
+                {
+                    "identity_id": entry.identity.identity_id,
+                    "instance_id": entry.instance.instance_id,
+                    "epoch": self.driver_epoch,
+                },
+            )
+        marker = "about:blank#doxagent-" + (
+            allocation["allocation_id"] if allocation else uuid4().hex
+        )
         target_id = None
         try:
-            result = await entry.cdp.send("Target.createTarget", {"url": marker})
+            result = await entry.cdp.send(
+                "Target.createTarget", {"url": marker, "background": True}
+            )
             target_id = str(result["targetId"])
+            if allocation:
+                await self.target_owner.event(
+                    "bind",
+                    {
+                        "allocation_id": allocation["allocation_id"],
+                        "target_id": target_id,
+                    },
+                )
             entry.cdp._owned_targets.add(target_id)
             # context.pages/url are local Playwright state, not cancellable RPCs.
             # The marker separates concurrent allocations in the same context.
@@ -409,6 +477,9 @@ class ExternalChromeRuntime:
                 page = next((p for p in entry.context.pages if p.url == marker), None)
                 if page is not None:
                     page._doxagent_target_id = target_id
+                    if allocation:
+                        page._doxagent_allocation_id = allocation["allocation_id"]
+                        page._doxagent_target_owner = self.target_owner
                     return page
                 await asyncio.sleep(0.01)
         except BaseException:
@@ -452,6 +523,8 @@ class ExternalChromeRuntime:
         *,
         target_id: str | None = None,
     ) -> _ExternalLease:
+        if target_id is None:
+            raise RuntimeError("exact_maintenance_target_reference_required")
         await self._page_slots.acquire()
         try:
             self._acquiring += 1
@@ -460,13 +533,31 @@ class ExternalChromeRuntime:
             if target_id is not None:
                 matched = []
                 for candidate in candidates:
-                    session = await entry.context.new_cdp_session(candidate)
+                    session = None
                     try:
+                        session = await entry.context.new_cdp_session(candidate)
                         info = await session.send("Target.getTargetInfo")
                         if str(info["targetInfo"]["targetId"]) == target_id:
                             matched.append(candidate)
+                    except Exception as exc:
+                        # Raw-CDP orphan cleanup and Playwright's PageClosed
+                        # delivery are separate channels. A disposed page in the
+                        # snapshot is not a failure of the wanted human target.
+                        if not any(
+                            marker in str(exc).lower()
+                            for marker in (
+                                "no object with guid",
+                                "no target with given id",
+                                "has been closed",
+                            )
+                        ):
+                            raise
                     finally:
-                        await session.detach()
+                        if session is not None:
+                            try:
+                                await session.detach()
+                            except Exception:
+                                pass
                 candidates = matched
             if not candidates:
                 raise RuntimeError("external_maintenance_page_not_found")
@@ -483,12 +574,7 @@ class ExternalChromeRuntime:
     async def close_existing_maintenance_page(
         self, identity: BrowserIdentitySpec, egress: ProxyEgress
     ) -> bool:
-        entry = await self._entry(identity, egress)
-        candidates = [page for page in entry.context.pages if page.url != "about:blank"]
-        if not candidates:
-            return False
-        await candidates[-1].close()
-        return True
+        raise RuntimeError("exact_maintenance_target_reference_required")
 
     async def stop_identity(self, identity_id: str, *, reason: str) -> bool:
         async with self._lock:
@@ -497,7 +583,7 @@ class ExternalChromeRuntime:
                 return False
             entry = self._entries.pop(identity_id, None)
         if entry is not None:
-            await entry.cdp.close()
+            await entry.cdp.detach_transport()
         return await self.client.stop(identity_id, reason=reason)
 
     async def status(self, identity_id: str) -> dict[str, object]:

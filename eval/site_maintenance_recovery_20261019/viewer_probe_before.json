@@ -1,0 +1,7 @@
+{
+  "environment": "production native VNC ports; before b1f8237c",
+  "yahoo_backup": {"direct_rfb": "RFB 003.008", "direct_banner_seconds": 0.11627460923045874, "old_probe_result": "viewer_service_unavailable_chrome_preserved"},
+  "wsj_main": {"direct_rfb": "RFB 003.008", "direct_banner_seconds": 0.2094881720840931, "isolated_probe_result": "ready", "subsequent_supervisor_select": "RuntimeError"},
+  "false_unavailable_acceptance": {"identity": "yahoo-backup", "operation_state": "DONE", "stage": "VIEWER_UNAVAILABLE", "relay_target_matches_identity": false},
+  "interpretation": "A healthy unrelated 5900 RFB banner cannot certify selected identity. The old 200ms probe can reject healthy native viewers; rapid repeated aborted connections do not fix the threshold."
+}

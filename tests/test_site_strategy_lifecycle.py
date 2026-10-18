@@ -441,9 +441,14 @@ async def test_challenge_keeps_original_article_and_blocks_identity_until_verifi
         return "barrons-1"
 
     service.runtime.adopt_challenge = adopt_challenge  # type: ignore[method-assign]
+    service.runtime.recover_login = adopt_challenge  # type: ignore[method-assign]
     service.runtime.verify_login = verify_login  # type: ignore[method-assign]
     service.runtime.close_login = close_login  # type: ignore[method-assign]
-    opened = await service.open_identity_login("barrons", "barrons-1")
+    with pytest.raises(ProfileUnavailableError, match="profile_in_maintenance"):
+        await service.open_identity_login("barrons", "barrons-1")
+    opened = await service.recover_identity_login(
+        "barrons", "barrons-1", token, target_id="chrome-target-1"
+    )
     assert opened["login_token"] == token
     with pytest.raises(RuntimeError, match="not been verified"):
         await service.close_profile_login(token)
@@ -563,7 +568,7 @@ async def test_challenge_reconnect_failure_preserves_original_pause(
 
 
 @pytest.mark.asyncio
-async def test_browser_challenge_stops_fallback_and_persists_pause(
+async def test_browser_challenge_preserves_primary_and_allows_fallback(
     service: SiteStrategyService, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     calls = []
@@ -572,6 +577,10 @@ async def test_browser_challenge_stops_fallback_and_persists_pause(
 
     async def challenge(request, _resolved, combination, profile, _egress):
         calls.append((combination.combination_id, profile.profile_id))
+        if len(calls) == 2:
+            return RuntimeResponse(
+                200, request.url, {}, "<html><body>fallback result</body></html>"
+            )
         return RuntimeResponse(
             200, request.url, {},
             "<html><title>Access is temporarily restricted</title></html>",
@@ -583,8 +592,8 @@ async def test_browser_challenge_stops_fallback_and_persists_pause(
         operation_id="challenge-fallback", purpose=SitePurpose.CRAWLER,
         mode=AccessMode.BROWSER, url=article,
     ))
-    assert len(calls) == 1
-    assert result.reason_code == "challenge_waiting_for_manual_resolution"
+    assert len(calls) == 2
+    assert result.combination_id == calls[1][0]
     profile = service.repository.get_profile(calls[0][1])
     assert profile is not None
     assert profile.operational_state is ProfileOperationalState.MAINTENANCE

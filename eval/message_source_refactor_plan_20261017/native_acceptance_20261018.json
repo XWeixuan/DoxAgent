@@ -1,0 +1,17 @@
+{
+  "environment": "isolated Linux Chrome Supervisor temporary profiles and local fixture proxy",
+  "production_profiles_touched": false,
+  "real_login_test": false,
+  "worker_restart_preserves_original_and_unknown_target": true,
+  "lost_create_reply_reconciled": true,
+  "independent_body_verify_and_exact_cleanup": true,
+  "supervisor_process_adopts_same_native_chrome": true,
+  "cookie_persists_through_graceful_cold_start": true,
+  "managed_and_external_real_drivers_are_independent": true,
+  "regressions": {"commit": "fe4a768bd61f3f32f819e04ae6cf1407a580d34e", "passed": 302, "platform_skipped": 1, "seconds": 100.93, "scope": "selected suite from clean committed Git archive; not a paid login test"},
+  "clean_archive_baseline": {"commit": "4801e831364be16710cd18d3d9ff39b7ad7cc7b4", "passed": 301, "platform_skipped": 1},
+  "production_receipts": "production_receipts/",
+  "production_real_paid_login_test": false,
+  "source_checkpoint": "D:/DoxAgentTmp/source-runtime-isolation-20261018-final.tar.gz",
+  "fixture_directory_auto_cleaned": "/tmp/doxagent-source-runtime-smoke-h2egu29z"
+}

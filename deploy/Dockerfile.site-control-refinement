@@ -1,0 +1,14 @@
+# Only for a committed site_strategy-only refinement against a pinned release.
+# Operator must reject any changed application paths outside this package.
+ARG APPROVED_BASE=doxagent-site-access:server
+FROM ${APPROVED_BASE}
+USER root
+ARG DOXAGENT_BUILD_COMMIT
+ARG DOXAGENT_SOURCE_SHA256
+ENV DOXAGENT_BUILD_COMMIT=${DOXAGENT_BUILD_COMMIT}
+LABEL org.opencontainers.image.revision=${DOXAGENT_BUILD_COMMIT} \
+      doxagent.source.sha256=${DOXAGENT_SOURCE_SHA256}
+RUN rm -rf /app/src/doxagent/site_strategy
+COPY src/doxagent/site_strategy /app/src/doxagent/site_strategy
+RUN find /app/src/doxagent/site_strategy -type d ! -perm -005 -exec chmod a+rx {} + \
+    && find /app/src/doxagent/site_strategy -type f ! -perm -004 -exec chmod a+r {} +

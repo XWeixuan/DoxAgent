@@ -1,0 +1,25 @@
+{
+  "source": "read-only SSH docker inspect and proc namespace/DNS checks at task start",
+  "site": {
+    "container_id": "447c5fafb6131a50749401bc59ba65e9ee7d879cfae5374cb3add9147c4c8800",
+    "network_mode": "container:b0ada7b51d0c7ac7c2d5e45f690e4833fe8ae0fb1a958afb106446404f3c9a99",
+    "namespace": "net:[4026532634]",
+    "started_at": "2026-10-18T17:45:38.26202315Z",
+    "health": "healthy",
+    "reuters_dns": "FAILED"
+  },
+  "current_supervisor": {
+    "container_id": "e1e1730e43a1a1fe131df7cbe0f97ee2eac98a8b1eb144d410dc97efc0ade77f",
+    "namespace": "net:[4026532586]",
+    "started_at": "2026-10-18T17:45:56.570312194Z",
+    "health": "healthy"
+  },
+  "host_reuters_dns": "PASSED",
+  "same_image_revision": "99d2da1dc9da7174e07d3e83069cd7e2526f0cba",
+  "after_rebind_same_images": {
+    "site_namespace": "net:[4026532586]",
+    "supervisor_namespace": "net:[4026532586]",
+    "reuters_dns": "PASSED",
+    "yahoo_dns": "PASSED"
+  }
+}

@@ -48,3 +48,4 @@ python3 -m py_compile /usr/local/sbin/doxagent-site-login-admin \
   /usr/local/bin/doxagent-site-login-ui \
   /usr/local/bin/doxagent-site-login-clipboard-bridge
 echo "site login desktop tool installed"
+sh "$repo_root/deploy/install-site-access-network-guard.sh"

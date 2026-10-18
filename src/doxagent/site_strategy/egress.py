@@ -15,6 +15,67 @@ from .repository import SiteStrategyRepository
 from .schema import ProxyEgress
 
 
+async def probe_egress_region(repository, egress_id):
+    """Record observed geography, never infer it from a historical slot/node name."""
+    egress = repository.get_egress(egress_id)
+    if not egress or not egress.observed_ip:
+        raise ValueError("egress IP must be verified first")
+    country = None
+    async with httpx.AsyncClient(proxy=egress.endpoint, timeout=5) as client:
+        for url, field in (
+            ("https://ifconfig.co/json", "country_iso"),
+            ("https://ipwho.is/", "country_code"),
+        ):
+            try:
+                response = await client.get(url)
+                response.raise_for_status()
+                payload = response.json()
+                observed_country = str(payload.get(field) or "").upper()
+                if (
+                    payload.get("success") is not False
+                    and payload.get("ip") == egress.observed_ip
+                    and len(observed_country) == 2
+                    and observed_country.isalpha()
+                ):
+                    country = observed_country
+                    break
+            except (httpx.HTTPError, ValueError):
+                continue
+    if country is None:
+        # Some fixed egresses can reach the business sites/ipify but reject
+        # geography hosts. Lookup metadata directly only AFTER verifying the
+        # current proxy exit. This is not a direct business traffic fallback.
+        async with httpx.AsyncClient(proxy=egress.endpoint, timeout=5) as client:
+            response = await client.get("https://api.ipify.org?format=json")
+            response.raise_for_status()
+            if response.json().get("ip") != egress.observed_ip:
+                raise ValueError("egress IP changed before geography lookup")
+        address = ip_address(egress.observed_ip)
+        if not address.is_global:
+            raise ValueError("geography lookup requires a public exit IP")
+        async with httpx.AsyncClient(timeout=5, trust_env=False) as client:
+            response = await client.get(f"https://ipwho.is/{address}")
+            response.raise_for_status()
+            payload = response.json()
+        observed_country = str(payload.get("country_code") or "").upper()
+        if (
+            payload.get("success") is False
+            or payload.get("ip") != egress.observed_ip
+            or len(observed_country) != 2
+            or not observed_country.isalpha()
+        ):
+            raise ValueError("egress geography/IP observation unverified")
+        country = observed_country
+    with repository.transaction() as connection:
+        connection.execute(
+            "insert into egress_regions values(?,?,?,?) "
+            "on conflict(egress_id) do update set observed_ip=excluded.observed_ip, "
+            "country_code=excluded.country_code,observed_at=excluded.observed_at",
+            (egress_id, egress.observed_ip, country, datetime.now(UTC).isoformat()),
+        )
+    return {"egress_id": egress_id, "observed_ip": egress.observed_ip, "country_code": country}
+
+
 def render_fixed_listeners(config_text: str, egresses: list[ProxyEgress]) -> str:
     """Merge deterministic, fail-closed HTTP listeners into a subscription config.
 

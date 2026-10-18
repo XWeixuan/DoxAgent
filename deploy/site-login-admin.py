@@ -117,7 +117,12 @@ def _locked() -> Any:
     descriptor = os.open(LOCK_FILE, os.O_CREAT | os.O_RDWR, 0o600)
     try:
         os.chmod(LOCK_FILE, 0o600)
-        fcntl.flock(descriptor, fcntl.LOCK_EX)  # type: ignore[attr-defined]
+        try:
+            fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)  # type: ignore[attr-defined]
+        except BlockingIOError as exc:
+            raise AdminError(
+                "BRIDGE_BUSY", "Another desktop command is saving its state.", "Retry in a moment."
+            ) from exc
         yield
     finally:
         fcntl.flock(descriptor, fcntl.LOCK_UN)  # type: ignore[attr-defined]
@@ -327,183 +332,162 @@ def _find_viewer_pid() -> int | None:
 
 
 def _inventory() -> dict[str, Any]:
-    sites = _request("GET", "/v1/sites")
-    profiles = _request("GET", "/v1/profiles")
-    egresses = _request("GET", "/v1/egresses")
-    has_identity_bindings = any(
-        combination.get("identity_id")
-        for entry in sites
-        for combination in entry["spec"]["access"]["combinations"]
-    )
-    identities = _request("GET", "/v1/identities") if has_identity_bindings else []
-    identity_by_id = {item["spec"]["identity_id"]: item for item in identities}
-    egress_by_id = {item["egress_id"]: item for item in egresses}
-    profile_by_id = {item["profile_id"]: item for item in profiles}
-    rows: list[dict[str, Any]] = []
-    for site_entry in sites:
-        head = site_entry["head"]
-        spec = site_entry["spec"]
-        auth = spec.get("auth") or {}
-        if not (auth.get("maintenance_url") or auth.get("login_url")):
-            continue
-        combinations = sorted(
-            (item for item in spec["access"]["combinations"] if item.get("enabled", True)),
-            key=lambda item: item["priority"],
-        )
-        runtime = _request("GET", f"/v1/combinations/{spec['site_id']}")
-        combination_runtime = runtime.get("combinations") or {}
-        for index, combination in enumerate(combinations):
-            identity_entry = identity_by_id.get(combination.get("identity_id"))
-            identity = identity_entry.get("spec", {}) if identity_entry else {}
-            profile_id = identity.get("profile_id") or combination.get("profile_id")
-            egress_id = identity.get("egress_id") or combination.get("egress_id")
-            profile = profile_by_id.get(profile_id)
-            egress = egress_by_id.get(egress_id)
-            if profile is None or egress is None:
-                continue
-            identity_id = identity.get("identity_id") or profile["profile_id"]
-            site_auth = next(
-                (
-                    item
-                    for item in (identity_entry or {}).get("site_auth", [])
-                    if item.get("site_id") in {spec["site_id"], runtime.get("runtime_key")}
-                ),
-                None,
-            )
-            auth_state = (
-                site_auth.get("auth_state") if site_auth else profile.get("auth_state", "UNKNOWN")
-            )
-            rows.append(
-                {
-                    "row_id": f"{spec['site_id']}:{identity_id}",
-                    "site_id": spec["site_id"],
-                    "site_name": spec.get("display_name")
-                    or DISPLAY_NAMES.get(spec["site_id"], spec["site_id"]),
-                    "site_enabled": bool(head["enabled"]),
-                    "profile_id": profile["profile_id"],
-                    "identity_id": identity_id,
-                    "runtime_kind": identity.get("runtime_kind", "managed_playwright"),
-                    "profile_role": "primary" if index == 0 else "backup",
-                    "priority": combination["priority"],
-                    "combination_id": combination.get("combination_id"),
-                    "egress_id": egress["egress_id"],
-                    "egress_node": egress["node_ref"],
-                    "egress_enabled": bool(egress["enabled"]),
-                    "egress_status": egress.get("status", "UNKNOWN"),
-                    "last_probe_attempt": egress.get("last_probe_attempt"),
-                    "auth_state": auth_state,
-                    "operational_state": (identity_entry or {})
-                    .get("runtime", {})
-                    .get("operational_state", profile.get("operational_state", "AVAILABLE")),
-                    "session_revision": (site_auth or {}).get(
-                        "observed_session_revision", profile.get("session_revision", 0)
-                    ),
-                    "verification_configured": bool(auth.get("verification_url")),
-                    "verification_kind": auth.get("verification_kind", "subscription_article"),
-                    "challenge_url": (
-                        profile.get("challenge_url")
-                        if profile.get("challenge_site_id") == spec["site_id"]
-                        and profile.get("challenge_identity_id") == identity_id
-                        else None
-                    ),
-                    "observed_ip": egress.get("observed_ip"),
-                    "observed_at": egress.get("observed_at"),
-                    "manual_attention_required": bool(
-                        (combination_runtime.get(combination.get("combination_id")) or {}).get(
-                            "manual_attention_required"
-                        )
-                    ),
-                }
-            )
-    return {"profiles": rows, "vnc_ready": _vnc_ready()}
+    inventory = _request("GET", "/v1/maintenance/inventory", timeout=3)
+    inventory["vnc_ready"] = _vnc_ready()
+    return inventory
 
 
 def command_list() -> dict[str, Any]:
+    inventory = _inventory()
+    inventory["ok"] = True
+    return inventory
+
+
+ACTIONS = {
+    "OPEN_LOGIN",
+    "OPEN_CHALLENGE",
+    "VERIFY_LOGIN",
+    "VERIFY_CHALLENGE",
+    "RELEASE_VIEWER",
+    "CLOSE_LOGIN",
+    "REOPEN_LOST_CHALLENGE",
+    "ACTIVATE_PRIMARY",
+}
+
+
+def command_action(arguments) -> dict[str, Any]:
+    if arguments.action not in ACTIONS:
+        raise AdminError("INVALID_ACTION", "Unsupported maintenance action.")
+    payload = {"action": arguments.action, "idempotency_key": arguments.idempotency_key}
+    for field in ("scope_id", "identity_id", "session_id", "task_id"):
+        value = getattr(arguments, field)
+        if value:
+            if not re.fullmatch(r"[a-z0-9][a-z0-9_:.-]{0,199}", value):
+                raise AdminError("INVALID_REFERENCE", "Invalid source or session reference.")
+            payload[field] = value
+    if arguments.url:
+        payload["verification_url"] = _validate_override_url(arguments.url)
+    if getattr(arguments, "confirm_discard", False):
+        if arguments.action != "CLOSE_LOGIN" or not arguments.task_id:
+            raise AdminError("INVALID_ACTION", "Discard requires a Challenge task reference.")
+        payload["confirm_discard"] = True
+    operation = _request("POST", "/v1/maintenance/operations", payload, timeout=3)
+    # Network and Docker have completed before taking the short local state lock.
     with _locked():
-        inventory = _inventory()
-        inventory.update({"ok": True, "session": _public_session(_read_session())})
-        return inventory
+        reference = STATE_DIR / "operation.json"
+        temporary = reference.with_suffix(".tmp")
+        descriptor = os.open(temporary, os.O_CREAT | os.O_WRONLY | os.O_TRUNC, 0o600)
+        with os.fdopen(descriptor, "w", encoding="utf-8") as stream:
+            json.dump({"operation_id": operation["operation_id"]}, stream)
+        os.replace(temporary, reference)
+    return {"ok": True, **operation}
 
 
-def command_open(profile_id: str, site_id: str | None = None) -> dict[str, Any]:
-    profile_id = _validate_profile_id(profile_id)
+def command_operation(operation_id: str, *, cancel=False) -> dict[str, Any]:
+    if not re.fullmatch(r"[a-z0-9][a-z0-9_-]{0,199}", operation_id):
+        raise AdminError("INVALID_REFERENCE", "Invalid operation reference.")
+    suffix = ":cancel" if cancel else ""
+    result = _request(
+        "POST" if cancel else "GET", f"/v1/maintenance/operations/{operation_id}{suffix}", timeout=3
+    )
+    return {"ok": True, **result}
+
+
+def _read_session_locked():
+    with _locked():
+        return _read_session()
+
+
+def _write_session_locked(session):
     with _locked():
         existing = _read_session()
-        if existing:
+        if existing and existing["login_token"] != session["login_token"]:
             raise AdminError(
-                "SESSION_ACTIVE",
-                f"{existing['profile_id']} is already under login maintenance.",
-                "Continue or cancel the current session before opening another profile.",
+                "SESSION_CHANGED", "Another session was selected; refresh the desktop tool."
             )
-        inventory = _inventory()
-        selected = next(
-            (
-                item
-                for item in inventory["profiles"]
-                if (
-                    item["profile_id"] == profile_id
-                    or item["identity_id"] == profile_id
-                    or item["row_id"] == profile_id
-                )
-                and (site_id is None or item["site_id"] == site_id)
-            ),
-            None,
-        )
-        if selected is None or not selected["site_enabled"] or not selected["egress_enabled"]:
-            raise AdminError(
-                "PROFILE_DISABLED",
-                "The profile is missing, the site is disabled, or the egress is unavailable.",
-            )
-        started = time.monotonic()
-        if (
-            selected["runtime_kind"] == "managed_playwright"
-            and selected["identity_id"] == selected["profile_id"]
-        ):
-            path = f"/v1/profiles/{selected['profile_id']}/login:open"
-            payload: dict[str, Any] = {}
-        else:
-            path = f"/v1/identities/{selected['identity_id']}/login:open"
-            payload = {"site_id": selected["site_id"]}
-        response = _request("POST", path, payload, timeout=40)
-        token = response.get("login_token") if isinstance(response, dict) else None
-        if not isinstance(token, str) or not re.fullmatch(r"[a-f0-9]{32}", token):
-            raise AdminError("BROWSER_START_FAILED", "The login browser failed to start.")
-        session = {
-            "profile_id": selected["profile_id"],
-            "identity_id": selected["identity_id"],
-            "runtime_kind": selected["runtime_kind"],
-            "site_id": selected["site_id"],
-            "site_name": selected["site_name"],
-            "login_token": token,
-            "opened_at": dt.datetime.now(dt.UTC).isoformat(),
-            "viewer_pid": None,
-            "challenge_url": selected.get("challenge_url"),
-        }
         _write_session(session)
-        viewer_deadline = time.monotonic() + 5
-        while not _vnc_ready():
-            if time.monotonic() >= viewer_deadline:
-                closed = _close_token(session)
-                if closed:
-                    _delete_session()
-                raise AdminError(
-                    "VNC_UNAVAILABLE",
-                    "The browser started, but the viewer is unavailable.",
-                    "Refresh and retry. If this persists, ask the administrator to check port 5900."
-                    if closed
-                    else "The maintenance session is retained; cancel it or retry recovery.",
-                )
-            time.sleep(0.1)
-        return {
-            "ok": True,
-            "profile_id": selected["profile_id"],
-            "identity_id": selected["identity_id"],
-            "site_name": selected["site_name"],
-            "egress_node": selected["egress_node"],
-            "browser_host": urlsplit(str(response.get("url") or "")).hostname,
-            "opened_in_seconds": round(time.monotonic() - started, 2),
-            "navigation_state": response.get("navigation_state", "PENDING"),
-        }
+
+
+def _delete_session_locked(token):
+    with _locked():
+        current = _read_session()
+        if current and current["login_token"] == token:
+            _delete_session()
+
+
+def _legacy_open(profile_id: str, site_id: str | None = None) -> dict[str, Any]:
+    profile_id = _validate_profile_id(profile_id)
+    existing = _read_session_locked()
+    if existing:
+        raise AdminError(
+            "SESSION_ACTIVE",
+            f"{existing['profile_id']} is already under login maintenance.",
+            "Continue or cancel the current session before opening another profile.",
+        )
+    inventory = _inventory()
+    selected = next(
+        (
+            item
+            for item in inventory["profiles"]
+            if (
+                item["profile_id"] == profile_id
+                or item["identity_id"] == profile_id
+                or item["row_id"] == profile_id
+            )
+            and (site_id is None or item["site_id"] == site_id)
+        ),
+        None,
+    )
+    if selected is None or not selected["site_enabled"] or not selected["egress_enabled"]:
+        raise AdminError(
+            "PROFILE_DISABLED",
+            "The profile is missing, the site is disabled, or the egress is unavailable.",
+        )
+    started = time.monotonic()
+    if (
+        selected["runtime_kind"] == "managed_playwright"
+        and selected["identity_id"] == selected["profile_id"]
+    ):
+        path = f"/v1/profiles/{selected['profile_id']}/login:open"
+        payload: dict[str, Any] = {}
+    else:
+        path = f"/v1/identities/{selected['identity_id']}/login:open"
+        payload = {"site_id": selected["site_id"]}
+    response = _request("POST", path, payload, timeout=40)
+    token = response.get("login_token") if isinstance(response, dict) else None
+    if not isinstance(token, str) or not re.fullmatch(r"[a-f0-9]{32}", token):
+        raise AdminError("BROWSER_START_FAILED", "The login browser failed to start.")
+    session = {
+        "profile_id": selected["profile_id"],
+        "identity_id": selected["identity_id"],
+        "runtime_kind": selected["runtime_kind"],
+        "site_id": selected["site_id"],
+        "site_name": selected["site_name"],
+        "login_token": token,
+        "opened_at": dt.datetime.now(dt.UTC).isoformat(),
+        "viewer_pid": None,
+        "challenge_url": selected.get("challenge_url"),
+    }
+    _write_session_locked(session)
+    viewer_deadline = time.monotonic() + 5
+    while not _vnc_ready():
+        if time.monotonic() >= viewer_deadline:
+            raise AdminError(
+                "VNC_UNAVAILABLE",
+                "The browser started, but the viewer is unavailable.",
+                "The maintenance session is retained; retry the viewer or explicitly cancel.",
+            )
+        time.sleep(0.1)
+    return {
+        "ok": True,
+        "profile_id": selected["profile_id"],
+        "identity_id": selected["identity_id"],
+        "site_name": selected["site_name"],
+        "egress_node": selected["egress_node"],
+        "browser_host": urlsplit(str(response.get("url") or "")).hostname,
+        "opened_in_seconds": round(time.monotonic() - started, 2),
+        "navigation_state": response.get("navigation_state", "PENDING"),
+    }
 
 
 def _close_token(session: dict[str, Any]) -> bool:
@@ -516,206 +500,293 @@ def _close_token(session: dict[str, Any]) -> bool:
         return False
 
 
-def command_verify(
+def _legacy_verify(
     profile_id: str, override_url: str | None, site_id: str | None = None
 ) -> dict[str, Any]:
     profile_id = _validate_profile_id(profile_id)
     override_url = _validate_override_url(override_url)
-    with _locked():
-        session = _read_session()
-        if session is None:
-            raise AdminError("NO_SESSION", "No login maintenance session is active.")
-        if profile_id not in {session["profile_id"], session.get("identity_id")}:
-            raise AdminError("PROFILE_MISMATCH", "The active session belongs to another profile.")
-        if site_id is not None and session.get("site_id") != site_id:
-            raise AdminError("PROFILE_MISMATCH", "The active session belongs to another site.")
-        inventory = _inventory()
-        selected = next(
-            (
-                item
-                for item in inventory["profiles"]
-                if item["profile_id"] == session["profile_id"]
-                and item["site_id"] == session.get("site_id")
-            ),
-            None,
+    session = _read_session_locked()
+    if session is None:
+        raise AdminError("NO_SESSION", "No login maintenance session is active.")
+    if profile_id not in {session["profile_id"], session.get("identity_id")}:
+        raise AdminError("PROFILE_MISMATCH", "The active session belongs to another profile.")
+    if site_id is not None and session.get("site_id") != site_id:
+        raise AdminError("PROFILE_MISMATCH", "The active session belongs to another site.")
+    inventory = _inventory()
+    selected = next(
+        (
+            item
+            for item in inventory["profiles"]
+            if item["profile_id"] == session["profile_id"]
+            and item["site_id"] == session.get("site_id")
+        ),
+        None,
+    )
+    if selected is None:
+        raise AdminError("PROFILE_DISABLED", "The current profile was disabled or deleted.")
+    article_url = session.get("challenge_url") or override_url
+    if session.get("challenge_url") and override_url not in {None, article_url}:
+        raise AdminError(
+            "CHALLENGE_ARTICLE_MISMATCH",
+            "Verify the article that triggered the challenge in the preserved tab.",
         )
-        if selected is None:
-            raise AdminError("PROFILE_DISABLED", "The current profile was disabled or deleted.")
-        article_url = session.get("challenge_url") or override_url
-        if session.get("challenge_url") and override_url not in {None, article_url}:
-            raise AdminError(
-                "CHALLENGE_ARTICLE_MISMATCH",
-                "Verify the article that triggered the challenge in the preserved tab.",
-            )
-        if article_url is None:
-            site = next(
-                item["spec"]
-                for item in _request("GET", "/v1/sites")
-                if item["spec"]["site_id"] == selected["site_id"]
-            )
-            article_url = (site.get("auth") or {}).get("verification_url")
-        if not article_url:
-            raise AdminError(
-                "VERIFY_URL_MISSING",
-                "This site has no verification article configured.",
-                "Use the advanced option to provide another article.",
-            )
-        result: Any = None
-        failure: AdminError | None = None
-        try:
-            if session.get("identity_id") and session["identity_id"] != session["profile_id"]:
-                path = f"/v1/identities/{session['identity_id']}:verify"
-                payload = {
-                    "site_id": session["site_id"],
-                    "article_url": article_url,
-                    "login_token": session["login_token"],
-                }
-            else:
-                path = f"/v1/profiles/{profile_id}:verify"
-                payload = {"article_url": article_url, "login_token": session["login_token"]}
-            result = _request("POST", path, payload, timeout=45)
-        except AdminError as exc:
-            failure = exc
-        if session.get("challenge_url"):
-            if failure is not None:
-                raise failure
-            profile = result.get("profile", {})
-            state = (result.get("auth") or {}).get("auth_state") or profile.get("auth_state")
-            public_ready = result.get("reason") == "public_access_ready"
-            if (state != "VALID" and not public_ready) or not profile.get("challenge_verified"):
-                return {
-                    "ok": True,
-                    "profile_id": profile_id,
-                    "auth_state": state or "UNKNOWN",
-                    "message": (
-                        "The original article is not verified yet. Keep this tab open "
-                        "and retry after resolving the challenge."
-                    ),
-                    "reason": result.get("reason"),
-                    "closed": False,
-                }
-        closed = _close_token(session)
-        if closed:
-            _delete_session()
+    if article_url is None:
+        site = next(
+            item["spec"]
+            for item in _request("GET", "/v1/sites")
+            if item["spec"]["site_id"] == selected["site_id"]
+        )
+        article_url = (site.get("auth") or {}).get("verification_url")
+    if not article_url:
+        raise AdminError(
+            "VERIFY_URL_MISSING",
+            "This site has no verification article configured.",
+            "Use the advanced option to provide another article.",
+        )
+    result: Any = None
+    failure: AdminError | None = None
+    try:
+        if session.get("identity_id") and session["identity_id"] != session["profile_id"]:
+            path = f"/v1/identities/{session['identity_id']}:verify"
+            payload = {
+                "site_id": session["site_id"],
+                "article_url": article_url,
+                "login_token": session["login_token"],
+            }
+        else:
+            path = f"/v1/profiles/{profile_id}:verify"
+            payload = {"article_url": article_url, "login_token": session["login_token"]}
+        result = _request("POST", path, payload, timeout=45)
+    except AdminError as exc:
+        failure = exc
+    if session.get("challenge_url"):
         if failure is not None:
-            if not closed:
-                failure.suggestion = (
-                    "Verification failed and the session could not close. Refresh, then cancel it."
-                )
             raise failure
-        if not closed:
-            raise AdminError(
-                "CLOSE_FAILED",
-                "Verification finished, but the maintenance browser did not close safely.",
-                "Refresh and cancel the maintenance session.",
-            )
         profile = result.get("profile", {})
-        state = (result.get("auth") or {}).get("auth_state") or profile.get("auth_state", "UNKNOWN")
-        reason = result.get("reason")
-        messages = {
-            "VALID": "Signed in with access to subscription articles.",
-            "REAUTH_REQUIRED": "The login is still invalid. Sign in again.",
-            "ENTITLEMENT_MISSING": (
-                "Subscription access is unavailable. "
-                "Sign in with an entitled account and verify again."
-            ),
-            "UNKNOWN": "Verification failed. The article may have expired or was not recognized.",
-        }
-        message = (
-            "Public access is ready. This check does not assert a subscription login."
-            if reason == "public_access_ready"
-            else messages.get(state, "The verification result is unknown.")
-        )
-        return {
-            "ok": True,
-            "profile_id": profile_id,
-            "auth_state": state,
-            "message": message,
-            "reason": reason,
-            "closed": True,
-        }
-
-
-def command_close() -> dict[str, Any]:
-    with _locked():
-        session = _read_session()
-        if session is None:
-            return {"ok": True, "closed": False, "message": "No maintenance session is active."}
-        if not _close_token(session):
-            raise AdminError(
-                "CLOSE_FAILED",
-                "The maintenance session cannot be closed right now.",
-                "Do not reopen the profile. Try again later.",
-            )
-        _delete_session()
-        return {"ok": True, "closed": True, "message": "The maintenance session was closed."}
-
-
-def command_recover() -> dict[str, Any]:
-    with _locked():
-        session = _read_session()
-        if session is None:
-            return {"ok": True, "session": None}
-        try:
-            inspection = _request(
-                "POST",
-                "/v1/profiles/login:inspect",
-                {"login_token": session["login_token"]},
-                timeout=8,
-            )
-        except AdminError as exc:
-            if exc.code != "NOT_FOUND":
-                raise
-            if (
-                session.get("runtime_kind") == "external_chrome"
-                and session.get("identity_id")
-                and session.get("site_id")
-            ):
-                try:
-                    inspection = _request(
-                        "POST",
-                        f"/v1/identities/{session['identity_id']}/login:recover",
-                        {
-                            "site_id": session["site_id"],
-                            "login_token": session["login_token"],
-                        },
-                        timeout=20,
-                    )
-                except AdminError:
-                    pass
-                else:
-                    return {
-                        "ok": True,
-                        "session": _public_session(session),
-                        "browser": {
-                            "host": urlsplit(str(inspection.get("url") or "")).hostname,
-                            "title": None,
-                        },
-                        "recovered": "external_chrome_reattached",
-                        "message": "The long-running Chrome maintenance page was reattached.",
-                    }
-            _delete_session()
+        state = (result.get("auth") or {}).get("auth_state") or profile.get("auth_state")
+        public_ready = result.get("reason") == "public_access_ready"
+        if (state != "VALID" and not public_ready) or not profile.get("challenge_verified"):
             return {
                 "ok": True,
-                "session": None,
-                "recovered": "stale_session_removed",
-                "message": "The stale maintenance session was removed after the service restart.",
+                "profile_id": profile_id,
+                "auth_state": state or "UNKNOWN",
+                "message": (
+                    "The original article is not verified yet. Keep this tab open "
+                    "and retry after resolving the challenge."
+                ),
+                "reason": result.get("reason"),
+                "closed": False,
             }
-        if not _viewer_running(session.get("viewer_pid")):
-            viewer_pid = _find_viewer_pid()
-            if viewer_pid:
-                session["viewer_pid"] = viewer_pid
-                _write_session(session)
+    if failure is not None:
+        raise failure  # Verification errors must preserve the original login page.
+    profile = result.get("profile", {})
+    state = (result.get("auth") or {}).get("auth_state") or profile.get("auth_state", "UNKNOWN")
+    if state != "VALID" and result.get("reason") != "public_access_ready":
+        return {
+            "ok": True,
+            "closed": False,
+            "profile_id": profile_id,
+            "auth_state": state,
+            "reason": result.get("reason"),
+            "message": "Access is not verified. The original page is preserved.",
+        }
+    closed = _close_token(session)
+    if closed:
+        _delete_session_locked(session["login_token"])
+    if failure is not None:
+        if not closed:
+            failure.suggestion = (
+                "Verification failed and the session could not close. Refresh, then cancel it."
+            )
+        raise failure
+    if not closed:
+        raise AdminError(
+            "CLOSE_FAILED",
+            "Verification finished, but the maintenance browser did not close safely.",
+            "Refresh and cancel the maintenance session.",
+        )
+    profile = result.get("profile", {})
+    state = (result.get("auth") or {}).get("auth_state") or profile.get("auth_state", "UNKNOWN")
+    reason = result.get("reason")
+    messages = {
+        "VALID": "Signed in with access to subscription articles.",
+        "REAUTH_REQUIRED": "The login is still invalid. Sign in again.",
+        "ENTITLEMENT_MISSING": (
+            "Subscription access is unavailable. Sign in with an entitled account and verify again."
+        ),
+        "UNKNOWN": "Verification failed. The article may have expired or was not recognized.",
+    }
+    message = (
+        "Public access is ready. This check does not assert a subscription login."
+        if reason == "public_access_ready"
+        else messages.get(state, "The verification result is unknown.")
+    )
+    return {
+        "ok": True,
+        "profile_id": profile_id,
+        "auth_state": state,
+        "message": message,
+        "reason": reason,
+        "closed": True,
+    }
+
+
+def _legacy_close() -> dict[str, Any]:
+    session = _read_session_locked()
+    if session is None:
+        return {"ok": True, "closed": False, "message": "No maintenance session is active."}
+    if not _close_token(session):
+        raise AdminError(
+            "CLOSE_FAILED",
+            "The maintenance session cannot be closed right now.",
+            "Do not reopen the profile. Try again later.",
+        )
+    _delete_session_locked(session["login_token"])
+    return {"ok": True, "closed": True, "message": "The maintenance session was closed."}
+
+
+def _legacy_recover() -> dict[str, Any]:
+    session = _read_session_locked()
+    if session is None:
+        return {"ok": True, "session": None}
+    try:
+        inspection = _request(
+            "POST",
+            "/v1/profiles/login:inspect",
+            {"login_token": session["login_token"]},
+            timeout=8,
+        )
+    except AdminError as exc:
+        if exc.code != "NOT_FOUND":
+            raise
+        if (
+            session.get("runtime_kind") == "external_chrome"
+            and session.get("identity_id")
+            and session.get("site_id")
+        ):
+            try:
+                inspection = _request(
+                    "POST",
+                    f"/v1/identities/{session['identity_id']}/login:recover",
+                    {
+                        "site_id": session["site_id"],
+                        "login_token": session["login_token"],
+                    },
+                    timeout=20,
+                )
+            except AdminError:
+                pass
+            else:
+                return {
+                    "ok": True,
+                    "session": _public_session(session),
+                    "browser": {
+                        "host": urlsplit(str(inspection.get("url") or "")).hostname,
+                        "title": None,
+                    },
+                    "recovered": "external_chrome_reattached",
+                    "message": "The long-running Chrome maintenance page was reattached.",
+                }
         return {
             "ok": True,
             "session": _public_session(session),
-            "browser": {
-                "host": urlsplit(str(inspection.get("url") or "")).hostname,
-                "title": inspection.get("title"),
-                "navigation_state": inspection.get("navigation_state"),
-                "navigation_error": inspection.get("navigation_error"),
-            },
+            "recovered": "target_presence_unverified",
+            "message": "Original target presence is unverified; the session reference is retained.",
         }
+    return {
+        "ok": True,
+        "session": _public_session(session),
+        "browser": {
+            "host": urlsplit(str(inspection.get("url") or "")).hostname,
+            "title": inspection.get("title"),
+            "navigation_state": inspection.get("navigation_state"),
+            "navigation_error": inspection.get("navigation_error"),
+        },
+    }
+
+
+def _compat_action(action, **references):
+    arguments = argparse.Namespace(
+        action=action,
+        idempotency_key=os.urandom(16).hex(),
+        scope_id=None,
+        identity_id=None,
+        session_id=None,
+        task_id=None,
+        url=None,
+        confirm_discard=False,
+    )
+    for key, value in references.items():
+        setattr(arguments, key, value)
+    return command_action(arguments)
+
+
+def command_open(profile_id, site_id=None):
+    inventory = _inventory()
+    selected = next(
+        (
+            row
+            for row in inventory["profiles"]
+            if profile_id in {row["profile_id"], row["identity_id"], row["row_id"]}
+            and (site_id is None or row["site_id"] == site_id)
+        ),
+        None,
+    )
+    if selected and selected.get("scope_id"):
+        if not selected["site_enabled"] or not selected["egress_enabled"]:
+            raise AdminError("PROFILE_DISABLED", "The source or egress is disabled.")
+        return _compat_action(
+            "OPEN_LOGIN", scope_id=selected["scope_id"], identity_id=selected["identity_id"]
+        )
+    return _legacy_open(profile_id, site_id)
+
+
+def command_verify(profile_id, override_url=None, site_id=None):
+    inventory = _inventory()
+    identities = {
+        row["identity_id"]
+        for row in inventory["profiles"]
+        if profile_id in {row["profile_id"], row["identity_id"], row["row_id"]}
+        and (site_id is None or row["site_id"] == site_id)
+    }
+    matches = [
+        session
+        for session in inventory.get("sessions", [])
+        if session["identity_id"] in identities and session["state"] != "CLOSED"
+    ]
+    if len(matches) == 1:
+        session = matches[0]
+        return _compat_action(
+            "VERIFY_CHALLENGE" if session["kind"] == "CHALLENGE" else "VERIFY_LOGIN",
+            session_id=session["session_id"],
+            url=override_url,
+        )
+    if len(matches) > 1:
+        raise AdminError("AMBIGUOUS_SESSION", "Select the exact session in the desktop tool.")
+    return _legacy_verify(profile_id, override_url, site_id)
+
+
+def command_close():
+    inventory = _inventory()
+    session = next((s for s in inventory.get("sessions", []) if s["state"] == "OPEN"), None)
+    if session:
+        if session["kind"] == "CHALLENGE":
+            return _compat_action("RELEASE_VIEWER", session_id=session["session_id"])
+        return _compat_action("CLOSE_LOGIN", session_id=session["session_id"])
+    return _legacy_close()
+
+
+def command_recover():
+    inventory = _inventory()
+    if "sessions" in inventory:
+        session = next((s for s in inventory["sessions"] if s["state"] == "OPEN"), None)
+        return {
+            "ok": True,
+            "session": session,
+            "sessions": inventory["sessions"],
+            "message": "Select Continue to explicitly reopen the viewer; no browser was changed.",
+        }
+    return _legacy_recover()
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -731,6 +802,15 @@ def build_parser() -> argparse.ArgumentParser:
     verify_parser.add_argument("--site-id")
     subparsers.add_parser("close", add_help=False)
     subparsers.add_parser("recover", add_help=False)
+    action = subparsers.add_parser("action", add_help=False)
+    action.add_argument("action", choices=sorted(ACTIONS))
+    action.add_argument("--idempotency-key", required=True)
+    action.add_argument("--confirm-discard", action="store_true")
+    for field in ("scope-id", "identity-id", "session-id", "task-id", "url"):
+        action.add_argument("--" + field)
+    for name in ("status", "cancel-operation"):
+        command = subparsers.add_parser(name, add_help=False)
+        command.add_argument("operation_id")
     return parser
 
 
@@ -738,7 +818,13 @@ def main(argv: list[str] | None = None) -> None:
     try:
         _ensure_root()
         arguments = build_parser().parse_args(argv)
-        if arguments.command == "list":
+        if arguments.command == "action":
+            result = command_action(arguments)
+        elif arguments.command in {"status", "cancel-operation"}:
+            result = command_operation(
+                arguments.operation_id, cancel=arguments.command == "cancel-operation"
+            )
+        elif arguments.command == "list":
             result = command_list()
         elif arguments.command == "open":
             result = command_open(arguments.profile_id, arguments.site_id)

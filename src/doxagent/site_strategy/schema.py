@@ -309,6 +309,7 @@ class BrowserIdentityAccess(SiteModel):
 
 class BrowserIdentitySpec(SiteModel):
     identity_id: str
+    owner_scope_id: str | None = None
     revision: int = Field(default=0, ge=0)
     enabled: bool = True
     runtime_kind: BrowserRuntimeKind = BrowserRuntimeKind.MANAGED_PLAYWRIGHT
@@ -412,6 +413,7 @@ class BrowserProfile(SiteModel):
 
 
 class CombinationRuntime(SiteModel):
+    capabilities: dict[str, JsonObject] = Field(default_factory=dict)
     purpose_denials: dict[str, list[str]] = Field(default_factory=dict)
     purpose_rejected_until: dict[str, datetime] = Field(default_factory=dict)
     # The legacy fields are the browser lane state and remain wire-compatible.
@@ -498,6 +500,8 @@ class AccessRequest(SiteModel):
     request_id: str = Field(default_factory=lambda: new_id("access"))
     operation_id: str
     parent_id: str | None = None
+    origin_scope_id: str | None = None
+    scope_revision: int | None = Field(default=None, ge=1)
     purpose: SitePurpose
     url: str
     method: Literal["GET", "POST"] = "GET"
@@ -550,6 +554,9 @@ class AccessAttempt(SiteModel):
 class AccessResult(SiteModel):
     request_id: str
     operation_id: str
+    effective_scope_id: str | None = None
+    route_generation: int | None = None
+    challenge_task_id: str | None = None
     disposition: AccessDisposition
     status_code: int | None = None
     final_url: str | None = None

@@ -25,6 +25,7 @@ from doxagent.monitoring.media_enrichment import (
 )
 from doxagent.site_strategy.client import SiteAccessClient
 from doxagent.site_strategy.schema import BodyOutcome
+from doxagent.site_strategy.scope import source_routed
 
 logger = logging.getLogger(__name__)
 
@@ -130,6 +131,7 @@ class ContentEnrichmentHub:
         if close is not None:
             await close()
 
+    @source_routed
     async def _process(self, job: EnrichmentJob, now: datetime) -> None:
         from doxagent.message_bus_v2.admission import evaluate_admission
 

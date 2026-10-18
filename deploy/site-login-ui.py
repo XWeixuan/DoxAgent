@@ -1,501 +1,484 @@
 #!/usr/bin/python3
-"""Small xRDP desktop UI for maintaining Site Access browser identities."""
+"""Responsive xRDP maintenance UI: human tasks are not browser business leases."""
 
 from __future__ import annotations
 
 import json
+import queue
 import subprocess
 import threading
+import time
 import tkinter as tk
-from collections.abc import Callable
 from tkinter import messagebox, simpledialog, ttk
-from typing import Any
+from uuid import uuid4
 
 ADMIN = "/usr/local/sbin/doxagent-site-login-admin"
 VNC_VIEWER = "/usr/bin/vncviewer"
 CLIPBOARD_BRIDGE = "/usr/local/bin/doxagent-site-login-clipboard-bridge"
-STATE_TEXT = {
-    "VALID": "Signed in",
-    "REAUTH_REQUIRED": "Sign-in required",
-    "ENTITLEMENT_MISSING": "No subscription access",
-    "MAINTENANCE": "Maintenance in progress",
-    "UNKNOWN": "Not verified",
-}
-REGION_TEXT = {
-    "jp": "Japan",
-    "us": "United States",
-    "nl": "Netherlands",
-    "de": "Germany",
-}
+TERMINAL = {"DONE", "FAILED", "CANCELLED", "INTERRUPTED"}
 
 
-def call_admin(arguments: list[str]) -> dict[str, Any]:
-    try:
-        completed = subprocess.run(
-            ["/usr/bin/sudo", "-n", ADMIN, *arguments],
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=75,
+def viewer_binding_matches(expected, sessions):
+    return any(
+        session["state"] == "OPEN"
+        and all(
+            session.get(key) == expected.get(key)
+            for key in ("session_id", "generation", "identity_id")
         )
-    except (OSError, subprocess.TimeoutExpired):
-        return {
-            "ok": False,
-            "message": "The login maintenance service did not respond.",
-            "suggestion": "Try again later or contact the administrator.",
-        }
-    try:
-        payload = json.loads(completed.stdout)
-    except json.JSONDecodeError:
-        return {
-            "ok": False,
-            "message": "The login maintenance service returned an invalid response.",
-            "suggestion": "Contact the administrator to check the desktop installation.",
-        }
-    return (
-        payload
-        if isinstance(payload, dict)
-        else {"ok": False, "message": "The login maintenance result was not recognized."}
+        for session in sessions
     )
 
 
-def region_label(egress_id: str, node: str) -> str:
-    # Egress IDs are stable slots, not a guarantee of the currently selected
-    # country. Prefer the real subscription node's country marker.
-    for marker, country in {
-        "🇳🇱": "Netherlands",
+def call_admin(arguments):
+    try:
+        reply = subprocess.run(
+            ["/usr/bin/sudo", "-n", ADMIN, *arguments],
+            capture_output=True,
+            text=True,
+            timeout=12,
+            check=False,
+        )
+        result = json.loads(reply.stdout)
+        if not isinstance(result, dict):
+            raise ValueError("invalid result")
+        return result
+    except (OSError, ValueError, subprocess.TimeoutExpired):
+        return {"ok": False, "message": "Maintenance service unavailable. Pages are preserved."}
+
+
+def region_label(egress_id, node):
+    regions = {
         "🇩🇪": "Germany",
+        "🇳🇱": "Netherlands",
         "🇺🇸": "United States",
         "🇯🇵": "Japan",
-        "🇹🇼": "Taiwan",
+        "🇹🇷": "Turkey",
         "🇸🇬": "Singapore",
-    }.items():
-        if marker in node:
-            return f"{country} ({egress_id})"
-    prefix = egress_id.split("-", 1)[0].lower()
-    return f"{REGION_TEXT.get(prefix, prefix.upper())} ({egress_id})"
+    }
+    region = next((name for flag, name in regions.items() if flag in node), None)
+    if region is None:
+        region = {
+            "de": "Germany",
+            "nl": "Netherlands",
+            "us": "United States",
+            "jp": "Japan",
+            "tr": "Turkey",
+        }.get(egress_id.split("-", 1)[0], "Unknown region")
+    return f"{region} ({egress_id})"
 
 
 class SiteLoginApp:
-    def __init__(self, root: tk.Tk) -> None:
+    def __init__(self, root):
         self.root = root
-        self.root.title("Site Login Maintenance")
-        self.root.geometry("980x560")
-        self.root.minsize(820, 480)
-        self.rows: dict[str, dict[str, Any]] = {}
-        self.session: dict[str, Any] | None = None
-        self.viewer: subprocess.Popen[bytes] | None = None
-        self.busy = False
-        self.filter_value = tk.StringVar(value="All sites")
-        self.status_value = tk.StringVar(value="Loading profile status...")
-        self.session_value = tk.StringVar(value="No login maintenance session is active.")
+        root.title("Site Login Maintenance")
+        root.geometry("1180x650")
+        self.mailbox = queue.Queue()
+        self._closed = False
+        self._pending = set()
+        self._generations = {}
+        self.rows = {}
+        self.challenges = {}
+        self.session = None
+        self.operation = None
+        self.viewer = None
+        self._viewer_pending = None
+        self._status_failures = 0
+        self.busy = False  # Legacy inspection compatibility; never gates readonly actions.
+        self.status_value = tk.StringVar(value="Loading source inventory...")
+        self.session_value = tk.StringVar(value="No Viewer session selected.")
         self._build()
-        self.root.protocol("WM_DELETE_WINDOW", self._on_window_close)
+        root.protocol("WM_DELETE_WINDOW", self._on_window_close)
+        root.after(50, self._drain)
         self.refresh()
 
-    def _build(self) -> None:
-        outer = ttk.Frame(self.root, padding=14)
-        outer.pack(fill=tk.BOTH, expand=True)
-        title = ttk.Label(outer, text="Site Login Maintenance", font=("Sans", 18, "bold"))
-        title.pack(anchor=tk.W)
+    def _build(self):
+        frame = ttk.Frame(self.root, padding=12)
+        frame.pack(fill="both", expand=True)
+        ttk.Label(frame, text="Site Login Maintenance", font=("Sans", 18, "bold")).pack(anchor="w")
         ttk.Label(
-            outer,
-            text=(
-                "Select a profile to open its persistent browser. Enter credentials and MFA "
-                "only on the website."
-            ),
-        ).pack(anchor=tk.W, pady=(3, 12))
-
-        controls = ttk.Frame(outer)
-        controls.pack(fill=tk.X, pady=(0, 8))
-        ttk.Label(controls, text="Site filter:").pack(side=tk.LEFT)
-        self.filter_box = ttk.Combobox(
-            controls, textvariable=self.filter_value, state="readonly", width=24
+            frame, text="Credentials and MFA stay in the website. Later preserves challenge pages."
+        ).pack(anchor="w", pady=6)
+        controls = ttk.Frame(frame)
+        controls.pack(fill="x")
+        ttk.Button(controls, text="Refresh", command=self.refresh).pack(side="right")
+        ttk.Button(controls, text="Cancel Operation", command=self.cancel_operation).pack(
+            side="right", padx=6
         )
-        self.filter_box.pack(side=tk.LEFT, padx=(4, 12))
-        self.filter_box.bind("<<ComboboxSelected>>", lambda _event: self._render_rows())
-        self.refresh_button = ttk.Button(controls, text="Refresh", command=self.refresh)
-        self.refresh_button.pack(side=tk.RIGHT)
-
-        columns = ("site", "identity", "runtime", "role", "egress", "state")
-        self.tree = ttk.Treeview(outer, columns=columns, show="headings", height=13)
-        labels = {
-            "site": "Site",
-            "identity": "Browser Identity",
-            "runtime": "Runtime",
-            "role": "Role",
-            "egress": "Egress / Region",
-            "state": "Login status",
-        }
-        widths = {
-            "site": 130,
-            "identity": 155,
-            "runtime": 110,
-            "role": 80,
-            "egress": 280,
-            "state": 130,
-        }
-        for column in columns:
-            self.tree.heading(column, text=labels[column])
-            self.tree.column(column, width=widths[column], minwidth=80)
-        self.tree.pack(fill=tk.BOTH, expand=True)
-        self.tree.bind("<<TreeviewSelect>>", lambda _event: self._update_buttons())
-
-        session_frame = ttk.LabelFrame(outer, text="Maintenance session", padding=8)
-        session_frame.pack(fill=tk.X, pady=(10, 8))
-        ttk.Label(session_frame, textvariable=self.session_value).pack(side=tk.LEFT, fill=tk.X)
-        self.continue_button = ttk.Button(
-            session_frame, text="Continue / Open Viewer", command=self._continue_viewer
+        ttk.Label(controls, textvariable=self.status_value).pack(side="left")
+        self.tabs = ttk.Notebook(frame)
+        self.tabs.pack(fill="both", expand=True, pady=8)
+        challenge_frame = ttk.Frame(self.tabs)
+        login_frame = ttk.Frame(self.tabs)
+        self.tabs.add(challenge_frame, text="Challenges")
+        self.tabs.add(login_frame, text="Login & Access")
+        self.challenge_tree = self._tree(
+            challenge_frame,
+            ("source", "identity", "state", "target", "opened"),
+            ("Source", "Identity", "Task state", "Original target", "Opened"),
         )
-        self.continue_button.pack(side=tk.RIGHT)
-
-        actions = ttk.Frame(outer)
-        actions.pack(fill=tk.X)
-        self.open_button = ttk.Button(actions, text="Open Browser", command=self.open_selected)
-        self.open_button.pack(side=tk.LEFT)
-        self.verify_button = ttk.Button(
-            actions, text="Finish Login and Verify", command=self.verify_selected
+        self.tree = self._tree(
+            login_frame,
+            ("source", "identity", "role", "egress", "auth", "crawler", "body"),
+            ("Source", "Identity", "Role", "Observed egress", "Authentication", "Crawler", "Body"),
         )
-        self.verify_button.pack(side=tk.LEFT, padx=8)
-        self.cancel_button = ttk.Button(
-            actions, text="Cancel Maintenance", command=self.cancel_session
+        buttons = ttk.Frame(challenge_frame)
+        buttons.pack(fill="x", pady=6)
+        for text, action in (
+            ("Open Original", "OPEN_CHALLENGE"),
+            ("Verify Challenge", "VERIFY_CHALLENGE"),
+            ("Later", "RELEASE_VIEWER"),
+            ("Reopen Lost Page", "REOPEN_LOST_CHALLENGE"),
+        ):
+            ttk.Button(buttons, text=text, command=lambda a=action: self._action(a)).pack(
+                side="left", padx=3
+            )
+        buttons = ttk.Frame(login_frame)
+        ttk.Button(challenge_frame, text="Discard Page...", command=self._discard_challenge).pack(
+            anchor="e"
         )
-        self.cancel_button.pack(side=tk.LEFT)
-        self.advanced_button = ttk.Button(
-            actions,
-            text="Change Verification Article (Advanced)",
-            command=self.verify_with_custom_url,
+        buttons.pack(fill="x", pady=6)
+        for text, action in (
+            ("Open Login", "OPEN_LOGIN"),
+            ("Verify Access", "VERIFY_LOGIN"),
+            ("Close Login", "CLOSE_LOGIN"),
+            ("Later", "RELEASE_VIEWER"),
+            ("Activate Primary", "ACTIVATE_PRIMARY"),
+        ):
+            ttk.Button(buttons, text=text, command=lambda a=action: self._action(a)).pack(
+                side="left", padx=3
+            )
+        ttk.Button(
+            buttons, text="Verification Article...", command=self.verify_with_custom_url
+        ).pack(side="left")
+        ttk.Label(frame, textvariable=self.session_value).pack(anchor="w")
+        ttk.Button(frame, text="Continue / Open Viewer", command=self._continue_viewer).pack(
+            anchor="e"
         )
-        self.advanced_button.pack(side=tk.LEFT, padx=8)
-        ttk.Label(actions, textvariable=self.status_value).pack(side=tk.RIGHT)
-        self._update_buttons()
+        ttk.Button(frame, text="Retry Close", command=lambda: self._action("CLOSE_LOGIN")).pack(
+            anchor="e"
+        )
 
-    def _selected(self) -> dict[str, Any] | None:
-        selection = self.tree.selection()
-        return self.rows.get(selection[0]) if selection else None
+    @staticmethod
+    def _tree(parent, columns, headings):
+        tree = ttk.Treeview(parent, columns=columns, show="headings", height=15)
+        for column, title in zip(columns, headings, strict=True):
+            tree.heading(column, text=title)
+            tree.column(column, width=150, minwidth=70)
+        tree.pack(fill="both", expand=True)
+        return tree
 
-    def _run(
-        self,
-        operation: Callable[[], dict[str, Any]],
-        done: Callable[[dict[str, Any]], None],
-    ) -> None:
-        if self.busy:
+    def _run(self, operation, done, *, channel="command"):
+        if self._closed or channel in self._pending:
             return
-        self.busy = True
-        self.status_value.set("Working...")
-        self._update_buttons()
+        generation = self._generations.get(channel, 0) + 1
+        self._generations[channel] = generation
+        self._pending.add(channel)
 
-        def worker() -> None:
-            result = operation()
-            self.root.after(0, lambda: self._finish(result, done))
+        def worker():
+            try:
+                result = operation()
+            except Exception:
+                result = {
+                    "ok": False,
+                    "message": "Operation failed. Refresh the session status before retrying.",
+                }
+            finally:
+                self.mailbox.put((channel, generation, done, result))
 
         threading.Thread(target=worker, daemon=True).start()
 
-    def _finish(self, result: dict[str, Any], done: Callable[[dict[str, Any]], None]) -> None:
-        self.busy = False
-        if not result.get("ok"):
-            message = str(result.get("message") or "The operation failed.")
-            suggestion = str(result.get("suggestion") or "")
-            messagebox.showerror("Site Login Maintenance", f"{message}\n\n{suggestion}".strip())
-            self.status_value.set("Operation failed")
-            self._update_buttons()
+    def _drain(self):
+        if self._closed:
             return
-        done(result)
-        self._update_buttons()
-
-    def refresh(self) -> None:
-        self._run(lambda: call_admin(["list"]), self._apply_inventory)
-
-    def _apply_inventory(self, payload: dict[str, Any]) -> None:
-        profiles = payload.get("profiles") or []
-        self.rows = {item.get("row_id", item["profile_id"]): item for item in profiles}
-        sites = sorted({item["site_name"] for item in profiles})
-        self.filter_box["values"] = ["All sites", *sites]
-        if self.filter_value.get() not in self.filter_box["values"]:
-            self.filter_value.set("All sites")
-        self.session = payload.get("session")
-        self._render_rows()
-        self._render_session()
-        if not payload.get("vnc_ready", False):
-            self.status_value.set("VNC service is not ready")
-        else:
-            self.status_value.set(f"Loaded {len(profiles)} profiles")
-        if self.session:
-            self.root.after(50, self._recover)
-
-    def _render_rows(self) -> None:
-        prior = self.tree.selection()
-        self.tree.delete(*self.tree.get_children())
-        selected_site = self.filter_value.get()
-        ordered = sorted(
-            self.rows.values(),
-            key=lambda row: (row["site_name"].casefold(), row["priority"]),
-        )
-        for row in ordered:
-            if selected_site != "All sites" and row["site_name"] != selected_site:
+        while True:
+            try:
+                channel, generation, callback, result = self.mailbox.get_nowait()
+            except queue.Empty:
+                break
+            if generation != self._generations.get(channel):
                 continue
-            role = "Primary" if row["profile_role"] == "primary" else "Backup"
-            state = STATE_TEXT.get(row["auth_state"], row["auth_state"])
-            if row.get("verification_kind") == "public_access" and row["auth_state"] == "UNKNOWN":
-                state = "Public access only"
-            if row.get("manual_attention_required"):
-                state = "Needs manual challenge"
-            if row.get("operational_state") in {
-                "DRAINING",
-                "DRAINING_FOR_MAINTENANCE",
-                "MAINTENANCE",
-            }:
-                state = "Maintenance active"
-            if row["profile_role"] == "primary" and row["auth_state"] == "VALID":
-                state = "Primary login ready"
-            if row["profile_role"] == "backup" and row["auth_state"] == "UNKNOWN":
-                state = "Backup not configured"
-            self.tree.insert(
-                "",
-                tk.END,
-                iid=row.get("row_id", row["profile_id"]),
-                values=(
-                    row["site_name"],
-                    row.get("identity_id", row["profile_id"]),
-                    "External Chrome"
-                    if row.get("runtime_kind") == "external_chrome"
-                    else "Managed",
-                    role,
-                    region_label(row["egress_id"], row["egress_node"])
-                    + (f" / {row['observed_ip']}" if row.get("observed_ip") else "")
-                    + (
-                        " [egress unavailable]" if row.get("egress_status") == "UNAVAILABLE" else ""
-                    ),
-                    state,
-                ),
-            )
-        if prior and self.tree.exists(prior[0]):
-            self.tree.selection_set(prior[0])
-        elif self.tree.get_children():
-            preferred = next(
-                (
-                    item
-                    for item in self.tree.get_children()
-                    if self.rows[item]["profile_role"] == "primary"
-                ),
-                self.tree.get_children()[0],
-            )
-            self.tree.selection_set(preferred)
+            self._pending.discard(channel)
+            try:
+                callback(result)
+            except Exception:
+                self.status_value.set("Display update failed. Refresh; pages are preserved.")
+        self.root.after(50, self._drain)
 
-    def _render_session(self) -> None:
-        if self.session:
-            viewer = "viewer open" if self.session.get("viewer_running") else "viewer closed"
-            self.session_value.set(
-                f"Unfinished maintenance: {self.session.get('site_name')} / "
-                f"{self.session.get('profile_id')} ({viewer})."
-            )
-            row_id = f"{self.session.get('site_id')}:{self.session.get('identity_id')}"
-            if self.tree.exists(row_id):
-                self.tree.selection_set(row_id)
-                self.tree.see(row_id)
-        else:
-            self.session_value.set("No login maintenance session is active.")
+    def refresh(self):
+        self._run(lambda: call_admin(["list"]), self._apply_inventory, channel="inventory")
 
-    def _update_buttons(self) -> None:
-        selected = self._selected()
-        active = bool(self.session)
-        matching = bool(
-            selected
-            and self.session
-            and selected.get("identity_id", selected["profile_id"])
-            == self.session.get("identity_id", self.session.get("profile_id"))
-            and selected["site_id"] == self.session.get("site_id")
-        )
-        disabled = self.busy
-        open_state = tk.NORMAL if selected and not active and not disabled else tk.DISABLED
-        self.open_button.configure(state=open_state)
-        self.verify_button.configure(state=tk.NORMAL if matching and not disabled else tk.DISABLED)
-        advanced_state = tk.NORMAL if matching and not disabled else tk.DISABLED
-        self.advanced_button.configure(state=advanced_state)
-        self.cancel_button.configure(state=tk.NORMAL if active and not disabled else tk.DISABLED)
-        self.continue_button.configure(state=tk.NORMAL if active and not disabled else tk.DISABLED)
-        self.refresh_button.configure(state=tk.DISABLED if disabled else tk.NORMAL)
-
-    def open_selected(self) -> None:
-        selected = self._selected()
-        if selected is None:
+    def _apply_inventory(self, result):
+        if not result.get("ok"):
+            self.status_value.set(result.get("message", "Inventory unavailable"))
             return
-        if selected["profile_role"] == "backup":
-            region = region_label(selected["egress_id"], selected["egress_node"])
-            if not messagebox.askokcancel(
-                "Open Backup Profile",
-                f"You are opening backup profile {selected['profile_id']} via {region}.\n\n"
-                "The website may restrict simultaneous logins from different regions. Continue?",
+        if result.get("status") == "INITIALIZING":
+            self.status_value.set("Registry snapshot initializing...")
+            self.root.after(2000, self.refresh)
+            return
+        if self.operation is None and result.get("active_operations"):
+            self.operation = result["active_operations"][0]
+            self.root.after(1000, self._poll_operation)
+        elif (
+            self.operation
+            and self.operation.get("state") not in TERMINAL
+            and self._status_failures >= 2
+        ):
+            self._status_failures = 0
+            self.root.after(1000, self._poll_operation)
+        self.rows = {row["row_id"]: row for row in result.get("profiles", [])}
+        self.challenges = {task["task_id"]: task for task in result.get("challenges", [])}
+        for tree, records in ((self.tree, self.rows), (self.challenge_tree, self.challenges)):
+            selected = tree.selection()
+            tree.delete(*tree.get_children())
+            for key, row in records.items():
+                if tree is self.tree:
+                    values = (
+                        row.get("scope_id"),
+                        row["identity_id"],
+                        row["profile_role"] + (" (active)" if row.get("active") else ""),
+                        str(row.get("observed_ip") or "")
+                        + " "
+                        + region_label(row["egress_id"], row["egress_node"]),
+                        row.get("auth_state"),
+                        row.get("crawler_ready", "NOT_TESTED"),
+                        row.get("body_ready", "NOT_TESTED"),
+                    )
+                else:
+                    values = (
+                        row["scope_id"],
+                        row["identity_id"],
+                        row["state"],
+                        row.get("original_target_id") or "TARGET_LOST",
+                        row["opened_at"],
+                    )
+                tree.insert("", "end", iid=key, values=values)
+            if selected and tree.exists(selected[0]):
+                tree.selection_set(selected[0])
+        sessions = result.get("sessions", [])
+        if self._viewer_pending:
+            expected, deadline = self._viewer_pending
+            if viewer_binding_matches(expected, sessions):
+                self._stop_owned_viewer()
+                self._launch_viewer()
+                self._viewer_pending = None
+            elif time.monotonic() > deadline:
+                self._viewer_pending = None
+                self.status_value.set(
+                    "Viewer selection changed or is not confirmed. Refresh before Continue."
+                )
+            else:
+                self.root.after(500, self.refresh)
+        if self.session:
+            self.session = next(
+                (s for s in sessions if s["session_id"] == self.session["session_id"]), None
+            )
+        if not self.session:
+            self.session = next((s for s in sessions if s["state"] == "OPEN"), None)
+        self.session_value.set(
+            f"Viewer: {self.session['identity_id']} / {self.session['kind']} / "
+            f"{self.session['session_id']}"
+            if self.session
+            else "No Viewer session selected."
+        )
+        if not self.operation:
+            self.status_value.set(
+                f"Loaded {len(self.rows)} identities; {len(self.challenges)} pending tasks"
+                + (" (stale snapshot)" if result.get("stale") else "")
+            )
+        if not result.get("vnc_ready", False):
+            self.status_value.set("Viewer service unavailable. Tasks and profiles are preserved.")
+
+    def _selected(self):
+        keys = self.tree.selection()
+        return self.rows.get(keys[0]) if keys else None
+
+    def _action(self, action, url=None):
+        if self.operation and self.operation.get("state") not in TERMINAL:
+            self.status_value.set("An operation is active. Refresh/status/cancel remain available.")
+            return
+        row = self._selected()
+        args = ["action", action, "--idempotency-key", uuid4().hex]
+        if action in {"OPEN_CHALLENGE", "REOPEN_LOST_CHALLENGE"}:
+            selected = self.challenge_tree.selection()
+            if not selected:
+                return
+            args.extend(["--task-id", selected[0]])
+        elif action in {"OPEN_LOGIN", "ACTIVATE_PRIMARY"}:
+            if not row:
+                return
+            if row["profile_role"] == "backup" and not messagebox.askokcancel(
+                "Backup Identity",
+                "This uses an independent login profile and egress:\n"
+                + str(row.get("egress_node"))
+                + "\nThe account may restrict concurrent logins.",
             ):
                 return
-        self._run(
-            lambda: call_admin(
-                [
-                    "open",
-                    selected.get("identity_id", selected["profile_id"]),
-                    "--site-id",
-                    selected["site_id"],
-                ]
-            ),
-            self._opened,
-        )
+            args.extend(["--scope-id", row["scope_id"], "--identity-id", row["identity_id"]])
+        else:
+            if not self.session:
+                return
+            args.extend(["--session-id", self.session["session_id"]])
+        if url:
+            args.extend(["--url", url])
+        self.status_value.set(action + ": submitting...")
+        self._run(lambda: call_admin(args), self._submitted)
 
-    def _opened(self, payload: dict[str, Any]) -> None:
-        self.status_value.set(f"Browser opened in {payload.get('opened_in_seconds')} seconds")
-        self._stop_owned_viewer()
-        self._launch_viewer()
-        messagebox.showinfo(
-            "Complete Website Login",
-            "The browser viewer is open. Complete the website login or MFA.\n\n"
-            "Then return here and click Finish Login and Verify.",
-        )
-        self.root.after(1000, self._recover)
-
-    def _launch_viewer(self) -> None:
-        if self.viewer and self.viewer.poll() is None:
+    def _submitted(self, result):
+        if not result.get("ok"):
+            self.status_value.set(result.get("message", "Submission failed; page preserved"))
             return
+        self.operation = result
+        self._status_failures = 0
+        self.status_value.set(result["action"] + ": " + result["stage"])
+        self.root.after(1000, self._poll_operation)
+
+    def _discard_challenge(self):
+        if self.operation and self.operation.get("state") not in TERMINAL:
+            return
+        selected = self.challenge_tree.selection()
+        if selected and messagebox.askyesno(
+            "Discard Challenge Page",
+            "Close this task's original page? The source remains blocked. "
+            "The original challenge cannot be restored later.",
+        ):
+            arguments = [
+                "action",
+                "CLOSE_LOGIN",
+                "--task-id",
+                selected[0],
+                "--confirm-discard",
+                "--idempotency-key",
+                uuid4().hex,
+            ]
+            self._run(lambda: call_admin(arguments), self._submitted)
+
+    def _poll_operation(self):
+        if self.operation:
+            operation_id = self.operation["operation_id"]
+            self._run(
+                lambda: call_admin(["status", operation_id]),
+                self._operation_status,
+                channel="status",
+            )
+
+    def _operation_status(self, result):
+        if self.operation and result.get("operation_id") not in {
+            None,
+            self.operation["operation_id"],
+        }:
+            return
+        if (
+            self.operation
+            and self.operation.get("state") in TERMINAL
+            and result.get("state") not in TERMINAL
+        ):
+            return
+        if not result.get("ok"):
+            self._status_failures += 1
+            self.status_value.set("Status unavailable; operation reference preserved.")
+            if self._status_failures < 2:
+                self.root.after(3000, self._poll_operation)
+            return
+        self._status_failures = 0
+        self.operation = result
+        self.status_value.set(result["action"] + ": " + result["stage"])
+        if result["state"] not in TERMINAL:
+            self.root.after(1000, self._poll_operation)
+            return
+        details = result.get("result") or {}
+        if details.get("session_id"):
+            self.session = {**(self.session or {}), **details}
+        if details.get("stage") == "VIEWER_READY":
+            self._viewer_pending = (details, time.monotonic() + 5)
+        if details.get("session_closed") or details.get("released"):
+            self._viewer_pending = None
+            self._stop_owned_viewer()
+            self.session = None
+        if result["state"] == "FAILED":
+            self.status_value.set(
+                result.get("error") or "Operation failed; original page preserved"
+            )
+        elif details.get("reason") == "second_subscription_article_required":
+            self.status_value.set(
+                "First paid article verified. Keep this session open and use Advanced URL "
+                "to verify a different subscription article for the backup identity."
+            )
+        elif details:
+            self.status_value.set(json.dumps(details, ensure_ascii=True))
+        self.refresh()
+        self.root.after(2100, self.refresh)
+
+    def cancel_operation(self):
+        if self.operation:
+            operation_id = self.operation["operation_id"]
+            self._run(
+                lambda: call_admin(["cancel-operation", operation_id]),
+                self._operation_status,
+                channel="cancel",
+            )
+
+    def verify_with_custom_url(self):
+        url = simpledialog.askstring(
+            "Verification Article", "HTTPS article URL belonging to this source:"
+        )
+        if url:
+            kind = (
+                "VERIFY_CHALLENGE"
+                if self.session and self.session.get("kind") == "CHALLENGE"
+                else "VERIFY_LOGIN"
+            )
+            self._action(kind, url)
+
+    def _launch_viewer(self):
         try:
             self.viewer = subprocess.Popen(
                 [VNC_VIEWER, "-Shared", "127.0.0.1::5900"],
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
             )
-        except OSError:
-            messagebox.showerror(
-                "Cannot Open Browser Viewer",
-                "VNC Viewer could not start. The maintenance session is still active. "
-                "Contact the administrator, then continue or cancel it.",
-            )
-            return
-        try:
             subprocess.Popen(
                 ["/usr/bin/python3", CLIPBOARD_BRIDGE, "--viewer-pid", str(self.viewer.pid)],
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
             )
         except OSError:
-            messagebox.showwarning(
-                "Clipboard Unavailable",
-                "The browser viewer is open, but clipboard forwarding could not start.",
-            )
-        self.root.after(1500, self._watch_viewer)
+            self.status_value.set("Viewer unavailable. Original page/session is preserved.")
 
-    def _stop_owned_viewer(self) -> None:
+    def _continue_viewer(self):
+        if self.session:
+            action = "OPEN_CHALLENGE" if self.session.get("kind") == "CHALLENGE" else "OPEN_LOGIN"
+            arguments = [
+                "action",
+                action,
+                "--idempotency-key",
+                uuid4().hex,
+                "--session-id",
+                self.session["session_id"],
+            ]
+            if self.session.get("task_id"):
+                arguments += ["--task-id", self.session["task_id"]]
+            self._run(lambda: call_admin(arguments), self._submitted)
+
+    def _stop_owned_viewer(self):
         viewer, self.viewer = self.viewer, None
         if viewer and viewer.poll() is None:
             try:
                 viewer.terminate()
-                viewer.wait(timeout=2)
-            except (OSError, subprocess.TimeoutExpired):
-                # Do not kill arbitrary desktop VNC processes or the Chrome session.
+            except OSError:
                 pass
 
-    def _watch_viewer(self) -> None:
-        if not self.session:
-            return
-        if self.viewer and self.viewer.poll() is not None:
-            self.status_value.set("VNC Viewer closed; you can still verify or cancel")
-        else:
-            self.root.after(1500, self._watch_viewer)
-
-    def _recover(self) -> None:
-        self._run(lambda: call_admin(["recover"]), self._recovered)
-
-    def _recovered(self, payload: dict[str, Any]) -> None:
-        self.session = payload.get("session")
-        self._render_session()
-        self.status_value.set(str(payload.get("message") or "Maintenance session recovered"))
-        browser = payload.get("browser") or {}
-        if browser.get("navigation_state") == "FAILED":
-            self.status_value.set(
-                "Browser is open; navigation failed: "
-                + str(browser.get("navigation_error") or "network unavailable")
-            )
-        elif browser.get("navigation_state") == "PENDING" and self.session:
-            self.root.after(1500, self._recover)
-
-    def _continue_viewer(self) -> None:
-        self._launch_viewer()
-        self.root.after(1000, self._recover)
-
-    def verify_selected(self) -> None:
-        selected = self._selected()
-        if selected:
-            self._verify(
-                selected.get("identity_id", selected["profile_id"]),
-                selected["site_id"],
-                None,
-            )
-
-    def verify_with_custom_url(self) -> None:
-        selected = self._selected()
-        if not selected:
-            return
-        value = simpledialog.askstring(
-            "Change Verification Article (Advanced)",
-            "Use only if the default article has expired. Enter a subscription article "
-            "HTTPS URL from the current site:",
-            parent=self.root,
-        )
-        if value:
-            self._verify(
-                selected.get("identity_id", selected["profile_id"]),
-                selected["site_id"],
-                value.strip(),
-            )
-
-    def _verify(self, profile_id: str, site_id: str, url: str | None) -> None:
-        arguments = ["verify", profile_id, "--site-id", site_id]
-        if url:
-            arguments.extend(["--url", url])
-        self._run(lambda: call_admin(arguments), self._verified)
-
-    def _verified(self, payload: dict[str, Any]) -> None:
-        if payload.get("closed") is False:
-            messagebox.showwarning(
-                "Challenge Not Verified",
-                str(payload.get("message") or "Keep the browser open and complete the challenge."),
-            )
-            self._recover()
-            return
-        self._stop_owned_viewer()
-        self.session = None
-        self._render_session()
-        message = str(payload.get("message") or "Verification completed.")
-        state = str(payload.get("auth_state") or "UNKNOWN")
-        if state == "VALID" or payload.get("reason") == "public_access_ready":
-            messagebox.showinfo("Login Verified", message)
-        elif state == "ENTITLEMENT_MISSING":
-            messagebox.showwarning("No Subscription Access", message)
-        else:
-            messagebox.showwarning("Login Verification Failed", message)
-        self.refresh()
-
-    def cancel_session(self) -> None:
-        if not messagebox.askyesno(
-            "Cancel Maintenance", "Close the current login browser and cancel maintenance?"
-        ):
-            return
-        self._run(lambda: call_admin(["close"]), self._cancelled)
-
-    def _cancelled(self, payload: dict[str, Any]) -> None:
-        self._stop_owned_viewer()
-        self.session = None
-        self._render_session()
-        self.status_value.set(str(payload.get("message") or "Maintenance cancelled"))
-        self.refresh()
-
-    def _on_window_close(self) -> None:
+    def _on_window_close(self):
         if self.session and not messagebox.askyesno(
-            "Maintenance Is Still Active",
-            "Closing this tool will leave the browser session active. You can reopen the tool "
-            "later to continue.\n\nClose this window?",
+            "Session Remains Active",
+            "Leave this browser session active for later? No page will be closed.",
         ):
             return
+        self._closed = True
+        self._stop_owned_viewer()
         self.root.destroy()
 
 
-def main() -> None:
+def main():
     root = tk.Tk()
     SiteLoginApp(root)
     root.mainloop()

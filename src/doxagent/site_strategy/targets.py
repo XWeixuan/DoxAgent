@@ -1,0 +1,117 @@
+"""Exact target ownership across controller connections; no age/blank-page sweeps."""
+
+from .governance_models import ChallengeTask, OwnedBrowserTarget
+from .governance_repository import GovernanceRepository
+from .schema import utc_now
+
+
+class TargetOwner:
+    def __init__(self, repository):
+        self.store = GovernanceRepository(repository)
+
+    async def event(self, action, payload):
+        if action == "allocate":
+            return self.allocate(**payload).model_dump(mode="json")
+        if action == "bind":
+            return self.bind(**payload).model_dump(mode="json")
+        if action == "list":
+            return [t.model_dump(mode="json") for t in self.list_for_instance(**payload)]
+        if action == "state":
+            target = self.store.get_target(payload["allocation_id"])
+            if target is None:
+                raise KeyError(payload["allocation_id"])
+            if payload["state"] not in {"LIVE", "CLOSE_PENDING", "CLOSED", "LOST"}:
+                raise ValueError("invalid target transition")
+            if payload["state"] == "LOST":
+                task = self.store.current_challenge(target.identity_id)
+                if task and task.allocation_id == target.allocation_id:
+                    self.store.save_challenge(task.model_copy(update={"state": "TARGET_LOST"}))
+            return self.store.save_target(
+                target.model_copy(
+                    update={
+                        "state": payload["state"],
+                        "updated_at": utc_now(),
+                    }
+                )
+            ).model_dump(mode="json")
+        if action == "login":
+            return self.store.handoff_login(
+                payload["allocation_id"], payload["session_id"], payload["site_id"]
+            ).model_dump(mode="json")
+        if action == "handoff":
+            return self.store.handoff_challenge(ChallengeTask.model_validate(payload)).model_dump(
+                mode="json",
+            )
+        raise ValueError("unsupported ownership action")
+
+    def allocate(self, identity_id, instance_id, epoch):
+        return self.store.save_target(
+            OwnedBrowserTarget(
+                identity_id=identity_id,
+                browser_instance_id=instance_id,
+                worker_epoch=epoch,
+            )
+        )
+
+    def bind(self, allocation_id, target_id):
+        target = self.store.get_target(allocation_id)
+        if target is None:
+            raise KeyError(allocation_id)
+        return self.store.save_target(
+            target.model_copy(
+                update={
+                    "target_id": target_id,
+                    "state": "LIVE",
+                    "updated_at": utc_now(),
+                }
+            )
+        )
+
+    def list_for_instance(self, identity_id, instance_id):
+        repo = self.store.repository
+        with repo._lock:
+            rows = repo._connection.execute(
+                "select data_json from owned_browser_targets "
+                "where identity_id=? and browser_instance_id=? and state not in ('CLOSED','LOST')",
+                (identity_id, instance_id),
+            ).fetchall()
+        return [OwnedBrowserTarget.model_validate_json(row[0]) for row in rows]
+
+    async def reconcile(self, cdp, identity_id, instance_id):
+        """Find lost create replies, retry exact business closes, preserve humans."""
+        result = await cdp.send("Target.getTargets")
+        live = {str(t["targetId"]): t for t in result["targetInfos"]}
+        outcomes = []
+        for target in self.list_for_instance(identity_id, instance_id):
+            if not target.target_id:
+                matched = [key for key, info in live.items() if info.get("url") == target.marker]
+                if len(matched) == 1:
+                    target = self.bind(target.allocation_id, matched[0])
+            if target.target_id not in live:
+                target = target.model_copy(update={"state": "LOST", "updated_at": utc_now()})
+                self.store.save_target(target)
+                task = self.store.current_challenge(identity_id)
+                if task and task.allocation_id == target.allocation_id:
+                    self.store.save_challenge(task.model_copy(update={"state": "TARGET_LOST"}))
+            elif target.owner_kind == "BUSINESS":
+                pending = target.model_copy(update={"state": "CLOSE_PENDING"})
+                self.store.save_target(pending)
+                try:
+                    await cdp.send("Target.closeTarget", {"targetId": target.target_id})
+                except Exception:
+                    pass  # Durable pending record survives this connection.
+                else:
+                    target = self.store.save_target(pending.model_copy(update={"state": "CLOSED"}))
+            outcomes.append(target)
+        return outcomes
+
+    def handoff(self, target: OwnedBrowserTarget, **details):
+        return self.store.handoff_challenge(
+            ChallengeTask(
+                allocation_id=target.allocation_id,
+                identity_id=target.identity_id,
+                browser_instance_id=target.browser_instance_id,
+                original_target_id=target.target_id,
+                **details,
+            )
+        )

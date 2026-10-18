@@ -32,19 +32,27 @@ from .storage import StorageMonitor, storage_failure
 
 
 class SiteStrategyRepository:
-    def __init__(self, path: str | Path) -> None:
+    def __init__(self, path: str | Path, *, read_only: bool = False) -> None:
         self.path = Path(path)
-        self.path.parent.mkdir(parents=True, exist_ok=True)
+        if not read_only:
+            self.path.parent.mkdir(parents=True, exist_ok=True)
         self.storage = StorageMonitor(self.path)
         self._diagnostic_warning_at = float("-inf")
-        self._connection = sqlite3.connect(self.path, check_same_thread=False, timeout=5)
+        self._connection = sqlite3.connect(
+            self.path.resolve().as_uri() + "?mode=ro" if read_only else self.path,
+            uri=read_only,
+            check_same_thread=False,
+            timeout=5,
+        )
         self._connection.row_factory = sqlite3.Row
         self._lock = threading.RLock()
         with self._lock:
-            self._connection.execute("pragma journal_mode=WAL")
+            if not read_only:
+                self._connection.execute("pragma journal_mode=WAL")
             self._connection.execute("pragma foreign_keys=ON")
             self._connection.execute("pragma busy_timeout=5000")
-        self.ensure_schema()
+        if not read_only:
+            self.ensure_schema()
 
     @contextmanager
     def transaction(self) -> Iterator[sqlite3.Connection]:
@@ -178,6 +186,12 @@ class SiteStrategyRepository:
                     on body_outcomes(final_site_id, completed_at);
                 """
             )
+            from .governance_repository import migrate_governance
+
+            migrate_governance(connection)
+            from .retention import migrate_retention
+
+            migrate_retention(connection)
 
     def apply_identity(
         self,
@@ -204,7 +218,7 @@ class SiteStrategyRepository:
                 """select r.spec_json from browser_identity_heads h
                    join browser_identity_revisions r on r.identity_id=h.identity_id
                     and r.revision=h.active_revision
-                   where h.identity_id<>? and h.enabled=1""",
+                   where h.identity_id<>?""",
                 (spec.identity_id,),
             ).fetchall()
             for item in duplicate:

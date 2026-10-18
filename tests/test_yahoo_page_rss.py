@@ -205,10 +205,10 @@ class SSRPage(Page):
         return SimpleNamespace(status=self.status, headers={"retry-after": "600"})
 
     def locator(self, selector):
-        assert selector == "script[data-sveltekit-fetched]"
+        assert selector in {"script[data-sveltekit-fetched]", '[data-testid="storyitem"]'}
 
         async def evaluate_all(script):
-            return self.scripts
+            return self.scripts if selector == "script[data-sveltekit-fetched]" else []
 
         return SimpleNamespace(evaluate_all=evaluate_all)
 

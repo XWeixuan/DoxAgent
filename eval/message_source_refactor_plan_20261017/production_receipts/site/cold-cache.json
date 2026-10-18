@@ -1,0 +1,14 @@
+{
+  "dowjones-main": {
+    "status": "managed",
+    "deleted_bytes": 159283203
+  },
+  "trendforce-1": {
+    "status": "managed",
+    "deleted_bytes": 0
+  },
+  "public-markets-nl": {
+    "status": "managed",
+    "deleted_bytes": 0
+  }
+}

@@ -1,0 +1,81 @@
+{
+  "open": {
+    "operation": {
+      "action": "OPEN_LOGIN",
+      "idempotency_key": "release-toolchain:340b3d82574049b880ab7a6cf53b49d8",
+      "scope_id": "source:globenewswire_semiconductors_rss",
+      "identity_id": "globe-rss-main",
+      "session_id": null,
+      "task_id": null,
+      "verification_url": null,
+      "confirm_discard": false,
+      "operation_id": "maintenance_op_b069414c94334692a0c5e72da3172c39",
+      "state": "DONE",
+      "stage": "DONE",
+      "stage_started_at": "2026-10-17T19:30:17.216589Z",
+      "deadline_at": "2026-10-17T19:30:57.216541Z",
+      "result": {
+        "session_id": "maintenance_85201357acbe4b16b8a40ead1212125f",
+        "identity_id": "globe-rss-main",
+        "stage": "VIEWER_READY",
+        "generation": 2,
+        "kind": "LOGIN",
+        "task_id": null,
+        "site_id": "globenewswire"
+      },
+      "error": null,
+      "updated_at": "2026-10-17T19:30:22.823344Z"
+    },
+    "ack_seconds": 0.014149830676615238,
+    "seconds": 5.686338965781033,
+    "stages": [
+      "STARTING_BROWSER",
+      "DONE"
+    ]
+  },
+  "real_login": false,
+  "original_tasks_before": 4,
+  "viewer_rfb": "RFB ",
+  "close": {
+    "operation": {
+      "action": "VERIFY_LOGIN",
+      "idempotency_key": "release-toolchain:1a9de446d318463a8d390506d2994bbd",
+      "scope_id": null,
+      "identity_id": null,
+      "session_id": "maintenance_85201357acbe4b16b8a40ead1212125f",
+      "task_id": null,
+      "verification_url": null,
+      "confirm_discard": false,
+      "operation_id": "maintenance_op_8955872fe78e4e46b220727407d854ea",
+      "state": "DONE",
+      "stage": "DONE",
+      "stage_started_at": "2026-10-17T19:30:23.165406Z",
+      "deadline_at": "2026-10-17T19:31:08.165360Z",
+      "result": {
+        "challenge": "CLEARED",
+        "authentication": "NOT_REQUIRED",
+        "crawler": "READY",
+        "body": "FULL",
+        "reason": "complete_article",
+        "health_applied": true,
+        "session_closed": true,
+        "cleanup_pending": false,
+        "challenge_task_id": null,
+        "verification_url": "https://www.globenewswire.com/news-release/2026/10/16/3382554/9885/en/silicon-motion-announces-annual-dividend-increase.html",
+        "runtime_instance_id": "managed:globe-rss-main:7e4080aa532f443487ff22f5f08beee6"
+      },
+      "error": null,
+      "updated_at": "2026-10-17T19:30:32.717268Z"
+    },
+    "ack_seconds": 0.012833788059651852,
+    "seconds": 10.015771484933794,
+    "stages": [
+      "CHECKING_CHALLENGE",
+      "CHECKING_CRAWLER",
+      "CHECKING_BODY",
+      "CLEANUP",
+      "DONE"
+    ]
+  },
+  "original_task_refs_unchanged": true
+}

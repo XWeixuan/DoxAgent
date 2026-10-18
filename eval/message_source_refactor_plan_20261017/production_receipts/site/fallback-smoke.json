@@ -1,0 +1,61 @@
+{
+  "initial": "BUDGET_DEFERRED",
+  "initial_reason": "fallback_activation_pending",
+  "test_public_source_only": true,
+  "network_redundancy": "NONE_DIRECT",
+  "active_after_cold": "globe-search-backup",
+  "activation_seconds": 8.092158037703484,
+  "body_capability": {
+    "result": "FULL",
+    "checked_at": "2026-10-17T19:30:43.747556+00:00",
+    "fingerprint": "dc803b4e80dfaa443f0de473391ebd9064b503d87c72fb6e505e61f66004fa05",
+    "instance_id": "managed:globe-search-backup:6aa309dd7e464c92a0abd79bffa59112",
+    "article_samples": [
+      "74c3b4bf1e331102fd5082590965070b23680882dc5900e1a7924dc7741046a2"
+    ],
+    "subscription_samples": [],
+    "last_url": "https://www.globenewswire.com/news-release/2026/10/16/3382408/28124/en/global-emerging-memory-and-storage-technology-market-analysis-2026-2035-ai-and-hbm-demand-fuels-19-73-cagr-creating-a-44-61-billion-market-by-2035.html",
+    "state": "VERIFIED_COLD",
+    "contract": "body_v2.2/listing_v1",
+    "authenticated": false
+  },
+  "bodies": [
+    {
+      "disposition": "SUCCESS",
+      "identity": "globe-search-backup",
+      "body": "FULL"
+    },
+    {
+      "disposition": "SUCCESS",
+      "identity": "globe-search-backup",
+      "body": "FULL"
+    }
+  ],
+  "sticky_listing": {
+    "disposition": "SUCCESS",
+    "identity": "globe-search-backup"
+  },
+  "explicit_primary_restore": {
+    "action": "ACTIVATE_PRIMARY",
+    "idempotency_key": "release-restore:475d7a7b046b4931bb86d32e2dbc2ba1",
+    "scope_id": "source:globenewswire_search",
+    "identity_id": null,
+    "session_id": null,
+    "task_id": null,
+    "verification_url": null,
+    "confirm_discard": false,
+    "operation_id": "maintenance_op_3f7e324f79f7424dbf2c443448a88a1c",
+    "state": "DONE",
+    "stage": "DONE",
+    "stage_started_at": "2026-10-17T19:30:50.131150Z",
+    "deadline_at": "2026-10-17T19:31:30.131110Z",
+    "result": {
+      "ready": true,
+      "identity_id": "globenewswire-1",
+      "active_role": "primary",
+      "canary": "CRAWLER"
+    },
+    "error": null,
+    "updated_at": "2026-10-17T19:30:55.767102Z"
+  }
+}

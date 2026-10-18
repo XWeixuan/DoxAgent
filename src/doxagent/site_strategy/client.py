@@ -72,10 +72,20 @@ class SiteAccessClient:
         return ResolvedSite.model_validate(response.json())
 
     async def execute(self, request: AccessRequest) -> AccessResult:
+        from .scope import current_routing
+
+        context = current_routing()
+        if request.origin_scope_id is None and context is not None:
+            request = request.model_copy(
+                update={
+                    "origin_scope_id": context.origin_scope_id,
+                    "scope_revision": context.scope_revision,
+                }
+            )
         if self.service is not None:
             return await self.service.execute(request)
         assert self._client is not None
-        payload = request.model_dump(mode="json")
+        payload = request.model_dump(mode="json", exclude_none=True)
         # The RPC owns a request budget, not a fresh multi-minute timeout per retry.
         seconds = min(self.timeout_seconds, request.remaining_budget_ms / 1000 + 15)
         timeout = httpx.Timeout(seconds, connect=min(5, seconds), pool=min(5, seconds))
@@ -83,14 +93,20 @@ class SiteAccessClient:
             async with asyncio.timeout(seconds):
                 try:
                     response = await self._client.post(
-                        "/v1/access/execute", json=payload, timeout=timeout
+                        "/v1/access/execute",
+                        json=payload,
+                        timeout=timeout,
+                        headers={"X-Site-Access-Protocol": "2"},
                     )
                 except (httpx.ReadError, httpx.RemoteProtocolError):
                     if request.method != "GET":
                         raise
                     # Same ID preserves server-side deduplication if the response was lost.
                     response = await self._client.post(
-                        "/v1/access/execute", json=payload, timeout=timeout
+                        "/v1/access/execute",
+                        json=payload,
+                        timeout=timeout,
+                        headers={"X-Site-Access-Protocol": "2"},
                     )
         except TimeoutError as exc:
             raise httpx.ReadTimeout(
@@ -230,6 +246,8 @@ class SiteAccessError(RuntimeError):
 def _provenance(result: AccessResult) -> dict[str, object]:
     return {
         "site_id": result.site_id,
+        "effective_scope_id": result.effective_scope_id,
+        "route_generation": result.route_generation,
         "strategy_revision": result.strategy_revision,
         "combination_id": result.combination_id,
         "profile_id": result.profile_id,

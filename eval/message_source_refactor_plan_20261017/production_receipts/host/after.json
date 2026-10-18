@@ -1,0 +1,96 @@
+{
+  "at": "2026-10-17T18:26:56.840278+00:00",
+  "containers": {
+    "doxagent-v2-v2-content-enrichment-1": {
+      "container": "9377f90a6c9db4b72ee7659c5c04b594140bb7e247e0956b086b559cbe6b58db",
+      "image": "sha256:a6d0aa1df7dee1e48afbfb1551e47e4f0be47d7d052dc9eb262656878e9ce6dd",
+      "tag": "doxagent-v2:main-de00466f"
+    },
+    "doxagent-v2-v2-message-bus-1": {
+      "container": "3ce3205f231ca27090e45ce579bc3b3f11b1746b0e396b960e7265c933a372bf",
+      "image": "sha256:a6d0aa1df7dee1e48afbfb1551e47e4f0be47d7d052dc9eb262656878e9ce6dd",
+      "tag": "doxagent-v2:main-de00466f"
+    },
+    "doxagent-v2-v2-site-access-1": {
+      "container": "3140a214d2c2b7993096a1ecdcd2454fb23b593a74e437573532f6371249331b",
+      "image": "sha256:17edcd5e93f4e2f8c55bf10aaa86dd3b90488165544e2c89c24b97f4e2242da6",
+      "tag": "doxagent-site-access:main-60ec5c5d"
+    },
+    "doxagent-v2-v2-chrome-supervisor-1": {
+      "container": "07783e2a1fd3112e6f16b7969131b0290a8b7296280b87ed5f8e2a45670e5328",
+      "image": "sha256:bdcc5e0d7974264b632e8b016a303875313ed91ae809b6e3c0cc17d8e3b078a3",
+      "tag": "doxagent-chrome-supervisor:main-60ec5c5d"
+    },
+    "doxagent-v2-v2-initialization-1": {
+      "container": "3aec046ea8b29b8cd73c01092434d068ee0497e9a410b4e3eb5b2ec79d7a4684",
+      "image": "sha256:d821c406ccdeafb530b04b8b3f3f3c7e5f5b0ae30ce0d6ec2b6100c256b1de9c",
+      "tag": "doxagent-cohr-recovery:initialization-lease-f142e55c"
+    },
+    "doxagent-v2-initialization-guardian-1": {
+      "container": "198abf5e244f1bf2d3f70503e1c64f756c0815fc3488f878b490a6f74c500d08",
+      "image": "sha256:2f4721a92bfe33e02d9459ff4556694f7c2faf2472a80f80c5df1b4ef5ca01ae",
+      "tag": "doxagent-cohr-recovery:guardian-5c4b7dd5"
+    },
+    "doxagent-v2-codex-worker-1": {
+      "container": "a374becff424ef25c360983cd1c5699ee3c1893ce78e0b973594872b2b5ffbc8",
+      "image": "sha256:9b0f9eadec8e808ba8320d7efb5360e94f99a6c1e361e9f846126ca9138f602a",
+      "tag": "doxagent-cohr-recovery:worker-58078285"
+    },
+    "doxagent-v2-v2-scheduler-1": {
+      "container": "96350ff40d84742f665109a801ee0fd4e0e5d0074a4dde5d4b2c9487bc690fcf",
+      "image": "sha256:78a45d6b1d3f33ef1e71b19634abb1c8b666f32d9f4f91467bab73f75a214ca7",
+      "tag": "doxagent-v2:main-00acd74a"
+    },
+    "doxagent-v2-v2-projector-1": {
+      "container": "b4104141b066ab2d27a234862710a18b51ae0cd70d02b3e356f11cfcff10f4e7",
+      "image": "sha256:0db49675cec6abc52a0dc9624de10492af044b0a0a164755ab6f06de8b246be3",
+      "tag": "doxagent-v2:main-3c30365a"
+    },
+    "doxagent-v2-v2-api-1": {
+      "container": "1c1396afbb28d35fbd733d384abb2de5c11f136622fbe106dd9a6dd7440051f1",
+      "image": "sha256:0db49675cec6abc52a0dc9624de10492af044b0a0a164755ab6f06de8b246be3",
+      "tag": "doxagent-v2:main-3c30365a"
+    },
+    "doxagent-v2-v2-web-1": {
+      "container": "9e36a71453ae5791825da554009bc118cc704334a6edf23930d505405136eeea",
+      "image": "sha256:ccc0b6ff869d10c383f2466cdf04faee9f9090bbffb6024bf7a4e0bf702fc882",
+      "tag": "doxagent-v2-web:main-e929134d"
+    },
+    "doxagent-v2-v2-cdecr-executor-1": {
+      "container": "d319151d8656d1fc0556ec2ccdedff41fc7bb3e1cfcea0ef1dfa8e070befb02a",
+      "image": "sha256:a19e4e9ae9211f589fc4a2b5492f39f364872834d5c347452f1c1b446bc2f70b",
+      "tag": "doxagent-v2:main-618fd9c5"
+    },
+    "doxagent-v2-v2-o4-1": {
+      "container": "9fe361d2eb9a7b5ee2c5fdd20459c298eea5d9e8d248342d1e8d5bd2561c9b9c",
+      "image": "sha256:a19e4e9ae9211f589fc4a2b5492f39f364872834d5c347452f1c1b446bc2f70b",
+      "tag": "doxagent-v2:main-618fd9c5"
+    },
+    "doxagent-v2-v2-maintenance-1": {
+      "container": "20b8cfa89f6a4228678fb3ba971df6e2ebbc0d407c914b3ecc6f8bbb6579bb3c",
+      "image": "sha256:a19e4e9ae9211f589fc4a2b5492f39f364872834d5c347452f1c1b446bc2f70b",
+      "tag": "doxagent-v2:main-618fd9c5"
+    },
+    "doxagent-v2-v2-executor-1": {
+      "container": "84a8b3f327abd4bcb2b12b64ecda8d2ba22fca685547f98529bb574bdc42b468",
+      "image": "sha256:a19e4e9ae9211f589fc4a2b5492f39f364872834d5c347452f1c1b446bc2f70b",
+      "tag": "doxagent-v2:main-618fd9c5"
+    },
+    "doxagent-v2-v2-delivery-1": {
+      "container": "a3a2ba7007ead02ad8d08c553dbafa0498ff4bf94d057fd8f2dd243e82a0acbb",
+      "image": "sha256:a19e4e9ae9211f589fc4a2b5492f39f364872834d5c347452f1c1b446bc2f70b",
+      "tag": "doxagent-v2:main-618fd9c5"
+    },
+    "doxagent-v2-v2-transport-maintenance-1": {
+      "container": "afcaed42067e6a40da3f3c77b859545f81a342720e99a685507e8308ed88cf49",
+      "image": "sha256:a19e4e9ae9211f589fc4a2b5492f39f364872834d5c347452f1c1b446bc2f70b",
+      "tag": "doxagent-v2:main-618fd9c5"
+    },
+    "doxagent-v2-v2-control-1": {
+      "container": "7c73b2692fd0a2c34092810feddc063e516de3e34eac2faccf82fa0c27cebcbb",
+      "image": "sha256:a19e4e9ae9211f589fc4a2b5492f39f364872834d5c347452f1c1b446bc2f70b",
+      "tag": "doxagent-v2:main-618fd9c5"
+    }
+  },
+  "root_free": 1215139840
+}

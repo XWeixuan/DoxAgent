@@ -15,6 +15,95 @@ from email.utils import parsedate_to_datetime
 from urllib.parse import parse_qs, quote, urlparse
 from xml.etree import ElementTree
 
+# Public immutable publication dates only; bounded per identity control worker.
+_ARTICLE_DATES: dict[str, tuple[float, str]] = {}
+
+
+async def capture_dom_news(page, ticker: str, *, count: int):
+    """Current Yahoo SSR cards no longer contain the old latestNews NCP JSON."""
+    cards = await page.locator('[data-testid="storyitem"]').evaluate_all(
+        """els => els.flatMap(e => {
+          const a=e.querySelector('a:has(h3),a:has(h2)'); if(!a) return [];
+          let tag={}; try { tag=JSON.parse(a.dataset.yga||'{}'); } catch {}
+          if(tag.yModuleName!=='qsp-news') return [];
+          const u=new URL(a.href,location.href);
+          if(u.origin!==location.origin||!u.pathname.endsWith('.html')) return [];
+          return [{id:tag.yDestinationContentUUID||u.href,title:a.innerText.trim(),link:u.href,
+            publisher:tag.yDestinationContentPartner||tag.yContentPartner||'Yahoo Finance'}];
+        })"""
+    )
+    cards = list({r["link"]: r for r in cards}.values())[: max(1, min(count, 20))]
+    if not cards:
+        return None
+    now = time.monotonic()
+    missing = [r["link"] for r in cards if _ARTICLE_DATES.get(r["link"], (0, ""))[0] <= now]
+    if missing:
+        # Same-origin browser fetch retains actual browser TLS/cookies/cache.
+        # Never infer an exact publication time from a relative "2h ago" label.
+        dates = await page.evaluate(
+            """async urls => {
+              const results=[]; let next=0;
+              async function worker(){while(next<urls.length){
+                const url=urls[next++], controller=new AbortController();
+                const timer=setTimeout(()=>controller.abort(),6000);
+                try {
+                  const r=await fetch(url,{credentials:'include',signal:controller.signal});
+                  const d=new DOMParser().parseFromString(await r.text(),'text/html');
+                  let date=null;
+                  function visit(v){
+                    if(Array.isArray(v)){v.forEach(visit);return;}
+                    if(!v||typeof v!=='object')return;
+                    const types=Array.isArray(v['@type'])?v['@type']:[v['@type']];
+                    if(types.some(t=>['NewsArticle','Article','ReportageNewsArticle'].includes(t))
+                       &&v.datePublished&&!date)date=v.datePublished;
+                    if(v['@graph'])visit(v['@graph']);
+                  }
+                  for(const s of d.querySelectorAll('script[type="application/ld+json"]')){
+                    try{visit(JSON.parse(s.textContent));}catch{}
+                  }
+                  if(!date)date=d.querySelector('meta[property="article:published_time"]')?.content;
+                  results.push({url,status:r.status,date});
+                }catch{results.push({url,status:0,date:null});}
+                finally{clearTimeout(timer);}
+              }}
+              await Promise.all(Array.from({length:Math.min(3,urls.length)},worker));
+              return results;
+            }""",
+            missing,
+        )
+        for item in dates:
+            if item["status"] in {401, 403, 429}:
+                raise page_http_failure(
+                    item["status"], {}, phase="dom_article_metadata", url=item["url"]
+                )
+            stamp = item.get("date")
+            try:
+                parsed = datetime.fromisoformat(stamp.replace("Z", "+00:00"))
+                valid = parsed.tzinfo is not None and len(stamp) > 10
+            except (AttributeError, ValueError, TypeError):
+                valid = False
+            if item["status"] == 200 and valid:
+                _ARTICLE_DATES[item["url"]] = (now + 86400, parsed.isoformat())
+        while len(_ARTICLE_DATES) > 512:
+            _ARTICLE_DATES.pop(next(iter(_ARTICLE_DATES)))
+    rows = [
+        {**row, "pubDate": _ARTICLE_DATES[row["link"]][1]}
+        for row in cards
+        if _ARTICLE_DATES.get(row["link"], (0, ""))[0] > now
+    ]
+    if not rows:
+        raise YahooPageUnavailable(
+            "Yahoo cards have no verified publication timestamps", phase="dom_article_metadata"
+        )
+    return rows, {
+        "capture_method": "ssr_dom_article_metadata",
+        "network_status": 200,
+        "endpoint": "ticker_news_dom",
+        "ticker": ticker,
+        "article_date_failures": len(cards) - len(rows),
+        "parsed_cards": len(cards),
+    }
+
 
 class YahooPageUnavailable(RuntimeError):
     def __init__(
@@ -179,6 +268,14 @@ async def capture_latest_news(page, ticker: str, *, timeout_seconds=20, snippet_
                         "endpoint": "sveltekit_latest_news",
                     }
                 else:
+                    dom = await capture_dom_news(page, ticker, count=snippet_count)
+                    if dom is not None:
+                        rows, metadata = dom
+                        return rows, {
+                            **metadata,
+                            "page_url": page.url,
+                            "elapsed_seconds": round(time.monotonic() - started, 3),
+                        }
                     # A real same-origin browser fetch: browser TLS, cookies, JS
                     # environment and connection pool, never Playwright APIRequest.
                     # Mark it explicitly so the listener cannot label it native.

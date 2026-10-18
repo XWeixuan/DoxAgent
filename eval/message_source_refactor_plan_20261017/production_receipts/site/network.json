@@ -1,0 +1,46 @@
+[
+  {
+    "egress_id": "de-standard-1",
+    "stored_ip": "205.198.126.113",
+    "probes": [
+      {
+        "url": "https://api.ipify.org?format=json",
+        "status": 200,
+        "ip": "205.198.126.113",
+        "country_iso": null,
+        "country_code": null,
+        "success": null
+      },
+      {
+        "url": "https://ifconfig.co/json",
+        "error": "ConnectError"
+      },
+      {
+        "url": "https://ipwho.is/",
+        "error": "ConnectError"
+      }
+    ]
+  },
+  {
+    "egress_id": "us-standard-5",
+    "stored_ip": "205.198.126.113",
+    "probes": [
+      {
+        "url": "https://api.ipify.org?format=json",
+        "status": 200,
+        "ip": "205.198.126.113",
+        "country_iso": null,
+        "country_code": null,
+        "success": null
+      },
+      {
+        "url": "https://ifconfig.co/json",
+        "error": "ConnectError"
+      },
+      {
+        "url": "https://ipwho.is/",
+        "error": "ConnectError"
+      }
+    ]
+  }
+]

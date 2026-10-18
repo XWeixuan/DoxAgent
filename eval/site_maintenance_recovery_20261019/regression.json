@@ -1,0 +1,13 @@
+{
+  "commit": "b1f8237c6dedd63cc5c2419811949886eda09c86",
+  "source": "clean git archive; isolated cwd/PYTHONPATH; no dirty working-tree modules",
+  "passed": 342,
+  "skipped": 1,
+  "skip_reason": "Windows symlink platform test",
+  "seconds": 148.76,
+  "warning": "curl_cffi adds selector thread for Windows Proactor add_reader support",
+  "selection": "site_strategy/site_login/site_maintenance/source_access/source_isolation/source_maintenance_refactor/identity_control/message_source_recurring/service_busy/message_bus_market_sources/message_bus_industry_sources/crawler_plane/content_enrichment/yahoo",
+  "real_paid_login_test": false,
+  "seven_day_observation_completed": false,
+  "product_ruff": "passed"
+}

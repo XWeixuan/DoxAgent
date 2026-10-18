@@ -1,0 +1,64 @@
+[
+  {
+    "identity": "yahoo-backup",
+    "open": {
+      "action": "OPEN_LOGIN",
+      "state": "DONE",
+      "result": {
+        "session_id": "maintenance_32916ef57154426e9724f6b23216e5b3",
+        "identity_id": "yahoo-backup",
+        "stage": "VIEWER_READY",
+        "generation": 2,
+        "kind": "LOGIN",
+        "task_id": null,
+        "site_id": "yahoo_finance"
+      },
+      "error": null,
+      "ack_seconds": 0.016911713872104883,
+      "seconds": 11.490092834923416
+    },
+    "relay_target_matches_identity": true,
+    "viewer_rfb": "RFB ",
+    "close": {
+      "action": "CLOSE_LOGIN",
+      "state": "DONE",
+      "result": {
+        "session_closed": true
+      },
+      "error": null,
+      "ack_seconds": 0.005284800194203854,
+      "seconds": 0.9217287600040436
+    }
+  },
+  {
+    "identity": "wsj-main",
+    "open": {
+      "action": "OPEN_LOGIN",
+      "state": "DONE",
+      "result": {
+        "session_id": "maintenance_a7040aa7830e4f8485f24f9d59ab0189",
+        "identity_id": "wsj-main",
+        "stage": "VIEWER_READY",
+        "generation": 2,
+        "kind": "LOGIN",
+        "task_id": null,
+        "site_id": "wsj"
+      },
+      "error": null,
+      "ack_seconds": 0.004710746929049492,
+      "seconds": 7.800765328109264
+    },
+    "relay_target_matches_identity": true,
+    "viewer_rfb": "RFB ",
+    "close": {
+      "action": "CLOSE_LOGIN",
+      "state": "DONE",
+      "result": {
+        "session_closed": true
+      },
+      "error": null,
+      "ack_seconds": 0.004931563977152109,
+      "seconds": 1.82378289103508
+    }
+  }
+]

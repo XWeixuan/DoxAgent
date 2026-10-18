@@ -1,0 +1,14 @@
+{
+  "commit": "fe4a768bd61f3f32f819e04ae6cf1407a580d34e",
+  "source": "git archive; isolated cwd and PYTHONPATH; no dirty checkout source",
+  "selected_suite": "test_(site_strategy|site_login|source_access|source_isolation|source_maintenance_refactor|identity_control|message_source_recurring|service_busy|message_bus_market_sources|message_bus_industry_sources|crawler_plane|content_enrichment)",
+  "passed": 302,
+  "skipped": 1,
+  "skip_reason": "Windows platform symlink test",
+  "seconds": 100.93,
+  "product_ruff": "passed: src/doxagent/site_strategy, deploy/site-login-ui.py, tests/test_source_maintenance_refactor.py",
+  "production_paid_auth_test": false,
+  "production_natural_ten_cycles": "NOT_COMPLETED_CLOSED_WINDOW",
+  "resource_seven_day_observation": "NOT_COMPLETED",
+  "production_receipts": "production_receipts/host/final.json"
+}

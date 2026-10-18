@@ -83,12 +83,35 @@ class ProfileUseCoordinator:
             self._accepting = True
             self._maintenance_profile = None
             self._challenge_profiles.clear()
+            from .governance_repository import GovernanceRepository
+
+            sessions = GovernanceRepository(self.repository).list_sessions()
+            session_profiles = {}
+            for session in sessions:
+                identity = self.repository.get_identity(session.identity_id)
+                if identity and session.control_token:
+                    session_profiles[identity.profile_id] = session
             external_profiles = {
                 identity.profile_id
                 for _, identity in self.repository.list_active_identities()
                 if identity.runtime_kind is BrowserRuntimeKind.EXTERNAL_CHROME
             }
             for profile in self.repository.list_profiles():
+                session = session_profiles.get(profile.profile_id)
+                if session:
+                    self.repository.save_profile(
+                        profile.model_copy(
+                            update={
+                                "operational_state": ProfileOperationalState.MAINTENANCE,
+                                "maintenance_session_id": session.control_token,
+                            }
+                        )
+                    )
+                    if session.state == "OPEN":
+                        self._maintenance_profile = profile.profile_id
+                    if session.kind == "CHALLENGE":
+                        self._challenge_profiles.add(profile.profile_id)
+                    continue
                 if (
                     profile.profile_id in external_profiles
                     and profile.challenge_url
@@ -183,12 +206,18 @@ class ProfileUseCoordinator:
                     self._active[profile_id] = remaining
                 self._condition.notify_all()
 
-    async def begin_maintenance(self, profile_id: str, *, timeout_seconds: float = 30) -> str:
-        session_id = uuid4().hex
+    async def begin_maintenance(
+        self,
+        profile_id: str,
+        *,
+        timeout_seconds: float = 30,
+        session_id: str | None = None,
+    ) -> str:
+        session_id = session_id or uuid4().hex
         async with self._condition:
             if not self._accepting:
                 raise ProfileUnavailableError("service_draining")
-            if self._maintenance_profile is not None or self._challenge_profiles:
+            if self._maintenance_profile is not None:
                 raise ProfileUnavailableError("another_profile_is_in_maintenance")
             profile = self.repository.get_profile(profile_id)
             if profile is None:
@@ -226,6 +255,26 @@ class ProfileUseCoordinator:
             )
             return session_id
 
+    async def prepare_login(self, profile_id: str, identity_id: str) -> None:
+        """Retire only confirmed lost Challenge reservations, never a live human page."""
+        from .governance_repository import GovernanceRepository
+
+        async with self._condition:
+            store = GovernanceRepository(self.repository)
+            task = store.current_challenge(identity_id)
+            if task and task.state != "TARGET_LOST":
+                raise ProfileUnavailableError("active_challenge_use_challenge_maintenance")
+            for session in store.list_sessions():
+                if session.identity_id != identity_id or session.kind != "CHALLENGE":
+                    continue
+                if task and session.task_id == task.task_id or not session.target_id:
+                    store.save_session(session.model_copy(update={"state": "CLOSED"}))
+            profile = self.repository.get_profile(profile_id)
+            if task and profile and profile.maintenance_session_id:
+                if self._maintenance_profile not in {None, profile_id}:
+                    raise ProfileUnavailableError("another_profile_is_in_maintenance")
+                await self._release_locked(profile_id, profile.maintenance_session_id)
+
     async def begin_challenge(
         self,
         profile_id: str,
@@ -242,6 +291,17 @@ class ProfileUseCoordinator:
             if not self._accepting:
                 raise ProfileUnavailableError("service_draining")
             profile = self.repository.get_profile(profile_id)
+            if (
+                profile
+                and profile.maintenance_session_id == token
+                and profile.operational_state
+                in {
+                    ProfileOperationalState.DRAINING_FOR_MAINTENANCE,
+                    ProfileOperationalState.MAINTENANCE,
+                }
+            ):
+                self._challenge_profiles.add(profile_id)
+                return  # The ownership transaction already persisted this handoff.
             if (
                 profile is None
                 or profile.operational_state is not ProfileOperationalState.AVAILABLE
@@ -317,10 +377,6 @@ class ProfileUseCoordinator:
                 profile is None
                 or profile.operational_state is not ProfileOperationalState.MAINTENANCE
                 or profile.maintenance_session_id != session_id
-                or (
-                    self._maintenance_profile != profile_id
-                    and profile_id not in self._challenge_profiles
-                )
             ):
                 raise ProfileUnavailableError("invalid_maintenance_session")
             return profile
@@ -328,6 +384,15 @@ class ProfileUseCoordinator:
     async def end_maintenance(self, profile_id: str, session_id: str) -> None:
         async with self._condition:
             await self._release_locked(profile_id, session_id)
+
+    async def release_viewer(self, profile_id: str, session_id: str) -> None:
+        async with self._condition:
+            profile = self.repository.get_profile(profile_id)
+            if profile is None or profile.maintenance_session_id != session_id:
+                raise ProfileUnavailableError("invalid_maintenance_session")
+            if self._maintenance_profile == profile_id:
+                self._maintenance_profile = None
+            self._condition.notify_all()
 
     async def _release_locked(self, profile_id: str, session_id: str) -> None:
         profile = self.repository.get_profile(profile_id)
@@ -385,6 +450,7 @@ class SiteStrategyService:
         safety_path: str | Path | None = None,
         supervisor_socket: str | Path | None = None,
         controller_id: str = "site-access",
+        isolated_browser_workers: bool = False,
     ) -> None:
         self.repository = repository
         self.resolver = SiteResolver(repository)
@@ -392,7 +458,12 @@ class SiteStrategyService:
         self.health = CombinationHealthManager(repository)
         self.profile_use = ProfileUseCoordinator(repository)
         self.profile_storage = ProfileSnapshotManager(profile_root, repository)
-        self.runtime = SiteAccessRuntime(
+        runtime_type = SiteAccessRuntime
+        if isolated_browser_workers:
+            from .worker_runtime import WorkerSiteAccessRuntime
+
+            runtime_type = WorkerSiteAccessRuntime
+        self.runtime = runtime_type(
             repository,
             self.resolver,
             profile_root=profile_root,
@@ -411,6 +482,13 @@ class SiteStrategyService:
         self._cache_bytes = 0
         self._cache_lock = asyncio.Lock()
         self._maintenance_task: asyncio.Task[None] | None = None
+        self._retention_task: asyncio.Task[None] | None = None
+        self._scope_inflight = {}
+        self._switching_scopes = set()
+        self._native_drains = {}
+        from .failover import FailoverCoordinator
+
+        self.failover = FailoverCoordinator(self)
 
     async def start(self) -> None:
         """Acquire the single-owner profile lock and start the browser driver."""
@@ -424,17 +502,57 @@ class SiteStrategyService:
                 for combination_id, value in state.combinations.items():
                     if value.probe_in_flight or value.state == "HALF_OPEN":
                         await self.health.mark_probe_uncertain(spec.site_id, combination_id)
-        await self._prewarm_identities()
+        # Source warmup is background work, not a condition for serving the
+        # maintenance API or for another healthy identity to make progress.
         if self._maintenance_task is None:
             self._maintenance_task = asyncio.create_task(self._maintenance_loop())
+        if self._retention_task is None:
+            from .retention import RetentionWorker
+
+            self.retention = RetentionWorker(self.repository)
+            self.retention.resource_cleanup = self._maintain_managed_resources
+            self._retention_task = asyncio.create_task(self.retention.run(), name="site-retention")
+
+    async def _maintain_managed_resources(self):
+        from .resource_gc import maintain_profile
+
+        root = self.runtime.browser_pool.root
+        # Preserve the production retention fix: retired identities still own
+        # profiles, and the shared owner lock fences both browser runtime types.
+        for profile in self.repository.list_profiles():
+            if not profile.maintenance_session_id:
+                await asyncio.to_thread(
+                    maintain_profile, root, profile.directory_key, allow_cache=True
+                )
+        await asyncio.to_thread(self.profile_storage.maintain)
 
     async def _prewarm_identities(self) -> None:
+        from .governance_repository import GovernanceRepository
+
+        scopes = GovernanceRepository(self.repository).list_scopes()
+        hot = set()
+        for scope in scopes:
+            primary = self.repository.get_identity(scope.primary_identity_id)
+            if (
+                scope.enabled
+                and scope.source_id
+                and primary.lifecycle.residency is BrowserResidency.ALWAYS_ON
+            ):
+                route = self.repository.get_runtime(f"scope:{scope.scope_id}")
+                hot.add(route.active_combination_id or scope.primary_identity_id)
         for head, identity in self.repository.list_active_identities():
             if (
                 not head.enabled
                 or not identity.enabled
+                or (scopes and identity.identity_id not in hot)
                 or identity.runtime_kind is not BrowserRuntimeKind.EXTERNAL_CHROME
-                or identity.lifecycle.residency is not BrowserResidency.ALWAYS_ON
+                or (not scopes and identity.lifecycle.residency is not BrowserResidency.ALWAYS_ON)
+            ):
+                continue
+            profile = self.repository.get_profile(identity.profile_id)
+            if (profile and profile.maintenance_session_id) or (
+                self.repository.get_identity_runtime(identity.identity_id).operational_state
+                is IdentityOperationalState.UNHEALTHY
             ):
                 continue
             egress = self.repository.get_egress(identity.egress_id)
@@ -471,6 +589,8 @@ class SiteStrategyService:
 
     @property
     def browser_driver_ready(self) -> bool:
+        if hasattr(self.runtime, "workers"):
+            return True
         return self.runtime.browser_pool.driver_ready and not self.access_diagnostics()["stalled"]
 
     def access_diagnostics(self) -> dict[str, object]:
@@ -518,7 +638,17 @@ class SiteStrategyService:
         return self.profile_use.accepting
 
     async def close(self) -> None:
+        await self.failover.close()
+        for task in self._native_drains.values():
+            task.cancel()
+        if self._native_drains:
+            await asyncio.wait(tuple(self._native_drains.values()), timeout=3)
         await self.profile_use.begin_shutdown()
+        if self._retention_task is not None:
+            self._retention_task.cancel()
+            with suppress(asyncio.CancelledError):
+                await self._retention_task
+            self._retention_task = None
         if self._maintenance_task is not None:
             self._maintenance_task.cancel()
             with suppress(asyncio.CancelledError):
@@ -541,7 +671,6 @@ class SiteStrategyService:
             self.repository.close()
 
     async def _maintenance_loop(self) -> None:
-        last_diagnostic_prune = 0.0
         while True:
             exit_code = self.runtime.browser_pool.driver_exit_code
             if exit_code is not None:
@@ -574,9 +703,6 @@ class SiteStrategyService:
                 observe(self, driver_before, external.diagnostics() if driver_before else None)
                 if not self.repository.storage.diagnostics()["unavailable"]:
                     await self._run_due_probes()
-                    if time.monotonic() - last_diagnostic_prune >= 3600:
-                        self.repository.prune_diagnostics()
-                        last_diagnostic_prune = time.monotonic()
             except asyncio.CancelledError:
                 raise
             except Exception:
@@ -612,6 +738,39 @@ class SiteStrategyService:
                 logger.exception("egress maintenance probe failed: %s", egress.egress_id)
 
         await asyncio.gather(*(check_egress(e) for e in self.repository.list_egresses()))
+        from .governance_repository import GovernanceRepository
+
+        scopes = GovernanceRepository(self.repository).list_scopes()
+        if scopes:
+            for scope in scopes:
+                if not scope.enabled:
+                    continue
+                key = f"scope:{scope.scope_id}"
+                state = self.repository.get_runtime(key)
+                target = state.active_combination_id or scope.primary_identity_id
+                if GovernanceRepository(self.repository).current_challenge(target):
+                    continue
+                claimed = await self.health.claim_due_probe(
+                    key,
+                    [
+                        AccessCombination(id=target, identity_id=target),
+                    ],
+                )
+                if claimed:
+                    purpose = (
+                        SitePurpose.CRAWLER
+                        if scope.verification_plan.get("crawler")
+                        else SitePurpose.BODY
+                    )
+                    try:
+                        outcome = await self.failover.activate(
+                            scope, purpose, primary=target == scope.primary_identity_id
+                        )
+                    except Exception:
+                        outcome = {"ready": False}
+                    if not outcome.get("ready"):
+                        await self.health.mark_probe_uncertain(key, target)
+            return  # Never probe retired legacy combinations after source routing activates.
         for head, spec in self.repository.list_active_strategies():
             if not head.enabled or spec.site_id == "generic" or not self._recovery_probe_url(spec):
                 continue
@@ -792,6 +951,49 @@ class SiteStrategyService:
     def resolve(self, url: str, *, revision: int | None = None) -> ResolvedSite:
         return self.resolver.resolve(url, revision=revision)
 
+    def _resolve_request(self, request: AccessRequest) -> ResolvedSite:
+        from .scope import ScopeResolver
+
+        return ScopeResolver(self.repository).resolve(
+            self.resolve(request.url, revision=request.strategy_revision),
+            request.origin_scope_id,
+            request.scope_revision,
+        )
+
+    def _identity_belongs_to_site(self, site_id: str, identity_id: str) -> bool:
+        from .governance_repository import GovernanceRepository
+
+        scopes = GovernanceRepository(self.repository).list_scopes()
+        owner = next(
+            (
+                scope
+                for scope in scopes
+                if identity_id
+                in {
+                    scope.primary_identity_id,
+                    scope.fallback_identity_id,
+                }
+            ),
+            None,
+        )
+        if owner:
+            return owner.owner_site_id == site_id
+        spec = self.repository.get_strategy(site_id)
+        identity = self.repository.get_identity(identity_id)
+        return bool(
+            spec
+            and identity
+            and any(
+                item.identity_id == identity_id
+                or (
+                    item.identity_id is None
+                    and item.profile_id == identity.profile_id
+                    and item.egress_id == identity.egress_id
+                )
+                for item in spec.access.combinations
+            )
+        )
+
     def validate_strategy(self, spec: SiteStrategySpec) -> None:
         self.resolver.validate_no_conflicts(spec)
         validate_body_strategy(spec.body.ref, spec.body.parameters)
@@ -951,8 +1153,56 @@ class SiteStrategyService:
                         self._inflight.pop(cache_key, None)
                         self._inflight_started.pop(cache_key, None)
         if task.done() and not task.cancelled() and task.exception() is None:
+            blocked_task = None
+            if result.effective_scope_id and result.disposition is not AccessDisposition.SUCCESS:
+                from .governance_repository import GovernanceRepository
+
+                store = GovernanceRepository(self.repository)
+                scope = store.get_scope(result.effective_scope_id)
+                route = self.repository.get_runtime(result.runtime_key)
+                blocked_task = (
+                    store.current_challenge(
+                        route.active_combination_id or scope.primary_identity_id
+                    )
+                    if scope
+                    else None
+                )
+                if blocked_task:
+                    if not result.attempts:
+                        store.save_challenge(
+                            blocked_task.model_copy(
+                                update={
+                                    "seen_count": blocked_task.seen_count + 1,
+                                    "last_check": utc_now(),
+                                }
+                            )
+                        )
+                    result = result.model_copy(update={"challenge_task_id": blocked_task.task_id})
+                    if (
+                        not result.attempts
+                        and result.disposition is AccessDisposition.AUTH_REQUIRED
+                    ):
+                        result = result.model_copy(
+                            update={
+                                "disposition": AccessDisposition.ACCESS_EXHAUSTED,
+                                "failure_category": FailureCategory.ACCESS_CHALLENGE,
+                                "reason_code": "challenge_target_lost"
+                                if blocked_task.state == "TARGET_LOST"
+                                else "human_challenge_required",
+                            }
+                        )
+                    if result.attempts:
+                        blocked_task = (
+                            None  # Persist the initial real failure, not every later poll.
+                        )
             await self._put_cache(result, cache_key=cache_key)
-            if created:
+            # This operation itself may activate a new route. Lost-response retries
+            # should observe its receipt without performing the website I/O again.
+            post_key = self._cache_key(request)
+            route = self.repository.get_runtime(result.runtime_key)
+            if result.route_generation == route.generation and post_key != cache_key:
+                await self._put_cache(result, cache_key=post_key)
+            if created and blocked_task is None:
                 event_strategy_ref = request.recipe_ref
                 if event_strategy_ref is None and request.purpose is SitePurpose.CRAWLER:
                     event_site = self.resolve(request.url, revision=result.strategy_revision)
@@ -965,6 +1215,8 @@ class SiteStrategyService:
                         category="ACCESS_RESULT",
                         payload={
                             "purpose": request.purpose.value,
+                            "identity_id": result.identity_id,
+                            "effective_scope_id": result.effective_scope_id,
                             "disposition": result.disposition.value,
                             "failure_category": (
                                 result.failure_category.value
@@ -998,7 +1250,7 @@ class SiteStrategyService:
             self._inflight_started.pop(key, None)
 
     def _cache_key(self, request: AccessRequest) -> str:
-        resolved = self.resolve(request.url, revision=request.strategy_revision)
+        resolved = self._resolve_request(request)
         identities: list[tuple[str, int, int]] = []
         for combination in resolved.access.combinations:
             identity_id = combination.identity_id or combination.profile_id
@@ -1018,17 +1270,28 @@ class SiteStrategyService:
                 "request": request.model_dump(mode="json"),
                 "site_revision": resolved.strategy_revision,
                 "identities": sorted(identities),
+                "route_generation": self.repository.get_runtime(resolved.runtime_key).generation,
+                "scope_revision": resolved.match_evidence.get("scope_revision"),
             }
         )
         return f"{request.request_id}:{fingerprint}"
 
     async def _execute_deadlined(self, request: AccessRequest) -> AccessResult:
         started = time.monotonic()
+        resolved = self._resolve_request(request)
+        key = resolved.runtime_key
+        self._scope_inflight[key] = self._scope_inflight.get(key, 0) + 1
         try:
-            async with asyncio.timeout(request.remaining_budget_ms / 1000):
+            async with asyncio.timeout_at(started + request.remaining_budget_ms / 1000):
                 return await self._execute_uncached(request)
         except TimeoutError:
-            resolved = self.resolve(request.url, revision=request.strategy_revision)
+            if resolved.match_evidence.get("scope_id"):
+                from .governance_repository import GovernanceRepository
+
+                scope = GovernanceRepository(self.repository).get_scope(
+                    resolved.match_evidence["scope_id"]
+                )
+                self.failover.schedule(scope, request.purpose)
             return self._result(
                 request,
                 resolved,
@@ -1037,6 +1300,10 @@ class SiteStrategyService:
                 reason="access_budget_exhausted",
                 started=started,
             )
+        finally:
+            self._scope_inflight[key] -= 1
+            if not self._scope_inflight[key]:
+                self._scope_inflight.pop(key)
 
     async def effective_candidates(
         self,
@@ -1074,6 +1341,8 @@ class SiteStrategyService:
                 reasons.append("identity_disabled")
             if profile is None:
                 reasons.append("profile_missing")
+            elif profile.operational_state is not ProfileOperationalState.AVAILABLE:
+                reasons.append("identity_in_maintenance")
             if (
                 egress is None
                 or not egress.enabled
@@ -1120,7 +1389,17 @@ class SiteStrategyService:
 
     async def _execute_uncached(self, request: AccessRequest) -> AccessResult:
         started = time.monotonic()
-        resolved = self.resolve(request.url, revision=request.strategy_revision)
+        resolved = self._resolve_request(request)
+        if resolved.runtime_key in self._switching_scopes:
+            return self._result(
+                request,
+                resolved,
+                AccessDisposition.BUDGET_DEFERRED,
+                reason="scope_activation_in_progress",
+                category=FailureCategory.BUDGET_DEFERRED,
+                retry_not_before=utc_now() + timedelta(seconds=60),
+                started=started,
+            )
         if not resolved.enabled:
             return self._result(
                 request,
@@ -1134,13 +1413,26 @@ class SiteStrategyService:
             resolved, request.purpose, request.mode, set(request.excluded_combinations)
         )
         skips = [row for row in view if row["skip_reasons"]]
-        _, candidates, next_retry = await self.health.candidates(
+        route, candidates, next_retry = await self.health.candidates(
             resolved.runtime_key,
             combinations,
             excluded=set(request.excluded_combinations),
             transport=request.mode,
             purpose=request.purpose,
         )
+        scope = None
+        if resolved.match_evidence.get("scope_id"):
+            from .governance_repository import GovernanceRepository
+
+            scope = GovernanceRepository(self.repository).get_scope(
+                resolved.match_evidence["scope_id"]
+            )
+            if (
+                scope
+                and scope.fallback_identity_id
+                and route.active_combination_id == scope.fallback_identity_id
+            ):
+                candidates = [c for c in candidates if c.identity_id == scope.fallback_identity_id]
         if not candidates:
             manual = any("manual_attention" in row["skip_reasons"] for row in skips)
             return self._result(
@@ -1159,6 +1451,8 @@ class SiteStrategyService:
         risk_failures = 0
         unavailable = 0
         auth_missing = 0
+        maintenance_blocked = 0
+        runtime_failure = None
         for combination in candidates:
             materialized = self._materialize_combination(combination)
             if materialized is None:
@@ -1166,6 +1460,18 @@ class SiteStrategyService:
                 continue
             combination = materialized
             remaining = request.remaining_budget_ms / 1000 - (time.monotonic() - started)
+            if scope and combination.identity_id == scope.fallback_identity_id and remaining < 5:
+                activation = self.failover.schedule(scope, request.purpose)
+                return self._result(
+                    request,
+                    resolved,
+                    AccessDisposition.BUDGET_DEFERRED,
+                    category=FailureCategory.BUDGET_DEFERRED,
+                    reason="fallback_activation_pending" if activation else "fallback_not_ready",
+                    attempts=attempts,
+                    retry_not_before=utc_now() + timedelta(seconds=60),
+                    started=started,
+                )
             if remaining <= 0.003:
                 return self._result(
                     request,
@@ -1177,8 +1483,36 @@ class SiteStrategyService:
                     started=started,
                 )
             profile = self._profile(resolved, combination)
+            if profile and profile.operational_state is not ProfileOperationalState.AVAILABLE:
+                maintenance_blocked += 1
+                continue
             assert combination.egress_id is not None
             egress = self.repository.get_egress(combination.egress_id)
+            if (
+                scope
+                and combination.identity_id == scope.fallback_identity_id
+                and egress
+                and route.active_combination_id != scope.fallback_identity_id
+            ):
+                primary = self.repository.get_identity(scope.primary_identity_id)
+                main_egress = self.repository.get_egress(primary.egress_id)
+                if (
+                    main_egress
+                    and main_egress.node_ref != "DIRECT"
+                    and (
+                        not egress.observed_ip
+                        or not main_egress.observed_ip
+                        or egress.observed_ip == main_egress.observed_ip
+                    )
+                ):
+                    unavailable += 1
+                    skips.append(
+                        {
+                            "combination_id": combination.combination_id,
+                            "skip_reasons": ["fallback_egress_not_independent"],
+                        }
+                    )
+                    continue
             if (
                 profile is None
                 or egress is None
@@ -1199,6 +1533,24 @@ class SiteStrategyService:
             ):
                 auth_missing += 1
                 continue
+            if (
+                scope
+                and combination.identity_id == scope.fallback_identity_id
+                and route.active_combination_id != scope.fallback_identity_id
+                and request.mode is not AccessMode.HTTP_PUBLIC
+                and not self.failover.usable(scope, combination.identity_id, request.purpose)
+            ):
+                activation = self.failover.schedule(scope, request.purpose)
+                return self._result(
+                    request,
+                    resolved,
+                    AccessDisposition.BUDGET_DEFERRED,
+                    category=FailureCategory.BUDGET_DEFERRED,
+                    reason="fallback_activation_pending" if activation else "fallback_not_ready",
+                    attempts=attempts,
+                    retry_not_before=utc_now() + timedelta(seconds=60),
+                    started=started,
+                )
             budget = self.budgets.get(
                 resolved.runtime_key,
                 max_concurrency=resolved.access.max_concurrency,
@@ -1317,19 +1669,8 @@ class SiteStrategyService:
                     await self.profile_use.finish_challenge(
                         profile.profile_id, response.challenge_token
                     )
-                    return self._result_from_response(
-                        request,
-                        resolved,
-                        combination,
-                        profile,
-                        egress,
-                        response,
-                        AccessDisposition.ACCESS_EXHAUSTED,
-                        category=category,
-                        reason="challenge_waiting_for_manual_resolution",
-                        attempts=attempts,
-                        started=started,
-                    )
+                    # The human task blocks only this identity. The candidate
+                    # loop must still consider this source's independent fallback.
                 continue
             if category is FailureCategory.EGRESS_UNAVAILABLE:
                 unavailable += 1
@@ -1342,6 +1683,9 @@ class SiteStrategyService:
                 # invalidate a Profile that can still read other articles.
                 if category is FailureCategory.AUTH_REQUIRED:
                     self._mark_identity_auth(resolved, combination, profile)
+                    if scope:
+                        auth_missing += 1
+                        continue  # Only the already-authenticated scoped backup may replace it.
                 return self._result_from_response(
                     request,
                     resolved,
@@ -1400,8 +1744,12 @@ class SiteStrategyService:
             if category in {
                 FailureCategory.TRANSIENT_TRANSPORT,
                 FailureCategory.RUNTIME_UNAVAILABLE,
-                FailureCategory.UNKNOWN,
             }:
+                if self.repository.storage.diagnostics()["unavailable"]:
+                    return self._storage_deferred(request)
+                runtime_failure = (category, reason)
+                continue
+            if category is FailureCategory.UNKNOWN:
                 return self._result_from_response(
                     request,
                     resolved,
@@ -1432,9 +1780,13 @@ class SiteStrategyService:
             final_resolved = self.resolve(response.final_url)
             final_host = urlsplit(response.final_url).hostname or ""
             if (
-                final_resolved.runtime_key != resolved.runtime_key
-                and not self.resolver.supports_host(resolved.site_id, final_host)
-            ):
+                final_resolved.site_id != resolved.site_id
+                or (
+                    resolved.site_id == "generic"
+                    and final_resolved.match_evidence.get("host")
+                    != resolved.match_evidence.get("host")
+                )
+            ) and not self.resolver.supports_host(resolved.site_id, final_host):
                 response.redirect_url = response.final_url
                 return self._result_from_response(
                     request,
@@ -1460,7 +1812,30 @@ class SiteStrategyService:
                 combination.combination_id,
                 request.purpose,
             )
-            self._event(request, resolved, combination, "ACCESS_SUCCEEDED", attempt)
+            if scope and request.mode is not AccessMode.HTTP_PUBLIC:
+                from .governance_repository import GovernanceRepository
+
+                GovernanceRepository(self.repository).record_capability(
+                    scope,
+                    identity.identity_id,
+                    request.purpose.value,
+                    "READY"
+                    if request.purpose is SitePurpose.CRAWLER
+                    else response.body_quality or "FULL",
+                    url=response.final_url,
+                    instance_id=response.provenance.instance_id if response.provenance else None,
+                    subscription_verified=response.subscription_verified,
+                )
+                active = self.repository.get_runtime(resolved.runtime_key)
+                if active.active_combination_id != identity.identity_id and (
+                    active.active_combination_id is None
+                    or identity.identity_id == scope.fallback_identity_id
+                ):
+                    await self.health.activate(
+                        resolved.runtime_key,
+                        identity.identity_id,
+                        expected_generation=active.generation,
+                    )
             current_generation = self.repository.get_runtime(resolved.runtime_key).generation
             return self._result_from_response(
                 request,
@@ -1491,11 +1866,18 @@ class SiteStrategyService:
             disposition = AccessDisposition.ACCESS_EXHAUSTED
             category = FailureCategory.ACCESS_RATE_LIMIT
             reason = "risk_combinations_exhausted"
+        elif runtime_failure:
+            disposition = AccessDisposition.SERVICE_UNAVAILABLE
+            category, reason = runtime_failure
         else:
             disposition = AccessDisposition.SERVICE_UNAVAILABLE
             category = FailureCategory.EGRESS_UNAVAILABLE
             reason = "access_resources_unavailable"
-        if not attempts and unavailable and not auth_missing:
+        if not attempts and maintenance_blocked:
+            category = FailureCategory.RUNTIME_UNAVAILABLE
+            reason = "identity_in_maintenance"
+            next_retry = utc_now() + timedelta(seconds=60)
+        elif not attempts and unavailable and not auth_missing:
             reason = "egress_unavailable"
             next_retry = max(next_retry or utc_now(), utc_now() + timedelta(seconds=120))
         return self._result(
@@ -1527,6 +1909,34 @@ class SiteStrategyService:
                     request, resolved, combination, profile, egress
                 )
                 category, reason = classify_response(response)
+                scope_id = resolved.match_evidence.get("scope_id")
+                if (
+                    category is None
+                    and scope_id
+                    and request.mode is not AccessMode.HTTP_PUBLIC
+                    and not response.redirect_url
+                    and 200 <= response.status_code < 300
+                ):
+                    from .governance_repository import GovernanceRepository
+                    from .verification import validate_capture, validate_crawler_capture
+
+                    scope = GovernanceRepository(self.repository).get_scope(str(scope_id))
+                    if request.purpose is SitePurpose.CRAWLER and scope and scope.source_id:
+                        try:
+                            ready = validate_crawler_capture(scope.source_id, response, request)
+                        except Exception:
+                            ready = False
+                        if not ready:
+                            category, reason = (
+                                FailureCategory.CONTENT_ERROR,
+                                "crawler_contract_failed",
+                            )
+                    elif request.purpose is SitePurpose.BODY:
+                        proof = validate_capture(response, resolved)
+                        response.body_quality = proof.body
+                        response.subscription_verified = proof.authentication == "VALID"
+                        if proof.body not in {"FULL", "SHORT_FULL"}:
+                            category, reason = FailureCategory.EXTRACTION_ERROR, proof.reason
             except Exception as exc:
                 if isinstance(exc, sqlite3.Error) and storage_failure(exc):
                     raise
@@ -1571,19 +1981,123 @@ class SiteStrategyService:
                         )
                     except RuntimeError:
                         pass
+                    if getattr(exc, "control_recovery_attempted", False) and reason in {
+                        "browser_cdp_attach_failed",
+                        "browser_driver_unavailable",
+                        "identity_worker_disconnected",
+                    }:
+                        identity = self.repository.get_identity(identity_id)
+                        if identity and identity.runtime_kind is BrowserRuntimeKind.EXTERNAL_CHROME:
+                            self._schedule_native_drain(identity)
             elapsed = int((time.monotonic() - started) * 1000)
+            if category in {
+                FailureCategory.CONTENT_ERROR,
+                FailureCategory.EXTRACTION_ERROR,
+                FailureCategory.AUTH_OR_ACCESS_UNKNOWN,
+            }:
+                from .failure_shapes import record_failure_shape
+
+                try:
+                    record_failure_shape(
+                        self.repository,
+                        request,
+                        resolved,
+                        combination.identity_id or profile.profile_id,
+                        response,
+                        category,
+                        reason,
+                    )
+                except (ValueError, sqlite3.Error):
+                    pass  # Optional evidence cannot override the actual access outcome.
+            if category is not None and resolved.match_evidence.get("scope_id"):
+                from .governance_repository import GovernanceRepository
+
+                store = GovernanceRepository(self.repository)
+                scope = store.get_scope(resolved.match_evidence["scope_id"])
+                store.record_capability(
+                    scope,
+                    combination.identity_id or profile.profile_id,
+                    request.purpose.value,
+                    category.value,
+                    url=request.url,
+                )
             last = response, category, reason, elapsed
             if category is not FailureCategory.TRANSIENT_TRANSPORT or retry == 1:
                 break
         assert last is not None
         return last
 
+    def _schedule_native_drain(self, identity):
+        previous = self._native_drains.get(identity.identity_id)
+        if previous and not previous.done():
+            return
+
+        async def drain():
+            reserved_revision = None
+            try:
+                async with asyncio.timeout(5), self.profile_use._condition:
+                    while self.profile_use._active.get(identity.profile_id, 0):
+                        await self.profile_use._condition.wait()
+                    profile = self.repository.get_profile(identity.profile_id)
+                    if not profile or profile.maintenance_session_id:
+                        return  # Native human scenes are never automatically drained.
+                    reserved_revision = profile.operational_revision + 1
+                    self.repository.save_profile(
+                        profile.model_copy(
+                            update={
+                                "operational_state": (
+                                    ProfileOperationalState.DRAINING_FOR_MAINTENANCE
+                                ),
+                                "operational_revision": reserved_revision,
+                            }
+                        )
+                    )
+                async with asyncio.timeout(30):
+                    stopped = await self.runtime.browser_runtimes.stop_identity(
+                        identity,
+                        reason="unhealthy_native_graceful_recovery",
+                    )
+                self.repository.append_event(
+                    AccessEvent(
+                        operation_id=f"native-drain:{identity.identity_id}:{reserved_revision}",
+                        category="NATIVE_GRACEFUL_DRAIN",
+                        site_id=profile.site_id,
+                        payload={"identity_id": identity.identity_id, "stopped": stopped},
+                    )
+                )
+            except Exception:
+                logger.warning(
+                    "native graceful recovery unconfirmed identity=%s", identity.identity_id
+                )
+            finally:
+                async with self.profile_use._condition:
+                    profile = self.repository.get_profile(identity.profile_id)
+                    if (
+                        profile
+                        and profile.operational_revision == reserved_revision
+                        and not profile.maintenance_session_id
+                    ):
+                        self.repository.save_profile(
+                            profile.model_copy(
+                                update={
+                                    "operational_state": ProfileOperationalState.AVAILABLE,
+                                    "operational_revision": profile.operational_revision + 1,
+                                }
+                            )
+                        )
+                    self.profile_use._condition.notify_all()
+
+        self._native_drains[identity.identity_id] = asyncio.create_task(
+            drain(),
+            name=f"native-graceful-recovery:{identity.identity_id}",
+        )
+
     def _profile(
         self, resolved: ResolvedSite, combination: AccessCombination
     ) -> BrowserProfile | None:
         combination = self._materialize_combination(combination) or combination
         profile = self.repository.get_profile(combination.profile_id or "")
-        if resolved.site_id != "generic":
+        if resolved.site_id != "generic" or resolved.runtime_key.startswith("scope:"):
             return profile
         egress = self.repository.get_egress(combination.egress_id or "")
         if egress is None:
@@ -1642,7 +2156,7 @@ class SiteStrategyService:
         profile: BrowserProfile,
     ) -> AuthState:
         identity = self._identity_for(combination, profile)
-        auth = self.repository.get_site_identity_auth(resolved.runtime_key, identity.identity_id)
+        auth = self.repository.get_site_identity_auth(resolved.site_id, identity.identity_id)
         if auth.auth_state is AuthState.UNKNOWN and combination.identity_id is None:
             return profile.auth_state
         runtime = self.repository.get_identity_runtime(identity.identity_id)
@@ -1691,7 +2205,7 @@ class SiteStrategyService:
         runtime = self.repository.get_identity_runtime(identity.identity_id)
         self.repository.save_site_identity_auth(
             SiteIdentityAuth(
-                site_id=resolved.runtime_key,
+                site_id=resolved.site_id,
                 identity_id=identity.identity_id,
                 auth_state=state,
                 reason_code=FailureCategory.AUTH_REQUIRED.value,
@@ -1712,6 +2226,33 @@ class SiteStrategyService:
             raise KeyError(profile_id)
         resolved = self.resolve(url)
         # A shared Identity can serve several sites. The active combination
+        from .governance_repository import GovernanceRepository
+
+        owner = next(
+            (
+                scope
+                for scope in GovernanceRepository(self.repository).list_scopes()
+                if any(
+                    (identity := self.repository.get_identity(member))
+                    and identity.profile_id == profile_id
+                    for member in (scope.primary_identity_id, scope.fallback_identity_id)
+                    if member
+                )
+            ),
+            None,
+        )
+        if owner:
+            if owner.owner_site_id != resolved.site_id:
+                raise ValueError("profile scope does not own the requested publisher")
+            resolved = self._resolve_request(
+                AccessRequest(
+                    operation_id="profile-probe-resolve",
+                    purpose=SitePurpose.PROBE,
+                    mode=AccessMode.BROWSER,
+                    url=url,
+                    origin_scope_id=owner.scope_id,
+                )
+            )
         # below, rather than the legacy Profile owner, establishes ownership.
         combination = next(
             (
@@ -1847,7 +2388,7 @@ class SiteStrategyService:
                 raise RuntimeError("browser instance changed after article probe")
             self.repository.save_site_identity_auth(
                 SiteIdentityAuth(
-                    site_id=resolved.runtime_key,
+                    site_id=resolved.site_id,
                     identity_id=identity.identity_id,
                     auth_state=AuthState.VALID,
                     verified_at=utc_now(),
@@ -1871,7 +2412,9 @@ class SiteStrategyService:
                 )
             )
 
-    async def snapshot_profile(self, profile_id: str, *, browser_version: str) -> dict[str, str]:
+    async def snapshot_profile(
+        self, profile_id: str, *, browser_version: str, batch_id: str | None = None
+    ) -> dict[str, str]:
         session_id = await self.profile_use.begin_maintenance(profile_id)
         try:
             profile = await self.profile_use.assert_session(profile_id, session_id)
@@ -1895,7 +2438,10 @@ class SiteStrategyService:
             if not stopped:
                 raise ProfileUnavailableError("profile_is_busy")
             return await asyncio.to_thread(
-                self.profile_storage.create, profile, browser_version=browser_version
+                self.profile_storage.create,
+                profile,
+                browser_version=browser_version,
+                batch_id=batch_id,
             )
         finally:
             await self.profile_use.end_maintenance(profile_id, session_id)
@@ -1952,7 +2498,13 @@ class SiteStrategyService:
         )
         return await self.open_identity_login(profile.site_id, identity.identity_id)
 
-    async def open_identity_login(self, site_id: str, identity_id: str) -> dict[str, str]:
+    async def open_identity_login(
+        self,
+        site_id: str,
+        identity_id: str,
+        *,
+        control_token: str | None = None,
+    ) -> dict[str, str]:
         identity = self.repository.get_identity(identity_id)
         if identity is None or not identity.enabled:
             raise KeyError(identity_id)
@@ -1961,35 +2513,27 @@ class SiteStrategyService:
         if profile is None or egress is None or not egress.enabled:
             raise RuntimeError("bound identity resources are unavailable")
         spec = self.repository.get_strategy(site_id)
-        if spec is None or not any(
-            item.identity_id == identity_id
-            or (
-                item.identity_id is None
-                and item.profile_id == identity.profile_id
-                and item.egress_id == identity.egress_id
-            )
-            for item in spec.access.combinations
-        ):
+        if spec is None or not self._identity_belongs_to_site(site_id, identity_id):
             raise ValueError("identity is not referenced by the selected site")
         url = (spec.auth.maintenance_url or spec.auth.login_url) or profile.login_url
         if not url:
+            from .governance_repository import GovernanceRepository
+
+            scope = next(
+                (
+                    s
+                    for s in GovernanceRepository(self.repository).list_scopes()
+                    if identity_id in (s.primary_identity_id, s.fallback_identity_id)
+                ),
+                None,
+            )
+            url = scope.verification_plan.get("crawler", {}).get("url") if scope else None
+        if not url:
             raise ValueError("profile has no maintenance URL")
-        if profile.challenge_url is not None:
-            if profile.challenge_site_id != site_id or profile.challenge_identity_id != identity_id:
-                raise ValueError("challenge belongs to another site identity")
-            if not profile.maintenance_session_id:
-                raise RuntimeError("challenge session is missing")
-            await self.profile_use.assert_session(
-                profile.profile_id, profile.maintenance_session_id
-            )
-            return await self.runtime.adopt_challenge(
-                profile,
-                egress,
-                identity=identity,
-                site_id=site_id,
-                token=profile.maintenance_session_id,
-            )
-        session_id = await self.profile_use.begin_maintenance(profile.profile_id)
+        await self.profile_use.prepare_login(profile.profile_id, identity_id)
+        session_id = await self.profile_use.begin_maintenance(
+            profile.profile_id, session_id=control_token
+        )
         external = self.runtime.browser_runtimes.external
         if external is not None:
             external.rotation_paused = True
@@ -2005,18 +2549,187 @@ class SiteStrategyService:
                 identity=identity,
                 site_id=site_id,
             )
-        except Exception:
-            await self.profile_use.end_maintenance(profile.profile_id, session_id)
+        except BaseException:
+            from .governance_repository import GovernanceRepository
+
+            retained = any(
+                s.control_token == session_id and s.target_id
+                for s in GovernanceRepository(self.repository).list_sessions()
+            )
+            if retained:
+                await self.profile_use.release_viewer(profile.profile_id, session_id)
+            else:
+                await self.profile_use.end_maintenance(profile.profile_id, session_id)
             raise
 
     async def inspect_profile_login(self, token: str) -> dict[str, str]:
         return await self.runtime.inspect_login(token)
 
+    async def verify_scope_session(self, session, *, article_url=None, stage=None):
+        from .governance_repository import GovernanceRepository
+        from .verification import (
+            VerificationReport,
+            body_verification_url,
+            validate_capture,
+            validate_crawler_capture,
+        )
+
+        store = GovernanceRepository(self.repository)
+        scope = store.maintenance_scope(session.scope_id)
+        if scope is None:
+            raise ValueError("maintenance scope is no longer configured")
+        deadline = time.monotonic() + 40
+        if stage:
+            stage("CHECKING_CHALLENGE")
+        original = await self.runtime.inspect_challenge(session.control_token)
+        report = VerificationReport()
+        original_inspection = inspect_html(original.body, original.final_url, "")
+        if original_inspection.access_reason == "challenge_required":
+            report.challenge = "BLOCKED"
+            report.reason = "challenge_required"
+            if session.kind == "LOGIN" and session.allocation_id and original.provenance:
+                from .governance_models import ChallengeTask
+
+                task = store.handoff_challenge(
+                    ChallengeTask(
+                        scope_id=scope.scope_id,
+                        identity_id=session.identity_id,
+                        site_id=session.site_id,
+                        purpose="LOGIN",
+                        operation_id=f"login-challenge:{session.session_id}",
+                        original_url=original.final_url,
+                        original_target_id=session.target_id,
+                        browser_instance_id=original.provenance.instance_id,
+                        allocation_id=session.allocation_id,
+                        reason="login_challenge_required",
+                    ),
+                    session=session,
+                )
+                report.challenge_task_id = task.task_id
+                session = store.get_session(session.session_id)
+                identity = self.repository.get_identity(session.identity_id)
+                profile = self.repository.get_profile(identity.profile_id)
+                await self.runtime.adopt_challenge(
+                    profile,
+                    self.repository.get_egress(identity.egress_id),
+                    identity=identity,
+                    site_id=session.site_id,
+                    token=session.control_token,
+                )
+            return store.commit_verification(scope, session.identity_id, report, session=session)
+        if original.challenge_cleared:
+            report.challenge = "CLEARED"
+        spec = self.repository.get_strategy(scope.owner_site_id)
+        crawler = scope.verification_plan.get("crawler")
+        article_candidates = []
+        if crawler:
+            if stage:
+                stage("CHECKING_CRAWLER")
+            request = AccessRequest(
+                **crawler,
+                operation_id=f"verify-crawler:{uuid4().hex}",
+                purpose=SitePurpose.CRAWLER,
+                mode=AccessMode.BROWSER,
+                remaining_budget_ms=max(1, int((deadline - time.monotonic()) * 1000)),
+            )
+            capture = await self.runtime.verify_crawler(session.control_token, request)
+            try:
+                ready = validate_crawler_capture(scope.source_id, capture, request)
+            except Exception:
+                ready = False
+            report.crawler = "READY" if ready else "CONTENT_ERROR"
+            if ready:
+                report.challenge = "CLEARED"
+                from urllib.parse import urljoin
+
+                from .verification import crawler_capture_items
+
+                for row in crawler_capture_items(scope.source_id, capture, request) or []:
+                    raw = row.get("url") if isinstance(row, dict) else row.url
+                    if raw:
+                        candidate = urljoin(request.url, str(raw))
+                        if self.resolve(candidate).site_id == scope.owner_site_id:
+                            article_candidates.append(candidate)
+        triggering = store.current_challenge(session.identity_id)
+        trigger_url = (
+            triggering.original_url
+            if triggering
+            and triggering.purpose == "BODY"
+            and original_inspection.page_kind not in {"listing", "quote", "login"}
+            else None
+        )
+        url = article_url or body_verification_url(
+            scope,
+            trigger_url,
+            spec.auth.verification_url,
+            scope.verification_plan.get("body_url"),
+            *article_candidates,
+        )
+        if url and time.monotonic() < deadline:
+            if self.resolve(url).site_id != scope.owner_site_id:
+                raise ValueError("verification article belongs to another publisher")
+            if stage:
+                stage("CHECKING_BODY")
+            capture = await self.runtime.verify_login(
+                session.control_token,
+                url,
+                timeout_ms=max(1, int((deadline - time.monotonic()) * 1000)),
+            )
+            if capture.status_code in {404, 410} and not article_url:
+                replacement = next((u for u in article_candidates if u != url), None)
+                if replacement and time.monotonic() < deadline:
+                    url = replacement
+                    capture = await self.runtime.verify_login(
+                        session.control_token,
+                        url,
+                        timeout_ms=max(1, int((deadline - time.monotonic()) * 1000)),
+                    )
+            body = validate_capture(
+                capture,
+                self.resolve(url),
+                expected_subscription=(
+                    spec.auth.verification_kind == "subscription_article"
+                    and url == spec.auth.verification_url
+                ),
+            )
+            report.body, report.authentication, report.reason = (
+                body.body,
+                body.authentication,
+                body.reason,
+            )
+            from .governance_repository import safe_display_url
+
+            report.verification_url = safe_display_url(capture.final_url)
+            report.runtime_instance_id = (
+                capture.provenance.instance_id if capture.provenance else None
+            )
+            if body.challenge == "CLEARED" or capture.challenge_cleared:
+                report.challenge = "CLEARED"
+        elif spec.auth.requirement == "none":
+            report.authentication = "NOT_REQUIRED"
+        if stage:
+            stage("APPLYING_HEALTH")
+        return store.commit_verification(
+            scope,
+            session.identity_id,
+            report,
+            session=session,
+            credential_change=(
+                session.kind == "LOGIN" or bool(triggering and triggering.purpose == "LOGIN")
+            )
+            and report.authentication == "VALID",
+        )
+
     async def recover_identity_login(
-        self, site_id: str, identity_id: str, login_token: str
+        self,
+        site_id: str,
+        identity_id: str,
+        login_token: str,
+        *,
+        target_id: str | None = None,
     ) -> dict[str, str]:
         identity = self.repository.get_identity(identity_id)
-        if identity is None or identity.runtime_kind is not BrowserRuntimeKind.EXTERNAL_CHROME:
+        if identity is None:
             raise KeyError(identity_id)
         egress = self.repository.get_egress(identity.egress_id)
         if egress is None or not egress.enabled:
@@ -2031,6 +2744,8 @@ class SiteStrategyService:
             ):
                 raise ValueError("challenge session binding mismatch")
         profile = await self.profile_use.recover_maintenance(identity.profile_id, login_token)
+        if target_id:
+            profile = profile.model_copy(update={"challenge_target_id": target_id})
         external = self.runtime.browser_runtimes.external
         if external is not None:
             external.rotation_paused = True
@@ -2045,8 +2760,7 @@ class SiteStrategyService:
         except Exception:
             # A failed controller reconnect must not release the human-owned
             # challenge page or reopen this identity for business requests.
-            if profile.challenge_url is None:
-                await self.profile_use.end_maintenance(identity.profile_id, login_token)
+            await self.profile_use.release_viewer(identity.profile_id, login_token)
             raise
 
     async def close_profile_login(self, token: str) -> None:
@@ -2098,9 +2812,7 @@ class SiteStrategyService:
                         )
                         await self.runtime.close_login(token)
                     else:
-                        await self.runtime.browser_runtimes.close_stale_maintenance_page(
-                            identity, egress
-                        )
+                        raise RuntimeError("exact_maintenance_target_reference_required") from None
             profile_id = profile.profile_id
         await self.profile_use.end_maintenance(profile_id, token)
         if challenge_profile is not None and challenge_profile.challenge_combination_id:
@@ -2168,7 +2880,11 @@ class SiteStrategyService:
             None,
         )
         if combination is None:
-            raise ValueError("profile is not referenced by the active site strategy")
+            if not self._identity_belongs_to_site(site_id, identity_id):
+                raise ValueError("profile is not referenced by the active site strategy")
+            combination = self._materialize_combination(
+                AccessCombination(id=identity_id, identity_id=identity_id)
+            )
         operation_id = f"identity-verify:{site_id}:{identity_id}:{int(time.time())}"
         response = await self.runtime.verify_login(login_token, article_url)
         category, reason = classify_response(response)
@@ -2184,6 +2900,7 @@ class SiteStrategyService:
             verification_kind == "public_access"
             and category is None
             and 200 <= response.status_code < 300
+            and (inspection.page_kind == "article" or bool(response.recipe_result))
         ):
             state = profile.auth_state
             reason = "public_access_ready"
@@ -2208,7 +2925,7 @@ class SiteStrategyService:
         updated = profile.model_copy(
             update={
                 "auth_state": state,
-                "session_revision": profile.session_revision + 1,
+                "session_revision": profile.session_revision,
                 "updated_at": utc_now(),
             }
         )
@@ -2219,7 +2936,7 @@ class SiteStrategyService:
             updated = updated.model_copy(update={"challenge_verified": True})
             self.repository.save_profile(updated)
         identity_runtime = self.repository.get_identity_runtime(identity_id)
-        next_session_revision = identity_runtime.session_revision + 1
+        next_session_revision = identity_runtime.session_revision
         self.repository.save_identity_runtime(
             identity_runtime.model_copy(
                 update={
@@ -2232,7 +2949,7 @@ class SiteStrategyService:
         )
         self.repository.save_site_identity_auth(
             SiteIdentityAuth(
-                site_id=resolved.runtime_key,
+                site_id=resolved.site_id,
                 identity_id=identity_id,
                 auth_state=state,
                 verified_at=utc_now(),
@@ -2340,6 +3057,8 @@ class SiteStrategyService:
             strategy_revision=resolved.strategy_revision,
             body_strategy_ref=resolved.body.ref,
             generation=generation,
+            effective_scope_id=resolved.match_evidence.get("scope_id"),
+            route_generation=generation,
             attempts=attempts or [],
             network_ms=sum(item.network_ms for item in (attempts or [])),
         )
@@ -2380,6 +3099,9 @@ class SiteStrategyService:
             body_strategy_ref=resolved.body.ref,
             combination_id=combination.combination_id,
             generation=result_generation,
+            effective_scope_id=resolved.match_evidence.get("scope_id"),
+            route_generation=result_generation,
+            challenge_task_id=response.challenge_token,
             profile_id=profile.profile_id,
             egress_id=egress.egress_id,
             identity_id=(
@@ -2439,6 +3161,8 @@ def classify_response(response: RuntimeResponse) -> tuple[FailureCategory | None
 
 
 def classify_exception(exc: Exception) -> tuple[FailureCategory, str]:
+    if getattr(exc, "failure_category", None):
+        return FailureCategory(exc.failure_category), exc.reason_code
     status = int(getattr(exc, "status_code", 0) or 0)
     if status:
         return classify_response(RuntimeResponse(status, "https://invalid.example/", {}, str(exc)))[
@@ -2450,12 +3174,23 @@ def classify_exception(exc: Exception) -> tuple[FailureCategory, str]:
         )
     name = type(exc).__name__.casefold()
     message = str(exc).casefold()
+    if re.fullmatch(r"[a-z][a-z0-9_]{0,127}", message) and message.startswith(
+        ("original_", "exact_", "maintenance_", "controller_", "viewer_", "invalid_")
+    ):
+        return FailureCategory.RUNTIME_UNAVAILABLE, message
+    if "exceeds frame" in message or "response exceeds frame budget" in message:
+        return FailureCategory.CONTENT_ERROR, "ipc_response_too_large"
+    if "no object with guid" in message:
+        return FailureCategory.RUNTIME_UNAVAILABLE, "browser_handle_disposed"
+    if message.startswith("identity_"):
+        return FailureCategory.RUNTIME_UNAVAILABLE, message[:128]
     if "browsertype.connect_over_cdp" in message:
         return FailureCategory.RUNTIME_UNAVAILABLE, "browser_cdp_attach_failed"
     if any(
         marker in message
         for marker in (
             "profile_busy_unknown_singleton",
+            "profile_busy_live_chrome_writer",
             "processsingleton",
             "profile appears to be in use",
             "writer lock is already held",
