@@ -1,0 +1,41 @@
+[
+  {
+    "action": "OPEN_LOGIN",
+    "state": "DONE",
+    "error": null,
+    "result": {
+      "session_id": "maintenance_90c21e7de9ae4a059661995d8535023e",
+      "identity_id": "digitimes-de-1",
+      "stage": "VIEWER_READY",
+      "generation": 2,
+      "kind": "LOGIN",
+      "task_id": null,
+      "site_id": "reuters"
+    },
+    "ack_seconds": 0.013803305104374886,
+    "seconds": 6.531762537080795
+  },
+  {
+    "action": "VERIFY_LOGIN",
+    "state": "DONE",
+    "error": null,
+    "result": {
+      "challenge": "CLEARED",
+      "authentication": "VALID",
+      "crawler": "READY",
+      "body": "FULL",
+      "reason": "complete_article",
+      "health_applied": true,
+      "session_closed": true,
+      "cleanup_pending": false,
+      "challenge_task_id": null,
+      "verification_url": "https://www.reuters.com/world/china/global-markets-view-europe-2026-10-16/",
+      "runtime_instance_id": "2961ec60dbcb44f883141a3abcecd247",
+      "crawler_reason": "listing_contract_verified",
+      "body_reason": "complete_article",
+      "original_page_kind": "listing"
+    },
+    "ack_seconds": 0.004544885829091072,
+    "seconds": 19.210969792678952
+  }
+]

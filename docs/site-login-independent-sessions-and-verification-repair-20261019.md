@@ -42,3 +42,15 @@
 仅改 commit 不足：Reuters 第二轮 canary 仍等待结果条件超时。原生 Chrome 以 background target 运行采集任务，不应依赖 `wait_for_function` 默认的 requestAnimationFrame 轮询；Managed 启动默认环境与普通 Chrome 在后台调度上存在差异。明确采用 250ms timer polling 后，同一身份、同一出口的真实 canary 已返回 CRAWLER READY，不改 UA、不切节点、不重建浏览器。
 
 随后正文 canary 在捕获 626KB 正常 article 文档后仍超时，暴露只等待 `<p>` 的过窄条件。改为实际 ArticleBody/itemprop/article 容器文本就绪；如果仅就绪事件/选择器超时，但已有 2xx article 文档且通过现有站点适配的 FULL/SHORT_FULL 校验，保留该真实正文。空壳、403、Challenge、截断付费文档不得由此成功。Verify 无论成功失败均记录脱敏后的验证文章 URL，以便再次定位，而非只有泛化的 TimeoutError。
+
+## 最终验收（2026-10-19 客户端日期）
+
+- 已提交 main 并同步生产。最终功能镜像 `doxagent-site-access:maintenance-68c9414c`，image `sha256:1e4d75cea48fd23f2b6ad3a512bf500457eeb5a974e3ad7ed4a4201c3274b4ea`。47 个修复包源文件逐个对已提交代码哈希，零差异。
+- Supervisor 容器保持 `d148e850...`、镜像 `maintenance-b1f8237c` 不变；Site/Supervisor 均 healthy、同 namespace，确定性 network guard READY。其他服务容器与镜像保留；没有全栈重建。
+- Reuters 真实 `OPEN_LOGIN` 约 6.53 秒；`VERIFY_LOGIN` 约 19.21 秒，返回 `CLEARED / VALID / READY / FULL`，`session_closed=true`、`cleanup_pending=false`，原生实例仍为 `2961ec60dbcb44f883141a3abcecd247`（本轮前已有实例）。实际验证文章为 Reuters 2026-10-16 的正常新闻正文，不发布测试文章、不放宽实时入库窗口。
+- Reuters 原 Challenge 结清已在此前原页 Verify 中完成；普通登录、旧 Challenge 的精确恢复与跨源释放路径均已验证。Barron’s、WSJ 验证的是窗口、会话、Viewer 和旧页保留，不声称替用户完成其新登录、MFA 或付费正文认证。
+- 桌面桥接以 `doxagent-desktop` 执行 `sudo -n ... list` 成功；桌面用户不在 docker 组；VNC 仅监听宿主 `127.0.0.1:5900`。GUI root:root/0755。用户需关闭并重新打开维护工具，以加载更新；不必重建 Chrome/Profile。
+- 干净 Git 快照扩大回归 **176 passed / 1 skipped**（Windows symlink 条件跳过；curl_cffi Windows loop warning 非失败）。后续正文修正的相关回归 46 passed；最终新增 FULL 超时保留/Challenge 禁止保留边界后，维护专项 **21 passed**。计数有重叠，不相加。Ruff 与提交版 GUI 编译检查通过。
+- 本次证明维护恢复路径和真实业务 canary，不等同于所有网站以后不会发生风控，也不声称已完成所有来源付费登录或跨多个自然轮询周期的稳定性观察。未部署/启用维护 Codex Worker。
+
+原始脱敏收据：`eval/site_maintenance_sessions_20261019/receipts/`；私有 Registry/env/GUI 备份留在远端 root 专用目录，未导出 Cookie、账号密码或管理令牌。

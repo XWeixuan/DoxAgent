@@ -1,0 +1,164 @@
+[
+  {
+    "action": "OPEN_LOGIN",
+    "state": "FAILED",
+    "error": "Viewer is in use by digitimes-de-1. Choose Later / Release Viewer before opening another identity; its page will be preserved.",
+    "result": {},
+    "ack_seconds": 0.008058432955294847,
+    "seconds": 0.3142234766855836
+  },
+  {
+    "action": "RELEASE_VIEWER",
+    "state": "DONE",
+    "error": null,
+    "result": {
+      "released": true,
+      "page_preserved": true
+    },
+    "ack_seconds": 0.007316011935472488,
+    "seconds": 0.3130228826776147
+  },
+  {
+    "action": "OPEN_LOGIN",
+    "state": "DONE",
+    "error": null,
+    "result": {
+      "session_id": "maintenance_97d42d9eaa5a4af9b6659382d172ceb5",
+      "identity_id": "digitimes-de-1",
+      "stage": "VIEWER_READY",
+      "generation": 2,
+      "kind": "LOGIN",
+      "task_id": null,
+      "site_id": "reuters"
+    },
+    "ack_seconds": 0.004783424083143473,
+    "seconds": 6.090092778205872
+  },
+  {
+    "action": "OPEN_LOGIN",
+    "state": "DONE",
+    "error": null,
+    "result": {
+      "session_id": "maintenance_97d42d9eaa5a4af9b6659382d172ceb5",
+      "identity_id": "digitimes-de-1",
+      "generation": 2,
+      "stage": "VIEWER_READY",
+      "kind": "LOGIN",
+      "task_id": null,
+      "site_id": "reuters"
+    },
+    "ack_seconds": 0.03348583308979869,
+    "seconds": 0.7038286859169602
+  },
+  {
+    "identity": "digitimes-de-1",
+    "viewer_ready": true,
+    "kind": "LOGIN",
+    "original_target_preserved": true
+  },
+  {
+    "action": "CLOSE_LOGIN",
+    "state": "DONE",
+    "error": null,
+    "result": {
+      "session_closed": true
+    },
+    "ack_seconds": 0.008143723011016846,
+    "seconds": 0.3138561639934778
+  },
+  {
+    "action": "OPEN_LOGIN",
+    "state": "DONE",
+    "error": null,
+    "result": {
+      "session_id": "maintenance_99abb5f660144062aed5391e26d8a128",
+      "identity_id": "dowjones-main",
+      "stage": "VIEWER_READY",
+      "generation": 2,
+      "kind": "LOGIN",
+      "task_id": null,
+      "site_id": "barrons"
+    },
+    "ack_seconds": 0.011219956912100315,
+    "seconds": 6.458134539891034
+  },
+  {
+    "action": "OPEN_LOGIN",
+    "state": "DONE",
+    "error": null,
+    "result": {
+      "session_id": "maintenance_99abb5f660144062aed5391e26d8a128",
+      "identity_id": "dowjones-main",
+      "generation": 2,
+      "stage": "VIEWER_READY",
+      "kind": "LOGIN",
+      "task_id": null,
+      "site_id": "barrons"
+    },
+    "ack_seconds": 0.004619463812559843,
+    "seconds": 0.3076059827581048
+  },
+  {
+    "identity": "dowjones-main",
+    "viewer_ready": true,
+    "kind": "LOGIN",
+    "original_target_preserved": true
+  },
+  {
+    "action": "CLOSE_LOGIN",
+    "state": "DONE",
+    "error": null,
+    "result": {
+      "session_closed": true
+    },
+    "ack_seconds": 0.00706057995557785,
+    "seconds": 0.6427961247973144
+  },
+  {
+    "action": "OPEN_LOGIN",
+    "state": "DONE",
+    "error": null,
+    "result": {
+      "session_id": "maintenance_30bad4448f2142aa8f5718a0e9d77fbe",
+      "identity_id": "wsj-main",
+      "stage": "VIEWER_READY",
+      "generation": 2,
+      "kind": "LOGIN",
+      "task_id": null,
+      "site_id": "wsj"
+    },
+    "ack_seconds": 0.00771205872297287,
+    "seconds": 9.040176094975322
+  },
+  {
+    "action": "OPEN_LOGIN",
+    "state": "DONE",
+    "error": null,
+    "result": {
+      "session_id": "maintenance_30bad4448f2142aa8f5718a0e9d77fbe",
+      "identity_id": "wsj-main",
+      "generation": 2,
+      "stage": "VIEWER_READY",
+      "kind": "LOGIN",
+      "task_id": null,
+      "site_id": "wsj"
+    },
+    "ack_seconds": 0.011881704907864332,
+    "seconds": 0.6237011519260705
+  },
+  {
+    "identity": "wsj-main",
+    "viewer_ready": true,
+    "kind": "LOGIN"
+  },
+  {
+    "action": "CLOSE_LOGIN",
+    "state": "DONE",
+    "error": null,
+    "result": {
+      "session_closed": true
+    },
+    "ack_seconds": 0.013059808406978846,
+    "seconds": 0.31943360809236765
+  }
+]

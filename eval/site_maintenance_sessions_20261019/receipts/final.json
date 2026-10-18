@@ -1,0 +1,41 @@
+{
+  "containers": [
+    {
+      "name": "/doxagent-v2-v2-site-access-1",
+      "id": "eb370c05606f0e928e1bb5796a8614bf57d273657eb35ae94187b02e61c4079d",
+      "image": "sha256:1e4d75cea48fd23f2b6ad3a512bf500457eeb5a974e3ad7ed4a4201c3274b4ea",
+      "tag": "doxagent-site-access:maintenance-68c9414c",
+      "health": "healthy",
+      "namespace": "net:[4026532496]"
+    },
+    {
+      "name": "/doxagent-v2-v2-chrome-supervisor-1",
+      "id": "d148e850b214e8aeae2a70d24a108dc0811e08e2c457293f8f72797c173be1c0",
+      "image": "sha256:b26eb6f77b4bf8d61094dd0cdc869f7f5a2ce4d25c1403765d07c1725276934f",
+      "tag": "doxagent-chrome-supervisor:maintenance-b1f8237c",
+      "health": "healthy",
+      "namespace": "net:[4026532496]"
+    }
+  ],
+  "root_available_bytes": 40342675456,
+  "provenance": {
+    "repair_commit": "68c9414ccaa8a4fdea10d512368c3240ea3aeaaf",
+    "checked_files": 47,
+    "mismatches": []
+  },
+  "desktop_bridge": {
+    "ok": true,
+    "profiles": 115,
+    "sessions": 6
+  },
+  "desktop_groups": "doxagent-desktop",
+  "vnc_listeners": [
+    "LISTEN 0      4096       127.0.0.1:5900       0.0.0.0:*   "
+  ],
+  "network_guard": {
+    "state": "READY",
+    "site_namespace": "net:[4026532496]",
+    "supervisor_namespace": "net:[4026532496]",
+    "bound_current_supervisor": true
+  }
+}

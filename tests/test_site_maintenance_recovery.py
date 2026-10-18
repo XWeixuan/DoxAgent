@@ -326,6 +326,62 @@ def test_worker_resolves_released_challenge_binding_after_login_projection_chang
     assert site == task.site_id and identity.identity_id == task.identity_id
 
 
+@pytest.mark.parametrize("full", [True, False])
+async def test_body_readiness_timeout_preserves_only_proven_full_document(setup, monkeypatch, full):
+    from types import SimpleNamespace
+
+    from doxagent.site_strategy import runtime as runtime_module
+    from doxagent.site_strategy.schema import AccessRequest
+    from doxagent.site_strategy.verification import validate_capture
+    from tests.test_content_enrichment_pipeline import article
+
+    repo, service, _, scope, _, _ = setup
+    identity = repo.get_identity(scope.primary_identity_id)
+    egress = repo.get_egress(identity.egress_id)
+    url = "https://www.reuters.com/technology/complete-story-2026-10-19/"
+    resolved = service.resolve(url)
+    response = SimpleNamespace(status=200, all_headers=AsyncMock(return_value={}))
+    page = SimpleNamespace(
+        url=url,
+        goto=AsyncMock(return_value=response),
+        wait_for_function=AsyncMock(side_effect=TimeoutError()),
+        content=AsyncMock(
+            return_value=article()
+            if full
+            else "<html><title>Verify you are human</title><body>Captcha</body></html>"
+        ),
+    )
+    # Special async methods are looked up on the class, not an instance namespace.
+    class Lease:
+        provenance = SimpleNamespace(instance_id="body-test-instance")
+        browser_cdp = None
+
+        async def __aenter__(self):
+            return page
+
+        async def __aexit__(self, *args):
+            return None
+
+    gate = SimpleNamespace(start=AsyncMock(), close=AsyncMock(), blocked=None)
+    monkeypatch.setattr(runtime_module, "public_url", AsyncMock())
+    monkeypatch.setattr(runtime_module, "_DocumentNavigationGate", lambda *args: gate)
+    monkeypatch.setattr(service.runtime.browser_runtimes, "page", AsyncMock(return_value=Lease()))
+    request = AccessRequest(
+        operation_id="body-timeout",
+        purpose="BODY",
+        mode="BROWSER",
+        url=url,
+        recipe_parameters={"_maintenance_canary": True},
+    )
+    if full:
+        result = await service.runtime._browser(request, resolved, identity, egress)
+        assert validate_capture(result, resolved).body in {"FULL", "SHORT_FULL"}
+    else:
+        with pytest.raises(TimeoutError):
+            await service.runtime._browser(request, resolved, identity, egress)
+    gate.close.assert_awaited_once()
+
+
 async def test_open_login_creates_new_login_instead_of_adopting_lost_challenge(setup, monkeypatch):
     repo, service, store, scope, task, old = setup
     opened = []

@@ -1,0 +1,74 @@
+{
+  "doxagent-v2-v2-site-access-1": {
+    "id": "eb370c05606f0e928e1bb5796a8614bf57d273657eb35ae94187b02e61c4079d",
+    "image": "sha256:1e4d75cea48fd23f2b6ad3a512bf500457eeb5a974e3ad7ed4a4201c3274b4ea"
+  },
+  "doxagent-v2-v2-scheduler-1": {
+    "id": "4e6a16f10cc3739ea09869d31d5304ba673ccecc5d844899892b1e09a871dfd7",
+    "image": "sha256:f5267e270a9fa3db9845ef6c0af8dcafde19af0fcd9ad18183aa5bb2e48400c9"
+  },
+  "doxagent-v2-v2-projector-1": {
+    "id": "ed5852a42ecf6539f5914dd63eca94ad0d7472ef603683f12029cf2ab9092328",
+    "image": "sha256:b215bf3e9706d01b8cdce38bb49a1b2e9b144f4d93df1e1e6471244ec2021612"
+  },
+  "doxagent-v2-v2-initialization-1": {
+    "id": "9fb318f82b52f6316a94d52fb82032a542ee550bb9cc7e6ad06d175a0c281a7f",
+    "image": "sha256:7b7b48e74ae03a24e6464d90606cf474417b514c7ff6e3b92a68f87765b4e5fe"
+  },
+  "doxagent-v2-initialization-guardian-1": {
+    "id": "9c73336bee0f2b5c324e5b7300a5be5f44d5c62b39b74c488ced34dbf4933380",
+    "image": "sha256:1cea7ddaf6ec14a3d16903cdf79467980a3b1989ce571e4f3fca017a6f0ce523"
+  },
+  "doxagent-v2-v2-chrome-supervisor-1": {
+    "id": "d148e850b214e8aeae2a70d24a108dc0811e08e2c457293f8f72797c173be1c0",
+    "image": "sha256:b26eb6f77b4bf8d61094dd0cdc869f7f5a2ce4d25c1403765d07c1725276934f"
+  },
+  "doxagent-v2-codex-worker-1": {
+    "id": "fba6ce9b4103e0d9de37a424f82d617660b249372e784fbde5e550b007853877",
+    "image": "sha256:73fc4396ef15bcc2627b20647a143c0243bcfd3e35f9bee77d7c3261eb675b71"
+  },
+  "doxagent-v2-v2-api-1": {
+    "id": "d42eea3b2f840105102bf863ae643eb7e6648fc8943e834e863a12ae80ed8ffc",
+    "image": "sha256:73fc4396ef15bcc2627b20647a143c0243bcfd3e35f9bee77d7c3261eb675b71"
+  },
+  "doxagent-v2-v2-content-enrichment-1": {
+    "id": "c0e49110b6d75b6c2f50173192d6616a47f1edf3d6c47bec791f046c515f52c3",
+    "image": "sha256:0e5a9fe7970ab2450c8f31eb013cac3d4d0c7e2d22c111cf6db500deda5387fb"
+  },
+  "doxagent-v2-v2-message-bus-1": {
+    "id": "8ca21707dd2a5e2ff024ee570e2318f55a384049aba881acab1a6b22339dd892",
+    "image": "sha256:0e5a9fe7970ab2450c8f31eb013cac3d4d0c7e2d22c111cf6db500deda5387fb"
+  },
+  "doxagent-v2-v2-cdecr-executor-1": {
+    "id": "746c97a75b33257023c5ff6616f3dfc7ff5634598d257e318b641155d3ee27d7",
+    "image": "sha256:0e5a9fe7970ab2450c8f31eb013cac3d4d0c7e2d22c111cf6db500deda5387fb"
+  },
+  "doxagent-v2-v2-o4-1": {
+    "id": "5c6150d5e86a42d660630d7b725400a77a70855d6f770ce2aec04e3788f6629e",
+    "image": "sha256:0e5a9fe7970ab2450c8f31eb013cac3d4d0c7e2d22c111cf6db500deda5387fb"
+  },
+  "doxagent-v2-v2-executor-1": {
+    "id": "097ecbae40f8fdfd9a619ef858ccd0560a26ff36a95d3841c241c5b4ea08aa73",
+    "image": "sha256:0e5a9fe7970ab2450c8f31eb013cac3d4d0c7e2d22c111cf6db500deda5387fb"
+  },
+  "doxagent-v2-v2-delivery-1": {
+    "id": "a7a7693c1cc3298c2af9f5217e1d0c9936459b8e322012520d28e1d60b38130a",
+    "image": "sha256:0e5a9fe7970ab2450c8f31eb013cac3d4d0c7e2d22c111cf6db500deda5387fb"
+  },
+  "doxagent-v2-v2-control-1": {
+    "id": "238a984ce26a3102255dc0016464b91ff9b66ce1e34590dc47dd061ca10d934e",
+    "image": "sha256:0e5a9fe7970ab2450c8f31eb013cac3d4d0c7e2d22c111cf6db500deda5387fb"
+  },
+  "doxagent-v2-v2-maintenance-1": {
+    "id": "35443336b9ab4c7b8846d36996d2e8498a092725a739584e43a9472b5dd06da9",
+    "image": "sha256:0e5a9fe7970ab2450c8f31eb013cac3d4d0c7e2d22c111cf6db500deda5387fb"
+  },
+  "doxagent-v2-v2-web-1": {
+    "id": "72ddf9b201f58a698d135b847e938f10a4d19b813abe9723f0376e81252eead0",
+    "image": "sha256:8119c82c9aa3cb08febc44d787257676fa7bee0b7c2d0f133c97a296e4d2ed85"
+  },
+  "doxagent-v2-v2-transport-maintenance-1": {
+    "id": "afcaed42067e6a40da3f3c77b859545f81a342720e99a685507e8308ed88cf49",
+    "image": "sha256:a19e4e9ae9211f589fc4a2b5492f39f364872834d5c347452f1c1b446bc2f70b"
+  }
+}
