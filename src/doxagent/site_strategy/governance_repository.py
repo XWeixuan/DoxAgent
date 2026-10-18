@@ -512,6 +512,17 @@ class GovernanceRepository:
             return self._save_session(connection, session)
 
     def _save_session(self, connection, session):
+        if session.state == "OPEN":
+            occupied = connection.execute(
+                "select data_json from maintenance_sessions where state='OPEN' and session_id<>?",
+                (session.session_id,),
+            ).fetchone()
+            if occupied:
+                active = MaintenanceSession.model_validate_json(occupied[0])
+                raise ValueError(
+                    f"Viewer is in use by {active.identity_id}. Choose Later / Release Viewer "
+                    "before opening another identity; its page will be preserved."
+                )
         previous = self.get_session(session.session_id)
         if previous:
             if previous.generation != session.generation:
@@ -682,7 +693,16 @@ class GovernanceRepository:
                     }
             if report.challenge == "CLEARED":
                 task = self.current_challenge(identity_id)
-                if task:
+                task_cleared = (
+                    task is None
+                    or session is None
+                    or (
+                        session.task_id == task.task_id
+                        and session.target_id == task.original_target_id
+                        and session.browser_instance_id == task.browser_instance_id
+                    )
+                )
+                if task and task_cleared:
                     self._write_task(
                         connection,
                         task.model_copy(
@@ -693,8 +713,9 @@ class GovernanceRepository:
                             }
                         ),
                     )
-                member.manual_attention_required = False
-                if member.last_browser_result == "ACCESS_CHALLENGE":
+                if task_cleared:
+                    member.manual_attention_required = False
+                if task_cleared and member.last_browser_result == "ACCESS_CHALLENGE":
                     member.state = "READY"
                     member.cooldown_until = None
             if report.crawler == "READY":

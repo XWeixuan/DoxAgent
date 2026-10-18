@@ -89,6 +89,243 @@ def operation(action, **kwargs):
     )
 
 
+async def test_viewer_conflict_is_actionable_and_release_preserves_original(setup, monkeypatch):
+    repo, service, store, scope, task, old = setup
+    active = store.save_session(old.model_copy(update={"state": "OPEN"}))
+    controller = MaintenanceController(service)
+    wsj = store.get_scope("publisher:wsj")
+    opened = AsyncMock()
+    monkeypatch.setattr(service, "open_identity_login", opened)
+    with pytest.raises(ValueError, match="Viewer is in use by .*Later / Release Viewer"):
+        await controller._dispatch(operation("OPEN_LOGIN", scope_id=wsj.scope_id))
+    opened.assert_not_awaited()
+    await controller._dispatch(operation("RELEASE_VIEWER", session_id=active.session_id))
+    assert store.get_session(active.session_id).state == "RELEASED"
+    assert store.get_target(old.allocation_id).target_id == old.target_id
+    assert store.current_challenge(task.identity_id).task_id == task.task_id
+    assert repo.get_profile(repo.get_identity(task.identity_id).profile_id).maintenance_session_id
+    opened.return_value = {"login_token": "new-token", "target_id": "wsj-tab"}
+    result = await controller._dispatch(operation("OPEN_LOGIN", scope_id=wsj.scope_id))
+    assert store.get_session(result["session_id"]).state == "OPEN"
+
+
+async def test_repeated_open_login_reuses_exact_session(setup, monkeypatch):
+    _, service, store, scope, _, _ = setup
+    session = store.save_session(
+        MaintenanceSession(
+            kind="LOGIN",
+            scope_id=scope.scope_id,
+            identity_id=scope.primary_identity_id,
+            site_id=scope.owner_site_id,
+            target_id="login-tab",
+            control_token="login-token",
+        )
+    )
+    recover = AsyncMock(return_value={"login_token": "login-token"})
+    monkeypatch.setattr(service, "recover_identity_login", recover)
+    result = await MaintenanceController(service)._dispatch(
+        operation("OPEN_LOGIN", scope_id=scope.scope_id)
+    )
+    assert result["session_id"] == session.session_id
+    recover.assert_awaited_once_with(
+        session.site_id, session.identity_id, session.control_token, target_id="login-tab"
+    )
+
+
+def test_reuters_rendered_listing_is_normal_but_shell_and_challenge_are_not():
+    from doxagent.content_enrichment.quality import inspect_html
+
+    url = "https://www.reuters.com/site-search/?query=Micron"
+    normal = (
+        "<html><title>Search Results</title>"
+        "<main>Search results for Micron: 0 results</main></html>"
+    )
+    assert inspect_html(normal, url, "").page_kind == "listing"
+    assert inspect_html("<html><main></main></html>", url, "").page_kind != "listing"
+    blocked = (
+        "<html><title>Verify you are human</title><main>Search results for Micron</main></html>"
+    )
+    assert inspect_html(blocked, url, "").access_reason == "challenge_required"
+
+
+async def test_original_challenge_clear_commits_even_when_business_checks_throw(setup, monkeypatch):
+    from doxagent.site_strategy.runtime import RuntimeResponse
+
+    _, service, store, scope, task, old = setup
+    store.save_challenge(
+        store.current_challenge(task.identity_id).model_copy(update={"state": "WAITING_HUMAN"})
+    )
+    monkeypatch.setattr(
+        service.runtime,
+        "inspect_challenge",
+        AsyncMock(
+            return_value=RuntimeResponse(
+                0,
+                "https://www.reuters.com/site-search/",
+                {},
+                body="<main>Search results for Micron: 0 results</main>",
+                challenge_cleared=True,
+            )
+        ),
+    )
+    monkeypatch.setattr(
+        service.runtime,
+        "verify_crawler",
+        AsyncMock(side_effect=RuntimeError("net::ERR_TUNNEL_CONNECTION_FAILED https://secret")),
+    )
+    monkeypatch.setattr(
+        service.runtime,
+        "verify_login",
+        AsyncMock(side_effect=RuntimeError("net::ERR_CONNECTION_RESET https://secret")),
+    )
+    monkeypatch.setattr(service.runtime, "close_login", AsyncMock())
+    monkeypatch.setattr(service.profile_use, "end_maintenance", AsyncMock())
+    result = await MaintenanceController(service)._dispatch(
+        operation(
+            "VERIFY_CHALLENGE",
+            session_id=old.session_id,
+            verification_url="https://www.reuters.com/world/test-story-2026-10-19/",
+        )
+    )
+    assert result["challenge"] == "CLEARED" and result["session_closed"]
+    assert result["original_page_kind"] == "listing"
+    assert result["crawler"] == result["body"] == "CONTENT_ERROR"
+    assert result["crawler_reason"] == "net::ERR_TUNNEL_CONNECTION_FAILED"
+    assert result["body_reason"] == "net::ERR_CONNECTION_RESET"
+    assert result["authentication"] != "VALID"
+    assert not store.current_challenge(task.identity_id)
+    proof = service.repository.get_runtime(f"scope:{scope.scope_id}").combinations[task.identity_id]
+    assert proof.capabilities["CRAWLER"]["state"] == "UNVERIFIED"
+    assert proof.capabilities["BODY"]["state"] == "UNVERIFIED"
+
+
+async def test_unknown_original_does_not_clear_challenge_on_network_failure(setup, monkeypatch):
+    from doxagent.site_strategy.runtime import RuntimeResponse
+
+    _, service, store, _, task, old = setup
+    store.save_challenge(
+        store.current_challenge(task.identity_id).model_copy(update={"state": "WAITING_HUMAN"})
+    )
+    monkeypatch.setattr(
+        service.runtime,
+        "inspect_challenge",
+        AsyncMock(
+            return_value=RuntimeResponse(
+                0,
+                "about:blank",
+                {},
+                body="<html></html>",
+                challenge_cleared=False,
+            )
+        ),
+    )
+    monkeypatch.setattr(service.runtime, "verify_crawler", AsyncMock(side_effect=TimeoutError()))
+    monkeypatch.setattr(service.runtime, "verify_login", AsyncMock(side_effect=TimeoutError()))
+    closed = AsyncMock()
+    monkeypatch.setattr(service.runtime, "close_login", closed)
+    result = await MaintenanceController(service)._dispatch(
+        operation("VERIFY_CHALLENGE", session_id=old.session_id)
+    )
+    assert result["challenge"] == "UNKNOWN" and not result["session_closed"]
+    assert store.current_challenge(task.identity_id).state == "WAITING_HUMAN"
+    closed.assert_not_awaited()
+
+
+def test_verification_diagnostics_never_forward_exception_urls():
+    from doxagent.site_strategy.verification import verification_failure_reason
+    from doxagent.site_strategy.worker_manager import IdentityOperationError
+
+    assert verification_failure_reason(RuntimeError("https://secret/token")) == "RuntimeError"
+    assert (
+        verification_failure_reason(IdentityOperationError("X", "net::ERR_NAME_NOT_RESOLVED"))
+        == "net::ERR_NAME_NOT_RESOLVED"
+    )
+
+
+def test_ui_verification_message_separates_challenge_and_business_failures():
+    spec = importlib.util.spec_from_file_location(
+        "maintenance_ui_messages", Path("deploy/site-login-ui.py")
+    )
+    ui = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(ui)
+    text = ui.verification_message(
+        {"challenge": "CLEARED", "crawler": "CONTENT_ERROR", "body": "NOT_TESTED"}
+    )
+    assert "challenge cleared" in text and "CONTENT_ERROR" in text
+    assert "not yet recognized" in ui.verification_message({"challenge": "UNKNOWN"})
+
+
+def test_independent_login_cannot_resolve_another_original_challenge(setup):
+    from doxagent.site_strategy.verification import VerificationReport
+
+    _, _, store, scope, task, _ = setup
+    store.save_challenge(
+        store.current_challenge(task.identity_id).model_copy(update={"state": "WAITING_HUMAN"})
+    )
+    login = store.save_session(
+        MaintenanceSession(
+            kind="LOGIN",
+            scope_id=scope.scope_id,
+            identity_id=task.identity_id,
+            site_id=task.site_id,
+            target_id="separate-login-tab",
+            control_token="separate-login",
+        )
+    )
+    store.commit_verification(
+        scope,
+        task.identity_id,
+        VerificationReport(
+            challenge="CLEARED",
+            authentication="VALID",
+            body="FULL",
+        ),
+        session=login,
+    )
+    assert store.current_challenge(task.identity_id).state == "WAITING_HUMAN"
+
+
+async def test_challenge_reconnect_uses_durable_session_not_current_login_projection(
+    setup, monkeypatch
+):
+    repo, service, store, scope, task, old = setup
+    store.save_challenge(
+        store.current_challenge(task.identity_id).model_copy(update={"state": "WAITING_HUMAN"})
+    )
+    profile = repo.get_profile(repo.get_identity(task.identity_id).profile_id)
+    repo.save_profile(
+        profile.model_copy(
+            update={
+                "maintenance_session_id": "separate-login",
+                "challenge_url": None,
+                "challenge_target_id": "separate-login-tab",
+            }
+        )
+    )
+    monkeypatch.setattr(
+        service.runtime, "recover_login", AsyncMock(return_value={"login_token": old.control_token})
+    )
+    await service.recover_identity_login(
+        task.site_id, task.identity_id, old.control_token, target_id=old.target_id
+    )
+    recovered = repo.get_profile(profile.profile_id)
+    assert recovered.challenge_target_id == old.target_id
+    assert recovered.maintenance_session_id == old.control_token
+    assert recovered.challenge_url == task.original_url
+
+
+def test_worker_resolves_released_challenge_binding_after_login_projection_changed(setup):
+    from doxagent.site_strategy.worker_runtime import WorkerSiteAccessRuntime
+
+    repo, _, _, _, task, old = setup
+    profile = repo.get_profile(repo.get_identity(task.identity_id).profile_id)
+    repo.save_profile(profile.model_copy(update={"maintenance_session_id": "another-login"}))
+    runtime = WorkerSiteAccessRuntime.__new__(WorkerSiteAccessRuntime)
+    runtime.repository, runtime._tokens = repo, {}
+    site, identity, _ = runtime._binding(old.control_token)
+    assert site == task.site_id and identity.identity_id == task.identity_id
+
+
 async def test_open_login_creates_new_login_instead_of_adopting_lost_challenge(setup, monkeypatch):
     repo, service, store, scope, task, old = setup
     opened = []
@@ -117,19 +354,27 @@ async def test_open_login_creates_new_login_instead_of_adopting_lost_challenge(s
     adopt.assert_not_awaited()
 
 
-async def test_live_challenge_is_not_silently_discarded_or_adopted_by_login(setup, monkeypatch):
-    _, service, store, scope, task, _ = setup
+async def test_live_challenge_does_not_block_independent_login_or_get_discarded(setup, monkeypatch):
+    repo, service, store, scope, task, old = setup
     store.save_challenge(
         store.current_challenge(task.identity_id).model_copy(update={"state": "WAITING_HUMAN"})
     )
-    open_login = AsyncMock()
+    open_login = AsyncMock(return_value={"login_token": "ordinary-login", "target_id": "login-tab"})
     monkeypatch.setattr(service.runtime, "open_login", open_login)
-    with pytest.raises(RuntimeError, match="active_challenge_use_challenge_maintenance"):
-        await MaintenanceController(service)._dispatch(
-            operation("OPEN_LOGIN", scope_id=scope.scope_id)
-        )
+    result = await MaintenanceController(service)._dispatch(
+        operation("OPEN_LOGIN", scope_id=scope.scope_id)
+    )
+    assert store.get_session(result["session_id"]).kind == "LOGIN"
     assert store.current_challenge(task.identity_id).original_target_id == "old-target"
-    open_login.assert_not_awaited()
+    assert store.get_session(old.session_id).state == "RELEASED"
+    open_login.assert_awaited_once()
+    # Closing the independent login must restore the pending Task reservation,
+    # not close its target or make the identity business-ready.
+    profile = repo.get_profile(repo.get_identity(task.identity_id).profile_id)
+    await service.profile_use.end_maintenance(profile.profile_id, profile.maintenance_session_id)
+    restored = repo.get_profile(profile.profile_id)
+    assert restored.challenge_target_id == old.target_id
+    assert restored.maintenance_session_id == old.control_token
 
 
 async def test_login_action_cannot_resume_challenge_session(setup):

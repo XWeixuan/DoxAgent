@@ -284,6 +284,16 @@ def inspect_html(
         result.page_kind, result.access_reason = "challenge", "challenge_required"
         return result
     path = urlparse(url).path.lower()
+    if (
+        (urlparse(url).hostname or "").lower() in {"www.reuters.com", "reuters.com"}
+        and path.rstrip("/") == "/site-search"
+        and root.xpath("//main")
+        and re.search(r"Search results for", visible, re.I)
+    ):
+        # A rendered Reuters search document is a normal listing, not an article
+        # or an unresolved WAF. A matching URL/empty shell alone is not proof.
+        result.page_kind = "listing"
+        return result
     if prepare_document(
         strategy,
         root,
@@ -523,8 +533,12 @@ def choose_candidate(
         return None, "UNAVAILABLE", info.access_reason
     if info.page_kind in {"quote", "listing"}:
         return None, "UNAVAILABLE", "non_article_target"
-    if (expected_title and info.headline and not title_match(info.headline, expected_title)
-            and not (info.canonical_article_match and info.page_kind == "article")):
+    if (
+        expected_title
+        and info.headline
+        and not title_match(info.headline, expected_title)
+        and not (info.canonical_article_match and info.page_kind == "article")
+    ):
         return None, "UNAVAILABLE", "publisher_identity_mismatch"
     if expected_title and not info.headline and info.candidates:
         if not any(title_match(c.headline, expected_title) for c in info.candidates):
