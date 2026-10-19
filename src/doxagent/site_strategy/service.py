@@ -2691,14 +2691,18 @@ class SiteStrategyService:
                 ready = False
                 report.crawler_reason = verification_failure_reason(exc)
             else:
-                info = inspect_html(capture.body, capture.final_url, "")
                 report.crawler_reason = (
                     "listing_contract_verified"
                     if ready
-                    else info.access_reason or capture.reason or "listing_contract_not_satisfied"
+                    else inspect_html(
+                        capture.body, capture.final_url, "", generic_extraction=False
+                    ).access_reason or capture.reason or "listing_contract_not_satisfied"
                 )
             report.crawler = "READY" if ready else "CONTENT_ERROR"
             if ready:
+                report.runtime_instance_id = (
+                    capture.provenance.instance_id if capture.provenance else None
+                )
                 report.challenge = "CLEARED"
                 from urllib.parse import urljoin
 
@@ -2718,6 +2722,10 @@ class SiteStrategyService:
             and original_inspection.page_kind not in {"listing", "quote", "login"}
             else None
         )
+        if spec.auth.requirement != "required":
+            # Prefer ordinary public news for a public-access maintenance check;
+            # a recommendation for Investing Pro must not certify/poison this path.
+            article_candidates.sort(key=lambda candidate: "/news/pro/" in candidate)
         url = article_url or body_verification_url(
             scope,
             trigger_url,
@@ -3001,7 +3009,10 @@ class SiteStrategyService:
             verification_kind == "public_access"
             and category is None
             and 200 <= response.status_code < 300
-            and (inspection.page_kind == "article" or bool(response.recipe_result))
+            and (
+                inspection.page_kind in {"article", "listing", "quote"}
+                or bool(response.recipe_result)
+            )
         ):
             state = profile.auth_state
             reason = "public_access_ready"

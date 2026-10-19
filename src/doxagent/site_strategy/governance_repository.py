@@ -702,6 +702,28 @@ class GovernanceRepository:
                         and session.browser_instance_id == task.browser_instance_id
                     )
                 )
+                # LOGIN and CHALLENGE are separate workflows. A lost historical
+                # page cannot be inspected again, but new same-scope business
+                # proof can supersede its blocker. Never dismiss a live original,
+                # a different scope, or a failed/untested affected capability.
+                if task and session and session.kind == "LOGIN" and task.state == "TARGET_LOST":
+                    recovered_purpose = (
+                        report.body in {"FULL", "SHORT_FULL"}
+                        if task.purpose == "BODY"
+                        else report.crawler == "READY"
+                        if task.purpose == "CRAWLER"
+                        else report.authentication in {"VALID", "NOT_REQUIRED"}
+                    )
+                    task_cleared = task_cleared or (
+                        task.scope_id == scope.scope_id
+                        and task.site_id == scope.owner_site_id
+                        and session.site_id == scope.owner_site_id
+                        and session.identity_id == task.identity_id == identity_id
+                        and session.scope_id == scope.scope_id
+                        and bool(report.runtime_instance_id)
+                        and report.runtime_instance_id == session.browser_instance_id
+                        and recovered_purpose
+                    )
                 if task and task_cleared:
                     self._write_task(
                         connection,

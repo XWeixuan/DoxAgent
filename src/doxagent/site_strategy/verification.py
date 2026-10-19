@@ -16,11 +16,23 @@ def body_verification_url(scope, *candidates, excluded_urls=()):
         return parsed.hostname, parsed.path.rstrip("/") or "/"
 
     excluded = {key(url) for url in (listing, *excluded_urls) if url}
+
+    def collection(url):
+        parsed = urlsplit(url)
+        return (
+            parsed.hostname in {"investing.com", "www.investing.com"}
+            and parsed.path.startswith("/equities/")
+            and parsed.path.rstrip("/").endswith("-news")
+        )
+
     return next(
         (
             url
             for url in candidates
-            if url and key(url) not in excluded and urlsplit(url).path.rstrip("/")
+            if url
+            and key(url) not in excluded
+            and urlsplit(url).path.rstrip("/")
+            and not collection(url)
         ),
         None,
     )

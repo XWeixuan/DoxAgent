@@ -1,0 +1,10 @@
+ARG APPROVED_BASE
+FROM ${APPROVED_BASE}
+ARG REPAIR_COMMIT
+LABEL org.opencontainers.image.revision=${REPAIR_COMMIT} \
+      doxagent.repair.scope="investing_proven_recovery"
+ENV DOXAGENT_BUILD_COMMIT=${REPAIR_COMMIT}
+COPY src/doxagent/content_enrichment/quality.py /app/src/doxagent/content_enrichment/quality.py
+COPY src/doxagent/site_strategy/governance_repository.py /app/src/doxagent/site_strategy/governance_repository.py
+COPY src/doxagent/site_strategy/service.py /app/src/doxagent/site_strategy/service.py
+COPY src/doxagent/site_strategy/verification.py /app/src/doxagent/site_strategy/verification.py

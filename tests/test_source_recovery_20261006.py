@@ -182,6 +182,10 @@ async def test_human_verification_releases_health_only_on_real_success(
     service, monkeypatch, success
 ):
     spec = service.repository.get_strategy("reuters")
+    spec.auth.verification_url = spec.auth.maintenance_url
+    spec = service.apply_strategy(
+        spec, expected_revision=spec.revision, actor="test-public-search-verification"
+    )
     combo = spec.access.combinations[0]
     profile = service.repository.get_profile(combo.profile_id)
     identity = service._identity_for(combo, profile)
@@ -209,7 +213,7 @@ async def test_human_verification_releases_health_only_on_real_success(
                 200 if success else 401,
                 spec.auth.verification_url,
                 {},
-                "<html><body>Search results for Micron</body></html>"
+                "<html><main>Search results for Micron: 0 results</main></html>"
                 if success
                 else "<html><title>Verify you are human</title></html>",
             )

@@ -286,6 +286,16 @@ def inspect_html(
         return result
     path = urlparse(url).path.lower()
     if (
+        (urlparse(url).hostname or "").lower() in {"www.investing.com", "investing.com"}
+        and path.startswith("/equities/")
+        and path.rstrip("/").endswith("-news")
+        and root.xpath('//*[@data-test="article-item"]//*[@data-test="article-title-link"]')
+    ):
+        # News cards are <article> too, but are not the article being verified.
+        # In particular, do not cold-run a body extractor over this ad-heavy list.
+        result.page_kind = "listing"
+        return result
+    if (
         (urlparse(url).hostname or "").lower() in {"www.reuters.com", "reuters.com"}
         and path.rstrip("/") == "/site-search"
         and root.xpath("//main")
