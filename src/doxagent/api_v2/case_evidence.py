@@ -12,6 +12,29 @@ class CaseEvidence:
     def __init__(self, store, ticker, case_id, seq):
         self.store, self.ticker, self.case_id, self.seq = store, ticker, case_id, seq
 
+    @property
+    def members(self):
+        # Every caller filters kind/ticker/parent. The projection revision index
+        # must not turn a one-Case lookup into a scan of every current attempt.
+        return self.relation()
+
+    def relation(self, kind=None):
+        current, history = {
+            "fact": ("current_case_fact", "case_fact_evidence"),
+            "policy_detail": ("current_case_policy", "case_policy_evidence"),
+            "native:runtime_v2_candidates": (
+                "current_case_provisional", "case_provisional_evidence"
+            ),
+        }.get(kind, ("current_parent", "objects_parent"))
+        # Include the literal kind in each branch so partial lookup indexes
+        # remain usable even when the outer query has LIMIT/aggregation.
+        where = " WHERE kind='" + kind + "'" if kind else ""
+        return (
+            "(SELECT * FROM object_current INDEXED BY " + current + where +
+            " UNION ALL SELECT * FROM " + self.store.history_table +
+            " INDEXED BY " + history + where + ")"
+        )
+
     def fields(self, kind, identity, paths):
         # Paths are internal constants, never request input. Do not select payload:
         # its row codec would dereference unrelated frozen inputs/article bodies.
@@ -93,8 +116,9 @@ class CaseEvidence:
                     "|| 'Z' AS first_at, "
                     "MAX(rtrim(json_extract(payload,'$.timing.completed_at.value'),'Z')) "
                     "|| 'Z' AS last_at "
-                    "FROM objects WHERE kind='attempt' AND ticker=? AND parent=? "
-                    "AND valid_from<=? AND (valid_to IS NULL OR valid_to>?) GROUP BY route,round,phase",
+                    "FROM " + self.members + " WHERE kind='attempt' AND ticker=? AND parent=? "
+                    "AND valid_from<=? AND (valid_to IS NULL OR valid_to>?) "
+                    "GROUP BY route,round,phase",
                     (self.ticker, self.case_id, self.seq, self.seq),
                 )
             ]
@@ -142,7 +166,8 @@ class CaseEvidence:
     def latest_success(self, node, round_name):
         with self.store.connect() as db:
             row = db.execute(
-                "SELECT id FROM objects WHERE kind='attempt' AND ticker=? AND parent=? AND route=? "
+                "SELECT id FROM " + self.members +
+                " WHERE kind='attempt' AND ticker=? AND parent=? AND route=? "
                 "AND json_extract(payload,'$.round')=? "
                 "AND json_extract(payload,'$.status')='SUCCEEDED' "
                 "AND valid_from<=? AND (valid_to IS NULL OR valid_to>?) "

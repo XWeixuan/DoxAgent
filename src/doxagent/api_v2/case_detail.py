@@ -77,7 +77,8 @@ def install(app: FastAPI) -> None:
             raise ApiFailure("PINNED_ARTIFACT_MISSING", 404)
         with store.connect() as db:
             row = db.execute(
-                "SELECT payload FROM objects WHERE kind='policy_detail' AND ticker=? AND parent=? "
+                "SELECT payload FROM " + evidence.relation("policy_detail") +
+                " WHERE kind='policy_detail' AND ticker=? AND parent=? "
                 "AND json_extract(payload,'$.summary.policy_id')=? AND valid_from<=? "
                 "AND (valid_to IS NULL OR valid_to>?) LIMIT 1",
                 (
@@ -221,7 +222,8 @@ def install(app: FastAPI) -> None:
                 if event is None:
                     with store.connect() as db:
                         provisional = db.execute(
-                            "SELECT id FROM objects WHERE kind='native:runtime_v2_candidates' "
+                            "SELECT id FROM " + evidence.relation("native:runtime_v2_candidates") +
+                            " WHERE kind='native:runtime_v2_candidates' "
                             "AND ticker=? AND json_extract(payload,'$.provisional_event_id')=? "
                             "AND json_extract(payload,'$.trading_date')=? "
                             "AND json_extract(payload,'$.snapshot_version')<=? "
@@ -248,13 +250,15 @@ def install(app: FastAPI) -> None:
                     for fact_id in attribution.get(identity, []) if event else []:
                         row = db.execute(
                             "SELECT id "
-                            "FROM objects "
+                            "FROM " + evidence.relation("fact") + " "
                             "WHERE kind='fact' AND ticker=? AND parent=? "
                             "AND json_extract(payload,'$.fact.fact_id')=? "
                             "AND valid_from<=? AND (valid_to IS NULL OR valid_to>?) LIMIT 1",
                             (ticker, parent, fact_id, seq, seq),
                         ).fetchone()
-                        fields = evidence.fields('fact', row[0], ['fact.proposition']) if row else None
+                        fields = (
+                            evidence.fields('fact', row[0], ['fact.proposition']) if row else None
+                        )
                         value = fields.get('fact.proposition') if fields else None
                         facts.append(
                             {
@@ -297,7 +301,8 @@ def install(app: FastAPI) -> None:
                         "SELECT json_extract(payload,'$.summary.title') AS title, "
                         "json_extract(payload,'$.summary.policy_activation_revision') AS revision, "
                         "json_extract(payload,'$.summary.policy_revision_id') AS content_revision "
-                        "FROM objects WHERE kind='policy_detail' AND ticker=? "
+                        "FROM " + evidence.relation("policy_detail") +
+                        " WHERE kind='policy_detail' AND ticker=? "
                         "AND parent=? AND json_extract(payload,'$.summary.policy_id')=? "
                         "AND valid_from<=? AND (valid_to IS NULL OR valid_to>?) LIMIT 1",
                         (ticker, activation["policy_set"]["artifact_id"], identity, seq, seq),
@@ -568,7 +573,7 @@ def install(app: FastAPI) -> None:
         with store.connect() as db:
             counts = {
                 kind: db.execute(
-                    "SELECT COUNT(*) FROM objects WHERE kind=? AND ticker=? "
+                    "SELECT COUNT(*) FROM " + evidence.members + " WHERE kind=? AND ticker=? "
                     "AND parent=? AND valid_from<=? AND (valid_to IS NULL OR valid_to>?)",
                     (kind, ticker, case_id, seq, seq),
                 ).fetchone()[0]
@@ -582,7 +587,7 @@ def install(app: FastAPI) -> None:
                     "'status',json_extract(payload,'$.status'), "
                     "'error',json_extract(payload,'$.error'),'occurred_at',"
                     "json_extract(payload,'$.timing.completed_at.value')) "
-                    "FROM objects WHERE kind='attempt' AND ticker=? AND parent=? "
+                    "FROM " + evidence.members + " WHERE kind='attempt' AND ticker=? AND parent=? "
                     "AND json_extract(payload,'$.error') IS NOT NULL "
                     "AND json_extract(payload,'$.timing.completed_at.value') IS NOT NULL "
                     "AND valid_from<=? AND (valid_to IS NULL OR valid_to>?) "

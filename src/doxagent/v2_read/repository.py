@@ -818,8 +818,13 @@ class ReadStore:
             rows = []
             for table in branches:
                 history = " AND valid_to IS NOT NULL" if table == history_name else ""
+                index = (
+                    "objects_parent" if table == history_name else "current_parent"
+                ) if parent is not None else (
+                    "history_recent" if table == history_name else None
+                )
                 rows.extend(db.execute(
-                    "SELECT id,sort_key,payload,valid_from FROM " + table + " AS objects" + (" INDEXED BY history_recent" if table == history_name else "") + " WHERE "
+                    "SELECT id,sort_key,payload,valid_from FROM " + table + " AS objects" + (" INDEXED BY " + index if index else "") + " WHERE "
                     + " AND ".join(where) + history
                     + " ORDER BY sort_key DESC,id DESC LIMIT ?", [*params, limit]
                 ).fetchall())

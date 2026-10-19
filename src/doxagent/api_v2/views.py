@@ -225,6 +225,15 @@ class Views:
         if kind == "case":
             from doxagent.v2_read.trade_outcomes import legacy_case_summary
             rows = [{**row, "data": legacy_case_summary(self.store, ticker, row["data"], seq)} for row in rows]
+        if kind == "message":
+            # Older projections stored the internal W3 route while its agent
+            # was RUNNING. Public CaseLink uses W3_PENDING for that group.
+            rows = [
+                {**row, "data": {**row["data"], "case": {
+                    **row["data"]["case"], "route_group": "W3_PENDING",
+                }}} if row["data"].get("case", {}).get("route_group") == "W3" else row
+                for row in rows
+            ]
         next_cursor = (
             self.store.save_token(
                 owner, scope, {"seq": seq, "view_id": view_id, "after": [rows[-1]["sort"], rows[-1]["id"]]}

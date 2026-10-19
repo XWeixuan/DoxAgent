@@ -1,0 +1,10 @@
+# Preserve the running API's dependencies and configuration; replace read code only.
+ARG APPROVED_BASE
+FROM ${APPROVED_BASE}
+ARG REPAIR_COMMIT
+LABEL org.opencontainers.image.revision=${REPAIR_COMMIT} \
+      doxagent.repair.scope="runtime_case_detail"
+ENV DOXAGENT_BUILD_COMMIT=${REPAIR_COMMIT}
+COPY src/doxagent/api_v2/case_detail.py src/doxagent/api_v2/case_evidence.py \
+     src/doxagent/api_v2/views.py /app/src/doxagent/api_v2/
+COPY src/doxagent/v2_read/repository.py /app/src/doxagent/v2_read/

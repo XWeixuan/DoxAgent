@@ -2,6 +2,95 @@ from doxagent.api_v2.case_evidence import CaseEvidence
 from doxagent.v2_read.repository import ReadStore
 
 
+def test_case_messages_accept_running_w3_projection_without_rewriting_history(tmp_path):
+    from doxagent.api_v2.dto import validate
+    from doxagent.api_v2.views import Views
+    from tests.v2_backend.test_streaming import message
+
+    store = ReadStore(tmp_path / "read.db")
+    store.migrate()
+    record = message("a", route="W3")
+    record["parent"] = "case-a"
+    record["data"]["case"].update(
+        case_id="case-a", status="PENDING_W3", initial_route="W3", w3_status="RUNNING",
+    )
+    seq = store.ingest("test", "running", [record])
+    page = Views(store, None).page(
+        "reader", "message", "MU", view={"seq": seq}, parent="case-a",
+    )
+    validate("MessageSummaryPage", page)
+    link = page["items"][0]["case"]
+    assert link["route_group"] == "W3_PENDING"
+    assert link["initial_route"] == "W3" and link["w3_status"] == "RUNNING"
+    assert store.get("message", "MU", "a", seq)["case"]["route_group"] == "W3"
+
+
+def test_case_members_stay_bounded_with_projection_revision_index(tmp_path, monkeypatch):
+    """A tiny Case must not walk unrelated attempts, including at an old watermark."""
+    from contextlib import contextmanager
+
+    store = ReadStore(tmp_path / "read.db")
+    store.migrate()
+    store.migrate_projection_indexes()
+
+    def attempt(identity, parent, round_name="R1"):
+        return {
+            "kind": "attempt", "ticker": "MU", "id": identity, "parent": parent,
+            "route": "W2", "sort": identity,
+            "data": {
+                "round": round_name, "phase": None, "status": "SUCCEEDED",
+                "timing": {
+                    "first_started_at": {"value": "2026-10-19T00:00:00Z"},
+                    "completed_at": {"value": "2026-10-19T00:00:01Z"},
+                },
+            },
+        }
+
+    seq = store.ingest("test", "many-cases", [
+        attempt(f"other-{i:05}", "unrelated") for i in range(5000)
+    ] + [attempt(f"target-{i:03}", "case-a") for i in range(25)])
+    # Move one target revision into history and add unrelated historical rows.
+    store.ingest("test", "later", [
+        attempt("target-024", "case-a", "R2"),
+        *[attempt(f"other-{i:05}", "unrelated", "R2") for i in range(5000)],
+    ])
+    original = store.connect
+
+    @contextmanager
+    def bounded(**kwargs):
+        with original(**kwargs) as db:
+            calls = 0
+
+            def budget():
+                nonlocal calls
+                calls += 1
+                return calls > 300  # 30k VM instructions; no wall-clock assertion.
+
+            db.set_progress_handler(budget, 100)
+            yield db
+
+    monkeypatch.setattr(store, "connect", bounded)
+    reader = CaseEvidence(store, "MU", "case-a", seq)
+    assert reader.attempt_groups()[0]["count"] == 25
+    assert reader.latest_success("W2", "R3") is None
+    rows = store.page("attempt", "MU", seq, parent="case-a", route="W2", limit=20)
+    assert len(rows) == 20
+    assert rows[0]["id"] == "target-024"
+    assert rows[0]["data"]["round"] == "R1"
+    next_rows = store.page("attempt", "MU", seq, parent="case-a", route="W2",
+                           after=(rows[-1]["sort"], rows[-1]["id"]), limit=20)
+    assert len(next_rows) == 5
+    with store.connect() as db:
+        assert db.execute(
+            "SELECT COUNT(*) FROM " + reader.members +
+            " WHERE kind='attempt' AND ticker=? AND parent=? "
+            "AND valid_from<=? AND (valid_to IS NULL OR valid_to>?)",
+            ("MU", "case-a", seq, seq),
+        ).fetchone()[0] == 25
+    current = store.page("attempt", "MU", seq + 1, parent="case-a", route="W2", limit=20)
+    assert current[0]["data"]["round"] == "R2"
+
+
 def test_selected_fields_do_not_open_large_native_content(tmp_path, monkeypatch):
     store = ReadStore(tmp_path / "read.db")
     store.migrate()
@@ -97,6 +186,7 @@ def test_hot_path_includes_w2_r3_but_not_w1_extraction(tmp_path):
 def test_evidence_lookup_plans_use_exact_identity_indexes(tmp_path):
     store = ReadStore(tmp_path / "read.db")
     store.migrate()
+    store.migrate_projection_indexes()
     probes = [
         (
             "kind='fact' AND ticker=? AND parent=? AND json_extract(payload,'$.fact.fact_id')=?",
@@ -120,10 +210,12 @@ def test_evidence_lookup_plans_use_exact_identity_indexes(tmp_path):
     ]
     with store.connect() as db:
         for where, args, index in probes:
+            kind = where.split("'", 2)[1]
+            relation = CaseEvidence(store, "MU", "case-a", 1).relation(kind)
             plan = " ".join(
                 str(row[3])
                 for row in db.execute(
-                    "EXPLAIN QUERY PLAN SELECT id FROM objects WHERE "
+                    "EXPLAIN QUERY PLAN SELECT id FROM " + relation + " WHERE "
                     + where
                     + " AND valid_from<=? AND (valid_to IS NULL OR valid_to>?) LIMIT 1",
                     (*args, 1, 1),
