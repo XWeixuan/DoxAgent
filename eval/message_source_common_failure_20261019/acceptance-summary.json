@@ -1,5 +1,5 @@
 {
-  "observed_at": "2026-10-19T11:30:42Z",
+  "observed_at": "2026-10-19T11:45:07Z",
   "product_commits": {"bus_and_enrichment": "c35032895316f02763cb5c5a873ad1979fe58736", "site_access": "76c581cda6b8e9307bef526265a3eb12ec23a8e8"},
   "images": {"bus_and_enrichment": "sha256:aa21a1ecd637915d6c41ad409d537466826251cd6ecff197d21b696f1ab59a0a", "site_access": "sha256:9f4a946af75635a865e4d661b9cbca26a276c351bc83b06437aee81571e461bb"},
   "supervisor_unchanged": "617b4e1d59f97cd199491ce6f81af5ffa8664927600d2d7af2716fd82cec571c",

@@ -65,7 +65,7 @@ Reuters、Barron's、Investing.com 的既有身份目前另有持久化人工维
 
    这一项需要对 Site Access 做一次仅含 `scope.py` 的不可变更新。发布前确认没有 OPEN 维护会话、排队/运行中的维护操作或活的待处理 Challenge 页面；保留 Supervisor 容器、External Chrome/Profile 和挂载，验证共享网络命名空间仍一致。Managed Chrome 由自身生命周期正常关闭并按需再启，不承诺它的进程跨 Site Access 容器替换保持不变。
 
-## 最终上线验收（2026-10-19 19:30–19:31 CST）
+## 最终上线验收（2026-10-19 19:30–19:45 CST）
 
 - **233 个不同测试通过**（合并本目录各次 JUnit testcase 去重；不是把重复重跑相加），涵盖 Bus/准入/跨线程去重、分发/正文队列、源解析、HTTP 路由、网站隔离/维护与最终发布者路由；Ruff 与 diff 检查通过。
 - Bus/Enrichment 当前产品提交 `c3503289`，精确镜像 `aa21a1ecd637`；Site Access 当前产品提交 `76c581cd`，精确镜像 `9f4a946af756`。全部代码修复已进入 main、推送 origin 并同步生产 checkout；不是未归并的远端热补丁。发布 manifest 校验对应源文件 SHA-256 与持久挂载，更新 canonical Compose 与组件 current/previous 记录。
@@ -74,6 +74,8 @@ Reuters、Barron's、Investing.com 的既有身份目前另有持久化人工维
 - Site Access 替换期间确实出现过短暂 ConnectError，未把启动健康当作最终验收。随后保持服务运行并观察自然轮询，**124 个生产启用订阅中 95 个 succeeded、29 个 failed**。此前有共性连接错误的 TrendForce 两入口、DIGITIMES 英/台、行业 RSS、Google RSS、GlobeNewswire 两入口、Yahoo、官方 RSS、API 均恢复采集；InvestorsHub 全部 **9/9 ticker 自然轮询成功**；CEG 官方 RSS 改用已核验出口后自然成功。未手工改 poll status、清 failure_since 或发布过期 canary 消息。
 
 ### 剩余事项，不能称为全部业务恢复
+
+19:45 交接前再次读取生产状态，仍为 **95 succeeded / 29 failed**，失败来源仍仅为下表五项。Bus、Site Access、Enrichment、Supervisor 与 Clash 均没有重启计数增长或 OOM。该复核晚于 Site Access 更新约 18 分钟，不是刚启动的瞬时健康快照；也不据此承诺以后绝无单次网络抖动。
 
 | 来源 | 当前结果 | 后续所需 |
 | --- | --- | --- |
