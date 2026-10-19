@@ -19,7 +19,7 @@ m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
 with m.lock(root):
     assert run(['git','rev-parse','HEAD']) == commit
     before = inventory(); old = before['v2-projector']
-    assert old['Image'] == 'sha256:8f1778e60b12525bfe79ca54a6414e4a74c6e013a23a23a775d344ee77ddaa81'
+    assert old['Image'] == 'sha256:a4680386da0bc205f06b6aa6795b2c2de05057aa6cb2c73d33b4a173123ac278'
     audit = root/('read-freshness-'+commit[:12]); audit.mkdir(exist_ok=False)
     canonical = root/'compose.current.json'; cfg = json.loads(canonical.read_text())
     state = json.loads((root/'state.json').read_text())

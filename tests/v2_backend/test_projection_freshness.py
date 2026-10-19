@@ -199,3 +199,32 @@ def test_event_work_budget_is_bounded_and_preserves_order(monkeypatch,budget,exp
     count=worker._events(SimpleNamespace(source="bus"),list(range(1,30)),
         lambda n:dict(seq=n,recorded_at="2026-10-19T00:00:00Z"),budget=budget)
     assert count==expected and committed==list(range(1,expected+1))
+
+
+def test_projection_session_reuses_idle_connections_without_delaying_commits(tmp_path, monkeypatch):
+    store=ReadStore(tmp_path/'read.db');store.migrate()
+    opened=[];original=sqlite3.connect
+    def connect(*args,**kwargs):
+        db=original(*args,**kwargs);opened.append(db);return db
+    monkeypatch.setattr(sqlite3,'connect',connect)
+    with store.projection_session():
+        for i in range(20):
+            store.ingest('bus',str(i),[dict(kind='native:poll_states',ticker='MU',id='b',data=dict(count=i))])
+            assert store.get('native:poll_states','MU','b')['count']==i
+            # A different process/connection can already see each event commit.
+            with original(store.path) as external:
+                assert external.execute('select max(seq) from commits').fetchone()[0]==i+1
+        assert len(opened)==2
+        with store.connect() as outer:
+            assert store.get('native:poll_states','MU','b')['count']==19
+            assert outer.in_transaction
+        assert len(opened)==3  # Nested readers never reuse a checked-out snapshot.
+        with pytest.raises(ValueError):
+            with store.connect(write=True) as db:
+                db.execute("DELETE FROM object_current")
+                raise ValueError('abort this event only')
+        assert store.get('native:poll_states','MU','b')['count']==19
+        assert all(not db.in_transaction for pool in store._projection_connections.values() for db in pool)
+    assert store._projection_connections is None
+    for db in opened:
+        with pytest.raises(sqlite3.ProgrammingError):db.execute('select 1')

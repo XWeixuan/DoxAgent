@@ -74,6 +74,7 @@ class ReadStore:
     def __init__(self, path: str | Path) -> None:
         self.path = Path(path).resolve()
         self._retirement_shapes={}
+        self._projection_connections = None
         if self.path.suffix == ".json":
             alias = json.loads(self.path.read_text(encoding="utf-8"))
             if alias.get("format") != "doxagent.v2.read-alias.1":
@@ -104,17 +105,40 @@ class ReadStore:
         db.execute('DELETE FROM '+current+' WHERE '+where,args)
 
     @contextmanager
+    def projection_session(self):
+        """Worker-only, tick-local schema cache; transactions still commit per event.
+
+        Idle connections have no open transaction/snapshot. Nested checkouts get
+        separate connections. Nothing is shared with the API or across ticks.
+        """
+        if self._projection_connections is not None:
+            raise RuntimeError("nested projection session")
+        idle = {False: [], True: []}
+        self._projection_connections = idle
+        try:
+            yield
+        finally:
+            self._projection_connections = None
+            for connections in idle.values():
+                for db in connections:
+                    db.close()
+
+    @contextmanager
     def connect(self, *, write: bool = False, timeout: float = 2) -> Iterator[sqlite3.Connection]:
-        db = sqlite3.connect(
-            self.path.as_uri() + ("?mode=rw" if write else "?mode=ro"), uri=True, timeout=timeout
-        )
-        if not write:
-            from .query_budget import interrupted
-            db.set_progress_handler(interrupted, 1000)
-        db.execute('PRAGMA recursive_triggers=ON')
-        codec = self.content_codec
-        codec.definition_connection = db
-        db.row_factory = codec.row
+        idle = self._projection_connections
+        if idle is not None and idle[write]:
+            db = idle[write].pop()
+        else:
+            db = sqlite3.connect(
+                self.path.as_uri() + ("?mode=rw" if write else "?mode=ro"), uri=True, timeout=timeout
+            )
+            if not write:
+                from .query_budget import interrupted
+                db.set_progress_handler(interrupted, 1000)
+            db.execute('PRAGMA recursive_triggers=ON')
+            codec = self.content_codec
+            codec.definition_connection = db
+            db.row_factory = codec.row
         try:
             db.execute("BEGIN IMMEDIATE" if write else "BEGIN")
             yield db
@@ -123,7 +147,10 @@ class ReadStore:
             db.rollback()
             raise
         finally:
-            db.close()
+            if idle is None:
+                db.close()
+            else:
+                idle[write].append(db)
 
     def migrate(self) -> None:
         self.path.parent.mkdir(parents=True, exist_ok=True)

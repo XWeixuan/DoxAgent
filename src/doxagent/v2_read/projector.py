@@ -26,6 +26,11 @@ class ProjectionWorker:
         self._acknowledgements = {}
 
     def tick(self, *, limit: int = 100) -> int:
+        session = self.store.projection_session() if hasattr(self.store, "projection_session") else nullcontext()
+        with session:
+            return self._tick(limit=limit)
+
+    def _tick(self, *, limit: int) -> int:
         if not 1 <= limit <= 500:
             raise ValueError("invalid projection batch size")
         count = 0
