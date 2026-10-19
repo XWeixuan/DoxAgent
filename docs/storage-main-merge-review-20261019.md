@@ -4,7 +4,7 @@
 
 ## 比较基线
 
-- 合并前本地 main、origin/main 和本次 fetch 的远端 main：`35d1057b8c5ae97d928e123273c5a25ef485ada8`。
+- 初次审查时本地 main、origin/main 和本次 fetch 的远端 main：`35d1057b8c5ae97d928e123273c5a25ef485ada8`。
 - 存储分支：`codex/storage-lifecycle-v4`，审查起点 `8c20f37d07b56a13253442a6b16d5344dbe8405e`。
 - 共同祖先：`d8a7fee9e77ca76a828ec788d185f8e1688ce327`。
 - main 一侧修改 144 个文件，存储分支修改 106 个文件，重叠 20 个；真实预合并出现 6 个文本冲突。
@@ -48,8 +48,14 @@ Docker 静态检查确认提交号不进入 backend-deps，main 的 tokenizer �
 
 ## 合并与本地内容保留
 
-先在原存储 worktree 中完成 main 的适配和验证，再由本地 main 以完整 merge commit 接收整个分支，保留两条历史以及 main 的第一父提交路径，不做 squash/cherry-pick 子集。
+先在原存储 worktree 中完成 main 的适配和验证，包含随后更新的 origin/main；本地 main 先 fast-forward 到已审查的 origin/main `d3ce7d2f`，再以完整 merge commit 接收整个分支，第一父提交为最新 main，保留完整历史，不做 squash/cherry-pick 子集。
 
 主工作区只临时移开会阻挡合并的既有执行报告，并对唯一的未提交 changelog 做逐字节快照和三方内容核对。两边末尾追加造成的日志文本冲突，按唯一相邻上下文插回原 SNOW 段落；合并后该补记仍为未提交修改。其他未跟踪材料不移动、不纳入提交。
 
 原始差异、保留验证、测试命令/XML/日志及未提交内容快照在 `D:/DoxAgentStorageExecution/main-merge-20261019/`。最终提交和本地/远端关系以最终 Git 回执为准。
+
+## 等待期间远端集成提交的适配
+
+origin/main 在等待测试期间更新为 `d3ce7d2fb24e605f738086705441c736e0a3311e`，其父提交正是上述 main 与存储起点。额外代码变动为禁用的旧 MCP 配置保留合法 command/args，以兼容 SDK 的配置解析。该实现及 W3 回归完整保留。再次合并出现三处冲突：changelog 按精确行保留两侧全部独有记录；维修 workspace 测试保留更完整的 dirty 保护验证；Read 测试保留 V4 与 legacy 双场景覆盖，包含远端新增断言的业务目的。原 main 未提交 SNOW 补记继续独立保留。
+
+最新 origin 适配后针对 W3 ready、Session 退出、维修 worktree/Guardian 与 Initialization progress 的 **20 项回归全部通过**。最终生产代码与最新 origin/main 完全相同；与 origin 的差异仅为两项更完整的测试、合并审查/既有执行报告补记和两侧 changelog 的完整保留。最终集成不回退远端已落地的业务能力。
