@@ -43,6 +43,9 @@ class InitializationRepository:
                 CREATE TABLE IF NOT EXISTS initialization_runs (
                     id TEXT PRIMARY KEY, ticker TEXT NOT NULL, payload TEXT NOT NULL
                 );
+                CREATE TABLE IF NOT EXISTS v2_consumer_control (
+                    ticker TEXT PRIMARY KEY, epoch INTEGER NOT NULL, payload TEXT NOT NULL
+                );
                 CREATE TABLE IF NOT EXISTS ticker_operations (
                     ticker TEXT PRIMARY KEY, run_id TEXT NOT NULL UNIQUE,
                     owner TEXT, token INTEGER NOT NULL DEFAULT 0,
@@ -463,9 +466,6 @@ class InitializationRepository:
         self, owner: str, *, lease_seconds: float = 60, permit: Callable[[str], bool] | None = None
     ) -> Lease | None:
         with self._write() as db:
-            from doxagent.v2_control.mirror import migrate
-
-            migrate(db)
             row = db.execute(
                 """SELECT o.* FROM ticker_operations o
                 JOIN initialization_runs r ON r.id=o.run_id

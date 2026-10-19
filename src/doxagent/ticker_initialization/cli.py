@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
+import logging
 import signal
 from datetime import datetime
 from pathlib import Path
@@ -69,6 +70,8 @@ def parser() -> argparse.ArgumentParser:
 
 
 async def _worker(repo: InitializationRepository, once: bool) -> int:
+    logging.basicConfig(level=logging.WARNING)
+    logging.getLogger(__name__).setLevel(logging.INFO)
     from doxagent.trade_execution.worker import WriterLock
 
     from .catalog import adapter_factory
@@ -137,17 +140,59 @@ async def _run_loop(worker: InitializationWorker, once: bool) -> int:
 
 
 async def _run_parallel_loop(workers: list[InitializationWorker]) -> int:
-    """Keep many ticker orchestrators live without reserving stage resources."""
-
-    async def drive(worker: InitializationWorker) -> None:
+    """One queue reader fills independent execution slots; idle slots do not poll."""
+    loop = asyncio.get_running_loop()
+    available = list(workers)
+    running: dict[asyncio.Task, InitializationWorker] = {}
+    next_claim = 0.0
+    report_at = loop.time() + 60
+    claims = claimed = 0
+    try:
         while True:
-            result = await worker.run_once()
-            if result is not None:
-                print(result.model_dump_json())
-            else:
-                await asyncio.sleep(0.25)
-
-    await asyncio.gather(*(drive(worker) for worker in workers))
+            while available and loop.time() >= next_claim:
+                worker = available[-1]
+                lease = worker.repository.claim(worker.owner, lease_seconds=worker.lease_seconds)
+                claims += 1
+                if lease is None:
+                    next_claim = loop.time() + 0.5
+                    break
+                available.pop()
+                claimed += 1
+                running[asyncio.create_task(worker.run_claimed(lease))] = worker
+            if loop.time() >= report_at:
+                logging.getLogger(__name__).info(
+                    "initialization_dispatch claims=%s claimed=%s running=%s slots=%s",
+                    claims,
+                    claimed,
+                    len(running),
+                    len(workers),
+                )
+                claims = claimed = 0
+                report_at = loop.time() + 60
+            if not running:
+                await asyncio.sleep(max(0, next_claim - loop.time()))
+                continue
+            done, _ = await asyncio.wait(
+                running,
+                timeout=max(0, next_claim - loop.time()) if available else None,
+                return_when=asyncio.FIRST_COMPLETED,
+            )
+            deferred = False
+            for task in done:
+                available.append(running.pop(task))
+                result = task.result()
+                if result is not None:
+                    print(result.model_dump_json())
+                # A deferred run releases its lease. Do not hot-loop by immediately
+                # assigning the same run to another free slot.
+                if result is not None and result.status == RunStatus.RUNNING:
+                    deferred = True
+            if done:
+                next_claim = loop.time() + 0.5 if deferred else 0.0
+    finally:
+        for task in running:
+            task.cancel()
+        await asyncio.gather(*running, return_exceptions=True)
     return 0
 
 
