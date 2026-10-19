@@ -1,0 +1,17 @@
+{
+  "observed_at": "2026-10-19T11:30:42Z",
+  "product_commits": {"bus_and_enrichment": "c35032895316f02763cb5c5a873ad1979fe58736", "site_access": "76c581cda6b8e9307bef526265a3eb12ec23a8e8"},
+  "images": {"bus_and_enrichment": "sha256:aa21a1ecd637915d6c41ad409d537466826251cd6ecff197d21b696f1ab59a0a", "site_access": "sha256:9f4a946af75635a865e4d661b9cbca26a276c351bc83b06437aee81571e461bb"},
+  "supervisor_unchanged": "617b4e1d59f97cd199491ce6f81af5ffa8664927600d2d7af2716fd82cec571c",
+  "unique_passing_tests": 233,
+  "main_thread_sampling": {"before_total": 299, "before_sqlite": 291, "after_active": 76, "after_sqlite": 0},
+  "active_binding_counts": {"succeeded": 95, "failed": 29},
+  "remaining_failed_bindings": {"reuters_site_search": 9, "barrons_ticker_news": 9, "investing_ticker_news": 9, "BE:newswire_rss": 1, "MU:tikhub_x_user_posts": 1},
+  "investorshub_natural_poll_success": "9/9",
+  "ceg_rss": {"direct": "ConnectTimeout", "approved_de_probe": "200_XML_56275_bytes", "binding_version": 3, "poll_interval_seconds": 60, "natural_poll": "succeeded"},
+  "body_success_examples_chars": {"google_rss_INTC": 6152, "official_rss_SNOW": 7040, "yahoo_MU": 7082, "tomshardware_MU_and_INTC": 9673},
+  "manual_status_reset": false,
+  "historical_canary_messages_published": false,
+  "automatic_challenge_solving": false,
+  "source_maintenance_worker_enabled": false
+}

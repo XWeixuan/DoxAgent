@@ -1,4 +1,4 @@
-# 消息源共性失效：事件循环饥饿根因与修复
+# 消息源共性失效：事件循环饥饿、身份路由与修复验收
 
 日期：2026-10-19。范围：Message Bus 新消息抓取、共享分发与正文补全执行边界；不重新创建 Chrome、Profile 或 Site Registry。
 
@@ -55,7 +55,7 @@ Reuters、Barron's、Investing.com 的既有身份目前另有持久化人工维
 
 4. **启动 DDL 与运行期共用 50 ms 锁预算**：追加发布曾遇到 RuntimeJournal 构造函数 `BEGIN IMMEDIATE → database is locked`，容器自动重启后恢复。50 ms 原用于避免网络线程等待，却同时使正常 Runtime 写入足以打断 Bus 启动。存储调用已经移出网络循环后，将 Bus Journal 的有界忙等待改为 5 秒；保留事务 fencing、有限重试，不增加无限重启或全局 DB 串行锁。
 
-离线共 171 个不同测试已通过。生产自然新消息记录也出现实际 FULL 正文：Google RSS/INTC 6,152 字符，官方 RSS/SNOW 7,040 字符，Yahoo/MU 7,082 字符，Tom's Hardware/MU 与 INTC 各 9,673 字符，GlobeNewswire 多条 1,436–15,856 字符。另两条 Google 召回消息的最终发布站点仍返回 `risk_combinations_exhausted`，应归属发布站点风控，而不是 RSS 没有工作；保留其失败证据，不宣传正文 100% 恢复。
+生产自然新消息记录也出现实际 FULL 正文：Google RSS/INTC 6,152 字符，官方 RSS/SNOW 7,040 字符，Yahoo/MU 7,082 字符，Tom's Hardware/MU 与 INTC 各 9,673 字符，GlobeNewswire 多条 1,436–15,856 字符。另两条 Google 召回消息的最终发布站点仍返回 `risk_combinations_exhausted`，应归属发布站点风控，而不是 RSS 没有工作；保留其失败证据，不宣传正文 100% 恢复。
 
 5. **CEG 官方 RSS 的实际网络路径失效**：从已修复的同一 Bus 容器探测，直连仍 ConnectTimeout；既有 `de-standard-1` 出口返回 200、56,275 字节有效 XML。这不是数据库饥饿的残留。为通用 Newswire RSS 增加显式 binding 级 approved HTTP route（最多主备两项），默认保持直连；只对 CEG 设置已验证 DE 路由。传输失败最多换一次已批准备用，403/429 不换出口，整体 25 秒预算，保留 60 秒轮询。不会让普通 RSS 继承浏览器登录身份或创建 Chrome。
 
@@ -65,4 +65,29 @@ Reuters、Barron's、Investing.com 的既有身份目前另有持久化人工维
 
    这一项需要对 Site Access 做一次仅含 `scope.py` 的不可变更新。发布前确认没有 OPEN 维护会话、排队/运行中的维护操作或活的待处理 Challenge 页面；保留 Supervisor 容器、External Chrome/Profile 和挂载，验证共享网络命名空间仍一致。Managed Chrome 由自身生命周期正常关闭并按需再启，不承诺它的进程跨 Site Access 容器替换保持不变。
 
-最终追加发布和持续自然轮询验收继续记录在本文件。真实 Challenge、登录失效、上游权限仍可能存在，不承诺绕过这些限制。
+## 最终上线验收（2026-10-19 19:30–19:31 CST）
+
+- **233 个不同测试通过**（合并本目录各次 JUnit testcase 去重；不是把重复重跑相加），涵盖 Bus/准入/跨线程去重、分发/正文队列、源解析、HTTP 路由、网站隔离/维护与最终发布者路由；Ruff 与 diff 检查通过。
+- Bus/Enrichment 当前产品提交 `c3503289`，精确镜像 `aa21a1ecd637`；Site Access 当前产品提交 `76c581cd`，精确镜像 `9f4a946af756`。全部代码修复已进入 main、推送 origin 并同步生产 checkout；不是未归并的远端热补丁。发布 manifest 校验对应源文件 SHA-256 与持久挂载，更新 canonical Compose 与组件 current/previous 记录。
+- Supervisor 保持原容器 `617b4e1d59f9`，未重启。Site Access 与它的网络命名空间仍一致，`/readyz` 健康；替换前没有 OPEN 维护会话/执行中的维护操作/存活 Challenge 页，本轮没有人为清除待办或重建 Profile。Site 只更换 `scope.py`，没有把整个 Bus 修复镜像覆盖到浏览器服务。
+- 只读生产路由复测：Google → Barron's 是 `source:barrons_ticker_news`/`dowjones-main` 主备；Google → Yahoo 是 `source:yahoo_finance_news` 主备；Yahoo → Reuters 是 `source:reuters_site_search` 主备；TrendForce Press 仍是 `source:trendforce_press_releases`，保留独立身份。没有创建新的 publisher Profile。
+- Site Access 替换期间确实出现过短暂 ConnectError，未把启动健康当作最终验收。随后保持服务运行并观察自然轮询，**124 个生产启用订阅中 95 个 succeeded、29 个 failed**。此前有共性连接错误的 TrendForce 两入口、DIGITIMES 英/台、行业 RSS、Google RSS、GlobeNewswire 两入口、Yahoo、官方 RSS、API 均恢复采集；InvestorsHub 全部 **9/9 ticker 自然轮询成功**；CEG 官方 RSS 改用已核验出口后自然成功。未手工改 poll status、清 failure_since 或发布过期 canary 消息。
+
+### 剩余事项，不能称为全部业务恢复
+
+| 来源 | 当前结果 | 后续所需 |
+| --- | --- | --- |
+| Reuters | 9 个 ticker 待人工，主备旧 Challenge 均 TARGET_LOST | 在维护工具重新打开丢失任务页面，完成必要 Challenge 并 Verify；不是继续换 RSS 或加 timeout |
+| Barron's | 9 个 ticker `challenge_target_lost` | 对 `dowjones-main` 的 Challenge 待办重新开页并验证 |
+| Investing.com | 9 个 ticker `manual_attention_required` | 主备 Challenge 验证；五个新 ticker 缺 locator 的复合问题已修复 |
+| BE 官方 IR RSS | 403 | 按既有要求排除本轮修复，不绕过显式封禁 |
+| TikHub X User Posts / MU | 上游 400 | 独立真实请求重现，供应方 JSON 也返回 400/重试或联系支持提示；不是本地 ConnectTimeout，需另外进行供应方/参数专项处理 |
+
+Reuters 与 Barron's 的主身份认证事实仍记录为 VALID，故不能直接把上述状态解释成“密码失效、必须先退出重新登录”。阻塞点是遗留 Challenge 待办未完成验证；本轮没有为了变绿擅自清掉它们。DIGITIMES 英文主身份认证仍 VALID，列表已恢复；它的每篇付费正文、所有备用身份仍需逐项真实业务验收，不能从列表成功推定全部订阅权限有效。
+
+### 保留边界
+
+- 本轮解决了执行边界、跨来源身份路由和实测复合故障；没有宣称能够消除网站风控，也没有自动处理 CAPTCHA、MFA 或账号密码。
+- 历史过期消息不补发。已有失败正文不会通过改元数据冒充 FULL；发布站点拒绝、订阅权限与人工待办继续保留。
+- 存储慢操作仍可能达到 1–3 秒，现已有独立日志且不占网络循环；本轮不扩张为更换数据库、全局串行浏览器或新的自动维护 Agent。新增 ticker 仍须提供可信 Investing locator，不能把补齐当前九个 ticker 误认为任意 ticker 自动识别已实现。
+- 维护 Codex Worker 仍默认禁用、没有部署。本轮没有清理业务数据、Cookie、Profile 或代码；宿主机既有发布资源定时器按原生命周期运行。
