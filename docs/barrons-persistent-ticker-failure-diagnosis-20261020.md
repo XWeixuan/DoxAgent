@@ -39,6 +39,16 @@
 
 02:50:56 的实际 crawler 验证已通过正常健康提交解除了旧任务并关闭维护会话；02:52 九个 ticker 都有自然轮询成功、连续失败归零。它仍只是开始恢复，后面继续检验正文和持续性。
 
+### 2.5 普通登录会复活历史 LOGIN，会再次制造业务停顿
+
+02:57:54 主动做普通 Open Login 收尾验收，意外复用了 **10/18 创建的 RELEASED LOGIN**，目标属于早已结束的 native instance，而不是创建新登录页。约 11 秒后 configure 超时；Profile 已被重新改成 MAINTENANCE，九个 ticker 随后都报 `identity_in_maintenance`。这是本轮维护动作触发并可重现的内因，不是新的 Barron's 风控。
+
+代码发现：`OPEN_LOGIN` 自动重连只按 kind/identity/scope 选会话，**没有排除 CLOSED，更没排除目标已丢失的 RELEASED**。所以即便人工曾完成维护，下一次 Open Login 仍可重启旧锁。02:59:31 已通过正常 CLOSE_LOGIN 关闭这个确定过期的旧会话，未触及当前 Chrome/Cookie。
+
+修复：自动恢复只挑 OPEN/RELEASED；已关闭会话不再复活。已知 LOST/CLOSED 或经 Supervisor + loopback CDP 元数据证明原页已不存在的 LOGIN，只结束旧会话占用并新建正常登录页。连接超时、浏览器存在性不明不当成“页丢失”，不关闭或复制真实人工页；Challenge 路径继续独立。另将 configure 冷启动预算从 10 秒调整为 20 秒，整体命令/维护 deadline 仍保持原上限，不做无限重试。
+
+正文业务对照实际读取两篇不同订阅文章，均 SUCCESS/FULL，3,212 / 4,701 字符，native instance 仍为 `011bcc052e3a47b395204e6e7b6b5f35`。旧整页加载/多次分类使每篇网络阶段约 23–26 秒，会挤压维护验证预算；因此 Barron's 正文也改为 commit 后等待实际文章候选达到原质量标准（或明确登录/订阅/Challenge 页面），不再等待广告相关的全页事件。正文门槛没有降低。
+
 ## 3. 窄修复
 
 1. 保留 External Chrome、CDP、Profile、出口、单身份并发和持久化；不加入 stealth、不随机化指纹、不重建登录身份。

@@ -11,3 +11,6 @@ COPY src/doxagent/site_strategy/external_runtime.py /app/src/doxagent/site_strat
 COPY src/doxagent/site_strategy/service.py /app/src/doxagent/site_strategy/service.py
 COPY src/doxagent/site_strategy/verification.py /app/src/doxagent/site_strategy/verification.py
 COPY src/doxagent/site_strategy/failover.py /app/src/doxagent/site_strategy/failover.py
+COPY src/doxagent/site_strategy/maintenance.py /app/src/doxagent/site_strategy/maintenance.py
+COPY src/doxagent/site_strategy/maintenance_document.py /app/src/doxagent/site_strategy/maintenance_document.py
+COPY src/doxagent/site_strategy/worker_manager.py /app/src/doxagent/site_strategy/worker_manager.py

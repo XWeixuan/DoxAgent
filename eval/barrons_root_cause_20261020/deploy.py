@@ -4,7 +4,7 @@ from pathlib import Path
 repo=Path('/home/ubuntu/doxagent');root=Path('/var/lib/doxagent/releases')
 commit,site_base,bus_base=sys.argv[1:4]
 os.environ.update(GIT_CONFIG_COUNT='1',GIT_CONFIG_KEY_0='safe.directory',GIT_CONFIG_VALUE_0=str(repo))
-files=['message_bus_v2/barrons_sources.py','message_bus_v2/industry_sources.py','site_strategy/runtime.py','site_strategy/external_runtime.py','site_strategy/service.py','site_strategy/verification.py','site_strategy/failover.py']
+files=['message_bus_v2/barrons_sources.py','message_bus_v2/industry_sources.py','site_strategy/runtime.py','site_strategy/external_runtime.py','site_strategy/service.py','site_strategy/verification.py','site_strategy/failover.py','site_strategy/maintenance.py','site_strategy/maintenance_document.py','site_strategy/worker_manager.py']
 def run(args,timeout=180):
  p=subprocess.run(args,cwd=repo,text=True,capture_output=True,timeout=timeout)
  if p.returncode:raise RuntimeError(str(args[:3])+': '+p.stderr[-1200:])

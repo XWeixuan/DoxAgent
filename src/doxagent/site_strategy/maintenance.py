@@ -311,23 +311,66 @@ class MaintenanceController:
                 ),
             )
 
+    async def _login_session_reusable(self, session):
+        if session.state not in {"OPEN", "RELEASED"}:
+            return False
+        target = self.store.get_target(session.allocation_id) if session.allocation_id else None
+        if target and target.state in {"LOST", "CLOSED"}:
+            return False
+        socket = getattr(self.service.runtime, "supervisor_socket", None)
+        identity = self.service.repository.get_identity(session.identity_id)
+        if socket and identity.runtime_kind.value == "external_chrome" and target:
+            from .maintenance_document import original_target_exists
+            from .supervisor_client import ChromeSupervisorClient
+
+            return await original_target_exists(
+                ChromeSupervisorClient(socket, owner_id="maintenance-presence"),
+                identity,
+                session,
+                target,
+            )
+        # An incomplete create reply is not proof that its page is gone. Leave
+        # its existing ownership/recovery path in charge rather than duplicate it.
+        return True
+
+    async def _finish_lost_login(self, session):
+        identity = self.service.repository.get_identity(session.identity_id)
+        profile = self.service.repository.get_profile(identity.profile_id)
+        if profile.maintenance_session_id == session.control_token:
+            await self.service.profile_use.end_maintenance(
+                profile.profile_id, session.control_token
+            )
+        current = self.store.get_session(session.session_id)
+        self.store.save_session(current.model_copy(update={"state": "CLOSED"}))
+
     async def _dispatch(self, operation):
         scope = self.store.maintenance_scope(operation.scope_id) if operation.scope_id else None
         identity_id = operation.identity_id or (scope.primary_identity_id if scope else None)
         session = self.store.get_session(operation.session_id) if operation.session_id else None
         if operation.action == "OPEN_LOGIN":
+            if (
+                session
+                and session.kind == "LOGIN"
+                and not await self._login_session_reusable(session)
+            ):
+                scope = scope or self.store.maintenance_scope(session.scope_id)
+                identity_id = session.identity_id
+                await self._finish_lost_login(session)
+                session = None
             if not session and identity_id:
                 # Repeated Open Login is a reconnect, not a second Viewer seat.
-                session = next(
-                    (
-                        s
-                        for s in self.store.list_sessions()
-                        if s.kind == "LOGIN"
-                        and s.identity_id == identity_id
-                        and s.scope_id == operation.scope_id
-                    ),
-                    None,
-                )
+                for candidate in self.store.list_sessions():
+                    if (
+                        candidate.kind != "LOGIN"
+                        or candidate.state not in {"OPEN", "RELEASED"}
+                        or candidate.identity_id != identity_id
+                        or candidate.scope_id != operation.scope_id
+                    ):
+                        continue
+                    if await self._login_session_reusable(candidate):
+                        session = candidate
+                        break
+                    await self._finish_lost_login(candidate)
             if session:
                 if session.kind != "LOGIN":
                     raise ValueError("Use Open Challenge for a Challenge session")

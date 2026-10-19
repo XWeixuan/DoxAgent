@@ -132,6 +132,72 @@ async def test_repeated_open_login_reuses_exact_session(setup, monkeypatch):
     )
 
 
+@pytest.mark.parametrize("state", ["CLOSED", "RELEASED"])
+async def test_normal_login_never_resurrects_finished_or_lost_login(setup, monkeypatch, state):
+    repo, service, store, scope, _, _ = setup
+    target = store.save_target(
+        OwnedBrowserTarget(
+            identity_id=scope.primary_identity_id,
+            browser_instance_id="obsolete-chrome",
+            target_id="obsolete-tab",
+            worker_epoch=1,
+            state="LOST",
+            owner_kind="LOGIN",
+        )
+    )
+    old = store.save_session(
+        MaintenanceSession(
+            kind="LOGIN",
+            scope_id=scope.scope_id,
+            site_id=scope.owner_site_id,
+            identity_id=scope.primary_identity_id,
+            target_id=target.target_id,
+            allocation_id=target.allocation_id,
+            browser_instance_id=target.browser_instance_id,
+            control_token="obsolete-login",
+            state=state,
+        )
+    )
+    recover = AsyncMock()
+    opened = AsyncMock(return_value={"login_token": "new-login", "target_id": "new-tab"})
+    monkeypatch.setattr(service, "recover_identity_login", recover)
+    monkeypatch.setattr(service, "open_identity_login", opened)
+    result = await MaintenanceController(service)._dispatch(
+        operation("OPEN_LOGIN", scope_id=scope.scope_id)
+    )
+    assert result["session_id"] != old.session_id
+    assert store.get_session(old.session_id).state == "CLOSED"
+    recover.assert_not_awaited()
+    opened.assert_awaited_once()
+
+
+async def test_unknown_native_presence_preserves_session_and_does_not_create_duplicate(
+    setup, monkeypatch
+):
+    _, service, store, scope, _, _ = setup
+    session = store.save_session(
+        MaintenanceSession(
+            kind="LOGIN",
+            scope_id=scope.scope_id,
+            identity_id=scope.primary_identity_id,
+            site_id=scope.owner_site_id,
+            control_token="in-progress",
+            target_id="original",
+            state="RELEASED",
+        )
+    )
+    controller = MaintenanceController(service)
+    monkeypatch.setattr(
+        controller, "_login_session_reusable", AsyncMock(side_effect=TimeoutError())
+    )
+    opened = AsyncMock()
+    monkeypatch.setattr(service, "open_identity_login", opened)
+    with pytest.raises(TimeoutError):
+        await controller._dispatch(operation("OPEN_LOGIN", scope_id=scope.scope_id))
+    assert store.get_session(session.session_id).state == "RELEASED"
+    opened.assert_not_awaited()
+
+
 def test_reuters_rendered_listing_is_normal_but_shell_and_challenge_are_not():
     from doxagent.content_enrichment.quality import inspect_html
 

@@ -161,7 +161,10 @@ async def test_feed_paths_cannot_be_supplied_by_callers(url):
 
 
 @pytest.mark.asyncio
-async def test_runtime_recipe_checks_document_denial_before_native_feed(tmp_path, monkeypatch):
+@pytest.mark.parametrize("purpose", ["CRAWLER", "BODY"])
+async def test_runtime_recipe_checks_document_denial_before_native_feed(
+    tmp_path, monkeypatch, purpose
+):
     from doxagent.site_strategy.repository import SiteStrategyRepository
     from doxagent.site_strategy.schema import AccessRequest, BrowserRuntimeKind
     from doxagent.site_strategy.seeds import bootstrap_seed
@@ -170,13 +173,33 @@ async def test_runtime_recipe_checks_document_denial_before_native_feed(tmp_path
     repository = SiteStrategyRepository(tmp_path / "site.db")
     service = SiteStrategyService(repository, profile_root=tmp_path / "profiles")
     bootstrap_seed(repository, service)
-    url = "https://www.barrons.com/market-data/stocks/mu"
+    url = (
+        "https://www.barrons.com/market-data/stocks/mu"
+        if purpose == "CRAWLER"
+        else "https://www.barrons.com/articles/micron-chip-report-123"
+    )
+    article = (
+        "<article><h1>Micron memory production results</h1>"
+        + "".join(
+            "<p>"
+            + ("Micron reported memory demand and semiconductor capacity growth. " * 12)
+            + "</p>"
+            for _ in range(5)
+        )
+        + "</article>"
+    )
     page = SimpleNamespace(
         url=url,
         goto=AsyncMock(),
         all_headers=AsyncMock(return_value={}),
         status=200,
-        content=AsyncMock(return_value="<html><title>Micron Stock Overview</title></html>"),
+        content=AsyncMock(
+            return_value=(
+                "<html><title>Micron Stock Overview</title></html>"
+                if purpose == "CRAWLER"
+                else article
+            )
+        ),
         evaluate=AsyncMock(return_value=feeds()),
     )
     page.goto.return_value = page
@@ -207,17 +230,23 @@ async def test_runtime_recipe_checks_document_denial_before_native_feed(tmp_path
     request = AccessRequest(
         operation_id="test",
         url=url,
-        purpose="CRAWLER",
+        purpose=purpose,
         mode="BROWSER",
-        recipe_ref="builtin:barrons_ticker@1",
+        recipe_ref="builtin:barrons_ticker@1" if purpose == "CRAWLER" else None,
     )
     try:
         result = await service.runtime._browser(
             request, service.resolve(url), identity, repository.get_egress(identity.egress_id)
         )
-        assert len(parse(result.body)) == 1
+        if purpose == "CRAWLER":
+            assert len(parse(result.body)) == 1
+            page.evaluate.assert_awaited_once()
+        else:
+            from doxagent.site_strategy.verification import validate_capture
+
+            assert validate_capture(result, service.resolve(url)).body in {"FULL", "SHORT_FULL"}
+            page.evaluate.assert_not_awaited()
         assert page.goto.call_args.kwargs["wait_until"] == "commit"
-        page.evaluate.assert_awaited_once()
         retained.assert_not_awaited()
         page.evaluate.reset_mock()
         page.content.return_value = "<title>Access is temporarily restricted</title>"
@@ -296,3 +325,34 @@ async def test_recovery_never_attaches_to_closed_native_orphan_cached_by_playwri
     assert lease.page is human
     entry.context.new_cdp_session.assert_awaited_once_with(human)
     await lease.abandon()
+
+
+@pytest.mark.asyncio
+async def test_native_login_presence_does_not_start_or_replace_chrome():
+    from doxagent.site_strategy.maintenance_document import original_target_exists
+
+    identity = SimpleNamespace(identity_id="dowjones-main")
+    session = SimpleNamespace(target_id="original", browser_instance_id="old")
+    target = SimpleNamespace(
+        identity_id="dowjones-main",
+        target_id="original",
+        browser_instance_id="old",
+        owner_kind="LOGIN",
+        state="LIVE",
+    )
+    client = SimpleNamespace(
+        status=AsyncMock(
+            return_value={
+                "running": True,
+                "instance_id": "new",
+            }
+        ),
+        ensure=AsyncMock(),
+        stop=AsyncMock(),
+    )
+    assert await original_target_exists(client, identity, session, target) is False
+    client.ensure.assert_not_awaited()
+    client.stop.assert_not_awaited()
+    client.status.return_value = {"running": False, "known_missing": False}
+    with pytest.raises(RuntimeError, match="unverified"):
+        await original_target_exists(client, identity, session, target)

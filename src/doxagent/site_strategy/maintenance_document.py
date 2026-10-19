@@ -10,6 +10,36 @@ from .browser_runtime import RuntimeProvenance
 from .runtime import RuntimeResponse
 
 
+async def original_target_exists(client, identity, session, target):
+    """Cheap authoritative presence check; uncertainty must not discard a live page."""
+    if not target or target.state in {"LOST", "CLOSED"}:
+        return False
+    if (target.identity_id, target.target_id, target.browser_instance_id) != (
+        identity.identity_id,
+        session.target_id,
+        session.browser_instance_id,
+    ) or target.owner_kind != "LOGIN":
+        raise RuntimeError("exact_maintenance_target_ownership_required")
+    async with asyncio.timeout(5):
+        status = await client.status(identity.identity_id)
+        if not status.get("running") and status.get("known_missing") is False:
+            raise RuntimeError("original_browser_state_unverified")
+        if not status.get("running") or status.get("instance_id") != session.browser_instance_id:
+            return False
+        base = str(status["cdp_http_url"]).rstrip("/")
+        parsed = urlsplit(base)
+        if parsed.scheme != "http" or parsed.hostname != "127.0.0.1":
+            raise RuntimeError("untrusted_original_document_endpoint")
+        async with httpx.AsyncClient(trust_env=False, timeout=2) as http:
+            response = await http.get(base + "/json/list")
+            response.raise_for_status()
+            if len(response.content) > 512 * 1024:
+                raise RuntimeError("original_document_metadata_too_large")
+        return any(
+            t.get("id") == session.target_id and t.get("type") == "page" for t in response.json()
+        )
+
+
 async def close_original_document(client, identity, session, target):
     """Close only the recorded human target; never start/reclaim a cold worker."""
     if (

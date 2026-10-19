@@ -1307,7 +1307,7 @@ class SiteAccessRuntime:
                     # content we consume instead, without aborting any resources.
                     wait_until=(
                         "commit"
-                        if resolved.site_id in {"investorshub", "investing", "reuters"}
+                        if resolved.site_id in {"investorshub", "investing", "reuters", "barrons"}
                         or request.recipe_ref == "builtin:barrons_ticker@1"
                         else "domcontentloaded"
                     ),
@@ -1323,7 +1323,7 @@ class SiteAccessRuntime:
                         provenance=lease.provenance,
                     )
                 if (
-                    resolved.site_id in {"reuters", "investing"}
+                    resolved.site_id in {"reuters", "investing", "barrons"}
                     or request.recipe_ref == "builtin:barrons_ticker@1"
                 ):
                     # commit may precede the challenge document's DOM. Capture
@@ -1352,7 +1352,7 @@ class SiteAccessRuntime:
                         initial_html,
                         page.url,
                         "",
-                        generic_extraction=request.recipe_ref != "builtin:barrons_ticker@1",
+                        generic_extraction=resolved.site_id != "barrons",
                     ).access_reason
                     == "challenge_required"
                 )
@@ -1446,6 +1446,27 @@ class SiteAccessRuntime:
                         state="visible", timeout=min(request.remaining_budget_ms, 10_000)
                     )
                 html = await page.content()
+                if (
+                    resolved.site_id == "barrons"
+                    and request.purpose.value == "BODY"
+                    and status == 200
+                    and not initial_challenge
+                ):
+                    from doxagent.content_enrichment.quality import choose_candidate
+
+                    content_deadline = min(deadline, time.monotonic() + 12)
+                    while True:
+                        info = inspect_html(
+                            html, page.url, "", strategy_ref=resolved.body.ref,
+                            strategy_parameters=resolved.body.parameters, generic_extraction=False,
+                        )
+                        candidate, quality, _ = choose_candidate(info, "")
+                        if info.access_reason or (candidate and quality in {"FULL", "SHORT_FULL"}):
+                            break
+                        if time.monotonic() >= content_deadline:
+                            break
+                        await asyncio.sleep(.5)
+                        html = await page.content()
                 if len(html.encode("utf-8")) > request.max_response_bytes:
                     return RuntimeResponse(
                         0,
@@ -1454,7 +1475,9 @@ class SiteAccessRuntime:
                         reason="response_too_large",
                         provenance=lease.provenance,
                     )
-                challenge = inspect_html(html, page.url, "").access_reason == "challenge_required"
+                challenge = inspect_html(
+                    html, page.url, "", generic_extraction=resolved.site_id != "barrons"
+                ).access_reason == "challenge_required"
                 token = (
                     uuid4().hex
                     if (challenge and not request.recipe_parameters.get("_maintenance_canary"))
@@ -1965,7 +1988,9 @@ class SiteAccessRuntime:
         if resolved.site_id != maintained.site_id:
             raise ValueError("verification URL belongs to another publisher")
         original_html = await self._maintenance_document(maintained)
-        original = inspect_html(original_html, maintained.page.url, "")
+        original = inspect_html(
+            original_html, maintained.page.url, "", generic_extraction=resolved.site_id != "barrons"
+        )
         if original.access_reason == "challenge_required":
             return RuntimeResponse(
                 0,
@@ -1994,7 +2019,9 @@ class SiteAccessRuntime:
         recognized = original.page_kind in {"article", "listing", "quote"} or (
             original.access_reason in {"subscription_required", "login_required"}
         )
-        inspection = inspect_html(response.body, response.final_url, "")
+        inspection = inspect_html(
+            response.body, response.final_url, "", generic_extraction=resolved.site_id != "barrons"
+        )
         response.challenge_cleared = recognized or (
             response.status_code in range(200, 300)
             and inspection.page_kind == "article"

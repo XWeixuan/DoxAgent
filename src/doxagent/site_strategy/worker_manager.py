@@ -212,7 +212,11 @@ class IdentityWorkerManager:
                         "snapshot": self.snapshot(identity, egress),
                         "runtime_options": self.runtime_options,
                     },
-                    timeout=10,
+                    # Cold configure includes Python/import startup, not only
+                    # IPC. Under concurrent post-release starts 10s repeatedly
+                    # killed healthy controllers. command's overall deadline
+                    # still bounds startup + the actual operation together.
+                    timeout=20,
                 )
             except BaseException:
                 await self.retire(identity.identity_id, graceful=False)
