@@ -9,8 +9,9 @@ action = sys.argv[1]
 if action == 'open':
     payload = {'action': 'OPEN_LOGIN', 'scope_id': 'source:investing_ticker_news',
                'identity_id': sys.argv[2] if len(sys.argv) > 2 else 'public-markets-nl'}
-elif action in ('verify', 'close'):
-    payload = {'action': 'VERIFY_LOGIN' if action == 'verify' else 'CLOSE_LOGIN', 'session_id': sys.argv[2]}
+elif action in ('verify', 'close', 'release'):
+    payload = {'action': {'verify': 'VERIFY_LOGIN', 'close': 'CLOSE_LOGIN',
+                          'release': 'RELEASE_VIEWER'}[action], 'session_id': sys.argv[2]}
 elif action == 'activate':
     payload = {'action': 'ACTIVATE_PRIMARY', 'scope_id': 'source:investing_ticker_news'}
 else:

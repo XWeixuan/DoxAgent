@@ -16,7 +16,7 @@ files = ['content_enrichment/quality.py', 'site_strategy/governance_repository.p
          'site_strategy/service.py', 'site_strategy/verification.py',
          'site_strategy/isolation_migration.py', 'site_strategy/runtime.py',
          'site_strategy/investing_document.py', 'site_strategy/worker_runtime.py',
-         'site_strategy/maintenance.py']
+         'site_strategy/maintenance.py', 'site_strategy/worker_manager.py']
 
 
 def run(args, timeout=180):

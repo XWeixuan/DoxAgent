@@ -1,6 +1,8 @@
 """Real subprocess boundaries without contacting publishers or launching Chrome."""
 
 import asyncio
+from types import SimpleNamespace
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 
@@ -8,7 +10,54 @@ from doxagent.site_strategy.repository import SiteStrategyRepository
 from doxagent.site_strategy.schema import BrowserIdentitySpec
 from doxagent.site_strategy.seeds import bootstrap_seed
 from doxagent.site_strategy.service import SiteStrategyService
-from doxagent.site_strategy.worker_manager import IdentityWorkerManager
+from doxagent.site_strategy.worker_manager import (
+    IdentityOperationError,
+    IdentityWorkerManager,
+    WorkerHandle,
+)
+
+
+@pytest.mark.asyncio
+async def test_queued_command_re_resolves_retired_worker_without_replaying_request():
+    def handle(epoch):
+        process = SimpleNamespace(returncode=None, stdin=Mock())
+        process.stdin.is_closing.return_value = False
+        return WorkerHandle("investing", epoch, process, "same-config")
+
+    old, current = handle(1), handle(2)
+    manager = IdentityWorkerManager.__new__(IdentityWorkerManager)
+    manager.workers = {"investing": old}
+    manager.ensure = AsyncMock(side_effect=[old, current])
+    manager.snapshot = Mock(return_value={})
+    manager._roundtrip = AsyncMock(return_value={"ready": True})
+    await old.operation_lock.acquire()
+    pending = asyncio.create_task(manager.command(
+        SimpleNamespace(identity_id="investing"), None, "execute", {}, timeout=1
+    ))
+    await asyncio.sleep(0)
+    manager.workers["investing"] = current
+    old.process.stdin.is_closing.return_value = True
+    old.operation_lock.release()
+    assert await pending == {"ready": True}
+    assert manager.ensure.await_count == 2
+    assert manager._roundtrip.await_args.args[0] is current
+    manager._roundtrip.assert_awaited_once()
+    assert not old.operation_lock.locked() and not current.operation_lock.locked()
+
+
+@pytest.mark.asyncio
+async def test_closed_worker_pipe_is_typed_but_unrelated_runtime_error_is_not_hidden():
+    process = SimpleNamespace(stdin=Mock())
+    handle = WorkerHandle("investing", 1, process, "config")
+    manager = IdentityWorkerManager.__new__(IdentityWorkerManager)
+    process.stdin.is_closing.return_value = True
+    with pytest.raises(IdentityOperationError, match="identity_worker_disconnected"):
+        await manager._write(handle, {"action": "execute"})
+    process.stdin.write.assert_not_called()
+    process.stdin.is_closing.return_value = False
+    process.stdin.write.side_effect = RuntimeError("unrelated bug")
+    with pytest.raises(RuntimeError, match="unrelated bug"):
+        await manager._write(handle, {"action": "execute"})
 
 
 @pytest.mark.asyncio

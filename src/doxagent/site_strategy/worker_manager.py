@@ -110,7 +110,12 @@ class IdentityWorkerManager:
         async with lock:
             fingerprint = digest_json([identity.model_dump(mode="json"), egress.generation])
             handle = self.workers.get(identity.identity_id)
-            if handle and handle.process.returncode is None:
+            if (
+                handle and handle.process.returncode is None
+                and handle.process.stdin is not None
+                and not handle.process.stdin.is_closing()
+                and (handle.reader_task is None or not handle.reader_task.done())
+            ):
                 if handle.quarantined:
                     raise RuntimeError("identity_controller_still_exiting")
                 if handle.fingerprint != fingerprint:
@@ -229,8 +234,22 @@ class IdentityWorkerManager:
         if len(raw) > MAX_FRAME_BYTES:
             raise ValueError("identity command exceeds frame limit")
         async with handle.write_lock:
-            handle.process.stdin.write(struct.pack("!I", len(raw)) + raw)
-            await handle.process.stdin.drain()
+            writer = handle.process.stdin
+            if writer is None or writer.is_closing():
+                raise IdentityOperationError("RUNTIME_UNAVAILABLE", "identity_worker_disconnected")
+            try:
+                writer.write(struct.pack("!I", len(raw)) + raw)
+                await writer.drain()
+            except (BrokenPipeError, ConnectionResetError):
+                raise IdentityOperationError(
+                    "RUNTIME_UNAVAILABLE", "identity_worker_disconnected"
+                ) from None
+            except RuntimeError:
+                if writer.is_closing():
+                    raise IdentityOperationError(
+                        "RUNTIME_UNAVAILABLE", "identity_worker_disconnected"
+                    ) from None
+                raise
 
     async def _read(self, handle):
         try:
@@ -333,8 +352,22 @@ class IdentityWorkerManager:
     async def command(self, identity, egress, action, payload, *, timeout):
         deadline = time.monotonic() + timeout
         async with asyncio.timeout_at(deadline):
-            handle = await self.ensure(identity, egress)
-            await handle.operation_lock.acquire()
+            while True:
+                handle = await self.ensure(identity, egress)
+                await handle.operation_lock.acquire()
+                if (
+                    self.workers.get(identity.identity_id) is handle
+                    and handle.process.returncode is None
+                    and handle.process.stdin is not None
+                    and not handle.process.stdin.is_closing()
+                    and (handle.reader_task is None or not handle.reader_task.done())
+                ):
+                    break
+                # A prewarm/previous command can retire this handle while we
+                # wait on its lock. Re-resolve control ownership, not the site
+                # request, within the original command deadline.
+                handle.operation_lock.release()
+                await asyncio.sleep(0)
         try:
             handle.stage = action.upper()
             remaining = deadline - time.monotonic()
