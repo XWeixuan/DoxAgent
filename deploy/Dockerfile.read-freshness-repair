@@ -8,4 +8,4 @@ ENV DOXAGENT_BUILD_COMMIT=${REPAIR_COMMIT}
 COPY src/doxagent/v2_read/cli.py src/doxagent/v2_read/health.py \
      src/doxagent/v2_read/lifecycle.py src/doxagent/v2_read/outbox.py \
      src/doxagent/v2_read/projector.py src/doxagent/v2_read/projectors.py \
-     src/doxagent/v2_read/repository.py /app/src/doxagent/v2_read/
+     src/doxagent/v2_read/repository.py src/doxagent/v2_read/source_lifecycle.py /app/src/doxagent/v2_read/

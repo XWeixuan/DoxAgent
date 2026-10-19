@@ -113,11 +113,20 @@ def sync_business_facts(source, store):
             value=json.loads(payload)
             if 'activated_at' in value:
                 records.append(('field:'+kind,ticker,identity,encode({k:value[k] for k in ('activated_at','runtime_activation_id') if k in value})))
+    previous_hits = getattr(source, '_business_fact_hits', None)
+    hit_ids = frozenset(hits)
+    # Bus poll commits advance the global Read sequence too. They are not a
+    # reason to acquire Runtime's writer lock and repeat the same DELETE.
+    if not records and hit_ids == previous_hits:
+        source._business_fact_seq=seq
+        return
     with closing(source.connection(write=True)) as db, db:
         db.execute('BEGIN IMMEDIATE');migrate(db)
         db.executemany('INSERT INTO v2_serving_business_facts VALUES(?,?,?,?) ON CONFLICT(kind,ticker,id) DO UPDATE SET payload=excluded.payload WHERE payload<>excluded.payload',records)
-        db.execute("DELETE FROM v2_serving_business_facts WHERE kind='policy_hit_set' AND ticker||':'||id NOT IN (SELECT value FROM json_each(?))",(json.dumps(hits),))
+        if hit_ids != previous_hits:
+            db.execute("DELETE FROM v2_serving_business_facts WHERE kind='policy_hit_set' AND ticker||':'||id NOT IN (SELECT value FROM json_each(?))",(json.dumps(hits),))
     source._business_fact_seq=seq
+    source._business_fact_hits=hit_ids
 
 
 def expire(source, *, now=None, limit=500):

@@ -2,6 +2,7 @@
 import json
 import sqlite3
 import sys
+from types import SimpleNamespace
 from contextlib import contextmanager
 
 import pytest
@@ -9,6 +10,8 @@ import pytest
 from doxagent.v2_read import cli, health
 from doxagent.v2_read.lifecycle import direction_evidence, direction_summary
 from doxagent.v2_read.projectors import DomainProjectors
+from doxagent.v2_read.projector import ProjectionWorker
+from doxagent.v2_read.source_lifecycle import sync_business_facts
 from doxagent.v2_read.repository import ReadStore, encode
 from tests.v2_backend.test_source_lifecycle import fixture_source
 
@@ -144,3 +147,55 @@ def test_projection_indexes_are_explicit_idempotent_and_cover_hot_predicates(tmp
     with store.connect() as db:
         for index, query in queries:
             assert index in " ".join(str(tuple(r)) for r in db.execute("EXPLAIN QUERY PLAN " + query))
+
+
+def test_bus_only_progress_does_not_take_runtime_writer_for_business_sync(tmp_path, monkeypatch):
+    source = fixture_source(tmp_path)
+    source.source = "runtime"
+    store = ReadStore(tmp_path / "read.db")
+    store.migrate()
+    source.claim_serving_facts(store.path)
+    sync_business_facts(source, store)
+    original = source.connection
+    def connection(*, write=False):
+        assert not write, "unrelated Bus commit must not acquire Runtime writer"
+        return original()
+    monkeypatch.setattr(source, "connection", connection)
+    store.ingest("bus", "poll", [dict(kind="native:poll_states", ticker="MU", id="b", data=dict(status="succeeded"))])
+    sync_business_facts(source, store)
+
+
+def test_acknowledgement_noop_is_coalesced_but_progress_and_gaps_are_not(tmp_path, monkeypatch):
+    source = fixture_source(tmp_path)
+    store = ReadStore(tmp_path / "read.db")
+    store.migrate()
+    calls=[]
+    original=source.acknowledge_exceptions
+    def ack(*args):
+        calls.append(args);return original(*args)
+    monkeypatch.setattr(source, "acknowledge_exceptions", ack)
+    worker=ProjectionWorker(store,[source],lambda event:([],[]))
+    worker.tick(limit=500)
+    first=len(calls)
+    worker.tick(limit=500)
+    assert len(calls)==first
+    with source.connection(write=True) as db:
+        db.execute("INSERT INTO poll_states VALUES('fresh','s','MU','succeeded','1','{}')")
+    worker.tick(limit=500)
+    assert len(calls)==first+1
+    with store.connect(write=True) as db:
+        db.execute("INSERT INTO gaps(source,event,reason,next_attempt_at) VALUES('bus','1','TEST','9999')")
+    worker.tick(limit=500)
+    assert len(calls)==first+2
+
+
+@pytest.mark.parametrize("budget,expected", [(1,2),(5,9)])
+def test_event_work_budget_is_bounded_and_preserves_order(monkeypatch,budget,expected):
+    times=iter(i*0.6 for i in range(100))
+    monkeypatch.setattr("doxagent.v2_read.projector.time.monotonic",lambda:next(times))
+    committed=[]
+    store=SimpleNamespace(ingest=lambda source,event,*args,**kwargs:committed.append(int(event)))
+    worker=ProjectionWorker(store,[],lambda event:([],[]))
+    count=worker._events(SimpleNamespace(source="bus"),list(range(1,30)),
+        lambda n:dict(seq=n,recorded_at="2026-10-19T00:00:00Z"),budget=budget)
+    assert count==expected and committed==list(range(1,expected+1))

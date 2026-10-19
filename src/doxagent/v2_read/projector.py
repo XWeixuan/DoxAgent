@@ -23,13 +23,13 @@ class ProjectionWorker:
         self.store, self.sources, self.mapper = store, sources, mapper
         self.consumer_id=consumer_id
         self._coverage_keys = {}
+        self._acknowledgements = {}
 
     def tick(self, *, limit: int = 100) -> int:
         if not 1 <= limit <= 500:
             raise ValueError("invalid projection batch size")
         count = 0
         for source in self.sources:
-            started = time.monotonic()
             position = self.store.position(source.source)
             try:
                 if source.source == "initialization":
@@ -77,7 +77,11 @@ class ProjectionWorker:
                 )
             reader = source.event_reader() if hasattr(source, "event_reader") else nullcontext(getattr(source, "event", None))
             with reader as load_event:
-                count += self._events(source, events, load_event, started)
+                # Capture/health SQL can already consume the entire old one-
+                # second allowance. Budget actual event work, not setup time.
+                # A full batch gets a bounded catch-up burst; other sources
+                # still receive a turn and each event retains its own commit.
+                count += self._events(source, events, load_event, budget=5 if len(events) == limit else 1)
             checkpoint = self.store.position(source.source)
             with self.store.connect(write=True) as db:
                 db.execute(
@@ -97,9 +101,14 @@ class ProjectionWorker:
                     if hasattr(source,'acknowledge_exceptions'):
                         from .source_lifecycle import sync_business_facts
                         sync_business_facts(source,self.store)
-                        source.acknowledge_exceptions(consumer,checkpoint,repairs)
-                    else:
-                        source.acknowledge(consumer, checkpoint, repair)
+                    signature = (checkpoint, tuple(sorted(repairs)), repair)
+                    acknowledged = self._acknowledgements.get(source.source)
+                    if acknowledged is None or signature != acknowledged[0] or time.monotonic() - acknowledged[1] >= 60:
+                        if hasattr(source,'acknowledge_exceptions'):
+                            source.acknowledge_exceptions(consumer,checkpoint,repairs)
+                        else:
+                            source.acknowledge(consumer, checkpoint, repair)
+                        self._acknowledgements[source.source] = (signature, time.monotonic())
                 except sqlite3.OperationalError as exc:
                     if getattr(exc, "sqlite_errorcode", None) not in (sqlite3.SQLITE_BUSY, sqlite3.SQLITE_LOCKED):
                         raise
@@ -117,8 +126,9 @@ class ProjectionWorker:
         self.repair(limit=min(20, limit))
         return count
 
-    def _events(self, source, events, load_event, started):
+    def _events(self, source, events, load_event, *, budget):
         count = 0
+        started = time.monotonic()
         for candidate in events:
             coordinate = candidate if isinstance(candidate,int) else candidate["seq"]
             event = {"seq":coordinate,"recorded_at":None}
@@ -148,7 +158,7 @@ class ProjectionWorker:
                     at=event["recorded_at"],
                 )
             count += 1
-            if time.monotonic() - started >= 1:
+            if time.monotonic() - started >= budget:
                 break
         return count
 

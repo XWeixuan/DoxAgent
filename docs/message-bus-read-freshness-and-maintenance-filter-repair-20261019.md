@@ -14,10 +14,11 @@
 
 1. ticker health 使用一次当前状态快照，合并本条事件的新增/更新/删除，再计算状态；保持 ack、暂停、来源启用和失败语义，不读 CDC 历史。
 2. SourceOutbox 为每个有界批次复用一个只读连接，不开启跨事件事务，不预加载大正文；仍逐条读取、映射、提交检查点，异常仍进 gaps。
-3. productive tick 立即进入下轮，空闲或 SQLite contention 才休眠；保留每源一秒配额和批次数量限制，未引入第二写者、跳游标或旁路读库。
+3. productive tick 立即进入下轮，空闲或 SQLite contention 才休眠；实际事件处理的一秒配额不再被 capture/head SQL 耗尽。满批积压时允许至多五秒追赶 burst，同时保留批次数量限制和轮转；未引入第二写者、跳游标或旁路读库。
 4. 授权头/方向消费事件及正式激活按 ticker 一次读取方向 usage、head 存在性、未解决迁移集合；事件内共享，不作跨事件永久缓存。unknown、pending usage、迁移阻塞和 LONG/SHORT 独立语义不变。
 5. 维护 UI 默认隐藏没有显式验证文章的 `publisher:*`（含具名旧 Publisher），不再只判断 generic。source scope 与显式配置验证的订阅账户保留；待办和未完成会话始终可见，advanced 开关可以查看全部。不删除 Registry/Profile，不改变正文抓取归属。
 6. 实际 writer 十秒采样进一步定位 `sync_business_facts` 增量查询扫全目录、`consumption_projection` 为方向型 Policy 做无效旧版判定、graph member 按 Case 全扫描。新增显式 `projection-indexes` 发布迁移：current(kind,valid_from)、contributions(metric,valid_from)、graph member 的 Case 索引、旧版 Policy coverage 部分索引。方向型 Policy 在 SQL 层排除，不改变旧版判定。DDL 仅在停单一 Projector 后显式执行，不放在 HTTP GET、业务事务或普通服务启动里。
+7. 加索引后采样进一步发现无业务变更仍每轮争用 Runtime writer：Bus 轮询推进全局 Read seq，被错误当成业务快照需要重新落库；没变化的 source ACK 也反复 `BEGIN IMMEDIATE`。无 business records 且 hit membership 未变时不争 Runtime writer，membership 删除/更新仍即时同步。ACK 在 position/repair 集合变化时即时写入，无变化仅保留一分钟 heartbeat；失败不缓存成功，重启首次仍注册。
 
 修复只替换 Projector，并更新宿主机 Tkinter 脚本；不重启 API、Site Access、Supervisor、采集容器或 Chrome，不改轮询频率/30min 时效窗口，不重放业务消息。保留 active Read generation、所有内容引用和 checkpoint。
 
