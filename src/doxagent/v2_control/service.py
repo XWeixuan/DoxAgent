@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+import logging
 import sqlite3
 from datetime import datetime, timedelta
 from typing import Any
@@ -18,7 +20,7 @@ from doxagent.settings import DoxAgentSettings
 from doxagent.ticker_initialization.catalog import default_plan
 from doxagent.ticker_initialization.schema import RunStatus
 
-from .mirror import apply
+from .mirror import apply, states_in
 from .repository import ControlError, ControlRepository
 
 
@@ -34,38 +36,47 @@ class ControlService:
         self.repository, self.initialization = repository, initialization
         self.bus, self.scheduler = bus, scheduler_repository
         self.settings = settings or DoxAgentSettings()
+        self._heartbeat_at = None
+        self._report_at = self.repository.journal.clock()
+        self._mirror_writes = 0
 
-    def _mirrors(self, state: dict[str, Any], op: dict[str, Any]) -> None:
-        with self.initialization._write() as db:
-            apply(db, state)
-            if op["kind"] == "REMOVE":
-                row = db.execute(
-                    "SELECT run_id FROM ticker_operations WHERE ticker=?", (state["ticker"],)
-                ).fetchone()
-                if row:
-                    run = self.initialization._run(db, row[0])
-                    from doxagent.ticker_initialization.schema import NodeRecord
+    def _mirrors(self, state: dict[str, Any], op: dict[str, Any], *, snapshot=None) -> None:
+        initial, bus, acknowledged = snapshot if snapshot is not None else (None, None, False)
+        if initial != state or (snapshot is None and op["kind"] == "REMOVE"):
+            with self.initialization._write() as db:
+                apply(db, state)
+                self._mirror_writes += 1
+                if op["kind"] == "REMOVE":
+                    row = db.execute(
+                        "SELECT run_id FROM ticker_operations WHERE ticker=?", (state["ticker"],)
+                    ).fetchone()
+                    if row:
+                        run = self.initialization._run(db, row[0])
+                        from doxagent.ticker_initialization.schema import NodeRecord
 
-                    for node_row in db.execute(
-                        "SELECT payload FROM initialization_nodes WHERE run_id=? "
-                        "AND json_extract(payload,'$.status')='RUNNING'",
-                        (row[0],),
-                    ).fetchall():
-                        node = NodeRecord.model_validate_json(node_row[0])
-                        node.status, node.error = "FAILED", "OPERATOR_STOPPED"
-                        self.initialization._save_node(db, row[0], node)
-                    run.status, run.error, run.manual_resume_required = (
-                        RunStatus.FAILED,
-                        "OPERATOR_STOPPED",
-                        False,
-                    )
-                    self.initialization._event(
-                        db, run, "operator.stopped", {"operation_id": op["id"]}
-                    )
-                    db.execute("DELETE FROM ticker_operations WHERE run_id=?", (row[0],))
-        with self.bus.repository.transaction() as db:
-            apply(db, state)
-        self._ack(state, "initializer")
+                        for node_row in db.execute(
+                            "SELECT payload FROM initialization_nodes WHERE run_id=? "
+                            "AND json_extract(payload,'$.status')='RUNNING'",
+                            (row[0],),
+                        ).fetchall():
+                            node = NodeRecord.model_validate_json(node_row[0])
+                            node.status, node.error = "FAILED", "OPERATOR_STOPPED"
+                            self.initialization._save_node(db, row[0], node)
+                        run.status, run.error, run.manual_resume_required = (
+                            RunStatus.FAILED,
+                            "OPERATOR_STOPPED",
+                            False,
+                        )
+                        self.initialization._event(
+                            db, run, "operator.stopped", {"operation_id": op["id"]}
+                        )
+                        db.execute("DELETE FROM ticker_operations WHERE run_id=?", (row[0],))
+        if bus != state:
+            with self.bus.repository.transaction() as db:
+                apply(db, state)
+                self._mirror_writes += 1
+        if not acknowledged:
+            self._ack(state, "initializer")
 
     def _ack(self, state: dict[str, Any], consumer: str) -> None:
         from doxagent.persistent_runtime_v2.journal import encode
@@ -235,7 +246,9 @@ class ControlService:
     def tick(self) -> int:
         completed = 0
         now = self.repository.journal.clock()
-        self.repository.journal.set("v2_workers", "control", {"heartbeat_at": now.isoformat()})
+        if self._heartbeat_at is None or (now - self._heartbeat_at).total_seconds() >= 10:
+            self.repository.journal.set("v2_workers", "control", {"heartbeat_at": now.isoformat()})
+            self._heartbeat_at = now
         for op in self.repository.pending():
             if datetime.fromisoformat(op["next_attempt_at"]) > now:
                 continue
@@ -253,22 +266,41 @@ class ControlService:
                 ).isoformat()
                 self.repository.update_operation(op)
         self.reconcile_initializations()
+        if (now - self._report_at).total_seconds() >= 60:
+            logging.getLogger(__name__).info(
+                "control_reconciliation mirror_write_transactions=%s", self._mirror_writes
+            )
+            self._mirror_writes = 0
+            self._report_at = now
         return completed
 
     def reconcile_initializations(self) -> None:
-        with self.repository.journal.transaction() as db:
-            rows = db.execute(
-                "SELECT payload FROM v2_ticker_control WHERE "
-                "json_extract(payload,'$.initialization_id') IS NOT NULL "
-                "AND json_extract(payload,'$.admission_allowed')=1"
-            ).fetchall()
-        import json
-
-        for row in rows:
-            state = json.loads(row[0])
-            run = self.initialization.get(state["initialization_id"])
-            active = self.initialization.active_revision(state["ticker"])
-            if run.status == RunStatus.FAILED and run.control_epoch == state["epoch"]:
+        with self.repository.read() as db:
+            rows = db.execute("SELECT payload FROM v2_ticker_control").fetchall()
+            acknowledgements = {
+                (r[0], r[1])
+                for r in db.execute(
+                    "SELECT ticker,epoch FROM v2_control_ack WHERE consumer='initializer'"
+                )
+            }
+        states = [json.loads(row[0]) for row in rows]
+        if not states:
+            return
+        runs, heads, initial_mirrors = self.initialization.control_reconciliation_snapshot(
+            [s["initialization_id"] for s in states if s.get("initialization_id")]
+        )
+        with self.bus.repository._connect() as db:
+            bus_mirrors = states_in(db)
+        for state in states:
+            run_id = state.get("initialization_id")
+            run = runs.get(run_id) if state.get("admission_allowed") else None
+            active_id = heads.get(state["ticker"])
+            if (
+                run
+                and run["status"] == RunStatus.FAILED
+                and run["control_epoch"] == state["epoch"]
+                and not state.get("initialization_failed")
+            ):
                 from .repository import control_in
 
                 with self.repository.journal.transaction() as db:
@@ -281,20 +313,30 @@ class ControlService:
                         latest.update(initialization_failed=True, initialization_incomplete=True)
                         latest["revision"] += 1
                         self.repository._save(db, latest, "initialization.failed")
-                continue
-            if (
-                run.status != RunStatus.SUCCEEDED
-                or run.control_epoch != state["epoch"]
-                or not active
-                or (
-                    active["artifacts"]["monitoring_configuration"]["initialization_id"]
-                    != run.initialization_id
-                )
+                        state = latest
+            elif (
+                run
+                and run["status"] == RunStatus.SUCCEEDED
+                and run["control_epoch"] == state["epoch"]
+                and active_id
+                and not (state.get("activation_id") == active_id and state["analysis_allowed"])
             ):
-                continue
-            self.repository.activate_candidate(
-                state["ticker"], state["epoch"], active["revision_id"]
+                active = self.initialization.active_revision(state["ticker"])
+                if (
+                    active
+                    and active["artifacts"]["monitoring_configuration"]["initialization_id"]
+                    == run_id
+                ):
+                    self.repository.activate_candidate(
+                        state["ticker"], state["epoch"], active["revision_id"]
+                    )
+                    state = self.repository.get(state["ticker"]) or state
+            self._mirrors(
+                state,
+                {"kind": "REMOVE" if state.get("removed") else "START", "id": None},
+                snapshot=(
+                    initial_mirrors.get(state["ticker"]),
+                    bus_mirrors.get(state["ticker"]),
+                    (state["ticker"], state["epoch"]) in acknowledgements,
+                ),
             )
-            effective = self.repository.get(state["ticker"])
-            if effective:
-                self._mirrors(effective, {"kind": "START", "id": run.control_operation_id})

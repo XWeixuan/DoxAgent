@@ -23,15 +23,24 @@ def state_in(db: sqlite3.Connection, ticker: str) -> dict[str, Any] | None:
     return json.loads(row[0]) if row else None
 
 
+def states_in(db: sqlite3.Connection) -> dict[str, dict[str, Any]]:
+    if not db.execute("SELECT 1 FROM sqlite_master WHERE name='v2_consumer_control'").fetchone():
+        return {}
+    return {
+        r[0]: json.loads(r[1]) for r in db.execute("SELECT ticker,payload FROM v2_consumer_control")
+    }
+
+
 def apply(db: sqlite3.Connection, state: dict[str, Any]) -> None:
     migrate(db)
     db.execute(
         "INSERT INTO v2_consumer_control VALUES(?,?,?) ON CONFLICT(ticker) DO UPDATE "
         "SET epoch=excluded.epoch,payload=excluded.payload "
-        "WHERE excluded.epoch>v2_consumer_control.epoch OR "
+        "WHERE v2_consumer_control.payload IS NOT excluded.payload AND ("
+        "excluded.epoch>v2_consumer_control.epoch OR "
         "(excluded.epoch=v2_consumer_control.epoch AND "
         "json_extract(excluded.payload,'$.revision') >= "
-        "json_extract(v2_consumer_control.payload,'$.revision'))",
+        "json_extract(v2_consumer_control.payload,'$.revision')))",
         (state["ticker"], state["epoch"], json.dumps(state, sort_keys=True)),
     )
 

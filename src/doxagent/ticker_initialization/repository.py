@@ -1533,6 +1533,24 @@ class InitializationRepository:
             ).fetchone()
             return json.loads(row[0]) if row else None
 
+    def control_reconciliation_snapshot(self, run_ids: list[str]):
+        """Read only scalar run/head metadata and small control mirrors in one connection."""
+        from doxagent.v2_control.mirror import states_in
+
+        with self._connection() as db:
+            runs = {
+                row[0]: dict(status=row[1], control_epoch=row[2], control_operation_id=row[3])
+                for row in db.execute(
+                    "SELECT id,json_extract(payload,'$.status'),"
+                    "json_extract(payload,'$.control_epoch'),"
+                    "json_extract(payload,'$.control_operation_id') FROM initialization_runs "
+                    "WHERE id IN (SELECT value FROM json_each(?))",
+                    (json.dumps(run_ids),),
+                )
+            }
+            heads = dict(db.execute("SELECT ticker,revision_id FROM ticker_active_revision"))
+            return runs, heads, states_in(db)
+
     def active_revisions(self) -> list[dict[str, Any]]:
         with self._connection() as db:
             return [

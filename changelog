@@ -1837,3 +1837,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-19 Reuters maintenance cold-start repair: traced all nine search_query_failed states to stale manual-attention gates, not new website requests. Reproduced CHECKING_CHALLENGE deadline loop: first article classifier load ~4.6s plus CDP recovery exceeded 5s and repeatedly retired healthy workers. Give original-page/login inspection a bounded 15s cold-start allowance within the existing overall maintenance deadline; preserve native Chrome, Profile, exact human target and ownership. Add cold-budget regressions; do not infer sustained source recovery from one verification.
 
 2026-10-20 CPU-01: Single initialization queue reader preserves execution slots, coalesces idle/deferred polling, drains tasks before releasing ownership, and moves mirror DDL to startup. Dispatcher behavior tests passed.
+
+2026-10-20 CPU-02: Batch scalar reconciliation reads, skip unchanged mirror/activation writes, preserve actual mirror repair and failure transitions, and persist control heartbeat every ten seconds. Four reconciliation tests passed.

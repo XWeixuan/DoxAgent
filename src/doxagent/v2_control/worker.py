@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import logging
 import time
 from pathlib import Path
 
@@ -18,6 +19,8 @@ from .service import ControlService
 
 
 def main() -> None:
+    logging.basicConfig(level=logging.WARNING)
+    logging.getLogger("doxagent.v2_control.service").setLevel(logging.INFO)
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ("runtime-db", "initialization-db", "bus-db", "scheduler-db"):
         parser.add_argument("--" + name, required=True, type=Path)
