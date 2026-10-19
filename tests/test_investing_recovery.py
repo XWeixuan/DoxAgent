@@ -63,6 +63,27 @@ def test_body_verification_excludes_other_ticker_lists_too():
 
 
 @pytest.mark.asyncio
+async def test_native_completed_response_requires_real_same_ticker_listing():
+    from unittest.mock import AsyncMock
+
+    from doxagent.site_strategy.investing_document import response_listing
+
+    response = SimpleNamespace(status=200, url=URL, body=AsyncMock(return_value=LISTING.encode()))
+    assert await response_listing(response, URL, 'INTC', timeout=1, max_bytes=8000000) == LISTING
+    assert await response_listing(response, URL, 'MU', timeout=1, max_bytes=8000000) is None
+    response.body.return_value = b'<title>Verify you are human</title>'
+    assert await response_listing(response, URL, 'INTC', timeout=1, max_bytes=8000000) is None
+    response.body.reset_mock()
+    response.status = 403
+    assert await response_listing(response, URL, 'INTC', timeout=1, max_bytes=8000000) is None
+    response.body.assert_not_awaited()
+    response.status = 200
+    response.url = 'https://other.example/news'
+    assert await response_listing(response, URL, 'INTC', timeout=1, max_bytes=8000000) is None
+    response.body.assert_not_awaited()
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "markup,kind", [(LISTING, "listing"), ("<title>Verify you are human</title>", "challenge")]
 )

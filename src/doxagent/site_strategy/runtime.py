@@ -1402,6 +1402,26 @@ class SiteAccessRuntime:
                         timeout=min(request.remaining_budget_ms, 12_000),
                     )
                 initial_html = native_document[0] if native_document else await page.content()
+                if native_document and request.purpose.value == "CRAWLER":
+                    snapshot = inspect_html(
+                        initial_html, native_document[1], "", generic_extraction=False
+                    )
+                    if not snapshot.access_reason and snapshot.page_kind != "listing":
+                        from .investing_document import response_listing
+
+                        complete = await response_listing(
+                            response, native_document[1],
+                            str(request.recipe_parameters.get("ticker") or ""),
+                            timeout=max(.001, min(3, deadline - time.monotonic())),
+                            max_bytes=request.max_response_bytes,
+                        )
+                        if complete:
+                            logger.info(
+                                "investing completed-response listing proof operation=%s",
+                                request.operation_id,
+                            )
+                            native_document = (complete, native_document[1])
+                            initial_html = complete
                 initial_challenge = (
                     inspect_html(
                         initial_html,

@@ -2,12 +2,42 @@
 
 import asyncio
 import logging
+import re
 import time
+from datetime import UTC, datetime
 from urllib.parse import urlsplit
 
 from doxagent.content_enrichment.quality import choose_candidate, inspect_html
 
 logger = logging.getLogger(__name__)
+
+
+async def response_listing(response, url, ticker, *, timeout, max_bytes):
+    """Observe this exact completed native response, never fetch another URL."""
+    if response is None or not 200 <= response.status < 300 or response.url != url or not ticker:
+        return None
+    from lxml import html as H
+
+    from doxagent.message_bus_v2.market_sources import parse_investing
+
+    try:
+        async with asyncio.timeout(timeout):
+            raw = await response.body()  # Playwright observes Network.getResponseBody.
+        if len(raw) > max_bytes:
+            return None
+        html = raw.decode('utf-8')
+        if inspect_html(html, url, '', generic_extraction=False).access_reason:
+            return None
+        headings = H.fromstring(html).xpath('//h1|//h2[not(ancestor::article)]')
+        if not any(re.fullmatch(
+            rf'{re.escape(ticker)}\s*News', ' '.join(' '.join(n.itertext()).split()), re.I
+        ) for n in headings):
+            return None
+        if not parse_investing(html, ticker=ticker, now=datetime.now(UTC)):
+            return None
+        return html
+    except Exception:
+        return None  # Keep the actual incomplete DOM and existing failure classification.
 
 
 async def capture_document(
