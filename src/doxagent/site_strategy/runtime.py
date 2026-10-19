@@ -1246,6 +1246,22 @@ class SiteAccessRuntime:
         retained = False
         response = None
         native_document = None
+        native_investing = (
+            resolved.site_id == "investing" and lease.browser_cdp is not None
+            and hasattr(page, "on")
+        )
+        observed_response = None
+
+        def observe_response(value):
+            nonlocal observed_response
+            try:
+                if value.request.is_navigation_request() and value.frame == page.main_frame:
+                    observed_response = value
+            except Exception:
+                pass  # A detached resource is not proof of a new main document.
+
+        if native_investing:
+            page.on("response", observe_response)
 
         async def recipe_capture(rows, metadata=None):
             nonlocal retained
@@ -1289,6 +1305,11 @@ class SiteAccessRuntime:
         try:
             try:
                 await gate.start()
+                if native_investing and gate.root_target_id:
+                    # This identity is already single-concurrency and excluded
+                    # from human maintenance. Let its native document checks run
+                    # in the real active tab, not an indefinitely backgrounded tab.
+                    await self._focus_maintenance_target(lease.browser_cdp, gate.root_target_id)
                 if request.recipe_ref == "builtin:yahoo_latest_news@1":
                     rows, metadata = await capture_latest_news(
                         page,
@@ -1329,14 +1350,13 @@ class SiteAccessRuntime:
                 if (
                     resolved.site_id in {"reuters", "investing", "barrons"}
                     or request.recipe_ref == "builtin:barrons_ticker@1"
-                ):
+                ) and not native_investing:
                     # commit may precede the challenge document's DOM. Capture
                     # a complete error document before classifying it.
                     if response is not None and response.status in {401, 403}:
                         await page.wait_for_load_state("domcontentloaded", timeout=8_000)
                     response = await wait_for_native_document_redirect(page, response)
                 status = response.status if response is not None else 200
-                headers = await response.all_headers() if response is not None else {}
                 if (
                     resolved.site_id == "investing"
                     and lease.browser_cdp is not None
@@ -1351,6 +1371,15 @@ class SiteAccessRuntime:
                         timeout=max(.001, min(12, deadline - time.monotonic())),
                         body_parameters=resolved.body.parameters,
                     )
+                    if (
+                        observed_response is not None
+                        and 200 <= observed_response.status < 300
+                        and observed_response.url == native_document[1]
+                    ):
+                        # Only a witnessed same-frame navigation can replace a
+                        # bootstrap 403; a normal-looking DOM never invents 200.
+                        response = observed_response
+                        status = response.status
                     if gate.blocked or urlsplit(native_document[1]).hostname not in {
                         "investing.com", "www.investing.com"
                     }:
@@ -1358,6 +1387,7 @@ class SiteAccessRuntime:
                             0, request.url, {}, redirect_url=native_document[1],
                             reason="cross_site_navigation", provenance=lease.provenance,
                         )
+                headers = await response.all_headers() if response is not None else {}
                 if resolved.site_id == "reuters" and status == 200:
                     await page.wait_for_function(
                         """() => Boolean(
@@ -1608,6 +1638,8 @@ class SiteAccessRuntime:
                 if not retained and not getattr(page, "_doxagent_handoff_pending", False):
                     await gate.close()
         finally:
+            if native_investing:
+                page.remove_listener("response", observe_response)
             if not retained and not getattr(page, "_doxagent_handoff_pending", False):
                 await lease.__aexit__(None, None, None)
 

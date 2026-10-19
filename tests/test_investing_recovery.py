@@ -84,7 +84,7 @@ async def test_native_document_capture_observes_dom_without_evaluating_javascrip
             assert method == "Target.detachFromTarget"
             return {}
 
-    html, url = await capture_document(CDP(), "owned", URL, timeout=1)
+    html, url = await capture_document(CDP(), "owned", URL, timeout=1, challenge_grace_seconds=0)
     assert quality.inspect_html(html, url, "", generic_extraction=False).page_kind == kind
     assert calls == [
         "Target.attachToTarget",
@@ -92,6 +92,116 @@ async def test_native_document_capture_observes_dom_without_evaluating_javascrip
         "DOM.getOuterHTML",
         "Target.detachFromTarget",
     ]
+
+
+@pytest.mark.asyncio
+async def test_native_automatic_check_can_finish_without_reload_or_human_task():
+    from doxagent.site_strategy.investing_document import capture_document
+
+    reads = 0
+    calls = []
+
+    class CDP:
+        async def send(self, method, params, **kwargs):
+            nonlocal reads
+            calls.append(method)
+            if method == "Target.attachToTarget":
+                return {"sessionId": "observer"}
+            if method == "DOM.getDocument":
+                return {"root": {"nodeId": 1, "documentURL": URL}}
+            if method == "DOM.getOuterHTML":
+                reads += 1
+                return {
+                    "outerHTML": "<title>Verify you are human</title>" if reads == 1 else LISTING
+                }
+            assert method == "Target.detachFromTarget"
+            return {}
+
+    html, _ = await capture_document(CDP(), "owned", URL, timeout=2)
+    assert html == LISTING and reads == 2
+    assert not any(method.startswith(("Page.", "Runtime.", "Fetch.")) for method in calls)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("same_frame", [True, False])
+async def test_bootstrap_403_requires_observed_same_frame_200_not_just_normal_dom(
+    monkeypatch, same_frame
+):
+    from unittest.mock import AsyncMock
+
+    from doxagent.site_strategy import investing_document
+    from doxagent.site_strategy import runtime as module
+    from doxagent.site_strategy.schema import (
+        AccessMode,
+        AccessRequest,
+        BrowserIdentitySpec,
+        IdentityOperationalState,
+    )
+
+    callbacks = {}
+    frame = object()
+    initial = SimpleNamespace(status=403, all_headers=AsyncMock(return_value={}))
+    page = SimpleNamespace(
+        url=URL,
+        main_frame=frame,
+        goto=AsyncMock(return_value=initial),
+        content=AsyncMock(side_effect=AssertionError("page JS content wait")),
+        on=lambda event, callback: callbacks.update({event: callback}),
+        remove_listener=lambda event, callback: callbacks.pop(event),
+    )
+
+    async def native(*args, **kwargs):
+        callbacks["response"](
+            SimpleNamespace(
+                status=200,
+                url=URL,
+                frame=frame if same_frame else object(),
+                request=SimpleNamespace(is_navigation_request=lambda: True),
+                all_headers=AsyncMock(return_value={}),
+            )
+        )
+        return LISTING, URL
+
+    monkeypatch.setattr(investing_document, "capture_document", native)
+    monkeypatch.setattr(module, "public_url", AsyncMock())
+    monkeypatch.setattr(
+        module,
+        "_DocumentNavigationGate",
+        lambda *args: SimpleNamespace(
+            start=AsyncMock(), close=AsyncMock(), blocked=[], root_target_id="owned"
+        ),
+    )
+    lease = SimpleNamespace(
+        __aenter__=AsyncMock(return_value=page),
+        __aexit__=AsyncMock(),
+        browser_cdp=object(),
+        provenance=SimpleNamespace(instance_id="chrome"),
+    )
+    runtime = module.SiteAccessRuntime.__new__(module.SiteAccessRuntime)
+    runtime.resolver = object()
+    runtime.repository = SimpleNamespace(
+        get_identity_runtime=lambda _: SimpleNamespace(
+            instance_id="chrome", operational_state=IdentityOperationalState.AVAILABLE
+        )
+    )
+    runtime.browser_runtimes = SimpleNamespace(page=AsyncMock(return_value=lease))
+    result = await runtime._browser(
+        AccessRequest(operation_id="native", url=URL, purpose="CRAWLER", mode=AccessMode.BROWSER),
+        SimpleNamespace(
+            site_id="investing", body=SimpleNamespace(ref="builtin:generic@1", parameters={})
+        ),
+        BrowserIdentitySpec(
+            identity_id="public",
+            profile_id="public",
+            egress_id="proxy",
+            runtime_kind="external_chrome",
+        ),
+        object(),
+    )
+    assert result.status_code == (200 if same_frame else 403)
+    assert result.body == LISTING
+    page.content.assert_not_awaited()
+    assert not callbacks
 
 
 @pytest.mark.asyncio

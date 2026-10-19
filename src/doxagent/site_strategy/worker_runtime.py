@@ -372,14 +372,19 @@ class WorkerSiteAccessRuntime(SiteAccessRuntime):
             response = await self._browser(
                 AccessRequest(
                     operation_id=f"maintenance-verify:{uuid4().hex}",
-                    purpose="BODY", url=article_url, mode=AccessMode.BROWSER,
+                    purpose="BODY",
+                    url=article_url,
+                    mode=AccessMode.BROWSER,
                     recipe_parameters={"_maintenance_canary": True},
                     remaining_budget_ms=max(1, int((deadline - time.monotonic()) * 1000)),
                 ),
-                resolved, identity, egress,
+                resolved,
+                identity,
+                egress,
             )
             if (
-                not response.provenance or not original.provenance
+                not response.provenance
+                or not original.provenance
                 or response.provenance.instance_id != original.provenance.instance_id
             ):
                 raise RuntimeError("original_browser_changed_during_verification")
@@ -419,6 +424,30 @@ class WorkerSiteAccessRuntime(SiteAccessRuntime):
                 store.get_target(session.allocation_id),
             )
             info = inspect_html(capture.body, capture.final_url, "", generic_extraction=False)
+            if (
+                identity.identity_id
+                and session.site_id == "investing"
+                and info.access_reason == "challenge_required"
+            ):
+                # Cloudflare may finish a native JS check after first commit.
+                # Observe this exact owned page once, never reload/click/solve it.
+                try:
+                    async with asyncio.timeout(8):
+                        while info.access_reason == "challenge_required":
+                            await asyncio.sleep(0.5)
+                            capture = await read_original_document(
+                                ChromeSupervisorClient(
+                                    self.supervisor_socket, owner_id=self.controller_id
+                                ),
+                                identity,
+                                session,
+                                store.get_target(session.allocation_id),
+                            )
+                            info = inspect_html(
+                                capture.body, capture.final_url, "", generic_extraction=False
+                            )
+                except TimeoutError:
+                    pass  # A still-blocked page remains a real human task.
             capture.challenge_cleared = info.page_kind in {"article", "listing", "quote"} or (
                 info.access_reason in {"subscription_required", "login_required"}
             )

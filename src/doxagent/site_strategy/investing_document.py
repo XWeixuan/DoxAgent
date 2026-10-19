@@ -7,12 +7,15 @@ from urllib.parse import urlsplit
 from doxagent.content_enrichment.quality import choose_candidate, inspect_html
 
 
-async def capture_document(cdp, target_id, url, *, timeout, body_parameters=None):
+async def capture_document(
+    cdp, target_id, url, *, timeout, body_parameters=None, challenge_grace_seconds=8
+):
     """No JS evaluation, interception, resource blocking, navigation or CAPTCHA clicks."""
     deadline = time.monotonic() + timeout
     session_id = None
     last = ""
     final_url = url
+    challenge_since = None
     try:
         async with asyncio.timeout_at(deadline):
             attached = await cdp.send(
@@ -41,7 +44,12 @@ async def capture_document(cdp, target_id, url, *, timeout, body_parameters=None
                     strategy_parameters=body_parameters,
                     generic_extraction=False,
                 )
-                if info.access_reason or info.page_kind == "listing":
+                if info.access_reason == "challenge_required":
+                    if challenge_since is None:
+                        challenge_since = time.monotonic()
+                    if time.monotonic() - challenge_since >= challenge_grace_seconds:
+                        return last, final_url
+                elif info.access_reason or info.page_kind == "listing":
                     return last, final_url
                 candidate, quality, _ = choose_candidate(info, "")
                 if candidate and quality in {"FULL", "SHORT_FULL"}:
