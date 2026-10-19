@@ -5,3 +5,5 @@ LABEL org.opencontainers.image.revision=${REPAIR_COMMIT} \
       doxagent.repair.scope="reuters_cold_maintenance_verification"
 ENV DOXAGENT_BUILD_COMMIT=${REPAIR_COMMIT}
 COPY src/doxagent/site_strategy/worker_runtime.py /app/src/doxagent/site_strategy/worker_runtime.py
+COPY src/doxagent/site_strategy/identity_worker.py /app/src/doxagent/site_strategy/identity_worker.py
+COPY src/doxagent/site_strategy/runtime.py /app/src/doxagent/site_strategy/runtime.py

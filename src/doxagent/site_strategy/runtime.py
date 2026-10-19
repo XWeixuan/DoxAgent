@@ -2005,8 +2005,18 @@ class SiteAccessRuntime:
         maintained = self._maintenance_pages.get(token)
         if maintained is None:
             raise KeyError(token)
+        started = time.monotonic()
+        logger.warning("maintenance_inspection identity=%s phase=read", maintained.identity_id)
         html = await self._maintenance_document(maintained)
+        logger.warning(
+            "maintenance_inspection identity=%s phase=classify elapsed=%.3f bytes=%s",
+            maintained.identity_id, time.monotonic() - started, len(html),
+        )
         info = inspect_html(html, maintained.page.url, "")
+        logger.warning(
+            "maintenance_inspection identity=%s phase=classified elapsed=%.3f kind=%s",
+            maintained.identity_id, time.monotonic() - started, info.page_kind,
+        )
         recognized = info.page_kind in {"article", "listing", "quote"} or info.access_reason in {
             "subscription_required",
             "login_required",

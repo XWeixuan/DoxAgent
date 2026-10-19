@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import os
 import signal
 import struct
@@ -296,11 +297,19 @@ class Worker:
     async def ensure_maintenance_target(self, command):
         if command["token"] in self.runtime._maintenance_pages:
             return
+        started = asyncio.get_running_loop().time()
+        logging.getLogger(__name__).warning(
+            "maintenance_recovery identity=%s phase=begin", self.repository.identity.identity_id
+        )
         identity = self.repository.identity
         if identity.runtime_kind.value != "external_chrome" or not command.get("target_id"):
             raise RuntimeError("original_maintenance_target_unavailable")
         adapter = self.runtime.browser_runtimes.external
         status = await adapter.client.status(identity.identity_id)
+        logging.getLogger(__name__).warning(
+            "maintenance_recovery identity=%s phase=status elapsed=%.3f",
+            identity.identity_id, asyncio.get_running_loop().time() - started,
+        )
         if not status.get("running") and status.get("known_missing") is False:
             raise RuntimeError("original_browser_state_unverified")
         if not status.get("running") or status["instance_id"] != command.get(
@@ -315,6 +324,10 @@ class Worker:
             identity=identity,
             site_id=command["site_id"],
             token=command["token"],
+        )
+        logging.getLogger(__name__).warning(
+            "maintenance_recovery identity=%s phase=attached elapsed=%.3f",
+            identity.identity_id, asyncio.get_running_loop().time() - started,
         )
 
     async def handle(self, command):
