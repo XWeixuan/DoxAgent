@@ -25,6 +25,14 @@
 
 ## 验证记录
 
-待生产发布后追加；不能把容器存活当成投影已追平。验收须比较 owner 最新轮询、投影最新轮询、Message Bus API/消息流，观察持续自然流量下的 lag。
+- 本地最终组合回归 **227 passed**。覆盖 Read/API、Policy 方向授权与未知状态、快照重建、真实 outbox、SQLite contention、逐事件可见性/回滚/嵌套连接、登录维护筛选。更新了上一轮 publisher routing 修复后过时的 Reuters 测试断言。
+- 最终产品提交 `8806fa32b7f4d87eb9dc287b8b38ba9098962801`，Projector 镜像 `sha256:19c675045ff8cc2b6a59401ee957251bf840635b07d2e88de25574168a365d78`。通过 canonical release ledger 升级单一 Projector，逐文件 hash 与 Git 一致；保留 generation/checkpoints，完成实际追平，不是只重启即称恢复。
+- **22:59:19 CST** 自然流量采样：research=12,461/12,461，initialization=138,930/138,930，runtime=2,009,398/2,009,398；Bus 已投影到 3,029,079，不低于先采样的 head 3,029,078（读取间仍有新写入）。Bus 积压归零，未重置/快进 checkpoint。
+- 同次采样，9 个 ticker 的最新 poll `last_attempt_at`、`updated_at` 与 owner 一致；9 个 ticker 的最新消息 `stream_published_at` 与 owner 精确到微秒一致。MU 最新消息 22:57:52、INTC 22:57:57；BE 最新仍为 22:26:48，owner 同样如此，不制造新消息伪装恢复。
+- **23:01:02 CST** 再次复查，Bus checkpoint=3,029,441，不低于 sampled head=3,029,440；Runtime=2,009,535/2,009,535，另外两路仍追平。恢复后继续自然采集，未重新积压；不是碰巧取得一次 head 相等。
+- 生产 API 的 ReadContext/SourceStatus/MessageBaseline 同源 builder 在 MU/INTC/BE 上通过。此次不声称实点用户已登录网页；未改前端或重新发布 Web，页面原有每分钟刷新与 SSE/15min view renewal 保持。
+- 真实维护库存 **179 identities → 默认 39，隐藏 140**。ChartMill/Fool/TheStreet 默认隐藏，Reuters/Barron's/WSJ/Seeking Alpha/MarketWatch 保留，advanced 能显示全部。旧 Tkinter 进程需关闭重开以加载新代码；不需要关闭 Chrome 或重新登录。
+- Chrome Supervisor `617b4e1d...`、Site Access `6f24c349...`、Message Bus `786cdb63...` 本轮没有重建；无 OOM、重启次数均为 0。宿主机余量约 55 GiB，未清理业务数据、Profile 或镜像。
+- 原有 **45 条 Runtime PROVENANCE_UNVERIFIED gap** 与来源登录/challenge 状态未修改；Bus 没有 gap。本轮解决投影时效，不把待人工鉴权来源伪装成成功轮询。
 
 本地和生产诊断材料：`eval/message_bus_read_freshness_20261019/`。其中运行态完整清单只作本地验收材料，提交仅包含不含秘密的脚本、测试和摘要。

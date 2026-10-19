@@ -1,0 +1,33 @@
+{
+  "product_commit": "8806fa32b7f4d87eb9dc287b8b38ba9098962801",
+  "image": "sha256:19c675045ff8cc2b6a59401ee957251bf840635b07d2e88de25574168a365d78",
+  "observed_at": "2026-10-19T14:59:19Z",
+  "tests_passed": 227,
+  "source_position": {
+    "research": {"head": 12461, "checkpoint": 12461},
+    "initialization": {"head": 138930, "checkpoint": 138930},
+    "runtime": {"head": 2009398, "checkpoint": 2009398},
+    "bus": {"sampled_head": 3029078, "checkpoint": 3029079}
+  },
+  "latest_poll_owner_matches": 9,
+  "latest_stream_owner_matches": 9,
+  "steady_recheck": {
+    "observed_at": "2026-10-19T15:01:02Z",
+    "bus_sampled_head": 3029440,
+    "bus_checkpoint": 3029441,
+    "runtime_head_and_checkpoint": 2009535,
+    "all_sources_caught_up": true
+  },
+  "maintenance": {
+    "total": 179,
+    "visible": 39,
+    "hidden": 140,
+    "named_legacy_publishers_hidden": ["chartmill", "fool", "thestreet"],
+    "advanced_shows_all": true
+  },
+  "browser_and_profile_recreation": false,
+  "read_generation_replacement": false,
+  "checkpoint_skip": false,
+  "business_message_injection": false,
+  "preexisting_runtime_provenance_gaps_preserved": 45
+}
