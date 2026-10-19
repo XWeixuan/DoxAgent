@@ -154,6 +154,32 @@ def test_snapshot_preserves_retired_catalog_and_usage_after_process_exit(tmp_pat
         assert db.execute("SELECT value FROM contributions_current WHERE metric='input_tokens' AND entity='call'").fetchone()[0]=='100'
 
 
+def test_snapshot_seeds_membership_before_current_activation(tmp_path,monkeypatch):
+    from tests.v2_backend.test_policy_consumption_coverage import seeded
+    from doxagent.v2_read.formal import FormalProjectors
+    from doxagent.v2_read.lifecycle import activate
+    s=fixture_source(tmp_path);s=SourceOutbox(s.path,'runtime');s.migrate(('poll_states',))
+    live,summary=seeded(tmp_path);s.claim_serving_facts(live.path)
+    attempt=dict(kind='attempt',ticker='MU',id='retired-job',parent='case',route='W3',data={'status':'SUCCEEDED'})
+    live.ingest('fixture','terminal-audit',[attempt],contributions=[dict(metric='new_fact_candidates',ticker='MU',entity='old-candidate',day='2026-10-01',value='1')])
+    sync_business_facts(s,live)
+    original=FormalProjectors.__call__
+    def apply_current(self,event):
+        records,counts=original(self,event)
+        if event['table_name']=='poll_states':
+            self.store.ingest('fixture','detail',[dict(kind='policy_detail',ticker='MU',id='rev',parent='d3',data={'summary':summary,'policy':{}})])
+            changes,_=activate(self.store,'MU',dict(runtime_activation_id='a',policy_set=dict(artifact_id='d3',policy_set_version=1,published_at='2026-09-03T00:00:00Z')),None)
+            records.extend(changes)
+        return records,counts
+    monkeypatch.setattr(FormalProjectors,'__call__',apply_current)
+    report=rebuild_current([s],tmp_path/'rebuilt'/'read.db');assert report['verified']
+    target=ReadStore(report['path'])
+    assert target.get('attempt','MU','retired-job')==attempt['data']
+    with target.connect() as db:
+        assert not db.execute("SELECT 1 FROM object_current WHERE kind='policy_change'").fetchone()
+        assert db.execute("SELECT value FROM contributions_current WHERE metric='new_fact_candidates'").fetchone()[0]=='1'
+
+
 def test_source_native_exit_protects_exact_repair_and_resurrected_current(tmp_path):
     from doxagent.v2_read import source_native_gc as gc
     s=fixture_source(tmp_path)

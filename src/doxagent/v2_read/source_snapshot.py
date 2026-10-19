@@ -147,7 +147,10 @@ def _rebuild_current(sources, target, *, event_root=None, max_batches=10000):
             if runtime:
                 source,db,tables=runtime
                 if db.execute("SELECT 1 FROM sqlite_master WHERE name='v2_serving_business_facts'").fetchone():
-                    seeds=[json.loads(r[0]) for r in db.execute("SELECT payload FROM v2_serving_business_facts WHERE kind IN ('policy_hit_set','policy_admission')")]
+                    # Seed historical membership before applying the current
+                    # activation; otherwise it fabricates ADD transitions for
+                    # every already-active Policy in a fresh target.
+                    seeds=[json.loads(r[0]) for r in db.execute("SELECT payload FROM v2_serving_business_facts WHERE kind IN ('policy_hit_set','policy_admission','policy_catalog','event_catalog','fact_catalog')")]
                     for value in seeds:
                         value['sort']=value.pop('sort_key',value['id']);value['search']=value.pop('search_text','') or ''
                         store.ingest('business-baseline',uuid4().hex,[value])
