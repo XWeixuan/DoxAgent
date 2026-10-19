@@ -53,3 +53,11 @@
 ## 留痕
 
 服务器：`/var/lib/doxagent/releases/sync-3e685254-20261019/`，发布状态：`/var/lib/doxagent/releases/state.json`。本地验收、清退及构建/排空回执：`eval/production_sync_20261019/`。含生产配置的完整快照仅放服务器 root 私有目录，不写入 Git。
+
+## 追加验收发现：Read 既有投影性能瓶颈尚未解决
+
+发布后针对数据时效继续核验，四源 checkpoints 在两次采样之间尚未推进。Projector 进程没有退出，采样 CPU 约 83%；一次实际栈采样定位在 `DomainProjectors` 处理 `policy_authorization_head` 时的 `direction_summary -> store.get -> connect`，即遍历 Policy 目录并逐条多次新建 SQLite 连接，游标须待整条事件映射结束才提交。
+
+实际目录数量：INTC 16,571、MU 8,544、BE 2,903；单次 121-byte 授权头读取实测约 0.067 秒，不能将单次耗时机械外推为完整追平 ETA，但足以表明逐对象连接会在这种规模下放大。`lifecycle.py`、`projectors.py`、`projector.py` 与发布前正在运行的 `d21505b5` 三个 Git blob 完全一致，属于既有逻辑瓶颈；容器源码一致和健康检查不代表 Read 实时性已达标。本轮不宣称该问题已解决。
+
+后续最小修复方向是把同一 ticker/同一授权头事件需要的 usage、head 与迁移状态集中读取，保留既有 Policy 业务语义与引用；无需删除历史业务目录才能修复该热点。本轮没有借此开展深度存量清理或另一次未评审的 Read 重构。现场证据：`eval/production_sync_20261019/projector-stack.txt`、`direction-read-audit.txt`、`git-final.json`。
