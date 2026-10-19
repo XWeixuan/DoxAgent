@@ -604,7 +604,8 @@ class GovernanceRepository:
         )
 
     def commit_verification(
-        self, scope, identity_id, report, *, session=None, credential_change=False
+        self, scope, identity_id, report, *, session=None, credential_change=False,
+        passive_task=None,
     ):
         """Proof, relevant gates and current Task resolve in one short owner transaction."""
         from .schema import (
@@ -619,6 +620,41 @@ class GovernanceRepository:
             current_scope = self.maintenance_scope(scope.scope_id)
             if current_scope is None or current_scope.revision != scope.revision:
                 raise RuntimeError("scope changed during verification")
+            if passive_task is not None:
+                current = self.current_challenge(identity_id)
+                target = self.get_target(passive_task.allocation_id)
+                sessions = self.list_sessions()
+                if (
+                    scope.source_id != "investing_ticker_news" or not current_scope.enabled
+                    or passive_task.purpose != "CRAWLER" or not current
+                    or (current.task_id, current.browser_instance_id, current.original_target_id,
+                        current.allocation_id, current.original_url)
+                    != (passive_task.task_id, passive_task.browser_instance_id,
+                        passive_task.original_target_id, passive_task.allocation_id,
+                        passive_task.original_url)
+                    or current.state != "WAITING_HUMAN" or current.scope_id != scope.scope_id
+                    or current.site_id != scope.owner_site_id or not target
+                    or target.state != "LIVE" or target.owner_kind != "CHALLENGE"
+                    or target.owner_ref != current.task_id
+                    or (target.identity_id, target.browser_instance_id, target.target_id)
+                    != (identity_id, current.browser_instance_id, current.original_target_id)
+                    or report.runtime_instance_id != current.browser_instance_id
+                    or report.challenge != "CLEARED" or report.crawler != "READY"
+                    or report.original_page_kind != "listing"
+                    or report.verification_url != current.original_url
+                    or any(s.identity_id == identity_id and s.state == "OPEN" for s in sessions)
+                ):
+                    raise RuntimeError("passive challenge proof became stale")
+                session = next((s for s in sessions if s.task_id == current.task_id
+                                and s.state == "RELEASED"), None)
+                if session is None:
+                    session = self._save_session(connection, MaintenanceSession(
+                        kind="CHALLENGE", state="RELEASED", scope_id=scope.scope_id,
+                        site_id=current.site_id, identity_id=identity_id,
+                        task_id=current.task_id, control_token=current.task_id,
+                        allocation_id=target.allocation_id, target_id=target.target_id,
+                        browser_instance_id=target.browser_instance_id,
+                    ))
             if session:
                 current_session = self.get_session(session.session_id)
                 if (

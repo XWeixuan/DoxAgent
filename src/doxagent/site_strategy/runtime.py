@@ -1383,7 +1383,7 @@ class SiteAccessRuntime:
                         lease.browser_cdp,
                         gate.root_target_id,
                         request.url,
-                        timeout=max(.001, min(12, deadline - time.monotonic())),
+                        timeout=max(.001, min(30, deadline - time.monotonic() - 2)),
                         body_parameters=resolved.body.parameters,
                         on_challenge=lambda html, url: self._capture_challenge_evidence(
                             lease, page, gate, identity, resolved, request, html,

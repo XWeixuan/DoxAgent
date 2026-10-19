@@ -12,6 +12,29 @@ from doxagent.content_enrichment.quality import choose_candidate, inspect_html
 logger = logging.getLogger(__name__)
 
 
+def listing_ticker(html, url):
+    """Business proof from this exact ticker document, not a script/ad marker."""
+    from lxml import html as H
+    from lxml.etree import ParserError
+
+    from doxagent.message_bus_v2.market_sources import parse_investing
+
+    if urlsplit(url).hostname not in {"investing.com", "www.investing.com"}:
+        return None
+    if inspect_html(html, url, "", generic_extraction=False).access_reason:
+        return None
+    try:
+        for node in H.fromstring(html).xpath("//h1|//h2[not(ancestor::article)]"):
+            match = re.fullmatch(
+                r"([A-Z0-9.-]+)\s+News", " ".join(" ".join(node.itertext()).split())
+            )
+            if match and parse_investing(html, ticker=match[1], now=datetime.now(UTC)):
+                return match[1]
+    except (ValueError, ParserError):
+        pass
+    return None
+
+
 async def response_listing(response, url, ticker, *, timeout, max_bytes):
     """Observe this exact completed native response, never fetch another URL."""
     if response is None or not 200 <= response.status < 300 or response.url != url or not ticker:
@@ -25,13 +48,16 @@ async def response_listing(response, url, ticker, *, timeout, max_bytes):
             raw = await response.body()  # Playwright observes Network.getResponseBody.
         if len(raw) > max_bytes:
             return None
-        html = raw.decode('utf-8')
-        if inspect_html(html, url, '', generic_extraction=False).access_reason:
+        html = raw.decode("utf-8")
+        if inspect_html(html, url, "", generic_extraction=False).access_reason:
             return None
-        headings = H.fromstring(html).xpath('//h1|//h2[not(ancestor::article)]')
-        if not any(re.fullmatch(
-            rf'{re.escape(ticker)}\s*News', ' '.join(' '.join(n.itertext()).split()), re.I
-        ) for n in headings):
+        headings = H.fromstring(html).xpath("//h1|//h2[not(ancestor::article)]")
+        if not any(
+            re.fullmatch(
+                rf"{re.escape(ticker)}\s*News", " ".join(" ".join(n.itertext()).split()), re.I
+            )
+            for n in headings
+        ):
             return None
         if not parse_investing(html, ticker=ticker, now=datetime.now(UTC)):
             return None
@@ -41,7 +67,13 @@ async def response_listing(response, url, ticker, *, timeout, max_bytes):
 
 
 async def capture_document(
-    cdp, target_id, url, *, timeout, body_parameters=None, challenge_grace_seconds=8,
+    cdp,
+    target_id,
+    url,
+    *,
+    timeout,
+    body_parameters=None,
+    challenge_grace_seconds=25,
     on_challenge=None,
 ):
     """No JS evaluation, interception, resource blocking, navigation or CAPTCHA clicks."""
@@ -50,6 +82,10 @@ async def capture_document(
     last = ""
     final_url = url
     challenge_since = None
+    started = time.monotonic()
+    reads = 0
+    first_challenge = None
+    last_kind = "unknown"
     try:
         async with asyncio.timeout_at(deadline):
             attached = await cdp.send(
@@ -97,15 +133,21 @@ async def capture_document(
                     strategy_parameters=body_parameters,
                     generic_extraction=False,
                 )
+                reads += 1
+                last_kind = info.page_kind
                 if info.access_reason == "challenge_required":
                     if challenge_since is None:
                         challenge_since = time.monotonic()
+                        if first_challenge is None:
+                            first_challenge = challenge_since
                         if on_challenge is not None:
                             await on_challenge(last, final_url)
                     if time.monotonic() - challenge_since >= challenge_grace_seconds:
                         return last, final_url
                 elif info.access_reason or info.page_kind == "listing":
                     return last, final_url
+                else:
+                    challenge_since = None
                 candidate, quality, _ = choose_candidate(info, "")
                 if candidate and quality in {"FULL", "SHORT_FULL"}:
                     return last, final_url
@@ -117,6 +159,14 @@ async def capture_document(
             return last, final_url
         raise
     finally:
+        logger.info(
+            "investing_native_capture target=%s elapsed=%.3f reads=%s first_challenge_s=%s kind=%s",
+            target_id,
+            time.monotonic() - started,
+            reads,
+            round(first_challenge - started, 3) if first_challenge is not None else None,
+            last_kind,
+        )
         if session_id:
             try:
                 async with asyncio.timeout(1):

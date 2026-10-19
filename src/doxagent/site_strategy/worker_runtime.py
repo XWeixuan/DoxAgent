@@ -474,7 +474,21 @@ class WorkerSiteAccessRuntime(SiteAccessRuntime):
         )
 
     async def verify_crawler(self, token, request):
-        _, identity, egress = self._binding(token)
+        site_id, identity, egress = self._binding(token)
+        if site_id == "investing" and identity.runtime_kind is BrowserRuntimeKind.EXTERNAL_CHROME:
+            # Like BODY verification: native original-page inspection is already
+            # done by the controller. Do not reconstruct its old Playwright Page.
+            expected_instance = self._maintenance_refs(token).get("expected_instance_id")
+            response = await self._browser(
+                request.model_copy(update={
+                    "recipe_parameters": {**request.recipe_parameters, "_maintenance_canary": True},
+                }),
+                self.resolver.resolve(request.url), identity, egress,
+            )
+            if (not response.provenance
+                or response.provenance.instance_id != expected_instance):
+                raise RuntimeError("original_browser_changed_during_verification")
+            return response
         return decode_response(
             await self._verify_with_capacity(
                 identity,

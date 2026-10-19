@@ -2674,6 +2674,22 @@ class SiteStrategyService:
             report.challenge = "CLEARED"
         spec = self.repository.get_strategy(scope.owner_site_id)
         crawler = scope.verification_plan.get("crawler")
+        triggering_task = store.current_challenge(session.identity_id)
+        if (
+            crawler and scope.source_id == "investing_ticker_news"
+            and session.kind == "CHALLENGE" and triggering_task
+            and session.task_id == triggering_task.task_id
+            and triggering_task.purpose == "CRAWLER"
+            and original.final_url == triggering_task.original_url
+        ):
+            from .investing_document import listing_ticker
+
+            ticker = listing_ticker(original.body, original.final_url)
+            if ticker:
+                # Prove the affected ticker (e.g. RKLB/ONDS), not always INTC.
+                crawler = {**crawler, "url": original.final_url,
+                           "recipe_parameters": {**crawler.get("recipe_parameters", {}),
+                                                 "ticker": ticker}}
         article_candidates = []
         if crawler:
             if stage:
