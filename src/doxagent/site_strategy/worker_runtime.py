@@ -382,7 +382,9 @@ class WorkerSiteAccessRuntime(SiteAccessRuntime):
                 raise KeyError("maintenance session")
             capture = await read_original_document(
                 ChromeSupervisorClient(self.supervisor_socket, owner_id=self.controller_id),
-                identity, session, store.get_target(session.allocation_id),
+                identity,
+                session,
+                store.get_target(session.allocation_id),
             )
             info = inspect_html(capture.body, capture.final_url, "", generic_extraction=False)
             capture.challenge_cleared = info.page_kind in {"article", "listing", "quote"} or (
@@ -449,6 +451,28 @@ class WorkerSiteAccessRuntime(SiteAccessRuntime):
             ),
             None,
         )
+        handle = self.workers.workers.get(identity.identity_id)
+        if identity.runtime_kind is BrowserRuntimeKind.EXTERNAL_CHROME and (
+            handle is None or handle.process.returncode is not None
+        ):
+            from .maintenance_document import close_original_document
+            from .supervisor_client import ChromeSupervisorClient
+
+            store = GovernanceRepository(self.repository)
+            if session is None:
+                raise KeyError("maintenance session")
+            target = store.get_target(session.allocation_id)
+            await close_original_document(
+                ChromeSupervisorClient(self.supervisor_socket, owner_id=self.controller_id),
+                identity,
+                session,
+                target,
+            )
+            store.save_target(
+                target.model_copy(update={"state": "CLOSED", "updated_at": utc_now()})
+            )
+            self._tokens.pop(token, None)
+            return identity.profile_id
         result = await self.workers.command(
             identity,
             egress,

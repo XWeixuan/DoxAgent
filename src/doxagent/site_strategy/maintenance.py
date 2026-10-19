@@ -535,11 +535,12 @@ class MaintenanceController:
             if completed:
                 try:
                     stage("CLEANUP")
-                    await self.service.runtime.close_login(session.control_token)
-                    identity = self.service.repository.get_identity(session.identity_id)
-                    await self.service.profile_use.end_maintenance(
-                        identity.profile_id, session.control_token
-                    )
+                    async with asyncio.timeout(10):
+                        await self.service.runtime.close_login(session.control_token)
+                        identity = self.service.repository.get_identity(session.identity_id)
+                        await self.service.profile_use.end_maintenance(
+                            identity.profile_id, session.control_token
+                        )
                 except Exception:
                     report.cleanup_pending = True
                 else:

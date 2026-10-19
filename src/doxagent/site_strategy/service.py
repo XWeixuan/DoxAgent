@@ -2625,7 +2625,9 @@ class SiteStrategyService:
         scope = store.maintenance_scope(session.scope_id)
         if scope is None:
             raise ValueError("maintenance scope is no longer configured")
-        deadline = time.monotonic() + 40
+        # The outer operation has 45s. Leave time for exact target cleanup and
+        # durable session release; business probes cannot consume that reserve.
+        deadline = time.monotonic() + 30
         if stage:
             stage("CHECKING_CHALLENGE")
         original = await self.runtime.inspect_challenge(session.control_token)

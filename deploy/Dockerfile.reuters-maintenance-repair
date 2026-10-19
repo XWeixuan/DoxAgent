@@ -9,4 +9,5 @@ COPY src/doxagent/site_strategy/identity_worker.py /app/src/doxagent/site_strate
 COPY src/doxagent/site_strategy/runtime.py /app/src/doxagent/site_strategy/runtime.py
 COPY src/doxagent/site_strategy/maintenance_document.py /app/src/doxagent/site_strategy/maintenance_document.py
 COPY src/doxagent/site_strategy/service.py /app/src/doxagent/site_strategy/service.py
+COPY src/doxagent/site_strategy/maintenance.py /app/src/doxagent/site_strategy/maintenance.py
 COPY src/doxagent/content_enrichment/quality.py /app/src/doxagent/content_enrichment/quality.py
