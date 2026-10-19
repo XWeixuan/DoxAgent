@@ -1,0 +1,95 @@
+"""Read an exact human-owned native target without starting a control worker."""
+
+import asyncio
+import json
+from urllib.parse import urlsplit
+
+import httpx
+
+from .browser_runtime import RuntimeProvenance
+from .runtime import RuntimeResponse
+
+
+async def read_original_document(client, identity, session, target):
+    """Observation only: no ensure, controller claim, navigation or Viewer selection."""
+    if (
+        not target
+        or target.owner_kind not in {"LOGIN", "CHALLENGE"}
+        or target.state != "LIVE"
+        or target.identity_id != identity.identity_id
+        or target.target_id != session.target_id
+        or target.browser_instance_id != session.browser_instance_id
+    ):
+        raise RuntimeError("exact_maintenance_target_ownership_required")
+    async with asyncio.timeout(10):
+        status = await client.status(identity.identity_id)
+        if not status.get("running") and status.get("known_missing") is False:
+            raise RuntimeError("original_browser_state_unverified")
+        if not status.get("running") or status.get("instance_id") != session.browser_instance_id:
+            raise RuntimeError("original_challenge_target_lost")
+        base = str(status["cdp_http_url"]).rstrip("/")
+        parsed = urlsplit(base)
+        if parsed.scheme != "http" or parsed.hostname != "127.0.0.1":
+            raise RuntimeError("untrusted_original_document_endpoint")
+        async with httpx.AsyncClient(trust_env=False, timeout=2) as http:
+            response = await http.get(base + "/json/list")
+            response.raise_for_status()
+            if len(response.content) > 512 * 1024:
+                raise RuntimeError("original_document_metadata_too_large")
+            tab = next(
+                (
+                    t
+                    for t in response.json()
+                    if t.get("id") == session.target_id and t.get("type") == "page"
+                ),
+                None,
+            )
+        if tab is None:
+            raise RuntimeError("original_challenge_target_lost")
+        endpoint = str(tab["webSocketDebuggerUrl"])
+        ws_url = urlsplit(endpoint)
+        if (
+            ws_url.scheme != "ws"
+            or ws_url.hostname != parsed.hostname
+            or ws_url.port != parsed.port
+        ):
+            raise RuntimeError("untrusted_original_document_endpoint")
+        from websockets.asyncio.client import connect
+
+        async with connect(endpoint, max_size=10 * 1024 * 1024, close_timeout=1) as ws:
+            await ws.send(
+                json.dumps(
+                    {
+                        "id": 1,
+                        "method": "Runtime.evaluate",
+                        "params": {
+                            "expression": (
+                                "JSON.stringify({html:document.documentElement.outerHTML,"
+                                "url:location.href})"
+                            ),
+                            "returnByValue": True,
+                        },
+                    }
+                )
+            )
+            while True:
+                result = json.loads(await ws.recv())
+                if result.get("id") == 1:
+                    break
+            if result.get("error") or result.get("result", {}).get("exceptionDetails"):
+                raise RuntimeError("original_document_unavailable")
+            value = json.loads(result["result"]["result"]["value"])
+        return RuntimeResponse(
+            0,
+            value["url"],
+            {},
+            body=value["html"],
+            provenance=RuntimeProvenance(
+                identity.identity_id,
+                identity.revision,
+                identity.runtime_kind,
+                status["instance_id"],
+                status["generation"],
+            ),
+            challenge_target_id=session.target_id,
+        )

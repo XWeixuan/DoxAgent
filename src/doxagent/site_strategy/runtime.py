@@ -2012,7 +2012,7 @@ class SiteAccessRuntime:
             "maintenance_inspection identity=%s phase=classify elapsed=%.3f bytes=%s",
             maintained.identity_id, time.monotonic() - started, len(html),
         )
-        info = inspect_html(html, maintained.page.url, "")
+        info = inspect_html(html, maintained.page.url, "", generic_extraction=False)
         logger.warning(
             "maintenance_inspection identity=%s phase=classified elapsed=%.3f kind=%s",
             maintained.identity_id, time.monotonic() - started, info.page_kind,

@@ -2630,7 +2630,9 @@ class SiteStrategyService:
             stage("CHECKING_CHALLENGE")
         original = await self.runtime.inspect_challenge(session.control_token)
         report = VerificationReport()
-        original_inspection = inspect_html(original.body, original.final_url, "")
+        original_inspection = inspect_html(
+            original.body, original.final_url, "", generic_extraction=False
+        )
         report.original_page_kind = original_inspection.page_kind
         if original_inspection.access_reason == "challenge_required":
             report.challenge = "BLOCKED"

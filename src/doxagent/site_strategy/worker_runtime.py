@@ -369,6 +369,27 @@ class WorkerSiteAccessRuntime(SiteAccessRuntime):
 
     async def inspect_challenge(self, token):
         _, identity, egress = self._binding(token)
+        if identity.runtime_kind is BrowserRuntimeKind.EXTERNAL_CHROME:
+            from doxagent.content_enrichment.quality import inspect_html
+
+            from .governance_repository import GovernanceRepository
+            from .maintenance_document import read_original_document
+            from .supervisor_client import ChromeSupervisorClient
+
+            store = GovernanceRepository(self.repository)
+            session = next((s for s in store.list_sessions() if s.control_token == token), None)
+            if session is None:
+                raise KeyError("maintenance session")
+            capture = await read_original_document(
+                ChromeSupervisorClient(self.supervisor_socket, owner_id=self.controller_id),
+                identity, session, store.get_target(session.allocation_id),
+            )
+            info = inspect_html(capture.body, capture.final_url, "", generic_extraction=False)
+            capture.challenge_cleared = info.page_kind in {"article", "listing", "quote"} or (
+                info.access_reason in {"subscription_required", "login_required"}
+            )
+            capture.reason = info.access_reason or "original_page_inspected"
+            return capture
         return decode_response(
             await self.workers.command(
                 identity,

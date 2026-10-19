@@ -308,7 +308,8 @@ class Worker:
         status = await adapter.client.status(identity.identity_id)
         logging.getLogger(__name__).warning(
             "maintenance_recovery identity=%s phase=status elapsed=%.3f",
-            identity.identity_id, asyncio.get_running_loop().time() - started,
+            identity.identity_id,
+            asyncio.get_running_loop().time() - started,
         )
         if not status.get("running") and status.get("known_missing") is False:
             raise RuntimeError("original_browser_state_unverified")
@@ -327,7 +328,8 @@ class Worker:
         )
         logging.getLogger(__name__).warning(
             "maintenance_recovery identity=%s phase=attached elapsed=%.3f",
-            identity.identity_id, asyncio.get_running_loop().time() - started,
+            identity.identity_id,
+            asyncio.get_running_loop().time() - started,
         )
 
     async def handle(self, command):

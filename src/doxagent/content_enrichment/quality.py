@@ -214,6 +214,7 @@ def inspect_html(
     *,
     strategy_ref: str | None = None,
     strategy_parameters: dict[str, Any] | None = None,
+    generic_extraction: bool = True,
 ) -> Inspection:
     result = Inspection()
     if not html.strip():
@@ -377,7 +378,9 @@ def inspect_html(
                     else 10,
                 )
             )
-    extracted = _default_extractor()(html)
+    # Challenge inspection needs document/access evidence, not a cold-loaded
+    # generic body extractor. Normal body acceptance keeps the full cascade.
+    extracted = _default_extractor()(html) if generic_extraction else None
     if extracted:
         result.candidates.append(
             Candidate(clean(extracted), "trafilatura", bool(article_nodes), result.headline)
