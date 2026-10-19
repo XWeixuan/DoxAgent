@@ -59,4 +59,10 @@ Reuters、Barron's、Investing.com 的既有身份目前另有持久化人工维
 
 5. **CEG 官方 RSS 的实际网络路径失效**：从已修复的同一 Bus 容器探测，直连仍 ConnectTimeout；既有 `de-standard-1` 出口返回 200、56,275 字节有效 XML。这不是数据库饥饿的残留。为通用 Newswire RSS 增加显式 binding 级 approved HTTP route（最多主备两项），默认保持直连；只对 CEG 设置已验证 DE 路由。传输失败最多换一次已批准备用，403/429 不换出口，整体 25 秒预算，保留 60 秒轮询。不会让普通 RSS 继承浏览器登录身份或创建 Chrome。
 
+6. **跨消息源正文路由绕过已登录的网站默认身份**：这是除事件循环外另一个架构级共性原因。`ScopeResolver` 仅在 `origin_scope_id is None` 时使用站点指定的 `default_publisher`；正常正文 job 恰恰携带原消息源 scope，所以 Google/Yahoo 召回的第三方网站文章会绕开对应网站的既有身份。已经自动生成的空 publisher scope 又比显式默认配置优先，导致换页、重新登录既有身份后，生产正文仍可能使用另一套空 Profile。
+
+   生产只读路由探针确认：Google → Barron's 选择 `publisher-44465cea08be1472`，Google → Yahoo 选择 `publisher-ad2ccd5708de9bbc`，Yahoo → Reuters 试图新建身份（只读模式阻止写入），而相应网站已经明确指定默认 source scope。修复优先级为：**同站 origin 自己的独立 scope → 最终发布站明确指定的默认 scope → 既有 publisher scope → 必要时新建**。通用未知域名仍按域名隔离；TrendForce Press 同站任务继续使用自己的 Press 身份，不合并到 News。既有空 Profile 不删除、不导入 Cookie、不重写 Registry。
+
+   这一项需要对 Site Access 做一次仅含 `scope.py` 的不可变更新。发布前确认没有 OPEN 维护会话、排队/运行中的维护操作或活的待处理 Challenge 页面；保留 Supervisor 容器、External Chrome/Profile 和挂载，验证共享网络命名空间仍一致。Managed Chrome 由自身生命周期正常关闭并按需再启，不承诺它的进程跨 Site Access 容器替换保持不变。
+
 最终追加发布和持续自然轮询验收继续记录在本文件。真实 Challenge、登录失效、上游权限仍可能存在，不承诺绕过这些限制。

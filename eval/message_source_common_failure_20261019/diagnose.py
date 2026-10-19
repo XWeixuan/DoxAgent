@@ -53,6 +53,9 @@ out['tasks']=[{k:v.get(k) for k in ('task_id','identity_id','scope_id','state','
               for raw, in site.execute("select data_json from challenge_tasks where state<>'RESOLVED' and superseded_by is null")
               for v in [json.loads(raw)]]
 out['identity_states']=[json.loads(raw) for raw, in site.execute('select data_json from identity_runtime')]
+out['auth_facts']=[{k:v.get(k) for k in ('site_id','identity_id','auth_state','observed_session_revision','updated_at')}
+                   for raw, in site.execute('select data_json from site_identity_auth')
+                   for v in [json.loads(raw)] if v.get('site_id') in ('digitimes','reuters','barrons','investing')]
 cursor=site.execute('select * from access_events order by rowid desc limit 30')
 out['access_events']=[dict(zip([d[0] for d in cursor.description],row)) for row in cursor.fetchall()]
 out['stats']=run(['docker','stats','--no-stream','--format','{{.Name}} {{.CPUPerc}} {{.MemUsage}}',*names])

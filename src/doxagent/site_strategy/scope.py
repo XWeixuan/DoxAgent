@@ -61,20 +61,26 @@ class ScopeResolver:
             if origin
             and origin.owner_site_id == resolved.site_id
             and (resolved.site_id != "generic" or origin.scope_id == self.publisher_key(resolved))
-            else self.governance.get_scope(self.publisher_key(resolved))
+            else None
         )
         if scope is None:
             scopes = self.governance.list_scopes()
+            # Source provenance is not the final publisher's browser owner.
+            # A Google/Yahoo article on Barron's must use the explicitly chosen
+            # Barron's default, even when a stale auto-provisioned empty publisher
+            # scope already exists. Same-site origins above retain feed isolation.
             scope = next(
                 (
                     s
                     for s in scopes
                     if s.owner_site_id == resolved.site_id
-                    and origin_scope_id is None
+                    and resolved.site_id != "generic"
                     and s.verification_plan.get("default_publisher")
                 ),
                 None,
             )
+            if scope is None:
+                scope = self.governance.get_scope(self.publisher_key(resolved))
             if scope is None:
                 if not scopes:
                     return resolved
