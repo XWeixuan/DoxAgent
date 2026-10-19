@@ -25,8 +25,10 @@ with m.lock(root):
     state = json.loads((root/'state.json').read_text())
     m.atomic(audit/'compose.before.private.json', cfg); os.chmod(audit/'compose.before.private.json', 0o600)
     tag = 'doxagent-projector:read-freshness-'+commit[:12]
+    alias = 'doxagent-projector-base:' + old['Image'].split(':')[1][:12]
+    run(['docker','tag',old['Image'],alias])
     run(['docker','build','-f','deploy/Dockerfile.read-freshness-repair',
-         '--build-arg','APPROVED_BASE='+old['Image'],'--build-arg','REPAIR_COMMIT='+commit,'-t',tag,'.'], timeout=600)
+         '--build-arg','APPROVED_BASE='+alias,'--build-arg','REPAIR_COMMIT='+commit,'-t',tag,'.'], timeout=600)
     image = run(['docker','image','inspect','--format','{{.Id}}',tag])
     # Explicit, durable rollback ownership before replacing the active container.
     state.setdefault('owned_images', []).append(image)
