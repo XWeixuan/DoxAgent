@@ -141,34 +141,62 @@ class MessageBusV2Repository:
                 db.execute("INSERT OR REPLACE INTO message_admission_results VALUES(?,?)", args)
 
     def resolve_first_seen(self, message: RawMessageInput, binding_id: str) -> RawMessageInput:
+        return self.resolve_first_seen_many([message], binding_id)[0]
+
+    def resolve_first_seen_many(
+        self, messages: Sequence[RawMessageInput], binding_id: str
+    ) -> list[RawMessageInput]:
         """Pin unknown publication dates across polls, revisions and process restarts."""
         from .schema import identity_key_for
 
-        key = identity_key_for(binding_id, message)
+        if not messages:
+            return []
+        keys = [identity_key_for(binding_id, message) for message in messages]
+        values = [
+            (
+                key,
+                (
+                    utc_now()
+                    if message.publication_time_basis == "UNKNOWN_FIRST_SEEN"
+                    else message.published_at
+                )
+                .astimezone(UTC)
+                .isoformat(),
+            )
+            for key, message in zip(keys, messages, strict=True)
+        ]
+        pinned = {}
         with self.transaction() as db:
-            db.execute(
+            db.executemany(
                 "INSERT INTO message_first_seen VALUES(?,?) ON CONFLICT(id) DO UPDATE SET "
                 "first_seen_at=min(first_seen_at,excluded.first_seen_at)",
-                (
-                    key,
-                    (
-                        utc_now()
-                        if message.publication_time_basis == "UNKNOWN_FIRST_SEEN"
-                        else message.published_at
-                    )
-                    .astimezone(UTC)
-                    .isoformat(),
-                ),
+                values,
             )
-            row = db.execute(
-                "SELECT first_seen_at FROM message_first_seen WHERE id=?", (key,)
-            ).fetchone()
-        if (
-            message.publication_time_basis == "UNKNOWN_FIRST_SEEN"
+            for start in range(0, len(keys), 400):
+                batch = keys[start : start + 400]
+                pinned.update(
+                    db.execute(
+                        "SELECT id,first_seen_at FROM message_first_seen WHERE id IN ("
+                        + ",".join("?" for _ in batch)
+                        + ")",
+                        batch,
+                    ).fetchall()
+                )
+        return [
+            message.model_copy(update={"published_at": datetime.fromisoformat(pinned[key])})
+            if message.publication_time_basis == "UNKNOWN_FIRST_SEEN"
             or message.metadata.get("publication_time_origin") == "UPDATED_FALLBACK"
-        ):
-            return message.model_copy(update={"published_at": datetime.fromisoformat(row[0])})
-        return message
+            else message
+            for key, message in zip(keys, messages, strict=True)
+        ]
+
+    def record_admissions(
+        self, messages: Sequence[tuple[RawMessageInput, str]], binding_id: str
+    ) -> None:
+        for start in range(0, len(messages), 200):
+            with self.transaction() as db:
+                for message, reason in messages[start : start + 200]:
+                    self.record_admission(message, reason, "INTAKE", binding_id, connection=db)
 
     def _initialize(self) -> None:
         with self.transaction() as connection:
@@ -1433,7 +1461,9 @@ class MessageBusV2Repository:
                 )
                 deadline_at = existing.deadline_at
                 if closed_work and existing.attempt_count == 0:
-                    retry_budget = max(timedelta(seconds=1), existing.deadline_at - existing.created_at)
+                    retry_budget = max(
+                        timedelta(seconds=1), existing.deadline_at - existing.created_at
+                    )
                     deadline_at = current + retry_budget
                 job = existing.model_copy(
                     update={
@@ -2361,7 +2391,7 @@ class MessageBusV2Repository:
                     body=standard.body,
                     source=standard.source,
                     source_name=standard.source_name,
-            publisher_name=standard.publisher_name,
+                    publisher_name=standard.publisher_name,
                     resolved_domain=standard.resolved_domain,
                     url=standard.url,
                     published_at=standard.published_at,

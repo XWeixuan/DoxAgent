@@ -54,10 +54,10 @@ class DistributionWorker:
     async def run_once(self) -> int:
         if time.monotonic() >= self._retirement_at:
             self._retirement_at = time.monotonic() + 60
-            retired = await asyncio.to_thread(self.repository.expire_runs)
+            retired = await self.bus.storage.call(self.repository.expire_runs)
             if retired:
                 logger.info("retired expired realtime distribution runs count=%s", retired)
-        rows = self.repository.claim_deliveries(limit=16)
+        rows = await self.bus.storage.call(self.repository.claim_deliveries, limit=16)
         groups: dict[tuple[str, int], list[dict[str, Any]]] = defaultdict(list)
         for row in rows:
             groups[(row["article_id"], int(row["terms_revision"]))].append(row)
@@ -78,12 +78,15 @@ class DistributionWorker:
     async def _article(self, rows: list[dict[str, Any]]) -> None:
         message = RawMessageInput.model_validate_json(rows[0]["enriched_json"])
         source = SourceDefinition.model_validate_json(rows[0]["source_json"])
-        current_source = self.bus.repository.get_source(source.source_id)
+        current_source = await self.bus.storage.call(
+            self.bus.repository.get_source, source.source_id
+        )
         if _complete_body_required(current_source or source) and not _complete_body_verified(
             message
         ):
             for row in rows:
-                self.repository.finish_delivery(
+                await self.bus.storage.call(
+                    self.repository.finish_delivery,
                     row["delivery_id"],
                     row["claim_token"],
                     "NO_PUBLIC_BODY",
@@ -97,7 +100,8 @@ class DistributionWorker:
                 message.published_at, context, utc_now(), message.publication_time_basis
             )
             if reason:
-                self.repository.finish_delivery(
+                await self.bus.storage.call(
+                    self.repository.finish_delivery,
                     row["delivery_id"],
                     row["claim_token"],
                     "ADMISSION_REJECTED",
@@ -111,9 +115,12 @@ class DistributionWorker:
         definitions: dict[str, TickerMonitoringTerms] = {}
         relevant: dict[str, bool] = {}
         for row in eligible_rows:
-            found = self.terms.get(row["ticker"], int(row["terms_revision"]))
+            found = await self.bus.storage.call(
+                self.terms.get, row["ticker"], int(row["terms_revision"])
+            )
             if found is None:
-                self.repository.finish_delivery(
+                await self.bus.storage.call(
+                    self.repository.finish_delivery,
                     row["delivery_id"],
                     row["claim_token"],
                     "CONFIG_INCOMPLETE",
@@ -147,7 +154,8 @@ class DistributionWorker:
             scores, attempts, errors = await jev_task
             for row in eligible_rows:
                 if relevant.get(row["ticker"]):
-                    self.repository.update_jev_decision(
+                    await self.bus.storage.call(
+                        self.repository.update_jev_decision,
                         row,
                         scores.get(row["ticker"]),
                         attempts.get(row["ticker"], 0),
@@ -279,7 +287,8 @@ class DistributionWorker:
         error_code: str | None,
     ) -> None:
         relevant = regex_hit or (jev_result is not None and jev_result >= 0.5)
-        decision_id = self.repository.record_decision(
+        decision_id = await self.bus.storage.call(
+            self.repository.record_decision,
             row,
             regex_result=regex_hit,
             jev_result=jev_result,
@@ -288,7 +297,8 @@ class DistributionWorker:
             final_result="RELEVANT" if relevant else "NOT_RELEVANT",
         )
         if not relevant:
-            self.repository.finish_delivery(
+            await self.bus.storage.call(
+                self.repository.finish_delivery,
                 row["delivery_id"],
                 row["claim_token"],
                 "NOT_RELEVANT",
@@ -296,16 +306,22 @@ class DistributionWorker:
             )
             return
         snapshot = TickerSourceBinding.model_validate_json(row["binding_json"])
-        current = self.bus.repository.get_binding(snapshot.binding_id)
-        ticker_state = self.bus.repository.get_ticker_state(snapshot.ticker)
+        current = await self.bus.storage.call(self.bus.repository.get_binding, snapshot.binding_id)
+        ticker_state = await self.bus.storage.call(
+            self.bus.repository.get_ticker_state, snapshot.ticker
+        )
         if (
             current is None
             or not current.enabled
             or ticker_state is None
             or ticker_state.status != TickerMonitoringStatus.RUNNING
         ):
-            self.repository.finish_delivery(
-                row["delivery_id"], row["claim_token"], "CANCELLED", {"decision_id": decision_id}
+            await self.bus.storage.call(
+                self.repository.finish_delivery,
+                row["delivery_id"],
+                row["claim_token"],
+                "CANCELLED",
+                {"decision_id": decision_id},
             )
             return
         context = AdmissionContext.model_validate(json.loads(row["admission_json"]))
@@ -313,7 +329,8 @@ class DistributionWorker:
             message.published_at, context, utc_now(), message.publication_time_basis
         )
         if reason:
-            self.repository.finish_delivery(
+            await self.bus.storage.call(
+                self.repository.finish_delivery,
                 row["delivery_id"],
                 row["claim_token"],
                 "ADMISSION_REJECTED",
@@ -347,11 +364,16 @@ class DistributionWorker:
                 type(exc).__name__,
             )
             if int(row["attempts"]) >= 2:
-                self.repository.finish_delivery(
-                    row["delivery_id"], row["claim_token"], "FAILED", {"reason": type(exc).__name__}
+                await self.bus.storage.call(
+                    self.repository.finish_delivery,
+                    row["delivery_id"],
+                    row["claim_token"],
+                    "FAILED",
+                    {"reason": type(exc).__name__},
                 )
             else:
-                self.repository.finish_delivery(
+                await self.bus.storage.call(
+                    self.repository.finish_delivery,
                     row["delivery_id"],
                     row["claim_token"],
                     "PENDING",
@@ -359,7 +381,8 @@ class DistributionWorker:
                 )
             return
         state = "DEDUPLICATED" if result.decision.value == "duplicate" else "PUBLISHED"
-        self.repository.finish_delivery(
+        await self.bus.storage.call(
+            self.repository.finish_delivery,
             row["delivery_id"],
             row["claim_token"],
             state,

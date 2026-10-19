@@ -1,0 +1,16 @@
+# Exact deployed application/dependency base; no Chrome or Registry replacement.
+ARG APPROVED_BASE
+FROM ${APPROVED_BASE}
+ARG REPAIR_COMMIT
+ARG BASE_COMMIT
+LABEL org.opencontainers.image.revision=${REPAIR_COMMIT} \
+      doxagent.repair.base_revision=${BASE_COMMIT} \
+      doxagent.repair.scope="message_bus_storage_lane,content_enrichment"
+ENV DOXAGENT_BUILD_COMMIT=${REPAIR_COMMIT}
+COPY src/doxagent/message_bus_v2/storage_lane.py /app/src/doxagent/message_bus_v2/storage_lane.py
+COPY src/doxagent/message_bus_v2/repository.py /app/src/doxagent/message_bus_v2/repository.py
+COPY src/doxagent/message_bus_v2/service.py /app/src/doxagent/message_bus_v2/service.py
+COPY src/doxagent/message_bus_v2/scheduler.py /app/src/doxagent/message_bus_v2/scheduler.py
+COPY src/doxagent/message_bus_v2/distribution.py /app/src/doxagent/message_bus_v2/distribution.py
+COPY src/doxagent/persistent_runtime_v2/bus_orchestration.py /app/src/doxagent/persistent_runtime_v2/bus_orchestration.py
+COPY src/doxagent/content_enrichment/service.py /app/src/doxagent/content_enrichment/service.py

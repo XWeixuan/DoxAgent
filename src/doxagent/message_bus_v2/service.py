@@ -74,6 +74,9 @@ class MessageBusV2Service:
         self.enrichment_pipeline_version = enrichment_pipeline_version
         self.hidden_news_policy = hidden_news_policy or HiddenNewsIngressPolicy()
         self.site_language_resolver = site_language_resolver
+        from .storage_lane import StorageLane
+
+        self.storage = StorageLane()
 
     def bootstrap(self) -> None:
         for source in initial_sources():
@@ -675,6 +678,24 @@ class MessageBusV2Service:
         attempted_at: datetime | None = None,
         admission_context: AdmissionContext | None = None,
     ) -> PollExecutionResult:
+        return await self.storage.call(
+            self._accept_poll_result,
+            source=source,
+            binding=binding,
+            result=result,
+            attempted_at=attempted_at,
+            admission_context=admission_context,
+        )
+
+    def _accept_poll_result(
+        self,
+        *,
+        source: SourceDefinition,
+        binding: TickerSourceBinding,
+        result: PollResult,
+        attempted_at: datetime | None = None,
+        admission_context: AdmissionContext | None = None,
+    ) -> PollExecutionResult:
         result = self.hidden_news_policy.apply(source.source_id, result)
         now = attempted_at or utc_now()
         state = self.repository.get_poll_state(binding)
@@ -700,8 +721,10 @@ class MessageBusV2Service:
             self.repository.save_failure(failure)
             self._upsert_failure_alert(failure)
             output = output.model_copy(update={"invalid_count": output.invalid_count + 1})
-        for input_message in result.messages:
-            input_message = self.repository.resolve_first_seen(input_message, binding.binding_id)
+        rejected = []
+        for input_message in self.repository.resolve_first_seen_many(
+            result.messages, binding.binding_id
+        ):
             input_message = input_message.model_copy(
                 update={"admission_context": admission_context or AdmissionContext()}
             )
@@ -712,9 +735,7 @@ class MessageBusV2Service:
                 input_message.publication_time_basis,
             )
             if reason:
-                self.repository.record_admission(
-                    input_message, reason, "INTAKE", binding.binding_id
-                )
+                rejected.append((input_message, reason))
                 output.filtered_count += 1
                 continue
             try:
@@ -733,7 +754,7 @@ class MessageBusV2Service:
                     if created:
                         output = output.model_copy(update={"queued_count": output.queued_count + 1})
                     continue
-                ingest = await self.accept_message(
+                ingest = self._accept_message(
                     source=source,
                     binding=binding,
                     message=input_message,
@@ -777,6 +798,7 @@ class MessageBusV2Service:
             if ingest.stream_item_ids:
                 updates["published_count"] = output.published_count + len(ingest.stream_item_ids)
             output = output.model_copy(update=updates)
+        self.repository.record_admissions(rejected, binding.binding_id)
         if poll_errors:
             output.window_coverage = "PARTIAL"
         all_queries_failed = (
@@ -952,6 +974,30 @@ class MessageBusV2Service:
             raise ValueError("API sources may not use a crawler adapter_ref")
 
     async def accept_message(
+        self,
+        *,
+        source: SourceDefinition,
+        binding: TickerSourceBinding,
+        message: RawMessageInput,
+        bootstrap: bool,
+        collected_at: datetime | None = None,
+        trusted_enrichment: bool = False,
+        enrichment_input: RawMessageInput | None = None,
+        enrichment_claim: tuple[str, str] | None = None,
+    ) -> IngestResult:
+        return await self.storage.call(
+            self._accept_message,
+            source=source,
+            binding=binding,
+            message=message,
+            bootstrap=bootstrap,
+            collected_at=collected_at,
+            trusted_enrichment=trusted_enrichment,
+            enrichment_input=enrichment_input,
+            enrichment_claim=enrichment_claim,
+        )
+
+    def _accept_message(
         self,
         *,
         source: SourceDefinition,

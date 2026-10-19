@@ -58,8 +58,11 @@ class ContentEnrichmentHub:
     async def run_once(self, *, now: datetime | None = None) -> int:
         await self._flush_outcomes(force=True)
         current = (now or utc_now()).astimezone(UTC)
-        jobs = self.repository.claim_enrichment_jobs(
-            limit=self.concurrency, now=current, lease_seconds=60
+        jobs = await self.bus.storage.call(
+            self.repository.claim_enrichment_jobs,
+            limit=self.concurrency,
+            now=current,
+            lease_seconds=60,
         )
         if not jobs:
             return 0
@@ -91,7 +94,9 @@ class ContentEnrichmentHub:
         while job.claim_token:
             await asyncio.sleep(20)
             try:
-                self.repository.renew_enrichment_claim(job.job_id, job.claim_token)
+                await self.bus.storage.call(
+                    self.repository.renew_enrichment_claim, job.job_id, job.claim_token
+                )
             except RuntimeError as exc:
                 if str(exc) == "enrichment_lease_lost":
                     return
@@ -109,7 +114,8 @@ class ContentEnrichmentHub:
                 active -= finished
                 if len(active) < self.concurrency:
                     now = utc_now()
-                    jobs = self.repository.claim_enrichment_jobs(
+                    jobs = await self.bus.storage.call(
+                        self.repository.claim_enrichment_jobs,
                         limit=self.concurrency - len(active),
                         now=now,
                         lease_seconds=60,
@@ -146,10 +152,16 @@ class ContentEnrichmentHub:
             )
         )
         if reason and job.binding:
-            self.repository.record_admission(
-                job.message, reason, "ENRICHMENT_DEQUEUE", job.binding.binding_id
+            await self.bus.storage.call(
+                self.repository.record_admission,
+                job.message,
+                reason,
+                "ENRICHMENT_DEQUEUE",
+                job.binding.binding_id,
             )
-            self.repository.delete_enrichment_job(job.job_id, claim_token=job.claim_token)
+            await self.bus.storage.call(
+                self.repository.delete_enrichment_job, job.job_id, claim_token=job.claim_token
+            )
             return
         generic_url = job.message.metadata.get("identity_evidence", {}).get("url_kind") == "generic"
         native = native_article(job.message)
@@ -233,7 +245,8 @@ class ContentEnrichmentHub:
         if not result.succeeded and result.reason == "storage_unavailable":
             not_before = finished_at + timedelta(seconds=60)
             if not_before < job.deadline_at:
-                self.repository.requeue_enrichment_job(
+                await self.bus.storage.call(
+                    self.repository.requeue_enrichment_job,
                     job.model_copy(
                         update={
                             "status": EnrichmentJobStatus.RETRY_WAIT,
@@ -243,7 +256,7 @@ class ContentEnrichmentHub:
                             "lease_expires_at": None,
                             "updated_at": finished_at,
                         }
-                    )
+                    ),
                 )
                 return
         if (
@@ -267,7 +280,7 @@ class ContentEnrichmentHub:
                         "updated_at": finished_at,
                     }
                 )
-                self.repository.requeue_enrichment_job(requeued)
+                await self.bus.storage.call(self.repository.requeue_enrichment_job, requeued)
                 return
 
         metadata = media_enrichment_metadata(job.message.metadata, result)
@@ -329,10 +342,13 @@ class ContentEnrichmentHub:
         if job.owner_kind == "distribution_article":
             from doxagent.message_bus_v2.distribution_repository import DistributionRepository
 
-            DistributionRepository(self.repository).finalize_article(
-                job, message, self._outcome_payload(job, message)
-            )
-            body(job, message)
+            def finalize():
+                DistributionRepository(self.repository).finalize_article(
+                    job, message, self._outcome_payload(job, message)
+                )
+                body(job, message)
+
+            await self.bus.storage.call(finalize)
             return
         assert job.binding is not None
         await self.bus.accept_message(
@@ -345,12 +361,13 @@ class ContentEnrichmentHub:
             enrichment_input=job.message,
             enrichment_claim=(job.job_id, job.claim_token) if job.claim_token else None,
         )
-        self.repository.complete_enrichment_job_with_outcome(
+        await self.bus.storage.call(
+            self.repository.complete_enrichment_job_with_outcome,
             job.job_id,
             job.claim_token,
             self._outcome_payload(job, message),
         )
-        body(job, message)
+        await self.bus.storage.call(body, job, message)
 
     @staticmethod
     def _outcome_payload(job: EnrichmentJob, message: RawMessageInput) -> dict[str, object] | None:
@@ -385,7 +402,7 @@ class ContentEnrichmentHub:
         if not force and now - self._last_outbox_flush < 10:
             return
         self._last_outbox_flush = now
-        rows = self.repository.list_site_strategy_outbox(limit=100)
+        rows = await self.bus.storage.call(self.repository.list_site_strategy_outbox, limit=100)
         if not rows:
             return
         ids = [str(row["outbox_id"]) for row in rows]
@@ -393,11 +410,11 @@ class ContentEnrichmentHub:
             outcomes = [BodyOutcome.model_validate(row["payload"]) for row in rows]
             await self.site_access_client.submit_outcomes(outcomes)
         except Exception:
-            self.repository.retry_site_strategy_outbox(ids)
+            await self.bus.storage.call(self.repository.retry_site_strategy_outbox, ids)
             logger.warning("Site Strategy outcome flush failed", exc_info=True)
         else:
-            self.repository.confirm_site_strategy_outbox(ids)
-            self.repository.prune_site_strategy_outbox()
+            await self.bus.storage.call(self.repository.confirm_site_strategy_outbox, ids)
+            await self.bus.storage.call(self.repository.prune_site_strategy_outbox)
 
     def _retry_after(self, attempts: Sequence[FetchAttempt]) -> float:
         values = [item.retry_after_seconds for item in attempts if item.retry_after_seconds]

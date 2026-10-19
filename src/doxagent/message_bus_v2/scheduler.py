@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import inspect
 import logging
 import time
 from collections import defaultdict
@@ -58,7 +59,7 @@ class SchedulerGroupLimiter:
         *,
         clock: MonotonicClock = time.monotonic,
         sleep: Sleeper = asyncio.sleep,
-        on_request: Callable[[], None] | None = None,
+        on_request: Callable[[], object] | None = None,
         initial_delay_seconds: float = 0.0,
     ) -> None:
         self.constraints = constraints
@@ -80,7 +81,9 @@ class SchedulerGroupLimiter:
                 request_at = self._clock()
                 self._next_request_at = request_at + self.constraints.minimum_request_gap_seconds
                 if self._on_request:
-                    self._on_request()
+                    recorded = self._on_request()
+                    if inspect.isawaitable(recorded):
+                        await recorded
             yield
 
 
@@ -108,30 +111,37 @@ class GlobalPollScheduler:
         self.distribution_worker: DistributionWorker | None = None
         self._distribution_task: asyncio.Task[int] | None = None
 
+    async def storage_call(self, operation, *args, **kwargs):
+        return await self.service.storage.call(operation, *args, **kwargs)
+
     async def run_once(self) -> list[PollExecutionResult]:
         admission = getattr(self, "activation_admission", None)
         if admission is not None:
-            admission()
+            await self.storage_call(admission)
         from doxagent.ticker_initialization.consumers import bus_revision_usable, consumer_heartbeat
 
-        with consumer_heartbeat(
+        heartbeat = consumer_heartbeat(
             getattr(self, "initialization_control", None),
             "bus",
             lambda revision: bus_revision_usable(self.service, revision),
-        ):
+        )
+        await self.storage_call(heartbeat.__enter__)
+        try:
             return await self._run_admitted_once()
+        finally:
+            await self.storage_call(heartbeat.__exit__, None, None, None)
 
     async def _run_admitted_once(self) -> list[PollExecutionResult]:
         orchestration = self.runtime_orchestration
         if orchestration is not None:
             return await orchestration.run_once(self)
         now = utc_now()
-        eligible = self._eligible_bindings(now)
-        self._initialize_due_slots(eligible, now)
-        self._update_capacity_alerts(eligible)
+        eligible = await self.storage_call(self._eligible_bindings, now)
+        await self.storage_call(self._initialize_due_slots, eligible, now)
+        await self.storage_call(self._update_capacity_alerts, eligible)
         due: list[tuple[SourceDefinition, TickerSourceBinding]] = []
         for source, binding in eligible:
-            state = self.repository.get_poll_state(binding)
+            state = await self.storage_call(self.repository.get_poll_state, binding)
             if state.next_dispatch_at is None or state.next_dispatch_at <= now:
                 due.append((source, binding))
         shared: dict[str, tuple[SourceDefinition, list[TickerSourceBinding]]] = {}
@@ -145,7 +155,7 @@ class GlobalPollScheduler:
             if source.acquisition_mode is AcquisitionMode.BY_DISTRIBUTION:
                 shared.setdefault(source.source_id, (source, []))[1].append(binding)
         for source, bindings in shared.values():
-            if self.distribution_due(bindings, now):
+            if await self.storage_call(self.distribution_due, bindings, now):
                 tasks.append(asyncio.create_task(self._poll_distribution(source, bindings, now)))
         results = await asyncio.gather(*tasks) if tasks else []
         if self.distribution_worker is not None and (
@@ -154,8 +164,8 @@ class GlobalPollScheduler:
             if self._distribution_task is not None:
                 self._distribution_task.result()
             self._distribution_task = asyncio.create_task(self.distribution_worker.run_once())
-        self.service.flush_due_buffers(now=now)
-        self.service.retry_pending_raw()
+        await self.storage_call(self.service.flush_due_buffers, now=now)
+        await self.storage_call(self.service.retry_pending_raw)
         return list(results)
 
     async def run_forever(self, *, loop_sleep_seconds: float, stop: asyncio.Event) -> None:
@@ -164,15 +174,20 @@ class GlobalPollScheduler:
                 await self.run_once()
             except Exception as exc:
                 from doxagent.persistent_runtime_v2.journal import is_sqlite_contention
+
                 if not is_sqlite_contention(exc):
                     raise
-                logging.getLogger(__name__).warning("bus runtime lock contention; preserving durable leases and retrying next loop")
+                logging.getLogger(__name__).warning(
+                    "bus runtime lock contention; preserving durable leases and retrying next loop"
+                )
             try:
                 await asyncio.wait_for(stop.wait(), timeout=loop_sleep_seconds)
             except TimeoutError:
                 pass
 
     async def close(self) -> None:
+        if self.runtime_orchestration is not None:
+            await self.runtime_orchestration.close()
         if self._distribution_task is not None:
             self._distribution_task.cancel()
             await asyncio.gather(self._distribution_task, return_exceptions=True)
@@ -282,7 +297,7 @@ class GlobalPollScheduler:
             )
         roster = []
         for binding in bindings:
-            found = self.terms.get(binding.ticker)
+            found = await self.storage_call(self.terms.get, binding.ticker)
             if found is None:
                 continue
             admission = admission_context or AdmissionContext()
@@ -291,7 +306,8 @@ class GlobalPollScheduler:
             return PollExecutionResult(
                 binding_id=f"shared:{source.source_id}", error_code="CONFIG_INCOMPLETE"
             )
-        run = self.distribution.get_or_create_run(
+        run = await self.storage_call(
+            self.distribution.get_or_create_run,
             work_key=work_key,
             source=source,
             mode=mode,
@@ -300,16 +316,18 @@ class GlobalPollScheduler:
             roster=roster,
         )
         for binding, revision, admission_payload in roster:
-            self.distribution.attach_target(run["run_id"], binding, revision, admission_payload)
+            await self.storage_call(
+                self.distribution.attach_target, run["run_id"], binding, revision, admission_payload
+            )
         if run["status"] == "DONE":
-            self._record_distribution_poll(source, roster, run)
+            await self.storage_call(self._record_distribution_poll, source, roster, run)
             return PollExecutionResult(
                 binding_id=f"shared:{source.source_id}",
                 poll_run_id=run["run_id"],
                 window_done=True,
                 window_coverage=run["coverage"],
             )
-        token = self.distribution.claim_run(run["run_id"])
+        token = await self.storage_call(self.distribution.claim_run, run["run_id"])
         if token is None:
             return PollExecutionResult(
                 binding_id=f"shared:{source.source_id}",
@@ -328,28 +346,36 @@ class GlobalPollScheduler:
                 window_start=window_start,
                 window_cutoff=window_cutoff,
                 requested_at=attempted_at,
-                request_permit=self._limiter(source).permit,
+                request_permit=(await self.storage_call(self._limiter, source)).permit,
             )
             result = await shared_poll(context)
             from doxagent.source_maintenance.signals import shared
 
             shared(source, [b for b, _, _ in roster], run["run_id"], attempted_at, mode, result)
             if result.site_access_deferred:
-                self.distribution.release_run(run["run_id"], token)
+                await self.storage_call(self.distribution.release_run, run["run_id"], token)
                 if mode == "REALTIME":
-                    retry_at = (
-                        result.site_access_retry_not_before or self._next_distribution_due(source)
+                    retry_at = result.site_access_retry_not_before or self._next_distribution_due(
+                        source
                     )
                     for binding, _, _ in roster:
-                        state = self.repository.get_poll_state(binding)
-                        self.repository.save_poll_state(state.model_copy(update={
-                            "next_dispatch_at": retry_at,
-                            "updated_at": utc_now(),
-                            "last_error_code": "SOURCE_DEFERRED:" + (
-                                result.site_access_deferred_reason or "access_budget_deferred"
+                        state = await self.storage_call(self.repository.get_poll_state, binding)
+                        await self.storage_call(
+                            self.repository.save_poll_state,
+                            state.model_copy(
+                                update={
+                                    "next_dispatch_at": retry_at,
+                                    "updated_at": utc_now(),
+                                    "last_error_code": "SOURCE_DEFERRED:"
+                                    + (
+                                        result.site_access_deferred_reason
+                                        or "access_budget_deferred"
+                                    ),
+                                    "last_error_message": "Acquisition deferred until "
+                                    + retry_at.isoformat(),
+                                }
                             ),
-                            "last_error_message": "Acquisition deferred until " + retry_at.isoformat(),
-                        }))
+                        )
                 return PollExecutionResult(
                     binding_id=f"shared:{source.source_id}",
                     poll_run_id=run["run_id"],
@@ -357,7 +383,8 @@ class GlobalPollScheduler:
                     site_access_deferred=True,
                     site_access_retry_not_before=result.site_access_retry_not_before,
                 )
-            job_ids = self.distribution.ingest(
+            job_ids = await self.storage_call(
+                self.distribution.ingest,
                 run["run_id"],
                 token,
                 source,
@@ -369,9 +396,14 @@ class GlobalPollScheduler:
                 pipeline_version=self.service.enrichment_pipeline_version,
             )
             if result.window_done:
-                self._record_distribution_poll(source, roster, run,
-                                               coverage=result.window_coverage,
-                                               observed_at=attempted_at)
+                await self.storage_call(
+                    self._record_distribution_poll,
+                    source,
+                    roster,
+                    run,
+                    coverage=result.window_coverage,
+                    observed_at=attempted_at,
+                )
             return PollExecutionResult(
                 binding_id=f"shared:{source.source_id}",
                 poll_run_id=run["run_id"],
@@ -383,31 +415,43 @@ class GlobalPollScheduler:
                 window_coverage=result.window_coverage,
             )
         except Exception as exc:
-            self.distribution.release_run(run["run_id"], token)
+            await self.storage_call(self.distribution.release_run, run["run_id"], token)
             from doxagent.source_maintenance.signals import shared
 
-            shared(source, [b for b, _, _ in roster], run["run_id"], attempted_at,
-                   mode, error=type(exc).__name__)
+            shared(
+                source,
+                [b for b, _, _ in roster],
+                run["run_id"],
+                attempted_at,
+                mode,
+                error=type(exc).__name__,
+            )
             for binding, _, _ in roster:
-                failed = self.service.record_poll_failure(
-                    binding, code=type(exc).__name__, message=str(exc),
+                failed = await self.storage_call(
+                    self.service.record_poll_failure,
+                    binding,
+                    code=type(exc).__name__,
+                    message=str(exc),
                     attempted_at=attempted_at,
                 )
                 if mode == "REALTIME":
                     next_due = self._next_distribution_due(source)
-                    self.repository.save_poll_state(failed.model_copy(update={
-                        "target_due_at": next_due,
-                        "next_dispatch_at": next_due,
-                        "updated_at": utc_now(),
-                    }))
+                    await self.storage_call(
+                        self.repository.save_poll_state,
+                        failed.model_copy(
+                            update={
+                                "target_due_at": next_due,
+                                "next_dispatch_at": next_due,
+                                "updated_at": utc_now(),
+                            }
+                        ),
+                    )
             raise
 
     @staticmethod
     def _next_distribution_due(source: SourceDefinition) -> datetime:
         interval = source.default_polling_config.target_interval_seconds
-        return datetime.fromtimestamp(
-            (int(utc_now().timestamp()) // interval + 1) * interval, UTC
-        )
+        return datetime.fromtimestamp((int(utc_now().timestamp()) // interval + 1) * interval, UTC)
 
     def _record_distribution_poll(
         self,
@@ -426,19 +470,25 @@ class GlobalPollScheduler:
             previous = self.repository.get_poll_state(binding)
             if previous.last_attempt_at and previous.last_attempt_at >= observed_at:
                 continue
-            self.repository.save_poll_state(previous.model_copy(update={
-                "status": PollStatus.PARTIAL if partial else PollStatus.SUCCEEDED,
-                "last_attempt_at": observed_at,
-                "last_success_at": observed_at,
-                "last_failure_at": observed_at if partial else None,
-                "failure_since": observed_at if partial else None,
-                "last_error_code": "SOURCE_WINDOW_PARTIAL" if partial else None,
-                "last_error_message": "Shared source coverage is partial" if partial else None,
-                "consecutive_failures": 0,
-                "target_due_at": next_due,
-                "next_dispatch_at": next_due,
-                "updated_at": utc_now(),
-            }))
+            self.repository.save_poll_state(
+                previous.model_copy(
+                    update={
+                        "status": PollStatus.PARTIAL if partial else PollStatus.SUCCEEDED,
+                        "last_attempt_at": observed_at,
+                        "last_success_at": observed_at,
+                        "last_failure_at": observed_at if partial else None,
+                        "failure_since": observed_at if partial else None,
+                        "last_error_code": "SOURCE_WINDOW_PARTIAL" if partial else None,
+                        "last_error_message": "Shared source coverage is partial"
+                        if partial
+                        else None,
+                        "consecutive_failures": 0,
+                        "target_due_at": next_due,
+                        "next_dispatch_at": next_due,
+                        "updated_at": utc_now(),
+                    }
+                )
+            )
 
     @source_routed
     async def _poll(
@@ -455,9 +505,9 @@ class GlobalPollScheduler:
         freeze_query_plan: bool = False,
     ) -> PollExecutionResult:
         # Snapshot source and binding for this poll. Updates become visible on the next poll.
-        state = self.repository.get_poll_state(binding)
+        state = await self.storage_call(self.repository.get_poll_state, binding)
         started_at = self._clock()
-        limiter = self._limiter(source)
+        limiter = await self.storage_call(self._limiter, source)
         poll_run_id = new_id("poll")
         try:
             query_plan = (
@@ -466,7 +516,8 @@ class GlobalPollScheduler:
                 else (
                     build_query_plan(source, found[1], found[0]).model_dump(mode="json")
                     if source.acquisition_mode is AcquisitionMode.BY_SEARCH
-                    and (found := self.terms.get(binding.ticker)) is not None
+                    and (found := await self.storage_call(self.terms.get, binding.ticker))
+                    is not None
                     else None
                 )
             )
@@ -509,18 +560,19 @@ class GlobalPollScheduler:
                     attempted_at + timedelta(seconds=5)
                 )
                 retry_at = max(retry_at, attempted_at + timedelta(seconds=1))
-                self.repository.save_poll_state(
+                await self.storage_call(
+                    self.repository.save_poll_state,
                     state.model_copy(
                         update={
                             "next_dispatch_at": retry_at,
                             "last_latency_ms": max(0, int((self._clock() - started_at) * 1000)),
                             "updated_at": attempted_at,
-                            "last_error_code": "SOURCE_DEFERRED:" + (
-                                result.site_access_deferred_reason or "access_budget_deferred"
-                            ),
-                            "last_error_message": "Acquisition deferred until " + retry_at.isoformat(),
+                            "last_error_code": "SOURCE_DEFERRED:"
+                            + (result.site_access_deferred_reason or "access_budget_deferred"),
+                            "last_error_message": "Acquisition deferred until "
+                            + retry_at.isoformat(),
                         }
-                    )
+                    ),
                 )
                 return PollExecutionResult(
                     poll_run_id=poll_run_id,
@@ -541,11 +593,12 @@ class GlobalPollScheduler:
             if window_cutoff is not None:
                 return execution
             if execution.crawler_execution_id and self.adapters.crawler_plane is not None:
-                self.adapters.crawler_plane.record_message_bus_telemetry(
+                await self.storage_call(
+                    self.adapters.crawler_plane.record_message_bus_telemetry,
                     execution.crawler_execution_id,
                     execution.model_dump(mode="json"),
                 )
-            refreshed = self.repository.get_poll_state(binding)
+            refreshed = await self.storage_call(self.repository.get_poll_state, binding)
             target_due = self._next_due(
                 refreshed.target_due_at or attempted_at,
                 attempted_at,
@@ -554,7 +607,8 @@ class GlobalPollScheduler:
             next_dispatch = target_due
             if result.optional_next_poll_hint and result.optional_next_poll_hint > next_dispatch:
                 next_dispatch = result.optional_next_poll_hint
-            self.repository.save_poll_state(
+            await self.storage_call(
+                self.repository.save_poll_state,
                 refreshed.model_copy(
                     update={
                         "target_due_at": target_due,
@@ -562,20 +616,22 @@ class GlobalPollScheduler:
                         "last_latency_ms": max(0, int((self._clock() - started_at) * 1000)),
                         "updated_at": attempted_at,
                     }
-                )
+                ),
             )
             return execution
         except Exception as exc:
             crawler_execution_id = getattr(exc, "crawler_execution_id", None)
-            self.service.record_poll_failure(
+            await self.storage_call(
+                self.service.record_poll_failure,
                 binding,
                 code=type(exc).__name__,
                 message=str(exc),
                 attempted_at=attempted_at,
             )
             if window_cutoff is None:
-                refreshed = self.repository.get_poll_state(binding)
-                self.repository.save_poll_state(
+                refreshed = await self.storage_call(self.repository.get_poll_state, binding)
+                await self.storage_call(
+                    self.repository.save_poll_state,
                     refreshed.model_copy(
                         update={
                             "target_due_at": self._next_due(
@@ -591,7 +647,7 @@ class GlobalPollScheduler:
                             "last_latency_ms": max(0, int((self._clock() - started_at) * 1000)),
                             "updated_at": attempted_at,
                         }
-                    )
+                    ),
                 )
             execution = PollExecutionResult(
                 poll_run_id=poll_run_id,
@@ -601,7 +657,8 @@ class GlobalPollScheduler:
                 error_message=str(exc)[:1000],
             )
             if execution.crawler_execution_id and self.adapters.crawler_plane is not None:
-                self.adapters.crawler_plane.record_message_bus_telemetry(
+                await self.storage_call(
+                    self.adapters.crawler_plane.record_message_bus_telemetry,
                     execution.crawler_execution_id,
                     execution.model_dump(mode="json"),
                 )
@@ -620,12 +677,15 @@ class GlobalPollScheduler:
         if current is not None and current[0] == constraints:
             return current[1]
 
-        def on_request() -> None:
-            now = utc_now()
-            state = self.repository.get_scheduler_group_state(source.scheduler_group)
-            self.repository.save_scheduler_group_state(
-                state.model_copy(update={"last_request_at": now, "updated_at": now})
-            )
+        async def on_request() -> None:
+            def persist():
+                now = utc_now()
+                state = self.repository.get_scheduler_group_state(source.scheduler_group)
+                self.repository.save_scheduler_group_state(
+                    state.model_copy(update={"last_request_at": now, "updated_at": now})
+                )
+
+            await self.storage_call(persist)
 
         persisted = self.repository.get_scheduler_group_state(source.scheduler_group)
         remaining_gap = 0.0
