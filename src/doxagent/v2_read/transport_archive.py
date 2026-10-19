@@ -96,19 +96,21 @@ def main():
         for source in sources:
             source_started = time.monotonic()
             count = 0
+            scanned = 0
             error = None
             while time.monotonic() - source_started < 2 / max(1, len(sources)):
                 try:
                     from .source_lifecycle import expire
                     batch = expire(source,limit=64)
                     changed = batch['expired']
+                    scanned += batch['scanned']
                 except (sqlite3.OperationalError, OSError, ValueError) as exc:
                     error = str(exc)
                     break
                 count += changed
                 if not changed:
                     break
-            result[source.source] = dict(expired=count,error=error)
+            result[source.source] = dict(expired=count,scanned=scanned,error=error)
             if source.source=='bus' and time.monotonic()>=capacity_at:
                 from .storage_status import capacity
                 try:result[source.source]['capacity']=capacity(source)

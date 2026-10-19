@@ -350,7 +350,7 @@ class SourceOutbox:
 
         return reader()
 
-    def event(self, sequence: int, *, decode: bool = True, connection=None) -> dict[str, Any] | None:
+    def event(self, sequence: int, *, decode: bool = True, connection=None, pack_cache=None) -> dict[str, Any] | None:
         def packet(value):
             return {**value,'row':self.content.source_row(json.loads(value['payload']))} if decode else dict(value)
         db = connection if connection is not None else self.connection()
@@ -371,7 +371,14 @@ class SourceOutbox:
             packed = db.execute("SELECT digest,size,ordinal FROM v2_receipt_packs WHERE seq=?",
                                 (sequence,)).fetchone() if has_packs(db) else None
             if packed:
-                value = load_pack(str(self.path.parent / 'receipt-packs' / self.source), packed[0], packed[1])[packed[2]]
+                key = (packed[0], packed[1])
+                rows = pack_cache.get(key) if pack_cache is not None else None
+                if rows is None:
+                    rows = load_pack(str(self.path.parent / 'receipt-packs' / self.source), *key)
+                    if pack_cache is not None:
+                        pack_cache.clear()  # One decompressed pack per maintenance batch.
+                        pack_cache[key] = rows
+                value = rows[packed[2]]
                 if value['seq'] != sequence:
                     raise ValueError('transport pack coordinate mismatch')
                 return packet(value)

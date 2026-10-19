@@ -156,14 +156,17 @@ def expire(source, *, now=None, limit=500):
         pins={r[0] for r in db.execute('SELECT seq FROM v2_source_exception_pins')}
         tables=['v2_source_outbox','v2_receipt_archive']
         if db.execute("SELECT 1 FROM sqlite_master WHERE name='v2_receipt_packs'").fetchone():tables.append('v2_receipt_packs')
+        pack_cache = {}
         for table in tables:
             db.execute('INSERT OR IGNORE INTO v2_transport_gc_state(kind) VALUES(?)',(table,))
             cursor=db.execute('SELECT cursor FROM v2_transport_gc_state WHERE kind=?',(table,)).fetchone()[0]
             rows=db.execute('SELECT * FROM '+table+' WHERE seq>? AND seq<=? ORDER BY seq LIMIT ?',(cursor,floor,limit)).fetchall()
             for row in rows:
-                packet=source.event(row['seq'],decode=False)
-                if packet is None:raise ValueError('transport packet missing')
                 report['scanned']+=1
+                if table=='v2_source_outbox' and datetime.fromisoformat(row['recorded_at']) >= before:
+                    continue
+                packet=source.event(row['seq'],decode=False,connection=db,pack_cache=pack_cache)
+                if packet is None:raise ValueError('transport packet missing')
                 if datetime.fromisoformat(packet['recorded_at']) >= before:continue
                 if row['seq'] in pins:
                     raw={k:v for k,v in packet.items() if k!='row'}
