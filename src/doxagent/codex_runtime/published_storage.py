@@ -63,7 +63,39 @@ def cache_local_published_content(repository, sha256: str, content: bytes) -> No
     if cache.exists():
         if hashlib.sha256(cache.read_bytes()).hexdigest() != sha256:
             raise ValueError("local published content checksum mismatch")
+        _queue_w3_asset(cache)
         return
     pending = cache.with_name(sha256 + "." + uuid4().hex + ".tmp")
     pending.write_bytes(content)
     pending.replace(cache)
+    _queue_w3_asset(cache)
+
+
+def _queue_w3_asset(path):
+    """Publication notification only; compilation runs outside this transaction."""
+    import json
+    import logging
+    import re
+    from pathlib import Path
+
+    from doxagent.settings import DoxAgentSettings
+
+    settings = DoxAgentSettings()
+    root = Path(settings.codex_workspace_root).resolve()
+    if not path.resolve().is_relative_to(root.parent):
+        return
+    try:
+        text = path.read_text(encoding="utf-8")
+        if text.lstrip().startswith("{"):
+            value = json.loads(text)
+            kind = "d2" if "shells" in value else "policy" if "policies" in value else None
+            ticker = value.get("ticker")
+        else:
+            match = re.match(r"#\s+([A-Z][A-Z0-9.\-]*)\s+Global Research", text)
+            kind, ticker = ("d1", match[1]) if match else (None, None)
+        if kind and ticker:
+            from doxagent.persistent_runtime_v2.w3_research_store import W3ResearchStore
+            W3ResearchStore(root).enqueue(kind, ticker, source_path=path, expected_sha=path.name)
+    except Exception as exc:
+        # A committed publication must never appear failed due to a read index.
+        logging.getLogger(__name__).warning("W3 asset queue deferred: %s", type(exc).__name__)

@@ -381,24 +381,31 @@ def main() -> None:
     )
     construct_ready = time.perf_counter_ns()
     server = build_server(application)
-    if str(claims.node_id) == "persistent_runtime_w3":
-        try:
-            (control_root / "mcp_bootstrap_timing.json").write_text(
-                json.dumps(
-                    dict(
-                        schema_version="w3-mcp-bootstrap-v1",
-                        implementation="w3-lite-v1",
-                        run_id=claims.run_id,
-                        attempt_id=claims.node_attempt_id,
-                        module_import_ms=(_IMPORT_READY - _IMPORT_STARTED) / 1e6,
-                        application_ms=(construct_ready - construct_started) / 1e6,
-                        server_build_ms=(time.perf_counter_ns() - construct_ready) / 1e6,
-                    )
-                ),
-                encoding="utf-8",
-            )
-        except OSError:
-            pass  # Diagnostics cannot fail or retry a business turn.
+    try:
+        (control_root / "mcp_bootstrap_timing.json").write_text(
+            json.dumps(
+                dict(
+                    schema_version=(
+                        "w3-mcp-bootstrap-v1" if str(claims.node_id) == "persistent_runtime_w3"
+                        else "data-mcp-bootstrap-v1"
+                    ),
+                    implementation=(
+                        "w3-lite-v1" if str(claims.node_id) == "persistent_runtime_w3"
+                        else "full-registry-lazy-http-v1"
+                    ),
+                    node=str(claims.node_id),
+                    run_id=claims.run_id,
+                    attempt_id=claims.node_attempt_id,
+                    module_import_ms=(_IMPORT_READY - _IMPORT_STARTED) / 1e6,
+                    application_ms=(construct_ready - construct_started) / 1e6,
+                    server_build_ms=(time.perf_counter_ns() - construct_ready) / 1e6,
+                    bootstrap_ms=(time.perf_counter_ns() - _IMPORT_STARTED) / 1e6,
+                )
+            ),
+            encoding="utf-8",
+        )
+    except OSError:
+        pass  # Diagnostics cannot fail or retry a business turn.
 
     async def run() -> None:
         async with stdio_server() as (read_stream, write_stream):

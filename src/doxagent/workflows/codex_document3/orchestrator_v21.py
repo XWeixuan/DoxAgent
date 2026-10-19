@@ -132,11 +132,16 @@ def delta_has_work(value):
 def feed_has_work(value):
     if (
         isinstance(value, dict)
-        and value.get("contract_version") in {"persistent-runtime.o3-maintenance-feed.v1", "persistent-runtime.o3-maintenance-feed.v2"}
+        and value.get("contract_version") in {
+            "persistent-runtime.o3-maintenance-feed.v1", "persistent-runtime.o3-maintenance-feed.v2"
+        }
     ):
         return any(
             value.get(k)
-            for k in ("trade_candidates", "trade_records", "badcase_records", "w3_coverage_gaps", "policy_consumption")
+            for k in (
+                "trade_candidates", "trade_records", "badcase_records",
+                "w3_coverage_gaps", "policy_consumption"
+            )
         ) or delta_has_work(value.get("reference_view_delta"))
     return bool(value)
 
@@ -158,7 +163,8 @@ class Document3OrchestratorV21:
         if getattr(self, "pilot_stop_after_phase", None) == phase:
             raise PilotPhasePaused(phase, run_id)
 
-    def __init__(self, *, input_preparer, agent_runner, state, node_assets, policy_repository=None, published_storage=None):
+    def __init__(self, *, input_preparer, agent_runner, state, node_assets,
+                 policy_repository=None, published_storage=None):
         self.state = state
         self.runner = RunnerV21(agent_runner, state, node_assets)
         self.workspace = self.runner.workspace
@@ -1693,7 +1699,8 @@ class Document3OrchestratorV21:
             event = run["prepared"].get("event_library_ref") or actual_refs[0]
         from doxagent.persistent_runtime_v2.policy_consumption import accept_rearm_requests
         accepted_rearm, rearm_issues = accept_rearm_requests(patch.rearm_requests,
-            feed=run["identity"].get("feed"), upsert_ids=accepted_upserts, retire_ids=set(patch.retire_policy_ids),
+            feed=run["identity"].get("feed"), upsert_ids=accepted_upserts,
+            retire_ids=set(patch.retire_policy_ids),
             base_ids={p.policy_id for p in base.policies}, run_id=run_id,
             base_release={"version": base.policy_set_version, "hash": digest(run["base"])})
         missing.extend("rearm rejected:" + issue["policy_id"] for issue in rearm_issues)

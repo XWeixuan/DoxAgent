@@ -1,0 +1,14 @@
+# Hourly capacity recovery — 2026-10-18 20:27–20:32 CST
+
+Production root user-available capacity again reached zero. No new unreferenced image IDs and no reclaimable nonshared BuildKit cache were found. No BuildKit history query was used. Site Access returned readiness 503 with `storage_unavailable`; critical threshold is 1 GiB. CEG remained RUNNING/D3 with actual integration Worker session activity, a renewed original token-5 lease and unchanged initialization ID/cutoff. No new active Guardian incident; no failed current Control initialization required resume. Older failed MU/RKLB/BE runs are superseded by active Control identities and were not retried.
+
+Emergency, reversible capacity recovery:
+
+1. Reduced ext4 reserved blocks on `/dev/vda3` from 470476 (1%) to 235238 (0.5%); original setting can be restored with `tune2fs -r 470476 /dev/vda3`. Retained approximately 0.9 GiB root-reserved headroom. This is not a growth fix.
+2. Losslessly archived four closed operator-owned source snapshots in `/var/lib/doxagent/cohr-recovery-20261017/{worker,initialization,guardian,agent}` into adjacent `.tar.gz` files. Verified none are container mounts or open files, checked every archived file SHA-256 and unchanged source metadata, and preserved per-archive restore command/manifests before removing the uncompressed representations. Respectively 663/662/662/656 files; compressed archives about 33 MB each. All source contents and rollback reconstruction capability remain available. No business/research volume data was removed.
+
+At 20:31 CST available space was about 1.25 GiB; Site Access `/readyz` returned HTTP 200 with accepting=true, storage unavailable=false, registry/browser/external workers ready. No production service restart or image/code deployment was necessary. CEG original integration job continued with fresh session writes; original run state_seq advanced 2406 -> 2409. Existing ONDS/COHR/NBIS completion unchanged; frontend ONDS RUNNING/PAPER_TRADING and CEG INITIALIZING accurately match Control. CEG guarded mode script still returns wait_for_original_initialization; its eventual PAPER_TRADING switch remains pending.
+
+Capacity is still limited and may exhaust again before the next hourly check. Broader business-data lifecycle changes remain owned by the separate review-only conversation; existing authorization to clean unused containerd resources cannot reclaim further space. Further sizable cleanup or capacity expansion needs a concrete authorized target; no broad pruning, business retention change, account change or initialization reset was performed.
+
+Evidence: primary workspace `eval/ticker_heartbeat_20261018_1227/`: inventory, exact archive/verification script, per-archive receipts, filesystem command receipt, Worker/runtime snapshot, Control/lease/Guardian/read-model results. Root-private archive restore manifests remain adjacent to the preserved archives.

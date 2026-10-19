@@ -8,7 +8,7 @@ from doxagent.crawler_plane.factory import build_crawler_plane_service
 from doxagent.crawler_plane.service import CrawlerPlaneService
 from doxagent.message_bus_v2.adapters import AdapterRegistry
 from doxagent.message_bus_v2.distribution import DistributionWorker
-from doxagent.message_bus_v2.jev import JevClient
+from doxagent.message_bus_v2.jev import BailianDecisionClient
 from doxagent.message_bus_v2.news_policy import HiddenNewsIngressPolicy
 from doxagent.message_bus_v2.repository import MessageBusV2Repository
 from doxagent.message_bus_v2.scheduler import GlobalPollScheduler
@@ -24,7 +24,7 @@ class MessageBusV2Runtime:
     adapters: AdapterRegistry
     scheduler: GlobalPollScheduler
     crawler_plane: CrawlerPlaneService
-    jev: JevClient | None = None
+    jev: BailianDecisionClient | None = None
 
     async def close(self) -> None:
         await self.scheduler.close()
@@ -44,8 +44,12 @@ def build_message_bus_v2_runtime(settings: DoxAgentSettings) -> MessageBusV2Runt
         crawler_plane=crawler_plane,
     )
     scheduler = GlobalPollScheduler(repository, service, adapters)
-    secret = settings.openrouter_api_key.get_secret_value() if settings.openrouter_api_key else ""
-    jev = JevClient(secret, timeout=settings.message_bus_jev_timeout_seconds) if (
+    secret = settings.dashscope_api_key or ""
+    jev = BailianDecisionClient(
+        secret,
+        url=settings.message_bus_decision_url,
+        timeout=settings.message_bus_jev_timeout_seconds,
+    ) if (
         settings.message_bus_jev_enabled and secret
     ) else None
     scheduler.distribution_worker = DistributionWorker(

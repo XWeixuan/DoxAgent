@@ -18,6 +18,18 @@ CLIPBOARD_BRIDGE = "/usr/local/bin/doxagent-site-login-clipboard-bridge"
 TERMINAL = {"DONE", "FAILED", "CANCELLED", "INTERRUPTED"}
 
 
+def visible_profiles(profiles, challenges, sessions, *, show_automatic=False):
+    """Generic publisher discovery is not a request for human login maintenance."""
+    attention = {
+        item.get("identity_id") for item in challenges if item.get("state") != "RESOLVED"
+    } | {item.get("identity_id") for item in sessions if item.get("state") in {"OPEN", "RELEASED"}}
+    return {
+        key: row
+        for key, row in profiles.items()
+        if show_automatic or row.get("site_id") != "generic" or row.get("identity_id") in attention
+    }
+
+
 def viewer_binding_matches(expected, sessions):
     return any(
         session["state"] == "OPEN"
@@ -27,6 +39,24 @@ def viewer_binding_matches(expected, sessions):
         )
         for session in sessions
     )
+
+
+def verification_message(details):
+    if "challenge" not in details:
+        return None
+    if details["challenge"] == "BLOCKED":
+        return "Challenge still blocks this page. Complete it in the Viewer, then verify again."
+    prefix = (
+        "Original page challenge cleared. " if details["challenge"] == "CLEARED" else
+        "Original page is not yet recognized as ready. "
+    )
+    return (
+        prefix + "Login: " + details.get("authentication", "UNKNOWN")
+        + "; crawler: " + details.get("crawler", "NOT_TESTED")
+        + "; body: " + details.get("body", "NOT_TESTED")
+        + ". " + str(details.get("crawler_reason") or "")
+        + " " + str(details.get("body_reason") or "")
+    ).strip()
 
 
 def call_admin(arguments):
@@ -78,6 +108,10 @@ class SiteLoginApp:
         self._generations = {}
         self.rows = {}
         self.challenges = {}
+        self._sessions = []
+        self._after_release = None
+        self.show_automatic = tk.BooleanVar(value=False)
+        self.profile_count = tk.StringVar()
         self.session = None
         self.operation = None
         self.viewer = None
@@ -111,6 +145,15 @@ class SiteLoginApp:
         login_frame = ttk.Frame(self.tabs)
         self.tabs.add(challenge_frame, text="Challenges")
         self.tabs.add(login_frame, text="Login & Access")
+        profile_controls = ttk.Frame(login_frame)
+        profile_controls.pack(fill="x", pady=4)
+        ttk.Checkbutton(
+            profile_controls,
+            text="Show automatic publishers (advanced)",
+            variable=self.show_automatic,
+            command=self._render_tables,
+        ).pack(side="left")
+        ttk.Label(profile_controls, textvariable=self.profile_count).pack(side="right")
         self.challenge_tree = self._tree(
             challenge_frame,
             ("source", "identity", "state", "target", "opened"),
@@ -126,7 +169,7 @@ class SiteLoginApp:
         for text, action in (
             ("Open Original", "OPEN_CHALLENGE"),
             ("Verify Challenge", "VERIFY_CHALLENGE"),
-            ("Later", "RELEASE_VIEWER"),
+            ("Later / Release Viewer", "RELEASE_VIEWER"),
             ("Reopen Lost Page", "REOPEN_LOST_CHALLENGE"),
         ):
             ttk.Button(buttons, text=text, command=lambda a=action: self._action(a)).pack(
@@ -141,7 +184,7 @@ class SiteLoginApp:
             ("Open Login", "OPEN_LOGIN"),
             ("Verify Access", "VERIFY_LOGIN"),
             ("Close Login", "CLOSE_LOGIN"),
-            ("Later", "RELEASE_VIEWER"),
+            ("Later / Release Viewer", "RELEASE_VIEWER"),
             ("Activate Primary", "ACTIVATE_PRIMARY"),
         ):
             ttk.Button(buttons, text=text, command=lambda a=action: self._action(a)).pack(
@@ -227,34 +270,9 @@ class SiteLoginApp:
             self.root.after(1000, self._poll_operation)
         self.rows = {row["row_id"]: row for row in result.get("profiles", [])}
         self.challenges = {task["task_id"]: task for task in result.get("challenges", [])}
-        for tree, records in ((self.tree, self.rows), (self.challenge_tree, self.challenges)):
-            selected = tree.selection()
-            tree.delete(*tree.get_children())
-            for key, row in records.items():
-                if tree is self.tree:
-                    values = (
-                        row.get("scope_id"),
-                        row["identity_id"],
-                        row["profile_role"] + (" (active)" if row.get("active") else ""),
-                        str(row.get("observed_ip") or "")
-                        + " "
-                        + region_label(row["egress_id"], row["egress_node"]),
-                        row.get("auth_state"),
-                        row.get("crawler_ready", "NOT_TESTED"),
-                        row.get("body_ready", "NOT_TESTED"),
-                    )
-                else:
-                    values = (
-                        row["scope_id"],
-                        row["identity_id"],
-                        row["state"],
-                        row.get("original_target_id") or "TARGET_LOST",
-                        row["opened_at"],
-                    )
-                tree.insert("", "end", iid=key, values=values)
-            if selected and tree.exists(selected[0]):
-                tree.selection_set(selected[0])
-        sessions = result.get("sessions", [])
+        self._sessions = result.get("sessions", [])
+        self._render_tables()
+        sessions = self._sessions
         if self._viewer_pending:
             expected, deadline = self._viewer_pending
             if viewer_binding_matches(expected, sessions):
@@ -288,6 +306,43 @@ class SiteLoginApp:
         if not result.get("vnc_ready", False):
             self.status_value.set("Viewer service unavailable. Tasks and profiles are preserved.")
 
+    def _render_tables(self):
+        profiles = visible_profiles(
+            self.rows,
+            self.challenges.values(),
+            self._sessions,
+            show_automatic=self.show_automatic.get(),
+        )
+        hidden = len(self.rows) - len(profiles)
+        self.profile_count.set(f"Showing {len(profiles)} identities; {hidden} automatic hidden")
+        for tree, records in ((self.tree, profiles), (self.challenge_tree, self.challenges)):
+            selected = tree.selection()
+            tree.delete(*tree.get_children())
+            for key, row in records.items():
+                if tree is self.tree:
+                    values = (
+                        row.get("scope_id"),
+                        row["identity_id"],
+                        row["profile_role"] + (" (active)" if row.get("active") else ""),
+                        str(row.get("observed_ip") or "")
+                        + " "
+                        + region_label(row["egress_id"], row["egress_node"]),
+                        row.get("auth_state"),
+                        row.get("crawler_ready", "NOT_TESTED"),
+                        row.get("body_ready", "NOT_TESTED"),
+                    )
+                else:
+                    values = (
+                        row["scope_id"],
+                        row["identity_id"],
+                        row["state"],
+                        row.get("original_target_id") or "TARGET_LOST",
+                        row["opened_at"],
+                    )
+                tree.insert("", "end", iid=key, values=values)
+            if selected and tree.exists(selected[0]):
+                tree.selection_set(selected[0])
+
     def _selected(self):
         keys = self.tree.selection()
         return self.rows.get(keys[0]) if keys else None
@@ -320,6 +375,37 @@ class SiteLoginApp:
             args.extend(["--session-id", self.session["session_id"]])
         if url:
             args.extend(["--url", url])
+        if action == "CLOSE_LOGIN" and self.session and self.session.get("kind") == "CHALLENGE":
+            if messagebox.askokcancel(
+                "Preserve Challenge Page",
+                "Close Login does not discard Challenge pages. Release the Viewer instead? "
+                "The original page will remain available under Open Original.",
+            ):
+                self._action("RELEASE_VIEWER")
+            return
+        if action in {"OPEN_LOGIN", "OPEN_CHALLENGE", "REOPEN_LOST_CHALLENGE"}:
+            active = next((s for s in self._sessions if s["state"] == "OPEN"), None)
+            if active:
+                same = (
+                    action == "OPEN_LOGIN" and active.get("kind") == "LOGIN"
+                    and row and active["identity_id"] == row["identity_id"]
+                ) or (
+                    action == "OPEN_CHALLENGE" and active.get("task_id") == args[-1]
+                )
+                if same and action == "OPEN_LOGIN":
+                    args.extend(["--session-id", active["session_id"]])
+                elif not same:
+                    if not messagebox.askokcancel(
+                        "Switch Viewer",
+                        "Release the Viewer for " + active["identity_id"] + " and continue? "
+                        "Its browser page and login progress will be preserved.",
+                    ):
+                        return
+                    self._after_release = args
+                    release = ["action", "RELEASE_VIEWER", "--session-id", active["session_id"],
+                               "--idempotency-key", uuid4().hex]
+                    self._run(lambda: call_admin(release), self._submitted)
+                    return
         self.status_value.set(action + ": submitting...")
         self._run(lambda: call_admin(args), self._submitted)
 
@@ -395,6 +481,7 @@ class SiteLoginApp:
             self._stop_owned_viewer()
             self.session = None
         if result["state"] == "FAILED":
+            self._after_release = None
             self.status_value.set(
                 result.get("error") or "Operation failed; original page preserved"
             )
@@ -403,8 +490,13 @@ class SiteLoginApp:
                 "First paid article verified. Keep this session open and use Advanced URL "
                 "to verify a different subscription article for the backup identity."
             )
+        elif verification_message(details):
+            self.status_value.set(verification_message(details))
         elif details:
             self.status_value.set(json.dumps(details, ensure_ascii=True))
+        if details.get("released") and self._after_release:
+            arguments, self._after_release = self._after_release, None
+            self._run(lambda: call_admin(arguments), self._submitted)
         self.refresh()
         self.root.after(2100, self.refresh)
 

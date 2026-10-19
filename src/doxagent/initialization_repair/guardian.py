@@ -216,6 +216,10 @@ class Guardian:
         if self.external_auth_source is None and not incident_auth.is_file():
             shutil.copy2(self.codex_auth_file, incident_auth)
             incident_auth.chmod(0o600)
+        elif self.external_auth_source is not None:
+            from .auth import quarantine_legacy_refresh_auth
+
+            quarantine_legacy_refresh_auth(code_home)
         command = [
             "doxagent-initialization-repair",
             "agent",
@@ -310,7 +314,9 @@ class Guardian:
             raw_retries = payload.get("agent_infra_retries", 0)
             retries = (raw_retries if isinstance(raw_retries, int) else 0) + 1
             payload["agent_infra_retries"] = retries
-            (local_root / f"agent-infra-{retries}.log").write_text(log, encoding="utf-8")
+            recovery = len(payload.get("agent_recovery_history", []))
+            prefix = f"agent-infra-recovery-{recovery}" if recovery else "agent-infra"
+            (local_root / f"{prefix}-{retries}.log").write_text(log, encoding="utf-8")
             self.repairs.update_round(repair_round.round_id, payload=payload)
             self.docker.remove(name)
             if retries >= 3:
@@ -322,7 +328,7 @@ class Guardian:
                 )
                 self.repairs.add_issue(
                     IssueEntry(
-                        entry_id=f"{repair_round.round_id}:agent-infra:{len(repair_round.thread_turn_ids)}",
+                        entry_id=f"{repair_round.round_id}:agent-infra:{recovery}:{retries}",
                         incident_id=incident.incident_id,
                         round_id=repair_round.round_id,
                         kind="agent_infrastructure_failure",

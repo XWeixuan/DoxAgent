@@ -297,7 +297,17 @@ class MaintenanceController:
                 error=(
                     "Original page is lost. Use Reopen Lost Page."
                     if lost
-                    else f"{reason} during {latest.stage}; inspect the preserved session."
+                    else (
+                        str(exc)
+                        if str(exc).startswith("Viewer is in use by ")
+                        else "An active Challenge page is preserved for this identity. "
+                        "Use Open Original / Verify Challenge first."
+                        if str(exc) == "active_challenge_use_challenge_maintenance"
+                        else "This is a Challenge session. Choose Later to release the Viewer "
+                        "without discarding its page."
+                        if str(exc) == "Close Login cannot discard a Challenge page"
+                        else f"{reason} during {latest.stage}; inspect the preserved session."
+                    )
                 ),
             )
 
@@ -306,6 +316,18 @@ class MaintenanceController:
         identity_id = operation.identity_id or (scope.primary_identity_id if scope else None)
         session = self.store.get_session(operation.session_id) if operation.session_id else None
         if operation.action == "OPEN_LOGIN":
+            if not session and identity_id:
+                # Repeated Open Login is a reconnect, not a second Viewer seat.
+                session = next(
+                    (
+                        s
+                        for s in self.store.list_sessions()
+                        if s.kind == "LOGIN"
+                        and s.identity_id == identity_id
+                        and s.scope_id == operation.scope_id
+                    ),
+                    None,
+                )
             if session:
                 if session.kind != "LOGIN":
                     raise ValueError("Use Open Challenge for a Challenge session")
@@ -503,7 +525,12 @@ class MaintenanceController:
                     return report.as_dict()
             # A cleared Challenge ends independently of entitlement/parser health.
             completed = report.challenge == "CLEARED" and (
-                session.kind == "CHALLENGE" or report.authentication in {"VALID", "NOT_REQUIRED"}
+                session.kind == "CHALLENGE"
+                or report.authentication in {"VALID", "NOT_REQUIRED"}
+                or (
+                    required != "required"
+                    and (report.crawler == "READY" or report.body in {"FULL", "SHORT_FULL"})
+                )
             )
             if completed:
                 try:
@@ -534,7 +561,19 @@ class MaintenanceController:
                 egress = self.service.repository.get_egress(identity.egress_id)
                 spec = self.service.repository.get_strategy(task.site_id)
                 replacement_id = "challenge_" + uuid4().hex
-                url = spec.auth.maintenance_url or spec.auth.login_url or task.original_url
+                # A replacement re-exercises the failed URL, not an unrelated login
+                # landing page. The predecessor records the lost original separately.
+                url = task.original_url or spec.auth.maintenance_url or spec.auth.login_url
+                from urllib.parse import urlsplit
+
+                task_scope = self.store.maintenance_scope(task.scope_id)
+                crawler_url = task_scope.verification_plan.get("crawler", {}).get("url")
+                if crawler_url and urlsplit(url).path.rstrip("/") == urlsplit(
+                    crawler_url
+                ).path.rstrip("/"):
+                    # Task display URLs intentionally exclude query strings.
+                    # Restore the registered public search query, not a blank search.
+                    url = crawler_url
                 reserved = self.store.save_session(
                     MaintenanceSession(
                         kind="CHALLENGE",

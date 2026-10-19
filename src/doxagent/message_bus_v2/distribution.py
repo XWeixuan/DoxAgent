@@ -216,7 +216,7 @@ class DistributionWorker:
                     self._jev_retry_at = 0.0
                 except httpx.HTTPStatusError as exc:
                     status = exc.response.status_code
-                    logger.warning("Jev decision HTTP failure: %s", status)
+                    logger.warning("Bailian decision HTTP failure: %s", status)
                     if status == 402:
                         self._jev_retry_at = time.monotonic() + 300
                         errors.update(
@@ -235,7 +235,7 @@ class DistributionWorker:
                             retry_delay = max(5.0, float(value))
                     continue
                 except Exception as exc:
-                    logger.warning("Jev decision attempt failed: %s", type(exc).__name__)
+                    logger.warning("Bailian decision attempt failed: %s", type(exc).__name__)
                     continue
                 for ticker, score in result.items():
                     if ticker not in target:

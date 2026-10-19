@@ -51,24 +51,24 @@ def classify(name: str, arguments: str) -> dict[str, Any]:
         ("CONTROL_CONTRACT", r"agents\.md|skill\.md|task\.json|output_schema", "control_path"),
         (
             "RESEARCH_NAVIGATION",
-            r"research_index|index\.json|\bfind\b|\bls\b|\bpwd\b",
+            r"research_index|index\.json|\bfind\b|\bls\b|\bpwd\b|w3_research[_\.]+(?:catalog|search)",
             "navigation",
         ),
-        ("D1_RESEARCH", r"document1|/d1[/_.]|\bd1\b|company_profile", "d1_path_or_term"),
+        ("D1_RESEARCH", r"document1|/d1[/_.]|\bd1\b|d1_section|company_profile", "d1_path_or_term"),
         (
             "D2_EXPECTATIONS",
-            r"document2|/d2[/_.]|\bd2\b|expectation|shells?/|units?/",
+            r"document2|/d2[/_.]|\bd2\b|d2_unit|expectation|shells?/|units?/",
             "d2_path_or_term",
         ),
         ("D3_POLICY", r"document3|/d3[/_.]|\bd3\b|polic(?:y|ies)", "policy_path_or_term"),
         (
             "EVENT_HISTORY",
-            r"reference_view|reference\.md|event_library|recent_trade|watch|pin_candidates",
+            r"reference_view|reference_event|historical_message|trade_intent|runtime_state|reference\.md|event_library|recent_trade|watch|pin_candidates",
             "history_term",
         ),
         (
             "MARKET_PRICE",
-            r"ibkr|historical_bars|market_history|candles|k.line",
+            r"ibkr|historical_bars|market_history|market_view|candles|k.line",
             "market_tool_or_term",
         ),
         (
@@ -93,6 +93,8 @@ def classify(name: str, arguments: str) -> dict[str, Any]:
         ),
     )
     for label, pattern, reason in rules:
+        if label == "CAPABILITY_DISCOVERY" and re.search(r"w3_research[_\.]+(?:catalog|search)", text) and not re.search(r"all_tools|ibkrtwssession|tools/providers|tools\.keys", text):
+            continue
         if re.search(pattern, text):
             labels.append(label)
             evidence.append(reason)

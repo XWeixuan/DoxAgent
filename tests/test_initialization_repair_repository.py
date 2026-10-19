@@ -40,6 +40,30 @@ async def failed_run(repo: InitializationRepository, ticker: str = "MU"):
 
 
 @pytest.mark.asyncio
+async def test_agent_infrastructure_recovery_keeps_round_and_node_budget(tmp_path):
+    initialization = InitializationRepository(tmp_path / "control.sqlite3")
+    run = await failed_run(initialization)
+    repairs = RepairRepository(initialization)
+    incident = repairs.open_incident(run.initialization_id, expected_state_seq=run.state_seq)
+    current = repairs.start_round(incident.incident_id, failed_state_seq=run.state_seq)
+    repairs.update_round(current.round_id, status=RoundStatus.FAILED,
+                         payload={"agent_infra_retries": 3}, thread_turn_ids=["old-turn"])
+    repairs.update_incident(incident.incident_id, status=IncidentStatus.HUMAN_REQUIRED,
+                            last_error="REPAIR_AGENT_INFRA_RETRIES_EXHAUSTED:1")
+    resumed = repairs.retry_agent(incident.incident_id, reason="credential ownership repaired")
+    same = repairs.start_round(incident.incident_id, failed_state_seq=run.state_seq)
+    assert resumed.current_round_id == same.round_id == current.round_id
+    assert len(repairs.rounds(incident.incident_id)) == 1
+    assert repairs.budgets(incident.incident_id)[0].rounds_started == 1
+    assert same.thread_turn_ids == ["old-turn"]
+    assert same.payload["agent_infra_retries"] == 0
+    assert same.payload["agent_recovery_history"][0]["prior_retries"] == 3
+    assert initialization.get(run.initialization_id).state_seq == run.state_seq
+    with pytest.raises(InitializationError, match="REQUIRES_INFRA_FAILURE"):
+        repairs.retry_agent(incident.incident_id, reason="duplicate recovery")
+
+
+@pytest.mark.asyncio
 async def test_repair_resume_is_routed_away_from_normal_worker(tmp_path):
     initialization = InitializationRepository(tmp_path / "control.sqlite3")
     failed = await failed_run(initialization)

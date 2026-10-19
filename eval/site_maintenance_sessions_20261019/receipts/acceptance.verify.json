@@ -1,0 +1,41 @@
+[
+  {
+    "action": "OPEN_CHALLENGE",
+    "state": "DONE",
+    "error": null,
+    "result": {
+      "session_id": "maintenance_f57fd6cc4310461ab8a90061a30426b9",
+      "stage": "VIEWER_READY",
+      "generation": 8,
+      "page_preserved": true,
+      "kind": "CHALLENGE",
+      "task_id": "challenge_ff2c1644e9aa421ea552e5b7392e8780",
+      "identity_id": "digitimes-de-1"
+    },
+    "ack_seconds": 0.012352153193205595,
+    "seconds": 0.6356210201047361
+  },
+  {
+    "action": "VERIFY_CHALLENGE",
+    "state": "DONE",
+    "error": null,
+    "result": {
+      "challenge": "CLEARED",
+      "authentication": "UNKNOWN",
+      "crawler": "CONTENT_ERROR",
+      "body": "NOT_TESTED",
+      "reason": "challenge_cleared",
+      "health_applied": true,
+      "session_closed": true,
+      "cleanup_pending": false,
+      "challenge_task_id": null,
+      "verification_url": null,
+      "runtime_instance_id": null,
+      "crawler_reason": "TimeoutError",
+      "body_reason": null,
+      "original_page_kind": "listing"
+    },
+    "ack_seconds": 0.003502317238599062,
+    "seconds": 20.80572840385139
+  }
+]

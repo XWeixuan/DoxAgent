@@ -485,6 +485,8 @@ class IbkrTwsSession:
         what_to_show: str = "TRADES",
         use_rth: bool = True,
         end_datetime: str = "",
+        market_venue: str | None = None,
+        format_date: int = 1,
     ) -> dict[str, Any]:
         app = self._require_app()
         request_id = next(self._request_ids)
@@ -495,13 +497,14 @@ class IbkrTwsSession:
         try:
             app.reqHistoricalData(
                 request_id,
-                _to_official_contract(app, contract),
+                (_to_official_contract(app, contract, market_venue=market_venue)
+                 if market_venue else _to_official_contract(app, contract)),
                 end_datetime,
                 duration,
                 bar_size,
                 what_to_show,
                 int(use_rth),
-                1,
+                format_date,
                 False,
                 [],
             )
@@ -509,10 +512,11 @@ class IbkrTwsSession:
             self._raise_request_error(request_id, operation="historical bars")
             bars = list(app.historical_results[request_id])
         finally:
-            try:
-                app.cancelHistoricalData(request_id)
-            except Exception:
-                pass
+            if not event.is_set():
+                try:
+                    app.cancelHistoricalData(request_id)
+                except Exception:
+                    pass
             app.historical_events.pop(request_id, None)
             app.historical_results.pop(request_id, None)
         if not bars:
@@ -912,12 +916,16 @@ def _resolved_contract(details: Any) -> ResolvedContract:
     )
 
 
-def _to_official_contract(app: Any, resolved: ResolvedContract) -> Any:
+def _to_official_contract(
+    app: Any, resolved: ResolvedContract, *, market_venue: str | None = None
+) -> Any:
     contract = app.contract_type()
     contract.conId = resolved.con_id
     contract.symbol = resolved.symbol
     contract.secType = resolved.security_type
-    contract.exchange = "SMART"
+    if market_venue not in {None, "SMART", "OVERNIGHT", "IBEOS"}:
+        raise ValueError("unsupported read-only market venue")
+    contract.exchange = market_venue or "SMART"
     contract.currency = resolved.currency
     if resolved.primary_exchange:
         contract.primaryExchange = resolved.primary_exchange

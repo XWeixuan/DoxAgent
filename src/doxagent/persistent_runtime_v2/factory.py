@@ -37,6 +37,7 @@ from .repository import (
 )
 from .service import PersistentRuntimeV2Service
 from .transport import BailianRuntimeResponsesClient
+from .openrouter import W2R1OpenRouterClient
 from .w3 import CodexW3AgentRunner, PublishedW3ContextProvider
 
 logger = logging.getLogger(__name__)
@@ -104,7 +105,7 @@ def build_persistent_runtime_v2_service(
         settings.event_library_root,
         market=settings.event_library_market,
     )
-    responses = BailianRuntimeResponsesClient(
+    bailian = BailianRuntimeResponsesClient(
         api_key=settings.require_dashscope_api_key(),
         base_url=settings.dashscope_chat_base_url,
         model=settings.persistent_runtime_v2_model,
@@ -113,6 +114,11 @@ def build_persistent_runtime_v2_service(
         session_cache=settings.persistent_runtime_v2_session_cache_enabled,
         w2_r1_model=settings.persistent_runtime_v2_w2_r1_model,
         w2_r1_timeout_seconds=settings.persistent_runtime_v2_w2_r1_timeout_seconds,
+    )
+    responses = W2R1OpenRouterClient(
+        bailian,
+        api_key=settings.openrouter_api_key.get_secret_value() if settings.openrouter_api_key else "",
+        w2_r1_model=settings.persistent_runtime_v2_w2_r1_model,
     )
     logger.info(
         "Persistent Runtime V2 model transport configured: rounds=%s automatic_retries=%s",
@@ -241,13 +247,18 @@ def build_persistent_runtime_v2_service(
         )
         from .w2_alignment import W2_CONTRACT
 
-        ExecutionBundles(journal).publish(
+        prior_execution = journal.get("execution", "active")
+        published_execution = ExecutionBundles(journal).publish(
             RuntimeV2PromptSet.load(Path(settings.persistent_runtime_v2_prompt_root)),
             assets=assets,
             orchestration_revision=3,
             w2_contract_version=W2_CONTRACT,
             w3_contract_version=W3_CONTRACT if settings.persistent_runtime_v2_w3_enabled else None,
         )
+        if settings.persistent_runtime_v2_w3_enabled:
+            if prior_execution and prior_execution != published_execution and not journal.get("w3_entry", "previous"):
+                journal.set("w3_entry", "previous", prior_execution)
+            journal.set("w3_entry", "pending", published_execution)
     service = PersistentRuntimeV2Service(
         journal=journal,
         input_snapshot_loader=input_snapshot_loader,

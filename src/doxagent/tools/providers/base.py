@@ -59,8 +59,9 @@ class BaseRealToolClient:
 
     @property
     def client(self) -> httpx.Client:
-        # Preserve the deployed MCP cold-start fix: registration does not need
-        # to construct a TLS client for every registered provider.
+        # Tool registration only needs descriptors. Creating every provider's TLS
+        # context here made each MCP cold start load the same CA bundle dozens
+        # of times before the initialize handshake could even begin.
         if self._client is None:
             with self._client_lock:
                 if self._client is None:

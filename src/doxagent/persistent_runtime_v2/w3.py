@@ -53,6 +53,25 @@ from .schema import (
     strict_json_schema,
 )
 from .w3_models import execution_profile
+from .w3_research_store import ENTRY, compact
+
+
+def research_pin_key(case):
+    from .journal import digest
+
+    p = case.version_pin
+    return digest(
+        [
+            case.ticker,
+            p.document1_run_id,
+            p.document2_run_id,
+            p.event_library_root,
+            p.event_library_version,
+            p.policy_set_version,
+            ENTRY,
+        ]
+    )
+
 
 _EVENT_ID = re.compile(r"\bE[1-9][0-9]*\b")
 
@@ -473,6 +492,137 @@ class CodexW3AgentRunner:
         )
         self._loop_thread.start()
         self._closed = False
+        self._asset_preparations = {}
+
+    def entry_enabled(self, case):
+        return case.frozen_inputs.get("w3_contracts", {}).get(
+            "w3_entry_version"
+        ) == ENTRY and hasattr(self._worker, "bind_w3_context")
+
+    def _install_context(self, case, context):
+        async def install():
+            components = await self._worker.prepare_w3_research(
+                case.ticker,
+                dict(
+                    d1=context.document1,
+                    d2=context.original_document2
+                    or compact(context.document2.model_dump(mode="json")),
+                    policy=context.original_policy_set
+                    or compact(context.policy_set.model_dump(mode="json")),
+                    reference=context.reference_view,
+                ),
+            )
+            saved = dict(
+                components=components,
+                version_pin=context.version_pin.model_dump(mode="json"),
+                context_cutoffs=context.context_cutoffs,
+                reference_event_ids=sorted(
+                    context.reference_event_ids
+                    if context.reference_event_ids is not None
+                    else set(_EVENT_ID.findall(context.reference_view))
+                ),
+            )
+            self._journal.set("w3_research_v2", research_pin_key(case), saved)
+            return saved
+
+        return self._wait_v4(install())
+
+    def configure_ready(self, case, template, *, active_public=True):
+        if not self.entry_enabled(case):
+            return
+        profile = execution_profile(
+            case,
+            model=self._model,
+            effort=self._effort,
+            provider=self._model_provider,
+            override=self._execution_model_override,
+        )
+        assets = case.frozen_inputs["w3_assets"]
+        return self._wait_v4(
+            self._worker.configure_w3_ready(
+                dict(
+                    parent_thread_id=template["thread_id"],
+                    active_public=active_public,
+                    profile=profile,
+                    web_search_mode=self.environment.web_search_mode,
+                    instructions={
+                        "AGENTS.md": assets["w3/AGENTS.md"],
+                        "skills/skill.md": assets["w3/skills/skill.md"],
+                    },
+                )
+            )
+        )
+
+    @observed("thread.ready_claim")
+    def claim_ready(self, case, record, profile):
+        request = dict(
+            case_id=case.case_id,
+            record_id=record["record_id"],
+            parent_thread_id=record["parent_id"],
+            profile=profile,
+        )
+        try:
+            value = self._wait_v4(self._worker.claim_w3_ready(request))
+        except Exception as exc:
+            if getattr(exc, "code", None) != "w3_ready_unconfigured":
+                raise
+            self.configure_ready(case, {"thread_id": record["parent_id"]}, active_public=False)
+            value = self._wait_v4(self._worker.claim_w3_ready(request))
+        with self._journal.transaction() as db:
+            db.execute(
+                "UPDATE runtime_v2_w3_threads SET thread_id=?,workspace=? WHERE record_id=?",
+                (value["thread_id"], value["run_id"], record["record_id"]),
+            )
+        record.update(thread_id=value["thread_id"], workspace=value["run_id"])
+
+    def stop_market(self, case_id):
+        if hasattr(self._worker, "stop_w3_market"):
+            return self._wait_v4(self._worker.stop_w3_market(case_id))
+
+    def start_market(self, case):
+        from datetime import timedelta
+
+        if self.entry_enabled(case):
+            return self._wait_v4(
+                self._worker.start_w3_market(
+                    dict(
+                        case_id=case.case_id,
+                        ticker=case.ticker,
+                        mode=self.environment.mode,
+                        deadline_at=(
+                            datetime.now().astimezone()
+                            + timedelta(seconds=self._timeout_seconds + 60)
+                        ).isoformat(),
+                    )
+                )
+            )
+
+    def queue_market(self, case):
+        if not self.entry_enabled(case):
+            return
+        from datetime import UTC, timedelta
+
+        pending = asyncio.run_coroutine_threadsafe(
+            self._worker.start_w3_market(
+                dict(
+                    case_id=case.case_id,
+                    ticker=case.ticker,
+                    mode=self.environment.mode,
+                    deadline_at=(
+                        datetime.now(UTC) + timedelta(seconds=self._timeout_seconds + 60)
+                    ).isoformat(),
+                )
+            ),
+            self._loop,
+        )
+
+        def observed(future):
+            try:
+                future.result()
+            except Exception as exc:
+                self._journal.gap("w3-market-prepare", case.ticker, type(exc).__name__, str(exc))
+
+        pending.add_done_callback(observed)
 
     def _run_loop(self) -> None:
         asyncio.set_event_loop(self._loop)
@@ -489,6 +639,10 @@ class CodexW3AgentRunner:
         )
 
     def prepare_public_assets(self, case):
+        if self.entry_enabled(case):
+            context = self._wait_v4(self._context.load(case))
+            return self._install_context(case, context)
+
         async def prepare():
             from .w3_assets import research_assets
 
@@ -514,6 +668,55 @@ class CodexW3AgentRunner:
     @observed("context.prepare")
     def prepare_case(self, case):
         try:
+            if self.entry_enabled(case):
+                from types import SimpleNamespace
+
+                saved = self._journal.get("w3_research_v2", research_pin_key(case))
+                if saved is None:
+                    if self.environment.mode == "OFFLINE_REPLAY":
+                        # Explicit replay preparation has no production latency budget.
+                        saved = self.prepare_public_assets(case)
+                    else:
+                        key = research_pin_key(case)
+                        pending = self._asset_preparations.get(key)
+                        if pending is not None and pending.done():
+                            self._asset_preparations.pop(key, None)
+                            pending.result()
+                            saved = self._journal.get("w3_research_v2", key)
+                        if saved is None:
+                            if pending is None or pending.done():
+                                self._asset_preparations[key] = asyncio.run_coroutine_threadsafe(
+                                    asyncio.to_thread(self.prepare_public_assets, case), self._loop
+                                )
+                            raise W3Error(
+                                "w3_prepare_pending",
+                                "Exact pinned research is preparing off the Case stage; "
+                                "no version substitution",
+                            )
+                policies = case.frozen_inputs.get("projection", {}).get("policies", [])
+                wrapped = [
+                    SimpleNamespace(
+                        policy_id=p["policy_id"],
+                        model_dump=lambda mode=None, v=p: v,
+                        activation_conditions=[
+                            SimpleNamespace(condition_id=c["condition_id"])
+                            for c in p.get("activation_conditions", [])
+                        ],
+                    )
+                    for p in policies
+                ]
+                return SimpleNamespace(
+                    components=saved["components"],
+                    version_pin=W3ContextVersionPin.model_validate(saved["version_pin"]),
+                    policy_set=SimpleNamespace(policies=wrapped),
+                    context_cutoffs=saved["context_cutoffs"],
+                    reference_view="",
+                    policy_origins={},
+                    reference_event_ids=frozenset(saved.get("reference_event_ids", []))
+                    | frozenset(
+                        p["provisional_event_id"] for p in case.frozen_inputs.get("provisional", [])
+                    ),
+                )
             return self._wait_v4(self._prepare_v4(case))
         except Exception as exc:
             exc.w3_step = "CONTEXT"
@@ -600,6 +803,7 @@ class CodexW3AgentRunner:
         from .worker_receipts import ReceiptWorker
 
         assets = case.frozen_inputs["w3_assets"]
+        new_entry = self.entry_enabled(case)
         run_id = record["workspace"]
         attempt_id = case.case_id[-24:] + "-" + phase
         case_root = f"attempts/{attempt_id}"
@@ -625,7 +829,7 @@ class CodexW3AgentRunner:
         else:
             for path, content in instructions.items():
                 await write(run_id, path, content)
-        if research is not None and phase != "w3_template":
+        if research is not None and phase != "w3_template" and not new_entry:
             asset_key, research_files, _ = research
             if batch:
                 await self._workspace.ensure_research_pack(asset_key, research_files)
@@ -635,7 +839,7 @@ class CodexW3AgentRunner:
                     await write(run_id, f"context/research/{asset_key}/{path}", content)
                 self._journal.set("w3_workspace_assets", digest([run_id, asset_key]), True)
         reference_pack = ""
-        if context is not None and phase != "w3_template":
+        if context is not None and phase != "w3_template" and not new_entry:
             if batch and phase != OPERATIONS_PHASE:
                 reference_pack = context.reference_identity or digest(
                     [
@@ -667,10 +871,89 @@ class CodexW3AgentRunner:
             )
             template = assets["w3/task.md"] if not single_skill else ""
         task = dict(phase=phase, input=payload)
+        if new_entry:
+            task.update(
+                entry_version=ENTRY,
+                contract_version="persistent-runtime.w3.v4",
+                output_fields=list(schema.get("properties", {})),
+                instruction=(
+                    "Inherited AGENTS and unique Skill apply. "
+                    "This is the current phase input; do not reread contracts/task/schema "
+                    "routinely. Research uses w3_research tools with context_ref. "
+                    "Print one text body; follow next_cursor for incomplete relevant content."
+                ),
+            )
+            if phase != "w3_template":
+                frozen_key = case.case_id + ":" + phase
+                binding = self._journal.get("w3_context_v2", frozen_key)
+                if binding is None:
+                    manifest = self._journal.get("w3_context_manifest_v2", frozen_key)
+                    from doxagent.v2_read.native_content import NativeContent
+
+                    codec = NativeContent(self._journal.path)
+                    if manifest is not None:
+                        manifest = codec.decode(manifest)
+                    if manifest is None:
+                        manifest = dict(
+                            case_id=case.case_id,
+                            phase=phase,
+                            ticker=case.ticker,
+                            inline_policy_ids=[p["policy_id"] for p in payload.get("policies", [])],
+                            mode=self.environment.mode,
+                            cutoff_at=payload.get("cutoff_at")
+                            or case.source.message_bus_event_time.isoformat(),
+                            version_pin=context.version_pin.model_dump(mode="json"),
+                            components=context.components,
+                            policy_usage=case.frozen_inputs.get("policy_usage", []),
+                            state={
+                                k: payload[k]
+                                for k in (
+                                    "watch",
+                                    "pins",
+                                    "submitted_decision",
+                                    "output_disposition",
+                                )
+                                if k in payload
+                            },
+                            history=payload.get("recent_trade_intents", []),
+                            events={
+                                e.get("event_id", e.get("provisional_event_id")): e
+                                for e in payload.get("w1", {}).get("events", [])
+                            },
+                            evidence=case.frozen_inputs.get("w3_replay", {}).get(
+                                "evidence_files", {}
+                            ),
+                            deadline_at=case.frozen_inputs.get("w3_deadline_at"),
+                        )
+                        if not manifest["deadline_at"]:
+                            from datetime import UTC, timedelta
+
+                            manifest["deadline_at"] = (
+                                datetime.now(UTC) + timedelta(seconds=self._timeout_seconds + 60)
+                            ).isoformat()
+                        if self.environment.mode == "OFFLINE_REPLAY":
+                            from doxagent.codex_worker.w3_market import offline_market_view
+
+                            manifest["market_view"] = offline_market_view(
+                                manifest["evidence"], manifest["cutoff_at"], case.ticker
+                            )
+                        self._journal.set(
+                            "w3_context_manifest_v2", frozen_key, json.loads(codec.encode(manifest))
+                        )
+                    binding = await measured(
+                        "case.context_bind",
+                        self._worker.bind_w3_context(case.case_id, phase, manifest),
+                    )
+                    self._journal.set("w3_context_v2", frozen_key, binding)
+                task.update(binding)
+                payload.pop("ibkr_history", None)
+                payload.pop("research_path", None)
+                task["input"] = payload
         if self.environment.mode == "OFFLINE_REPLAY":
             task["execution_environment"] = self.environment.compatibility()
             task["instruction"] = (
-                "This is an offline historical replay. Web Search, MCP, IBKR API and "
+                "This is an offline historical replay. Web Search, external MCP providers, "
+                "IBKR API and "
                 "subagents are disabled. Use the supplied local precollected search and "
                 "price files instead of making network or IBKR calls. They replace only "
                 "evidence delivery; retain the skill's decision and operations rules. "
@@ -679,13 +962,21 @@ class CodexW3AgentRunner:
             if phase != "w3_template":
                 replay = case.frozen_inputs.get("w3_replay", {})
                 evidence_root = f"{case_root}/evidence"
-                if phase != OPERATIONS_PHASE:
+                if phase != OPERATIONS_PHASE and not new_entry:
                     for name, content in replay.get("evidence_files", {}).items():
                         await write(run_id, f"{evidence_root}/{name}", content)
                 else:
                     evidence_root = f"attempts/{case.case_id[-24:]}-trade_decision/evidence"
-                task["evidence"] = dict(root=evidence_root, index=f"{evidence_root}/index.json")
-                if replay.get("policy_execution_view"):
+                task["evidence"] = (
+                    {
+                        "access": "w3_research.read",
+                        "kind": "raw_document",
+                        "ids": list(replay.get("evidence_files", {})),
+                    }
+                    if new_entry
+                    else dict(root=evidence_root, index=f"{evidence_root}/index.json")
+                )
+                if replay.get("policy_execution_view") and not new_entry:
                     view_path = f"{case_root}/policy_execution_view.json"
                     await write(
                         run_id,
@@ -710,6 +1001,15 @@ class CodexW3AgentRunner:
         )
         if single_skill:
             task.update(paths)
+            if new_entry:
+                for name in (
+                    "research_path",
+                    "reference_path",
+                    "task_path",
+                    "output_schema",
+                    "skill_path",
+                ):
+                    task.pop(name, None)
             if phase == "w3_template":
                 task["instruction"] = (
                     "Initialize the shared AGENTS.md and unique skill only. "
@@ -757,13 +1057,20 @@ class CodexW3AgentRunner:
         if batch:
             if phase != "w3_template":
                 files[f"{case_root}/audit/w3_identity.json"] = json.dumps(
-                    {"case_id": case.case_id, "ticker": case.ticker, "phase": phase,
-                     "context_version_pin": context.version_pin.model_dump(mode="json")
-                     if context else None}, separators=(",", ":")
+                    {
+                        "case_id": case.case_id,
+                        "ticker": case.ticker,
+                        "phase": phase,
+                        "context_version_pin": context.version_pin.model_dump(mode="json")
+                        if context
+                        else None,
+                    },
+                    separators=(",", ":"),
                 )
             await self._workspace.materialize_case(run_id, packs, files)
         if (
             phase == "trade_decision"
+            and not new_entry
             and not record.get("thread_id")
             and hasattr(self._worker, "prepare_thread")
         ):
@@ -868,8 +1175,10 @@ class CodexW3AgentRunner:
                     else self.environment.web_search_mode,
                     read_only=True,
                     data_mcp_enabled=False
-                    if phase == "w3_template"
+                    if phase == "w3_template" or new_entry
                     else self.environment.data_mcp_enabled,
+                    research_assets_mcp_enabled=new_entry and phase != "w3_template",
+                    w3_entry_version=ENTRY if new_entry else None,
                     allow_subagents=False,
                     max_subagents=0,
                     timeout_seconds=self._timeout_seconds,
@@ -1216,6 +1525,12 @@ class CodexW3AgentRunner:
     def close(self) -> None:
         if self._closed:
             return
+        for pending in self._asset_preparations.values():
+            try:
+                pending.result(timeout=30)
+            except Exception:
+                pending.cancel()
+        self._asset_preparations.clear()
         self._closed = True
         close = getattr(self._worker, "aclose", None)
         if close is not None:

@@ -71,6 +71,8 @@ def main():
                 commit,
                 "src/doxagent/site_strategy",
                 "src/doxagent/message_bus_v2/yahoo_sources.py",
+                "src/doxagent/message_bus_v2/reuters_sources.py",
+                "src/doxagent/content_enrichment/quality.py",
                 "deploy/Dockerfile.site-maintenance-repair",
             ],
             cwd=REPO,

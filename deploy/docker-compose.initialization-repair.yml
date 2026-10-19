@@ -23,6 +23,7 @@ services:
       DOXAGENT_INITIALIZATION_REPAIR_PRODUCTION_CONTAINER: ${DOXAGENT_INITIALIZATION_REPAIR_PRODUCTION_CONTAINER:?set the exact v2-initialization container name}
       DOXAGENT_INITIALIZATION_REPAIR_AGENT_IMAGE: ${DOXAGENT_INITIALIZATION_REPAIR_AGENT_IMAGE:-doxagent-initialization-repair-agent:server}
       DOXAGENT_INITIALIZATION_REPAIR_CODEX_AUTH_FILE: /var/lib/doxagent/initialization-repair/auth.json
+      DOXAGENT_INITIALIZATION_REPAIR_EXTERNAL_AUTH_SOURCE: /data/codex-home/auth.json
     command:
       - doxagent-initialization-repair
       - guardian

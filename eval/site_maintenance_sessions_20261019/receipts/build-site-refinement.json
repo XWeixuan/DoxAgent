@@ -1,0 +1,17 @@
+{
+  "repair_commit": "68c9414ccaa8a4fdea10d512368c3240ea3aeaaf",
+  "images": {
+    "site-access": {
+      "tag": "doxagent-site-access:maintenance-68c9414c",
+      "image": "sha256:1e4d75cea48fd23f2b6ad3a512bf500457eeb5a974e3ad7ed4a4201c3274b4ea",
+      "base": "sha256:c8ee00781af7953386fc10289d34962b95d80b48a3780cbea6ba58310607df1d",
+      "base_commit": "9de580c9287c7da43a3dc5c88c527669fc423a89",
+      "dependency_layers_preserved": true
+    },
+    "chrome-supervisor": {
+      "tag": "doxagent-chrome-supervisor:maintenance-b1f8237c",
+      "image": "sha256:b26eb6f77b4bf8d61094dd0cdc869f7f5a2ce4d25c1403765d07c1725276934f",
+      "preserved": true
+    }
+  }
+}

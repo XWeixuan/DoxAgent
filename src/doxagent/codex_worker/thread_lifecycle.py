@@ -21,25 +21,35 @@ class AppServerThreads:
     def __init__(self, config=None):
         self.config, self.client = config, None
         self.clients = set()
+        self._initialize_lock = asyncio.Lock()
 
     async def request(self, method, params):
         from openai_codex.async_client import AsyncCodexClient
 
-        client = AsyncCodexClient(self.config) if self.config is not None else AsyncCodexClient()
-        self.clients.add(client)
+        async with asyncio.timeout(15), self._initialize_lock:
+            if self.client is None:
+                client = (
+                    AsyncCodexClient(self.config) if self.config is not None else AsyncCodexClient()
+                )
+                try:
+                    async with asyncio.timeout(10):
+                        await client.start()
+                        await client.initialize()
+                except BaseException:
+                    await asyncio.wait_for(client.close(), 3)
+                    raise
+                self.client = client
+                self.clients.add(client)
+            client = self.client
 
         async def rpc():
-            with span("lifecycle.client_start", method=method):
-                await client.start()
-            with span("lifecycle.client_initialize", method=method):
-                await client.initialize()
             with span("lifecycle.rpc", method=method):
                 result = await client.request(method, params, response_model=_WireResponse)
             return result.model_dump(mode="json")
 
         try:
             return await asyncio.wait_for(rpc(), 10)
-        finally:
+        except BaseException:
             owned_process = getattr(getattr(client, "_sync", None), "_proc", None)
             try:
                 with span("lifecycle.client_close", method=method):
@@ -49,6 +59,9 @@ class AppServerThreads:
                     owned_process.kill()
                     await asyncio.to_thread(owned_process.wait, timeout=3)
                 self.clients.discard(client)
+                if self.client is client:
+                    self.client = None
+            raise
 
     async def close(self):
         await asyncio.gather(*(asyncio.wait_for(c.close(), 5) for c in list(self.clients)))
@@ -110,7 +123,7 @@ class WorkerThreadLifecycle:
 
         raw = request.model_dump(mode="json")
         key = request.operation_key
-        if key != "w3-fork:" + request.record_id:
+        if key not in {"w3-fork:" + request.record_id, "w3-slot-fork:" + request.record_id}:
             raise ValueError("operation key must identify the original record")
         canonical = json.dumps(raw, sort_keys=True)
         parent = self._row(request.parent_thread_id)
@@ -176,15 +189,33 @@ class WorkerThreadLifecycle:
             cwd = await asyncio.to_thread(self.workspaces.ensure_run, request.run_id)
             if recover:
                 self._operation_update(key, step="RECONCILING")
-                listed = await self.transport.request(
-                    "thread/list", {"cwd": str(cwd), "limit": 100}
-                )
-                found = [
-                    t
-                    for t in listed.get("data", [])
-                    if t.get("cwd") == str(cwd)
-                    and t.get("forkedFromId") == request.parent_thread_id
-                ]
+                receipt = cwd / ".w3-fork-receipt.json"
+                if receipt.is_file():
+                    value = json.loads(receipt.read_text())
+                    if (
+                        value.get("run_id") == request.run_id
+                        and value.get("parent_id") == request.parent_thread_id
+                    ):
+                        return value["thread_id"]
+                found = []
+                for fast in (True, False):
+                    cursor = None
+                    while True:
+                        params = {"cwd": str(cwd), "limit": 100, "useStateDbOnly": fast}
+                        if cursor:
+                            params["cursor"] = cursor
+                        listed = await self.transport.request("thread/list", params)
+                        found.extend(
+                            t
+                            for t in listed.get("data", [])
+                            if t.get("cwd") == str(cwd)
+                            and t.get("forkedFromId") == request.parent_thread_id
+                        )
+                        cursor = listed.get("nextCursor")
+                        if not cursor:
+                            break
+                    if found:
+                        break
                 if len(found) > 1:
                     raise ValueError("ambiguous persisted prepare")
                 if found:
@@ -208,20 +239,37 @@ class WorkerThreadLifecycle:
                 effort=profile.get("effort") or "max",
                 read_only=True,
                 data_mcp_enabled=profile.get("data_mcp_enabled") == "true",
+                research_assets_mcp_enabled=profile.get("research_assets_mcp_enabled") == "true",
+                w3_entry_version=profile.get("w3_entry_version"),
                 web_search_mode=profile.get("web_search_mode") or "live",
                 timeout_seconds=int(profile.get("timeout_seconds") or "600"),
             )
+            if request.source_case_id is None:
+                # Let already-dispatched business startups acquire the existing
+                # finite semaphore before speculative empty-slot replenishment.
+                while getattr(self.jobs, "_starting", None):
+                    await asyncio.sleep(0.02)
             async with self.jobs._startup:
                 return await self.jobs._runtime.prepare_fork(
                     execution, cwd, request.parent_thread_id
                 )
 
         try:
-            thread_id = await asyncio.wait_for(execute(), 30)
+            running = asyncio.create_task(execute())
+            try:
+                thread_id = await asyncio.wait_for(asyncio.shield(running), 10)
+            except TimeoutError:
+                self._operation_update(key, step="FORK_SLOW")
+                thread_id = await asyncio.wait_for(running, 55)
             with closing(self.jobs.store.connect()) as db, db:
                 db.execute(
-                    "INSERT OR IGNORE INTO w3_thread_registry VALUES(?,'CASE',?,?,'ACTIVE')",
-                    (thread_id, request.parent_thread_id, request.run_id),
+                    "INSERT OR IGNORE INTO w3_thread_registry VALUES(?,?,?,?,'ACTIVE')",
+                    (
+                        thread_id,
+                        "PREPARED" if request.source_case_id is None else "CASE",
+                        request.parent_thread_id,
+                        request.run_id,
+                    ),
                 )
             self._operation_update(
                 key,
@@ -460,6 +508,12 @@ class WorkerThreadLifecycle:
             if row["status"] == "DELETED":
                 if row["run_id"].startswith("w3-case-"):
                     self.workspaces.delete_w3_workspace(row["run_id"])
+                elif row["run_id"].startswith("w3-ready-"):
+                    await asyncio.to_thread(
+                        self.workspaces.retire_w3_ready_workspace,
+                        row["run_id"],
+                        preserve_evidence=row["kind"] == "CASE",
+                    )
                 return dict(thread_id=thread_id, status="DELETED")
             if self.active(thread_id):
                 raise ValueError("cannot delete a thread with an active or queued job")
@@ -491,6 +545,12 @@ class WorkerThreadLifecycle:
                 )
             if row["run_id"].startswith("w3-case-"):
                 await asyncio.to_thread(self.workspaces.delete_w3_workspace, row["run_id"])
+            elif row["run_id"].startswith("w3-ready-"):
+                await asyncio.to_thread(
+                    self.workspaces.retire_w3_ready_workspace,
+                    row["run_id"],
+                    preserve_evidence=row["kind"] == "CASE",
+                )
             return dict(thread_id=thread_id, status="DELETED")
 
     async def close(self):

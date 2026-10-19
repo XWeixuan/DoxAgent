@@ -19,6 +19,11 @@ class DoxAgentSettings(BaseSettings):
         populate_by_name=True,
     )
 
+    w3_research_mcp_url: str = Field(default="http://127.0.0.1:8791/mcp/w3-research", validation_alias="DOXAGENT_W3_RESEARCH_MCP_URL")
+    w3_market_refresh_seconds: float = Field(default=30, ge=15, validation_alias="DOXAGENT_W3_MARKET_REFRESH_SECONDS")
+    w3_ready_luna: int = Field(default=2, ge=0, le=16, validation_alias="DOXAGENT_W3_READY_LUNA")
+    w3_ready_sol: int = Field(default=1, ge=0, le=16, validation_alias="DOXAGENT_W3_READY_SOL")
+
     codex_queue_high_watermark: int = Field(
         default=10000,
         ge=100,
@@ -588,6 +593,10 @@ class DoxAgentSettings(BaseSettings):
     message_bus_jev_enabled: bool = Field(
         default=False, validation_alias="DOXAGENT_MESSAGE_BUS_JEV_ENABLED"
     )
+    message_bus_decision_url: str = Field(
+        default="https://trial.cn-beijing.maas.aliyuncs.com/compatible-mode/v1/systemone",
+        validation_alias="DOXAGENT_MESSAGE_BUS_DECISION_URL",
+    )
     message_bus_jev_timeout_seconds: float = Field(
         default=15.0,
         ge=1,
@@ -844,7 +853,7 @@ class DoxAgentSettings(BaseSettings):
         validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_TIMEOUT_SECONDS",
     )
     persistent_runtime_v2_w2_r1_model: str = Field(
-        default="deepseek-v4.1-flash",
+        default="anthropic/claude-haiku-5.5",
         validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_W2_R1_MODEL",
     )
     persistent_runtime_v2_w2_r1_timeout_seconds: float = Field(

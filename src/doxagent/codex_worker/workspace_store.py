@@ -398,6 +398,40 @@ class LocalWorkspaceStore:
             if target.exists():
                 shutil.rmtree(target)
 
+    def retire_w3_ready_workspace(self, run_id: str, *, preserve_evidence: bool) -> None:
+        """Retire v5 controls/output; no upstream research is materialized here."""
+        self._validate_identifier(run_id, "run_id")
+        target = self._run_root(run_id)
+        if (
+            not run_id.startswith("w3-ready-")
+            or target.parent != self.root.resolve()
+            or target.is_symlink()
+        ):
+            raise InvalidWorkspacePath("not a dedicated W3 ready-slot workspace")
+        with self._named_lock(self._materialize_locks, run_id):
+            if not target.exists():
+                return
+            if preserve_evidence:
+                import zipfile
+
+                archive = self.root / ".w3-case-archives" / (run_id + ".zip")
+                archive.parent.mkdir(exist_ok=True)
+                pending = archive.with_suffix(".tmp")
+                with zipfile.ZipFile(pending, "w", compression=zipfile.ZIP_DEFLATED) as output:
+                    for source in target.rglob("*"):
+                        if source.is_symlink() or not source.resolve().is_relative_to(
+                            target.resolve()
+                        ):
+                            raise InvalidWorkspacePath("cannot archive a symlinked W3 workspace")
+                        if source.is_file():
+                            output.write(source, source.relative_to(target).as_posix())
+                pending.replace(archive)
+            # Validate even unused slots; never follow an externally replaced link.
+            for source in target.rglob("*"):
+                if source.is_symlink() or not source.resolve().is_relative_to(target.resolve()):
+                    raise InvalidWorkspacePath("cannot retire a linked W3 workspace")
+            shutil.rmtree(target)
+
     def delete_attempt(self, run_id: str, attempt_id: str) -> None:
         self._validate_identifier(run_id, "run_id")
         self._validate_identifier(attempt_id, "attempt_id")

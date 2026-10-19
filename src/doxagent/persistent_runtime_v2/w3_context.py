@@ -260,20 +260,45 @@ def freeze_history(journal, case, accepted_at):
 
 @observed("history.payload")
 def history_payload(journal, repository, case, membership):
+    saved_payload = journal.get("w3_frozen_history_payload", case.case_id)
+    if saved_payload is not None:
+        return saved_payload["items"], saved_payload["matches"]
     items, matches = [], []
     frozen = journal.get("w3_history_matches", case.case_id)
     with journal.transaction(write=False) as db:
+        members = membership["members"]
+        identities = [(m["namespace"], m["identity"]) for m in members]
+        values = {}
+        for start in range(0, len(identities), 200):
+            batch = identities[start : start + 200]
+            predicates = " OR ".join("(namespace=? AND key=?)" for _ in batch)
+            for row in db.execute(
+                "SELECT namespace,key,payload FROM runtime_values WHERE " + predicates,
+                [v for pair in batch for v in pair],
+            ):
+                values[(row[0], row[1])] = json.loads(row[2])
+        current_cases = {}
+        if hasattr(repository, "path"):
+            ids = list({v["trade"]["case_id"] for v in values.values()})
+            for start in range(0, len(ids), 200):
+                batch = ids[start : start + 200]
+                for row in db.execute(
+                    "SELECT case_id,payload_json FROM runtime_v2_cases WHERE case_id IN ("
+                    + ",".join("?" for _ in batch)
+                    + ")",
+                    batch,
+                ):
+                    current_cases[row[0]] = repository.content.decode(json.loads(row[1]))
         for member in membership["members"]:
-            row = db.execute(
-                "SELECT payload FROM runtime_values WHERE namespace=? AND key=?",
-                (member["namespace"], member["identity"]),
-            ).fetchone()
-            if row is None:
+            value = values.get((member["namespace"], member["identity"]))
+            if value is None:
                 raise ValueError("frozen history business record is unavailable")
-            value = json.loads(row[0])
             trade = value["trade"]
-            current = repository.get_case(trade["case_id"])
-            business = current.model_dump(mode="json") if current else trade
+            if hasattr(repository, "path"):
+                business = current_cases.get(trade["case_id"], trade)
+            else:
+                current = repository.get_case(trade["case_id"])
+                business = current.model_dump(mode="json") if current else trade
             w1 = trade["w1_result"]
             w2 = trade["w2_result"]
             w3 = trade.get("w3_trade_decision")
@@ -319,6 +344,7 @@ def history_payload(journal, repository, case, membership):
         journal.set("w3_history_matches", case.case_id, matches)
     else:
         matches = frozen
+    journal.set("w3_frozen_history_payload", case.case_id, {"items": items, "matches": matches})
     return items, matches
 
 
@@ -379,6 +405,16 @@ def build_case_payload(case, context, *, events, history, labels, state, journal
     w1.pop("fact_attributions", None)
     w1["events"] = events
     wanted = set(policy_associations(case.w2_final))
+    new_entry = case.frozen_inputs.get("w3_contracts", {}).get("w3_entry_version") == "w3-entry-v5"
+    if new_entry:
+        wanted.update(p["policy_id"] for p in case.frozen_inputs.get("policy_watch_followup", []))
+        wanted.update(
+            p["policy_id"]
+            for p in state.get("watch", [])
+            if isinstance(p, dict) and p.get("policy_id")
+        )
+        if case.w2_final.policy_related and not wanted and not case.w2_contract_version:
+            wanted.update(case.w2_final.policy_ids)
     policies = [
         p.model_dump(mode="json") for p in context.policy_set.policies if p.policy_id in wanted
     ]
@@ -389,6 +425,8 @@ def build_case_payload(case, context, *, events, history, labels, state, journal
         ]
     usage = []
     for row in case.frozen_inputs.get("policy_usage", []):
+        if new_entry and row["policy_id"] not in wanted:
+            continue
         usage.append(
             dict(
                 policy_id=row["policy_id"],
@@ -442,4 +480,8 @@ def build_case_payload(case, context, *, events, history, labels, state, journal
         payload.pop("ibkr_history", None)
         if replay.get("trading_context"):
             payload["trading_context"].update(replay["trading_context"])
+    if new_entry:
+        payload.pop("ibkr_history", None)
+        payload["policy_usage_scope"] = "ASSOCIATED_ONLY"
+        payload["policy_usage_ref"] = {"kind": "policy_usage", "snapshot": "FROZEN"}
     return payload

@@ -38,12 +38,12 @@ async def test_real_startup_handshake_replacement_rollback_and_exact_resume(tmp_
     _seed_published_d2(repository, partial=True)
     repository.save_bundle(
         GlobalResearchBundle(
-            run_id="d1-new",
+            run_id="d1-mu",
             ticker="MU",
             status="published",
             published_at=NOW,
             handoff=GlobalResearchHandoffV1(
-                run_id="d1-new", ticker="MU", document_artifact_id="d1-body", published_at=NOW
+                run_id="d1-mu", ticker="MU", document_artifact_id="d1-body", published_at=NOW
             ),
         )
     )
@@ -51,7 +51,7 @@ async def test_real_startup_handshake_replacement_rollback_and_exact_resume(tmp_
         ArtifactRef(
             workflow_version="codex_global_research_v1",
             research_lane=ResearchLane.GLOBAL_RESEARCH,
-            run_id="d1-new",
+            run_id="d1-mu",
             artifact_id="d1-body",
             node=CodexD1Node.ASSEMBLE,
             attempt_id="offline-assemble",
@@ -65,7 +65,7 @@ async def test_real_startup_handshake_replacement_rollback_and_exact_resume(tmp_
     )
     repository.save_published_document(
         PublishedDocument(
-            run_id="d1-new",
+            run_id="d1-mu",
             artifact_id="d1-body",
             artifact_kind="bundle",
             content_type="application/json",
@@ -107,7 +107,7 @@ async def test_real_startup_handshake_replacement_rollback_and_exact_resume(tmp_
         cutoff=NOW,
         reason="offline first activation",
         artifacts={
-            "document1": {"run_id": "d1-new"},
+            "document1": {"run_id": "d1-mu"},
             "document2": {"run_id": "d2-mu"},
             "document3": {"version": 1},
             "event_library": {"version": 1},
@@ -173,7 +173,7 @@ async def test_real_startup_handshake_replacement_rollback_and_exact_resume(tmp_
         assert result.status == "SUCCEEDED", result.error
         assert control.nodes(replacement.initialization_id)[0] == completed_prepare
         active = control.active_revision("MU")
-        assert active["artifacts"]["document1"] == {"run_id": "d1-new"}
+        assert active["artifacts"]["document1"] == {"run_id": "d1-mu"}
         assert active["artifacts"]["document2"] == {"run_id": "d2-mu"}
         assert active["artifacts"]["document3"] == {"version": version}
         assert scheduler.repository.get_state("MU").metadata["initial_offset"] == 0

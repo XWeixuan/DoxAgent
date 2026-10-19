@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import hmac
 import os
 import tempfile
@@ -75,28 +76,157 @@ def create_worker_app(
             owner.__exit__()
         raise
     disk = DiskBudget()
+    from doxagent.mcp.w3_research_server import ResearchMcp
+    from doxagent.persistent_runtime_v2.w3_research_store import W3ResearchStore
+
+    from .w3_market import W3MarketPreparer
+
+    research = W3ResearchStore(workspaces.root)
+    market = W3MarketPreparer(research, settings)
+    research_mcp = ResearchMcp(research, capability_secret, market)
+    from .w3_ready import W3ReadySlots
+
+    ready_slots = W3ReadySlots(jobs, workspaces, settings, research_mcp)
+
+    async def prepare_assets():
+        import logging
+        import time
+
+        next_gc = time.monotonic() + 3600
+        while True:
+            try:
+                await asyncio.to_thread(research.reconcile)
+                for ticker in list(market.fixed_tasks):
+                    market.warm_fixed(ticker)
+                for key in list(ready_slots.configs):
+                    await ready_slots.fill(key)
+                await ready_slots.retire()
+                if time.monotonic() >= next_gc:
+                    from .w3_resources import gc_derivatives
+
+                    await asyncio.to_thread(gc_derivatives, research, apply=True)
+                    next_gc = time.monotonic() + 3600
+            except Exception:
+                logging.getLogger(__name__).exception("W3 background preparation will retry")
+            await asyncio.sleep(30)
 
     @asynccontextmanager
     async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
+        import asyncio
+
+        await asyncio.to_thread(research.initialize)
         jobs.start()
-        try:
-            yield
-        finally:
+        preparation = asyncio.create_task(prepare_assets())
+        async with research_mcp.manager.run():
             try:
-                await jobs.close()
+                yield
             finally:
-                if owner is not None:
-                    owner.__exit__()
+                preparation.cancel()
+                await asyncio.gather(preparation, return_exceptions=True)
+                await market.close()
+                await ready_slots.close()
+                try:
+                    await jobs.close()
+                finally:
+                    if owner is not None:
+                        owner.__exit__()
 
     capabilities = CapabilityTokenCodec(capability_secret)
     app = FastAPI(title="DoxAgent Codex Worker", version="1.0.0", lifespan=lifespan)
     app.state.workspaces = workspaces
     app.state.jobs = jobs
+    app.state.w3_research = research
+    app.state.w3_market = market
+    app.state.w3_ready_slots = ready_slots
+    from starlette.routing import Route
+
+    app.router.routes.append(
+        Route("/mcp/w3-research", research_mcp, methods=["GET", "POST", "DELETE"])
+    )
+    app.mount("/mcp/w3-research", research_mcp)
 
     def require_service_auth(authorization: str | None = Header(default=None)) -> None:
         expected = f"Bearer {bearer_token}"
         if authorization is None or not hmac.compare_digest(authorization, expected):
             raise HTTPException(status_code=401, detail="invalid worker credentials")
+
+    @app.post("/v1/w3/research/prepare", dependencies=[Depends(require_service_auth)])
+    async def prepare_research(payload: dict):
+        components = await disk.run(research.install, payload["components"], payload["ticker"])
+        market.warm_fixed(payload["ticker"])
+        return {"components": components}
+
+    @app.post("/v1/w3/contexts", dependencies=[Depends(require_service_auth)])
+    async def bind_research(payload: dict):
+        try:
+            result = await disk.run(
+                research.bind, payload["case_id"], payload["phase"], payload["manifest"]
+            )
+        except ValueError as exc:
+            raise HTTPException(409, str(exc)) from exc
+        if payload["phase"] == "trade_decision":
+            market.start(payload["manifest"])
+        return result
+
+    @app.post("/v1/w3/market/stop", dependencies=[Depends(require_service_auth)])
+    async def stop_market(payload: dict):
+        market.stop(payload["case_id"])
+        with __import__("contextlib").closing(jobs.store.connect()) as db, db:
+            db.execute(
+                "UPDATE w3_ready_slots SET state='USED' WHERE case_id=? "
+                "AND state='BOUND' AND thread_id IS NOT NULL",
+                (payload["case_id"],),
+            )
+            db.execute(
+                "UPDATE w3_ready_slots SET state='ABANDONED' "
+                "WHERE case_id=? AND (error IS NOT NULL OR thread_id IS NULL)",
+                (payload["case_id"],),
+            )
+        return {"stopped": True}
+
+    @app.post("/v1/w3/market/start", dependencies=[Depends(require_service_auth)])
+    async def start_market(payload: dict):
+        market.start(payload)
+        return {"accepted": True}
+
+    @app.post("/v1/w3/ready-slots/configure", dependencies=[Depends(require_service_auth)])
+    async def configure_ready(payload: dict):
+        from contextlib import closing
+
+        key = await ready_slots.configure(payload)
+        with closing(jobs.store.connect()) as db:
+            count = db.execute(
+                "SELECT count(*) FROM w3_ready_slots WHERE scope=? AND state='READY'", (key,)
+            ).fetchone()[0]
+        return {"scope": key, "ready": count > 0}
+
+    @app.get("/v1/w3/readiness", dependencies=[Depends(require_service_auth)])
+    async def w3_readiness():
+        from contextlib import closing
+
+        with closing(jobs.store.connect()) as db:
+            rows = db.execute(
+                "SELECT scope,state,count(*) FROM w3_ready_slots GROUP BY scope,state"
+            ).fetchall()
+        profiles = {}
+        for key, config in ready_slots.configs.items():
+            if not config.get("active_public", True):
+                continue
+            profiles[config["profile"]["model"]] = sum(
+                n for scope, state, n in rows if scope == key and state == "READY"
+            )
+        return {
+            "ready": all(profiles.get(model, 0) > 0 for model in ("gpt-6-luna", "gpt-6-sol")),
+            "profiles": profiles,
+            "mcp_calls": research_mcp.calls,
+        }
+
+    @app.post("/v1/w3/ready-slots/claim", dependencies=[Depends(require_service_auth)])
+    async def claim_ready(payload: dict):
+        try:
+            return await ready_slots.claim(payload)
+        except ValueError as exc:
+            raise HTTPException(409, str(exc)) from exc
 
     @app.post("/v1/threads/register-template", dependencies=[Depends(require_service_auth)])
     async def register_template(request: TemplateRegisterRequest):

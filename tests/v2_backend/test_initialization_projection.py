@@ -1,4 +1,8 @@
+import json
+import sqlite3
 from datetime import UTC, datetime, timedelta
+
+import pytest
 
 from doxagent.initialization_repair.repository import RepairRepository
 from doxagent.initialization_repair.schema import RoundStatus
@@ -9,6 +13,66 @@ from doxagent.v2_read.outbox import SourceOutbox
 from doxagent.v2_read.projector import ProjectionWorker
 from doxagent.v2_read.projectors import DomainProjectors
 from doxagent.v2_read.repository import ReadStore
+
+
+@pytest.mark.parametrize('legacy_native',[False,True])
+def test_progress_reads_used_fields_without_hydrating_worker_receipts(tmp_path, monkeypatch,legacy_native):
+    from doxagent.v2_read.content_files import ContentFiles, ContentUnavailable
+    from doxagent.v2_read.initialization import progress
+
+    store = ReadStore(tmp_path / "read.db")
+    store.migrate()
+    run = dict(ticker="MU", initialization_id="init-mu", status="SUCCEEDED", state_seq=5,
+               manual_resume_required=False, error=None)
+    node = dict(key="d3", block="D3", status="SUCCEEDED",
+                receipt={"worker_output": "r" * 20000},
+                result={"artifacts": {"large": "a" * 20000},
+                        "quality_annotations": ["PARTIAL"]})
+    records = [dict(kind="native:initialization_nodes", ticker="MU", id="d3",
+                    parent="init-mu", data=node)]
+    for index, (kind, at) in enumerate([
+        ("node.started", "2026-10-18T00:00:00Z"),
+        ("node.settled", "2026-10-18T00:01:00Z"),
+    ]):
+        records.append(dict(kind="native:initialization_events", ticker="MU", id=str(index),
+                            parent="init-mu", data=dict(kind=kind, created_at=at,
+                            payload={"node": "d3", "unused": "e" * 20000})))
+    store.ingest("test", "seed", records)
+    with sqlite3.connect(store.path) as db:
+        if legacy_native:
+            # Imported older generations can still contain full native rows.
+            # Keep main's projection/integrity regression for that real shape.
+            for record in records:
+                db.execute("UPDATE object_current SET payload=? WHERE kind=? AND id=?",
+                           (store.content_codec.encode(record['data']),record['kind'],record['id']))
+        raw = json.loads(db.execute(
+            "SELECT payload FROM objects WHERE kind='native:initialization_nodes'"
+        ).fetchone()[0])
+    original = ContentFiles.read
+    if legacy_native:
+        result = raw["result"]["$doxagent_content_v1"]
+        blocked = {raw["receipt"]["$doxagent_content_v1"]}
+    else:
+        assert 'receipt' not in raw and raw['result']=={'quality_annotations':['PARTIAL']}
+        blocked = None  # V4 needs no external receipt/result bodies at all.
+
+    def checked(self, identity, *args, **kwargs):
+        if blocked is None or identity in blocked:
+            raise ContentUnavailable("unavailable test content")
+        return original(self, identity, *args, **kwargs)
+
+    monkeypatch.setattr(ContentFiles, "read", checked)
+    value = progress(store, run, dict(kind="native:initialization_runs"))["data"]
+    stage = next(s for s in value["steps"] if s["step_key"] == "POLICIES")
+    assert stage["status"] == "SUCCEEDED"
+    assert stage["quality_annotations"] == ["PARTIAL"]
+    assert stage["duration_seconds"]["value"] == 60
+    assert value["failed_node_keys"] == []
+    # Results used by progress retain normal native-content verification.
+    if legacy_native:
+        blocked.add(result)
+        with pytest.raises(ContentUnavailable):
+            progress(store, run, dict(kind="native:initialization_runs"))
 
 
 def test_progress_retains_all_failed_nodes_and_recorded_stage_times(tmp_path):

@@ -51,3 +51,20 @@ job, or run resume again under this feature. Inspect the preserved container log
 Three repair rounds are available independently for each concrete durable node key. Changing error
 text or generation does not reset the count. A later node starts at round one; a managed child does
 not also charge its failed parent.
+
+## Production authentication and infrastructure recovery
+
+The production overlay sets `DOXAGENT_INITIALIZATION_REPAIR_EXTERNAL_AUTH_SOURCE` to the
+Worker's persistent login cache. Guardian publishes access-token/account-id snapshots to each
+incident's isolated home and updates them while its Agent runs. The Agent uses the SDK's external
+token login and refresh callback. Refresh tokens, Worker MCP configuration and the Worker's
+CODEX_HOME are not mounted into the Agent. The login owner remains responsible for refreshing
+the canonical cache; expired credentials prevent a new Agent launch before node budget is spent.
+The old `--codex-auth-file` bootstrap remains available for a separately provisioned managed login.
+
+After correcting Agent infrastructure, use `retry-agent --initialization-db <db> --incident-id <id>
+--reason <text>` to continue the same unexecuted round. This is limited to
+`REPAIR_AGENT_INFRA_RETRIES_EXHAUSTED` incidents with a FAILED initialization and no active
+execution or candidate image/control operation. It preserves the round ID, conversation, node
+budgets and prior retry history. Agent failures now persist individual logs and a terminal round
+state/issue entry, rather than leaving a stopped Agent labelled AGENT_RUNNING.

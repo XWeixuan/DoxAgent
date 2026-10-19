@@ -1,4 +1,4 @@
-"""OpenRouter Jev Decisions API: one article, keyed independent ticker questions."""
+"""Bailian System One API: one article, keyed independent ticker questions."""
 
 from __future__ import annotations
 
@@ -11,14 +11,16 @@ from .monitoring_terms import TickerMonitoringTerms
 from .schema import RawMessageInput
 
 
-class JevClient:
-    MODEL = "typesafe/jev-1.13"
-    URL = "https://openrouter.ai/api/alpha/decisions"
+class BailianDecisionClient:
+    MODEL = "decision-model-preview"
+    URL = "https://trial.cn-beijing.maas.aliyuncs.com/compatible-mode/v1/systemone"
 
     def __init__(
-        self, key: str, *, timeout: float = 15.0, client: httpx.AsyncClient | None = None
+        self, key: str, *, url: str = URL, timeout: float = 15.0,
+        client: httpx.AsyncClient | None = None,
     ) -> None:
         self.key = key
+        self.url = url
         self.timeout = timeout
         self.client = client or httpx.AsyncClient(timeout=timeout)
         self._owns_client = client is None
@@ -31,15 +33,17 @@ class JevClient:
         self, message: RawMessageInput, terms: Mapping[str, TickerMonitoringTerms]
     ) -> dict[str, float]:
         if len(terms) > 16:
-            raise ValueError("Jev batch cannot exceed 16 tickers")
+            raise ValueError("Decision model batch cannot exceed 16 tickers")
+        if not terms:
+            return {}
         questions = {
             ticker: {
                 "type": "noul",
-                "instructions": (
-                    f"Is this news relevant to {ticker}? "
-                    f"Relevant: {definition.definition.relevant} "
-                    f"Irrelevant: {definition.definition.irrelevant}"
-                ),
+                "instructions": f"Is this news relevant to {ticker}?",
+                "criteria": {
+                    "true": definition.definition.relevant,
+                    "false": definition.definition.irrelevant,
+                },
             }
             for ticker, definition in terms.items()
         }
@@ -51,7 +55,7 @@ class JevClient:
             "language": message.metadata.get("content_language") or "",
         }
         response = await self.client.post(
-            self.URL,
+            self.url,
             headers={"Authorization": f"Bearer {self.key}"},
             json={"model": self.MODEL, "state": state, "questions": questions},
             timeout=self.timeout,
@@ -67,6 +71,10 @@ class JevClient:
             if not isinstance(answer, dict) or answer.get("type") != "noul":
                 continue
             number = answer.get("noul")
-            if isinstance(number, int | float) and 0 <= number <= 1:
+            if type(number) in (int, float) and 0 <= number <= 1:
                 values[ticker] = float(number)
         return values
+
+
+# Compatibility for existing worker annotations and external imports. No OpenRouter calls.
+JevClient = BailianDecisionClient

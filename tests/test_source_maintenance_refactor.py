@@ -380,6 +380,41 @@ def test_inventory_does_not_report_stale_credentials_as_valid(seeded, tmp_path):
     assert row["auth_state"] == "REVERIFY_REQUIRED" and row["stored_auth_state"] == "VALID"
 
 
+def test_gui_default_inventory_hides_only_ordinary_automatic_publishers():
+    module = _load_desktop("site-login-ui.py")
+    rows = {
+        "source": {"site_id": "reuters", "identity_id": "reuters-main"},
+        "managed-publisher": {"site_id": "wsj", "identity_id": "wsj-main"},
+        "automatic": {"site_id": "generic", "identity_id": "auto-sports"},
+        "challenge": {"site_id": "generic", "identity_id": "auto-news"},
+        "lost": {"site_id": "generic", "identity_id": "auto-lost"},
+        "resolved": {"site_id": "generic", "identity_id": "auto-resolved"},
+    }
+    tasks = [
+        {"identity_id": "auto-news", "state": "WAITING_HUMAN"},
+        {"identity_id": "auto-lost", "state": "TARGET_LOST"},
+        {"identity_id": "auto-resolved", "state": "RESOLVED"},
+    ]
+    assert set(module.visible_profiles(rows, tasks, [])) == {
+        "source",
+        "managed-publisher",
+        "challenge",
+        "lost",
+    }
+    assert module.visible_profiles(rows, tasks, [], show_automatic=True) == rows
+    assert len(rows) == 6  # Filtering must not mutate the cached inventory.
+
+
+@pytest.mark.parametrize("state,visible", [("OPEN", True), ("RELEASED", True), ("CLOSED", False)])
+def test_gui_automatic_publisher_keeps_unfinished_human_session_visible(state, visible):
+    module = _load_desktop("site-login-ui.py")
+    rows = {"automatic": {"site_id": "generic", "identity_id": "auto"}}
+    assert (
+        bool(module.visible_profiles(rows, [], [{"identity_id": "auto", "state": state}]))
+        is visible
+    )
+
+
 def test_gui_unexpected_thread_error_always_reaches_main_thread_completion():
     module = _load_desktop("site-login-ui.py")
     app = object.__new__(module.SiteLoginApp)

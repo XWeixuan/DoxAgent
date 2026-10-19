@@ -37,10 +37,12 @@ class Capsule:
         self.busy = True
         self.healthy = False
         self.idle_at = 0.0
+        self.ready_slot = False
         self._log: Any = None
         self._stderr_task: asyncio.Task[None] | None = None
         self.stderr_bytes = 0
         self.startup_timing: dict[str, Any] | None = None
+        self.boot_timing: dict[str, Any] | None = None
         self.prepared = False
 
     @observed("capsule.spawn")
@@ -76,7 +78,8 @@ class Capsule:
             ),
             encoding="utf-8",
         )
-        await asyncio.wait_for(self.receive(), 30)
+        boot = await asyncio.wait_for(self.receive(), 30)
+        self.boot_timing = boot.get("timing")
 
     async def _drain_stderr(self) -> None:
         assert self.process is not None and self.process.stderr is not None
@@ -198,6 +201,7 @@ class CapsuleRuntime:
         )
 
     async def warm(self, target: int, gate=None, interval_seconds: float = 2.0) -> None:
+        target = getattr(self, "w3_warm_target", target)
         now = time.monotonic()
         if now < self._warm_next_at:
             return
@@ -225,18 +229,24 @@ class CapsuleRuntime:
             self.pool.remove(capsule)
 
     async def prepare_fork(self, request, cwd, parent_thread_id):
+        return await self._prepare(request, cwd, parent_thread_id)
+
+    async def prepare_resume(self, request, cwd):
+        return await self._prepare(request, cwd, None)
+
+    async def _prepare(self, request, cwd, parent_thread_id):
         capsule = await self._take(None)
         try:
             await capsule.send(
                 {
-                    "type": "prepare_fork",
+                    "type": "prepare_fork" if parent_thread_id else "prepare_resume",
                     "request": request.model_dump(mode="json"),
                     "cwd": str(cwd),
                     "parent_thread_id": parent_thread_id,
                     "timing_directory": str(self.root / "boundary-timing"),
                 }
             )
-            ready = await asyncio.wait_for(capsule.receive(), 15)
+            ready = await asyncio.wait_for(capsule.receive(), 60)
             capsule.thread_id = ready["thread_id"]
             capsule.prepared = True
             capsule.healthy, capsule.busy = True, False
@@ -262,6 +272,7 @@ class CapsuleRuntime:
         with span("capsule.acquire"):
             capsule = await self._take(request.thread_id)
         capsule.prepared = False
+        capsule.ready_slot = False
         self.active[self.key(request)] = capsule
         boot_already_ready = capsule.healthy
         capsule.healthy = False
@@ -283,6 +294,7 @@ class CapsuleRuntime:
                 capsule.startup_timing = data.get("startup_timing")
                 if capsule.startup_timing is not None:
                     capsule.startup_timing["boot_already_ready"] = boot_already_ready
+                    capsule.startup_timing["boot"] = capsule.boot_timing
                 return capsule
 
     async def release(self, request: WorkerRunRequest) -> None:
@@ -313,6 +325,7 @@ class CapsuleRuntime:
                     all_idle
                     or (
                         c.thread_id is not None
+                        and not c.ready_slot
                         and time.monotonic() - c.idle_at >= (300 if c.prepared else 30)
                     )
                 )

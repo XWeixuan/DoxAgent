@@ -40,13 +40,17 @@ python -m doxagent.message_bus_v2.cli distribution decisions --ticker MU --limit
 
 共享 run 保存原始文章、观察关系、正文版本和每 ticker 的 decision/delivery；真正发布仍经过 ticker 本地准入、去重和 stream。闭市 sweep 保留每 ticker 的 SOURCE_SWEEP task，等待其 distribution delivery 终结，失败会留下 gap/PARTIAL。实时仍用现有 1800 秒精确发布时间准入；DATE/UNKNOWN_FIRST_SEEN 不被改写为伪精确时间。
 
-## Jev 实验轨
+## 百炼决策模型轨（原 Jev 实验轨）
 
-OpenRouter 使用当前官方 Decisions API `POST /api/alpha/decisions`，`typesafe/jev-1.13`。仅给实际运行 classifier 的 `v2-message-bus` 配 `OPENROUTER_API_KEY`；本地 `.env` 已忽略，勿在文档、日志、提交或命令回显中输出值。生产 Compose 默认 `DOXAGENT_MESSAGE_BUS_JEV_ENABLED=false`，未注入远端 key 时正则轨照常工作。开启前先对少量人工标注样本核对相关/不相关与成本。每文章×ticker 最多两轮，至多 16 ticker/批、15 秒/请求、60 秒文章总预算。正则或 Jev 任一命中即可投递，双中只发布一次；Jev 不可用且正则未命中按不相关终结，保留诊断原因。
+2026-10-17 起使用阿里云百炼 `decision-model-preview`，按[官方 API 文档](https://help.aliyun.com/zh/model-studio/decision-model-api)调用 `POST /compatible-mode/v1/systemone`，不再调用 OpenRouter。每个 ticker 独立使用 `noul` 问题，`criteria.true/false` 分别传入监测词中的相关/不相关定义，读取 `answers[ticker].noul`，阈值保持 0.5。
+
+实际运行 classifier 的 `v2-message-bus` 使用 `DASHSCOPE_API_KEY`。独立端点变量为 `DOXAGENT_MESSAGE_BUS_DECISION_URL`，默认沿用项目已有评测端点 `https://trial.cn-beijing.maas.aliyuncs.com/compatible-mode/v1/systemone`；其他业务空间按文档将 `trial` 换成业务空间 ID，新加坡使用 `{WorkspaceId}.ap-southeast-1.maas.aliyuncs.com`。此变量不影响研究流程的 DashScope Responses/Chat 接口。
+
+兼容保留 `DOXAGENT_MESSAGE_BUS_JEV_ENABLED` 总开关、来源 `distribution_policy.jev_enabled`、`DOXAGENT_MESSAGE_BUS_JEV_TIMEOUT_SECONDS` 和 `jev_*` 落库字段；这些字段现指百炼决策轨，历史记录仍对应当时的模型。生产 Compose 总开关默认仍为 false，缺少 key 时正则轨照常工作。每文章×ticker 最多两轮，至多 16 ticker/批、15 秒/请求、60 秒文章总预算，长正文沿用分段判定。正则或模型任一命中即可投递，双中只发布一次；模型不可用且正则未命中按不相关终结，保留诊断原因。供应商切换本身不构成召回质量或永久低价的保证，生产业务验收仍需检查自然消息样本。
 
 ## 回滚与验收
 
-优先关闭 Jev，再视需要关闭 `ctee_semiconductor`；不要删除新增表或已发布消息。完整代码回滚前先 drain `distribution_article` 正文任务及 delivery。验收要分别看入口采集、正文 FULL/降级、L2 命中、Jev 命中/失败、时效拒绝、去重、发布与窗口覆盖；HTTP 200 或搜索固定返回量均不能证明业务覆盖。工商时报栏目达到分页上限报告 PARTIAL，不能伪称完整。生产 Jev 尚须远端 key 和用户选择的正式监测词/订阅才能验收实际增益。
+优先关闭百炼决策轨（原 Jev 开关），再视需要关闭 `ctee_semiconductor`；不要删除新增表或已发布消息。完整代码回滚前先 drain `distribution_article` 正文任务及 delivery。验收要分别看入口采集、正文 FULL/降级、L2 命中、Jev 命中/失败、时效拒绝、去重、发布与窗口覆盖；HTTP 200 或搜索固定返回量均不能证明业务覆盖。工商时报栏目达到分页上限报告 PARTIAL，不能伪称完整。生产百炼决策轨须远端 DASHSCOPE_API_KEY、正确业务空间端点和正式监测词/订阅才能验收实际增益。
 # V2 页面管理统一监测词（2026-09-29）
 
 消息总线“配置”页的统一监测词区域按 ticker 编辑 L1 搜索概念、L2 分发规则与 Jev 相关性定义。三个区域共用一次应用，形成同一个不可变 revision。规则视图与原始 JSON 编辑同一份 L2 数据；保存前可通过“检查并预览”读取后端生成的搜索语句。遇到 revision 冲突，应读取新版本并核对草稿后重试。页面不管理 Jev Worker 总开关或密钥，也不回放已冻结窗口及旧分发目标。

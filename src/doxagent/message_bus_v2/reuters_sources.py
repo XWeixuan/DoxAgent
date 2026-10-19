@@ -40,7 +40,10 @@ async def wait_for_native_document_redirect(page: Any, response: Any) -> Any:
 async def capture_reuters_search(page: Any, query: str, offset: int) -> list[dict[str, object]]:
     response = await page.goto(
         f"https://www.reuters.com/site-search/?query={quote(query)}&offset={offset}",
-        wait_until="domcontentloaded",
+        # Third-party/deferred scripts can indefinitely postpone DCL even after
+        # a complete native listing is rendered. The contract below waits for
+        # actual result cards (or explicit zero results), not page-wide events.
+        wait_until="commit",
     )
     response = await wait_for_native_document_redirect(page, response)
     status = response.status if response is not None else 200
@@ -64,6 +67,7 @@ async def capture_reuters_search(page: Any, query: str, offset: int) -> list[dic
             .some(link => articlePath.test(link.getAttribute('href') || ''));
           return hasArticle || /Search results for[\s\S]*?\b0 results\b/i.test(body);
         }""",
+        polling=250,  # Native Chrome background tabs do not reliably run requestAnimationFrame.
         timeout=12_000,
     )
     rows = await page.evaluate(

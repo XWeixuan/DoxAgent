@@ -178,21 +178,20 @@ def test_receipt_compatibility_does_not_invent_required_fields():
 
 @pytest.mark.asyncio
 async def test_managed_d1_publication_failure_reuses_research_and_assembly(tmp_path):
+    from doxagent.codex_runtime.repository import InMemoryCodexRuntimeRepository
+    from doxagent.codex_worker.local_client import LocalWorkspaceClient
+    from doxagent.codex_worker.workspace_store import LocalWorkspaceStore
     from doxagent.ticker_initialization import (
         InitializationRepository,
         InitializationWorker,
         NodeResult,
         NodeSpec,
     )
-    from tests.fixtures.codex_document1 import (
+    from doxagent.workflows.codex_global_research.orchestrator import (
         CodexGlobalResearchOrchestrator,
-        GlobalResearchRunRequest,
-        InMemoryCodexRuntimeRepository,
-        LocalWorkspaceClient,
-        LocalWorkspaceStore,
-        _empty_horizontal,
-        _FakeWorker,
     )
+    from doxagent.workflows.codex_global_research.schema import GlobalResearchRunRequest
+    from tests.fixtures.codex_document1 import _empty_horizontal, _FakeWorker
 
     collector, compiler = _empty_horizontal()
     repository = InMemoryCodexRuntimeRepository()
@@ -233,7 +232,10 @@ async def test_managed_d1_publication_failure_reuses_research_and_assembly(tmp_p
     run = control.submit("NVDA", datetime.now(UTC), [NodeSpec(key="d1", block="D1")])
     result = await InitializationWorker(control, lambda _: Adapter()).run_once()
     assert result.status == "SUCCEEDED", result.error
-    assert len(worker.requests) == 5
+    # The current global DAG has seven research nodes. Publication recovery
+    # must not invoke any of them twice.
+    nodes = [request.node for request in worker.requests]
+    assert len(nodes) == len(set(nodes)) == 7
     assert len(control.attempts(run.initialization_id, "d1.assemble")) == 1
     assert len(control.attempts(run.initialization_id, "d1.publish")) == 2
 
@@ -260,14 +262,14 @@ def test_unresolved_citation_keeps_identity_in_aggregate():
 
 @pytest.mark.asyncio
 async def test_d3_failed_worker_recovers_written_compile_and_review(tmp_path):
+    from doxagent.codex_runtime.repository import InMemoryCodexRuntimeRepository
+    from doxagent.codex_runtime.schema import CodexD3Node
+    from doxagent.workflows.codex_document3.inputs import Document3InputPreparer
+    from doxagent.workflows.codex_document3.orchestrator import Document3Orchestrator
+    from doxagent.workflows.codex_document3.repository import InMemoryDocument3PolicyRepository
+    from doxagent.workflows.codex_document3.runner import Document3AgentRunner
     from tests.fixtures.codex_document3 import (
         NOW,
-        CodexD3Node,
-        Document3AgentRunner,
-        Document3InputPreparer,
-        Document3Orchestrator,
-        InMemoryCodexRuntimeRepository,
-        InMemoryDocument3PolicyRepository,
         _AsyncWorkspace,
         _O3WorkerStub,
         _refactored_prompt_root,
