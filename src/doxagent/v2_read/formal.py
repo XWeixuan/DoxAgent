@@ -253,15 +253,23 @@ class FormalProjectors(DomainProjectors):
             for r in records
             if r["kind"] == "shell" and r.get("parent") == documents["document2"]["run_id"]
         }
+        from .policy_origins import memberships, published_origins
+
+        origins = published_origins(self.artifacts.source, bundle, self.store, source_document)
+        shell_views = [
+            r["data"] for r in records
+            if r["kind"] == "shell" and r.get("parent") == documents["document2"]["run_id"]
+        ]
         for policy in policies.policies:
             modern = policies.schema_version == "document3.v3"
             ar = None if modern else policy_activation_revision(policy)
             policy_revision = hashlib.sha256(
                 encode([artifact_id, policy.policy_id, policy.model_dump(mode="json")]).encode()
             ).hexdigest()
-            # Arbitrary V3 refs do not imply a D2 Gap or Shell relationship.
-            shell_ids = (
-                [] if modern else list(dict.fromkeys(item.shell_id for item in policy.source_refs))
+            shell_ids, unresolved_shells = memberships(
+                origins.get(policy.policy_id, []), shell_views
+            ) if modern else (
+                list(dict.fromkeys(item.shell_id for item in policy.source_refs)), []
             )
             if modern:
                 directions = sorted({c.decision for c in policy.activation_conditions})
@@ -276,8 +284,8 @@ class FormalProjectors(DomainProjectors):
                         directions=directions,
                         executable_directions=directions,
                         consumed_directions=[],
-                        shell_ids=[],
-                        unresolved_shell_ids=[],
+                        shell_ids=shell_ids,
+                        unresolved_shell_ids=unresolved_shells,
                         lifecycle="ACTIVE",
                         consumed=missing(),
                         consumed_at=missing(),
@@ -354,6 +362,7 @@ class FormalProjectors(DomainProjectors):
                     "reference": ref,
                     "source_document2": source_document,
                     "content": original,
+                    "policy_origins": origins,
                 },
             }
         )

@@ -1,0 +1,14 @@
+ARG APPROVED_BASE
+FROM ${APPROVED_BASE} AS api
+ARG REPAIR_COMMIT
+LABEL org.opencontainers.image.revision=${REPAIR_COMMIT} doxagent.repair.scope="policy_origin_shells"
+ENV DOXAGENT_BUILD_COMMIT=${REPAIR_COMMIT}
+COPY src/doxagent/api_v2/policies.py /app/src/doxagent/api_v2/
+
+FROM ${APPROVED_BASE} AS projector
+ARG REPAIR_COMMIT
+LABEL org.opencontainers.image.revision=${REPAIR_COMMIT} doxagent.repair.scope="policy_origin_shells"
+ENV DOXAGENT_BUILD_COMMIT=${REPAIR_COMMIT}
+COPY src/doxagent/v2_read/formal.py src/doxagent/v2_read/lifecycle.py \
+     src/doxagent/v2_read/policy_origins.py src/doxagent/v2_read/policy_origin_backfill.py \
+     src/doxagent/v2_read/policy_origin_trace.py /app/src/doxagent/v2_read/

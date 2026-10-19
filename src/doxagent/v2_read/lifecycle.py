@@ -161,8 +161,8 @@ def activate(store, ticker, active, at):
         )
         day = semantic_day(datetime.fromisoformat(at)).isoformat()
         for shell in (
-            set(summary["shell_ids"]) | set(previous["shell_ids"] if previous else [])
-        ) or {"ALL"}:
+            {"ALL"} | set(summary["shell_ids"]) | set(previous["shell_ids"] if previous else [])
+        ):
             records.append(
                 {
                     "kind": "policy_change",

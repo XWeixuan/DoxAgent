@@ -228,12 +228,22 @@ def test_formal_activation_indexes_exact_documents_policy_and_library(
         "codex_document3_v1",
         "d3_publish",
     )
+    origin_artifacts = []
+    if attribution_recorded == "native":
+        origin = publish(
+            "d3-mu", "policy-origins",
+            json.dumps({policy_set.policies[0].policy_id: ["demand"]}),
+            "document3", "codex_document3_v1", "d3_publish",
+        ).model_copy(update={"relative_path": "artifacts/policy_origins.json"})
+        source.save_artifact(origin)
+        origin_artifacts.append(origin)
     source.save_bundle(
         Document3Bundle(
             run_id="d3-mu",
             ticker="MU",
             status="published",
             published_at=NOW,
+            artifacts=origin_artifacts,
             handoff=Document3Handoff(
                 run_id="d3-mu",
                 ticker="MU",
@@ -276,7 +286,7 @@ def test_formal_activation_indexes_exact_documents_policy_and_library(
         detail=next(r["data"] for r in records if r["kind"]=="policy_detail")
         assert detail["policy"]["transmission"]==policy_set.policies[0].transmission
         assert detail["summary"]["directions"]==["LONG","SHORT"]
-        assert detail["summary"]["shell_ids"]==[]
+        assert detail["summary"]["shell_ids"]==["shell-0000"]
         shell=next(r["data"] for r in records if r["kind"]=="shell")
         unit=next(r["data"] for r in records if r["kind"]=="unit")
         assert shell["shell_id"]=="shell-0000" and shell["name"]=="demand"

@@ -109,7 +109,7 @@ def install(app):
             ticker,
             view=view,
             view_id=args["view_id"],
-            parent=None if shell == "ALL" else shell,
+            parent=shell,
             days=days,
             source_id=args.get("policy_id"),
             limit=int(args.get("limit", 20)),
