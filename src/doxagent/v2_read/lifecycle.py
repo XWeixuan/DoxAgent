@@ -195,13 +195,15 @@ def consumption_projection(store, capture):
             catalog = db.execute(
                 "SELECT p.ticker,p.id,p.payload FROM object_current p JOIN object_current a "
                 "ON a.kind='policy_admission' AND a.ticker=p.ticker AND a.id=p.id "
-                "WHERE p.kind='policy_catalog' AND json_extract(p.payload,'$.consumed.value') IS NULL "
+                "WHERE p.kind='policy_catalog' AND json_type(p.payload,'$.directions') IS NULL "
+                "AND json_extract(p.payload,'$.consumed.value') IS NULL "
                 "AND julianday(json_extract(a.payload,'$.first_activated_at')) BETWEEN julianday(?) AND julianday(?)",
                 (start, end),
             ).fetchall()
         else:
             catalog = db.execute(
                 "SELECT ticker,id,payload FROM object_current WHERE kind='policy_catalog' "
+                "AND json_type(payload,'$.directions') IS NULL "
                 "AND json_extract(payload,'$.consumed.value')=0"
             ).fetchall()
     for ticker, key, payload in catalog:

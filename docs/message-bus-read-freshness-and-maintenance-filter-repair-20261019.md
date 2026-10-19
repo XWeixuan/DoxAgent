@@ -17,6 +17,7 @@
 3. productive tick 立即进入下轮，空闲或 SQLite contention 才休眠；保留每源一秒配额和批次数量限制，未引入第二写者、跳游标或旁路读库。
 4. 授权头/方向消费事件及正式激活按 ticker 一次读取方向 usage、head 存在性、未解决迁移集合；事件内共享，不作跨事件永久缓存。unknown、pending usage、迁移阻塞和 LONG/SHORT 独立语义不变。
 5. 维护 UI 默认隐藏没有显式验证文章的 `publisher:*`（含具名旧 Publisher），不再只判断 generic。source scope 与显式配置验证的订阅账户保留；待办和未完成会话始终可见，advanced 开关可以查看全部。不删除 Registry/Profile，不改变正文抓取归属。
+6. 实际 writer 十秒采样进一步定位 `sync_business_facts` 增量查询扫全目录、`consumption_projection` 为方向型 Policy 做无效旧版判定、graph member 按 Case 全扫描。新增显式 `projection-indexes` 发布迁移：current(kind,valid_from)、contributions(metric,valid_from)、graph member 的 Case 索引、旧版 Policy coverage 部分索引。方向型 Policy 在 SQL 层排除，不改变旧版判定。DDL 仅在停单一 Projector 后显式执行，不放在 HTTP GET、业务事务或普通服务启动里。
 
 修复只替换 Projector，并更新宿主机 Tkinter 脚本；不重启 API、Site Access、Supervisor、采集容器或 Chrome，不改轮询频率/30min 时效窗口，不重放业务消息。保留 active Read generation、所有内容引用和 checkpoint。
 

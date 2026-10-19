@@ -47,6 +47,19 @@ def migrate_case_evidence_indexes(db) -> None:
 class ReadStore:
     VERSION = 4
 
+    def migrate_projection_indexes(self):
+        """Explicit worker release migration, never DDL inside an HTTP read."""
+        with self.connect(write=True, timeout=30) as db:
+            db.execute("CREATE INDEX IF NOT EXISTS current_kind_revision ON object_current(kind,valid_from)")
+            db.execute("CREATE INDEX IF NOT EXISTS contribution_metric_revision "
+                       "ON contributions_current(metric,valid_from)")
+            db.execute("CREATE INDEX IF NOT EXISTS current_graph_case_members "
+                       "ON object_current(kind,ticker,json_extract(payload,'$.case_id')) "
+                       "WHERE kind='graph_member'")
+            db.execute("CREATE INDEX IF NOT EXISTS legacy_policy_coverage "
+                       "ON object_current(kind,json_extract(payload,'$.consumed.value')) "
+                       "WHERE kind='policy_catalog' AND json_type(payload,'$.directions') IS NULL")
+
     def migrate_policy_query_indexes(self):
         """Explicit, idempotent Policy read migration; never run on a GET/startup."""
         with self.connect(write=True) as db:

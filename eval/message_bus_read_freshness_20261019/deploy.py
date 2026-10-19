@@ -19,7 +19,7 @@ m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
 with m.lock(root):
     assert run(['git','rev-parse','HEAD']) == commit
     before = inventory(); old = before['v2-projector']
-    assert old['Image'] == 'sha256:027a61ab96371d91e62fef034500884062bd02fee3a44bc359349551d80268a7'
+    assert old['Image'] == 'sha256:ba1ed96d6576c9938daccf50416c475b810064d3d85758fed43980a6002b09a0'
     audit = root/('read-freshness-'+commit[:12]); audit.mkdir(exist_ok=False)
     canonical = root/'compose.current.json'; cfg = json.loads(canonical.read_text())
     state = json.loads((root/'state.json').read_text())
@@ -40,6 +40,8 @@ with m.lock(root):
     command = [*state['compose_base_command'],'-f',str(canonical)]
     try:
         run(['docker','stop','--time','30',old['Id']])
+        run(['docker','run','--rm','--volumes-from',old['Id'],'--entrypoint','python',image,
+             '-m','doxagent.v2_read.cli','projection-indexes','--read-db','/data/read/active.json'],timeout=180)
         m.atomic(canonical,cfg)
         run([*command,'up','-d','--no-deps','--no-build','v2-projector'])
         time.sleep(5)

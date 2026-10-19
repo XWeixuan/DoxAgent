@@ -116,6 +116,7 @@ def main() -> None:
             "verify",
             "reproject-trade-outcomes",
             "policy-query-indexes",
+            "projection-indexes",
             "serving-generation",
             "current-snapshot",
         ),
@@ -146,7 +147,10 @@ def main() -> None:
             parser.error("source kind must be known and unique within one read store")
         sources.append(SourceOutbox(path, kind))
     store = ReadStore(args.read_db)
-    if args.command == "migrate":
+    if args.command == "projection-indexes":
+        store.migrate_projection_indexes()
+        print(json.dumps({"projection_indexes": "ready"}))
+    elif args.command == "migrate":
         report = {s.source: s.migrate(dry_run=True) for s in sources}
         if not args.dry_run:
             if not args.backup_dir:

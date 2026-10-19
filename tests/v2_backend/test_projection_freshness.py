@@ -128,3 +128,19 @@ def test_projector_does_not_sleep_between_productive_ticks(tmp_path, monkeypatch
     with pytest.raises(SystemExit):
         cli.main()
     assert sleeps == [1]
+
+
+def test_projection_indexes_are_explicit_idempotent_and_cover_hot_predicates(tmp_path):
+    store = ReadStore(tmp_path / "read.db")
+    store.migrate()
+    store.migrate_projection_indexes()
+    store.migrate_projection_indexes()
+    queries = [
+        ("current_kind_revision", "SELECT * FROM object_current WHERE kind='policy_catalog' AND valid_from>10"),
+        ("contribution_metric_revision", "SELECT * FROM contributions_current WHERE metric='new_fact_candidates' AND valid_from>10"),
+        ("current_graph_case_members", "SELECT parent,day FROM object_current WHERE kind='graph_member' AND ticker='MU' AND json_extract(payload,'$.case_id')='c'"),
+        ("legacy_policy_coverage", "SELECT * FROM object_current WHERE kind='policy_catalog' AND json_type(payload,'$.directions') IS NULL AND json_extract(payload,'$.consumed.value')=0"),
+    ]
+    with store.connect() as db:
+        for index, query in queries:
+            assert index in " ".join(str(tuple(r)) for r in db.execute("EXPLAIN QUERY PLAN " + query))
