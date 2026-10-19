@@ -1,0 +1,7 @@
+ARG APPROVED_BASE
+FROM ${APPROVED_BASE}
+ARG REPAIR_COMMIT
+LABEL org.opencontainers.image.revision=${REPAIR_COMMIT} \
+      doxagent.repair.scope="reuters_cold_maintenance_verification"
+ENV DOXAGENT_BUILD_COMMIT=${REPAIR_COMMIT}
+COPY src/doxagent/site_strategy/worker_runtime.py /app/src/doxagent/site_strategy/worker_runtime.py

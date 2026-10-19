@@ -295,7 +295,7 @@ class WorkerSiteAccessRuntime(SiteAccessRuntime):
     async def inspect_login(self, token):
         _, identity, egress = self._binding(token)
         return await self.workers.command(
-            identity, egress, "inspect_target", self._maintenance_refs(token), timeout=5
+            identity, egress, "inspect_target", self._maintenance_refs(token), timeout=15
         )
 
     def _maintenance_refs(self, token):
@@ -378,7 +378,12 @@ class WorkerSiteAccessRuntime(SiteAccessRuntime):
                     **self._maintenance_refs(token),
                     "inspect_only": True,
                 },
-                timeout=5,
+                # A recovered worker must attach CDP, read the original page and
+                # cold-load the article classifier. The old 5s budget killed a
+                # healthy controller during its first extraction (~4.6s alone),
+                # making every subsequent Verify cold again. Still bounded by
+                # the maintenance operation's overall deadline.
+                timeout=15,
             )
         )
 
