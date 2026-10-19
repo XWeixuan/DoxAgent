@@ -229,3 +229,70 @@ async def test_runtime_recipe_checks_document_denial_before_native_feed(tmp_path
         retained.assert_awaited_once()
     finally:
         repository.close()
+
+
+def test_login_home_and_crawler_urls_cannot_be_subscription_body_proof():
+    from doxagent.site_strategy.verification import body_verification_url
+
+    scope = SimpleNamespace(
+        verification_plan={
+            "crawler": {
+                "url": "https://www.barrons.com/market-data/stocks/MU",
+            }
+        }
+    )
+    article = "https://www.barrons.com/articles/real-subscription-proof"
+    assert (
+        body_verification_url(
+            scope,
+            "https://www.barrons.com/login",
+            "https://www.barrons.com/",
+            "https://www.barrons.com/market-data/stocks/MU?mod=search",
+            article,
+            excluded_urls=("https://www.barrons.com/login",),
+        )
+        == article
+    )
+
+
+@pytest.mark.asyncio
+async def test_recovery_never_attaches_to_closed_native_orphan_cached_by_playwright():
+    from doxagent.site_strategy.external_runtime import ExternalChromeRuntime
+
+    # Native Target.getTargetInfo is authoritative even before Playwright gets
+    # PageClosed. Calling new_cdp_session(stale) would never finish in the bad case.
+    stale = SimpleNamespace(
+        url="https://www.barrons.com/market-data/stocks/mu", is_closed=lambda: False
+    )
+    human = SimpleNamespace(url="https://www.barrons.com/", is_closed=lambda: False)
+    session = SimpleNamespace(
+        send=AsyncMock(return_value={"targetInfo": {"targetId": "human"}}), detach=AsyncMock()
+    )
+
+    async def attach(page):
+        assert page is human, "must not RPC an orphan pending PageClosed delivery"
+        return session
+
+    identity = SimpleNamespace(identity_id="dowjones-main", revision=1)
+    entry = SimpleNamespace(
+        context=SimpleNamespace(
+            pages=[stale, human], new_cdp_session=AsyncMock(side_effect=attach)
+        ),
+        cdp=SimpleNamespace(
+            send=AsyncMock(
+                return_value={
+                    "targetInfo": {"targetId": "human", "url": human.url},
+                }
+            )
+        ),
+        identity=identity,
+        instance=SimpleNamespace(instance_id="chrome", generation=1),
+        active_pages=0,
+        last_used=0,
+    )
+    runtime = ExternalChromeRuntime(SimpleNamespace())
+    runtime._entry = AsyncMock(return_value=entry)
+    lease = await runtime.existing_page(identity, SimpleNamespace(), target_id="human")
+    assert lease.page is human
+    entry.context.new_cdp_session.assert_awaited_once_with(human)
+    await lease.abandon()

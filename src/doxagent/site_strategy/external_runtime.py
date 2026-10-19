@@ -529,7 +529,16 @@ class ExternalChromeRuntime:
         try:
             self._acquiring += 1
             entry = await self._entry(identity, egress)
-            candidates = [page for page in entry.context.pages if page.url != "about:blank"]
+            # Raw-CDP orphan closes and Playwright PageClosed delivery are
+            # independent. Never send a Playwright RPC to every cached Page:
+            # a disposed orphan can wait forever during CDP-session creation.
+            info = await entry.cdp.send("Target.getTargetInfo", {"targetId": target_id})
+            wanted_url = info["targetInfo"]["url"]
+            candidates = [
+                page
+                for page in entry.context.pages
+                if not page.is_closed() and page.url == wanted_url
+            ]
             if target_id is not None:
                 matched = []
                 for candidate in candidates:

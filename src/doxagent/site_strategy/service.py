@@ -2724,6 +2724,7 @@ class SiteStrategyService:
             spec.auth.verification_url,
             scope.verification_plan.get("body_url"),
             *article_candidates,
+            excluded_urls=(spec.auth.login_url,),
         )
         if url and time.monotonic() < deadline:
             if self.resolve(url).site_id != scope.owner_site_id:

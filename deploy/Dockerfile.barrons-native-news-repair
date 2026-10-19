@@ -7,3 +7,7 @@ ENV DOXAGENT_BUILD_COMMIT=${REPAIR_COMMIT}
 COPY src/doxagent/message_bus_v2/barrons_sources.py /app/src/doxagent/message_bus_v2/barrons_sources.py
 COPY src/doxagent/message_bus_v2/industry_sources.py /app/src/doxagent/message_bus_v2/industry_sources.py
 COPY src/doxagent/site_strategy/runtime.py /app/src/doxagent/site_strategy/runtime.py
+COPY src/doxagent/site_strategy/external_runtime.py /app/src/doxagent/site_strategy/external_runtime.py
+COPY src/doxagent/site_strategy/service.py /app/src/doxagent/site_strategy/service.py
+COPY src/doxagent/site_strategy/verification.py /app/src/doxagent/site_strategy/verification.py
+COPY src/doxagent/site_strategy/failover.py /app/src/doxagent/site_strategy/failover.py

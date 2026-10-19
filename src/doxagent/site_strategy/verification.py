@@ -7,7 +7,7 @@ from urllib.parse import urlsplit
 from doxagent.content_enrichment.quality import choose_candidate, inspect_html
 
 
-def body_verification_url(scope, *candidates):
+def body_verification_url(scope, *candidates, excluded_urls=()):
     """Legacy verification URLs sometimes point at the collector's search page."""
     listing = scope.verification_plan.get("crawler", {}).get("url")
 
@@ -15,8 +15,15 @@ def body_verification_url(scope, *candidates):
         parsed = urlsplit(url)
         return parsed.hostname, parsed.path.rstrip("/") or "/"
 
-    listing_key = key(listing) if listing else None
-    return next((url for url in candidates if url and key(url) != listing_key), None)
+    excluded = {key(url) for url in (listing, *excluded_urls) if url}
+    return next(
+        (
+            url
+            for url in candidates
+            if url and key(url) not in excluded and urlsplit(url).path.rstrip("/")
+        ),
+        None,
+    )
 
 
 @dataclass

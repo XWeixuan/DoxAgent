@@ -31,6 +31,14 @@
 
 旧 Barron's recipe 本来就是 DOM、滚动和标签点击，不使用 Yahoo 的 `/xhr/ncp`。本次观察到的 Barron's 原生新闻接口是 `/market-data/api/news`。不应把没有 NCP 操作当作没有执行的唯一证据；需要结合访问 attempts、Worker、原始 Target 和真实网络响应。
 
+### 2.4 冷重连与错误验证 URL：生产复验发现的另外两条链
+
+新 recipe 发布后首次验证仍在 30 秒预算内失败。日志显示 Worker 已开始恢复并确认原生实例，但未完成 attach；原生遗留业务 Target `14B57B7B4EE37B9A0FDC56BF8BDCFCA7` 随后被所有权 reconcile 清掉。代码却继续遍历 Playwright 缓存中的全部 Page 并逐个 `new_cdp_session`；原生关闭与 PageClosed 通知不是一个同步通道，关闭中的旧句柄会拖住恢复。旧页消失后再次冷恢复，attach 约 **6.11 秒**完成，真实 crawler 随即 READY。新增回归用仍未收到 PageClosed 的孤儿句柄重现此机制；修复先查询精确原生 Target 的 URL，仅尝试未关闭且 URL 匹配的候选，最后仍校验 Target ID，不按 URL 直接认领人类页。
+
+该次验证正文仍失败：公开结果 `verification_url=https://www.barrons.com/login`。历史 BODY 待办经旧版本重开后保存了登录地址，`body_verification_url` 仅排除 crawler URL，所以错误地优先选了它。此处不是订阅无效。修复自动正文候选排除已登记 login、首页和已知 crawler 入口；保持人工指定文章、有效订阅证据和最终发布者约束。**不能以“正常首页”证明付费正文有效。**
+
+02:50:56 的实际 crawler 验证已通过正常健康提交解除了旧任务并关闭维护会话；02:52 九个 ticker 都有自然轮询成功、连续失败归零。它仍只是开始恢复，后面继续检验正文和持续性。
+
 ## 3. 窄修复
 
 1. 保留 External Chrome、CDP、Profile、出口、单身份并发和持久化；不加入 stealth、不随机化指纹、不重建登录身份。

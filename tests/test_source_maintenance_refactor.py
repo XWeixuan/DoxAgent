@@ -634,12 +634,13 @@ def test_login_target_reference_is_committed_before_lost_open_reply(seeded):
 @pytest.mark.asyncio
 async def test_exact_human_recovery_skips_disposed_orphan_page_from_other_channel(seeded):
     from types import SimpleNamespace
+    from unittest.mock import AsyncMock
 
     from doxagent.site_strategy.external_runtime import ExternalChromeRuntime
 
     repository, _ = seeded
-    stale = SimpleNamespace(url="about:blank#doxagent-orphan")
-    human = SimpleNamespace(url="https://www.barrons.com/articles/real")
+    stale = SimpleNamespace(url="https://www.barrons.com/articles/real", is_closed=lambda: False)
+    human = SimpleNamespace(url="https://www.barrons.com/articles/real", is_closed=lambda: False)
 
     class Session:
         async def send(self, _method):
@@ -663,7 +664,12 @@ async def test_exact_human_recovery_skips_disposed_orphan_page_from_other_channe
         identity=identity,
         egress=egress,
         instance=SimpleNamespace(instance_id="native", generation=1),
-        cdp=SimpleNamespace(_owned_targets=set()),
+        cdp=SimpleNamespace(
+            _owned_targets=set(),
+            send=AsyncMock(return_value={"targetInfo": {
+                "targetId": "wanted-human", "url": human.url,
+            }}),
+        ),
         active_pages=0,
         last_used=0,
     )

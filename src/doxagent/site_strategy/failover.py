@@ -168,7 +168,11 @@ class FailoverCoordinator:
             if primary_member:
                 last_url = primary_member.capabilities.get("BODY", {}).get("last_url")
         url = body_verification_url(
-            scope, spec.auth.verification_url, scope.verification_plan.get("body_url"), last_url
+            scope,
+            spec.auth.verification_url,
+            scope.verification_plan.get("body_url"),
+            last_url,
+            excluded_urls=(spec.auth.login_url,),
         )
         parameters = (
             scope.verification_plan.get("crawler")

@@ -4,7 +4,7 @@ from pathlib import Path
 repo=Path('/home/ubuntu/doxagent');root=Path('/var/lib/doxagent/releases')
 commit,site_base,bus_base=sys.argv[1:4]
 os.environ.update(GIT_CONFIG_COUNT='1',GIT_CONFIG_KEY_0='safe.directory',GIT_CONFIG_VALUE_0=str(repo))
-files=['message_bus_v2/barrons_sources.py','message_bus_v2/industry_sources.py','site_strategy/runtime.py']
+files=['message_bus_v2/barrons_sources.py','message_bus_v2/industry_sources.py','site_strategy/runtime.py','site_strategy/external_runtime.py','site_strategy/service.py','site_strategy/verification.py','site_strategy/failover.py']
 def run(args,timeout=180):
  p=subprocess.run(args,cwd=repo,text=True,capture_output=True,timeout=timeout)
  if p.returncode:raise RuntimeError(str(args[:3])+': '+p.stderr[-1200:])
@@ -15,7 +15,8 @@ def inventory():
 spec=importlib.util.spec_from_file_location('release',repo/'scripts/ops/storage_release.py');m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
 with m.lock(root):
  assert run(['git','rev-parse','HEAD'])==commit
- before=inventory();bases={'v2-site-access':site_base,'v2-message-bus':bus_base}
+ before=inventory();bases={'v2-site-access':site_base}
+ if bus_base!='-':bases['v2-message-bus']=bus_base
  assert all(before[s]['Image']==base for s,base in bases.items())
  canonical=root/'compose.current.json';state=json.loads((root/'state.json').read_text());cfg=json.loads(canonical.read_text())
  audit=root/('barrons-native-'+commit[:12]);audit.mkdir(exist_ok=False)
