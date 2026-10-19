@@ -36,7 +36,7 @@ with m.lock(root):
   m.atomic(canonical,cfg);run([*command,'up','-d','--no-deps','--no-build',*bases])
   for _ in range(60):
    after=inventory()
-   if all(after[s]['State']['Running'] and after[s]['State'].get('Health',{}).get('Status')=='healthy' for s in bases):break
+   if all(after[s]['State']['Running'] and ('Health' not in after[s]['State'] or after[s]['State']['Health']['Status']=='healthy') for s in bases):break
    time.sleep(2)
   else:raise RuntimeError('readiness failed')
   assert all(before[n]['Id']==after[n]['Id'] for n in before if n not in bases)
