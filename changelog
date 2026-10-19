@@ -1711,3 +1711,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-19 W2R1端点调整：按用户要求将新Case的OpenRouter Haiku5.5默认端点由google-vertex/europe改为google-vertex/global，同步环境示例、工厂冻结断言及本地说明/冒烟脚本；保留high、180秒超时、1h显式缓存与禁用fallback。历史冻结端点和既有实测回执不改写。仅本地，未部署。
 
 2026-10-19 main 全工作目录归集提交：统一纳入其他会话的正式代码、配置、测试、提示词及文档，共82个文件；排除eval/exports下14,141个未跟踪运行证据及其他缓存、临时资产，不删除本地数据。Python语法、Ruff F规则、uv锁一致性、Compose解析及diff检查通过。扩大离线回归377通过/5失败后停止；W3专项完整复查104通过/5失败，均为新增客户端close探测与离线回测_NoUpstreamCalls拦截不兼容；另有未修改的来源维护归档测试因真实updated_at与固定测试时钟不一致失败。本轮仅归集提交并推送，保留现有实现及已知失败，未修复上述冲突、未部署，不能作为上线验收通过。
+
+- 2026-10-19: 发布审查修复 W2 客户端关闭逻辑与 W3 离线回测隔离对象的合并冲突：为不创建上游连接的 replay provider 增加无操作 close，保留禁止真实上游调用约束。W3/Worker/Policy/W2R1/消息模型及来源维护组合311项通过；未将此前五项回测关闭失败作为生产可用证据。

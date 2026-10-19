@@ -101,6 +101,9 @@ class FrozenContextProvider:
 
 
 class _NoUpstreamCalls:
+    def close(self):
+        """No transport is constructed in replay; service shutdown is a no-op."""
+
     def __getattr__(self, name):
         raise RuntimeError(f"Replay must not invoke upstream provider: {name}")
 
