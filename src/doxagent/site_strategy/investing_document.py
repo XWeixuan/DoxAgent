@@ -151,7 +151,12 @@ async def capture_document(
                 candidate, quality, _ = choose_candidate(info, "")
                 if candidate and quality in {"FULL", "SHORT_FULL"}:
                     return last, final_url
-                if time.monotonic() + 0.5 >= deadline:
+                # Extra time is for an observed check, not every ad-heavy
+                # incomplete document. Preserve the previous healthy-path cap.
+                read_deadline = (
+                    deadline if first_challenge is not None else min(deadline, started + 12)
+                )
+                if time.monotonic() + 0.5 >= read_deadline:
                     return last, final_url  # Preserve the actual incomplete document.
                 await asyncio.sleep(0.5)
     except TimeoutError:

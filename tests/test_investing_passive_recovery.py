@@ -21,7 +21,8 @@ LISTING = (
 
 
 @pytest.mark.asyncio
-async def test_wait_more_than_eight_seconds_for_passive_cloudflare(monkeypatch):
+@pytest.mark.parametrize("challenge", [True, False])
+async def test_passive_time_extension_does_not_slow_every_normal_document(monkeypatch, challenge):
     import asyncio
     import time
 
@@ -47,7 +48,11 @@ async def test_wait_more_than_eight_seconds_for_passive_cloudflare(monkeypatch):
                 return {"root": {"nodeId": 1, "documentURL": URL}}
             if method == "DOM.getOuterHTML":
                 return {
-                    "outerHTML": "<title>Verify you are human</title>"
+                    "outerHTML": (
+                        "<title>Verify you are human</title>"
+                        if challenge
+                        else "<title>Loading</title>"
+                    )
                     if now - start < 14
                     else LISTING
                 }
@@ -55,7 +60,10 @@ async def test_wait_more_than_eight_seconds_for_passive_cloudflare(monkeypatch):
             return {}
 
     html, _ = await module.capture_document(CDP(), "original", URL, timeout=25)
-    assert html == LISTING and now - start >= 14
+    if challenge:
+        assert html == LISTING and now - start >= 14
+    else:
+        assert html == "<title>Loading</title>" and now - start <= 12
 
 
 @pytest.mark.asyncio
