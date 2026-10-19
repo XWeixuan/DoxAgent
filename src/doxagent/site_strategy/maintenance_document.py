@@ -106,33 +106,26 @@ async def read_original_document(client, identity, session, target):
         from websockets.asyncio.client import connect
 
         async with connect(endpoint, max_size=10 * 1024 * 1024, close_timeout=1) as ws:
-            await ws.send(
-                json.dumps(
-                    {
-                        "id": 1,
-                        "method": "Runtime.evaluate",
-                        "params": {
-                            "expression": (
-                                "JSON.stringify({html:document.documentElement.outerHTML,"
-                                "url:location.href})"
-                            ),
-                            "returnByValue": True,
-                        },
-                    }
-                )
-            )
-            while True:
-                result = json.loads(await ws.recv())
-                if result.get("id") == 1:
-                    break
-            if result.get("error") or result.get("result", {}).get("exceptionDetails"):
-                raise RuntimeError("original_document_unavailable")
-            value = json.loads(result["result"]["result"]["value"])
+
+            async def call(number, method, parameters):
+                await ws.send(json.dumps({"id": number, "method": method, "params": parameters}))
+                while True:
+                    result = json.loads(await ws.recv())
+                    if result.get("id") == number:
+                        break
+                if result.get("error"):
+                    raise RuntimeError("original_document_unavailable")
+                return result["result"]
+
+            # DOM commands do not depend on the publisher's main JS execution
+            # context being responsive during a native challenge/navigation.
+            root = (await call(1, "DOM.getDocument", {"depth": 0}))["root"]
+            html = (await call(2, "DOM.getOuterHTML", {"nodeId": root["nodeId"]}))["outerHTML"]
         return RuntimeResponse(
             0,
-            value["url"],
+            root.get("documentURL") or str(tab["url"]),
             {},
-            body=value["html"],
+            body=html,
             provenance=RuntimeProvenance(
                 identity.identity_id,
                 identity.revision,

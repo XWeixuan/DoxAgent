@@ -231,6 +231,30 @@ async def test_unknown_original_does_not_clear_challenge_on_network_failure(setu
     closed.assert_not_awaited()
 
 
+async def test_cleanup_timeout_preserves_completed_verification_report(setup, monkeypatch):
+    from doxagent.site_strategy.verification import VerificationReport
+
+    _, service, store, _, _, session = setup
+    monkeypatch.setattr(
+        service,
+        "verify_scope_session",
+        AsyncMock(
+            return_value=VerificationReport(
+                challenge="CLEARED",
+                crawler="READY",
+                health_applied=True,
+            )
+        ),
+    )
+    monkeypatch.setattr(service.runtime, "close_login", AsyncMock(side_effect=TimeoutError()))
+    result = await MaintenanceController(service)._dispatch(
+        operation("VERIFY_CHALLENGE", session_id=session.session_id)
+    )
+    assert result["challenge"] == "CLEARED" and result["health_applied"]
+    assert result["cleanup_pending"] and not result["session_closed"]
+    assert store.get_session(session.session_id).state != "CLOSED"
+
+
 def test_verification_diagnostics_never_forward_exception_urls():
     from doxagent.site_strategy.verification import verification_failure_reason
     from doxagent.site_strategy.worker_manager import IdentityOperationError
@@ -351,6 +375,7 @@ async def test_body_readiness_timeout_preserves_only_proven_full_document(setup,
             else "<html><title>Verify you are human</title><body>Captcha</body></html>"
         ),
     )
+
     # Special async methods are looked up on the class, not an instance namespace.
     class Lease:
         provenance = SimpleNamespace(instance_id="body-test-instance")

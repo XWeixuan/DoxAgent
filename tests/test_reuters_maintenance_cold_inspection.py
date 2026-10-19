@@ -174,19 +174,22 @@ async def test_original_observation_only_reads_exact_page(monkeypatch):
             commands.append(json.loads(command))
 
         async def recv(self):
+            if commands[-1]["id"] == 1:
+                return json.dumps(
+                    {
+                        "id": 1,
+                        "result": {
+                            "root": {
+                                "nodeId": 3,
+                                "documentURL": "https://www.reuters.com/site-search/?query=Micron",
+                            }
+                        },
+                    }
+                )
             return json.dumps(
                 {
-                    "id": 1,
-                    "result": {
-                        "result": {
-                            "value": json.dumps(
-                                {
-                                    "html": "<main>Search results for Micron: 0 results</main>",
-                                    "url": "https://www.reuters.com/site-search/?query=Micron",
-                                }
-                            )
-                        }
-                    },
+                    "id": 2,
+                    "result": {"outerHTML": "<main>Search results for Micron: 0 results</main>"},
                 }
             )
 
@@ -199,8 +202,8 @@ async def test_original_observation_only_reads_exact_page(monkeypatch):
     assert capture.provenance.instance_id == "original"
     assert capture.challenge_target_id == "human-page"
     assert requests == ["http://127.0.0.1:9225/json/list"]
-    assert [c["method"] for c in commands] == ["Runtime.evaluate"]
-    assert "location.href" in commands[0]["params"]["expression"]
+    assert [c["method"] for c in commands] == ["DOM.getDocument", "DOM.getOuterHTML"]
+    assert commands[1]["params"]["nodeId"] == 3
 
 
 @pytest.mark.asyncio
