@@ -679,11 +679,7 @@ class GlobalPollScheduler:
 
         async def on_request() -> None:
             def persist():
-                now = utc_now()
-                state = self.repository.get_scheduler_group_state(source.scheduler_group)
-                self.repository.save_scheduler_group_state(
-                    state.model_copy(update={"last_request_at": now, "updated_at": now})
-                )
+                self.repository.record_scheduler_request_start(source.scheduler_group, utc_now())
 
             await self.storage_call(persist)
 

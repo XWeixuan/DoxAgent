@@ -2674,6 +2674,22 @@ class MessageBusV2Repository:
                 (state.scheduler_group, self._json(state)),
             )
 
+    def record_scheduler_request_start(self, group: str, now: datetime) -> None:
+        """Persist request admission without overwriting concurrent cooldown fields."""
+        with self.transaction() as connection:
+            row = connection.execute(
+                "SELECT data_json FROM scheduler_group_states WHERE scheduler_group=?", (group,)
+            ).fetchone()
+            state = self._model(SchedulerGroupState, row) or SchedulerGroupState(
+                scheduler_group=group
+            )
+            state = state.model_copy(update={"last_request_at": now, "updated_at": now})
+            connection.execute(
+                "INSERT INTO scheduler_group_states VALUES(?,?) ON CONFLICT(scheduler_group) "
+                "DO UPDATE SET data_json=excluded.data_json",
+                (group, self._json(state)),
+            )
+
     def get_scheduler_group_state(self, group: str) -> SchedulerGroupState:
         with self._connect() as connection:
             row = connection.execute(
