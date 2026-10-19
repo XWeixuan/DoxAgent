@@ -69,6 +69,7 @@ def main():
         level=logging.WARNING, format="%(asctime)s %(levelname)s %(name)s %(message)s",
     )
     logging.getLogger("doxagent.persistent_runtime_v2.service").setLevel(logging.INFO)
+    logging.getLogger("doxagent.persistent_runtime_v2.w3_execution").setLevel(logging.INFO)
     stop = Event()
     for sig in (signal.SIGINT, signal.SIGTERM):
         signal.signal(sig, lambda *_: stop.set())

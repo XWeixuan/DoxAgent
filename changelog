@@ -1839,3 +1839,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-20 CPU-01: Single initialization queue reader preserves execution slots, coalesces idle/deferred polling, drains tasks before releasing ownership, and moves mirror DDL to startup. Dispatcher behavior tests passed.
 
 2026-10-20 CPU-02: Batch scalar reconciliation reads, skip unchanged mirror/activation writes, preserve actual mirror repair and failure transitions, and persist control heartbeat every ten seconds. Four reconciliation tests passed.
+
+2026-10-20 CPU-03: Scan 64 raw Cases, skip registered threads, point-query indexed receipts, prefer explicit stage jobs, and resume within the 20-registration budget; isolate discovery failure from ACK/expiry maintenance. W3 behavior and lifecycle regression tests passed.

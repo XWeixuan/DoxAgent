@@ -27,6 +27,10 @@ class W3ThreadRegistry:
                     ON runtime_v2_w3_threads(template_key) WHERE kind='TEMPLATE';
                 CREATE INDEX IF NOT EXISTS w3_thread_expiry
                     ON runtime_v2_w3_threads(ticker,status,expires_at);
+                CREATE INDEX IF NOT EXISTS w3_legacy_invocation_thread
+                    ON runtime_values(json_extract(payload,'$.job.thread_id'))
+                    WHERE namespace='worker_invocations'
+                      AND json_extract(payload,'$.node')='persistent_runtime_w3';
                 CREATE TABLE IF NOT EXISTS runtime_v2_w3_thread_links (
                     record_id TEXT NOT NULL, ticker TEXT NOT NULL, link_kind TEXT NOT NULL,
                     subject_key TEXT NOT NULL, source_case_id TEXT NOT NULL,

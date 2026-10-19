@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import json
+import logging
+import time
 from datetime import datetime
 
 from doxagent.codex_worker.schema import ThreadForkRequest
@@ -771,6 +774,129 @@ class W3Execution:
         except Exception as exc:
             self.journal.set("w3_ack_pending", job_id, str(exc)[:500])
 
+    def _maintain_legacy(self, now):
+        """Bound the input scan first; registered threads never read Worker receipts."""
+        from datetime import timedelta
+
+        with self.journal.transaction(write=False) as db:
+            markers = {
+                r[0]: json.loads(r[1])
+                for r in db.execute(
+                    "SELECT key,payload FROM runtime_values WHERE namespace='w3_housekeeping'"
+                )
+            }
+            cursor = markers.get("legacy_case_cursor", "")
+            receipt_cursor = markers.get("legacy_receipt_cursor", {})
+            failed = markers.get("legacy_cycle_failed", False)
+            batch = [
+                dict(r)
+                for r in db.execute(
+                    "WITH batch AS MATERIALIZED (SELECT case_id,ticker,"
+                    "json_extract(payload_json,'$.thread_id') AS thread_id "
+                    "FROM runtime_v2_w3_cases WHERE case_id>? ORDER BY case_id LIMIT 64) "
+                    "SELECT b.*,EXISTS(SELECT 1 FROM runtime_v2_w3_threads t "
+                    "WHERE t.thread_id=b.thread_id) AS registered FROM batch b ORDER BY case_id",
+                    (cursor,),
+                )
+            ]
+        report = dict(scanned=len(batch), lookups=0, attempts=0, more=len(batch) == 64)
+        seen = set()
+        for case in batch:
+            thread_id = case["thread_id"]
+            if not thread_id or case["registered"] or thread_id in seen:
+                cursor, receipt_cursor = case["case_id"], {}
+                continue
+            if report["attempts"] == 20:
+                report["more"] = True
+                break
+            resume = receipt_cursor if receipt_cursor.get("case_id") == case["case_id"] else {}
+            with self.journal.transaction(write=False) as db:
+                preferred = [
+                    r[0]
+                    for r in db.execute(
+                        "SELECT worker_job_id FROM runtime_v2_w3_stages "
+                        "WHERE case_id=? AND worker_job_id IS NOT NULL",
+                        (case["case_id"],),
+                    )
+                ]
+                receipts = [
+                    dict(r)
+                    for r in db.execute(
+                        "SELECT key,json_extract(payload,'$.job.job_id') AS job_id,"
+                        "json_extract(payload,'$.run_id') AS workspace,"
+                        "CASE WHEN key IN (SELECT value FROM json_each(?)) "
+                        "THEN 0 ELSE 1 END AS priority "
+                        "FROM runtime_values WHERE namespace='worker_invocations' "
+                        "AND json_extract(payload,'$.node')='persistent_runtime_w3' "
+                        "AND json_extract(payload,'$.job.thread_id')=? "
+                        "AND (priority>? OR (priority=? AND key>?)) "
+                        "ORDER BY priority,key LIMIT ?",
+                        (
+                            json.dumps(preferred),
+                            thread_id,
+                            resume.get("priority", -1),
+                            resume.get("priority", -1),
+                            resume.get("key", ""),
+                            21 - report["attempts"],
+                        ),
+                    )
+                ]
+            report["lookups"] += 1
+            registered = False
+            consumed = 0
+            for receipt in receipts:
+                if report["attempts"] == 20:
+                    break
+                report["attempts"] += 1
+                consumed += 1
+                receipt_cursor = dict(
+                    case_id=case["case_id"], priority=receipt["priority"], key=receipt["key"]
+                )
+                try:
+                    self.agent.register_legacy_thread(receipt["job_id"])
+                    with self.journal.transaction() as db:
+                        db.execute(
+                            "INSERT OR IGNORE INTO runtime_v2_w3_threads"
+                            "(record_id,thread_id,ticker,kind,compatibility_key,workspace,status,"
+                            "last_received_at,expires_at) "
+                            "VALUES(?,?,?,'LEGACY_CASE','legacy',?,'ACTIVE',?,?)",
+                            (
+                                digest(["legacy", thread_id]),
+                                thread_id,
+                                case["ticker"],
+                                receipt["workspace"],
+                                now.isoformat(),
+                                (now + timedelta(hours=48)).isoformat(),
+                            ),
+                        )
+                        db.execute(
+                            "DELETE FROM runtime_values WHERE "
+                            "namespace='w3_legacy_registration_errors' AND key=?",
+                            (thread_id,),
+                        )
+                    registered = True
+                    seen.add(thread_id)
+                    break
+                except Exception as exc:
+                    failed = True
+                    self.journal.set("w3_legacy_registration_errors", thread_id, str(exc)[:500])
+            if not registered and consumed < len(receipts):
+                report["more"] = True
+                break  # Retain this Case and its last receipt coordinate.
+            if not registered:
+                failed = True  # Missing proof is revisited, never fabricated.
+            seen.add(thread_id)
+            cursor, receipt_cursor = case["case_id"], {}
+        with self.journal.transaction() as db:
+            for key, value in {
+                "legacy_case_cursor": cursor if report["more"] else "",
+                "legacy_receipt_cursor": receipt_cursor if report["more"] else {},
+                "legacy_cycle_failed": failed if report["more"] else False,
+            }.items():
+                policy_consumption.put_value(db, "w3_housekeeping", key, value)
+        report["failed"] = failed
+        return report
+
     def maintain(self):
         """Daily bounded housekeeping; SDK errors leave durable retryable records."""
         now = self.journal.clock()
@@ -779,43 +905,17 @@ class W3Execution:
             return
         from datetime import timedelta
 
+        started = time.monotonic()
+        cpu_started = time.thread_time()
         failed = False
         cursor = self.journal.get("w3_housekeeping", "cursor", "")
-        # Prove old thread ownership with both a Runtime W3 Case and a Worker receipt.
-        with self.journal.transaction(write=False) as db:
-            legacy = db.execute(
-                "SELECT DISTINCT json_extract(c.payload_json,'$.thread_id'),c.ticker,"
-                "json_extract(v.payload,'$.job.job_id'),json_extract(v.payload,'$.run_id') "
-                "FROM runtime_v2_w3_cases c JOIN runtime_values v "
-                "ON v.namespace='worker_invocations' "
-                "AND json_extract(v.payload,'$.node')='persistent_runtime_w3' "
-                "AND json_extract(v.payload,'$.job.thread_id')="
-                "json_extract(c.payload_json,'$.thread_id') "
-                "WHERE json_extract(c.payload_json,'$.thread_id') IS NOT NULL "
-                "AND NOT EXISTS(SELECT 1 FROM runtime_v2_w3_threads t "
-                "WHERE t.thread_id=json_extract(c.payload_json,'$.thread_id')) LIMIT 20"
-            ).fetchall()
-        for thread_id, ticker, job_id, workspace in legacy:
-            try:
-                self.agent.register_legacy_thread(job_id)
-                with self.journal.transaction() as db:
-                    db.execute(
-                        "INSERT OR IGNORE INTO runtime_v2_w3_threads"
-                        "(record_id,thread_id,ticker,kind,compatibility_key,workspace,status,"
-                        "last_received_at,expires_at) "
-                        "VALUES(?,?,?,'LEGACY_CASE','legacy',?,'ACTIVE',?,?)",
-                        (
-                            digest(["legacy", thread_id]),
-                            thread_id,
-                            ticker,
-                            workspace,
-                            now.isoformat(),
-                            (now + timedelta(hours=48)).isoformat(),
-                        ),
-                    )
-            except Exception as exc:
-                failed = True
-                self.journal.set("w3_legacy_registration_errors", thread_id, str(exc)[:500])
+        try:
+            legacy = self._maintain_legacy(now)
+            failed = legacy["failed"]
+        except Exception as exc:
+            failed = True
+            legacy = dict(scanned=0, lookups=0, attempts=0, more=False)
+            self.journal.set("w3_legacy_registration_errors", "scan", str(exc)[:500])
         with self.journal.transaction(write=False) as db:
             rows = [
                 dict(row)
@@ -885,12 +985,23 @@ class W3Execution:
                         "UPDATE runtime_v2_w3_threads SET error=? WHERE record_id=?",
                         (str(exc)[:1000], record["record_id"]),
                     )
-        more = len(rows) == 20 or len(legacy) == 20 or len(acknowledgements) == 20
+        more = len(rows) == 20 or legacy["more"] or len(acknowledgements) == 20
         self.journal.set(
             "w3_housekeeping", "cursor", rows[-1]["record_id"] if len(rows) == 20 else ""
         )
         delay = timedelta(seconds=5) if more else timedelta(hours=1 if failed else 24)
         self.journal.set("w3_housekeeping", "next_at", (now + delay).isoformat())
+        logging.getLogger(__name__).info(
+            "w3_housekeeping scanned=%s lookups=%s registration_attempts=%s more=%s "
+            "failed=%s elapsed_ms=%.1f cpu_ms=%.1f",
+            legacy["scanned"],
+            legacy["lookups"],
+            legacy["attempts"],
+            more,
+            failed,
+            (time.monotonic() - started) * 1000,
+            (time.thread_time() - cpu_started) * 1000,
+        )
 
     def record_failure(self, case_id, phase, exc, *, retryable):
         case = self.service.repository.get_case(case_id)
