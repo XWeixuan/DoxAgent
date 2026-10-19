@@ -15,6 +15,7 @@ COPY src/doxagent/message_bus_v2/distribution.py /app/src/doxagent/message_bus_v
 COPY src/doxagent/message_bus_v2/ibkr_news.py /app/src/doxagent/message_bus_v2/ibkr_news.py
 COPY src/doxagent/message_bus_v2/market_sources.py /app/src/doxagent/message_bus_v2/market_sources.py
 COPY src/doxagent/message_bus_v2/manifests.py /app/src/doxagent/message_bus_v2/manifests.py
+COPY src/doxagent/message_bus_v2/factory.py /app/src/doxagent/message_bus_v2/factory.py
 COPY src/doxagent/site_strategy/client.py /app/src/doxagent/site_strategy/client.py
 COPY src/doxagent/persistent_runtime_v2/bus_orchestration.py /app/src/doxagent/persistent_runtime_v2/bus_orchestration.py
 COPY src/doxagent/content_enrichment/service.py /app/src/doxagent/content_enrichment/service.py

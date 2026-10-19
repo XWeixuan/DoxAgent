@@ -53,4 +53,8 @@ Investing 的补充入口以官方页面为证据：[NBIS](https://www.investing
 
 Reuters、Barron's、Investing.com 的既有身份目前另有持久化人工维护阻塞/丢页任务，主备并非都已可用。不能在未通过真人 Challenge/登录与业务验证前清掉阻塞，或宣称换线程已经恢复这些源。BE 官方 IR RSS 按既有要求不处理；TikHub 的上游 400 与本轮网络饥饿不是同一问题。
 
+4. **启动 DDL 与运行期共用 50 ms 锁预算**：追加发布曾遇到 RuntimeJournal 构造函数 `BEGIN IMMEDIATE → database is locked`，容器自动重启后恢复。50 ms 原用于避免网络线程等待，却同时使正常 Runtime 写入足以打断 Bus 启动。存储调用已经移出网络循环后，将 Bus Journal 的有界忙等待改为 5 秒；保留事务 fencing、有限重试，不增加无限重启或全局 DB 串行锁。
+
+离线共 171 个不同测试已通过。生产自然新消息记录也出现实际 FULL 正文：Google RSS/INTC 6,152 字符，官方 RSS/SNOW 7,040 字符，Yahoo/MU 7,082 字符，Tom's Hardware/MU 与 INTC 各 9,673 字符，GlobeNewswire 多条 1,436–15,856 字符。另两条 Google 召回消息的最终发布站点仍返回 `risk_combinations_exhausted`，应归属发布站点风控，而不是 RSS 没有工作；保留其失败证据，不宣传正文 100% 恢复。
+
 最终追加发布和持续自然轮询验收继续记录在本文件。真实 Challenge、登录失效、上游权限仍可能存在，不承诺绕过这些限制。
