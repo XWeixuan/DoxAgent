@@ -10,7 +10,7 @@ param(
 # Credentials are stored only in Windows Credential Manager, never in this file.
 
 $ErrorActionPreference = 'Stop'
-$sshAlias = 'doxagent-sg'
+$sshAlias = 'doxagent-sg-rdp'
 $rdpHost = '127.0.0.1'
 $rdpPort = 14389
 $credentialTarget = 'TERMSRV/{0}:{1}' -f $rdpHost, $rdpPort
@@ -34,7 +34,7 @@ function Wait-RdpTunnel {
             return
         }
         if ($Process.HasExited) {
-            throw "SSH tunnel exited before local port $rdpPort opened (exit code $($Process.ExitCode)). Check the doxagent-sg SSH alias and network/VPN connection."
+            throw "SSH tunnel exited before local port $rdpPort opened (exit code $($Process.ExitCode)). Check the $sshAlias SSH alias and the Clash DoxAgent-RDP group."
         }
         Start-Sleep -Milliseconds 500
     }

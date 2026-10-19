@@ -166,8 +166,8 @@ class SiteLoginApp:
         ttk.Label(profile_controls, textvariable=self.profile_count).pack(side="right")
         self.challenge_tree = self._tree(
             challenge_frame,
-            ("source", "identity", "state", "target", "opened"),
-            ("Source", "Identity", "Task state", "Original target", "Opened"),
+            ("source", "identity", "state", "type", "target", "opened"),
+            ("Source", "Identity", "Task state", "Challenge type", "Original target", "Opened"),
         )
         self.tree = self._tree(
             login_frame,
@@ -176,6 +176,7 @@ class SiteLoginApp:
         )
         buttons = ttk.Frame(challenge_frame)
         buttons.pack(fill="x", pady=6)
+        ttk.Button(buttons, text="View Evidence", command=self._view_evidence).pack(side="right")
         for text, action in (
             ("Open Original", "OPEN_CHALLENGE"),
             ("Verify Challenge", "VERIFY_CHALLENGE"),
@@ -346,6 +347,7 @@ class SiteLoginApp:
                         row["scope_id"],
                         row["identity_id"],
                         row["state"],
+                        row.get("challenge_type", "NOT_RECORDED"),
                         row.get("original_target_id") or "TARGET_LOST",
                         row["opened_at"],
                     )
@@ -356,6 +358,43 @@ class SiteLoginApp:
     def _selected(self):
         keys = self.tree.selection()
         return self.rows.get(keys[0]) if keys else None
+
+    def _view_evidence(self, phase="confirmed"):
+        keys = self.challenge_tree.selection()
+        if not keys:
+            self.status_value.set("Select a Challenge task first.")
+            return
+
+        def show(result):
+            if not result.get("ok"):
+                self.status_value.set(result.get("message", "Evidence unavailable or expired."))
+                return
+            record = result["record"]
+            shown_phase = result.get("phase", phase)
+            window = tk.Toplevel(self.root)
+            window.title("Challenge Evidence - " + record.get("site_id", ""))
+            ttk.Label(window, text=f"{shown_phase} / {record.get('state')} / "
+                      f"Target {record.get('target_id')}").pack(anchor="w")
+            frame = record.get("frames", {}).get(shown_phase, {})
+            text = json.dumps(frame.get("classification", {}), ensure_ascii=True, indent=2)
+            details = tk.Text(window, height=10, width=100, wrap="word")
+            details.insert("1.0", text)
+            details.configure(state="disabled")
+            details.pack(fill="x")
+            data = result.get("image_base64")
+            if data:
+                image = tk.PhotoImage(data=data)
+                scale = max(1, (image.width() + 1199) // 1200)
+                window.evidence_image = image.subsample(scale, scale)
+                ttk.Label(window, image=window.evidence_image).pack()
+            else:
+                ttk.Label(window, text="Screenshot unavailable; metadata is retained.").pack()
+            other = "first" if shown_phase == "confirmed" else "confirmed"
+            ttk.Button(window, text="View " + other,
+                       command=lambda: self._view_evidence(other),
+                       state="normal" if other in record.get("frames", {}) else "disabled").pack()
+
+        self._run(lambda: call_admin(["evidence", keys[0], phase]), show, channel="evidence")
 
     def _action(self, action, url=None):
         if self.operation and self.operation.get("state") not in TERMINAL:

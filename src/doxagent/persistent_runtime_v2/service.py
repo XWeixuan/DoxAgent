@@ -600,6 +600,9 @@ class PersistentRuntimeV2Service:
                 "w12_model": self.responses.model,
                 "w12_effort": getattr(self.responses, "reasoning_effort", "medium"),
             }
+            # Fresh, unbundled admissions use the current input contract too.
+            # Existing bundles/previously frozen Cases retain their old format.
+            case.frozen_inputs["models"].setdefault("w1_r1_input_view", "provisional-md-v1")
         if self.journal:
             ControlRepository(self.journal).admit(
                 case.case_id,
@@ -775,6 +778,12 @@ class PersistentRuntimeV2Service:
                 _w1_provisional_business_payload(item) for item in provisional
             ],
         }
+        if (
+            case.frozen_inputs.get("models", {}).get("w1_r1_input_view") == "provisional-md-v1"
+        ):
+            from .w1_context import compile_provisional_view
+
+            r1_payload["today_provisional_facts"] = compile_provisional_view(provisional)
         r1, r1_response_id = self._call_with_retry(
             case=case,
             lane="W1",
@@ -1286,6 +1295,9 @@ class PersistentRuntimeV2Service:
                         provider=model_settings.get("provider", "bailian"),
                         provider_endpoint=model_settings.get("provider_endpoint"),
                         cache_ttl=model_settings.get("cache_ttl"),
+                        provisional_cache_batch_size=model_settings.get(
+                            "provisional_cache_batch_size"
+                        ),
                         instructions=frozen["instructions"]
                         + (_retry_correction_context(last_error) if last_error else ""),
                         payload=payload,

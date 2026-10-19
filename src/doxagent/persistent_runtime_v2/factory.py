@@ -37,7 +37,7 @@ from .repository import (
 )
 from .service import PersistentRuntimeV2Service
 from .transport import BailianRuntimeResponsesClient
-from .openrouter import W2R1OpenRouterClient
+from .openrouter import RuntimeRecallOpenRouterClient
 from .w3 import CodexW3AgentRunner, PublishedW3ContextProvider
 
 logger = logging.getLogger(__name__)
@@ -115,10 +115,14 @@ def build_persistent_runtime_v2_service(
         w2_r1_model=settings.persistent_runtime_v2_w2_r1_model,
         w2_r1_timeout_seconds=settings.persistent_runtime_v2_w2_r1_timeout_seconds,
     )
-    responses = W2R1OpenRouterClient(
+    responses = RuntimeRecallOpenRouterClient(
         bailian,
         api_key=settings.openrouter_api_key.get_secret_value() if settings.openrouter_api_key else "",
         w2_r1_model=settings.persistent_runtime_v2_w2_r1_model,
+        w1_r1_model=settings.persistent_runtime_v2_w1_r1_model,
+        w1_provisional_cache_batch_size=(
+            settings.persistent_runtime_v2_w1_provisional_cache_batch_size
+        ),
     )
     logger.info(
         "Persistent Runtime V2 model transport configured: rounds=%s automatic_retries=%s",

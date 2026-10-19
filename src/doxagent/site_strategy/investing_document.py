@@ -41,7 +41,8 @@ async def response_listing(response, url, ticker, *, timeout, max_bytes):
 
 
 async def capture_document(
-    cdp, target_id, url, *, timeout, body_parameters=None, challenge_grace_seconds=8
+    cdp, target_id, url, *, timeout, body_parameters=None, challenge_grace_seconds=8,
+    on_challenge=None,
 ):
     """No JS evaluation, interception, resource blocking, navigation or CAPTCHA clicks."""
     deadline = time.monotonic() + timeout
@@ -99,6 +100,8 @@ async def capture_document(
                 if info.access_reason == "challenge_required":
                     if challenge_since is None:
                         challenge_since = time.monotonic()
+                        if on_challenge is not None:
+                            await on_challenge(last, final_url)
                     if time.monotonic() - challenge_since >= challenge_grace_seconds:
                         return last, final_url
                 elif info.access_reason or info.page_kind == "listing":

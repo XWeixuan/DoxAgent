@@ -422,6 +422,7 @@ class WorkerSiteAccessRuntime(SiteAccessRuntime):
                 identity,
                 session,
                 store.get_target(session.allocation_id),
+                evidence_store=self.evidence_store,
             )
             info = inspect_html(capture.body, capture.final_url, "", generic_extraction=False)
             if (
@@ -442,6 +443,7 @@ class WorkerSiteAccessRuntime(SiteAccessRuntime):
                                 identity,
                                 session,
                                 store.get_target(session.allocation_id),
+                                  evidence_store=self.evidence_store,
                             )
                             info = inspect_html(
                                 capture.body, capture.final_url, "", generic_extraction=False

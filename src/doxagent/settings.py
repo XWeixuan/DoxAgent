@@ -852,6 +852,14 @@ class DoxAgentSettings(BaseSettings):
         gt=0,
         validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_TIMEOUT_SECONDS",
     )
+    persistent_runtime_v2_w1_r1_model: str = Field(
+        default="anthropic/claude-haiku-5.5",
+        validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_W1_R1_MODEL",
+    )
+    persistent_runtime_v2_w1_provisional_cache_batch_size: int = Field(
+        default=5, ge=1, le=256,
+        validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_W1_PROVISIONAL_CACHE_BATCH_SIZE",
+    )
     persistent_runtime_v2_w2_r1_model: str = Field(
         default="anthropic/claude-haiku-5.5",
         validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_W2_R1_MODEL",

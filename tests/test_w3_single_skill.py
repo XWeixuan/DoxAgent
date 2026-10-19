@@ -75,6 +75,12 @@ def test_factory_publishes_new_contract_from_current_prompt_directory(tmp_path):
         assert r1["model"] == "anthropic/claude-haiku-5.5"
         assert r1["provider"] == "openrouter" and r1["reasoning_effort"] == "high"
         assert r1["provider_endpoint"] == "google-vertex/global" and r1["cache_ttl"] == "1h"
+        model_settings = json.loads(bundle["assets"]["runtime_models.json"])
+        w1 = model_settings["rounds"]["W1:R1"]
+        assert model_settings["w1_r1_input_view"] == "provisional-md-v1"
+        assert w1["model"] == "anthropic/claude-haiku-5.5" and w1["reasoning_effort"] == "high"
+        assert w1["provider_endpoint"] == "google-vertex/global" and w1["cache_ttl"] == "1h"
+        assert w1["provisional_cache_batch_size"] == 5
         assert bundle["contracts"]["w3_contract_version"] == W3_CONTRACT
         assert bundle["contracts"]["w3_asset_layout"] == "agents-skill.v1"
         for name in ("AGENTS.md", "skills/skill.md", "skills/weekend_sweep.md"):

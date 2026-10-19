@@ -1071,6 +1071,9 @@ class SiteAccessRuntime:
     ) -> None:
         self.repository = repository
         self.resolver = resolver
+        from .challenge_evidence import EvidenceStore
+
+        self.evidence_store = EvidenceStore(Path(profile_root).parent / "challenge-evidence")
         self.browser_pool = PersistentBrowserPool(
             Path(profile_root),
             headless=browser_headless,
@@ -1112,6 +1115,9 @@ class SiteAccessRuntime:
 
     async def close(self) -> None:
         for token, maintained in list(self._maintenance_pages.items()):
+            pending = getattr(self, "_ownership_transfers", set())
+            if pending:
+                await asyncio.wait(tuple(pending), timeout=2.5)
             self._maintenance_pages.pop(token, None)
             await self._finish_maintenance_navigation(maintained)
             await maintained.gate.close()
@@ -1276,6 +1282,7 @@ class SiteAccessRuntime:
                 )
             html = await page.content()
             if inspect_html(html, page.url, "").access_reason == "challenge_required":
+                page._doxagent_challenge_html = html
                 token = None
                 if not request.recipe_parameters.get("_maintenance_canary"):
                     token = await self._retain_challenge(
@@ -1338,6 +1345,14 @@ class SiteAccessRuntime:
                     ),
                     timeout=min(request.remaining_budget_ms, 20_000),
                 )
+                page._doxagent_challenge_status = response.status if response else 0
+                page._doxagent_challenge_headers = getattr(response, "headers", {})
+                if response is not None and response.status == 403 and not native_investing:
+                    # A suspected main-document denial is not a CAPTCHA verdict.
+                    # Capture before a native redirect can erase its visual scene.
+                    await self._capture_challenge_evidence(
+                        lease, page, gate, identity, resolved, request, "", phase="first",
+                    )
                 if gate.blocked:
                     return RuntimeResponse(
                         0,
@@ -1370,6 +1385,10 @@ class SiteAccessRuntime:
                         request.url,
                         timeout=max(.001, min(12, deadline - time.monotonic())),
                         body_parameters=resolved.body.parameters,
+                        on_challenge=lambda html, url: self._capture_challenge_evidence(
+                            lease, page, gate, identity, resolved, request, html,
+                            phase="first", url=url,
+                        ),
                     )
                     if (
                         observed_response is not None
@@ -1554,6 +1573,24 @@ class SiteAccessRuntime:
                 challenge = inspect_html(
                     html, page.url, "", generic_extraction=resolved.site_id != "barrons"
                 ).access_reason == "challenge_required"
+                if challenge:
+                    page._doxagent_challenge_html = html
+                    page._doxagent_challenge_status = status
+                    page._doxagent_challenge_headers = headers
+                    if request.recipe_parameters.get("_maintenance_canary"):
+                        await self._capture_challenge_evidence(
+                            lease, page, gate, identity, resolved, request, html,
+                            phase="confirmed", url=page.url,
+                        )
+                elif (
+                    getattr(page, "_doxagent_evidence_first", False) and 200 <= status < 300
+                    and inspect_html(html, page.url, "", generic_extraction=False).page_kind
+                    in {"listing", "article", "quote"}
+                ):
+                    await self._capture_challenge_evidence(
+                        lease, page, gate, identity, resolved, request,
+                        html, phase="cleared", url=page.url,
+                    )
                 token = (
                     uuid4().hex
                     if (challenge and not request.recipe_parameters.get("_maintenance_canary"))
@@ -1614,6 +1651,7 @@ class SiteAccessRuntime:
                         and inspection.access_reason == "challenge_required"
                         and not request.recipe_parameters.get("_maintenance_canary")
                     ):
+                        page._doxagent_challenge_html = html
                         token = await self._retain_challenge(
                             lease, page, gate, identity, resolved, request
                         )
@@ -1748,6 +1786,15 @@ class SiteAccessRuntime:
                 navigation_state="READY",
             )
             await lease.abandon()
+            # The original is now durably human-owned and business capacity is
+            # released. A failed screenshot must not prevent fallback/handoff.
+            if hasattr(self, "evidence_store"):
+                task = asyncio.create_task(self._capture_challenge_evidence(
+                    lease, page, gate, identity, resolved, request,
+                    getattr(page, "_doxagent_challenge_html", ""), phase="confirmed",
+                ), name="challenge-evidence")
+                self._ownership_transfers.add(task)
+                task.add_done_callback(self._ownership_transfers.discard)
             return token
 
         transfer_task = asyncio.create_task(transfer(), name="challenge-ownership-transfer")
@@ -1756,6 +1803,36 @@ class SiteAccessRuntime:
         self._ownership_transfers.add(transfer_task)
         transfer_task.add_done_callback(self._ownership_transfers.discard)
         return await asyncio.shield(transfer_task)
+
+    async def _capture_challenge_evidence(
+        self, lease, page, gate, identity, resolved, request, html, *, phase, url=None
+    ):
+        from .challenge_evidence import cdp_screenshot
+
+        store = getattr(self, "evidence_store", None)
+        target_id = gate.root_target_id
+        if store is None or not target_id:
+            return None
+        if not html:
+            # Used after handoff; do not wait for main-thread JS to respond.
+            html = getattr(page, "_doxagent_challenge_html", "")
+        context = {
+            "scope_id": str(
+                resolved.match_evidence.get("scope_id") or f"publisher:{resolved.site_id}"
+            ),
+            "site_id": resolved.site_id, "identity_id": identity.identity_id,
+            "browser_instance_id": lease.provenance.instance_id, "target_id": target_id,
+            "operation_id": request.operation_id, "url": url or request.url,
+        }
+        evidence_id = await store.capture(
+            context, html, phase=phase,
+            screenshot=lambda: cdp_screenshot(lease.browser_cdp, target_id),
+            status=getattr(page, "_doxagent_challenge_status", 0),
+            headers=getattr(page, "_doxagent_challenge_headers", {}),
+        )
+        if phase == "first" and evidence_id:
+            page._doxagent_evidence_first = True
+        return evidence_id
 
     async def reset_egress(self, egress_id: str) -> None:
         stale = [key for key in self._http_sessions if key[1] == egress_id]
@@ -2145,6 +2222,16 @@ class SiteAccessRuntime:
             maintained.identity_id, time.monotonic() - started, len(html),
         )
         info = inspect_html(html, maintained.page.url, "", generic_extraction=False)
+        if info.access_reason == "challenge_required" and hasattr(self, "evidence_store"):
+            identity = self.repository.get_identity(maintained.identity_id)
+            url = maintained.challenge_url or maintained.page.url
+            resolved = self.resolver.resolve(url).model_copy(update={"site_id": maintained.site_id})
+            await self._capture_challenge_evidence(
+                maintained.lease, maintained.page, maintained.gate, identity, resolved,
+                AccessRequest(operation_id=f"maintenance-inspect:{token}", purpose="LOGIN",
+                              mode=AccessMode.BROWSER, url=url),
+                html, phase="confirmed", url=maintained.page.url,
+            )
         logger.warning(
             "maintenance_inspection identity=%s phase=classified elapsed=%.3f kind=%s",
             maintained.identity_id, time.monotonic() - started, info.page_kind,

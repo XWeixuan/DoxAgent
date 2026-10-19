@@ -419,7 +419,7 @@ def test_service_runs_parallel_hot_path_then_w3_owned_delta(tmp_path: Path) -> N
         "published_known_event_index",
         "today_provisional_facts",
     }
-    assert w1_r1_request.payload["today_provisional_facts"] == []
+    assert w1_r1_request.payload["today_provisional_facts"] == ""
     assert w1_r1_request.cache_context_keys == ("published_known_event_index",)
     w1_r2_request = next(
         request for request in responses.calls if request.output_model is W1NoveltyResult

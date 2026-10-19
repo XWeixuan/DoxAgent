@@ -507,6 +507,7 @@ class RuntimeModelTurn(RuntimeV2Model):
     provider: Literal["bailian", "openrouter"] = "bailian"
     provider_endpoint: str | None = None
     cache_ttl: Literal["1h"] | None = None
+    provisional_cache_batch_size: int | None = Field(default=None, ge=1)
     reasoning_effort: Literal["low", "medium", "high"] = "medium"
     transport: Literal["responses_json_schema", "responses_json_object", "chat_completions_json_schema"] = "responses_json_schema"
     timeout_seconds: float | None = Field(default=None, gt=0)

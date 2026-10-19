@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import base64
 import hmac
 import sqlite3
 from collections.abc import AsyncIterator, Awaitable, Callable
@@ -327,6 +328,33 @@ def create_app(
                 limit=limit,
             )
         ]
+
+    @app.get("/v1/challenge-evidence", dependencies=[Depends(admin)])
+    async def recent_challenge_evidence(limit: int = Query(100, ge=1, le=200)):
+        rows = await asyncio.to_thread(service.runtime.evidence_store.recent, limit)
+        return JSONResponse({"evidence": rows}, headers={"Cache-Control": "no-store"})
+
+    def evidence_for_task(task_id):
+        task = maintenance.store.get_challenge(task_id)
+        record = service.runtime.evidence_store.for_task(task) if task else None
+        if not record:
+            raise HTTPException(status_code=404, detail="Evidence not recorded or expired")
+        return record
+
+    @app.get("/v1/challenges/{task_id}/evidence", dependencies=[Depends(admin)])
+    async def challenge_evidence(task_id: str):
+        record = await asyncio.to_thread(evidence_for_task, task_id)
+        return JSONResponse(record, headers={"Cache-Control": "no-store"})
+
+    @app.get("/v1/challenges/{task_id}/evidence/{phase}", dependencies=[Depends(admin)])
+    async def challenge_evidence_image(task_id: str, phase: Literal["first", "confirmed"]):
+        def read():
+            record = evidence_for_task(task_id)
+            chosen = phase if phase in record["frames"] else "first"
+            path = service.runtime.evidence_store.image_path(record["evidence_id"], chosen)
+            return {"record": record, "phase": chosen,
+                    "image_base64": base64.b64encode(path.read_bytes()).decode() if path else None}
+        return JSONResponse(await asyncio.to_thread(read), headers={"Cache-Control": "no-store"})
 
     @app.post("/v1/outcomes:batch", dependencies=[Depends(worker)])
     async def outcomes(request: OutcomesRequest) -> dict[str, int]:

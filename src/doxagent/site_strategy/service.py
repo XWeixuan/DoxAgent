@@ -571,6 +571,7 @@ class SiteStrategyService:
                     maintain_profile, root, profile.directory_key, allow_cache=True
                 )
         await asyncio.to_thread(self.profile_storage.maintain)
+        await asyncio.to_thread(self.runtime.evidence_store.prune)
 
     async def _prewarm_identities(self) -> None:
         from .governance_repository import GovernanceRepository

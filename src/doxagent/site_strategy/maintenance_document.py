@@ -1,6 +1,7 @@
 """Read an exact human-owned native target without starting a control worker."""
 
 import asyncio
+import base64
 import json
 from urllib.parse import urlsplit
 
@@ -89,7 +90,7 @@ async def close_original_document(client, identity, session, target):
                 raise RuntimeError("original_document_close_pending")
 
 
-async def read_original_document(client, identity, session, target):
+async def read_original_document(client, identity, session, target, *, evidence_store=None):
     """Observation only: no ensure, controller claim, navigation or Viewer selection."""
     if (
         not target
@@ -151,6 +152,25 @@ async def read_original_document(client, identity, session, target):
             # context being responsive during a native challenge/navigation.
             root = (await call(1, "DOM.getDocument", {"depth": 0}))["root"]
             html = (await call(2, "DOM.getOuterHTML", {"nodeId": root["nodeId"]}))["outerHTML"]
+            if evidence_store is not None:
+                from doxagent.content_enrichment.quality import inspect_html
+
+                if inspect_html(html, root.get("documentURL") or tab["url"], "",
+                                generic_extraction=False).access_reason == "challenge_required":
+                    async def screenshot():
+                        value = await call(3, "Page.captureScreenshot", {
+                            "format": "png", "captureBeyondViewport": False,
+                        })
+                        return base64.b64decode(value["data"], validate=True)
+
+                    await evidence_store.capture({
+                        "scope_id": session.scope_id, "site_id": session.site_id,
+                        "identity_id": identity.identity_id,
+                        "browser_instance_id": status["instance_id"],
+                        "target_id": session.target_id,
+                        "operation_id": "maintenance:" + session.session_id,
+                        "url": root.get("documentURL") or tab["url"],
+                    }, html, phase="first", screenshot=screenshot)
         return RuntimeResponse(
             0,
             root.get("documentURL") or str(tab["url"]),

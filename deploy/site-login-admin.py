@@ -793,6 +793,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(add_help=False)
     subparsers = parser.add_subparsers(dest="command", required=True)
     subparsers.add_parser("list", add_help=False)
+    evidence = subparsers.add_parser("evidence", add_help=False)
+    evidence.add_argument("task_id")
+    evidence.add_argument("phase", choices=("first", "confirmed"), default="confirmed", nargs="?")
     open_parser = subparsers.add_parser("open", add_help=False)
     open_parser.add_argument("profile_id")
     open_parser.add_argument("--site-id")
@@ -826,6 +829,12 @@ def main(argv: list[str] | None = None) -> None:
             )
         elif arguments.command == "list":
             result = command_list()
+        elif arguments.command == "evidence":
+            task_id = _validate_profile_id(arguments.task_id)
+            value = _request(
+                "GET", f"/v1/challenges/{task_id}/evidence/{arguments.phase}", timeout=3
+            )
+            result = {"ok": True, **value}
         elif arguments.command == "open":
             result = command_open(arguments.profile_id, arguments.site_id)
         elif arguments.command == "verify":

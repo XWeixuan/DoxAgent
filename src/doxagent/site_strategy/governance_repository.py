@@ -298,6 +298,9 @@ class GovernanceRepository:
             ).fetchone()
         return ChallengeTask.model_validate_json(row[0]) if row else None
 
+    def get_challenge(self, task_id):
+        return self._read("challenge_tasks", "task_id", task_id, ChallengeTask)
+
     def handoff_login(self, allocation_id, token, site_id):
         """Commit the login reference before acknowledging a newly visible human page."""
         with self.repository.transaction() as connection:

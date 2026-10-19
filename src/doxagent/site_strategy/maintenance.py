@@ -219,7 +219,9 @@ class MaintenanceController:
             "snapshot_at": utc_now().isoformat(),
             "stale": False,
             "profiles": rows,
-            "challenges": [t.model_dump(mode="json") for t in self.store.list_challenges()],
+            "challenges": [{**t.model_dump(mode="json"),
+                            "challenge_type": self.service.runtime.evidence_store.summary(t)}
+                           for t in self.store.list_challenges()],
             "vnc_ready": True,
             "sessions": [
                 s.model_dump(mode="json", exclude={"control_token"})
