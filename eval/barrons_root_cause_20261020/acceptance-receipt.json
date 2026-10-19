@@ -1,0 +1,417 @@
+{
+  "limitations": [
+    "No eligible fresh article was published during the observation window; do not claim a new-item end-to-end publication test.",
+    "The backup has UNKNOWN authentication and no cold subscription verification; do not claim it is production-ready.",
+    "A bounded observation does not guarantee that the publisher will never issue a future challenge."
+  ],
+  "maintenance_cycles": [
+    {
+      "open_seconds": 18.676,
+      "result": {
+        "challenge": "CLEARED",
+        "authentication": "VALID",
+        "crawler": "READY",
+        "body": "FULL",
+        "reason": "complete_article",
+        "health_applied": true,
+        "session_closed": true,
+        "cleanup_pending": false,
+        "challenge_task_id": null,
+        "verification_url": "https://www.barrons.com/articles/annaly-capital-sports-mortgage-reit-dividend-stock-price-3972cdfb",
+        "runtime_instance_id": "011bcc052e3a47b395204e6e7b6b5f35",
+        "crawler_reason": "listing_contract_verified",
+        "body_reason": "complete_article",
+        "original_page_kind": "app_shell"
+      },
+      "session_id": "maintenance_7f00bf58a2094bdea4a6d3df1845a5f5",
+      "verify_seconds": 29.622
+    },
+    {
+      "open_seconds": 2.079,
+      "result": {
+        "challenge": "CLEARED",
+        "authentication": "VALID",
+        "crawler": "READY",
+        "body": "FULL",
+        "reason": "complete_article",
+        "health_applied": true,
+        "session_closed": true,
+        "cleanup_pending": false,
+        "challenge_task_id": null,
+        "verification_url": "https://www.barrons.com/articles/annaly-capital-sports-mortgage-reit-dividend-stock-price-3972cdfb",
+        "runtime_instance_id": "011bcc052e3a47b395204e6e7b6b5f35",
+        "crawler_reason": "listing_contract_verified",
+        "body_reason": "complete_article",
+        "original_page_kind": "app_shell"
+      },
+      "session_id": "maintenance_3f21e0d2685e4569aed130dec30e24ce",
+      "verify_seconds": 28.699
+    }
+  ],
+  "natural_observation": {
+    "admission_reasons": {
+      "EXPIRED_PUBLICATION": 361
+    },
+    "from": "2026-10-20T03:11:35.833323+08:00",
+    "to": "2026-10-20T03:31:42.205452+08:00",
+    "poll_states": [
+      {
+        "ticker": "BE",
+        "status": "succeeded",
+        "last_success_at": "2026-10-19T19:31:02.314533Z",
+        "last_attempt_at": "2026-10-19T19:31:02.314533Z",
+        "last_error_code": null,
+        "last_error_message": null,
+        "consecutive_failures": 0,
+        "last_latency_ms": 29192,
+        "collected_count": 84929,
+        "filtered_count": 83608
+      },
+      {
+        "ticker": "INTC",
+        "status": "succeeded",
+        "last_success_at": "2026-10-19T19:29:49.833422Z",
+        "last_attempt_at": "2026-10-19T19:29:49.833422Z",
+        "last_error_code": null,
+        "last_error_message": null,
+        "consecutive_failures": 0,
+        "last_latency_ms": 33471,
+        "collected_count": 107772,
+        "filtered_count": 105769
+      },
+      {
+        "ticker": "MU",
+        "status": "succeeded",
+        "last_success_at": "2026-10-19T19:29:49.833422Z",
+        "last_attempt_at": "2026-10-19T19:29:49.833422Z",
+        "last_error_code": null,
+        "last_error_message": null,
+        "consecutive_failures": 0,
+        "last_latency_ms": 46529,
+        "collected_count": 94002,
+        "filtered_count": 91284
+      },
+      {
+        "ticker": "RKLB",
+        "status": "succeeded",
+        "last_success_at": "2026-10-19T19:30:30.707343Z",
+        "last_attempt_at": "2026-10-19T19:30:30.707343Z",
+        "last_error_code": null,
+        "last_error_message": null,
+        "consecutive_failures": 0,
+        "last_latency_ms": 40599,
+        "collected_count": 102354,
+        "filtered_count": 101005
+      },
+      {
+        "ticker": "NBIS",
+        "status": "succeeded",
+        "last_success_at": "2026-10-19T19:29:49.833422Z",
+        "last_attempt_at": "2026-10-19T19:29:49.833422Z",
+        "last_error_code": null,
+        "last_error_message": null,
+        "consecutive_failures": 0,
+        "last_latency_ms": 45542,
+        "collected_count": 1064,
+        "filtered_count": 1064
+      },
+      {
+        "ticker": "COHR",
+        "status": "succeeded",
+        "last_success_at": "2026-10-19T19:30:30.707343Z",
+        "last_attempt_at": "2026-10-19T19:30:30.707343Z",
+        "last_error_code": null,
+        "last_error_message": null,
+        "consecutive_failures": 0,
+        "last_latency_ms": 33669,
+        "collected_count": 2052,
+        "filtered_count": 2052
+      },
+      {
+        "ticker": "ONDS",
+        "status": "succeeded",
+        "last_success_at": "2026-10-19T19:30:30.707343Z",
+        "last_attempt_at": "2026-10-19T19:30:30.707343Z",
+        "last_error_code": null,
+        "last_error_message": null,
+        "consecutive_failures": 0,
+        "last_latency_ms": 36590,
+        "collected_count": 448,
+        "filtered_count": 448
+      },
+      {
+        "ticker": "CEG",
+        "status": "succeeded",
+        "last_success_at": "2026-10-19T19:29:49.833422Z",
+        "last_attempt_at": "2026-10-19T19:29:49.833422Z",
+        "last_error_code": null,
+        "last_error_message": null,
+        "consecutive_failures": 0,
+        "last_latency_ms": 29585,
+        "collected_count": 1645,
+        "filtered_count": 1645
+      },
+      {
+        "ticker": "SNOW",
+        "status": "succeeded",
+        "last_success_at": "2026-10-19T19:30:30.707343Z",
+        "last_attempt_at": "2026-10-19T19:30:30.707343Z",
+        "last_error_code": null,
+        "last_error_message": null,
+        "consecutive_failures": 0,
+        "last_latency_ms": 38390,
+        "collected_count": 1334,
+        "filtered_count": 1334
+      }
+    ],
+    "published_count": 0,
+    "successful_crawler_operations": 174,
+    "samples": 21,
+    "observed_successful_polls_lower_bound": {
+      "CEG": 19,
+      "ONDS": 17,
+      "MU": 18,
+      "BE": 19,
+      "RKLB": 17,
+      "SNOW": 17,
+      "INTC": 17,
+      "NBIS": 19,
+      "COHR": 17
+    },
+    "results": {
+      "ok": 174
+    },
+    "risk_count": 0,
+    "minutes": 20.1062
+  },
+  "runtime": {
+    "at": "2026-10-20T03:30:16.154012+08:00",
+    "implementation_commit": "bed59294a24db47231f22deb94b077e42653b45c",
+    "containers": [
+      {
+        "name": "/doxagent-v2-v2-site-access-1",
+        "id": "241c000f714a3109ae07a24dce508287ba3b2920a9c985fa46bee03c6ca46b93",
+        "image": "sha256:79d3a751c3bc83a2f798f268b38acd58d188d36adc56f856688dd8c01f0a1b6f",
+        "running": true,
+        "oom_killed": false,
+        "restarts": 0
+      },
+      {
+        "name": "/doxagent-v2-v2-message-bus-1",
+        "id": "96817669da2ffd6188e6e99a9e119dc1062b2ecdb426c66f201deaba4e4af95f",
+        "image": "sha256:e4bcb82297b36944a4789274bacb8fc0cfcb631180a75718c6449f13e6a3ae8f",
+        "running": true,
+        "oom_killed": false,
+        "restarts": 0
+      },
+      {
+        "name": "/doxagent-v2-v2-chrome-supervisor-1",
+        "id": "617b4e1d59f97cd199491ce6f81af5ffa8664927600d2d7af2716fd82cec571c",
+        "image": "sha256:4aebf2ad2a7a5eeb98a515e6611c118e742a30cc932823ddfbee013d1aa09aef",
+        "running": true,
+        "oom_killed": false,
+        "restarts": 0
+      }
+    ],
+    "all_ten_files_match_commit": true,
+    "native_status": [
+      {
+        "identity_id": "dowjones-main",
+        "instance_id": "011bcc052e3a47b395204e6e7b6b5f35",
+        "running": true,
+        "known_missing": null,
+        "generation": 1
+      },
+      {
+        "identity_id": "dowjones-backup",
+        "instance_id": null,
+        "running": false,
+        "known_missing": true,
+        "generation": null
+      }
+    ],
+    "profile": {
+      "profile_id": "dowjones-main",
+      "operational_state": "AVAILABLE",
+      "auth_state": "VALID",
+      "maintenance_session_id": null,
+      "session_revision": 11
+    },
+    "active_identity": "dowjones-main",
+    "manual_attention": false,
+    "pending_current_challenges": 0,
+    "unfinished_login_sessions": 0
+  },
+  "frontend_read_builder": {
+    "checked_at": "2026-10-20T03:30:36.797455+08:00",
+    "seq": 5440038,
+    "checkpoints": [
+      {
+        "source": "bus",
+        "head": 3084827,
+        "checkpoint": 3084827,
+        "checked_at": "2026-10-19T19:30:36.741555Z",
+        "error": null
+      }
+    ],
+    "sources": [
+      {
+        "ticker": "BE",
+        "status": "succeeded",
+        "health": "NORMAL",
+        "error": null,
+        "last_success": {
+          "state": "AVAILABLE",
+          "value": "2026-10-19T19:28:41.108913Z",
+          "reason": null
+        },
+        "interval": 60
+      },
+      {
+        "ticker": "INTC",
+        "status": "succeeded",
+        "health": "NORMAL",
+        "error": null,
+        "last_success": {
+          "state": "AVAILABLE",
+          "value": "2026-10-19T19:28:41.108913Z",
+          "reason": null
+        },
+        "interval": 60
+      },
+      {
+        "ticker": "MU",
+        "status": "succeeded",
+        "health": "NORMAL",
+        "error": null,
+        "last_success": {
+          "state": "AVAILABLE",
+          "value": "2026-10-19T19:28:41.108913Z",
+          "reason": null
+        },
+        "interval": 60
+      },
+      {
+        "ticker": "RKLB",
+        "status": "succeeded",
+        "health": "NORMAL",
+        "error": null,
+        "last_success": {
+          "state": "AVAILABLE",
+          "value": "2026-10-19T19:29:19.034882Z",
+          "reason": null
+        },
+        "interval": 60
+      },
+      {
+        "ticker": "NBIS",
+        "status": "succeeded",
+        "health": "NORMAL",
+        "error": null,
+        "last_success": {
+          "state": "AVAILABLE",
+          "value": "2026-10-19T19:28:41.108913Z",
+          "reason": null
+        },
+        "interval": 60
+      },
+      {
+        "ticker": "COHR",
+        "status": "succeeded",
+        "health": "NORMAL",
+        "error": null,
+        "last_success": {
+          "state": "AVAILABLE",
+          "value": "2026-10-19T19:29:19.034882Z",
+          "reason": null
+        },
+        "interval": 60
+      },
+      {
+        "ticker": "ONDS",
+        "status": "succeeded",
+        "health": "NORMAL",
+        "error": null,
+        "last_success": {
+          "state": "AVAILABLE",
+          "value": "2026-10-19T19:28:41.108913Z",
+          "reason": null
+        },
+        "interval": 60
+      },
+      {
+        "ticker": "CEG",
+        "status": "succeeded",
+        "health": "NORMAL",
+        "error": null,
+        "last_success": {
+          "state": "AVAILABLE",
+          "value": "2026-10-19T19:28:41.108913Z",
+          "reason": null
+        },
+        "interval": 60
+      },
+      {
+        "ticker": "SNOW",
+        "status": "succeeded",
+        "health": "NORMAL",
+        "error": null,
+        "last_success": {
+          "state": "AVAILABLE",
+          "value": "2026-10-19T19:29:19.034882Z",
+          "reason": null
+        },
+        "interval": 60
+      }
+    ]
+  },
+  "implementation_commit": "bed59294a24db47231f22deb94b077e42653b45c",
+  "business_body_proofs": [
+    {
+      "disposition": "SUCCESS",
+      "status_code": 200,
+      "reason_code": "ok",
+      "failure_category": null,
+      "identity_id": "dowjones-main",
+      "runtime_instance_id": "011bcc052e3a47b395204e6e7b6b5f35",
+      "effective_scope_id": "source:barrons_ticker_news",
+      "network_ms": 9344,
+      "queue_wait_ms": 0,
+      "url": "https://www.barrons.com/articles/micron-stock-cxmt-china-memory-chip-175b32ef",
+      "elapsed_seconds": 16.351184693165123,
+      "quality": "FULL",
+      "quality_reason": "complete_article",
+      "article_chars": 3139,
+      "html_bytes": 867597,
+      "page_kind": "article",
+      "access_reason": null,
+      "subscription_article": true
+    },
+    {
+      "disposition": "SUCCESS",
+      "status_code": 200,
+      "reason_code": "ok",
+      "failure_category": null,
+      "identity_id": "dowjones-main",
+      "runtime_instance_id": "011bcc052e3a47b395204e6e7b6b5f35",
+      "effective_scope_id": "source:barrons_ticker_news",
+      "network_ms": 7912,
+      "queue_wait_ms": 1150,
+      "url": "https://www.barrons.com/articles/intel-stock-upgrade-chip-selloff-328bd94d",
+      "elapsed_seconds": 10.13387115020305,
+      "quality": "FULL",
+      "quality_reason": "complete_article",
+      "article_chars": 4701,
+      "html_bytes": 890290,
+      "page_kind": "article",
+      "access_reason": null,
+      "subscription_article": true
+    }
+  ],
+  "tests": {
+    "skip_reason": "Windows symlink permission",
+    "skipped": 1,
+    "passed": 301
+  },
+  "source_id": "barrons_ticker_news"
+}

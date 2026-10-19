@@ -26,6 +26,12 @@ out={'at':datetime.now(UTC).isoformat(),'since':since,
 out['polls']=[{k:v.get(k) for k in ('ticker','status','last_success_at','last_attempt_at','last_error_code','last_error_message','consecutive_failures','last_latency_ms','collected_count','filtered_count')} for v in
               (json.loads(r[0]) for r in bus.execute("select data_json from poll_states where source_id='barrons_ticker_news'"))]
 out['body_outcomes']=[dict(r) for r in site.execute("select job_id,outcome,reason,completed_at from body_outcomes where final_site_id='barrons' and completed_at>=? order by completed_at desc limit 15",(since,))]
+out['raw_items']=[]
+for raw, status in bus.execute("select data_json,processing_status from raw_messages where source_id='barrons_ticker_news' and collected_at>=? order by collected_at desc limit 20",(since,)):
+    value=json.loads(raw)
+    out['raw_items'].append({**{k:value.get(k) for k in ('raw_message_id','ticker','title','url','published_at','collected_at','publication_time_basis')},'processing_status':status,'body_chars':len(value.get('body') or '')})
+out['published_count']=bus.execute("select count(*) from stream_members m join standard_messages s on s.standard_message_id=m.standard_message_id join raw_messages r on r.raw_message_id=s.raw_message_id where r.source_id='barrons_ticker_news' and r.collected_at>=?",(since,)).fetchone()[0]
+out['admission_reasons']=dict(bus.execute("select json_extract(data_json,'$.reason'),count(*) from message_admission_results where json_extract(data_json,'$.binding_id') like '%:barrons_ticker_news' and json_extract(data_json,'$.checked_at')>=? group by json_extract(data_json,'$.reason')",(since,)))
 out['tasks']=[{k:v.get(k) for k in ('task_id','state','reason','opened_at','resolved_at','original_target_id')} for v in (json.loads(r[0]) for r in site.execute("select data_json from challenge_tasks where identity_id='dowjones-main' order by updated_at desc limit 5"))]
 out['scope']=json.loads(site.execute("select data_json from site_runtime where runtime_key='scope:source:barrons_ticker_news'").fetchone()[0])
 print(json.dumps(out))

@@ -61,10 +61,55 @@
 
 候选对照：同一个生产主身份约 **6.11 秒**返回 **35 条**有效新闻（20 Barron's、15 Other Dow Jones），含精确 UTC 时间。它只是修复试验成功，**不是持续生产验收结论**。
 
-本地测试：121 passed，包含新增 18 项原生 feed、两标签完整性、时间、IBD、HTTP 错误分类、超时及 Runtime 保留真实 Challenge 的回归；Ruff 通过。Windows curl-cffi event-loop 警告不影响测试结果。
+首阶段测试 121 passed。最终扩展到原生 feed、会话复活、原页存在性、冷连接、正文、客户端和生命周期等相关测试，**164 + 137 = 301 passed，1 skipped**；跳过项为 Windows 当前账户无符号链接创建权限。Ruff 通过，curl-cffi Windows event-loop 警告不影响测试结果。
 
 ## 4. 发布与连续验收
 
-实现提交：`07179cec`。使用生产精确父镜像，仅更新 Site Access 与 Message Bus 的三个相关文件；Chrome Supervisor、native Chrome 与人工原始页不重建。发布与连续业务验收记录将在本节追加，不能以容器 running、API 200 或上面的单次 35 条作为已恢复结论。
+实现提交：`07179cec`（原生新闻 feed）、`7196ae61`（精确原页恢复、验证 URL）、`bed59294`（旧 LOGIN 复活及正文等待修复）；`b26c2cb9` 为中间诊断文档与发布脚本收尾。代码均已进入并推送 main，不留只有远端生效的临时源码补丁。
 
-原始脱敏诊断保存在 `eval/barrons_root_cause_20261020/`；探针只读生产库或创建并关闭自身临时页，不关闭用户原始页。未记录管理令牌、Cookie、网站密码。
+首次窄发布脚本错误地要求 Message Bus 具有 Docker healthcheck，触发自动回滚；修正为检查其实际进程状态，业务健康另做真实验收。这不是网站风控。最终只更新 Site Access、Message Bus；后续两轮只更新 Site Access，未重建 Supervisor，未清理 Profile、Cookie 或更换出口。
+
+- Site Access 镜像：`sha256:79d3a751c3bc83a2f798f268b38acd58d188d36adc56f856688dd8c01f0a1b6f`，代码 `bed59294`。
+- Message Bus 镜像：`sha256:e4bcb82297b36944a4789274bacb8fc0cfcb631180a75718c6449f13e6a3ae8f`，原生 feed/空列表合同已更新。
+- 十个相关 Site Access 文件 SHA256 与提交逐项一致；Site Access 与 Supervisor 网络命名空间一致。三个相关容器无 OOM、无运行期自发重启。
+- native Chrome 从勘察到复验始终是 `011bcc052e3a47b395204e6e7b6b5f35`。实例连续性不是根据 Profile 文件还在推断。
+
+### 4.1 两轮真实普通登录维护
+
+没有填写密码、注入 Cookie 或自动解决验证码；使用已登录身份执行正式维护 API。
+
+| 验收 | 第一轮 | 关闭后再次打开 |
+| --- | --- | --- |
+| 新 Session | `maintenance_7f00bf58a2094bdea4a6d3df1845a5f5` | `maintenance_3f21e0d2685e4569aed130dec30e24ce` |
+| Open Login / Viewer Ready | 冷启动约 18.7 秒 | 温启动约 2.1 秒 |
+| Verify 总耗时 | 约 29.6 秒 | 约 28.7 秒 |
+| 真实 crawler / 订阅正文 | READY / FULL | READY / FULL |
+| 认证 / 自动收尾 | VALID，session_closed=true | VALID，session_closed=true |
+| cleanup_pending / native instance | false，原实例 | false，原实例 |
+
+第二轮没有复活第一轮已关闭会话，也没有重新选择 10/18 的历史会话。最终主 Profile AVAILABLE/VALID、session revision=11、maintenance_session_id 为空；无当前 Challenge、无未完成 LOGIN；scope READY、manual_attention_required=false。
+
+两篇不同真实订阅文章通过正式 BODY 路径再次获得 FULL（3,139 / 4,701 字符，subscription_article=true）；同一对文章抓取阶段由约 23–26 秒降至约 8–9 秒。维护使用的第三篇注册验证文章也 FULL。未把测试旧文发布到消息流。
+
+### 4.2 维护结束后的独立自然轮询窗口
+
+**03:11:35–03:31:42，共约 20 分 6 秒、21 次只读采样**。观察时不再执行网站探测、登录操作、出口切换或重启。
+
+- **174 次真实 CRAWLER 成功结果，0 次失败访问结果，0 次新风险/Challenge 事件**。
+- BE、INTC、MU、RKLB、NBIS、COHR、ONDS、CEG、SNOW 最终全部 succeeded、consecutive_failures=0、无当前错误。
+- 每个 ticker 至少观察到 17–19 个不同成功轮询时间；这是采样下界，不把最新状态重复算多次成功。
+- 首帧为 6/9 succeeded，尚有维护期间的旧失败状态等待自然轮询覆盖；约一分钟后 9/9，随后采样维持 9/9。不把首帧遗留状态伪装成一开始全正常，也不误算为新网站 Challenge。
+- 前端同源 SourceStatus builder 对九个 ticker 返回 NORMAL/succeeded、无错误、配置间隔 60 秒；Bus 投影 head/checkpoint 已追平。没有只验 owner、忽略前端读取路径。
+- 无新增入流：候选准入记录仅有 EXPIRED_PUBLICATION（最终 361 条，按 ticker/准入键可重复，并非唯一文章数）。没有新增 raw、待补正文或发布项；未改日期、放宽时效或回填旧闻制造成功。
+
+### 4.3 尚未证明与需人工处理的边界
+
+1. **主身份当前不需要重新登录或处理 Challenge。** 冷备用 `dowjones-backup` 认证 UNKNOWN、无已验证订阅/冷启动接替证据；需要用户后续单独登录、完成订阅验收，不能宣称主备都生产可用。未复制 Cookie 或伪造备用认证。
+2. 窗口没有符合时效的新文章，未完成“刚发布文章 → 新 raw → 正文 → 新消息入流”的自然全链路实例。列表、正文分别做了真实验证，不合并冒充新发布验收。
+3. Other Dow Jones 列表和 IBD 排除已验证；其正文仍归属最终发布者的独立策略/身份，不将 Barron's 登录视作 WSJ、MarketWatch 等其他 Profile 均有订阅。
+4. 20 分钟零失败不能证明未来永不风控或接口变更。10/15 的 401 分类记录保留，但原始页已丢失，本轮不能重新鉴定当时 Challenge 形态。此次修复的是**可重复制造持续失败的内部恢复/采集机制**，不是承诺网站永远放行。
+5. 60 秒是目标调度间隔，不承诺九个 ticker 在每个精确 60 秒点完成；单身份串行和全局资源影响完成延迟。本轮未通过提高并发或反复换 IP 掩盖该约束。
+
+持久化摘要：`eval/barrons_root_cause_20261020/acceptance-receipt.json`，含实际时间、主备/原生状态、镜像/文件核对、维护、正文、自然轮询下界和前端结果；不含密码、令牌、Cookie 或整篇订阅正文。
+
+原始脱敏诊断保存在同目录。独立探针只读生产库或创建并关闭自身临时页；用户原始页只由 Verify 成功后的正式清理路径关闭，不由诊断脚本随意关闭。
