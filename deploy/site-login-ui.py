@@ -19,14 +19,24 @@ TERMINAL = {"DONE", "FAILED", "CANCELLED", "INTERRUPTED"}
 
 
 def visible_profiles(profiles, challenges, sessions, *, show_automatic=False):
-    """Generic publisher discovery is not a request for human login maintenance."""
+    """Discovery/body-only adapters are not registered human login sources.
+
+    Keep source scopes and explicitly configured account verification, including
+    body-only subscription sites. Legacy named publishers are not all 'generic'.
+    Human tasks/sessions stay reachable regardless of the advanced filter.
+    """
     attention = {
         item.get("identity_id") for item in challenges if item.get("state") != "RESOLVED"
     } | {item.get("identity_id") for item in sessions if item.get("state") in {"OPEN", "RELEASED"}}
     return {
         key: row
         for key, row in profiles.items()
-        if show_automatic or row.get("site_id") != "generic" or row.get("identity_id") in attention
+        if show_automatic or row.get("identity_id") in attention or (
+            row.get("site_id") != "generic" and (
+                not row.get("scope_id", "").startswith("publisher:")
+                or row.get("verification_configured", False)
+            )
+        )
     }
 
 

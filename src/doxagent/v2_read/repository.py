@@ -95,7 +95,6 @@ class ReadStore:
         db = sqlite3.connect(
             self.path.as_uri() + ("?mode=rw" if write else "?mode=ro"), uri=True, timeout=timeout
         )
-        db.row_factory = self.content_codec.row
         if not write:
             from .query_budget import interrupted
             db.set_progress_handler(interrupted, 1000)

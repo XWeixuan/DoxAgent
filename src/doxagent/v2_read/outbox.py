@@ -335,10 +335,25 @@ class SourceOutbox:
         finally:
             db.close()
 
-    def event(self, sequence: int, *, decode: bool = True) -> dict[str, Any] | None:
+    def event_reader(self):
+        """Reuse connection/schema caches for a bounded batch, without BEGIN.
+
+        Each SELECT finishes before the next event is mapped/committed; no
+        long-lived source snapshot or unbounded payload prefetch is introduced.
+        """
+        from contextlib import contextmanager
+
+        @contextmanager
+        def reader():
+            with closing(self.connection()) as db:
+                yield lambda sequence: self.event(sequence, connection=db)
+
+        return reader()
+
+    def event(self, sequence: int, *, decode: bool = True, connection=None) -> dict[str, Any] | None:
         def packet(value):
             return {**value,'row':self.content.source_row(json.loads(value['payload']))} if decode else dict(value)
-        db = self.connection()
+        db = connection if connection is not None else self.connection()
         try:
             row = db.execute(
                 "SELECT o.*,r.payload FROM v2_source_outbox o JOIN "
@@ -375,7 +390,8 @@ class SourceOutbox:
             value = json.loads(raw)
             return packet(value)
         finally:
-            db.close()
+            if connection is None:
+                db.close()
 
     def acknowledge(self, consumer: str, checkpoint: int, repair_pin: int | None = None) -> None:
         """Consumer registrations are durable; offline consumers continue to pin history."""

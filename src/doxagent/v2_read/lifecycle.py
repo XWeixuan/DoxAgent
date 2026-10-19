@@ -55,6 +55,9 @@ def activate(store, ticker, active, at):
         for d in details.values()
     }
     catalog = rows(store, "policy_catalog", ticker)
+    evidence = direction_evidence(store, ticker) if any(
+        "directions" in p for p in [*catalog.values(), *(d["summary"] for d in incoming.values())]
+    ) else None
     previous_by_id = {p["policy_id"]: p for p in catalog.values() if p["lifecycle"] == "ACTIVE"}
     current_ids = {d["summary"]["policy_id"] for d in incoming.values()}
     for key in sorted(set(incoming) | set(catalog)):
@@ -87,7 +90,7 @@ def activate(store, ticker, active, at):
         if not current:
             summary["effective"] = available(False)
         if "directions" in summary:
-            summary = direction_summary(store, ticker, summary)
+            summary = direction_summary(store, ticker, summary, evidence=evidence)
         consumed = None if "directions" in summary else store.get("policy_consumption", ticker, key)
         if consumed:
             summary.update(
@@ -251,12 +254,35 @@ def consumption_projection(store, capture):
     return records
 
 
-def direction_summary(store, ticker, summary, *, pending_state=None, admitted=False):
+def direction_evidence(store, ticker):
+    """One event-local snapshot shared by all Policy summaries of a ticker."""
+    with store.connect() as db:
+        states = {
+            r[0]: json.loads(r[1]) for r in db.execute(
+                "SELECT id,payload FROM object_current WHERE kind='policy_direction_usage' AND ticker=?",
+                (ticker,),
+            )
+        }
+        head = db.execute(
+            "SELECT 1 FROM object_current WHERE kind='native:runtime_values' AND ticker=? AND id=?",
+            (ticker, "policy_authorization_head:" + ticker),
+        ).fetchone() is not None
+        unresolved = {
+            r[0] for r in db.execute(
+                "SELECT json_extract(payload,'$.policy_id') FROM object_current "
+                "WHERE kind='native:runtime_values' AND ticker=? "
+                "AND id LIKE 'policy_consumption_migration:%' "
+                "AND json_extract(payload,'$.status')='UNRESOLVED'", (ticker,),
+            )
+        }
+    return states, head, unresolved
+
+
+def direction_summary(store, ticker, summary, *, pending_state=None, admitted=False, evidence=None):
     summary = dict(summary)
+    usage, head, migrations = evidence if evidence is not None else direction_evidence(store, ticker)
     states = [
-        store.get(
-            "policy_direction_usage", ticker, encode([ticker, summary["policy_id"], direction])
-        )
+        usage.get(encode([ticker, summary["policy_id"], direction]))
         for direction in summary["directions"]
     ]
     if pending_state:
@@ -264,23 +290,13 @@ def direction_summary(store, ticker, summary, *, pending_state=None, admitted=Fa
             pending_state if direction == pending_state["direction"] else state
             for direction, state in zip(summary["directions"], states, strict=True)
         ]
-    head = store.get("native:runtime_values", ticker, "policy_authorization_head:" + ticker)
-    known = admitted or head is not None or all(state is not None for state in states)
+    known = admitted or head or all(state is not None for state in states)
     consumed = [
         direction
         for direction, state in zip(summary["directions"], states, strict=True)
         if state and state["consumed"]
     ]
-    with store.connect() as db:
-        unresolved = (
-            db.execute(
-                "SELECT 1 FROM object_current WHERE kind='native:runtime_values' "
-                "AND ticker=? AND id LIKE 'policy_consumption_migration:%' "
-                "AND json_extract(payload,'$.policy_id')=? AND json_extract(payload,'$.status')='UNRESOLVED' LIMIT 1",
-                (ticker, summary["policy_id"]),
-            ).fetchone()
-            is not None
-        )
+    unresolved = summary["policy_id"] in migrations
     executable = (
         []
         if unresolved

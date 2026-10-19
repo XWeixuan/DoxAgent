@@ -6,6 +6,7 @@ import json
 import re
 import sqlite3
 import time
+from contextlib import nullcontext
 from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
 from typing import Any
@@ -74,37 +75,9 @@ class ProjectionWorker:
                     "DELETE FROM gaps WHERE source=? AND event='source-unavailable'",
                     (source.source,),
                 )
-            for candidate in events:
-                coordinate = candidate if isinstance(candidate,int) else candidate["seq"]
-                event = {"seq":coordinate,"recorded_at":None}
-                try:
-                    loaded = source.event(candidate) if isinstance(candidate,int) else candidate
-                    if loaded is None:
-                        raise ValueError("SOURCE_RECEIPT_MISSING")
-                    event = {**loaded,"source":source.source}
-                    records, contributions = self.mapper(event)
-                    self.store.ingest(
-                        source.source,
-                        str(event["seq"]),
-                        records,
-                        contributions=contributions,
-                        position=event["seq"],
-                        at=event["recorded_at"],
-                    )
-                except (ValueError, KeyError, TypeError, OSError, sqlite3.OperationalError) as exc:
-                    self.store.ingest(
-                        source.source,
-                        str(event["seq"]),
-                        [],
-                        position=event["seq"],
-                        gap=str(exc)
-                        if re.fullmatch(r"[A-Z][A-Z0-9_]{0,80}", str(exc))
-                        else type(exc).__name__,
-                        at=event["recorded_at"],
-                    )
-                count += 1
-                if time.monotonic() - started >= 1:
-                    break
+            reader = source.event_reader() if hasattr(source, "event_reader") else nullcontext(getattr(source, "event", None))
+            with reader as load_event:
+                count += self._events(source, events, load_event, started)
             checkpoint = self.store.position(source.source)
             with self.store.connect(write=True) as db:
                 db.execute(
@@ -142,6 +115,41 @@ class ProjectionWorker:
                     f"{head}:{checkpoint}:{observed[:16]}:{bool(gap)}",
                 )
         self.repair(limit=min(20, limit))
+        return count
+
+    def _events(self, source, events, load_event, started):
+        count = 0
+        for candidate in events:
+            coordinate = candidate if isinstance(candidate,int) else candidate["seq"]
+            event = {"seq":coordinate,"recorded_at":None}
+            try:
+                loaded = load_event(candidate) if isinstance(candidate,int) else candidate
+                if loaded is None:
+                    raise ValueError("SOURCE_RECEIPT_MISSING")
+                event = {**loaded,"source":source.source}
+                records, contributions = self.mapper(event)
+                self.store.ingest(
+                    source.source,
+                    str(event["seq"]),
+                    records,
+                    contributions=contributions,
+                    position=event["seq"],
+                    at=event["recorded_at"],
+                )
+            except (ValueError, KeyError, TypeError, OSError, sqlite3.OperationalError) as exc:
+                self.store.ingest(
+                    source.source,
+                    str(event["seq"]),
+                    [],
+                    position=event["seq"],
+                    gap=str(exc)
+                    if re.fullmatch(r"[A-Z][A-Z0-9_]{0,80}", str(exc))
+                    else type(exc).__name__,
+                    at=event["recorded_at"],
+                )
+            count += 1
+            if time.monotonic() - started >= 1:
+                break
         return count
 
     def _coverage(self, source, capture, key):

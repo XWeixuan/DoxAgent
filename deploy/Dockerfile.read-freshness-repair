@@ -1,0 +1,11 @@
+# The existing Projector image is the exact parent; only Read code changes.
+ARG APPROVED_BASE
+FROM ${APPROVED_BASE}
+ARG REPAIR_COMMIT
+LABEL org.opencontainers.image.revision=${REPAIR_COMMIT} \
+      doxagent.repair.scope="read_projection_freshness"
+ENV DOXAGENT_BUILD_COMMIT=${REPAIR_COMMIT}
+COPY src/doxagent/v2_read/cli.py src/doxagent/v2_read/health.py \
+     src/doxagent/v2_read/lifecycle.py src/doxagent/v2_read/outbox.py \
+     src/doxagent/v2_read/projector.py src/doxagent/v2_read/projectors.py \
+     src/doxagent/v2_read/repository.py /app/src/doxagent/v2_read/

@@ -351,15 +351,17 @@ class DomainProjectors:
             records.append(
                 dict(kind="policy_direction_usage", ticker=ticker, id=row["key"], data=value)
             )
-            from .lifecycle import direction_summary, rows
+            from .lifecycle import direction_evidence, direction_summary, rows
 
+            evidence = direction_evidence(self.store, ticker)
             for key, summary in rows(self.store, "policy_catalog", ticker).items():
                 if summary["policy_id"] == value["policy_id"] and "directions" in summary:
-                    summary = direction_summary(self.store, ticker, summary, pending_state=value)
+                    summary = direction_summary(self.store, ticker, summary, pending_state=value, evidence=evidence)
                     records.append(dict(kind="policy_catalog", ticker=ticker, id=key, data=summary))
         elif table == "runtime_values" and row["namespace"] == "policy_authorization_head":
-            from .lifecycle import direction_summary, rows
+            from .lifecycle import direction_evidence, direction_summary, rows
 
+            evidence = direction_evidence(self.store, ticker)
             for key, summary in rows(self.store, "policy_catalog", ticker).items():
                 if "directions" in summary:
                     records.append(
@@ -367,7 +369,7 @@ class DomainProjectors:
                             kind="policy_catalog",
                             ticker=ticker,
                             id=key,
-                            data=direction_summary(self.store, ticker, summary, admitted=True),
+                            data=direction_summary(self.store, ticker, summary, admitted=True, evidence=evidence),
                         )
                     )
         elif table == "v2_ticker_control":

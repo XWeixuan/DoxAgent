@@ -385,6 +385,10 @@ def test_gui_default_inventory_hides_only_ordinary_automatic_publishers():
     rows = {
         "source": {"site_id": "reuters", "identity_id": "reuters-main"},
         "managed-publisher": {"site_id": "wsj", "identity_id": "wsj-main"},
+        "account-publisher": {"site_id": "seeking_alpha", "identity_id": "sa-main",
+                              "scope_id": "publisher:seeking_alpha", "verification_configured": True},
+        **{site: {"site_id": site, "identity_id": site + "-1", "scope_id": "publisher:" + site,
+                  "verification_configured": False} for site in ("chartmill", "fool", "thestreet")},
         "automatic": {"site_id": "generic", "identity_id": "auto-sports"},
         "challenge": {"site_id": "generic", "identity_id": "auto-news"},
         "lost": {"site_id": "generic", "identity_id": "auto-lost"},
@@ -398,11 +402,12 @@ def test_gui_default_inventory_hides_only_ordinary_automatic_publishers():
     assert set(module.visible_profiles(rows, tasks, [])) == {
         "source",
         "managed-publisher",
+        "account-publisher",
         "challenge",
         "lost",
     }
     assert module.visible_profiles(rows, tasks, [], show_automatic=True) == rows
-    assert len(rows) == 6  # Filtering must not mutate the cached inventory.
+    assert len(rows) == 10  # Filtering must not mutate the cached inventory.
 
 
 @pytest.mark.parametrize("state,visible", [("OPEN", True), ("RELEASED", True), ("CLOSED", False)])
@@ -766,8 +771,8 @@ def test_source_scopes_split_entries_not_tickers_and_redirect_to_publisher(seede
             origin_scope_id="source:google_news_search_rss",
         )
     )
-    assert aggregator.runtime_key == "scope:publisher:reuters"
-    assert aggregator.access.combinations[0].identity_id != "digitimes-de-1"
+    assert aggregator.runtime_key == "scope:source:reuters_site_search"
+    assert aggregator.access.combinations[0].identity_id == "digitimes-de-1"
 
 
 @pytest.mark.asyncio

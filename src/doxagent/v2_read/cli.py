@@ -291,8 +291,9 @@ def main() -> None:
 
         with WriterLock(Path(str(store.path) + ".projector")):
             while True:
+                processed = 0
                 try:
-                    worker.tick(limit=args.limit)
+                    processed = worker.tick(limit=args.limit)
                 except sqlite3.OperationalError as exc:
                     if args.once or (getattr(exc, "sqlite_errorcode", 0) & 255) not in (
                         sqlite3.SQLITE_BUSY, sqlite3.SQLITE_LOCKED
@@ -304,7 +305,10 @@ def main() -> None:
                     logging.getLogger(__name__).warning("projection tick deferred: SQLite contention")
                 if args.once:
                     return
-                time.sleep(1)
+                # Productive ticks are already bounded per source. Do not add
+                # one second of artificial lag while transport is backlogged.
+                if not processed:
+                    time.sleep(1)
 
 
 if __name__ == "__main__":

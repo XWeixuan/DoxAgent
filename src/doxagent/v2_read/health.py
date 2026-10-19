@@ -2,6 +2,8 @@
 
 
 def project(store, ticker, records):
+    import json
+
     from .projectors import state_wire
 
     dependencies = {"native:v2_ticker_control", "native:v2_control_ack", "native:ticker_monitoring_states",
@@ -9,18 +11,26 @@ def project(store, ticker, records):
     if not any(record["kind"] in dependencies for record in records):
         return
 
+    # One bounded current-state snapshot, not a new connection for every ack,
+    # binding and source on every poll event. Incoming deletions must win too.
+    with store.connect() as db:
+        current = {
+            (r[0], r[1], r[2]): json.loads(r[3])
+            for r in db.execute(
+                "SELECT kind,ticker,id,payload FROM object_current "
+                "WHERE ticker=? AND kind IN (SELECT value FROM json_each(?)) "
+                "UNION ALL SELECT kind,ticker,id,payload FROM object_current "
+                "WHERE ticker='' AND kind='native:source_definitions'",
+                (ticker, json.dumps(sorted(dependencies - {"native:source_definitions"}))),
+            )
+        }
+    current.update(
+        ((r["kind"], r["ticker"], r["id"]), r["data"])
+        for r in records if r["kind"] in dependencies
+    )
+
     def latest(kind, identity):
-        incoming = next(
-            (
-                r["data"]
-                for r in reversed(records)
-                if r["kind"] == kind and r["ticker"] == ticker and r["id"] == identity
-            ),
-            None,
-        )
-        if any(r["kind"] == kind and r["ticker"] == ticker and r["id"] == identity for r in records):
-            return incoming
-        return store.get(kind, ticker, identity)
+        return current.get((kind, ticker, identity))
 
     state = latest("native:v2_ticker_control", ticker)
     if not state:
@@ -33,26 +43,16 @@ def project(store, ticker, records):
         ]
         bus = latest("native:ticker_monitoring_states", ticker)
         if all(acks) and bus and bus["status"] == "running":
-            import json
-
-            with store.connect() as db:
-                polls = {
-                    r[0]: json.loads(r[1])
-                    for r in db.execute(
-                        "SELECT id,payload FROM object_current WHERE kind='native:poll_states' "
-                        "AND ticker=? AND valid_to IS NULL",
-                        (ticker,),
-                    )
-                }
-            for record in records:
-                if record["kind"] == "native:poll_states" and record["ticker"] == ticker:
-                    polls[record["id"]] = record["data"]
+            polls = {
+                identity: value for (kind, owner, identity), value in current.items()
+                if kind == "native:poll_states" and owner == ticker
+            }
             failed = False
             for identity, poll in polls.items():
                 binding = latest("native:ticker_source_bindings", identity)
                 if not poll or not binding or not binding.get("enabled"):
                     continue
-                source = store.get("native:source_definitions", "", binding["source_id"])
+                source = current.get(("native:source_definitions", "", binding["source_id"]))
                 if source and source.get("enabled") and poll["status"] in {"partial", "failed"}:
                     failed = True
                     break
