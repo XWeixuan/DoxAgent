@@ -11,3 +11,4 @@ COPY src/doxagent/site_strategy/verification.py /app/src/doxagent/site_strategy/
 COPY src/doxagent/site_strategy/isolation_migration.py /app/src/doxagent/site_strategy/isolation_migration.py
 COPY src/doxagent/site_strategy/runtime.py /app/src/doxagent/site_strategy/runtime.py
 COPY src/doxagent/site_strategy/investing_document.py /app/src/doxagent/site_strategy/investing_document.py
+COPY src/doxagent/site_strategy/worker_runtime.py /app/src/doxagent/site_strategy/worker_runtime.py

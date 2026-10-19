@@ -212,7 +212,10 @@ class _RawBrowserCDP:
     async def start(self) -> None:
         from websockets.asyncio.client import connect
 
-        self._socket = await connect(self.websocket_url, max_size=2 * 1024 * 1024)
+        # Native DOM observations may include the same bounded article HTML as
+        # the 21MB worker frame. The old metadata-only 2MB limit would disconnect
+        # this shared owner channel on an otherwise valid larger document.
+        self._socket = await connect(self.websocket_url, max_size=21_000_000)
         self._reader = asyncio.create_task(self._read())
         await self.send(
             "Target.setAutoAttach",

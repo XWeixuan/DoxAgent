@@ -157,6 +157,47 @@ async def test_verify_reuses_exact_live_configured_listing_and_still_checks_real
         repo.close()
 
 
+@pytest.mark.asyncio
+async def test_external_body_verification_does_not_recover_a_playwright_human_page():
+    from unittest.mock import AsyncMock
+
+    from doxagent.site_strategy.runtime import RuntimeResponse
+    from doxagent.site_strategy.schema import BrowserRuntimeKind
+    from doxagent.site_strategy.worker_runtime import WorkerSiteAccessRuntime
+
+    runtime = WorkerSiteAccessRuntime.__new__(WorkerSiteAccessRuntime)
+    identity = SimpleNamespace(runtime_kind=BrowserRuntimeKind.EXTERNAL_CHROME)
+    runtime._binding = lambda token: ("investing", identity, "egress")
+    runtime.resolver = SimpleNamespace(resolve=lambda url: SimpleNamespace(site_id="investing"))
+    original = RuntimeResponse(
+        0,
+        URL,
+        {},
+        LISTING,
+        provenance=SimpleNamespace(instance_id="chrome"),
+        challenge_cleared=True,
+    )
+    runtime.inspect_challenge = AsyncMock(return_value=original)
+    runtime._browser = AsyncMock(
+        return_value=RuntimeResponse(
+            200, URL, {}, "<article/>", provenance=SimpleNamespace(instance_id="chrome")
+        )
+    )
+    runtime.workers = SimpleNamespace(
+        command=AsyncMock(side_effect=AssertionError("human recovery"))
+    )
+    result = await runtime.verify_login("session", URL)
+    assert result.challenge_cleared
+    runtime._browser.assert_awaited_once()
+    runtime.workers.command.assert_not_awaited()
+    runtime.inspect_challenge.return_value = RuntimeResponse(
+        0, URL, {}, "<title>Verify you are human</title>"
+    )
+    runtime._browser.reset_mock()
+    await runtime.verify_login("session", URL)
+    runtime._browser.assert_not_awaited()
+
+
 @pytest.mark.parametrize(
     "task_state,purpose,body,crawler,other_scope,cleared",
     [

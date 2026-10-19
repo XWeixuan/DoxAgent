@@ -2,7 +2,7 @@
 import subprocess
 
 CODE = r'''
-import asyncio,json,os,httpx,websockets
+import asyncio,json,os,httpx,websockets,time
 from lxml import html as H
 from doxagent.content_enrichment.quality import inspect_html
 from doxagent.site_strategy.supervisor_client import ChromeSupervisorClient
@@ -18,7 +18,7 @@ async def main():
    tabs=(await http.get(status['cdp_http_url']+'/json/list')).json()
   for tab in tabs:
    if tab.get('type')!='page' or 'investing.com' not in tab.get('url',''):continue
-   row={'target':tab['id'],'url':tab['url'],'title':tab.get('title')};entry['pages'].append(row)
+   row={'target':tab['id'],'url':tab['url'],'title':tab.get('title')};entry['pages'].append(row);begin=time.monotonic()
    try:
     async with websockets.connect(tab['webSocketDebuggerUrl'],max_size=12*1024*1024) as ws:
      async def call(i,method,params):
@@ -27,8 +27,8 @@ async def main():
        while True:
         r=json.loads(await ws.recv())
         if r.get('id')==i:return r['result']
-     root=await call(1,'DOM.getDocument',{'depth':0})
-     raw=await call(2,'DOM.getOuterHTML',{'nodeId':root['root']['nodeId']})
+     root=await call(1,'DOM.getDocument',{'depth':0});row['root_seconds']=time.monotonic()-begin
+     raw=await call(2,'DOM.getOuterHTML',{'nodeId':root['root']['nodeId']});row['html_seconds']=time.monotonic()-begin
      html=raw['outerHTML'];tree=H.fromstring(html)
      info=inspect_html(html,tab['url'],'',generic_extraction=False)
      text=' '.join(tree.xpath('//text()[not(ancestor::script or ancestor::style)]'))

@@ -3,11 +3,12 @@
 import asyncio
 import time
 from pathlib import Path
+from uuid import uuid4
 
 from .browser_operations import decode_response
 from .browser_runtime import RuntimeProvenance
 from .runtime import SiteAccessRuntime
-from .schema import BrowserRuntimeKind, IdentityOperationalState, utc_now
+from .schema import AccessMode, AccessRequest, BrowserRuntimeKind, IdentityOperationalState, utc_now
 from .worker_manager import IdentityOperationError, IdentityWorkerManager
 
 
@@ -352,7 +353,38 @@ class WorkerSiteAccessRuntime(SiteAccessRuntime):
         )
 
     async def verify_login(self, token, article_url, *, timeout_ms=30_000):
-        _, identity, egress = self._binding(token)
+        site_id, identity, egress = self._binding(token)
+        if site_id == "investing" and identity.runtime_kind is BrowserRuntimeKind.EXTERNAL_CHROME:
+            # Verification uses a separate business target. Reconstructing a
+            # Playwright Page for the old human tab first can stall on recovery,
+            # even though bounded native DOM inspection of that exact tab works.
+            # Keep its ownership/instance check, not its disposable Python handle.
+            deadline = time.monotonic() + timeout_ms / 1000
+            original = await self.inspect_challenge(token)
+            from doxagent.content_enrichment.quality import inspect_html
+
+            info = inspect_html(original.body, original.final_url, "", generic_extraction=False)
+            if info.access_reason == "challenge_required":
+                return original
+            resolved = self.resolver.resolve(article_url)
+            if resolved.site_id != site_id:
+                raise ValueError("verification article belongs to another publisher")
+            response = await self._browser(
+                AccessRequest(
+                    operation_id=f"maintenance-verify:{uuid4().hex}",
+                    purpose="BODY", url=article_url, mode=AccessMode.BROWSER,
+                    recipe_parameters={"_maintenance_canary": True},
+                    remaining_budget_ms=max(1, int((deadline - time.monotonic()) * 1000)),
+                ),
+                resolved, identity, egress,
+            )
+            if (
+                not response.provenance or not original.provenance
+                or response.provenance.instance_id != original.provenance.instance_id
+            ):
+                raise RuntimeError("original_browser_changed_during_verification")
+            response.challenge_cleared = original.challenge_cleared
+            return response
         return decode_response(
             await self._verify_with_capacity(
                 identity,
