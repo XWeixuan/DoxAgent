@@ -1,0 +1,8 @@
+Updating 8a9fe6de..4514ddaa
+Fast-forward
+ changelog                                        |  4 ++++
+ src/doxagent/site_strategy/investing_document.py | 30 ++++++++++++++++++++++++
+ src/doxagent/site_strategy/runtime.py            | 20 ++++++++++++++++
+ tests/test_investing_recovery.py                 | 21 +++++++++++++++++
+ 4 files changed, 75 insertions(+)
+{"commit": "4514ddaa6afb8af07ad4479c43ffd8c233d1a466", "base": "sha256:7a8f016237fe86bbdb8372f904db2ded8f3c1d26625729fe1964f37cb8a074a2", "image": "sha256:d09877df2c78f33d1f393916d62da9de1986df9e29af21377a23cfb663a57180", "hashes": {"content_enrichment/quality.py": "c85d20bd4b6c4dae1861ec4d0ba278a798c10539362a0153f405f0daeab07384", "site_strategy/governance_repository.py": "11eb545ebdf996fc04781b7dea1e986414c52f6c0a489c3713f44a33ffa2eb98", "site_strategy/service.py": "3d6f15a18a1189008e5f2b8c217d76c5d06b023fc1b3b717b22e492230f8b8ee", "site_strategy/verification.py": "a826012281352bd5108de9ad5de44306249c53ac0efc282d6bcdc009c0f0444c", "site_strategy/isolation_migration.py": "06e1d80a32b507a15cf775bcf14a70ecc4756eeeb93d358249660a100de92110", "site_strategy/runtime.py": "1d0861ec9a4e9d9287dee736a40020105988bc5ddb3a44d56c647f4c27a2976f", "site_strategy/investing_document.py": "40eeb4013cdc977110c196ff09a8f72d6a8975727633ad7a6dce3d43e1ae1d6a", "site_strategy/worker_runtime.py": "32f60a68b4ce68e39d0e1d0dc1b39418ccc01579e327469da33aeb692dd04959", "site_strategy/maintenance.py": "b6fb237b9168145817702e002aecc438eb24ef20343bbd8b4b293aa59a6efde4", "site_strategy/worker_manager.py": "20078117c747140635b25d771dcedb95349fbb2ef7516daad1ff615411757e1d"}, "other_containers_unchanged": true, "network_namespace_matches": true, "finished": 1792443033.574295}

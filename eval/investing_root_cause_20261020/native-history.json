@@ -1,0 +1,1 @@
+[{"operation_id": "native-drain:public-markets-nl:31", "occurred_at": "2026-10-19T20:43:40.594320+00:00", "category": "NATIVE_GRACEFUL_DRAIN", "payload_json": "{\"identity_id\":\"public-markets-nl\",\"stopped\":true}"}]
