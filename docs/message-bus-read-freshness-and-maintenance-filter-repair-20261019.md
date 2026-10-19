@@ -32,6 +32,7 @@
 - **23:01:02 CST** 再次复查，Bus checkpoint=3,029,441，不低于 sampled head=3,029,440；Runtime=2,009,535/2,009,535，另外两路仍追平。恢复后继续自然采集，未重新积压；不是碰巧取得一次 head 相等。
 - 生产 API 的 ReadContext/SourceStatus/MessageBaseline 同源 builder 在 MU/INTC/BE 上通过。此次不声称实点用户已登录网页；未改前端或重新发布 Web，页面原有每分钟刷新与 SSE/15min view renewal 保持。
 - 真实维护库存 **179 identities → 默认 39，隐藏 140**。ChartMill/Fool/TheStreet 默认隐藏，Reuters/Barron's/WSJ/Seeking Alpha/MarketWatch 保留，advanced 能显示全部。旧 Tkinter 进程需关闭重开以加载新代码；不需要关闭 Chrome 或重新登录。
+- 23:01 再验期间自然发现的新 Publisher 使库存增至 **185**，默认仍只显示 **39**、隐藏 **146**；三项漏网例子继续隐藏，证明不是删除或只屏蔽一份静态名单。MU/INTC/BE 的状态 builder 均已返回 23:00:24 的自然轮询成功时间。
 - Chrome Supervisor `617b4e1d...`、Site Access `6f24c349...`、Message Bus `786cdb63...` 本轮没有重建；无 OOM、重启次数均为 0。宿主机余量约 55 GiB，未清理业务数据、Profile 或镜像。
 - 原有 **45 条 Runtime PROVENANCE_UNVERIFIED gap** 与来源登录/challenge 状态未修改；Bus 没有 gap。本轮解决投影时效，不把待人工鉴权来源伪装成成功轮询。
 

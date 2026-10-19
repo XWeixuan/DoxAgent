@@ -16,7 +16,11 @@
     "bus_sampled_head": 3029440,
     "bus_checkpoint": 3029441,
     "runtime_head_and_checkpoint": 2009535,
-    "all_sources_caught_up": true
+    "all_sources_caught_up": true,
+    "maintenance_total": 185,
+    "maintenance_visible": 39,
+    "maintenance_hidden": 146,
+    "api_latest_benzinga_poll": "2026-10-19T15:00:24.573445Z"
   },
   "maintenance": {
     "total": 179,
