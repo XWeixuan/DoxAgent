@@ -1308,6 +1308,7 @@ class SiteAccessRuntime:
                     wait_until=(
                         "commit"
                         if resolved.site_id in {"investorshub", "investing", "reuters"}
+                        or request.recipe_ref == "builtin:barrons_ticker@1"
                         else "domcontentloaded"
                     ),
                     timeout=min(request.remaining_budget_ms, 20_000),
@@ -1321,7 +1322,10 @@ class SiteAccessRuntime:
                         reason="cross_site_navigation",
                         provenance=lease.provenance,
                     )
-                if resolved.site_id in {"reuters", "investing"}:
+                if (
+                    resolved.site_id in {"reuters", "investing"}
+                    or request.recipe_ref == "builtin:barrons_ticker@1"
+                ):
                     # commit may precede the challenge document's DOM. Capture
                     # a complete error document before classifying it.
                     if response is not None and response.status in {401, 403}:
@@ -1344,7 +1348,13 @@ class SiteAccessRuntime:
                     )
                 initial_html = await page.content()
                 initial_challenge = (
-                    inspect_html(initial_html, page.url, "").access_reason == "challenge_required"
+                    inspect_html(
+                        initial_html,
+                        page.url,
+                        "",
+                        generic_extraction=request.recipe_ref != "builtin:barrons_ticker@1",
+                    ).access_reason
+                    == "challenge_required"
                 )
                 if (
                     not initial_challenge
@@ -1401,11 +1411,23 @@ class SiteAccessRuntime:
                         if "timeout" not in type(exc).__name__.casefold():
                             raise
                         raise _BrowserContentNotReady("browser_content_not_ready") from exc
-                if request.recipe_ref == "builtin:barrons_ticker@1" and not initial_challenge:
-                    html = await _capture_barrons_ticker_cards(page)
+                if (
+                    request.recipe_ref == "builtin:barrons_ticker@1"
+                    and not initial_challenge
+                    and status == 200
+                ):
+                    from doxagent.message_bus_v2.barrons_sources import capture_barrons_ticker_news
+
+                    html = await capture_barrons_ticker_news(
+                        page,
+                        request.url,
+                        timeout_seconds=max(0.001, min(12, deadline - time.monotonic())),
+                    )
                     native_html = await page.content()
                     if (
-                        inspect_html(native_html, page.url, "").access_reason
+                        inspect_html(
+                            native_html, page.url, "", generic_extraction=False
+                        ).access_reason
                         != "challenge_required"
                     ):
                         return RuntimeResponse(
@@ -2070,49 +2092,10 @@ class SiteAccessRuntime:
 
 
 async def _capture_barrons_ticker_cards(page: Any) -> str:
-    """Read the two client-loaded stock-news tabs without the page's footer links."""
-    news = page.locator('[data-id="News_index"]').first
-    articles = news.locator('a[href*="/articles/"]')
-    try:
-        await news.scroll_into_view_if_needed(timeout=5_000)
-    except Exception:
-        pass
-    for _ in range(24):
-        if await articles.count():
-            break
-        if not await news.count():
-            await page.mouse.wheel(0, 650)
-        await asyncio.sleep(0.5)
-    if not await articles.count():
-        return await page.content()
-    for _ in range(8):
-        if (await news.inner_text()).count(". ET") >= min(3, await articles.count()):
-            break
-        await asyncio.sleep(0.5)
-    barrons_html = await news.inner_html()
-    barrons_urls = await articles.evaluate_all("links => links.map(link => link.href)")
-    other_html = ""
-    try:
-        other_tab = news.get_by_role("tab", name="OTHER DOW JONES")
-        await other_tab.click(timeout=3_000)
-        for _ in range(10):
-            await asyncio.sleep(0.5)
-            urls = await articles.evaluate_all("links => links.map(link => link.href)")
-            if urls != barrons_urls and await other_tab.get_attribute("aria-selected") == "true":
-                for _ in range(8):
-                    if (await news.inner_text()).count(". ET") >= min(3, len(urls)):
-                        break
-                    await asyncio.sleep(0.5)
-                other_html = await news.inner_html()
-                break
-    except Exception:
-        pass
-    return (
-        "<html><title>Barron's ticker news</title><main>"
-        f'<section data-dj-section="barrons">{barrons_html}</section>'
-        f'<section data-dj-section="other">{other_html}</section>'
-        "</main></html>"
-    )
+    """Compatibility entrypoint for bounded native-browser stock-news capture."""
+    from doxagent.message_bus_v2.barrons_sources import capture_barrons_ticker_news
+
+    return await capture_barrons_ticker_news(page, page.url)
 
 
 async def _expand_article(page: Any) -> None:

@@ -350,6 +350,12 @@ def parse_barrons_ticker_listing(html: str, *, ticker: str, now: datetime) -> li
     if not rows:
         if candidate_count:
             return []
+        if scope.get("data-barrons-feed") == "complete" and {
+            node.get("data-dj-section")
+            for node in wrapped
+            if node.get("data-feed-complete") == "true"
+        } == {"barrons", "other"}:
+            return []  # Both native tab contracts succeeded, with no eligible stories.
         raise RuntimeError("barrons_ticker_news_empty_or_changed")
     return list(rows.values())
 

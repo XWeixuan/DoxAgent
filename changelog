@@ -1849,3 +1849,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-20 CPU-06: Persist scheduler request start using one read-modify-write transaction, retaining other group fields and durable restart minimum-gap semantics. Atomic request-state tests passed; Yahoo CPU-04 is intentionally excluded.
 
 2026-10-20 CPU-03 follow-up: Keep completed legacy/thread housekeeping phases finished across sibling batches, retain cycle failures until final retry scheduling, and commit markers atomically. All 26 W3 lifecycle/phase tests passed.
+
+2026-10-20 Barron's targeted repair: replace unbounded lazy news DOM/date/tab polling with two bounded same-origin native Chrome news-feed reads; retain Profile/egress/TLS and exact publication dates, validate both tab contracts, exclude IBD, distinguish feed rejection from an observed page Challenge. Preserve the existing maintenance verification/ownership and final-publisher body flow. Add native-capture, empty-feed, timestamp, denial, timeout and runtime Challenge regressions; production evidence and sustained acceptance recorded separately.

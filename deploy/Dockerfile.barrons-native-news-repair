@@ -1,0 +1,9 @@
+ARG APPROVED_BASE
+FROM ${APPROVED_BASE}
+ARG REPAIR_COMMIT
+LABEL org.opencontainers.image.revision=${REPAIR_COMMIT} \
+      doxagent.repair.scope="barrons_native_browser_news"
+ENV DOXAGENT_BUILD_COMMIT=${REPAIR_COMMIT}
+COPY src/doxagent/message_bus_v2/barrons_sources.py /app/src/doxagent/message_bus_v2/barrons_sources.py
+COPY src/doxagent/message_bus_v2/industry_sources.py /app/src/doxagent/message_bus_v2/industry_sources.py
+COPY src/doxagent/site_strategy/runtime.py /app/src/doxagent/site_strategy/runtime.py
