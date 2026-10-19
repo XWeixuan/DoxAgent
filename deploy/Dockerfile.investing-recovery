@@ -8,3 +8,6 @@ COPY src/doxagent/content_enrichment/quality.py /app/src/doxagent/content_enrich
 COPY src/doxagent/site_strategy/governance_repository.py /app/src/doxagent/site_strategy/governance_repository.py
 COPY src/doxagent/site_strategy/service.py /app/src/doxagent/site_strategy/service.py
 COPY src/doxagent/site_strategy/verification.py /app/src/doxagent/site_strategy/verification.py
+COPY src/doxagent/site_strategy/isolation_migration.py /app/src/doxagent/site_strategy/isolation_migration.py
+COPY src/doxagent/site_strategy/runtime.py /app/src/doxagent/site_strategy/runtime.py
+COPY src/doxagent/site_strategy/investing_document.py /app/src/doxagent/site_strategy/investing_document.py

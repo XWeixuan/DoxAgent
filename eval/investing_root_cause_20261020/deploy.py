@@ -13,7 +13,9 @@ root = Path('/var/lib/doxagent/releases')
 commit, base = sys.argv[1:3]
 os.environ.update(GIT_CONFIG_COUNT='1', GIT_CONFIG_KEY_0='safe.directory', GIT_CONFIG_VALUE_0=str(repo))
 files = ['content_enrichment/quality.py', 'site_strategy/governance_repository.py',
-         'site_strategy/service.py', 'site_strategy/verification.py']
+         'site_strategy/service.py', 'site_strategy/verification.py',
+         'site_strategy/isolation_migration.py', 'site_strategy/runtime.py',
+         'site_strategy/investing_document.py']
 
 
 def run(args, timeout=180):

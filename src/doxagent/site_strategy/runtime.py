@@ -1242,6 +1242,7 @@ class SiteAccessRuntime:
         gate = _DocumentNavigationGate(page, self.resolver, resolved, lease.browser_cdp)
         retained = False
         response = None
+        native_document = None
 
         async def recipe_capture(rows, metadata=None):
             nonlocal retained
@@ -1333,6 +1334,27 @@ class SiteAccessRuntime:
                     response = await wait_for_native_document_redirect(page, response)
                 status = response.status if response is not None else 200
                 headers = await response.all_headers() if response is not None else {}
+                if (
+                    resolved.site_id == "investing"
+                    and lease.browser_cdp is not None
+                    and gate.root_target_id
+                ):
+                    from .investing_document import capture_document
+
+                    native_document = await capture_document(
+                        lease.browser_cdp,
+                        gate.root_target_id,
+                        request.url,
+                        timeout=max(.001, min(12, deadline - time.monotonic())),
+                        body_parameters=resolved.body.parameters,
+                    )
+                    if gate.blocked or urlsplit(native_document[1]).hostname not in {
+                        "investing.com", "www.investing.com"
+                    }:
+                        return RuntimeResponse(
+                            0, request.url, {}, redirect_url=native_document[1],
+                            reason="cross_site_navigation", provenance=lease.provenance,
+                        )
                 if resolved.site_id == "reuters" and status == 200:
                     await page.wait_for_function(
                         """() => Boolean(
@@ -1346,7 +1368,7 @@ class SiteAccessRuntime:
                         polling=250,
                         timeout=min(request.remaining_budget_ms, 12_000),
                     )
-                initial_html = await page.content()
+                initial_html = native_document[0] if native_document else await page.content()
                 initial_challenge = (
                     inspect_html(
                         initial_html,
@@ -1360,6 +1382,7 @@ class SiteAccessRuntime:
                     not initial_challenge
                     and status == 200
                     and resolved.site_id in {"investorshub", "investing"}
+                    and native_document is None
                 ):
                     path = urlsplit(request.url).path.rstrip("/")
                     listing = (
@@ -1445,7 +1468,7 @@ class SiteAccessRuntime:
                     await page.locator(wait_selector).first.wait_for(
                         state="visible", timeout=min(request.remaining_budget_ms, 10_000)
                     )
-                html = await page.content()
+                html = native_document[0] if native_document else await page.content()
                 if (
                     resolved.site_id == "barrons"
                     and request.purpose.value == "BODY"
@@ -1490,7 +1513,7 @@ class SiteAccessRuntime:
                     retained = True
                 return RuntimeResponse(
                     int(status),
-                    page.url,
+                    native_document[1] if native_document else page.url,
                     _filtered_headers({str(k).lower(): str(v) for k, v in headers.items()}),
                     body=html,
                     provenance=lease.provenance,

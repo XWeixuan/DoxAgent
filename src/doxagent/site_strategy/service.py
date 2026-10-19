@@ -2685,7 +2685,13 @@ class SiteStrategyService:
                 remaining_budget_ms=max(1, int((deadline - time.monotonic()) * 1000)),
             )
             try:
-                capture = await self.runtime.verify_crawler(session.control_token, request)
+                if original.final_url == request.url and original.provenance:
+                    # The live, exact human-owned page can itself prove the
+                    # configured collector contract. Do not open its duplicate
+                    # just to read the same listing again under a short budget.
+                    capture = original
+                else:
+                    capture = await self.runtime.verify_crawler(session.control_token, request)
                 ready = validate_crawler_capture(scope.source_id, capture, request)
             except Exception as exc:
                 ready = False

@@ -110,9 +110,10 @@ def crawler_canary(source):
             "url": "https://www.globenewswire.com/en/search/keyword/micron/load/more?page=1&pageSize=10"
         }
     if source.source_id in {"investing_ticker_news", "investorshub_ticker_news"}:
+        ticker = "INTC" if source.source_id == "investing_ticker_news" else "MU"
         return {
-            "url": source.default_parameters["ticker_pages"]["MU"],
-            "recipe_parameters": {"ticker": "MU"},
+            "url": source.default_parameters["ticker_pages"][ticker],
+            "recipe_parameters": {"ticker": ticker},
         }
     if source.entry_url and source.kind is SourceKind.CRAWLER:
         result = {"url": source.entry_url.replace("{ticker}", "MU")}

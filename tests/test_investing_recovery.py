@@ -62,6 +62,101 @@ def test_body_verification_excludes_other_ticker_lists_too():
     assert body_verification_url(scope, URL) is None
 
 
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "markup,kind", [(LISTING, "listing"), ("<title>Verify you are human</title>", "challenge")]
+)
+async def test_native_document_capture_observes_dom_without_evaluating_javascript(markup, kind):
+    from doxagent.site_strategy.investing_document import capture_document
+
+    calls = []
+
+    class CDP:
+        async def send(self, method, params, **kwargs):
+            calls.append(method)
+            if method == "Target.attachToTarget":
+                assert params["targetId"] == "owned"
+                return {"sessionId": "observer"}
+            if method == "DOM.getDocument":
+                return {"root": {"nodeId": 1, "documentURL": URL}}
+            if method == "DOM.getOuterHTML":
+                return {"outerHTML": markup}
+            assert method == "Target.detachFromTarget"
+            return {}
+
+    html, url = await capture_document(CDP(), "owned", URL, timeout=1)
+    assert quality.inspect_html(html, url, "", generic_extraction=False).page_kind == kind
+    assert calls == [
+        "Target.attachToTarget",
+        "DOM.getDocument",
+        "DOM.getOuterHTML",
+        "Target.detachFromTarget",
+    ]
+
+
+@pytest.mark.asyncio
+async def test_verify_reuses_exact_live_configured_listing_and_still_checks_real_body(tmp_path):
+    from unittest.mock import AsyncMock
+
+    from doxagent.site_strategy.runtime import RuntimeResponse
+
+    repo = SiteStrategyRepository(tmp_path / "verify.db")
+    service = SiteStrategyService(repo, profile_root=tmp_path / "profiles")
+    try:
+        bootstrap_seed(repo, service)
+        plan = migration_plan(repo)
+        apply_migration(
+            repo,
+            plan,
+            expected_revision=plan["expected_revision"],
+            backup_path=tmp_path / "before.db",
+        )
+        store = GovernanceRepository(repo)
+        scope = store.get_scope("source:investing_ticker_news")
+        assert scope.verification_plan["crawler"]["url"] == URL
+        session = store.save_session(
+            MaintenanceSession(
+                kind="LOGIN",
+                scope_id=scope.scope_id,
+                site_id="investing",
+                identity_id=scope.primary_identity_id,
+                browser_instance_id="chrome",
+                control_token="test",
+            )
+        )
+        original = RuntimeResponse(
+            0,
+            URL,
+            {},
+            LISTING,
+            provenance=SimpleNamespace(instance_id="chrome"),
+            challenge_cleared=True,
+        )
+        service.runtime.inspect_challenge = AsyncMock(return_value=original)
+        service.runtime.verify_crawler = AsyncMock(side_effect=AssertionError("duplicate listing"))
+        text = (
+            "<h1>Intel production update</h1><article>"
+            + "<p>Intel production continues to expand and improve.</p>" * 15
+            + "</article>"
+        )
+        service.runtime.verify_login = AsyncMock(
+            return_value=RuntimeResponse(
+                200,
+                "https://www.investing.com/news/stock-market-news/intel-12345",
+                {},
+                text,
+                provenance=SimpleNamespace(instance_id="chrome"),
+            )
+        )
+        report = await service.verify_scope_session(session)
+        assert report.crawler == "READY" and report.body in {"FULL", "SHORT_FULL"}
+        service.runtime.verify_crawler.assert_not_awaited()
+        service.runtime.verify_login.assert_awaited_once()
+        assert service.runtime.verify_login.await_args.args[1].endswith("/intel-12345")
+    finally:
+        repo.close()
+
+
 @pytest.mark.parametrize(
     "task_state,purpose,body,crawler,other_scope,cleared",
     [
