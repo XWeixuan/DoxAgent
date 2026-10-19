@@ -299,6 +299,11 @@ def initial_sources() -> list[SourceDefinition]:
                         ("INTC", "NASDAQ"),
                         ("BE", "NYSE"),
                         ("RKLB", "NASDAQ"),
+                        ("NBIS", "NASDAQ"),
+                        ("COHR", "NYSE"),
+                        ("ONDS", "NASDAQ"),
+                        ("CEG", "NASDAQ"),
+                        ("SNOW", "NYSE"),
                     ]
                 }
             },
@@ -335,6 +340,11 @@ def initial_sources() -> list[SourceDefinition]:
                         ("INTC", "intel-corp"),
                         ("BE", "bloom-energy-corp"),
                         ("RKLB", "vector-acquisition"),
+                        ("NBIS", "yandex-nv"),
+                        ("COHR", "coherent"),
+                        ("ONDS", "ondas"),
+                        ("CEG", "constellation-energy"),
+                        ("SNOW", "snowflake-inc"),
                     ]
                 }
             },

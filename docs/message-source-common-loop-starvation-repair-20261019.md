@@ -39,4 +39,18 @@
 
 发布采用当前精确应用镜像为基线的窄不可变镜像，仅更新 Message Bus 与 Content Enrichment；不更新 Site Access 或 Chrome Supervisor，不清理任何业务数据。上线验收必须观察自然轮询和执行栈，再按剩余错误分类；HTTP 200、`/readyz`、手工改状态均不代表消息业务验收。
 
-生产验收记录待本轮发布后补充。真实 Challenge、登录失效、上游权限、配置缺失仍可能存在，不承诺本项修复能绕过这些限制。
+## 生产复核与补充修复
+
+首阶段产品提交 `805dfaea` 已发布到 Bus/Enrichment，镜像 `35c1b6dc0fcb`。15 秒复采样中主线程有 76 个活跃样本，**SQLite owner 路径为 0**；忙碌的事务现在位于存储线程，不再占住网络主线程。自然轮询已恢复：TrendForce 两入口、DIGITIMES 英文/台湾、GlobeNewswire Search/RSS、HuggingNews、The Elec、ETNews、Tom's Hardware、Yahoo、Benzinga、Finnhub、IBKR，以及此前数百秒延迟的行业/官方 RSS。只用实际新轮询覆盖旧状态，没有手工将失败状态改绿；恢复采集不等于已经对所有文章完成正文验收。
+
+复核也发现并区分了以下独立问题：
+
+1. **InvestorsHub 验收丢失 ticker 上下文**：短 URL `/stock-market/NASDAQ/COHR/news` 不符合 Site 验收器原来的“公司 slug-TICKER”推断，ticker 为空，解析器排除了全部卡片，被报为 `crawler_contract_failed`。现在由采集 adapter 显式将 ticker 通过现有 AccessRequest.recipe_parameters 传入，客户端保留该参数；不放松验收、跨 ticker 检查或反风控规则，也不需要重启 Site Access。真实 INTC/COHR canary 已返回 SUCCESS/200 并分别解析 6/14 条，不发布 canary 历史消息。
+2. **全局默认源与静态 locator 覆盖不一致**：Investing.com 仅登记 MU/INTC/BE/RKLB，NBIS/COHR/ONDS/CEG/SNOW 的错误实际为 `investing_ticker_locator_missing`，不是 challenge。补齐已核验入口，并在 bootstrap 幂等补齐 Source 与复制了旧 map 的 Binding 缺项；保留人工 listing_url、自定义 URL、启停与其他参数。未知新 ticker 仍必须提供可信 locator，不猜 URL、不误用其他公司的页面。
+3. **IBKR 退出后线程仍存活**：发布时旧 Bus 已进入 Python `_shutdown`，业务与 DB 写入结束，但残留 IBAPI socket reader 导致退出挂住。原因是取消 `to_thread` 的协程不会取消线程，旧生命周期还允许 in-flight poll 在 gateway.close 后重新连接。增加 poll 取消后的线程 drain，配合先收尾 scheduler 再 close adapters。仅在确认旧进程已无 DB 工作后结束该残留 Bus；没有结束 Chrome。首轮发布曾因 Docker Mounts 列表顺序变化触发过严的比较而自动回滚，改为比较实际 Destination/Type/Source/RW 后重发成功，未改变物理挂载。
+
+Investing 的补充入口以官方页面为证据：[NBIS](https://www.investing.com/equities/yandex-nv-news)、[COHR](https://www.investing.com/equities/coherent-news)、[ONDS](https://www.investing.com/equities/ondas-news)、[CEG](https://www.investing.com/equities/constellation-energy-news)、[SNOW](https://www.investing.com/equities/snowflake-inc-news)。这些入口核验不是远端登录成功的证据。
+
+Reuters、Barron's、Investing.com 的既有身份目前另有持久化人工维护阻塞/丢页任务，主备并非都已可用。不能在未通过真人 Challenge/登录与业务验证前清掉阻塞，或宣称换线程已经恢复这些源。BE 官方 IR RSS 按既有要求不处理；TikHub 的上游 400 与本轮网络饥饿不是同一问题。
+
+最终追加发布和持续自然轮询验收继续记录在本文件。真实 Challenge、登录失效、上游权限仍可能存在，不承诺绕过这些限制。

@@ -210,6 +210,11 @@ class MarketTickerAdapter:
                     url,
                     operation_id=context.poll_run_id + ":" + self.variant,
                     remaining_budget_ms=45_000,
+                    **(
+                        {"recipe_parameters": {"ticker": context.ticker}}
+                        if getattr(self.browser, "site_managed", False)
+                        else {}
+                    ),
                 )
         except SiteAccessError as exc:
             if exc.site_access_deferred:
@@ -233,7 +238,7 @@ class MarketTickerAdapter:
             # text_content() joins adjacent DOM nodes without separators:
             # </h2><p>Find ... becomes "RKLB NewsFind ...". Check the
             # instrument heading itself, not word boundaries in the whole page.
-            headings = H.fromstring(html).xpath('//h1|//h2[not(ancestor::article)]')
+            headings = H.fromstring(html).xpath("//h1|//h2[not(ancestor::article)]")
             if not any(
                 re.fullmatch(rf"{re.escape(context.ticker)}\s*News", _text(node), re.I)
                 for node in headings

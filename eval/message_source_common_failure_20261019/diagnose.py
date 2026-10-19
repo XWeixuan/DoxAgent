@@ -33,6 +33,12 @@ out['bus_tables']={r[0]:[c[1] for c in db.execute('pragma table_info('+r[0]+')')
 out['sources']=[{k:v.get(k) for k in ('source_id','adapter_ref','acquisition_mode','entry_url','enabled','default_parameters')}
                 for raw, in db.execute('select data_json from source_definitions') for v in [json.loads(raw)]]
 polls=[json.loads(raw) for raw, in db.execute('select data_json from poll_states')]
+bindings=[json.loads(raw) for raw, in db.execute('select data_json from ticker_source_bindings')]
+tickers=[json.loads(raw) for raw, in db.execute('select data_json from ticker_monitoring_states')]
+active_tickers={v['ticker'] for v in tickers if v.get('status')=='running'}
+active_sources={v['source_id'] for v in out['sources'] if v.get('enabled')}
+active_bindings={v['binding_id'] for v in bindings if v.get('enabled') and v['ticker'] in active_tickers and v['source_id'] in active_sources}
+out['active_poll_states']=[p for p in polls if p['binding_id'] in active_bindings]
 out['poll_summary']={}
 for source in sorted({p['source_id'] for p in polls}):
     rows=[p for p in polls if p['source_id']==source]

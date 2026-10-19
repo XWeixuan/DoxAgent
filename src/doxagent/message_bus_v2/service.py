@@ -88,6 +88,36 @@ class MessageBusV2Service:
             self._append_missing_default_sources()
         self._migrate_new_source_intervals()
         self._migrate_legacy_default_news_windows()
+        self._append_verified_ticker_locators()
+
+    def _append_verified_ticker_locators(self) -> None:
+        """Complete known market locators without overwriting operator overrides."""
+        for seed in initial_sources():
+            if seed.source_id not in {"investorshub_ticker_news", "investing_ticker_news"}:
+                continue
+            source = self.repository.get_source(seed.source_id)
+            if source is None or source.adapter_ref != "site:auto":
+                continue
+            desired = seed.default_parameters["ticker_pages"]
+            current = source.default_parameters.get("ticker_pages", {})
+            merged = {**desired, **current}
+            patches = {}
+            for binding in self.repository.list_bindings(source_id=source.source_id):
+                parameters = binding.source_parameters
+                if "ticker_pages" in parameters:
+                    pages = {**desired, **parameters["ticker_pages"]}
+                    if pages != parameters["ticker_pages"]:
+                        patches[binding.binding_id] = {
+                            "source_parameters": {**parameters, "ticker_pages": pages}
+                        }
+            if merged != current or patches:
+                self.update_source(
+                    source.source_id,
+                    {"default_parameters": {**source.default_parameters, "ticker_pages": merged}},
+                    binding_patches=patches,
+                    actor=UpdateActor.SYSTEM,
+                    reason="append verified market ticker locators; preserve custom URLs",
+                )
 
     def _migrate_new_source_intervals(self) -> None:
         """Replace only the 300-second defaults introduced with the new sources."""

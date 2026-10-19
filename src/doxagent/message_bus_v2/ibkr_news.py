@@ -359,9 +359,18 @@ class IbkrNewsAdapter:
     async def poll(self, context: PollContext) -> PollResult:
         since = context.requested_at - timedelta(hours=24)
         async with context.request_permit():
-            rows, metadata = await asyncio.to_thread(
-                self.gateway.poll, context.ticker, since, context.requested_at
+            work = asyncio.create_task(
+                asyncio.to_thread(self.gateway.poll, context.ticker, since, context.requested_at)
             )
+            try:
+                rows, metadata = await asyncio.shield(work)
+            except asyncio.CancelledError:
+                # A cancelled to_thread waiter does not stop its socket owner.
+                # Drain before AdapterRegistry.close disconnects the gateway;
+                # otherwise a queued poll may reconnect after close and retain
+                # a non-daemon IBAPI reader during interpreter shutdown.
+                await asyncio.gather(work, return_exceptions=True)
+                raise
         providers_value = metadata.get("provider_names")
         providers = (
             cast(dict[str, object], providers_value) if isinstance(providers_value, dict) else {}

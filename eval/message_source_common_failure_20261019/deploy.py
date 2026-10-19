@@ -11,13 +11,15 @@ from pathlib import Path
 repo = Path('/home/ubuntu/doxagent')
 root = Path('/var/lib/doxagent/releases')
 commit = sys.argv[1]
-expected_base = 'sha256:027a61ab96371d91e62fef034500884062bd02fee3a44bc359349551d80268a7'
+expected_base = sys.argv[2]
 services = ['v2-message-bus', 'v2-content-enrichment']
 files = [
     'message_bus_v2/storage_lane.py', 'message_bus_v2/repository.py',
     'message_bus_v2/service.py', 'message_bus_v2/scheduler.py',
     'message_bus_v2/distribution.py', 'persistent_runtime_v2/bus_orchestration.py',
     'content_enrichment/service.py',
+    'message_bus_v2/ibkr_news.py', 'message_bus_v2/market_sources.py',
+    'message_bus_v2/manifests.py', 'site_strategy/client.py',
 ]
 os.environ.update(GIT_CONFIG_COUNT='1', GIT_CONFIG_KEY_0='safe.directory', GIT_CONFIG_VALUE_0=str(repo))
 
@@ -51,12 +53,13 @@ with m.lock(root):
     m.atomic(audit/'state.before.private.json', state)
     os.chmod(audit/'compose.before.private.json', 0o600)
     os.chmod(audit/'state.before.private.json', 0o600)
-    alias = 'doxagent-bus-base:027a61ab9637'
+    alias = 'doxagent-bus-base:' + expected_base.removeprefix('sha256:')[:12]
     tag = 'doxagent-v2:bus-loop-' + commit[:12]
     run(['docker', 'tag', expected_base, alias])
+    base_commit = dict(item.split('=', 1) for item in before[services[0]]['Config']['Env'])['DOXAGENT_BUILD_COMMIT']
     run(['docker', 'build', '-f', 'deploy/Dockerfile.bus-storage-repair',
          '--build-arg', 'APPROVED_BASE='+alias, '--build-arg', 'REPAIR_COMMIT='+commit,
-         '--build-arg', 'BASE_COMMIT=b83382ddf1db25e61e26299c77d75308d732559c',
+         '--build-arg', 'BASE_COMMIT='+base_commit,
          '-t', tag, '.'], timeout=600)
     image = run(['docker', 'image', 'inspect', '--format', '{{.Id}}', tag])
     state.setdefault('owned_images', []).append(image)
@@ -90,7 +93,8 @@ with m.lock(root):
             assert c['State']['Running'] and c['Image'] == image
             check = "import json,hashlib;from pathlib import Path;p=Path('/app/src/doxagent');print(json.dumps({f:hashlib.sha256((p/f).read_bytes()).hexdigest() for f in "+repr(files)+"}))"
             assert json.loads(run(['docker', 'exec', c['Id'], 'python', '-c', check])) == expected
-            assert c['Mounts'] == before[service]['Mounts'], 'persistent mounts changed'
+            mounts = lambda item: sorted((v['Destination'], v['Type'], v['Source'], v['RW']) for v in item['Mounts'])
+            assert mounts(c) == mounts(before[service]), 'persistent mounts changed'
             m.promote(state, service, image, commit=commit)
             state['components'][service]['current']['compose'] = cfg['services'][service]
             m.atomic(root/'state.json', state)

@@ -3,8 +3,9 @@
 import asyncio
 import threading
 import time
-from contextlib import contextmanager
+from contextlib import asynccontextmanager, contextmanager
 from datetime import timedelta
+from types import SimpleNamespace
 
 from doxagent.message_bus_v2.schema import PollResult, utc_now
 from doxagent.message_bus_v2.storage_lane import StorageLane
@@ -110,3 +111,40 @@ def test_batch_first_seen_never_refreshes_unknown_or_updated_timestamp(tmp_path)
     )
     resolved = repo.resolve_first_seen_many([unknown, updated], "binding")
     assert [item.published_at for item in resolved] == [old.published_at] * 2
+
+
+def test_ibkr_cancel_drains_socket_operation_before_adapter_close():
+    from doxagent.message_bus_v2.ibkr_news import IbkrNewsAdapter
+
+    async def scenario():
+        started, release = threading.Event(), threading.Event()
+        events = []
+
+        def poll(*args):
+            started.set()
+            assert release.wait(2)
+            events.append("poll_finished")
+            return [], {}
+
+        @asynccontextmanager
+        async def permit():
+            yield
+
+        gateway = SimpleNamespace(poll=poll, close=lambda: events.append("closed"))
+        adapter = IbkrNewsAdapter(SimpleNamespace(), gateway=gateway)
+        task = asyncio.create_task(
+            adapter.poll(
+                SimpleNamespace(requested_at=utc_now(), ticker="MU", request_permit=permit)
+            )
+        )
+        while not started.is_set():
+            await asyncio.sleep(0.001)
+        task.cancel()
+        await asyncio.sleep(0.02)
+        assert not task.done()
+        release.set()
+        await asyncio.gather(task, return_exceptions=True)
+        adapter.close()
+        assert events == ["poll_finished", "closed"]
+
+    asyncio.run(scenario())

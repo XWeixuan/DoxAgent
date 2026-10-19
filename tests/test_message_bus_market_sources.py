@@ -66,6 +66,37 @@ def test_manifests_and_global_defaults():
         assert SOURCES[source_id].default_polling_config.target_interval_seconds == 60
 
 
+def test_market_locator_seed_upgrade_is_idempotent_and_preserves_custom_urls(tmp_path):
+    from doxagent.message_bus_v2.schema import UpdateActor
+    from tests.fixtures.message_bus_v2 import _bus
+
+    repo, bus = _bus(tmp_path / "bus.db")
+    source = repo.get_source("investing_ticker_news")
+    custom = "https://www.investing.com/equities/operator-custom-news"
+    bus.update_source(
+        source.source_id,
+        {"default_parameters": {"ticker_pages": {"MU": custom}}},
+        actor=UpdateActor.SYSTEM,
+    )
+    bus.configure_binding(
+        ticker="SNOW",
+        source_id=source.source_id,
+        source_parameters={"ticker_pages": {"MU": custom}},
+        actor=UpdateActor.SYSTEM,
+    )
+    bus.bootstrap()
+    updated = repo.get_source(source.source_id)
+    assert updated.default_parameters["ticker_pages"]["MU"] == custom
+    assert updated.default_parameters["ticker_pages"]["SNOW"].endswith("/snowflake-inc-news")
+    assert (
+        repo.get_binding("SNOW:" + source.source_id)
+        .source_parameters["ticker_pages"]["SNOW"]
+        .endswith("/snowflake-inc-news")
+    )
+    bus.bootstrap()
+    assert repo.get_source(source.source_id).version == updated.version
+
+
 def test_investorshub_excludes_wrong_ticker_and_unscoped_news():
     doc = IH + IH.replace("micron-technology-MU", "intel-INTC").replace("12345", "67890")
     doc += '<a href="/stock-market/NASDAQ/MU/stock-news/99999/footer">Unrelated footer</a>'
@@ -129,6 +160,37 @@ async def test_ticker_locator_uses_current_ticker_and_rejects_cross_site():
     ctx.binding.source_parameters = {"listing_url": "https://attacker.test/news"}
     with pytest.raises(ValueError):
         await MarketTickerAdapter(Browser(), "investorshub").poll(ctx)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("ticker", ["INTC", "COHR", "NBIS"])
+async def test_short_ticker_url_supplies_identity_to_site_business_contract(ticker):
+    from doxagent.site_strategy.runtime import RuntimeResponse
+    from doxagent.site_strategy.schema import AccessMode, AccessRequest, SitePurpose
+    from doxagent.site_strategy.verification import validate_crawler_capture
+
+    doc = IH.replace("micron-technology-MU", f"company-{ticker}")
+
+    class Browser:
+        site_managed = True
+
+        async def get(self, url, **kwargs):
+            assert kwargs["recipe_parameters"] == {"ticker": ticker}
+            request = AccessRequest(
+                operation_id="test",
+                url=url,
+                purpose=SitePurpose.CRAWLER,
+                mode=AccessMode.BROWSER,
+                recipe_parameters=kwargs["recipe_parameters"],
+            )
+            response = RuntimeResponse(200, url, {}, body=doc)
+            assert validate_crawler_capture("investorshub_ticker_news", response, request)
+            return 200, url, {}, doc
+
+    result = await MarketTickerAdapter(Browser(), "investorshub").poll(
+        context("investorshub_ticker_news", ticker=ticker)
+    )
+    assert result.messages
 
 
 @pytest.mark.asyncio
