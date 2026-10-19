@@ -6,7 +6,7 @@ import hashlib
 import json
 import sqlite3
 from collections.abc import Iterator
-from contextlib import contextmanager, nullcontext
+from contextlib import closing, contextmanager, nullcontext
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
@@ -24,6 +24,11 @@ def instant(at: datetime) -> str:
 
 def migrate_case_evidence_indexes(db) -> None:
     """Add display lookup indexes to an existing release without a full migration."""
+    relation=db.execute("SELECT type FROM sqlite_master WHERE name='objects'").fetchone()
+    if relation and relation[0]=='view':
+        from .serving_schema import upgrade
+        upgrade(db)
+        return  # V4 owns physical current/history lookup indexes, not view indexes.
     for name, fields, kind in (
         ("case_fact_evidence", "parent,json_extract(payload,'$.fact.fact_id'),valid_from", "fact"),
         ("case_policy_evidence", "parent,json_extract(payload,'$.summary.policy_id'),valid_from", "policy_detail"),
@@ -40,20 +45,22 @@ def migrate_case_evidence_indexes(db) -> None:
 
 
 class ReadStore:
-    VERSION = 3
+    VERSION = 4
 
     def migrate_policy_query_indexes(self):
         """Explicit, idempotent Policy read migration; never run on a GET/startup."""
         with self.connect(write=True) as db:
+            from .serving_schema import history_relation
             db.execute("CREATE INDEX IF NOT EXISTS policy_positive_current ON contributions_current("
                        "metric,ticker,day,json_extract(dimensions,'$.business_key'),valid_from) "
                        "WHERE metric IN ('policy_ar_hits','policy_executed') AND CAST(value AS NUMERIC)>0")
-            db.execute("CREATE INDEX IF NOT EXISTS policy_positive_history ON contributions("
+            db.execute("CREATE INDEX IF NOT EXISTS policy_positive_history ON " + history_relation(db,'contributions') + "("
                        "metric,ticker,valid_to,valid_from,day,json_extract(dimensions,'$.business_key')) "
                        "WHERE valid_to IS NOT NULL AND metric IN ('policy_ar_hits','policy_executed') AND CAST(value AS NUMERIC)>0")
 
     def __init__(self, path: str | Path) -> None:
         self.path = Path(path).resolve()
+        self._retirement_shapes={}
         if self.path.suffix == ".json":
             alias = json.loads(self.path.read_text(encoding="utf-8"))
             if alias.get("format") != "doxagent.v2.read-alias.1":
@@ -68,6 +75,21 @@ class ReadStore:
         from .native_content import NativeContent
         return NativeContent(self.path)
 
+    def close_current(self,db,base,where,args,seq):
+        """Move current once; never search technical history to close a head."""
+        if base not in self._retirement_shapes:
+            from .serving_schema import history_relation
+            history=history_relation(db,base)
+            columns=[r[1] for r in db.execute('PRAGMA table_info('+history+')')]
+            self._retirement_shapes[base]=(history,columns)
+        history,columns=self._retirement_shapes[base]
+        if history==base:
+            db.execute('UPDATE '+base+' SET valid_to=? WHERE '+where+' AND valid_to IS NULL',(seq,*args));return
+        current='object_current' if base=='objects' else base+'_current'
+        selected=','.join('?' if column=='valid_to' else column for column in columns)
+        db.execute('INSERT INTO '+history+'('+','.join(columns)+') SELECT '+selected+' FROM '+current+' WHERE '+where,(seq,*args))
+        db.execute('DELETE FROM '+current+' WHERE '+where,args)
+
     @contextmanager
     def connect(self, *, write: bool = False, timeout: float = 2) -> Iterator[sqlite3.Connection]:
         db = sqlite3.connect(
@@ -77,6 +99,10 @@ class ReadStore:
         if not write:
             from .query_budget import interrupted
             db.set_progress_handler(interrupted, 1000)
+        db.execute('PRAGMA recursive_triggers=ON')
+        codec = self.content_codec
+        codec.definition_connection = db
+        db.row_factory = codec.row
         try:
             db.execute("BEGIN IMMEDIATE" if write else "BEGIN")
             yield db
@@ -89,7 +115,18 @@ class ReadStore:
 
     def migrate(self) -> None:
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        with sqlite3.connect(self.path) as db:
+        with closing(sqlite3.connect(self.path)) as db, db:
+            existing = db.execute("SELECT 1 FROM sqlite_master WHERE name='schema_meta'").fetchone()
+            if existing:
+                version = db.execute('SELECT version FROM schema_meta').fetchone()[0]
+                if version == 4:
+                    from .serving_schema import upgrade
+                    upgrade(db)
+                    return
+                if version not in (1,2,3):
+                    raise ValueError('unsupported V2 read schema')
+                if db.execute('SELECT 1 FROM objects LIMIT 1').fetchone():
+                    raise ValueError('populated V3 requires an explicit serving generation build')
             if db.execute(
                 "SELECT 1 FROM sqlite_master WHERE type='table' AND name='schema_meta'"
             ).fetchone() and [r[0] for r in db.execute("SELECT version FROM schema_meta")] not in (
@@ -251,6 +288,14 @@ class ReadStore:
                 db.execute("INSERT INTO generation VALUES(?)", (uuid4().hex,))
             if [r[0] for r in db.execute("SELECT version FROM schema_meta")] != [self.VERSION]:
                 raise ValueError("unsupported V2 read schema")
+            from .serving_schema import install
+            install(db)
+
+    @property
+    def history_table(self):
+        with self.connect() as db:
+            from .serving_schema import history_relation
+            return history_relation(db)
 
     def metric_table(self, seq, table="metric_buckets"):
         if table not in {"metric_buckets", "contributions"}:
@@ -259,7 +304,10 @@ class ReadStore:
         with self.connect() as db:
             if seq == self.highwater(db):
                 return table + "_current"
-        return f"(SELECT * FROM {table}_current WHERE valid_from<={seq} UNION ALL SELECT * FROM {table} WHERE valid_to IS NOT NULL AND valid_from<={seq} AND valid_to>{seq})"
+        with self.connect() as db:
+            from .serving_schema import history_relation
+            history = history_relation(db, table)
+        return f"(SELECT * FROM {table}_current WHERE valid_from<={seq} UNION ALL SELECT * FROM {history} WHERE valid_to IS NOT NULL AND valid_from<={seq} AND valid_to>{seq})"
 
     def snapshot_table(self, seq):
         """Disjoint hot/history relation; SQLite pushes caller filters into each branch."""
@@ -267,7 +315,7 @@ class ReadStore:
         with self.connect() as db:
             if seq == self.highwater(db):
                 return "object_current"
-        return f"(SELECT * FROM object_current WHERE valid_from<={seq} UNION ALL SELECT * FROM objects INDEXED BY history_recent WHERE valid_to IS NOT NULL AND valid_from<={seq} AND valid_to>{seq})"
+        return f"(SELECT * FROM object_current WHERE valid_from<={seq} UNION ALL SELECT * FROM {self.history_table} INDEXED BY history_recent WHERE valid_to IS NOT NULL AND valid_from<={seq} AND valid_to>{seq})"
 
     def position(self, source: str) -> int:
         with self.connect() as db:
@@ -312,6 +360,11 @@ class ReadStore:
         records = [record for record in records if record["kind"] != "capture_coverage"]
         unique: dict[tuple[str, str, str], dict[str, Any]] = {}
         for record in records:
+            from .serving_fields import select
+            selected = select(record['kind'], record['id'], record.get('data'))
+            if selected is None and record.get('data') is not None:
+                continue
+            record = {**record, 'data': selected}
             key = (record["kind"], record["ticker"], record["id"])
             if key in unique and unique[key] != record:
                 raise ValueError("conflicting representations in one source receipt")
@@ -335,6 +388,11 @@ class ReadStore:
             bus_members, raw_links, graph_cases = set(), set(), set()
             for ordinal, record in enumerate(records):
                 kind, ticker, identity = record["kind"], record["ticker"], record["id"]
+                payload=record.get('data')
+                normalized=kind in {'fact','event_detail','policy_detail'}
+                if normalized and payload is not None:
+                    from .serving_schema import normalize_definition
+                    payload=normalize_definition(db,kind,payload)
                 if position is not None:
                     last = db.execute(
                         "SELECT position FROM entity_watermarks WHERE source=? "
@@ -350,12 +408,13 @@ class ReadStore:
                         (source, kind, ticker, identity, position),
                     )
                 old = db.execute(
-                    "SELECT payload,sort_key,parent,day,source_id,route,search_text FROM object_current WHERE kind=? AND ticker=? AND id=? "
+                    "SELECT "+('payload AS persisted_json' if normalized else 'payload')+",sort_key,parent,day,source_id,route,search_text FROM object_current WHERE kind=? AND ticker=? AND id=? "
                     "AND valid_to IS NULL",
                     (kind, ticker, identity),
                 ).fetchone()
-                payload = record.get("data")
                 previous = json.loads(old[0]) if old else None
+                if normalized and previous is not None:
+                    previous=self.content_codec.decode(previous,expand_definitions=False)
                 comparable = dict(payload) if isinstance(payload, dict) else payload
                 if kind == "native:runtime_tasks":
                     for technical in ("lease_until", "updated_at"):
@@ -393,17 +452,14 @@ class ReadStore:
                     for parent in ((old[2] if old else None), record.get("parent")):
                         if parent:
                             raw_links.add((ticker,parent))
-                db.execute(
-                    "UPDATE objects SET valid_to=? WHERE kind=? AND ticker=? AND id=? "
-                    "AND valid_to IS NULL",
-                    (seq, kind, ticker, identity),
-                )
-                payload = record.get("data")
+                if old:self.close_current(db,'objects','kind=? AND ticker=? AND id=?',(kind,ticker,identity),seq)
                 if payload is not None and kind == "message":
                     payload = {**payload, "row_revision": seq}
                 elif payload is not None and kind == "case":
                     payload = {**payload, "revision": seq}
                 if payload is not None:
+                    from .serving_schema import normalize_definition
+                    payload = normalize_definition(db, kind, payload)
                     db.execute(
                         "INSERT INTO objects VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
                         (
@@ -461,8 +517,9 @@ class ReadStore:
                     member = (item["day"], encode(item.get("dimensions", {})))
                     if member in expected and expected[member] != amount:
                         raise ValueError("conflicting contribution set")
-                    expected[member] = amount
-                old_values = db.execute("SELECT day,dimensions,value FROM contributions WHERE metric=? AND ticker=? AND entity=? AND valid_to IS NULL", base).fetchall()
+                    if amount:
+                        expected[member] = amount
+                old_values = db.execute("SELECT day,dimensions,value FROM contributions_current WHERE metric=? AND ticker=? AND entity=?", base).fetchall()
                 previous = {(row[0], row[1]): Decimal(row[2]) for row in old_values}
                 if previous == expected:
                     continue
@@ -472,28 +529,33 @@ class ReadStore:
                     for bucket_day in (day, "*"):
                         bucket = (base[0], base[1], bucket_day, dimensions)
                         deltas[bucket] = deltas.get(bucket, Decimal(0)) - amount
-                db.execute("UPDATE contributions SET valid_to=? WHERE metric=? AND ticker=? AND entity=? AND valid_to IS NULL", (seq, *base))
+                if old_values:self.close_current(db,'contributions','metric=? AND ticker=? AND entity=?',base,seq)
                 for (day, dimensions), amount in expected.items():
                     for bucket_day in (day, "*"):
                         bucket = (base[0], base[1], bucket_day, dimensions)
                         deltas[bucket] = deltas.get(bucket, Decimal(0)) + amount
-                    db.execute("INSERT INTO contributions VALUES(?,?,?,?,?,?,?,NULL)", (*base, day, dimensions, format(amount, "f"), seq))
+                    db.execute("INSERT INTO contributions(metric,ticker,entity,day,dimensions,value,valid_from,valid_to) VALUES(?,?,?,?,?,?,?,NULL)", (*base, day, dimensions, format(amount, "f"), seq))
+            # One positive settlement feeds both dashboard reductions. Only
+            # small buckets, not per-Case contribution entities, are duplicated.
+            for (metric,ticker,day,dimensions),delta in list(deltas.items()):
+                if metric == 'policy_ar_hits':
+                    dims = json.loads(dimensions)
+                    policy = dims.get('policy_id')
+                    if policy:
+                        alias = ('policy_hits',ticker,day,encode({'business_key':policy}))
+                        deltas[alias] = deltas.get(alias,Decimal(0)) + delta
             for key, delta in deltas.items():
                 if not delta:
                     continue
                 old = db.execute(
-                    "SELECT value FROM metric_buckets WHERE metric=? AND ticker=? AND day=? "
-                    "AND dimensions=? AND valid_to IS NULL",
+                    "SELECT value FROM metric_buckets_current WHERE metric=? AND ticker=? AND day=? "
+                    "AND dimensions=?",
                     key,
                 ).fetchone()
                 value = (Decimal(old[0]) if old else Decimal(0)) + delta
+                if old:self.close_current(db,'metric_buckets','metric=? AND ticker=? AND day=? AND dimensions=?',key,seq)
                 db.execute(
-                    "UPDATE metric_buckets SET valid_to=? WHERE metric=? AND ticker=? AND day=? "
-                    "AND dimensions=? AND valid_to IS NULL",
-                    (seq, *key),
-                )
-                db.execute(
-                    "INSERT INTO metric_buckets VALUES(?,?,?,?,?,?,NULL)",
+                    "INSERT INTO metric_buckets(metric,ticker,day,dimensions,value,valid_from,valid_to) VALUES(?,?,?,?,?,?,NULL)",
                     (*key, format(value, "f"), seq),
                 )
             if gap or resolved_gap:
@@ -566,7 +628,7 @@ class ReadStore:
             candidates = []
             for table, extra, parameters in (
                 ("object_current", "", (ticker, seq)),
-                ("objects INDEXED BY history_recent", " AND valid_to>?", (ticker, seq, seq)),
+                (self.history_table + " INDEXED BY history_recent", " AND valid_to>?", (ticker, seq, seq)),
             ):
                 row = db.execute("SELECT id,sort_key,valid_from FROM " + table +
                                  " WHERE kind='message' AND ticker=? AND valid_from<=?" + extra +
@@ -711,12 +773,14 @@ class ReadStore:
 
                 db.create_function("policy_recalled", 1, policy_recalled, deterministic=True)
             # Disjoint branches apply predicates and keyset before their own LIMIT.
-            branches = ["object_current"] if seq == self.highwater(db) else ["object_current", "objects"]
+            from .serving_schema import history_relation
+            history_name = history_relation(db)
+            branches = ["object_current"] if seq == self.highwater(db) else ["object_current", history_name]
             rows = []
             for table in branches:
-                history = " AND valid_to IS NOT NULL" if table == "objects" else ""
+                history = " AND valid_to IS NOT NULL" if table == history_name else ""
                 rows.extend(db.execute(
-                    "SELECT id,sort_key,payload,valid_from FROM " + table + " AS objects" + (" INDEXED BY history_recent" if table == "objects" else "") + " WHERE "
+                    "SELECT id,sort_key,payload,valid_from FROM " + table + " AS objects" + (" INDEXED BY history_recent" if table == history_name else "") + " WHERE "
                     + " AND ".join(where) + history
                     + " ORDER BY sort_key DESC,id DESC LIMIT ?", [*params, limit]
                 ).fetchall())
@@ -796,7 +860,8 @@ class ReadStore:
             retained = int(db.execute("SELECT value FROM read_meta WHERE key='retained_floor'").fetchone()[0])
             if "seq" in payload and payload["seq"] < retained:
                 raise TimeoutError("VIEW_EXPIRED" if view else "CURSOR_EXPIRED")
-            expires = now + timedelta(days=1)
+            from .settings import Limits
+            expires = now + timedelta(minutes=Limits.load().view_minutes if view else Limits.load().stream_minutes)
             if not view and payload.get("view_id"):
                 parent = db.execute("SELECT expires_at FROM views WHERE id=? AND owner=?", (payload["view_id"],owner)).fetchone()
                 if not parent or datetime.fromisoformat(parent[0]) <= now:

@@ -71,7 +71,7 @@ def test_overview_status_does_not_wait_for_gateway(monkeypatch):
     status = AsyncMock(return_value="DISCONNECTED")
     monkeypatch.setattr(GatewayMonitor, "status", status)
     app = FastAPI()
-    app.state.store = SimpleNamespace(get=lambda *args: None)
+    app.state.store = SimpleNamespace(get=lambda *args: None, batch_get=lambda *args: {})
     app.state.control = None
     app.state.views = SimpleNamespace(get=lambda *args: {
         "wire": {"page": "OVERVIEW", "clock": {}}, "tickers": [], "seq": 1,

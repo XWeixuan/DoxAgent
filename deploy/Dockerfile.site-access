@@ -1,5 +1,5 @@
-ARG BASE_IMAGE=doxagent-v2:production
-FROM ${BASE_IMAGE}
+ARG BASE_IMAGE=doxagent-deps:backend
+FROM ${BASE_IMAGE} AS site-deps
 
 USER root
 RUN apt-get update \
@@ -11,6 +11,21 @@ RUN apt-get update \
          --create-home --shell /usr/sbin/nologin siteaccess \
     && rm -rf /var/lib/apt/lists/*
 ENV LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 HOME=/home/siteaccess
+
+FROM site-deps AS source-files
+COPY src /source/src
+RUN rm -rf /source/src/cdecr/catalogs
+FROM site-deps AS site
+ARG DOXAGENT_BUILD_COMMIT=unversioned
+ARG DOXAGENT_SOURCE_SHA256=""
+ENV DOXAGENT_BUILD_COMMIT=${DOXAGENT_BUILD_COMMIT}
+LABEL org.opencontainers.image.revision=${DOXAGENT_BUILD_COMMIT} \
+      doxagent.source.sha256=${DOXAGENT_SOURCE_SHA256} doxagent.owner=doxagent
+COPY --from=source-files /source/src /app/src
+COPY prompts /app/prompts
+COPY dev_plan/workflow_v2/api_contract /app/dev_plan/workflow_v2/api_contract
+RUN find /app/src /app/prompts /app/dev_plan -type d ! -perm -005 -exec chmod a+rx {} + \
+    && find /app/src /app/prompts /app/dev_plan -type f ! -perm -004 -exec chmod a+r {} +
 COPY deploy/site-access-entrypoint.sh /usr/local/bin/site-access-entrypoint
 COPY deploy/site-login-vnc-relay.py /usr/local/bin/site-login-vnc-relay.py
 RUN chmod 0755 /usr/local/bin/site-access-entrypoint /usr/local/bin/site-login-vnc-relay.py

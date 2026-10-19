@@ -15,10 +15,26 @@ class CaseEvidence:
     def fields(self, kind, identity, paths):
         # Paths are internal constants, never request input. Do not select payload:
         # its row codec would dereference unrelated frozen inputs/article bodies.
-        columns = ",".join("json_extract(payload,'$." + path + "')" for path in paths)
         with self.store.connect() as db:
+            normalized = db.execute(
+                "SELECT 1 FROM sqlite_master WHERE name='definitions'"
+            ).fetchone()
+            expressions = []
+            for path in paths:
+                root, _, tail = path.partition('.')
+                direct = "json_extract(o.payload,'$." + path + "')"
+                if normalized and root in {'fact', 'event', 'policy'}:
+                    marker = "json_extract(o.payload,'$." + root + ".$doxagent_definition_v4')"
+                    selected = "json_extract(d.payload,'$." + tail + "')" if tail else 'd.payload'
+                    direct = (
+                        "CASE WHEN " + marker + " IS NOT NULL THEN (SELECT "
+                        + selected + " FROM definitions d WHERE d.sha256=" + marker
+                        + ") ELSE " + direct + " END"
+                    )
+                expressions.append(direct)
+            columns = ','.join(expressions)
             row = db.execute(
-                "SELECT " + columns + " FROM objects WHERE kind=? AND ticker=? AND id=? "
+                "SELECT " + columns + " FROM objects o WHERE kind=? AND ticker=? AND id=? "
                 "AND valid_from<=? AND (valid_to IS NULL OR valid_to>?) "
                 "ORDER BY valid_from DESC LIMIT 1",
                 (kind, self.ticker, identity, self.seq, self.seq),

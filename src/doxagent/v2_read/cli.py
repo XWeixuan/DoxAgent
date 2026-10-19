@@ -6,6 +6,9 @@ import argparse
 import json
 import sqlite3
 import time
+import os
+from contextlib import closing,contextmanager
+from uuid import uuid4
 from pathlib import Path
 
 from doxagent.persistent_runtime_v2.journal import RuntimeJournal
@@ -18,7 +21,27 @@ from .projector import ProjectionWorker
 from .repository import ReadStore
 
 
+@contextmanager
+def generation_termination():
+    """Let normal CLI termination unwind an unpublished generation build."""
+    import signal
+    previous=signal.getsignal(signal.SIGTERM)
+    def stop(signum,_frame):raise SystemExit(128+signum)
+    signal.signal(signal.SIGTERM,stop)
+    try:yield
+    finally:signal.signal(signal.SIGTERM,previous)
+
+
 def backup(source: Path, target: Path) -> None:
+    if target.exists():raise ValueError('backup destination already exists')
+    partial=target.with_name('.'+target.name+'-'+uuid4().hex+'.pending')
+    try:
+        _backup(source,partial)
+        os.link(partial,target)  # Publish only after all referenced files verify.
+    finally:partial.unlink(missing_ok=True)
+
+
+def _backup(source: Path, target: Path) -> None:
     if target.exists():
         raise ValueError("backup destination already exists")
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -55,10 +78,11 @@ def backup(source: Path, target: Path) -> None:
             else:
                 shutil.copyfile(item, destination_file)
     if native_root.exists():
-        identities = [path.parent.name for path in native_root.glob("*/*/manifest.json")]
+        from .backup_native import identities as native_identities
+        identities = native_identities(target,source)
         ContentFiles(native_root).copy(identities, target.parent / "native-files")
 
-    with sqlite3.connect(target.resolve().as_uri() + "?mode=ro", uri=True) as db:
+    with closing(sqlite3.connect(target.resolve().as_uri() + "?mode=ro", uri=True)) as db:
         if db.execute("SELECT 1 FROM sqlite_master WHERE name='v2_receipt_archive'").fetchone():
             identities = [r[0] for r in db.execute("SELECT DISTINCT digest FROM v2_receipt_archive")]
             for (name,) in db.execute("SELECT source FROM v2_source_state"):
@@ -92,6 +116,8 @@ def main() -> None:
             "verify",
             "reproject-trade-outcomes",
             "policy-query-indexes",
+            "serving-generation",
+            "current-snapshot",
         ),
     )
     parser.add_argument("--read-db", type=Path, default=Path(".tmp/v2_read.sqlite3"))
@@ -176,6 +202,12 @@ def main() -> None:
     elif args.command == "reproject-trade-outcomes":
         from .maintenance import reproject_trade_outcomes
         print(json.dumps(reproject_trade_outcomes(store, ticker=args.ticker, limit=args.limit)))
+    elif args.command == "serving-generation":
+        if not args.target:
+            parser.error('serving-generation requires --target in a new directory')
+        from .serving_generation import build
+        with generation_termination():
+            print(json.dumps(build(store.path, args.target)), flush=True)
     elif args.command == "compact":
         if not args.target:
             parser.error("compact requires --target with a new shadow database path")
@@ -194,6 +226,11 @@ def main() -> None:
         if not sources:
             parser.error("rebuild requires explicit sources")
         print(json.dumps(rebuild(sources, args.read_db, event_root=args.event_root)))
+    elif args.command == 'current-snapshot':
+        if not sources:parser.error('current snapshot requires the complete source set')
+        from .source_snapshot import rebuild_current
+        with generation_termination():
+            print(json.dumps(rebuild_current(sources,args.read_db,event_root=args.event_root)))
     elif args.command == "switch":
         from .maintenance import activate_alias
 

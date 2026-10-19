@@ -186,9 +186,10 @@ def test_native_hit_statistics_keep_all_final_hits_independent_of_selection(tmp_
         {"final_policy_hit": {"value": True}},
         {"operation": "UPDATE", "recorded_at": "2026-10-10T12:00:00+00:00"},
     )
-    assert {r["data"]["policy_id"] for r in records if r["data"]["hit"]} == {"P1", "P2"}
+    assert len(records) == 1
+    assert set(records[0]["data"]["hits"]) == {"P1", "P2"}
     assert {
         m["dimensions"]["policy_id"]
         for m in metrics
-        if m["metric"] == "policy_hits" and m["value"] == "1"
+        if m["metric"] == "policy_ar_hits" and m["value"] == "1"
     } == {"P1", "P2"}

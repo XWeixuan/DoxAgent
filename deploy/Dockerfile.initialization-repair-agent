@@ -1,8 +1,17 @@
-ARG DOXAGENT_BASE_IMAGE=doxagent-v2:production
-FROM ${DOXAGENT_BASE_IMAGE}
+ARG DOXAGENT_BASE_IMAGE=doxagent-deps:backend
+FROM ${DOXAGENT_BASE_IMAGE} AS repair-agent-deps
 
 # The agent/verification job uses the candidate checkout through PYTHONPATH and needs the
 # repository's locked development test tools. Authentication is mounted at runtime, never baked in.
-RUN --mount=type=cache,target=/root/.cache/uv uv sync --frozen --group dev --inexact && uv pip install --python /app/.venv/bin/python protobuf==5.29.5 && uv pip check --python /app/.venv/bin/python
+RUN --mount=type=cache,target=/root/.cache/uv uv sync --frozen --no-install-project --group dev --inexact && uv pip install --python /app/.venv/bin/python protobuf==5.29.5 && uv pip check --python /app/.venv/bin/python
+FROM repair-agent-deps AS source-files
+COPY src /source/src
+RUN rm -rf /source/src/cdecr/catalogs
+FROM repair-agent-deps AS repair-agent
+COPY --from=source-files /source/src /app/src
+COPY prompts /app/prompts
+COPY dev_plan/workflow_v2/api_contract /app/dev_plan/workflow_v2/api_contract
+COPY README.md /app/README.md
+RUN uv pip install --no-deps --python /app/.venv/bin/python -e /app
 ENV CODEX_HOME=/var/lib/doxagent/initialization-repair/codex-home
 CMD ["doxagent-initialization-repair", "--help"]

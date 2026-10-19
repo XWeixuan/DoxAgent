@@ -72,3 +72,25 @@ def test_backup_estimate_includes_wal_pages_and_immutable_files(tmp_path):
         logical = db.execute('PRAGMA page_count').fetchone()[0]*db.execute('PRAGMA page_size').fetchone()[0]
         assert logical > path.stat().st_size
         assert estimate_migration_backup({'runtime': path}) == logical+content.stat().st_size
+
+
+def test_compression_resume_keeps_already_finished_database_in_coherent_manifest(tmp_path,monkeypatch):
+    import json
+    from doxagent.v2_read import backup_retention as retention
+    originals={'a':tmp_path/'business/a.sqlite3','b':tmp_path/'business/b.sqlite3'}
+    current=tmp_path/'backups/current';current.mkdir(parents=True)
+    (current/'a.sqlite3').write_bytes(b'database a');(current/'b.sqlite3').write_bytes(b'database b')
+    original=retention.gzip.GzipFile;calls=0
+    def fail_second(*args,**kwargs):
+        nonlocal calls
+        if kwargs.get('mode')=='wb':
+            calls+=1
+            if calls==2:raise OSError('interrupted after the first database')
+        return original(*args,**kwargs)
+    monkeypatch.setattr(retention.gzip,'GzipFile',fail_second)
+    assert complete_migration_backup(current,originals)['errors']
+    assert not (current/'a.sqlite3').exists() and (current/'b.sqlite3').exists()
+    monkeypatch.setattr(retention.gzip,'GzipFile',original)
+    assert not complete_migration_backup(current,originals)['errors']
+    manifest=json.loads((current/retention.MARKER).read_text())
+    assert {x['file'] for x in manifest['databases']}=={'a.sqlite3.gz','b.sqlite3.gz'}

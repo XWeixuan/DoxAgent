@@ -43,13 +43,14 @@ class Metrics:
             return
         where = "metric IN (SELECT value FROM json_each(?)) AND ticker IN (SELECT value FROM json_each(?)) AND day IN (SELECT value FROM json_each(?)) AND valid_from<=? AND (valid_to IS NULL OR valid_to>?)"
         import json
+        distinct_sources={name:('policy_ar_hits' if name=='policy_hits' else name) for name in distinct}
         with self.store.connect() as db:
             rows = list(db.execute("SELECT metric,ticker,day,value FROM " + self.store.metric_table(seq) + " WHERE " + where,
                                    (json.dumps(sorted(names)), json.dumps(tickers), json.dumps(sorted(wanted_days)), seq, seq)))
             distinct_rows = list(db.execute(
-                "SELECT metric,ticker,day,coalesce(json_extract(dimensions,'$.business_key'),entity) FROM " + self.store.metric_table(seq,"contributions") + " WHERE metric IN (SELECT value FROM json_each(?)) AND ticker IN (SELECT value FROM json_each(?)) AND valid_from<=? AND (valid_to IS NULL OR valid_to>?) AND CAST(value AS NUMERIC)!=0" +
+                "SELECT metric,ticker,day,CASE WHEN metric='policy_ar_hits' THEN coalesce(json_extract(dimensions,'$.policy_id'),json_extract(dimensions,'$.business_key'),entity) ELSE coalesce(json_extract(dimensions,'$.business_key'),entity) END FROM " + self.store.metric_table(seq,"contributions") + " WHERE metric IN (SELECT value FROM json_each(?)) AND ticker IN (SELECT value FROM json_each(?)) AND valid_from<=? AND (valid_to IS NULL OR valid_to>?) AND CAST(value AS NUMERIC)!=0" +
                 ("" if None in windows else " AND day IN (SELECT value FROM json_each(?))"),
-                (json.dumps(list(distinct)), json.dumps(tickers), seq, seq, *([] if None in windows else [json.dumps(sorted(wanted_days))])))) if distinct else []
+                (json.dumps(list(distinct_sources.values())), json.dumps(tickers), seq, seq, *([] if None in windows else [json.dumps(sorted(wanted_days))])))) if distinct else []
         for window in windows:
             selected_days = set(window) if window is not None else {"*"}
             totals = {}
@@ -60,7 +61,8 @@ class Metrics:
             identities = {}
             for metric,ticker,day,identity in distinct_rows:
                 if window is None or day in selected_days:
-                    identities.setdefault((metric,ticker),set()).add(identity)
+                    for name,source in distinct_sources.items():
+                        if source==metric:identities.setdefault((name,ticker),set()).add(identity)
             for selected in ([ticker] for ticker in tickers):
                 for name in names:
                     self._values[(name,tuple(selected),seq,window,False,None)] = totals.get((name,selected[0]),Decimal(0))
@@ -127,7 +129,8 @@ class Metrics:
         if key in self._values:
             return self._values[key]
         where = ["metric=?", "valid_from<=?", "(valid_to IS NULL OR valid_to>?)"]
-        parameters: list[Any] = [metric, seq, seq]
+        source_metric='policy_ar_hits' if distinct and metric=='policy_hits' else metric
+        parameters: list[Any] = [source_metric, seq, seq]
         where.append("ticker IN (" + ",".join("?" for _ in tickers) + ")" if tickers else "0")
         parameters.extend(tickers)
         if days is not None:
@@ -143,8 +146,8 @@ class Metrics:
                 where.append("CAST(value AS NUMERIC) != 0")
                 row = db.execute(
                     "SELECT COUNT(*) FROM (SELECT DISTINCT ticker,"
-                    "coalesce(json_extract(dimensions,'$.business_key'),entity) "
-                    "FROM " + self.store.metric_table(seq,"contributions") + " WHERE " + " AND ".join(where) + ")",
+                    + ("coalesce(json_extract(dimensions,'$.policy_id'),json_extract(dimensions,'$.business_key'),entity) " if metric=='policy_hits' else "coalesce(json_extract(dimensions,'$.business_key'),entity) ")
+                    + "FROM " + self.store.metric_table(seq,"contributions") + " WHERE " + " AND ".join(where) + ")",
                     parameters,
                 ).fetchone()
                 return Decimal(row[0])

@@ -64,3 +64,6 @@ def test_incident_worktree_and_branch_do_not_mutate_source_checkout(tmp_path):
     assert git("rev-parse", "HEAD", cwd=workspace.path) == commit
     assert git("--git-dir", str(manager.bare), "branch", "-r", "--list",
                "origin/codex/new-deployment", cwd=source) == ""
+    assert manager.retire("incident-1")
+    assert not workspace.path.exists()
+    assert git("--git-dir", str(manager.bare), "rev-parse", "codex/init-repair/incident-1", cwd=source) == commit

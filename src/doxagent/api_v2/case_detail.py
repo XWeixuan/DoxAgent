@@ -247,17 +247,19 @@ def install(app: FastAPI) -> None:
                 with store.connect() as db:
                     for fact_id in attribution.get(identity, []) if event else []:
                         row = db.execute(
-                            "SELECT json_extract(payload,'$.fact.proposition') AS proposition "
+                            "SELECT id "
                             "FROM objects "
                             "WHERE kind='fact' AND ticker=? AND parent=? "
                             "AND json_extract(payload,'$.fact.fact_id')=? "
                             "AND valid_from<=? AND (valid_to IS NULL OR valid_to>?) LIMIT 1",
                             (ticker, parent, fact_id, seq, seq),
                         ).fetchone()
+                        fields = evidence.fields('fact', row[0], ['fact.proposition']) if row else None
+                        value = fields.get('fact.proposition') if fields else None
                         facts.append(
                             {
                                 "fact_id": fact_id,
-                                "proposition": available(row[0]) if row and row[0] else missing(),
+                                "proposition": available(value) if value else missing(),
                             }
                         )
                 proposition = ((provisional or {}).get("candidate") or {}).get("proposition")

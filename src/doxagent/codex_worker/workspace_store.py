@@ -128,11 +128,22 @@ class LocalWorkspaceStore:
         self._validate_identifier(snapshot_id, "snapshot_id")
         source = self.ensure_run(run_id)
         destination = self._snapshot_root(run_id, snapshot_id)
+        shared=run_id.startswith(('init-','d2ws-','rerun-'))
+        owner=self.root/'.init-owners'/(destination.name+'.json')
         with self._lock:
+            if owner.exists() and json.loads(owner.read_text()).get('state')=='RETIRED':
+                raise AttemptConflict('INITIALIZATION_SNAPSHOT_RETIRED_NEW_EXECUTION_REQUIRED')
             if destination.is_dir():
+                if shared:self._record_snapshot_owner(owner,run_id,snapshot_id)
                 return
             destination.parent.mkdir(parents=True, exist_ok=True)
-            self._copy_atomic(source, destination)
+            self._copy_atomic(source, destination,shared_snapshot=shared)
+            if shared:self._record_snapshot_owner(owner,run_id,snapshot_id)
+
+    def _record_snapshot_owner(self,path,run_id,snapshot_id):
+        from doxagent.v2_read.maintenance import atomic_json
+        if path.is_file():return
+        atomic_json(path,dict(workspace_run_id=run_id,snapshot_id=snapshot_id,state='LIVE'))
 
     def fork_snapshot(self, run_id: str, snapshot_id: str, destination_run_id: str) -> None:
         self._validate_identifier(snapshot_id, "snapshot_id")
@@ -144,6 +155,9 @@ class LocalWorkspaceStore:
             identity = {"source_run_id": run_id, "snapshot_id": snapshot_id}
             if marker.is_file() and json.loads(marker.read_text(encoding="utf-8")) == identity:
                 return
+            owner=self.root/'.init-owners'/(source.name+'.json')
+            if owner.exists() and json.loads(owner.read_text()).get('state')=='RETIRED':
+                raise AttemptConflict('INITIALIZATION_SNAPSHOT_RETIRED_REBUILD_FROM_PUBLISHED_ARTIFACTS')
             if destination.exists():
                 raise AttemptConflict("snapshot fork destination already exists")
             if not source.is_dir():
@@ -156,7 +170,7 @@ class LocalWorkspaceStore:
         return self.root / ".init" / identity
 
     def _copy_atomic(
-        self, source: Path, destination: Path, *, identity: dict[str, str] | None = None
+        self, source: Path, destination: Path, *, identity: dict[str, str] | None = None,shared_snapshot=False
     ) -> None:
         if source.is_symlink() or any(
             item.is_symlink() or not self._is_contained(item, source) for item in source.rglob("*")
@@ -165,7 +179,14 @@ class LocalWorkspaceStore:
         destination.parent.mkdir(parents=True, exist_ok=True)
         with tempfile.TemporaryDirectory(prefix=".s-", dir=destination.parent) as temporary:
             staging = Path(temporary) / "workspace"
-            shutil.copytree(source, staging)
+            if shared_snapshot:
+                from doxagent.codex_runtime.immutable_evidence import adopt_file
+                def copy_file(origin,target):
+                    adopt_file(origin,target,self.root/'.init-contents',mode=stat.S_IMODE(Path(origin).stat().st_mode))
+                    return str(target)
+                shutil.copytree(source,staging,copy_function=copy_file)
+            else:
+                shutil.copytree(source, staging)
             if identity is not None:
                 marker = staging / "audit" / "initialization-fork.json"
                 marker.parent.mkdir(parents=True, exist_ok=True)

@@ -61,9 +61,9 @@ def build(source, target):
                 writer.execute(sql)
         for table in tables:
             columns = [r[1] for r in reader.execute('PRAGMA table_info(' + quoted(table) + ')')]
-            payload = columns.index('payload') + 1 if table in ('objects', 'object_current', 'business_revisions') else None
-            kind_index = columns.index('kind') + 1 if table == 'objects' else None
-            valid_to = columns.index('valid_to') + 1 if table == 'objects' else None
+            payload = columns.index('payload') + 1 if table in ('objects', 'object_history', 'object_current', 'business_revisions') else None
+            kind_index = columns.index('kind') + 1 if table in ('objects', 'object_history') else None
+            valid_to = columns.index('valid_to') + 1 if table in ('objects', 'object_history') else None
             query = 'SELECT rowid,' + ','.join(map(quoted, columns)) + ' FROM ' + quoted(table) + ' ORDER BY rowid'
             insert = 'INSERT INTO ' + quoted(table) + '(rowid,' + ','.join(map(quoted, columns)) + ') VALUES(' + ','.join('?' for _ in range(len(columns)+1)) + ')'
             digest = hashlib.sha256()
@@ -82,7 +82,7 @@ def build(source, target):
                         # copies, as in maintenance.compact().
                         row[columns.index('before_payload') + 1] = None
                         row[columns.index('after_payload') + 1] = None
-                    if table == 'objects' and not bus_gap and row[kind_index] == 'native:poll_states' and row[valid_to] is not None and row[valid_to] < floor:
+                    if table in ('objects', 'object_history') and not bus_gap and row[kind_index] == 'native:poll_states' and row[valid_to] is not None and row[valid_to] < floor:
                         omitted += 1
                         continue
                     if payload and len(row[payload]) >= 16384 and MARKER not in row[payload]:

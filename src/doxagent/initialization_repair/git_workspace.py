@@ -87,6 +87,17 @@ class GitWorkspaceManager:
         )
         return [line[3:] for line in output.splitlines() if len(line) > 3]
 
+    def retire(self, incident_id: str) -> bool:
+        path=self.root/'incidents'/incident_id/'worktree'
+        if path.resolve().parent!=self.root/'incidents'/incident_id or path.is_symlink():
+            raise GitWorkspaceError('repair worktree escaped its incident owner')
+        if not path.exists():return False
+        if self._run(['git','status','--porcelain','--untracked-files=all'],cwd=path):return False
+        # The committed repair branch and small receipts remain recoverable in
+        # the existing bare mirror. Let Git remove its own worktree registration.
+        self._run(['git','--git-dir',str(self.bare),'worktree','remove',str(path)])
+        return True
+
     def source_sha256(self, workspace: IncidentWorkspace) -> str:
         """Hash the committed Git archive used as the candidate build source."""
 

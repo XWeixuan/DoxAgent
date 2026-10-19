@@ -1,0 +1,10 @@
+[Unit]
+Description=Retry DoxAgent release resource retirement
+
+[Timer]
+OnBootSec=5min
+OnUnitInactiveSec=1h
+Persistent=true
+
+[Install]
+WantedBy=timers.target

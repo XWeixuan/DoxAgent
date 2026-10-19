@@ -77,3 +77,19 @@ async def test_failed_receipt_model_refresh_requires_explicit_override(
     assert journal.get("worker_invocations", "job-1")["model"] == "gpt-6-luna"
     assert journal.get("worker_invocations", "job-2")["model"] == "gpt-6-luna"
     assert journal.get("worker_invocations", "job-2")["requested_model"] == expected_model
+
+
+@pytest.mark.asyncio
+async def test_retired_non_w3_failure_keeps_receipt_and_does_not_redispatch(tmp_path):
+    from types import SimpleNamespace
+    journal=RuntimeJournal(tmp_path/'runtime.db');worker=_Worker()
+    request=SimpleNamespace(run_id='maintenance-o3',node='d3_o3_maintain',task_phase=None,attempt_id='a')
+    identity='runtime-worker:maintenance:maintenance-o3:d3_o3_maintain:maintain'
+    frozen=dict(retired_process=True,run_id=request.run_id,attempt_id='a',node=request.node)
+    job=WorkerJob(job_id='failed-job',run_id=request.run_id,attempt_id='a',status='failed')
+    journal.set('worker_requests',identity,frozen);journal.set('worker_receipts',identity,job.model_dump(mode='json'))
+    with pytest.raises(ValueError,match='WORKER_REQUEST_RETIRED_REBUILD_FROM_PINNED_ARTIFACTS'):
+        await ReceiptWorker(worker,journal,'maintenance').run(request)
+    assert worker.requests==[] and journal.get('worker_requests',identity)==frozen
+    assert journal.get('worker_receipts',identity)['job_id']=='failed-job'
+    assert journal.get('worker_generation',identity) is None

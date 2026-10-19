@@ -1,23 +1,30 @@
-ARG BASE_IMAGE=doxagent-v2:production
+ARG BASE_IMAGE=doxagent-deps:site
 ARG CHROME_RUNTIME_IMAGE=doxagent-chrome:approved-cc38be0a
-FROM ${BASE_IMAGE} AS application
-FROM ${CHROME_RUNTIME_IMAGE}
+FROM ${CHROME_RUNTIME_IMAGE} AS approved_chrome
+FROM ${BASE_IMAGE} AS supervisor-deps
 USER root
 ARG GOOGLE_CHROME_VERSION=153.0.8010.52-1
-# Copy dependencies separately from changing source. A source-only release must
-# not recopy the entire /app virtualenv in the same layer as its Python files.
-RUN rm -rf /app
-COPY --from=application /app/.venv /app/.venv
-COPY --from=application /app/pyproject.toml /app/uv.lock /app/README.md /app/
+# Import only the approved browser, never its historical application layers.
+COPY --from=approved_chrome /opt/google/chrome /opt/google/chrome
+RUN ln -sf /opt/google/chrome/google-chrome /usr/bin/google-chrome \
+    && ln -sf /opt/google/chrome/google-chrome /usr/bin/google-chrome-stable \
+    && test "$(/opt/google/chrome/chrome --version | awk '{print $3}')" = "${GOOGLE_CHROME_VERSION%-*}"
+ENV CHROME_BINARY=/usr/bin/google-chrome-stable
+FROM supervisor-deps AS source-files
+COPY src /source/src
+RUN rm -rf /source/src/cdecr/catalogs
+FROM supervisor-deps AS supervisor
 ARG DOXAGENT_BUILD_COMMIT=unversioned
+ARG DOXAGENT_SOURCE_SHA256=""
 ENV DOXAGENT_BUILD_COMMIT=${DOXAGENT_BUILD_COMMIT}
-LABEL org.opencontainers.image.revision=${DOXAGENT_BUILD_COMMIT}
-# Keep the approved pinned browser/OS; use exact committed application sources.
-COPY --from=application /app/src /app/src
-COPY --from=application /app/prompts /app/prompts
-COPY --from=application /app/dev_plan /app/dev_plan
-RUN test "$(dpkg-query -W -f='${Version}' google-chrome-stable)" = "${GOOGLE_CHROME_VERSION}"
+LABEL org.opencontainers.image.revision=${DOXAGENT_BUILD_COMMIT} \
+      doxagent.source.sha256=${DOXAGENT_SOURCE_SHA256} doxagent.owner=doxagent
+COPY --from=source-files /source/src /app/src
+COPY prompts /app/prompts
+COPY dev_plan/workflow_v2/api_contract /app/dev_plan/workflow_v2/api_contract
 COPY deploy/chrome-supervisor-entrypoint.sh /usr/local/bin/chrome-supervisor-entrypoint
-RUN chmod 0755 /usr/local/bin/chrome-supervisor-entrypoint
+RUN find /app/src /app/prompts /app/dev_plan -type d ! -perm -005 -exec chmod a+rx {} + \
+    && find /app/src /app/prompts /app/dev_plan -type f ! -perm -004 -exec chmod a+r {} + \
+    && chmod 0755 /usr/local/bin/chrome-supervisor-entrypoint
 ENTRYPOINT ["/usr/local/bin/chrome-supervisor-entrypoint"]
 CMD ["python", "-m", "doxagent.site_strategy.chrome_supervisor", "--socket", "/run/doxagent-chrome/supervisor.sock", "--profile-root", "/site-data/profiles"]

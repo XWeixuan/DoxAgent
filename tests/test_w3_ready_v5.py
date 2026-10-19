@@ -176,6 +176,14 @@ async def test_v5_attempt_and_cutoff_changes_keep_prepared_sdk_and_mcp(tmp_path)
         async def thread_fork(self, *args, **kwargs):
             calls.append("fork")
             assert kwargs["config"]["mcp_servers.w3_research.enabled"]
+            for server in ("data", "source_capture", "o4_operations", "d2_discovery"):
+                prefix = f"mcp_servers.{server}."
+                config = kwargs["config"]
+                assert config[prefix + "enabled"] is False
+                assert config[prefix + "command"]
+                assert config[prefix + "args"][:1] == ["-m"]
+                assert config[prefix + "args"][1].startswith("doxagent.")
+                assert not any(k.startswith(prefix + "env.") for k in config)
             return Thread()
 
         async def thread_resume(self, *args, **kwargs):

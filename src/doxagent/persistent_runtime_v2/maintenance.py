@@ -48,6 +48,12 @@ class RuntimeMaintenance:
         self.control = InitializationRepository(settings.ticker_initialization_control_path)
         self.worker_factory = worker_factory
         self.o2_factory, self.o3_factory = o2_factory, o3_factory
+        self.resource_gc_due = True
+
+    def collect_resources(self):
+        from .resource_gc import collect
+        self.resource_gc_due=False
+        return collect(self.journal,self.settings.ticker_initialization_control_path,limit=4)
 
     def _frame(self, task: dict[str, Any]) -> dict[str, Any]:
         current = self.control.active_revision(task["ticker"])
@@ -505,6 +511,7 @@ class RuntimeMaintenance:
         finally:
             if hasattr(worker, "aclose"):
                 await worker.aclose()
+            self.resource_gc_due=True
 
     def _admit(self, revision):
         from doxagent.workflows.codex_document3.repository import SQLiteDocument3PolicyRepository

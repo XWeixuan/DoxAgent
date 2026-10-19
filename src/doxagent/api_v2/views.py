@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from doxagent.v2_read.settings import Limits
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
@@ -107,7 +108,7 @@ class Views:
             )
             value = {
                 "view_id": "pending",
-                "expires_at": instant(now + timedelta(days=1)),
+                "expires_at": instant(now + timedelta(minutes=Limits.load().view_minutes)),
                 "page": page,
                 "ticker": ticker,
                 "clock": clock,

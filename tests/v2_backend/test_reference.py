@@ -80,13 +80,13 @@ def test_actual_reference_input_and_equal_version_no_change_are_immutable(tmp_pa
             params={"view_id": view, "limit": 1},
         )
         assert response.status_code == 200, response.text
-        data = response.json()["data"]
+        data = response.json()["data"]["data"]
         change = data["changes"]["items"][0]
         url = PREFIX + f"/tickers/MU/reference-deltas/daily-a/changes/{change['change_id']}/event"
         response = client.get(url, headers=headers, params={"side": "after", "limit": 1})
         assert response.status_code == 200, response.text
         assert (
-            response.json()["data"]["reference_snapshot_id"] == data["after_reference_snapshot_id"]
+            response.json()["data"]["data"]["reference_snapshot_id"] == data["after_reference_snapshot_id"]
         )
         assert client.get(url, headers=headers, params={"side": "before"}).status_code == 404
     prepare(

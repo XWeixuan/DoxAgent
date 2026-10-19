@@ -33,18 +33,29 @@ def migrate(db):
                "BEGIN SELECT RAISE(ABORT,'ARTIFACT_ALREADY_DELETING'); END")
 
 
-def native_triggers(db, table, columns, identity):
-    """Historical references are append-only business evidence, not age-based logs."""
-    for column in columns:
-        for operation in ("INSERT", "UPDATE"):
-            name = quoted("v2_artifact_" + table + "_" + column + "_" + operation)
-            changed = "UPDATE OF " + quoted(column) if operation == "UPDATE" else "INSERT"
-            db.execute("CREATE TRIGGER IF NOT EXISTS " + name + " AFTER " + changed + " ON " + quoted(table) +
-                " WHEN instr(NEW." + quoted(column) + ",'$doxagent_content_v1')>0 BEGIN "
-                "INSERT INTO artifact(id,sha256,size,codec,location,class,created_at) "
-                "SELECT value,value,0,'json-chunks-v1','native-files/'||substr(value,1,2)||'/'||value,'BUSINESS',strftime('%Y-%m-%dT%H:%M:%fZ','now') "
-                "FROM json_tree(NEW." + quoted(column) + ") WHERE key='$doxagent_content_v1' ON CONFLICT DO NOTHING; "
-                "INSERT INTO artifact_ref SELECT '" + table + "'," + identity + ",value FROM json_tree(NEW." + quoted(column) + ") WHERE key='$doxagent_content_v1' ON CONFLICT DO NOTHING; END")
+def native_triggers(db, table, columns, identity, *, classification='BUSINESS'):
+    """Current owners replace their references; deleted owners release them."""
+    # A table can have several JSON columns. Rebuild all of its references in
+    # one trigger, otherwise updates of two columns can erase each other's refs.
+    for name, in db.execute("SELECT name FROM sqlite_master WHERE type='trigger' AND name LIKE ?", ("v2_artifact_"+table+"_%",)).fetchall():
+        db.execute("DROP TRIGGER "+quoted(name))
+    assert classification in {'BUSINESS', 'SERVING'}
+    old_identity=identity.replace('NEW.','OLD.')
+    conflict=("ON CONFLICT(id) DO UPDATE SET state='LIVE' WHERE artifact.class='SERVING'"
+              if classification=='SERVING' else "ON CONFLICT(id) DO UPDATE SET state='LIVE' WHERE artifact.codec='json-chunks-v1' AND artifact.location='native-files/'||substr(excluded.id,1,2)||'/'||excluded.id")
+    queries=["SELECT value FROM json_tree(NEW."+quoted(c)+") WHERE key='$doxagent_content_v1'" for c in columns]
+    if table=='v2_source_receipts':
+        # Capture serializes an entire SQL row; its JSON columns are strings in
+        # that envelope. json_tree of the outer envelope alone misses these refs.
+        queries.append("SELECT n.value FROM json_tree(NEW.payload) j JOIN json_tree(CASE WHEN j.type='text' AND j.key IN ('payload','payload_json','inputs','receipt','data_json') AND json_valid(j.value) THEN j.value ELSE '{}' END) n WHERE n.key='$doxagent_content_v1'")
+    hashes=' UNION '.join(queries)
+    for operation in ('INSERT','UPDATE'):
+        event='UPDATE OF '+','.join(map(quoted,columns)) if operation=='UPDATE' else 'INSERT'
+        clear=("DELETE FROM artifact_ref WHERE owner_type='"+table+"' AND owner_id="+old_identity+";") if operation=='UPDATE' else ''
+        db.execute("CREATE TRIGGER "+quoted('v2_artifact_'+table+'_'+operation)+" AFTER "+event+" ON "+quoted(table)+" BEGIN "+clear+
+            "INSERT INTO artifact(id,sha256,size,codec,location,class,created_at) SELECT value,value,0,'json-chunks-v1','native-files/'||substr(value,1,2)||'/'||value,'"+classification+"',strftime('%Y-%m-%dT%H:%M:%fZ','now') FROM ("+hashes+") WHERE 1 "+conflict+"; "+
+            "INSERT INTO artifact_ref SELECT '"+table+"',"+identity+",value FROM ("+hashes+") WHERE 1 ON CONFLICT DO NOTHING; END")
+    db.execute("CREATE TRIGGER "+quoted('v2_artifact_'+table+'_DELETE')+" AFTER DELETE ON "+quoted(table)+" BEGIN DELETE FROM artifact_ref WHERE owner_type='"+table+"' AND owner_id="+old_identity+"; END")
 
 
 def retain(db, identity, sha256, size, *, codec, location, owner_type, owner_id, classification="BUSINESS"):
@@ -70,17 +81,24 @@ def collect_diagnostics(store, *, now, limit=10):
     protected = ("EXISTS(SELECT 1 FROM artifact_ref r WHERE r.artifact_id=a.id) OR "
                  "EXISTS(SELECT 1 FROM retention_hold h WHERE h.released_at IS NULL AND (h.scope='ALL' OR h.id=a.id))")
     with store.connect(write=True, timeout=.05) as db:
+        queue = db.execute("SELECT 1 FROM sqlite_master WHERE name='serving_content_exit'").fetchone()
+        if queue:
+            db.execute("UPDATE artifact SET state='MARKED' WHERE id IN (SELECT a.id FROM serving_content_exit e JOIN artifact a ON a.id=e.id WHERE a.class='SERVING' AND a.state='LIVE' AND NOT ("+protected+") LIMIT ?)",(limit,))
+            db.execute("DELETE FROM serving_content_exit WHERE id IN (SELECT e.id FROM serving_content_exit e LEFT JOIN artifact a ON a.id=e.id WHERE a.id IS NULL OR a.state<>'LIVE' LIMIT ?)",(limit,))
         db.execute("UPDATE artifact SET state='MARKED' WHERE id IN (SELECT id FROM artifact a WHERE class='DIAGNOSTIC' AND state='LIVE' AND created_at<? AND NOT ("+protected+") LIMIT ?)",
                    (instant(now-timedelta(days=Limits.load().diagnostic_days)),limit))
     with store.connect() as db:
-        candidates = db.execute("SELECT id,sha256,location,state FROM artifact WHERE class='DIAGNOSTIC' AND state IN ('MARKED','QUARANTINED','DELETING') LIMIT ?", (limit,)).fetchall()
+        candidates = db.execute("SELECT id,sha256,location,state,class FROM artifact WHERE class IN ('DIAGNOSTIC','SERVING') AND state IN ('MARKED','QUARANTINED','DELETING') LIMIT ?", (limit,)).fetchall()
     changed = []
-    for identity, digest, location, stage in candidates:
+    for identity, digest, location, stage, classification in candidates:
         source = (root / location).resolve()
         quarantine = root / "quarantine" / digest
         if not source.is_relative_to(root) or source == root or source.is_symlink():
             raise ValueError("artifact escaped owned storage")
         with store.connect(write=True, timeout=.05) as db:
+            current = db.execute('SELECT state FROM artifact WHERE id=?',(identity,)).fetchone()
+            if current is None or current[0] != stage:
+                continue
             if db.execute("SELECT 1 FROM artifact a WHERE a.id=? AND ("+protected+")", (identity,)).fetchone():
                 continue
             manifest = {"id": identity, "sha256": digest, "original": location, "quarantine": str(quarantine.relative_to(root))}
@@ -88,7 +106,13 @@ def collect_diagnostics(store, *, now, limit=10):
                 quarantine.parent.mkdir(exist_ok=True)
                 if source.exists():
                     if quarantine.exists():
-                        raise ValueError("quarantine collision")
+                        if classification != 'SERVING':
+                            raise ValueError("quarantine collision")
+                        # A regenerated CAS value can reacquire an owner while
+                        # the old unreferenced quarantine awaits its next pass.
+                        if quarantine.is_symlink() or quarantine.resolve().parent != (root/'quarantine').resolve():
+                            raise ValueError('quarantine escaped owned storage')
+                        shutil.rmtree(quarantine)
                     if source.is_file():
                         with source.open("rb") as stream:
                             if hashlib.file_digest(stream,"sha256").hexdigest() != digest:

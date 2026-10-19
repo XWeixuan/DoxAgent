@@ -53,7 +53,8 @@ x-environment: &environment
   DOXAGENT_V2_DB_QUEUE_SECONDS: ${DOXAGENT_V2_DB_QUEUE_SECONDS:-1}
   DOXAGENT_V2_DB_CANCEL_GRACE_SECONDS: ${DOXAGENT_V2_DB_CANCEL_GRACE_SECONDS:-1}
   DOXAGENT_V2_DB_DETAIL_SECONDS: ${DOXAGENT_V2_DB_DETAIL_SECONDS:-5}
-  DOXAGENT_V2_DB_MVCC_HOURS: ${DOXAGENT_V2_DB_MVCC_HOURS:-24}
+  DOXAGENT_V2_DB_VIEW_MINUTES: ${DOXAGENT_V2_DB_VIEW_MINUTES:-15}
+  DOXAGENT_V2_DB_STREAM_MINUTES: ${DOXAGENT_V2_DB_STREAM_MINUTES:-30}
   DOXAGENT_V2_DB_DIAGNOSTIC_DAYS: ${DOXAGENT_V2_DB_DIAGNOSTIC_DAYS:-30}
   CODEX_HOME: /data/codex-home
 
@@ -84,7 +85,7 @@ services:
     build:
       context: .
       dockerfile: deploy/Dockerfile.site-access
-      args: {BASE_IMAGE: "${DOXAGENT_V2_IMAGE:-doxagent-v2:production}"}
+      args: {BASE_IMAGE: "${DOXAGENT_BACKEND_DEPS_IMAGE:-doxagent-deps:backend}"}
     env_file: ["${DOXAGENT_V2_ENV_FILE:-.env.v2}"]
     # The supervisor owns the stable network namespace so a Site Access
     # process/container restart cannot strand the long-lived Chrome CDP ports
@@ -139,7 +140,7 @@ services:
       context: .
       dockerfile: deploy/Dockerfile.chrome-supervisor
       args:
-        BASE_IMAGE: ${DOXAGENT_V2_IMAGE:-doxagent-v2:production}
+        BASE_IMAGE: ${DOXAGENT_SITE_DEPS_IMAGE:-doxagent-deps:site}
         GOOGLE_CHROME_VERSION: ${DOXAGENT_GOOGLE_CHROME_VERSION:-153.0.8010.52-1}
     env_file: ["${DOXAGENT_V2_ENV_FILE:-.env.v2}"]
     networks:
@@ -266,7 +267,7 @@ services:
     command: [python, -m, doxagent.v2_read.cli, gc-worker, --read-db, /data/read/v2.sqlite3]
   v2-transport-maintenance:
     <<: *backend
-    command: [python, -m, doxagent.v2_read.transport_archive, --source, bus=/data/bus/bus.sqlite3, --source, runtime=/data/runtime/runtime.sqlite3]
+    command: [python, -m, doxagent.v2_read.transport_archive, --source, research=/data/research/research.sqlite3, --source, initialization=/data/initialization/control.sqlite3, --source, bus=/data/bus/bus.sqlite3, --source, runtime=/data/runtime/runtime.sqlite3]
   v2-executor:
     <<: *backend
     # Exactly one writer across Paper and Live, enforced again by the OS-owned DB lock.

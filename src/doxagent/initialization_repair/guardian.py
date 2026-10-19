@@ -58,6 +58,7 @@ class Guardian:
         self.workspaces = workspaces or GitWorkspaceManager(self.root, source_repository)
         self.issue_path = self.root / "init-issue.md"
         self.external_auth_source = external_auth_source
+        self._resource_exit_at=0.0
 
     def initialize_watermark(self) -> datetime:
         path = self.root / "guardian-watermark.json"
@@ -119,6 +120,25 @@ class Guardian:
             except Exception as exc:
                 self.repairs.update_incident(incident.incident_id, last_error=str(exc)[:1000])
         render_to(self.repairs, self.issue_path)
+        self._retire_closed_worktrees()
+
+    def _retire_closed_worktrees(self):
+        import time
+        from datetime import timedelta
+        from doxagent.v2_read.maintenance import atomic_json
+        if time.monotonic()<self._resource_exit_at:return
+        self._resource_exit_at=time.monotonic()+3600
+        if not hasattr(self.docker,'incident_running'):return
+        retired=[];errors=[]
+        for incident in self.repairs.incidents():
+            if len(retired)>=2:break
+            if incident.status not in {IncidentStatus.SUCCEEDED,IncidentStatus.CANCELLED}:continue
+            if datetime.now(UTC)-incident.updated_at<timedelta(days=7):continue
+            if self.docker.incident_running(incident.incident_id):continue
+            try:
+                if self.workspaces.retire(incident.incident_id):retired.append(incident.incident_id)
+            except (OSError,RuntimeError) as exc:errors.append(dict(incident=incident.incident_id,error=str(exc)[:250]))
+        atomic_json(self.root/'last-resource-exit.json',dict(at=datetime.now(UTC).isoformat(),retired=retired,errors=errors))
 
     def _advance(self, incident: RepairIncident) -> None:
         incident = self.repairs.get(incident.incident_id)

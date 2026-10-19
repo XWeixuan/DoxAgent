@@ -377,6 +377,11 @@ class EventLibraryRepository:
             raise ValueError("ticker must not be empty")
         return normalized
 
+    @staticmethod
+    def _require_native_version(connection, ticker, version):
+        if version and not connection.execute('SELECT 1 FROM library_versions WHERE ticker=? AND version=?',(ticker,version)).fetchone():
+            raise UnknownLibraryObjectError(f'library version {version} is not retained for {ticker}')
+
     def published_version(self, ticker: str) -> int:
         normalized = self._ticker(ticker)
         with self._read() as connection:
@@ -428,6 +433,7 @@ class EventLibraryRepository:
         if selected == 0:
             return 0
         with self._read() as connection:
+            self._require_native_version(connection,normalized,selected)
             row = connection.execute(
                 "SELECT MAX(event_no) AS max_event_no FROM canonical_events "
                 "WHERE ticker=? AND created_version<=?",
@@ -615,6 +621,14 @@ class EventLibraryRepository:
                 """,
                 (runtime_scope, runtime_atomic_id),
             ).fetchone()
+            if row is None:
+                # Minimal branches retain the committed identity map instead of
+                # every old published Delta payload. Pending rows still win.
+                row = connection.execute(
+                    "SELECT runtime_atomic_version,runtime_signature FROM runtime_atomic_mappings "
+                    "WHERE runtime_scope=? AND runtime_atomic_id=?",
+                    (runtime_scope, runtime_atomic_id),
+                ).fetchone()
         if row is None:
             return None
         return int(row["runtime_atomic_version"]), str(row["runtime_signature"])
@@ -629,6 +643,7 @@ class EventLibraryRepository:
         if selected_version == 0:
             return []
         with self._read() as connection:
+            self._require_native_version(connection,normalized,selected_version)
             rows = connection.execute(
                 """
                 SELECT e.event_no
@@ -663,6 +678,7 @@ class EventLibraryRepository:
             return None
         selected_version = self.published_version(normalized) if version is None else version
         with self._read() as connection:
+            self._require_native_version(connection,normalized,selected_version)
             exists = connection.execute(
                 "SELECT 1 FROM canonical_events "
                 "WHERE ticker=? AND event_no=? AND created_version<=?",
@@ -680,6 +696,7 @@ class EventLibraryRepository:
         normalized = self._ticker(ticker)
         selected_version = self.published_version(normalized) if version is None else version
         with self._read() as connection:
+            self._require_native_version(connection,normalized,selected_version)
             row = connection.execute(
                 """
                 SELECT status,redirect_to_event_no FROM canonical_event_states
@@ -706,6 +723,7 @@ class EventLibraryRepository:
         normalized = self._ticker(ticker)
         selected_version = self.published_version(normalized) if version is None else version
         with self._read() as connection:
+            self._require_native_version(connection,normalized,selected_version)
             row = connection.execute(
                 """
                 SELECT status,redirect_to_fact_no FROM canonical_fact_states

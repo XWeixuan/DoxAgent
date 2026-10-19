@@ -65,6 +65,8 @@ class RuntimeCoordinator:
         self._public_futures = {}
         self._public_next = {}
         self._public_bundle = {}
+        self._storage_future = None
+        self._storage_next = 0.0
 
     def mode(self, ticker: str, now: datetime | None = None) -> tuple[str, str | None]:
         at = now or self.journal.clock()
@@ -308,8 +310,16 @@ class RuntimeCoordinator:
         return identity
 
     def tick(self, ticker: str) -> None:
-        if self._closed or self.journal.get("pause", ticker):
+        if self._closed:
             return
+        cleanup=getattr(self.maintain,'collect_resources',None)
+        if cleanup and (self._storage_future is None or self._storage_future.done()) and (perf_counter()>=self._storage_next or getattr(self.maintain,'resource_gc_due',False)):
+            if self._storage_future is not None:
+                try:self._storage_future.result()
+                except Exception as exc:self.journal.gap('runtime-resource-exit',ticker,type(exc).__name__,str(exc)[:1000])
+            self._storage_future=self._background.submit(cleanup)
+            self._storage_next=perf_counter()+900
+        if self.journal.get('pause',ticker):return
         self.wake_effects()
         try:
             self.reconcile(ticker)

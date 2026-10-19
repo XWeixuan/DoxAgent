@@ -96,7 +96,8 @@ class ContentFiles:
     def backup(self, database: Path, destination: Path) -> None:
         """Copy precisely the content referenced by an already consistent DB backup."""
         import sqlite3
-        with sqlite3.connect(database.resolve().as_uri() + "?mode=ro", uri=True) as db:
+        from contextlib import closing
+        with closing(sqlite3.connect(database.resolve().as_uri() + "?mode=ro", uri=True)) as db:
             if not db.execute("SELECT 1 FROM sqlite_master WHERE name='content_locations'").fetchone():
                 return
             identities = [row[0] for row in db.execute("SELECT DISTINCT sha256 FROM content_locations")]

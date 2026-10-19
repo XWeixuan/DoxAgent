@@ -1,7 +1,8 @@
+ARG PYTHON_BASE_IMAGE=ghcr.io/astral-sh/uv:0.8.14-python3.11-bookworm-slim
 ARG IBKR_SDK_SOURCE_IMAGE=doxagent-ibapi:approved-7d361219
 FROM ${IBKR_SDK_SOURCE_IMAGE} AS approved_ibapi
 # Production backend and Codex worker share one immutable application image.
-FROM ghcr.io/astral-sh/uv:0.8.14-python3.11-bookworm-slim
+FROM ${PYTHON_BASE_IMAGE} AS backend-deps
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 UV_LINK_MODE=copy \
     UV_PROJECT_ENVIRONMENT=/app/.venv PATH="/app/.venv/bin:$PATH" \
     PLAYWRIGHT_BROWSERS_PATH=/ms-playwright CODEX_HOME=/data/codex-home
@@ -10,19 +11,12 @@ RUN sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.l
     && printf 'Acquire::Retries "3";\n' > /etc/apt/apt.conf.d/80-retries \
     && apt-get update && apt-get install -y --no-install-recommends ca-certificates curl git \
     && rm -rf /var/lib/apt/lists/*
-COPY pyproject.toml uv.lock README.md ./
-RUN --mount=type=cache,target=/root/.cache/uv uv sync --frozen --no-install-project --no-group dev
+COPY pyproject.toml uv.lock ./
+RUN --mount=type=cache,target=/root/.cache/uv printf 'DoxAgent dependency metadata\n' > README.md \
+    && uv sync --frozen --no-install-project --no-group dev
 ENV TIKTOKEN_CACHE_DIR=/app/.token-cache
 RUN python -c "import tiktoken; tiktoken.get_encoding('o200k_base')"
 RUN playwright install --with-deps chromium
-ARG DOXAGENT_BUILD_COMMIT=unversioned
-ARG DOXAGENT_SOURCE_SHA256=""
-ENV DOXAGENT_BUILD_COMMIT=${DOXAGENT_BUILD_COMMIT}
-LABEL org.opencontainers.image.revision=${DOXAGENT_BUILD_COMMIT} \
-      doxagent.source.sha256=${DOXAGENT_SOURCE_SHA256}
-COPY src ./src
-COPY scripts/ops/migrate_source_access_scopes.py ./scripts/ops/migrate_source_access_scopes.py
-RUN uv sync --frozen --no-group dev
 ARG IBKR_TWS_API_VERSION=1049.02
 ARG IBKR_TWS_API_SHA256=d1878128eb725bf744ab796f0ad518b915f2fce0f2c4ab3b9476f8a7fcf7649a
 # The pinned upstream archive is unavailable; retain the approved official package.
@@ -30,11 +24,29 @@ COPY --from=approved_ibapi /app/.venv/lib/python3.11/site-packages/ibapi /app/.v
 COPY --from=approved_ibapi /app/.venv/lib/python3.11/site-packages/ibapi-10.49.2.dist-info /app/.venv/lib/python3.11/site-packages/ibapi-10.49.2.dist-info
 RUN uv pip install --python /app/.venv/bin/python protobuf==5.29.5 \
     && uv pip check --python /app/.venv/bin/python
+ENV PYTHONPATH=/app/src
+COPY src/cdecr/catalogs /app/src/cdecr/catalogs
+
+FROM backend-deps AS source-files
+COPY src /source/src
+RUN rm -rf /source/src/cdecr/catalogs
+
+FROM backend-deps AS backend
+ARG DOXAGENT_BUILD_COMMIT=unversioned
+ARG DOXAGENT_SOURCE_SHA256=""
+ENV DOXAGENT_BUILD_COMMIT=${DOXAGENT_BUILD_COMMIT}
+LABEL org.opencontainers.image.revision=${DOXAGENT_BUILD_COMMIT} \
+      doxagent.source.sha256=${DOXAGENT_SOURCE_SHA256}
+COPY --from=source-files /source/src ./src
+COPY scripts/ops/migrate_source_access_scopes.py ./scripts/ops/migrate_source_access_scopes.py
+COPY README.md ./
+RUN --mount=type=cache,target=/root/.cache/uv uv pip install --no-deps --python /app/.venv/bin/python -e /app
 COPY prompts ./prompts
 COPY dev_plan/workflow_v2/api_contract ./dev_plan/workflow_v2/api_contract
 # A root checkout under umask 0077 can create 0600 files/0700 directories.
 # COPY preserves those host modes; the non-root browser owner must still import
 # the exact same committed application, independent of the release shell's umask.
-RUN chmod -R a+rX /app/src /app/prompts /app/dev_plan /app/scripts \
+RUN find /app/src /app/prompts /app/dev_plan /app/scripts -type d ! -perm -005 -exec chmod a+rx {} + \
+    && find /app/src /app/prompts /app/dev_plan /app/scripts -type f ! -perm -004 -exec chmod a+r {} + \
     && chmod a+r /app/pyproject.toml /app/uv.lock /app/README.md
 CMD ["python", "-m", "doxagent.production_v2", "check"]

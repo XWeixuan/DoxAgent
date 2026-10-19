@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import re
 import sqlite3
+from contextlib import closing
 from pathlib import Path
 from typing import Any
 
@@ -159,6 +160,9 @@ class SourceOutbox:
             from .artifact_registry import native_triggers
 
             migrate_artifacts(db)
+            from .source_lifecycle import migrate as migrate_lifecycle
+            migrate_lifecycle(db)
+            names.add('v2_source_receipts')
             for native_table in sorted(names):
                 if native_table.startswith("sqlite_"):
                     continue
@@ -257,6 +261,8 @@ class SourceOutbox:
             raise ValueError("source batch limit must be 1..500")
         db = self.connection()
         try:
+            from .source_lifecycle import check_replay
+            check_replay(db, after)
             from .transport_archive import has_packs
             if has_packs(db) and db.execute("SELECT 1 FROM v2_receipt_packs WHERE seq>? LIMIT 1", (after,)).fetchone():
                 return [self.event(sequence) for sequence in self.coordinates(after, limit)]
@@ -290,6 +296,8 @@ class SourceOutbox:
             raise ValueError("invalid projection batch size")
         db = self.connection()
         try:
+            from .source_lifecycle import check_replay
+            check_replay(db, after)
             from .transport_archive import has_packs
             packed = (" UNION SELECT seq FROM (SELECT seq FROM v2_receipt_packs WHERE seq>? ORDER BY seq LIMIT ?)"
                       if has_packs(db) else "")
@@ -327,7 +335,9 @@ class SourceOutbox:
         finally:
             db.close()
 
-    def event(self, sequence: int) -> dict[str, Any] | None:
+    def event(self, sequence: int, *, decode: bool = True) -> dict[str, Any] | None:
+        def packet(value):
+            return {**value,'row':self.content.source_row(json.loads(value['payload']))} if decode else dict(value)
         db = self.connection()
         try:
             row = db.execute(
@@ -336,7 +346,12 @@ class SourceOutbox:
                 (sequence,),
             ).fetchone()
             if row:
-                return {**dict(row), "row": self.content.source_row(json.loads(row["payload"]))}
+                return packet(row)
+            if db.execute("SELECT 1 FROM sqlite_master WHERE name='v2_source_exception_receipts'").fetchone():
+                saved = db.execute('SELECT packet FROM v2_source_exception_receipts WHERE seq=?',(sequence,)).fetchone()
+                if saved:
+                    value = json.loads(saved[0])
+                    return packet(value)
             from .transport_archive import has_packs, load_pack
             packed = db.execute("SELECT digest,size,ordinal FROM v2_receipt_packs WHERE seq=?",
                                 (sequence,)).fetchone() if has_packs(db) else None
@@ -344,7 +359,7 @@ class SourceOutbox:
                 value = load_pack(str(self.path.parent / 'receipt-packs' / self.source), packed[0], packed[1])[packed[2]]
                 if value['seq'] != sequence:
                     raise ValueError('transport pack coordinate mismatch')
-                return {**value, "row": self.content.source_row(json.loads(value["payload"]))}
+                return packet(value)
             archived = db.execute(
                 "SELECT digest,size FROM v2_receipt_archive WHERE seq=?", (sequence,)
             ).fetchone()
@@ -358,13 +373,13 @@ class SourceOutbox:
                 for offset in range(0, archived[1], files.CHUNK)
             )
             value = json.loads(raw)
-            return {**value, "row": self.content.source_row(json.loads(value["payload"]))}
+            return packet(value)
         finally:
             db.close()
 
     def acknowledge(self, consumer: str, checkpoint: int, repair_pin: int | None = None) -> None:
         """Consumer registrations are durable; offline consumers continue to pin history."""
-        with self.connection(write=True) as db:
+        with closing(self.connection(write=True)) as db, db:
             db.execute("BEGIN IMMEDIATE")
             if repair_pin is None:
                 db.execute("DELETE FROM v2_source_pins WHERE id=?", (consumer + ":repair",))
@@ -378,6 +393,21 @@ class SourceOutbox:
                 "ON CONFLICT(id) DO UPDATE SET checkpoint=max(checkpoint,excluded.checkpoint),updated_at=excluded.updated_at WHERE checkpoint<excluded.checkpoint",
                 (consumer, checkpoint),
             )
+
+    def acknowledge_exceptions(self, consumer, checkpoint, repairs):
+        from .source_lifecycle import acknowledge
+        acknowledge(self,consumer,checkpoint,repairs)
+
+    def retire_consumer(self, consumer):
+        from .source_lifecycle import retire_consumer
+        retire_consumer(self,consumer)
+
+    def claim_serving_facts(self, path):
+        if self.source!='runtime':return
+        from .source_lifecycle import migrate
+        with closing(self.connection(write=True)) as db,db:
+            db.execute('BEGIN IMMEDIATE');migrate(db)
+            db.execute('INSERT INTO v2_serving_fact_owner VALUES(1,?) ON CONFLICT(id) DO UPDATE SET path=excluded.path',(str(Path(path).resolve()),))
 
     def archive(self, checkpoint_database: Path, *, before: str, limit: int = 100) -> int:
         """Archive acknowledged transport rows behind a verified consistent source backup.

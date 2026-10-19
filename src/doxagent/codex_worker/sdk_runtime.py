@@ -598,6 +598,15 @@ class OpenAICodexRuntime:
                 # Disabled stdio descriptors must not smuggle attempt-specific
                 # env/control paths back into the stable resident fingerprint.
                 sdk_config = {k: v for k, v in sdk_config.items() if not k.startswith(prefix)}
+                # Codex validates the transport even for disabled entries. An
+                # enabled=false-only table cannot deserialize on a clean home.
+                sdk_config[prefix + "command"] = sys.executable
+                module = (
+                    "doxagent.workflows.codex_document2.discovery_checkpoint"
+                    if disabled == "d2_discovery"
+                    else f"doxagent.mcp.{disabled}_server"
+                )
+                sdk_config[prefix + "args"] = ["-m", module]
                 sdk_config[prefix + "enabled"] = False
             sdk_config.update(
                 {

@@ -129,5 +129,7 @@ def test_evidence_lookup_plans_use_exact_identity_indexes(tmp_path):
                     (*args, 1, 1),
                 )
             )
-            assert "SEARCH objects USING INDEX " + index in plan, plan
+            assert "SEARCH object_history USING INDEX " + index in plan, plan
+            assert "SEARCH object_current USING INDEX current_case_" in plan, plan
+            assert "SCAN object_" not in plan, plan
             assert "SCAN objects" not in plan

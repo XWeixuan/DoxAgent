@@ -115,14 +115,14 @@ class DomainProjectors:
         elif table == "initialization_repair_rounds":
             with self.store.connect() as db:
                 found = db.execute(
-                    "SELECT ticker FROM objects "
+                    "SELECT ticker FROM object_current "
                     "WHERE kind='native:initialization_repair_incidents' "
                     "AND id=? AND valid_to IS NULL",
                     (value["incident_id"],),
                 ).fetchone()
                 if not found and event["operation"] == "DELETE":
                     found = db.execute(
-                        "SELECT ticker FROM objects "
+                        "SELECT ticker FROM object_current "
                         "WHERE kind='native:initialization_repair_rounds' "
                         "AND id=? AND valid_to IS NULL",
                         (value["round_id"],),
@@ -136,7 +136,7 @@ class DomainProjectors:
             else:
                 with self.store.connect() as db:
                     found = db.execute(
-                        "SELECT payload FROM objects WHERE kind='native:initialization_runs' "
+                        "SELECT payload FROM object_current WHERE kind='native:initialization_runs' "
                         "AND id=? AND valid_to IS NULL",
                         (row["run_id"],),
                     ).fetchone()
@@ -150,13 +150,14 @@ class DomainProjectors:
         if table == "runtime_v2_turns":
             with self.store.connect() as db:
                 found = db.execute(
-                    "SELECT ticker,payload FROM objects WHERE kind='native:runtime_v2_cases' "
+                    "SELECT ticker FROM object_current WHERE kind='native:runtime_v2_cases' "
                     "AND id=? AND valid_to IS NULL",
                     (value["case_id"],),
                 ).fetchone()
             if not found:
                 raise ValueError("turn Case must be indexed first")
-            ticker, related_case = found[0], json.loads(found[1])
+            ticker=found[0]
+            related_case={'source':{'snapshot':{'ticker':ticker}}}
         identity = next(
             (
                 value[key]
@@ -322,7 +323,8 @@ class DomainProjectors:
                     record["data"] = {**row, "payload": value}
             from .initialization import progress
 
-            records.append(progress(self.store, initialization_run, record))
+            if not getattr(self.store,'defer_initialization_progress',False):
+                records.append(progress(self.store, initialization_run, record))
         if table == "source_definitions":
             record.update(ticker="", id=value["source_id"])
         elif table == "runtime_v2_policy_activations":
@@ -582,7 +584,7 @@ class DomainProjectors:
                 summary = self.store.get("case", ticker, item["parent"])
                 if summary:
                     changed_cases[summary["case_id"]] = (ticker, summary)
-        if changed_cases:
+        if changed_cases and not getattr(self.store,'defer_graph_projection',False):
             from .graph import project
 
             for case_ticker, summary in changed_cases.values():
@@ -727,7 +729,7 @@ class DomainProjectors:
                         "source_id": source["source_id"],
                         "route": message["case"]["route_group"],
                         "sort": message_anchor(message),
-                        "search": (standard.get("title") or "") + "\n" + standard.get("body", ""),
+                        "search": self.message_search(ticker, standard),
                         "day": semantic_day(
                             datetime.fromisoformat(message["stream_published_at"])
                         ).isoformat(),
@@ -757,11 +759,29 @@ class DomainProjectors:
             ),
         }
 
+    def message_search(self, ticker: str, message: dict[str, Any]) -> str:
+        # Thin native state owns a BodyRef, not a second inline body. Reuse the
+        # content object when building/updating the search index, including UTF-8
+        # bodies larger than one API chunk.
+        body = message.get("body")
+        if body is None:
+            reference = message.get("body_ref")
+            chunks = []
+            offset = 0
+            while reference and offset < reference["size_bytes"]:
+                _, text, end = self.store.content(ticker, reference["content_id"], offset, 131072)
+                if end <= offset:
+                    raise ValueError("message content did not advance")
+                chunks.append(text)
+                offset = end
+            body = "".join(chunks)
+        return (message.get("title") or "") + "\n" + body
+
     def message(self, member: dict[str, Any], revision: int) -> list[dict[str, Any]]:
         # stream_members has no ticker; the stream identity is indexed on publication.
         with self.store.connect() as db:
             row = db.execute(
-                "SELECT ticker,payload FROM objects WHERE kind='native:stream_items' "
+                "SELECT ticker,payload FROM object_current WHERE kind='native:stream_items' "
                 "AND id=? AND valid_to IS NULL",
                 (member["stream_item_id"],),
             ).fetchone()
@@ -808,7 +828,7 @@ class DomainProjectors:
                 "source_id": message["source_id"],
                 "route": summary["case"]["route_group"],
                 "parent": case["case_id"] if case else None,
-                "search": (message.get("title") or "") + "\n" + message["body"],
+                "search": self.message_search(ticker, message),
                 "day": semantic_day(datetime.fromisoformat(stream["published_at"])).isoformat(),
             }
         ]

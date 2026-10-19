@@ -1,0 +1,12 @@
+[Unit]
+Description=DoxAgent component release resource reconciliation
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+TimeoutStartSec=10min
+ExecStart=/usr/bin/python3 /var/lib/doxagent/releases/storage_release.py reconcile-resources
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7

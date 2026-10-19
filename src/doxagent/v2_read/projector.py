@@ -18,8 +18,9 @@ Mapping = Callable[[dict[str, Any]], tuple[list[dict[str, Any]], list[dict[str, 
 
 
 class ProjectionWorker:
-    def __init__(self, store: ReadStore, sources: list[SourceOutbox], mapper: Mapping) -> None:
+    def __init__(self, store: ReadStore, sources: list[SourceOutbox], mapper: Mapping, *, consumer_id: str | None = None) -> None:
         self.store, self.sources, self.mapper = store, sources, mapper
+        self.consumer_id=consumer_id
         self._coverage_keys = {}
 
     def tick(self, *, limit: int = 100) -> int:
@@ -44,7 +45,7 @@ class ProjectionWorker:
                 head = source.head()
                 events = source.coordinates(position, limit) if hasattr(source,"coordinates") else source.read(position, limit)
             except (sqlite3.OperationalError, OSError, ValueError) as exc:
-                reason = "SOURCE_EPOCH_MISMATCH" if str(exc) == "SOURCE_EPOCH_MISMATCH" else "SOURCE_UNAVAILABLE"
+                reason = str(exc) if str(exc) in {'SOURCE_EPOCH_MISMATCH','SOURCE_SNAPSHOT_REQUIRED'} else 'SOURCE_UNAVAILABLE'
                 with self.store.connect(write=True) as db:
                     db.execute(
                         "INSERT OR REPLACE INTO source_health VALUES(?,?,?,?,?)",
@@ -114,12 +115,18 @@ class ProjectionWorker:
                     "SELECT 1 FROM gaps WHERE source=? LIMIT 1", (source.source,)
                 ).fetchone()
             from hashlib import sha256
-            consumer = "read:" + sha256(str(self.store.path).encode()).hexdigest()[:24]
+            consumer = self.consumer_id or "read:" + sha256(str(self.store.path).encode()).hexdigest()[:24]
             with self.store.connect() as db:
                 repair = db.execute("SELECT min(CASE WHEN event NOT GLOB '*[^0-9]*' THEN CAST(event AS INTEGER) ELSE 0 END) FROM gaps WHERE source=?", (source.source,)).fetchone()[0]
+                repairs = [int(r[0]) for r in db.execute("SELECT event FROM gaps WHERE source=? AND event<>'' AND event NOT GLOB '*[^0-9]*'",(source.source,))]
             if hasattr(source, "acknowledge"):
                 try:
-                    source.acknowledge(consumer, checkpoint, repair)
+                    if hasattr(source,'acknowledge_exceptions'):
+                        from .source_lifecycle import sync_business_facts
+                        sync_business_facts(source,self.store)
+                        source.acknowledge_exceptions(consumer,checkpoint,repairs)
+                    else:
+                        source.acknowledge(consumer, checkpoint, repair)
                 except sqlite3.OperationalError as exc:
                     if getattr(exc, "sqlite_errorcode", None) not in (sqlite3.SQLITE_BUSY, sqlite3.SQLITE_LOCKED):
                         raise

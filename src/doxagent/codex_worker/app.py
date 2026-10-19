@@ -69,6 +69,7 @@ def create_worker_app(
             safety_state_path=(
                 Path(settings.safety_state_path) if settings.safety_state_path else None
             ),
+            session_retention_settings=settings if runtime is None else None,
         )
     except BaseException:
         if owner is not None:

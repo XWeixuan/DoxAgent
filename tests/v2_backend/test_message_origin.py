@@ -1,10 +1,12 @@
 import asyncio
+from datetime import UTC, datetime
 
 from doxagent.v2_control.mirror import apply
 from tests.fixtures.message_bus_v2 import _bus, _input
 
 
 def test_ingestion_origin_is_immutable_across_delayed_duplicates(tmp_path):
+    published_at = datetime.now(UTC)
     repo, bus = _bus(tmp_path / "bus.db")
     bus.start_ticker("MU")
     source = repo.get_source("benzinga_news")
@@ -15,7 +17,7 @@ def test_ingestion_origin_is_immutable_across_delayed_duplicates(tmp_path):
             bus.accept_message(source=source, binding=binding, message=message, bootstrap=False)
         )
 
-    old = accept(_input("legacy"))
+    old = accept(_input("legacy", published_at=published_at))
     assert "v2_control_origin" not in repo.get_raw(old.raw_message_id).metadata
     with repo.transaction() as db:
         apply(
@@ -28,10 +30,10 @@ def test_ingestion_origin_is_immutable_across_delayed_duplicates(tmp_path):
                 "analysis_allowed": True,
             },
         )
-    duplicate = accept(_input("legacy"))
+    duplicate = accept(_input("legacy", published_at=published_at))
     assert duplicate.raw_message_id == old.raw_message_id
     assert "v2_control_origin" not in repo.get_raw(old.raw_message_id).metadata
-    message = _input("managed")
+    message = _input("managed", published_at=published_at)
     message.metadata["v2_control_origin"] = {"epoch": 999}
     result = accept(message)
     origin = repo.get_raw(result.raw_message_id).metadata["v2_control_origin"]

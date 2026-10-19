@@ -74,6 +74,7 @@ class WorkerJobManager:
         startup_concurrency: int = 3,
         background_aging_seconds: float = 300,
         safety_state_path: Path | None = None,
+        session_retention_settings=None,
     ) -> None:
         self._runtime = runtime
         self._workspaces = workspaces
@@ -104,6 +105,13 @@ class WorkerJobManager:
         from .thread_lifecycle import WorkerThreadLifecycle
 
         self.thread_lifecycle = WorkerThreadLifecycle(self, workspaces)
+        self.session_retention = None
+        self._retention_settings=session_retention_settings
+        self._session_gc_task = None
+        if session_retention_settings is not None:
+            from .session_retention import TerminalSessions,business_holds
+            self.session_retention=TerminalSessions(self,self.thread_lifecycle.transport,
+                owner_holds=partial(business_holds,session_retention_settings))
         self._condition = asyncio.Condition()
         self._recover_snapshots()
         if hasattr(runtime, "receipt_callback"):
@@ -140,6 +148,10 @@ class WorkerJobManager:
         if self._closed or len(self.store.queued()) >= self.queue_high_watermark:
             raise QueueHighWatermark("QUEUE_STORAGE_HIGH_WATERMARK")
         self.thread_lifecycle.validate_run(request)
+        if self.session_retention is not None:
+            self.session_retention.validate_submit(request)
+            if (self._workspaces.root/request.run_id/'audit'/'retained-assets.json').is_file():
+                raise ValueError('PUBLISHED_WORKSPACE_INPUTS_RETIRED_CREATE_NEW_RUN')
         job = WorkerJob(
             job_id=job_id,
             run_id=request.run_id,
@@ -159,6 +171,14 @@ class WorkerJobManager:
     def start(self) -> None:
         if self._pump is None and not self._closed:
             self._pump = asyncio.create_task(self._dispatch_loop())
+
+    async def _collect_owned_resources(self):
+        from .workspace_retention import collect
+        result=await self.session_retention.collect()
+        result['workspaces']=await asyncio.to_thread(collect,self._workspaces,self,self._retention_settings)
+        from .snapshot_retention import collect as collect_snapshots
+        result['initialization_snapshots']=await asyncio.to_thread(collect_snapshots,self._workspaces,self,self._retention_settings)
+        return result
 
     async def probe(self) -> dict[str, object]:
         probe = getattr(self._runtime, "probe", None)
@@ -184,6 +204,7 @@ class WorkerJobManager:
 
     async def _dispatch_loop(self) -> None:
         observation_gc_at = 0.0
+        session_gc_at = time.monotonic()+60
         if not self._processes_recovered:
             recover = getattr(self._runtime, "recover", None)
             if recover is not None:
@@ -191,6 +212,12 @@ class WorkerJobManager:
             self._processes_recovered = True
             self._recover_snapshots()  # Completions may commit during old-process cleanup.
         while not self._closed:
+            if self.session_retention is not None and time.monotonic()>=session_gc_at and (self._session_gc_task is None or self._session_gc_task.done()):
+                if self._session_gc_task is not None:
+                    try:self.store.metadata('session_retention',self._session_gc_task.result())
+                    except Exception as exc:self.store.metadata('session_retention',{'error':str(exc)[:250]})
+                self._session_gc_task=asyncio.create_task(self._collect_owned_resources())
+                session_gc_at=time.monotonic()+600
             if time.monotonic() >= observation_gc_at:
                 from .w3_turn_probe import maintenance
 
@@ -419,6 +446,9 @@ class WorkerJobManager:
 
     async def close(self) -> None:
         self._closed = True
+        if self._session_gc_task is not None:
+            self._session_gc_task.cancel()
+            await asyncio.gather(self._session_gc_task,return_exceptions=True)
         if self._pump is not None:
             self._pump.cancel()
             await asyncio.gather(self._pump, return_exceptions=True)

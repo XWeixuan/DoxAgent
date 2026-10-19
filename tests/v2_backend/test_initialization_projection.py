@@ -41,6 +41,14 @@ def test_progress_reads_used_fields_without_hydrating_worker_receipts(tmp_path, 
         raw = json.loads(db.execute(
             "SELECT payload FROM objects WHERE kind='native:initialization_nodes'"
         ).fetchone()[0])
+    # V4 serves stage metadata only; source receipts/artifacts stay with their
+    # owning business repository. Also exercise a retained V3 externalized row.
+    assert "receipt" not in raw
+    assert raw["result"] == {"quality_annotations": ["PARTIAL"]}
+    raw = json.loads(store.content_codec.encode(node))
+    with sqlite3.connect(store.path) as db:
+        db.execute("UPDATE objects SET payload=? WHERE kind='native:initialization_nodes'",
+                   (json.dumps(raw),))
     receipt = raw["receipt"]["$doxagent_content_v1"]
     result = raw["result"]["$doxagent_content_v1"]
     original = ContentFiles.read

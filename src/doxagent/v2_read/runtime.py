@@ -23,7 +23,7 @@ def hot_path_contributions(store: Any, case: dict[str, Any]) -> list[dict]:
             turns = [
                 json.loads(row[0])
                 for row in db.execute(
-                    "SELECT payload FROM objects WHERE kind='attempt' AND ticker=? "
+                    "SELECT payload FROM object_current WHERE kind='attempt' AND ticker=? "
                     "AND parent=? AND valid_to IS NULL AND route IN ('W1','W2')",
                     (ticker, identity),
                 )
@@ -293,7 +293,7 @@ def w3_contributions(store: Any, case: dict) -> list[dict]:
         turns = [
             json.loads(row[0])
             for row in db.execute(
-                "SELECT payload FROM objects WHERE kind='attempt' AND ticker=? "
+                "SELECT payload FROM object_current WHERE kind='attempt' AND ticker=? "
                 "AND parent=? AND route='W3' AND valid_to IS NULL",
                 (ticker, identity),
             )
