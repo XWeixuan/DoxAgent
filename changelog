@@ -1845,3 +1845,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-20 CPU-05: Skip young outbox packet loads, borrow the expiry connection, reuse one decompressed pack per batch, and report scanned rows; retention and pin/reference rules are unchanged. Transport lifecycle regression tests passed.
 
 2026-10-20 CPU-06: Persist scheduler request start using one read-modify-write transaction, retaining other group fields and durable restart minimum-gap semantics. Atomic request-state tests passed; Yahoo CPU-04 is intentionally excluded.
+
+2026-10-20 CPU-03 follow-up: Keep completed legacy/thread housekeeping phases finished across sibling batches, retain cycle failures until final retry scheduling, and commit markers atomically. All 26 W3 lifecycle/phase tests passed.

@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
 
 from doxagent.persistent_runtime_v2.journal import RuntimeJournal, encode
@@ -123,3 +123,50 @@ def test_failed_legacy_discovery_does_not_block_ack_maintenance(tmp_path, monkey
     ex.maintain()
     assert acked == ["job"]
     assert journal.get("w3_legacy_registration_errors", "scan") == "bad legacy row"
+
+
+def active_thread(journal, identity, now):
+    with journal.transaction() as db:
+        db.execute(
+            "INSERT INTO runtime_v2_w3_threads(record_id,thread_id,ticker,kind,"
+            "compatibility_key,workspace,status,owner_case_id,expires_at) "
+            "VALUES(?,?,'MU','CASE','test','workspace','ACTIVE','owner',?)",
+            (identity, identity, (now + timedelta(days=1)).isoformat()),
+        )
+
+
+def test_legacy_batches_do_not_repeat_completed_normal_thread_rpc(tmp_path):
+    ex, journal = execution(tmp_path)
+    now = [datetime.now(UTC)]
+    journal.clock = lambda: now[0]
+    seed(journal, [(f"{i:03}", "known") for i in range(130)])
+    active_thread(journal, "known", now[0])
+    calls = []
+    ex.service._w3_agent.thread_status = lambda thread: calls.append(thread) or {"active": True}
+    for _ in range(3):
+        ex.maintain()
+        now[0] += timedelta(seconds=6)
+    assert calls == ["known"]
+    assert not journal.get("w3_housekeeping", "thread_phase_done")
+    assert journal.get("w3_housekeeping", "next_at") > (now[0] + timedelta(hours=23)).isoformat()
+
+
+def test_normal_thread_batches_do_not_restart_completed_legacy_discovery(tmp_path, monkeypatch):
+    ex, journal = execution(tmp_path)
+    now = [datetime.now(UTC)]
+    journal.clock = lambda: now[0]
+    for i in range(40):
+        active_thread(journal, f"thread-{i:03}", now[0])
+    ex.service._w3_agent.thread_status = lambda _: {"active": True}
+    original = ex._maintain_legacy
+    scans = []
+
+    def discover(at):
+        scans.append(1)
+        return original(at)
+
+    monkeypatch.setattr(ex, "_maintain_legacy", discover)
+    for _ in range(3):
+        ex.maintain()
+        now[0] += timedelta(seconds=6)
+    assert scans == [1]

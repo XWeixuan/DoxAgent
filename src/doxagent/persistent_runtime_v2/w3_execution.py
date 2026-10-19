@@ -900,33 +900,48 @@ class W3Execution:
     def maintain(self):
         """Daily bounded housekeeping; SDK errors leave durable retryable records."""
         now = self.journal.clock()
-        marker = self.journal.get("w3_housekeeping", "next_at")
+        with self.journal.transaction(write=False) as db:
+            markers = {
+                r[0]: json.loads(r[1])
+                for r in db.execute(
+                    "SELECT key,payload FROM runtime_values WHERE namespace='w3_housekeeping'"
+                )
+            }
+        marker = markers.get("next_at")
         if marker and marker > now.isoformat():
             return
         from datetime import timedelta
 
         started = time.monotonic()
         cpu_started = time.thread_time()
-        failed = False
-        cursor = self.journal.get("w3_housekeeping", "cursor", "")
+        failed = markers.get("cycle_failed", False)
+        cursor = markers.get("cursor", "")
         try:
-            legacy = self._maintain_legacy(now)
-            failed = legacy["failed"]
+            legacy = (
+                dict(scanned=0, lookups=0, attempts=0, more=False, failed=False)
+                if markers.get("legacy_phase_done")
+                else self._maintain_legacy(now)
+            )
+            failed |= legacy["failed"]
         except Exception as exc:
             failed = True
             legacy = dict(scanned=0, lookups=0, attempts=0, more=False)
             self.journal.set("w3_legacy_registration_errors", "scan", str(exc)[:500])
         with self.journal.transaction(write=False) as db:
-            rows = [
-                dict(row)
-                for row in db.execute(
-                    "SELECT * FROM runtime_v2_w3_threads WHERE kind IN ('CASE','LEGACY_CASE') "
-                    "AND status IN ('ACTIVE','DELETING') "
-                    "AND (expires_at<=? OR owner_case_id IS NOT NULL) "
-                    "AND record_id>? ORDER BY record_id LIMIT 20",
-                    (now.isoformat(), cursor),
-                )
-            ]
+            rows = (
+                []
+                if markers.get("thread_phase_done")
+                else [
+                    dict(row)
+                    for row in db.execute(
+                        "SELECT * FROM runtime_v2_w3_threads WHERE kind IN ('CASE','LEGACY_CASE') "
+                        "AND status IN ('ACTIVE','DELETING') "
+                        "AND (expires_at<=? OR owner_case_id IS NOT NULL) "
+                        "AND record_id>? ORDER BY record_id LIMIT 20",
+                        (now.isoformat(), cursor),
+                    )
+                ]
+            )
             acknowledgements = [
                 r[0]
                 for r in db.execute(
@@ -985,12 +1000,19 @@ class W3Execution:
                         "UPDATE runtime_v2_w3_threads SET error=? WHERE record_id=?",
                         (str(exc)[:1000], record["record_id"]),
                     )
-        more = len(rows) == 20 or legacy["more"] or len(acknowledgements) == 20
-        self.journal.set(
-            "w3_housekeeping", "cursor", rows[-1]["record_id"] if len(rows) == 20 else ""
-        )
+        thread_done = bool(markers.get("thread_phase_done")) or len(rows) < 20
+        legacy_done = not legacy["more"]
+        more = not thread_done or not legacy_done or len(acknowledgements) == 20
         delay = timedelta(seconds=5) if more else timedelta(hours=1 if failed else 24)
-        self.journal.set("w3_housekeeping", "next_at", (now + delay).isoformat())
+        with self.journal.transaction() as db:
+            for key, value in {
+                "cursor": rows[-1]["record_id"] if len(rows) == 20 else "",
+                "legacy_phase_done": legacy_done if more else False,
+                "thread_phase_done": thread_done if more else False,
+                "cycle_failed": failed if more else False,
+                "next_at": (now + delay).isoformat(),
+            }.items():
+                policy_consumption.put_value(db, "w3_housekeeping", key, value)
         logging.getLogger(__name__).info(
             "w3_housekeeping scanned=%s lookups=%s registration_attempts=%s more=%s "
             "failed=%s elapsed_ms=%.1f cpu_ms=%.1f",
