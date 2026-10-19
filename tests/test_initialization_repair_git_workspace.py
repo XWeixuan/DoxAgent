@@ -64,6 +64,13 @@ def test_incident_worktree_and_branch_do_not_mutate_source_checkout(tmp_path):
     assert git("rev-parse", "HEAD", cwd=workspace.path) == commit
     assert git("--git-dir", str(manager.bare), "branch", "-r", "--list",
                "origin/codex/new-deployment", cwd=source) == ""
+
+    # Storage exit removes only a clean terminal checkout; fetched repair refs
+    # and another still-dirty incident remain available after remote pruning.
     assert manager.retire("incident-1")
     assert not workspace.path.exists()
-    assert git("--git-dir", str(manager.bare), "rev-parse", "codex/init-repair/incident-1", cwd=source) == commit
+    assert git("--git-dir",str(manager.bare),"rev-parse",workspace.branch,cwd=source)==commit
+    (next_workspace.path / "tracked.txt").write_text("uncommitted repair\n",encoding="utf-8")
+    assert not manager.retire("incident-2")
+    assert next_workspace.path.is_dir()
+    assert git("rev-parse","HEAD",cwd=next_workspace.path)==deployed

@@ -15,7 +15,8 @@ from doxagent.v2_read.projectors import DomainProjectors
 from doxagent.v2_read.repository import ReadStore
 
 
-def test_progress_reads_used_fields_without_hydrating_worker_receipts(tmp_path, monkeypatch):
+@pytest.mark.parametrize('legacy_native',[False,True])
+def test_progress_reads_used_fields_without_hydrating_worker_receipts(tmp_path, monkeypatch,legacy_native):
     from doxagent.v2_read.content_files import ContentFiles, ContentUnavailable
     from doxagent.v2_read.initialization import progress
 
@@ -38,24 +39,25 @@ def test_progress_reads_used_fields_without_hydrating_worker_receipts(tmp_path, 
                             payload={"node": "d3", "unused": "e" * 20000})))
     store.ingest("test", "seed", records)
     with sqlite3.connect(store.path) as db:
+        if legacy_native:
+            # Imported older generations can still contain full native rows.
+            # Keep main's projection/integrity regression for that real shape.
+            for record in records:
+                db.execute("UPDATE object_current SET payload=? WHERE kind=? AND id=?",
+                           (store.content_codec.encode(record['data']),record['kind'],record['id']))
         raw = json.loads(db.execute(
             "SELECT payload FROM objects WHERE kind='native:initialization_nodes'"
         ).fetchone()[0])
-    # V4 serves stage metadata only; source receipts/artifacts stay with their
-    # owning business repository. Also exercise a retained V3 externalized row.
-    assert "receipt" not in raw
-    assert raw["result"] == {"quality_annotations": ["PARTIAL"]}
-    raw = json.loads(store.content_codec.encode(node))
-    with sqlite3.connect(store.path) as db:
-        db.execute("UPDATE objects SET payload=? WHERE kind='native:initialization_nodes'",
-                   (json.dumps(raw),))
-    receipt = raw["receipt"]["$doxagent_content_v1"]
-    result = raw["result"]["$doxagent_content_v1"]
     original = ContentFiles.read
-    blocked = {receipt}
+    if legacy_native:
+        result = raw["result"]["$doxagent_content_v1"]
+        blocked = {raw["receipt"]["$doxagent_content_v1"]}
+    else:
+        assert 'receipt' not in raw and raw['result']=={'quality_annotations':['PARTIAL']}
+        blocked = None  # V4 needs no external receipt/result bodies at all.
 
     def checked(self, identity, *args, **kwargs):
-        if identity in blocked:
+        if blocked is None or identity in blocked:
             raise ContentUnavailable("unavailable test content")
         return original(self, identity, *args, **kwargs)
 
@@ -67,9 +69,10 @@ def test_progress_reads_used_fields_without_hydrating_worker_receipts(tmp_path, 
     assert stage["duration_seconds"]["value"] == 60
     assert value["failed_node_keys"] == []
     # Results used by progress retain normal native-content verification.
-    blocked.add(result)
-    with pytest.raises(ContentUnavailable):
-        progress(store, run, dict(kind="native:initialization_runs"))
+    if legacy_native:
+        blocked.add(result)
+        with pytest.raises(ContentUnavailable):
+            progress(store, run, dict(kind="native:initialization_runs"))
 
 
 def test_progress_retains_all_failed_nodes_and_recorded_stage_times(tmp_path):

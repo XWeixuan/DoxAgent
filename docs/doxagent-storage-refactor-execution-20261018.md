@@ -103,3 +103,5 @@ Read alias `/data/read/active.json`；兼容路径 `/data/read/v2.sqlite3` 指�
 - 产品改动在独立分支，已合入主分支截至 `d8a7fee9` 的已提交 Site/Yahoo 修复，保留本轮存储 owner；主工作区存在大量并行 W3/其他未提交工作，没有 reset/stash/覆盖。主分支后续集成必须保留本轮存储提交，未来发布前先集成本轮分支，再使用已落地的统一 release 入口；旧 main 的 Read V3 不能作为 V4 API 的可用代码回滚。
 - 主机查询：`sudo /usr/local/sbin/doxagent-release storage-status`；日样本 `/var/lib/doxagent/releases/capacity/`；发布状态与收尾回执 `/var/lib/doxagent/releases/state.json`、`last-reconcile.json`。
 - 原始执行证据：主工作区 `eval/storage_lifecycle_execution_20261018/`；大日志/校验材料 `D:/DoxAgentStorageExecution/`。报告不保存凭据或环境秘密。
+
+后续本地集成：用户于 2026-10-19 授权将完整存储分支与最新 main 整合，审查基线 main 为 `35d1057b`；差异、冲突处理和最终验证见 `docs/storage-main-merge-review-20261019.md`。本报告前述生产状态仍是原部署回执，不因后续本地 Git 合并而改称新合并版已经上线。
