@@ -1614,13 +1614,18 @@ class SiteAccessRuntime:
                         )
                     logger.warning(
                         "browser document failure site=%s identity=%s html_bytes=%s "
-                        "page_kind=%s access_reason=%s error=%s",
+                        "page_kind=%s access_reason=%s error=%s protocol_detail=%s",
                         resolved.site_id,
                         identity.identity_id,
                         len(html.encode("utf-8")),
                         getattr(inspection, "page_kind", "unknown"),
                         getattr(inspection, "access_reason", None),
                         type(exc).__name__,
+                        (
+                            re.sub(r"https?://[^\s'\"]+", "<url>", str(exc))[:240]
+                            if str(exc).startswith("{'code':")
+                            else "not_a_cdp_protocol_error"
+                        ),
                     )
                     if isinstance(exc, _BrowserContentNotReady):
                         return RuntimeResponse(

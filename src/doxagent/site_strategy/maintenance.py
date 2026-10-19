@@ -567,7 +567,7 @@ class MaintenanceController:
                     report.reason = "second_subscription_article_required"
                     return report.as_dict()
             # A cleared Challenge ends independently of entitlement/parser health.
-            completed = report.challenge == "CLEARED" and (
+            completed = report.challenge == "CLEARED" and not report.challenge_task_id and (
                 session.kind == "CHALLENGE"
                 or report.authentication in {"VALID", "NOT_REQUIRED"}
                 or (

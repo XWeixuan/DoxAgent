@@ -1,10 +1,13 @@
 """Bounded native DOM observation for Investing's ad-heavy background documents."""
 
 import asyncio
+import logging
 import time
 from urllib.parse import urlsplit
 
 from doxagent.content_enrichment.quality import choose_candidate, inspect_html
+
+logger = logging.getLogger(__name__)
 
 
 async def capture_document(
@@ -23,14 +26,33 @@ async def capture_document(
             )
             session_id = attached["sessionId"]
             while True:
-                root = (await cdp.send("DOM.getDocument", {"depth": 0}, session_id=session_id))[
-                    "root"
-                ]
-                last = (
-                    await cdp.send(
-                        "DOM.getOuterHTML", {"nodeId": root["nodeId"]}, session_id=session_id
-                    )
-                )["outerHTML"]
+                try:
+                    root = (await cdp.send("DOM.getDocument", {"depth": 0}, session_id=session_id))[
+                        "root"
+                    ]
+                    last = (
+                        await cdp.send(
+                            "DOM.getOuterHTML", {"nodeId": root["nodeId"]}, session_id=session_id
+                        )
+                    )["outerHTML"]
+                except RuntimeError as exc:
+                    message = str(exc).casefold()
+                    if any(
+                        marker in message
+                        for marker in (
+                            "could not find node",
+                            "no node with given id",
+                            "cannot find context",
+                            "document is not available",
+                            "no document",
+                        )
+                    ):
+                        # A native WAF redirect can replace the document between
+                        # these two observations. Retry the DOM read, not navigation.
+                        await asyncio.sleep(0.1)
+                        continue
+                    logger.warning("investing native DOM snapshot failed: %s", str(exc)[:300])
+                    raise
                 final_url = root.get("documentURL") or url
                 if final_url.startswith("about:"):
                     await asyncio.sleep(0.25)

@@ -123,6 +123,87 @@ async def test_native_automatic_check_can_finish_without_reload_or_human_task():
 
 
 @pytest.mark.asyncio
+async def test_native_document_replacement_retries_dom_not_navigation():
+    from doxagent.site_strategy.investing_document import capture_document
+
+    reads = 0
+
+    class CDP:
+        async def send(self, method, params, **kwargs):
+            nonlocal reads
+            if method == "Target.attachToTarget":
+                return {"sessionId": "observer"}
+            if method == "DOM.getDocument":
+                return {"root": {"nodeId": 1, "documentURL": URL}}
+            if method == "DOM.getOuterHTML":
+                reads += 1
+                if reads == 1:
+                    raise RuntimeError("Could not find node with given id")
+                return {"outerHTML": LISTING}
+            assert method == "Target.detachFromTarget"
+            return {}
+
+    html, _ = await capture_document(CDP(), "owned", URL, timeout=1)
+    assert html == LISTING and reads == 2
+
+
+@pytest.mark.asyncio
+async def test_unverified_old_body_blocker_keeps_login_open_for_a_real_retry(tmp_path):
+    from datetime import timedelta
+    from unittest.mock import AsyncMock
+
+    from doxagent.site_strategy.governance_models import MaintenanceOperation
+    from doxagent.site_strategy.maintenance import MaintenanceController
+    from doxagent.site_strategy.schema import utc_now
+
+    repo = SiteStrategyRepository(tmp_path / "pending.db")
+    service = SiteStrategyService(repo, profile_root=tmp_path / "profiles")
+    try:
+        bootstrap_seed(repo, service)
+        plan = migration_plan(repo)
+        apply_migration(
+            repo,
+            plan,
+            expected_revision=plan["expected_revision"],
+            backup_path=tmp_path / "before.db",
+        )
+        store = GovernanceRepository(repo)
+        scope = store.get_scope("source:investing_ticker_news")
+        session = store.save_session(
+            MaintenanceSession(
+                kind="LOGIN",
+                scope_id=scope.scope_id,
+                site_id="investing",
+                identity_id=scope.primary_identity_id,
+                control_token="test",
+            )
+        )
+        service.verify_scope_session = AsyncMock(
+            return_value=VerificationReport(
+                challenge="CLEARED",
+                crawler="READY",
+                body="NOT_TESTED",
+                challenge_task_id="old-lost-body",
+                reason="original_task_recovery_proof_incomplete",
+            )
+        )
+        service.runtime.close_login = AsyncMock()
+        result = await MaintenanceController(service)._dispatch(
+            MaintenanceOperation(
+                action="VERIFY_LOGIN",
+                idempotency_key="pending",
+                session_id=session.session_id,
+                deadline_at=utc_now() + timedelta(seconds=45),
+            )
+        )
+        assert result["session_closed"] is False
+        assert store.get_session(session.session_id).state == "OPEN"
+        service.runtime.close_login.assert_not_awaited()
+    finally:
+        repo.close()
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize("same_frame", [True, False])
 async def test_bootstrap_403_requires_observed_same_frame_200_not_just_normal_dom(
     monkeypatch, same_frame
@@ -385,5 +466,6 @@ def test_normal_login_can_recover_proven_lost_blocker_only(
         assert (updated.state == "RESOLVED") == cleared
         member = repo.get_runtime(f"scope:{scope.scope_id}").combinations[identity]
         assert member.manual_attention_required == (not cleared)
+        assert report.challenge_task_id == (None if cleared else task.task_id)
     finally:
         repo.close()

@@ -1,5 +1,7 @@
 # changelog
 
+- 2026-10-20: Investing completion guard: expose the unresolved task ID when a new normal login has not proven an old lost task's affected capability, and keep that login session open instead of reporting completion/closing it on CRAWLER READY alone. Add bounded DOM reread for a document replaced during native verification and a diagnostic for other CDP errors. Real pipeline public-body canaries already returned FULL (3463/2714 chars); sustained natural polling remains the final acceptance gate.
+
 - 2026-10-20: Reproduced an Investing Challenge task whose exact Target became a normal 10-card listing without any human action or egress change. Add one bounded passive native check grace, observe only real same-main-frame navigation responses before replacing bootstrap HTTP status, and foreground the single owned Investing task tab. Apply the same finite observation to the exact maintenance original; persistent challenges remain retained and blocked, with no reload loop, CAPTCHA interaction or invented HTTP 200.
 
 - 2026-10-20: Investing comparison isolated native original-page reads (~0.3-3s) from a cold Playwright maintenance-handle recovery that exhausted Verify before body navigation. External Investing body verification now validates the exact native original then executes a separate owned business target without reconstructing the human Page; returned native instance must still match. Keep shared business-page capacity/deadlines and raise native DOM frame capacity only to the existing bounded worker frame size.

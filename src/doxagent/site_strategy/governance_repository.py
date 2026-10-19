@@ -740,6 +740,10 @@ class GovernanceRepository:
                 if task_cleared and member.last_browser_result == "ACCESS_CHALLENGE":
                     member.state = "READY"
                     member.cooldown_until = None
+                if task and not task_cleared:
+                    report.challenge_task_id = task.task_id
+                    if session and session.kind == "LOGIN" and task.state == "TARGET_LOST":
+                        report.reason = "original_task_recovery_proof_incomplete"
             if report.crawler == "READY":
                 member.purpose_rejected_until.pop("CRAWLER", None)
                 member.purpose_denials.pop("CRAWLER", None)
