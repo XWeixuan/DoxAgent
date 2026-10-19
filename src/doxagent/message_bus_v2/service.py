@@ -89,6 +89,31 @@ class MessageBusV2Service:
         self._migrate_new_source_intervals()
         self._migrate_legacy_default_news_windows()
         self._append_verified_ticker_locators()
+        self._upgrade_rss_route_schema()
+
+    def _upgrade_rss_route_schema(self) -> None:
+        source = self.repository.get_source("newswire_rss")
+        if (
+            source is None
+            or source.adapter_ref != "builtin:newswire_rss"
+            or "http_routes" in source.parameter_schema.get("properties", {})
+        ):
+            return
+        desired = next(s for s in initial_sources() if s.source_id == source.source_id)
+        self.update_source(
+            source.source_id,
+            {
+                "parameter_schema": {
+                    **source.parameter_schema,
+                    "properties": {
+                        **source.parameter_schema.get("properties", {}),
+                        "http_routes": desired.parameter_schema["properties"]["http_routes"],
+                    },
+                }
+            },
+            actor=UpdateActor.SYSTEM,
+            reason="allow explicit approved HTTP egress per RSS binding",
+        )
 
     def _append_verified_ticker_locators(self) -> None:
         """Complete known market locators without overwriting operator overrides."""

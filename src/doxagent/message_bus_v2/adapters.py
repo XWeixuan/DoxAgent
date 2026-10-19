@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import importlib.util
 import inspect
 import re
@@ -841,15 +842,35 @@ class TikHubXUserPostsAdapter(TikHubXSearchAdapter):
 
 
 class NewswireRSSAdapter(_BaseAdapter):
+    async def _feed_text(self, context: PollContext, url: str) -> str:
+        routes = context.binding.source_parameters.get("http_routes")
+        headers = {"User-Agent": self.settings.monitoring_rss_user_agent}
+        if routes is None:
+            return await self._text(context, url, headers=headers)
+        from .http_routes import approved_routes, transport_routes
+
+        async def send(proxy):
+            async with context.request_permit():
+                if proxy is None:
+                    return await self.client.get(url, headers=headers, timeout=10)
+                async with httpx.AsyncClient(
+                    proxy=proxy, timeout=10, follow_redirects=True, trust_env=False
+                ) as client:
+                    return await client.get(url, headers=headers)
+
+        async with asyncio.timeout(25):
+            response, _ = await transport_routes(
+                send, approved_routes(routes), (httpx.TransportError,)
+            )
+        # Explicit 403/429 is not a transport failure and must not rotate egress.
+        response.raise_for_status()
+        return response.text
+
     async def poll(self, context: PollContext) -> PollResult:
         messages: list[RawMessageInput] = []
         failures: list[AcquisitionFailure] = []
         for feed_url in context.binding.source_parameters.get("rss_urls", []):
-            value = await self._text(
-                context,
-                str(feed_url),
-                headers={"User-Agent": self.settings.monitoring_rss_user_agent},
-            )
+            value = await self._feed_text(context, str(feed_url))
             for row in _rss_rows(value, str(feed_url)):
                 message, failure = self._message(
                     context,

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from doxagent.message_bus_v2.http_routes import HTTP_EGRESSES
 from doxagent.message_bus_v2.schema import (
     AcquisitionMode,
     ContentEnrichmentMode,
@@ -120,7 +121,15 @@ def initial_sources() -> list[SourceDefinition]:
         _source(
             "newswire_rss",
             "Newswire RSS",
-            properties={"rss_urls": {**string_array, "minItems": 1, "maxItems": 3}},
+            properties={
+                "rss_urls": {**string_array, "minItems": 1, "maxItems": 3},
+                "http_routes": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 2,
+                    "items": {"type": "string", "enum": list(HTTP_EGRESSES)},
+                },
+            },
             required=["rss_urls"],
         ),
         _source(

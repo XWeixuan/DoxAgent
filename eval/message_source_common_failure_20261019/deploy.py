@@ -21,6 +21,7 @@ files = [
     'message_bus_v2/ibkr_news.py', 'message_bus_v2/market_sources.py',
     'message_bus_v2/manifests.py', 'site_strategy/client.py',
     'message_bus_v2/factory.py',
+    'message_bus_v2/adapters.py',
 ]
 os.environ.update(GIT_CONFIG_COUNT='1', GIT_CONFIG_KEY_0='safe.directory', GIT_CONFIG_VALUE_0=str(repo))
 

@@ -57,4 +57,6 @@ Reuters、Barron's、Investing.com 的既有身份目前另有持久化人工维
 
 离线共 171 个不同测试已通过。生产自然新消息记录也出现实际 FULL 正文：Google RSS/INTC 6,152 字符，官方 RSS/SNOW 7,040 字符，Yahoo/MU 7,082 字符，Tom's Hardware/MU 与 INTC 各 9,673 字符，GlobeNewswire 多条 1,436–15,856 字符。另两条 Google 召回消息的最终发布站点仍返回 `risk_combinations_exhausted`，应归属发布站点风控，而不是 RSS 没有工作；保留其失败证据，不宣传正文 100% 恢复。
 
+5. **CEG 官方 RSS 的实际网络路径失效**：从已修复的同一 Bus 容器探测，直连仍 ConnectTimeout；既有 `de-standard-1` 出口返回 200、56,275 字节有效 XML。这不是数据库饥饿的残留。为通用 Newswire RSS 增加显式 binding 级 approved HTTP route（最多主备两项），默认保持直连；只对 CEG 设置已验证 DE 路由。传输失败最多换一次已批准备用，403/429 不换出口，整体 25 秒预算，保留 60 秒轮询。不会让普通 RSS 继承浏览器登录身份或创建 Chrome。
+
 最终追加发布和持续自然轮询验收继续记录在本文件。真实 Challenge、登录失效、上游权限仍可能存在，不承诺绕过这些限制。
