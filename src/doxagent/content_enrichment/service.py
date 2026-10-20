@@ -54,6 +54,7 @@ class ContentEnrichmentHub:
         self.extractor = extractor or SharedContentExtractor(concurrency=self.concurrency)
         self.site_access_client = site_access_client
         self._last_outbox_flush = 0.0
+        self.ir_body_reader = None
 
     async def run_once(self, *, now: datetime | None = None) -> int:
         await self._flush_outcomes(force=True)
@@ -133,6 +134,8 @@ class ContentEnrichmentHub:
             await asyncio.gather(*active, return_exceptions=True)
 
     async def close(self) -> None:
+        if self.ir_body_reader is not None:
+            await self.ir_body_reader.close()
         close = getattr(self.extractor, "close", None)
         if close is not None:
             await close()
@@ -195,7 +198,14 @@ class ContentEnrichmentHub:
         )
         try:
             seconds = (job.deadline_at - max(now, utc_now())).total_seconds()
-            if native:
+            if job.source.source_id == "corporate_ir_press_releases" and seconds > 0:
+                from doxagent.message_bus_v2.corporate_ir.body import IrBodyReader
+
+                if self.ir_body_reader is None:
+                    self.ir_body_reader = IrBodyReader()
+                async with asyncio.timeout(seconds):
+                    result = await self.ir_body_reader.extract(job,record)
+            elif native:
                 result = MediaExtractionResult(
                     record=record,
                     content=native.text,
@@ -307,7 +317,9 @@ class ContentEnrichmentHub:
         publication_updates: dict[str, object] = {}
         stamp = result.diagnostics.get("publisher_published_at")
         if (
-            job.source.source_id in {"investorshub_ticker_news", "investing_ticker_news"}
+            job.source.source_id in {
+                "investorshub_ticker_news", "investing_ticker_news", "corporate_ir_press_releases"
+            }
             and (
                 job.message.publication_time_basis == "DATE"
                 or job.source.source_id == "investing_ticker_news"

@@ -580,6 +580,7 @@ export interface BusStatus {
   latency_sample_count: Count;
 }
 export interface SourceStatus {
+  internal_endpoints?: IrEndpointStatus[];
   source: SourceLabel; binding_version: Count; source_version: Count;
   publication_mode: "immediate" | "buffered";
   enabled: boolean; global_enabled: boolean;
@@ -590,6 +591,13 @@ export interface SourceStatus {
   target_interval_seconds: Count; active_windows: ActiveWindow[];
   next_target_at: Value<Instant>;
   countdown_state: "SCHEDULED" | "PAUSED" | "DISABLED" | "WINDOW_CLOSED" | "CLOSED_SLEEP" | "UNKNOWN";
+}
+export interface IrEndpointStatus {
+  endpoint_id: string; name: string; url: string; method: string;
+  status: "never_polled" | "succeeded" | "failed" | "deferred";
+  last_success_at: Instant | null; last_attempt_at: Instant | null;
+  next_target_at: Instant | null; latency_ms: Count; http_status: number | null;
+  error: string | null;
 }
 export interface ActiveWindow { timezone: string; weekdays: number[]; start_time: string; end_time: string }
 export interface Polling {

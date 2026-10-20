@@ -1,0 +1,27 @@
+<rss xmlns:dc="http://purl.org/dc/elements/1.1/" version="2.0" xml:base="https://investors.rocketlabcorp.com/">
+  <channel>
+    <title>Rocket Lab Corporation</title>
+    <link>https://investors.rocketlabcorp.com/</link>
+    <description />
+    <language>en</language>
+
+    <item>
+  <title>Rocket Lab Provides Update on Neutron Development and Adjusts Target Launch Timing</title>
+  <link>https://investors.rocketlabcorp.com/news-releases/news-release-details/rocket-lab-provides-update-neutron-development-and-adjusts</link>
+  <description />
+  <pubDate>Wed, 14 Oct 2026 20:40:30 +0000</pubDate>
+    <dc:creator>Content Import</dc:creator>
+    <guid isPermaLink="false">13401 at https://investors.rocketlabcorp.com</guid>
+    </item>
+
+<item>
+  <title>Rocket Lab Secures Largest-Ever Electron Commercial Deal: 20-Launch Contract for Synspective</title>
+  <link>https://investors.rocketlabcorp.com/news-releases/news-release-details/rocket-lab-secures-largest-ever-electron-commercial-deal-20</link>
+  <description />
+  <pubDate>Wed, 30 Sep 2026 23:00:52 +0000</pubDate>
+    <dc:creator>Content Import</dc:creator>
+    <guid isPermaLink="false">13366 at https://investors.rocketlabcorp.com</guid>
+    </item>
+
+</channel>
+</rss>

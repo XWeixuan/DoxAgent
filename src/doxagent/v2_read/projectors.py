@@ -180,6 +180,9 @@ class DomainProjectors:
             identity = row["namespace"] + ":" + row["key"]
         if table in {"ticker_source_bindings", "poll_states"}:
             identity = value["binding_id"]
+        if table == "ir_endpoint_states":
+            ticker = value["binding_id"].split(":",1)[0]
+            identity = value["binding_id"]+":"+value["endpoint_id"]
         if table == "ticker_monitoring_states":
             identity = ticker
         if table == "v2_control_ack":

@@ -1,0 +1,83 @@
+<html><head><title>Public company releases</title></head><body><div id="teaser-733f1fe5fb" class="cmp-teaser" data-cmp-data-layer='{"teaser-733f1fe5fb":{"@type":"micron/components/content/teaser","repo:modifyDate":"2026-10-19T12:02:38Z","dc:title":"&lt;p&gt;Micron to Host Technology Webinar on Oct. 21&lt;/p&gt;\r\n","dc:description":"&lt;p&gt;October&amp;nbsp;19, 2026&lt;/p&gt;\r\n"}}' data-ai-indexing="true" data-component="teaser">
+
+
+        <div class="cmp-teaser__image-wrapper">
+
+
+
+        </div>
+        <div class="cmp-teaser__content">
+
+
+
+
+
+
+
+            <h2 class="cmp-teaser__title">
+                Micron to Host Technology Webinar on Oct. 21
+            </h2>
+
+
+
+
+    <div class="cmp-teaser__description"><p>October 19, 2026</p>
+
+</div>
+
+
+    <div class="cmp-teaser__action-container">
+
+    <a class="cmp-teaser__action-link cmp-teaser__action-link--styled" id="teaser-733f1fe5fb-cta-e1e0ed9012" data-cmp-data-layer='{"teaser-733f1fe5fb-cta-e1e0ed9012":{"@type":"micron/components/content/teaser/cta","dc:title":"Read article","xdm:linkURL":"https://investors.micron.com/news/press-release/2026/Micron-to-Host-Technology-Webinar-on-Oct--21/default.aspx"}}' data-cmp-clickable href="https://investors.micron.com/news/press-release/2026/Micron-to-Host-Technology-Webinar-on-Oct--21/default.aspx" target="_blank">
+        Read article
+    </a>
+
+    </div>
+
+        </div>
+
+</div>
+
+
+<div id="teaser-1dda6c2ec2" class="cmp-teaser" data-cmp-data-layer='{"teaser-1dda6c2ec2":{"@type":"micron/components/content/teaser","repo:modifyDate":"2026-10-19T12:02:49Z","dc:title":"&lt;p&gt;Micron Technology, Inc. Reports Record Fiscal Fourth-Quarter and Full-Year 2026 Results&lt;/p&gt;\r\n","dc:description":"&lt;p&gt;September 30, 2026&lt;/p&gt;\r\n"}}' data-ai-indexing="true" data-component="teaser">
+
+
+        <div class="cmp-teaser__image-wrapper">
+
+
+
+        </div>
+        <div class="cmp-teaser__content">
+
+
+
+
+
+
+
+            <h2 class="cmp-teaser__title">
+                Micron Technology, Inc. Reports Record Fiscal Fourth-Quarter and Full-Year 2026 Results
+            </h2>
+
+
+
+
+    <div class="cmp-teaser__description"><p>September 30, 2026</p>
+
+</div>
+
+
+    <div class="cmp-teaser__action-container">
+
+    <a class="cmp-teaser__action-link cmp-teaser__action-link--styled" id="teaser-1dda6c2ec2-cta-8da1dc49a7" data-cmp-data-layer='{"teaser-1dda6c2ec2-cta-8da1dc49a7":{"@type":"micron/components/content/teaser/cta","dc:title":"Read article","xdm:linkURL":"https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx"}}' data-cmp-clickable href="https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx" target="_blank">
+        Read article
+    </a>
+
+    </div>
+
+        </div>
+
+</div>
+
+
+</body></html>

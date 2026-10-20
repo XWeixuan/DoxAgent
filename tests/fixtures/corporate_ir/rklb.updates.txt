@@ -1,0 +1,24 @@
+<html><head><title>Public company releases</title><article class="blog__article-container blog__article-container--featured">
+            <a class="blog__article" href="/updates/rocket-lab-secures-largest-ever-electron-commercial-deal-20-launch-contract-for-synspective/">
+                <span class="blog__article-date">September 30, 2026</span>
+
+
+                    <span class="blog__article-title">Rocket Lab Secures Largest-Ever Electron Commercial Deal: 20-Launch Contract for Synspective</span>
+
+                <span class="blog__article-more">Read more</span>
+            </a>
+        </article>
+
+<article class="blog__article-container">
+    <a class="blog__article" href="/updates/mission-success-rocket-lab-launches-97th-electron-mission/">
+        <span class="blog__article-date">September 26, 2026</span>
+
+
+            <span class="blog__article-title">MISSION SUCCESS: Rocket Lab Launches 97th Electron Mission</span>
+
+        <span class="blog__article-more">Read more</span></a>
+
+</article>
+
+
+            </head></html>

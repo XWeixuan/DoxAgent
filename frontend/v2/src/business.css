@@ -1231,3 +1231,9 @@
   white-space: nowrap;
   letter-spacing: -0.6px;
 }
+
+.binding-endpoints { width: 100%; border-collapse: collapse; font-size: 14px; }
+.binding-endpoints th, .binding-endpoints td { padding: 8px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--border); }
+.binding-endpoints small { display: block; max-width: 28em; overflow-wrap: anywhere; }
+
+.binding-endpoints th:last-child, .binding-endpoints td:last-child { text-align: right; }

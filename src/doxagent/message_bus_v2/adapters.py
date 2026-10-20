@@ -133,8 +133,12 @@ class AdapterRegistry:
             ),
         }
         self._dynamic_cache: dict[tuple[str, int], SourceAdapter] = {}
+        from .corporate_ir.adapter import CorporateIrAdapter
+
+        self._builtins["corporate_ir@1"] = CorporateIrAdapter()
 
     async def close(self) -> None:
+        await self._builtins["corporate_ir@1"].close()
         ibkr = self._builtins.get("ibkr_news")
         close = getattr(ibkr, "close", None)
         if callable(close):

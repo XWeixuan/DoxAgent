@@ -1,0 +1,28 @@
+<rss xmlns:ns0="http://purl.org/rss/1.0/modules/content/" version="2.0">
+  <channel>
+    <title>Ondas Inc. (ONDS) News</title>
+    <link>https://ir.ondas.com/rss</link>
+    <description>The latest news released by Ondas Inc. (ONDS)</description>
+    <language>en-us</language>
+    <generator>Equisolve Investor Relations Suite</generator>
+    <image>
+      <url>https://d1io3yog0oux5.cloudfront.net/_b5af2cbef5d66c1d71e1ce737e5117df/ondas/files/theme/images/logo-300.png</url>
+      <title>Ondas Inc. (ONDS) News</title>
+      <link>https://ir.ondas.com/rss</link>
+      <width>88</width>
+      <height>31</height>
+    </image>
+    <item>
+      <title>Ondas Expands Airborne Defense Capabilities with EASA Certification of Advanced Missile Protection System on Bombardier Global 7500</title>
+      <link>https://ir.ondas.com/news/detail/335/ondas-expands-airborne-defense-capabilities-with-easa-certification-of-advanced-missile-protection-system-on-bombardier-global-7500</link>
+      <pubDate>Tue, 13 Oct 2026 08:30:00 -0400</pubDate>
+      <guid isPermaLink="true">https://ir.ondas.com/news/detail/335/ondas-expands-airborne-defense-capabilities-with-easa-certification-of-advanced-missile-protection-system-on-bombardier-global-7500</guid>
+<ns0:encoded />    </item>
+    <item>
+      <title>Ondas Announces Regna AI, Powered by Palantir, to Advance Sovereign AI</title>
+      <link>https://ir.ondas.com/news/detail/334/ondas-announces-regna-ai-powered-by-palantir-to-advance-sovereign-ai</link>
+      <pubDate>Mon, 12 Oct 2026 08:00:00 -0400</pubDate>
+      <guid isPermaLink="true">https://ir.ondas.com/news/detail/334/ondas-announces-regna-ai-powered-by-palantir-to-advance-sovereign-ai</guid>
+<ns0:encoded />    </item>
+    </channel>
+</rss>

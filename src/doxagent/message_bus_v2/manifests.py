@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from doxagent.message_bus_v2.corporate_ir.catalog import initial_source as initial_ir_source
 from doxagent.message_bus_v2.http_routes import HTTP_EGRESSES
 from doxagent.message_bus_v2.schema import (
     AcquisitionMode,
@@ -91,6 +92,7 @@ def initial_sources() -> list[SourceDefinition]:
         "exchange": {"type": "string", "enum": ["NASDAQ", "NYSE", "AMEX"]},
     }
     return [
+        initial_ir_source(),
         _source(
             "benzinga_news",
             "Benzinga News API",

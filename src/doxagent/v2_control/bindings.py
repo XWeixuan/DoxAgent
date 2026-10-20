@@ -274,6 +274,9 @@ class Bindings:
             ):
                 raise ApiFailure("RESOURCE_NOT_FOUND", 404)
             parameters, _, _ = public_parameters(source.default_parameters, source.parameter_schema)
+            if source.source_id == "corporate_ir_press_releases":
+                parameters = {"endpoint_ids":[s["endpoint_id"] for s in
+                    source.default_parameters.get("endpoints",[]) if s["owner_ticker"]==ticker]}
             return validate(
                 "AvailableSourceDetail",
                 {

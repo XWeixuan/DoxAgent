@@ -132,6 +132,12 @@ class GlobalPollScheduler:
             await self.storage_call(heartbeat.__exit__, None, None, None)
 
     async def _run_admitted_once(self) -> list[PollExecutionResult]:
+        ir = getattr(self, "ir_coordinator", None)
+        if ir is None:
+            from .corporate_ir.coordinator import IrCoordinator
+
+            self.ir_coordinator = ir = IrCoordinator(self)
+        ir.start()
         orchestration = self.runtime_orchestration
         if orchestration is not None:
             return await orchestration.run_once(self)
@@ -147,6 +153,8 @@ class GlobalPollScheduler:
         shared: dict[str, tuple[SourceDefinition, list[TickerSourceBinding]]] = {}
         tasks = []
         for source, binding in due:
+            if source.source_id == "corporate_ir_press_releases":
+                continue
             if source.acquisition_mode is AcquisitionMode.BY_DISTRIBUTION:
                 continue
             else:
@@ -186,6 +194,8 @@ class GlobalPollScheduler:
                 pass
 
     async def close(self) -> None:
+        if getattr(self, "ir_coordinator", None) is not None:
+            await self.ir_coordinator.close()
         if self.runtime_orchestration is not None:
             await self.runtime_orchestration.close()
         if self._distribution_task is not None:
@@ -583,13 +593,17 @@ class GlobalPollScheduler:
                     site_access_deferred=True,
                     site_access_retry_not_before=retry_at,
                 )
-            execution = await self.service.accept_poll_result(
-                source=source,
-                binding=binding,
-                result=result,
-                attempted_at=attempted_at,
-                admission_context=admission_context,
-            )
+            if source.source_id == "corporate_ir_press_releases":
+                execution = await self.storage_call(
+                    self.service._accept_poll_result, source=source, binding=binding,
+                    result=result, attempted_at=attempted_at, admission_context=admission_context,
+                    persist_poll_state=False, bootstrap_override=False, strict_intake=True,
+                )
+            else:
+                execution = await self.service.accept_poll_result(
+                    source=source, binding=binding, result=result,
+                    attempted_at=attempted_at, admission_context=admission_context,
+                )
             if window_cutoff is not None:
                 return execution
             if execution.crawler_execution_id and self.adapters.crawler_plane is not None:

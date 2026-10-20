@@ -1,0 +1,79 @@
+<html><head><title>Public company releases</title><article class="clearfix node node--nir-news--nir-widget-list node--type-nir-news node--view-mode-nir-widget-list node--promoted nir-widget-article llf-border" data-title="Coherent Corp. Announces Timing of FY2027 First Quarter Earnings Release">
+  <div class="llf-container-fluid-full">
+    <div class="llf-row llf-no-gutters llf-flex-sm-nowrap">
+
+
+      <div class="llf-col-md-12 llf-px-0 lfg-details ">
+
+        <div class="nir-widget--field" data-label="Title">
+
+                      <div class="nir-widget--field nir-widget--news--headline">
+                                                        <a href="/news-releases/news-release-details/coherent-corp-announces-timing-fy2027-first-quarter-earnings" hreflang="en">Coherent Corp. Announces Timing of FY2027 First Quarter Earnings Release</a>
+                                              </div>
+
+                                        <div class="nir-widget--field nir-widget--news--teaser llf-py-3" data-label="Teaser">
+                      SAXONBURG, Pa., Oct. 14, 2026 (GLOBE NEWSWIRE) -- Coherent Corp. (NYSE: COHR) (“Coherent,” “We,” or the “Company”), a global leader in photonics, announced today that it will release its financial results for the quarter ended September 30, 2026, on Wednesday, November 4, after the New York Stock
+                  </div>
+
+        </div>
+
+
+
+        <div class="nir-widget--field--group llf-row">
+          <div class="llf-col-sm-8 llf-d-flex llf-align-items-center">
+                          <div class="nir-widget--field nir-widget--news--date-time">
+                October 14, 2026
+              </div>
+
+                      </div>
+          <div class="llf-col-sm-4 llf-d-flex llf-align-items-center llf-justify-content-sm-end">
+                      </div>
+        </div>
+
+
+      </div>
+    </div>
+  </div>
+</article>
+
+
+<article class="clearfix node node--nir-news--nir-widget-list node--type-nir-news node--view-mode-nir-widget-list node--promoted nir-widget-article llf-border" data-title="Coherent Corp. Reports Fourth Quarter and Full Year Fiscal 2026 Results">
+  <div class="llf-container-fluid-full">
+    <div class="llf-row llf-no-gutters llf-flex-sm-nowrap">
+
+
+      <div class="llf-col-md-12 llf-px-0 lfg-details ">
+
+        <div class="nir-widget--field" data-label="Title">
+
+                      <div class="nir-widget--field nir-widget--news--headline">
+                                                        <a href="/news-releases/news-release-details/coherent-corp-reports-fourth-quarter-and-full-year-fiscal-2026" hreflang="en">Coherent Corp. Reports Fourth Quarter and Full Year Fiscal 2026 Results</a>
+                                              </div>
+
+                                        <div class="nir-widget--field nir-widget--news--teaser llf-py-3" data-label="Teaser">
+                      Q4 REVENUE OF $2.05B, INCREASED 34% Y/Y AND 42% Y/Y ON A PRO FORMA BASIS Q4 GAAP GROSS MARGIN OF 38.5%, INCREASED 277 bps Y/Y; Q4 NON-GAAP GROSS MARGIN OF 40.2%, INCREASED 215 bps Y/Y Q4 GAAP EPS OF $1.19, INCREASED $2.02 Y/Y; Q4 NON-GAAP EPS OF $1.74, INCREASED $0.74 Y/Y SAXONBURG, Pa., Aug.
+                  </div>
+
+        </div>
+
+
+
+        <div class="nir-widget--field--group llf-row">
+          <div class="llf-col-sm-8 llf-d-flex llf-align-items-center">
+                          <div class="nir-widget--field nir-widget--news--date-time">
+                August 12, 2026
+              </div>
+
+                      </div>
+          <div class="llf-col-sm-4 llf-d-flex llf-align-items-center llf-justify-content-sm-end">
+                      </div>
+        </div>
+
+
+      </div>
+    </div>
+  </div>
+</article>
+
+
+</head></html>

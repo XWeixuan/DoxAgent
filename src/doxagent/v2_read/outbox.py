@@ -58,6 +58,7 @@ TABLES = {
         "stream_items",
         "stream_members",
         "poll_states",
+        "ir_endpoint_states",
         "acquisition_failures",
         "audit_log",
     ),

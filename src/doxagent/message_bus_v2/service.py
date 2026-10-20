@@ -321,7 +321,12 @@ class MessageBusV2Service:
         if self.repository.get_source(source.source_id) is not None:
             raise ValueError(f"source already exists: {source.source_id}")
         self._validate_source_adapter(source)
-        if source.default_parameters:
+        if source.source_id == "corporate_ir_press_releases":
+            from .corporate_ir.schema import IrEndpointSpec
+
+            for value in source.default_parameters.get("endpoints", []):
+                IrEndpointSpec.model_validate(value)
+        elif source.default_parameters:
             validate_parameter_schema(source.parameter_schema, source.default_parameters)
         language = self._resolved_source_language(source)
         created = source.model_copy(
@@ -379,7 +384,14 @@ class MessageBusV2Service:
             update={"content_language": self._resolved_source_language(updated)}
         )
         self._validate_source_adapter(updated)
-        if updated.default_parameters:
+        if updated.source_id == "corporate_ir_press_releases":
+            from .corporate_ir.schema import IrEndpointSpec
+
+            specs = [IrEndpointSpec.model_validate(value) for value in
+                     updated.default_parameters.get("endpoints", [])]
+            if not specs or len({s.endpoint_id for s in specs})!=len(specs):
+                raise ValueError("IR catalog requires unique endpoints")
+        elif updated.default_parameters:
             validate_parameter_schema(updated.parameter_schema, updated.default_parameters)
         bindings = self.repository.list_bindings(source_id=current.source_id)
         invalid: list[str] = []
@@ -403,6 +415,11 @@ class MessageBusV2Service:
                 reason=reason or f"source updated to v{updated.version}",
             )
             prepared.append(candidate.model_copy(update={"source_version": updated.version}))
+        if updated.source_id == "corporate_ir_press_releases":
+            from .corporate_ir.schema import endpoints
+
+            for candidate in prepared:
+                endpoints(updated,candidate)
         if invalid:
             raise ValueError(
                 "source schema is incompatible with active binding(s); use atomic "
@@ -630,6 +647,11 @@ class MessageBusV2Service:
             source.default_parameters if source_parameters is None else source_parameters
         )
         validate_parameter_schema(source.parameter_schema, parameters)
+        if source.source_id == "corporate_ir_press_releases":
+            from .corporate_ir.schema import endpoints
+
+            endpoints(source, TickerSourceBinding(binding_id=binding_id, ticker=ticker,
+                     source_id=source.source_id, source_parameters=parameters))
         data = {
             "binding_id": binding_id,
             "ticker": ticker,
@@ -678,6 +700,10 @@ class MessageBusV2Service:
             if updated.polling.target_interval_seconds != current.polling.target_interval_seconds:
                 raise ValueError("distribution polling interval belongs to SourceDefinition")
         validate_parameter_schema(source.parameter_schema, updated.source_parameters)
+        if source.source_id == "corporate_ir_press_releases":
+            from .corporate_ir.schema import endpoints
+
+            endpoints(source, updated)
         self.repository.save_binding(updated)
         self._audit(
             "binding", updated.binding_id, "update", actor, reason, updated.version, updated
@@ -750,6 +776,9 @@ class MessageBusV2Service:
         result: PollResult,
         attempted_at: datetime | None = None,
         admission_context: AdmissionContext | None = None,
+        persist_poll_state: bool = True,
+        bootstrap_override: bool | None = None,
+        strict_intake: bool = False,
     ) -> PollExecutionResult:
         result = self.hidden_news_policy.apply(source.source_id, result)
         now = attempted_at or utc_now()
@@ -757,6 +786,8 @@ class MessageBusV2Service:
         bootstrap = not state.bootstrap_complete and not (
             admission_context and admission_context.mode == "CLOSED_SWEEP"
         )
+        if bootstrap_override is not None:
+            bootstrap = bootstrap_override
         output = PollExecutionResult(
             next_checkpoint=result.next_checkpoint,
             window_coverage=result.window_coverage,
@@ -817,6 +848,8 @@ class MessageBusV2Service:
                     collected_at=now,
                 )
             except Exception as exc:
+                if strict_intake:
+                    raise
                 failure = self._failure(
                     source=source,
                     binding=binding,
@@ -856,6 +889,8 @@ class MessageBusV2Service:
         self.repository.record_admissions(rejected, binding.binding_id)
         if poll_errors:
             output.window_coverage = "PARTIAL"
+        if not persist_poll_state:
+            return output
         all_queries_failed = (
             result.acquisition_metadata.get("query_failure_count", 0) > 0
             and result.acquisition_metadata.get("query_success_count", 0) == 0

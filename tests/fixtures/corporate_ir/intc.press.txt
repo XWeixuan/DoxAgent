@@ -1,0 +1,57 @@
+<rss version="2.0">
+
+    <channel>
+
+        <title>Intel Corporation (INTC) Press Releases</title>
+
+        <link>https://www.intc.com/news-events/press-releases/rss</link>
+
+        <description>Please specify a description for this RSS Feed</description>
+
+        <language>en-us</language>
+
+                                            <image>
+
+                <url>https://s3.amazonaws.com/equisolve-dev4/intel/files/theme/images/logo-sm.png</url>
+
+                <title>Intel Corporation Logo</title>
+
+                <link />
+
+            </image>
+
+                <generator>Equisolve Investor Relations Suite</generator>
+
+
+
+                            <item>
+
+                <title>Intel Accelerates Open Infrastructure for the Agentic AI Era</title>
+
+                <description />
+
+                <link>https://www.intc.com/news-events/press-releases/detail/1783/intel-accelerates-open-infrastructure-for-the-agentic-ai-era</link>
+
+                <pubDate>Mon, 12 Oct 26 15:32:00 -0400</pubDate>
+
+                <guid isPermalink="true">https://www.intc.com/news-events/press-releases/detail/1783/intel-accelerates-open-infrastructure-for-the-agentic-ai-era</guid>
+
+                                                                            </item>
+
+                    <item>
+
+                <title>Intel to Report Third-Quarter 2026 Financial Results</title>
+
+                <description />
+
+                <link>https://www.intc.com/news-events/press-releases/detail/1782/intel-to-report-third-quarter-2026-financial-results</link>
+
+                <pubDate>Tue, 06 Oct 26 16:01:00 -0400</pubDate>
+
+                <guid isPermalink="true">https://www.intc.com/news-events/press-releases/detail/1782/intel-to-report-third-quarter-2026-financial-results</guid>
+
+                                                                            </item>
+
+                    </channel>
+
+</rss>

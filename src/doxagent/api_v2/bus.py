@@ -42,7 +42,7 @@ def source_status(store, binding, seq, view):
         countdown = "PAUSED"
     elif not native.polling.active_at(now):
         countdown = "WINDOW_CLOSED"
-    elif view["wire"]["clock"]["session"]["value"] == "CLOSED_SLEEP":
+    elif native.source_id != "corporate_ir_press_releases" and view["wire"]["clock"]["session"]["value"] == "CLOSED_SLEEP":
         countdown = "CLOSED_SLEEP"
 
     def observed(key, transform=lambda value: value):
@@ -51,6 +51,16 @@ def source_status(store, binding, seq, view):
     return validate(
         "SourceStatus",
         {
+            "internal_endpoints": [
+                {"endpoint_id":s["endpoint_id"],"name":s["display_name"],"url":s["entry_url"],
+                 "method":s.get("method_used") or "HTTP", "status":s["status"],
+                 "last_success_at":instant(datetime.fromisoformat(s["last_success_at"])) if s.get("last_success_at") else None,
+                 "last_attempt_at":instant(datetime.fromisoformat(s["last_attempt_at"])) if s.get("last_attempt_at") else None,
+                 "next_target_at":instant(datetime.fromisoformat(s["next_due_at"])) if s.get("next_due_at") else None,
+                 "latency_ms":s.get("latency_ms",0),"http_status":s.get("http_status"),
+                 "error":s.get("last_error_message")}
+                for s in poll.get("checkpoint",{}).get("ir_endpoints",[])
+            ],
             "source": {
                 "source_id": native.source_id,
                 "binding_id": native.binding_id,

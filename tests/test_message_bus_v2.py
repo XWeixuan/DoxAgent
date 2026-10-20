@@ -63,6 +63,7 @@ def test_bootstrap_registry_profile_and_ticker_materialization(tmp_path: Path) -
     repository, service = _bus(tmp_path / "bus.sqlite3")
 
     assert {source.source_id for source in repository.list_sources()} == {
+        "corporate_ir_press_releases",
         "benzinga_news",
         "finnhub_company_news",
         "stocktwits_messages",

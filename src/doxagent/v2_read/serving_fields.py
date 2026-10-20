@@ -6,7 +6,7 @@ Source business repositories and Worker/W3 frozen inputs are never modified.
 # Small control and execution records are used by stateful projection and PNL.
 CONTROL={
     'source_definitions','ticker_source_bindings','ticker_monitoring_states',
-    'poll_states','v2_ticker_control','v2_control_ack',
+    'poll_states','ir_endpoint_states','v2_ticker_control','v2_control_ack',
     'initialization_repair_incidents','initialization_repair_rounds',
     'te_executions','te_jobs','te_attempts','te_fills','te_events','te_allocations',
     'te_lots','te_lot_adjustments',

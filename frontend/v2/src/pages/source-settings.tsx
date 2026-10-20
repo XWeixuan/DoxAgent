@@ -20,6 +20,7 @@ import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Choices } from "@/components/page-kit";
 import { formatInstant, valueText } from "@/core/format";
 import MonitoringTermsSettings from "./monitoring-terms-settings";
+import { IrEndpoints } from "@/components/ir-endpoints";
 export default function BindingSettings({
   ticker,
   view,
@@ -123,6 +124,7 @@ export default function BindingSettings({
                 {current.current_error && (
                   <Notice danger>{current.current_error.message}</Notice>
                 )}
+                <IrEndpoints endpoints={current.internal_endpoints} />
                 <ExistingBinding
                   key={current.source.binding_id}
                   ticker={ticker}

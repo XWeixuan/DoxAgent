@@ -12,6 +12,7 @@ import json
 import sqlite3
 from collections.abc import Iterator, Sequence
 from contextlib import contextmanager
+from contextvars import ContextVar
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from types import TracebackType
@@ -66,8 +67,28 @@ class _ClosingConnection(sqlite3.Connection):
         return False
 
 
+class _BorrowedConnection:
+    """Nested helpers must neither commit nor close an admitted outer intake."""
+
+    def __init__(self, connection):
+        self.connection = connection
+
+    def __getattr__(self, name):
+        return getattr(self.connection, name)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        return False
+
+    def close(self):
+        pass
+
+
 class MessageBusV2Repository:
     def __init__(self, sqlite_path: str | Path) -> None:
+        self._atomic_connection = ContextVar("bus_atomic_connection", default=None)
         self.path = Path(sqlite_path)
         from doxagent.v2_read.native_content import NativeContent
 
@@ -76,6 +97,9 @@ class MessageBusV2Repository:
         self._initialize()
 
     def _connect(self) -> sqlite3.Connection:
+        borrowed = self._atomic_connection.get()
+        if borrowed is not None:
+            return _BorrowedConnection(borrowed)
         connection = sqlite3.connect(
             self.path,
             timeout=30,
@@ -91,6 +115,10 @@ class MessageBusV2Repository:
 
     @contextmanager
     def transaction(self) -> Iterator[sqlite3.Connection]:
+        borrowed = self._atomic_connection.get()
+        if borrowed is not None:
+            yield borrowed
+            return
         connection = self._connect()
         try:
             connection.execute("begin immediate")
@@ -101,6 +129,16 @@ class MessageBusV2Repository:
             raise
         finally:
             connection.close()
+
+    @contextmanager
+    def atomic_intake(self):
+        """One owner-thread transaction across existing repository operations."""
+        with self.transaction() as connection:
+            token = self._atomic_connection.set(connection)
+            try:
+                yield connection
+            finally:
+                self._atomic_connection.reset(token)
 
     def close(self) -> None:
         """Connections are operation-scoped; provided for lifecycle symmetry."""
@@ -200,6 +238,11 @@ class MessageBusV2Repository:
 
     def _initialize(self) -> None:
         with self.transaction() as connection:
+            connection.execute(
+                "CREATE TABLE IF NOT EXISTS ir_endpoint_states "
+                "(id TEXT PRIMARY KEY, binding_id TEXT NOT NULL, endpoint_id TEXT NOT NULL, "
+                "data_json TEXT NOT NULL, UNIQUE(binding_id,endpoint_id))"
+            )
             connection.execute(
                 "CREATE TABLE IF NOT EXISTS message_first_seen "
                 "(id TEXT PRIMARY KEY, first_seen_at TEXT NOT NULL)"

@@ -129,6 +129,8 @@ class BusOrchestration:
                         sweep_distribution_sources.add(task["inputs"]["source"]["source_id"])
                     self._inflight[key] = asyncio.create_task(self._source(scheduler, task))
         for source, binding in eligible:
+            if source.source_id == "corporate_ir_press_releases":
+                continue  # Its independent endpoint coordinator runs 7x24 before this lane.
             if pauses.get(binding.ticker) == "all":
                 continue
             if realtime_mode is None:

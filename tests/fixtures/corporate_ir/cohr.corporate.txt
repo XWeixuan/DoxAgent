@@ -1,0 +1,79 @@
+<html><head><title>Public company releases</title><article class="clearfix node node--nir-news--nir-widget-list node--type-nir-news node--view-mode-nir-widget-list node--promoted nir-widget-article llf-border" data-title="Coherent Launches PhotonLink™ Integrated Optics Platform for AI Infrastructure">
+  <div class="llf-container-fluid-full">
+    <div class="llf-row llf-no-gutters llf-flex-sm-nowrap">
+
+
+      <div class="llf-col-md-12 llf-px-0 lfg-details ">
+
+        <div class="nir-widget--field" data-label="Title">
+
+                      <div class="nir-widget--field nir-widget--news--headline">
+                                                        <a href="/news-releases/news-release-details/coherent-launches-photonlinktm-integrated-optics-platform-ai" hreflang="en">Coherent Launches PhotonLink™ Integrated Optics Platform for AI Infrastructure</a>
+                                              </div>
+
+                                        <div class="nir-widget--field nir-widget--news--teaser llf-py-3" data-label="Teaser">
+                      Combines critical photonics technologies with end-to-end assembly and test to deliver complete optical solutions for next-generation datacenters SAXONBURG, Pa., Sept. 21, 2026 (GLOBE NEWSWIRE) -- Coherent Corp. (NYSE: COHR), the global leader in photonics, today announced PhotonLink™, an integrated
+                  </div>
+
+        </div>
+
+
+
+        <div class="nir-widget--field--group llf-row">
+          <div class="llf-col-sm-8 llf-d-flex llf-align-items-center">
+                          <div class="nir-widget--field nir-widget--news--date-time">
+                September 21, 2026
+              </div>
+
+                      </div>
+          <div class="llf-col-sm-4 llf-d-flex llf-align-items-center llf-justify-content-sm-end">
+                      </div>
+        </div>
+
+
+      </div>
+    </div>
+  </div>
+</article>
+
+
+<article class="clearfix node node--nir-news--nir-widget-list node--type-nir-news node--view-mode-nir-widget-list node--promoted nir-widget-article llf-border" data-title="Coherent Showcases Optical Innovations to Scale AI Infrastructure at ECOC 2026">
+  <div class="llf-container-fluid-full">
+    <div class="llf-row llf-no-gutters llf-flex-sm-nowrap">
+
+
+      <div class="llf-col-md-12 llf-px-0 lfg-details ">
+
+        <div class="nir-widget--field" data-label="Title">
+
+                      <div class="nir-widget--field nir-widget--news--headline">
+                                                        <a href="/news-releases/news-release-details/coherent-showcases-optical-innovations-scale-ai-infrastructure" hreflang="en">Coherent Showcases Optical Innovations to Scale AI Infrastructure at ECOC 2026</a>
+                                              </div>
+
+                                        <div class="nir-widget--field nir-widget--news--teaser llf-py-3" data-label="Teaser">
+                      SAXONBURG, Pa., Sept. 20, 2026 (GLOBE NEWSWIRE) -- Coherent Corp. (NYSE: COHR), the global leader in photonics, today announced new optical technologies and live demonstrations designed to help customers scale AI infrastructure at the European Conference on Optical Communication (ECOC) 2026 in
+                  </div>
+
+        </div>
+
+
+
+        <div class="nir-widget--field--group llf-row">
+          <div class="llf-col-sm-8 llf-d-flex llf-align-items-center">
+                          <div class="nir-widget--field nir-widget--news--date-time">
+                September 20, 2026
+              </div>
+
+                      </div>
+          <div class="llf-col-sm-4 llf-d-flex llf-align-items-center llf-justify-content-sm-end">
+                      </div>
+        </div>
+
+
+      </div>
+    </div>
+  </div>
+</article>
+
+
+</head></html>
