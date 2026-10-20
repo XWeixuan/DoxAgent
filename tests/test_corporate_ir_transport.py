@@ -105,3 +105,18 @@ def test_owner_migration_disables_sole_legacy_feed_without_invalid_empty_paramet
     assert len(first["overlaps"]) == 1
     assert not configure(bus)["overlaps"]
     assert repo.get_binding(old.binding_id).version == disabled.version
+
+
+@pytest.mark.asyncio
+async def test_httpx_conditional_304_is_success_without_location():
+    import httpx
+
+    async with httpx.AsyncClient(
+        transport=httpx.MockTransport(
+            lambda request: httpx.Response(304, headers={"ETag": "baseline"})
+        )
+    ) as client:
+        http = PublicHttp(client)
+        result = await http.fetch(initial_endpoints()[0], headers={"If-None-Match": "baseline"})
+        assert result.status == 304 and result.bytes_received == 0
+        await http.close()

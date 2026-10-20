@@ -138,7 +138,7 @@ class PublicHttp:
                     async with self.client.stream(
                         "GET", url, headers={**HEADERS, **(headers or {})}
                     ) as response:
-                        if response.is_redirect:
+                        if response.status_code in {301, 302, 303, 307, 308}:
                             from urllib.parse import urljoin
 
                             url = urljoin(url, response.headers["location"])
