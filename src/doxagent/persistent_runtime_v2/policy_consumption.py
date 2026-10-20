@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 
 from .journal import digest, encode
+from .w3_contracts import is_two_phase_contract
 
 POLICY_AUTO_FREEZE_ENABLED = True
 
@@ -133,7 +134,7 @@ def claim_ready_in_transaction(db, *, case, trade, intent_id, now):
     )
     watch = get_value(db, "policy_watch", encode([trade.ticker, trade.executed_policy_id]))
     if watch and not watch.get("retain_after_ready", False) and (
-        case.w3_contract_version != "persistent-runtime.w3.v4"
+        not is_two_phase_contract(case.w3_contract_version)
     ):
         db.execute(
             "DELETE FROM runtime_values WHERE namespace='policy_watch' AND key=?",

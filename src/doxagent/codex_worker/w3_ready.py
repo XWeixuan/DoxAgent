@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import time
 from contextlib import closing
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
@@ -11,6 +12,7 @@ from uuid import uuid4
 from doxagent.persistent_runtime_v2.w3_research_store import ENTRY, compact, sha
 
 from .schema import W3PrepareRequest, WorkerRunRequest
+from .startup_admission import startup_scope
 
 
 class ReadySlotError(ValueError):
@@ -41,6 +43,7 @@ class W3ReadySlots:
                 "failed_at",
                 "ready_recovery_count",
                 "recovery_error",
+                "prepare_deadline_at",
             ):
                 if column not in columns:
                     db.execute(f"ALTER TABLE w3_ready_slots ADD COLUMN {column} TEXT")
@@ -73,6 +76,9 @@ class W3ReadySlots:
         return key
 
     async def fill(self, key):
+        admission = getattr(self.jobs._runtime, "admission", None)
+        if admission is not None and not admission.allow_speculation():
+            return
         async with self.lock:
             self.reconcile_residents()
             config = self.configs[key]
@@ -84,27 +90,42 @@ class W3ReadySlots:
                 else self.settings.w3_ready_luna
             )
             with closing(self.jobs.store.connect()) as db, db:
-                failed = db.execute(
-                    "SELECT error FROM w3_ready_slots WHERE scope=? AND failed_at>? "
-                    "AND error IS NOT NULL ORDER BY failed_at DESC LIMIT 1",
-                    (key, (datetime.now(UTC) - timedelta(seconds=60)).isoformat()),
-                ).fetchone()
-                if failed and any(
-                    x in failed[0].lower()
-                    for x in (
-                        "invalid transport",
-                        "invalid configuration",
-                        "authentication",
-                        "unauthorized",
-                    )
-                ):
-                    return
+                failures = db.execute(
+                    "SELECT error,failed_at FROM w3_ready_slots "
+                    "WHERE scope=? AND error IS NOT NULL AND failed_at IS NOT NULL "
+                    "AND failed_at > COALESCE((SELECT max(ready_at) FROM w3_ready_slots "
+                    "WHERE scope=?), '') ORDER BY failed_at DESC LIMIT 2",
+                    (key, key),
+                ).fetchall()
+                if failures:
+                    error, failed_at = failures[0]
+                    if any(
+                        word in error.lower()
+                        for word in (
+                            "invalid transport",
+                            "invalid configuration",
+                            "authentication",
+                            "unauthorized",
+                        )
+                    ):
+                        # A changed configuration has a different scope.
+                        return
+                    cooldown = 60 if len(failures) > 1 else 30
+                    if datetime.now(UTC) < datetime.fromisoformat(failed_at) + timedelta(
+                        seconds=cooldown
+                    ):
+                        return
                 count = db.execute(
                     "SELECT count(*) FROM w3_ready_slots "
                     "WHERE scope=? AND state IN ('BUILDING','READY')",
                     (key,),
                 ).fetchone()[0]
-                for _ in range(max(0, target - count)):
+                building = db.execute(
+                    "SELECT 1 FROM w3_ready_slots WHERE scope=? AND state='BUILDING' "
+                    "AND case_id IS NULL LIMIT 1",
+                    (key,),
+                ).fetchone()
+                if count < target and not building:
                     self._insert(db, key, config)
 
     def reconcile_residents(self):
@@ -146,6 +167,7 @@ class W3ReadySlots:
         return identity
 
     async def build(self, identity, config):
+        retry = False
         run_id = "w3-ready-" + identity
         try:
             await asyncio.to_thread(
@@ -186,6 +208,14 @@ class W3ReadySlots:
                 await asyncio.sleep(0.1)
                 operation = self.jobs.thread_lifecycle.operation(request.operation_key)
                 if operation.get("step") == "RECONCILING":
+                    with closing(self.jobs.store.connect()) as db:
+                        bound = db.execute(
+                            "SELECT case_id FROM w3_ready_slots WHERE id=?", (identity,)
+                        ).fetchone()
+                    if not bound or not bound[0]:
+                        raise RuntimeError(
+                            operation.get("last_error") or "speculative prepare failed"
+                        )
                     operation = await self.jobs.thread_lifecycle.prepare(request)
             if operation["status"] != "COMPLETED":
                 raise RuntimeError(operation.get("error_message") or "prepared Fork failed")
@@ -198,40 +228,86 @@ class W3ReadySlots:
             if capsule is None and hasattr(runtime, "pool"):
                 # The durable Fork survived a lost owner/receipt. Prepare that
                 # exact child; never Fork another child for this operation.
-                await runtime.prepare_resume(
-                    WorkerRunRequest(
-                        workflow_version="persistent_runtime_w3_v1",
-                        research_lane="persistent_runtime",
-                        ticker="GLOBAL",
-                        node="persistent_runtime_w3",
-                        agent_role="w3_duty_trading_expert",
-                        run_id=run_id,
-                        attempt_id="prepared",
-                        cutoff_at=request.cutoff_at,
-                        prompt="",
-                        output_schema={},
-                        thread_id=thread_id,
-                        model=profile["model"],
-                        model_provider=profile.get("provider"),
-                        effort=profile["effort"],
-                        read_only=True,
-                        data_mcp_enabled=False,
-                        research_assets_mcp_enabled=True,
-                        w3_entry_version=ENTRY,
-                        web_search_mode=profile["web_search_mode"],
-                    ),
-                    self.workspaces.ensure_run(run_id),
+                async def resume():
+                    return await runtime.prepare_resume(
+                        WorkerRunRequest(
+                            workflow_version="persistent_runtime_w3_v1",
+                            research_lane="persistent_runtime",
+                            ticker="GLOBAL",
+                            node="persistent_runtime_w3",
+                            agent_role="w3_duty_trading_expert",
+                            run_id=run_id,
+                            attempt_id="prepared",
+                            cutoff_at=request.cutoff_at,
+                            prompt="",
+                            output_schema={},
+                            thread_id=thread_id,
+                            model=profile["model"],
+                            model_provider=profile.get("provider"),
+                            effort=profile["effort"],
+                            read_only=True,
+                            data_mcp_enabled=False,
+                            research_assets_mcp_enabled=True,
+                            w3_entry_version=ENTRY,
+                            web_search_mode=profile["web_search_mode"],
+                        ),
+                        self.workspaces.ensure_run(run_id),
+                    )
+
+                op_key = request.operation_key
+                with closing(self.jobs.store.connect()) as db:
+                    bound = db.execute(
+                        "SELECT prepare_deadline_at,case_id FROM w3_ready_slots WHERE id=?",
+                        (identity,),
+                    ).fetchone()
+                deadline = float(bound[0]) if bound and bound[0] else time.time() + 150
+                work_deadline = deadline - 15
+                previous_owner = self.jobs.thread_lifecycle.operation(op_key).get("owner_token")
+                owner = uuid4().hex
+                self.jobs.thread_lifecycle._operation_update(
+                    op_key,
+                    owner=previous_owner,
+                    owner_token=owner,
+                    execution_generation=getattr(self.jobs, "generation", None),
                 )
+
+                def resume_progress(stage, **values):
+                    operation = self.jobs.thread_lifecycle.operation(op_key)
+                    if operation.get("owner_token") != owner:
+                        raise asyncio.CancelledError("resume owner replaced")
+                    update = {"step": stage}
+                    if stage == "BOOT_ATTEMPT":
+                        count = int(operation.get("startup_attempts") or 0)
+                        if count >= 2:
+                            raise ValueError("prepare exhausted two physical boot attempts")
+                        update["startup_attempts"] = str(count + 1)
+                    self.jobs.thread_lifecycle._operation_update(op_key, owner=owner, **update)
+
+                with startup_scope(
+                    key=op_key,
+                    priority=0 if bound and bound[1] else 1,
+                    deadline=work_deadline,
+                    progress=resume_progress,
+                ):
+                    async with asyncio.timeout(max(0.001, work_deadline - time.time())):
+                        await resume()
                 capsule = next(c for c in runtime.pool if c.thread_id == thread_id)
             if capsule:
                 # tools/list must come from this resident SDK, not a second client.
+                with closing(self.jobs.store.connect()) as db:
+                    bound_deadline = db.execute(
+                        "SELECT prepare_deadline_at FROM w3_ready_slots WHERE id=?", (identity,)
+                    ).fetchone()[0]
                 for _ in range(100):
                     if capsule.identity in self.mcp.ready:
                         break
+                    if bound_deadline and time.time() >= float(bound_deadline) - 15:
+                        raise TimeoutError("bound MCP readiness budget exhausted")
                     await asyncio.sleep(0.05)
                 else:
                     raise RuntimeError("research MCP tools not ready in prepared capsule")
                 capsule.ready_slot = True
+                capsule.ready_profile = profile["model"]
             with closing(self.jobs.store.connect()) as db, db:
                 db.execute(
                     "UPDATE w3_ready_slots SET ready_at=?,capsule_id=? WHERE id=?",
@@ -251,13 +327,57 @@ class W3ReadySlots:
         except asyncio.CancelledError:
             raise
         except Exception as exc:
+            operation = self.jobs.thread_lifecycle.operation("w3-slot-fork:" + identity)
             with closing(self.jobs.store.connect()) as db, db:
+                bound = db.execute(
+                    "SELECT case_id,prepare_deadline_at FROM w3_ready_slots WHERE id=?", (identity,)
+                ).fetchone()
+                retry = bool(
+                    bound
+                    and bound[0]
+                    and operation
+                    and operation["status"] != "FAILED"
+                    and not isinstance(exc, ValueError)
+                    and int(operation.get("startup_attempts") or 0) < 2
+                    and float(bound[1] or 0) > time.time() + 15
+                    and getattr(exc, "code", None) != "CAPSULE_CLEANUP_QUARANTINED"
+                )
                 db.execute(
-                    "UPDATE w3_ready_slots SET state='RETIRING',error=?,failed_at=? WHERE id=?",
-                    (str(exc), datetime.now(UTC).isoformat(), identity),
+                    "UPDATE w3_ready_slots SET state=?,error=?,recovery_error=?,failed_at=? "
+                    "WHERE id=?",
+                    (
+                        "BOUND" if retry else "RETIRING",
+                        None if retry else str(exc),
+                        str(exc),
+                        datetime.now(UTC).isoformat(),
+                        identity,
+                    ),
+                )
+            if (
+                operation
+                and not retry
+                and (bound and bound[0] or operation.get("fork_dispatched_at") == "")
+            ):
+                self.jobs.thread_lifecycle._operation_update(
+                    "w3-slot-fork:" + identity,
+                    owner=operation.get("owner_token"),
+                    status="FAILED",
+                    last_error=str(exc),
+                    error_message=str(exc),
                 )
         finally:
             self.tasks.pop(identity, None)
+            if retry and not self.closed:
+
+                async def resume_build():
+                    await asyncio.sleep(1)
+                    await self.build(identity, config)
+
+                self.tasks[identity] = asyncio.create_task(resume_build())
+            elif not self.closed:
+                key = sha(compact([config["parent_thread_id"], config["profile"], ENTRY]))
+                if key in self.configs:
+                    await self.fill(key)
 
     async def retire(self):
         with closing(self.jobs.store.connect()) as db:
@@ -303,38 +423,15 @@ class W3ReadySlots:
                         "w3_ready_identity_conflict", "ready-slot claim parameters changed"
                     )
                 if row and row["error"]:
-                    op_key = "w3-slot-fork:" + row["id"]
-                    operation = self.jobs.thread_lifecycle.operation(op_key)
-                    has_job = db.execute(
-                        "SELECT 1 FROM jobs WHERE json_extract(request,'$.run_id')=? LIMIT 1",
-                        (row["run_id"],),
-                    ).fetchone()
-                    retryable = (
-                        operation
-                        and operation["status"] in {"CREATING", "FAILED"}
-                        and operation.get("error_code") in {"TimeoutError", "CancelledError", None}
-                        and not row["thread_id"]
-                        and not operation.get("thread_id")
-                        and not has_job
-                        and int(row["ready_recovery_count"] or 0) < 1
-                    )
-                    if not retryable:
+                    operation = self.jobs.thread_lifecycle.operation("w3-slot-fork:" + row["id"])
+                    if not operation or operation["status"] == "FAILED":
                         raise ReadySlotError(
                             "w3_ready_prepare_failed",
                             "ready-slot preparation failed: " + row["error"],
                         )
-                    if row["id"] in self.tasks:
-                        return dict(status="CREATING", thread_id=None, slot_id=row["id"])
-                    # Resume the exact durable request; lifecycle reconciles the original cwd
-                    # and SDK receipt before considering a Fork. Never replace an accepted turn.
+                    # Transient operations retain their identity and physical startup budget.
                     db.execute(
-                        "UPDATE w3_thread_operations SET status='CREATING',step='RECONCILING',"
-                        "recovery_count='0' WHERE operation_key=? AND status='FAILED'",
-                        (op_key,),
-                    )
-                    db.execute(
-                        "UPDATE w3_ready_slots SET state='BOUND',recovery_error=error,error=NULL,"
-                        "ready_recovery_count='1' WHERE id=?",
+                        "UPDATE w3_ready_slots SET state='BOUND',error=NULL WHERE id=?",
                         (row["id"],),
                     )
                     row = db.execute(
@@ -377,6 +474,17 @@ class W3ReadySlots:
                     row = db.execute(
                         "SELECT * FROM w3_ready_slots WHERE id=?", (identity,)
                     ).fetchone()
+                if not row["prepare_deadline_at"]:
+                    db.execute(
+                        "UPDATE w3_ready_slots SET prepare_deadline_at=? WHERE id=?",
+                        (
+                            str(
+                                time.time()
+                                + getattr(self.settings, "w3_prepare_timeout_seconds", 180)
+                            ),
+                            row["id"],
+                        ),
+                    )
                 if row["thread_id"]:
                     db.execute(
                         "UPDATE w3_thread_registry SET kind='CASE' WHERE thread_id=?",

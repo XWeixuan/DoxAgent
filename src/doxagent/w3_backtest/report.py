@@ -18,8 +18,8 @@ def read_jsonl(path: Path) -> list[dict]:
 
 def normalize_decision(result: dict, case: dict, dataset: Path) -> str | None:
     decision = result.get("decision") or {}
-    if decision.get("decision") == "NO_TRADE":
-        return "NO_TRADE"
+    if decision.get("decision") in {"LONG", "SHORT", "NO_TRADE"}:
+        return decision["decision"]
     if decision.get("decision") == "EXPERT_TRADE":
         return (decision.get("expert_trade") or {}).get("direction")
     if decision.get("decision") == "POLICY_TRADE":
@@ -32,7 +32,7 @@ def normalize_decision(result: dict, case: dict, dataset: Path) -> str | None:
             if policy["policy_id"] == chosen.get("policy_id"):
                 for condition in policy["activation_conditions"]:
                     if condition["condition_id"] == chosen.get("condition_id"):
-                        return condition.get("decision") or policy.get("decision")
+                        return condition.get("decision")
     return None
 
 

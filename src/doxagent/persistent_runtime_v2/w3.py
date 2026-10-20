@@ -841,8 +841,9 @@ class CodexW3AgentRunner:
         from .journal import digest
         from .w3_contracts import (
             OPERATIONS_PHASE,
-            W3OperationsResult,
-            W3TradeDecision,
+            contract_models,
+            is_unified_contract,
+            W3_LEGACY_CONTRACT,
             parse_w3_operations,
             parse_w3_trade_decision,
         )
@@ -909,7 +910,8 @@ class CodexW3AgentRunner:
             }
             template = assets["w3/template.md"] if not single_skill else ""
         else:
-            model = W3OperationsResult if phase == OPERATIONS_PHASE else W3TradeDecision
+            trade_model, operations_model = contract_models(case.w3_contract_version or W3_LEGACY_CONTRACT)
+            model = operations_model if phase == OPERATIONS_PHASE else trade_model
             schema = strict_json_schema(model.model_json_schema())
             frozen = case.frozen_inputs.get("w3_contracts", {})
             schema = frozen.get(
@@ -932,7 +934,7 @@ class CodexW3AgentRunner:
         if new_entry:
             task.update(
                 entry_version=ENTRY,
-                contract_version="persistent-runtime.w3.v4",
+                contract_version=case.w3_contract_version,
                 output_fields=list(schema.get("properties", {})),
                 instruction=(
                     "Inherited AGENTS and unique Skill apply. "
@@ -954,6 +956,7 @@ class CodexW3AgentRunner:
                     if manifest is None:
                         manifest = dict(
                             case_id=case.case_id,
+                            w3_contract_version=case.w3_contract_version,
                             phase=phase,
                             ticker=case.ticker,
                             inline_policy_ids=[p["policy_id"] for p in payload.get("policies", [])],
@@ -962,7 +965,8 @@ class CodexW3AgentRunner:
                             or case.source.message_bus_event_time.isoformat(),
                             version_pin=context.version_pin.model_dump(mode="json"),
                             components=context.components,
-                            policy_usage=case.frozen_inputs.get("policy_usage", []),
+                            **({} if is_unified_contract(case.w3_contract_version)
+                               else dict(policy_usage=case.frozen_inputs.get("policy_usage", []))),
                             state={
                                 k: payload[k]
                                 for k in (
@@ -1263,21 +1267,21 @@ class CodexW3AgentRunner:
                     raise ValueError("template initialization did not return ready=true")
                 result = {"ready": True}
             elif phase == OPERATIONS_PHASE:
-                result, issues = parse_w3_operations(job.final_response)
+                result, issues = parse_w3_operations(job.final_response, version=case.w3_contract_version or W3_LEGACY_CONTRACT)
                 self._journal.set("w3_action_parse_issues", case.case_id, issues)
             else:
-                result = parse_w3_trade_decision(job.final_response)
+                result = parse_w3_trade_decision(job.final_response, version=case.w3_contract_version or W3_LEGACY_CONTRACT)
             if context is not None and phase != "w3_template":
                 known = {
                     p.policy_id: {c.condition_id for c in p.activation_conditions}
                     for p in context.policy_set.policies
                 }
                 if phase == OPERATIONS_PHASE:
-                    if not set(result.policy.policy_ids).issubset(known):
+                    if not is_unified_contract(case.w3_contract_version) and not set(result.policy.policy_ids).issubset(known):
                         raise ValueError(
                             "final Policy references must be present in the frozen PolicySet"
                         )
-                    for group in result.policy.matched_condition_ids:
+                    for group in (() if is_unified_contract(case.w3_contract_version) else result.policy.matched_condition_ids):
                         if not set(group.condition_ids).issubset(known.get(group.policy_id, set())):
                             raise ValueError(
                                 "final Condition attribution is outside the frozen PolicySet"
@@ -1291,7 +1295,7 @@ class CodexW3AgentRunner:
                         raise ValueError(
                             "novelty references must be present in the pinned Reference View"
                         )
-                elif result.policy_trade and result.policy_trade.condition_id not in known.get(
+                elif not is_unified_contract(case.w3_contract_version) and result.policy_trade and result.policy_trade.condition_id not in known.get(
                     result.policy_trade.policy_id, set()
                 ):
                     raise ValueError("selected Condition must be present in the frozen PolicySet")

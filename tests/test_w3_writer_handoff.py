@@ -86,3 +86,89 @@ async def test_concurrent_lifecycle_call_cannot_use_client_being_closed(monkeypa
     assert "thread/fork" in events and "thread/list" in events
     await transport.close()
     assert events.count("close") == 1
+
+
+@pytest.mark.asyncio
+async def test_waiter_cancel_does_not_close_rpc_and_not_found_keeps_client(monkeypatch):
+    started, release = asyncio.Event(), asyncio.Event()
+    clients = []
+
+    class Client:
+        def __init__(self, *args):
+            self.closed = False
+            clients.append(self)
+
+        async def start(self):
+            pass
+
+        async def initialize(self):
+            pass
+
+        async def request(self, method, params, *, response_model):
+            if method == "thread/read":
+                started.set()
+                await release.wait()
+            if method == "not-found":
+                raise ValueError("InvalidRequest: thread not found")
+            assert not self.closed
+            return response_model.model_validate({})
+
+        async def close(self):
+            self.closed = True
+
+    monkeypatch.setattr("openai_codex.async_client.AsyncCodexClient", Client)
+    transport = AppServerThreads()
+    first = asyncio.create_task(transport.request("thread/read", {}))
+    await started.wait()
+    second = asyncio.create_task(transport.request("thread/list", {}))
+    await asyncio.sleep(0)
+    second.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await second
+    assert not clients[0].closed
+    release.set()
+    await first
+    with pytest.raises(ValueError):
+        await transport.request("not-found", {})
+    await transport.request("thread/list", {})
+    assert len(clients) == 1 and not clients[0].closed
+    await transport.close()
+
+
+@pytest.mark.asyncio
+async def test_inflight_failure_discards_only_its_client_before_next_rpc(monkeypatch):
+    started, release = asyncio.Event(), asyncio.Event()
+    clients = []
+
+    class Client:
+        def __init__(self, *args):
+            self.closed = False
+            clients.append(self)
+
+        async def start(self):
+            pass
+
+        async def initialize(self):
+            pass
+
+        async def request(self, method, params, *, response_model):
+            if method == "fail":
+                started.set()
+                await release.wait()
+                raise TimeoutError("inflight RPC timeout")
+            assert not self.closed
+            return response_model.model_validate({})
+
+        async def close(self):
+            self.closed = True
+
+    monkeypatch.setattr("openai_codex.async_client.AsyncCodexClient", Client)
+    transport = AppServerThreads()
+    first = asyncio.create_task(transport.request("fail", {}))
+    await started.wait()
+    second = asyncio.create_task(transport.request("thread/list", {}))
+    release.set()
+    result = await asyncio.gather(first, second, return_exceptions=True)
+    assert isinstance(result[0], TimeoutError) and result[1] == {}
+    assert len(clients) == 2 and clients[0].closed and not clients[1].closed
+    await transport.close()

@@ -139,10 +139,13 @@ def test_durable_trace_does_not_change_trade_first_semantics(tmp_path):
 
 
 @pytest.mark.asyncio
-async def test_lifecycle_request_isolation_removes_global_head_of_line(monkeypatch):
+async def test_lifecycle_helper_serializes_rpc_without_closing_active_client(monkeypatch):
     entered, release = asyncio.Event(), asyncio.Event()
 
     class Client:
+        def __init__(self, *args):
+            pass
+
         async def start(self):
             pass
 
@@ -166,7 +169,7 @@ async def test_lifecycle_request_isolation_removes_global_head_of_line(monkeypat
         await entered.wait()
         second = asyncio.create_task(transport.request("thread/fork", {}))
         await asyncio.sleep(0.02)
-        assert second.done()
+        assert not second.done()
         release.set()
         await asyncio.gather(first, second)
     rpcs = [v for v in trace.events if v["name"] == "lifecycle.rpc"]

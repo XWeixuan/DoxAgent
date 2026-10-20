@@ -332,6 +332,31 @@ const selection = {
 };
 
 describe("Runtime Case JSON export", () => {
+  it("exports a unified direction separately from inherited W2 HIT", async () => {
+    const { client, detail } = await fixture();
+    Object.assign(detail.summary, { final_policy_source: "W2" });
+    Object.assign(detail.w3.data as object, {
+      decision: {
+        decision: "SHORT",
+        reason: "Independent direction",
+        prior_expectation: "Baseline",
+        expectation_delta: "Delta",
+      },
+      policy_hit: value(true),
+      direction: value("SHORT"),
+    });
+    const result = await collectRuntimeCases(
+      client,
+      selection,
+      new AbortController().signal,
+    );
+    const third = (
+      result.cases[0] as unknown as Record<string, Record<string, unknown>>
+    )["W3 二轮研判"];
+    expect(third["交易判断"]).toBeDefined();
+    expect(third["W2 Policy判定（继承）"]).toBeDefined();
+    expect(third["专家交易判断"]).toBeUndefined();
+  });
   it("exports frozen WATCH evidence and the explicit final Policy selection", async () => {
     const { client, detail } = await fixture();
     const watch = {

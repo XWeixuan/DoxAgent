@@ -952,12 +952,21 @@ class W3CoverageGapRecord(RuntimeV2Model):
     created_at: datetime = Field(default_factory=utc_now)
 
 
+class ArchiveResultBasis(RuntimeV2Model):
+    novelty: W1NoveltyVerdict
+    novelty_source: Literal["W1", "W3_OPERATIONS"]
+    policy_hit: bool
+    policy_related: bool
+    w3_decision: Literal["NO_TRADE"]
+
+
 class ArchiveRecord(RuntimeV2Model):
     archive_id: str = Field(default_factory=lambda: new_runtime_v2_id("archive"))
     case_id: str
     ticker: str
     source_message_id: str
     reason: str
+    result_basis: ArchiveResultBasis | None = None
     created_at: datetime = Field(default_factory=utc_now)
 
 

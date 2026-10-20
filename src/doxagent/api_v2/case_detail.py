@@ -12,6 +12,9 @@ from doxagent.persistent_runtime_v2.schema import (
     normalize_w2_result,
 )
 
+from doxagent.persistent_runtime_v2.w3_contracts import is_unified_contract
+from doxagent.persistent_runtime_v2.case_outcomes import effective_novelty, effective_policy, decision_direction
+
 from .case_evidence import CaseEvidence
 from .dto import available, coverage, missing
 from .errors import ApiFailure
@@ -45,6 +48,7 @@ def install(app: FastAPI) -> None:
                 "w2_final",
                 "w3_result",
                 "w3_operations_result",
+                "w3_contract_version",
                 "w3_trade_decision",
             ],
         )
@@ -131,6 +135,7 @@ def install(app: FastAPI) -> None:
                 "w2_final",
                 "w2_round1",
                 "w2_skipped",
+                "w3_contract_version",
                 "w3_result",
                 "w3_trade_decision",
                 "w3_operations_result",
@@ -537,8 +542,14 @@ def install(app: FastAPI) -> None:
             }
         if case.get("w3_trade_decision"):
             decision = case["w3_trade_decision"]
-            ops = case.get("w3_operations_result") or {}
-            expert = decision.get("expert_trade") or {}
+            unified = is_unified_contract(case.get("w3_contract_version"))
+            expert = decision if unified else decision.get("expert_trade") or {}
+            final_novelty, _ = effective_novelty(case)
+            final_policy, _ = effective_policy(case)
+            if not unified and not case.get("w3_operations_result"):
+                final_novelty = final_policy = None
+            final_policy = final_policy or {}
+            direction = decision_direction(decision)
             if third is None:
                 route = evidence.fields("native:runtime_v2_w3_cases", case_id, ["mode"])
                 third = dict(mode=(route or {}).get("mode", "UNCOVERED_NEW"))
@@ -554,20 +565,20 @@ def install(app: FastAPI) -> None:
                 operations_timing=evidence.interval(
                     [g for g in groups if g.get("phase") == "post_decision_operations"], "W3"
                 ),
-                novelty=available(ops["novelty"]["result"]) if ops else missing(),
-                references=references(ops["novelty"]) if ops else [],
-                policy_hit=available(bool(ops["policy"]["policy_ids"])) if ops else missing(),
-                policies=policies(ops["policy"]) if ops else [],
-                expert_trade_evaluated=available(decision["decision"] == "EXPERT_TRADE"),
-                expert_trade=available(decision["decision"] == "EXPERT_TRADE"),
-                direction=available(expert["direction"]) if expert else missing(),
-                prior_expectation=available(expert["prior_expectation"]) if expert else missing(),
-                expectation_delta=available(expert["expectation_delta"]) if expert else missing(),
+                novelty=available(final_novelty["result"]) if final_novelty else missing(),
+                references=references(final_novelty) if final_novelty else [],
+                policy_hit=available(final_policy.get("policy_hit", bool(final_policy.get("policy_ids")))) if final_policy else missing(),
+                policies=policies(final_policy, "hit_condition_ids" if unified else "matched_condition_ids") if final_policy else [],
+                expert_trade_evaluated=missing("NOT_APPLICABLE", "NOT_APPLICABLE") if unified else available(decision["decision"] == "EXPERT_TRADE"),
+                expert_trade=missing("NOT_APPLICABLE", "NOT_APPLICABLE") if unified else available(decision["decision"] == "EXPERT_TRADE"),
+                direction=available(direction) if direction in {"LONG", "SHORT"} else available(expert["direction"]) if expert.get("direction") else missing(),
+                prior_expectation=available(expert["prior_expectation"]) if expert.get("prior_expectation") else missing(),
+                expectation_delta=available(expert["expectation_delta"]) if expert.get("expectation_delta") else missing(),
                 timing=interval("W3"),
                 attempts=page("attempt", "W3"),
                 reasoning={
-                    k: resource(reasons.get("w3_" + k))
-                    for k in ("novelty", "policy", "expert_trade")
+                    **{k: resource(reasons.get("w3_" + k)) for k in ("novelty", "policy", "expert_trade")},
+                    "trade": resource(reasons.get("w3_trade") or reasons.get("w3_expert_trade")),
                 },
             )
         with store.connect() as db:

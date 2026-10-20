@@ -220,7 +220,7 @@ def build_persistent_runtime_v2_service(
     if journal:
         from .execution_bundle import ExecutionBundles
         from .prompts import RuntimeV2PromptSet
-        from .w3_contracts import W3_CONTRACT
+        from .w3_contracts import asset_contract_version
 
         w3_root = Path(settings.persistent_runtime_v2_w3_prompt_root)
         assets = {
@@ -257,7 +257,8 @@ def build_persistent_runtime_v2_service(
             assets=assets,
             orchestration_revision=3,
             w2_contract_version=W2_CONTRACT,
-            w3_contract_version=W3_CONTRACT if settings.persistent_runtime_v2_w3_enabled else None,
+            w3_contract_version=asset_contract_version(assets)
+            if settings.persistent_runtime_v2_w3_enabled else None,
         )
         if settings.persistent_runtime_v2_w3_enabled:
             if prior_execution and prior_execution != published_execution and not journal.get("w3_entry", "previous"):

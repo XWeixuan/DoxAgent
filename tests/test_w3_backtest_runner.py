@@ -4,7 +4,7 @@ import pytest
 
 from doxagent.codex_worker.local_client import LocalWorkspaceClient
 from doxagent.codex_worker.workspace_store import LocalWorkspaceStore
-from doxagent.persistent_runtime_v2.w3_contracts import OPERATIONS_PHASE
+from doxagent.persistent_runtime_v2.w3_contracts import OPERATIONS_PHASE, TRADE_PHASE, W3_CONTRACT, W3_LEGACY_CONTRACT
 from doxagent.w3_backtest.legacy import LegacyReplayAdapter
 from doxagent.w3_backtest.runner import ReplayRunner, workspace_path
 from tests.test_runtime_policy_direction_usage import NOW, fixture_case
@@ -26,7 +26,15 @@ class ReplayWorker(ModelWorker):
     async def run(self, request):
         if request.task_phase == OPERATIONS_PHASE and self.fail_operations:
             raise RuntimeError("operations unavailable")
-        return await super().run(request)
+        job = await super().run(request)
+        properties = request.output_schema.get("properties", {})
+        value = json.loads(job.final_response)
+        if request.task_phase == TRADE_PHASE and "prior_expectation" in properties:
+            value = dict(decision="LONG", reason="Offline unified direction",
+                         prior_expectation="Trial baseline", expectation_delta="Production")
+        elif request.task_phase == OPERATIONS_PHASE and "policy" not in properties:
+            value.pop("policy", None)
+        return job.model_copy(update=dict(final_response=json.dumps(value)))
 
     async def register_template(self, _):
         return None
@@ -39,7 +47,7 @@ class ReplayWorker(ModelWorker):
         return None
 
 
-def fixture(tmp_path, monkeypatch):
+def fixture(tmp_path, monkeypatch, contract=W3_LEGACY_CONTRACT):
     case, _ = fixture_case()
     context = PhaseAgent().prepare_case(case)
     monkeypatch.setattr("doxagent.w3_backtest.runner.parse_document2", lambda _: context.document2)
@@ -76,7 +84,14 @@ def fixture(tmp_path, monkeypatch):
         stores.append(store)
         return worker, LocalWorkspaceClient(store)
 
-    runner = ReplayRunner(worker_factory=worker_factory)
+    # These recovery fixtures explicitly freeze their business contract, rather
+    # than silently following the currently published production prompt pack.
+    prompt_root = tmp_path / "prompts"
+    (prompt_root / "skills").mkdir(parents=True)
+    for name in ("AGENTS.md", "skills/skill.md", "skills/weekend_sweep.md"):
+        (prompt_root / name).write_text("Offline fixture instructions", encoding="utf-8")
+    write(prompt_root / "contract.json", dict(w3_contract_version=contract))
+    runner = ReplayRunner(worker_factory=worker_factory, prompt_root=prompt_root)
     return dataset, runner, worker, stores
 
 
@@ -103,6 +118,15 @@ def test_replay_uses_production_two_stages_with_isolated_evidence(tmp_path, monk
     resumed = runner.run_case(dataset, "C1", tmp_path / "run")
     assert resumed["status"] == "SUCCEEDED"
     assert len(worker.requests) == 3
+
+
+def test_unified_replay_uses_v5_and_preserves_web_broker_isolation(tmp_path, monkeypatch):
+    dataset, runner, worker, _ = fixture(tmp_path, monkeypatch, contract=W3_CONTRACT)
+    result = runner.run_case(dataset, "C1", tmp_path / "run")
+    assert result["status"] == "SUCCEEDED", result["error"]
+    assert result["decision"]["decision"] == "LONG"
+    assert all(r.web_search_mode == "disabled" and not r.data_mcp_enabled for r in worker.requests)
+    assert "policy" not in worker.requests[-1].output_schema["properties"]
 
 
 def test_operations_failure_resumes_without_repeating_trade(tmp_path, monkeypatch):

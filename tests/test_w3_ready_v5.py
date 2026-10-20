@@ -31,6 +31,7 @@ async def test_failed_empty_bound_slot_reconciles_original_operation_once(tmp_pa
 
         async def prepare_fork(self, request, cwd, parent):
             if self.fail:
+                self.fail = False
                 raise TimeoutError("startup timed out")
             return await super().prepare_fork(request, cwd, parent)
 
@@ -63,11 +64,13 @@ async def test_failed_empty_bound_slot_reconciles_original_operation_once(tmp_pa
     )
     request = dict(case_id="case", record_id="record", parent_thread_id="parent", profile=profile)
     original = await slots.claim(request)
-    await asyncio.gather(*list(slots.tasks.values()))
+    while slots.tasks:
+        await asyncio.gather(*list(slots.tasks.values()))
     runtime.fail = False
     restored = await slots.claim(request)
-    assert restored["status"] == "CREATING"
-    await asyncio.gather(*list(slots.tasks.values()))
+    assert restored["status"] in {"CREATING", "COMPLETED"}
+    while slots.tasks:
+        await asyncio.gather(*list(slots.tasks.values()))
     result = await slots.claim(request)
     assert result["status"] == "COMPLETED" and result["slot_id"] == original["slot_id"]
     assert runtime.forks == 1
@@ -79,8 +82,10 @@ async def test_failed_empty_bound_slot_reconciles_original_operation_once(tmp_pa
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize('model,target', [('gpt-6-luna',2),('gpt-6.1-sol',1)])
-async def test_bound_ready_inventory_is_idempotent_concurrent_and_not_per_ticker(tmp_path,model,target):
+@pytest.mark.parametrize("model,target", [("gpt-6-luna", 2), ("gpt-6.1-sol", 1)])
+async def test_bound_ready_inventory_is_idempotent_concurrent_and_not_per_ticker(
+    tmp_path, model, target
+):
     workspaces = LocalWorkspaceStore(tmp_path)
     jobs = SimpleNamespace(
         store=JobStore(tmp_path), _runtime=Runtime(), _startup=asyncio.Semaphore(3)
@@ -92,11 +97,12 @@ async def test_bound_ready_inventory_is_idempotent_concurrent_and_not_per_ticker
         )
     settings = SimpleNamespace(w3_ready_luna=2, w3_ready_sol=1)
     slots = W3ReadySlots(jobs, workspaces, settings, SimpleNamespace(ready={}))
-    profile = dict(model=model, provider=None, effort="medium" if model=='gpt-6.1-sol' else "max")
+    profile = dict(model=model, provider=None, effort="medium" if model == "gpt-6.1-sol" else "max")
     config = dict(parent_thread_id="parent", profile=profile, instructions={"AGENTS.md": "public"})
     try:
         key = await slots.configure(config)
-        await asyncio.gather(*list(slots.tasks.values()))
+        while slots.tasks:
+            await asyncio.gather(*list(slots.tasks.values()))
         requests = [
             dict(
                 case_id=f"case{i}",
@@ -107,7 +113,8 @@ async def test_bound_ready_inventory_is_idempotent_concurrent_and_not_per_ticker
             for i in range(20)
         ]
         values = await asyncio.gather(*(slots.claim(r) for r in requests))
-        await asyncio.gather(*list(slots.tasks.values()))
+        while slots.tasks:
+            await asyncio.gather(*list(slots.tasks.values()))
         values = await asyncio.gather(*(slots.claim(r) for r in requests))
         assert len({v["slot_id"] for v in values}) == 20
         assert all(v["status"] == "COMPLETED" for v in values)
@@ -147,21 +154,46 @@ async def test_restart_reclaims_original_bound_slot_and_completed_fork(tmp_path)
     await slots.configure(
         dict(parent_thread_id="parent", profile=profile, instructions={"AGENTS.md": "public"})
     )
-    await asyncio.gather(*list(slots.tasks.values()))
+    while slots.tasks:
+        await asyncio.gather(*list(slots.tasks.values()))
     request = dict(case_id="case", record_id="record", parent_thread_id="parent", profile=profile)
     original = await slots.claim(request)
-    await asyncio.gather(*list(slots.tasks.values()))
+    while slots.tasks:
+        await asyncio.gather(*list(slots.tasks.values()))
     await slots.close()
     before = runtime.forks
     with closing(jobs.store.connect()) as db, db:
         db.execute("UPDATE w3_ready_slots SET thread_id=NULL WHERE id=?", (original["slot_id"],))
-    restarted = W3ReadySlots(jobs, workspaces, settings, SimpleNamespace(ready={}))
+        db.execute(
+            "UPDATE w3_thread_operations SET owner_token=NULL WHERE operation_key=?",
+            ("w3-slot-fork:" + original["slot_id"],),
+        )
+    runtime.pool = []
+
+    async def prepare_resume(request, cwd):
+        from doxagent.codex_worker.startup_admission import progress
+
+        progress("BOOT_ATTEMPT")
+        runtime.pool.append(
+            SimpleNamespace(
+                thread_id=request.thread_id,
+                identity="resumed",
+                healthy=True,
+                process=SimpleNamespace(returncode=None),
+            )
+        )
+        return request.thread_id
+
+    runtime.prepare_resume = prepare_resume
+    restarted = W3ReadySlots(jobs, workspaces, settings, SimpleNamespace(ready={"resumed": True}))
     try:
         assert (await restarted.claim(request))["status"] == "CREATING"
         await asyncio.gather(*list(restarted.tasks.values()))
         recovered = await restarted.claim(request)
         assert recovered["thread_id"] == original["thread_id"]
         assert recovered["slot_id"] == original["slot_id"] and runtime.forks == before
+        operation = jobs.thread_lifecycle.operation("w3-slot-fork:" + original["slot_id"])
+        assert operation["owner_token"] and operation["startup_attempts"] == "1"
     finally:
         await restarted.close()
         await jobs.thread_lifecycle.close()
@@ -191,7 +223,8 @@ async def test_old_version_recovery_cannot_retire_current_public_inventory(tmp_p
         key = await slots.configure(
             dict(parent_thread_id="current", profile=profile, instructions={"AGENTS.md": "new"})
         )
-        await asyncio.gather(*list(slots.tasks.values()))
+        while slots.tasks:
+            await asyncio.gather(*list(slots.tasks.values()))
         await slots.configure(
             dict(
                 parent_thread_id="previous",

@@ -4,15 +4,27 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
+import signal
+import time
 from contextlib import closing
+from dataclasses import replace
+from pathlib import Path
+from uuid import uuid4
 
 from pydantic import BaseModel, ConfigDict
 
 from doxagent.w3_timing import file_trace, observed, span
 
+from .startup_admission import PriorityGate, startup_scope
+
 
 class _WireResponse(BaseModel):
     model_config = ConfigDict(extra="allow")
+
+
+class LifecycleCleanupError(RuntimeError):
+    code = "CAPSULE_CLEANUP_QUARANTINED"
 
 
 class AppServerThreads:
@@ -22,25 +34,74 @@ class AppServerThreads:
         self.config, self.client = config, None
         self.clients = set()
         self._initialize_lock = asyncio.Lock()
+        self._rpc_gate = PriorityGate(max_pending=64)
+        self.admission = None
+        self.root = None
+        self.generation = None
+        self.identities = {}
+        self.quarantined = False
 
     async def request(self, method, params):
+        # Queue cancellation must not touch the client serving another request.
+        async with self._rpc_gate.acquire(
+            priority=2 if method == "thread/delete" else 0, timeout=30
+        ):
+            if self.quarantined:
+                raise LifecycleCleanupError("previous helper owner has not exited")
+            return await self._request(method, params)
+
+    async def ensure_initialized(self):
+        await self.request("__initialize__", {})
+
+    async def _request(self, method, params):
         from openai_codex.async_client import AsyncCodexClient
 
-        async with asyncio.timeout(15), self._initialize_lock:
+        async with self._initialize_lock:
             if self.client is None:
-                client = (
-                    AsyncCodexClient(self.config) if self.config is not None else AsyncCodexClient()
+                from openai_codex import CodexConfig
+
+                identity = "lifecycle-" + uuid4().hex
+                config = self.config or CodexConfig()
+                config = replace(
+                    config,
+                    env={**os.environ, **(config.env or {}), "DOXAGENT_CAPSULE_ID": identity},
                 )
+                client = AsyncCodexClient(config)
+                self.identities[client] = {"identity": identity, "generation": self.generation}
+                self._record(client, "CREATED")
                 try:
-                    async with asyncio.timeout(10):
-                        await client.start()
-                        await client.initialize()
+
+                    async def initialize():
+                        async with asyncio.timeout(90):
+                            await client.start()
+                            proc = getattr(getattr(client, "_sync", None), "_proc", None)
+                            if proc is not None:
+                                from .process_tree import owned_processes
+
+                                owned = await asyncio.to_thread(owned_processes, identity)
+                                self.identities[client].update(
+                                    pid=proc.pid, start_ticks=owned.get(proc.pid, (None, 0))[0]
+                                )
+                            self._record(client, "SDK_INITIALIZE")
+                            await client.initialize()
+                            self._record(client, "SDK_READY")
+
+                    if self.admission is not None:
+                        async with self.admission.boot(
+                            priority=2 if method == "thread/delete" else None
+                        ):
+                            await initialize()
+                    else:
+                        await initialize()
                 except BaseException:
-                    await asyncio.wait_for(client.close(), 3)
+                    await self._close_client(client)
                     raise
                 self.client = client
                 self.clients.add(client)
             client = self.client
+
+        if method == "__initialize__":
+            return {}
 
         async def rpc():
             with span("lifecycle.rpc", method=method):
@@ -49,28 +110,70 @@ class AppServerThreads:
 
         try:
             return await asyncio.wait_for(rpc(), 10)
-        except BaseException:
-            owned_process = getattr(getattr(client, "_sync", None), "_proc", None)
-            try:
-                with span("lifecycle.client_close", method=method):
-                    await asyncio.wait_for(client.close(), 5)
-            finally:
-                if owned_process is not None and owned_process.poll() is None:
-                    owned_process.kill()
-                    await asyncio.to_thread(owned_process.wait, timeout=3)
-                self.clients.discard(client)
-                if self.client is client:
-                    self.client = None
+        except BaseException as exc:
+            fatal = isinstance(
+                exc, (TimeoutError, asyncio.CancelledError, ConnectionError, EOFError)
+            ) or any(word in type(exc).__name__ for word in ("TransportClosed", "ProcessExited"))
+            if not fatal:
+                raise
+            await self._close_client(client)
             raise
 
+    def _record(self, client, stage):
+        value = self.identities.get(client, {})
+        value["stage"] = stage
+        proc = getattr(getattr(client, "_sync", None), "_proc", None)
+        value["returncode"] = proc.poll() if proc is not None else None
+        if self.root is not None:
+            directory = Path(self.root) / "lifecycle-owners"
+            directory.mkdir(exist_ok=True, parents=True)
+            (directory / (value["identity"] + ".json")).write_text(
+                json.dumps(value), encoding="utf-8"
+            )
+
+    async def _close_client(self, client):
+        identity = self.identities.get(client, {}).get("identity")
+        try:
+            try:
+                await asyncio.wait_for(client.close(), 5)
+            finally:
+                if identity and os.name == "posix":
+                    from .process_tree import owned_processes, signal_owned
+
+                    for sig in (signal.SIGTERM, signal.SIGKILL):
+                        end = time.monotonic() + 5
+                        while True:
+                            owned = await asyncio.to_thread(owned_processes, identity)
+                            if not owned:
+                                break
+                            await asyncio.to_thread(signal_owned, owned, sig)
+                            if time.monotonic() >= end:
+                                break
+                            await asyncio.sleep(0.1)
+                    if await asyncio.to_thread(owned_processes, identity):
+                        self.quarantined = True
+                        raise LifecycleCleanupError("owned helper process cleanup failed")
+        finally:
+            try:
+                self._record(client, "QUARANTINED" if self.quarantined else "CLOSED")
+            finally:
+                self.clients.discard(client)
+                self.identities.pop(client, None)
+                if self.client is client:
+                    self.client = None
+
     async def close(self):
-        await asyncio.gather(*(asyncio.wait_for(c.close(), 5) for c in list(self.clients)))
+        async with self._rpc_gate.acquire(timeout=30):
+            await asyncio.gather(*(self._close_client(c) for c in list(self.clients)))
 
 
 class WorkerThreadLifecycle:
     def __init__(self, jobs, workspaces, transport=None):
         self.jobs, self.workspaces = jobs, workspaces
         self.transport = transport or AppServerThreads()
+        self.transport.admission = getattr(getattr(jobs, "_runtime", None), "admission", None)
+        self.transport.root = jobs.store.root
+        self.transport.generation = getattr(jobs, "generation", None)
         self.locks: dict[str, asyncio.Lock] = {}
         self.preparations: dict[str, asyncio.Task] = {}
         with closing(jobs.store.connect()) as db, db:
@@ -92,6 +195,14 @@ class WorkerThreadLifecycle:
                 "execution_generation",
                 "capsule_id",
                 "recovery_count",
+                "owner_token",
+                "fork_dispatched_at",
+                "startup_attempts",
+                "next_retry_at",
+                "last_error",
+                "prepare_deadline_at",
+                "startup_receipt",
+                "full_query_started_at",
             ):
                 if name not in columns:
                     db.execute(f"ALTER TABLE w3_thread_operations ADD COLUMN {name} TEXT")
@@ -106,7 +217,7 @@ class WorkerThreadLifecycle:
         value.pop("request", None)
         return value
 
-    def _operation_update(self, key, **values):
+    def _operation_update(self, key, owner=None, **values):
         from datetime import UTC, datetime
 
         values["updated_at"] = datetime.now(UTC).isoformat()
@@ -114,8 +225,9 @@ class WorkerThreadLifecycle:
             db.execute(
                 "UPDATE w3_thread_operations SET "
                 + ",".join(k + "=?" for k in values)
-                + " WHERE operation_key=?",
-                (*values.values(), key),
+                + " WHERE operation_key=?"
+                + (" AND owner_token=?" if owner else ""),
+                (*values.values(), key, *((owner,) if owner else ())),
             )
 
     async def prepare(self, request):
@@ -146,12 +258,17 @@ class WorkerThreadLifecycle:
                     raise ValueError("prepare key reused with different parameters")
             db.execute(
                 "INSERT OR IGNORE INTO w3_thread_operations"
-                "(operation_key,request,status,created_at,updated_at,step) "
-                "VALUES(?,?,'CREATING',?,?,'ACCEPTED')",
+                "(operation_key,request,status,created_at,updated_at,step,"
+                "fork_dispatched_at,startup_attempts) "
+                "VALUES(?,?,'CREATING',?,?,'ACCEPTED','','0')",
                 (key, canonical, datetime.now(UTC).isoformat(), datetime.now(UTC).isoformat()),
             )
         value = self.operation(key)
-        if value["status"] not in {"COMPLETED", "FAILED"} and key not in self.preparations:
+        if (
+            value["status"] not in {"COMPLETED", "FAILED"}
+            and key not in self.preparations
+            and float(value.get("next_retry_at") or 0) <= time.time()
+        ):
             task = asyncio.create_task(self._prepare_operation(request, legacy, bool(old)))
             self.preparations[key] = task
             task.add_done_callback(lambda _: self.preparations.pop(key, None))
@@ -170,13 +287,78 @@ class WorkerThreadLifecycle:
         from .schema import ThreadForkRequest, WorkerRunRequest
 
         key = request.operation_key
-        prior_errors = int(self.operation(key).get("recovery_count") or 0)
+        owner = uuid4().hex
         self._operation_update(
-            key, step="PREPARING", execution_generation=getattr(self.jobs, "generation", None)
+            key,
+            owner_token=owner,
+            step="PREPARING",
+            execution_generation=getattr(self.jobs, "generation", None),
         )
+        started = time.time()
+        initial = self.operation(key)
+        binding = {
+            "deadline": initial.get("prepare_deadline_at"),
+            "checked": 0.0,
+            "priority": 0 if request.source_case_id is not None else 1,
+        }
+        if not binding["deadline"] and request.source_case_id is not None:
+            accepted = initial.get("created_at")
+            from datetime import datetime
+
+            accepted = datetime.fromisoformat(accepted).timestamp() if accepted else started
+            binding["deadline"] = str(accepted + getattr(self.jobs, "w3_prepare_timeout", 180))
+
+        def refresh_binding():
+            if binding["priority"] == 0 or time.monotonic() - binding["checked"] < 0.25:
+                return
+            binding["checked"] = time.monotonic()
+            if key.startswith("w3-slot-fork:"):
+                with closing(self.jobs.store.connect()) as db:
+                    row = db.execute(
+                        "SELECT prepare_deadline_at,case_id FROM w3_ready_slots WHERE id=?",
+                        (request.record_id,),
+                    ).fetchone()
+                if row and row[1]:
+                    binding.update(priority=0, deadline=row[0])
+
+        def budget():
+            refresh_binding()
+            deadline = binding["deadline"]
+            if deadline and initial.get("prepare_deadline_at") != str(deadline):
+                self._operation_update(key, owner=owner, prepare_deadline_at=str(deadline))
+                initial["prepare_deadline_at"] = str(deadline)
+            return float(deadline) if deadline else None
+
+        def priority():
+            refresh_binding()
+            return binding["priority"]
+
+        def checkpoint(stage, **values):
+            current = self.operation(key)
+            if current.get("owner_token") != owner:
+                raise asyncio.CancelledError("prepare owner replaced")
+            deadline = budget()
+            if deadline and time.time() >= deadline - 15:
+                raise TimeoutError("bound prepare deadline exceeded")
+            update = {"step": stage}
+            if stage == "BOOT_ATTEMPT":
+                attempts = int(current.get("startup_attempts") or 0)
+                if attempts >= 2:
+                    raise ValueError("prepare exhausted two physical boot attempts")
+                update["startup_attempts"] = str(attempts + 1)
+            if stage == "FORK_DISPATCHED":
+                update["fork_dispatched_at"] = str(time.time())
+            if "capsule_id" in values:
+                update["capsule_id"] = values["capsule_id"]
+            if "thread_id" in values:
+                update["thread_id"] = values["thread_id"]
+            if "startup_receipt" in values:
+                update["startup_receipt"] = json.dumps(values["startup_receipt"])
+            self._operation_update(key, owner=owner, **update)
 
         async def execute():
             while not getattr(self.jobs, "_processes_recovered", True):
+                checkpoint("WAIT_PROCESS_RECOVERY")
                 await asyncio.sleep(0.05)
             if legacy:
                 with closing(self.jobs.store.connect()) as db:
@@ -187,8 +369,11 @@ class WorkerThreadLifecycle:
                     )
                 return (await self.fork(ThreadForkRequest.model_validate(prior)))["thread_id"]
             cwd = await asyncio.to_thread(self.workspaces.ensure_run, request.run_id)
-            if recover:
-                self._operation_update(key, step="RECONCILING")
+            current = self.operation(key)
+            if current.get("thread_id"):
+                return current["thread_id"]
+            if recover and current.get("fork_dispatched_at") != "":
+                checkpoint("RECONCILING")
                 receipt = cwd / ".w3-fork-receipt.json"
                 if receipt.is_file():
                     value = json.loads(receipt.read_text())
@@ -197,30 +382,44 @@ class WorkerThreadLifecycle:
                         and value.get("parent_id") == request.parent_thread_id
                     ):
                         return value["thread_id"]
-                found = []
+                # NULL is the legacy UNKNOWN state. A failed query is never an empty result.
+                initialize = getattr(self.transport, "ensure_initialized", None)
+                if initialize is not None:
+                    await initialize()
+                found = {}
                 for fast in (True, False):
-                    cursor = None
-                    while True:
-                        params = {"cwd": str(cwd), "limit": 100, "useStateDbOnly": fast}
-                        if cursor:
-                            params["cursor"] = cursor
-                        listed = await self.transport.request("thread/list", params)
-                        found.extend(
-                            t
-                            for t in listed.get("data", [])
-                            if t.get("cwd") == str(cwd)
-                            and t.get("forkedFromId") == request.parent_thread_id
+                    if not fast:
+                        if self.operation(key).get("full_query_started_at"):
+                            raise RuntimeError(
+                                "full recovery query already attempted; "
+                                "awaiting receipt/state index"
+                            )
+                        self._operation_update(
+                            key, owner=owner, full_query_started_at=str(time.time())
                         )
-                        cursor = listed.get("nextCursor")
-                        if not cursor:
-                            break
+                    cursor = None
+                    async with asyncio.timeout(10):
+                        while True:
+                            params = {"cwd": str(cwd), "limit": 100, "useStateDbOnly": fast}
+                            if cursor:
+                                params["cursor"] = cursor
+                            listed = await self.transport.request("thread/list", params)
+                            for t in listed.get("data", []):
+                                if (
+                                    t.get("cwd") == str(cwd)
+                                    and t.get("forkedFromId") == request.parent_thread_id
+                                ):
+                                    found[t["id"]] = t
+                            cursor = listed.get("nextCursor")
+                            if not cursor:
+                                break
                     if found:
                         break
                 if len(found) > 1:
                     raise ValueError("ambiguous persisted prepare")
                 if found:
-                    return found[0]["id"]
-            self._operation_update(key, step="FORKING")
+                    return next(iter(found))
+                self._operation_update(key, owner=owner, fork_dispatched_at="")
             profile = request.profile
             execution = WorkerRunRequest(
                 workflow_version="persistent_runtime_w3_v1",
@@ -244,23 +443,38 @@ class WorkerThreadLifecycle:
                 web_search_mode=profile.get("web_search_mode") or "live",
                 timeout_seconds=int(profile.get("timeout_seconds") or "600"),
             )
-            if request.source_case_id is None:
-                # Let already-dispatched business startups acquire the existing
-                # finite semaphore before speculative empty-slot replenishment.
-                while getattr(self.jobs, "_starting", None):
-                    await asyncio.sleep(0.02)
+            runtime = self.jobs._runtime
+            if getattr(runtime, "manages_startup_capacity", False):
+                return await runtime.prepare_fork(execution, cwd, request.parent_thread_id)
+            # Embedded/legacy runtimes lack stage callbacks; conservatively mark dispatch.
+            checkpoint("FORK_DISPATCHED")
             async with self.jobs._startup:
-                return await self.jobs._runtime.prepare_fork(
-                    execution, cwd, request.parent_thread_id
-                )
+                return await runtime.prepare_fork(execution, cwd, request.parent_thread_id)
 
         try:
-            running = asyncio.create_task(execute())
-            try:
-                thread_id = await asyncio.wait_for(asyncio.shield(running), 10)
-            except TimeoutError:
-                self._operation_update(key, step="FORK_SLOW")
-                thread_id = await asyncio.wait_for(running, 55)
+            # This task owns execution directly: cancelling it awaits capsule cleanup.
+            with startup_scope(key=key, priority=priority, deadline=budget(), progress=checkpoint):
+                async with asyncio.timeout(None) as timer:
+
+                    async def monitor():
+                        while True:
+                            deadline = budget()
+                            if deadline:
+                                timer.reschedule(
+                                    asyncio.get_running_loop().time()
+                                    + max(0, deadline - time.time() - 15)
+                                )
+                                return
+                            await asyncio.sleep(0.25)
+
+                    watcher = asyncio.create_task(monitor())
+                    try:
+                        thread_id = await execute()
+                    finally:
+                        watcher.cancel()
+                        await asyncio.gather(watcher, return_exceptions=True)
+            if self.operation(key).get("owner_token") != owner:
+                return
             with closing(self.jobs.store.connect()) as db, db:
                 db.execute(
                     "INSERT OR IGNORE INTO w3_thread_registry VALUES(?,?,?,?,'ACTIVE')",
@@ -273,29 +487,52 @@ class WorkerThreadLifecycle:
                 )
             self._operation_update(
                 key,
+                owner=owner,
                 thread_id=thread_id,
                 status="COMPLETED",
                 step="READY",
                 error_code=None,
                 error_message=None,
+                last_error=None,
+                next_retry_at=None,
             )
         except BaseException as exc:
-            # CapsuleRuntime destroys the owned process before raising; retry queries
-            # the original operation and reconciles its fixed cwd, never changes key.
+            current = self.operation(key)
+            deadline = budget()
+            terminal = (
+                isinstance(exc, ValueError)
+                or any(
+                    word in str(exc).lower()
+                    for word in (
+                        "invalid transport",
+                        "invalid configuration",
+                        "authentication",
+                        "unauthorized",
+                    )
+                )
+                or (deadline and time.time() >= deadline - 15)
+                or (
+                    int(current.get("startup_attempts") or 0) >= 2
+                    and current.get("fork_dispatched_at") == ""
+                )
+                or getattr(exc, "code", None) == "CAPSULE_CLEANUP_QUARANTINED"
+            )
             self._operation_update(
                 key,
-                status="FAILED"
-                if (
-                    isinstance(exc, ValueError)
-                    or prior_errors >= 2
-                    or getattr(exc, "code", None) == "CAPSULE_CLEANUP_QUARANTINED"
-                )
-                else "CREATING",
-                recovery_count=str(prior_errors + 1),
+                owner=owner,
+                status="FAILED" if terminal else "CREATING",
                 step="RECONCILING",
+                recovery_count=str(int(current.get("recovery_count") or 0) + 1),
+                next_retry_at=str(time.time() + 1),
+                last_error=str(exc) or type(exc).__name__,
+                startup_receipt=json.dumps(getattr(exc, "startup_receipt", None))
+                if getattr(exc, "startup_receipt", None)
+                else current.get("startup_receipt"),
                 error_code=getattr(exc, "code", type(exc).__name__),
                 error_message=str(exc) or type(exc).__name__,
             )
+            if isinstance(exc, asyncio.CancelledError):
+                raise
 
     def _row(self, thread_id):
         with closing(self.jobs.store.connect()) as db:

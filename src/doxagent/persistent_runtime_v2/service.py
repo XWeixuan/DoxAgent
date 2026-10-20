@@ -37,6 +37,7 @@ from doxagent.workflows.codex_document3.schema import (
     RuntimePolicyRecord,
 )
 
+from .w3_contracts import is_two_phase_contract, is_unified_contract
 from . import policy_consumption
 from .execution_bundle import ExecutionBundles
 from .journal import LeaseLost, RuntimeJournal, RuntimeStopping, digest, is_sqlite_contention
@@ -496,8 +497,6 @@ class PersistentRuntimeV2Service:
                 "Published Runtime Policy Projection is unavailable",
             )
         assert_runtime_projection_compatible(projection)
-        if mode != "CLOSED" and not isinstance(projection, RuntimePolicyProjectionV5):
-            projection = self._without_consumed_policies(projection)
         provisional_version = self.repository.provisional_snapshot_version(
             source.snapshot.ticker,
             trading_date,
@@ -572,6 +571,14 @@ class PersistentRuntimeV2Service:
             case.orchestration_revision = (
                 3 if isinstance(projection, RuntimePolicyProjectionV5) else 2
             )
+        # The frozen W3 contract decides whether historical usage constrains recall.
+        if (
+            mode != "CLOSED"
+            and not isinstance(projection, RuntimePolicyProjectionV5)
+            and not is_unified_contract(case.w3_contract_version)
+        ):
+            projection = self._without_consumed_policies(projection)
+            case.frozen_inputs["projection"] = projection.model_dump(mode="json")
         if isinstance(projection, RuntimePolicyProjectionV5):
             if (
                 case.execution_bundle_id
@@ -937,13 +944,14 @@ class PersistentRuntimeV2Service:
         if (
             isinstance(projection, RuntimePolicyProjectionV5)
             and "policy_usage" in case.frozen_inputs
+            and not is_unified_contract(case.w3_contract_version)
         ):
             allowed = {
                 p["policy_id"]
                 for p in case.frozen_inputs["policy_usage"]
                 if p["executable_directions"]
             }
-            if case.w3_contract_version == "persistent-runtime.w3.v4" and self.journal:
+            if is_two_phase_contract(case.w3_contract_version) and self.journal:
                 from .message_pin import active_states
 
                 if "watch_recall_policy_ids" not in case.frozen_inputs:
@@ -960,7 +968,8 @@ class PersistentRuntimeV2Service:
                 update={"policies": [p for p in projection.policies if p.policy_id in allowed]}
             )
         else:
-            recall_projection = self._without_consumed_policies(projection)
+            recall_projection = (projection if is_unified_contract(case.w3_contract_version)
+                                 else self._without_consumed_policies(projection))
         projected_ids = {item.policy_id for item in recall_projection.policies}
 
         def validate_r1(value: W2Round1RecallResult) -> None:
@@ -1045,7 +1054,7 @@ class PersistentRuntimeV2Service:
                                 if p["policy_id"] in requested_ids
                             ]
                         }
-                        if isinstance(details, PolicyDetailSnapshotV3)
+                        if isinstance(details, PolicyDetailSnapshotV3) and not is_unified_contract(case.w3_contract_version)
                         else {}
                     ),
                 },
@@ -1577,7 +1586,7 @@ class PersistentRuntimeV2Service:
                     effect_type=effect_type,
                     idempotency_key=(
                         f"{case.case_id}:W3:trade_decision"
-                        if case.w3_contract_version == "persistent-runtime.w3.v4"
+                        if is_two_phase_contract(case.w3_contract_version)
                         and effect_type is RuntimeSideEffect.ROUTE_TO_W3
                         else f"{case.case_id}:{effect_type.value}"
                     ),
@@ -1806,7 +1815,7 @@ class PersistentRuntimeV2Service:
             current = self.repository.get_case(effect.case_id)
             if (
                 current
-                and current.w3_contract_version == "persistent-runtime.w3.v4"
+                and is_two_phase_contract(current.w3_contract_version)
                 and effect.effect_type
                 in {
                     RuntimeSideEffect.ROUTE_TO_W3,
@@ -1846,7 +1855,7 @@ class PersistentRuntimeV2Service:
             raise RuntimeInputUnavailable(
                 "invalid_admission", "Message excluded by admission reconciliation"
             )
-        if case.w3_contract_version == "persistent-runtime.w3.v4" and effect.effect_type in {
+        if is_two_phase_contract(case.w3_contract_version) and effect.effect_type in {
             RuntimeSideEffect.ROUTE_TO_W3,
             RuntimeSideEffect.W3_POST_DECISION,
         }:
@@ -2454,7 +2463,7 @@ class PersistentRuntimeV2Service:
         if case is None:
             return
         effects = self.repository.list_effects(case_id)
-        if case.w3_contract_version == "persistent-runtime.w3.v4":
+        if is_two_phase_contract(case.w3_contract_version):
             effects = [
                 e for e in effects if e.effect_type is not RuntimeSideEffect.W3_POST_DECISION
             ]

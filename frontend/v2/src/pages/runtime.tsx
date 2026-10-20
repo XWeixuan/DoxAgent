@@ -933,7 +933,20 @@ function CaseResults({ row: c }: { row: CaseSummary }) {
   );
   return (
     <div className="case-results">
-      {!judgements.length && (
+      {c.w3_decision?.value && (
+        <span className="domain-tag">
+          {c.w3_decision.value === "NO_TRADE" ? "不交易" : c.w3_decision.value}
+        </span>
+      )}
+      {c.w3_decision?.value && c.w3_operations_status === "FAILED" && (
+        <span className="domain-tag result-FAILURE">后置处理失败</span>
+      )}
+      {c.w3_decision?.value &&
+        c.w3_operations_status &&
+        !["COMMITTED", "FAILED"].includes(c.w3_operations_status) && (
+          <span className="case-source">后置处理中</span>
+        )}
+      {!judgements.length && !c.w3_decision?.value && (
         <span className="case-source">
           {c.result_settled ? "结果未记录" : "尚未形成结果"}
         </span>
@@ -1077,7 +1090,9 @@ export function CaseRows({
                 >
                   {valueText(c.title)}
                 </button>
-                <span className="case-source">{c.source_name ?? c.source.name}</span>
+                <span className="case-source">
+                  {c.source_name ?? c.source.name}
+                </span>
               </td>
               <td>
                 <CaseResults row={c} />

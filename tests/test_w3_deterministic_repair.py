@@ -138,6 +138,7 @@ async def test_prepare_lost_fork_response_reconciles_same_child(tmp_path):
     assert value.operation("w3-fork:one")["step"] == "RECONCILING"
     # Restart loses process/task hints; the same durable row is sufficient.
     recovered = WorkerThreadLifecycle(value.jobs, value.workspaces, Transport())
+    await asyncio.sleep(1.01)  # Durable retry delay survives Worker restart.
     await recovered.prepare(prepare())
     await recovered.preparations["w3-fork:one"]
     assert recovered.operation("w3-fork:one")["thread_id"] == "persisted-child"
@@ -712,12 +713,12 @@ async def test_failed_warm_boot_does_not_restart_storm_or_block_requested_launch
     runtime = CapsuleRuntime(tmp_path)
     await runtime.warm(3)
     await asyncio.gather(*list(runtime._warming))
-    assert len(calls) == 3
+    assert len(calls) == 1
     await runtime.warm(3)
-    assert len(calls) == 3
+    assert len(calls) == 1
     with pytest.raises(RuntimeError, match="boot failed"):
         await runtime._take(None)
-    assert len(calls) == 4
+    assert len(calls) == 2
     await runtime.close()
 
 

@@ -556,7 +556,9 @@ class W3ResearchStore:
                     "object": wanted,
                     "body": body if arguments.get("view") == "raw" else columnar(body),
                 }
-                if wanted["kind"] == "policy":
+                from .w3_contracts import is_unified_contract
+
+                if wanted["kind"] == "policy" and not is_unified_contract(manifest.get("w3_contract_version")):
                     item["frozen_usage"] = next(
                         (
                             u

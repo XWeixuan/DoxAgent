@@ -670,6 +670,9 @@ export interface RuntimeMetrics {
 }
 export type FirstRoundTag = "FIRST_ROUND_TRADE" | "POLICY_RELATED_EVENT" | "SUSPECTED_DUPLICATE_HIT";
 export interface CaseSummary {
+  w3_decision?: Value<"LONG" | "SHORT" | "NO_TRADE">;
+  final_novelty_source?: "W1" | "W3_OPERATIONS" | null;
+  final_policy_source?: "W2" | "LEGACY_W3" | null;
   source_name?: string | null;
   w3_operations_status?: string | null;
   first_round_tags?: FirstRoundTag[];
@@ -772,10 +775,16 @@ export interface W3TradeDecision {
   policy_trade: {policy_id: Id; condition_id: Id} | null;
   expert_trade: {direction: "LONG" | "SHORT"; prior_expectation: string; expectation_delta: string} | null;
 }
+export interface W3DirectionDecision {
+  decision: "LONG" | "SHORT" | "NO_TRADE";
+  reason: string;
+  prior_expectation: string | null;
+  expectation_delta: string | null;
+}
 export interface W3Detail {
   trade_timing?: Timing;
   operations_timing?: Timing;
-  decision?: W3TradeDecision | null;
+  decision?: W3TradeDecision | W3DirectionDecision | null;
   operations_result?: JsonObject | null;
   operations_status?: string | null;
   operations_error?: string | null;
@@ -787,7 +796,7 @@ export interface W3Detail {
   direction: Value<"LONG" | "SHORT">;
   prior_expectation: Value<string>; expectation_delta: Value<string>;
   timing: Timing; attempts: Page<ModelAttempt>;
-  reasoning: { novelty: Resource<ContentRef>; policy: Resource<ContentRef>; expert_trade: Resource<ContentRef> };
+  reasoning: { novelty: Resource<ContentRef>; policy: Resource<ContentRef>; expert_trade: Resource<ContentRef>; trade?: Resource<ContentRef> };
 }
 export interface Candidate {
   candidate_id: Id; dedupe_key: Id; originating_node: "W1_R3" | "W3";

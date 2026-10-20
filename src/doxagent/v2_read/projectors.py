@@ -400,7 +400,7 @@ class DomainProjectors:
         elif table == "runtime_v2_cases":
             if not self.store.get("business_provenance", ticker, value["case_id"]):
                 raise ValueError("PROVENANCE_UNVERIFIED")
-            records.extend(self.case(value, event["seq"]))
+            records.extend(self.case(value, event["seq"], reconstruct_archive=event.get("w3_outcomes_complete", False)))
             summary = records[1]["data"]
             final = summary["final_novelty"].get("value")
             hit = summary["final_policy_hit"].get("value")
@@ -607,15 +607,18 @@ class DomainProjectors:
             health(self.store, ticker, records)
         return records, metrics
 
-    def case(self, value: dict[str, Any], revision: int) -> list[dict[str, Any]]:
+    def case(self, value: dict[str, Any], revision: int, *, reconstruct_archive: bool = False) -> list[dict[str, Any]]:
+        from doxagent.persistent_runtime_v2.case_outcomes import (effective_novelty, effective_policy, decision_direction, historical_archive)
+        from doxagent.persistent_runtime_v2.w3_contracts import is_unified_contract
+
         source, ticker = value["source"], value["source"]["snapshot"]["ticker"]
         w1, w2 = value.get("w1_final"), value.get("w2_final")
         initial = (value.get("route") or {}).get("primary_route")
         resolved = (value.get("resolved_route") or {}).get("primary_route")
         final = value.get("w3_operations_result") or value.get("w3_result")
         decision = value.get("w3_trade_decision")
-        if final:
-            w1, w2 = final.get("novelty", w1), final.get("policy", w2)
+        w1, novelty_source = effective_novelty(value)
+        w2, policy_source = effective_policy(value)
         pending = initial == "W3" and not resolved
         execution = value.get("frozen_inputs", {}).get("w3_execution_state", {})
         w3_status = (
@@ -638,6 +641,9 @@ class DomainProjectors:
         summary = {
             "case_id": value["case_id"],
             "first_round_tags": value.get("first_round_tags", []),
+            "w3_decision": available(decision_direction(decision, policies=value.get("frozen_inputs", {}).get("projection", {}).get("policies", []))) if decision_direction(decision, policies=value.get("frozen_inputs", {}).get("projection", {}).get("policies", [])) else missing(),
+            "final_novelty_source": novelty_source if w1 else None,
+            "final_policy_source": policy_source if w2 else None,
             "revision": revision,
             "semantic_day": value["trading_date"],
             "runtime_mode": value["runtime_mode"],
@@ -668,9 +674,9 @@ class DomainProjectors:
             "initial_route": initial,
             "resolved_route": resolved,
             "w3_status": w3_status,
-            "final_novelty": available(w1["result"]) if w1 and not pending else missing(),
+            "final_novelty": available(w1["result"]) if w1 and (not pending or is_unified_contract(value.get("w3_contract_version"))) else missing(),
             "final_policy_hit": available(w2.get("policy_hit", bool(w2["policy_ids"])))
-            if w2 and not pending
+            if w2 and (not pending or is_unified_contract(value.get("w3_contract_version")))
             else missing(),
             "results": [result for result in old["results"] if result != "FAILURE"] if old else [],
             "trade": old.get(
@@ -685,6 +691,10 @@ class DomainProjectors:
         }
         if value["status"] in {"FAILED", "UNAVAILABLE"}:
             summary["results"].append("FAILURE")
+        # Absence of a Read result is not evidence that its source had no output.
+        # Only the bounded source-verified reprojection may reconstruct old archives.
+        if reconstruct_archive and historical_archive(value, summary["results"]):
+            summary["results"].append("ARCHIVE")
         validate("CaseSummary", summary)
         records = [
             {
@@ -709,12 +719,15 @@ class DomainProjectors:
         elif (value.get("w2_final") or {}).get("reason") == "no_policy_candidate_recalled":
             # Historical routing marker is not a recorded recall explanation.
             reasons.pop("w2", None)
+        if is_unified_contract(value.get("w3_contract_version")):
+            reasons["w3_policy"] = reasons.get("w2")
         for name in ("novelty", "policy", "expert_trade"):
             result = (value.get("w3_operations_result") or value.get("w3_result") or {}).get(name)
             if result and result.get("reason"):
                 reasons["w3_" + name] = self.store.put_content(ticker, result["reason"])
         if decision:
             reasons["w3_expert_trade"] = self.store.put_content(ticker, decision["reason"])
+            reasons["w3_trade"] = reasons["w3_expert_trade"]
         records.append(
             {"kind": "case_reasoning", "ticker": ticker, "id": value["case_id"], "data": reasons}
         )

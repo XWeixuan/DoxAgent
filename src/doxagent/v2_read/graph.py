@@ -77,7 +77,7 @@ def project(
     nodes = {"SOURCE", *(r for r in summary["results"] if r in NODES), *tag_nodes}
     nodes.update(turn["node_id"] for turn in turns.values())
     execution = native.get("frozen_inputs", {}).get("w3_execution_state", {})
-    if summary.get("initial_route") == "W3" and execution.get("phase") == "trade_decision":
+    if summary.get("initial_route") == "W3" and (execution.get("phase") == "trade_decision" or native.get("w3_trade_decision") or native.get("w3_result")):
         nodes.add("W3")
     edges = set()
     if "W1" in nodes:

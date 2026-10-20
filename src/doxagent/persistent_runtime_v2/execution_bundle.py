@@ -46,22 +46,25 @@ class ExecutionBundles:
             )
         if w3_contract_version is not None:
             from .schema import strict_json_schema
-            from .w3_contracts import W3_CONTRACT, W3OperationsResult, W3TradeDecision
+            from .w3_contracts import contract_models
 
-            if w3_contract_version != W3_CONTRACT:
-                raise ValueError("unsupported W3 execution contract")
+            trade_model, operations_model = contract_models(w3_contract_version)
+            trade_schema = strict_json_schema(trade_model.model_json_schema())
+            operations_schema = strict_json_schema(operations_model.model_json_schema())
             if value["orchestration_revision"] != 3:
-                raise ValueError("W3 v4 requires the native Policy orchestration revision 3")
+                raise ValueError("Two-phase W3 requires the native Policy orchestration revision 3")
             required = ("w3/AGENTS.md", "w3/skills/skill.md")
             if any(not value["assets"].get(key, "").strip() for key in required):
-                raise ValueError("W3 v4 requires AGENTS.md and the single skills/skill.md")
+                raise ValueError("Two-phase W3 requires AGENTS.md and the single skills/skill.md")
             value.setdefault("contracts", {}).update(
-                w3_contract_version=W3_CONTRACT,
+                w3_contract_version=w3_contract_version,
                 w3_asset_layout="agents-skill.v1",
                 w3_entry_version="w3-entry-v5",
                 w3_citation_scope_version="loaded-events.v1",
-                w3_trade_schema=strict_json_schema(W3TradeDecision.model_json_schema()),
-                w3_operations_schema=strict_json_schema(W3OperationsResult.model_json_schema()),
+                w3_trade_schema=trade_schema,
+                w3_trade_schema_hash=digest(trade_schema),
+                w3_operations_schema=operations_schema,
+                w3_operations_schema_hash=digest(operations_schema),
             )
         if w2_contract_version is not None:
             from .schema import W2NovelFactAlignmentResultV2, W2PolicyAssessmentResultV2

@@ -6,7 +6,8 @@ from doxagent.semantic_clock import semantic_day
 def project(store, case, summary, event):
     ticker,case_id=case['source']['snapshot']['ticker'],case['case_id']
     final=summary['final_policy_hit']['value']
-    result=(case.get('w3_result') or {}).get('policy') or case.get('w2_final') or {}
+    from doxagent.persistent_runtime_v2.case_outcomes import effective_policy
+    result = effective_policy(case)[0] or {}
     hit_ids=set(result.get('policy_ids',[])) if final is True else set()
     previous=store.get('policy_hit_set',ticker,case_id) or {'hits':{}}
     old=previous['hits'];hits={};revisions=None

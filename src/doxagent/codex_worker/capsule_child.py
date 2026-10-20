@@ -21,9 +21,32 @@ async def main() -> None:
     wire = sys.stdout
     sys.stdout = sys.stderr
     boot_start = time.perf_counter_ns()
+
+    def boot_marker(stage):
+        value = dict(
+            type="boot_progress",
+            stage=stage,
+            pid=os.getpid(),
+            wall_ms=(time.perf_counter_ns() - boot_start) / 1e6,
+            cpu_ms=time.process_time() * 1000,
+        )
+        try:
+            directory = os.environ.get("DOXAGENT_MCP_BUDGET_ROOT")
+            if directory:
+                target = Path(directory).parent / "boot.json"
+                temporary = target.with_suffix(".tmp")
+                temporary.write_text(json.dumps(value), encoding="utf-8")
+                temporary.replace(target)
+        except OSError:
+            pass
+        wire.write(json.dumps(value) + "\n")
+        wire.flush()
+
+    boot_marker("SCHEMA_IMPORT")
     from .schema import WorkerRunRequest
 
     schema_ready = time.perf_counter_ns()
+    boot_marker("SDK_IMPORT")
     from .sdk_runtime import OpenAICodexRuntime
 
     sdk_ready = time.perf_counter_ns()
@@ -33,10 +56,13 @@ async def main() -> None:
         wire.write(json.dumps(payload, ensure_ascii=False) + "\n")
         wire.flush()
 
+    boot_marker("RUNTIME_CONSTRUCT")
     runtime = OpenAICodexRuntime()
     runtime_ready = time.perf_counter_ns()
+    boot_marker("SDK_INITIALIZE")
     await runtime.initialize()
     initialized_at = time.perf_counter_ns()
+    boot_marker("SDK_READY")
     send(
         {
             "type": "boot_ready",

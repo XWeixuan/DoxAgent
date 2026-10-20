@@ -346,9 +346,11 @@ export default function CaseDetails({
                   {d.w3.data.decision ? (
                     <>
                       {d.w3.data.decision.decision}
-                      {d.w3.data.decision.policy_trade &&
+                      {"policy_trade" in d.w3.data.decision &&
+                        d.w3.data.decision.policy_trade &&
                         ` · ${d.w3.data.decision.policy_trade.policy_id}/${d.w3.data.decision.policy_trade.condition_id}`}
-                      {d.w3.data.decision.expert_trade &&
+                      {"expert_trade" in d.w3.data.decision &&
+                        d.w3.data.decision.expert_trade &&
                         ` · ${d.w3.data.decision.expert_trade.direction}`}
                       {" · "}
                       {d.w3.data.decision.reason}
@@ -391,9 +393,13 @@ export default function CaseDetails({
                   </>
                 )}
                 <dt>原有预期</dt>
-                <dd><CitationText text={valueText(d.w3.data.prior_expectation)} /></dd>
+                <dd>
+                  <CitationText text={valueText(d.w3.data.prior_expectation)} />
+                </dd>
                 <dt>预期变化</dt>
-                <dd><CitationText text={valueText(d.w3.data.expectation_delta)} /></dd>
+                <dd>
+                  <CitationText text={valueText(d.w3.data.expectation_delta)} />
+                </dd>
               </dl>
               <Attempts
                 ticker={ticker}
@@ -410,11 +416,17 @@ export default function CaseDetails({
               <Reason
                 ticker={ticker}
                 content={d.w3.data.reasoning.policy}
-                label="Policy 判断依据"
+                label={
+                  d.summary.final_policy_source === "W2"
+                    ? "W2 Policy 判断依据"
+                    : "Policy 判断依据"
+                }
               />
               <Reason
                 ticker={ticker}
-                content={d.w3.data.reasoning.expert_trade}
+                content={
+                  d.w3.data.reasoning.trade ?? d.w3.data.reasoning.expert_trade
+                }
                 label="交易判断依据"
               />
             </section>

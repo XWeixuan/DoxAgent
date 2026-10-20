@@ -83,6 +83,7 @@ x-backend: &backend
 
 services:
   v2-site-access:
+    cpu_shares: 512
     image: ${DOXAGENT_SITE_ACCESS_IMAGE:-doxagent-site-access:production}
     build:
       context: .
@@ -137,6 +138,7 @@ services:
       options: {max-size: "20m", max-file: "3"}
 
   v2-chrome-supervisor:
+    cpu_shares: 256
     image: ${DOXAGENT_CHROME_SUPERVISOR_IMAGE:-doxagent-chrome-supervisor:production}
     build:
       context: .
@@ -188,6 +190,7 @@ services:
     <<: *backend
     command: [python, -m, doxagent.v2_control.worker, --runtime-db, /data/runtime/runtime.sqlite3, --initialization-db, /data/initialization/control.sqlite3, --bus-db, /data/bus/bus.sqlite3, --scheduler-db, /data/scheduler/scheduler.sqlite3]
   codex-worker:
+    cpu_shares: 2048
     <<: *backend
     command: [python, -m, doxagent.codex_worker]
     healthcheck:

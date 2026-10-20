@@ -26,7 +26,7 @@ from doxagent.persistent_runtime_v2.w3_context import case_labels, event_matches
 from doxagent.persistent_runtime_v2.w3_contracts import (
     OPERATIONS_PHASE,
     TRADE_PHASE,
-    W3_CONTRACT,
+    W3_LEGACY_CONTRACT as W3_CONTRACT,
     MessagePinAction,
     W3OperationsResult,
     W3TradeDecision,

@@ -324,6 +324,7 @@ export async function collectRuntimeCases(
       命中策略: await policyList(second?.policies),
       判断理由: second ? await text(second.reasoning) : null,
     };
+    const unified = third?.decision && "prior_expectation" in third.decision;
     const w3 = {
       研判模式: third?.mode ?? null,
       交易决策: third?.decision ?? null,
@@ -337,16 +338,20 @@ export async function collectRuntimeCases(
         结论: third?.novelty.value ?? null,
         判断理由: third ? await text(third.reasoning.novelty) : null,
       },
-      "Policy 复判": {
+      [unified ? "W2 Policy判定（继承）" : "Policy 复判"]: {
         是否命中: third?.policy_hit.value ?? null,
         判断理由: third ? await text(third.reasoning.policy) : null,
       },
-      专家交易判断: {
-        建议交易: third?.expert_trade.value ?? null,
+      [unified ? "交易判断" : "专家交易判断"]: {
+        建议交易: third?.decision
+          ? third.decision.decision !== "NO_TRADE"
+          : (third?.expert_trade.value ?? null),
         方向: third?.direction.value ?? null,
         原有预期: third?.prior_expectation.value ?? null,
         预期变化: third?.expectation_delta.value ?? null,
-        判断理由: third ? await text(third.reasoning.expert_trade) : null,
+        判断理由: third
+          ? await text(third.reasoning.trade ?? third.reasoning.expert_trade)
+          : null,
       },
       引用依据: references(third?.references ?? []),
       未能解析的事件引用: third?.unresolved_reference_ids ?? [],

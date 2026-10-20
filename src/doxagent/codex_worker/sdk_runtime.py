@@ -31,11 +31,6 @@ from doxagent.data_runtime.policy import DataCapabilityCodec, DataToolPolicyRegi
 from doxagent.mcp.data_names import GUIDE_TOOL_NAME, READ_TOOL_NAME
 from doxagent.settings import DoxAgentSettings
 from doxagent.w3_timing import measured
-from doxagent.workflows.codex_monitoring_o4.capability import (
-    ALL_O4_TOOLS,
-    TOOLS_BY_NODE,
-    O4OperationCapabilityCodec,
-)
 
 
 @dataclass(frozen=True)
@@ -276,7 +271,8 @@ class OpenAICodexRuntime:
             secret.encode(), b"w3-research-http-v2", hashlib.sha256
         ).hexdigest()
         self._data_capabilities = DataCapabilityCodec(secret)
-        self._o4_capabilities = O4OperationCapabilityCodec(secret)
+        self._capability_secret = secret
+        self._o4_capabilities = None
         self._data_policy = DataToolPolicyRegistry()
         self._data_contracts = None
         self._contract_node = None
@@ -513,6 +509,14 @@ class OpenAICodexRuntime:
                 }
             )
         if request.o4_operations_enabled:
+            from doxagent.workflows.codex_monitoring_o4.capability import (
+                ALL_O4_TOOLS,
+                TOOLS_BY_NODE,
+                O4OperationCapabilityCodec,
+            )
+
+            if self._o4_capabilities is None:
+                self._o4_capabilities = O4OperationCapabilityCodec(self._capability_secret)
             sdk_config["mcp_servers.o4_operations.enabled"] = True
             if not isinstance(request.node, CodexMonitoringO4Node):
                 raise ValueError("O4 operations are available only to O4 workflow nodes")

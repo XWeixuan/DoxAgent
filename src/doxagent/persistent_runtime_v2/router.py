@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from .w3_contracts import is_two_phase_contract
+
 from .schema import (
     FirstRoundTag,
     RuntimeConfidence,
@@ -119,7 +121,7 @@ def route_runtime_case(
     else:
         primary = (
             RuntimePrimaryRoute.W3
-            if policy_hit and w3_contract_version != "persistent-runtime.w3.v4"
+            if policy_hit and not is_two_phase_contract(w3_contract_version)
             else RuntimePrimaryRoute.ARCHIVE
         )
 

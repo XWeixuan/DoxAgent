@@ -105,6 +105,18 @@ def test_policy_discovery_and_same_read_usage_sources(tmp_path):
     assert before == sorted(p.relative_to(tmp_path) for p in tmp_path.rglob("objects.json"))
 
 
+def test_unified_policy_read_has_no_usage_view(tmp_path):
+    from doxagent.persistent_runtime_v2.w3_contracts import W3_CONTRACT
+
+    store, _, manifest = fixture_store(tmp_path, length=20)
+    manifest.pop("policy_usage")
+    manifest.update(case_id="unified", w3_contract_version=W3_CONTRACT)
+    binding = store.bind("unified", "trade_decision", manifest)
+    result = json.loads(store.call("read", dict(context_ref=binding["context_ref"],
+        objects=[dict(kind="policy", id="P1")]))["body"])[0]
+    assert "frozen_usage" not in result
+
+
 def test_columnar_missing_not_equal_null_and_preserves_values():
     refs = {}
     value = business({"rows": [{"n": 0, "p": None}, {"n": 1}], "ref": ["x"]}, refs)

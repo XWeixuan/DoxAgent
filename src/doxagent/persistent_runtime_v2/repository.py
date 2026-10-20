@@ -1221,6 +1221,13 @@ class SQLitePersistentRuntimeV2Repository:
             if item.provisional_event_id in wanted
         ]
 
+    def save_archive_in_transaction(self, db, value: ArchiveRecord, prepared: str):
+        """Caller owns fencing/commit; encode NativeContent before entering its write lock."""
+        db.execute(
+            "INSERT OR IGNORE INTO runtime_v2_archives(case_id,payload_json,created_at) VALUES(?,?,?)",
+            (value.case_id, prepared, value.created_at.isoformat()),
+        )
+
     def save_archive(self, value: ArchiveRecord) -> ArchiveRecord:
         return self._insert_case_record("runtime_v2_archives", value, value.case_id)
 

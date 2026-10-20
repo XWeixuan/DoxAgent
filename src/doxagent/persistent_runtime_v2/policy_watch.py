@@ -9,6 +9,7 @@ from doxagent.semantic_clock import boundary
 from .journal import encode
 from .policy_consumption import get_value, put_value
 from .w2_alignment import related_ids
+from .w3_contracts import is_unified_contract
 
 
 def watch_snapshot(db, ticker, now):
@@ -27,7 +28,8 @@ def apply_v4_actions(db, *, case, result, frozen, now):
     known = {p["policy_id"] for p in case.frozen_inputs["projection"]["policies"]}
     related = set(case.w2_final.policy_ids if case.w2_final.policy_hit else [])
     related.update(related_ids(case.w2_final))
-    related.update(result.policy.policy_ids)
+    if not is_unified_contract(case.w3_contract_version):
+        related.update(result.policy.policy_ids)
     visible = {r["policy_id"]: r for r in frozen.get("watch_rows", [])}
     cancelled = {a.policy_id for a in result.watch_actions if a.action == "CANCEL"}
     actions = {a.policy_id: a for a in result.watch_actions if a.action == "SET"}

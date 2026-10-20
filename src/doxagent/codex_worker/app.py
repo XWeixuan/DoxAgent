@@ -56,6 +56,10 @@ def create_worker_app(
     if owner is not None:
         owner.__enter__()
     resolved_runtime = runtime or CapsuleRuntime(workspaces.root)
+    if isinstance(resolved_runtime, CapsuleRuntime):
+        resolved_runtime.boot_timeout = settings.w3_boot_timeout_seconds
+        resolved_runtime.prepare_timeout = settings.w3_handshake_timeout_seconds
+        resolved_runtime.handoff_seconds = settings.w3_handoff_seconds
     try:
         jobs = WorkerJobManager(
             resolved_runtime,
@@ -75,6 +79,7 @@ def create_worker_app(
         if owner is not None:
             owner.__exit__()
         raise
+    jobs.w3_prepare_timeout = settings.w3_prepare_timeout_seconds
     disk = DiskBudget()
     from doxagent.mcp.w3_research_server import ResearchMcp
     from doxagent.persistent_runtime_v2.w3_research_store import W3ResearchStore
@@ -204,6 +209,7 @@ def create_worker_app(
     async def w3_readiness():
         from contextlib import closing
 
+        ready_slots.reconcile_residents()
         with closing(jobs.store.connect()) as db:
             rows = db.execute(
                 "SELECT scope,state,count(*) FROM w3_ready_slots GROUP BY scope,state"

@@ -17,6 +17,8 @@ from .journal import digest, encode
 from .message_pin import apply_pin_actions
 from .policy_watch import apply_v4_actions
 from .schema import (
+    ArchiveRecord,
+    ArchiveResultBasis,
     BadcaseRecord,
     RuntimeEffect,
     RuntimePrimaryRoute,
@@ -40,7 +42,13 @@ from .w3_context import (
     resolve_event_subjects,
     sync_event_links,
 )
-from .w3_contracts import OPERATIONS_PHASE, TRADE_PHASE, W3OperationsResult, W3TradeDecision
+from .w3_contracts import (
+    OPERATIONS_PHASE,
+    TRADE_PHASE,
+    W3_LEGACY_CONTRACT,
+    contract_models,
+    is_unified_contract,
+)
 from .w3_models import execution_profile
 from .w3_research_store import ENTRY
 from .w3_threads import W3ThreadRegistry
@@ -83,10 +91,14 @@ class W3Execution:
         )
         identity = digest([active, pin.model_dump(mode="json"), "instructions-only-v1"])
         new_public = bundle.get("contracts", {}).get("w3_entry_version") == ENTRY
+        business_contract = (
+            bundle.get("contracts", {}).get("w3_contract_version") or W3_LEGACY_CONTRACT
+        )
         if self.journal.get("w3_public_preparation", ticker) == identity and not new_public:
             return
         asset_case = SimpleNamespace(
             ticker=ticker,
+            w3_contract_version=business_contract,
             version_pin=pin,
             frozen_inputs=dict(w3_assets=assets, w3_contracts=bundle.get("contracts", {})),
         )
@@ -101,6 +113,7 @@ class W3Execution:
             )
             case = SimpleNamespace(
                 ticker=ticker,
+                w3_contract_version=business_contract,
                 case_id="public-" + ticker + "-" + digest(profile)[:16],
                 version_pin=pin,
                 source=SimpleNamespace(message_bus_event_time=self.journal.clock()),
@@ -121,7 +134,21 @@ class W3Execution:
             )
             layout = ENTRY if new_public else "instructions-only-v1"
             compatibility = digest(
-                [assets, profile, *capabilities, "persistent-runtime.w3.v4", layout]
+                [
+                    assets,
+                    profile,
+                    *capabilities,
+                    business_contract,
+                    *(
+                        [
+                            bundle["contracts"].get("w3_trade_schema_hash"),
+                            bundle["contracts"].get("w3_operations_schema_hash"),
+                        ]
+                        if is_unified_contract(business_contract)
+                        else []
+                    ),
+                    layout,
+                ]
             )
             key = digest([None if new_public else ticker, compatibility, layout])
             template, acquired = self.registry.template(ticker, key, compatibility)
@@ -255,7 +282,15 @@ class W3Execution:
                 instruction_assets(case.frozen_inputs["w3_assets"]),
                 profile,
                 *capabilities,
-                "persistent-runtime.w3.v4",
+                case.w3_contract_version or W3_LEGACY_CONTRACT,
+                *(
+                    [
+                        case.frozen_inputs.get("w3_contracts", {}).get("w3_trade_schema_hash"),
+                        case.frozen_inputs.get("w3_contracts", {}).get("w3_operations_schema_hash"),
+                    ]
+                    if is_unified_contract(case.w3_contract_version)
+                    else []
+                ),
                 layout,
             ]
         )
@@ -391,7 +426,9 @@ class W3Execution:
             )
             self._ack(job.job_id)
         else:
-            decision = W3TradeDecision.model_validate(stage["result_json"])
+            decision = contract_models(case.w3_contract_version)[0].model_validate(
+                stage["result_json"]
+            )
             record = self.registry.owned(case.case_id) or {"thread_id": stage["thread_id"]}
         case.w3_trade_decision = decision.model_dump(mode="json")
         trade, override = self._trade_record(case, decision)
@@ -451,12 +488,16 @@ class W3Execution:
             w2_result=case.w2_final,
             w3_trade_decision=decision.model_dump(mode="json"),
         )
-        if decision.decision == "EXPERT_TRADE":
+        if is_unified_contract(case.w3_contract_version) or decision.decision == "EXPERT_TRADE":
             return TradeRecord(
                 **common,
                 decision_origin=TradeDecisionOrigin.W3,
                 w3_case_id="w3:" + case.case_id,
-                decision=PolicyDecision(decision.expert_trade.direction),
+                decision=PolicyDecision(
+                    decision.decision
+                    if is_unified_contract(case.w3_contract_version)
+                    else decision.expert_trade.direction
+                ),
             ), None
         selected = decision.policy_trade
         policy = next(
@@ -568,7 +609,9 @@ class W3Execution:
             )
             self._ack(job.job_id)
         else:
-            result = W3OperationsResult.model_validate(stage["result_json"])
+            result = contract_models(case.w3_contract_version)[1].model_validate(
+                stage["result_json"]
+            )
         if result.delta_candidates:
             maximum = self.service._known_for_case(case).max_event_numeric_id(
                 case.ticker, case.version_pin.event_library_version
@@ -600,7 +643,14 @@ class W3Execution:
                     )
                 )
             self.registry.link(record, "EVENT", keys, case.case_id)
-        if result.novelty.result.value == "NEW" and not result.policy.policy_ids:
+        unified = is_unified_contract(case.w3_contract_version)
+        hit_ids = (
+            (case.w2_final.policy_ids if case.w2_final.policy_hit else [])
+            if unified
+            else result.policy.policy_ids
+        )
+        policy_reason = case.w2_final.reason if unified else result.policy.reason
+        if result.novelty.result.value == "NEW" and not hit_ids:
             self.service.repository.save_w3_coverage_gap(
                 W3CoverageGapRecord(
                     case_id=case.case_id,
@@ -612,10 +662,18 @@ class W3Execution:
                     result={
                         **result.model_dump(mode="json"),
                         "trade_decision": trade_stage["result_json"],
+                        **(
+                            dict(
+                                w2_assessment=case.w2_final.model_dump(mode="json"),
+                                result_contract_version=case.w3_contract_version,
+                            )
+                            if unified
+                            else {}
+                        ),
                     },
                 )
             )
-        if result.novelty.result.value == "OLD" and result.policy.policy_ids:
+        if result.novelty.result.value == "OLD" and hit_ids:
             self.service.repository.save_badcase(
                 BadcaseRecord(
                     case_id=case.case_id,
@@ -623,17 +681,23 @@ class W3Execution:
                     trading_date=case.trading_date,
                     source=case.source,
                     matched_known_event_ids=result.novelty.reference_ids,
-                    hit_policy_ids=result.policy.policy_ids,
+                    hit_policy_ids=hit_ids,
                     event_library_version=case.version_pin.event_library_version,
                     policy_set_version=case.version_pin.policy_set_version,
                     w1_reason=result.novelty.reason,
-                    w2_reason=result.policy.reason,
+                    w2_reason=policy_reason,
                 )
             )
         case.w3_operations_result = result.model_dump(mode="json")
         prepared_case = self._prepare_case_payload(case)
-        self.registry.link(
-            record, "EVENT", event_matches(case.model_dump(mode="json")), case.case_id
+        archive = self._fallback_archive(case, result, trade_stage)
+        archive_payload = (
+            self.service.repository.content.encode(archive.model_dump(mode="json"))
+            if archive and hasattr(self.service.repository, "content")
+            else None
+        )
+        event_subjects = event_matches(
+            case.model_dump(mode="json") | {"w3_operations_status": "COMMITTED"}
         )
         with self.journal.transaction() as db:
             assert_write_lease(db)
@@ -663,15 +727,73 @@ class W3Execution:
                         or [],
                     ),
                 )
+            if archive is not None and hasattr(self.service.repository, "path"):
+                self.service.repository.save_archive_in_transaction(db, archive, archive_payload)
             self.registry.commit_stage(db, case.case_id, OPERATIONS_PHASE)
+            db.executemany(
+                "INSERT OR IGNORE INTO runtime_v2_w3_thread_links VALUES(?,?,?,?,?)",
+                [
+                    (record["record_id"], case.ticker, "EVENT", key, case.case_id)
+                    for key in event_subjects
+                ],
+            )
             case.w3_operations_status = "COMMITTED"
             case.w3_operations_error = None
             self._save_case_in_transaction(db, case, prepared_case)
+        if archive is not None and not hasattr(self.service.repository, "path"):
+            self.service.repository.save_archive(archive)
         case.w3_operations_status = "COMMITTED"
         case.w3_operations_error = None
         self.service.repository.save_case(case)
         self._sync_route_case(case, record)
         self.registry.release(case.case_id)
+
+    def _fallback_archive(self, case, result, trade_stage):
+        if not is_unified_contract(case.w3_contract_version):
+            return None
+        if (
+            trade_stage["result_json"]["decision"] != "NO_TRADE"
+            or result.novelty.result.value != "OLD"
+            or case.w2_final.policy_hit
+        ):
+            return None
+        with self.journal.transaction(write=False) as db:
+            for namespace, key in (
+                ("trade_intents", "trade:" + case.case_id),
+                ("analysis_trade_decisions", "trade:" + case.case_id),
+                ("candidates", "candidate:" + case.case_id),
+            ):
+                if policy_consumption.get_value(db, namespace, key) is not None:
+                    return None
+            if hasattr(self.service.repository, "path"):
+                for table in (
+                    "runtime_v2_archives",
+                    "runtime_v2_badcases",
+                    "runtime_v2_trade_records",
+                    "runtime_v2_w3_coverage_gaps",
+                ):
+                    if db.execute(
+                        "SELECT 1 FROM " + table + " WHERE case_id=?", (case.case_id,)
+                    ).fetchone():
+                        return None
+                if db.execute(
+                    "SELECT 1 FROM runtime_v2_candidates WHERE source_message_id=? LIMIT 1",
+                    (case.source.source_message_id,),
+                ).fetchone():
+                    return None
+        return ArchiveRecord(
+            case_id=case.case_id,
+            ticker=case.ticker,
+            source_message_id=case.source.source_message_id,
+            reason=trade_stage["result_json"]["reason"] + "\n" + result.novelty.reason,
+            result_basis=ArchiveResultBasis(
+                novelty=result.novelty.result,
+                novelty_source="W3_OPERATIONS",
+                policy_hit=case.w2_final.policy_hit,
+                policy_related=case.w2_final.policy_related,
+                w3_decision="NO_TRADE",
+            ),
+        )
 
     def _sync_route_case(self, case, record):
         from .schema import W3CaseStatus, W3ThreadKind

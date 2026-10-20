@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "source_sha256": "0e703517b8baf0bdea0b7ed429bc54a028bd88757df933a211bf426578cbe69b",
+  "source_sha256": "0420c3373ff895dce516d0d8ca84e75d5864de87ee01d8f5afbc47096f657597",
   "$defs": {
     "Id": {
       "type": "string"
@@ -7897,6 +7897,23 @@
         },
         "member_count": {
           "$ref": "#/$defs/Count"
+        },
+        "w3_decision": {
+          "$ref": "#/$defs/Value_W3Direction"
+        },
+        "final_novelty_source": {
+          "enum": [
+            "W1",
+            "W3_OPERATIONS",
+            null
+          ]
+        },
+        "final_policy_source": {
+          "enum": [
+            "W2",
+            "LEGACY_W3",
+            null
+          ]
         }
       },
       "required": [
@@ -9146,6 +9163,9 @@
               "$ref": "#/$defs/W3TradeDecision"
             },
             {
+              "$ref": "#/$defs/W3DirectionDecision"
+            },
+            {
               "type": "null"
             }
           ]
@@ -9273,6 +9293,9 @@
               "$ref": "#/$defs/Resource__f6c6a9ccb193"
             },
             "expert_trade": {
+              "$ref": "#/$defs/Resource__f6c6a9ccb193"
+            },
+            "trade": {
               "$ref": "#/$defs/Resource__f6c6a9ccb193"
             }
           },
@@ -26475,6 +26498,110 @@
         "limit"
       ],
       "additionalProperties": false
+    },
+    "Value_W3Direction": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "state": {
+              "const": "AVAILABLE"
+            },
+            "value": {
+              "type": "string",
+              "enum": [
+                "LONG",
+                "SHORT",
+                "NO_TRADE"
+              ]
+            },
+            "reason": {
+              "type": "null"
+            }
+          },
+          "required": [
+            "state",
+            "value",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "state": {
+              "anyOf": [
+                {
+                  "const": "NOT_PRODUCED"
+                },
+                {
+                  "const": "NOT_RECORDED"
+                },
+                {
+                  "const": "UNAVAILABLE"
+                },
+                {
+                  "const": "NOT_APPLICABLE"
+                },
+                {
+                  "const": "FORBIDDEN"
+                },
+                {
+                  "const": "ERROR"
+                }
+              ]
+            },
+            "value": {
+              "type": "null"
+            },
+            "reason": {
+              "$ref": "#/$defs/Reason"
+            }
+          },
+          "required": [
+            "state",
+            "value",
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "W3DirectionDecision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "decision",
+        "reason",
+        "prior_expectation",
+        "expectation_delta"
+      ],
+      "properties": {
+        "decision": {
+          "enum": [
+            "LONG",
+            "SHORT",
+            "NO_TRADE"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "prior_expectation": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "expectation_delta": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
     }
   }
 }

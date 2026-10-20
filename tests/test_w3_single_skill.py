@@ -5,7 +5,7 @@ from doxagent.persistent_runtime_v2.factory import build_persistent_runtime_v2_s
 from doxagent.persistent_runtime_v2.journal import RuntimeJournal
 from doxagent.persistent_runtime_v2.w3 import CodexW3AgentRunner
 from doxagent.persistent_runtime_v2.w3_context import trading_context
-from doxagent.persistent_runtime_v2.w3_contracts import OPERATIONS_PHASE, TRADE_PHASE, W3_CONTRACT
+from doxagent.persistent_runtime_v2.w3_contracts import OPERATIONS_PHASE, TRADE_PHASE, W3_LEGACY_CONTRACT as W3_CONTRACT, W3_CONTRACT as CURRENT_W3_CONTRACT
 from doxagent.persistent_runtime_v2.w3_models import freeze_case_profile
 from doxagent.settings import DoxAgentSettings
 from tests.test_persistent_runtime_w3 import _Context, _Workspace
@@ -81,7 +81,7 @@ def test_factory_publishes_new_contract_from_current_prompt_directory(tmp_path):
         assert w1["model"] == "anthropic/claude-haiku-5.5" and w1["reasoning_effort"] == "high"
         assert w1["provider_endpoint"] == "google-vertex/global" and w1["cache_ttl"] == "1h"
         assert w1["provisional_cache_batch_size"] == 5
-        assert bundle["contracts"]["w3_contract_version"] == W3_CONTRACT
+        assert bundle["contracts"]["w3_contract_version"] == CURRENT_W3_CONTRACT
         assert bundle["contracts"]["w3_asset_layout"] == "agents-skill.v1"
         for name in ("AGENTS.md", "skills/skill.md", "skills/weekend_sweep.md"):
             assert bundle["assets"]["w3/" + name] == (

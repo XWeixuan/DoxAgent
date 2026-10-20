@@ -13,6 +13,8 @@ from .message_pin import active_states, message_content, pin_snapshot
 from .policy_consumption import put_value
 from .policy_watch import watch_snapshot
 from .w2_alignment import related_ids
+from .w3_contracts import is_unified_contract
+from .case_outcomes import effective_novelty, effective_policy
 
 
 def policy_associations(w2):
@@ -24,8 +26,8 @@ def policy_associations(w2):
 def event_matches(source_case, *, root=None):
     """Only explicit OLD coverage is a match; NEW references are Prior, not matches."""
     w1 = source_case.get("w1_final") or source_case.get("w1_result") or {}
-    final = source_case.get("w3_operations_result") or source_case.get("w3_result") or {}
-    novelty = final.get("novelty") or w1
+    novelty, _ = effective_novelty(source_case)
+    novelty = novelty or w1
     if novelty.get("result") != "OLD":
         return []
     pin = source_case.get("version_pin", {})
@@ -142,13 +144,11 @@ def sync_event_links(journal, ticker, root, version):
 
 
 def actual_policy_hits(value):
-    final = value.get("w3_operations_result") or value.get("w3_result") or {}
-    if "policy" in final:
-        return final["policy"].get("policy_ids", [])
-    w2 = value.get("w2_final") or value.get("w2_result") or {}
-    ids = list(w2.get("policy_ids", [])) if w2.get("policy_hit", bool(w2.get("policy_ids"))) else []
+    final, _ = effective_policy(value)
+    final = final or {}
+    ids = list(final.get("policy_ids", [])) if final.get("policy_hit", bool(final.get("policy_ids"))) else []
     decision = value.get("w3_trade_decision") or {}
-    if decision.get("decision") == "POLICY_TRADE":
+    if not is_unified_contract(value.get("w3_contract_version")) and decision.get("decision") == "POLICY_TRADE":
         ids.append(decision["policy_trade"]["policy_id"])
     return list(dict.fromkeys(ids))
 
@@ -424,7 +424,7 @@ def build_case_payload(case, context, *, events, history, labels, state, journal
             p for p in replay["policy_execution_view"]["policies"] if p["policy_id"] in wanted
         ]
     usage = []
-    for row in case.frozen_inputs.get("policy_usage", []):
+    for row in (() if is_unified_contract(case.w3_contract_version) else case.frozen_inputs.get("policy_usage", [])):
         if new_entry and row["policy_id"] not in wanted:
             continue
         usage.append(
@@ -455,7 +455,7 @@ def build_case_payload(case, context, *, events, history, labels, state, journal
         w1=w1,
         w2=case.w2_final.model_dump(mode="json"),
         policies=policies,
-        policy_usage=usage,
+        **({} if is_unified_contract(case.w3_contract_version) else dict(policy_usage=usage)),
         watch=state["watch"],
         pins=state["pins"],
         recent_trade_intents=history,
@@ -482,6 +482,7 @@ def build_case_payload(case, context, *, events, history, labels, state, journal
             payload["trading_context"].update(replay["trading_context"])
     if new_entry:
         payload.pop("ibkr_history", None)
-        payload["policy_usage_scope"] = "ASSOCIATED_ONLY"
-        payload["policy_usage_ref"] = {"kind": "policy_usage", "snapshot": "FROZEN"}
+        if not is_unified_contract(case.w3_contract_version):
+            payload["policy_usage_scope"] = "ASSOCIATED_ONLY"
+            payload["policy_usage_ref"] = {"kind": "policy_usage", "snapshot": "FROZEN"}
     return payload

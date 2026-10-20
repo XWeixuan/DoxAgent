@@ -145,7 +145,7 @@ def test_runtime_noop_activation_inherits_base_policy_run(tmp_path):
 
 
 @pytest.mark.parametrize("attribution_recorded", [
-    False, True, "resolved", "r3", "native", "v4", "r3_policy", "r3_unavailable",
+    False, True, "resolved", "r3", "native", "v4", "v5", "r3_policy", "r3_unavailable",
 ])
 def test_formal_activation_indexes_exact_documents_policy_and_library(
     tmp_path, attribution_recorded, monkeypatch
@@ -391,6 +391,13 @@ def test_formal_activation_indexes_exact_documents_policy_and_library(
                                    "direction": "LONG", "prior_expectation": "trial",
                                    "expectation_delta": "production"}},
         )
+    if attribution_recorded == "v5":
+        case.update(w3_contract_version="persistent-runtime.w3.v5", orchestration_revision=3,
+            route={"primary_route": "W3", "side_effects": [], "reason": "synthetic"},
+            resolved_route={"primary_route": "TRADE", "side_effects": [], "reason": "synthetic"},
+            status="COMPLETED", w3_operations_status="FAILED", w3_operations_error="synthetic failure",
+            w3_trade_decision={"decision": "SHORT", "reason": "Independent direction",
+                "prior_expectation": "Baseline", "expectation_delta": "Delta"})
     # Detail must never open the native Case's unrelated historical inputs.
     case["frozen_inputs"] = {"unrelated_history": "irrelevant" * 100000}
     seq = store.ingest(
@@ -442,6 +449,15 @@ def test_formal_activation_indexes_exact_documents_policy_and_library(
             assert data["w3"]["data"]["operations_status"] == "FAILED"
             assert data["w3"]["data"]["operations_error"] == "synthetic failure"
             assert data["summary"]["w3_status"] == "RESOLVED"
+        if attribution_recorded == "v5":
+            third = data["w3"]["data"]
+            assert third["decision"]["decision"] == "SHORT"
+            assert third["direction"]["value"] == "SHORT"
+            assert third["expert_trade"]["state"] == "NOT_APPLICABLE"
+            assert third["policy_hit"]["value"] == case["w2_final"].get(
+                "policy_hit", bool(case["w2_final"].get("policy_ids"))
+            )
+            assert third["operations_status"] == "FAILED"
         assert data["document1"]["value"]["run_id"] == "d1-mu"
         assert data["document2"]["value"]["content_sha256"] == d2.sha256
         assert data["w1"]["data"]["reasoning"]["data"]["content_id"]

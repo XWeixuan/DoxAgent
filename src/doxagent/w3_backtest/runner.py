@@ -22,7 +22,7 @@ from doxagent.persistent_runtime_v2.w3 import (
     W3ExecutionEnvironment,
     W3PreparedContext,
 )
-from doxagent.persistent_runtime_v2.w3_contracts import W3_CONTRACT
+from doxagent.persistent_runtime_v2.w3_contracts import asset_contract_version, contract_models
 from doxagent.persistent_runtime_v2.w3_execution import W3Execution
 from doxagent.persistent_runtime_v2.w3_models import freeze_case_profile
 from doxagent.semantic_clock import semantic_day
@@ -323,6 +323,8 @@ class ReplayRunner:
         self.timeout_seconds = timeout_seconds
 
     def run_case(self, dataset: Path, case_key: str, run_root: Path, **_):
+        marker = self.prompt_root / "contract.json"
+        replay_contract = asset_contract_version({"w3/contract.json": marker.read_text(encoding="utf-8")} if marker.exists() else {})
         dataset, run_root = Path(dataset).resolve(), Path(run_root).resolve()
         case_dir = dataset / "inputs" / case_key
         raw = _read(case_dir / "case.json")
@@ -342,7 +344,7 @@ class ReplayRunner:
             updated_at=cutoff.isoformat(),
             status="PENDING_W3",
             technical_status="OK",
-            w3_contract_version=W3_CONTRACT,
+            w3_contract_version=replay_contract,
             orchestration_revision=3,
             trade_expired=False,
             error_code=None,
@@ -369,7 +371,7 @@ class ReplayRunner:
         }
         case = RuntimeCase.model_validate(original)
         production_route = route_runtime_case(
-            case.w1_final, case.w2_final, case.w2_alignment, w3_contract_version=W3_CONTRACT
+            case.w1_final, case.w2_final, case.w2_alignment, w3_contract_version=replay_contract
         )
         would_enter = production_route.primary_route.value == "W3" or bool(
             case.frozen_inputs.get("policy_watch_followup")
@@ -434,6 +436,8 @@ class ReplayRunner:
             "w3/" + p: (self.prompt_root / p).read_text(encoding="utf-8")
             for p in ("AGENTS.md", "skills/skill.md")
         }
+        if marker.exists():
+            assets["w3/contract.json"] = marker.read_text(encoding="utf-8")
         evidence = {
             p.relative_to(case_dir / "evidence").as_posix(): p.read_text(encoding="utf-8")
             for p in (case_dir / "evidence").rglob("*")
@@ -481,6 +485,7 @@ class ReplayRunner:
             marker_path,
             dict(
                 case_key=case_key,
+                w3_contract_version=replay_contract,
                 original_case_id=original_id,
                 input_fingerprint=fingerprint,
                 orchestration_fingerprint=digest(code_identity),
@@ -492,7 +497,9 @@ class ReplayRunner:
         repository = SQLitePersistentRuntimeV2Repository(journal.path)
         case.frozen_inputs.update(
             w3_assets=assets,
-            w3_contracts={"w3_entry_version": "w3-entry-v5"},
+            w3_contracts=dict(w3_entry_version="w3-entry-v5", w3_contract_version=replay_contract,
+                w3_trade_schema=contract_models(replay_contract)[0].model_json_schema(),
+                w3_operations_schema=contract_models(replay_contract)[1].model_json_schema()),
             projection=view,
             policy_usage=usage,
             w3_replay=dict(

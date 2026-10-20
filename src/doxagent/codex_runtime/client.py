@@ -63,14 +63,22 @@ class HttpCodexWorkerClient:
         from doxagent.codex_runtime.errors import W3PreparationError
 
         for _ in range(40):
-            response = await self._client.post("/v1/w3/ready-slots/claim", json=request)
+            try:
+                response = await self._client.post("/v1/w3/ready-slots/claim", json=request)
+            except httpx.TransportError as exc:
+                raise W3PreparationError(
+                    "w3_prepare_pending", "Claim response unavailable; query the original binding"
+                ) from exc
             if response.status_code == 409:
                 try:
                     detail = response.json().get("detail", {})
                 except ValueError:
                     detail = {}
                 if isinstance(detail, dict) and detail.get("code"):
-                    raise W3PreparationError(detail["code"], detail.get("message", detail["code"]))
+                    raise W3PreparationError(
+                        "w3_prepare_pending" if detail.get("retryable") else detail["code"],
+                        detail.get("message", detail["code"]),
+                    )
             if response.status_code == 409 and "not configured" in response.text:
                 raise W3PreparationError(
                     "w3_ready_unconfigured",

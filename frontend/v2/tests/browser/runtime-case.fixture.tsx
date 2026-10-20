@@ -301,6 +301,68 @@ if (mode === "v4") {
     receipt: { watch: [{ policy_id: "P8", action: "SET", status: "APPLIED" }] },
   };
 }
+if (mode === "v5" || mode === "v5-failed") {
+  details.summary.final_policy_source = "W2";
+  details.summary.w3_decision = value("NO_TRADE");
+  details.w3 = resource({
+    status: "RESOLVED",
+    mode: "REVALIDATE_THEN_EVALUATE",
+    decision: {
+      decision: "NO_TRADE",
+      reason: "原W2命中仍保留，当前无交易机会",
+      prior_expectation: null,
+      expectation_delta: null,
+    },
+    operations_status: mode === "v5-failed" ? "FAILED" : "COMMITTED",
+    operations_error: mode === "v5-failed" ? "后置操作重试耗尽" : null,
+    operations_result:
+      mode === "v5-failed"
+        ? null
+        : {
+            novelty: {
+              result: "OLD",
+              reference_ids: ["E14"],
+              reason: "Covered",
+            },
+            delta_candidates: [],
+            watch_actions: [],
+            pin_actions: [],
+          },
+    novelty: value("OLD"),
+    policy_hit: value(true),
+    references: [],
+    policies: [policy],
+    expert_trade: {
+      state: "NOT_APPLICABLE",
+      value: null,
+      reason: "NOT_APPLICABLE",
+    },
+    expert_trade_evaluated: {
+      state: "NOT_APPLICABLE",
+      value: null,
+      reason: "NOT_APPLICABLE",
+    },
+    direction: value("NO_TRADE"),
+    prior_expectation: {
+      state: "NOT_APPLICABLE",
+      value: null,
+      reason: "NOT_APPLICABLE",
+    },
+    expectation_delta: {
+      state: "NOT_APPLICABLE",
+      value: null,
+      reason: "NOT_APPLICABLE",
+    },
+    timing,
+    attempts: page([]),
+    reasoning: {
+      novelty: noReason,
+      policy: resource(reasonRef),
+      expert_trade: noReason,
+      trade: resource(reasonRef),
+    },
+  } as never);
+}
 runtime.api.request = async (name) =>
   ({
     data:

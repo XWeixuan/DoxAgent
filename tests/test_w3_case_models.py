@@ -159,3 +159,33 @@ def test_unmigrated_case_preserves_its_old_settings():
     case, _ = fixture_case()
     case.frozen_inputs["models"] = {"w3_model": "gpt-6-luna", "w3_effort": "max"}
     assert execution_profile(case) == dict(model="gpt-6-luna", effort="max", provider=None)
+
+
+def test_v5_worker_parses_flat_direction_and_policy_free_operations(tmp_path):
+    from doxagent.persistent_runtime_v2.w3_contracts import W3_CONTRACT
+    from doxagent.persistent_runtime_v2.journal import RuntimeJournal
+    from tests.test_w3_v5_contracts import direction, old_operations
+    class UnifiedWorker(ModelWorker):
+        async def run(self, request):
+            job = await super().run(request)
+            value = direction('SHORT') if request.task_phase == TRADE_PHASE else old_operations()
+            return job.model_copy(update=dict(final_response=json.dumps(value)))
+    case, _ = fixture_case()
+    case.w3_contract_version = W3_CONTRACT
+    case.frozen_inputs['w3_assets'] = {'w3/AGENTS.md': 'offline', 'w3/skills/skill.md': 'offline'}
+    freeze_case_profile(case)
+    worker = UnifiedWorker()
+    runner = CodexW3AgentRunner(worker=worker, workspace=_Workspace(), context_provider=_Context(),
+        prompt_root=tmp_path, journal=RuntimeJournal(tmp_path/'v5.db'), timeout_seconds=30)
+    try:
+        for phase in (TRADE_PHASE, OPERATIONS_PHASE):
+            result, _ = runner.run_phase(case=case, record=dict(record_id='v5',workspace='v5',thread_id='child'),
+                phase=phase, payload={}, context=PhaseAgent().prepare_case(case).model_copy(update={'reference_view':'# Reference View\nE1 | known coverage'}))
+            if phase == TRADE_PHASE:
+                assert result.decision == 'SHORT'
+                assert set(worker.requests[-1].output_schema['properties']) == {'decision','reason','prior_expectation','expectation_delta'}
+            else:
+                assert not hasattr(result, 'policy')
+                assert 'policy' not in worker.requests[-1].output_schema['properties']
+    finally:
+        runner.close()

@@ -6,6 +6,13 @@ from doxagent.w3_backtest.prices import clip_prices
 from doxagent.w3_backtest.report import compare_runs, normalize_decision, score
 
 
+def test_unified_direction_scores_without_policy_or_host_execution(tmp_path):
+    for action in ("LONG", "SHORT", "NO_TRADE"):
+        result = dict(decision=dict(decision=action, reason="Offline"), output_disposition="ANALYSIS_ONLY")
+        assert normalize_decision(result, {}, tmp_path) == action
+        assert score(result, {}, action)["score"] is None
+
+
 def test_cutoff_excludes_the_ohlc_of_a_bar_that_finishes_in_the_future():
     raw = dict(
         ticker="MU",

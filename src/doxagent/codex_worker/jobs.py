@@ -94,6 +94,11 @@ class WorkerJobManager:
         self._closed = False
         self._probe_active = False
         self.safety = SafetyStateReader(safety_state_path)
+        self._reaper = None
+        self._reap_error = None
+        if hasattr(runtime, "admission"):
+            runtime.admission.safety = self.safety
+            runtime.admission.handshake = self._startup
         self._forced_reason: dict[str, str] = {}
         self._critical_intervened = False
         self._next_launch_at = 0.0
@@ -260,8 +265,14 @@ class WorkerJobManager:
                     self._forced_reason[victim] = "WORKER_RESOURCE_CRITICAL"
                     self._tasks[victim].cancel()
             reap = getattr(self._runtime, "reap_idle", None)
-            if reap is not None:
-                await reap(all_idle=snapshot.level is not SafetyLevel.NORMAL)
+            if reap is not None and (self._reaper is None or self._reaper.done()):
+                if self._reaper is not None:
+                    error = self._reaper.exception()
+                    self._reap_error = type(error).__name__ if error else None
+                kwargs = {"all_idle": snapshot.level is SafetyLevel.CRITICAL}
+                if getattr(self._runtime, "manages_startup_capacity", False):
+                    kwargs["pressure"] = snapshot.level is SafetyLevel.PRESSURE
+                self._reaper = asyncio.create_task(reap(**kwargs))
             warm = getattr(self._runtime, "warm", None)
             if warm is not None and snapshot.level is SafetyLevel.NORMAL:
                 await warm(self.launch_wave_size, self._startup, self.launch_interval_seconds)
@@ -406,7 +417,18 @@ class WorkerJobManager:
                     "slot quarantined until manual reconciliation",
                 }
             current = self._jobs[job_id]
-            infrastructure = finish.get("error_code") in {
+            startup_failure = getattr(self._runtime, "failure_for", lambda _: None)(request)
+            if startup_failure:
+                await self._update(
+                    job_id, resource_receipt={
+                        **current.resource_receipt, "startup_failure": startup_failure,
+                    },
+                )
+                current = self._jobs[job_id]
+            safe_start_retry = (finish.get("error_code") == "CODEX_START_TIMEOUT"
+                                and startup_failure is not None
+                                and startup_failure.get("run_command_sent") is False)
+            infrastructure = safe_start_retry or finish.get("error_code") in {
                 "WORKER_PROCESS_EXITED",
                 "WORKER_RESOURCE_PRESSURE",
                 "WORKER_RESOURCE_CRITICAL",
@@ -414,7 +436,11 @@ class WorkerJobManager:
                 "WORKER_MCP_UNAVAILABLE",
             }
             if infrastructure and cleanup_ok and not self._closed:
-                if current.infra_recovery_count < 2:
+                retry_limit = (
+                    1 if startup_failure is not None
+                    and startup_failure.get("run_command_sent") is False else 2
+                )
+                if current.infra_recovery_count < retry_limit:
                     finish = {
                         "status": "queued",
                         "infra_recovery_count": current.infra_recovery_count + 1,
@@ -457,6 +483,8 @@ class WorkerJobManager:
                 task.cancel()
         await asyncio.gather(*list(self._tasks.values()), return_exceptions=True)
         await self.thread_lifecycle.close()
+        if self._reaper is not None:
+            await asyncio.gather(self._reaper, return_exceptions=True)
         close = getattr(self._runtime, "close", None)
         if close is not None:
             await close()
@@ -468,6 +496,8 @@ class WorkerJobManager:
     def resources(self) -> dict[str, object]:
         snapshot = self.safety.read()
         now = utc_now()
+        admission = getattr(self._runtime, "admission", None)
+        cold = getattr(admission, "cold", None)
         active_by_lane = {
             lane: sum(1 for value in self._active_lanes.values() if value == lane)
             for lane in ("realtime", "background")
@@ -497,6 +527,12 @@ class WorkerJobManager:
                 "observed_at": snapshot.observed_at,
                 "reasons": list(snapshot.reasons),
                 "stale": snapshot.stale,
+            },
+            "startup_admission": {
+                "cold_active": getattr(cold, "active", False),
+                "cold_waiters": len(getattr(cold, "waiters", [])),
+                "startup_pressure": getattr(admission, "startup_pressure", False),
+                "reap_error": self._reap_error,
             },
             "dispatcher_running": self._pump is not None and not self._pump.done(),
             "generation": self.generation,
@@ -587,16 +623,21 @@ class WorkerJobManager:
             phase = "START_THREAD"
             cold_start_started = time.monotonic()
             try:
+                managed = getattr(self._runtime, "manages_startup_capacity", False)
                 with span("worker.startup_wait"):
-                    await self._startup.acquire()
+                    if not managed:
+                        await self._startup.acquire()
                 try:
                     with span("worker.runtime_start"):
                         handle = await asyncio.wait_for(
                             self._runtime.start(request, run_root),
-                            timeout=min(120, request.timeout_seconds),
+                            timeout=max(
+                                .001, min(120, request.timeout_seconds) - (15 if managed else 0)
+                            ),
                         )
                 finally:
-                    self._startup.release()
+                    if not managed:
+                        self._startup.release()
             finally:
                 self._starting.discard(job_id)
             self._handles[job_id] = handle
