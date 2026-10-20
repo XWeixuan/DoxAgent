@@ -23,7 +23,7 @@ from doxagent.workflows.codex_document3.consumer_contracts import (
 
 from .calendar import MarketCalendar
 from .fencing import write_scope
-from .journal import LeaseLost, RuntimeJournal, digest
+from .journal import LeaseLost, RuntimeJournal, RuntimeStopping, digest, is_sqlite_contention
 from .schema import RuntimeCaseStatus, SourceMessageEnvelope
 
 SWEEP_WAVE_SIZE = 20
@@ -54,6 +54,9 @@ class RuntimeCoordinator:
         self._sweeps = ThreadPoolExecutor(max_workers=32, thread_name_prefix="runtime-sweep")
         self._futures: dict[str, Future[Any]] = {}
         self._closed = False
+        self._dispatch_lock = Lock()
+        self._leases = {}
+        self._reconciled = set()
         self._effects = ThreadPoolExecutor(max_workers=1, thread_name_prefix="runtime-effects")
         self._effect_future: Future[Any] | None = None
         self._effect_lock = Lock()
@@ -310,16 +313,35 @@ class RuntimeCoordinator:
         return identity
 
     def tick(self, ticker: str) -> None:
+        with self._dispatch_lock:
+            self._tick(ticker)
+
+    def _tick(self, ticker: str) -> None:
         if self._closed:
             return
-        cleanup=getattr(self.maintain,'collect_resources',None)
-        if cleanup and (self._storage_future is None or self._storage_future.done()) and (perf_counter()>=self._storage_next or getattr(self.maintain,'resource_gc_due',False)):
+        if ticker not in self._reconciled:
+            self.journal.reconcile_interrupted(self.runtime.repository, ticker)
+            self._reconciled.add(ticker)
+        cleanup = getattr(self.maintain, "collect_resources", None)
+        if (
+            cleanup
+            and (self._storage_future is None or self._storage_future.done())
+            and (
+                perf_counter() >= self._storage_next
+                or getattr(self.maintain, "resource_gc_due", False)
+            )
+        ):
             if self._storage_future is not None:
-                try:self._storage_future.result()
-                except Exception as exc:self.journal.gap('runtime-resource-exit',ticker,type(exc).__name__,str(exc)[:1000])
-            self._storage_future=self._background.submit(cleanup)
-            self._storage_next=perf_counter()+900
-        if self.journal.get('pause',ticker):return
+                try:
+                    self._storage_future.result()
+                except Exception as exc:
+                    self.journal.gap(
+                        "runtime-resource-exit", ticker, type(exc).__name__, str(exc)[:1000]
+                    )
+            self._storage_future = self._background.submit(cleanup)
+            self._storage_next = perf_counter() + 900
+        if self.journal.get("pause", ticker):
+            return
         self.wake_effects()
         try:
             self.reconcile(ticker)
@@ -377,6 +399,7 @@ class RuntimeCoordinator:
                 except Exception as exc:
                     self.journal.gap(identity, ticker, type(exc).__name__, str(exc)[:1000])
                 del self._futures[identity]
+                self._leases.pop(identity, None)
         for task in self.journal.tasks(ticker=ticker, active_only=True):
             if task["id"] in self._futures or task["status"] in {"SUCCEEDED", "FAILED", "HELD"}:
                 continue
@@ -417,6 +440,7 @@ class RuntimeCoordinator:
                 prepare_inputs=self.prepare_case_inputs,
             )
             if lease:
+                self._leases[task["id"]] = lease
                 self._futures[task["id"]] = pool.submit(self._execute, lease)
 
     def _waiting_cases(self, task: dict[str, Any]) -> bool:
@@ -495,9 +519,12 @@ class RuntimeCoordinator:
                 self.journal.finish(task, result=result)
         except LeaseLost:
             return
-        except ControlError:
+        except (ControlError, RuntimeStopping):
             ControlRepository(self.journal).defer(task)
         except Exception as exc:
+            if is_sqlite_contention(exc):
+                ControlRepository(self.journal).defer(task)
+                return
             try:
                 self.journal.fail(task, exc)
                 if (
@@ -916,6 +943,9 @@ class RuntimeCoordinator:
         try:
             while True:
                 with self._effect_lock:
+                    if self._closed:
+                        self._effect_future = None
+                        return
                     self._effect_requested = False
                 from doxagent.w3_timing import BoundaryTrace, save_trace
 
@@ -983,7 +1013,10 @@ class RuntimeCoordinator:
                 )
 
     def close(self) -> None:
-        self._closed = True
+        with self._dispatch_lock:
+            self._closed = True
+            for identity, future in list(self._futures.items()):
+                if future.cancel() and identity in self._leases:
+                    ControlRepository(self.journal).defer(self._leases[identity])
         for pool in (self._realtime, self._background, self._sweeps, self._effects, self._delivery):
-            # Drain real-time Cases before service.close shuts their lane pools.
-            pool.shutdown(wait=pool is self._realtime, cancel_futures=True)
+            pool.shutdown(wait=True, cancel_futures=True)

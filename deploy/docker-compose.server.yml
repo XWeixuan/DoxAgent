@@ -114,6 +114,7 @@ services:
     image: ${DOXAGENT_V2_IMAGE:-doxagent-v2:server}
     extra_hosts: ["host.docker.internal:host-gateway"]
   v2-scheduler:
+    stop_grace_period: 20m
     <<: *cgroup-boundary
     mem_limit: 15g
     memswap_limit: 16g

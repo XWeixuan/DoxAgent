@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+import random
 import time
 from collections.abc import Callable
 from concurrent.futures import CancelledError, Future, ThreadPoolExecutor
@@ -38,7 +39,7 @@ from doxagent.workflows.codex_document3.schema import (
 
 from . import policy_consumption
 from .execution_bundle import ExecutionBundles
-from .journal import LeaseLost, RuntimeJournal, digest
+from .journal import LeaseLost, RuntimeJournal, RuntimeStopping, digest, is_sqlite_contention
 from .prompts import RuntimeV2PromptSet
 from .providers import RuntimeInputSnapshot, RuntimeKnownEventProvider, RuntimePolicyProvider
 from .repository import PersistentRuntimeV2Repository
@@ -233,6 +234,8 @@ def _retry_correction_context(error: Exception) -> str:
     lines = [
         "\n\n# Previous Attempt Correction",
         f"上一轮输出未通过验证：{error}",
+        "只输出 Schema 规定的字段。Event/Policy/Condition 必须来自本轮明确提供的集合；"
+        "NEW 的旧事实归属若引用 Event，reference_ids 也必须包含该 Event；不要编造身份。",
     ]
     parse_error = usage.get("parse_error")
     if isinstance(parse_error, dict):
@@ -309,6 +312,8 @@ class PersistentRuntimeV2Service:
             thread_name_prefix="prv2-effect",
         )
         self._closed = False
+        self._draining = False
+        self._close_lock = Lock()
         self._w3_threads: set[Thread] = set()
         self._w3_threads_lock = Lock()
 
@@ -321,32 +326,37 @@ class PersistentRuntimeV2Service:
     def close(self) -> None:
         """Drain submitted work and release worker threads deterministically."""
 
-        if self._closed:
-            return
-        self._closed = True
-        if self.coordinator:
-            self.coordinator.close()
-        with self._hot_executors_lock:
-            self._hot_executors_closed = True
-            hot_executors = list(self._hot_executors.values())
-        for executor in hot_executors:
-            executor.shutdown(wait=True, cancel_futures=False)
-        self._effect_executor.shutdown(wait=True, cancel_futures=False)
-        while True:
-            with self._w3_threads_lock:
-                threads = list(self._w3_threads)
-            if not threads:
-                break
-            for thread in threads:
-                thread.join()
-        if self._w3_agent is not None:
-            self._w3_agent.close()
-        close_responses = getattr(self.responses, "close", None)
-        if close_responses is not None:
-            close_responses()
+        with self._close_lock:
+            if self._closed:
+                return
+            self._draining = True
+            if self.coordinator:
+                self.coordinator.close()
+            with self._hot_executors_lock:
+                self._hot_executors_closed = True
+                hot_executors = list(self._hot_executors.values())
+            for executor in hot_executors:
+                executor.shutdown(wait=True, cancel_futures=False)
+            while True:
+                with self._w3_threads_lock:
+                    threads = list(self._w3_threads)
+                if not threads:
+                    break
+                for thread in threads:
+                    thread.join()
+            self._effect_executor.shutdown(wait=True, cancel_futures=False)
+            if self._w3_agent is not None:
+                self._w3_agent.close()
+            close_responses = getattr(self.responses, "close", None)
+            if close_responses is not None:
+                close_responses()
+
+            self._closed = True
 
     def _submit_hot_lanes(
-        self, case: RuntimeCase, index: KnownEventIndexSnapshot,
+        self,
+        case: RuntimeCase,
+        index: KnownEventIndexSnapshot,
         projection: RuntimePolicyProjection,
     ) -> tuple[Future[Any], Future[Any]]:
         # Both submissions are atomic with respect to pool shutdown. In-flight
@@ -364,17 +374,27 @@ class PersistentRuntimeV2Service:
             submitted = perf_counter()
             return (
                 executor.submit(
-                    self._run_hot_lane, case, "W1", submitted,
+                    self._run_hot_lane,
+                    case,
+                    "W1",
+                    submitted,
                     lambda: self._run_w1_hot(case, index),
                 ),
                 executor.submit(
-                    self._run_hot_lane, case, "W2", submitted,
+                    self._run_hot_lane,
+                    case,
+                    "W2",
+                    submitted,
                     lambda: self._run_w2_hot(case, projection),
                 ),
             )
 
     def _run_hot_lane(
-        self, case: RuntimeCase, lane: str, submitted: float, run: Callable[[], Any],
+        self,
+        case: RuntimeCase,
+        lane: str,
+        submitted: float,
+        run: Callable[[], Any],
     ) -> Any:
         started = perf_counter()
         queue_wait_ms = round((started - submitted) * 1000)
@@ -386,21 +406,39 @@ class PersistentRuntimeV2Service:
             return result
         finally:
             self._log_hot_lane(
-                case, lane, status, queue_wait_ms, round((perf_counter() - started) * 1000),
+                case,
+                lane,
+                status,
+                queue_wait_ms,
+                round((perf_counter() - started) * 1000),
             )
 
     @staticmethod
     def _log_hot_lane(
-        case: RuntimeCase, lane: str, status: str, queue_wait_ms: int, lane_elapsed_ms: int,
+        case: RuntimeCase,
+        lane: str,
+        status: str,
+        queue_wait_ms: int,
+        lane_elapsed_ms: int,
     ) -> None:
         try:
             _LOGGER.info(
                 "runtime_hot_lane case_id=%s ticker=%s lane=%s status=%s "
                 "queue_wait_ms=%d lane_elapsed_ms=%d",
-                case.case_id, case.ticker, lane, status, queue_wait_ms, lane_elapsed_ms,
-                extra={"case_id": case.case_id, "ticker": case.ticker, "lane": lane,
-                       "status": status, "queue_wait_ms": queue_wait_ms,
-                       "lane_elapsed_ms": lane_elapsed_ms},
+                case.case_id,
+                case.ticker,
+                lane,
+                status,
+                queue_wait_ms,
+                lane_elapsed_ms,
+                extra={
+                    "case_id": case.case_id,
+                    "ticker": case.ticker,
+                    "lane": lane,
+                    "status": status,
+                    "queue_wait_ms": queue_wait_ms,
+                    "lane_elapsed_ms": lane_elapsed_ms,
+                },
             )
         except Exception:
             # Diagnostics must not prevent dispatch or mask a business failure.
@@ -420,7 +458,7 @@ class PersistentRuntimeV2Service:
         trade_expired: bool = False,
     ) -> RuntimeCase:
         if self._closed:
-            raise RuntimeError("Persistent Runtime V2 service is closed")
+            raise RuntimeStopping("Persistent Runtime V2 service is closed")
         if self.journal and self.journal.get("invalid_admissions", source.source_message_id):
             raise RuntimeInputUnavailable(
                 "invalid_admission", "Message excluded by admission reconciliation"
@@ -430,6 +468,8 @@ class PersistentRuntimeV2Service:
             if existing.status != RuntimeCaseStatus.RUNNING:
                 return existing
             return self._resume_hot(existing, phase=phase)
+        if self._draining and admitted_at is None:
+            raise RuntimeStopping("Persistent Runtime V2 is draining; new admission stopped")
         created = admitted_at or (self.journal.clock() if self.journal else utc_now())
         trading_date = semantic_day(created)
         snapshot = (
@@ -502,8 +542,14 @@ class PersistentRuntimeV2Service:
                 case.frozen_inputs["w2_contracts"] = {
                     k: v for k, v in bundle["contracts"].items() if k.startswith("w2_")
                 }
-            w3_bundle_id = (self.journal.get("w3_entry_active", case.ticker)
-                            or self.journal.get("w3_entry", "previous")) if self.journal else None
+            w3_bundle_id = (
+                (
+                    self.journal.get("w3_entry_active", case.ticker)
+                    or self.journal.get("w3_entry", "previous")
+                )
+                if self.journal
+                else None
+            )
             w3_bundle = self.execution_bundles.get(w3_bundle_id) if w3_bundle_id else bundle
             case.frozen_inputs["w3_execution_bundle_id"] = w3_bundle_id or case.execution_bundle_id
             case.frozen_inputs["w3_assets"] = w3_bundle["assets"]
@@ -511,10 +557,13 @@ class PersistentRuntimeV2Service:
             case.w3_contract_version = w3_bundle.get("contracts", {}).get("w3_contract_version")
             if case.w3_contract_version:
                 case.frozen_inputs["w3_assets"] = {
-                    k: v for k, v in w3_bundle["assets"].items()
-                    if (k in {"w3/AGENTS.md", "w3/skills/skill.md"}
+                    k: v
+                    for k, v in w3_bundle["assets"].items()
+                    if (
+                        k in {"w3/AGENTS.md", "w3/skills/skill.md"}
                         if w3_bundle["contracts"].get("w3_asset_layout") == "agents-skill.v1"
-                        else k.startswith("w3/"))
+                        else k.startswith("w3/")
+                    )
                 }
                 case.frozen_inputs["w3_contracts"] = w3_bundle["contracts"]
             if not isinstance(projection, RuntimePolicyProjectionV5):
@@ -587,19 +636,22 @@ class PersistentRuntimeV2Service:
             case.frozen_inputs["w3_output_schema_hash"] = digest(schema)
         models = (
             bundle["assets"].get("runtime_models.json")
-            if case.execution_bundle_id and self.execution_bundles else None
+            if case.execution_bundle_id and self.execution_bundles
+            else None
         )
         if models:
             import json
 
             case.frozen_inputs["models"] = json.loads(models)
         else:
-            case.frozen_inputs["models"] = self.responses.model_settings() if hasattr(
-                self.responses, "model_settings"
-            ) else {
-                "w12_model": self.responses.model,
-                "w12_effort": getattr(self.responses, "reasoning_effort", "medium"),
-            }
+            case.frozen_inputs["models"] = (
+                self.responses.model_settings()
+                if hasattr(self.responses, "model_settings")
+                else {
+                    "w12_model": self.responses.model,
+                    "w12_effort": getattr(self.responses, "reasoning_effort", "medium"),
+                }
+            )
             # Fresh, unbundled admissions use the current input contract too.
             # Existing bundles/previously frozen Cases retain their old format.
             case.frozen_inputs["models"].setdefault("w1_r1_input_view", "provisional-md-v1")
@@ -615,9 +667,7 @@ class PersistentRuntimeV2Service:
             return case
         return self._resume_hot(case, phase=phase)
 
-    def _visible_provisional(
-        self, case: RuntimeCase
-    ) -> list[ProvisionalFactDetail]:
+    def _visible_provisional(self, case: RuntimeCase) -> list[ProvisionalFactDetail]:
         reader = getattr(self.repository, "visible_provisional", None)
         if reader is None:
             return self.repository.list_provisional(case.ticker, case.trading_date)
@@ -706,7 +756,8 @@ class PersistentRuntimeV2Service:
                         case.w2_alignment_status, case.w2_alignment_error = "COMPLETE", None
                 except RuntimeResponsesError as exc:
                     if case.w2_contract_version != W2_CONTRACT or exc.code not in {
-                        "structured_output_validation_failed", "semantic_output_validation_failed",
+                        "structured_output_validation_failed",
+                        "semantic_output_validation_failed",
                         "empty_structured_output",
                     }:
                         raise
@@ -714,14 +765,18 @@ class PersistentRuntimeV2Service:
                     case.w2_alignment_status = "UNAVAILABLE"
                     case.w2_alignment_error = f"{exc.code}: {exc}"
                     self.repository.save_case(case)
-        except (ControlError, LeaseLost, CancelledError):
+        except (ControlError, LeaseLost, CancelledError, RuntimeStopping):
             raise
         except Exception as exc:
+            if is_sqlite_contention(exc):
+                raise
             return self._fail_case(case, exc)
 
         case.first_round_tags = first_round_tags(w1_final, w2_final, case.w2_alignment)
         route = route_runtime_case(
-            w1_final, w2_final, case.w2_alignment,
+            w1_final,
+            w2_final,
+            case.w2_alignment,
             w3_contract_version=case.w3_contract_version,
             w2_contract_version=case.w2_contract_version,
             alignment_unavailable=case.w2_alignment_status == "UNAVAILABLE",
@@ -735,8 +790,10 @@ class PersistentRuntimeV2Service:
                 route = RuntimeRouteDecision(
                     primary_route=RuntimePrimaryRoute.W3,
                     side_effects=[RuntimeSideEffect.ROUTE_TO_W3],
-                    reason="POLICY_WATCH_FOLLOWUP:" + ",".join(v["policy_id"] for v in followup)
-                    + ";" + route.reason,
+                    reason="POLICY_WATCH_FOLLOWUP:"
+                    + ",".join(v["policy_id"] for v in followup)
+                    + ";"
+                    + route.reason,
                 )
         adjudicated = case.model_copy(
             update={
@@ -778,9 +835,7 @@ class PersistentRuntimeV2Service:
                 _w1_provisional_business_payload(item) for item in provisional
             ],
         }
-        if (
-            case.frozen_inputs.get("models", {}).get("w1_r1_input_view") == "provisional-md-v1"
-        ):
+        if case.frozen_inputs.get("models", {}).get("w1_r1_input_view") == "provisional-md-v1":
             from .w1_context import compile_provisional_view
 
             r1_payload["today_provisional_facts"] = compile_provisional_view(provisional)
@@ -894,7 +949,8 @@ class PersistentRuntimeV2Service:
                 if "watch_recall_policy_ids" not in case.frozen_inputs:
                     with self.journal.transaction(write=False) as db:
                         case.frozen_inputs["watch_recall_policy_ids"] = [
-                            r["policy_id"] for r in active_states(
+                            r["policy_id"]
+                            for r in active_states(
                                 db, "policy_watch", case.ticker, self.journal.clock()
                             )
                         ]
@@ -960,12 +1016,9 @@ class PersistentRuntimeV2Service:
             if case.w2_contract_version == W2_CONTRACT:
                 by_policy = {p.policy_id: set(p.condition_ids) for p in projection.policies}
                 for group in value.hit_condition_ids:
-                    if (
-                        group.policy_id not in requested_ids
-                        or not set(group.condition_ids).issubset(
-                            by_policy.get(group.policy_id, set())
-                        )
-                    ):
+                    if group.policy_id not in requested_ids or not set(
+                        group.condition_ids
+                    ).issubset(by_policy.get(group.policy_id, set())):
                         raise RuntimeSemanticOutputError("HIT Condition outside candidate Policy")
 
         r2, r2_response_id = self._call_with_retry(
@@ -1037,6 +1090,7 @@ class PersistentRuntimeV2Service:
         self, case: RuntimeCase, w1_final: W1NoveltyResult, w2_response_id: str
     ) -> tuple[W2NovelFactAlignmentResult, str]:
         modern = case.w2_contract_version == W2_CONTRACT
+
         def validate(value):
             try:
                 validate_alignment(case.w2_final, value)
@@ -1048,8 +1102,10 @@ class PersistentRuntimeV2Service:
             lane="W2",
             round_name="R3",
             round_prompt=self.prompts.w2_r3 or "",
-            payload={"w1_r2_reason": w1_final.reason,
-                     **({"w2_r2": case.w2_final.model_dump(mode="json")} if modern else {})},
+            payload={
+                "w1_r2_reason": w1_final.reason,
+                **({"w2_r2": case.w2_final.model_dump(mode="json")} if modern else {}),
+            },
             output_model=W2NovelFactAlignmentResultV2 if modern else W2NovelFactAlignmentResult,
             schema_name="w2_novel_fact_alignment_result",
             validate=validate if modern else None,
@@ -1124,7 +1180,9 @@ class PersistentRuntimeV2Service:
             }
         )
 
-    def _round_model_settings(self, case: RuntimeCase, lane: str, round_name: str) -> dict[str, Any]:
+    def _round_model_settings(
+        self, case: RuntimeCase, lane: str, round_name: str
+    ) -> dict[str, Any]:
         models = case.frozen_inputs.get("models", {})
         settings = {
             "model": models.get("w12_model", self.responses.model),
@@ -1136,8 +1194,10 @@ class PersistentRuntimeV2Service:
         # Old Cases without a per-round manifest keep their original model/effort.
         settings.update(models.get("rounds", {}).get(f"{lane}:{round_name}", {}))
         settings["transport"] = (
-            "chat_completions_json_schema" if settings.get("provider") == "openrouter"
-            else "responses_json_object" if settings["model"] == "deepseek-v4.1-flash"
+            "chat_completions_json_schema"
+            if settings.get("provider") == "openrouter"
+            else "responses_json_object"
+            if settings["model"] == "deepseek-v4.1-flash"
             else "responses_json_schema"
         )
         return settings
@@ -1175,13 +1235,16 @@ class PersistentRuntimeV2Service:
                 try:
                     value = output_model.model_validate(persisted_output)
                     if validate is not None and output_model in {
-                        W2PolicyAssessmentResultV2, W2NovelFactAlignmentResultV2,
+                        W2PolicyAssessmentResultV2,
+                        W2NovelFactAlignmentResultV2,
                     }:
                         validate(value)
                     return value, turn.response_id or ""
                 except (ValidationError, RuntimeSemanticOutputError) as exc:
                     raise RuntimeResponsesError(
-                        "semantic_output_validation_failed", str(exc), retryable=False,
+                        "semantic_output_validation_failed",
+                        str(exc),
+                        retryable=False,
                     ) from exc
         if output_model in {W2PolicyAssessmentResultV2, W2NovelFactAlignmentResultV2}:
             key = "w2_r2_schema_hash" if round_name == "R2" else "w2_r3_schema_hash"
@@ -1317,6 +1380,7 @@ class PersistentRuntimeV2Service:
                 )
                 if output_model in {W2PolicyAssessmentResultV2, W2NovelFactAlignmentResultV2}:
                     from dataclasses import replace
+
                     result = replace(result, value=output_model.model_validate(result.value))
                 if validate is not None:
                     validate(result.value)
@@ -1333,7 +1397,9 @@ class PersistentRuntimeV2Service:
                 return result.value, result.response_id
             except ValidationError as exc:
                 error = RuntimeResponsesError(
-                    "structured_output_validation_failed", str(exc), retryable=True,
+                    "structured_output_validation_failed",
+                    str(exc),
+                    retryable=True,
                 )
             except RuntimeSemanticOutputError as exc:
                 error = RuntimeResponsesError(
@@ -1373,8 +1439,11 @@ class PersistentRuntimeV2Service:
                     if result
                     else error.usage.get("cached_input_tokens"),
                     cache_write_input_tokens=result.cache_write_input_tokens
-                    if result else error.usage.get("cache_write_input_tokens"),
-                    provider_usage=result.provider_usage if result else error.usage.get("provider_usage", {}),
+                    if result
+                    else error.usage.get("cache_write_input_tokens"),
+                    provider_usage=result.provider_usage
+                    if result
+                    else error.usage.get("provider_usage", {}),
                     response_id=result.response_id if result else error.usage.get("response_id"),
                     raw_output=result.raw_output if result else error.usage.get("raw_output"),
                     validation_warnings=(
@@ -1410,7 +1479,16 @@ class PersistentRuntimeV2Service:
             if not error.retryable or attempt >= budget:
                 raise error
             self._sleep(
-                self.retry_delays_seconds[min(attempt - 1, len(self.retry_delays_seconds) - 1)]
+                min(
+                    60.0,
+                    max(
+                        self.retry_delays_seconds[
+                            min(attempt - 1, len(self.retry_delays_seconds) - 1)
+                        ],
+                        float(getattr(error, "retry_after_seconds", 0) or 0)
+                        + (random.uniform(0, 0.5) if error.code == "provider_rate_limited" else 0),
+                    ),
+                )
             )
         raise RuntimeError("Runtime model retry loop ended unexpectedly") from last_error
 
@@ -1497,10 +1575,12 @@ class PersistentRuntimeV2Service:
                 RuntimeEffect(
                     case_id=case.case_id,
                     effect_type=effect_type,
-                    idempotency_key=(f"{case.case_id}:W3:trade_decision"
-                                     if case.w3_contract_version == "persistent-runtime.w3.v4"
-                                     and effect_type is RuntimeSideEffect.ROUTE_TO_W3
-                                     else f"{case.case_id}:{effect_type.value}"),
+                    idempotency_key=(
+                        f"{case.case_id}:W3:trade_decision"
+                        if case.w3_contract_version == "persistent-runtime.w3.v4"
+                        and effect_type is RuntimeSideEffect.ROUTE_TO_W3
+                        else f"{case.case_id}:{effect_type.value}"
+                    ),
                     payload=payload,
                 )
             )
@@ -1524,7 +1604,9 @@ class PersistentRuntimeV2Service:
                 orchestration_revision=case.orchestration_revision,
             )
         self.repository.save_case_with_effects(case, effects, w3_case)
-        if any(e.effect_type is RuntimeSideEffect.ROUTE_TO_W3 for e in effects) and hasattr(self._w3_agent, "queue_market"):
+        if any(e.effect_type is RuntimeSideEffect.ROUTE_TO_W3 for e in effects) and hasattr(
+            self._w3_agent, "queue_market"
+        ):
             self._w3_agent.queue_market(case)
 
     @staticmethod
@@ -1562,21 +1644,32 @@ class PersistentRuntimeV2Service:
         effects = self.repository.claim_effects(limit=limit)
         claim_ms = round((perf_counter() - claim_started) * 1000, 3)
         dispatched = 0
-        for effect in sorted(effects, key=lambda value: value.effect_type not in {
-            RuntimeSideEffect.ROUTE_TO_W3, RuntimeSideEffect.W3_POST_DECISION,
-        }):
+        for effect in sorted(
+            effects,
+            key=lambda value: (
+                value.effect_type
+                not in {
+                    RuntimeSideEffect.ROUTE_TO_W3,
+                    RuntimeSideEffect.W3_POST_DECISION,
+                }
+            ),
+        ):
             if effect.effect_type in {
-                RuntimeSideEffect.ROUTE_TO_W3, RuntimeSideEffect.W3_POST_DECISION,
+                RuntimeSideEffect.ROUTE_TO_W3,
+                RuntimeSideEffect.W3_POST_DECISION,
             }:
                 thread = Thread(
                     target=self._run_w3_effect_thread,
-                    args=(effect, {
-                        "effect_claim_started_at": claim_at.isoformat(),
-                        "effect_claim_elapsed_ms": claim_ms,
-                        "effect_claim_batch_size": len(effects),
-                        "effect_dispatched_at": utc_now().isoformat(),
-                        "dispatch_monotonic": perf_counter(),
-                    }),
+                    args=(
+                        effect,
+                        {
+                            "effect_claim_started_at": claim_at.isoformat(),
+                            "effect_claim_elapsed_ms": claim_ms,
+                            "effect_claim_batch_size": len(effects),
+                            "effect_dispatched_at": utc_now().isoformat(),
+                            "dispatch_monotonic": perf_counter(),
+                        },
+                    ),
                     name=f"prv2-w3-{effect.case_id[-8:]}",
                     daemon=False,
                 )
@@ -1593,7 +1686,9 @@ class PersistentRuntimeV2Service:
         return dispatched
 
     def _run_w3_effect_thread(
-        self, effect: RuntimeEffect, dispatch_timing: dict[str, Any] | None = None,
+        self,
+        effect: RuntimeEffect,
+        dispatch_timing: dict[str, Any] | None = None,
     ) -> None:
         timing = dict(dispatch_timing or {})
         dispatched = timing.pop("dispatch_monotonic", None)
@@ -1606,7 +1701,10 @@ class PersistentRuntimeV2Service:
                 self._w3_threads.discard(current_thread())
 
     def _process_claimed_effect(
-        self, effect: RuntimeEffect, *, dispatch_timing: dict[str, Any] | None = None,
+        self,
+        effect: RuntimeEffect,
+        *,
+        dispatch_timing: dict[str, Any] | None = None,
     ) -> int:
         if self.journal and effect.effect_type is RuntimeSideEffect.ROUTE_TO_W3:
             case = self.repository.get_case(effect.case_id)
@@ -1632,7 +1730,8 @@ class PersistentRuntimeV2Service:
             renew = getattr(self.repository, "renew_effect", lambda value: None)
             with heartbeat(lambda: renew(effect)), write_scope("effect", effect, utc_now):
                 if self.journal and effect.effect_type in {
-                    RuntimeSideEffect.ROUTE_TO_W3, RuntimeSideEffect.W3_POST_DECISION,
+                    RuntimeSideEffect.ROUTE_TO_W3,
+                    RuntimeSideEffect.W3_POST_DECISION,
                 }:
                     from doxagent.w3_timing import effect_trace
 
@@ -1645,7 +1744,7 @@ class PersistentRuntimeV2Service:
 
             if isinstance(exc, LeaseLost):
                 return 0
-            if isinstance(exc, ControlError):
+            if isinstance(exc, ControlError) or is_sqlite_contention(exc):
                 self.repository.save_effect(
                     effect.model_copy(
                         update={
@@ -1655,16 +1754,36 @@ class PersistentRuntimeV2Service:
                     )
                 )
                 return 0
-            if getattr(exc, "code", None) in {"w3_template_initializing", "w3_prepare_pending"}:
-                self.repository.save_effect(effect.model_copy(update=dict(
-                    status=RuntimeEffectStatus.PENDING_RETRY,
-                    available_at=utc_now() + timedelta(seconds=5),
-                    last_error=str(exc) or type(exc).__name__,
-                )))
+            if getattr(exc, "code", None) in {
+                "w3_template_initializing",
+                "w3_prepare_pending",
+                "w3_provider_paused",
+            }:
+                available_at = utc_now() + timedelta(seconds=5)
+                if getattr(exc, "code", None) == "w3_provider_paused" and self.journal:
+                    pause = self.journal.get("w3_provider_pause", "codex", {})
+                    until = pause.get("probe_until") or pause.get("until")
+                    if until:
+                        available_at = max(available_at, datetime.fromisoformat(until))
+                self.repository.save_effect(
+                    effect.model_copy(
+                        update=dict(
+                            status=RuntimeEffectStatus.PENDING_RETRY,
+                            available_at=available_at,
+                            last_error=str(exc) or type(exc).__name__,
+                        )
+                    )
+                )
                 return 0
             next_attempt = effect.attempt_count + 1
             retryable = not isinstance(exc, RuntimeResponsesError) and next_attempt < 3
-            if getattr(exc, "code", None) in {"w3_operations_expired", "w3_case_thread_missing"}:
+            if getattr(exc, "code", None) in {
+                "w3_operations_expired",
+                "w3_case_thread_missing",
+                "w3_output_repair_exhausted",
+                "w3_ready_identity_conflict",
+                "w3_ready_prepare_failed",
+            }:
                 retryable = False
             failed = effect.model_copy(
                 update={
@@ -1686,17 +1805,23 @@ class PersistentRuntimeV2Service:
             self.repository.save_effect(failed)
             current = self.repository.get_case(effect.case_id)
             if (
-                current and current.w3_contract_version == "persistent-runtime.w3.v4"
-                and effect.effect_type in {
-                    RuntimeSideEffect.ROUTE_TO_W3, RuntimeSideEffect.W3_POST_DECISION,
+                current
+                and current.w3_contract_version == "persistent-runtime.w3.v4"
+                and effect.effect_type
+                in {
+                    RuntimeSideEffect.ROUTE_TO_W3,
+                    RuntimeSideEffect.W3_POST_DECISION,
                 }
             ):
                 from .w3_contracts import OPERATIONS_PHASE, TRADE_PHASE
 
                 self._v4_execution().record_failure(
                     effect.case_id,
-                    OPERATIONS_PHASE if effect.effect_type is RuntimeSideEffect.W3_POST_DECISION
-                    else TRADE_PHASE, exc, retryable=retryable,
+                    OPERATIONS_PHASE
+                    if effect.effect_type is RuntimeSideEffect.W3_POST_DECISION
+                    else TRADE_PHASE,
+                    exc,
+                    retryable=retryable,
                 )
             if effect.effect_type is RuntimeSideEffect.ROUTE_TO_W3:
                 self._record_w3_failure(effect.case_id, exc, retryable=retryable)
@@ -1722,7 +1847,8 @@ class PersistentRuntimeV2Service:
                 "invalid_admission", "Message excluded by admission reconciliation"
             )
         if case.w3_contract_version == "persistent-runtime.w3.v4" and effect.effect_type in {
-            RuntimeSideEffect.ROUTE_TO_W3, RuntimeSideEffect.W3_POST_DECISION,
+            RuntimeSideEffect.ROUTE_TO_W3,
+            RuntimeSideEffect.W3_POST_DECISION,
         }:
             execution = self._v4_execution()
             if effect.effect_type is RuntimeSideEffect.ROUTE_TO_W3:
@@ -1791,8 +1917,11 @@ class PersistentRuntimeV2Service:
                     "SELECT 1 FROM sqlite_master WHERE name='runtime_v2_w3_threads'"
                 ).fetchone()
             if not exists:
-                self.journal.set("w3_housekeeping", "next_at",
-                                 (self.journal.clock() + timedelta(hours=1)).isoformat())
+                self.journal.set(
+                    "w3_housekeeping",
+                    "next_at",
+                    (self.journal.clock() + timedelta(hours=1)).isoformat(),
+                )
                 return
         self._v4_execution().maintain()
 
@@ -2330,10 +2459,15 @@ class PersistentRuntimeV2Service:
                 e for e in effects if e.effect_type is not RuntimeSideEffect.W3_POST_DECISION
             ]
             if case.decision_completed_at is not None:
-                self.repository.save_case(case.model_copy(update=dict(
-                    status=RuntimeCaseStatus.COMPLETED, technical_status=RuntimeTechnicalStatus.OK,
-                    completed_at=case.completed_at or case.decision_completed_at,
-                )))
+                self.repository.save_case(
+                    case.model_copy(
+                        update=dict(
+                            status=RuntimeCaseStatus.COMPLETED,
+                            technical_status=RuntimeTechnicalStatus.OK,
+                            completed_at=case.completed_at or case.decision_completed_at,
+                        )
+                    )
+                )
                 self._project_terminal(self.repository.get_case(case_id))
                 return
         if any(effect.status is RuntimeEffectStatus.FAILED for effect in effects):

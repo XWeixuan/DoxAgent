@@ -189,9 +189,8 @@ def test_close_waits_for_coordinator_case_to_submit_before_closing_lane_pools(
     def in_flight_case():
         entered.set()
         assert release.wait(10)
-        # The Case passed execute_message's admission before close started.
-        case = service.repository.get_case_by_source("MU-0")
-        return service._resume_hot(case)
+        # Claimed before shutdown, but execute_message is entered during draining.
+        return service.execute_message(source("MU", 0))
 
     # Freeze a valid Case before exercising the shutdown/late-submission race.
     case = service.execute_message(source("MU", 0))
@@ -205,7 +204,7 @@ def test_close_waits_for_coordinator_case_to_submit_before_closing_lane_pools(
     try:
         closer.start()
         assert closing.wait(5)
-        assert service._closed and not future.done()
+        assert service._draining and not service._closed and not future.done()
         with service._hot_executors_lock:
             assert not service._hot_executors_closed
         release.set()

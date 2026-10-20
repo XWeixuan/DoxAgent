@@ -226,7 +226,14 @@ def create_worker_app(
         try:
             return await ready_slots.claim(payload)
         except ValueError as exc:
-            raise HTTPException(409, str(exc)) from exc
+            raise HTTPException(
+                409,
+                detail={
+                    "code": getattr(exc, "code", "w3_ready_identity_conflict"),
+                    "message": str(exc),
+                    "retryable": getattr(exc, "retryable", False),
+                },
+            ) from exc
 
     @app.post("/v1/threads/register-template", dependencies=[Depends(require_service_auth)])
     async def register_template(request: TemplateRegisterRequest):

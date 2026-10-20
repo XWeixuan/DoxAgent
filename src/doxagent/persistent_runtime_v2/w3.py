@@ -705,7 +705,7 @@ class CodexW3AgentRunner:
                     )
                     for p in policies
                 ]
-                return SimpleNamespace(
+                context = SimpleNamespace(
                     components=saved["components"],
                     version_pin=W3ContextVersionPin.model_validate(saved["version_pin"]),
                     policy_set=SimpleNamespace(policies=wrapped),
@@ -717,10 +717,56 @@ class CodexW3AgentRunner:
                         p["provisional_event_id"] for p in case.frozen_inputs.get("provisional", [])
                     ),
                 )
-            return self._wait_v4(self._prepare_v4(case))
+                return self._citation_context(case, context)
+            return self._citation_context(case, self._wait_v4(self._prepare_v4(case)))
         except Exception as exc:
             exc.w3_step = "CONTEXT"
             raise
+
+    def _citation_context(self, case, context):
+        """Expose only already-frozen, loaded Events alongside the pinned reference."""
+        if (
+            case.frozen_inputs.get("w3_contracts", {}).get("w3_citation_scope_version")
+            != "loaded-events.v1"
+        ):
+            return context
+        saved = self._journal.get("w3_citation_scope", case.case_id)
+        if saved is None:
+            frozen = self._journal.get("round_inputs", case.case_id + ":W1:R2", {})
+            details = frozen.get("payload", {}).get("event_details", {})
+            events = {}
+            for event in details.get("canonical_events", []):
+                identity = event.get("event_id")
+                if identity and _EVENT_ID.fullmatch(identity):
+                    events[identity] = event
+            for event in case.frozen_inputs.get("provisional", []):
+                identity = event["provisional_event_id"]
+                events[identity] = event
+            saved = dict(events=events, version_pin=case.version_pin.model_dump(mode="json"))
+            self._journal.set("w3_citation_scope", case.case_id, saved)
+        ids = frozenset(context.reference_event_ids or ()) | frozenset(saved["events"])
+        updates = dict(reference_event_ids=ids)
+        if hasattr(context, "components"):
+            context.citation_events = saved["events"]
+            context.reference_event_ids = ids
+            return context
+        reference = context.reference_view
+        missing = {
+            k: v for k, v in saved["events"].items() if k not in (context.reference_event_ids or ())
+        }
+        if missing:
+            reference += "\n\n## Frozen loaded Event Details for this Case\n"
+            for identity, event in sorted(missing.items()):
+                reference += (
+                    "\n### " + identity + "\n" + json.dumps(event, ensure_ascii=False) + "\n"
+                )
+            from .journal import digest
+
+            updates.update(
+                reference_view=reference,
+                reference_identity=digest(["case-reference-v2", reference]),
+            )
+        return context.model_copy(update=updates)
 
     @observed("context.load_and_provisional")
     async def _prepare_v4(self, case):
@@ -870,6 +916,18 @@ class CodexW3AgentRunner:
                 "w3_operations_schema" if phase == OPERATIONS_PHASE else "w3_trade_schema", schema
             )
             template = assets["w3/task.md"] if not single_skill else ""
+        if phase == OPERATIONS_PHASE and context is not None:
+            payload = dict(payload)
+            payload["allowed_reference_event_ids"] = sorted(
+                context.reference_event_ids
+                if context.reference_event_ids is not None
+                else set(_EVENT_ID.findall(context.reference_view))
+            )
+            payload["reference_rule"] = (
+                "novelty.reference_ids accepts only the listed E# Event IDs, not F#, PIN IDs, "
+                "news IDs or URLs. OLD requires actual fact coverage by one of these Events. "
+                "Previously seen articles and insufficient body are not Event coverage."
+            )
         task = dict(phase=phase, input=payload)
         if new_entry:
             task.update(
@@ -917,8 +975,11 @@ class CodexW3AgentRunner:
                             },
                             history=payload.get("recent_trade_intents", []),
                             events={
-                                e.get("event_id", e.get("provisional_event_id")): e
-                                for e in payload.get("w1", {}).get("events", [])
+                                **getattr(context, "citation_events", {}),
+                                **{
+                                    e.get("event_id", e.get("provisional_event_id")): e
+                                    for e in payload.get("w1", {}).get("events", [])
+                                },
                             },
                             evidence=case.frozen_inputs.get("w3_replay", {}).get(
                                 "evidence_files", {}
@@ -1149,6 +1210,7 @@ class CodexW3AgentRunner:
             if phase == "w3_template" and not case.case_id.startswith("public-")
             else None,
             on_update=observe_job if phase == "trade_decision" else None,
+            repair_output=phase == OPERATIONS_PHASE,
             replace_failed_model=bool(self._execution_model_override)
             and "w3_execution_profile" not in case.frozen_inputs,
         )

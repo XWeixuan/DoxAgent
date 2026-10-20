@@ -278,10 +278,17 @@ class RuntimeRecallOpenRouterClient:
                         408: "provider_timeout",
                         504: "provider_timeout",
                     }.get(status, "provider_request_failed")
+                    try:
+                        retry_after = min(
+                            60.0, max(0.0, float(response.headers.get("retry-after", "0")))
+                        )
+                    except (ValueError, TypeError):
+                        retry_after = 0
                     raise RuntimeResponsesError(
                         code,
                         f"OpenRouter returned HTTP {status}",
                         retryable=status in (408, 429) or status >= 500,
+                        retry_after_seconds=retry_after,
                     )
                 for line in response.iter_lines():
                     if not line.startswith("data:"):

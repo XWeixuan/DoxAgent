@@ -10,10 +10,11 @@ import hashlib
 import json
 import logging
 import os
+import random
 import sqlite3
 import time
 from collections.abc import Callable, Iterator
-from contextlib import contextmanager
+from contextlib import closing, contextmanager
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any, cast
@@ -32,6 +33,24 @@ class LeaseLost(RuntimeError):
     pass
 
 
+class RuntimeStopping(RuntimeError):
+    """Admission stopped without a business failure."""
+
+
+def retry_write(call, *, seconds=30):
+    """Replay a short, rollback-safe SQL transaction, never an external call."""
+    deadline = time.monotonic() + seconds
+    delay = 0.05
+    while True:
+        try:
+            return call()
+        except sqlite3.OperationalError as exc:
+            if not is_sqlite_contention(exc) or time.monotonic() >= deadline:
+                raise
+            time.sleep(min(delay * random.uniform(0.8, 1.2), max(0, deadline - time.monotonic())))
+            delay = min(0.5, delay * 2)
+
+
 def is_sqlite_contention(exc: BaseException) -> bool:
     return isinstance(exc, sqlite3.OperationalError) and (
         getattr(exc, "sqlite_errorcode", 0) & 255
@@ -41,8 +60,9 @@ def is_sqlite_contention(exc: BaseException) -> bool:
 class MaintenancePhaseFailure(RuntimeError):
     """A confirmed maintenance phase failure with a bounded recovery scope."""
 
-    def __init__(self, message: str, *, phase: str, code: str,
-                 scope: str = "phase", retryable: bool = True) -> None:
+    def __init__(
+        self, message: str, *, phase: str, code: str, scope: str = "phase", retryable: bool = True
+    ) -> None:
         super().__init__(message)
         self.phase, self.code, self.scope, self.retryable = phase, code, scope, retryable
 
@@ -70,6 +90,8 @@ class RuntimeJournal:
                 raise ValueError("Runtime database has not been migrated")
             return
         self.path.parent.mkdir(parents=True, exist_ok=True)
+        with closing(sqlite3.connect(self.path, timeout=self.busy_timeout_seconds)) as db:
+            db.execute("PRAGMA journal_mode=WAL")
         with self.transaction() as db:
             db.executescript("""
                 CREATE TABLE IF NOT EXISTS orchestration_meta (key TEXT PRIMARY KEY, value TEXT);
@@ -116,7 +138,7 @@ class RuntimeJournal:
 
     @contextmanager
     def transaction(
-        self, *, write: bool = True, operation: str = "transaction"
+        self, *, write: bool = True, operation: str = "transaction", timeout: float | None = None
     ) -> Iterator[sqlite3.Connection]:
         started = time.monotonic()
         acquired = None
@@ -124,12 +146,13 @@ class RuntimeJournal:
         from doxagent.w3_timing import span
 
         with span("journal.connect"):
-            db = sqlite3.connect(self.path, timeout=self.busy_timeout_seconds)
+            db = sqlite3.connect(
+                self.path, timeout=self.busy_timeout_seconds if timeout is None else timeout
+            )
         db.row_factory = self.content.row
         try:
             with span("journal.begin", write=write):
                 if write:
-                    db.execute("PRAGMA journal_mode=WAL")
                     db.execute("PRAGMA synchronous=FULL")
                 db.execute("BEGIN IMMEDIATE" if write else "BEGIN")
             acquired = time.monotonic()
@@ -172,6 +195,7 @@ class RuntimeJournal:
         max_failures: int = 2,
     ) -> dict[str, Any]:
         now = self.clock().isoformat()
+        prepared_inputs = self.content.encode(inputs)
         with self.transaction() as db:
             old = db.execute("SELECT * FROM runtime_tasks WHERE id=?", (identity,)).fetchone()
             if old:
@@ -189,7 +213,7 @@ class RuntimeJournal:
                     identity,
                     ticker,
                     kind,
-                    self.content.encode(inputs),
+                    prepared_inputs,
                     max_failures,
                     (due_at or self.clock()).isoformat(),
                     now,
@@ -198,6 +222,51 @@ class RuntimeJournal:
             return self._task(
                 db.execute("SELECT * FROM runtime_tasks WHERE id=?", (identity,)).fetchone()
             )
+
+    def reconcile_interrupted(self, repository, ticker: str) -> int:
+        """Repair only proven control/storage failures with an unfinished original Case."""
+        with self.transaction(write=False) as db:
+            rows = db.execute(
+                "SELECT t.* FROM runtime_tasks t JOIN runtime_gaps g ON g.task_id=t.id "
+                "WHERE t.ticker=? AND t.kind='CASE' AND t.status='FAILED' AND "
+                "((g.code='RuntimeError' AND g.detail LIKE '%service is closed%') OR "
+                "(g.code='OperationalError' AND g.detail IN "
+                "('database is locked','database table is locked')))",
+                (ticker,),
+            ).fetchall()
+        recovered = 0
+        for raw in rows:
+            task = self._task(raw)
+            source_id = task["inputs"].get("source", {}).get("source_message_id")
+            case = repository.get_case_by_source(source_id) if source_id else None
+            if case is None or str(case.status) != "RUNNING":
+                continue
+            receipt = {
+                **task["receipt"],
+                "case_id": case.case_id,
+                "infrastructure_recovery": {
+                    "previous_failures": task["failures"],
+                    "at": self.clock().isoformat(),
+                },
+            }
+            payload = self.content.encode(receipt)
+            with self.transaction(operation="task.reconcile_interrupted") as db:
+                changed = db.execute(
+                    "UPDATE runtime_tasks SET status='PENDING',failures=0,generation=generation+1,"
+                    "owner=NULL,lease_until=NULL,receipt=?,due_at=?,updated_at=? "
+                    "WHERE id=? AND status='FAILED' AND generation=?",
+                    (
+                        payload,
+                        self.clock().isoformat(),
+                        self.clock().isoformat(),
+                        task["id"],
+                        task["generation"],
+                    ),
+                ).rowcount
+                if changed:
+                    db.execute("UPDATE runtime_gaps SET closed=1 WHERE task_id=?", (task["id"],))
+            recovered += changed
+        return recovered
 
     def get_task(self, identity: str) -> dict[str, Any] | None:
         with self.transaction(write=False) as db:
@@ -223,20 +292,28 @@ class RuntimeJournal:
             clauses.append("json_extract(inputs,'$.sweep_id')=?")
             parameters.append(sweep_id)
         with self.transaction(write=False) as db:
-            rows = db.execute("SELECT * FROM runtime_tasks" +
-                              (" WHERE " + " AND ".join(clauses) if clauses else "") +
-                              " ORDER BY due_at,id", parameters).fetchall()
+            rows = db.execute(
+                "SELECT * FROM runtime_tasks"
+                + (" WHERE " + " AND ".join(clauses) if clauses else "")
+                + " ORDER BY due_at,id",
+                parameters,
+            ).fetchall()
             return [self._task(row) for row in rows]
 
     def task_highwater(self, ticker: str) -> int:
         with self.transaction(write=False) as db:
-            row = db.execute("SELECT coalesce(json_extract(inputs,'$.stream_offset'),0) FROM runtime_tasks "
-                             "WHERE ticker=? AND kind='CASE' ORDER BY coalesce(json_extract(inputs,'$.stream_offset'),0) DESC LIMIT 1",
-                             (ticker,)).fetchone()
+            row = db.execute(
+                "SELECT coalesce(json_extract(inputs,'$.stream_offset'),0) FROM runtime_tasks "
+                "WHERE ticker=? AND kind='CASE' ORDER BY coalesce(json_extract(inputs,'$.stream_offset'),0) DESC LIMIT 1",
+                (ticker,),
+            ).fetchone()
             return int(row[0]) if row else 0
 
     def claim(
-        self, identity: str, *, seconds: float = 1800,
+        self,
+        identity: str,
+        *,
+        seconds: float = 1800,
         prepare_inputs: Callable[[dict[str, Any]], dict[str, Any]] | None = None,
     ) -> dict[str, Any] | None:
         now = self.clock()
@@ -249,7 +326,9 @@ class RuntimeJournal:
             if row["status"] == "RUNNING" and row["lease_until"] > now.isoformat():
                 return None
             cap = {
-                "SWEEP": 1, "MAINTENANCE": 1, "SELECTION": 1,
+                "SWEEP": 1,
+                "MAINTENANCE": 1,
+                "SELECTION": 1,
                 "CASE": self.CASE_CONCURRENCY_PER_TICKER,
             }.get(row["kind"])
             if (
@@ -266,8 +345,10 @@ class RuntimeJournal:
                 # Freeze content in the same fenced transaction as first ownership.
                 # A reclaimed/retried task never refreshes model-visible inputs.
                 inputs = prepare_inputs(json.loads(row["inputs"]))
-                db.execute("UPDATE runtime_tasks SET inputs=? WHERE id=?",
-                           (self.content.encode(inputs), identity))
+                db.execute(
+                    "UPDATE runtime_tasks SET inputs=? WHERE id=?",
+                    (self.content.encode(inputs), identity),
+                )
             db.execute(
                 "UPDATE runtime_tasks SET status='RUNNING',owner=?,token=token+1,"
                 "lease_until=?,updated_at=? WHERE id=?",
@@ -342,10 +423,16 @@ class RuntimeJournal:
                 maximum = 3 if error.scope == "infrastructure" else row["max_failures"]
                 delay = (60, 300, 900)[min(failures - 1, 2)]
                 retryable = retryable and error.retryable
-                receipt.update(phase_failures=counters, last_phase_failure={
-                    "phase": error.phase, "scope": error.scope, "code": error.code,
-                    "count": failures, "maximum": maximum,
-                })
+                receipt.update(
+                    phase_failures=counters,
+                    last_phase_failure={
+                        "phase": error.phase,
+                        "scope": error.scope,
+                        "code": error.code,
+                        "count": failures,
+                        "maximum": maximum,
+                    },
+                )
             status = "PENDING" if retryable and failures < maximum else "FAILED"
             db.execute(
                 "UPDATE runtime_tasks SET status=?,failures=?,due_at=?,updated_at=?,receipt=? "
@@ -407,12 +494,30 @@ class RuntimeJournal:
             return json.loads(row[0]) if row else default
 
     def set(self, namespace: str, key: str, value: Any) -> None:
-        with self.transaction() as db:
-            db.execute(
-                "INSERT INTO runtime_values VALUES(?,?,?) ON CONFLICT(namespace,key) "
-                "DO UPDATE SET payload=excluded.payload WHERE runtime_values.payload IS NOT excluded.payload",
-                (namespace, key, self.content.encode(value) if namespace in {"worker_requests", "worker_receipts", "round_inputs", "worker_invocations", "sweep_bundle"} else encode(value)),
-            )
+        payload = (
+            self.content.encode(value)
+            if namespace
+            in {
+                "worker_requests",
+                "worker_receipts",
+                "round_inputs",
+                "worker_invocations",
+                "sweep_bundle",
+            }
+            else encode(value)
+        )
+
+        def save():
+            with self.transaction(
+                operation="value." + namespace, timeout=min(2, self.busy_timeout_seconds)
+            ) as db:
+                db.execute(
+                    "INSERT INTO runtime_values VALUES(?,?,?) ON CONFLICT(namespace,key) "
+                    "DO UPDATE SET payload=excluded.payload WHERE runtime_values.payload IS NOT excluded.payload",
+                    (namespace, key, payload),
+                )
+
+        retry_write(save, seconds=self.busy_timeout_seconds)
 
     def delete(self, namespace: str, key: str) -> None:
         with self.transaction() as db:
@@ -430,10 +535,17 @@ class RuntimeJournal:
 
     def freeze(self, value: Any) -> str:
         identity = digest(value)
-        with self.transaction() as db:
-            db.execute(
-                "INSERT OR IGNORE INTO runtime_snapshots VALUES(?,?)", (identity, self.content.encode(value))
-            )
+        payload = self.content.encode(value)
+
+        def save():
+            with self.transaction(
+                operation="snapshot.freeze", timeout=min(2, self.busy_timeout_seconds)
+            ) as db:
+                db.execute(
+                    "INSERT OR IGNORE INTO runtime_snapshots VALUES(?,?)", (identity, payload)
+                )
+
+        retry_write(save, seconds=self.busy_timeout_seconds)
         return identity
 
     def snapshot(self, identity: str) -> Any:

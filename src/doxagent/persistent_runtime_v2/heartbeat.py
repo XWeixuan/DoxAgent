@@ -13,7 +13,11 @@ def heartbeat(renew: Callable[[], None], *, interval: float = 20) -> Iterator[No
         while not stop.wait(interval):
             try:
                 renew()
-            except Exception:
+            except Exception as exc:
+                from .journal import is_sqlite_contention
+
+                if is_sqlite_contention(exc):
+                    continue
                 # A lost lease must never be reacquired by its obsolete worker.
                 return
 

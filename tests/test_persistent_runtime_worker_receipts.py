@@ -93,3 +93,58 @@ async def test_retired_non_w3_failure_keeps_receipt_and_does_not_redispatch(tmp_
     assert worker.requests==[] and journal.get('worker_requests',identity)==frozen
     assert journal.get('worker_receipts',identity)['job_id']=='failed-job'
     assert journal.get('worker_generation',identity) is None
+
+
+@pytest.mark.asyncio
+async def test_operations_repair_changes_actual_frozen_prompt_only_once(tmp_path):
+    from doxagent.codex_runtime.errors import W3PreparationError
+
+    journal = RuntimeJournal(tmp_path / "runtime.db")
+    worker = _Worker()
+    receipt = ReceiptWorker(worker, journal, "case", case_id="case", repair_output=True)
+    request = _request("gpt-6-luna", "ops").model_copy(
+        update={"task_phase": "post_decision_operations"}
+    )
+    await receipt.run(request)
+    receipt.reject_output("reference_ids must contain E# identifiers")
+    await receipt.run(request.model_copy(update={"prompt": "Original operations; allowed E1"}))
+    assert "allowed E1" in worker.requests[-1].prompt
+    assert "reference_ids must contain E#" in worker.requests[-1].prompt
+    assert worker.requests[0].idempotency_key != worker.requests[1].idempotency_key
+    await receipt.run(request)
+    assert len(worker.requests) == 2
+    receipt.reject_output("still invalid")
+    with pytest.raises(W3PreparationError, match="still invalid"):
+        await receipt.run(request)
+    assert len(worker.requests) == 2
+
+
+@pytest.mark.asyncio
+async def test_quota_pauses_account_without_repeating_model_requests(tmp_path):
+    from datetime import timedelta
+
+    from doxagent.codex_runtime.errors import W3PreparationError
+
+    now = [datetime.now(UTC)]
+    journal = RuntimeJournal(tmp_path / "runtime.db", clock=lambda: now[0])
+
+    class QuotaWorker(_Worker):
+        async def run(self, request):
+            job = await super().run(request)
+            return (
+                job.model_copy(update={"error_message": "usage_limit_exceeded"})
+                if len(self.requests) == 1
+                else job
+            )
+
+    worker = QuotaWorker()
+    receipt = ReceiptWorker(worker, journal, "case", case_id="case")
+    request = _request("gpt-6-luna", "trade").model_copy(update={"task_phase": "trade_decision"})
+    for _ in range(2):
+        with pytest.raises(W3PreparationError):
+            await receipt.run(request)
+    assert len(worker.requests) == 1
+    now[0] += timedelta(minutes=16)
+    assert (await receipt.run(request)).status == "succeeded"
+    assert len(worker.requests) == 2
+    assert not journal.get("w3_provider_pause", "codex")

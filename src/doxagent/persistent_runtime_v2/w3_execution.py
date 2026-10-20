@@ -401,6 +401,7 @@ class W3Execution:
             idempotency_key=f"{case.case_id}:W3:{OPERATIONS_PHASE}",
         )
         # The output transaction never waits for the operations model or delivery network.
+        prepared_case = self._prepare_case_payload(case)
         with self.journal.transaction() as db:
             assert_write_lease(db)
             outcome = (
@@ -424,7 +425,7 @@ class W3Execution:
                 ),
                 persist=False,
             )
-            self._save_case_in_transaction(db, case)
+            self._save_case_in_transaction(db, case, prepared_case)
             self._enqueue_in_transaction(db, operations)
         if not hasattr(self.service.repository, "path"):
             self.service.repository.save_case(case)
@@ -630,6 +631,7 @@ class W3Execution:
                 )
             )
         case.w3_operations_result = result.model_dump(mode="json")
+        prepared_case = self._prepare_case_payload(case)
         self.registry.link(
             record, "EVENT", event_matches(case.model_dump(mode="json")), case.case_id
         )
@@ -664,7 +666,7 @@ class W3Execution:
             self.registry.commit_stage(db, case.case_id, OPERATIONS_PHASE)
             case.w3_operations_status = "COMMITTED"
             case.w3_operations_error = None
-            self._save_case_in_transaction(db, case)
+            self._save_case_in_transaction(db, case, prepared_case)
         case.w3_operations_status = "COMMITTED"
         case.w3_operations_error = None
         self.service.repository.save_case(case)
@@ -705,13 +707,37 @@ class W3Execution:
         if persist:
             self.service.repository.save_case(case)
 
-    def _save_case_in_transaction(self, db, case):
+    def _prepare_case_payload(self, case):
+        if hasattr(self.service.repository, "content"):
+            return json.loads(self.service.repository.content.encode(case.model_dump(mode="json")))
+        return None
+
+    def _save_case_in_transaction(self, db, case, prepared=None):
         if hasattr(self.service.repository, "path"):
+            # Only small fields decided by the commit guard are patched under the lock.
+            # Preserve the legacy recovery helper signature; hot paths pre-encode.
+            payload = dict(prepared) if prepared is not None else self._prepare_case_payload(case)
+            payload.update(
+                case.model_dump(
+                    mode="json",
+                    include={
+                        "status",
+                        "technical_status",
+                        "resolved_route",
+                        "decision_completed_at",
+                        "error_code",
+                        "error_message",
+                        "w3_operations_status",
+                        "w3_operations_error",
+                        "updated_at",
+                    },
+                )
+            )
             db.execute(
                 "UPDATE runtime_v2_cases SET payload_json=?,status=?,technical_status=?,"
                 "updated_at=? WHERE case_id=?",
                 (
-                    self.service.repository.content.encode(case.model_dump(mode="json")),
+                    encode(payload),
                     case.status.value,
                     case.technical_status.value,
                     self.journal.clock().isoformat(),

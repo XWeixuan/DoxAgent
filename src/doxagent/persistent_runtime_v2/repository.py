@@ -10,7 +10,9 @@ import json
 import sqlite3
 import threading
 from collections.abc import Iterable
+from contextvars import ContextVar
 from datetime import UTC, date, datetime, timedelta
+from functools import wraps
 from pathlib import Path
 from typing import Any, Literal, Protocol, TypeVar
 
@@ -39,6 +41,23 @@ from .schema import (
 
 T = TypeVar("T", bound=BaseModel)
 DailyT = TypeVar("DailyT", TradeRecord, BadcaseRecord, W3CoverageGapRecord)
+
+
+_write_timeout = ContextVar("runtime_short_write_timeout", default=30)
+
+
+def retry_sqlite_write(method):
+    @wraps(method)
+    def run(*args, **kwargs):
+        from .journal import retry_write
+
+        token = _write_timeout.set(2)
+        try:
+            return retry_write(lambda: method(*args, **kwargs))
+        finally:
+            _write_timeout.reset(token)
+
+    return run
 
 
 class _ClosingSQLiteConnection(FencedConnection):
@@ -538,9 +557,7 @@ class InMemoryPersistentRuntimeV2Repository:
 
 
 class SQLitePersistentRuntimeV2Repository:
-    def visible_provisional(
-        self, ticker: str, trading_date: date
-    ) -> list[ProvisionalFactDetail]:
+    def visible_provisional(self, ticker: str, trading_date: date) -> list[ProvisionalFactDetail]:
         items = self._read_models(
             ProvisionalFactDetail,
             "SELECT payload_json FROM runtime_v2_candidates WHERE ticker=? "
@@ -581,12 +598,12 @@ class SQLitePersistentRuntimeV2Repository:
     def _connect(self) -> sqlite3.Connection:
         connection = sqlite3.connect(
             self.path,
-            timeout=30,
+            timeout=_write_timeout.get(),
             factory=_ClosingSQLiteConnection,
         )
         connection.row_factory = self.content.row
         connection.execute("PRAGMA foreign_keys=ON")
-        connection.execute("PRAGMA busy_timeout=30000")
+        connection.execute(f"PRAGMA busy_timeout={int(_write_timeout.get() * 1000)}")
         return connection
 
     def _initialize(self) -> None:
@@ -771,6 +788,7 @@ class SQLitePersistentRuntimeV2Repository:
             if "updated_at" not in columns:
                 connection.execute("ALTER TABLE runtime_v2_w3_cases ADD COLUMN updated_at TEXT")
 
+    @retry_sqlite_write
     def save_case(self, case: RuntimeCase) -> RuntimeCase:
         payload = self.content.encode(case.model_dump(mode="json"))
         with self._lock, self._connect() as connection:
@@ -808,6 +826,7 @@ class SQLitePersistentRuntimeV2Repository:
             )
         return case
 
+    @retry_sqlite_write
     def save_case_with_effects(
         self,
         case: RuntimeCase,
@@ -815,6 +834,12 @@ class SQLitePersistentRuntimeV2Repository:
         w3_case: W3RouteCase | None = None,
     ) -> RuntimeCase:
         payload = self.content.encode(case.model_dump(mode="json"))
+        effect_payloads = {
+            e.effect_id: self.content.encode(e.model_dump(mode="json")) for e in effects
+        }
+        w3_payload = (
+            self.content.encode(w3_case.model_dump(mode="json")) if w3_case is not None else None
+        )
         with self._lock, self._connect() as connection:
             connection.execute("BEGIN IMMEDIATE")
             connection.execute(
@@ -857,7 +882,7 @@ class SQLitePersistentRuntimeV2Repository:
                         effect.status.value,
                         effect.attempt_count,
                         effect.available_at.isoformat(),
-                        self.content.encode(effect.model_dump(mode="json")),
+                        effect_payloads[effect.effect_id],
                         effect.updated_at.isoformat(),
                     ),
                 )
@@ -873,7 +898,7 @@ class SQLitePersistentRuntimeV2Repository:
                         w3_case.case_id,
                         w3_case.ticker,
                         w3_case.status.value,
-                        self.content.encode(w3_case.model_dump(mode="json")),
+                        w3_payload,
                         w3_case.created_at.isoformat(),
                         w3_case.updated_at.isoformat(),
                     ),
@@ -894,7 +919,9 @@ class SQLitePersistentRuntimeV2Repository:
             (source_message_id,),
         )
 
+    @retry_sqlite_write
     def append_turn(self, turn: RuntimeModelTurn) -> RuntimeModelTurn:
+        encoded_payload = self.content.encode(turn.model_dump(mode="json"))
         with self._connect() as connection:
             connection.execute(
                 """
@@ -915,7 +942,7 @@ class SQLitePersistentRuntimeV2Repository:
                     turn.attempt_number,
                     turn.status.value,
                     turn.response_id,
-                    self.content.encode(turn.model_dump(mode="json")),
+                    encoded_payload,
                     turn.created_at.isoformat(),
                 ),
             )
@@ -1023,7 +1050,9 @@ class SQLitePersistentRuntimeV2Repository:
                 ),
             )
 
+    @retry_sqlite_write
     def save_effect(self, effect: RuntimeEffect) -> RuntimeEffect:
+        encoded_payload = self.content.encode(effect.model_dump(mode="json"))
         with self._connect() as connection:
             connection.execute("BEGIN IMMEDIATE")
             old = connection.execute(
@@ -1041,7 +1070,7 @@ class SQLitePersistentRuntimeV2Repository:
                     effect.status.value,
                     effect.attempt_count,
                     effect.available_at.isoformat(),
-                    self.content.encode(effect.model_dump(mode="json")),
+                    encoded_payload,
                     effect.updated_at.isoformat(),
                     effect.effect_id,
                 ),
@@ -1248,7 +1277,9 @@ class SQLitePersistentRuntimeV2Repository:
     def save_badcase(self, value: BadcaseRecord) -> BadcaseRecord:
         return self._insert_daily_record("runtime_v2_badcases", value)
 
+    @retry_sqlite_write
     def save_w3_case(self, value: W3RouteCase) -> W3RouteCase:
+        encoded_payload = self.content.encode(value.model_dump(mode="json"))
         with self._lock, self._connect() as connection:
             connection.execute(
                 """
@@ -1264,7 +1295,7 @@ class SQLitePersistentRuntimeV2Repository:
                     value.case_id,
                     value.ticker,
                     value.status.value,
-                    self.content.encode(value.model_dump(mode="json")),
+                    encoded_payload,
                     value.created_at.isoformat(),
                     value.updated_at.isoformat(),
                 ),

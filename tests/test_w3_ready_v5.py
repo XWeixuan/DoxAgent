@@ -23,6 +23,62 @@ class Runtime:
 
 
 @pytest.mark.asyncio
+async def test_failed_empty_bound_slot_reconciles_original_operation_once(tmp_path):
+    from doxagent.codex_worker.w3_ready import ReadySlotError
+
+    class FlakyRuntime(Runtime):
+        fail = True
+
+        async def prepare_fork(self, request, cwd, parent):
+            if self.fail:
+                raise TimeoutError("startup timed out")
+            return await super().prepare_fork(request, cwd, parent)
+
+    class Threads:
+        async def request(self, method, params):
+            assert method == "thread/list"
+            return {"data": []}
+
+        async def close(self):
+            pass
+
+    runtime = FlakyRuntime()
+    jobs = SimpleNamespace(
+        store=JobStore(tmp_path), _runtime=runtime, _startup=asyncio.Semaphore(3)
+    )
+    jobs.thread_lifecycle = WorkerThreadLifecycle(jobs, LocalWorkspaceStore(tmp_path), Threads())
+    with closing(jobs.store.connect()) as db, db:
+        db.execute(
+            "INSERT INTO w3_thread_registry VALUES('parent','TEMPLATE',NULL,'mother','ACTIVE')"
+        )
+    slots = W3ReadySlots(
+        jobs,
+        LocalWorkspaceStore(tmp_path),
+        SimpleNamespace(w3_ready_luna=0, w3_ready_sol=0),
+        SimpleNamespace(ready={}),
+    )
+    profile = dict(model="gpt-6-luna", provider=None, effort="max")
+    await slots.configure(
+        dict(parent_thread_id="parent", profile=profile, instructions={"AGENTS.md": "public"})
+    )
+    request = dict(case_id="case", record_id="record", parent_thread_id="parent", profile=profile)
+    original = await slots.claim(request)
+    await asyncio.gather(*list(slots.tasks.values()))
+    runtime.fail = False
+    restored = await slots.claim(request)
+    assert restored["status"] == "CREATING"
+    await asyncio.gather(*list(slots.tasks.values()))
+    result = await slots.claim(request)
+    assert result["status"] == "COMPLETED" and result["slot_id"] == original["slot_id"]
+    assert runtime.forks == 1
+    with pytest.raises(ReadySlotError) as exc:
+        await slots.claim({**request, "profile": {**profile, "effort": "low"}})
+    assert exc.value.code == "w3_ready_identity_conflict"
+    await slots.close()
+    await jobs.thread_lifecycle.close()
+
+
+@pytest.mark.asyncio
 async def test_bound_ready_inventory_is_idempotent_concurrent_and_not_per_ticker(tmp_path):
     workspaces = LocalWorkspaceStore(tmp_path)
     jobs = SimpleNamespace(

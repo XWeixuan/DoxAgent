@@ -64,6 +64,13 @@ class HttpCodexWorkerClient:
 
         for _ in range(40):
             response = await self._client.post("/v1/w3/ready-slots/claim", json=request)
+            if response.status_code == 409:
+                try:
+                    detail = response.json().get("detail", {})
+                except ValueError:
+                    detail = {}
+                if isinstance(detail, dict) and detail.get("code"):
+                    raise W3PreparationError(detail["code"], detail.get("message", detail["code"]))
             if response.status_code == 409 and "not configured" in response.text:
                 raise W3PreparationError(
                     "w3_ready_unconfigured",

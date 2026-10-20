@@ -26,12 +26,19 @@ _REPAIRABLE_STRING_FIELDS: dict[str, frozenset[str]] = {
 
 class RuntimeResponsesError(RuntimeError):
     def __init__(
-        self, code: str, message: str, *, retryable: bool, usage: dict[str, Any] | None = None
+        self,
+        code: str,
+        message: str,
+        *,
+        retryable: bool,
+        usage: dict[str, Any] | None = None,
+        retry_after_seconds: float = 0,
     ) -> None:
         super().__init__(message)
         self.code = code
         self.retryable = retryable
         self.usage = usage or {}
+        self.retry_after_seconds = retry_after_seconds
 
 
 @dataclass(frozen=True)
@@ -119,8 +126,11 @@ class BailianRuntimeResponsesClient:
             "w12_timeout_seconds": self.timeout_seconds,
             "rounds": {
                 "W1:R1": {"reasoning_effort": "low"},
-                "W2:R1": {"model": self.w2_r1_model, "reasoning_effort": "low",
-                          "timeout_seconds": self.w2_r1_timeout_seconds},
+                "W2:R1": {
+                    "model": self.w2_r1_model,
+                    "reasoning_effort": "low",
+                    "timeout_seconds": self.w2_r1_timeout_seconds,
+                },
                 "W2:R3": {"reasoning_effort": "low"},
             },
         }
@@ -216,6 +226,7 @@ class BailianRuntimeResponsesClient:
                 retryable=True,
                 usage=receipt,
             )
+        text = strip_json_fence(text)
         validation_text = text
         warnings: list[str] = []
         try:
@@ -259,6 +270,18 @@ class BailianRuntimeResponsesClient:
         )
 
 
+def strip_json_fence(text: str) -> str:
+    match = re.fullmatch(r"\s*```(?:json)?\s*\n(.*?)\n```\s*", text, re.DOTALL | re.IGNORECASE)
+    if match:
+        candidate = match[1].strip()
+        try:
+            json.loads(candidate)
+        except ValueError:
+            return text
+        return candidate
+    return text
+
+
 def repair_known_json_string_quotes(text: str, schema_name: str) -> tuple[str, list[str]]:
     """Escape bare quotes only inside allowlisted scalar natural-language fields.
 
@@ -267,6 +290,7 @@ def repair_known_json_string_quotes(text: str, schema_name: str) -> tuple[str, l
     and business validation still run after this syntax repair.
     """
 
+    text = strip_json_fence(text)
     fields = _REPAIRABLE_STRING_FIELDS.get(schema_name, frozenset())
     if not fields:
         return text, []
@@ -377,9 +401,8 @@ def _cache_optimized_input(
         raise ValueError(f"Cache context keys are missing from payload: {missing}")
     stable = {key: payload[key] for key in cache_context_keys}
     dynamic = {key: value for key, value in payload.items() if key not in stable}
-    if (
-        cache_context_keys == ("published_known_event_index",)
-        and isinstance(payload.get("today_provisional_facts"), str)
+    if cache_context_keys == ("published_known_event_index",) and isinstance(
+        payload.get("today_provisional_facts"), str
     ):
         prefix = (
             "# Read-Only Business Reference Data\n"
@@ -388,8 +411,11 @@ def _cache_optimized_input(
         )
         provisional = dynamic.pop("today_provisional_facts")
         return (
-            prefix + "\n# today_provisional_facts\n" + provisional
-            + "\n# Current Case Input\n" + _json_text(dynamic),
+            prefix
+            + "\n# today_provisional_facts\n"
+            + provisional
+            + "\n# Current Case Input\n"
+            + _json_text(dynamic),
             sha256(prefix.encode("utf-8")).hexdigest(),
         )
     if not stable:
@@ -427,6 +453,21 @@ def _validation_error_summary(exc: Exception) -> str:
     if isinstance(exc, json.JSONDecodeError):
         return f"JSONDecodeError line={exc.lineno} column={exc.colno}"
     return type(exc).__name__
+
+
+def safe_provider_diagnostic(exc):
+    body = getattr(exc, "body", None)
+    error = body.get("error", body) if isinstance(body, dict) else {}
+    fields = {
+        "status": getattr(exc, "status_code", None),
+        "request_id": getattr(exc, "request_id", None),
+    }
+    if isinstance(error, dict):
+        fields.update({k: error[k] for k in ("code", "type", "message") if k in error})
+    raw = json.dumps(fields, ensure_ascii=False, default=str)
+    raw = re.sub(r"sk-[A-Za-z0-9_-]+", "[REDACTED]", raw)
+    raw = re.sub(r"(?i)bearer\s+[^\s\"]+", "Bearer [REDACTED]", raw)
+    return raw[:1200]
 
 
 def _safe_transport_error(exc: Exception) -> RuntimeResponsesError:
@@ -498,6 +539,6 @@ def _safe_transport_error(exc: Exception) -> RuntimeResponsesError:
         )
     return RuntimeResponsesError(
         "provider_request_failed",
-        f"Bailian request failed: {type(exc).__name__}",
+        f"Bailian request failed: {type(exc).__name__}; " + safe_provider_diagnostic(exc),
         retryable=False,
     )

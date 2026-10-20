@@ -5,12 +5,18 @@ from __future__ import annotations
 import asyncio
 import json
 from contextlib import closing
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 from doxagent.persistent_runtime_v2.w3_research_store import ENTRY, compact, sha
 
 from .schema import W3PrepareRequest, WorkerRunRequest
+
+
+class ReadySlotError(ValueError):
+    def __init__(self, code, message, retryable=False):
+        super().__init__(message)
+        self.code, self.retryable = code, retryable
 
 
 class W3ReadySlots:
@@ -32,6 +38,9 @@ class W3ReadySlots:
                 "capsule_id",
                 "generation",
                 "claim_kind",
+                "failed_at",
+                "ready_recovery_count",
+                "recovery_error",
             ):
                 if column not in columns:
                     db.execute(f"ALTER TABLE w3_ready_slots ADD COLUMN {column} TEXT")
@@ -75,6 +84,21 @@ class W3ReadySlots:
                 else self.settings.w3_ready_luna
             )
             with closing(self.jobs.store.connect()) as db, db:
+                failed = db.execute(
+                    "SELECT error FROM w3_ready_slots WHERE scope=? AND failed_at>? "
+                    "AND error IS NOT NULL ORDER BY failed_at DESC LIMIT 1",
+                    (key, (datetime.now(UTC) - timedelta(seconds=60)).isoformat()),
+                ).fetchone()
+                if failed and any(
+                    x in failed[0].lower()
+                    for x in (
+                        "invalid transport",
+                        "invalid configuration",
+                        "authentication",
+                        "unauthorized",
+                    )
+                ):
+                    return
                 count = db.execute(
                     "SELECT count(*) FROM w3_ready_slots "
                     "WHERE scope=? AND state IN ('BUILDING','READY')",
@@ -229,8 +253,8 @@ class W3ReadySlots:
         except Exception as exc:
             with closing(self.jobs.store.connect()) as db, db:
                 db.execute(
-                    "UPDATE w3_ready_slots SET state='RETIRING',error=? WHERE id=?",
-                    (str(exc), identity),
+                    "UPDATE w3_ready_slots SET state='RETIRING',error=?,failed_at=? WHERE id=?",
+                    (str(exc), datetime.now(UTC).isoformat(), identity),
                 )
         finally:
             self.tasks.pop(identity, None)
@@ -275,11 +299,47 @@ class W3ReadySlots:
                     (request["case_id"], request["record_id"]),
                 ).fetchone()
                 if row and row["scope"] != key:
-                    raise ValueError("ready-slot claim parameters changed")
+                    raise ReadySlotError(
+                        "w3_ready_identity_conflict", "ready-slot claim parameters changed"
+                    )
                 if row and row["error"]:
-                    # Preserve the original failed slot/Fork for diagnosis. A retry
-                    # must not keep polling a terminal preparation indefinitely.
-                    raise ValueError("ready-slot preparation failed: " + row["error"])
+                    op_key = "w3-slot-fork:" + row["id"]
+                    operation = self.jobs.thread_lifecycle.operation(op_key)
+                    has_job = db.execute(
+                        "SELECT 1 FROM jobs WHERE json_extract(request,'$.run_id')=? LIMIT 1",
+                        (row["run_id"],),
+                    ).fetchone()
+                    retryable = (
+                        operation
+                        and operation["status"] in {"CREATING", "FAILED"}
+                        and operation.get("error_code") in {"TimeoutError", "CancelledError", None}
+                        and not row["thread_id"]
+                        and not operation.get("thread_id")
+                        and not has_job
+                        and int(row["ready_recovery_count"] or 0) < 1
+                    )
+                    if not retryable:
+                        raise ReadySlotError(
+                            "w3_ready_prepare_failed",
+                            "ready-slot preparation failed: " + row["error"],
+                        )
+                    if row["id"] in self.tasks:
+                        return dict(status="CREATING", thread_id=None, slot_id=row["id"])
+                    # Resume the exact durable request; lifecycle reconciles the original cwd
+                    # and SDK receipt before considering a Fork. Never replace an accepted turn.
+                    db.execute(
+                        "UPDATE w3_thread_operations SET status='CREATING',step='RECONCILING',"
+                        "recovery_count='0' WHERE operation_key=? AND status='FAILED'",
+                        (op_key,),
+                    )
+                    db.execute(
+                        "UPDATE w3_ready_slots SET state='BOUND',recovery_error=error,error=NULL,"
+                        "ready_recovery_count='1' WHERE id=?",
+                        (row["id"],),
+                    )
+                    row = db.execute(
+                        "SELECT * FROM w3_ready_slots WHERE id=?", (row["id"],)
+                    ).fetchone()
                 if row and not row["thread_id"] and row["id"] not in self.tasks:
                     # Restart/lost claim response: continue this original durable
                     # operation, even if its old Template is no longer the default.
@@ -296,7 +356,10 @@ class W3ReadySlots:
                     if row is None:
                         config = self.configs.get(key)
                         if config is None:
-                            raise ValueError("public Template has not configured this profile")
+                            raise ReadySlotError(
+                                "w3_ready_unconfigured",
+                                "public Template has not configured this profile",
+                            )
                         identity = self._insert(db, key, config)
                     else:
                         identity = row["id"]
