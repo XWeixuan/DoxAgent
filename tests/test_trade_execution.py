@@ -264,14 +264,21 @@ def test_cancel_unknown_never_submits_next_order(setup):
     assert repo.journal.values("execution_gaps")
 
 
-def test_no_quote_does_not_block_another_job_or_create_orders(setup):
+def test_no_quote_does_not_block_another_job_or_create_orders(setup, monkeypatch):
     clock, repo, revision, executor, broker = setup
     broker.mode = "no_quote"
     admit(repo, revision)
     asyncio.run(run_job(executor, repo, clock, "trade:A:entry"))
-    assert repo.get("jobs", "trade:A:entry")["state"] == "WAIT_QUOTE"
+    assert repo.get("executions", "trade:A")["entry_result"] == "FAILED"
     assert not broker.sent
     broker.mode = "fill"
+    from doxagent.trade_execution.worker import recover_idle_accounts
+
+    monkeypatch.setattr(
+        "doxagent.trade_execution.worker.active_profile_revisions", lambda _: [revision]
+    )
+    clock.advance(executor.recovery.delay("DU_TEST"))
+    asyncio.run(recover_idle_accounts(executor))
     admit(repo, revision, "trade:B")
     asyncio.run(run_job(executor, repo, clock, "trade:B:entry"))
     assert repo.get("executions", "trade:B")["entry_result"] == "FILLED"

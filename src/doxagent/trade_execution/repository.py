@@ -569,13 +569,15 @@ class ExecutionRepository:
             else Decimal(0)
         )
 
-    def void_prepared_attempt(self, attempt: dict[str, Any]) -> None:
+    def void_prepared_attempt(self, attempt: dict[str, Any], *, if_prepared: bool = False) -> None:
         with self.journal.transaction() as db:
             row = db.execute(
                 "SELECT payload FROM te_attempts WHERE id=?", (attempt["id"],)
             ).fetchone()
             current = json.loads(row[0])
             if current["state"] != "PREPARED":
+                if if_prepared:
+                    return
                 raise ValueError("attempt is not safe to release")
             current["state"] = "NOT_SENT"
             db.execute(
@@ -589,6 +591,52 @@ class ExecutionRepository:
             )
             job["reserved_open_usd"] = "0"
             db.execute("UPDATE te_jobs SET payload=? WHERE id=?", (encode(job), job["id"]))
+
+    def mark_submitting(self, attempt: dict[str, Any], *, wait_seconds: float) -> dict | None:
+        """Final atomic entry admission before the external broker call."""
+        from .recovery import ENTRY_FAILURE_LIMIT
+
+        with self.journal.transaction() as db:
+            value = json.loads(
+                db.execute(
+                    "SELECT payload FROM te_attempts WHERE id=?", (attempt["id"],)
+                ).fetchone()[0]
+            )
+            job = json.loads(
+                db.execute("SELECT payload FROM te_jobs WHERE id=?", (value["job_id"],)).fetchone()[
+                    0
+                ]
+            )
+            if value["state"] != "PREPARED" or job["state"] in {"DONE", "FAILED"}:
+                return None
+            if job["leg"] == "ENTRY":
+                recovery = db.execute(
+                    "SELECT payload FROM runtime_values "
+                    "WHERE namespace='execution_recovery' AND key=?",
+                    (job["account"],),
+                ).fetchone()
+                account_failures = json.loads(recovery[0]).get("failures", 0) if recovery else 0
+                if (
+                    job.get("entry_abandoned_at")
+                    or max(job.get("entry_failures", 0), job.get("failures", 0), account_failures)
+                    >= ENTRY_FAILURE_LIMIT
+                ):
+                    return None
+            value.update(state="SUBMITTING", sent_at=self.journal.clock().isoformat())
+            job.update(
+                state="ACTIVE",
+                failures=0,
+                due_at=(self.journal.clock() + timedelta(seconds=wait_seconds)).isoformat(),
+            )
+            db.execute(
+                "UPDATE te_attempts SET state=?,payload=? WHERE id=?",
+                (value["state"], encode(value), value["id"]),
+            )
+            db.execute(
+                "UPDATE te_jobs SET state=?,due_at=?,payload=? WHERE id=?",
+                (job["state"], job["due_at"], encode(job), job["id"]),
+            )
+        return value
 
     def update_attempt(self, attempt: dict[str, Any], **updates: Any) -> dict[str, Any]:
         with self.journal.transaction() as db:

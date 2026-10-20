@@ -150,11 +150,15 @@ async def run_worker(executor: Any, *, once: Any = False) -> Any:
     next_cycle_check = 0.0
     cycle_capture = None
     next_exit_recovery = 0.0
+    next_entry_check = 0.0
     idle_recovery = None
     storage_failures = 0
     try:
         while True:
             try:
+                if time.monotonic() >= next_entry_check:
+                    executor.enforce_entry_failure_limits()
+                    next_entry_check = time.monotonic() + 60
                 if time.monotonic() >= next_heartbeat:
                     executor.journal.set(
                         "v2_workers",

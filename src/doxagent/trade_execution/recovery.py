@@ -4,6 +4,8 @@ import sqlite3
 from datetime import datetime, timedelta
 
 DELAYS = (2, 5, 10, 30, 60)
+ENTRY_FAILURE_LIMIT = 3
+ENTRY_ABANDONED = "ENTRY_FAILURE_BUDGET_EXHAUSTED"
 
 
 def transient(exc):
@@ -35,9 +37,10 @@ class RecoveryDeferred(Exception):
 
 
 class AccountRecovery:
-    def __init__(self, journal):
+    def __init__(self, journal, *, on_failure=None):
         self.journal = journal
         self.states = {}
+        self.on_failure = on_failure
 
     def state(self, account):
         if account not in self.states:
@@ -71,6 +74,8 @@ class AccountRecovery:
         }
         self.states[account] = value  # Keep cooldown even if the database is temporarily busy.
         self.journal.set("execution_recovery", account, value)
+        if self.on_failure:
+            self.on_failure(account)
 
     def success(self, account):
         if self.state(account):

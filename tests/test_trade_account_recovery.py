@@ -16,6 +16,9 @@ def test_outage_backoff_shared_by_jobs_and_maintenance_survives_restart(setup, m
     clock, repo, revision, executor, broker = setup
     intent = admit(repo, revision)
     repo.admit({**intent, "intent_id": "trade:B", "ticker": "BE"})
+    asyncio.run(run_job(executor, repo, clock, "trade:A:entry"))
+    asyncio.run(run_job(executor, repo, clock, "trade:B:entry"))
+    clock.value = datetime.fromisoformat(repo.require("lots", "trade:A")["scheduled_exit"])
     monkeypatch.setattr(
         "doxagent.trade_execution.worker.active_profile_revisions", lambda _: [revision]
     )
@@ -30,19 +33,19 @@ def test_outage_backoff_shared_by_jobs_and_maintenance_survives_restart(setup, m
     async def scenario():
         for expected in [2, 5, 10, 30, 60, 60]:
             before = len(calls)
-            await executor.step("trade:A:entry")
-            await executor.step("trade:B:entry")
+            await executor.step("trade:A:exit")
+            await executor.step("trade:B:exit")
             maintain_connections(executor)
             assert len(calls) == before + 1
             assert executor.recovery.delay("DU_TEST") == expected
             assert AccountRecovery(repo.journal).delay("DU_TEST") == expected
             clock.advance(expected - 1)
-            await executor.step("trade:B:entry")
+            await executor.step("trade:B:exit")
             assert len(calls) == before + 1
             clock.advance(1)
 
     asyncio.run(scenario())
-    assert not broker.sent
+    assert len(broker.sent) == 2  # Only the two healthy entries, no outage exit submissions.
 
 
 def test_transient_exit_recovers_without_new_generation_or_manual_resume(setup):

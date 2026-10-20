@@ -11,7 +11,13 @@ from typing import Any
 
 from .ibkr_session import IbkrSession
 from .portfolio import account_funds, margin_after
-from .recovery import AccountRecovery, RecoveryDeferred, transient
+from .recovery import (
+    ENTRY_ABANDONED,
+    ENTRY_FAILURE_LIMIT,
+    AccountRecovery,
+    RecoveryDeferred,
+    transient,
+)
 from .repository import TERMINAL_ORDERS, ExecutionRepository
 from .sessions import Sessions
 from .strategy import decimal, order_type, price_and_quantity
@@ -33,7 +39,7 @@ class Executor:
         self.brokers: dict[tuple[Any, ...], Any] = {}
         self.locks: dict[tuple[Any, ...], asyncio.Lock] = {}
         self.account_locks: dict[str, asyncio.Lock] = {}
-        self.recovery = AccountRecovery(self.journal)
+        self.recovery = AccountRecovery(self.journal, on_failure=self.enforce_entry_failure_limits)
         self.recovery_locks: dict[str, asyncio.Lock] = {}
         self.sync_locks: dict[int, asyncio.Lock] = {}
         self.sync_cache: dict[int, tuple[Any, Any]] = {}
@@ -116,6 +122,60 @@ class Executor:
         elif row["kind"] == "fees":
             self.journal.set("execution_fees", row["account"] + ":" + value["exec_id"], value)
 
+    def abandon_entry(self, job: dict) -> bool:
+        """Stop a stale entry permanently; sent orders retain their reconciliation duty."""
+        repo = self.repository
+        current = repo.require("jobs", job["id"])
+        if current["leg"] != "ENTRY" or current["state"] in {"DONE", "FAILED"}:
+            return False
+        failures = max(
+            current.get("entry_failures", 0),
+            current.get("failures", 0),
+            self.recovery.state(current["account"]).get("failures", 0),
+        )
+        if failures < ENTRY_FAILURE_LIMIT and not current.get("entry_abandoned_at"):
+            return False
+        if not current.get("entry_abandoned_at"):
+            current = repo.update_job(
+                current,
+                entry_failures=failures,
+                entry_abandon_reason=ENTRY_ABANDONED,
+                entry_abandoned_at=self.journal.clock().isoformat(),
+                error=ENTRY_ABANDONED,
+            )
+        attempts = repo.attempts(current["id"])
+        for attempt in attempts:
+            if attempt["state"] == "PREPARED":
+                repo.void_prepared_attempt(attempt, if_prepared=True)
+        outstanding = any(
+            a["state"] not in {"NOT_SENT", "SETTLED"} for a in repo.attempts(current["id"])
+        )
+        if outstanding:
+            repo.update_job(
+                repo.require("jobs", current["id"]),
+                state="RECONCILE_REQUIRED",
+                error=ENTRY_ABANDONED,
+                delay=self.recovery.delay(current["account"]),
+            )
+        else:
+            repo.finish(repo.require("jobs", current["id"]), ENTRY_ABANDONED)
+        return True
+
+    def enforce_entry_failure_limits(self, account: str | None = None) -> None:
+        # Includes jobs deferred by the shared cooldown, even when not due yet.
+        with self.journal.transaction(write=False) as db:
+            jobs = [
+                json.loads(r[0])
+                for r in db.execute(
+                    "SELECT payload FROM te_jobs WHERE leg='ENTRY' "
+                    "AND state NOT IN ('DONE','FAILED') "
+                    "AND (? IS NULL OR account=?)",
+                    (account, account),
+                )
+            ]
+        for job in jobs:
+            self.abandon_entry(job)
+
     async def step(self, job_id: Any) -> Any:
         repo = self.repository
         job = repo.get("jobs", job_id)
@@ -127,6 +187,10 @@ class Executor:
             return
         async with lock:
             try:
+                self.abandon_entry(job)
+                job = repo.require("jobs", job_id)
+                if job["state"] in {"DONE", "FAILED"}:
+                    return
                 account = job["account"]
                 self.recovery.check(account)
                 if self.recovery.state(account):
@@ -144,18 +208,37 @@ class Executor:
             except Exception as exc:
                 current = repo.require("jobs", job_id)
                 failures = current.get("failures", 0) + 1
+                if current["leg"] == "ENTRY":
+                    current = repo.update_job(
+                        current,
+                        failures=failures,
+                        error=str(exc),
+                        entry_last_error=str(exc),
+                        entry_failures=max(
+                            current.get("entry_failures", 0), current.get("failures", 0)
+                        )
+                        + 1,
+                    )
                 attempts = repo.attempts(job_id)
                 outstanding = any(a["state"] not in {"SETTLED", "NOT_SENT"} for a in attempts)
                 if transient(exc):
                     self.sync_cache.clear()
                     self.recovery.fail(job["account"], exc)
+                    self.abandon_entry(current)
+                    current = repo.require("jobs", job_id)
+                    if current["state"] in {"DONE", "FAILED"}:
+                        return
                     repo.update_job(
                         current,
                         state="RECONCILE_REQUIRED" if outstanding else "WAIT_QUOTE",
                         failures=failures,
                         delay=self.recovery.delay(job["account"]),
-                        error=str(exc),
+                        error=ENTRY_ABANDONED if current.get("entry_abandoned_at") else str(exc),
                     )
+                    return
+                self.abandon_entry(current)
+                current = repo.require("jobs", job_id)
+                if current["state"] in {"DONE", "FAILED"}:
                     return
                 if failures >= 3:
                     repo.gap(
@@ -169,7 +252,7 @@ class Executor:
                         state="RECONCILE_REQUIRED",
                         failures=failures,
                         delay=30 if failures >= 3 else failures,
-                        error=str(exc),
+                        error=ENTRY_ABANDONED if current.get("entry_abandoned_at") else str(exc),
                     )
                 elif failures >= 3 and current["leg"] != "ENTRY":
                     repo.finish(current, str(exc))
@@ -320,7 +403,9 @@ class Executor:
             and job["cycle_id"] != self.sessions.cycle_id(now, strategy.exit_offset_minutes)
         )
         expired = entry and (
-            now >= datetime.fromisoformat(execution["intent"]["expires_at"]) or cycle_ended
+            now >= datetime.fromisoformat(execution["intent"]["expires_at"])
+            or cycle_ended
+            or bool(job.get("entry_abandoned_at"))
         )
         active = next((a for a in reversed(attempts) if a["state"] != "SETTLED"), None)
         if active:
@@ -329,11 +414,22 @@ class Executor:
                 active,
                 broker,
                 expired,
-                "CYCLE_CLOSED" if cycle_ended else "EXPIRED_SEMANTIC_DAY",
+                ENTRY_ABANDONED
+                if job.get("entry_abandoned_at")
+                else "CYCLE_CLOSED"
+                if cycle_ended
+                else "EXPIRED_SEMANTIC_DAY",
             )
             return
         if expired:
-            repo.finish(job, "CYCLE_CLOSED" if cycle_ended else "EXPIRED_SEMANTIC_DAY")
+            repo.finish(
+                job,
+                ENTRY_ABANDONED
+                if job.get("entry_abandoned_at")
+                else "CYCLE_CLOSED"
+                if cycle_ended
+                else "EXPIRED_SEMANTIC_DAY",
+            )
             return
         cycle = None
         if entry and strategy.capital_model == "SHARED_CYCLE":
@@ -549,8 +645,11 @@ class Executor:
                             error=reason,
                         )
                     return
-                await self._submit_prepared(repo, job, execution, broker, strategy, attempt, entry)
-                await self._sync(broker, job["account"], force=True)
+                submitted = await self._submit_prepared(
+                    repo, job, execution, broker, strategy, attempt, entry
+                )
+                if submitted:
+                    await self._sync(broker, job["account"], force=True)
             return
         next_id = repo.allocate_order_id(job["account"], broker.profile.client_id, broker.next_id)
         attempt = repo.prepare_attempt(job, data, next_id, broker.profile.client_id)
@@ -565,7 +664,11 @@ class Executor:
         strategy: Any,
         attempt: Any,
         entry: bool,
-    ) -> None:
+    ) -> bool:
+        if entry:
+            current = repo.require("jobs", job["id"])
+            if current["state"] in {"DONE", "FAILED"} or self.abandon_entry(current):
+                return False
         if attempt.get("cycle_id") and attempt["cycle_id"] != self.sessions.cycle_id(
             self.journal.clock(), strategy.exit_offset_minutes
         ):
@@ -576,29 +679,26 @@ class Executor:
                 delay=1,
                 error="WAIT_CYCLE_EQUITY",
             )
-            return
+            return False
         # No await between final expiry check and persisted submit intent.
         if entry and self.journal.clock() >= datetime.fromisoformat(
             execution["intent"]["expires_at"]
         ):
             repo.void_prepared_attempt(attempt)
             repo.finish(job, "EXPIRED_SEMANTIC_DAY")
-            return
-        attempt = repo.update_attempt(
-            attempt, state="SUBMITTING", sent_at=self.journal.clock().isoformat()
-        )
-        repo.update_job(
-            repo.require("jobs", job["id"]),
-            state="ACTIVE",
-            failures=0,
-            delay=strategy.order_wait_seconds,
-        )
+            return False
+        attempt = repo.mark_submitting(attempt, wait_seconds=strategy.order_wait_seconds)
+        if attempt is None:
+            if entry:
+                self.abandon_entry(repo.require("jobs", job["id"]))
+            return False
         self.sync_cache.clear()
         try:
             await asyncio.to_thread(broker.submit, attempt)
         finally:
             self.sync_cache.clear()
         repo.update_attempt(attempt, state="WORKING")
+        return True
 
     def _position_check(self, job: Any, contract: Any, sync: Any) -> Any:
         key = f"{job['account']}:{contract['con_id']}"
