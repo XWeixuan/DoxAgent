@@ -396,6 +396,8 @@ class OpenAICodexRuntime:
             "mcp_servers.source_capture.startup_timeout_sec": 10,
             "mcp_servers.source_capture.tool_timeout_sec": 30,
         }
+        if request.node == CodexPersistentRuntimeNode.W3:
+            sdk_config["service_tier"] = "default"
         if request.node in {
             CodexD3Node.O3_DISCOVERY,
             CodexD3Node.O3_PLANNING,

@@ -93,7 +93,7 @@ def test_replay_uses_production_two_stages_with_isolated_evidence(tmp_path, monk
         assert request.data_mcp_enabled is False
         assert request.allow_subagents is False
         assert request.cutoff_at == NOW
-        assert request.model == "gpt-6-sol"
+        assert request.model == "gpt-6.1-sol"
     assert worker.requests[1].thread_id == worker.requests[2].thread_id == "offline-child"
     assert "evidence" not in json.loads(worker.requests[0].prompt.split("\n\n")[-1])
     assert "evidence" in json.loads(worker.requests[1].prompt)

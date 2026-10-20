@@ -95,7 +95,7 @@ class W3Execution:
         if not new_public or not self.journal.get("w3_research_v2", research_pin_key(asset_case)):
             self.agent.prepare_public_assets(asset_case)
         initializing = False
-        for model, effort in (("gpt-6-luna", "max"), ("gpt-6-sol", "medium")):
+        for model, effort in (("gpt-6-luna", "max"), ("gpt-6.1-sol", "medium")):
             profile = dict(
                 model=model, effort=effort, provider=getattr(self.agent, "_model_provider", None)
             )

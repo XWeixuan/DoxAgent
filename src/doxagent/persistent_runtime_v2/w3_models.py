@@ -6,10 +6,12 @@ from __future__ import annotations
 def freeze_case_profile(case, *, provider=None):
     saved = case.frozen_inputs.get("w3_execution_profile")
     if saved is None:
-        hit = bool(case.w2_final and case.w2_final.policy_hit)
+        policy_case = bool(
+            case.w2_final and (case.w2_final.policy_hit or case.w2_final.policy_related)
+        )
         saved = dict(
-            model="gpt-6-sol" if hit else "gpt-6-luna",
-            effort="medium" if hit else "max",
+            model="gpt-6.1-sol" if policy_case else "gpt-6-luna",
+            effort="medium" if policy_case else "max",
             provider=provider,
         )
         case.frozen_inputs["w3_execution_profile"] = saved

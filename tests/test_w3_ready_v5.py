@@ -79,7 +79,8 @@ async def test_failed_empty_bound_slot_reconciles_original_operation_once(tmp_pa
 
 
 @pytest.mark.asyncio
-async def test_bound_ready_inventory_is_idempotent_concurrent_and_not_per_ticker(tmp_path):
+@pytest.mark.parametrize('model,target', [('gpt-6-luna',2),('gpt-6.1-sol',1)])
+async def test_bound_ready_inventory_is_idempotent_concurrent_and_not_per_ticker(tmp_path,model,target):
     workspaces = LocalWorkspaceStore(tmp_path)
     jobs = SimpleNamespace(
         store=JobStore(tmp_path), _runtime=Runtime(), _startup=asyncio.Semaphore(3)
@@ -91,7 +92,7 @@ async def test_bound_ready_inventory_is_idempotent_concurrent_and_not_per_ticker
         )
     settings = SimpleNamespace(w3_ready_luna=2, w3_ready_sol=1)
     slots = W3ReadySlots(jobs, workspaces, settings, SimpleNamespace(ready={}))
-    profile = dict(model="gpt-6-luna", provider=None, effort="max")
+    profile = dict(model=model, provider=None, effort="medium" if model=='gpt-6.1-sol' else "max")
     config = dict(parent_thread_id="parent", profile=profile, instructions={"AGENTS.md": "public"})
     try:
         key = await slots.configure(config)
@@ -115,7 +116,7 @@ async def test_bound_ready_inventory_is_idempotent_concurrent_and_not_per_ticker
             count = db.execute(
                 "SELECT count(*) FROM w3_ready_slots WHERE scope=? AND state='READY'", (key,)
             ).fetchone()[0]
-            assert count == 2
+            assert count == target
             assert (
                 db.execute(
                     "SELECT kind FROM w3_thread_registry WHERE thread_id=?",

@@ -1903,3 +1903,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-20 Corporate IR: preserve valid RSS parameters when retiring a sole overlapping legacy binding; verify migration and repeated apply.
 2026-10-20 Corporate IR: treat HTTP 304 as a conditional success rather than a Location redirect; add actual httpx transport regression.
 2026-10-20 Corporate IR: record enabled nine ticker/twelve endpoint deployment, exact legacy RSS migration and user-shortened 20m44s natural observation (488/490 success, transient RKLB recovery); retain evidence and remaining end-to-end limits.
+
+2026-10-20 W3 model routing: freeze both Policy HIT and RELATED Cases to explicit gpt-6.1-sol/medium, retaining gpt-6-luna/max for OPEN and previously frozen Case profiles. Align public Template prewarming, Sol ready-slot capacity (including legacy frozen Sol profiles) and Worker readiness with 6.1 Sol; explicitly set W3 SDK service_tier=default, without Fast. Validate 84 targeted regressions across model freezing/phases, ready inventory, permissions, replay, lifecycle and persistent runtime; production release acceptance recorded separately.

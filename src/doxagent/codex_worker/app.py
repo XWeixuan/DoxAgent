@@ -216,7 +216,7 @@ def create_worker_app(
                 n for scope, state, n in rows if scope == key and state == "READY"
             )
         return {
-            "ready": all(profiles.get(model, 0) > 0 for model in ("gpt-6-luna", "gpt-6-sol")),
+            "ready": all(profiles.get(model, 0) > 0 for model in ("gpt-6-luna", "gpt-6.1-sol")),
             "profiles": profiles,
             "mcp_calls": research_mcp.calls,
         }

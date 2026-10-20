@@ -39,6 +39,7 @@ async def test_w3_sdk_exposes_only_ibkr_data_tools_and_scopes_capability(
         model="gpt-6-sol", effort="medium",
     ), run_root)
     config = sdk.thread_start_kwargs["config"]
+    assert config["service_tier"] == "default"
     assert sdk.thread_start_kwargs["model"] == "gpt-6-sol"
     assert config["mcp_servers.data.enabled"] is True
     assert config["mcp_servers.data.required"] is True

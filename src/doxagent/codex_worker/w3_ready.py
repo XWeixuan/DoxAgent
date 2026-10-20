@@ -80,7 +80,7 @@ class W3ReadySlots:
                 return
             target = (
                 self.settings.w3_ready_sol
-                if config["profile"]["model"] == "gpt-6-sol"
+                if config["profile"]["model"] in {"gpt-6-sol", "gpt-6.1-sol"}
                 else self.settings.w3_ready_luna
             )
             with closing(self.jobs.store.connect()) as db, db:
