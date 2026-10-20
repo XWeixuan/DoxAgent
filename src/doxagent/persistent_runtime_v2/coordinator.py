@@ -406,8 +406,15 @@ class RuntimeCoordinator:
             kind = task["kind"]
             if kind not in {"CASE", "MAINTENANCE", "SWEEP", "SELECTION"}:
                 continue
+            closed_recovery = False
             if kind == "CASE" and task["inputs"]["mode"] == "CLOSED":
-                continue  # Sequential sweep runner owns closed Cases.
+                closed_recovery = self._orphan_closed_recovery(task)
+                if not closed_recovery or any(
+                    lease["ticker"] == ticker and lease["inputs"].get("mode") == "CLOSED"
+                    and identity in self._futures and not self._futures[identity].done()
+                    for identity, lease in self._leases.items()
+                ):
+                    continue  # Live sweeps retain their wave ownership and ordering.
             if kind == "SWEEP" and any(
                 (self.journal.get_task(key) or {})["kind"] == "SWEEP"
                 and (self.journal.get_task(key) or {})["ticker"] == ticker
@@ -431,8 +438,8 @@ class RuntimeCoordinator:
                     continue
             pool = (
                 self._realtime
-                if kind == "CASE"
-                else (self._sweeps if kind == "SWEEP" else self._background)
+                if kind == "CASE" and not closed_recovery
+                else (self._sweeps if kind == "SWEEP" or closed_recovery else self._background)
             )
             lease = self.journal.claim(
                 task["id"],
@@ -442,6 +449,13 @@ class RuntimeCoordinator:
             if lease:
                 self._leases[task["id"]] = lease
                 self._futures[task["id"]] = pool.submit(self._execute, lease)
+
+    def _orphan_closed_recovery(self, task) -> bool:
+        if not task["receipt"].get("infrastructure_recovery"):
+            return False
+        parent = self.journal.get_task(task["inputs"].get("sweep_id", ""))
+        # Resume the original child only, never replay a completed sweep/selection.
+        return bool(parent and parent["status"] == "SUCCEEDED")
 
     def _waiting_cases(self, task: dict[str, Any]) -> bool:
         if task["inputs"].get("repair_id"):

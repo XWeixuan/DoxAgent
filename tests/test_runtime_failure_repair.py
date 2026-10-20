@@ -131,3 +131,56 @@ def test_citation_scope_includes_only_same_case_frozen_loaded_events(tmp_path):
     case.frozen_inputs["w3_contracts"] = {}
     legacy = SimpleNamespace(reference_event_ids=frozenset({"E1"}))
     assert runner._citation_context(case, legacy).reference_event_ids == {"E1"}
+
+
+def test_closed_recovery_dispatches_original_children_serially_without_replaying_sweep(
+    tmp_path, monkeypatch
+):
+    from threading import Event
+    from tests.test_runtime_hot_lane_concurrency import runtime, _FakeResponses
+    from doxagent.persistent_runtime_v2.coordinator import RuntimeCoordinator
+    from doxagent.v2_control.repository import ControlRepository
+
+    service = runtime(tmp_path, _FakeResponses())
+    journal = RuntimeJournal(tmp_path / 'journal.db')
+    coordinator = RuntimeCoordinator(service, journal, external_delivery=True)
+    service.coordinator = coordinator
+    monkeypatch.setattr(coordinator, 'reconcile', lambda ticker: None)
+    monkeypatch.setattr(coordinator, 'wake_effects', lambda: None)
+    monkeypatch.setattr(coordinator, '_schedule_supplements', lambda ticker: None)
+    journal.put_task('finished-sweep', 'MU', 'SWEEP', {})
+    parent = journal.claim('finished-sweep')
+    journal.finish(parent)
+    for identity in ('repair-1', 'repair-2', 'ordinary-closed'):
+        journal.put_task(identity, 'MU', 'CASE', {'mode': 'CLOSED', 'sweep_id': 'finished-sweep'})
+        if identity.startswith('repair'):
+            lease = journal.claim(identity)
+            journal.checkpoint(lease, infrastructure_recovery={'at': 'original'})
+            ControlRepository(journal).defer(lease)
+            with journal.transaction() as db:
+                db.execute('UPDATE runtime_tasks SET due_at=? WHERE id=?',
+                           (journal.clock().isoformat(), identity))
+    entered, release = Event(), Event()
+    calls = []
+    def run_child(task):
+        calls.append(task['id'])
+        entered.set()
+        assert release.wait(5)
+        journal.finish(task)
+    monkeypatch.setattr(coordinator, '_case', run_child)
+    try:
+        coordinator.tick('MU')
+        assert entered.wait(2)
+        assert len(calls) == 1
+        first = coordinator._futures[calls[0]]
+        release.set()
+        first.result(timeout=5)
+        coordinator.tick('MU')
+        for future in list(coordinator._futures.values()):
+            future.result(timeout=5)
+        assert set(calls) == {'repair-1', 'repair-2'}
+        assert journal.get_task('finished-sweep')['status'] == 'SUCCEEDED'
+        assert journal.get_task('ordinary-closed')['status'] == 'PENDING'
+    finally:
+        release.set()
+        service.close()

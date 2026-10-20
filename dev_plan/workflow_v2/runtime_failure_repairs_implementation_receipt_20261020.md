@@ -4,7 +4,7 @@
 
 ## 实现
 
-- 停机先停止认领和 Effect pump，排空已有任务后才关闭服务/客户端；未启动任务交回原租约，不消耗失败次数。按确切 service closed / SQLite 锁证据对账 task FAILED、原 Case RUNNING 的状态脱节，保留原 Case、冻结输入与成功轮次。
+- 停机先停止认领和 Effect pump，排空已有任务后才关闭服务/客户端；未启动任务交回原租约，不消耗失败次数。按确切 service closed / SQLite 锁证据对账 task FAILED、原 Case RUNNING 的状态脱节，保留原 Case、冻结输入与成功轮次。对原 sweep 已成功收束的 CLOSED 恢复子任务，使用原输入逐 ticker 串行恢复；正常 CLOSED 任务仍由原 sweep wave 执行，不重跑已完成的 sweep/selection。
 - journal 大内容与 Case/Effect/model turn 的编码前移；热写使用短连接等待、完整事务有界退避。WAL 设置移至初始化，保留 FULL 持久性和租约 fencing。临时 SQLite 争用不当作模型失败；heartbeat 不因一次临时争用永久停止。
 - 新 READY API 返回结构化错误。仅对没有业务 job、没有已接受 thread_id 的空准备恢复原 slot/原 operation；最多一次额外恢复，原生命周期负责先 reconcile 原 cwd/receipt。保留原错误，不更换 Case/线程身份。永久配置错误对同 profile 暂停补池 60 秒。
 - Codex usage-limit 按账户暂缓派发，保留失败 receipt 和 Case，不反复消耗普通重试。15 分钟后仅一个原 Case 探测恢复，成功后解除暂缓；不自动切账户/模型。
@@ -17,7 +17,8 @@
 ## 验证
 
 - 17 个相关测试文件，最终整组 **265 passed**。
-- 将 WAL 设置前移后补跑 8 项；最后的抖动退避调整后补跑 19 项，均通过。
+- 将 WAL 设置前移后补跑 8 项；最后的抖动退避调整后补跑 19 项，均通过。生产验收发现 CLOSED 恢复任务仍需 dispatcher 领取，补齐后覆盖 65 项相关回归，均通过。
+- 额外扩大到消息采集 CLOSED 契约时，Benzinga window/cursor 测试失败；相关采集实现未改，本轮不扩修消息源。
 - 修改 Python 文件的 Ruff F 类检查、编译与 diff whitespace 检查通过。代码库其他文件已有的 lint 问题不在本轮扩修。
 - 测试原始记录：`eval/runtime_failure_implementation_20261020/final-tests.xml`、`final-tests.log`。
 
