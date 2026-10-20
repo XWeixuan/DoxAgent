@@ -296,6 +296,7 @@ export function rows(): W.TickerOverview[] {
       abnormal: value(i === 4 ? 1 : 0),
     },
     metrics: {
+      policy_hits: metric("policy_hits", String([2, 1, 0, 0, 0][i])),
       trade_executed: metric("trade_executed", String([3, 1, 0, 0, 0][i])),
       trade_triggered: metric("trade_triggered", String([4, 2, 0, 0, 0][i])),
       messages: metric("messages", String([642, 418, 188, 0, 0][i])),

@@ -122,8 +122,9 @@ def install(app: FastAPI) -> None:
         from doxagent.v2_read.metrics import Metrics
         service = Metrics(store)
         period = view["wire"]["period"]
-        service.prime(("trade_executed", "trade_triggered", "messages", "api_token_cost"), selected[:limit], view["seq"],
-                      [period["current"]["trading_days"], period["previous"]["trading_days"] if period["previous"] else []])
+        service.prime(("policy_hits", "trade_executed", "trade_triggered", "messages", "api_token_cost"), selected[:limit], view["seq"],
+                      [period["current"]["trading_days"], period["previous"]["trading_days"] if period["previous"] else []],
+                      distinct=("policy_hits",))
         source_counts = aggregates_many(store, selected[:limit], view["seq"])
         states = store.batch_get([("ticker",ticker,ticker) for ticker in selected[:limit]],view["seq"])
         initializations = store.batch_get([("initialization",ticker,states[("ticker",ticker,ticker)]["initialization_id"]) for ticker in selected[:limit] if states[("ticker",ticker,ticker)]["initialization_id"]],view["seq"])
@@ -147,7 +148,7 @@ def install(app: FastAPI) -> None:
                     "metrics": measures(
                         view,
                         [ticker],
-                        ("trade_executed", "trade_triggered", "messages", "api_token_cost"),
+                        ("policy_hits", "trade_executed", "trade_triggered", "messages", "api_token_cost"),
                         service=service,
                     ),
                     "initialization": {

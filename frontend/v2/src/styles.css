@@ -738,6 +738,20 @@ h1 {
   width: max-content;
   margin-left: auto;
 }
+.monitor-metric {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+.monitor-metric-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.monitor-metric-note:empty {
+  display: none;
+}
 .init-row:hover,
 .receipt-row:hover {
   background: transparent;

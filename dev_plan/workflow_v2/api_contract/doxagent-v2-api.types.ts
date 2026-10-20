@@ -210,7 +210,7 @@ export interface TickerOverview {
   state: TickerState;
   last_standard_message_at: Value<Instant>;
   source_counts: SourceCounts;
-  metrics: { trade_executed: Metric; trade_triggered: Metric; messages: Metric; api_token_cost: Metric };
+  metrics: { policy_hits: Metric; trade_executed: Metric; trade_triggered: Metric; messages: Metric; api_token_cost: Metric };
   initialization: Resource<InitializationProgress> | null;
 }
 export type ParentStatus = "QUEUED" | "RUNNING" | "SUCCEEDED" | "FAILED";

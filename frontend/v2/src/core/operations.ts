@@ -61,6 +61,7 @@ export function pendingRow(state: TickerState): TickerOverview {
     last_standard_message_at: unknownCount,
     source_counts: { normal: unknownCount, abnormal: unknownCount },
     metrics: {
+      policy_hits: blankMetric,
       trade_executed: blankMetric,
       trade_triggered: blankMetric,
       messages: blankMetric,

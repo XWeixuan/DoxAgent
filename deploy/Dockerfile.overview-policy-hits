@@ -1,0 +1,12 @@
+ARG APPROVED_BASE
+FROM ${APPROVED_BASE} AS api
+ARG REPAIR_COMMIT
+LABEL org.opencontainers.image.revision=${REPAIR_COMMIT} doxagent.repair.scope="overview_policy_hits"
+ENV DOXAGENT_BUILD_COMMIT=${REPAIR_COMMIT}
+COPY src/doxagent/api_v2/overview.py src/doxagent/api_v2/wire_schema.json /app/src/doxagent/api_v2/
+COPY dev_plan/workflow_v2/api_contract/doxagent-v2-api.types.ts /app/dev_plan/workflow_v2/api_contract/
+
+FROM ${APPROVED_BASE} AS web
+ARG REPAIR_COMMIT
+LABEL org.opencontainers.image.revision=${REPAIR_COMMIT} doxagent.repair.scope="overview_policy_hits"
+COPY frontend/v2/dist/ /usr/share/nginx/html/

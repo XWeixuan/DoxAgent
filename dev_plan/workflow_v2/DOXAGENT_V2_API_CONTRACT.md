@@ -263,6 +263,8 @@ ReadContext：OVERVIEW 禁止 ticker，其余 page 必须 ticker。RESEARCH/EXPE
 
 OverviewMetrics 的 policy_hits/trade_executed/trade_triggered/messages 依 §3.4。api_token_cost 只计可计价 V2 API 调用，Codex 不估算美元费用，缺少可计价部分通过 coverage 暴露。nonroutine_repairs 统计所选交易日窗口内成功创建的 Ticker Initialization Guardian repair round；同一 round 的 Agent follow-up、状态更新、Control/Executor 重试不得重复计数，且不提供环比。收益依 §10，Paper/Live 分开。
 
+TickerOverview.metrics.policy_hits 与 Overview KPI 同口径，在所选周期内按 ticker + Policy ID 去重，采用最终命中（包含 W3 改判），不计为 W2 原始命中。列表复用稀疏 policy_ar_hits contribution 的分页标的批量聚合，不逐条读取 Case 明细。
+
 ## 5. 基础投研与预期研究
 
 ### 5.1 接口

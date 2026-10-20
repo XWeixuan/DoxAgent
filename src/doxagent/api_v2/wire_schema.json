@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "source_sha256": "c5c57257274995e093c9d62646d820917ced526d1c9cdb040bda99866b884949",
+  "source_sha256": "9d78153259debf671856e08cbcab855d32877d567887bf2b9d80a765123240d1",
   "$defs": {
     "Id": {
       "type": "string"
@@ -1873,6 +1873,9 @@
         "metrics": {
           "type": "object",
           "properties": {
+            "policy_hits": {
+              "$ref": "#/$defs/Metric"
+            },
             "trade_executed": {
               "$ref": "#/$defs/Metric"
             },
@@ -1887,6 +1890,7 @@
             }
           },
           "required": [
+            "policy_hits",
             "trade_executed",
             "trade_triggered",
             "messages",

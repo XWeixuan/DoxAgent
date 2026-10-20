@@ -314,6 +314,7 @@ export default function Overview() {
                           "状态",
                           "最近消息",
                           "Message Bus 状态",
+                          "Policy 命中",
                           `${prefix}交易`,
                           prefix === "当日" ? "消息数量" : `${prefix}消息`,
                           `${prefix}成本`,
@@ -321,7 +322,13 @@ export default function Overview() {
                         ].map((title, i) => (
                           <TableHead
                             key={title}
-                            className={i >= 5 && i <= 7 ? "numeric" : undefined}
+                            className={i >= 5 && i <= 8 ? "numeric" : undefined}
+                            scope="col"
+                            title={
+                              i === 5
+                                ? "与上方 KPI 同口径：所选周期内去重的最终 Policy 命中，包含 W3 改判"
+                                : undefined
+                            }
                           >
                             {title}
                           </TableHead>

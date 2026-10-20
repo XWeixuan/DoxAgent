@@ -107,6 +107,14 @@ export function MonitorRow({
             </span>
           </div>
         </TableCell>
+        <TableCell className="numeric" data-label={`${prefix} Policy 命中`}>
+          <div className="monitor-metric">
+            <span className="monitor-metric-note">
+              <MetricNote metric={row.metrics.policy_hits} />
+            </span>
+            <span>{metricText(row.metrics.policy_hits)}</span>
+          </div>
+        </TableCell>
         <TableCell
           className="numeric"
           data-label={`${prefix}交易 · 执行 / 触发`}
@@ -120,8 +128,12 @@ export function MonitorRow({
           {metricText(row.metrics.messages)}
         </TableCell>
         <TableCell className="numeric cost-cell" data-label={`${prefix}成本`}>
-          {metricText(row.metrics.api_token_cost, true)}
-          <MetricNote metric={row.metrics.api_token_cost} />
+          <div className="monitor-metric">
+            <span className="monitor-metric-note">
+              <MetricNote metric={row.metrics.api_token_cost} />
+            </span>
+            <span>{metricText(row.metrics.api_token_cost, true)}</span>
+          </div>
         </TableCell>
         <TableCell data-row-control>
           <div className="row-actions">
@@ -165,7 +177,7 @@ export function MonitorRow({
       </TableRow>
       {state.initialization_incomplete && (
         <TableRow className="init-row">
-          <TableCell colSpan={9}>
+          <TableCell colSpan={10}>
             <Initialization
               ticker={state.ticker}
               progress={row.initialization?.data ?? null}
@@ -178,7 +190,7 @@ export function MonitorRow({
       )}
       {!state.initialization_incomplete && pending && (
         <TableRow className="receipt-row">
-          <TableCell colSpan={9}>
+          <TableCell colSpan={10}>
             <OperationNotice entry={pending} />
           </TableCell>
         </TableRow>

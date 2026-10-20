@@ -219,9 +219,17 @@ def test_overview_filters_and_keyset_paging_keep_the_saved_view(tmp_path):
     def row(ticker, run='RUNNING', health='NORMAL'):
         return {'kind':'ticker','ticker':ticker,'id':ticker,'data':{
             'ticker':ticker,'run_state':run,'health':health,'initialization_id':None,'initialization_incomplete':False}}
-    seq=store.ingest('fixture','one',[row('A'),row('B','PAUSED'),row('C')])
+    def hit(ticker, entity, policy, ar, day='2026-10-02'):
+        return dict(metric='policy_ar_hits', ticker=ticker, entity=entity, day=day, value='1',
+                    dimensions=dict(policy_id=policy, business_key=policy+':'+ar, ar=ar))
+    seq=store.ingest('fixture','one',[row('A'),row('B','PAUSED'),row('C')], contributions=[
+        hit('A','case1:P','P','r1'), hit('A','case2:P','P','r2'),
+        hit('C','case3:P','P','r1'), hit('A','older:Q','Q','r1','2026-10-01'),
+    ])
     # A changes and D appears after opening this view. Paging must retain A/C.
-    store.ingest('fixture','two',[row('A','STOPPED','BLOCKED'),row('D')])
+    store.ingest('fixture','two',[row('A','STOPPED','BLOCKED'),row('D')], contributions=[
+        hit('A','later:R','R','r1'),
+    ])
     view={'seq':seq,'tickers':['A','B','C'],'wire':{'page':'OVERVIEW','period':{
         'current':{'trading_days':['2026-10-02']},'previous':None}}}
     frozen_id=store.save_token('owner','test',view,view=True)
@@ -240,10 +248,18 @@ def test_overview_filters_and_keyset_paging_keep_the_saved_view(tmp_path):
     first=fetch('view_id=frozen&limit=1&run_state=RUNNING&health=NORMAL')
     assert [r['state']['run_state'] for r in first['items']]==['RUNNING']
     assert first['items'][0]['state']['ticker']=='A'
+    assert first['items'][0]['metrics']['policy_hits']['current']['value']=='1'
     assert first['has_more'] and first['next_cursor']
     second=fetch('view_id=frozen&limit=1&run_state=RUNNING&health=NORMAL&cursor='+first['next_cursor'])
     assert second['items'][0]['state']['ticker']=='C'
+    assert second['items'][0]['metrics']['policy_hits']['current']['value']=='1'
     assert len(second['items'])==1 and not second['has_more']
     assert first['items'][0]['state'] != row('A','STOPPED','BLOCKED')['data']
     assert fetch('view_id=frozen&limit=1&health=BLOCKED')['items']==[]
     assert len(fetch('view_id=frozen&run_state=PAUSED')['items'])==1
+    metrics_endpoint=next(r.endpoint for r in app.routes if r.path.endswith('/overview/metrics'))
+    request=Request({'type':'http','path':'/overview/metrics','headers':[],
+                     'query_string':('view_id='+frozen_id).encode(),
+                     'state':{'principal':SimpleNamespace(user_id='owner')}})
+    global_metrics=asyncio.run(metrics_endpoint(request))
+    assert global_metrics['policy_hits']['current']['value']=='2'
