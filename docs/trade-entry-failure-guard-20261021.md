@@ -36,4 +36,14 @@
 
 新增回归覆盖：三次连接失败后恢复仍不下单；337/712 次历史失败在任何 API 调用前终止；共享账户失败传递给尚未到期的等待任务；冷却跳过不消耗失败预算；重启和重复 intake 不复活；已发送/部分成交只对账撤销、不补仓；最终发单竞态阻断；提交成功不清零开仓累计失败数。既有 EXIT 持续恢复与低频 API 回归继续通过。
 
-部署与生产断网回放、源码核验结果在本文件后续验收记录中追加。
+## 部署与验收
+
+代码提交：`4a16e1af44b9ac69e4debac3e155666c1536a3dc`。仅将四个修改模块叠加到原 Executor 镜像并发布，没有重启其他服务。发布账本和 Compose 当前镜像均已更新，原镜像保留为 previous。
+
+北京时间 02:46 核验：Executor 运行、重启计数 0；四个运行模块的 SHA-256 与发布清单逐一一致；其他服务镜像未变化，API healthz/readyz 正常。
+
+在候选生产镜像内断网重放上述两条真实 badcase 的 profile、原有效期与 712/337 次失败计数，两条均得到 FAILED / ENTRY_FAILURE_BUDGET_EXHAUSTED，attempt 数为 0，broker 工厂未被访问。未人为断开生产 API，未为验收创建真实交易。
+
+再次读取生产账本：无未完成 ENTRY；两笔已成交仓位仍保留原 READY 退出任务，generation=0、计划北京时间 03:30。已成交不能通过把记录改成 FAILED 来撤销，本次未改变真实成交或提前平仓。
+
+本地证据在 `eval/trade_delivery_audit_20261021/`：`tests-entry-guard-final.xml`、`entry-guard-offline-replay.json`、`entry-guard-release.jsonl`、`entry-guard-acceptance.json`、`entry-guard-before.json`、`entry-guard-after.json`。服务器发布目录为 `/var/lib/doxagent/releases/trade-entry-guard-20261021/`。
