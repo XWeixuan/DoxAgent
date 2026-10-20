@@ -126,9 +126,26 @@ def initial_endpoints():
         )
         for k, t, n, u, m, p, h in rows
     ]
-    return [
+    specs = [
         s.model_copy(update={"fallback_urls": ["https://investors.rocketlabcorp.com/news"]})
         if s.endpoint_id == "rklb.ir"
+        else s
+        for s in specs
+    ]
+    stdlib_hosts = {
+        "mu.ir": ["investors.micron.com"],
+        "mu.newsroom": ["investors.micron.com"],
+        "be.press": ["investor.bloomenergy.com"],
+        "rklb.updates": ["rocketlabcorp.com"],
+    }
+    return [
+        s.model_copy(
+            update={
+                "parser_parameters": {"urllib_hosts": stdlib_hosts[s.endpoint_id]},
+                "revision": 2,
+            }
+        )
+        if s.endpoint_id in stdlib_hosts
         else s
         for s in specs
     ]

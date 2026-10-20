@@ -71,7 +71,8 @@ class IrCoordinator:
         }
         for key, (task, generation) in list(self.inflight.items()):
             if desired.get(key) != generation:
-                task.cancel()
+                if not task.cancelling():
+                    task.cancel()
             if task.done():
                 if not task.cancelled() and task.exception():
                     logger.error(
@@ -293,6 +294,7 @@ class IrCoordinator:
             self.runner.cancel()
             await asyncio.gather(self.runner, return_exceptions=True)
         for task, _ in self.inflight.values():
-            task.cancel()
+            if not task.cancelling():
+                task.cancel()
         await asyncio.gather(*(task for task, _ in self.inflight.values()), return_exceptions=True)
         self.inflight.clear()

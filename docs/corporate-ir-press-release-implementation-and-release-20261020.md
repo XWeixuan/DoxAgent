@@ -36,6 +36,8 @@ sudo docker exec -i doxagent-v2-v2-message-bus-1 python - --apply < scripts/ops/
 
 ## 发布与自然验收
 
+首次生产HTTP canary识别了真实客户端差异：Micron IR/Bloom以及部分Rocket Lab详情在httpx下返回Cloudflare `cf-mitigated: challenge`，相同URL/出口/固定UA用标准库公共HTTP返回200；移除Accept-Language并未解决。按实测给四个endpoint recipe增加精确`urllib_hosts`（Micron newsroom只对最终IR host生效），不引入Chrome、代理轮换或Cookie。同步请求在有限HTTP槽中offload，取消等待真实线程结束，重复取消不提前归还permit。Owner工具仅升级原始revision1且参数为空的已知recipe，保留人工配置。
+
 本节在完成实际发布、九ticker配置及不少于30分钟自然观察后填写。当前此初稿仅记录已完成的本地实现和测试，不代表生产已经启用。
 
 发布组件仅限实际消费者：Message Bus、Content Enrichment、API、Projector、Web；保持Chrome Supervisor、Site Access、既有Profile/原页、维护Worker开关。使用canonical storage_release工具并保留current/previous。

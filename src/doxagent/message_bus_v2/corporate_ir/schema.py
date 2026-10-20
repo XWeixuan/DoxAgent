@@ -28,6 +28,10 @@ class IrEndpointSpec(BusModel):
             parsed = urlsplit(url)
             if parsed.scheme != "https" or parsed.hostname not in self.allowed_article_hosts:
                 raise ValueError("IR entry requires an approved HTTPS host")
+        if not set(self.parser_parameters.get("urllib_hosts", [])).issubset(
+            self.allowed_article_hosts
+        ):
+            raise ValueError("IR transport host must be approved")
         return self
 
     @property

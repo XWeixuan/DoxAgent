@@ -12,8 +12,31 @@ from doxagent.message_bus_v2.schema import UpdateActor, binding_id_for
 TICKERS = ("INTC", "MU", "BE", "COHR", "NBIS", "CEG", "RKLB", "SNOW", "ONDS")
 
 
+def planned_parameters(source):
+    if source is None:
+        return initial_source().default_parameters, []
+    seeds = {s.endpoint_id: s for s in initial_endpoints()}
+    catalog = []
+    upgrades = []
+    for value in source.default_parameters["endpoints"]:
+        seed = seeds.get(value["endpoint_id"])
+        if (
+            seed
+            and seed.revision == 2
+            and value.get("revision", 1) == 1
+            and not value.get("parser_parameters")
+            and value["entry_url"] == seed.entry_url
+            and value["owner_ticker"] == seed.owner_ticker
+        ):
+            value = {**value, "parser_parameters": seed.parser_parameters, "revision": 2}
+            upgrades.append(seed.endpoint_id)
+        catalog.append(value)
+    return {**source.default_parameters, "endpoints": catalog}, upgrades
+
+
 def preview(source, bindings, ticker_states):
-    catalog = (source or initial_source()).default_parameters["endpoints"]
+    parameters, upgrades = planned_parameters(source)
+    catalog = parameters["endpoints"]
     if not all(t in ticker_states for t in TICKERS):
         raise ValueError("all nine tickers must already be registered")
     indexed = {b.binding_id: b for b in bindings}
@@ -65,6 +88,7 @@ def preview(source, bindings, ticker_states):
                 }
             )
     return {
+        "catalog_recipe_upgrades": upgrades,
         "applied": False,
         "source_id": SOURCE_ID,
         "source_version": source.version if source else None,
@@ -83,12 +107,13 @@ def configure(service):
         )
         if not repo.get_source(SOURCE_ID):
             service.register_source(initial_source())
-        elif not repo.get_source(SOURCE_ID).enabled:
+        elif report["catalog_recipe_upgrades"] or not repo.get_source(SOURCE_ID).enabled:
+            parameters, _ = planned_parameters(repo.get_source(SOURCE_ID))
             service.update_source(
                 SOURCE_ID,
-                {"enabled": True},
+                {"enabled": True, "default_parameters": parameters},
                 actor=UpdateActor.USER,
-                reason="Enable requested corporate IR",
+                reason="Apply verified public HTTP recipes and enable requested corporate IR",
             )
         for item in report["bindings"]:
             if item["action"] == "unchanged":

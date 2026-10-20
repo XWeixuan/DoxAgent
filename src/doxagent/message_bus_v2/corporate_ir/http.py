@@ -1,5 +1,7 @@
 import asyncio
 import time
+import urllib.error
+import urllib.request
 from dataclasses import dataclass
 from urllib.parse import urlsplit
 
@@ -44,6 +46,69 @@ class PublicHttp:
         self.host_started = {}
         self.browser = PublicBrowserPool()
 
+    async def _stdlib(self, url, headers):
+        work = asyncio.create_task(asyncio.to_thread(self._stdlib_read, url, headers))
+        try:
+            return await asyncio.shield(work)
+        except asyncio.CancelledError:
+            # A cancelled await cannot stop a socket thread. Drain before giving
+            # back its host/global permit, just like an admitted storage commit.
+            while not work.done():
+                try:
+                    await asyncio.shield(work)
+                except asyncio.CancelledError:
+                    continue
+                except Exception:
+                    break
+            await asyncio.gather(work, return_exceptions=True)
+            raise
+
+    @staticmethod
+    def _stdlib_read(url, headers):
+        class NoRedirect(urllib.request.HTTPRedirectHandler):
+            def redirect_request(self, *args, **kwargs):
+                return None
+
+        deadline = time.monotonic() + 12
+        opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect())
+        request = urllib.request.Request(
+            url,
+            headers={
+                "User-Agent": HEADERS["User-Agent"],
+                "Accept": "*/*",
+                "Accept-Encoding": "identity",
+                **headers,
+            },
+        )
+        try:
+            response = opener.open(request, timeout=3)
+        except urllib.error.HTTPError as exc:
+            response = exc
+        with response:
+            raw = bytearray()
+            while True:
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    raise TimeoutError("IR public HTTP deadline")
+                try:
+                    response.fp.raw._sock.settimeout(min(8, remaining))
+                except AttributeError:
+                    pass
+                chunk = response.read(65536)
+                if not chunk:
+                    break
+                raw.extend(chunk)
+                if len(raw) > 4 * 1024 * 1024:
+                    raise ValueError("IR response exceeds 4 MiB")
+            charset = response.headers.get_content_charset() or "utf-8"
+            return Capture(
+                response.status,
+                response.url,
+                raw.decode(charset, errors="replace"),
+                {k.lower(): v for k, v in response.headers.items()},
+                len(raw),
+            )
+
     async def fetch(self, spec, *, url=None, headers=None):
         if spec.method == "browser" and url is None:
             status, body, final = await self.browser.fetch(spec)
@@ -62,6 +127,14 @@ class PublicHttp:
                             max(0, self.host_started.get(host, 0) + 0.5 - time.monotonic())
                         )
                         self.host_started[host] = time.monotonic()
+                    if host in spec.parser_parameters.get("urllib_hosts", []):
+                        capture = await self._stdlib(url, headers or {})
+                        if capture.status in {301, 302, 303, 307, 308}:
+                            from urllib.parse import urljoin
+
+                            url = urljoin(url, capture.headers["location"])
+                            continue
+                        return capture
                     async with self.client.stream(
                         "GET", url, headers={**HEADERS, **(headers or {})}
                     ) as response:
