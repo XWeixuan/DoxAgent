@@ -37,6 +37,8 @@ def classify_execution(summary: dict) -> tuple[str, list[str]]:
         return "NOT_EXECUTED", [reason or result]
     if intent_status == "DELIVERY_FAILED" and intake == "REJECTED":
         return "NOT_EXECUTED", ["DELIVERY_FAILED"]
+    if intake == "EXECUTION_ACCEPTED":
+        return "PENDING", [reason] if reason else []
     if intent_status == "UNKNOWN" or intake == "UNKNOWN":
         return "UNKNOWN", ["DELIVERY_FAILED_EXECUTION_UNKNOWN"] if reason else ["DELIVERY_UNKNOWN"]
     if intake == "NOT_RECEIVED" and intent_status in TERMINAL_UNSENT:
@@ -47,6 +49,8 @@ def classify_execution(summary: dict) -> tuple[str, list[str]]:
 
 
 def with_execution_state(summary: dict) -> dict:
+    if summary.get("intake_status") == "EXECUTION_ACCEPTED":
+        summary = {**summary, "intent_status": "EXECUTION_ACCEPTED"}
     state, reasons = classify_execution(summary)
     return {**summary, "execution_state": state, "execution_reason_codes": reasons}
 

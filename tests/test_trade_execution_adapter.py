@@ -55,3 +55,17 @@ def test_official_adapter_reject_callback_is_durable_and_time_normalized():
     assert events[-1][1]["status"] == "Rejected"
     assert events[-1][1]["order_id"] == 21
     assert execution_time("20260908 10:00:00 US/Eastern") == "2026-09-08T14:00:00+00:00"
+
+
+def test_account_subscription_information_is_counted_without_event_write_storm():
+    pytest.importorskip("ibapi.order_cancel")
+    events = []
+    session = IbkrSession(profile(), event_sink=lambda *args: events.append(args))
+    app = session._make_app()
+    for _ in range(200):
+        app.error(-1, 0, 2100, "API client has been unsubscribed from account data.")
+    assert events == []
+    assert session.informational_counts[2100] == 200
+    assert len(session.errors) == 100
+    app.error(21, 0, 201, "insufficient funds")
+    assert events[-1][1]["status"] == "Rejected"

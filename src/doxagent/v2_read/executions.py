@@ -226,6 +226,12 @@ class ExecutionProjector:
         pin = intent.get("execution_pin") or {}
         environment = (pin.get("profile") or {}).get("environment")
         first_fill = min((f["time"] for f in entry), default=None)
+        entry_jobs = self.rows("native:te_jobs", ticker, identity)
+        if job and job["leg"] == "ENTRY":
+            entry_jobs[job["id"]] = job
+        waiting_reason = next(
+            (item.get("error") for item in entry_jobs.values() if item["leg"] == "ENTRY"), None
+        )
         summary = validate(
             "ExecutionSummary",
             with_execution_state(
@@ -236,10 +242,10 @@ class ExecutionProjector:
                     "environment": available(environment) if environment else missing(),
                     "profile_revision": available(execution["profile_revision"]),
                     "direction": intent["trade"]["decision"],
-                    "intent_status": intent["status"],
+                    "intent_status": "EXECUTION_ACCEPTED",
                     "intake_status": "EXECUTION_ACCEPTED",
                     "entry_result": execution.get("entry_result"),
-                    "entry_reason": execution.get("entry_reason"),
+                    "entry_reason": execution.get("entry_reason") or waiting_reason,
                     "has_actual_fill": bool(positive),
                     "triggered_at": available(
                         instant(datetime.fromisoformat(intent["released_at"]))

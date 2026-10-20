@@ -11,6 +11,7 @@ from typing import Any
 
 from .ibkr_session import IbkrSession
 from .portfolio import account_funds, margin_after
+from .recovery import AccountRecovery, RecoveryDeferred, transient
 from .repository import TERMINAL_ORDERS, ExecutionRepository
 from .sessions import Sessions
 from .strategy import decimal, order_type, price_and_quantity
@@ -32,6 +33,11 @@ class Executor:
         self.brokers: dict[tuple[Any, ...], Any] = {}
         self.locks: dict[tuple[Any, ...], asyncio.Lock] = {}
         self.account_locks: dict[str, asyncio.Lock] = {}
+        self.recovery = AccountRecovery(self.journal)
+        self.recovery_locks: dict[str, asyncio.Lock] = {}
+        self.sync_locks: dict[int, asyncio.Lock] = {}
+        self.sync_cache: dict[int, tuple[Any, Any]] = {}
+        self.sync_successes: dict[str, int] = {}
 
     def broker(self, revision: Any) -> Any:
         profile = self.repository.profile(revision)
@@ -52,15 +58,18 @@ class Executor:
 
     def drain_events(self) -> Any:
         cursor = self.journal.get("trade_execution", "event_cursor", 0)
-        with self.journal.transaction() as db:
+        with self.journal.transaction(write=False) as db:
             rows = db.execute(
                 "SELECT * FROM te_events WHERE id>? ORDER BY id LIMIT 500", (cursor,)
             ).fetchall()
+        advanced = cursor
         for row in rows:
             value = json.loads(row["payload"])
             try:
                 self.apply_event(row)
             except Exception as exc:
+                if transient(exc):
+                    raise  # Retry the event; contention must not advance the fill cursor.
                 self.journal.set(
                     "execution_event_gaps",
                     str(row["id"]),
@@ -71,17 +80,21 @@ class Executor:
                         "error": str(exc),
                     },
                 )
-            self.journal.set("trade_execution", "event_cursor", row["id"])
+            advanced = row["id"]
+        if advanced != cursor:
+            self.journal.set("trade_execution", "event_cursor", advanced)
 
     def apply_event(self, row: Any) -> None:
         value = json.loads(row["payload"])
+        if row["kind"] in {"order", "fill"}:
+            self.sync_cache.clear()
         if row["kind"] == "order":
             self.repository.apply_order(row["account"], value)
         elif row["kind"] == "error":
             self.repository.apply_error(row["account"], value)
         elif row["kind"] == "fill":
             # Resolve offset from the pinned execution rather than the current config.
-            with self.journal.transaction() as db:
+            with self.journal.transaction(write=False) as db:
                 match = db.execute(
                     "SELECT j.execution_id FROM te_attempts a "
                     "JOIN te_jobs j ON a.job_id=j.id WHERE a.account=? "
@@ -114,12 +127,36 @@ class Executor:
             return
         async with lock:
             try:
-                await self._step(job)
+                account = job["account"]
+                self.recovery.check(account)
+                if self.recovery.state(account):
+                    # Serialize outage probes only; healthy ticker work stays parallel.
+                    async with self.recovery_locks.setdefault(account, asyncio.Lock()):
+                        self.recovery.check(account)
+                        before = self.sync_successes.get(account, 0)
+                        await self._step(job)
+                        if self.sync_successes.get(account, 0) > before:
+                            self.recovery.success(account)
+                else:
+                    await self._step(job)
+            except RecoveryDeferred:
+                return
             except Exception as exc:
                 current = repo.require("jobs", job_id)
                 failures = current.get("failures", 0) + 1
                 attempts = repo.attempts(job_id)
                 outstanding = any(a["state"] not in {"SETTLED", "NOT_SENT"} for a in attempts)
+                if transient(exc):
+                    self.sync_cache.clear()
+                    self.recovery.fail(job["account"], exc)
+                    repo.update_job(
+                        current,
+                        state="RECONCILE_REQUIRED" if outstanding else "WAIT_QUOTE",
+                        failures=failures,
+                        delay=self.recovery.delay(job["account"]),
+                        error=str(exc),
+                    )
+                    return
                 if failures >= 3:
                     repo.gap(
                         current,
@@ -151,9 +188,26 @@ class Executor:
                         error=str(exc),
                     )
 
-    async def _sync(self, broker: Any, account: Any) -> Any:
+    async def _sync(self, broker: Any, account: Any, *, force: bool = False) -> Any:
+        async with self.sync_locks.setdefault(id(broker), asyncio.Lock()):
+            self.recovery.check(account)
+            generation = getattr(broker, "connection_generation", 0)
+            cached = self.sync_cache.get(id(broker))
+            if (
+                not force
+                and cached
+                and cached[0] == generation
+                and (self.journal.clock() - datetime.fromisoformat(cached[1]["at"])).total_seconds()
+                < 1
+            ):
+                return cached[1]
+            value = await self._sync_fresh(broker, account)
+            self.sync_cache[id(broker)] = (getattr(broker, "connection_generation", 0), value)
+            return value
+
+    async def _sync_fresh(self, broker: Any, account: Any) -> Any:
         value = await asyncio.to_thread(broker.sync)
-        with self.journal.transaction() as db:
+        with self.journal.transaction(write=False) as db:
             watermark = db.execute("SELECT COALESCE(MAX(id),0) FROM te_events").fetchone()[0]
         while self.journal.get("trade_execution", "event_cursor", 0) < watermark:
             self.drain_events()
@@ -162,6 +216,7 @@ class Executor:
             db.execute(
                 "INSERT OR REPLACE INTO te_sync_state VALUES(?,?)", (account, json.dumps(value))
             )
+        self.sync_successes[account] = self.sync_successes.get(account, 0) + 1
         return value
 
     async def capture_ready_cycles(self, revisions: list[str]) -> None:
@@ -175,10 +230,12 @@ class Executor:
             if account in accounts:
                 continue
             accounts.add(account)
+            if self.recovery.state(account):
+                continue
             cycle_id = self.sessions.cycle_id(
                 self.journal.clock(), profile.strategy.exit_offset_minutes
             )
-            with self.journal.transaction() as db:
+            with self.journal.transaction(write=False) as db:
                 existing = db.execute(
                     "SELECT 1 FROM te_account_cycles WHERE account=? AND environment=? "
                     "AND cycle_id=? AND status='ACTIVE'",
@@ -212,6 +269,8 @@ class Executor:
                         profile.strategy.min_entry_notional_ratio,
                     )
                 except Exception as exc:
+                    if transient(exc):
+                        self.recovery.fail(account, exc)
                     self.journal.set(
                         "execution_cycle_capture",
                         account,
@@ -246,7 +305,7 @@ class Executor:
             return
         broker = self.broker(execution["profile_revision"])
         await asyncio.to_thread(broker.connect)
-        sync = await self._sync(broker, job["account"])
+        sync = await self._sync(broker, job["account"], force=bool(attempts))
         job = repo.require("jobs", job["id"])
         attempts = [
             a
@@ -290,7 +349,7 @@ class Executor:
                 repo.update_job(job, state="WAIT_QUOTE", delay=10, error=str(exc))
                 return
             if cycle is None:
-                repo.update_job(job, state="WAIT_QUOTE", delay=10, error="WAIT_CYCLE_EQUITY")
+                repo.update_job(job, state="WAIT_QUOTE", delay=60, error="WAIT_CYCLE_EQUITY")
                 return
         if len(attempts) >= 3 or any(a["order_type"] == "MKT" for a in attempts):
             repo.finish(job, "RETRY_BUDGET_EXHAUSTED")
@@ -302,7 +361,7 @@ class Executor:
             repo.finish(job, "NO_OWNED_POSITION", complete=True)
             return
         # An unresolved order for this contract must settle before an exit or another entry.
-        with self.journal.transaction() as db:
+        with self.journal.transaction(write=False) as db:
             busy = db.execute(
                 "SELECT 1 FROM te_attempts a JOIN te_jobs j ON a.job_id=j.id "
                 "WHERE j.account=? AND j.ticker=? AND a.state NOT IN ('SETTLED','NOT_SENT')",
@@ -405,7 +464,7 @@ class Executor:
                     )
                     return
                 # A submit with no broker acknowledgement can already consume funds.
-                with self.journal.transaction() as db:
+                with self.journal.transaction(write=False) as db:
                     unknown = db.execute(
                         "SELECT 1 FROM te_attempts a JOIN te_jobs j ON a.job_id=j.id "
                         "WHERE a.account=? AND j.leg='ENTRY' "
@@ -481,6 +540,8 @@ class Executor:
                     if reason == "INSUFFICIENT_MARGIN":
                         repo.finish(job, reason)
                     else:
+                        if transient(exc):
+                            raise
                         repo.update_job(
                             repo.require("jobs", job["id"]),
                             state="WAIT_QUOTE",
@@ -489,7 +550,7 @@ class Executor:
                         )
                     return
                 await self._submit_prepared(repo, job, execution, broker, strategy, attempt, entry)
-                await self._sync(broker, job["account"])
+                await self._sync(broker, job["account"], force=True)
             return
         next_id = repo.allocate_order_id(job["account"], broker.profile.client_id, broker.next_id)
         attempt = repo.prepare_attempt(job, data, next_id, broker.profile.client_id)
@@ -532,7 +593,11 @@ class Executor:
             failures=0,
             delay=strategy.order_wait_seconds,
         )
-        await asyncio.to_thread(broker.submit, attempt)
+        self.sync_cache.clear()
+        try:
+            await asyncio.to_thread(broker.submit, attempt)
+        finally:
+            self.sync_cache.clear()
         repo.update_attempt(attempt, state="WORKING")
 
     def _position_check(self, job: Any, contract: Any, sync: Any) -> Any:
@@ -542,7 +607,7 @@ class Executor:
                 contract["con_id"], sync["positions"].get(str(contract["con_id"]), 0)
             )
         )
-        with self.journal.transaction() as db:
+        with self.journal.transaction(write=False) as db:
             fills = self.repository._effective_fills(db, job["account"], contract["con_id"])
             adjustments = [
                 json.loads(row[0])
@@ -639,6 +704,7 @@ class Executor:
             return
         if not attempt.get("cancel_sent_at"):
             repo.update_attempt(attempt, state="CANCEL_PENDING", cancel_sent_at=now.isoformat())
+            self.sync_cache.clear()
             await asyncio.to_thread(broker.cancel, attempt)
             repo.update_job(job, state="ACTIVE", delay=0.2)
         else:
@@ -648,6 +714,7 @@ class Executor:
             ).total_seconds()
             if elapsed_cancel > 5:
                 repo.gap(job, "CANCEL_UNCONFIRMED", "Awaiting broker terminal state")
+                self.sync_cache.clear()
                 await asyncio.to_thread(broker.cancel, attempt)
                 repo.update_job(job, state="RECONCILE_REQUIRED", delay=30)
             else:

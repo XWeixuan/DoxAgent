@@ -4,10 +4,13 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import os
 import time
 from pathlib import Path
 from typing import Any
+
+from .recovery import DELAYS, RecoveryDeferred, transient
 
 
 def active_profile_revisions(executor: Any) -> list[str]:
@@ -43,16 +46,53 @@ def maintain_connections(executor: Any) -> dict[str, str]:
     """Keep configured execution sockets ready without submitting broker commands."""
     results = {}
     for revision in active_profile_revisions(executor):
+        account = executor.repository.profile(revision).expected_account_id
         try:
-            executor.broker(revision).connect()
-            results[revision] = "CONNECTED"
+            if executor.recovery.state(account):
+                results[revision] = "RECOVERING"
+            else:
+                executor.broker(revision).connect()
+                results[revision] = "CONNECTED"
         except Exception as exc:
+            if transient(exc):
+                executor.recovery.fail(account, exc)
             results[revision] = f"DISCONNECTED:{type(exc).__name__}"
         current = executor.journal.get("execution_connections", revision)
         value = {"status": results[revision]}
         if current != value:
             executor.journal.set("execution_connections", revision, value)
     return results
+
+
+async def recover_idle_accounts(executor):
+    """An idle account also recovers; active accounts are probed by their due jobs."""
+    with executor.journal.transaction(write=False) as db:
+        active = {
+            r[0]
+            for r in db.execute(
+                "SELECT DISTINCT account FROM te_jobs WHERE state NOT IN ('DONE','FAILED')"
+            )
+        }
+    seen = set()
+    for revision in active_profile_revisions(executor):
+        account = executor.repository.profile(revision).expected_account_id
+        if account in active or account in seen or not executor.recovery.state(account):
+            continue
+        seen.add(account)
+        try:
+            executor.recovery.check(account)
+            async with executor.recovery_locks.setdefault(account, asyncio.Lock()):
+                executor.recovery.check(account)
+                broker = executor.broker(revision)
+                await asyncio.to_thread(broker.connect)
+                await executor._sync(broker, account, force=True)
+                executor.recovery.success(account)
+        except RecoveryDeferred:
+            pass
+        except Exception as exc:
+            if not transient(exc):
+                raise
+            executor.recovery.fail(account, exc)
 
 
 class WriterLock:
@@ -109,50 +149,70 @@ async def run_worker(executor: Any, *, once: Any = False) -> Any:
     next_connection_check = 0.0
     next_cycle_check = 0.0
     cycle_capture = None
+    next_exit_recovery = 0.0
+    idle_recovery = None
+    storage_failures = 0
     try:
         while True:
-            if time.monotonic() >= next_heartbeat:
-                executor.journal.set(
-                    "v2_workers",
-                    "executor",
-                    {
-                        "heartbeat_at": executor.journal.clock().isoformat(),
-                    },
-                )
-                next_heartbeat = time.monotonic() + 10
-            if time.monotonic() >= next_connection_check:
-                maintain_connections(executor)
-                next_connection_check = time.monotonic() + 10
-            if (
-                cycle_capture is None or cycle_capture.done()
-            ) and time.monotonic() >= next_cycle_check:
-                if cycle_capture is not None:
-                    await cycle_capture
-                cycle_capture = asyncio.create_task(
-                    executor.capture_ready_cycles(active_profile_revisions(executor))
-                )
-                next_cycle_check = time.monotonic() + 30
-            executor.drain_events()
-            if (acceptance is None or acceptance.done()) and time.monotonic() >= next_acceptance:
-                if acceptance is not None:
-                    await acceptance
-                acceptance = asyncio.create_task(tick_suites(executor))
-                next_acceptance = time.monotonic() + 30
-            for key, task in list(pending.items()):
-                if task.done():
-                    await task
-                    pending.pop(key)
-            for job in executor.repository.jobs():
-                key = (job["account"], job["ticker"])
-                if key not in pending:
-                    pending[key] = asyncio.create_task(executor.step(job["id"]))
-            if once:
-                await asyncio.gather(*pending.values())
-                if cycle_capture:
-                    await cycle_capture
-                if acceptance:
-                    await acceptance
-                return
+            try:
+                if time.monotonic() >= next_heartbeat:
+                    executor.journal.set(
+                        "v2_workers",
+                        "executor",
+                        {
+                            "heartbeat_at": executor.journal.clock().isoformat(),
+                        },
+                    )
+                    next_heartbeat = time.monotonic() + 10
+                if time.monotonic() >= next_connection_check:
+                    await asyncio.to_thread(maintain_connections, executor)
+                    if idle_recovery is None or idle_recovery.done():
+                        if idle_recovery is not None:
+                            await idle_recovery
+                        idle_recovery = asyncio.create_task(recover_idle_accounts(executor))
+                    next_connection_check = time.monotonic() + 1
+                if (
+                    cycle_capture is None or cycle_capture.done()
+                ) and time.monotonic() >= next_cycle_check:
+                    if cycle_capture is not None:
+                        await cycle_capture
+                    cycle_capture = asyncio.create_task(
+                        executor.capture_ready_cycles(active_profile_revisions(executor))
+                    )
+                    next_cycle_check = time.monotonic() + 30
+                if time.monotonic() >= next_exit_recovery:
+                    executor.repository.recover_failed_exits()
+                    next_exit_recovery = time.monotonic() + 60
+                executor.drain_events()
+                if (
+                    acceptance is None or acceptance.done()
+                ) and time.monotonic() >= next_acceptance:
+                    if acceptance is not None:
+                        await acceptance
+                    acceptance = asyncio.create_task(tick_suites(executor))
+                    next_acceptance = time.monotonic() + 30
+                for key, task in list(pending.items()):
+                    if task.done():
+                        pending.pop(key)
+                        await task
+                for job in executor.repository.jobs():
+                    key = (job["account"], job["ticker"])
+                    if key not in pending:
+                        pending[key] = asyncio.create_task(executor.step(job["id"]))
+                if once:
+                    await asyncio.gather(*pending.values())
+                    if cycle_capture:
+                        await cycle_capture
+                    if acceptance:
+                        await acceptance
+                    return
+                storage_failures = 0
+            except Exception as exc:
+                if not transient(exc):
+                    raise
+                logging.getLogger(__name__).warning("executor_tick_deferred: %s", exc)
+                storage_failures += 1
+                await asyncio.sleep(DELAYS[min(storage_failures - 1, 4)])
             await asyncio.sleep(0.2)
     finally:
         # Let bounded socket requests finish before releasing the OS writer lock.
@@ -161,4 +221,6 @@ async def run_worker(executor: Any, *, once: Any = False) -> Any:
             await asyncio.gather(cycle_capture, return_exceptions=True)
         if acceptance:
             await asyncio.gather(acceptance, return_exceptions=True)
+        if idle_recovery:
+            await asyncio.gather(idle_recovery, return_exceptions=True)
         executor.close()

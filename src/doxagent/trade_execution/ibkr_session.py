@@ -12,9 +12,10 @@ from datetime import UTC, datetime
 from typing import Any
 from zoneinfo import ZoneInfo
 
+from .recovery import DELAYS
 from .schema import ExecutionProfile, account_fuse
 
-INFO_CODES = {1101, 1102, 2104, 2106, 2107, 2108, 2158, 10167, 2186}
+INFO_CODES = {2100, 1101, 1102, 2104, 2106, 2107, 2108, 2158, 10167, 2186}
 
 
 def execution_time(value: str) -> str:
@@ -50,6 +51,7 @@ class IbkrSession:
         self.accounts: list[str] = []
         self.next_id = 0
         self.errors: list[dict[str, Any]] = []
+        self.informational_counts: dict[int, int] = {}
         self.orders: dict[int, dict[str, Any]] = {}
         self.quotes: dict[tuple[Any, ...], dict[str, Any]] = {}
         self.quote_ids: dict[int, tuple[Any, ...]] = {}
@@ -93,7 +95,7 @@ class IbkrSession:
                 self.app.connect(self.profile.host, self.profile.port, self.profile.client_id)
             except Exception:
                 self.connection_failures += 1
-                self.retry_after = time.monotonic() + min(30, 2**self.connection_failures)
+                self.retry_after = time.monotonic() + DELAYS[min(self.connection_failures - 1, 4)]
                 raise
             self.thread = threading.Thread(target=self.app.run, daemon=True, name="doxagent-ibkr")
             self.thread.start()
@@ -101,7 +103,7 @@ class IbkrSession:
             if not self.ready.wait(timeout) or not self.accounts_ready.wait(timeout):
                 self.close()
                 self.connection_failures += 1
-                self.retry_after = time.monotonic() + min(30, 2**self.connection_failures)
+                self.retry_after = time.monotonic() + DELAYS[min(self.connection_failures - 1, 4)]
                 raise ConnectionError("IBKR_HANDSHAKE_TIMEOUT")
             account_fuse(self.profile, self.accounts)
             self.healthy = True
@@ -276,6 +278,18 @@ class IbkrSession:
     def sync(self) -> dict[str, Any]:
         self.connect()
         with self.sync_lock:
+            started = time.monotonic()
+            stages = {}
+
+            def wait_end(event, stage, code):
+                before = time.monotonic()
+                if not event.wait(self.profile.strategy.request_timeout_seconds):
+                    raise TimeoutError(
+                        f"{code}: stage={stage} generation={self.connection_generation} "
+                        f"elapsed={time.monotonic() - started:.3f}s"
+                    )
+                stages[stage] = round(time.monotonic() - before, 3)
+
             self.open_event.clear()
             self.completed_event.clear()
             self.position_event.clear()
@@ -288,22 +302,27 @@ class IbkrSession:
             filt.acctCode = self.profile.expected_account_id
             self.app.reqExecutions(request, filt)
             try:
-                self._wait(request)
-                timeout = self.profile.strategy.request_timeout_seconds
-                if not self.open_event.wait(timeout) or not self.completed_event.wait(timeout):
-                    raise TimeoutError("BROKER_ORDER_SYNC_INCOMPLETE")
+                before = time.monotonic()
+                try:
+                    self._wait(request)
+                except TimeoutError as exc:
+                    raise TimeoutError(
+                        "IBKR_REQUEST_TIMEOUT: stage=executions "
+                        f"generation={self.connection_generation}"
+                    ) from exc
+                stages["executions"] = round(time.monotonic() - before, 3)
+                wait_end(self.open_event, "open_orders", "BROKER_ORDER_SYNC_INCOMPLETE")
+                wait_end(self.completed_event, "completed_orders", "BROKER_ORDER_SYNC_INCOMPLETE")
                 self.positions = {}
                 self.app.reqPositions()
-                if not self.position_event.wait(timeout):
-                    raise TimeoutError("BROKER_POSITION_SYNC_INCOMPLETE")
+                wait_end(self.position_event, "positions", "BROKER_POSITION_SYNC_INCOMPLETE")
                 self.app.cancelPositions()
                 self.account_event.clear()
                 self.account_values = {}
                 self.portfolio = {}
                 self.app.reqAccountUpdates(True, self.profile.expected_account_id)
                 try:
-                    if not self.account_event.wait(timeout):
-                        raise TimeoutError("BROKER_ACCOUNT_SYNC_INCOMPLETE")
+                    wait_end(self.account_event, "account", "BROKER_ACCOUNT_SYNC_INCOMPLETE")
                 finally:
                     self.app.reqAccountUpdates(False, self.profile.expected_account_id)
                 self.last_sync = time.monotonic()
@@ -314,6 +333,9 @@ class IbkrSession:
                     "portfolio": list(self.portfolio.values()),
                     "at": datetime.now(UTC).isoformat(),
                     "history_scope": "BROKER_SESSION_WINDOW",
+                    "connection_generation": self.connection_generation,
+                    "stage_seconds": stages,
+                    "informational_counts": dict(self.informational_counts),
                 }
             finally:
                 self.requests.pop(request, None)
@@ -428,11 +450,17 @@ class IbkrSession:
                     "connection_generation": session.connection_generation,
                 }
                 session.errors.append(value)
+                del session.errors[:-100]
                 if errorCode in {1100, 1300, 504, 326}:
                     session.healthy = False
                     session.connection_failures += 1
-                    session.retry_after = time.monotonic() + min(30, 2**session.connection_failures)
+                    session.retry_after = (
+                        time.monotonic() + DELAYS[min(session.connection_failures - 1, 4)]
+                    )
                 if errorCode in INFO_CODES:
+                    session.informational_counts[errorCode] = (
+                        session.informational_counts.get(errorCode, 0) + 1
+                    )
                     return
                 request = session.requests.get(reqId)
                 if request:

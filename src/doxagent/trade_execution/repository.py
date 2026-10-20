@@ -106,7 +106,7 @@ class ExecutionRepository:
         return revision
 
     def profile(self, revision: str) -> ExecutionProfile:
-        with self.journal.transaction() as db:
+        with self.journal.transaction(write=False) as db:
             row = db.execute(
                 "SELECT payload FROM te_profiles WHERE revision=?", (revision,)
             ).fetchone()
@@ -115,7 +115,7 @@ class ExecutionRepository:
         return ExecutionProfile.model_validate_json(row[0])
 
     def profile_payload(self, revision: str) -> dict[str, Any]:
-        with self.journal.transaction() as db:
+        with self.journal.transaction(write=False) as db:
             row = db.execute(
                 "SELECT payload FROM te_profiles WHERE revision=?", (revision,)
             ).fetchone()
@@ -211,7 +211,7 @@ class ExecutionRepository:
     def get(self, table: str, identity: str) -> dict[str, Any] | None:
         if table not in {"executions", "jobs", "attempts", "lots", "acceptance_runs"}:
             raise ValueError("invalid execution table")
-        with self.journal.transaction() as db:
+        with self.journal.transaction(write=False) as db:
             row = db.execute(f"SELECT payload FROM te_{table} WHERE id=?", (identity,)).fetchone()
         return json.loads(row[0]) if row else None
 
@@ -222,7 +222,7 @@ class ExecutionRepository:
         return value
 
     def jobs(self) -> list[dict[str, Any]]:
-        with self.journal.transaction() as db:
+        with self.journal.transaction(write=False) as db:
             rows = db.execute(
                 "SELECT payload FROM te_jobs WHERE state IN "
                 "('READY','WAIT_SESSION','WAIT_QUOTE','ACTIVE','RECONCILE_REQUIRED') "
@@ -246,7 +246,7 @@ class ExecutionRepository:
         return job
 
     def attempts(self, job_id: str) -> list[dict[str, Any]]:
-        with self.journal.transaction() as db:
+        with self.journal.transaction(write=False) as db:
             rows = db.execute(
                 "SELECT payload FROM te_attempts WHERE job_id=? ORDER BY id", (job_id,)
             )
@@ -789,7 +789,7 @@ class ExecutionRepository:
         )
 
     def fills(self, job_id: str) -> list[dict[str, Any]]:
-        with self.journal.transaction() as db:
+        with self.journal.transaction(write=False) as db:
             attempts = db.execute(
                 "SELECT id,account FROM te_attempts WHERE job_id=?", (job_id,)
             ).fetchall()
@@ -1077,6 +1077,37 @@ class ExecutionRepository:
             failures=0,
             resume_reason=reason,
         )
+
+    def recover_failed_exits(self) -> int:
+        """Resume only overdue transient failures, preserving all attempt identities."""
+        from .recovery import transient
+
+        recovered = 0
+        with self.journal.transaction() as db:
+            rows = db.execute(
+                "SELECT j.payload,l.payload FROM te_jobs j JOIN te_lots l "
+                "ON l.id=j.execution_id WHERE j.leg='EXIT' AND j.state='FAILED'"
+            ).fetchall()
+            for row in rows:
+                job, lot = map(json.loads, row)
+                if not (
+                    decimal(lot["remaining_qty"]) > 0
+                    and datetime.fromisoformat(lot["scheduled_exit"]) <= self.journal.clock()
+                    and transient(RuntimeError(job.get("reason", "")))
+                ):
+                    continue
+                job.update(
+                    state="RECONCILE_REQUIRED",
+                    due_at=self.journal.clock().isoformat(),
+                    recovery_reason="TRANSIENT_EXIT_AUTO_RECOVERY",
+                    recovered_at=self.journal.clock().isoformat(),
+                )
+                db.execute(
+                    "UPDATE te_jobs SET state=?,due_at=?,payload=? WHERE id=?",
+                    (job["state"], job["due_at"], encode(job), job["id"]),
+                )
+                recovered += 1
+        return recovered
 
     def allocate_order_id(self, account: Any, client_id: Any, suggested: Any) -> Any:
         key = f"{account}:{client_id}"

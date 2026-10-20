@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import asyncio
-from contextlib import nullcontext
 import json
+from contextlib import nullcontext
 from datetime import date
 from typing import Any, Protocol
 
@@ -113,7 +113,7 @@ class TradeOutputService:
                 "created_at": self.journal.clock().isoformat(),
                 "trade": trade.model_dump(mode="json"),
             }
-            with (self.journal.transaction() if db is None else nullcontext(db)) as db:
+            with self.journal.transaction() if db is None else nullcontext(db) as db:
                 assert_write_lease(db)
                 reason, _ = output_permission(db, case.ticker, case.case_id)
                 value["origin_trade_eligible"] = reason is None and disposition_override is None
@@ -125,7 +125,7 @@ class TradeOutputService:
             return "CANDIDATE"
         day = release_day or case.trading_date
         identity = f"trade:{selection_id or case.case_id}"
-        with (self.journal.transaction() if db is None else nullcontext(db)) as db:
+        with self.journal.transaction() if db is None else nullcontext(db) as db:
             assert_write_lease(db)
             old = db.execute(
                 "SELECT payload FROM runtime_values WHERE namespace='trade_intents' AND key=?",
@@ -278,7 +278,7 @@ class TradeOutputService:
 
     async def deliver(self, adapter: TradeExecutionAdapter, *, limit: int = 20) -> int:
         count = 0
-        with self.journal.transaction() as db:
+        with self.journal.transaction(write=False) as db:
             rows = db.execute(
                 "SELECT v.payload FROM runtime_values v LEFT JOIN runtime_tasks t "
                 "ON t.id='delivery:' || v.key WHERE v.namespace='trade_intents' "
@@ -325,6 +325,13 @@ class TradeOutputService:
                 self.journal.finish(task, receipt=receipt)
                 count += 1
             except Exception as exc:
+                import sqlite3
+
+                from doxagent.trade_execution.recovery import transient
+
+                if isinstance(exc, sqlite3.OperationalError) and transient(exc):
+                    # Keep the task recoverable; contention is not delivery failure.
+                    raise
                 # An exception after durable intake may have lost only its receipt.
                 # Reconcile before declaring a delivery failure or admitting again.
                 try:

@@ -374,3 +374,12 @@ def test_case_title_search_filters_before_pagination_and_keeps_frozen_scope(tmp_
         empty = client.get(url, params={"view_id": view, "q": "   "}, headers=headers)
         assert len(empty.json()["data"]["data"]["items"]) == 5
         assert client.get(url, params={"view_id": view, "q": "x" * 201}, headers=headers).status_code == 422
+
+
+def test_durable_intake_overrides_embedded_unknown():
+    from doxagent.v2_read.trade_outcomes import with_execution_state
+    value = execution(status="UNKNOWN", intake="EXECUTION_ACCEPTED")
+    assert classify_execution(value) == ("PENDING", [])
+    normalized = with_execution_state(value)
+    assert normalized["intent_status"] == "EXECUTION_ACCEPTED"
+    assert normalized["execution_reason_codes"] == []

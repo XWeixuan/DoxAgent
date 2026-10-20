@@ -152,11 +152,17 @@ def test_exit_failure_keeps_lot_and_explicit_resume_has_new_budget(setup):
     clock, repo, revision, executor, broker = setup
     admit(repo, revision)
     asyncio.run(run_job(executor, repo, clock, "trade:A:entry"))
-    broker.mode = "no_quote"
+    original_quote = broker.quote
+
+    def denied(*args, **kwargs):
+        raise ValueError("MARKET_DATA_PERMISSION_DENIED")
+
+    broker.quote = denied
     asyncio.run(run_job(executor, repo, clock, "trade:A:exit"))
     assert repo.require("jobs", "trade:A:exit")["state"] == "FAILED"
     assert repo.require("lots", "trade:A")["remaining_qty"] == 198
     repo.resume_exit("trade:A", "quotes restored")
+    broker.quote = original_quote
     broker.mode = "fill"
     asyncio.run(run_job(executor, repo, clock, "trade:A:exit"))
     assert repo.require("lots", "trade:A")["remaining_qty"] == 0
