@@ -115,7 +115,7 @@ def install(app: FastAPI) -> None:
         parameters = (json.dumps(view["tickers"]), after, view["seq"], run_state, run_state, health, health)
         with store.connect() as db:
             selected = [row[0] for row in db.execute(
-                "SELECT ticker FROM (SELECT ticker FROM object_current WHERE " + where +
+                "SELECT ticker FROM (SELECT ticker FROM object_current INDEXED BY current_identity WHERE " + where +
                 " UNION ALL SELECT ticker FROM " + store.history_table + " INDEXED BY history_recent WHERE " + where + " AND valid_to>?) ORDER BY ticker LIMIT ?",
                 (*parameters, *parameters, view["seq"], limit + 1),
             )]
@@ -128,7 +128,7 @@ def install(app: FastAPI) -> None:
         source_counts = aggregates_many(store, selected[:limit], view["seq"])
         states = store.batch_get([("ticker",ticker,ticker) for ticker in selected[:limit]],view["seq"])
         initializations = store.batch_get([("initialization",ticker,states[("ticker",ticker,ticker)]["initialization_id"]) for ticker in selected[:limit] if states[("ticker",ticker,ticker)]["initialization_id"]],view["seq"])
-        latest_by_ticker = {ticker: store.latest_message_at(ticker, view["seq"]) for ticker in selected[:limit]}
+        latest_by_ticker = store.latest_messages_at(selected[:limit], view["seq"])
         items = []
         for ticker in selected[:limit]:
             state = states[("ticker",ticker,ticker)]

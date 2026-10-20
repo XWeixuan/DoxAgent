@@ -48,10 +48,13 @@ class Views:
             raise ApiFailure("VALIDATION_FAILED", 422)
         if page == "OVERVIEW" and period == "ALL":
             raise ApiFailure("VALIDATION_FAILED", 422)
+        # Maintenance only changes CLOSED_* sessions. On exchange trading days
+        # the clock is independent of pending maintenance tasks.
+        clock = self.calendar.clock(now)
         with self.store.connect() as db:
             seq = self.store.highwater(db)
             rows = db.execute(
-                "SELECT ticker,payload FROM object_current WHERE kind='ticker' "
+                "SELECT ticker,payload FROM object_current INDEXED BY current_identity WHERE kind='ticker' "
                 "AND valid_to IS NULL AND (? IS NULL OR ticker=?) "
                 "ORDER BY ticker",
                 (ticker, ticker),
@@ -65,13 +68,14 @@ class Views:
             ).fetchone()
             maintenance = None
             if (
-                source_health
+                not clock["is_trading_day"]["value"]
+                and source_health
                 and not source_health[0]
                 and (now - datetime.fromisoformat(source_health[1])).total_seconds() < 30
             ):
                 maintenance = bool(
                     db.execute(
-                        "SELECT 1 FROM object_current WHERE kind='native:runtime_tasks' AND ticker IN "
+                        "SELECT 1 FROM object_current INDEXED BY current_parent WHERE kind='native:runtime_tasks' AND ticker IN "
                         "(SELECT value FROM json_each(?)) AND valid_from<=? "
                         "AND (valid_to IS NULL OR valid_to>?) "
                         "AND json_extract(payload,'$.inputs.control_epoch') IS NOT NULL "
@@ -82,7 +86,8 @@ class Views:
                     ).fetchone()
                 )
             activation = self.store.get("activation", ticker or "", "active", seq)
-            clock = self.calendar.clock(now, maintenance_pending=maintenance)
+            if not clock["is_trading_day"]["value"]:
+                clock = self.calendar.clock(now, maintenance_pending=maintenance)
             semantic = page in {"MESSAGE_BUS", "RUNTIME", "EVENTS", "POLICIES"}
             selected = period or "PREVIOUS_TRADING_DAY"
             if selected not in {

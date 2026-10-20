@@ -662,24 +662,37 @@ class ReadStore:
                               (*params, *params, seq)).fetchall()
 
     def latest_message_at(self, ticker, seq):
+        return self.latest_messages_at([ticker], seq).get(ticker)
+
+    def latest_messages_at(self, tickers, seq):
         """Choose thin sort candidates before reading one timestamp, never the body."""
+        if len(tickers) > 100:
+            raise ValueError("message timestamp batch exceeds 100")
+        result = {}
+        if not tickers:
+            return result
         with self.connect() as db:
-            candidates = []
-            for table, extra, parameters in (
-                ("object_current", "", (ticker, seq)),
-                (self.history_table + " INDEXED BY history_recent", " AND valid_to>?", (ticker, seq, seq)),
-            ):
-                row = db.execute("SELECT id,sort_key,valid_from FROM " + table +
-                                 " WHERE kind='message' AND ticker=? AND valid_from<=?" + extra +
-                                 " ORDER BY sort_key DESC,id DESC LIMIT 1", parameters).fetchone()
-                if row:
-                    candidates.append(tuple(row))
-            if not candidates:
-                return None
-            identity, _, revision = max(candidates, key=lambda row: (row[1], row[0]))
-            return db.execute("SELECT json_extract(payload,'$.stream_published_at') FROM objects "
-                              "WHERE kind='message' AND ticker=? AND id=? AND valid_from=?",
-                              (ticker, identity, revision)).fetchone()[0]
+            from .serving_schema import history_relation
+            history = history_relation(db)
+            for ticker in dict.fromkeys(tickers):
+                candidates = []
+                for table, extra, parameters in (
+                    ("object_current INDEXED BY current_page", "", (ticker, seq)),
+                    (history + " INDEXED BY history_recent", " AND valid_to>?", (ticker, seq, seq)),
+                ):
+                    row = db.execute("SELECT id,sort_key,valid_from FROM " + table +
+                                     " WHERE kind='message' AND ticker=? AND valid_from<=?" + extra +
+                                     " ORDER BY sort_key DESC,id DESC LIMIT 1", parameters).fetchone()
+                    if row:
+                        candidates.append(tuple(row))
+                if not candidates:
+                    result[ticker] = None
+                    continue
+                identity, _, revision = max(candidates, key=lambda row: (row[1], row[0]))
+                result[ticker] = db.execute("SELECT json_extract(payload,'$.stream_published_at') FROM objects "
+                                           "WHERE kind='message' AND ticker=? AND id=? AND valid_from=?",
+                                           (ticker, identity, revision)).fetchone()[0]
+        return result
 
     def get(
         self, kind: str, ticker: str, identity: str, seq: int | None = None
