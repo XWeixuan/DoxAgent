@@ -3,5 +3,5 @@ FROM ${APPROVED_BASE}
 ARG REPAIR_COMMIT
 LABEL org.opencontainers.image.revision=${REPAIR_COMMIT} doxagent.repair.scope="overview_loading"
 ENV DOXAGENT_BUILD_COMMIT=${REPAIR_COMMIT}
-COPY src/doxagent/api_v2/overview.py src/doxagent/api_v2/views.py /app/src/doxagent/api_v2/
+COPY src/doxagent/api_v2/overview.py src/doxagent/api_v2/views.py src/doxagent/api_v2/graph.py /app/src/doxagent/api_v2/
 COPY src/doxagent/v2_read/repository.py /app/src/doxagent/v2_read/

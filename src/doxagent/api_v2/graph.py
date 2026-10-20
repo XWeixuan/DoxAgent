@@ -81,12 +81,33 @@ class Graphs:
         def value(metric, dimensions):
             return totals.get((metric, encode(dimensions)), Decimal(0))
 
-        observation_table = self.store.snapshot_table(seq)
+        # Limit each disjoint snapshot branch before merging. A nested snapshot
+        # UNION can materialize all current observations for a frozen view.
         window = " AND day IN (SELECT value FROM json_each(?))" if days is not None else ""
-        statement = "SELECT * FROM (SELECT parent,payload FROM " + observation_table + " WHERE kind='graph_observation' AND ticker=? AND parent=? AND valid_from<=? AND (valid_to IS NULL OR valid_to>?)" + window + " ORDER BY sort_key DESC,id DESC LIMIT 1)"
         import json
+        from doxagent.v2_read.serving_schema import history_relation
         with self.store.connect() as db:
-            latest_by_node = {row[0]:json.loads(row[1])["latest_at"] for row in db.execute(" UNION ALL ".join(statement for _ in NODES),[value for node in NODES for value in (ticker,node,seq,seq,*([json.dumps(days)] if days is not None else []))])}
+            branches = [("object_current", "current_parent", "")]
+            if seq != self.store.highwater(db):
+                branches.append((history_relation(db), "history_recent", " AND valid_to IS NOT NULL"))
+            statements, arguments = [], []
+            for table, index, history in branches:
+                for node in NODES:
+                    statements.append(
+                        "SELECT * FROM (SELECT parent,payload,sort_key,id FROM " + table
+                        + " INDEXED BY " + index
+                        + " WHERE kind='graph_observation' AND ticker=? AND parent=? AND valid_from<=?"
+                        + " AND (valid_to IS NULL OR valid_to>?)" + history + window
+                        + " ORDER BY sort_key DESC,id DESC LIMIT 1)"
+                    )
+                    arguments.extend((ticker, node, seq, seq))
+                    if days is not None:
+                        arguments.append(json.dumps(days))
+            latest = {}
+            for row in db.execute(" UNION ALL ".join(statements), arguments):
+                if row[0] not in latest or (row[2], row[3]) > latest[row[0]][:2]:
+                    latest[row[0]] = (row[2], row[3], json.loads(row[1])["latest_at"])
+            latest_by_node = {node: record[2] for node, record in latest.items()}
         nodes = []
         for node in NODES:
             dimensions = {"node": node}
