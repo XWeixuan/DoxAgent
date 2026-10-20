@@ -82,3 +82,26 @@ def test_owner_recipe_upgrade_is_narrow_and_idempotent(tmp_path):
     version = repo.get_source(SOURCE_ID).version
     assert not configure(bus)["catalog_recipe_upgrades"]
     assert repo.get_source(SOURCE_ID).version == version
+
+
+def test_owner_migration_disables_sole_legacy_feed_without_invalid_empty_parameters(tmp_path):
+    from scripts.ops.configure_corporate_ir_sources import TICKERS, configure
+    from doxagent.message_bus_v2.schema import UpdateActor
+    from tests.fixtures.message_bus_v2 import _bus
+
+    repo, bus = _bus(tmp_path / "bus.db")
+    for ticker in TICKERS:
+        bus.start_ticker(ticker)
+    url = initial_endpoints()[0].entry_url
+    old = bus.configure_binding(
+        ticker="INTC",
+        source_id="newswire_rss",
+        source_parameters={"rss_urls": [url]},
+        actor=UpdateActor.USER,
+    )
+    first = configure(bus)
+    disabled = repo.get_binding(old.binding_id)
+    assert not disabled.enabled and disabled.source_parameters["rss_urls"] == [url]
+    assert len(first["overlaps"]) == 1
+    assert not configure(bus)["overlaps"]
+    assert repo.get_binding(old.binding_id).version == disabled.version

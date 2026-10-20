@@ -72,7 +72,11 @@ def preview(source, bindings, ticker_states):
             }
         )
     for binding in bindings:
-        if binding.ticker not in TICKERS or binding.source_id != "newswire_rss":
+        if (
+            binding.ticker not in TICKERS
+            or binding.source_id != "newswire_rss"
+            or not binding.enabled
+        ):
             continue
         removed = [
             u
@@ -152,10 +156,7 @@ def configure(service):
             ]
             service.update_binding(
                 binding.binding_id,
-                {
-                    "source_parameters": parameters,
-                    "enabled": binding.enabled and bool(parameters["rss_urls"]),
-                },
+                {"source_parameters": parameters} if parameters["rss_urls"] else {"enabled": False},
                 actor=UpdateActor.USER,
                 reason="Move only overlapping feeds to corporate IR",
             )
