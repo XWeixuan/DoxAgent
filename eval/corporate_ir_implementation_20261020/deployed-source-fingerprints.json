@@ -1,0 +1,78 @@
+[
+  {
+    "component": "v2-message-bus",
+    "commit": "2cace1e7",
+    "files": {
+      "message_bus_v2/corporate_ir/http.py": {
+        "expected": "61467e2dc22f8a9b7b4b9e92a8ff6c44fc6a20a9ce9c5198fbe05fb2b6576cf2",
+        "actual": "61467e2dc22f8a9b7b4b9e92a8ff6c44fc6a20a9ce9c5198fbe05fb2b6576cf2"
+      },
+      "message_bus_v2/corporate_ir/catalog.py": {
+        "expected": "b9ccfd32f12bee113b280de15d1ba17a26c6f7475dcff2d859d92c4d33ac02df",
+        "actual": "b9ccfd32f12bee113b280de15d1ba17a26c6f7475dcff2d859d92c4d33ac02df"
+      },
+      "message_bus_v2/corporate_ir/coordinator.py": {
+        "expected": "021cf6e6deba6a841250399a92eae284eda6571ae920cc4f0d0b10b794545272",
+        "actual": "021cf6e6deba6a841250399a92eae284eda6571ae920cc4f0d0b10b794545272"
+      },
+      "message_bus_v2/scheduler.py": {
+        "expected": "88e439ad2b18ba03de1932f0775d13094662038ee407b4cc8c49f38330e80c93",
+        "actual": "88e439ad2b18ba03de1932f0775d13094662038ee407b4cc8c49f38330e80c93"
+      },
+      "message_bus_v2/service.py": {
+        "expected": "805d4c38f3b40af30a18580c5c9368163fb2f0ba8e5327b39ea9a61199e38896",
+        "actual": "805d4c38f3b40af30a18580c5c9368163fb2f0ba8e5327b39ea9a61199e38896"
+      }
+    },
+    "matches": true
+  },
+  {
+    "component": "v2-content-enrichment",
+    "commit": "2cace1e7",
+    "files": {
+      "message_bus_v2/corporate_ir/http.py": {
+        "expected": "61467e2dc22f8a9b7b4b9e92a8ff6c44fc6a20a9ce9c5198fbe05fb2b6576cf2",
+        "actual": "61467e2dc22f8a9b7b4b9e92a8ff6c44fc6a20a9ce9c5198fbe05fb2b6576cf2"
+      },
+      "message_bus_v2/corporate_ir/body.py": {
+        "expected": "f597f4e840d3b09748c4b30a45d2f291754d18f76b3bb4d8ea114a672cde3784",
+        "actual": "f597f4e840d3b09748c4b30a45d2f291754d18f76b3bb4d8ea114a672cde3784"
+      },
+      "content_enrichment/service.py": {
+        "expected": "9f8923c4e17363a892e5946fabd54a1a2a236aaaf802b3faf6db4682f2d3594c",
+        "actual": "9f8923c4e17363a892e5946fabd54a1a2a236aaaf802b3faf6db4682f2d3594c"
+      }
+    },
+    "matches": true
+  },
+  {
+    "component": "v2-projector",
+    "commit": "34ba6ce6",
+    "files": {
+      "v2_read/outbox.py": {
+        "expected": "df1cfb302a835bffb4ddb2c5bc92b5590363a01d3e955d1d36c288889d56a1bb",
+        "actual": "df1cfb302a835bffb4ddb2c5bc92b5590363a01d3e955d1d36c288889d56a1bb"
+      },
+      "v2_read/projectors.py": {
+        "expected": "8c185be463230dc5ca598c6424d1a4860f6c20268e70be568a55b710a154b46f",
+        "actual": "8c185be463230dc5ca598c6424d1a4860f6c20268e70be568a55b710a154b46f"
+      },
+      "v2_read/serving_fields.py": {
+        "expected": "189bc26689ed38e3a3587f9846d47bf2f8a76923858bb72793c75c07c668ec44",
+        "actual": "189bc26689ed38e3a3587f9846d47bf2f8a76923858bb72793c75c07c668ec44"
+      }
+    },
+    "matches": true
+  },
+  {
+    "component": "v2-api",
+    "commit": "34ba6ce6",
+    "files": {
+      "api_v2/bus.py": {
+        "expected": "cffa7b273709c6ece12895e03c92e86b7429b421bea1a54dafde5a54cd112eb4",
+        "actual": "cffa7b273709c6ece12895e03c92e86b7429b421bea1a54dafde5a54cd112eb4"
+      }
+    },
+    "matches": true
+  }
+]

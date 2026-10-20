@@ -1,0 +1,223 @@
+{
+  "start": "2026-10-20T12:23:34.956802+00:00",
+  "end": "2026-10-20T12:44:18.873916+00:00",
+  "elapsed_seconds": 1243.917114,
+  "collector_errors": [],
+  "endpoints": [
+    {
+      "endpoint": "be.press",
+      "attempts": 41,
+      "success": 41,
+      "errors": [],
+      "http304": 41,
+      "interval_median_s": 31.043,
+      "interval_p95_s": 44.489,
+      "interval_max_s": 63.384,
+      "delay_p95_s": 21.672,
+      "latency_p95_ms": 1997,
+      "entity_bytes": 0
+    },
+    {
+      "endpoint": "ceg.press",
+      "attempts": 41,
+      "success": 41,
+      "errors": [],
+      "http304": 0,
+      "interval_median_s": 31.55,
+      "interval_p95_s": 43.164,
+      "interval_max_s": 60.636,
+      "delay_p95_s": 22.809,
+      "latency_p95_ms": 1817,
+      "entity_bytes": 345999
+    },
+    {
+      "endpoint": "cohr.corporate",
+      "attempts": 41,
+      "success": 41,
+      "errors": [],
+      "http304": 34,
+      "interval_median_s": 31.593,
+      "interval_p95_s": 41.435,
+      "interval_max_s": 60.636,
+      "delay_p95_s": 21.801,
+      "latency_p95_ms": 751,
+      "entity_bytes": 668185
+    },
+    {
+      "endpoint": "cohr.financial",
+      "attempts": 41,
+      "success": 41,
+      "errors": [],
+      "http304": 34,
+      "interval_median_s": 31.692,
+      "interval_p95_s": 43.164,
+      "interval_max_s": 60.636,
+      "delay_p95_s": 21.809,
+      "latency_p95_ms": 1141,
+      "entity_bytes": 670215
+    },
+    {
+      "endpoint": "intc.press",
+      "attempts": 41,
+      "success": 41,
+      "errors": [],
+      "http304": 0,
+      "interval_median_s": 31.55,
+      "interval_p95_s": 43.164,
+      "interval_max_s": 60.638,
+      "delay_p95_s": 22.809,
+      "latency_p95_ms": 397,
+      "entity_bytes": 358422
+    },
+    {
+      "endpoint": "mu.ir",
+      "attempts": 41,
+      "success": 41,
+      "errors": [],
+      "http304": 41,
+      "interval_median_s": 31.55,
+      "interval_p95_s": 43.164,
+      "interval_max_s": 60.638,
+      "delay_p95_s": 22.809,
+      "latency_p95_ms": 1814,
+      "entity_bytes": 0
+    },
+    {
+      "endpoint": "mu.newsroom",
+      "attempts": 41,
+      "success": 41,
+      "errors": [],
+      "http304": 0,
+      "interval_median_s": 31.899,
+      "interval_p95_s": 43.164,
+      "interval_max_s": 60.638,
+      "delay_p95_s": 21.809,
+      "latency_p95_ms": 331,
+      "entity_bytes": 12014722
+    },
+    {
+      "endpoint": "nbis.press",
+      "attempts": 41,
+      "success": 41,
+      "errors": [],
+      "http304": 37,
+      "interval_median_s": 31.593,
+      "interval_p95_s": 41.435,
+      "interval_max_s": 60.638,
+      "delay_p95_s": 21.801,
+      "latency_p95_ms": 1907,
+      "entity_bytes": 1423780
+    },
+    {
+      "endpoint": "onds.press",
+      "attempts": 41,
+      "success": 41,
+      "errors": [],
+      "http304": 0,
+      "interval_median_s": 31.899,
+      "interval_p95_s": 43.163,
+      "interval_max_s": 60.638,
+      "delay_p95_s": 21.809,
+      "latency_p95_ms": 918,
+      "entity_bytes": 14389442
+    },
+    {
+      "endpoint": "rklb.ir",
+      "attempts": 41,
+      "success": 41,
+      "errors": [],
+      "http304": 39,
+      "interval_median_s": 29.883,
+      "interval_p95_s": 44.489,
+      "interval_max_s": 63.384,
+      "delay_p95_s": 21.672,
+      "latency_p95_ms": 977,
+      "entity_bytes": 213694
+    },
+    {
+      "endpoint": "rklb.updates",
+      "attempts": 39,
+      "success": 37,
+      "errors": [
+        [
+          "2026-10-20T12:30:20.190392Z",
+          "<urlopen error _ssl.c:999: The handshake operation timed out>"
+        ],
+        [
+          "2026-10-20T12:41:20.851019Z",
+          "The read operation timed out"
+        ]
+      ],
+      "http304": 0,
+      "interval_median_s": 33.4,
+      "interval_p95_s": 60.638,
+      "interval_max_s": 60.774,
+      "delay_p95_s": 40.036,
+      "latency_p95_ms": 7928,
+      "entity_bytes": 2499091
+    },
+    {
+      "endpoint": "snow.press",
+      "attempts": 41,
+      "success": 41,
+      "errors": [],
+      "http304": 7,
+      "interval_median_s": 30.376,
+      "interval_p95_s": 43.163,
+      "interval_max_s": 60.638,
+      "delay_p95_s": 22.809,
+      "latency_p95_ms": 2547,
+      "entity_bytes": 17300356
+    }
+  ],
+  "current": [
+    [
+      "be.press",
+      "succeeded"
+    ],
+    [
+      "ceg.press",
+      "succeeded"
+    ],
+    [
+      "cohr.corporate",
+      "succeeded"
+    ],
+    [
+      "cohr.financial",
+      "succeeded"
+    ],
+    [
+      "intc.press",
+      "succeeded"
+    ],
+    [
+      "mu.ir",
+      "succeeded"
+    ],
+    [
+      "mu.newsroom",
+      "succeeded"
+    ],
+    [
+      "nbis.press",
+      "succeeded"
+    ],
+    [
+      "onds.press",
+      "succeeded"
+    ],
+    [
+      "rklb.ir",
+      "succeeded"
+    ],
+    [
+      "rklb.updates",
+      "succeeded"
+    ],
+    [
+      "snow.press",
+      "succeeded"
+    ]
+  ]
+}

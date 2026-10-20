@@ -85,8 +85,8 @@ def test_owner_recipe_upgrade_is_narrow_and_idempotent(tmp_path):
 
 
 def test_owner_migration_disables_sole_legacy_feed_without_invalid_empty_parameters(tmp_path):
-    from scripts.ops.configure_corporate_ir_sources import TICKERS, configure
     from doxagent.message_bus_v2.schema import UpdateActor
+    from scripts.ops.configure_corporate_ir_sources import TICKERS, configure
     from tests.fixtures.message_bus_v2 import _bus
 
     repo, bus = _bus(tmp_path / "bus.db")
