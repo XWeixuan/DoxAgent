@@ -108,3 +108,7 @@
 目录 `eval/trade_delivery_audit_20261021/`：ledger.json 为 Runtime 原始只读快照；read_model.json 为 Read 快照；support.json 包含 lot/cycle/gap/同步事件统计；deployed_sources.json 为运行源码；executor.log 与 latest_executor.txt 为日志；intent_audit.csv 为逐条完整 ID 台账；summary.json 为统计与真实分类重放；build_audit.py 可离线重算统计。
 
 本轮未修改业务代码，因此未执行生产部署或下单验收。原有 dirty checkout 与 changelog 不作覆盖。
+
+## 7. 后续实施记录
+
+用户随后授权按本方案修复，并明确要求账户级 2/5/10/30/60 秒逐步退避、持续故障每分钟一次。已在 `91503abf` 实施并发布，原 INTC 165 股退出完成、当前两条有效意图成交，Read 的两条 DELIVERY_UNKNOWN 已正常投影消除，六条过期意图未补单。完整范围、测试、部署与未来退出验证边界见 `docs/trade-execution-recovery-20261021.md`。以上第 1–6 节保留为修复前只读排查记录。
