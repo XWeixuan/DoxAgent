@@ -249,7 +249,8 @@ class DataDomeSolver:
                     count = db.execute(
                         "select count(*) from datadome_solver_jobs where "
                         "julianday(coalesce(json_extract(data_json,'$.submitted_at'),created_at))>=julianday(?) "
-                        "and (json_extract(data_json,'$.task_id') is not null or "
+                        "and (json_extract(data_json,'$.submitted_at') is not null or "
+                        "json_extract(data_json,'$.task_id') is not null or "
                         "json_extract(data_json,'$.status')='SUBMITTING')",
                         ((utc_now() - timedelta(days=1)).isoformat(),),
                     ).fetchone()[0]

@@ -347,6 +347,20 @@ async def test_global_daily_cap_reserves_before_create(solver_setup):
     solver.provider.request.assert_not_awaited()
 
 
+@pytest.mark.asyncio
+async def test_uncertain_submission_still_consumes_daily_reservation(solver_setup):
+    from doxagent.site_strategy.schema import utc_now
+
+    solver, value, scope, identity, egress, _ = solver_setup
+    prior = solver.new_job(value.model_copy(update={"recovery_id": "older-incident"}), {}, "route")
+    prior.update(status="FAILED", submitted_at=utc_now().isoformat(), reason="SUBMISSION_OUTCOME_UNKNOWN")
+    solver.save(prior)
+    config = solver.config()
+    solver.config = lambda: {**config, "daily_tasks": 1}
+    assert not await solver.tick(value, scope, identity, egress)
+    solver.provider.request.assert_not_awaited()
+
+
 def test_native_mutation_rejects_open_viewer(solver_setup):
     solver, value, scope, identity, _, _ = solver_setup
     from doxagent.site_strategy.governance_models import MaintenanceSession

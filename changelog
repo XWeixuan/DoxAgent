@@ -8,6 +8,8 @@
 
 # changelog
 
+2026-10-22 Solver uncertain-cost accounting: retain a daily reservation for every persisted submission attempt, including transport-uncertain failures without a returned task ID; a later incident cannot silently reuse possibly-spent budget. Add a cross-incident daily-cap regression.
+
 2026-10-22 Automatic-check handoff budget: foreground the exact recovery tab without reloading it and reserve 15 seconds of the existing parent deadline for frame classification, durable page ownership and IPC return. Bound both cleared and persistent automatic documents in regression tests; never clear a gate because waiting expired.
 
 2026-10-22 Recovery browser admission: reserve one bounded Worker-runtime probe seat outside ordinary business browser capacity so a lost-original recovery can actually start a worker under sustained acquisition load. Keep per-identity ownership/maintenance exclusion and the coordinator's recovery concurrency limit; normal business capacity is unchanged.
