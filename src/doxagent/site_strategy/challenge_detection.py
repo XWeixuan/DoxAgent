@@ -98,7 +98,10 @@ def assess(
     ).lower()
     combined = text + " " + frame_text
     banned = any(allowed_frame_url(url) and parse_qs(urlsplit(url).query).get("t") == ["bv"] for url in frame_urls)
-    if banned or (frames and re.search(r"access is temporarily restricted|you have been blocked", frame_text)):
+    # DataDome reuses "You have been blocked" as the HTML title of a
+    # perfectly processable t=fe slider. Only an actual denial sentence or
+    # the authoritative t=bv navigation establishes terminal rejection.
+    if banned or (frames and re.search(r"access is temporarily restricted|access to this page has been denied", frame_text)):
         result.kind, result.interaction, result.handling_mode = "ACCESS_BLOCK", "ACCESS_BLOCK", "HUMAN"
         result.confidence, result.policy_reason = "HIGH", "datadome_ip_banned" if banned else "verification_access_denied"
         result.signals.append(result.policy_reason)

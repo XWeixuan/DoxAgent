@@ -13,7 +13,7 @@ from doxagent.site_strategy.governance_models import (
 from doxagent.site_strategy.governance_repository import GovernanceRepository
 from doxagent.site_strategy.isolation_migration import apply_migration, migration_plan
 from doxagent.site_strategy.repository import SiteStrategyRepository
-from doxagent.site_strategy.schema import CombinationRuntime
+from doxagent.site_strategy.schema import ChallengePolicy, CombinationRuntime
 from doxagent.site_strategy.seeds import bootstrap_seed
 from doxagent.site_strategy.service import SiteStrategyService
 from doxagent.site_strategy.verification import VerificationReport, body_verification_url
@@ -290,7 +290,8 @@ async def test_bootstrap_403_requires_observed_same_frame_200_not_just_normal_do
     result = await runtime._browser(
         AccessRequest(operation_id="native", url=URL, purpose="CRAWLER", mode=AccessMode.BROWSER),
         SimpleNamespace(
-            site_id="investing", body=SimpleNamespace(ref="builtin:generic@1", parameters={})
+            site_id="investing", body=SimpleNamespace(ref="builtin:generic@1", parameters={}),
+            challenge=ChallengePolicy(),
         ),
         BrowserIdentitySpec(
             identity_id="public",
@@ -351,7 +352,7 @@ async def test_verify_reuses_exact_live_configured_listing_and_still_checks_real
             + "<p>Intel production continues to expand and improve.</p>" * 15
             + "</article>"
         )
-        service.runtime.verify_login = AsyncMock(
+        service.runtime.probe_recovery = AsyncMock(
             return_value=RuntimeResponse(
                 200,
                 "https://www.investing.com/news/stock-market-news/intel-12345",
@@ -363,8 +364,8 @@ async def test_verify_reuses_exact_live_configured_listing_and_still_checks_real
         report = await service.verify_scope_session(session)
         assert report.crawler == "READY" and report.body in {"FULL", "SHORT_FULL"}
         service.runtime.verify_crawler.assert_not_awaited()
-        service.runtime.verify_login.assert_awaited_once()
-        assert service.runtime.verify_login.await_args.args[1].endswith("/intel-12345")
+        service.runtime.probe_recovery.assert_awaited_once()
+        assert service.runtime.probe_recovery.await_args.args[0].url.endswith("/intel-12345")
     finally:
         repo.close()
 

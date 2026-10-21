@@ -18,6 +18,15 @@ from doxagent.site_strategy.schema import ProfileOperationalState
 PARENT = '<iframe src="https://geo.captcha-delivery.com/interstitial/?old=1"></iframe>'
 
 
+def test_datadome_common_blocked_title_does_not_hide_real_slider():
+    value = assess(PARENT, frame_html=[
+        '<title>You have been blocked</title><h1>Verification Required</h1>'
+        '<p>Slide right to secure your access</p>',
+    ], frame_urls=['https://geo.captcha-delivery.com/captcha/?t=fe'])
+    assert value.kind == 'INTERACTIVE' and value.interaction == 'SLIDER'
+    assert value.policy_reason == 'explicit_slider'
+
+
 @pytest.fixture
 def setup(tmp_path):
     yield from base.setup.__wrapped__(tmp_path)
