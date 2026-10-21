@@ -24,6 +24,20 @@ EXTRA = (
 )
 
 
+class DecimalSum:
+    """Reduce across tickers inside SQLite without floating-point money sums."""
+
+    def __init__(self):
+        self.value = None
+
+    def step(self, value):
+        if value is not None:
+            self.value = (self.value or Decimal(0)) + Decimal(value)
+
+    def finalize(self):
+        return format(self.value, "f") if self.value is not None else None
+
+
 def source_reasons(view, scope, days):
     reasons = []
     requirements = (
@@ -241,12 +255,19 @@ def report(costs, view, args):
     tickers, nodes, models, observed_days = set(), set(), set(), set()
     facets = {}
     with costs.store.connect() as db:
-        for ticker, day, metric, value, dimensions in db.execute(
-            "SELECT ticker,day,metric,value,dimensions FROM "
+        db.create_aggregate("cost_decimal_sum", 1, DecimalSum)
+        cursor = db.cursor()
+        cursor.row_factory = None  # Only scalar buckets; no native content to decode.
+        for owners, day, metric, value, dimensions in cursor.execute(
+            "SELECT json_group_array(DISTINCT ticker) "
+            "FILTER (WHERE metric='requests' AND CAST(value AS INTEGER)>0),"
+            "day,metric,cost_decimal_sum(CASE WHEN ?='ALL' OR ticker=? THEN value END),"
+            "dimensions FROM "
             + costs.store.metric_table(view["seq"])
             + " WHERE "
-            + " AND ".join(where),
-            params,
+            + " AND ".join(where)
+            + " GROUP BY day,metric,dimensions",
+            [selected_ticker, selected_ticker, *params],
         ):
             dims = facets.get(dimensions)
             if dims is None:
@@ -255,7 +276,8 @@ def report(costs, view, args):
             node, rnd = dims.get("node", "unknown"), dims.get("round", "UNKNOWN_ROUND")
             leaf = node + rnd if node in {"W1", "W2"} and rnd in {"R1", "R2", "R3"} else node
             filters = {
-                "ticker_selector": selected_ticker == "ALL" or selected_ticker == ticker,
+                "ticker_selector": value is not None
+                and (metric != "requests" or Decimal(value) > 0),
                 "node_id": not args.get("node_id") or args["node_id"] in {node, leaf},
                 "round": not args.get("round") or args["round"] == rnd,
                 "provider": not args.get("provider") or args["provider"] == dims.get("provider"),
@@ -263,7 +285,7 @@ def report(costs, view, args):
             }
             if metric == "requests":
                 if all(v for k, v in filters.items() if k != "ticker_selector"):
-                    tickers.add(ticker)
+                    tickers.update(json.loads(owners))
                 if all(v for k, v in filters.items() if k not in {"node_id", "round"}):
                     nodes.add(leaf)
                 if all(v for k, v in filters.items() if k not in {"model_id", "provider"}):
@@ -275,6 +297,9 @@ def report(costs, view, args):
             amount = Decimal(value)
             for target in (sums, grouped.setdefault(key, {}), daily.setdefault(day, {})):
                 target[metric] = target.get(metric, Decimal(0)) + amount
+    grouped = {key: values for key, values in grouped.items() if values.get("requests", 0) > 0}
+    daily = {day: values for day, values in daily.items() if values.get("requests", 0) > 0}
+    observed_days = set(daily)
     reasons = source_reasons(view, scope, days if days is not None else sorted(observed_days))
     view = {**view, "cost_source_reasons": reasons}
     totals = total(costs, view, args, sums)

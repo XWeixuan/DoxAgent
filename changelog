@@ -1958,3 +1958,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-22 cost backfill online contention: retry only SQLITE_BUSY/LOCKED with bounded backoff and a 30-second consecutive contention cap. Re-read the unchanged cursor and optimistic usage revisions after every failed transaction; expose busy retry counts. Verified no double-counting or cursor advancement on a rejected write.
 
 2026-10-22 cost backfill page cache: bound the one-off SQLite writer page cache at 16 MiB to reduce active-index churn while retaining its 1 CPU / 256 MiB container limit. No durability, global SQLite, query timeout or online service settings changed. Cost regression remains 11 passing checks.
+
+2026-10-22 cost report exact SQL reduction: aggregate across ticker buckets within the same SELECT using a private Decimal sum, preserving precision and selector facets. Bypass native-content decoding for scalar aggregate rows; suppress retired zero-request rounds. No added queries, dependencies or timeout/worker changes. Precision, facet and closed-schema tests passed.

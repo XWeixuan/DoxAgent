@@ -444,3 +444,38 @@ def test_backfill_yields_to_sqlite_writer_and_reloads_same_batch(tmp_path, monke
             "WHERE ticker='MU' AND day='*' AND metric='requests'"
         ).fetchone()[0]
     assert value == "1"
+
+
+def test_sql_decimal_reduction_preserves_money_ticker_facets_and_omits_retired_rows(tmp_path):
+    store = ReadStore(tmp_path / "exact.db")
+    store.migrate()
+    amounts = {"MU": "12345678901234567.123456789", "GLOBAL": "0.000000001"}
+    counts = []
+    for ticker, amount in amounts.items():
+        counts.extend(
+            contributions(
+                ticker,
+                ticker,
+                "R2",
+                {
+                    "requests": 1,
+                    "total_cost_usd": amount,
+                    "total_cost_usd_samples": 1,
+                    "normalization_v1_attempts": 1,
+                },
+            )
+        )
+    counts.extend(contributions("retired", "OLD", "UNKNOWN_ROUND", {"requests": 0}))
+    seq = store.ingest("test", "exact", [], contributions=counts)
+    costs = Costs(store, None)
+    for ticker in ["ALL", *amounts]:
+        data = report(costs, view(seq), {"scope": "API", "ticker_selector": ticker})
+        validate("CostReport", data)
+        expected = (
+            sum(map(Decimal, amounts.values())) if ticker == "ALL" else Decimal(amounts[ticker])
+        )
+        assert Decimal(data["totals"]["total_cost_usd"]["current"]["value"]) == expected
+        assert data["filter_choices"]["tickers"] == ["GLOBAL", "MU"]
+        assert data["filter_choices"]["nodes"] == ["W1R2"]
+        assert data["row_count"] == 1
+        assert data["rows"][0]["round"] == "R2"
