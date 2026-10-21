@@ -56,6 +56,16 @@ def assess(
             text,
         )
     )
+    if base["provider"] == "DATADOME" and any(
+        urlsplit(src).path.startswith("/interstitial/")
+        and (
+            (urlsplit(src).hostname or "").endswith(".captcha-delivery.com")
+            or urlsplit(src).hostname == "captcha-delivery.com"
+        )
+        for src in root.xpath("//iframe/@src")
+    ):
+        auto = True
+        result.signals.append("datadome_device_check_frame")
     denied = base["interaction"] == "ACCESS_BLOCK"
     document = (
         blocked

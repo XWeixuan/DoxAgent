@@ -49,7 +49,7 @@ def test_original_cookie_and_challenge_url_not_synthesized():
     assert challenge_state(URL.replace("fe", "bv"), "") == "IP_BANNED"
     assert challenge_state(URL, "<script>retry()</script>") == "SOLVABLE"
     assert challenge_state(URL, "<button>Retry</button>") == "RETRY"
-    assert challenge_state(URL.replace("/captcha/", "/interstitial/"), "") == "UNSUPPORTED"
+    assert challenge_state(URL.replace("/captcha/", "/interstitial/"), "") == "INTERSTITIAL"
 
 
 def test_blocking_datadome_bootstrap_is_retained_before_iframe_loads():
@@ -69,6 +69,40 @@ def test_blocking_datadome_bootstrap_is_retained_before_iframe_loads():
         ).provider
         == "UNKNOWN"
     )
+
+
+def test_datadome_device_check_is_automatic_not_a_human_slider(setup):
+    from doxagent.site_strategy.challenge_detection import assess
+
+    sample = assess(
+        '<iframe src="https://geo.captcha-delivery.com/interstitial/?x=y"/>', blocked=True
+    )
+    assert sample.provider == "DATADOME" and sample.kind == "AUTO_CHECK"
+    assert sample.handling_mode == "AUTO"
+    _, _, store, _ = setup
+    recovery, target, _ = recovery_tests.retained(setup, human=True)
+    store.save_recovery(
+        recovery.model_copy(update={"handling_mode": "AUTO"}),
+        expected_generation=recovery.generation,
+    )
+    assert store.get_recovery(recovery.identity_id).phase != "RESOLVED"
+    assert store.get_target(target.allocation_id).state == "LIVE"
+    state = store.repository.get_runtime(f"scope:{recovery.scope_id}")
+    assert not state.combinations[recovery.identity_id].manual_attention_required
+
+
+def test_device_check_escalation_creates_exact_human_fallback_task(setup):
+    _, _, store, _ = setup
+    recovery, target, _ = recovery_tests.retained(setup)
+    updated = store.save_recovery(
+        recovery.model_copy(update={"handling_mode": "HUMAN"}),
+        expected_generation=recovery.generation,
+    )
+    task = store.current_challenge(recovery.identity_id)
+    assert updated.challenge_task_id == task.task_id
+    assert task.original_target_id == target.target_id
+    assert store.get_target(target.allocation_id).owner_ref == task.task_id
+    assert store.get_recovery(recovery.identity_id).phase != "RESOLVED"
 
 
 @pytest.fixture
@@ -119,8 +153,10 @@ def solver_setup(setup):
 
 
 @pytest.mark.asyncio
-async def test_paid_task_resumes_and_cookie_does_not_mark_business_success(solver_setup):
+@pytest.mark.parametrize("task_id", [123, "123"])
+async def test_paid_task_resumes_and_cookie_does_not_mark_business_success(solver_setup, task_id):
     solver, value, scope, identity, egress, browser = solver_setup
+    solver.provider.request.return_value = {"taskId": task_id}
     assert await solver.tick(value, scope, identity, egress)
     assert solver.jobs(value.recovery_id)[0]["task_id"] == 123
     solver.provider.request.return_value = {"status": "processing"}
@@ -157,6 +193,10 @@ async def test_retry_reload_is_bounded_and_not_billed_until_real_slider(solver_s
     browser.reload.assert_awaited_once()
     solver.provider.request.assert_not_awaited()
     assert solver.jobs(value.recovery_id)[0]["reason"] == "DATADOME_RETRY"
+    assert solver.jobs(value.recovery_id)[0]["status"] == "WAITING_SLIDER"
+    browser.inspect.return_value["state"] = "SOLVABLE"
+    assert await solver.tick(value, scope, identity, egress)
+    solver.provider.request.assert_awaited_once()
 
 
 @pytest.mark.asyncio
@@ -255,16 +295,33 @@ async def test_oopif_retry_is_read_and_child_connection_always_detached():
     assert call.await_args_list[2].kwargs == {"session_id": "child"}
 
 
-@pytest.mark.parametrize('query,offset,ready', [('Micron',0,True),('Samsung',0,False),('Micron',20,False)])
+@pytest.mark.parametrize(
+    "query,offset,ready", [("Micron", 0, True), ("Samsung", 0, False), ("Micron", 20, False)]
+)
 def test_reuters_recipe_default_offset_is_not_a_false_recovery_failure(setup, query, offset, ready):
     from doxagent.site_strategy.recovery import verify_capture, recovery_context
     from doxagent.site_strategy.runtime import RuntimeResponse
     from doxagent.site_strategy.schema import AccessRequest
+
     _, service, store, _ = setup
-    scope = store.get_scope('source:reuters_site_search')
-    context = recovery_context(AccessRequest(operation_id='test', url='https://www.reuters.com/site-search/?query=Micron',
-        purpose='CRAWLER', mode='BROWSER', recipe_ref='builtin:reuters_search@1', recipe_parameters={'query':'Micron'}))
-    capture = RuntimeResponse(200, f'https://www.reuters.com/site-search/?query={query}&offset={offset}', {},
-        recipe_result={'rows': [{'url':'/technology/micron-earnings-2026-10-22/','title':'Micron earnings'}]},
-        provenance=SimpleNamespace(instance_id='chrome'))
-    assert (verify_capture(service, scope, context, capture).crawler == 'READY') is ready
+    scope = store.get_scope("source:reuters_site_search")
+    context = recovery_context(
+        AccessRequest(
+            operation_id="test",
+            url="https://www.reuters.com/site-search/?query=Micron",
+            purpose="CRAWLER",
+            mode="BROWSER",
+            recipe_ref="builtin:reuters_search@1",
+            recipe_parameters={"query": "Micron"},
+        )
+    )
+    capture = RuntimeResponse(
+        200,
+        f"https://www.reuters.com/site-search/?query={query}&offset={offset}",
+        {},
+        recipe_result={
+            "rows": [{"url": "/technology/micron-earnings-2026-10-22/", "title": "Micron earnings"}]
+        },
+        provenance=SimpleNamespace(instance_id="chrome"),
+    )
+    assert (verify_capture(service, scope, context, capture).crawler == "READY") is ready

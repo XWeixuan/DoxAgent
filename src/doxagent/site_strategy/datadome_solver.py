@@ -209,9 +209,15 @@ class DataDomeSolver:
                     return (
                         True  # Next tick must prove the real listing/body, never mark healthy here.
                     )
-                if scene["state"] in {"RETRY", "IP_BANNED", "UNAVAILABLE"}:
+                if scene["state"] in {"RETRY", "IP_BANNED", "UNAVAILABLE", "INTERSTITIAL"}:
+                    if active and active["status"] == "WAITING_SLIDER":
+                        return False
                     if active and active["status"] == "REGENERATED":
-                        self.fail(active, recovery, "DATADOME_" + scene["state"])
+                        active.update(status="WAITING_SLIDER", reason="DATADOME_" + scene["state"])
+                        self.save(active)
+                        self.coordinator.event(
+                            recovery, "DATADOME_SOLVER_WAITING", reason=active["reason"]
+                        )
                         return False
                     active = self.new_job(recovery, scene, route)
                     active["status"] = "REGENERATED"
@@ -269,9 +275,12 @@ class DataDomeSolver:
                         "userAgent": scene["user_agent"],
                     },
                 )
-                if not isinstance(data.get("taskId"), int):
+                task_id = data.get("taskId")
+                if isinstance(task_id, str) and task_id.isascii() and task_id.isdigit():
+                    task_id = int(task_id)
+                if not isinstance(task_id, int) or isinstance(task_id, bool) or task_id <= 0:
                     raise SolverError("INVALID_TASK_ID")
-                active.update(status="PENDING", task_id=data["taskId"])
+                active.update(status="PENDING", task_id=task_id)
                 self.save(active)
                 self.coordinator.event(
                     recovery, "DATADOME_SOLVER_SUBMITTED", task_id=active["task_id"]

@@ -960,6 +960,50 @@ class GovernanceRepository:
             old = self.get_recovery(value.identity_id)
             if (old.generation if old else None) != expected_generation:
                 raise RuntimeError("stale_recovery_generation")
+            if old and old.handling_mode == 'AUTO' and value.handling_mode == 'HUMAN' and not value.challenge_task_id:
+                target = self.get_target(value.original_allocation_id or '')
+                if target and target.state == 'LIVE' and value.affected_contexts:
+                    context = value.affected_contexts[0]
+                    task = self.handoff_challenge(ChallengeTask(
+                        scope_id=value.scope_id, identity_id=value.identity_id, site_id=value.site_id,
+                        purpose=context['purpose'], operation_id=context['operation_id'],
+                        original_url=value.original_url or context['url'],
+                        original_target_id=target.target_id, browser_instance_id=target.browser_instance_id,
+                        allocation_id=target.allocation_id, reason='device_check_escalated_to_interactive',
+                        recovery_id=value.recovery_id), _connection=connection)
+                    value.challenge_task_id = task.task_id
+                    scope = self.maintenance_scope(value.scope_id)
+                    key = scope.verification_plan.get('legacy_runtime_key', f'scope:{scope.scope_id}')
+                    state = self.repository.get_runtime(key)
+                    member = state.combinations.get(value.identity_id)
+                    if member:
+                        member.manual_attention_required = True
+                        state.generation += 1
+                        connection.execute('update site_runtime set data_json=?,generation=?,updated_at=? where runtime_key=?',
+                            (state.model_dump_json(), state.generation, utc_now().isoformat(), key))
+            if old and old.handling_mode == 'HUMAN' and value.handling_mode == 'AUTO':
+                # Reclassification releases only the obsolete manual projection.
+                # BrowserRecovery remains authoritative for every affected purpose.
+                scope = self.maintenance_scope(value.scope_id)
+                key = scope.verification_plan.get('legacy_runtime_key', f'scope:{scope.scope_id}')
+                state = self.repository.get_runtime(key)
+                member = state.combinations.get(value.identity_id)
+                if member:
+                    member.manual_attention_required = False
+                    if member.last_browser_result == 'ACCESS_CHALLENGE':
+                        member.state, member.cooldown_until = 'READY', None
+                    state.generation += 1
+                    connection.execute('update site_runtime set data_json=?,generation=?,updated_at=? where runtime_key=?',
+                        (state.model_dump_json(), state.generation, utc_now().isoformat(), key))
+                if not any(s.identity_id == value.identity_id and s.state == 'OPEN' for s in self.list_sessions()):
+                    identity = self.repository.get_identity(value.identity_id)
+                    profile = self.repository.get_profile(identity.profile_id)
+                    if profile.maintenance_session_id and profile.maintenance_session_id == value.challenge_task_id:
+                        from .schema import ProfileOperationalState
+                        profile = profile.model_copy(update={'operational_state': ProfileOperationalState.AVAILABLE,
+                            'maintenance_session_id': None, 'updated_at': utc_now()})
+                        connection.execute('update browser_profiles set data_json=?,updated_at=? where profile_id=?',
+                            (profile.model_dump_json(), utc_now().isoformat(), profile.profile_id))
             return self._write_recovery(connection, value)
 
     def begin_recovery(self, value):

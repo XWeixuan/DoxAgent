@@ -34,8 +34,6 @@ def captcha_url(html):
 def challenge_state(url, html):
     if not url:
         return "UNAVAILABLE"
-    if not urlsplit(url).path.startswith("/captcha/"):
-        return "UNSUPPORTED"
     query = parse_qs(urlsplit(url).query)
     if query.get("t") == ["bv"]:
         return "IP_BANNED"
@@ -45,6 +43,10 @@ def challenge_state(url, html):
     text = root.text_content().lower()
     if any(word in text for word in ["please try again", "verification failed", "retry"]):
         return "RETRY"
+    if urlsplit(url).path.startswith("/interstitial/"):
+        return "INTERSTITIAL"
+    if not urlsplit(url).path.startswith("/captcha/"):
+        return "UNSUPPORTED"
     return "SOLVABLE" if query.get("t", ["fe"]) == ["fe"] else "UNSUPPORTED"
 
 
@@ -248,6 +250,7 @@ class NativeChallenge:
                 phase="confirmed",
                 screenshot=screenshot,
             )
+            await call("Page.bringToFront")
             await call("Page.reload", {"ignoreCache": False})
 
     async def apply(self, cookie, website):
