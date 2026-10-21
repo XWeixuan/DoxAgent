@@ -215,6 +215,7 @@ class MaintenanceController:
                         "auth_last_confirmed_at": auth.verified_at,
                         "auth_last_check_at": auth.last_check_at,
                         "auth_last_check_result": auth.last_check_result,
+                        "auth_last_check_reason": auth.last_check_reason,
                         "recovery_state": (r.phase if (r := self.store.get_recovery(member)) and r.phase != "RESOLVED" else None),
                         "recovery_handling": r.handling_mode if r and r.phase != "RESOLVED" else None,
                         "recovery_next_due_at": r.next_due_at if r and r.phase != "RESOLVED" else None,

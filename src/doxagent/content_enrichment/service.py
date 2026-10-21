@@ -253,7 +253,8 @@ class ContentEnrichmentHub:
         finished_at = utc_now()
         attempts = [*job.prior_attempts, *(item.to_payload() for item in result.attempts)]
         if not result.succeeded and result.reason in {"storage_unavailable", "site_recovery_pending"}:
-            not_before = finished_at + timedelta(seconds=60)
+            delay = max((item.retry_after_seconds or 0 for item in result.attempts), default=60)
+            not_before = finished_at + timedelta(seconds=max(1, delay) if result.reason == "site_recovery_pending" else 60)
             if not_before < job.deadline_at:
                 await self.bus.storage.call(
                     self.repository.requeue_enrichment_job,

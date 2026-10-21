@@ -754,6 +754,13 @@ def migrate_recoveries(service, *, apply=False, update_policies=True):
     store = GovernanceRepository(service.repository)
     policy_changes = []
     scope_changes = []
+    legacy_auth = [value for value in service.repository.list_site_identity_auth()
+                   if value.verified_at and value.last_check_at is None
+                   and value.last_check_reason != "legacy_confirmation_time_uncertain"] if update_policies else []
+    if apply:
+        for value in legacy_auth:
+            service.repository.save_site_identity_auth(value.model_copy(update={
+                "last_check_reason": "legacy_confirmation_time_uncertain"}))
     ctee = store.get_scope("source:ctee_semiconductor")
     if (
         update_policies
@@ -956,6 +963,7 @@ def migrate_recoveries(service, *, apply=False, update_policies=True):
         "applied": apply,
         "policies_updated": policy_changes,
         "scope_contracts_updated": scope_changes,
+        "legacy_auth_times_marked_uncertain": len(legacy_auth),
         "records": result,
         "profiles_recreated": 0,
         "egresses_changed": 0,

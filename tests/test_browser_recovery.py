@@ -575,6 +575,9 @@ def test_protocol_two_downgrades_pending_without_breaking_old_readers(setup):
     ).json()
     assert old["disposition"] == "BUDGET_DEFERRED" and "recovery_id" not in old
     assert new["disposition"] == "RECOVERY_PENDING" and new["recovery_id"] == "test-recovery"
+    resolved = client.get('/v1/resolve', params={"url": URL},
+        headers={"Authorization": "Bearer worker", "X-Site-Access-Protocol": "2"}).json()
+    assert "challenge" not in resolved and "auto_login" not in resolved["auth"]
 
 
 @pytest.mark.asyncio

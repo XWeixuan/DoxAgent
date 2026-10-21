@@ -872,6 +872,8 @@ class ReutersSiteSearchAdapter:
                         messages=messages,
                         failures=failures,
                         site_access_deferred=pages_fetched == 0,
+                        site_access_deferred_reason=exc.result.reason_code,
+                        site_access_retry_not_before=exc.result.retry_not_before,
                         window_coverage="PARTIAL",
                         window_done=False,
                         next_checkpoint={"page": page, "done": False, "coverage": "PARTIAL"},

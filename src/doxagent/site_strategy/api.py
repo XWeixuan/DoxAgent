@@ -310,7 +310,10 @@ def create_app(
                       x_site_access_protocol: Annotated[str | None, Header()] = None):
         try:
             value = service.resolve(url, revision=revision)
-            return JSONResponse(value.model_dump(mode="json", exclude=set() if x_site_access_protocol == "3" else {"challenge"}))
+            data = value.model_dump(mode="json", exclude=set() if x_site_access_protocol == "3" else {"challenge"})
+            if x_site_access_protocol != "3":
+                data["auth"].pop("auto_login", None)
+            return JSONResponse(data)
         except (ValueError, RuntimeError) as exc:
             raise HTTPException(status_code=422, detail=str(exc)) from exc
 
