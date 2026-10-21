@@ -27,6 +27,14 @@ def test_datadome_common_blocked_title_does_not_hide_real_slider():
     assert value.policy_reason == 'explicit_slider'
 
 
+def test_loaded_datadome_retry_is_not_device_check():
+    value = assess(PARENT, frame_html=[
+        '<title>You have been blocked</title><h1>Verification Required</h1><button>Retry</button>',
+    ], frame_urls=['https://geo.captcha-delivery.com/captcha/?t=fe'])
+    assert value.kind == 'INTERACTIVE' and value.interaction == 'SLIDER'
+    assert value.policy_reason == 'datadome_slider_frame'
+
+
 @pytest.fixture
 def setup(tmp_path):
     yield from base.setup.__wrapped__(tmp_path)

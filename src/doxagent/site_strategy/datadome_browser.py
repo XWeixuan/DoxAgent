@@ -95,7 +95,10 @@ def solution_cookie(raw, website):
     return {
         "name": "datadome",
         "value": item.value,
-        "domain": domain,
+        # Set-Cookie Domain=reuters.com is a domain cookie, whereas CDP's
+        # bare domain=reuters.com creates an apex-only cookie that www never
+        # sends. Keep Domain-attribute semantics, with or without its old dot.
+        "domain": "." + domain if item["domain"] else host,
         "path": "/",
         "secure": True,
         "httpOnly": bool(item["httponly"]),
@@ -276,7 +279,13 @@ class NativeChallenge:
             root = (await call("DOM.getDocument", {"depth": 0}))["root"]
             if urlsplit(root.get("documentURL", "")).hostname != urlsplit(website).hostname:
                 raise RuntimeError("solver_document_changed")
-            result = await call("Network.setCookie", solution_cookie(cookie, website))
+            params = solution_cookie(cookie, website)
+            result = await call("Network.setCookie", params)
             if result.get("success") is False:
                 raise RuntimeError("solver_cookie_rejected")
+            visible = await call("Network.getCookies", {"urls": [website]})
+            if not any(c.get("name") == params["name"] and c.get("value") == params["value"]
+                       and c.get("domain") == params["domain"]
+                       for c in visible.get("cookies", [])):
+                raise RuntimeError("solver_cookie_not_visible_to_publisher")
             await call("Page.reload", {"ignoreCache": False})

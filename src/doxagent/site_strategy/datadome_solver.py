@@ -202,6 +202,7 @@ class DataDomeSolver:
                         return False
                     await browser.apply(data.get("solution", {}).get("cookie"), scene["website"])
                     active["status"], active["cost"] = "APPLIED", str(data.get("cost", "unknown"))
+                    active["cookie_scope_verified"] = True
                     self.save(active)
                     self.coordinator.event(
                         recovery,

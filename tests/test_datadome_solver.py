@@ -45,7 +45,7 @@ def test_original_cookie_and_challenge_url_not_synthesized():
     cookie = solution_cookie(
         "datadome=abc; Domain=.reuters.com; Secure; Path=/", "https://www.reuters.com/"
     )
-    assert cookie["domain"] == "reuters.com" and cookie["value"] == "abc"
+    assert cookie["domain"] == ".reuters.com" and cookie["value"] == "abc"
     assert captcha_url(f'<iframe src="{URL}"/>') == URL
     assert captcha_url('<iframe src="https://captcha-delivery.com.evil.com/?t=fe"/>') is None
     assert challenge_state(URL.replace("fe", "bv"), "") == "IP_BANNED"
@@ -54,6 +54,44 @@ def test_original_cookie_and_challenge_url_not_synthesized():
     assert challenge_state(URL.replace("/captcha/", "/interstitial/"), "") == "INTERSTITIAL"
     assert loaded_challenge_url(URL) == URL
     assert loaded_challenge_url("https://captcha-delivery.com.evil.com/captcha/") is None
+
+
+@pytest.mark.parametrize('attribute,expected', [
+    ('; Domain=reuters.com', '.reuters.com'),
+    ('; Domain=.reuters.com', '.reuters.com'),
+    ('', 'www.reuters.com'),
+])
+def test_provider_cookie_scope_preserves_domain_attribute(attribute, expected):
+    assert solution_cookie('datadome=token'+attribute, 'https://www.reuters.com/')['domain'] == expected
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('visible', [True, False])
+async def test_native_apply_requires_cookie_visible_on_actual_publisher(monkeypatch, visible):
+    from contextlib import asynccontextmanager
+
+    calls = []
+    async def call(method, params=None):
+        calls.append(method)
+        return {
+            'DOM.getDocument': {'root': {'documentURL':'https://www.reuters.com/'}},
+            'Network.setCookie': {'success':True},
+            'Network.getCookies': {'cookies': ([{'name':'datadome','value':'token','domain':'.reuters.com'}]
+                                              if visible else [])},
+            'Page.reload': {},
+        }[method]
+    @asynccontextmanager
+    async def connection():
+        yield call
+    browser = NativeChallenge.__new__(NativeChallenge)
+    monkeypatch.setattr(browser, 'connection', connection)
+    if visible:
+        await browser.apply('datadome=token; Domain=reuters.com', 'https://www.reuters.com/')
+        assert calls[-1] == 'Page.reload'
+    else:
+        with pytest.raises(RuntimeError, match='solver_cookie_not_visible_to_publisher'):
+            await browser.apply('datadome=token; Domain=reuters.com', 'https://www.reuters.com/')
+        assert 'Page.reload' not in calls
 
 
 def test_blocking_datadome_bootstrap_is_retained_before_iframe_loads():

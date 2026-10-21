@@ -124,6 +124,18 @@ def assess(
             result.confidence, result.policy_reason = "HIGH", "explicit_" + interaction.lower()
             result.signals.append(result.policy_reason)
             return result
+    if base["provider"] == "DATADOME" and frames and any(
+        (urlsplit(url).hostname or "").endswith(".captcha-delivery.com")
+        and urlsplit(url).path.startswith("/captcha/")
+        and parse_qs(urlsplit(url).query).get("t") == ["fe"]
+        for url in frame_urls
+    ):
+        # A loaded slider can replace its instructions with Retry. It remains
+        # an interactive CAPTCHA, not a fresh automatic device check.
+        result.kind, result.interaction, result.handling_mode = "INTERACTIVE", "SLIDER", "HUMAN"
+        result.confidence, result.policy_reason = "HIGH", "datadome_slider_frame"
+        result.signals.append(result.policy_reason)
+        return result
     controls = []
     for document_root in [root, *frames]:
         controls.extend(
