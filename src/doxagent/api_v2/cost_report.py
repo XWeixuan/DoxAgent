@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from collections import defaultdict
 from datetime import date, datetime, timedelta
-from decimal import Decimal
+from decimal import Decimal, localcontext
 
 from fastapi import Request
 
@@ -220,6 +220,14 @@ def row_totals(costs, view, args, sums):
 
 
 def report(costs, view, args):
+    # Stored quotes are finite decimals. Preserve their fractional tails when
+    # adding many model/ticker partitions, rather than rounding at each addition.
+    with localcontext() as context:
+        context.prec = 64
+        return _report(costs, view, args)
+
+
+def _report(costs, view, args):
     if view["wire"]["page"] != "COST":
         raise ApiFailure("SCOPE_MISMATCH", 400)
     scope = args.get("scope")

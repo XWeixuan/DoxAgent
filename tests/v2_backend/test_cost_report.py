@@ -1,5 +1,5 @@
 import json
-from decimal import Decimal
+from decimal import Decimal, localcontext
 
 import pytest
 from fastapi.testclient import TestClient
@@ -449,7 +449,7 @@ def test_backfill_yields_to_sqlite_writer_and_reloads_same_batch(tmp_path, monke
 def test_sql_decimal_reduction_preserves_money_ticker_facets_and_omits_retired_rows(tmp_path):
     store = ReadStore(tmp_path / "exact.db")
     store.migrate()
-    amounts = {"MU": "12345678901234567.123456789", "GLOBAL": "0.000000001"}
+    amounts = {"MU": "12345678901234567.12345678901", "GLOBAL": "0.000000000001"}
     counts = []
     for ticker, amount in amounts.items():
         counts.extend(
@@ -471,9 +471,11 @@ def test_sql_decimal_reduction_preserves_money_ticker_facets_and_omits_retired_r
     for ticker in ["ALL", *amounts]:
         data = report(costs, view(seq), {"scope": "API", "ticker_selector": ticker})
         validate("CostReport", data)
-        expected = (
-            sum(map(Decimal, amounts.values())) if ticker == "ALL" else Decimal(amounts[ticker])
-        )
+        with localcontext() as context:
+            context.prec = 64
+            expected = (
+                sum(map(Decimal, amounts.values())) if ticker == "ALL" else Decimal(amounts[ticker])
+            )
         assert Decimal(data["totals"]["total_cost_usd"]["current"]["value"]) == expected
         assert data["filter_choices"]["tickers"] == ["GLOBAL", "MU"]
         assert data["filter_choices"]["nodes"] == ["W1R2"]
