@@ -397,6 +397,7 @@ def test_embedding_input_only_usage_is_billable_and_not_a_cache_miss():
 
 def test_backfill_yields_to_sqlite_writer_and_reloads_same_batch(tmp_path, monkeypatch):
     import sqlite3
+
     from doxagent.v2_read.cost_backfill import CostBackfillStore, run
 
     store = CostBackfillStore(tmp_path / "retry.db")
@@ -439,6 +440,7 @@ def test_backfill_yields_to_sqlite_writer_and_reloads_same_batch(tmp_path, monke
     assert attempts[0] == attempts[1]
     with store.connect() as db:
         value = db.execute(
-            "SELECT value FROM metric_buckets_current WHERE ticker='MU' AND day='*' AND metric='requests'"
+            "SELECT value FROM metric_buckets_current "
+            "WHERE ticker='MU' AND day='*' AND metric='requests'"
         ).fetchone()[0]
     assert value == "1"

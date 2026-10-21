@@ -29,6 +29,9 @@ class CostBackfillStore(ReadStore):
             with super().connect(write=write, timeout=timeout) as db:
                 if write:
                     acquired = time.monotonic()
+                    # Keep the active index pages in this one-off writer, within
+                    # the migration container's 256 MiB memory limit.
+                    db.execute("PRAGMA cache_size=-16384")
                 yield db
         finally:
             if acquired is not None:
