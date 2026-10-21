@@ -37,7 +37,42 @@
 - 生产发布前重新读取：根盘约 51 GiB 可用；7 个未结束历史 Challenge；79 个未终结 target 记录（记录数不等同于实际活页数）。无 OPEN 人工维护会话。
 - 已在 root 私有目录 `/var/lib/doxagent/challenge-recovery-20261021/before/` 保存 Registry 在线备份和既有截图。脱敏清单：`eval/challenge_recovery_implementation_20261021/pre-release.json`。
 - 用户明确允许重建 Supervisor，保留 Profile 并将实际失去的旧页标记 TARGET_LOST。重建必须同时更新 Site Access 的共享网络命名空间，不能把它留在旧 namespace。
-- 本文件后续追加精确发布 commit/镜像、迁移回执、真实业务验收。当前不能把离线测试或容器健康当成全源恢复。
+- 最终发布与真实回执见下节。离线测试或容器健康不等同于全源恢复。
+
+### 2026-10-22 窄发布及初步业务回执
+
+已推送 `origin/main`，生产按组件镜像归属发布，不统一重启全部服务：
+
+|组件|实际源码版本|镜像 digest|
+|---|---|---|
+|Site Access|`1ef3f8b7`|`sha256:ff5b579993c4e71c06bf79515993e8f182bfac7beab2c9984fcf7ea63691c3a2`|
+|Chrome Supervisor|`667031ea`|`sha256:8d3c6b9d8e64f283b38eee4e55f29cb6f0e134c852780a6bf58f4d3c7ad5421d`|
+|Message Bus|`c37c04c7`|`sha256:e9fa01e07f6bd924315f4d75182f6f5991ec81d2f03fc3fb6cec65d8b16a3edd`|
+|Content Enrichment|`667031ea`|`sha256:616efb325378e668232f0297375970c00de6ad968d810bac7288aa98d575d5e4`|
+
+Supervisor 经批准在 UTC 2026-10-21 16:28:45 重建一次；Profile/Cookie 卷不变，旧原页按实际不存在记录 LOST/TARGET_LOST。此后跟进只更新 Site Access 或 Message Bus，未再次重建 Supervisor。最后 Site Access 启动时间为 UTC **2026-10-21 17:27:49**（北京时间 10 月 22 日 01:27:49）。network guard 确认 Site Access 与当前 Supervisor 同在 `net:[4026532329]`。四组件按各自版本核对 31 个相关源码文件，均无哈希差异。桌面工具 inventory 为 READY、非 stale，Viewer 服务可用；这不冒充逐站人工登录成功。
+
+显式迁移首批历史阻塞为 **6 个 AUTO、1 个 HUMAN**，没有新建 Profile 或修改出口；仅修正验证策略与认证时间不确定性。迁移后实际暴露并补齐了 CTEE 旧备用验证入口错误、Investing BODY 旧验证地址实际是 ticker 列表、恢复请求丢失 Source Scope、CTEE 未转换延期异常等内部路径。还修复恢复/冷启动与业务的浏览器写入互斥、BODY 误冻 CRAWLER、迟到失败重新冻结，以及人工 Verify 成功未同步关闭恢复门禁的问题。
+
+最新完整离线组：**216 passed，1 skipped**；`ruff --select F,E9` 通过。该组覆盖分类、精确页面所有权、自动/人工恢复、迁移、旧协议、双轨 Runtime、维护桌面、正文队列和行业源；与此前分组有重叠，不相加。跳过项不冒充生产证明。
+
+初次发布后的自然窗口（UTC 16:28 起，截至约 17:27，**不是最终版本 24 小时窗口**）：
+
+|站点|自然业务记录|验收边界|
+|---|---|---|
+|Barron’s|381 次 CRAWLER SUCCESS；2 条实际正文 FULL；历史自动阻塞一次探测解除|列表与正文独立成立；不据此宣称长期无复发|
+|Investing|251 次 CRAWLER SUCCESS；1 条 SHORT_FULL；主身份与备用的自动恢复已分别 RESOLVED|窗口仍有 2 次 CONTENT_ERROR；发布连接错误需等自然轮询刷新，不能掩盖|
+|CTEE|46 次 CRAWLER SUCCESS；1 条 SHORT_FULL；主备历史恢复均 RESOLVED|备用旧验证入口修复后第 4 次实际探测恢复|
+|Reuters|仍有 HUMAN 恢复事件；旧原页 TARGET_LOST；后台继续到期探测|未恢复，不宣称 Challenge 已通过；未自动填写用户凭据|
+|InvestorsHub|备用仍 AUTO/BACKOFF，当前绑定延期|不放入人工 Challenge 列表，也不伪造恢复；继续真实探测|
+
+最终版本后的自然回执中，TrendForce 两入口、DIGITIMES English、CTEE、Barron’s、GlobeNewswire Search 及半导体 RSS、Yahoo 等继续出现真实成功；与本次无关的普通 Newswire RSS 单项 ParseError 保留原事实。各 source/ticker 完整状态保存在脱敏 `eval/challenge_recovery_implementation_20261021/acceptance-final.json`，不能只看 `status=succeeded` 而忽略当前 error/last_success。
+
+24 小时验收从最终版本时间起算，截止 UTC **2026-10-22 17:27:49**（北京时间 10 月 23 日 01:27:49）。已安排本聊天每两小时只读检查，完整时间窗统计业务/正文/恢复事件及资源，仅重要变化或最终结果通知；不额外请求网站，不修复、重启、切换身份或解验证码。未满窗口前，交付状态是“代码与窄发布完成，持续验收中”，不是全源长期验收通过。
+
+### 可选自动登录的当前边界
+
+Reuters 普通掉号自动登录代码与离线表单/域名/账户节流测试已完成，**生产仍为默认关闭，未保存本次提供的账号密码**。当前实际未解除的 blocker 是待判定/人工安全验证，不能把提交账号密码当成解决 DataDome。只有既有恢复事件明确产生 REAUTH_REQUIRED、受保护凭据已配置并显式开启时，才尝试一次普通登录；遇到验证码或 MFA 停止，之后仍须独立业务证明。当前没有持续全站 Cookie 巡检或经过真实成功登录的生产自动登录验收。
 
 ## 验收限制
 
