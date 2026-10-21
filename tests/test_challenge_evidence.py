@@ -133,6 +133,31 @@ async def test_screenshot_failure_keeps_metadata_and_never_fails_operation(tmp_p
 
 
 @pytest.mark.asyncio
+async def test_confirmed_timeout_gets_one_bounded_later_retry(tmp_path):
+    store = EvidenceStore(tmp_path / "evidence")
+    first = AsyncMock(side_effect=TimeoutError)
+    evidence_id = await store.capture(CONTEXT, "<title>Just a moment</title>", screenshot=first)
+    retry = AsyncMock(return_value=PNG)
+    await store.capture(CONTEXT, "<title>Just a moment</title>", screenshot=retry)
+    await store.capture(CONTEXT, "<title>Just a moment</title>", screenshot=retry)
+    retry.assert_awaited_once()
+    assert store.get(evidence_id)["frames"]["confirmed"]["frame_sequence"] == 2
+
+
+@pytest.mark.asyncio
+async def test_confirmed_evidence_keeps_the_loaded_frame_assessment_sample(tmp_path):
+    from doxagent.site_strategy.challenge_detection import assess
+
+    markup = '<iframe src="https://geo.captcha-delivery.com/captcha/"/>'
+    assessment = assess(markup, blocked=True, frame_html=["Slide right to secure your access"])
+    store = EvidenceStore(tmp_path / "evidence")
+    key = await store.capture(CONTEXT, markup, assessment=assessment.model_dump(mode="json"))
+    frame = store.get(key)["frames"]["confirmed"]
+    assert frame["sample_id"] == assessment.sample_id
+    assert frame["classification"]["assessment"]["interaction"] == "SLIDER"
+
+
+@pytest.mark.asyncio
 async def test_native_screenshot_only_observes_exact_target_and_detaches():
     cdp = SimpleNamespace(
         send=AsyncMock(

@@ -15,6 +15,7 @@ class VerificationAssessment(SiteModel):
     kind: str = "NONE"
     interaction: str = "NONE"
     confidence: str = "UNKNOWN"
+    provider_confidence: str = "UNKNOWN"
     signals: list[str] = Field(default_factory=list)
     observed_at: str = Field(default_factory=lambda: utc_now().isoformat())
     sample_id: str = Field(default_factory=lambda: new_id("sample"))
@@ -31,7 +32,7 @@ def assess(
     policy = policy or ChallengePolicy()
     base = classify(html, status=status, headers=headers)
     result = VerificationAssessment(
-        provider=base["provider"], signals=base["signals"], confidence=base["confidence"]
+        provider=base["provider"], signals=base["signals"], provider_confidence=base["confidence"]
     )
     try:
         root = H.fromstring((html or "")[:2_000_000])
@@ -72,6 +73,7 @@ def assess(
     result.kind, result.interaction = "UNKNOWN", "UNKNOWN"
     if denied:
         result.kind = "ACCESS_BLOCK"
+        result.confidence = "HIGH"
         result.policy_reason = "explicit_access_denial"
         return result
     # Frames are supplied only by observation of already loaded, allowlisted frames.

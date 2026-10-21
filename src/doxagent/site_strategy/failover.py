@@ -46,6 +46,9 @@ class FailoverCoordinator:
         key = (scope.scope_id, purpose)
         if not scope.fallback_identity_id:
             return None
+        recovery = self.store.get_recovery(scope.fallback_identity_id)
+        if recovery and recovery.phase != "RESOLVED":
+            return None  # Recovery owns this identity; a cold canary must not erase its original.
         if self.store.current_challenge(scope.fallback_identity_id):
             return None
         repo = self.service.repository
@@ -228,6 +231,9 @@ class FailoverCoordinator:
                 return {"ready": False, "reason": "fallback_same_region_unverified"}
         cold = not primary and before.active_combination_id != identity_id
         async with service.profile_use.control(profile.profile_id, identity_id):
+            recovery = self.store.get_recovery(identity_id)
+            if recovery and recovery.phase != "RESOLVED":
+                return {"ready": False, "reason": "recovery_pending"}
             if cold:
                 stopped = await service.runtime.browser_runtimes.stop_identity(
                     identity, reason="cold_fallback_canary"

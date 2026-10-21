@@ -872,8 +872,61 @@ class GovernanceRepository:
                     "update browser_profiles set data_json=?,updated_at=? where profile_id=?",
                     (profile.model_dump_json(), now.isoformat(), profile.profile_id),
                 )
+            if session and report.challenge == "CLEARED" and task_cleared:
+                self._commit_manual_recovery(connection, scope, identity_id, report, fingerprint, runtime)
         report.health_applied = True
         return report
+
+    def _commit_manual_recovery(self, connection, scope, identity_id, report, fingerprint, runtime):
+        """Manual business proof releases the same gate without a second network probe."""
+        from .recovery import context_key
+        from .schema import AccessEvent, canonical_json
+
+        current = self.get_recovery(identity_id)
+        if not current or current.phase == "RESOLVED" or current.scope_id != scope.scope_id:
+            return
+        if not report.runtime_instance_id or (
+            runtime.instance_id and report.runtime_instance_id != runtime.instance_id
+        ):
+            return
+        proven = set()
+        if report.crawler == "READY":
+            proven.add("CRAWLER")
+        if report.body in {"FULL", "SHORT_FULL"}:
+            proven.add("BODY")
+        if not proven:
+            return
+        covered = [c for c in current.affected_contexts if c["purpose"] in proven]
+        if not covered:
+            return
+        remaining = [c for c in current.affected_contexts if c["purpose"] not in proven]
+        now = utc_now()
+        target = self.get_target(current.original_allocation_id) if current.original_allocation_id else None
+        value = current.model_copy(update={
+            "phase": "BACKOFF" if remaining else "RESOLVED",
+            "generation": current.generation + 1, "fingerprint": fingerprint,
+            "verified_contexts": list(dict.fromkeys([
+                *current.verified_contexts, *(context_key(c) for c in covered),
+            ]))[-8:],
+            "affected_contexts": remaining or current.affected_contexts,
+            "resolved_at": None if remaining else now, "resolved_by": "manual_verification",
+            "lease_owner": None, "lease_until": None, "last_error": None,
+            "next_due_at": now + timedelta(seconds=60), "updated_at": now,
+            "cleanup_pending": bool(not remaining and target and target.state not in {"CLOSED", "LOST"}),
+        })
+        self._write_recovery(connection, value)
+        event = AccessEvent(
+            operation_id=value.recovery_id, site_id=value.site_id, combination_id=identity_id,
+            category="RECOVERY_RESOLVED" if not remaining else "CAPABILITY_RECOVERED",
+            payload={"recovery_id": value.recovery_id, "resolved_by": "manual_verification",
+                     "purposes": sorted(proven)},
+        )
+        connection.execute(
+            "insert or ignore into access_events(event_id,operation_id,site_id,combination_id,"
+            "occurred_at,category,payload_json) values(?,?,?,?,?,?,?)",
+            (event.event_id, event.operation_id, event.site_id, event.combination_id,
+             event.occurred_at.isoformat(), event.category, canonical_json(event.payload)),
+        )
 
     def get_recovery(self, identity_id):
         return self._read("browser_recoveries", "identity_id", identity_id, BrowserRecovery)

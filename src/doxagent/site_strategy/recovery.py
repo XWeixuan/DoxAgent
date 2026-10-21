@@ -245,7 +245,7 @@ def verify_capture(service, scope, context, capture, *, observed=False):
         report.reason = "recovery_cross_publisher_redirect"
         return report
     info = inspect_html(capture.body, capture.final_url, "", generic_extraction=False)
-    if info.access_reason == "challenge_required":
+    if capture.recovery_id or info.access_reason == "challenge_required":
         report.challenge, report.reason = "BLOCKED", "challenge_required"
         return report
     if context["purpose"] == "CRAWLER":

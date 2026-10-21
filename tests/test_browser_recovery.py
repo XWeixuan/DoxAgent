@@ -156,6 +156,64 @@ def test_auth_unknown_does_not_renew_old_valid_timestamp(setup):
     assert auth.last_check_at > prior
 
 
+@pytest.mark.parametrize("body_pending", [False, True])
+def test_manual_verify_converges_recovery_without_second_probe(setup, body_pending):
+    _, _, store, scope = setup
+    value, target, context = retained(setup, human=True)
+    if body_pending:
+        value = store.save_recovery(
+            value.model_copy(
+                update={
+                    "affected_contexts": [context, {**context, "purpose": "BODY"}],
+                }
+            ),
+            expected_generation=value.generation,
+        )
+    session = store.save_session(
+        MaintenanceSession(
+            kind="CHALLENGE",
+            scope_id=scope.scope_id,
+            site_id="investing",
+            identity_id=value.identity_id,
+            task_id=value.challenge_task_id,
+            allocation_id=target.allocation_id,
+            target_id=target.target_id,
+            browser_instance_id="chrome",
+        )
+    )
+    report = VerificationReport(challenge="CLEARED", crawler="READY", runtime_instance_id="chrome")
+    store.commit_verification(scope, value.identity_id, report, session=session)
+    final = store.get_recovery(value.identity_id)
+    assert final.phase == ("BACKOFF" if body_pending else "RESOLVED")
+    assert final.generation > value.generation
+    assert final.resolved_by == "manual_verification"
+    assert final.lease_owner is None
+    assert store.get_session(session.session_id).state == "OPEN"  # caller still owns cleanup
+    if body_pending:
+        assert {c["purpose"] for c in final.affected_contexts} == {"BODY"}
+
+
+def test_manual_absence_of_captcha_is_not_recovery_proof(setup):
+    _, _, store, scope = setup
+    value, _, _ = retained(setup)
+    session = store.save_session(
+        MaintenanceSession(
+            kind="LOGIN",
+            scope_id=scope.scope_id,
+            site_id="investing",
+            identity_id=value.identity_id,
+            browser_instance_id="chrome",
+        )
+    )
+    store.commit_verification(
+        scope,
+        value.identity_id,
+        VerificationReport(challenge="CLEARED", runtime_instance_id="chrome"),
+        session=session,
+    )
+    assert store.get_recovery(value.identity_id).phase != "RESOLVED"
+
+
 @pytest.mark.asyncio
 async def test_lost_page_fresh_business_probe_resolves_without_verify(setup):
     repo, service, store, scope = setup
@@ -310,7 +368,8 @@ async def test_pending_identity_returns_deferral_without_publisher_request(setup
     assert result.retry_at >= utc_now() + timedelta(seconds=59)
     with service.repository._lock:
         count = service.repository._connection.execute(
-            "select count(*) from access_events where category='ACCESS_RESULT'").fetchone()[0]
+            "select count(*) from access_events where category='ACCESS_RESULT'"
+        ).fetchone()[0]
     assert count == 0  # Gate reads are neither website attempts nor full event spam.
     service.runtime.execute.assert_not_awaited()
 
@@ -414,23 +473,61 @@ def test_auto_login_is_throttled_by_account_not_identity(setup):
     assert not store.claim_auto_login("reuters-account")
 
 
+def test_runtime_uses_active_verification_metadata_without_old_text_signatures(setup):
+    from doxagent.site_strategy.runtime import _verification_document
+    from doxagent.site_strategy.service import classify_response
+
+    _, service, _, scope = setup
+    request = AccessRequest(
+        operation_id="check",
+        url=URL,
+        purpose="CRAWLER",
+        mode="BROWSER",
+        origin_scope_id=scope.scope_id,
+    )
+    resolved = service._resolve_request(request)
+    assert _verification_document(
+        "<html><body></body></html>", URL, 403, {"cf-mitigated": "challenge"}, resolved, request
+    )
+    assert not _verification_document(
+        LISTING, URL, 200, {"cf-mitigated": "challenge"}, resolved, request
+    )
+    result = RuntimeResponse(
+        403,
+        URL,
+        {},
+        "",
+        recovery_id="retained",
+        assessment={"kind": "UNKNOWN", "handling_mode": "AUTO"},
+    )
+    assert classify_response(result)[0].value == "ACCESS_CHALLENGE"
+
+
 @pytest.mark.asyncio
 async def test_legacy_body_listing_discovers_article_without_claiming_body_success(setup):
     _, service, store, scope = setup
     value, target, _ = retained(setup, purpose="BODY")
     store.save_target(store.get_target(target.allocation_id).model_copy(update={"state": "LOST"}))
-    store.save_recovery(value.model_copy(update={"page_status": "LOST", "next_probe_at": utc_now()}),
-                        expected_generation=value.generation)
+    store.save_recovery(
+        value.model_copy(update={"page_status": "LOST", "next_probe_at": utc_now()}),
+        expected_generation=value.generation,
+    )
     listing = scope.verification_plan["crawler"]["url"]
-    service.runtime.probe_recovery = AsyncMock(return_value=RuntimeResponse(
-        200, listing, {}, LISTING.replace("RKLB News", "INTC News"),
-        provenance=SimpleNamespace(instance_id="chrome")))
+    service.runtime.probe_recovery = AsyncMock(
+        return_value=RuntimeResponse(
+            200,
+            listing,
+            {},
+            LISTING.replace("RKLB News", "INTC News"),
+            provenance=SimpleNamespace(instance_id="chrome"),
+        )
+    )
     await service.recovery._run(value.identity_id)
     current = store.get_recovery(value.identity_id)
     assert current.phase != "RESOLVED", current.last_error
     assert current.last_error == "body_article_selected_pending_proof"
     assert current.affected_contexts[0]["purpose"] == "BODY"
-    assert current.affected_contexts[0]["url"].endswith('/news/stock-market-news/rocket-12345')
+    assert current.affected_contexts[0]["url"].endswith("/news/stock-market-news/rocket-12345")
     assert service.runtime.probe_recovery.await_args.args[0].purpose.value == "CRAWLER"
 
 
@@ -440,12 +537,32 @@ async def test_replaced_auto_scene_cleanup_keeps_ownership_and_cannot_close_new_
 
     repo, _, store, scope = setup
     value, old, context = retained(setup)
-    new = store.save_target(OwnedBrowserTarget(identity_id=scope.primary_identity_id,
-        browser_instance_id="chrome", worker_epoch=1, target_id="new-human", state="LIVE"))
-    store.begin_recovery(value.model_copy(update={"original_allocation_id": new.allocation_id,
-        "original_target_id": new.target_id, "handling_mode": "HUMAN"}))
-    cdp = SimpleNamespace(send=AsyncMock(side_effect=[{"targetInfos": [
-        {"targetId": "original"}, {"targetId": "new-human"}]}, {"success": True}]))
+    new = store.save_target(
+        OwnedBrowserTarget(
+            identity_id=scope.primary_identity_id,
+            browser_instance_id="chrome",
+            worker_epoch=1,
+            target_id="new-human",
+            state="LIVE",
+        )
+    )
+    store.begin_recovery(
+        value.model_copy(
+            update={
+                "original_allocation_id": new.allocation_id,
+                "original_target_id": new.target_id,
+                "handling_mode": "HUMAN",
+            }
+        )
+    )
+    cdp = SimpleNamespace(
+        send=AsyncMock(
+            side_effect=[
+                {"targetInfos": [{"targetId": "original"}, {"targetId": "new-human"}]},
+                {"success": True},
+            ]
+        )
+    )
     await TargetOwner(repo).reconcile(cdp, value.identity_id, "chrome")
     assert store.get_target(old.allocation_id).owner_kind == "RECOVERY"
     assert store.get_target(old.allocation_id).state == "CLOSED"
@@ -477,17 +594,31 @@ async def test_original_recovers_after_handoff_without_verify_or_new_navigation(
 async def test_live_human_original_does_not_block_a_successful_fresh_business_probe(setup):
     _, service, store, _ = setup
     value, _, _ = retained(setup, human=True)
-    store.save_recovery(value.model_copy(update={"next_probe_at": utc_now()}), expected_generation=value.generation)
-    service.recovery._observe = AsyncMock(return_value=RuntimeResponse(403, URL, {},
-        '<iframe src="https://geo.captcha-delivery.com/"/>Slide right to secure your access',
-        provenance=SimpleNamespace(instance_id="chrome")))
-    service.runtime.probe_recovery = AsyncMock(return_value=RuntimeResponse(200, URL, {}, LISTING,
-        provenance=SimpleNamespace(instance_id="chrome")))
+    store.save_recovery(
+        value.model_copy(update={"next_probe_at": utc_now()}), expected_generation=value.generation
+    )
+    service.recovery._observe = AsyncMock(
+        return_value=RuntimeResponse(
+            403,
+            URL,
+            {},
+            '<iframe src="https://geo.captcha-delivery.com/"/>Slide right to secure your access',
+            provenance=SimpleNamespace(instance_id="chrome"),
+        )
+    )
+    service.runtime.probe_recovery = AsyncMock(
+        return_value=RuntimeResponse(
+            200, URL, {}, LISTING, provenance=SimpleNamespace(instance_id="chrome")
+        )
+    )
     service.runtime.close_recovery = AsyncMock()
     await service.recovery._run(value.identity_id)
     current = store.get_recovery(value.identity_id)
     assert current.phase == "RESOLVED", current.last_error
-    assert store.get_challenge(value.challenge_task_id).resolution_reason == "BUSINESS_RECOVERED_ON_NEW_PAGE"
+    assert (
+        store.get_challenge(value.challenge_task_id).resolution_reason
+        == "BUSINESS_RECOVERED_ON_NEW_PAGE"
+    )
 
 
 def test_old_instance_proof_cannot_clear_current_runtime_gate(setup):
@@ -495,11 +626,19 @@ def test_old_instance_proof_cannot_clear_current_runtime_gate(setup):
     value, _, context = retained(setup, human=True)
     claimed = store.claim_recovery(value.identity_id, owner="old-worker")
     runtime = repo.get_identity_runtime(value.identity_id)
-    repo.save_identity_runtime(runtime.model_copy(update={"instance_id": "replacement-chrome",
-        "generation": runtime.generation + 1}), expected_generation=runtime.generation)
+    repo.save_identity_runtime(
+        runtime.model_copy(
+            update={"instance_id": "replacement-chrome", "generation": runtime.generation + 1}
+        ),
+        expected_generation=runtime.generation,
+    )
     with pytest.raises(RuntimeError, match="stale_recovery_browser_or_configuration"):
-        store.finish_recovery(claimed, VerificationReport(challenge="CLEARED", crawler="READY",
-            runtime_instance_id="chrome"), context=context, resolved_by="fresh_probe")
+        store.finish_recovery(
+            claimed,
+            VerificationReport(challenge="CLEARED", crawler="READY", runtime_instance_id="chrome"),
+            context=context,
+            resolved_by="fresh_probe",
+        )
     assert store.current_challenge(value.identity_id).state == "WAITING_HUMAN"
 
 
@@ -520,6 +659,22 @@ async def test_recovery_is_exclusive_for_browser_but_not_public_http(setup):
 
 
 @pytest.mark.asyncio
+async def test_cold_activation_cannot_stop_an_identity_owned_by_recovery(setup):
+    from doxagent.site_strategy.schema import SitePurpose
+
+    _, service, _, scope = setup
+    value, _, _ = retained(setup)
+    service.runtime.browser_runtimes.stop_identity = AsyncMock(
+        side_effect=AssertionError("must not stop")
+    )
+    result = await service.failover._canary(
+        scope, value.identity_id, SitePurpose.CRAWLER, primary=True
+    )
+    assert result == {"ready": False, "reason": "recovery_pending"}
+    service.runtime.browser_runtimes.stop_identity.assert_not_awaited()
+
+
+@pytest.mark.asyncio
 async def test_body_recovery_does_not_freeze_crawler_candidates(setup):
     from doxagent.site_strategy.schema import AccessMode, SitePurpose
 
@@ -529,13 +684,30 @@ async def test_body_recovery_does_not_freeze_crawler_candidates(setup):
     route.combinations[value.identity_id].state = "COOLDOWN"
     route.combinations[value.identity_id].cooldown_until = utc_now() + timedelta(minutes=30)
     repo.save_runtime(route, expected_generation=route.generation)
-    resolved = service._resolve_request(AccessRequest(operation_id="crawl", url=URL,
-        purpose="CRAWLER", mode="BROWSER", origin_scope_id=scope.scope_id))
-    _, crawler, _ = await service.health.candidates(resolved.runtime_key, resolved.access.combinations,
-        excluded=set(), transport=AccessMode.BROWSER, purpose=SitePurpose.CRAWLER)
+    resolved = service._resolve_request(
+        AccessRequest(
+            operation_id="crawl",
+            url=URL,
+            purpose="CRAWLER",
+            mode="BROWSER",
+            origin_scope_id=scope.scope_id,
+        )
+    )
+    _, crawler, _ = await service.health.candidates(
+        resolved.runtime_key,
+        resolved.access.combinations,
+        excluded=set(),
+        transport=AccessMode.BROWSER,
+        purpose=SitePurpose.CRAWLER,
+    )
     assert any(c.identity_id == value.identity_id for c in crawler)
-    _, body, _ = await service.health.candidates(resolved.runtime_key, resolved.access.combinations,
-        excluded=set(), transport=AccessMode.BROWSER, purpose=SitePurpose.BODY)
+    _, body, _ = await service.health.candidates(
+        resolved.runtime_key,
+        resolved.access.combinations,
+        excluded=set(),
+        transport=AccessMode.BROWSER,
+        purpose=SitePurpose.BODY,
+    )
     assert all(c.identity_id != value.identity_id for c in body)
 
 
@@ -548,11 +720,21 @@ async def test_late_browser_failure_cannot_refreeze_committed_recovery(setup):
     claimed = store.claim_recovery(value.identity_id, owner="recovery")
     route = repo.get_runtime(f"scope:{scope.scope_id}")
     old_generation = route.generation
-    store.finish_recovery(claimed, VerificationReport(challenge="CLEARED", crawler="READY",
-        runtime_instance_id="chrome"), context=context, resolved_by="fresh_probe")
-    await service.health.mark_failure(route.runtime_key, value.identity_id, FailureCategory.ACCESS_CHALLENGE,
-        "old_page_challenge", assigned_generation=old_generation, transport=AccessMode.BROWSER,
-        handling_mode="HUMAN")
+    store.finish_recovery(
+        claimed,
+        VerificationReport(challenge="CLEARED", crawler="READY", runtime_instance_id="chrome"),
+        context=context,
+        resolved_by="fresh_probe",
+    )
+    await service.health.mark_failure(
+        route.runtime_key,
+        value.identity_id,
+        FailureCategory.ACCESS_CHALLENGE,
+        "old_page_challenge",
+        assigned_generation=old_generation,
+        transport=AccessMode.BROWSER,
+        handling_mode="HUMAN",
+    )
     member = repo.get_runtime(route.runtime_key).combinations[value.identity_id]
     assert member.state == "READY" and not member.manual_attention_required
 
@@ -684,8 +866,11 @@ def test_protocol_two_downgrades_pending_without_breaking_old_readers(setup):
     ).json()
     assert old["disposition"] == "BUDGET_DEFERRED" and "recovery_id" not in old
     assert new["disposition"] == "RECOVERY_PENDING" and new["recovery_id"] == "test-recovery"
-    resolved = client.get('/v1/resolve', params={"url": URL},
-        headers={"Authorization": "Bearer worker", "X-Site-Access-Protocol": "2"}).json()
+    resolved = client.get(
+        "/v1/resolve",
+        params={"url": URL},
+        headers={"Authorization": "Bearer worker", "X-Site-Access-Protocol": "2"},
+    ).json()
     assert "challenge" not in resolved and "auto_login" not in resolved["auth"]
 
 
@@ -722,8 +907,14 @@ async def test_recovery_probe_preserves_source_scope_through_runtime_facade(setu
     runtime = object.__new__(WorkerSiteAccessRuntime) if isolated else service.runtime
     runtime.resolver = service.resolver
     runtime._browser = AsyncMock(return_value=RuntimeResponse(403, URL, {}))
-    request = AccessRequest(operation_id="recovery", url=URL, purpose="CRAWLER", mode="BROWSER",
-                            origin_scope_id=scope.scope_id, scope_revision=scope.revision)
+    request = AccessRequest(
+        operation_id="recovery",
+        url=URL,
+        purpose="CRAWLER",
+        mode="BROWSER",
+        origin_scope_id=scope.scope_id,
+        scope_revision=scope.revision,
+    )
     identity = repo.get_identity(scope.primary_identity_id)
     await runtime.probe_recovery(request, identity, repo.get_egress(identity.egress_id))
     resolved = runtime._browser.await_args.args[1]

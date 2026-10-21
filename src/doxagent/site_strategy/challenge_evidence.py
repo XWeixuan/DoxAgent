@@ -175,9 +175,10 @@ class EvidenceStore:
             result = (frames.get("confirmed") or frames.get("first") or {}).get(
                 "classification", {}
             )
-            return "/".join(
-                result.get(k, "UNKNOWN") for k in ("provider", "interaction", "confidence")
-            )
+            if result.get("assessment"):
+                value = result["assessment"]
+                return "/".join(value.get(k, "UNKNOWN") for k in ("provider", "kind", "confidence"))
+            return "/".join(result.get(k, "UNKNOWN") for k in ("provider", "interaction", "confidence"))
         except (OSError, ValueError):
             return "UNAVAILABLE"
 
@@ -279,7 +280,7 @@ class EvidenceStore:
         return evidence_id
 
     async def capture(
-        self, context, html, *, phase="confirmed", screenshot=None, status=0, headers=None
+        self, context, html, *, phase="confirmed", screenshot=None, status=0, headers=None, policy=None, assessment=None
     ):
         """Cross-worker bounded screenshots; metadata remains useful on timeout."""
         try:
@@ -287,12 +288,17 @@ class EvidenceStore:
             prior = await asyncio.to_thread(self.get, evidence_id)
             if phase == "first" and prior and "first" in prior.get("frames", {}):
                 return evidence_id
-            if phase == "confirmed" and prior and prior.get("frames", {}).get("confirmed", {}).get("frame_sequence", 0) >= 1:
+            previous_confirmed = (prior or {}).get("frames", {}).get("confirmed", {})
+            if phase == "confirmed" and previous_confirmed and (
+                previous_confirmed.get("frame_sequence", 0) >= 2
+                or previous_confirmed.get("screenshot_status") == "CAPTURED"
+            ):
                 return evidence_id
             analysis = classify(html, status=status, headers=headers)
-            from .challenge_detection import assess
+            from .challenge_detection import assess, VerificationAssessment
 
-            sample = assess(html, status=status, headers=headers)
+            sample = (VerificationAssessment.model_validate(assessment) if assessment else
+                      assess(html, status=status, headers=headers, policy=policy))
             analysis.update({"assessment": sample.model_dump(mode="json"),
                              "sample_id": sample.sample_id, "assessment_at": sample.observed_at})
             image, error = None, None
@@ -310,11 +316,11 @@ class EvidenceStore:
                         # A small PNG can be a white/unrendered canvas, but is
                         # not proof of it. One bounded confirmed resample only;
                         # never overwrite the immutable first frame.
-                        if phase == "confirmed" and image and len(image) < 20_000:
+                        if phase == "confirmed" and not previous_confirmed and image and len(image) < 20_000:
                             analysis["image_quality"] = "LOW_DETAIL_SUSPECTED"
                             await asyncio.sleep(1)
-                            replacement = await screenshot()
                             analysis["screenshot_retries"] = 1
+                            replacement = await screenshot()
                             if replacement:
                                 image = replacement
                     if len(image) > MAX_IMAGE:

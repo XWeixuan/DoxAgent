@@ -39,6 +39,7 @@ from .schema import (
     IdentityOperationalState,
     ProxyEgress,
     ResolvedSite,
+    SitePurpose,
 )
 
 logger = logging.getLogger(__name__)
@@ -1058,6 +1059,34 @@ class _BrowserContentNotReady(RuntimeError):
     """The document arrived, but the expected publisher content did not."""
 
 
+def _verification_document(html, url, status, headers, resolved, request, *, recipe_result=None, inspection=None):
+    """Classify the current document, not only legacy title/text WAF signatures."""
+    from .challenge_detection import assess
+    from .verification import validate_capture, validate_crawler_capture
+
+    info = inspection or inspect_html(html, url, "", generic_extraction=resolved.site_id != "barrons")
+    legacy_blocked = info.access_reason == "challenge_required"
+    sample = assess(html, status=status, headers=headers, policy=resolved.challenge, blocked=legacy_blocked)
+    if sample.kind == "NONE":
+        return False
+    if not legacy_blocked:
+        capture = RuntimeResponse(status, url, headers or {}, body=html, recipe_result=recipe_result)
+        try:
+            if request.purpose is SitePurpose.BODY:
+                # The DOM can be newer than its initial HTTP challenge response.
+                # This is an explicit DOM proof, not a fabricated HTTP 200.
+                capture.status_code = 0
+                if validate_capture(capture, resolved, observed_document=True).body in {"FULL", "SHORT_FULL"}:
+                    return False
+            else:
+                scope = str(resolved.match_evidence.get("scope_id") or request.origin_scope_id or "")
+                if scope.startswith("source:") and validate_crawler_capture(scope.removeprefix("source:"), capture, request):
+                    return False
+        except (RuntimeError, ValueError, KeyError, TypeError, AttributeError):
+            pass  # Missing business proof cannot turn vendor metadata into normal content.
+    return True
+
+
 class SiteAccessRuntime:
     def __init__(
         self,
@@ -1286,7 +1315,8 @@ class SiteAccessRuntime:
                     provenance=lease.provenance,
                 )
             html = await page.content()
-            if inspect_html(html, page.url, "").access_reason == "challenge_required":
+            if _verification_document(html, page.url, 200, {}, resolved, request,
+                                      recipe_result={"rows": rows}):
                 page._doxagent_challenge_html = html
                 token = None
                 if (not request.recipe_parameters.get("_maintenance_canary")
@@ -1449,15 +1479,7 @@ class SiteAccessRuntime:
                             )
                             native_document = (complete, native_document[1])
                             initial_html = complete
-                initial_challenge = (
-                    inspect_html(
-                        initial_html,
-                        page.url,
-                        "",
-                        generic_extraction=resolved.site_id != "barrons",
-                    ).access_reason
-                    == "challenge_required"
-                )
+                initial_challenge = _verification_document(initial_html, page.url, status, headers, resolved, request)
                 if (
                     not initial_challenge
                     and status == 200
@@ -1578,12 +1600,10 @@ class SiteAccessRuntime:
                         reason="response_too_large",
                         provenance=lease.provenance,
                     )
-                challenge = inspect_html(
-                    html, page.url, "", generic_extraction=resolved.site_id != "barrons"
-                ).access_reason == "challenge_required"
+                challenge = _verification_document(html, page.url, status, headers, resolved, request)
                 if challenge and request.recipe_parameters.get("_recovery_probe"):
                     html = await self._wait_automatic_document(lease, page, gate, resolved, html, deadline)
-                    if inspect_html(html, page.url, "", generic_extraction=False).access_reason != "challenge_required":
+                    if not _verification_document(html, page.url, status, headers, resolved, request):
                         return RuntimeResponse(0, page.url, {}, body=html, provenance=lease.provenance,
                                                reason="observed_document_after_verification")
                 if challenge:
@@ -1663,12 +1683,15 @@ class SiteAccessRuntime:
                         if validate_capture(captured, resolved).body in {"FULL", "SHORT_FULL"}:
                             return captured  # Real body proof, not an event/selector timeout.
                     if (
-                        inspection
-                        and inspection.access_reason == "challenge_required"
+                        _verification_document(html, page.url,
+                            int(getattr(exc, "status_code", 0) or (response.status if response else 0)),
+                            getattr(exc, "response_headers", {}), resolved, request, inspection=inspection)
                         and (not request.recipe_parameters.get("_maintenance_canary")
                              or request.recipe_parameters.get("_retain_recovery_probe"))
                     ):
                         page._doxagent_challenge_html = html
+                        page._doxagent_challenge_status = int(getattr(exc, "status_code", 0) or (response.status if response else 0))
+                        page._doxagent_challenge_headers = getattr(exc, "response_headers", {})
                         token = await self._retain_challenge(
                             lease, page, gate, identity, resolved, request
                         )
@@ -1887,6 +1910,8 @@ class SiteAccessRuntime:
             screenshot=lambda: cdp_screenshot(lease.browser_cdp, target_id),
             status=getattr(page, "_doxagent_challenge_status", 0),
             headers=getattr(page, "_doxagent_challenge_headers", {}),
+            policy=resolved.challenge,
+            assessment=getattr(page, "_doxagent_assessment", None) if phase == "confirmed" else None,
         )
         if phase == "first" and evidence_id:
             page._doxagent_evidence_first = True

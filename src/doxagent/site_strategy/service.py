@@ -3390,6 +3390,9 @@ class SiteStrategyService:
 
 
 def classify_response(response: RuntimeResponse) -> tuple[FailureCategory | None, str]:
+    if response.recovery_id:
+        return (FailureCategory.ACCESS_BLOCK if (response.assessment or {}).get("kind") == "ACCESS_BLOCK"
+                else FailureCategory.ACCESS_CHALLENGE), "verification_document_retained"
     if response.reason == "browser_content_not_ready":
         return FailureCategory.EXTRACTION_ERROR, response.reason
     if response.reason == "response_too_large":

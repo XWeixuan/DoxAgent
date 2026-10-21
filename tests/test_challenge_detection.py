@@ -96,6 +96,12 @@ def test_loaded_provider_frame_can_supply_slider_instruction():
     assert result.kind == "INTERACTIVE" and result.interaction == "SLIDER"
 
 
+def test_provider_header_confidence_does_not_fabricate_a_known_challenge_type():
+    value = assess("<html><body></body></html>", headers={"cf-mitigated": "challenge"})
+    assert value.provider == "CLOUDFLARE" and value.provider_confidence == "HIGH"
+    assert value.kind == "UNKNOWN" and value.confidence == "UNKNOWN"
+
+
 def test_hidden_checkbox_is_not_an_interactive_requirement():
     value = assess(
         '<title>Just a moment</title><div hidden><input type="checkbox">Verify you are human</div>'
