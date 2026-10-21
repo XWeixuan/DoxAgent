@@ -428,13 +428,21 @@ class GovernanceRepository:
             if profile is not None:
                 from .schema import ProfileOperationalState
 
+                # A queued human Task is not an active Viewer. Shared recovery
+                # independently gates each unproven purpose; do not freeze the
+                # entire Profile (and its already-proven crawler) on escalation.
+                passive_recovery = bool(task.recovery_id and not session and not any(
+                    s.identity_id == stored.identity_id and s.state == "OPEN"
+                    for s in self.list_sessions()
+                ))
                 blocked = profile.model_copy(
                     update={
-                        "operational_state": ProfileOperationalState.MAINTENANCE,
+                        "operational_state": (ProfileOperationalState.AVAILABLE
+                                              if passive_recovery else ProfileOperationalState.MAINTENANCE),
                         "operational_revision": profile.operational_revision + 1,
                         "maintenance_session_id": session.control_token
                         if session
-                        else stored.task_id,
+                        else None if passive_recovery else stored.task_id,
                         # Compatibility projection, not an independently editable task.
                         "challenge_url": task.original_url,
                         "challenge_site_id": stored.site_id,

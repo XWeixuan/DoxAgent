@@ -150,6 +150,10 @@ def test_automatic_timeout_is_manual_review_not_fake_interactive(setup):
     assert task.reason == "automatic_verification_stalled"
     assert value.assessment["kind"] == "AUTO_CHECK"
     assert store.get_target(target.allocation_id).owner_ref == task.task_id
+    identity = service.repository.get_identity(value.identity_id)
+    profile = service.repository.get_profile(identity.profile_id)
+    assert profile.operational_state == ProfileOperationalState.AVAILABLE
+    assert profile.maintenance_session_id is None
     again = service.recovery._classify(
         value, capture, spec, VerificationReport(challenge="BLOCKED")
     )
