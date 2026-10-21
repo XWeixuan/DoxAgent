@@ -31,6 +31,29 @@ def captcha_url(html):
     return None
 
 
+def loaded_challenge_url(value):
+    """Use an actual child navigation, never synthesize interstitial -> captcha parameters."""
+    try:
+        p = urlsplit(value)
+        return (
+            value
+            if (
+                p.scheme == "https"
+                and p.hostname
+                and not p.username
+                and p.port in {None, 443}
+                and (
+                    p.hostname == "captcha-delivery.com"
+                    or p.hostname.endswith(".captcha-delivery.com")
+                )
+                and p.path.startswith(("/captcha/", "/interstitial/"))
+            )
+            else None
+        )
+    except ValueError:
+        return None
+
+
 def challenge_state(url, html):
     if not url:
         return "UNAVAILABLE"
@@ -213,7 +236,9 @@ class NativeChallenge:
             tree = await call("Page.getFrameTree")
             for frame in tree.get("frameTree", {}).get("childFrames", []):
                 node = frame.get("frame", {})
-                if url and node.get("url") == url:
+                loaded_url = loaded_challenge_url(node.get("url", ""))
+                if url and loaded_url:
+                    url = loaded_url
                     try:
                         frame_html = await loaded_frame_document(call, node["id"])
                     except RuntimeError:

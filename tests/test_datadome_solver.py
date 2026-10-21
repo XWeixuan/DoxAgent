@@ -40,6 +40,8 @@ def test_cookie_cannot_escape_publisher(raw):
 
 
 def test_original_cookie_and_challenge_url_not_synthesized():
+    from doxagent.site_strategy.datadome_browser import loaded_challenge_url
+
     cookie = solution_cookie(
         "datadome=abc; Domain=.reuters.com; Secure; Path=/", "https://www.reuters.com/"
     )
@@ -50,6 +52,8 @@ def test_original_cookie_and_challenge_url_not_synthesized():
     assert challenge_state(URL, "<script>retry()</script>") == "SOLVABLE"
     assert challenge_state(URL, "<button>Retry</button>") == "RETRY"
     assert challenge_state(URL.replace("/captcha/", "/interstitial/"), "") == "INTERSTITIAL"
+    assert loaded_challenge_url(URL) == URL
+    assert loaded_challenge_url("https://captcha-delivery.com.evil.com/captcha/") is None
 
 
 def test_blocking_datadome_bootstrap_is_retained_before_iframe_loads():
@@ -293,6 +297,47 @@ async def test_oopif_retry_is_read_and_child_connection_always_detached():
     assert challenge_state(URL, html) == "RETRY"
     assert call.await_args.args == ("Target.detachFromTarget", {"sessionId": "child"})
     assert call.await_args_list[2].kwargs == {"session_id": "child"}
+
+
+@pytest.mark.asyncio
+async def test_existing_public_http_cannot_starve_browser_recovery(setup):
+    _, service, _, scope = setup
+    identity = service.repository.get_identity(scope.primary_identity_id)
+    async with service.profile_use.business(identity.profile_id, browser=False):
+        async with service.profile_use.control(identity.profile_id, identity.identity_id):
+            assert service.profile_use._active[identity.profile_id] == 2
+        assert service.profile_use._active[identity.profile_id] == 1
+
+
+@pytest.mark.asyncio
+async def test_control_reservation_drains_old_page_and_rejects_new_browser(setup):
+    import asyncio
+    from doxagent.site_strategy.service import ProfileUnavailableError
+
+    _, service, _, scope = setup
+    identity = service.repository.get_identity(scope.primary_identity_id)
+    started, release = asyncio.Event(), asyncio.Event()
+
+    async def old_work():
+        async with service.profile_use.business(identity.profile_id):
+            started.set()
+            await release.wait()
+
+    async def control():
+        async with service.profile_use.control(identity.profile_id, identity.identity_id):
+            assert not service.profile_use._browser_active.get(identity.profile_id)
+
+    old = asyncio.create_task(old_work())
+    await started.wait()
+    next_control = asyncio.create_task(control())
+    await asyncio.sleep(0)
+    with pytest.raises(ProfileUnavailableError):
+        async with service.profile_use.business(identity.profile_id):
+            pass
+    release.set()
+    await asyncio.gather(old, next_control)
+    assert not service.profile_use._active.get(identity.profile_id)
+    assert identity.profile_id not in service.profile_use._exclusive
 
 
 @pytest.mark.parametrize(

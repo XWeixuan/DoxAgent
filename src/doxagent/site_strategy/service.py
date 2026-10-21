@@ -70,6 +70,7 @@ class ProfileUseCoordinator:
         self.repository = repository
         self._condition = asyncio.Condition()
         self._active: dict[str, int] = {}
+        self._browser_active: dict[str, int] = {}
         self._exclusive: set[str] = set()
         self._maintenance_profile: str | None = None
         self._challenge_profiles: set[str] = set()
@@ -219,13 +220,24 @@ class ProfileUseCoordinator:
         from .governance_repository import GovernanceRepository
 
         async with self._condition:
-            if not self._accepting or self._active.get(profile_id, 0) or profile_id in self._exclusive or any(
+            if not self._accepting or self._maintenance_profile == profile_id or profile_id in self._exclusive or any(
                 s.identity_id == identity_id and s.state == "OPEN"
                 for s in GovernanceRepository(self.repository).list_sessions()
             ):
                 raise ProfileUnavailableError("user_maintenance_or_business_active")
             self._exclusive.add(profile_id)
-            self._active[profile_id] = 1
+            try:
+                async with asyncio.timeout(20):
+                    while self._browser_active.get(profile_id, 0):
+                        await self._condition.wait()
+                if not self._accepting or self._maintenance_profile == profile_id or any(s.identity_id == identity_id and s.state == 'OPEN'
+                    for s in GovernanceRepository(self.repository).list_sessions()):
+                    raise ProfileUnavailableError('user_maintenance_or_business_active')
+            except BaseException:
+                self._exclusive.discard(profile_id)
+                self._condition.notify_all()
+                raise
+            self._active[profile_id] = self._active.get(profile_id, 0) + 1
         try:
             yield self.repository.get_profile(profile_id)
         finally:
@@ -256,10 +268,18 @@ class ProfileUseCoordinator:
             if profile.operational_state is not ProfileOperationalState.AVAILABLE:
                 raise ProfileUnavailableError("profile_in_maintenance")
             self._active[profile_id] = self._active.get(profile_id, 0) + 1
+            if browser:
+                self._browser_active[profile_id] = self._browser_active.get(profile_id, 0) + 1
         try:
             yield profile
         finally:
             async with self._condition:
+                if browser:
+                    browser_remaining = self._browser_active.get(profile_id, 1) - 1
+                    if browser_remaining:
+                        self._browser_active[profile_id] = browser_remaining
+                    else:
+                        self._browser_active.pop(profile_id, None)
                 remaining = self._active.get(profile_id, 1) - 1
                 if remaining <= 0:
                     self._active.pop(profile_id, None)
