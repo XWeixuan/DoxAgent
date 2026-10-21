@@ -46,7 +46,7 @@ class SiteAccessClient:
             httpx.AsyncClient(
                 base_url=self.base_url,
                 timeout=timeout_seconds,
-                headers={"Authorization": f"Bearer {token}"} if token else {},
+                headers={"X-Site-Access-Protocol": "3", **({"Authorization": f"Bearer {token}"} if token else {})},
             )
             if self.base_url
             else None
@@ -96,7 +96,7 @@ class SiteAccessClient:
                         "/v1/access/execute",
                         json=payload,
                         timeout=timeout,
-                        headers={"X-Site-Access-Protocol": "2"},
+                        headers={"X-Site-Access-Protocol": "3"},
                     )
                 except (httpx.ReadError, httpx.RemoteProtocolError):
                     if request.method != "GET":
@@ -106,7 +106,7 @@ class SiteAccessClient:
                         "/v1/access/execute",
                         json=payload,
                         timeout=timeout,
-                        headers={"X-Site-Access-Protocol": "2"},
+                        headers={"X-Site-Access-Protocol": "3"},
                     )
         except TimeoutError as exc:
             raise httpx.ReadTimeout(
@@ -233,7 +233,7 @@ class SiteAccessError(RuntimeError):
             if result.retry_not_before
             else 0.0
         )
-        self.site_access_deferred = result.disposition.value == "BUDGET_DEFERRED" or (
+        self.site_access_deferred = result.disposition.value in {"BUDGET_DEFERRED", "RECOVERY_PENDING"} or (
             result.disposition.value == "SERVICE_UNAVAILABLE"
             and (
                 result.reason_code == "storage_unavailable"

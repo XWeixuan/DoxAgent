@@ -274,6 +274,10 @@ class IdentityWorkerManager:
                             target = self.owner.store.get_target(payload["allocation_id"])
                             if target is None or target.identity_id != handle.identity_id:
                                 raise ValueError("allocation belongs to another identity")
+                        if message["action"] == "recovery":
+                            target = self.owner.store.get_target(payload.get("original_allocation_id", ""))
+                            if not target or target.identity_id != handle.identity_id:
+                                raise ValueError("recovery allocation belongs to another identity")
                         if message["action"] == "controller_pid":
                             pid = int(payload["pid"])
                             if os.name == "posix":

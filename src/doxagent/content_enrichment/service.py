@@ -252,7 +252,7 @@ class ContentEnrichmentHub:
 
         finished_at = utc_now()
         attempts = [*job.prior_attempts, *(item.to_payload() for item in result.attempts)]
-        if not result.succeeded and result.reason == "storage_unavailable":
+        if not result.succeeded and result.reason in {"storage_unavailable", "site_recovery_pending"}:
             not_before = finished_at + timedelta(seconds=60)
             if not_before < job.deadline_at:
                 await self.bus.storage.call(
@@ -447,7 +447,7 @@ class ContentEnrichmentHub:
         }:
             return False
         # Preserve the already deployed finite retry for budget deferrals.
-        if reason == "site_budget_deferred":
+        if reason in {"site_budget_deferred", "site_recovery_pending"}:
             return True
         status = result.http_status
         if status is None and result.attempts and result.attempts[-1].reason == result.reason:

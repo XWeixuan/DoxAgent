@@ -118,6 +118,8 @@ class ChallengeInspector:
         return True
 
     async def run_once(self):
+        if hasattr(self.service, "recovery"):
+            await self.service.recovery.run_once()
         runtime = self.service.runtime
         socket = getattr(runtime, "supervisor_socket", None)
         if not socket:
@@ -126,6 +128,9 @@ class ChallengeInspector:
         slots = asyncio.Semaphore(2)
 
         async def inspect(task):
+            recovery = self.store.get_recovery(task.identity_id)
+            if recovery and recovery.phase != "RESOLVED" and recovery.challenge_task_id == task.task_id:
+                return  # The shared coordinator owns both lost and live recovery now.
             identity = self.service.repository.get_identity(task.identity_id)
             if not identity:
                 return
@@ -176,4 +181,4 @@ class ChallengeInspector:
     async def run(self):
         while True:
             await self.run_once()
-            await asyncio.sleep(60)
+            await asyncio.sleep(5)

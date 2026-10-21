@@ -78,6 +78,9 @@ def parse_category_response(html: str) -> list[dict[str, Any]]:
     wrapper = re.search(r"<body[^>]*>(.*?)</body>", text, re.I | re.S)
     if wrapper:
         text = unescape(wrapper.group(1)).strip()
+        if re.match(r"<pre(?:\s|>)", text, re.I):
+            from lxml import html as H
+            text = H.fromstring(text).text_content().strip()
     payload = json.loads(text)
     if not isinstance(payload, list):
         raise ValueError("CTEE category response must be a list")

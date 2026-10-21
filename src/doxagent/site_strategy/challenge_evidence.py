@@ -264,6 +264,10 @@ class EvidenceStore:
         if phase != "cleared":
             frame = {
                 "captured_at": time.time(),
+                "sample_id": analysis.get("sample_id"),
+                "assessment_at": analysis.get("assessment_at"),
+                "screenshot_at": time.time() if image is not None else None,
+                "frame_sequence": prior.get("frames", {}).get(phase, {}).get("frame_sequence", 0) + 1,
                 "classification": analysis,
                 "screenshot_status": image_error or "NOT_CAPTURED",
             }
@@ -277,22 +281,49 @@ class EvidenceStore:
     async def capture(
         self, context, html, *, phase="confirmed", screenshot=None, status=0, headers=None
     ):
-        """At most 2s rendering work; failure never becomes a business dependency."""
+        """Cross-worker bounded screenshots; metadata remains useful on timeout."""
         try:
             evidence_id = self.key(context)
             prior = await asyncio.to_thread(self.get, evidence_id)
             if phase == "first" and prior and "first" in prior.get("frames", {}):
                 return evidence_id
+            if phase == "confirmed" and prior and prior.get("frames", {}).get("confirmed", {}).get("frame_sequence", 0) >= 1:
+                return evidence_id
             analysis = classify(html, status=status, headers=headers)
+            from .challenge_detection import assess
+
+            sample = assess(html, status=status, headers=headers)
+            analysis.update({"assessment": sample.model_dump(mode="json"),
+                             "sample_id": sample.sample_id, "assessment_at": sample.observed_at})
             image, error = None, None
             if screenshot is not None and phase != "cleared":
+                from .runtime import OwnerFileLock
+
+                await asyncio.to_thread(self._prepare)
+                lock = OwnerFileLock(self.root / ".capture.lock")
+                acquired = False
                 try:
-                    async with asyncio.timeout(2):
+                    lock.acquire()
+                    acquired = True
+                    async with asyncio.timeout(2 if phase == "first" else 5):
                         image = await screenshot()
+                        # A small PNG can be a white/unrendered canvas, but is
+                        # not proof of it. One bounded confirmed resample only;
+                        # never overwrite the immutable first frame.
+                        if phase == "confirmed" and image and len(image) < 20_000:
+                            analysis["image_quality"] = "LOW_DETAIL_SUSPECTED"
+                            await asyncio.sleep(1)
+                            replacement = await screenshot()
+                            analysis["screenshot_retries"] = 1
+                            if replacement:
+                                image = replacement
                     if len(image) > MAX_IMAGE:
                         image, error = None, "TOO_LARGE"
                 except Exception as exc:
                     error = type(exc).__name__
+                finally:
+                    if acquired:
+                        lock.release()
             return await asyncio.to_thread(self.save, context, analysis, phase, image, error)
         except Exception:
             return None

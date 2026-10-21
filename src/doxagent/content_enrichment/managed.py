@@ -120,6 +120,8 @@ def _key(value: str) -> str:
 def _reason(result: AccessResult) -> str | None:
     if result.disposition.value == "SUCCESS":
         return None
+    if result.disposition.value == "RECOVERY_PENDING":
+        return "site_recovery_pending"
     if result.disposition.value == "BUDGET_DEFERRED":
         deadline = DEADLINE.get()
         return (

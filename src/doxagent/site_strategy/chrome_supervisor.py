@@ -16,6 +16,7 @@ import os
 import re
 import signal
 import socket
+import time
 import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
@@ -267,7 +268,10 @@ class ChromeSupervisor:
         if command == "status":
             instance = self._instances.get(identity_id)
             if instance:
-                return self._describe(instance)
+                result = self._describe(instance)
+                if instance.chrome.returncode is not None:
+                    self._record_exit(instance, "unexpected_exit")
+                return result
             path = self.manifest_root / f"{identity_id}.json"
             if path.exists():
                 try:
@@ -289,7 +293,9 @@ class ChromeSupervisor:
                         "known_missing": False,
                         "diagnostic": "instance_manifest_unreadable",
                     }
-            return {"identity_id": identity_id, "running": False, "known_missing": True}
+            last_exit = self.manifest_root / "last-exit" / f"{identity_id}.json"
+            return {"identity_id": identity_id, "running": False, "known_missing": True,
+                    "last_exit": json.loads(last_exit.read_text()) if last_exit.is_file() else None}
         if command == "stop":
             instance = self._instances.get(identity_id)
             if instance and instance.controller_id and instance.controller_id != owner_id:
@@ -412,6 +418,7 @@ class ChromeSupervisor:
                 self._persist_instance(existing)
                 return existing
             if existing:
+                self._record_exit(existing, "unexpected_exit")
                 await self._finalize(existing)
                 self._instances.pop(identity.identity_id, None)
             if len(self._instances) >= self.max_instances:
@@ -543,7 +550,6 @@ class ChromeSupervisor:
             return instance
 
     async def stop(self, identity_id: str, *, reason: str) -> bool:
-        del reason
         lock = self._locks.setdefault(identity_id, asyncio.Lock())
         async with lock:
             instance = self._instances.pop(identity_id, None)
@@ -558,8 +564,30 @@ class ChromeSupervisor:
                     self._instances[identity_id] = instance
                     raise RuntimeError("chrome_unclean_shutdown") from exc
             await self._finalize(instance)
+            self._record_exit(instance, reason)
             (self.manifest_root / f"{identity_id}.json").unlink(missing_ok=True)
             return True
+
+    def _record_exit(self, instance, reason):
+        from .schema import utc_now
+
+        record = {"identity_id": instance.identity.identity_id, "instance_id": instance.instance_id,
+                  "reason": re.sub(r"[^a-zA-Z0-9_.:-]", "_", str(reason))[:160],
+                  "returncode": instance.chrome.returncode, "observed_at": utc_now().isoformat()}
+        root = self.manifest_root / "last-exit"
+        root.mkdir(parents=True, exist_ok=True, mode=0o700)
+        path = root / (instance.identity.identity_id + ".json")
+        temporary = path.with_suffix(".tmp")
+        fd = os.open(temporary, os.O_CREAT | os.O_TRUNC | os.O_WRONLY, 0o600)
+        with os.fdopen(fd, "w", encoding="utf-8") as stream:
+            json.dump(record, stream)
+        os.replace(temporary, path)
+        # One summary per identity, with a bound for retired identity names.
+        cutoff = time.time() - 14 * 86400
+        for old in root.glob("*.json"):
+            if not old.is_symlink() and old.is_file() and old.stat().st_mtime < cutoff:
+                old.unlink(missing_ok=True)
+        logging.getLogger(__name__).info("CHROME_STOPPED %s", json.dumps(record))
 
     async def _finalize(self, instance: ChromeInstance) -> None:
         if instance.vnc.returncode is None:

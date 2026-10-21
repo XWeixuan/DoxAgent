@@ -165,6 +165,15 @@ def _parser() -> argparse.ArgumentParser:
     events.add_argument("--limit", type=int, default=200)
     commands.add_parser("generic-report")
 
+    recovery = commands.add_parser("recovery")
+    recovery_actions = recovery.add_subparsers(dest="action", required=True)
+    recovery_actions.add_parser("list")
+    recovery_actions.add_parser("rollback-export")
+    recovery_migrate = recovery_actions.add_parser("migrate")
+    flags = recovery_migrate.add_mutually_exclusive_group()
+    flags.add_argument("--apply", action="store_true")
+    flags.add_argument("--dry-run", action="store_true")
+
     migrate = commands.add_parser("migrate")
     migrate.add_argument("action", choices=("seed", "audit", "reconcile-outcomes"))
     return parser
@@ -213,6 +222,12 @@ def _apply_spec(client: AdminClient, spec: dict[str, Any], expected: int) -> Any
 
 def _run_remote(args: argparse.Namespace) -> Any:
     client = AdminClient(args.base_url, args.token)
+    if args.command == "recovery":
+        if args.action == "list":
+            return client.request("GET", "/v1/recoveries")
+        if args.action == "migrate":
+            return client.request("POST", "/v1/recoveries:migrate", json={"apply": args.apply})
+        return client.request("POST", "/v1/recoveries:rollback-export")
     if args.command == "resolve":
         worker = AdminClient(args.base_url, args.worker_token)
         return worker.request("GET", "/v1/resolve", params={"url": args.url})

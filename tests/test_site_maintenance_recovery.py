@@ -245,6 +245,10 @@ async def test_original_challenge_clear_commits_even_when_business_checks_throw(
         AsyncMock(side_effect=RuntimeError("net::ERR_CONNECTION_RESET https://secret")),
     )
     monkeypatch.setattr(service.runtime, "close_login", AsyncMock())
+    monkeypatch.setattr(service.runtime, "probe_recovery", AsyncMock(side_effect=[
+        RuntimeError("net::ERR_TUNNEL_CONNECTION_FAILED https://secret"),
+        RuntimeError("net::ERR_CONNECTION_RESET https://secret"),
+    ]))
     monkeypatch.setattr(service.profile_use, "end_maintenance", AsyncMock())
     result = await MaintenanceController(service)._dispatch(
         operation(
@@ -287,6 +291,7 @@ async def test_unknown_original_does_not_clear_challenge_on_network_failure(setu
     )
     monkeypatch.setattr(service.runtime, "verify_crawler", AsyncMock(side_effect=TimeoutError()))
     monkeypatch.setattr(service.runtime, "verify_login", AsyncMock(side_effect=TimeoutError()))
+    monkeypatch.setattr(service.runtime, "probe_recovery", AsyncMock(side_effect=TimeoutError()))
     closed = AsyncMock()
     monkeypatch.setattr(service.runtime, "close_login", closed)
     result = await MaintenanceController(service)._dispatch(
@@ -317,8 +322,8 @@ async def test_cleanup_timeout_preserves_completed_verification_report(setup, mo
         operation("VERIFY_CHALLENGE", session_id=session.session_id)
     )
     assert result["challenge"] == "CLEARED" and result["health_applied"]
-    assert result["cleanup_pending"] and not result["session_closed"]
-    assert store.get_session(session.session_id).state != "CLOSED"
+    assert result["cleanup_pending"] and result["session_closed"]
+    assert store.get_session(session.session_id).state == "CLOSED"
 
 
 def test_verification_diagnostics_never_forward_exception_urls():

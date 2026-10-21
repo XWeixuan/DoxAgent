@@ -16,6 +16,16 @@ class TargetOwner:
             return self.bind(**payload).model_dump(mode="json")
         if action == "list":
             return [t.model_dump(mode="json") for t in self.list_for_instance(**payload)]
+        if action == "close_claim":
+            with self.store.repository.transaction() as connection:
+                target = self.store.get_target(payload["allocation_id"])
+                expected_ref = payload.get("owner_ref")
+                if not target or target.state in {"LOST", "CLOSED"} or (
+                    target.owner_kind != "BUSINESS" and target.owner_ref != expected_ref
+                ):
+                    return {"claimed": False}
+                self.store._write_target(connection, target.model_copy(update={"state": "CLOSE_PENDING"}))
+                return {"claimed": True}
         if action == "state":
             target = self.store.get_target(payload["allocation_id"])
             if target is None:
@@ -42,6 +52,18 @@ class TargetOwner:
             return self.store.handoff_challenge(ChallengeTask.model_validate(payload)).model_dump(
                 mode="json",
             )
+        if action == "recovery":
+            previous = self.store.get_recovery(payload["identity_id"])
+            result = self.store.begin_recovery(payload)
+            if previous is None or previous.recovery_id != result.recovery_id:
+                from .schema import AccessEvent
+
+                self.store.repository.append_event(AccessEvent(
+                    operation_id=result.recovery_id, site_id=result.site_id, category="RECOVERY_STARTED",
+                    payload={"recovery_id": result.recovery_id, "identity_id": result.identity_id,
+                             "handling_mode": result.handling_mode, "kind": result.assessment.get("kind")},
+                ))
+            return result.model_dump(mode="json")
         raise ValueError("unsupported ownership action")
 
     def allocate(self, identity_id, instance_id, epoch):
@@ -75,7 +97,18 @@ class TargetOwner:
                 "where identity_id=? and browser_instance_id=? and state not in ('CLOSED','LOST')",
                 (identity_id, instance_id),
             ).fetchall()
-        return [OwnedBrowserTarget.model_validate_json(row[0]) for row in rows]
+        values = [OwnedBrowserTarget.model_validate_json(row[0]) for row in rows]
+        recovery = self.store.get_recovery(identity_id)
+        task = self.store.current_challenge(identity_id)
+        sessions = {s.allocation_id for s in self.store.list_sessions() if s.state == "OPEN"}
+        for index, value in enumerate(values):
+            if (value.owner_kind == "RECOVERY" and recovery and value.owner_ref == recovery.recovery_id
+                    and value.allocation_id != recovery.original_allocation_id
+                    and (not task or task.allocation_id != value.allocation_id)
+                    and value.allocation_id not in sessions):
+                values[index] = self.store.save_target(value.model_copy(update={
+                    "owner_kind": "BUSINESS", "owner_ref": None, "state": "CLOSE_PENDING"}))
+        return values
 
     async def reconcile(self, cdp, identity_id, instance_id):
         """Find lost create replies, retry exact business closes, preserve humans."""
@@ -94,8 +127,10 @@ class TargetOwner:
                 if task and task.allocation_id == target.allocation_id:
                     self.store.save_challenge(task.model_copy(update={"state": "TARGET_LOST"}))
             elif target.owner_kind == "BUSINESS":
-                pending = target.model_copy(update={"state": "CLOSE_PENDING"})
-                self.store.save_target(pending)
+                claimed = await self.event("close_claim", {"allocation_id": target.allocation_id})
+                if not claimed["claimed"]:
+                    continue
+                pending = self.store.get_target(target.allocation_id)
                 try:
                     await cdp.send("Target.closeTarget", {"targetId": target.target_id})
                 except Exception:

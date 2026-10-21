@@ -41,11 +41,45 @@ async def original_target_exists(client, identity, session, target):
         )
 
 
+async def reconcile_original_target(client, identity, task, store):
+    """Repair a LOST projection only after exact native presence is established."""
+    target = store.get_target(task.allocation_id)
+    if not target or target.state == "CLOSED" or target.owner_kind != "CHALLENGE" or (
+        target.identity_id, target.browser_instance_id, target.target_id, target.owner_ref
+    ) != (identity.identity_id, task.browser_instance_id, task.original_target_id, task.task_id):
+        raise RuntimeError("exact_maintenance_target_ownership_required")
+    status = await client.status(identity.identity_id)
+    if not status.get("running") and status.get("known_missing") is False:
+        raise RuntimeError("original_browser_state_unverified")
+    if not status.get("running") or status.get("instance_id") != task.browser_instance_id:
+        present = False
+    else:
+        from .challenge_inspector import _target_ids
+        present = task.original_target_id in await asyncio.to_thread(_target_ids, status["cdp_http_url"])
+    from .schema import AccessEvent, utc_now
+    with store.repository.transaction() as connection:
+        latest = store.get_target(task.allocation_id)
+        current = store.current_challenge(identity.identity_id)
+        if latest != target or not current or current.task_id != task.task_id:
+            raise RuntimeError("maintenance_target_changed_during_presence_check")
+        state = "LIVE" if present else "LOST"
+        if latest.state != state:
+            store._write_target(connection, latest.model_copy(update={"state": state, "updated_at": utc_now()}))
+        store._write_task(connection, current.model_copy(update={
+            "state": "WAITING_HUMAN" if present else "TARGET_LOST", "last_check": utc_now(),
+        }))
+    if present and target.state == "LOST":
+        store.repository.append_event(AccessEvent(operation_id=task.task_id, site_id=task.site_id,
+            category="TARGET_RECONCILED", payload={"identity_id": identity.identity_id,
+                                                   "target_id": task.original_target_id}))
+    return present
+
+
 async def close_original_document(client, identity, session, target):
     """Close only the recorded human target; never start/reclaim a cold worker."""
     if (
         not target
-        or target.owner_kind not in {"LOGIN", "CHALLENGE"}
+        or target.owner_kind not in {"LOGIN", "CHALLENGE", "RECOVERY"}
         or target.identity_id != identity.identity_id
         or target.target_id != session.target_id
         or target.browser_instance_id != session.browser_instance_id
@@ -94,7 +128,7 @@ async def read_original_document(client, identity, session, target, *, evidence_
     """Observation only: no ensure, controller claim, navigation or Viewer selection."""
     if (
         not target
-        or target.owner_kind not in {"LOGIN", "CHALLENGE"}
+        or target.owner_kind not in {"LOGIN", "CHALLENGE", "RECOVERY"}
         or target.state != "LIVE"
         or target.identity_id != identity.identity_id
         or target.target_id != session.target_id

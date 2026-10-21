@@ -83,7 +83,16 @@ class CombinationHealthManager:
                                 next_retry = runtime.http_cooldown_until
                             continue
                 else:
-                    if runtime.manual_attention_required:
+                    from .governance_repository import GovernanceRepository
+
+                    recovery = GovernanceRepository(self.repository).get_recovery(item.identity_id or item.profile_id or "")
+                    recovering = recovery is not None and recovery.phase != "RESOLVED"
+                    if recovering and (purpose is None or any(
+                        c["purpose"] == purpose.value for c in recovery.affected_contexts
+                    )):
+                        next_retry = min(next_retry or recovery.next_due_at, recovery.next_due_at)
+                        continue
+                    if runtime.manual_attention_required and not recovering:
                         continue
                     if runtime.state == "COOLDOWN":
                         if runtime.cooldown_until and (
@@ -158,6 +167,11 @@ class CombinationHealthManager:
             for item in sorted(
                 combinations, key=lambda value: (value.priority, value.combination_id)
             ):
+                from .governance_repository import GovernanceRepository
+
+                recovery = GovernanceRepository(self.repository).get_recovery(item.identity_id or item.profile_id or "")
+                if recovery and recovery.phase != "RESOLVED":
+                    continue
                 runtime = state.combinations[item.combination_id]
                 if (
                     item.enabled
@@ -247,6 +261,7 @@ class CombinationHealthManager:
         assigned_generation: int,
         retry_after_seconds: float | None = None,
         transport: AccessMode | None = None,
+        handling_mode: str | None = None,
     ) -> SiteRuntimeState:
         async with self._locks[runtime_key]:
             state = self.repository.get_runtime(runtime_key)
@@ -279,8 +294,9 @@ class CombinationHealthManager:
                         FailureCategory.ACCESS_BLOCK,
                     }:
                         runtime.manual_attention_required = (
-                            category is FailureCategory.ACCESS_CHALLENGE
+                            handling_mode != "AUTO" and (category is FailureCategory.ACCESS_CHALLENGE
                             or runtime.risk_strikes >= 2
+                            )
                         )
                 if (
                     assigned_generation == state.generation

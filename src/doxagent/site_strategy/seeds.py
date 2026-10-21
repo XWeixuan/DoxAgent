@@ -16,6 +16,7 @@ from .schema import (
     BodyStrategyPointer,
     BrowserEnvironment,
     BrowserProfile,
+    ChallengePolicy,
     DomainRole,
     DomainRule,
     MatchType,
@@ -510,6 +511,7 @@ def _site(
     ]
     return SiteStrategySpec(
         site_id=site_id,
+        challenge=ChallengePolicy(unknown_handling="human" if site_id == "reuters" else "auto"),
         default_content_language=default_content_language
         or ("zh-Hant" if site_id == "ctee" else None),
         domains=[DomainRule(host=host) for host in domains],

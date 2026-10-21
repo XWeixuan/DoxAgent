@@ -91,6 +91,8 @@ def _existing_scopes(repository):
 
 
 def crawler_canary(source):
+    if source.source_id == "ctee_semiconductor":
+        return {"url": "https://www.ctee.com.tw/api/category/semi/1"}
     if source.source_id == "globenewswire_semiconductors_rss":
         return {"url": source.entry_url}
     if source.source_id == "yahoo_finance_news":

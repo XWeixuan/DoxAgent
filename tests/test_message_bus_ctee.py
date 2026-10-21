@@ -25,3 +25,7 @@ def test_ctee_observed_category_payload_and_date_precision() -> None:
     assert date_only is not None and date_only.publication_time_basis == "DATE"
     row["hyperLink"] = "https://evil.example/news/20260923701847-430501"
     assert parse_category_item(row) is None
+
+
+def test_ctee_native_json_viewer_wrapper():
+    assert parse_category_response('<html><body><pre style="white-space:pre-wrap">[]</pre></body></html>') == []

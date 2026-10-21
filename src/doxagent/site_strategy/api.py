@@ -107,6 +107,10 @@ class CredentialRequest(BaseModel):
     password: str = Field(min_length=1)
 
 
+class RecoveryMigrationRequest(BaseModel):
+    apply: bool = False
+
+
 class ActivateCombinationRequest(BaseModel):
     expected_generation: int | None = Field(default=None, ge=0)
 
@@ -127,6 +131,7 @@ def create_app(
 ) -> FastAPI:
     if not worker_token or not admin_token:
         raise ValueError("worker and admin tokens are required")
+    service.credential_store = credential_store
 
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
@@ -158,6 +163,44 @@ def create_app(
 
     worker = authorize(worker_token)
     admin = authorize(admin_token)
+
+    @app.get("/v1/recoveries", dependencies=[Depends(admin)])
+    async def recoveries():
+        return [r.model_dump(mode="json", exclude={"affected_contexts"})
+                for r in service.recovery.store.list_recoveries(active_only=False)]
+
+    @app.post("/v1/recoveries:migrate", dependencies=[Depends(admin)])
+    async def recovery_migrate(request: RecoveryMigrationRequest):
+        from .recovery import migrate_recoveries
+        return await asyncio.to_thread(migrate_recoveries, service, apply=request.apply)
+
+    @app.post("/v1/recoveries:rollback-export", dependencies=[Depends(admin)])
+    async def recovery_rollback():
+        from .recovery import rollback_export
+        return await asyncio.to_thread(rollback_export, service)
+
+    @app.get("/v1/recoveries/{recovery_id}/evidence", dependencies=[Depends(admin)])
+    async def recovery_evidence(recovery_id: str):
+        from types import SimpleNamespace
+        value = next((r for r in service.recovery.store.list_recoveries(active_only=False)
+                      if r.recovery_id == recovery_id), None)
+        if value is None:
+            raise HTTPException(status_code=404, detail="Recovery not found")
+        record = service.runtime.evidence_store.for_task(SimpleNamespace(
+            original_target_id=value.original_target_id, browser_instance_id=value.original_instance_id,
+            identity_id=value.identity_id, scope_id=value.scope_id, site_id=value.site_id,
+        ))
+        return JSONResponse({"evidence": record}, headers={"Cache-Control": "no-store"})
+
+    @app.get("/v1/recoveries/{recovery_id}/evidence/{phase}", dependencies=[Depends(admin)])
+    async def recovery_evidence_image(recovery_id: str, phase: Literal["first", "confirmed"]):
+        import json
+        result = await recovery_evidence(recovery_id)
+        record = json.loads(result.body).get("evidence")
+        path = service.runtime.evidence_store.image_path(record["evidence_id"], phase) if record else None
+        return JSONResponse({"record": record, "phase": phase,
+            "image_base64": base64.b64encode(path.read_bytes()).decode() if path else None},
+            headers={"Cache-Control": "no-store"})
 
     @app.get("/v2/scopes", dependencies=[Depends(admin)])
     async def scopes():
@@ -263,9 +306,11 @@ def create_app(
         response_model=ResolvedSite,
         dependencies=[Depends(worker)],
     )
-    async def resolve(url: str, revision: int | None = Query(default=None, ge=1)) -> ResolvedSite:
+    async def resolve(url: str, revision: int | None = Query(default=None, ge=1),
+                      x_site_access_protocol: Annotated[str | None, Header()] = None):
         try:
-            return service.resolve(url, revision=revision)
+            value = service.resolve(url, revision=revision)
+            return JSONResponse(value.model_dump(mode="json", exclude=set() if x_site_access_protocol == "3" else {"challenge"}))
         except (ValueError, RuntimeError) as exc:
             raise HTTPException(status_code=422, detail=str(exc)) from exc
 
@@ -281,14 +326,19 @@ def create_app(
         result = await service.execute(request)
         excluded = (
             set()
-            if x_site_access_protocol == "2"
+            if x_site_access_protocol in {"2", "3"}
             else {
                 "effective_scope_id",
                 "route_generation",
                 "challenge_task_id",
             }
         )
-        return JSONResponse(result.model_dump(mode="json", exclude=excluded))
+        if x_site_access_protocol != "3":
+            excluded |= {"recovery_id", "handling_mode", "retry_at"}
+        data = result.model_dump(mode="json", exclude=excluded)
+        if x_site_access_protocol != "3" and data["disposition"] == "RECOVERY_PENDING":
+            data["disposition"] = "BUDGET_DEFERRED"
+        return JSONResponse(data)
 
     @app.get("/v1/maintenance/inventory", dependencies=[Depends(admin)])
     async def maintenance_inventory():
@@ -327,6 +377,7 @@ def create_app(
                 offset=offset,
                 limit=limit,
             )
+            if not (r := maintenance.store.get_recovery(item.identity_id)) or r.handling_mode == "HUMAN"
         ]
 
     @app.get("/v1/challenge-evidence", dependencies=[Depends(admin)])

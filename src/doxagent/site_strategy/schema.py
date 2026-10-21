@@ -167,6 +167,7 @@ class AuthPolicy(SiteModel):
     maintenance_url: str | None = None
     verification_url: str | None = None
     verification_kind: VerificationKind = "subscription_article"
+    auto_login: bool = False
 
     @field_validator("login_url", "maintenance_url", "verification_url")
     @classmethod
@@ -177,6 +178,12 @@ class AuthPolicy(SiteModel):
         if parsed.scheme not in {"http", "https"} or not parsed.hostname:
             raise ValueError("auth URLs must be absolute HTTP(S)")
         return value.strip()
+
+
+class ChallengePolicy(SiteModel):
+    unknown_handling: Literal["auto", "human"] = "auto"
+    automatic_wait_seconds: int = Field(default=60, ge=5, le=120)
+    recovery_enabled: bool = True
 
 
 class SiteStrategySpec(SiteModel):
@@ -192,6 +199,7 @@ class SiteStrategySpec(SiteModel):
         default_factory=lambda: BodyStrategyPointer(ref="builtin:generic@1")
     )
     auth: AuthPolicy = Field(default_factory=AuthPolicy)
+    challenge: ChallengePolicy = Field(default_factory=ChallengePolicy)
 
     @field_validator("site_id")
     @classmethod
@@ -368,6 +376,9 @@ class SiteIdentityAuth(SiteModel):
     verification_url: str | None = None
     reason_code: str | None = None
     observed_session_revision: int = Field(default=0, ge=0)
+    last_check_at: datetime | None = None
+    last_check_result: str | None = None
+    last_check_reason: str | None = None
 
     @field_validator("verification_url")
     @classmethod
@@ -457,6 +468,7 @@ class AccessMode(StrEnum):
 
 class AccessDisposition(StrEnum):
     SUCCESS = "SUCCESS"
+    RECOVERY_PENDING = "RECOVERY_PENDING"
     ACCESS_EXHAUSTED = "ACCESS_EXHAUSTED"
     CONTENT_ERROR = "CONTENT_ERROR"
     AUTH_REQUIRED = "AUTH_REQUIRED"
@@ -494,6 +506,7 @@ class ResolvedSite(SiteModel):
     crawler: StrategyPointer | None = None
     auth: AuthPolicy = Field(default_factory=AuthPolicy)
     access: AccessPolicy
+    challenge: ChallengePolicy = Field(default_factory=ChallengePolicy)
 
 
 class AccessRequest(SiteModel):
@@ -557,6 +570,9 @@ class AccessResult(SiteModel):
     effective_scope_id: str | None = None
     route_generation: int | None = None
     challenge_task_id: str | None = None
+    recovery_id: str | None = None
+    handling_mode: Literal["AUTO", "HUMAN"] | None = None
+    retry_at: datetime | None = None
     disposition: AccessDisposition
     status_code: int | None = None
     final_url: str | None = None

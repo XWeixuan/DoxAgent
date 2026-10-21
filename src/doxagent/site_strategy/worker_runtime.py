@@ -63,16 +63,18 @@ class WorkerRuntimeFacade:
             if not identity or status["stage"] != "IDLE" or identity_id in viewer_identities:
                 continue
             profile = self.runtime.repository.get_profile(identity.profile_id)
+            recovery = store.get_recovery(identity_id)
+            recovering_page = bool(recovery and recovery.phase != "RESOLVED" and recovery.page_status != "LOST")
             challenge = store.current_challenge(identity_id)
             lost_scene = challenge is not None and challenge.state == "TARGET_LOST"
             human = bool(profile and profile.maintenance_session_id and not lost_scene)
-            if human and identity.runtime_kind is BrowserRuntimeKind.MANAGED_PLAYWRIGHT:
+            if (human or recovering_page) and identity.runtime_kind is BrowserRuntimeKind.MANAGED_PLAYWRIGHT:
                 continue
             timeout = min(identity.lifecycle.idle_seconds, 600 if identity_id in active else 120)
             rotate = status["age_seconds"] >= 4 * 3600 or status["high_rss_samples"] >= 3
             driver_idle = status["idle_seconds"] >= 600
             native_idle = (
-                not human
+                not human and not recovering_page
                 and (identity_id not in hot or lost_scene)
                 and status["idle_seconds"] >= timeout
             )
@@ -87,6 +89,11 @@ class WorkerRuntimeFacade:
         # A detached controller is not a reason to leave an inactive native Chrome forever.
         live = self.runtime.workers.status()
         for _, identity in self.runtime.repository.list_active_identities():
+            recovery = store.get_recovery(identity.identity_id)
+            if recovery and recovery.phase != "RESOLVED" and (
+                recovery.page_status != "LOST" or (recovery.lease_until and recovery.lease_until > utc_now())
+            ):
+                continue
             challenge = store.current_challenge(identity.identity_id)
             lost_scene = challenge is not None and challenge.state == "TARGET_LOST"
             if (
@@ -275,6 +282,65 @@ class WorkerSiteAccessRuntime(SiteAccessRuntime):
         identity = self.repository.get_identity(binding[1])
         egress = self.repository.get_egress(identity.egress_id)
         return binding[0], identity, egress
+
+    async def observe_recovery(self, recovery, identity):
+        from .recovery import retained_token
+        from .governance_repository import GovernanceRepository
+        handle = self.workers.workers.get(identity.identity_id)
+        if handle is None or handle.process.returncode is not None:
+            raise RuntimeError("original_browser_state_unverified")
+        return decode_response(await self.workers.command(
+            identity, self.repository.get_egress(identity.egress_id), "observe_recovery", {
+                "retained_token": retained_token(GovernanceRepository(self.repository), recovery),
+                "target_id": recovery.original_target_id,
+                "expected_instance_id": recovery.original_instance_id,
+            }, timeout=10,
+        ))
+
+    async def auto_login_reuters(self, identity, egress, credentials, request):
+        try:
+            return await self.workers.command(identity, egress, "auto_login_reuters", {
+                "credentials": credentials, "request": request.model_dump(mode="json"),
+            }, timeout=40)
+        finally:
+            credentials.clear()
+
+    async def probe_recovery(self, request, identity, egress):
+        request = request.model_copy(update={"recipe_parameters": {
+            **request.recipe_parameters, "_maintenance_canary": True, "_recovery_probe": True,
+        }})
+        return await self._browser(request, self.resolver.resolve(request.url), identity, egress)
+
+    async def close_recovery(self, recovery, identity):
+        from .governance_repository import GovernanceRepository
+
+        store = GovernanceRepository(self.repository)
+        from .recovery import retained_token
+        token = retained_token(store, recovery)
+        target = store.get_target(recovery.original_allocation_id or "")
+        if not target or target.state in {"CLOSED", "LOST"}:
+            return
+        if identity.runtime_kind is BrowserRuntimeKind.EXTERNAL_CHROME:
+            from types import SimpleNamespace
+            from .maintenance_document import close_original_document
+            from .supervisor_client import ChromeSupervisorClient
+
+            await close_original_document(
+                ChromeSupervisorClient(self.supervisor_socket, owner_id=self.controller_id), identity,
+                SimpleNamespace(target_id=target.target_id, browser_instance_id=target.browser_instance_id), target,
+            )
+        else:
+            await self.workers.command(identity, self.repository.get_egress(identity.egress_id), "close_recovery", {
+                "retained_token": token,
+                "target_id": target.target_id, "expected_instance_id": target.browser_instance_id,
+            }, timeout=10)
+        store.save_target(target.model_copy(update={"state": "CLOSED", "updated_at": utc_now()}))
+        handle = self.workers.workers.get(identity.identity_id)
+        if identity.runtime_kind is BrowserRuntimeKind.EXTERNAL_CHROME and handle and handle.process.returncode is None:
+            await self.workers.command(identity, self.repository.get_egress(identity.egress_id), "forget_recovery", {
+                "retained_token": token,
+                "target_id": target.target_id, "expected_instance_id": target.browser_instance_id,
+            }, timeout=3)
 
     async def open_login(self, profile, egress, url, *, token=None, identity=None, site_id=None):
         if identity is None or token is None:

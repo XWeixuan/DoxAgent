@@ -33,7 +33,7 @@ class OwnedBrowserTarget(SiteModel):
     browser_instance_id: str
     worker_epoch: int = Field(ge=0)
     target_id: str | None = None
-    owner_kind: Literal["BUSINESS", "CHALLENGE", "LOGIN"] = "BUSINESS"
+    owner_kind: Literal["BUSINESS", "CHALLENGE", "LOGIN", "RECOVERY"] = "BUSINESS"
     owner_ref: str | None = None
     state: Literal["ALLOCATING", "LIVE", "CLOSE_PENDING", "CLOSED", "LOST"] = "ALLOCATING"
     created_at: datetime = Field(default_factory=utc_now)
@@ -64,6 +64,41 @@ class ChallengeTask(SiteModel):
     predecessor_task_id: str | None = None
     superseded_by: str | None = None
     seen_count: int = 1
+    recovery_id: str | None = None
+    resolution_reason: str | None = None
+    resolved_by: str | None = None
+
+
+class BrowserRecovery(SiteModel):
+    recovery_id: str = Field(default_factory=lambda: new_id("recovery"))
+    identity_id: str
+    scope_id: str
+    site_id: str
+    generation: int = 0
+    phase: Literal["OBSERVING", "BACKOFF", "PROBING", "RESOLVED"] = "OBSERVING"
+    assessment: dict = Field(default_factory=dict)
+    handling_mode: Literal["AUTO", "HUMAN"] = "AUTO"
+    challenge_task_id: str | None = None
+    original_allocation_id: str | None = None
+    original_target_id: str | None = None
+    original_instance_id: str | None = None
+    original_url: str | None = None
+    page_status: Literal["PRESENT", "LOST", "UNKNOWN"] = "UNKNOWN"
+    opened_at: datetime = Field(default_factory=utc_now)
+    updated_at: datetime = Field(default_factory=utc_now)
+    next_due_at: datetime = Field(default_factory=utc_now)
+    next_probe_at: datetime | None = None
+    resolved_at: datetime | None = None
+    attempt_count: int = 0
+    last_real_probe_at: datetime | None = None
+    last_error: str | None = None
+    resolved_by: str | None = None
+    affected_contexts: list[dict] = Field(default_factory=list, max_length=8)
+    verified_contexts: list[str] = Field(default_factory=list, max_length=8)
+    lease_owner: str | None = None
+    lease_until: datetime | None = None
+    fingerprint: str | None = None
+    cleanup_pending: bool = False
 
 
 class MaintenanceSession(SiteModel):

@@ -54,6 +54,10 @@ def viewer_binding_matches(expected, sessions):
 def verification_message(details):
     if "challenge" not in details:
         return None
+    if details.get("reason") == "automatic_verification_pending":
+        return "Automatic verification is running. No CAPTCHA interaction is required."
+    if details.get("reason") == "original_page_unavailable":
+        return "Original page unavailable; business verification continues separately."
     if details["challenge"] == "BLOCKED":
         return "Challenge still blocks this page. Complete it in the Viewer, then verify again."
     prefix = (
@@ -339,7 +343,8 @@ class SiteLoginApp:
                         + " "
                         + region_label(row["egress_id"], row["egress_node"]),
                         row.get("auth_state"),
-                        row.get("crawler_ready", "NOT_TESTED"),
+                        ("RECOVERING " + str(row.get("recovery_handling") or "AUTO")
+                         if row.get("recovery_state") else row.get("crawler_ready", "NOT_TESTED")),
                         row.get("body_ready", "NOT_TESTED"),
                     )
                 else:

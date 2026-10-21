@@ -89,10 +89,12 @@ class ProfileUseCoordinator:
             sessions = store.list_sessions()
             session_profiles = {}
             for session in sorted(sessions, key=lambda s: (s.state == "OPEN", s.updated_at)):
+                if session.state != "OPEN":
+                    continue
                 identity = self.repository.get_identity(session.identity_id)
                 if session.kind == "CHALLENGE":
                     task = store.current_challenge(session.identity_id)
-                    if not task or session.task_id != task.task_id or task.state == "TARGET_LOST":
+                    if not task or session.task_id != task.task_id or task.state == "TARGET_LOST" or session.state != "OPEN":
                         continue  # Historical released sessions do not reclaim the Profile.
                 if identity and session.control_token:
                     session_profiles[identity.profile_id] = session
@@ -121,6 +123,8 @@ class ProfileUseCoordinator:
                     profile.profile_id in external_profiles
                     and profile.challenge_url
                     and profile.maintenance_session_id
+                    and not any(r.identity_id == profile.challenge_identity_id and r.phase != "RESOLVED"
+                                for r in store.list_recoveries())
                     and profile.operational_state
                     in {
                         ProfileOperationalState.MAINTENANCE,
@@ -151,6 +155,8 @@ class ProfileUseCoordinator:
                     }
                     and profile.maintenance_session_id
                     and self._maintenance_profile is None
+                    and not any(r.identity_id == profile.challenge_identity_id and r.phase != "RESOLVED"
+                                for r in store.list_recoveries())
                 ):
                     self._maintenance_profile = profile.profile_id
                     if (
@@ -188,6 +194,34 @@ class ProfileUseCoordinator:
                             }
                         )
                     )
+
+    @asynccontextmanager
+    async def recovery(self, identity, recovery_id, expected_generation):
+        from .governance_repository import GovernanceRepository
+
+        async with self._condition:
+            store = GovernanceRepository(self.repository)
+            value = store.get_recovery(identity.identity_id)
+            if not self._accepting or not value or (
+                value.recovery_id, value.generation
+            ) != (recovery_id, expected_generation) or not value.lease_until or value.lease_until <= utc_now():
+                raise ProfileUnavailableError("stale_recovery_lease")
+            if self._active.get(identity.profile_id, 0) or any(
+                s.identity_id == identity.identity_id and s.state == "OPEN" for s in store.list_sessions()
+            ):
+                raise ProfileUnavailableError("user_maintenance_or_business_active")
+            self._active[identity.profile_id] = 1
+        try:
+            yield self.repository.get_profile(identity.profile_id)
+        finally:
+            async with self._condition:
+                self._active.pop(identity.profile_id, None)
+                self._condition.notify_all()
+
+    async def release_recovered(self, identity):
+        async with self._condition:
+            self._challenge_profiles.discard(identity.profile_id)
+            self._condition.notify_all()
 
     @asynccontextmanager
     async def business(self, profile_id: str) -> AsyncIterator[BrowserProfile]:
@@ -442,7 +476,8 @@ class ProfileUseCoordinator:
                 ),
                 None,
             )
-            if task:
+            recovery = store.get_recovery(task.identity_id) if task else None
+            if task and not (recovery and recovery.phase != "RESOLVED"):
                 retained = next(
                     (s for s in store.list_sessions() if s.task_id == task.task_id), None
                 )
@@ -535,6 +570,9 @@ class SiteStrategyService:
         from .failover import FailoverCoordinator
 
         self.failover = FailoverCoordinator(self)
+        from .recovery import BrowserRecoveryCoordinator
+
+        self.recovery = BrowserRecoveryCoordinator(self)
 
     async def start(self) -> None:
         """Acquire the single-owner profile lock and start the browser driver."""
@@ -685,6 +723,7 @@ class SiteStrategyService:
         return self.profile_use.accepting
 
     async def close(self) -> None:
+        await self.recovery.close()
         await self.failover.close()
         for task in self._native_drains.values():
             task.cancel()
@@ -1481,6 +1520,21 @@ class SiteStrategyService:
             ):
                 candidates = [c for c in candidates if c.identity_id == scope.fallback_identity_id]
         if not candidates:
+            if request.mode is not AccessMode.HTTP_PUBLIC:
+                from .governance_repository import GovernanceRepository
+
+                store = GovernanceRepository(self.repository)
+                pending = next((r for c in combinations
+                                if (r := store.get_recovery(c.identity_id or c.profile_id or ""))
+                                and r.phase != "RESOLVED" and any(
+                                    x["purpose"] == request.purpose.value for x in r.affected_contexts)), None)
+                if pending:
+                    result = self._result(request, resolved, AccessDisposition.RECOVERY_PENDING,
+                                          reason="site_recovery_pending", started=started,
+                                          retry_not_before=pending.next_due_at, combination_skips=skips)
+                    return result.model_copy(update={"recovery_id": pending.recovery_id,
+                                                     "handling_mode": pending.handling_mode,
+                                                     "retry_at": pending.next_due_at})
             manual = any("manual_attention" in row["skip_reasons"] for row in skips)
             return self._result(
                 request,
@@ -1710,6 +1764,7 @@ class SiteStrategyService:
                     assigned_generation=attempt.generation,
                     retry_after_seconds=response.retry_after_seconds,
                     transport=request.mode,
+                    handling_mode=(response.assessment or {}).get("handling_mode"),
                 )
                 self._event(request, resolved, combination, "COMBINATION_RISK_FAILURE", attempt)
                 if response.challenge_token is not None:
@@ -1718,6 +1773,19 @@ class SiteStrategyService:
                     )
                     # The human task blocks only this identity. The candidate
                     # loop must still consider this source's independent fallback.
+                if response.recovery_id:
+                    from .governance_repository import GovernanceRepository
+
+                    pending = GovernanceRepository(self.repository).get_recovery(identity.identity_id)
+                    self.failover.schedule(scope, request.purpose) if pending.handling_mode == "HUMAN" else None
+                    result = self._result_from_response(
+                        request, resolved, combination, profile, egress, response,
+                        AccessDisposition.RECOVERY_PENDING, category, "site_recovery_pending", attempts, started,
+                    )
+                    return result.model_copy(update={"recovery_id": pending.recovery_id,
+                                                     "handling_mode": pending.handling_mode,
+                                                     "retry_at": pending.next_due_at,
+                                                     "retry_not_before": pending.next_due_at})
                 continue
             if category is FailureCategory.EGRESS_UNAVAILABLE:
                 unavailable += 1
@@ -2626,13 +2694,22 @@ class SiteStrategyService:
         scope = store.maintenance_scope(session.scope_id)
         if scope is None:
             raise ValueError("maintenance scope is no longer configured")
-        # The outer operation has 45s. Leave time for exact target cleanup and
-        # durable session release; business probes cannot consume that reserve.
-        deadline = time.monotonic() + 30
+        # Independent stages leave a cleanup reserve; losing the historical page
+        # must not prevent an explicit same-identity business verification.
+        deadline = time.monotonic() + 90
         if stage:
             stage("CHECKING_CHALLENGE")
-        original = await self.runtime.inspect_challenge(session.control_token)
         report = VerificationReport()
+        try:
+            async with asyncio.timeout(10):
+                original = await self.runtime.inspect_challenge(session.control_token)
+        except Exception as exc:
+            original = RuntimeResponse(0, scope.verification_plan.get("crawler", {}).get("url")
+                                       or self.repository.get_strategy(scope.owner_site_id).auth.login_url
+                                       or "https://" + self.repository.get_strategy(scope.owner_site_id).domains[0].host,
+                                       {}, reason=verification_failure_reason(exc))
+            report.reason = "original_page_unavailable"
+            report.original_page_kind = "unknown"
         original_inspection = inspect_html(
             original.body, original.final_url, "", generic_extraction=False
         )
@@ -2640,7 +2717,13 @@ class SiteStrategyService:
         if original_inspection.access_reason == "challenge_required":
             report.challenge = "BLOCKED"
             report.reason = "challenge_required"
-            if session.kind == "LOGIN" and session.allocation_id and original.provenance:
+            from .challenge_detection import assess
+
+            assessment = assess(original.body, status=original.status_code, headers=original.headers,
+                                policy=self.repository.get_strategy(scope.owner_site_id).challenge, blocked=True)
+            if assessment.handling_mode == "AUTO":
+                report.challenge, report.reason = "UNKNOWN", "automatic_verification_pending"
+            if session.kind == "LOGIN" and assessment.handling_mode == "HUMAN" and session.allocation_id and original.provenance:
                 from .governance_models import ChallengeTask
 
                 task = store.handoff_challenge(
@@ -2669,12 +2752,17 @@ class SiteStrategyService:
                     site_id=session.site_id,
                     token=session.control_token,
                 )
-            return store.commit_verification(scope, session.identity_id, report, session=session)
+            if session.kind == "LOGIN":
+                from .recovery import register_login_recovery
+                register_login_recovery(self, scope, session, assessment)
+                return store.commit_verification(scope, session.identity_id, report, session=session)
         if original.challenge_cleared:
             report.challenge = "CLEARED"
         spec = self.repository.get_strategy(scope.owner_site_id)
         crawler = scope.verification_plan.get("crawler")
         triggering_task = store.current_challenge(session.identity_id)
+        if session.kind == "CHALLENGE" and triggering_task and triggering_task.purpose == "BODY" and not article_url:
+            crawler = None
         if (
             crawler and scope.source_id == "investing_ticker_news"
             and session.kind == "CHALLENGE" and triggering_task
@@ -2699,16 +2787,17 @@ class SiteStrategyService:
                 operation_id=f"verify-crawler:{uuid4().hex}",
                 purpose=SitePurpose.CRAWLER,
                 mode=AccessMode.BROWSER,
-                remaining_budget_ms=max(1, int((deadline - time.monotonic()) * 1000)),
+                remaining_budget_ms=max(1, min(75000, int((deadline - time.monotonic()) * 1000))),
             )
             try:
-                if original.final_url == request.url and original.provenance:
+                if original.final_url == request.url and original.provenance and report.challenge != "BLOCKED":
                     # The live, exact human-owned page can itself prove the
                     # configured collector contract. Do not open its duplicate
                     # just to read the same listing again under a short budget.
                     capture = original
                 else:
-                    capture = await self.runtime.verify_crawler(session.control_token, request)
+                    identity = self.repository.get_identity(session.identity_id)
+                    capture = await self.runtime.probe_recovery(request, identity, self.repository.get_egress(identity.egress_id))
                 ready = validate_crawler_capture(scope.source_id, capture, request)
             except Exception as exc:
                 ready = False
@@ -2757,7 +2846,9 @@ class SiteStrategyService:
             *article_candidates,
             excluded_urls=(spec.auth.login_url,),
         )
-        if url and time.monotonic() < deadline:
+        check_body = not (session.kind == "CHALLENGE" and triggering_task
+                          and triggering_task.purpose == "CRAWLER" and not article_url)
+        if url and check_body and time.monotonic() < deadline:
             if self.resolve(url).site_id != scope.owner_site_id:
                 raise ValueError("verification article belongs to another publisher")
             if stage:
@@ -2766,23 +2857,25 @@ class SiteStrategyService:
 
             report.verification_url = safe_display_url(url)
             try:
-                capture = await self.runtime.verify_login(
-                    session.control_token,
-                    url,
-                    timeout_ms=max(1, int((deadline - time.monotonic()) * 1000)),
-                )
+                identity = self.repository.get_identity(session.identity_id)
+                capture = await self.runtime.probe_recovery(AccessRequest(
+                    operation_id=f"verify-body:{uuid4().hex}", url=url, purpose=SitePurpose.BODY,
+                    mode=AccessMode.BROWSER,
+                    remaining_budget_ms=max(1, min(75000, int((deadline - time.monotonic()) * 1000))),
+                ), identity, self.repository.get_egress(identity.egress_id))
                 if capture.status_code in {404, 410} and not article_url:
                     replacement = next((u for u in article_candidates if u != url), None)
                     if replacement and time.monotonic() < deadline:
                         url = replacement
-                        capture = await self.runtime.verify_login(
-                            session.control_token,
-                            url,
-                            timeout_ms=max(1, int((deadline - time.monotonic()) * 1000)),
-                        )
+                        capture = await self.runtime.probe_recovery(AccessRequest(
+                            operation_id=f"verify-body:{uuid4().hex}", url=url, purpose=SitePurpose.BODY,
+                            mode=AccessMode.BROWSER,
+                            remaining_budget_ms=max(1, min(75000, int((deadline - time.monotonic()) * 1000))),
+                        ), identity, self.repository.get_egress(identity.egress_id))
                 body = validate_capture(
                     capture,
                     self.resolve(url),
+                    observed_document=capture.reason == "observed_document_after_verification",
                     expected_subscription=(
                         spec.auth.verification_kind == "subscription_article"
                         and url == spec.auth.verification_url

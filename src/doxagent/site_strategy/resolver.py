@@ -134,6 +134,7 @@ class SiteResolver:
             crawler=spec.crawler,
             auth=spec.auth,
             access=spec.access,
+            challenge=spec.challenge,
         )
 
     def supports_host(self, site_id: str, host: str) -> bool:

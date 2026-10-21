@@ -800,6 +800,10 @@ class ReutersSiteSearchAdapter:
         return PollResult(
             messages=list(messages.values()),
             site_access_deferred=bool(results) and all(r.site_access_deferred for r in results),
+            site_access_deferred_reason=next((r.site_access_deferred_reason for r in results
+                                             if r.site_access_deferred_reason), None),
+            site_access_retry_not_before=min((r.site_access_retry_not_before for r in results
+                                             if r.site_access_retry_not_before), default=None),
             failures=[failure for result in results for failure in result.failures],
             window_coverage="COMPLETE"
             if all(item.get("coverage") == "COMPLETE" for item in checkpoints.values())

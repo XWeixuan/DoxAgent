@@ -403,9 +403,9 @@ class ExternalChromeRuntime:
                 continue
             if record["owner_kind"] != "BUSINESS":
                 continue
-            await self.target_owner.event(
-                "state", {"allocation_id": allocation_id, "state": "CLOSE_PENDING"}
-            )
+            claim = await self.target_owner.event("close_claim", {"allocation_id": allocation_id})
+            if not claim["claimed"]:
+                continue
             try:
                 await entry.cdp.send("Target.closeTarget", {"targetId": target_id})
             except Exception as exc:

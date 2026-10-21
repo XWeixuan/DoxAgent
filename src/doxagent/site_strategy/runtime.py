@@ -62,6 +62,8 @@ class RuntimeResponse:
     challenge_cleared: bool | None = None
     body_quality: str | None = None
     subscription_verified: bool = False
+    recovery_id: str | None = None
+    assessment: dict | None = None
 
 
 class OwnerFileLock:
@@ -849,13 +851,16 @@ class PersistentBrowserPool:
         os.replace(temporary, manifest)
 
 
-async def _close_owned_page(page: Any, cdp: _RawBrowserCDP, *, timeout_seconds: float = 5) -> None:
+async def _close_owned_page(page: Any, cdp: _RawBrowserCDP, *, timeout_seconds: float = 5,
+                            owner_ref: str | None = None) -> None:
     """Bound cleanup separately: cancellation does not bound awaited finally blocks."""
     target_id = getattr(page, "_doxagent_target_id", None)
     owner = getattr(page, "_doxagent_target_owner", None)
     allocation_id = getattr(page, "_doxagent_allocation_id", None)
     if owner and allocation_id:
-        await owner.event("state", {"allocation_id": allocation_id, "state": "CLOSE_PENDING"})
+        claim = await owner.event("close_claim", {"allocation_id": allocation_id, "owner_ref": owner_ref})
+        if not claim["claimed"]:
+            return  # A completed handoff wins over this old connection's finally.
     if target_id:
         # CDP does not wait for Playwright's unbounded abort acknowledgement.
         try:
@@ -1284,7 +1289,8 @@ class SiteAccessRuntime:
             if inspect_html(html, page.url, "").access_reason == "challenge_required":
                 page._doxagent_challenge_html = html
                 token = None
-                if not request.recipe_parameters.get("_maintenance_canary"):
+                if (not request.recipe_parameters.get("_maintenance_canary")
+                        or request.recipe_parameters.get("_retain_recovery_probe")):
                     token = await self._retain_challenge(
                         lease, page, gate, identity, resolved, request
                     )
@@ -1296,6 +1302,8 @@ class SiteAccessRuntime:
                     body=html,
                     provenance=lease.provenance,
                     challenge_token=token,
+                    recovery_id=getattr(page, "_doxagent_recovery_id", None),
+                    assessment=getattr(page, "_doxagent_assessment", None),
                     challenge_target_id=getattr(
                         page, "_doxagent_original_target_id", gate.root_target_id
                     ),
@@ -1573,6 +1581,11 @@ class SiteAccessRuntime:
                 challenge = inspect_html(
                     html, page.url, "", generic_extraction=resolved.site_id != "barrons"
                 ).access_reason == "challenge_required"
+                if challenge and request.recipe_parameters.get("_recovery_probe"):
+                    html = await self._wait_automatic_document(lease, page, gate, resolved, html, deadline)
+                    if inspect_html(html, page.url, "", generic_extraction=False).access_reason != "challenge_required":
+                        return RuntimeResponse(0, page.url, {}, body=html, provenance=lease.provenance,
+                                               reason="observed_document_after_verification")
                 if challenge:
                     page._doxagent_challenge_html = html
                     page._doxagent_challenge_status = status
@@ -1593,7 +1606,8 @@ class SiteAccessRuntime:
                     )
                 token = (
                     uuid4().hex
-                    if (challenge and not request.recipe_parameters.get("_maintenance_canary"))
+                    if (challenge and (not request.recipe_parameters.get("_maintenance_canary")
+                                       or request.recipe_parameters.get("_retain_recovery_probe")))
                     else None
                 )
                 if token is not None:
@@ -1613,6 +1627,8 @@ class SiteAccessRuntime:
                     )
                     if challenge
                     else None,
+                    recovery_id=getattr(page, "_doxagent_recovery_id", None),
+                    assessment=getattr(page, "_doxagent_assessment", None),
                 )
             except Exception as exc:
                 # A native redirect/late WAF document may replace the initial
@@ -1649,7 +1665,8 @@ class SiteAccessRuntime:
                     if (
                         inspection
                         and inspection.access_reason == "challenge_required"
-                        and not request.recipe_parameters.get("_maintenance_canary")
+                        and (not request.recipe_parameters.get("_maintenance_canary")
+                             or request.recipe_parameters.get("_retain_recovery_probe"))
                     ):
                         page._doxagent_challenge_html = html
                         token = await self._retain_challenge(
@@ -1666,6 +1683,8 @@ class SiteAccessRuntime:
                             body=html,
                             provenance=lease.provenance,
                             challenge_token=token,
+                            recovery_id=getattr(page, "_doxagent_recovery_id", None),
+                            assessment=getattr(page, "_doxagent_assessment", None),
                             challenge_target_id=getattr(
                                 page, "_doxagent_original_target_id", gate.root_target_id
                             ),
@@ -1706,6 +1725,36 @@ class SiteAccessRuntime:
             if not retained and not getattr(page, "_doxagent_handoff_pending", False):
                 await lease.__aexit__(None, None, None)
 
+    async def _wait_automatic_document(self, lease, page, gate, resolved, html, deadline):
+        from .challenge_detection import assess
+
+        end = min(deadline - 5, time.monotonic() + resolved.challenge.automatic_wait_seconds)
+        while time.monotonic() < end:
+            assessment = assess(html, policy=resolved.challenge, blocked=True)
+            if assessment.handling_mode == "HUMAN" or assessment.kind == "ACCESS_BLOCK":
+                break
+            await asyncio.sleep(min(2, max(0, end - time.monotonic())))
+            session_id = None
+            try:
+                async with asyncio.timeout(min(3, max(.01, end - time.monotonic()))):
+                    session_id = (await lease.browser_cdp.send("Target.attachToTarget", {
+                        "targetId": gate.root_target_id, "flatten": True,
+                    }))["sessionId"]
+                    root = (await lease.browser_cdp.send("DOM.getDocument", {"depth": 0}, session_id=session_id))["root"]
+                    html = (await lease.browser_cdp.send("DOM.getOuterHTML", {"nodeId": root["nodeId"]}, session_id=session_id))["outerHTML"]
+            except Exception:
+                break  # Unknown is retryable; a hung DOM is not proof of CAPTCHA failure.
+            finally:
+                if session_id:
+                    try:
+                        async with asyncio.timeout(1):
+                            await lease.browser_cdp.send("Target.detachFromTarget", {"sessionId": session_id})
+                    except Exception:
+                        pass
+            if inspect_html(html, page.url, "", generic_extraction=False).access_reason != "challenge_required":
+                break
+        return html
+
     async def _retain_challenge(
         self,
         lease: Any,
@@ -1714,12 +1763,23 @@ class SiteAccessRuntime:
         identity: BrowserIdentitySpec,
         resolved: ResolvedSite,
         request: AccessRequest,
-    ) -> str:
+    ) -> str | None:
         # One path for ordinary documents and recipes: preserve the actual tab,
         # remove navigation instrumentation, and let the service pause its identity.
-        from .governance_models import ChallengeTask
+        from .governance_models import BrowserRecovery
+        from .challenge_detection import assess, observe_frames
+        from .recovery import recovery_context
+        from datetime import timedelta
+        from .schema import utc_now
 
         page._doxagent_handoff_pending = True
+        assessment = assess(
+            getattr(page, "_doxagent_challenge_html", ""),
+            status=getattr(page, "_doxagent_challenge_status", 0),
+            headers=getattr(page, "_doxagent_challenge_headers", {}),
+            policy=resolved.challenge, blocked=True, frame_html=await observe_frames(page),
+        )
+        page._doxagent_assessment = assessment.model_dump(mode="json")
 
         async def transfer():
             allocation_id = getattr(page, "_doxagent_allocation_id", None)
@@ -1740,41 +1800,39 @@ class SiteAccessRuntime:
                         "target_id": gate.root_target_id,
                     },
                 )
-            task = ChallengeTask.model_validate(
+            recovery = BrowserRecovery.model_validate(
                 await self.target_owner.event(
-                    "handoff",
-                    ChallengeTask(
+                    "recovery",
+                    BrowserRecovery(
                         scope_id=str(
                             resolved.match_evidence.get("scope_id")
                             or f"publisher:{resolved.site_id}"
                         ),
                         identity_id=identity.identity_id,
                         site_id=resolved.site_id,
-                        purpose=request.purpose.value,
-                        operation_id=request.operation_id,
-                        combination_id=next(
-                            (
-                                c.combination_id
-                                for c in resolved.access.combinations
-                                if c.identity_id == identity.identity_id
-                            ),
-                            identity.identity_id,
-                        ),
-                        original_url=request.url,
                         original_target_id=gate.root_target_id,
-                        browser_instance_id=lease.provenance.instance_id,
-                        allocation_id=allocation_id,
-                        reason="challenge_required",
+                        original_instance_id=lease.provenance.instance_id,
+                        original_url=page.url,
+                        original_allocation_id=allocation_id,
+                        assessment=assessment.model_dump(mode="json"),
+                        handling_mode=assessment.handling_mode,
+                        affected_contexts=[recovery_context(request)],
+                        next_probe_at=utc_now() + timedelta(seconds=(
+                            300 if assessment.handling_mode == "HUMAN"
+                            else resolved.challenge.automatic_wait_seconds + 60
+                        )),
                     ).model_dump(mode="json"),
                 )
             )
-            page._doxagent_challenge_task_id = task.task_id
-            token = task.task_id
-            page._doxagent_original_target_id = task.original_target_id
+            page._doxagent_recovery_id = recovery.recovery_id
+            page._doxagent_challenge_task_id = recovery.challenge_task_id
+            page._doxagent_owner_ref = recovery.challenge_task_id or recovery.recovery_id
+            token = recovery.challenge_task_id or recovery.recovery_id
+            page._doxagent_original_target_id = recovery.original_target_id
             await gate.close()
-            if task.allocation_id != allocation_id:
+            if recovery.original_allocation_id != allocation_id:
                 await lease.__aexit__(None, None, None)
-                return token
+                return recovery.challenge_task_id
             self._maintenance_pages[token] = _MaintenancePage(
                 lease,
                 page,
@@ -1795,7 +1853,7 @@ class SiteAccessRuntime:
                 ), name="challenge-evidence")
                 self._ownership_transfers.add(task)
                 task.add_done_callback(self._ownership_transfers.discard)
-            return token
+            return recovery.challenge_task_id
 
         transfer_task = asyncio.create_task(transfer(), name="challenge-ownership-transfer")
         if not hasattr(self, "_ownership_transfers"):
@@ -1833,6 +1891,60 @@ class SiteAccessRuntime:
         if phase == "first" and evidence_id:
             page._doxagent_evidence_first = True
         return evidence_id
+
+    async def auto_login_reuters(self, identity, egress, credentials, request):
+        """Optional regular login, using the same identity and no Viewer claim."""
+        from .recovery import reuters_login_form
+
+        resolved = self.resolver.resolve(request.url)
+        if resolved.site_id != "reuters":
+            raise ValueError("auto_login_site_not_supported")
+        deadline = time.monotonic() + 35
+        lease = await self.browser_runtimes.page(identity, egress, deadline=deadline)
+        gate = None
+        retained = False
+        try:
+            async with asyncio.timeout_at(deadline):
+                page = await lease.__aenter__()
+                gate = _DocumentNavigationGate(page, self.resolver, resolved, lease.browser_cdp)
+                await gate.start()
+                await page.goto(request.url, wait_until="domcontentloaded", timeout=15000)
+                result = await reuters_login_form(page, credentials)
+                if result["status"] == "CHALLENGE_REQUIRED":
+                    page._doxagent_challenge_html = await page.content()
+                    await self._retain_challenge(lease, page, gate, identity, resolved, request)
+                    retained = True
+                return result
+        except Exception:
+            return {"status": "LOGIN_ATTEMPT_FAILED"}  # Do not expose Playwright form errors.
+        finally:
+            credentials.clear()
+            if gate and not retained:
+                await gate.close()
+            if not retained:
+                await lease.__aexit__(None, None, None)
+
+    async def probe_recovery(self, request, identity, egress):
+        request = request.model_copy(update={"recipe_parameters": {
+            **request.recipe_parameters, "_maintenance_canary": True, "_recovery_probe": True,
+        }})
+        return await self._browser(request, self.resolver.resolve(request.url), identity, egress)
+
+    async def observe_recovery(self, recovery, identity):
+        from .recovery import retained_token
+        from .governance_repository import GovernanceRepository
+        maintained = self._maintenance_pages.get(retained_token(GovernanceRepository(self.repository), recovery))
+        if not maintained or maintained.page.is_closed():
+            raise RuntimeError("original_challenge_target_lost")
+        if maintained.identity_id != identity.identity_id:
+            raise RuntimeError("exact_recovery_target_ownership_required")
+        return RuntimeResponse(0, maintained.page.url, {}, body=await maintained.page.content(),
+                               provenance=maintained.lease.provenance)
+
+    async def close_recovery(self, recovery, identity):
+        from .recovery import retained_token
+        from .governance_repository import GovernanceRepository
+        await self.close_login(retained_token(GovernanceRepository(self.repository), recovery))
 
     async def reset_egress(self, egress_id: str) -> None:
         stale = [key for key in self._http_sessions if key[1] == egress_id]
@@ -1908,7 +2020,7 @@ class SiteAccessRuntime:
         session_token = token or uuid4().hex
         allocation_id = getattr(page, "_doxagent_allocation_id", None)
         if allocation_id:
-            await self.target_owner.event(
+            owned = await self.target_owner.event(
                 "login",
                 {
                     "allocation_id": allocation_id,
@@ -1916,6 +2028,7 @@ class SiteAccessRuntime:
                     "site_id": target_site_id,
                 },
             )
+            page._doxagent_owner_ref = owned["owner_ref"]
         await lease.abandon()
         maintained = _MaintenancePage(
             lease,
@@ -2023,6 +2136,11 @@ class SiteAccessRuntime:
         if profile.challenge_url:
             maintained.challenge_url = profile.challenge_url
             await maintained.gate.close()
+            records = await self.target_owner.event("list", {
+                "identity_id": identity.identity_id, "instance_id": maintained.lease.provenance.instance_id})
+            owned = next((r for r in records if r["target_id"] == maintained.gate.root_target_id), None)
+            if owned:
+                maintained.page._doxagent_owner_ref = owned["owner_ref"]
         await self.browser_runtimes.select_maintenance(identity)
         await self._focus_maintenance_target(
             maintained.lease.browser_cdp, maintained.gate.root_target_id
@@ -2092,6 +2210,7 @@ class SiteAccessRuntime:
             page._doxagent_target_id = target_id
             page._doxagent_allocation_id = owned["allocation_id"]
             page._doxagent_target_owner = self.target_owner
+            page._doxagent_owner_ref = owned["owner_ref"]
             gate.root_target_id = target_id
             if profile.challenge_url is None:
                 await gate.start()
@@ -2282,7 +2401,9 @@ class SiteAccessRuntime:
         finally:
             # A human page has already relinquished its business lease. Closing
             # it is an explicit ownership operation, not another permit release.
-            await _close_owned_page(maintained.page, maintained.lease.browser_cdp)
+            await _close_owned_page(maintained.page, maintained.lease.browser_cdp,
+                                    owner_ref=getattr(maintained.page, "_doxagent_owner_ref", None)
+                                    or getattr(maintained.page, "_doxagent_challenge_task_id", None) or token)
             await maintained.lease.__aexit__(None, None, None)
         self._maintenance_pages.pop(token, None)
         return profile_id

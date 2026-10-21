@@ -75,6 +75,7 @@ def validate_capture(
     expected_title=None,
     crawler_proof=False,
     expected_subscription=False,
+    observed_document=False,
 ):
     """No networking, publishing, lease acquisition or model requests here."""
     report = VerificationReport()
@@ -89,7 +90,9 @@ def validate_capture(
         report.challenge = "BLOCKED"
         report.reason = "challenge_required"
         return report
-    if not 200 <= response.status_code < 300:
+    if not 200 <= response.status_code < 300 and not (
+        observed_document and response.status_code == 0 and response.provenance
+    ):
         report.reason = f"verification_http_{response.status_code}"
         return report
     candidate, quality, reason = choose_candidate(info, expected_title)
@@ -160,6 +163,17 @@ def crawler_capture_items(source_id, response, request):
         rows = response.recipe_result.get("rows")
         return rows if isinstance(rows, list) else None  # Helpers prove explicit empty results.
     now = utc_now()
+    if source_id == "ctee_semiconductor":
+        from doxagent.message_bus_v2.ctee import parse_category_response, parse_category_item
+
+        if not re.fullmatch(r"/api/category/semi/\d+", urlsplit(request.url).path):
+            return None
+        try:
+            rows = parse_category_response(response.body)
+        except (ValueError, TypeError):
+            return None
+        messages = [message for row in rows if (message := parse_category_item(row)) is not None]
+        return messages if messages or not rows else None
     if source_id == "globenewswire_semiconductors_rss":
         from doxagent.message_bus_v2.industry_sources import (
             normalize_browser_feed,

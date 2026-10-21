@@ -212,6 +212,13 @@ class MaintenanceController:
                         if profile.challenge_url
                         else None,
                         "session_revision": auth.observed_session_revision,
+                        "auth_last_confirmed_at": auth.verified_at,
+                        "auth_last_check_at": auth.last_check_at,
+                        "auth_last_check_result": auth.last_check_result,
+                        "recovery_state": (r.phase if (r := self.store.get_recovery(member)) and r.phase != "RESOLVED" else None),
+                        "recovery_handling": r.handling_mode if r and r.phase != "RESOLVED" else None,
+                        "recovery_next_due_at": r.next_due_at if r and r.phase != "RESOLVED" else None,
+                        "last_network_probe_at": r.last_real_probe_at if r else None,
                     }
                 )
         return {
@@ -221,7 +228,8 @@ class MaintenanceController:
             "profiles": rows,
             "challenges": [{**t.model_dump(mode="json"),
                             "challenge_type": self.service.runtime.evidence_store.summary(t)}
-                           for t in self.store.list_challenges()],
+                           for t in self.store.list_challenges()
+                           if not (r := self.store.get_recovery(t.identity_id)) or r.handling_mode == "HUMAN"],
             "vnc_ready": True,
             "sessions": [
                 s.model_dump(mode="json", exclude={"control_token"})
@@ -239,7 +247,7 @@ class MaintenanceController:
 
     def submit(self, command: MaintenanceCommand):
         seconds = (
-            45
+            105
             if command.action.startswith("VERIFY")
             else (10 if command.action in {"CLOSE_LOGIN", "RELEASE_VIEWER"} else 40)
         )
@@ -578,17 +586,16 @@ class MaintenanceController:
                 )
             )
             if completed:
+                identity = self.service.repository.get_identity(session.identity_id)
                 try:
                     stage("CLEANUP")
                     async with asyncio.timeout(10):
                         await self.service.runtime.close_login(session.control_token)
-                        identity = self.service.repository.get_identity(session.identity_id)
-                        await self.service.profile_use.end_maintenance(
-                            identity.profile_id, session.control_token
-                        )
                 except Exception:
                     report.cleanup_pending = True
-                else:
+                try:
+                    await self.service.profile_use.end_maintenance(identity.profile_id, session.control_token)
+                finally:
                     current_session = self.store.get_session(session.session_id)
                     self.store.save_session(current_session.model_copy(update={"state": "CLOSED"}))
                     report.session_closed = True
@@ -599,6 +606,17 @@ class MaintenanceController:
             )
             if not task:
                 raise KeyError("challenge")
+            if operation.action == "OPEN_CHALLENGE" and getattr(self.service.runtime, "supervisor_socket", None):
+                from .maintenance_document import reconcile_original_target
+                from .supervisor_client import ChromeSupervisorClient
+
+                identity = self.service.repository.get_identity(task.identity_id)
+                if identity.runtime_kind.value == "external_chrome":
+                    if not await reconcile_original_target(ChromeSupervisorClient(
+                        self.service.runtime.supervisor_socket, owner_id="maintenance-presence"
+                    ), identity, task, self.store):
+                        raise RuntimeError("original_challenge_target_lost")
+                    task = self.store.get_challenge(task.task_id)
             if operation.action == "REOPEN_LOST_CHALLENGE":
                 if task.state != "TARGET_LOST":
                     raise ValueError("Reopen is only available for a confirmed lost target")

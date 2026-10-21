@@ -186,6 +186,59 @@ class Worker:
                 egress,
             )
             return encode_response(response)
+        if action == "auto_login_reuters":
+            return await self.runtime.auto_login_reuters(
+                identity, egress, command.pop("credentials"), AccessRequest.model_validate(command["request"]),
+            )
+        if action == "observe_recovery":
+            maintained = self.runtime._maintenance_pages.get(command["retained_token"])
+            if not maintained or maintained.page.is_closed():
+                raise RuntimeError("original_challenge_target_lost")
+            if (maintained.identity_id != identity.identity_id
+                or maintained.lease.provenance.instance_id != command["expected_instance_id"]
+                or maintained.gate.root_target_id != command["target_id"]):
+                raise RuntimeError("exact_recovery_target_ownership_required")
+            from .runtime import RuntimeResponse
+            cdp = maintained.lease.browser_cdp
+            session_id = None
+            try:
+                async with asyncio.timeout(8):
+                    targets = (await cdp.send("Target.getTargets"))["targetInfos"]
+                    if not any(t["targetId"] == command["target_id"] for t in targets):
+                        raise RuntimeError("original_challenge_target_lost")
+                    session_id = (await cdp.send("Target.attachToTarget", {
+                        "targetId": command["target_id"], "flatten": True,
+                    }))["sessionId"]
+                    root = (await cdp.send("DOM.getDocument", {"depth": 0}, session_id=session_id))["root"]
+                    html = (await cdp.send("DOM.getOuterHTML", {"nodeId": root["nodeId"]}, session_id=session_id))["outerHTML"]
+            finally:
+                if session_id:
+                    try:
+                        async with asyncio.timeout(1):
+                            await cdp.send("Target.detachFromTarget", {"sessionId": session_id})
+                    except Exception:
+                        pass
+            return encode_response(RuntimeResponse(
+                0, root.get("documentURL") or maintained.page.url, {}, body=html,
+                provenance=maintained.lease.provenance,
+            ))
+        if action == "forget_recovery":
+            maintained = self.runtime._maintenance_pages.get(command["retained_token"])
+            if maintained and maintained.identity_id == identity.identity_id and (
+                maintained.lease.provenance.instance_id == command["expected_instance_id"]
+                and maintained.gate.root_target_id == command["target_id"]
+            ):
+                self.runtime._maintenance_pages.pop(command["retained_token"], None)
+            return {"forgotten": True}
+        if action == "close_recovery":
+            maintained = self.runtime._maintenance_pages.get(command["retained_token"])
+            if not maintained:
+                raise RuntimeError("original_browser_state_unverified")
+            if (maintained.identity_id != identity.identity_id
+                or maintained.lease.provenance.instance_id != command["expected_instance_id"]
+                or maintained.gate.root_target_id != command["target_id"]):
+                raise RuntimeError("exact_recovery_target_ownership_required")
+            return {"profile_id": await self.runtime.close_login(command["retained_token"])}
         if action == "allocate":
             if command.get("prewarm"):
                 from dataclasses import asdict
