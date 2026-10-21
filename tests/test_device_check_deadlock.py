@@ -220,3 +220,40 @@ async def test_pending_body_does_not_starve_independent_crawler_proof(setup):
     service.recovery._commit = AsyncMock()
     await service.recovery._run(value.identity_id)
     assert service.recovery._commit.await_args.args[2]["purpose"] == "CRAWLER"
+
+
+@pytest.mark.asyncio
+async def test_denied_article_rotates_once_but_listing_never_proves_body(setup):
+    _, service, store, scope = setup
+    value, target, context = retained(setup, purpose="BODY")
+    context = {**context, "url": "https://www.investing.com/news/stock-market-news/old-denied-100"}
+    store.save_target(store.get_target(target.allocation_id).model_copy(update={"state": "LOST"}))
+    value = value.model_copy(
+        update={
+            "affected_contexts": [context],
+            "page_status": "LOST",
+            "manual_review_reason": "datadome_ip_banned",
+            "next_probe_at": utc_now(),
+        }
+    )
+    store.save_recovery(value, expected_generation=value.generation)
+    service.runtime.probe_recovery = AsyncMock(
+        return_value=RuntimeResponse(
+            200,
+            scope.verification_plan["crawler"]["url"],
+            {},
+            base.LISTING,
+            provenance=SimpleNamespace(instance_id="chrome"),
+        )
+    )
+    await service.recovery._run(value.identity_id)
+    current = store.get_recovery(value.identity_id)
+    assert current.phase != "RESOLVED"
+    assert current.last_error == "body_article_selected_pending_proof"
+    assert current.affected_contexts[0]["recipe_parameters"]["_recovery_sample_selected"]
+    assert current.affected_contexts[0]["url"].endswith("rocket-12345")
+    current = current.model_copy(update={"next_due_at": utc_now(), "next_probe_at": utc_now()})
+    store.save_recovery(current, expected_generation=current.generation)
+    service.runtime.probe_recovery.side_effect = RuntimeError("test-stop")
+    await service.recovery._run(value.identity_id)
+    assert service.runtime.probe_recovery.await_args.args[0].purpose.value == "BODY"

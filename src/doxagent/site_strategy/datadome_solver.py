@@ -214,6 +214,11 @@ class DataDomeSolver:
                     )
                 if scene["state"] in {"RETRY", "IP_BANNED", "UNAVAILABLE", "INTERSTITIAL"}:
                     if active and active["status"] == "WAITING_SLIDER":
+                        reason = "DATADOME_" + scene["state"]
+                        if active.get("reason") != reason:
+                            active["reason"] = reason
+                            self.save(active)
+                            self.coordinator.event(recovery, "DATADOME_SOLVER_WAITING", reason=reason)
                         return False
                     if active and active["status"] == "REGENERATED":
                         if utc_now() - datetime.fromisoformat(active["created_at"]) < timedelta(

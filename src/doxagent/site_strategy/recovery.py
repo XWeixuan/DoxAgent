@@ -599,10 +599,10 @@ class BrowserRecoveryCoordinator:
                         discovery = bool(
                             context["purpose"] == "BODY"
                             and scope.verification_plan.get("crawler")
-                            and body_verification_url(
+                            and (body_verification_url(
                                 scope, context["url"], excluded_urls=(spec.auth.login_url,)
                             )
-                            is None
+                            is None or (recovery.manual_review_reason and not context.get('recipe_parameters', {}).get('_recovery_sample_selected')))
                         )
                         if discovery:
                             request = AccessRequest(
@@ -652,14 +652,14 @@ class BrowserRecoveryCoordinator:
                                     if self.service.resolve(url).site_id == scope.owner_site_id:
                                         articles.append(url)
                             article = body_verification_url(
-                                scope, *articles, excluded_urls=(spec.auth.login_url,)
+                                scope, *articles, excluded_urls=(spec.auth.login_url, context['url'])
                             )
                             if article:
                                 context = {
                                     **context,
                                     "url": article,
                                     "recipe_ref": None,
-                                    "recipe_parameters": {},
+                                    "recipe_parameters": {'_recovery_sample_selected': True},
                                 }
                                 recovery = recovery.model_copy(
                                     update={

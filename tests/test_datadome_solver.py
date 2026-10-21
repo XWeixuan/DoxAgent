@@ -275,6 +275,19 @@ async def test_uncertain_create_never_buys_again(solver_setup):
 
 
 @pytest.mark.asyncio
+async def test_waiting_slider_updates_terminal_ip_denial_without_purchase(solver_setup):
+    solver,value,scope,identity,egress,browser=solver_setup
+    job=solver.new_job(value,{},'route')
+    job.update(status='WAITING_SLIDER',reason='DATADOME_INTERSTITIAL')
+    solver.save(job)
+    browser.inspect.return_value['state']='IP_BANNED'
+    assert not await solver.tick(value,scope,identity,egress)
+    assert solver.jobs(value.recovery_id)[0]['reason']=='DATADOME_IP_BANNED'
+    browser.reload.assert_not_awaited()
+    solver.provider.request.assert_not_awaited()
+
+
+@pytest.mark.asyncio
 async def test_retry_reload_is_bounded_and_not_billed_until_real_slider(solver_setup):
     solver, value, scope, identity, egress, browser = solver_setup
     browser.inspect.return_value["state"] = "RETRY"
