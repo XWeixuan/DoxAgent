@@ -75,3 +75,10 @@ profile 只影响新 Case 的 model manifest；Vertex project 同样冻结到 ma
 其协议没有文本输出和上下文缓存，按输入专属模型处理，而不是把 input 也作废；缓存比率排除该类调用。
 北京在线输入公开价 CNY0.5/百万token，Batch价格不套在线请求；依据 https://help.aliyun.com/zh/model-studio/qwen3-7-text-embedding 。
 规则版本提升为 cost-audit-20261021-v2；其它既有价格未改，黄金样本仍完全一致。
+
+
+### 生产预算验证后的响应精简
+
+双 worker、1秒队列、3秒查询预算实测：原全历史明细响应124,474 bytes，四并发中2个排队繁忙；Overview两个模块均200、约0.26秒。
+明细行移除未展示的字段和恒为N/A的上一期／变化率，只传实际使用的数值、完整性、暂估标记及计价计数，汇总与逐行实际数据不变。保留完整闭合schema校验，不扩大队列或超时。schema引用展开实验无稳定收益，未纳入产品。
+最终紧凑账本回归296通过；另2项既有Overview测试因当天UTC16点固定时间造成VIEW_EXPIRED，已独立复现。精简响应后14项相关API/schema测试、67项前端测试、typecheck/build及1262/1559浏览器检查通过。

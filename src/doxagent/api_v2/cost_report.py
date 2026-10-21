@@ -173,6 +173,38 @@ def total(costs, view, args, sums):
     return base
 
 
+def row_totals(costs, view, args, sums):
+    """A row has no comparison period; don't serialize/validate empty comparisons."""
+    full = total(costs, view, args, sums)
+    counters = (
+        "observed_attempts",
+        "usage_known_attempts",
+        "reported_cost_attempts",
+        "estimated_cost_attempts",
+        "unpriced_attempts",
+        "cache_ratio_known_attempts",
+        "cost_native_cny",
+        "cost_native_usd",
+    )
+    metrics = (
+        "input_tokens",
+        "cached_input_tokens",
+        "output_tokens",
+        "cache_hit_ratio",
+        "input_cost_usd",
+        "output_cost_usd",
+        "total_cost_usd",
+        *EXTRA,
+    )
+    return {
+        **{name: full[name] for name in counters},
+        **{
+            name: {key: full[name][key] for key in ("current", "current_coverage", "provisional")}
+            for name in metrics
+        },
+    }
+
+
 def report(costs, view, args):
     if view["wire"]["page"] != "COST":
         raise ApiFailure("SCOPE_MISMATCH", 400)
@@ -253,7 +285,7 @@ def report(costs, view, args):
             "round": key[1],
             "provider": key[2],
             "model": key[3],
-            "totals": total(costs, view, args, values),
+            "totals": row_totals(costs, view, args, values),
         }
         for key, values in sorted(grouped.items())
     ]

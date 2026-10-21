@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "source_sha256": "351e4387fb73557d814e373d6752f4adff855feedd16cbcf2b0df82a88d37347",
+  "source_sha256": "60cf13dde8c63822266f9a512728fe976643292d3807a3967c1f5d5eed0fede6",
   "$defs": {
     "Id": {
       "type": "string"
@@ -26858,7 +26858,7 @@
           "type": "string"
         },
         "totals": {
-          "$ref": "#/$defs/CostReportTotals"
+          "$ref": "#/$defs/CostReportRowTotals"
         }
       },
       "required": [
@@ -26976,6 +26976,111 @@
           "additionalProperties": false
         }
       ]
+    },
+    "CostReportRowTotals": {
+      "type": "object",
+      "properties": {
+        "observed_attempts": {
+          "$ref": "#/$defs/Count"
+        },
+        "usage_known_attempts": {
+          "$ref": "#/$defs/Count"
+        },
+        "reported_cost_attempts": {
+          "$ref": "#/$defs/Count"
+        },
+        "estimated_cost_attempts": {
+          "$ref": "#/$defs/Count"
+        },
+        "unpriced_attempts": {
+          "$ref": "#/$defs/Count"
+        },
+        "cache_ratio_known_attempts": {
+          "$ref": "#/$defs/Count"
+        },
+        "input_tokens": {
+          "$ref": "#/$defs/CostRowMetric"
+        },
+        "cached_input_tokens": {
+          "$ref": "#/$defs/CostRowMetric"
+        },
+        "output_tokens": {
+          "$ref": "#/$defs/CostRowMetric"
+        },
+        "cache_hit_ratio": {
+          "$ref": "#/$defs/CostRowMetric"
+        },
+        "input_cost_usd": {
+          "$ref": "#/$defs/CostRowMetric"
+        },
+        "output_cost_usd": {
+          "$ref": "#/$defs/CostRowMetric"
+        },
+        "total_cost_usd": {
+          "$ref": "#/$defs/CostRowMetric"
+        },
+        "cache_write_input_tokens": {
+          "$ref": "#/$defs/CostRowMetric"
+        },
+        "cache_write_5m_input_tokens": {
+          "$ref": "#/$defs/CostRowMetric"
+        },
+        "cache_write_1h_input_tokens": {
+          "$ref": "#/$defs/CostRowMetric"
+        },
+        "cache_write_cost_usd": {
+          "$ref": "#/$defs/CostRowMetric"
+        },
+        "cost_native_cny": {
+          "$ref": "#/$defs/Value%3CDecimalString%3E"
+        },
+        "cost_native_usd": {
+          "$ref": "#/$defs/Value%3CDecimalString%3E"
+        }
+      },
+      "required": [
+        "observed_attempts",
+        "usage_known_attempts",
+        "reported_cost_attempts",
+        "estimated_cost_attempts",
+        "unpriced_attempts",
+        "cache_ratio_known_attempts",
+        "input_tokens",
+        "cached_input_tokens",
+        "output_tokens",
+        "cache_hit_ratio",
+        "input_cost_usd",
+        "output_cost_usd",
+        "total_cost_usd",
+        "cache_write_input_tokens",
+        "cache_write_5m_input_tokens",
+        "cache_write_1h_input_tokens",
+        "cache_write_cost_usd",
+        "cost_native_cny",
+        "cost_native_usd"
+      ],
+      "additionalProperties": false
+    },
+    "CostRowMetric": {
+      "type": "object",
+      "properties": {
+        "current": {
+          "$ref": "#/$defs/Value%3CDecimalString%3E"
+        },
+        "current_coverage": {
+          "$ref": "#/$defs/Coverage"
+        },
+        "provisional": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "current",
+        "current_coverage",
+        "provisional"
+      ],
+      "additionalProperties": false,
+      "description": "Rows have no previous-period comparison; retain only their displayed evidence."
     }
   }
 }

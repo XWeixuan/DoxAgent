@@ -48,7 +48,11 @@ export function Comparison({
     </span>
   );
 }
-export function MetricNote({ metric }: { metric: Metric }) {
+export function MetricNote({
+  metric,
+}: {
+  metric: Pick<Metric, "current" | "current_coverage" | "provisional">;
+}) {
   return (
     <>
       {metric.current.state === "AVAILABLE" && (

@@ -915,9 +915,24 @@ export interface CostReportTotals extends UsageTotals {
   cache_write_1h_input_tokens: Metric; cache_write_cost_usd: Metric;
   cost_native_cny: Value<DecimalString>; cost_native_usd: Value<DecimalString>;
 }
+/** Rows have no previous-period comparison; retain only their displayed evidence. */
+export interface CostRowMetric {
+  current: Value<DecimalString>; current_coverage: Coverage; provisional: boolean;
+}
+export interface CostReportRowTotals {
+  observed_attempts: Count; usage_known_attempts: Count;
+  reported_cost_attempts: Count; estimated_cost_attempts: Count; unpriced_attempts: Count;
+  cache_ratio_known_attempts: Count;
+  input_tokens: CostRowMetric; cached_input_tokens: CostRowMetric;
+  output_tokens: CostRowMetric; cache_hit_ratio: CostRowMetric;
+  input_cost_usd: CostRowMetric; output_cost_usd: CostRowMetric; total_cost_usd: CostRowMetric;
+  cache_write_input_tokens: CostRowMetric; cache_write_5m_input_tokens: CostRowMetric;
+  cache_write_1h_input_tokens: CostRowMetric; cache_write_cost_usd: CostRowMetric;
+  cost_native_cny: Value<DecimalString>; cost_native_usd: Value<DecimalString>;
+}
 export interface CostReportRow {
   key: string; node: string; round: string; provider: string; model: string;
-  totals: CostReportTotals;
+  totals: CostReportRowTotals;
 }
 export interface CostReport {
   scope: AuditScope; pricing_version: string; usd_cny: DecimalString; observed_through: Instant;
