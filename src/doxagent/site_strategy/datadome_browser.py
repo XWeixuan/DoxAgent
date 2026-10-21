@@ -77,6 +77,33 @@ def solution_cookie(raw, website):
     }
 
 
+async def loaded_frame_document(call, frame_id):
+    """Read only the original page's exact child; handle Chrome's cross-process iframe."""
+    try:
+        context = await call(
+            "Page.createIsolatedWorld", {"frameId": frame_id, "worldName": "doxagent-observe"}
+        )
+        result = await call(
+            "Runtime.evaluate",
+            {
+                "expression": "document.documentElement.outerHTML",
+                "contextId": context["executionContextId"],
+                "returnByValue": True,
+            },
+        )
+        return result.get("result", {}).get("value", "")
+    except RuntimeError:
+        child = await call("Target.attachToTarget", {"targetId": frame_id, "flatten": True})
+        session = child["sessionId"]
+        try:
+            root = (await call("DOM.getDocument", {"depth": 0}, session_id=session))["root"]
+            return (await call("DOM.getOuterHTML", {"nodeId": root["nodeId"]}, session_id=session))[
+                "outerHTML"
+            ]
+        finally:
+            await call("Target.detachFromTarget", {"sessionId": session})
+
+
 class NativeChallenge:
     def __init__(self, coordinator, recovery, identity):
         self.coordinator, self.recovery, self.identity = coordinator, recovery, identity
@@ -152,11 +179,14 @@ class NativeChallenge:
         async with connect(tab["webSocketDebuggerUrl"], max_size=10_000_000, close_timeout=1) as ws:
             counter = 0
 
-            async def call(method, params=None):
+            async def call(method, params=None, *, session_id=None):
                 nonlocal counter
                 self.check()
                 counter += 1
-                await ws.send(json.dumps({"id": counter, "method": method, "params": params or {}}))
+                command = {"id": counter, "method": method, "params": params or {}}
+                if session_id:
+                    command["sessionId"] = session_id
+                await ws.send(json.dumps(command))
                 async with asyncio.timeout(5):
                     while True:
                         value = json.loads(await ws.recv())
@@ -183,19 +213,7 @@ class NativeChallenge:
                 node = frame.get("frame", {})
                 if url and node.get("url") == url:
                     try:
-                        isolated = await call(
-                            "Page.createIsolatedWorld",
-                            {"frameId": node["id"], "worldName": "doxagent-observe"},
-                        )
-                        result = await call(
-                            "Runtime.evaluate",
-                            {
-                                "expression": "document.documentElement.outerHTML",
-                                "contextId": isolated["executionContextId"],
-                                "returnByValue": True,
-                            },
-                        )
-                        frame_html = result.get("result", {}).get("value", "")
+                        frame_html = await loaded_frame_document(call, node["id"])
                     except RuntimeError:
                         pass  # An OOPIF is not necessarily addressable on this page session.
             self.check()

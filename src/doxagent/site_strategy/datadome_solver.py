@@ -144,7 +144,9 @@ class DataDomeSolver:
         if active and active["status"] == "PENDING":
             from datetime import datetime
 
-            if utc_now() - datetime.fromisoformat(active["created_at"]) > timedelta(seconds=240):
+            if utc_now() - datetime.fromisoformat(
+                active.get("submitted_at", active["created_at"])
+            ) > timedelta(seconds=240):
                 self.fail(active, recovery, "SOLVER_DEADLINE_EXCEEDED")
                 return False
         try:
@@ -153,7 +155,7 @@ class DataDomeSolver:
             ):
                 browser = self.browser_factory(self.coordinator, recovery, identity)
                 scene = await browser.inspect()
-                if not scene.get('website') or not scene.get("user_agent"):
+                if not scene.get("website") or not scene.get("user_agent"):
                     return False
                 if self.coordinator.service.resolve(scene["website"]).site_id != recovery.site_id:
                     return False
@@ -232,14 +234,20 @@ class DataDomeSolver:
                     active = self.new_job(recovery, scene, route)
                 with self.coordinator.service.repository.transaction() as db:
                     count = db.execute(
-                        "select count(*) from datadome_solver_jobs where julianday(created_at)>=julianday(?) "
+                        "select count(*) from datadome_solver_jobs where "
+                        "julianday(coalesce(json_extract(data_json,'$.submitted_at'),created_at))>=julianday(?) "
                         "and (json_extract(data_json,'$.task_id') is not null or "
                         "json_extract(data_json,'$.status')='SUBMITTING')",
                         ((utc_now() - timedelta(days=1)).isoformat(),),
                     ).fetchone()[0]
                     if count >= min(int(config.get("daily_tasks", 20)), 100):
                         return False
-                    active.update(status="SUBMITTING", scene=signature, binding=route)
+                    active.update(
+                        status="SUBMITTING",
+                        scene=signature,
+                        binding=route,
+                        submitted_at=utc_now().isoformat(),
+                    )
                     active["updated_at"] = utc_now().isoformat()
                     db.execute(
                         "update datadome_solver_jobs set updated_at=?,data_json=? where job_id=?",

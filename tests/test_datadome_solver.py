@@ -54,12 +54,21 @@ def test_original_cookie_and_challenge_url_not_synthesized():
 
 def test_blocking_datadome_bootstrap_is_retained_before_iframe_loads():
     from doxagent.site_strategy.challenge_detection import assess
-    stub = ('<html>Please enable JS and disable any ad blocker'
-            '<script>var dd={"t":"fe"}</script>'
-            '<script src="https://ct.captcha-delivery.com/c.js"></script></html>')
-    assert assess(stub, status=403).provider == 'DATADOME'
-    assert assess(stub, status=403).kind == 'UNKNOWN'
-    assert assess('<article>Normal</article><script src="https://ct.captcha-delivery.com/c.js"/>', status=200).provider == 'UNKNOWN'
+
+    stub = (
+        "<html>Please enable JS and disable any ad blocker"
+        '<script>var dd={"t":"fe"}</script>'
+        '<script src="https://ct.captcha-delivery.com/c.js"></script></html>'
+    )
+    assert assess(stub, status=403).provider == "DATADOME"
+    assert assess(stub, status=403).kind == "UNKNOWN"
+    assert (
+        assess(
+            '<article>Normal</article><script src="https://ct.captcha-delivery.com/c.js"/>',
+            status=200,
+        ).provider
+        == "UNKNOWN"
+    )
 
 
 @pytest.fixture
@@ -153,7 +162,7 @@ async def test_retry_reload_is_bounded_and_not_billed_until_real_slider(solver_s
 @pytest.mark.asyncio
 async def test_unloaded_datadome_bootstrap_gets_one_recovery_refresh(solver_setup):
     solver, value, scope, identity, egress, browser = solver_setup
-    browser.inspect.return_value.update(url=None, state='UNAVAILABLE')
+    browser.inspect.return_value.update(url=None, state="UNAVAILABLE")
     assert await solver.tick(value, scope, identity, egress)
     assert not await solver.tick(value, scope, identity, egress)
     browser.reload.assert_awaited_once()
@@ -225,3 +234,37 @@ def test_proxy_config_denies_open_relay_and_never_direct():
     assert "never_direct allow all" in config and "ssl_bump" not in config
     assert "http_access deny !allowed" in config and "http_access deny !solver_src" in config
     assert "proxy_auth dd-user" in config and "http_access deny all" in config
+
+
+@pytest.mark.asyncio
+async def test_oopif_retry_is_read_and_child_connection_always_detached():
+    from doxagent.site_strategy.datadome_browser import loaded_frame_document
+
+    call = AsyncMock(
+        side_effect=[
+            RuntimeError("cross_process"),
+            {"sessionId": "child"},
+            {"root": {"nodeId": 12}},
+            {"outerHTML": "<button>Retry</button>"},
+            {},
+        ]
+    )
+    html = await loaded_frame_document(call, "exact-frame")
+    assert challenge_state(URL, html) == "RETRY"
+    assert call.await_args.args == ("Target.detachFromTarget", {"sessionId": "child"})
+    assert call.await_args_list[2].kwargs == {"session_id": "child"}
+
+
+@pytest.mark.parametrize('query,offset,ready', [('Micron',0,True),('Samsung',0,False),('Micron',20,False)])
+def test_reuters_recipe_default_offset_is_not_a_false_recovery_failure(setup, query, offset, ready):
+    from doxagent.site_strategy.recovery import verify_capture, recovery_context
+    from doxagent.site_strategy.runtime import RuntimeResponse
+    from doxagent.site_strategy.schema import AccessRequest
+    _, service, store, _ = setup
+    scope = store.get_scope('source:reuters_site_search')
+    context = recovery_context(AccessRequest(operation_id='test', url='https://www.reuters.com/site-search/?query=Micron',
+        purpose='CRAWLER', mode='BROWSER', recipe_ref='builtin:reuters_search@1', recipe_parameters={'query':'Micron'}))
+    capture = RuntimeResponse(200, f'https://www.reuters.com/site-search/?query={query}&offset={offset}', {},
+        recipe_result={'rows': [{'url':'/technology/micron-earnings-2026-10-22/','title':'Micron earnings'}]},
+        provenance=SimpleNamespace(instance_id='chrome'))
+    assert (verify_capture(service, scope, context, capture).crawler == 'READY') is ready

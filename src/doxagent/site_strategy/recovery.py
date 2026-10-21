@@ -232,6 +232,31 @@ async def reuters_login_form(page, credentials):
     return {"status": "LOGIN_NOT_CONFIRMED"}
 
 
+def recovery_listing_url_matches(scope, request, actual):
+    if actual == request.url:
+        return True
+    # The trusted Reuters recipe always adds offset=0; old incidents omitted it.
+    # Compare the declared query/offset, not arbitrary same-site navigation.
+    if scope.source_id != 'reuters_site_search' or request.recipe_ref != 'builtin:reuters_search@1':
+        return False
+    from urllib.parse import urlsplit, parse_qs
+    expected, final = urlsplit(request.url), urlsplit(actual)
+    if any(p.scheme != 'https' or p.hostname != 'www.reuters.com' or p.port not in {None, 443}
+           or p.username or p.path != '/site-search/' or p.fragment for p in (expected, final)):
+        return False
+    query = str(request.recipe_parameters.get('query', ''))
+    offset = str(request.recipe_parameters.get('offset', 0))
+    if not query:
+        return False
+    wanted = {'query': [query], 'offset': [offset]}
+    def canonical(p):
+        values = parse_qs(p.query, keep_blank_values=True)
+        if offset == '0':
+            values.setdefault('offset', ['0'])
+        return values
+    return canonical(expected) == canonical(final) == wanted
+
+
 def verify_capture(service, scope, context, capture, *, observed=False):
     """Same publisher and real parser/body proof; absence of CAPTCHA is insufficient."""
     from doxagent.content_enrichment.quality import inspect_html
@@ -257,7 +282,7 @@ def verify_capture(service, scope, context, capture, *, observed=False):
         # A DOM observation has no HTTP status, but must satisfy the actual listing contract.
         if (
             (capture.status_code == 0 and observed or 200 <= capture.status_code < 300)
-            and (capture.final_url == context["url"])
+            and recovery_listing_url_matches(scope, request, capture.final_url)
             and crawler_ready
         ):
             report.challenge, report.crawler = "CLEARED", "READY"
@@ -695,6 +720,7 @@ class BrowserRecoveryCoordinator:
                             capture_reason=capture.reason,
                             html_bytes=len((capture.body or '').encode('utf-8')),
                             retained=bool(capture.recovery_id),
+                            recipe_rows=len(capture.recipe_result.get('rows', [])) if capture.recipe_result else None,
                             purpose=context["purpose"],
                             result=report.crawler
                             if context["purpose"] == "CRAWLER"
