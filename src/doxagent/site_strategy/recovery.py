@@ -691,6 +691,10 @@ class BrowserRecoveryCoordinator:
                         self.event(
                             recovery,
                             "PROBE_FINISHED",
+                            http_status=capture.status_code,
+                            capture_reason=capture.reason,
+                            html_bytes=len((capture.body or '').encode('utf-8')),
+                            retained=bool(capture.recovery_id),
                             purpose=context["purpose"],
                             result=report.crawler
                             if context["purpose"] == "CRAWLER"

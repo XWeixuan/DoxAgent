@@ -52,6 +52,16 @@ def test_original_cookie_and_challenge_url_not_synthesized():
     assert challenge_state(URL.replace("/captcha/", "/interstitial/"), "") == "UNSUPPORTED"
 
 
+def test_blocking_datadome_bootstrap_is_retained_before_iframe_loads():
+    from doxagent.site_strategy.challenge_detection import assess
+    stub = ('<html>Please enable JS and disable any ad blocker'
+            '<script>var dd={"t":"fe"}</script>'
+            '<script src="https://ct.captcha-delivery.com/c.js"></script></html>')
+    assert assess(stub, status=403).provider == 'DATADOME'
+    assert assess(stub, status=403).kind == 'UNKNOWN'
+    assert assess('<article>Normal</article><script src="https://ct.captcha-delivery.com/c.js"/>', status=200).provider == 'UNKNOWN'
+
+
 @pytest.fixture
 def solver_setup(setup):
     repo, service, store, scope = setup
@@ -138,6 +148,16 @@ async def test_retry_reload_is_bounded_and_not_billed_until_real_slider(solver_s
     browser.reload.assert_awaited_once()
     solver.provider.request.assert_not_awaited()
     assert solver.jobs(value.recovery_id)[0]["reason"] == "DATADOME_RETRY"
+
+
+@pytest.mark.asyncio
+async def test_unloaded_datadome_bootstrap_gets_one_recovery_refresh(solver_setup):
+    solver, value, scope, identity, egress, browser = solver_setup
+    browser.inspect.return_value.update(url=None, state='UNAVAILABLE')
+    assert await solver.tick(value, scope, identity, egress)
+    assert not await solver.tick(value, scope, identity, egress)
+    browser.reload.assert_awaited_once()
+    solver.provider.request.assert_not_awaited()
 
 
 @pytest.mark.asyncio

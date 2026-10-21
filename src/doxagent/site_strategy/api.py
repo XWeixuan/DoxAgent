@@ -180,6 +180,19 @@ def create_app(
         fields = {'job_id', 'created_at', 'updated_at', 'status', 'task_id', 'reason', 'cost'}
         return [{k: v for k, v in job.items() if k in fields} for job in jobs]
 
+    @app.post("/v1/recoveries/{recovery_id}:retry", dependencies=[Depends(admin)])
+    async def retry_recovery(recovery_id: str):
+        from .schema import utc_now
+        store = service.recovery.store
+        value = next((r for r in store.list_recoveries() if r.recovery_id == recovery_id), None)
+        if value is None:
+            raise HTTPException(status_code=404, detail='Active recovery not found')
+        if value.lease_until and value.lease_until > utc_now():
+            raise HTTPException(status_code=409, detail='Recovery is already running')
+        value = value.model_copy(update={'next_due_at': utc_now(), 'next_probe_at': utc_now()})
+        store.save_recovery(value, expected_generation=value.generation)
+        return {'scheduled': True, 'recovery_id': recovery_id}
+
     @app.post("/v1/recoveries:rollback-export", dependencies=[Depends(admin)])
     async def recovery_rollback():
         from .recovery import rollback_export

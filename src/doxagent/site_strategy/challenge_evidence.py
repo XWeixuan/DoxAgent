@@ -68,6 +68,13 @@ def classify(html, *, status=0, headers=None):
     ):
         provider, confidence = "DATADOME", "HIGH"
         signals.append("active_datadome_frame")
+    elif (status == 403 and (headers.get('x-datadome') or (
+        any((urlsplit(s).hostname or '').endswith('.captcha-delivery.com') for s in scripts)
+        and re.search(r'\b(?:var|let|const)\s+dd\s*=', html or '')
+        and re.search(r'please enable js|disable.{0,30}ad.?block', text)
+    ))):
+        provider, confidence = 'DATADOME', 'HIGH'
+        signals.append('datadome_blocking_bootstrap')
     elif active_px:
         provider, confidence = "HUMAN_PERIMETERX", "HIGH"
         signals.append("visible_px_captcha_wrapper")

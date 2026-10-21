@@ -55,7 +55,7 @@ async def capture_reuters_search(page: Any, query: str, offset: int) -> list[dic
         error.response_headers = {
             key: value
             for key, value in headers.items()
-            if key.casefold() in {"content-type", "retry-after", "location", "server"}
+            if key.casefold() in {"content-type", "retry-after", "location", "server", "x-datadome"}
         }
         error.response_url = page.url
         raise error

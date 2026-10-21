@@ -153,7 +153,7 @@ class DataDomeSolver:
             ):
                 browser = self.browser_factory(self.coordinator, recovery, identity)
                 scene = await browser.inspect()
-                if not scene.get("url") or not scene.get("user_agent"):
+                if not scene.get('website') or not scene.get("user_agent"):
                     return False
                 if self.coordinator.service.resolve(scene["website"]).site_id != recovery.site_id:
                     return False
