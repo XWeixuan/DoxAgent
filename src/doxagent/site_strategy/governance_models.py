@@ -78,6 +78,8 @@ class BrowserRecovery(SiteModel):
     phase: Literal["OBSERVING", "BACKOFF", "PROBING", "RESOLVED"] = "OBSERVING"
     assessment: dict = Field(default_factory=dict)
     handling_mode: Literal["AUTO", "HUMAN"] = "AUTO"
+    manual_review_reason: str | None = None
+    manual_review_at: datetime | None = None
     challenge_task_id: str | None = None
     original_allocation_id: str | None = None
     original_target_id: str | None = None

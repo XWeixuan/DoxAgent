@@ -172,8 +172,11 @@ async def read_original_document(client, identity, session, target, *, evidence_
 
         async with connect(endpoint, max_size=10 * 1024 * 1024, close_timeout=1) as ws:
 
-            async def call(number, method, parameters):
-                await ws.send(json.dumps({"id": number, "method": method, "params": parameters}))
+            async def call(number, method, parameters, *, session_id=None):
+                command = {"id": number, "method": method, "params": parameters}
+                if session_id:
+                    command["sessionId"] = session_id
+                await ws.send(json.dumps(command))
                 while True:
                     result = json.loads(await ws.recv())
                     if result.get("id") == number:
@@ -186,6 +189,16 @@ async def read_original_document(client, identity, session, target, *, evidence_
             # context being responsive during a native challenge/navigation.
             root = (await call(1, "DOM.getDocument", {"depth": 0}))["root"]
             html = (await call(2, "DOM.getOuterHTML", {"nodeId": root["nodeId"]}))["outerHTML"]
+            from .verification_frames import observe_verification_frames
+            from .challenge_detection import assess
+            counter = 10
+            async def frame_call(method, parameters=None, *, session_id=None):
+                nonlocal counter
+                counter += 1
+                return await call(counter, method, parameters or {}, session_id=session_id)
+            frames = await observe_verification_frames(frame_call, root, html)
+            assessment = assess(html, frame_html=[f["html"] for f in frames if f["loaded"]],
+                frame_urls=[f["url"] for f in frames if f["loaded"]])
             if evidence_store is not None:
                 from doxagent.content_enrichment.quality import inspect_html
 
@@ -218,4 +231,5 @@ async def read_original_document(client, identity, session, target, *, evidence_
                 status["generation"],
             ),
             challenge_target_id=session.target_id,
+            assessment=assessment.model_dump(mode="json"),
         )

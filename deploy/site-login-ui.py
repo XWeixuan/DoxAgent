@@ -343,7 +343,7 @@ class SiteLoginApp:
                         + " "
                         + region_label(row["egress_id"], row["egress_node"]),
                         row.get("auth_state"),
-                        ("RECOVERING " + str(row.get("recovery_handling") or "AUTO")
+                        ("REVIEW " + row["recovery_review_reason"] if row.get("recovery_review_reason") else "RECOVERING " + str(row.get("recovery_handling") or "AUTO")
                          if row.get("recovery_state") else row.get("crawler_ready", "NOT_TESTED")),
                         row.get("body_ready", "NOT_TESTED"),
                     )

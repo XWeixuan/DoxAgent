@@ -218,6 +218,7 @@ class MaintenanceController:
                         "auth_last_check_reason": auth.last_check_reason,
                         "recovery_state": (r.phase if (r := self.store.get_recovery(member)) and r.phase != "RESOLVED" else None),
                         "recovery_handling": r.handling_mode if r and r.phase != "RESOLVED" else None,
+                        "recovery_review_reason": r.manual_review_reason if r and r.phase != "RESOLVED" else None,
                         "recovery_next_due_at": r.next_due_at if r and r.phase != "RESOLVED" else None,
                         "last_network_probe_at": r.last_real_probe_at if r else None,
                     }
@@ -228,7 +229,8 @@ class MaintenanceController:
             "stale": False,
             "profiles": rows,
             "challenges": [{**t.model_dump(mode="json"),
-                            "challenge_type": self.service.runtime.evidence_store.summary(t)}
+                            "review_reason": r.manual_review_reason if (r := self.store.get_recovery(t.identity_id)) else None,
+                            "challenge_type": "MANUAL_REVIEW: " + r.manual_review_reason if r and r.manual_review_reason else self.service.runtime.evidence_store.summary(t)}
                            for t in self.store.list_challenges()
                            if not (r := self.store.get_recovery(t.identity_id)) or r.handling_mode == "HUMAN"],
             "vnc_ready": True,

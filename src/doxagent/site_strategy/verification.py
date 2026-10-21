@@ -23,7 +23,8 @@ def body_verification_url(scope, *candidates, excluded_urls=()):
             parsed.hostname in {"investing.com", "www.investing.com"}
             and parsed.path.startswith("/equities/")
             and parsed.path.rstrip("/").endswith("-news")
-        )
+        ) or (parsed.hostname == 'investorshub.advfn.com' and bool(re.fullmatch(
+            r'/stock-market/(NASDAQ|NYSE|AMEX)/[^/]+/news/?', parsed.path)))
 
     return next(
         (

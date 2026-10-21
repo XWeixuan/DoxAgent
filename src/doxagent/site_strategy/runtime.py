@@ -1806,7 +1806,7 @@ class SiteAccessRuntime:
         # One path for ordinary documents and recipes: preserve the actual tab,
         # remove navigation instrumentation, and let the service pause its identity.
         from .governance_models import BrowserRecovery
-        from .challenge_detection import assess, observe_frames
+        from .challenge_detection import assess, observe_frames, allowed_frame_url
         from .recovery import recovery_context
         from datetime import timedelta
         from .schema import utc_now
@@ -1817,6 +1817,7 @@ class SiteAccessRuntime:
             status=getattr(page, "_doxagent_challenge_status", 0),
             headers=getattr(page, "_doxagent_challenge_headers", {}),
             policy=resolved.challenge, blocked=True, frame_html=await observe_frames(page),
+            frame_urls=[f.url for f in getattr(page, 'frames', []) if allowed_frame_url(f.url)],
         )
         page._doxagent_assessment = assessment.model_dump(mode="json")
 

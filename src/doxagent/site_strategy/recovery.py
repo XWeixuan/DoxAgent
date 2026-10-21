@@ -235,6 +235,17 @@ async def reuters_login_form(page, credentials):
 def recovery_listing_url_matches(scope, request, actual):
     if actual == request.url:
         return True
+    if scope.source_id == 'investorshub_ticker_news':
+        from urllib.parse import urlsplit
+        import re
+        expected, final = urlsplit(request.url), urlsplit(actual)
+        pattern = r'/stock-market/(NASDAQ|NYSE|AMEX)/([^/]+)/news/?'
+        parts = [re.fullmatch(pattern, p.path) for p in (expected, final)]
+        ticker = str(request.recipe_parameters.get('ticker') or '').upper()
+        return bool(ticker and all(p.scheme == 'https' and p.hostname == 'investorshub.advfn.com'
+            and not p.username and p.port in {None, 443} and not p.query and not p.fragment
+            for p in (expected, final)) and all(parts) and parts[0][1] == parts[1][1]
+            and all(p[2].rsplit('-', 1)[-1].upper() == ticker for p in parts))
     # The trusted Reuters recipe always adds offset=0; old incidents omitted it.
     # Compare the declared query/offset, not arbitrary same-site navigation.
     if scope.source_id != 'reuters_site_search' or request.recipe_ref != 'builtin:reuters_search@1':
@@ -470,7 +481,8 @@ class BrowserRecoveryCoordinator:
                             }
                         )
                         self.store.save_recovery(recovery, expected_generation=claimed.generation)
-                    context = recovery.affected_contexts[0] if recovery.affected_contexts else None
+                    context = next((c for c in recovery.affected_contexts if c['purpose'] == 'CRAWLER'),
+                        recovery.affected_contexts[0] if recovery.affected_contexts else None)
                     if context is None:
                         await self._defer(recovery, "recovery_request_unavailable", delay=600)
                         return
@@ -538,37 +550,7 @@ class BrowserRecoveryCoordinator:
                                 recovery, report, context, "original_document", identity
                             )
                             return
-                        assessment = assess(
-                            capture.body,
-                            status=capture.status_code,
-                            headers=capture.headers,
-                            policy=spec.challenge,
-                            blocked=report.challenge == "BLOCKED",
-                        )
-                        if assessment.kind != "NONE" and assessment.model_dump(
-                            exclude={"sample_id", "observed_at"}
-                        ) != {
-                            k: v
-                            for k, v in recovery.assessment.items()
-                            if k not in {"sample_id", "observed_at"}
-                        }:
-                            self.event(
-                                recovery,
-                                "CLASSIFICATION_CHANGED",
-                                kind=assessment.kind,
-                                handling_mode=assessment.handling_mode,
-                            )
-                            recovery = recovery.model_copy(
-                                update={
-                                    "assessment": assessment.model_dump(mode="json"),
-                                    "handling_mode": assessment.handling_mode,
-                                }
-                            )
-                            if (
-                                assessment.handling_mode == "HUMAN"
-                                and not recovery.challenge_task_id
-                            ):
-                                recovery = self.store.promote_recovery(recovery)
+                        recovery = self._classify(recovery, capture, spec, report)
                     open_writer = any(
                         s.identity_id == identity_id and s.state == "OPEN"
                         for s in self.store.list_sessions()
@@ -730,22 +712,7 @@ class BrowserRecoveryCoordinator:
                         if report.challenge == "CLEARED":
                             await self._commit(recovery, report, context, "fresh_probe", identity)
                             return
-                        assessment = assess(
-                            capture.body,
-                            status=capture.status_code,
-                            headers=capture.headers,
-                            policy=spec.challenge,
-                            blocked=report.challenge == "BLOCKED",
-                        )
-                        if assessment.kind != "NONE" and not (
-                            recovery.handling_mode == "HUMAN" and assessment.handling_mode == "AUTO"
-                        ):
-                            recovery = recovery.model_copy(
-                                update={
-                                    "assessment": assessment.model_dump(mode="json"),
-                                    "handling_mode": assessment.handling_mode,
-                                }
-                            )
+                        recovery = self._classify(recovery, capture, spec, report)
                         delay = (
                             600
                             if recovery.handling_mode == "HUMAN"
@@ -763,7 +730,7 @@ class BrowserRecoveryCoordinator:
                         self.service.failover.schedule(scope, SitePurpose(context["purpose"]))
                     await self._defer(
                         recovery,
-                        "user_maintenance" if open_writer else "verification_pending",
+                        "user_maintenance" if open_writer else recovery.manual_review_reason or "verification_pending",
                         delay=2
                         if recovery.handling_mode == "AUTO"
                         and age < spec.challenge.automatic_wait_seconds
@@ -785,6 +752,27 @@ class BrowserRecoveryCoordinator:
                 await self._defer(
                     recovery, getattr(exc, "reason_code", None) or type(exc).__name__, delay=60
                 )
+
+    def _classify(self, recovery, capture, spec, report):
+        from .challenge_detection import VerificationAssessment
+        data = capture.assessment or {}
+        assessment = (VerificationAssessment.model_validate(data)
+            if data.get('kind') in {'AUTO_CHECK', 'INTERACTIVE', 'ACCESS_BLOCK'} else assess(
+                capture.body, status=capture.status_code, headers=capture.headers,
+                policy=spec.challenge, blocked=report.challenge == 'BLOCKED'))
+        reason = recovery.manual_review_reason
+        if assessment.kind == 'ACCESS_BLOCK':
+            reason = assessment.policy_reason
+        elif assessment.handling_mode == 'AUTO' and (
+            utc_now() - recovery.opened_at).total_seconds() >= max(180, min(300, spec.challenge.automatic_wait_seconds * 3)):
+            reason = reason or ('recovery_contract_not_satisfied' if assessment.kind == 'NONE' else 'automatic_verification_stalled')
+        mode = 'HUMAN' if reason else assessment.handling_mode
+        value = recovery.model_copy(update={'assessment':assessment.model_dump(mode='json'),
+            'handling_mode':mode, 'manual_review_reason':reason,
+            'manual_review_at': (recovery.manual_review_at or utc_now()) if reason else None})
+        if (recovery.assessment.get('kind'), recovery.handling_mode, recovery.manual_review_reason) != (assessment.kind, mode, reason):
+            self.event(value, 'CLASSIFICATION_CHANGED', kind=assessment.kind, handling_mode=mode, reason=reason)
+        return self.store.save_recovery(value, expected_generation=recovery.generation)
 
     async def _defer(self, recovery, reason, *, delay):
         current = self.store.get_recovery(recovery.identity_id)

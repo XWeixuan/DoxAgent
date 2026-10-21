@@ -961,7 +961,7 @@ class GovernanceRepository:
             if (old.generation if old else None) != expected_generation:
                 raise RuntimeError("stale_recovery_generation")
             linked = self.get_challenge(value.challenge_task_id) if value.challenge_task_id else None
-            if old and old.handling_mode == 'AUTO' and value.handling_mode == 'HUMAN' and (not linked or linked.state == 'RESOLVED'):
+            if old and value.handling_mode == 'HUMAN' and (old.handling_mode == 'AUTO' or value.manual_review_reason) and (not linked or linked.state == 'RESOLVED') and not any(s.identity_id == value.identity_id and s.state == 'OPEN' for s in self.list_sessions()):
                 target = self.get_target(value.original_allocation_id or '')
                 if target and target.state == 'LIVE' and value.affected_contexts:
                     context = value.affected_contexts[0]
@@ -970,7 +970,7 @@ class GovernanceRepository:
                         purpose=context['purpose'], operation_id=context['operation_id'],
                         original_url=value.original_url or context['url'],
                         original_target_id=target.target_id, browser_instance_id=target.browser_instance_id,
-                        allocation_id=target.allocation_id, reason='device_check_escalated_to_interactive',
+                        allocation_id=target.allocation_id, reason=value.manual_review_reason or 'device_check_escalated_to_interactive',
                         recovery_id=value.recovery_id), _connection=connection)
                     value.challenge_task_id = task.task_id
                     scope = self.maintenance_scope(value.scope_id)
@@ -982,6 +982,15 @@ class GovernanceRepository:
                         state.generation += 1
                         connection.execute('update site_runtime set data_json=?,generation=?,updated_at=? where runtime_key=?',
                             (state.model_dump_json(), state.generation, utc_now().isoformat(), key))
+                elif target and value.manual_review_reason and value.affected_contexts:
+                    context = value.affected_contexts[0]
+                    task = ChallengeTask(scope_id=value.scope_id, identity_id=value.identity_id,
+                        site_id=value.site_id, purpose=context['purpose'], operation_id=context['operation_id'],
+                        original_url=value.original_url or context['url'], original_target_id=target.target_id,
+                        browser_instance_id=target.browser_instance_id, allocation_id=target.allocation_id,
+                        state='TARGET_LOST', reason=value.manual_review_reason, recovery_id=value.recovery_id)
+                    self._write_task(connection, task)
+                    value.challenge_task_id = task.task_id
             if old and old.handling_mode == 'HUMAN' and value.handling_mode == 'AUTO':
                 # Reclassification releases only the obsolete manual projection.
                 # BrowserRecovery remains authoritative for every affected purpose.
@@ -1007,6 +1016,10 @@ class GovernanceRepository:
                             (profile.model_dump_json(), utc_now().isoformat(), profile.profile_id))
             if value.handling_mode == 'AUTO':
                 self._retire_automatic_task(connection, value)
+            elif value.manual_review_reason and value.challenge_task_id:
+                current_task = self.get_challenge(value.challenge_task_id)
+                if current_task and current_task.state != 'RESOLVED' and current_task.reason != value.manual_review_reason:
+                    self._write_task(connection, current_task.model_copy(update={'reason': value.manual_review_reason}))
             return self._write_recovery(connection, value)
 
     def _retire_automatic_task(self, connection, value):
@@ -1068,7 +1081,7 @@ class GovernanceRepository:
                         "original_url": value.original_url,
                         "page_status": value.page_status,
                         "assessment": value.assessment,
-                        "handling_mode": value.handling_mode,
+                        "handling_mode": "HUMAN" if previous.manual_review_reason else value.handling_mode,
                     }),
                 })
                 if keep:

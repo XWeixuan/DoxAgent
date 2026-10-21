@@ -1,7 +1,7 @@
 """Observe verification requirements; never interact with, solve or alter them."""
 
 import re
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit, parse_qs
 
 from lxml import html as H
 from lxml.etree import ParserError
@@ -25,7 +25,7 @@ class VerificationAssessment(SiteModel):
 
 
 def assess(
-    html, *, status=0, headers=None, policy=None, blocked=False, frame_html=(), business_ready=False
+    html, *, status=0, headers=None, policy=None, blocked=False, frame_html=(), frame_urls=(), business_ready=False
 ):
     from .challenge_evidence import classify
 
@@ -97,6 +97,12 @@ def assess(
         " ".join(f.xpath("//text()[not(ancestor::script or ancestor::style)]")) for f in frames
     ).lower()
     combined = text + " " + frame_text
+    banned = any(allowed_frame_url(url) and parse_qs(urlsplit(url).query).get("t") == ["bv"] for url in frame_urls)
+    if banned or (frames and re.search(r"access is temporarily restricted|you have been blocked", frame_text)):
+        result.kind, result.interaction, result.handling_mode = "ACCESS_BLOCK", "ACCESS_BLOCK", "HUMAN"
+        result.confidence, result.policy_reason = "HIGH", "datadome_ip_banned" if banned else "verification_access_denied"
+        result.signals.append(result.policy_reason)
+        return result
     patterns = (
         (
             "SLIDER",

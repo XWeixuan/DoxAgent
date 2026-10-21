@@ -1575,9 +1575,10 @@ class SiteStrategyService:
                 if pending:
                     retry_at = max(pending.next_due_at, utc_now() + timedelta(seconds=60))
                     result = self._result(request, resolved, AccessDisposition.RECOVERY_PENDING,
-                                          reason="site_recovery_pending", started=started,
+                                          reason=pending.manual_review_reason or "site_recovery_pending", started=started,
                                           retry_not_before=retry_at, combination_skips=skips)
                     return result.model_copy(update={"recovery_id": pending.recovery_id,
+                                                     "challenge_task_id": pending.challenge_task_id,
                                                      "handling_mode": pending.handling_mode,
                                                      "retry_at": retry_at})
             manual = any("manual_attention" in row["skip_reasons"] for row in skips)
@@ -1794,7 +1795,7 @@ class SiteStrategyService:
                     result = self._result(request, resolved,
                         AccessDisposition.RECOVERY_PENDING if pending and pending.phase != "RESOLVED"
                         else AccessDisposition.BUDGET_DEFERRED,
-                        reason="site_recovery_pending" if pending and pending.phase != "RESOLVED"
+                        reason=(pending.manual_review_reason or "site_recovery_pending") if pending and pending.phase != "RESOLVED"
                         else "identity_control_busy", attempts=attempts,
                         retry_not_before=retry_at, started=started)
                     return result.model_copy(update={
@@ -1839,7 +1840,7 @@ class SiteStrategyService:
                     self.failover.schedule(scope, request.purpose) if pending.handling_mode == "HUMAN" else None
                     result = self._result_from_response(
                         request, resolved, combination, profile, egress, response,
-                        AccessDisposition.RECOVERY_PENDING, category, "site_recovery_pending", attempts, started,
+                        AccessDisposition.RECOVERY_PENDING, category, pending.manual_review_reason or "site_recovery_pending", attempts, started,
                     )
                     return result.model_copy(update={"recovery_id": pending.recovery_id,
                                                      "handling_mode": pending.handling_mode,

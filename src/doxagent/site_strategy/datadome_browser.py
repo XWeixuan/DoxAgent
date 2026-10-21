@@ -9,6 +9,7 @@ from urllib.parse import parse_qs, urlsplit
 
 import httpx
 from lxml import html as H
+from .verification_frames import loaded_frame_document, observe_verification_frames
 
 
 def captcha_url(html):
@@ -100,33 +101,6 @@ def solution_cookie(raw, website):
         "httpOnly": bool(item["httponly"]),
         "sameSite": "Lax",
     }
-
-
-async def loaded_frame_document(call, frame_id):
-    """Read only the original page's exact child; handle Chrome's cross-process iframe."""
-    try:
-        child = await call("Target.attachToTarget", {"targetId": frame_id, "flatten": True})
-    except RuntimeError:
-        context = await call(
-            "Page.createIsolatedWorld", {"frameId": frame_id, "worldName": "doxagent-observe"}
-        )
-        result = await call(
-            "Runtime.evaluate",
-            {
-                "expression": "document.documentElement.outerHTML",
-                "contextId": context["executionContextId"],
-                "returnByValue": True,
-            },
-        )
-        return result.get("result", {}).get("value", "")
-    session = child["sessionId"]
-    try:
-        root = (await call("DOM.getDocument", {"depth": 0}, session_id=session))["root"]
-        return (await call("DOM.getOuterHTML", {"nodeId": root["nodeId"]}, session_id=session))[
-            "outerHTML"
-        ]
-    finally:
-        await call("Target.detachFromTarget", {"sessionId": session})
 
 
 class NativeChallenge:
@@ -246,9 +220,14 @@ class NativeChallenge:
             )  # Actual Chrome metadata; no override or busy-renderer JS dependency.
             url = captcha_url(html)
             frame_html = ""
-            # Loaded OOPIF frame URL/DOM can provide RETRY, but main iframe src is authoritative for submission.
+            observations = await observe_verification_frames(call, root, html)
+            for frame in observations:
+                if frame["loaded"] and loaded_challenge_url(frame["url"]):
+                    url, frame_html = frame["url"], frame["html"]
+                    break
+            # Legacy same-process fallback; OOPIF is absent from Page.getFrameTree.
             tree = await call("Page.getFrameTree")
-            for frame in tree.get("frameTree", {}).get("childFrames", []):
+            for frame in ([] if any(f["loaded"] for f in observations) else tree.get("frameTree", {}).get("childFrames", [])):
                 node = frame.get("frame", {})
                 loaded_url = loaded_challenge_url(node.get("url", ""))
                 if url and loaded_url:
