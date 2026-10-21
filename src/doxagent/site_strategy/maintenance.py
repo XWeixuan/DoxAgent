@@ -319,6 +319,8 @@ class MaintenanceController:
                         else "This is a Challenge session. Choose Later to release the Viewer "
                         "without discarding its page."
                         if str(exc) == "Close Login cannot discard a Challenge page"
+                        else f"{reason} ({exc}) during {latest.stage}; retry after active work drains."
+                        if type(exc).__name__ == "ProfileUnavailableError"
                         else f"{reason} during {latest.stage}; inspect the preserved session."
                     )
                 ),

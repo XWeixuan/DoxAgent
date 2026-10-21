@@ -1,3 +1,4 @@
+import asyncio
 from datetime import timedelta
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
@@ -11,6 +12,8 @@ from doxagent.site_strategy.runtime import RuntimeResponse
 from doxagent.site_strategy.schema import AccessRequest, utc_now
 from doxagent.site_strategy.verification import VerificationReport
 from doxagent.site_strategy.verification_frames import observe_verification_frames
+from doxagent.site_strategy.governance_models import MaintenanceSession
+from doxagent.site_strategy.schema import ProfileOperationalState
 
 PARENT = '<iframe src="https://geo.captcha-delivery.com/interstitial/?old=1"></iframe>'
 
@@ -21,6 +24,51 @@ def setup(tmp_path):
 
 
 retained = base.retained
+
+
+@pytest.mark.asyncio
+async def test_manual_review_drains_inflight_work_instead_of_failing_busy(setup):
+    repo, service, _, scope = setup
+    identity = repo.get_identity(scope.primary_identity_id)
+    uses = service.profile_use
+    async with uses.business(identity.profile_id):
+        handoff = asyncio.create_task(uses.recover_maintenance(identity.profile_id, "viewer"))
+        await asyncio.sleep(0)
+        assert not handoff.done()
+        assert repo.get_profile(identity.profile_id).operational_state == ProfileOperationalState.DRAINING_FOR_MAINTENANCE
+    assert (await handoff).maintenance_session_id == "viewer"
+
+
+@pytest.mark.asyncio
+async def test_manual_review_drain_timeout_restores_admission(setup):
+    repo, service, _, scope = setup
+    identity = repo.get_identity(scope.primary_identity_id)
+    uses = service.profile_use
+    async with uses.business(identity.profile_id):
+        with pytest.raises(TimeoutError):
+            await uses.recover_maintenance(identity.profile_id, "viewer", timeout_seconds=.01)
+    assert repo.get_profile(identity.profile_id).operational_state == ProfileOperationalState.AVAILABLE
+    assert uses._maintenance_profile is None
+
+
+@pytest.mark.asyncio
+async def test_releasing_review_viewer_preserves_page_without_freezing_crawler(setup):
+    value, target, _ = retained(setup, human=True)
+    repo, service, store, _ = setup
+    task = store.current_challenge(value.identity_id)
+    session = store.save_session(MaintenanceSession(
+        kind="CHALLENGE", scope_id=value.scope_id, site_id=value.site_id,
+        identity_id=value.identity_id, task_id=task.task_id, control_token=task.task_id,
+        allocation_id=target.allocation_id, target_id=target.target_id,
+        browser_instance_id=target.browser_instance_id,
+    ))
+    identity = repo.get_identity(value.identity_id)
+    await service.profile_use.recover_maintenance(identity.profile_id, session.control_token)
+    store.save_session(session.model_copy(update={"state": "RELEASED"}))
+    await service.profile_use.release_viewer(identity.profile_id, session.control_token)
+    assert repo.get_profile(identity.profile_id).operational_state == ProfileOperationalState.AVAILABLE
+    assert store.current_challenge(value.identity_id).task_id == task.task_id
+    assert store.get_target(target.allocation_id).state != "CLOSED"
 
 
 @pytest.mark.asyncio

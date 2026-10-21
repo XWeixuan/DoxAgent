@@ -428,12 +428,12 @@ class ProfileUseCoordinator:
                 )
             )
 
-    async def recover_maintenance(self, profile_id: str, session_id: str) -> BrowserProfile:
+    async def recover_maintenance(
+        self, profile_id: str, session_id: str, *, timeout_seconds: float = 20
+    ) -> BrowserProfile:
         async with self._condition:
             if self._maintenance_profile not in {None, profile_id}:
                 raise ProfileUnavailableError("another_profile_is_in_maintenance")
-            if self._active.get(profile_id, 0):
-                raise ProfileUnavailableError("profile_is_busy")
             profile = self.repository.get_profile(profile_id)
             if profile is None:
                 raise KeyError(profile_id)
@@ -444,6 +444,26 @@ class ProfileUseCoordinator:
             ):
                 return profile
             self._maintenance_profile = profile_id
+            self.repository.save_profile(profile.model_copy(update={
+                "operational_state": ProfileOperationalState.DRAINING_FOR_MAINTENANCE,
+                "maintenance_session_id": session_id,
+                "operational_revision": profile.operational_revision + 1,
+                "updated_at": utc_now(),
+            }))
+            try:
+                async with asyncio.timeout(timeout_seconds):
+                    while self._active.get(profile_id, 0):
+                        await self._condition.wait()
+            except BaseException:
+                # A failed Viewer handoff must not become a new permanent gate.
+                self.repository.save_profile(profile.model_copy(update={
+                    "operational_revision": profile.operational_revision + 2,
+                    "updated_at": utc_now(),
+                }))
+                self._maintenance_profile = None
+                self._condition.notify_all()
+                raise
+            profile = self.repository.get_profile(profile_id)
             updated = profile.model_copy(
                 update={
                     "operational_state": ProfileOperationalState.MAINTENANCE,
@@ -475,6 +495,17 @@ class ProfileUseCoordinator:
             profile = self.repository.get_profile(profile_id)
             if profile is None or profile.maintenance_session_id != session_id:
                 raise ProfileUnavailableError("invalid_maintenance_session")
+            from .governance_repository import GovernanceRepository
+
+            store = GovernanceRepository(self.repository)
+            session = next((s for s in store.list_sessions()
+                            if s.control_token == session_id), None)
+            recovery = store.get_recovery(session.identity_id) if session else None
+            if recovery and recovery.phase != "RESOLVED":
+                # Recovery/Task owns the exact page independently. Releasing its
+                # Viewer restores proven capabilities and background probes.
+                await self._release_locked(profile_id, session_id)
+                return
             if self._maintenance_profile == profile_id:
                 self._maintenance_profile = None
             self._condition.notify_all()

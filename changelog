@@ -8,6 +8,8 @@
 
 # changelog
 
+2026-10-22 Manual review handoff: drain active business/recovery work before adopting an original Challenge page instead of failing immediately with profile_is_busy. Roll back timed-out/cancelled handoffs and release pending-recovery Viewer compatibility reservations without deleting the preserved Task/page, so proven crawler capabilities and autonomous recovery can continue. Add drain, rollback and release regressions; retain explicit safe admission reasons in maintenance errors.
+
 2026-10-22 Recovery body-sample renewal: after explicit denial or automatic recovery exhaustion, select at most one different same-publisher article from the verified crawler listing instead of pinning every BODY probe to an old blocked URL. Persist the selected-sample marker, preserve the original human scene, and require a later independent FULL/SHORT_FULL proof; listing success cannot certify body readiness.
 
 2026-10-22 Verification deadlock repair: read vendor OOPIFs through their exact DOM frame owner and actual TargetInfo URL, exposing DataDome t=bv denial hidden behind stale interstitial src. Bound automatic/unknown recovery to 3-5 minutes, retain explicit manual-review tasks/reasons and original pages without fabricating interactive CAPTCHA; keep background proof and user-session fencing. Prefer pending crawler proof over body, and accept only same-instrument InvestorsHub canonical redirects after the real parser succeeds. Repair desktop review visibility and preserve publisher/identity/egress gates. See docs/device-check-deadlock-repair-20261022.md.
