@@ -10,6 +10,8 @@ from typing import Any
 from urllib.parse import urljoin, urlparse
 from zoneinfo import ZoneInfo
 
+from doxagent.site_strategy.client import SiteAccessError
+
 from .schema import PollContext, PollResult, RawMessageInput, SharedPollContext
 
 
@@ -32,12 +34,22 @@ class CteeSemiconductorAdapter:
         pages_fetched = 0
         while page <= max_pages:
             url = f"https://www.ctee.com.tw/api/category/semi/{page}"
-            async with context.request_permit():
-                status, _final, _headers, html = await self.browser.get(
-                    url,
-                    operation_id=f"{context.run_id}:ctee:{page}",
-                    remaining_budget_ms=45000,
-                )
+            try:
+                async with context.request_permit():
+                    status, _final, _headers, html = await self.browser.get(
+                        url,
+                        operation_id=f"{context.run_id}:ctee:{page}",
+                        remaining_budget_ms=45000,
+                    )
+            except SiteAccessError as exc:
+                if not exc.site_access_deferred:
+                    raise
+                return PollResult(site_access_deferred=True, window_done=False,
+                    site_access_deferred_reason=exc.result.reason_code,
+                    site_access_retry_not_before=exc.result.retry_not_before,
+                    next_checkpoint=dict(context.checkpoint),
+                    acquisition_metadata={"provider": "ctee", "reason": exc.result.reason_code,
+                                          "attempted": bool(exc.result.attempts)})
             if status != 200:
                 raise RuntimeError(f"CTEE category status {status}")
             rows = parse_category_response(html)

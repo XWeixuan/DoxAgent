@@ -1,6 +1,12 @@
 from __future__ import annotations
 
 import json
+from contextlib import asynccontextmanager
+from datetime import datetime, UTC, timedelta
+from types import SimpleNamespace
+from unittest.mock import AsyncMock
+
+import pytest
 
 from doxagent.message_bus_v2.ctee import parse_category_item, parse_category_response
 
@@ -29,3 +35,25 @@ def test_ctee_observed_category_payload_and_date_precision() -> None:
 
 def test_ctee_native_json_viewer_wrapper():
     assert parse_category_response('<html><body><pre style="white-space:pre-wrap">[]</pre></body></html>') == []
+
+
+@pytest.mark.asyncio
+async def test_ctee_recovery_gate_is_deferral_without_checkpoint_progress():
+    from doxagent.message_bus_v2.ctee import CteeSemiconductorAdapter
+    from doxagent.site_strategy.client import SiteAccessError
+    from doxagent.site_strategy.schema import AccessResult
+
+    @asynccontextmanager
+    async def permit():
+        yield
+    retry = datetime.now(UTC) + timedelta(seconds=60)
+    error = SiteAccessError(AccessResult(request_id="request", operation_id="run", site_id="ctee",
+        runtime_key="ctee", strategy_revision=1, disposition="RECOVERY_PENDING",
+        reason_code="site_recovery_pending", retry_not_before=retry))
+    adapter = CteeSemiconductorAdapter(SimpleNamespace(get=AsyncMock(side_effect=error)))
+    context = SimpleNamespace(checkpoint={"page": 2}, source=SimpleNamespace(default_parameters={}),
+        window_start=None, requested_at=datetime.now(UTC), run_id="run", request_permit=permit)
+    result = await adapter.poll_shared(context)
+    assert result.site_access_deferred and result.site_access_deferred_reason == "site_recovery_pending"
+    assert result.site_access_retry_not_before == retry
+    assert result.next_checkpoint == {"page": 2} and result.messages == []
