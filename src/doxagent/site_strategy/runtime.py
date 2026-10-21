@@ -1899,6 +1899,9 @@ class SiteAccessRuntime:
         resolved = self.resolver.resolve(request.url)
         if resolved.site_id != "reuters":
             raise ValueError("auto_login_site_not_supported")
+        if request.origin_scope_id:
+            resolved = resolved.model_copy(update={"match_evidence": {
+                **resolved.match_evidence, "scope_id": request.origin_scope_id}})
         deadline = time.monotonic() + 35
         lease = await self.browser_runtimes.page(identity, egress, deadline=deadline)
         gate = None
@@ -1928,7 +1931,11 @@ class SiteAccessRuntime:
         request = request.model_copy(update={"recipe_parameters": {
             **request.recipe_parameters, "_maintenance_canary": True, "_recovery_probe": True,
         }})
-        return await self._browser(request, self.resolver.resolve(request.url), identity, egress)
+        resolved = self.resolver.resolve(request.url)
+        if request.origin_scope_id:
+            resolved = resolved.model_copy(update={"match_evidence": {
+                **resolved.match_evidence, "scope_id": request.origin_scope_id}})
+        return await self._browser(request, resolved, identity, egress)
 
     async def observe_recovery(self, recovery, identity):
         from .recovery import retained_token

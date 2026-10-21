@@ -309,7 +309,11 @@ class WorkerSiteAccessRuntime(SiteAccessRuntime):
         request = request.model_copy(update={"recipe_parameters": {
             **request.recipe_parameters, "_maintenance_canary": True, "_recovery_probe": True,
         }})
-        return await self._browser(request, self.resolver.resolve(request.url), identity, egress)
+        resolved = self.resolver.resolve(request.url)
+        if request.origin_scope_id:
+            resolved = resolved.model_copy(update={"match_evidence": {
+                **resolved.match_evidence, "scope_id": request.origin_scope_id}})
+        return await self._browser(request, resolved, identity, egress)
 
     async def close_recovery(self, recovery, identity):
         from .governance_repository import GovernanceRepository

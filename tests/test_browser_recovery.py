@@ -610,6 +610,23 @@ async def test_login_form_rejects_foreign_redirect_without_reading_dom():
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("isolated", [False, True])
+async def test_recovery_probe_preserves_source_scope_through_runtime_facade(setup, isolated):
+    from doxagent.site_strategy.worker_runtime import WorkerSiteAccessRuntime
+
+    repo, service, _, scope = setup
+    runtime = object.__new__(WorkerSiteAccessRuntime) if isolated else service.runtime
+    runtime.resolver = service.resolver
+    runtime._browser = AsyncMock(return_value=RuntimeResponse(403, URL, {}))
+    request = AccessRequest(operation_id="recovery", url=URL, purpose="CRAWLER", mode="BROWSER",
+                            origin_scope_id=scope.scope_id, scope_revision=scope.revision)
+    identity = repo.get_identity(scope.primary_identity_id)
+    await runtime.probe_recovery(request, identity, repo.get_egress(identity.egress_id))
+    resolved = runtime._browser.await_args.args[1]
+    assert resolved.match_evidence["scope_id"] == scope.scope_id
+
+
+@pytest.mark.asyncio
 async def test_automatic_check_waits_for_native_document_without_navigation(setup, monkeypatch):
     import doxagent.site_strategy.runtime as module
     from doxagent.site_strategy.schema import ChallengePolicy

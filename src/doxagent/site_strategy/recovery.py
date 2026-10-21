@@ -558,6 +558,8 @@ class BrowserRecoveryCoordinator:
                             **{
                                 **context,
                                 "operation_id": recovery.recovery_id,
+                                "origin_scope_id": recovery.scope_id,
+                                "scope_revision": scope.revision,
                                 "recipe_parameters": parameters,
                             },
                             remaining_budget_ms=75000,
@@ -672,6 +674,7 @@ class BrowserRecoveryCoordinator:
 
     async def _commit(self, recovery, report, context, resolved_by, identity):
         spec = self.service.repository.get_strategy(recovery.site_id)
+        scope = self.store.maintenance_scope(recovery.scope_id)
         if (
             recovery.site_id == "reuters"
             and spec.auth.auto_login
@@ -698,6 +701,8 @@ class BrowserRecoveryCoordinator:
                         AccessRequest(
                             operation_id=recovery.recovery_id,
                             url=spec.auth.login_url or context["url"],
+                            origin_scope_id=recovery.scope_id,
+                            scope_revision=scope.revision,
                             purpose="CRAWLER",
                             mode="BROWSER",
                         ),
