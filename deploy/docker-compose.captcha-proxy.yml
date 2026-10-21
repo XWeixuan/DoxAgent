@@ -1,0 +1,25 @@
+services:
+  captcha-proxy:
+    image: doxagent-captcha-proxy:1
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.captcha-proxy
+    container_name: doxagent-captcha-proxy
+    restart: unless-stopped
+    ports: ["0.0.0.0:18791:18791"]
+    volumes: ["/var/lib/doxagent/captcha-proxy:/config:ro"]
+    read_only: true
+    tmpfs: ["/tmp:rw,noexec,nosuid,size=16m", "/run:rw,noexec,nosuid,size=1m"]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 128m
+    cpus: 0.25
+    pids_limit: 64
+    logging:
+      driver: json-file
+      options: {max-size: "5m", max-file: "2"}
+    networks: [source-egress]
+networks:
+  source-egress:
+    external: true
+    name: doxagent-v2_default

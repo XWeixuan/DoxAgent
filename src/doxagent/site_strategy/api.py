@@ -174,6 +174,12 @@ def create_app(
         from .recovery import migrate_recoveries
         return await asyncio.to_thread(migrate_recoveries, service, apply=request.apply)
 
+    @app.get("/v1/recoveries/{recovery_id}/solver", dependencies=[Depends(admin)])
+    async def recovery_solver(recovery_id: str):
+        jobs = service.recovery.datadome_solver.jobs(recovery_id)
+        fields = {'job_id', 'created_at', 'updated_at', 'status', 'task_id', 'reason', 'cost'}
+        return [{k: v for k, v in job.items() if k in fields} for job in jobs]
+
     @app.post("/v1/recoveries:rollback-export", dependencies=[Depends(admin)])
     async def recovery_rollback():
         from .recovery import rollback_export

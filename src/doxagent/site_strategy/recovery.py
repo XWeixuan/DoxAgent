@@ -1,4 +1,4 @@
-"""Bounded identity recovery. No CAPTCHA interaction, credentials, or publishing."""
+"""Bounded identity recovery; optional paid DataDome handling remains separately gated."""
 
 import asyncio
 import logging
@@ -296,6 +296,12 @@ class BrowserRecoveryCoordinator:
         self.tasks = {}
         self._last_legacy_scan = 0.0
         self._legacy_migration_enabled = False
+        from .datadome_solver import DataDomeSolver
+        self.datadome_solver = DataDomeSolver(self)
+
+    @staticmethod
+    def now():
+        return utc_now()
 
     def event(self, recovery, category, **payload):
         self.service.repository.append_event(
@@ -442,6 +448,11 @@ class BrowserRecoveryCoordinator:
                     context = recovery.affected_contexts[0] if recovery.affected_contexts else None
                     if context is None:
                         await self._defer(recovery, "recovery_request_unavailable", delay=600)
+                        return
+                    if await self.datadome_solver.tick(recovery, scope, identity, egress):
+                        self.service.failover.schedule(scope, SitePurpose(context['purpose']))
+                        recovery = recovery.model_copy(update={"next_probe_at": utc_now()})
+                        await self._defer(recovery, "datadome_solver_pending", delay=15)
                         return
                     if (
                         scope.source_id == "ctee_semiconductor"

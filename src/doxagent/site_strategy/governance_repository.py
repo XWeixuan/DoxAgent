@@ -67,6 +67,10 @@ def migrate_governance(connection):
             credential_id text primary key, attempted_at text not null, result text not null);
         create table if not exists site_recovery_migrations (
             name text primary key, applied_at text not null);
+        create table if not exists datadome_solver_jobs (
+            job_id text primary key, recovery_id text not null, identity_id text not null,
+            created_at text not null, updated_at text not null, data_json text not null);
+        create index if not exists datadome_solver_incident on datadome_solver_jobs(recovery_id,created_at);
     """)
 
 

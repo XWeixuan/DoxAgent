@@ -54,6 +54,7 @@ class RetentionWorker:
         deleted = {}
         rules = [
             ("browser_recoveries", "updated_at", 7, "phase='RESOLVED'"),
+            ("datadome_solver_jobs", "updated_at", 7, "1=1"),
             ("access_failure_shapes", "last_seen", 7, "1=1"),
             ("access_hourly_summaries", "hour", 90, "1=1"),
             ("owned_browser_targets", "updated_at", 7, "state in ('CLOSED','LOST')"),
