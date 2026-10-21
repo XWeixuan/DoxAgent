@@ -555,6 +555,21 @@ class ReadStore:
             groups = {}
             for item in contributions or []:
                 groups.setdefault((item["metric"], item["ticker"], item["entity"]), []).append(item)
+            # Cost history migration already checks all receipt revisions under this
+            # writer lock. Fetch its old contribution sets in one indexed join, then
+            # move/insert rows in prepared batches instead of thousands of round trips.
+            bulk_cost = source == "cost_backfill" and expected_usage_versions is not None
+            old_sets, closing, inserting = {}, [], []
+            if bulk_cost and groups:
+                for row in db.execute(
+                    "SELECT c.metric,c.ticker,c.entity,c.day,c.dimensions,c.value "
+                    "FROM json_each(?) AS requested JOIN contributions_current AS c "
+                    "ON c.metric=json_extract(requested.value,'$[0]') "
+                    "AND c.ticker=json_extract(requested.value,'$[1]') "
+                    "AND c.entity=json_extract(requested.value,'$[2]')",
+                    (encode(list(groups)),),
+                ):
+                    old_sets.setdefault(tuple(row[:3]), []).append(tuple(row[3:]))
             for base, items in groups.items():
                 identity = (source, *base)
                 if position is not None:
@@ -574,7 +589,7 @@ class ReadStore:
                         raise ValueError("conflicting contribution set")
                     if amount:
                         expected[member] = amount
-                old_values = db.execute("SELECT day,dimensions,value FROM contributions_current WHERE metric=? AND ticker=? AND entity=?", base).fetchall()
+                old_values = old_sets.get(base, []) if bulk_cost else db.execute("SELECT day,dimensions,value FROM contributions_current WHERE metric=? AND ticker=? AND entity=?", base).fetchall()
                 previous = {(row[0], row[1]): Decimal(row[2]) for row in old_values}
                 if previous == expected:
                     continue
@@ -584,12 +599,31 @@ class ReadStore:
                     for bucket_day in (day, "*"):
                         bucket = (base[0], base[1], bucket_day, dimensions)
                         deltas[bucket] = deltas.get(bucket, Decimal(0)) - amount
-                if old_values:self.close_current(db,'contributions','metric=? AND ticker=? AND entity=?',base,seq)
+                if old_values:
+                    if bulk_cost:
+                        closing.append(base)
+                    else:
+                        self.close_current(db,'contributions','metric=? AND ticker=? AND entity=?',base,seq)
                 for (day, dimensions), amount in expected.items():
                     for bucket_day in (day, "*"):
                         bucket = (base[0], base[1], bucket_day, dimensions)
                         deltas[bucket] = deltas.get(bucket, Decimal(0)) + amount
-                    db.execute("INSERT INTO contributions(metric,ticker,entity,day,dimensions,value,valid_from,valid_to) VALUES(?,?,?,?,?,?,?,NULL)", (*base, day, dimensions, format(amount, "f"), seq))
+                    row = (*base, day, dimensions, format(amount, "f"), seq)
+                    if bulk_cost:
+                        inserting.append(row)
+                    else:
+                        db.execute("INSERT INTO contributions(metric,ticker,entity,day,dimensions,value,valid_from,valid_to) VALUES(?,?,?,?,?,?,?,NULL)", row)
+            if bulk_cost:
+                if closing:
+                    from .serving_schema import history_relation
+                    history = history_relation(db, "contributions")
+                    columns = [r[1] for r in db.execute("PRAGMA table_info("+history+")")]
+                    selected = ",".join("?" if column == "valid_to" else column for column in columns)
+                    predicate = "metric=? AND ticker=? AND entity=?"
+                    db.executemany("INSERT INTO "+history+"("+",".join(columns)+") SELECT "+selected+
+                                   " FROM contributions_current WHERE "+predicate, [(seq,*base) for base in closing])
+                    db.executemany("DELETE FROM contributions_current WHERE "+predicate, closing)
+                db.executemany("INSERT INTO contributions(metric,ticker,entity,day,dimensions,value,valid_from,valid_to) VALUES(?,?,?,?,?,?,?,NULL)", inserting)
             # One positive settlement feeds both dashboard reductions. Only
             # small buckets, not per-Case contribution entities, are duplicated.
             for (metric,ticker,day,dimensions),delta in list(deltas.items()):

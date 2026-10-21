@@ -51,3 +51,10 @@
 `DOXAGENT_PERSISTENT_RUNTIME_V2_API_PROFILE=current` 是默认值；未来可选 vertex_recall、bailian_glm、vertex_glm。
 Vertex 需要 DOXAGENT_VERTEX_PROJECT 与 ADC secret；GLM 需要 DOXAGENT_BAILIAN_GLM_ENDPOINT（北京工作空间兼容端点），可独立设置 DOXAGENT_BAILIAN_GLM_API_KEY。
 profile 只影响新 Case 的 model manifest；Vertex project 同样冻结到 manifest。旧 Case 路由不变，保留其仍需要的原渠道凭据直至在途工作收尾。
+
+
+### 首次生产试跑后的回填优化
+
+通用 ingest 逐 metric/entity 查旧值，试跑25条约1.3秒，单向缩批退化到1条并固定休眠0.5秒，不适合49,324条保留调用。
+改为只对带 usage 版本保护的 cost_backfill 路径预取旧贡献、executemany 批量移动与插入；桶结算和 MVCC 语义不变，在线普通投影路径不变。
+自适应缩批最低8条（显式更小配置仍被尊重），批间延时由运维明确配置，不再自动抬至0.5秒；输出实际write/CPU时间用于确认资源影响。

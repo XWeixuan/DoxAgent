@@ -8,12 +8,31 @@ import json
 import os
 import sqlite3
 import time
+from contextlib import contextmanager
 from decimal import Decimal
 from pathlib import Path
 
 from .pricing import VERSION
 from .repository import ReadStore
 from .usage import accounting, observations
+
+
+class CostBackfillStore(ReadStore):
+    """Measure writer ownership separately from waiting for the projector's lock."""
+
+    last_write_seconds = 0.0
+
+    @contextmanager
+    def connect(self, *, write=False, timeout=2):
+        acquired = None
+        try:
+            with super().connect(write=write, timeout=timeout) as db:
+                if write:
+                    acquired = time.monotonic()
+                yield db
+        finally:
+            if acquired is not None:
+                self.last_write_seconds = time.monotonic() - acquired
 
 
 def reproject(record, raw_turn=None):
@@ -135,6 +154,9 @@ def run(
         raise ValueError("invalid cost backfill limits")
     batches = seen = changed = conflicts = missing_runtime = 0
     started = time.monotonic()
+    minimum_batch = min(8, batch_size)
+    cpu_started = time.process_time()
+    write_seconds = 0.0
     while not max_batches or batches < max_batches:
         where = ["kind='usage'", "(ticker,id)>(?,?)"]
         params = list(cursor)
@@ -195,10 +217,10 @@ def run(
                     raise RuntimeError("cost backfill repeatedly raced the projector") from exc
                 time.sleep(delay)
                 continue  # Re-read this batch before moving the cursor.
-            elapsed = time.monotonic() - write_at
-            if elapsed > 0.1:
-                batch_size = max(1, batch_size // 2)
-                delay = max(delay, 0.5)
+            batch_wall_seconds = time.monotonic() - write_at
+            write_seconds = getattr(store, "last_write_seconds", batch_wall_seconds)
+            if write_seconds > 0.1:
+                batch_size = max(minimum_batch, batch_size // 2)
         seen += len(rows)
         changed += len(records)
         batches += 1
@@ -212,6 +234,9 @@ def run(
             missing_runtime=missing_runtime,
             conflicts=conflicts,
             seconds=round(time.monotonic() - started, 3),
+            cpu_seconds=round(time.process_time() - cpu_started, 3),
+            write_seconds=round(write_seconds, 4),
+            batch_size=batch_size,
             dry_run=dry_run,
         )
         if checkpoint and not dry_run:
@@ -259,23 +284,22 @@ def main():
         if saved["version"] != VERSION:
             parser.error("checkpoint pricing version differs")
         cursor = tuple(saved["cursor"])
-    print(
-        json.dumps(
-            run(
-                ReadStore(args.read_path),
-                runtime_path=args.runtime_path,
-                start=args.start_day,
-                end=args.end_day,
-                cursor=cursor,
-                batch_size=args.batch_size,
-                max_batches=args.max_batches,
-                delay=args.delay,
-                dry_run=args.dry_run,
-                checkpoint=args.checkpoint,
-                source=args.source,
-            )
+    store = CostBackfillStore(args.read_path)
+    with store.projection_session():
+        result = run(
+            store,
+            runtime_path=args.runtime_path,
+            start=args.start_day,
+            end=args.end_day,
+            cursor=cursor,
+            batch_size=args.batch_size,
+            max_batches=args.max_batches,
+            delay=args.delay,
+            dry_run=args.dry_run,
+            checkpoint=args.checkpoint,
+            source=args.source,
         )
-    )
+    print(json.dumps(result))
 
 
 if __name__ == "__main__":
