@@ -8,6 +8,8 @@
 
 # changelog
 
+2026-10-22 DataDome release receipt: deploy d0e31001 to Site Access only plus authenticated Squid; verify 13 production source hashes, current supervisor namespace, private credential permissions and matching .113/.114 proxy exits. Preserve Supervisor/Profile and read the same retained RECOVERY original after release. Two real 401 DeviceCheck probes retain their scenes; WAITING_SLIDER has no paid task ID, so neither external solver connectivity nor paid decoding/business recovery is claimed. Final offline group 203 passed/1 skipped; details docs/datadome-2captcha-implementation-20261022.md.
+
 2026-10-22 Solver uncertain-cost accounting: retain a daily reservation for every persisted submission attempt, including transport-uncertain failures without a returned task ID; a later incident cannot silently reuse possibly-spent budget. Add a cross-incident daily-cap regression.
 
 2026-10-22 Automatic-check handoff budget: foreground the exact recovery tab without reloading it and reserve 15 seconds of the existing parent deadline for frame classification, durable page ownership and IPC return. Bound both cleared and persistent automatic documents in regression tests; never clear a gate because waiting expired.
