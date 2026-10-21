@@ -535,3 +535,27 @@ def test_cohort_backfill_resumes_partial_batch_without_double_counting(tmp_path,
             ).fetchone()[0]
             == "8"
         )
+
+
+def test_backfill_preserves_retained_reported_charge_when_raw_envelope_has_expired():
+    record = {
+        "kind": "usage",
+        "id": "old-call",
+        "ticker": "MU",
+        "day": "2026-10-20",
+        "data": {
+            "scope": "API",
+            "node": "W2",
+            "round": "R1",
+            "provider": "openrouter",
+            "model": "anthropic/claude-haiku-5.5",
+            "usage": {"input_tokens": 100, "output_tokens": 5, "cached_input_tokens": 40},
+            "accounting": {"cost_basis": "REPORTED", "reported_cost_native": "0.004"},
+        },
+    }
+    new, counts = reproject(record)
+    assert new["data"]["accounting"]["cost_basis"] == "REPORTED"
+    assert new["data"]["accounting"]["total_cost_usd"] == "0.004"
+    assert next(x["value"] for x in counts if x["metric"] == "total_cost_usd") == Decimal("0.004")
+    again, _ = reproject(new)
+    assert again["data"]["accounting"] == new["data"]["accounting"]

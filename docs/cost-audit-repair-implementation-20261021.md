@@ -103,3 +103,5 @@ CPU profile定位全历史报告逐条解码约19,912个标的桶，和响应sch
 全量前半程出现临时MVCC/history增长超过500MiB及写事务超过100ms，已暂停；既有GC有正确expiry索引，瓶颈是写锁占用及回收赶不上新增历史。单条50调用试验5.35秒，大多写锁几十毫秒。改为keyset每次最多读100条，按ticker/day/round/provider/model分组，每个短事务最多8条，同桶只写一次；超过100ms缩组，低于50ms逐步恢复到最多8条，逐组让出写锁。整批全部提交才推进原断点；部分已提交后锁重试重新读取版本且不双计，已用回归验证。保留原MVCC与既有GC，不做truncate/vacuum或全库副本。
 
 profile确认解释型schema遍历占报告约一半CPU。对CostReport使用fastjsonschema 2.22.2编译当前draft-07可表达子集，价格/数值/schema原文不变。格式仍调用原FormatChecker；关闭default注入；出现2020-12新增关键字、引用附加约束或编译校验失败时，继续原Canonical验证。普通成功响应只校验一次，失败仍保留原语义与脱敏错误。对正常夹具、负数/布尔计数、非法时间、缺字段、未知字段、换行小数及未来dependentRequired验证对照通过；schema和响应不被修改。官方机制说明：https://horejsek.github.io/python-fastjsonschema/ 。本地初测10次夹具校验CPU由0.109秒降至0.016秒，最终以生产实测为准。
+
+原始OpenRouter envelope已过保留期时，沿用同usage事实中明确标为REPORTED的冻结已报费用；若真实raw仍在则始终优先raw。不能因为归一化usage未再带provider envelope而丢掉已证实费用。保留缺原始回执标记，反复归一化费用不变；35项成本／来源重建测试通过。

@@ -41,6 +41,24 @@ class CostBackfillStore(ReadStore):
 def reproject(record, raw_turn=None):
     value = dict(record["data"])
     usage = dict(value.get("usage") or {})
+    retained = value.get("accounting") or {}
+    if (
+        raw_turn is None
+        and value.get("provider") == "openrouter"
+        and retained.get("cost_basis") == "REPORTED"
+        and retained.get("reported_cost_native") is not None
+    ):
+        # Source retention may already have removed the raw provider envelope.
+        # A frozen reported charge remains evidence, rather than a fresh estimate.
+        envelope = usage.get("provider_usage") or {}
+        envelope = envelope if isinstance(envelope, dict) else {}
+        native = envelope.get("usage", envelope)
+        native = native if isinstance(native, dict) else {}
+        if native.get("cost") is None:
+            usage["provider_usage"] = {
+                **envelope,
+                "usage": {**native, "cost": retained["reported_cost_native"]},
+            }
     rnd = value.get("round") or ("AGENT" if value["scope"] == "CODEX" else "UNKNOWN_ROUND")
     if raw_turn:
         rnd = raw_turn["round_name"]
