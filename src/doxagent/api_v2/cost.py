@@ -12,6 +12,7 @@ from fastapi import FastAPI, Request
 from doxagent.semantic_clock import boundary
 from doxagent.v2_read.repository import encode, instant
 
+from doxagent.v2_read.pricing import VERSION as PRICE_VERSION
 from .dto import available, coverage, missing, validate
 from .errors import ApiFailure
 
@@ -56,7 +57,7 @@ class Costs:
             params.extend(days)
         return where, params
 
-    def totals(self, ticker, view, args, *, sums=None):
+    def totals(self, ticker, view, args, *, sums=None, validate_wire=True):
         if sums is None:
             where, params = self.conditions(ticker, view, args)
             sums = {}
@@ -66,7 +67,8 @@ class Costs:
                 ):
                     sums[row[0]] = sums.get(row[0], Decimal(0)) + Decimal(row[1])
         requests = int(sums.get("requests", 0))
-        observed = coverage(count=requests)
+        source_reasons = view.get("cost_source_reasons", [])
+        observed = coverage(complete=not source_reasons, count=requests, at=view.get("as_of"), reasons=source_reasons)
 
         def metric(name, unit):
             amount = sums.get(name)
@@ -85,7 +87,7 @@ class Costs:
                 "current": current,
                 "previous": missing("NOT_APPLICABLE", "NOT_APPLICABLE"),
                 "change_pct": missing("NOT_APPLICABLE", "NOT_APPLICABLE"),
-                "current_coverage": coverage(count=sample_count, reasons=reasons or ["SOURCE_GAP"]),
+                "current_coverage": coverage(complete=sample_count == requests and not source_reasons, count=sample_count, at=view.get("as_of"), reasons=reasons + source_reasons),
                 "previous_coverage": None,
                 "provisional": False,
             }
@@ -104,6 +106,11 @@ class Costs:
             and sums.get("input_tokens_samples") == requests
             else missing("NO_SAMPLES" if not incoming else "NOT_RECORDED")
         )
+        ratio["current_coverage"] = coverage(
+            complete=ratio["current"]["state"] == "AVAILABLE" and not source_reasons,
+            count=min(int(sums.get("input_tokens_samples", 0)), int(sums.get("cached_input_tokens_samples", 0))),
+            at=view.get("as_of"), reasons=source_reasons + ([] if ratio["current"]["state"] == "AVAILABLE" else ["NOT_RECORDED"]),
+        )
         values.update(
             requests=available(requests),
             cache_hit_ratio=ratio,
@@ -117,7 +124,7 @@ class Costs:
             if args["scope"] == "API"
             else missing("CODEX_SUBSCRIPTION_NOT_PRICED", "NOT_APPLICABLE"),
         )
-        return validate("UsageTotals", values)
+        return validate("UsageTotals", values) if validate_wire else values
 
     def choices(self, owner, ticker, view_id, view, args, dimension):
         limit = int(args.get("limit", 20))
@@ -182,6 +189,8 @@ class Costs:
 
 def install(app: FastAPI):
     costs = Costs(app.state.store, app.state.views)
+    from .cost_report import install as install_report
+    install_report(app, costs)
     prefix = "/api/doxagent/v2/tickers/{ticker}/audit/cost"
     allowed = {"view_id", "scope", "node_id", "provider", "model_id"}
 
@@ -193,7 +202,7 @@ def install(app: FastAPI):
         args = app.state.query(request, allowed)
         data = {
             "scope": args.get("scope"),
-            "pricing_version": "frontend-fixed-20260907",
+            "pricing_version": PRICE_VERSION,
             "usd_cny": "6.8",
             "totals": costs.totals(ticker, view(request, ticker, args), args),
         }
@@ -302,7 +311,7 @@ def install(app: FastAPI):
             "other": share("OTHER", sum((amount for _, amount in ordered[limit:]), Decimal(0)))
             if len(ordered) > limit
             else None,
-            "coverage": coverage(count=len(groups)),
+            "coverage": costs.totals(ticker, current, args)[metric]["current_coverage"],
         }
         return app.state.respond(request, "CostBreakdown", data, view_id=args["view_id"])
 
@@ -378,7 +387,9 @@ def install(app: FastAPI):
                     "cost_usd": known("total_cost_usd")
                     if args["scope"] == "API"
                     else missing("CODEX_SUBSCRIPTION_NOT_PRICED", "NOT_APPLICABLE"),
-                    "coverage": coverage(count=int(merged.get("requests", 0))),
+                    "coverage": costs.totals(ticker, current, args, sums=merged)[
+                        "total_cost_usd" if args["scope"] == "API" else "total_tokens"
+                    ]["current_coverage"],
                 }
             )
         return app.state.respond(

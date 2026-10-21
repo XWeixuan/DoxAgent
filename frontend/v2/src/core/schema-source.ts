@@ -76,3 +76,5 @@ export type WireMonitoringTermsWrite = W.Response<W.MonitoringTermsConfig>;
 export type WireMonitoringTermsValidation = W.Response<W.MonitoringTermsValidation>;
 
 export type WireDeferredQueryTicket = W.DeferredQueryTicket;
+
+export type WireCostReport = W.Response<W.Resource<W.CostReport>>;

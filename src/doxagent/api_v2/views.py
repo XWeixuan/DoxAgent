@@ -38,7 +38,7 @@ class Views:
             "COST",
         }:
             raise ApiFailure("VALIDATION_FAILED", 422)
-        if (page == "OVERVIEW") != (ticker is None):
+        if page == "OVERVIEW" and ticker is not None or page not in {"OVERVIEW", "COST"} and ticker is None:
             raise ApiFailure("VALIDATION_FAILED", 422)
         if refresh not in {"OPEN", "MANUAL", "MINUTE"} or (
             refresh == "MINUTE" and page not in {"MESSAGE_BUS", "RUNTIME"}
@@ -60,7 +60,7 @@ class Views:
                 (ticker, ticker),
             ).fetchall()
             tickers = [r[0] for r in rows if not json.loads(r[1])["removed"]]
-            if ticker and ticker not in tickers:
+            if ticker and ticker not in tickers and page != "COST":
                 raise ApiFailure("TICKER_NOT_FOUND", 404)
             first = db.execute("SELECT value FROM read_meta WHERE key='first_at'").fetchone()[0]
             source_health = db.execute(
@@ -149,6 +149,7 @@ class Views:
                 "tickers": tickers if ticker is None else [ticker],
                 "as_of": instant(now),
                 "freshness": self.store.freshness(now),
+                "cost_source_health": {row[0]: {"head": row[1], "checkpoint": row[2], "checked_at": row[3], "error": row[4]} for row in db.execute("SELECT source,head,checkpoint,checked_at,error FROM source_health WHERE source IN ('runtime','initialization')")} if page == "COST" else {},
                 "capture_proofs": {row[0]: json.loads(row[1]) for row in db.execute("SELECT source,payload FROM capture_proofs")},
             }
         # Pin the completed read snapshot in a short, separate write transaction.

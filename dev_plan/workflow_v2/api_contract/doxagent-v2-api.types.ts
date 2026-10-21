@@ -886,7 +886,7 @@ export interface AuditFilters {
   nodes: Page<{ node_id: string; label: string }>;
   models: Page<{ provider: string; model_id: string }>;
 }
-export interface CostSummary { scope: AuditScope; pricing_version: "frontend-fixed-20260907"; usd_cny: "6.8"; totals: UsageTotals }
+export interface CostSummary { scope: AuditScope; pricing_version: string; usd_cny: "6.8"; totals: UsageTotals }
 export interface TrendPoint { start_at: Instant; end_at: Instant; total_tokens: Value<DecimalString>; cost_usd: Value<DecimalString>; coverage: Coverage }
 export interface CostTrend { scope: AuditScope; bucket: "SEMANTIC_DAY" | "SEMANTIC_WEEK" | "SEMANTIC_MONTH"; points: TrendPoint[] }
 export interface ShareRow { key: string; label: string; value: DecimalString; ratio: DecimalString }
@@ -903,4 +903,26 @@ export interface DeferredQueryTicket {
   retry_after_seconds: number;
   expires_at: Instant;
   result_path: string;
+}
+
+/** One frozen report across the retained production invocation ledger. */
+export interface CostReportTotals extends UsageTotals {
+  observed_attempts: Count; usage_known_attempts: Count; usage_unknown_attempts: Count;
+  priced_attempts: Count; unpriced_attempts: Count;
+  reported_cost_attempts: Count; estimated_cost_attempts: Count;
+  normalized_attempts: Count; cache_ratio_known_attempts: Count; unknown_model_price_attempts: Count;
+  cache_write_input_tokens: Metric; cache_write_5m_input_tokens: Metric;
+  cache_write_1h_input_tokens: Metric; cache_write_cost_usd: Metric;
+  cost_native_cny: Value<DecimalString>; cost_native_usd: Value<DecimalString>;
+}
+export interface CostReportRow {
+  key: string; node: string; round: string; provider: string; model: string;
+  totals: CostReportTotals;
+}
+export interface CostReport {
+  scope: AuditScope; pricing_version: string; usd_cny: DecimalString; observed_through: Instant;
+  totals: CostReportTotals; trend: CostTrend; breakdown: CostBreakdown;
+  rows: CostReportRow[]; row_count: Count; offset: Count; limit: Count;
+  filter_choices: { tickers: string[]; nodes: string[]; models: {provider: string; model_id: string}[] };
+  source_coverage: Coverage; coverage: Coverage;
 }

@@ -1237,3 +1237,47 @@
 .binding-endpoints small { display: block; max-width: 28em; overflow-wrap: anywhere; }
 
 .binding-endpoints th:last-child, .binding-endpoints td:last-child { text-align: right; }
+
+/* Cost report shares one column geometry for header and body. */
+.audit-report-filters {
+  margin-block: 12px;
+}
+.audit-observation-counts,
+.audit-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-block: 12px;
+}
+.cost-report-table {
+  table-layout: fixed;
+  width: 100%;
+  min-width: 920px;
+}
+.cost-report-table th,
+.cost-report-table td {
+  text-align: right;
+  vertical-align: top;
+  padding: 12px 10px;
+  font-size: 14px;
+}
+.cost-report-table th:first-child,
+.cost-report-table td:first-child {
+  text-align: left;
+  width: 24%;
+  overflow-wrap: anywhere;
+}
+.cost-report-table small {
+  display: block;
+  overflow-wrap: anywhere;
+}
+.cost-report-table details {
+  margin-top: 4px;
+}
+.cost-report-table summary {
+  cursor: pointer;
+}
+.cost-report-table .model-name {
+  white-space: normal;
+}

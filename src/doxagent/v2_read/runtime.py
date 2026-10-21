@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from datetime import datetime
+from decimal import Decimal
 from typing import Any
 
 from doxagent.api_v2.dto import available, missing, validate
@@ -11,7 +12,7 @@ from doxagent.api_v2.errors import ApiFailure
 from doxagent.semantic_clock import semantic_day
 
 from .repository import instant
-from .usage import cost, observations
+from .usage import accounting, observations
 
 
 def hot_path_contributions(store: Any, case: dict[str, Any]) -> list[dict]:
@@ -101,17 +102,16 @@ def turn_records(turn: dict[str, Any], case: dict[str, Any]) -> tuple[list[dict]
         }
     ]
     day = semantic_day(datetime.fromisoformat(turn.get("started_at") or turn["created_at"]))
-    usage = {key: turn.get(key) for key in ("input_tokens", "output_tokens", "cached_input_tokens")}
-    price = (
-        cost(turn["model"], datetime.fromisoformat(turn["started_at"]), usage)
-        if turn.get("started_at")
-        else missing("NOT_RECORDED")
-    )
+    usage = {key: turn.get(key) for key in (
+        "input_tokens", "output_tokens", "cached_input_tokens", "cache_write_input_tokens",
+        "cache_write_5m_input_tokens", "cache_write_1h_input_tokens", "provider_usage",
+        "reasoning_tokens", "cache_ttl", "provider_endpoint", "region", "normalization_version",
+    )}
+    normalized, money = accounting(turn["model"], turn["provider"], "API", turn.get("started_at"), usage)
+    price = available(format(money["total_cost_usd"], "f")) if money["total_cost_usd"] is not None else missing(money["reason"] or "NOT_RECORDED")
     dimensions = {
-        "scope": "API",
-        "node": turn["lane"],
-        "model": turn["model"],
-        "provider": turn["provider"],
+        "scope": "API", "node": turn["lane"], "round": turn["round_name"],
+        "model": turn["model"], "provider": turn["provider"],
     }
     records.append(
         {
@@ -126,11 +126,16 @@ def turn_records(turn: dict[str, Any], case: dict[str, Any]) -> tuple[list[dict]
                 "node": turn["lane"],
                 "model": turn["model"],
                 "provider": turn["provider"],
-                "usage": usage,
+                "round": turn["round_name"],
+                "normalization_version": normalized["normalization_version"],
+                "usage": normalized,
+                "accounting": {key: format(value, "f") if isinstance(value, Decimal) else value for key, value in money.items()},
+                "upstream_provider": (turn.get("provider_usage") or {}).get("response_provider"),
+                "attribution_basis": "STARTED_AT" if turn.get("started_at") else "CREATED_AT",
                 "cost_usd": price,
                 "timing": attempt["timing"],
                 "coverage": "COMPLETE"
-                if all(value is not None for value in usage.values())
+                if normalized["total_tokens"] is not None
                 else "PARTIAL",
             },
         }
@@ -202,6 +207,7 @@ def worker_records(value: dict) -> tuple[list[dict], list[dict]]:
                 "invocation_id": job["job_id"],
                 "scope": "CODEX",
                 "node": "W3",
+                "round": "AGENT",
                 "model": value["model"],
                 "provider": value.get("provider") or "unknown",
                 "timing": interval,
@@ -223,6 +229,7 @@ def worker_records(value: dict) -> tuple[list[dict], list[dict]]:
             "dimensions": {
                 "scope": "CODEX",
                 "node": "W3",
+                "round": "AGENT",
                 "model": value["model"],
                 "provider": value.get("provider") or "unknown",
             },
@@ -249,6 +256,7 @@ def worker_usage(value):
     dimensions = {
         "scope": "CODEX",
         "node": value["node"],
+        "round": value.get("round") or "AGENT",
         "model": value.get("model") or "unknown",
         "provider": value.get("provider") or "unknown",
     }

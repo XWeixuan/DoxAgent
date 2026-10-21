@@ -22,6 +22,15 @@ def instant(at: datetime) -> str:
     return at.astimezone(UTC).isoformat().replace("+00:00", "Z")
 
 
+def migrate_cost_indexes(db) -> None:
+    """Only cost buckets are indexed; no source receipt or JSON payload index."""
+    for table in ("metric_buckets_current", "metric_buckets_history"):
+        if db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", (table,)).fetchone():
+            fields = "scope,valid_to,valid_from,day,metric" if table.endswith("history") else "scope,day,metric"
+            db.execute("CREATE INDEX IF NOT EXISTS " + table + "_cost_global ON " + table +
+                       "(" + fields + ") WHERE scope IN ('API','CODEX')")
+
+
 def migrate_case_evidence_indexes(db) -> None:
     """Add display lookup indexes to an existing release without a full migration."""
     relation=db.execute("SELECT type FROM sqlite_master WHERE name='objects'").fetchone()
@@ -329,6 +338,7 @@ class ReadStore:
                 raise ValueError("unsupported V2 read schema")
             from .serving_schema import install
             install(db)
+            migrate_cost_indexes(db)
 
     @property
     def history_table(self):
@@ -394,6 +404,7 @@ class ReadStore:
         contributions: list[dict[str, Any]] | None = None,
         gap: str | None = None,
         resolved_gap: str | None = None,
+        expected_usage_versions: list[tuple[str, str, int]] | None = None,
     ) -> int:
         proofs = [record for record in records if record["kind"] == "capture_coverage"]
         records = [record for record in records if record["kind"] != "capture_coverage"]
@@ -410,6 +421,11 @@ class ReadStore:
             unique[key] = record
         records = list(unique.values())
         with self.connect(write=True) as db:
+            # A cost backfill must not overwrite a receipt updated by the live projector.
+            for ticker, identity, revision in expected_usage_versions or ():
+                current = db.execute("SELECT valid_from FROM object_current WHERE kind='usage' AND ticker=? AND id=?", (ticker, identity)).fetchone()
+                if not current or current[0] != revision:
+                    raise ValueError("COST_BACKFILL_CONCURRENT_UPDATE")
             row = db.execute(
                 "SELECT seq FROM commits WHERE source=? AND source_event=?", (source, event)
             ).fetchone()

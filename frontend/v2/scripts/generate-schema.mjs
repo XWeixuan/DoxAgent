@@ -1,5 +1,5 @@
 import { createGenerator } from "ts-json-schema-generator";
-import { writeFileSync, readFileSync, renameSync } from "node:fs";
+import { writeFileSync, readFileSync, renameSync, existsSync } from "node:fs";
 import { createHash } from "node:crypto";
 const schema = createGenerator({
   path: "src/core/schema-source.ts",
@@ -61,3 +61,33 @@ renameSync("src/core/wire-schema.json.tmp", "src/core/wire-schema.json");
 console.log(
   "Generated V2 validators from shared wire types (no V1 dependency).",
 );
+
+// Python keeps server-only compatibility aliases; update cost roots and missing dependencies.
+const backendPath = "../../src/doxagent/api_v2/wire_schema.json";
+if (existsSync(backendPath)) {
+  const backend = JSON.parse(readFileSync(backendPath, "utf8"));
+  const definitions = JSON.parse(
+    JSON.stringify(schema.definitions).replaceAll("#/definitions/", "#/$defs/"),
+  );
+  const add = (name, replace = false) => {
+    if (!replace && backend.$defs[name]) return;
+    backend.$defs[name] = definitions[name];
+    const walk = (value) => {
+      if (!value || typeof value !== "object") return;
+      if (value.$ref?.startsWith("#/$defs/"))
+        add(decodeURIComponent(value.$ref.slice(8)));
+      for (const child of Object.values(value)) walk(child);
+    };
+    walk(definitions[name]);
+  };
+  for (const name of [
+    "CostReport",
+    "CostReportTotals",
+    "CostReportRow",
+    "CostSummary",
+  ])
+    add(name, true);
+  backend.source_sha256 = createHash("sha256").update(contract).digest("hex");
+  writeFileSync(backendPath + ".tmp", JSON.stringify(backend, null, 2) + "\n");
+  renameSync(backendPath + ".tmp", backendPath);
+}

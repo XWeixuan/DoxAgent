@@ -104,3 +104,10 @@ V2 是 **Greenfield Rebuild**：不在 V1 上改，不复用 V1 组件，不继�
 ## 2026-09-08 业务页实施补充
 
 七个业务页已接入真实 V2 API；收益审计仅按 PRD 保留占位。Overview 筛选、普通 GET Resource 包装、Policy ALL、Runtime 按实际 Case 的节点路径聚合已在前后端同步收口。Runtime 仍采用共同契约的九节点，不由前端虚构 ROUTER 节点。当前代码与验证边界见 frontend/v2/DELIVERY.md；隔离测试成功不等于真实账户、真实数据库和部署验收完成。
+
+
+#### 2026-10-21 成本口径落地补充
+
+全局 `/audit/cost` 默认全部标的；ticker 原入口仅预选筛选。KPI、趋势、占比与逐轮模型明细统一调用 CostReport。
+主请求数为有效 usage 样本，同时显示已观测全部尝试与缺失数；旧 ticker API requests 保持原语义。
+均值以完整 token 样本为分母，缓存 token 比率用成对已知样本。价格依据、未知、来源缺口分别显示，不用固定 PARTIAL 代替真实判断。

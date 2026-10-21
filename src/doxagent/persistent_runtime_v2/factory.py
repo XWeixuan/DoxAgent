@@ -105,10 +105,13 @@ def build_persistent_runtime_v2_service(
         settings.event_library_root,
         market=settings.event_library_market,
     )
+    from .future_model_profiles import configured_rounds
+    round_overrides = configured_rounds(settings)
     bailian = BailianRuntimeResponsesClient(
         api_key=settings.require_dashscope_api_key(),
         base_url=settings.dashscope_chat_base_url,
         model=settings.persistent_runtime_v2_model,
+        glm_api_key=settings.bailian_glm_api_key.get_secret_value() if settings.bailian_glm_api_key else None,
         reasoning_effort=settings.persistent_runtime_v2_reasoning_effort,
         timeout_seconds=settings.persistent_runtime_v2_timeout_seconds,
         session_cache=settings.persistent_runtime_v2_session_cache_enabled,
@@ -118,6 +121,8 @@ def build_persistent_runtime_v2_service(
     responses = RuntimeRecallOpenRouterClient(
         bailian,
         api_key=settings.openrouter_api_key.get_secret_value() if settings.openrouter_api_key else "",
+        round_overrides=round_overrides,
+        vertex_project=settings.vertex_project,
         w2_r1_model=settings.persistent_runtime_v2_w2_r1_model,
         w1_r1_model=settings.persistent_runtime_v2_w1_r1_model,
         w1_provisional_cache_batch_size=(

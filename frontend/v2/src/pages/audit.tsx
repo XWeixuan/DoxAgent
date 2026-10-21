@@ -7,22 +7,20 @@ import {
   Database,
   Gauge,
   ChartPie,
-  Network,
   Cpu,
   Code2,
   Wallet,
 } from "lucide-react";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useParams, useSearchParams, Link } from "react-router-dom";
 import Decimal from "decimal.js";
 import type {
   Period,
-  CostNodeRow,
+  CostReport,
   CostTrend,
   Value,
   UsageTotals,
 } from "@contract";
-import { usePageContext, useRead, tickerPath } from "@/core/page-query";
-import { usePages } from "@/core/paged-query";
+import { usePageContext, useRead } from "@/core/page-query";
 import { queryString } from "@/core/api";
 import { valueText, decimal } from "@/core/format";
 import { PageTitle, Choices } from "@/components/page-kit";
@@ -35,17 +33,18 @@ const tokens = (v: Value<string>) =>
     v,
     (x) => decimal(new Decimal(x).div(1_000_000).toString(), 3) + "M",
   );
-const money = (v: Value<string>) => valueText(v, (x) => "$" + decimal(x, 3));
+const money = (v: Value<string>) => valueText(v, (x) => "$" + decimal(x, 4));
 const ratio = (v: Value<string>) =>
   valueText(v, (x) => decimal(new Decimal(x).mul(100).toString(), 1) + "%");
+
 export default function Audit() {
-  const { ticker = "" } = useParams(),
-    [p, setP] = useSearchParams();
+  const { ticker = "" } = useParams();
+  const [p, setP] = useSearchParams();
   const revenue = p.get("audit") === "REVENUE";
   return (
     <>
       <div className="business-heading">
-        <h1>{ticker} 收益 / 成本审计</h1>
+        <h1>收益 / 成本审计</h1>
         <Choices
           value={revenue ? "REVENUE" : "COST"}
           items={[
@@ -71,72 +70,42 @@ export default function Audit() {
 }
 function CostAudit({ ticker }: { ticker: string }) {
   const [p, setP] = useSearchParams();
-  const scope = p.get("scope") === "CODEX" ? "CODEX" : "API",
-    dimension = p.get("dimension") === "MODEL" ? "MODEL" : "NODE";
+  const scope = p.get("scope") === "CODEX" ? "CODEX" : "API";
+  const dimension = p.get("dimension") === "MODEL" ? "MODEL" : "NODE";
   const period = (periods.find((x) => x[0] === p.get("period"))?.[0] ??
-    "CURRENT_TRADING_DAY") as Period;
-  const c = usePageContext(ticker, "COST", period),
+    "PREVIOUS_TRADING_DAY") as Period;
+  // A global view lets the ticker selector include inactive and shared owners.
+  const c = usePageContext("", "COST", period),
     view = c.data?.data.view_id;
-  const set = (key: string, v: string) => {
+  const selection = p.get("ticker") ?? (ticker || "ALL");
+  const set = (key: string, value: string) => {
     const n = new URLSearchParams(p);
-    if (v) n.set(key, v);
+    if (value) n.set(key, value);
     else n.delete(key);
-    if (key === "scope" || key === "period") {
+    if (key !== "offset") n.delete("offset");
+    if (["scope", "period", "ticker"].includes(key)) {
       n.delete("node");
-      n.delete("model");
       n.delete("provider");
+      n.delete("model");
     }
     setP(n);
   };
-  const base = tickerPath(ticker) + "/audit/cost";
-  const qs = queryString({ view_id: view, scope });
-  const summary = useRead(
-      "CostSummary",
-      view ? base + "/summary" + qs : null,
-      view,
-    ),
-    trend = useRead(
-      "CostTrend",
-      view
-        ? base +
-            "/trend" +
-            queryString({ view_id: view, scope, max_points: "60" })
-        : null,
-      view,
-    ),
-    shares = useRead(
-      "CostBreakdown",
-      view
-        ? base +
-            "/breakdown" +
-            queryString({ view_id: view, scope, dimension, limit: "10" })
-        : null,
-      view,
-    ),
-    filters = useRead(
-      "CostFilters",
-      view
-        ? base +
-            "/filters" +
-            queryString({ view_id: view, scope, limit: "100" })
-        : null,
-      view,
-    );
-  const nodes = usePages<CostNodeRow, "CostNodes">(
-    "CostNodes",
+  const report = useRead(
+    "CostReport",
     view
-      ? base +
-          "/nodes" +
+      ? "/audit/cost/report" +
           queryString({
             view_id: view,
             scope,
+            dimension,
+            ticker_selector: selection,
             node_id: p.get("node") ?? undefined,
             provider: p.get("provider") ?? undefined,
             model_id: p.get("model") ?? undefined,
-            limit: "20",
+            offset: p.get("offset") ?? "0",
+            limit: "12",
           })
       : null,
-    (r) => r.data,
     view,
   );
   return (
@@ -148,9 +117,9 @@ function CostAudit({ ticker }: { ticker: string }) {
             ["API", "API"],
             ["CODEX", "Codex"],
           ]}
-          onChange={(v) => set("scope", v)}
           icons={{ API: Cpu, CODEX: Code2 }}
           label="调用类型"
+          onChange={(v) => set("scope", v)}
         />
         <PeriodPicker
           value={period}
@@ -160,35 +129,152 @@ function CostAudit({ ticker }: { ticker: string }) {
         <PageTitle title="" refresh={c.refetch} />
       </div>
       {c.error && <Notice danger>{c.error.message}</Notice>}
-      <Module query={summary} label="用量汇总">
+      <Module query={report} label="成本审计">
         {(d) => (
-          <>
-            <UsageKpis totals={d.totals} codex={scope === "CODEX"} />
-            {scope === "API" &&
-              (d.totals.unpriced_request_count.state !== "AVAILABLE" ||
-                d.totals.unpriced_request_count.value > 0) && (
-                <p className="coverage-note">
-                  未计价请求：{valueText(d.totals.unpriced_request_count)}
-                </p>
-              )}
-          </>
+          <Report
+            data={d}
+            scope={scope}
+            dimension={dimension}
+            selection={selection}
+            p={p}
+            set={set}
+            setP={setP}
+          />
         )}
       </Module>
+    </>
+  );
+}
+function Report({
+  data: d,
+  scope,
+  dimension,
+  selection,
+  p,
+  set,
+  setP,
+}: {
+  data: CostReport;
+  scope: "API" | "CODEX";
+  dimension: "NODE" | "MODEL";
+  selection: string;
+  p: URLSearchParams;
+  set: (k: string, v: string) => void;
+  setP: (p: URLSearchParams) => void;
+}) {
+  const t = d.totals;
+  return (
+    <>
+      <div className="filter-bar audit-report-filters">
+        <div className="business-filters">
+          <label>
+            标的
+            <select
+              aria-label="审计标的"
+              value={selection}
+              onChange={(e) => set("ticker", e.target.value)}
+            >
+              <option value="ALL">全部标的</option>
+              {Array.from(
+                new Set([
+                  ...d.filter_choices.tickers,
+                  ...(selection !== "ALL" ? [selection] : []),
+                ]),
+              ).map((v) => (
+                <option key={v} value={v}>
+                  {v === "GLOBAL" ? "共享研究" : v}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            节点
+            <select
+              aria-label="审计节点"
+              value={p.get("node") ?? ""}
+              onChange={(e) => set("node", e.target.value)}
+            >
+              <option value="">全部节点</option>
+              {d.filter_choices.nodes.map((v) => (
+                <option key={v} value={v}>
+                  {v}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            模型
+            <select
+              aria-label="审计模型"
+              value={
+                p.get("model")
+                  ? JSON.stringify([p.get("provider"), p.get("model")])
+                  : ""
+              }
+              onChange={(e) => {
+                const n = new URLSearchParams(p);
+                n.delete("provider");
+                n.delete("model");
+                n.delete("offset");
+                if (e.target.value) {
+                  const [provider, model] = JSON.parse(e.target.value);
+                  n.set("provider", provider);
+                  n.set("model", model);
+                }
+                setP(n);
+              }}
+            >
+              <option value="">全部模型</option>
+              {d.filter_choices.models.map((m) => (
+                <option
+                  key={m.provider + ":" + m.model_id}
+                  value={JSON.stringify([m.provider, m.model_id])}
+                >
+                  {m.provider} · {m.model_id}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+        {selection !== "ALL" && <Link to="/audit/cost">全部标的审计</Link>}
+      </div>
+      <UsageKpis totals={t} codex={scope === "CODEX"} />
+      <div className="audit-observation-counts">
+        <span>
+          有效请求 {t.usage_known_attempts} / 已观测 {t.observed_attempts}
+        </span>
+        {t.usage_unknown_attempts > 0 && (
+          <span>缺 usage {t.usage_unknown_attempts}</span>
+        )}
+        {scope === "API" && (
+          <>
+            <span>未计价 {t.unpriced_attempts}{t.unknown_model_price_attempts > 0 ? `（价格未配 ${t.unknown_model_price_attempts}）` : ""}</span>
+            <span>
+              已报费用 {t.reported_cost_attempts} / 估价{" "}
+              {t.estimated_cost_attempts}
+            </span>
+          </>
+        )}
+        <CoverageNote coverage={d.source_coverage} />
+        {t.normalized_attempts < t.observed_attempts && (
+          <span>
+            历史重算 {t.normalized_attempts}/{t.observed_attempts}
+          </span>
+        )}
+      </div>
       <div className="audit-charts">
         <section className="chart-panel">
           <h2>
             <ChartNoAxesCombined aria-hidden="true" />
-            {scope === "API" ? "用量与成本趋势" : "Token 用量趋势"}
+            用量与成本趋势
           </h2>
-          <Module query={trend} label="趋势">
-            {(d) => <Trend data={d} />}
-          </Module>
+          <Trend data={d.trend} />
         </section>
         <section className="chart-panel">
           <header>
             <h2>
               <ChartPie aria-hidden="true" />
-              {scope === "API" ? "成本占比" : "Token 占比"}
+              {scope === "API" ? "已知成本占比" : "Token 占比"}
             </h2>
             <Choices
               value={dimension}
@@ -200,186 +286,165 @@ function CostAudit({ ticker }: { ticker: string }) {
               label="占比维度"
             />
           </header>
-          <Module query={shares} label="占比">
-            {(d) =>
-              d.items.length ? (
-                <div className="share-bars">
-                  <CoverageNote coverage={d.coverage} />
-                  {[...d.items, ...(d.other ? [d.other] : [])].map((r, i) => (
-                    <div key={r.key}>
-                      <header>
-                        <span>{shareLabel(r.label)}</span>
-                        <strong>
-                          {new Decimal(r.ratio).mul(100).toFixed(1)}%
-                        </strong>
-                      </header>
-                      <div className="share-track">
-                        <span
-                          style={{
-                            width:
-                              new Decimal(r.ratio)
-                                .mul(100)
-                                .clamp(0, 100)
-                                .toString() + "%",
-                            opacity: 1 - i * 0.06,
-                          }}
-                        />
-                      </div>
-                      <small>
-                        {d.unit === "USD"
-                          ? "$" + decimal(r.value, 3)
-                          : decimal(
-                              new Decimal(r.value).div(1e6).toString(),
-                              3,
-                            ) + "M"}
-                      </small>
-                    </div>
-                  ))}
+          {d.breakdown.items.length ? (
+            <div className="share-bars">
+              {d.breakdown.items.slice(0, 12).map((r) => (
+                <div key={r.key}>
+                  <header>
+                    <span>{shareLabel(r.label)}</span>
+                    <strong>{new Decimal(r.ratio).mul(100).toFixed(1)}%</strong>
+                  </header>
+                  <div className="share-track">
+                    <span
+                      style={{
+                        width:
+                          new Decimal(r.ratio)
+                            .mul(100)
+                            .clamp(0, 100)
+                            .toString() + "%",
+                      }}
+                    />
+                  </div>
+                  <small>
+                    {d.breakdown.unit === "USD"
+                      ? "$" + decimal(r.value, 4)
+                      : decimal(new Decimal(r.value).div(1e6).toString(), 3) +
+                        "M"}
+                  </small>
                 </div>
-              ) : (
-                <Notice>当前范围没有可计算的占比</Notice>
-              )
-            }
-          </Module>
+              ))}
+            </div>
+          ) : (
+            <Notice>当前范围没有可计算的占比</Notice>
+          )}
         </section>
       </div>
       <section className="cost-nodes">
-        <div className="filter-bar">
-          <h2>
-            <Network aria-hidden="true" />
-            节点明细
-          </h2>
-          <div className="business-filters">
-            <label>
-              节点
-              <select
-                value={p.get("node") ?? ""}
-                onChange={(e) => set("node", e.target.value)}
-              >
-                <option value="">全部节点</option>
-                {filters.data?.data.data?.nodes.items.map((n) => (
-                  <option key={n.node_id} value={n.node_id}>
-                    {n.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              模型
-              <select
-                value={
-                  p.get("model")
-                    ? JSON.stringify([p.get("provider"), p.get("model")])
-                    : ""
-                }
-                onChange={(e) => {
-                  const n = new URLSearchParams(p);
-                  n.delete("provider");
-                  n.delete("model");
-                  if (e.target.value) {
-                    const [provider, model] = JSON.parse(e.target.value);
-                    n.set("provider", provider);
-                    n.set("model", model);
-                  }
-                  setP(n);
-                }}
-              >
-                <option value="">全部模型</option>
-                {filters.data?.data.data?.models.items.map((m) => (
-                  <option
-                    key={m.provider + ":" + m.model_id}
-                    value={JSON.stringify([m.provider, m.model_id])}
-                  >
-                    {m.model_id}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-        </div>
-        {filters.error && <Notice danger>{filters.error.message}</Notice>}
-        <Module query={nodes} label="节点明细">
-          {(d) =>
-            d.items.length ? (
-              <div className="domain-table-scroll">
-                <table className="domain-table cost-table">
-                  <thead>
-                    <tr>
-                      {[
-                        "节点",
-                        "模型",
-                        "请求数量",
-                        "Input Token / 成本",
-                        "Output Token / 成本",
-                        "缓存命中",
-                        "命中比例",
-                        "平均每请求 Token",
-                        "总成本",
-                      ].map((h) => (
-                        <th key={h}>{h}</th>
-                      ))}
+        <h2>逐轮模型用量</h2>
+        {d.rows.length ? (
+          <div className="domain-table-scroll">
+            <table className="domain-table cost-table cost-report-table">
+              <thead>
+                <tr>
+                  {[
+                    "节点 / 模型",
+                    "有效 / 全部请求",
+                    "输入 Token",
+                    "缓存读取 / 命中率",
+                    "缓存创建",
+                    "输出 Token",
+                    "已知成本",
+                  ].map((h) => (
+                    <th key={h}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {d.rows.map((r) => {
+                  const x = r.totals;
+                  return (
+                    <tr key={r.key}>
+                      <td>
+                        <strong>
+                          {r.node}
+                          {["W1", "W2"].includes(r.node) &&
+                          r.round !== "UNKNOWN_ROUND"
+                            ? r.round
+                            : ""}
+                        </strong>
+                        <span className="model-name">{r.model}</span>
+                        <small>
+                          {r.provider}
+                          {r.round === "UNKNOWN_ROUND" ? " · 轮次未知" : ""}
+                        </small>
+                      </td>
+                      <td>
+                        {x.usage_known_attempts} / {x.observed_attempts}
+                      </td>
+                      <td>
+                        {tokens(x.input_tokens.current)}
+                        <small>{money(x.input_cost_usd.current)}</small>
+                      </td>
+                      <td>
+                        {tokens(x.cached_input_tokens.current)}
+                        <small>
+                          {ratio(x.cache_hit_ratio.current)} ·{" "}
+                          {x.cache_ratio_known_attempts} 样本
+                        </small>
+                      </td>
+                      <td>
+                        {tokens(x.cache_write_input_tokens.current)}
+                        <details>
+                          <summary>分项</summary>
+                          <small>
+                            5m {tokens(x.cache_write_5m_input_tokens.current)} /
+                            1h {tokens(x.cache_write_1h_input_tokens.current)}
+                          </small>
+                          <small>{money(x.cache_write_cost_usd.current)}</small>
+                        </details>
+                      </td>
+                      <td>
+                        {tokens(x.output_tokens.current)}
+                        <small>{money(x.output_cost_usd.current)}</small>
+                      </td>
+                      <td>
+                        {scope === "CODEX"
+                          ? "不适用"
+                          : money(x.total_cost_usd.current)}
+                        <MetricNote metric={x.total_cost_usd} />
+                        <details>
+                          <summary>依据</summary>
+                          <small>
+                            已报 {x.reported_cost_attempts} / 估价{" "}
+                            {x.estimated_cost_attempts} / 未计价{" "}
+                            {x.unpriced_attempts}
+                          </small>
+                          <small>
+                            USD {valueText(x.cost_native_usd)} / CNY{" "}
+                            {valueText(x.cost_native_cny)}
+                          </small>
+                        </details>
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {d.items.map((n) => (
-                      <tr key={n.node_id}>
-                        <td>
-                          {n.label}
-                          <MetricNote metric={n.totals.total_tokens} />
-                        </td>
-                        <td>
-                          {n.models.map((m) => (
-                            <span
-                              className="model-name"
-                              key={m.provider + m.model_id}
-                            >
-                              {m.model_id}
-                            </span>
-                          ))}
-                        </td>
-                        <td>{valueText(n.totals.requests)}</td>
-                        <td>
-                          {tokens(n.totals.input_tokens.current)}
-                          <small>
-                            {scope === "CODEX"
-                              ? "不适用"
-                              : money(n.totals.input_cost_usd.current)}
-                          </small>
-                        </td>
-                        <td>
-                          {tokens(n.totals.output_tokens.current)}
-                          <small>
-                            {scope === "CODEX"
-                              ? "不适用"
-                              : money(n.totals.output_cost_usd.current)}
-                          </small>
-                        </td>
-                        <td>{tokens(n.totals.cached_input_tokens.current)}</td>
-                        <td>{ratio(n.totals.cache_hit_ratio.current)}</td>
-                        <td>
-                          {tokens(n.totals.average_total_tokens_per_request)}
-                        </td>
-                        <td>
-                          {scope === "CODEX"
-                            ? "不适用"
-                            : money(n.totals.total_cost_usd.current)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <Notice>当前范围没有节点用量</Notice>
-            )
-          }
-        </Module>
-        {nodes.hasNextPage && (
-          <Button variant="outline" onClick={() => void nodes.fetchNextPage()}>
-            更多节点
-          </Button>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <Notice>当前范围没有调用记录</Notice>
+        )}
+        {d.row_count > d.limit && (
+          <div className="audit-pagination">
+            <Button
+              variant="outline"
+              disabled={!d.offset}
+              onClick={() =>
+                set("offset", String(Math.max(0, d.offset - d.limit)))
+              }
+            >
+              上一页
+            </Button>
+            <span>
+              {d.offset + 1}–{Math.min(d.offset + d.limit, d.row_count)} /{" "}
+              {d.row_count}
+            </span>
+            <Button
+              variant="outline"
+              disabled={d.offset + d.limit >= d.row_count}
+              onClick={() => set("offset", String(d.offset + d.limit))}
+            >
+              下一页
+            </Button>
+          </div>
         )}
       </section>
+      {scope === "API" && (
+        <p className="coverage-note">
+          公开价格估算与供应商已报费用合计；CNY 按固定 6.8 折算
+          USD。缺失费用未充零。
+        </p>
+      )}
     </>
   );
 }

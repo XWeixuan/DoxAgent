@@ -1202,7 +1202,7 @@ class PersistentRuntimeV2Service:
         }
         # Old Cases without a per-round manifest keep their original model/effort.
         settings.update(models.get("rounds", {}).get(f"{lane}:{round_name}", {}))
-        settings["transport"] = (
+        settings["transport"] = settings.get("transport") or (
             "chat_completions_json_schema"
             if settings.get("provider") == "openrouter"
             else "responses_json_object"
@@ -1350,20 +1350,22 @@ class PersistentRuntimeV2Service:
             started = perf_counter()
             started_at = utc_now()
             result = None
+            stateless_parent = model_settings["transport"] == "chat_completions_json_object" and inherit_context
             context_mode = (
                 "REPLAY_PARENT"
-                if recovery
+                if recovery or stateless_parent
                 else "PREVIOUS_RESPONSE"
                 if inherit_context
                 else "EXPLICIT"
             )
             try:
-                replay_parent = self._parent_replay(case, lane) if recovery else None
+                replay_parent = self._parent_replay(case, lane) if recovery or stateless_parent else None
                 result = self.responses.complete(
                     RuntimeResponsesRequest(
                         model=model_settings["model"],
                         reasoning_effort=model_settings["reasoning_effort"],
                         timeout_seconds=model_settings["timeout_seconds"],
+                        transport=model_settings["transport"],
                         provider=model_settings.get("provider", "bailian"),
                         provider_endpoint=model_settings.get("provider_endpoint"),
                         cache_ttl=model_settings.get("cache_ttl"),
@@ -1376,10 +1378,11 @@ class PersistentRuntimeV2Service:
                         output_model=output_model,
                         schema_name=schema_name,
                         cache_context_keys=cache_context_keys,
-                        previous_response_id=previous_response_id,
-                        inherit_context=inherit_context,
+                        previous_response_id=None if stateless_parent else previous_response_id,
+                        inherit_context=False if stateless_parent else inherit_context,
                         replay_parent=replay_parent,
                         metadata={
+                            "vertex_project": case.frozen_inputs.get("models", {}).get("vertex_project", ""),
                             "runtime": "persistent_v2",
                             "case_id": case.case_id,
                             "lane": lane,

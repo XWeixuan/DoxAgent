@@ -1,0 +1,66 @@
+{
+  "version": "cost-audit-20261021-v1",
+  "usd_cny": "6.8",
+  "fx_version": "product-fixed-6.8",
+  "bailian": {
+    "qwen3.8-flash": {
+      "currency": "CNY",
+      "input": "0.8",
+      "read": "0.1",
+      "output": "2.7"
+    },
+    "deepseek-v4-flash-0731": {
+      "currency": "CNY",
+      "input": "3",
+      "read": "0.3",
+      "output": "9",
+      "offpeak_multiplier": "0.5"
+    },
+    "deepseek-v4.1-flash": {
+      "currency": "CNY",
+      "input": "2",
+      "read": "0.2",
+      "output": "8",
+      "offpeak_multiplier": "0.5"
+    },
+    "ZHIPU/GLM-5.3-FlashX": {
+      "currency": "CNY",
+      "input": "2",
+      "read": "0.57",
+      "output": "7",
+      "region": "cn-beijing"
+    },
+    "deepseek-v4.1-flash-1017": {
+      "currency": "CNY",
+      "input": "2",
+      "read": "0.2",
+      "output": "8",
+      "offpeak_multiplier": "0.5"
+    }
+  },
+  "haiku": {
+    "short": {
+      "currency": "USD",
+      "input": "0.10",
+      "read": "0.01",
+      "write_5m": "0.125",
+      "write_1h": "0.20",
+      "output": "0.50"
+    },
+    "long": {
+      "currency": "USD",
+      "input": "0.50",
+      "read": "0.05",
+      "write_5m": "0.625",
+      "write_1h": "1.00",
+      "output": "2.50"
+    },
+    "long_input_from": 100000,
+    "non_global_multiplier": "1.1"
+  },
+  "sources": {
+    "haiku": "https://cloud.google.com/gemini-enterprise-agent-platform/generative-ai/pricing",
+    "glm": "https://help.aliyun.com/zh/model-studio/glm-5-3-flashx-by-zhipu",
+    "bailian": "https://help.aliyun.com/zh/model-studio/models"
+  }
+}

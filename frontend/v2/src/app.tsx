@@ -20,6 +20,7 @@ import { Notice } from "@/components/state";
 
 import { useIdentity, useRuntime } from "@/core/runtime";
 const TickerWorkspace = lazy(() => import("@/pages/ticker-workspace"));
+const Audit = lazy(() => import("@/pages/audit"));
 const Overview = lazy(() => import("@/pages/overview"));
 export class ErrorBoundary extends Component<
   { children: ReactNode },
@@ -129,6 +130,7 @@ function Workspace() {
         )}
 
         <div className="account-area">
+          <Link to="/audit/cost">成本审计</Link>
           {!principal.data?.data.can_operate && (
             <span className="account-label">
               <ShieldCheck aria-hidden="true" />
@@ -176,6 +178,16 @@ function Workspace() {
         >
           <Routes>
             <Route path="/overview" element={<Overview />} />
+            <Route
+              path="/audit/cost"
+              element={
+                <main id="main" className="ticker-workspace">
+                  <div className="business-page">
+                    <Audit />
+                  </div>
+                </main>
+              }
+            />
             <Route path="/ticker/:ticker/:page" element={<TickerWorkspace />} />
             <Route path="/" element={<Navigate to="/overview" replace />} />
             <Route

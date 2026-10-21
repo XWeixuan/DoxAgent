@@ -864,6 +864,12 @@ class DoxAgentSettings(BaseSettings):
         gt=0,
         validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_TIMEOUT_SECONDS",
     )
+    persistent_runtime_v2_api_profile: Literal["current", "vertex_recall", "bailian_glm", "vertex_glm"] = Field(
+        default="current", validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_API_PROFILE"
+    )
+    vertex_project: str = Field(default="", validation_alias="DOXAGENT_VERTEX_PROJECT")
+    bailian_glm_endpoint: str = Field(default="", validation_alias="DOXAGENT_BAILIAN_GLM_ENDPOINT")
+    bailian_glm_api_key: SecretStr | None = Field(default=None, validation_alias="DOXAGENT_BAILIAN_GLM_API_KEY")
     persistent_runtime_v2_w1_r1_model: str = Field(
         default="anthropic/claude-haiku-5.5",
         validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_W1_R1_MODEL",

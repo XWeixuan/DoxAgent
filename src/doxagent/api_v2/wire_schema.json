@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "source_sha256": "0420c3373ff895dce516d0d8ca84e75d5864de87ee01d8f5afbc47096f657597",
+  "source_sha256": "351e4387fb73557d814e373d6752f4adff855feedd16cbcf2b0df82a88d37347",
   "$defs": {
     "Id": {
       "type": "string"
@@ -10730,9 +10730,10 @@
           "$ref": "#/$defs/AuditScope"
         },
         "pricing_version": {
-          "const": "frontend-fixed-20260907"
+          "type": "string"
         },
         "usd_cny": {
+          "type": "string",
           "const": "6.8"
         },
         "totals": {
@@ -26602,6 +26603,379 @@
           ]
         }
       }
+    },
+    "CostReport": {
+      "type": "object",
+      "properties": {
+        "scope": {
+          "$ref": "#/$defs/AuditScope"
+        },
+        "pricing_version": {
+          "type": "string"
+        },
+        "usd_cny": {
+          "$ref": "#/$defs/DecimalString"
+        },
+        "observed_through": {
+          "$ref": "#/$defs/Instant"
+        },
+        "totals": {
+          "$ref": "#/$defs/CostReportTotals"
+        },
+        "trend": {
+          "$ref": "#/$defs/CostTrend"
+        },
+        "breakdown": {
+          "$ref": "#/$defs/CostBreakdown"
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CostReportRow"
+          }
+        },
+        "row_count": {
+          "$ref": "#/$defs/Count"
+        },
+        "offset": {
+          "$ref": "#/$defs/Count"
+        },
+        "limit": {
+          "$ref": "#/$defs/Count"
+        },
+        "filter_choices": {
+          "type": "object",
+          "properties": {
+            "tickers": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "nodes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "models": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "provider": {
+                    "type": "string"
+                  },
+                  "model_id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "provider",
+                  "model_id"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "tickers",
+            "nodes",
+            "models"
+          ],
+          "additionalProperties": false
+        },
+        "source_coverage": {
+          "$ref": "#/$defs/Coverage"
+        },
+        "coverage": {
+          "$ref": "#/$defs/Coverage"
+        }
+      },
+      "required": [
+        "scope",
+        "pricing_version",
+        "usd_cny",
+        "observed_through",
+        "totals",
+        "trend",
+        "breakdown",
+        "rows",
+        "row_count",
+        "offset",
+        "limit",
+        "filter_choices",
+        "source_coverage",
+        "coverage"
+      ],
+      "additionalProperties": false
+    },
+    "CostReportTotals": {
+      "type": "object",
+      "properties": {
+        "requests": {
+          "$ref": "#/$defs/Value%3CCount%3E"
+        },
+        "input_tokens": {
+          "$ref": "#/$defs/Metric"
+        },
+        "cached_input_tokens": {
+          "$ref": "#/$defs/Metric"
+        },
+        "output_tokens": {
+          "$ref": "#/$defs/Metric"
+        },
+        "total_tokens": {
+          "$ref": "#/$defs/Metric"
+        },
+        "cache_hit_ratio": {
+          "$ref": "#/$defs/Metric"
+        },
+        "noncached_input_cost_usd": {
+          "$ref": "#/$defs/Metric"
+        },
+        "cached_input_cost_usd": {
+          "$ref": "#/$defs/Metric"
+        },
+        "input_cost_usd": {
+          "$ref": "#/$defs/Metric"
+        },
+        "output_cost_usd": {
+          "$ref": "#/$defs/Metric"
+        },
+        "total_cost_usd": {
+          "$ref": "#/$defs/Metric"
+        },
+        "average_total_tokens_per_request": {
+          "$ref": "#/$defs/Value%3CDecimalString%3E"
+        },
+        "coverage": {
+          "$ref": "#/$defs/Coverage"
+        },
+        "unpriced_request_count": {
+          "$ref": "#/$defs/Value%3CCount%3E"
+        },
+        "observed_attempts": {
+          "$ref": "#/$defs/Count"
+        },
+        "usage_known_attempts": {
+          "$ref": "#/$defs/Count"
+        },
+        "usage_unknown_attempts": {
+          "$ref": "#/$defs/Count"
+        },
+        "priced_attempts": {
+          "$ref": "#/$defs/Count"
+        },
+        "unpriced_attempts": {
+          "$ref": "#/$defs/Count"
+        },
+        "reported_cost_attempts": {
+          "$ref": "#/$defs/Count"
+        },
+        "estimated_cost_attempts": {
+          "$ref": "#/$defs/Count"
+        },
+        "normalized_attempts": {
+          "$ref": "#/$defs/Count"
+        },
+        "cache_ratio_known_attempts": {
+          "$ref": "#/$defs/Count"
+        },
+        "unknown_model_price_attempts": {
+          "$ref": "#/$defs/Count"
+        },
+        "cache_write_input_tokens": {
+          "$ref": "#/$defs/Metric"
+        },
+        "cache_write_5m_input_tokens": {
+          "$ref": "#/$defs/Metric"
+        },
+        "cache_write_1h_input_tokens": {
+          "$ref": "#/$defs/Metric"
+        },
+        "cache_write_cost_usd": {
+          "$ref": "#/$defs/Metric"
+        },
+        "cost_native_cny": {
+          "$ref": "#/$defs/Value%3CDecimalString%3E"
+        },
+        "cost_native_usd": {
+          "$ref": "#/$defs/Value%3CDecimalString%3E"
+        }
+      },
+      "required": [
+        "average_total_tokens_per_request",
+        "cache_hit_ratio",
+        "cache_ratio_known_attempts",
+        "cache_write_1h_input_tokens",
+        "cache_write_5m_input_tokens",
+        "cache_write_cost_usd",
+        "cache_write_input_tokens",
+        "cached_input_cost_usd",
+        "cached_input_tokens",
+        "cost_native_cny",
+        "cost_native_usd",
+        "coverage",
+        "estimated_cost_attempts",
+        "input_cost_usd",
+        "input_tokens",
+        "noncached_input_cost_usd",
+        "normalized_attempts",
+        "observed_attempts",
+        "output_cost_usd",
+        "output_tokens",
+        "priced_attempts",
+        "reported_cost_attempts",
+        "requests",
+        "total_cost_usd",
+        "total_tokens",
+        "unknown_model_price_attempts",
+        "unpriced_attempts",
+        "unpriced_request_count",
+        "usage_known_attempts",
+        "usage_unknown_attempts"
+      ],
+      "additionalProperties": false,
+      "description": "One frozen report across the retained production invocation ledger."
+    },
+    "CostReportRow": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "node": {
+          "type": "string"
+        },
+        "round": {
+          "type": "string"
+        },
+        "provider": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        },
+        "totals": {
+          "$ref": "#/$defs/CostReportTotals"
+        }
+      },
+      "required": [
+        "key",
+        "node",
+        "round",
+        "provider",
+        "model",
+        "totals"
+      ],
+      "additionalProperties": false
+    },
+    "Value<Count>": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "state": {
+              "type": "string",
+              "const": "AVAILABLE"
+            },
+            "value": {
+              "$ref": "#/$defs/Count"
+            },
+            "reason": {
+              "type": "null"
+            }
+          },
+          "required": [
+            "state",
+            "value",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "state": {
+              "type": "string",
+              "enum": [
+                "NOT_PRODUCED",
+                "NOT_RECORDED",
+                "UNAVAILABLE",
+                "NOT_APPLICABLE",
+                "FORBIDDEN",
+                "ERROR"
+              ]
+            },
+            "value": {
+              "type": "null"
+            },
+            "reason": {
+              "$ref": "#/$defs/Reason"
+            }
+          },
+          "required": [
+            "state",
+            "value",
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Value<DecimalString>": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "state": {
+              "type": "string",
+              "const": "AVAILABLE"
+            },
+            "value": {
+              "$ref": "#/$defs/DecimalString"
+            },
+            "reason": {
+              "type": "null"
+            }
+          },
+          "required": [
+            "state",
+            "value",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "state": {
+              "type": "string",
+              "enum": [
+                "NOT_PRODUCED",
+                "NOT_RECORDED",
+                "UNAVAILABLE",
+                "NOT_APPLICABLE",
+                "FORBIDDEN",
+                "ERROR"
+              ]
+            },
+            "value": {
+              "type": "null"
+            },
+            "reason": {
+              "$ref": "#/$defs/Reason"
+            }
+          },
+          "required": [
+            "state",
+            "value",
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      ]
     }
   }
 }

@@ -805,3 +805,17 @@ OverviewStatus 增加可选 ib_gateway_status（CONNECTED / DISCONNECTED），�
 Document2 支持 `GET /tickers/{ticker}/expectations/runs/{run_id}/download`：仅接受已索引且属于该 ticker 的 run，按 document_ref 固定 artifact_id/content_sha256 从只读发布库返回完整原始 JSON，文件名 document2.json；支持历史/部分发布版本，不由当前页面的 Shell 或 Unit 筛选截取，不触发生成或激活。
 
 - 2026-10-09：运行记录 `q` 为消息标题字面子串搜索（去首尾空白，最多 200 字符，Unicode 大小写折叠）；仅影响最近处理记录，组合周期/结果/来源过滤，在分页前执行且纳入 cursor scope。不搜索正文，不改变运行图或 KPI。
+
+
+### 成本审计统一报告增补（2026-10-21，取代旧成本节的冲突口径）
+
+`GET /api/doxagent/v2/audit/cost/report` 使用 page=COST、无 ticker 的全局 read-context。
+允许 scope、ticker_selector(ALL/具体标的/GLOBAL)、node_id、round、provider/model_id、dimension、offset/limit。
+全部板块共享 view_id、窗口与筛选。保留 ticker 旧接口；其 requests 仍为全部已观测尝试，不静默改义。
+新报告主请求数显示 usage_known_attempts，并返回 observed_attempts、usage_unknown_attempts、priced/unpriced_attempts、reported/estimated_cost_attempts。
+均值只对 total_tokens 完整样本计算；token 命中率只用 input/cache-read 同时已知的样本。失败但有 usage 的调用计入；未知不是零。
+逐行 `(channel,node,round,provider,model)`，包含历史停用标的与 GLOBAL，默认全部聚合。node_id 可选 W2 或 W2R1，round 不改变运行图 node 身份。
+按 started_at 归属 ET02 交易日；ALL 包含非交易日。SOURCE_GAP、PROJECTION_LAG、缺 usage、未计价分别表达。
+新价格版本为版本化规则文件，CNY/USD 固定6.8标明估算；OpenRouter 采用已报费用优先，不重复叠加 cost_details；Codex 费用 N/A。
+新增缓存创建及5m/1h分项；Vertex原生总输入=普通输入+创建+读取，OpenRouter总输入不可再次加创建。
+历史重算期间 normalized_attempts/observed_attempts 明确进度，source_coverage 与字段覆盖独立。实际结构以 CostReport/CostReportTotals/CostReportRow 为准。

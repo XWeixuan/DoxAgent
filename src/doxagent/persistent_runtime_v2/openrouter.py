@@ -178,8 +178,14 @@ class RuntimeRecallOpenRouterClient:
         client: httpx.Client | None = None,
         w1_r1_model: str | None = None,
         w1_provisional_cache_batch_size: int = 5,
+        round_overrides: dict[str, Any] | None = None,
+        vertex_project: str = "",
     ) -> None:
-        if HAIKU_MODEL in (w2_r1_model, w1_r1_model) and not api_key:
+        needs_openrouter = any(
+            model == HAIKU_MODEL and (round_overrides or {}).get(key, {}).get("provider", "openrouter") == "openrouter"
+            for key, model in (("W2:R1", w2_r1_model), ("W1:R1", w1_r1_model))
+        )
+        if needs_openrouter and not api_key:
             raise ValueError("OPENROUTER_API_KEY is required for recall Haiku")
         self.bailian = bailian
         self.model = bailian.model
@@ -189,10 +195,15 @@ class RuntimeRecallOpenRouterClient:
         self.w1_r1_model = w1_r1_model
         self.w1_provisional_cache_batch_size = w1_provisional_cache_batch_size
         self._api_key = api_key
+        self._vertex = None
+        self._round_overrides = round_overrides or {}
+        self._vertex_project = vertex_project
         self._client = client or httpx.Client()
 
     def close(self) -> None:
         self._client.close()
+        if self._vertex is not None:
+            self._vertex.client.close()
 
     def model_settings(self) -> dict[str, Any]:
         settings = self.bailian.model_settings()
@@ -214,9 +225,19 @@ class RuntimeRecallOpenRouterClient:
                 cache_ttl="1h",
                 provisional_cache_batch_size=self.w1_provisional_cache_batch_size,
             )
+        for key, override in self._round_overrides.items():
+            settings["rounds"].setdefault(key, {}).update(override)
+        if self._vertex_project:
+            settings["vertex_project"] = self._vertex_project
         return settings
 
     def complete(self, request: RuntimeResponsesRequest[T]) -> RuntimeResponsesResult[T]:
+        if request.provider == "vertex":
+            if self._vertex is None:
+                import os
+                from .vertex import VertexClaudeClient
+                self._vertex = VertexClaudeClient(self._vertex_project or os.environ.get("DOXAGENT_VERTEX_PROJECT", ""))
+            return self._vertex.complete(request)
         if request.provider != "openrouter":
             return self.bailian.complete(request)
         if (

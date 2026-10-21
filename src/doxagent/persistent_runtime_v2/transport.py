@@ -55,6 +55,7 @@ class RuntimeResponsesRequest(Generic[T]):
     inherit_context: bool = False
     replay_parent: tuple[str, str] | None = None
     metadata: dict[str, str] = field(default_factory=dict)
+    transport: str | None = None
     provider: str = "bailian"
     provider_endpoint: str | None = None
     cache_ttl: str | None = None
@@ -100,12 +101,14 @@ class BailianRuntimeResponsesClient:
         w2_r1_model: str = "deepseek-v4.1-flash",
         w2_r1_timeout_seconds: float = 180.0,
         client: OpenAI | None = None,
+        glm_api_key: str | None = None,
     ) -> None:
         if not api_key and client is None:
             raise ValueError("DASHSCOPE_API_KEY is required for Runtime V2")
         if reasoning_effort != "medium":
             raise ValueError("Persistent Runtime V2 reasoning effort is frozen to medium")
         self.model = model
+        self._glm_api_key = glm_api_key
         self.reasoning_effort = reasoning_effort
         self.timeout_seconds = timeout_seconds
         self.session_cache = session_cache
@@ -136,6 +139,16 @@ class BailianRuntimeResponsesClient:
         }
 
     def complete(self, request: RuntimeResponsesRequest[T]) -> RuntimeResponsesResult[T]:
+        if request.transport == "chat_completions_json_object":
+            from .bailian_chat import complete
+            import os
+            options = {"max_retries": 0}
+            if request.provider_endpoint:
+                options["base_url"] = request.provider_endpoint
+            if request.model == "ZHIPU/GLM-5.3-FlashX" and (self._glm_api_key or os.environ.get("DOXAGENT_BAILIAN_GLM_API_KEY")):
+                options["api_key"] = self._glm_api_key or os.environ["DOXAGENT_BAILIAN_GLM_API_KEY"]
+            client = self._client.with_options(**options)
+            return complete(client, request)
         started = perf_counter()
         schema = bailian_strict_wire_schema(request.output_model.model_json_schema())
         schema_text = json.dumps(

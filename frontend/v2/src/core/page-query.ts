@@ -22,7 +22,8 @@ export function usePageContext(
     queryFn: ({ signal }) =>
       api.request(
         "ReadContext",
-        "/read-context" + queryString({ ticker, page, period }),
+        "/read-context" +
+          queryString({ ticker: ticker || undefined, page, period }),
         { signal },
       ),
   });
@@ -31,7 +32,12 @@ export function usePageContext(
     const next = await api.request(
       "ReadContext",
       "/read-context" +
-        queryString({ ticker, page, period, refresh: "MANUAL" }),
+        queryString({
+          ticker: ticker || undefined,
+          page,
+          period,
+          refresh: "MANUAL",
+        }),
     );
     const old = result.data?.data.view_id,
       view = next.data.view_id;
@@ -78,7 +84,9 @@ export function usePageContext(
             (q.state.data as { pageParams?: unknown[] } | undefined)
               ?.pageParams?.[0]
           ) &&
-          String(q.queryKey[3]).startsWith(tickerPath(ticker) + "/"),
+          (ticker
+            ? String(q.queryKey[3]).startsWith(tickerPath(ticker) + "/")
+            : String(q.queryKey[3]).startsWith("/audit/cost/")),
       );
     const reads = await Promise.all(
       active.map(async (q) => {

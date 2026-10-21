@@ -45,6 +45,7 @@ export type Endpoints = {
   Execution: S.WireExecution;
   Orders: S.WireOrders;
   Fills: S.WireFills;
+  CostReport: S.WireCostReport;
   CostFilters: S.WireCostFilters;
   CostSummary: S.WireCostSummary;
   CostTrend: S.WireCostTrend;

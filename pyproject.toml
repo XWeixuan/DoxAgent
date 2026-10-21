@@ -33,6 +33,7 @@ dependencies = [
     "zstandard>=0.25,<1",
     "PyYAML>=6,<7",
     "regex>=2024,<2027",
+    "google-auth[requests]>=2.40,<3",
 ]
 
 [project.scripts]

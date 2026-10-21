@@ -1,0 +1,53 @@
+# 成本审计修复实施记录
+
+日期：2026-10-21。实施依据：`dev_plan/workflow_v2/cost_audit_repair_execution_plan_20261021.md`。
+
+## 已完成代码
+
+- 全局 `/audit/cost` 与一次桶读取的 `/api/doxagent/v2/audit/cost/report`；原 ticker URL 保留预选兼容，标的导航进入全局默认。
+- node 保持 W1/W2，增加 round，逐轮／逐 provider／model 分行；KPI、趋势、占比、行页共享筛选及冻结水位。
+- 已观测尝试、有效 usage、未知 usage、已报费用、估价、未计价和历史归一化进度分别表达；缓存比率用同批成对已知样本；已知零与未知分开。
+- 版本化 Decimal 计价，固定汇率6.8，原币独立保存；OpenRouter 已报总费用优先、不与详情相加；补 DeepSeek v4.1 Flash，保留旧规则；Codex 费用 N/A。
+- 原始缓存创建／读取、TTL 和价格依据进入归一化 usage；Vertex 原生输入正确加读写，OpenRouter 不重复加。回填完整替换贡献（含撤销空值和旧 round），原有机制已能正确处理 None tombstone，无需重写通用贡献框架。
+- 回填使用短事务、keyset、断点、单进程限速、源只读及目标版本检查；不重放业务副作用，不复制 serving 库。
+- 增加全局成本桶部分索引；DDL 为显式发布步骤，不在 GET 中运行，不调用 serving_schema.install 重建生产库。
+- Vertex 原生 streaming/ADC、GLM Chat Completions/父轮显式上下文已前置适配，profile 默认为 current，按显式配置才加载。正式模型不切换。
+
+## 来源接入矩阵
+
+| 业务 | 现有证据源／入口 | 身份与准入 | 本轮处理 |
+| --- | --- | --- | --- |
+| W1/W2 各轮 API | runtime_v2_turns → DomainProjectors.turn_records | turn_id，已准入 Case 关联 | 恢复 round、缓存写入、费用回执和归一化 |
+| W3／维护 Codex | runtime_values.worker_invocations → worker_records/worker_usage | codex:job_id；Case provenance 或 control_epoch | 保留既有去重，归一化重算；不套API价格 |
+| C4/C1/C3/C5、O0/O1、O2/O3/O4 等初始化 API | usage_capture/spool → v2_model_invocations → FormalProjectors.api_usage | invocation_id；control_operation_id 必须存在 | 统一计价和字段投影；不移除生产准入 |
+| 初始化各节点 Codex | initialization_nodes.receipt.worker_invocations → FormalProjectors.worker_usage | codex:job_id；准入 initialization_run | 同一账本层级去重，原有精确节点保留 |
+| CDECR／共享研究实际执行 | 上述已准入 API 回执／worker 回执；codex_runtime_records 为研究工件源 | 原始业务所有权与稳定调用身份 | 不根据工件数推算调用数，不随意分摊 GLOBAL |
+| Pilot／无法证明来源的记录 | 相同源库中的非准入记录 | 无生产证明 | 仍排除，不为补数放开 guard |
+
+当前审查样本没有发现2,121个已持久化 Runtime API身份漏投影；本轮不新增另一套并行总账或全库定时扫描。
+
+## 本地验证
+
+- `eval/cost_audit_implementation_20261021/golden.json`：2,121 调用，2,030 有完整 usage，91 未知；input/output/read 与原始样本完全一致。
+- 已知成本 USD 2.534239477647058823529411767；W1R2 原币 CNY 3.1885021，W2R1 创建1,769,343 token。
+- 自动化覆盖旧价格／新渠道、已报费用优先、缓存TTL／100k边界、部分usage、全局／历史ticker／GLOBAL、整页筛选、同ID贡献替换、MVCC、回填并发版本拒绝、API权限范围。
+- 1262px、1559px 浏览器交互检查通过：表头列边界一致、无整页横溢；每次初开只有 context+report，标的与节点切换均影响KPI／图表／行。截图位于 frontend/v2/test-results/cost-audit-*.png。
+- Vertex/GLM 模拟HTTP/SSE通过；未调用真实模型。完整测试结果见 eval/cost_audit_implementation_20261021/tests.xml。
+
+## 生产发布与回填
+
+待 origin/main 同步后填写实际提交、镜像、回填规模、磁盘增量与查询基准。本段不能作为已上线证明。
+
+## 已知边界
+
+- 真实缺 usage 和缺原始回执不会被充零或回填成猜测值；回填无法找回的缓存字段保持未知。
+- 生产既有 runtime capture proof 的 closed_end_at 停留2026-09-29，complete=false，即使checkpoint=head。全局 source gap 与模型回执缺失分别报告，不把历史来源缺口刷成 COMPLETE。
+- GLM 官方已确认原厂工作空间 endpoint、JSON object 和原生 low/high/max，不能用 medium 或关闭思考。可选 DOXAGENT_BAILIAN_GLM_API_KEY 支持独立授权密钥；不从其他对话复制任何密钥。
+- Vertex project、ADC权限和真实缓存命中需未来模型切换窗口核验；跨项目缓存不能继承。
+
+
+### 未来切换配置（本次不设置）
+
+`DOXAGENT_PERSISTENT_RUNTIME_V2_API_PROFILE=current` 是默认值；未来可选 vertex_recall、bailian_glm、vertex_glm。
+Vertex 需要 DOXAGENT_VERTEX_PROJECT 与 ADC secret；GLM 需要 DOXAGENT_BAILIAN_GLM_ENDPOINT（北京工作空间兼容端点），可独立设置 DOXAGENT_BAILIAN_GLM_API_KEY。
+profile 只影响新 Case 的 model manifest；Vertex project 同样冻结到 manifest。旧 Case 路由不变，保留其仍需要的原渠道凭据直至在途工作收尾。

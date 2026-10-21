@@ -147,7 +147,7 @@ export function TickerNavigation({ ticker }: { ticker: string; page: string }) {
           return (
             <NavLink
               key={path}
-              to={`/ticker/${encodeURIComponent(ticker)}/${path}`}
+              to={path === "audit" ? "/audit/cost" : `/ticker/${encodeURIComponent(ticker)}/${path}`}
             >
               <Icon aria-hidden="true" />
               <span>{label}</span>
