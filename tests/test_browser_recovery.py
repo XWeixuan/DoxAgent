@@ -1,3 +1,4 @@
+import asyncio
 from datetime import timedelta
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
@@ -906,6 +907,8 @@ async def test_recovery_probe_preserves_source_scope_through_runtime_facade(setu
     repo, service, _, scope = setup
     runtime = object.__new__(WorkerSiteAccessRuntime) if isolated else service.runtime
     runtime.resolver = service.resolver
+    if isolated:
+        runtime._recovery_slots = asyncio.Semaphore(1)
     runtime._browser = AsyncMock(return_value=RuntimeResponse(403, URL, {}))
     request = AccessRequest(
         operation_id="recovery",
@@ -919,6 +922,32 @@ async def test_recovery_probe_preserves_source_scope_through_runtime_facade(setu
     await runtime.probe_recovery(request, identity, repo.get_egress(identity.egress_id))
     resolved = runtime._browser.await_args.args[1]
     assert resolved.match_evidence["scope_id"] == scope.scope_id
+
+
+@pytest.mark.asyncio
+async def test_recovery_browser_capacity_is_independent_and_released():
+    from doxagent.site_strategy.worker_runtime import WorkerSiteAccessRuntime
+    from doxagent.site_strategy.browser_operations import encode_response
+
+    runtime = object.__new__(WorkerSiteAccessRuntime)
+    runtime._business_slots = asyncio.Semaphore(0)
+    runtime._recovery_slots = asyncio.Semaphore(1)
+    runtime.workers = SimpleNamespace(command=AsyncMock(return_value=encode_response(
+        RuntimeResponse(403, URL, {}, body="denial")
+    )))
+    request = AccessRequest(operation_id="probe", url=URL, purpose="CRAWLER", mode="BROWSER")
+    identity = SimpleNamespace(identity_id="test", runtime_kind="external_chrome")
+    resolved = SimpleNamespace(site_id="test", model_dump=lambda **kwargs: {})
+    response = await asyncio.wait_for(runtime._browser(
+        request, resolved, identity, None, capacity=runtime._recovery_slots
+    ), timeout=1)
+    assert response.status_code == 403
+    assert runtime._business_slots._value == 0
+    assert runtime._recovery_slots._value == 1
+    runtime.workers.command.side_effect = ValueError("test")
+    with pytest.raises(ValueError):
+        await runtime._browser(request, resolved, identity, None, capacity=runtime._recovery_slots)
+    assert runtime._recovery_slots._value == 1
 
 
 @pytest.mark.asyncio

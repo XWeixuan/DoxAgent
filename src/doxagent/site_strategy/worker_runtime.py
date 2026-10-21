@@ -166,12 +166,14 @@ class WorkerSiteAccessRuntime(SiteAccessRuntime):
         self.workers = IdentityWorkerManager(repository, safe_options)
         self.browser_runtimes = WorkerRuntimeFacade(self)
         self._business_slots = asyncio.Semaphore(options.get("browser_max_pages", 4))
+        self._recovery_slots = asyncio.Semaphore(1)
         self._tokens = {}
 
-    async def _browser(self, request, resolved, identity, egress):
+    async def _browser(self, request, resolved, identity, egress, *, capacity=None):
+        slots = capacity if capacity is not None else self._business_slots
         deadline = time.monotonic() + request.remaining_budget_ms / 1000
         async with asyncio.timeout_at(deadline):
-            await self._business_slots.acquire()
+            await slots.acquire()
         try:
             for recovery in range(2):
                 remaining = deadline - time.monotonic()
@@ -244,7 +246,7 @@ class WorkerSiteAccessRuntime(SiteAccessRuntime):
                 self._tokens[response.challenge_token] = (resolved.site_id, identity.identity_id)
             return response
         finally:
-            self._business_slots.release()
+            slots.release()
 
     def _binding(self, token):
         binding = self._tokens.get(token)
@@ -314,7 +316,9 @@ class WorkerSiteAccessRuntime(SiteAccessRuntime):
         if request.origin_scope_id:
             resolved = resolved.model_copy(update={"match_evidence": {
                 **resolved.match_evidence, "scope_id": request.origin_scope_id}})
-        return await self._browser(request, resolved, identity, egress)
+        return await self._browser(
+            request, resolved, identity, egress, capacity=self._recovery_slots
+        )
 
     async def close_recovery(self, recovery, identity):
         from .governance_repository import GovernanceRepository

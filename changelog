@@ -8,6 +8,8 @@
 
 # changelog
 
+2026-10-22 Recovery browser admission: reserve one bounded Worker-runtime probe seat outside ordinary business browser capacity so a lost-original recovery can actually start a worker under sustained acquisition load. Keep per-identity ownership/maintenance exclusion and the coordinator's recovery concurrency limit; normal business capacity is unchanged.
+
 2026-10-22 Paid challenge scene continuity: fence purchased results by the actual iframe URL, publisher and native Chrome UA rather than changing presentation labels; RETRY/SOLVABLE text changes alone cannot discard an otherwise identical paid result. Keep target/instance/lease/egress checks intact and add regression coverage.
 
 2026-10-22 DataDome paid recovery: add opt-in 2Captcha tasks to the existing recovery coordinator with durable task IDs, short polling, exact native target/lease/egress fencing, one bounded RETRY refresh and publisher-only Cookie application. Real business proof still gates recovery; failures preserve the human original/fallback. Add a non-root authenticated, source/domain-restricted Squid ingress pinned per identity to existing Clash listeners, no TLS MITM or direct fallback. Store secrets outside Git and expose only sanitized task diagnostics; implementation and real acceptance are recorded separately.
