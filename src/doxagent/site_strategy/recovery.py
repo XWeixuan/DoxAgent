@@ -443,6 +443,18 @@ class BrowserRecoveryCoordinator:
                     if context is None:
                         await self._defer(recovery, "recovery_request_unavailable", delay=600)
                         return
+                    if (
+                        scope.source_id == "ctee_semiconductor"
+                        and context["purpose"] == "CRAWLER"
+                        and "/api/category/semi/" not in context["url"]
+                    ):
+                        # Old fallback checks used the category HTML rather than
+                        # the API actually consumed by the collector.
+                        context = {**context, "url": "https://www.ctee.com.tw/api/category/semi/1"}
+                        recovery = recovery.model_copy(
+                            update={"affected_contexts": [context, *recovery.affected_contexts[1:]]}
+                        )
+                        self.store.save_recovery(recovery, expected_generation=claimed.generation)
                     capture = None
                     if recovery.page_status != "LOST" and not configuration_changed:
                         try:
@@ -564,6 +576,28 @@ class BrowserRecoveryCoordinator:
                             },
                             remaining_budget_ms=75000,
                         )
+                        from .verification import body_verification_url, crawler_capture_items
+
+                        discovery = bool(
+                            context["purpose"] == "BODY"
+                            and scope.verification_plan.get("crawler")
+                            and body_verification_url(
+                                scope, context["url"], excluded_urls=(spec.auth.login_url,)
+                            )
+                            is None
+                        )
+                        if discovery:
+                            request = AccessRequest(
+                                **scope.verification_plan["crawler"],
+                                purpose="CRAWLER",
+                                mode="BROWSER",
+                                operation_id=recovery.recovery_id,
+                                origin_scope_id=recovery.scope_id,
+                                scope_revision=scope.revision,
+                                remaining_budget_ms=75000,
+                            )
+                            request = request.model_copy(update={"recipe_parameters": {
+                                **request.recipe_parameters, "_retain_recovery_probe": True}})
                         previous_page = recovery
                         async with self.service.profile_use.recovery(
                             identity, recovery.recovery_id, recovery.generation
@@ -577,6 +611,59 @@ class BrowserRecoveryCoordinator:
                         # A lost original may have been replaced atomically by this probe.
                         recovery = latest.model_copy(update={"last_real_probe_at": utc_now()})
                         self.store.save_recovery(recovery, expected_generation=claimed.generation)
+                        if (
+                            discovery
+                            and verify_capture(
+                                self.service,
+                                scope,
+                                recovery_context(request),
+                                capture,
+                                observed=capture.reason == "observed_document_after_verification",
+                            ).crawler
+                            == "READY"
+                        ):
+                            from urllib.parse import urljoin
+
+                            articles = []
+                            for row in (
+                                crawler_capture_items(scope.source_id, capture, request) or []
+                            ):
+                                raw = row.get("url") if isinstance(row, dict) else row.url
+                                if raw:
+                                    url = urljoin(request.url, str(raw))
+                                    if self.service.resolve(url).site_id == scope.owner_site_id:
+                                        articles.append(url)
+                            article = body_verification_url(
+                                scope, *articles, excluded_urls=(spec.auth.login_url,)
+                            )
+                            if article:
+                                context = {
+                                    **context,
+                                    "url": article,
+                                    "recipe_ref": None,
+                                    "recipe_parameters": {},
+                                }
+                                recovery = recovery.model_copy(
+                                    update={
+                                        "affected_contexts": [
+                                            context,
+                                            *recovery.affected_contexts[1:],
+                                        ],
+                                        "next_probe_at": utc_now() + timedelta(seconds=60),
+                                    }
+                                )
+                                self.event(recovery, "BODY_VERIFICATION_URL_SELECTED")
+                                await self._defer(
+                                    recovery, "body_article_selected_pending_proof", delay=60
+                                )
+                            else:
+                                recovery = recovery.model_copy(
+                                    update={"next_probe_at": utc_now() + timedelta(seconds=600)}
+                                )
+                                await self._defer(
+                                    recovery, "verification_article_unavailable", delay=60
+                                )
+                            return  # Listing proof must never certify a body.
                         if recovery.original_allocation_id != previous_page.original_allocation_id:
                             try:
                                 await self._close_page(previous_page, identity)
@@ -759,13 +846,22 @@ def migrate_recoveries(service, *, apply=False, update_policies=True):
     store = GovernanceRepository(service.repository)
     policy_changes = []
     scope_changes = []
-    legacy_auth = [value for value in service.repository.list_site_identity_auth()
-                   if value.verified_at and value.last_check_at is None
-                   and value.last_check_reason != "legacy_confirmation_time_uncertain"] if update_policies else []
+    legacy_auth = (
+        [
+            value
+            for value in service.repository.list_site_identity_auth()
+            if value.verified_at
+            and value.last_check_at is None
+            and value.last_check_reason != "legacy_confirmation_time_uncertain"
+        ]
+        if update_policies
+        else []
+    )
     if apply:
         for value in legacy_auth:
-            service.repository.save_site_identity_auth(value.model_copy(update={
-                "last_check_reason": "legacy_confirmation_time_uncertain"}))
+            service.repository.save_site_identity_auth(
+                value.model_copy(update={"last_check_reason": "legacy_confirmation_time_uncertain"})
+            )
     ctee = store.get_scope("source:ctee_semiconductor")
     if (
         update_policies

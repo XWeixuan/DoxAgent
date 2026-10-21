@@ -415,6 +415,26 @@ def test_auto_login_is_throttled_by_account_not_identity(setup):
 
 
 @pytest.mark.asyncio
+async def test_legacy_body_listing_discovers_article_without_claiming_body_success(setup):
+    _, service, store, scope = setup
+    value, target, _ = retained(setup, purpose="BODY")
+    store.save_target(store.get_target(target.allocation_id).model_copy(update={"state": "LOST"}))
+    store.save_recovery(value.model_copy(update={"page_status": "LOST", "next_probe_at": utc_now()}),
+                        expected_generation=value.generation)
+    listing = scope.verification_plan["crawler"]["url"]
+    service.runtime.probe_recovery = AsyncMock(return_value=RuntimeResponse(
+        200, listing, {}, LISTING.replace("RKLB News", "INTC News"),
+        provenance=SimpleNamespace(instance_id="chrome")))
+    await service.recovery._run(value.identity_id)
+    current = store.get_recovery(value.identity_id)
+    assert current.phase != "RESOLVED", current.last_error
+    assert current.last_error == "body_article_selected_pending_proof"
+    assert current.affected_contexts[0]["purpose"] == "BODY"
+    assert current.affected_contexts[0]["url"].endswith('/news/stock-market-news/rocket-12345')
+    assert service.runtime.probe_recovery.await_args.args[0].purpose.value == "CRAWLER"
+
+
+@pytest.mark.asyncio
 async def test_replaced_auto_scene_cleanup_keeps_ownership_and_cannot_close_new_human(setup):
     from doxagent.site_strategy.targets import TargetOwner
 
