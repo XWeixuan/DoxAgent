@@ -1,7 +1,7 @@
 """Opt-in paid DataDome recovery. Durable task IDs, short ticks, no success without business proof."""
 
 import json
-from datetime import timedelta
+from datetime import datetime, timedelta
 from urllib.parse import quote
 
 import httpx
@@ -142,8 +142,6 @@ class DataDomeSolver:
                 self.fail(active, recovery, "SUBMISSION_OUTCOME_UNKNOWN")
             return False
         if active and active["status"] == "PENDING":
-            from datetime import datetime
-
             if utc_now() - datetime.fromisoformat(
                 active.get("submitted_at", active["created_at"])
             ) > timedelta(seconds=240):
@@ -213,6 +211,10 @@ class DataDomeSolver:
                     if active and active["status"] == "WAITING_SLIDER":
                         return False
                     if active and active["status"] == "REGENERATED":
+                        if utc_now() - datetime.fromisoformat(active["created_at"]) < timedelta(
+                            seconds=60
+                        ):
+                            return True
                         active.update(status="WAITING_SLIDER", reason="DATADOME_" + scene["state"])
                         self.save(active)
                         self.coordinator.event(
@@ -296,12 +298,28 @@ class DataDomeSolver:
             if active:
                 self.fail(active, recovery, str(exc))
             return False
-        except Exception:
+        except Exception as exc:
             # Browser/provider messages can contain full challenge URLs, credentials or cookies.
-            self.coordinator.event(
-                recovery, "DATADOME_SOLVER_UNAVAILABLE", reason="BROWSER_OR_PROXY_UNAVAILABLE"
+            reason = (
+                str(exc)
+                if isinstance(exc, RuntimeError) and str(exc).startswith("solver_")
+                else "BROWSER_OR_PROXY_UNAVAILABLE"
             )
-            return bool(active and active["status"] == "PENDING")
+            self.coordinator.event(
+                recovery,
+                "DATADOME_SOLVER_UNAVAILABLE",
+                reason=reason,
+                error_type=type(exc).__name__,
+            )
+            return bool(
+                active
+                and (
+                    active["status"] == "PENDING"
+                    or active["status"] == "REGENERATED"
+                    and utc_now() - datetime.fromisoformat(active["created_at"])
+                    < timedelta(seconds=60)
+                )
+            )
 
     def fail(self, job, recovery, reason):
         job.update(status="FAILED", reason=reason)

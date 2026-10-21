@@ -68,7 +68,7 @@ def squid_config(bindings, listeners, subnet):
             "via off",
             "connect_timeout 10 seconds",
             "request_timeout 15 seconds",
-            "read_timeout 120 seconds",
+            "read_timeout 300 seconds",
             "shutdown_lifetime 3 seconds",
             "delay_pools 1",
             "delay_class 1 1",

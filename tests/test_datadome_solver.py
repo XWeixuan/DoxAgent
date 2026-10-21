@@ -109,6 +109,91 @@ def test_device_check_escalation_creates_exact_human_fallback_task(setup):
     assert store.get_recovery(recovery.identity_id).phase != "RESOLVED"
 
 
+def test_reclassified_old_task_cannot_steal_replacement_human_target(setup):
+    from doxagent.site_strategy.governance_models import OwnedBrowserTarget
+
+    _, _, store, _ = setup
+    recovery, old_target, _ = recovery_tests.retained(setup, human=True)
+    old_task = recovery.challenge_task_id
+    recovery = store.save_recovery(
+        recovery.model_copy(update={"handling_mode": "AUTO"}),
+        expected_generation=recovery.generation,
+    )
+    assert store.get_challenge(old_task).state == "RESOLVED"
+    assert store.get_target(old_target.allocation_id).owner_kind == "RECOVERY"
+    new = store.save_target(
+        OwnedBrowserTarget(
+            identity_id=recovery.identity_id,
+            browser_instance_id="chrome",
+            target_id="real-new-slider",
+            state="LIVE",
+            worker_epoch=1,
+        )
+    )
+    value = store.begin_recovery(
+        recovery.model_copy(
+            update={
+                "handling_mode": "HUMAN",
+                "original_allocation_id": new.allocation_id,
+                "original_target_id": new.target_id,
+            }
+        ).model_dump()
+    )
+    task = store.current_challenge(recovery.identity_id)
+    assert task.task_id != old_task and task.original_target_id == new.target_id
+    assert store.get_target(new.allocation_id).owner_ref == task.task_id == value.challenge_task_id
+
+
+def test_changed_logical_token_still_requires_exact_physical_page():
+    from doxagent.site_strategy.runtime import retained_entry
+
+    page = SimpleNamespace(
+        identity_id="identity",
+        lease=SimpleNamespace(provenance=SimpleNamespace(instance_id="chrome")),
+        gate=SimpleNamespace(root_target_id="original"),
+    )
+    assert retained_entry({"old-task": page}, "identity", "chrome", "original", "new-task") == (
+        "old-task",
+        page,
+    )
+    assert (
+        retained_entry({"old-task": page}, "identity", "other-chrome", "original", "new-task")[1]
+        is None
+    )
+
+
+@pytest.mark.asyncio
+async def test_fresh_original_does_not_inherit_old_incident_ttl(setup):
+    from datetime import timedelta
+    from doxagent.site_strategy.schema import utc_now
+    from doxagent.site_strategy.runtime import RuntimeResponse
+
+    _, service, store, _ = setup
+    value, target, _ = recovery_tests.retained(setup)
+    store.save_recovery(
+        value.model_copy(
+            update={
+                "opened_at": utc_now() - timedelta(hours=2),
+                "next_probe_at": utc_now() + timedelta(minutes=10),
+            }
+        ),
+        expected_generation=value.generation,
+    )
+    service.recovery._observe = AsyncMock(
+        return_value=RuntimeResponse(
+            403,
+            recovery_tests.URL,
+            {},
+            '<iframe src="https://challenges.cloudflare.com/test"/>',
+            provenance=SimpleNamespace(instance_id="chrome"),
+        )
+    )
+    service.runtime.close_recovery = AsyncMock()
+    await service.recovery._run(value.identity_id)
+    service.runtime.close_recovery.assert_not_awaited()
+    assert store.get_target(target.allocation_id).state == "LIVE"
+
+
 @pytest.fixture
 def solver_setup(setup):
     repo, service, store, scope = setup
@@ -193,6 +278,12 @@ async def test_retry_reload_is_bounded_and_not_billed_until_real_slider(solver_s
     solver, value, scope, identity, egress, browser = solver_setup
     browser.inspect.return_value["state"] = "RETRY"
     assert await solver.tick(value, scope, identity, egress)
+    from datetime import timedelta
+    from doxagent.site_strategy.schema import utc_now
+
+    job = solver.jobs(value.recovery_id)[-1]
+    job["created_at"] = (utc_now() - timedelta(seconds=61)).isoformat()
+    solver.save(job)
     assert not await solver.tick(value, scope, identity, egress)
     browser.reload.assert_awaited_once()
     solver.provider.request.assert_not_awaited()
@@ -208,6 +299,12 @@ async def test_unloaded_datadome_bootstrap_gets_one_recovery_refresh(solver_setu
     solver, value, scope, identity, egress, browser = solver_setup
     browser.inspect.return_value.update(url=None, state="UNAVAILABLE")
     assert await solver.tick(value, scope, identity, egress)
+    from datetime import timedelta
+    from doxagent.site_strategy.schema import utc_now
+
+    job = solver.jobs(value.recovery_id)[-1]
+    job["created_at"] = (utc_now() - timedelta(seconds=61)).isoformat()
+    solver.save(job)
     assert not await solver.tick(value, scope, identity, egress)
     browser.reload.assert_awaited_once()
     solver.provider.request.assert_not_awaited()
@@ -265,6 +362,19 @@ def test_native_mutation_rejects_open_viewer(solver_setup):
         NativeChallenge(solver.coordinator, value, identity).check()
 
 
+def test_ownership_fence_ignores_only_metadata_touch_not_owner_change(solver_setup):
+    from doxagent.site_strategy.schema import utc_now
+
+    solver, value, _, identity, _, _ = solver_setup
+    browser = NativeChallenge(solver.coordinator, value, identity)
+    store = solver.coordinator.store
+    store.save_target(browser.target.model_copy(update={"updated_at": utc_now()}))
+    browser.check()
+    store.save_target(browser.target.model_copy(update={"owner_ref": "different-owner"}))
+    with pytest.raises(RuntimeError, match="solver_target_changed"):
+        browser.check()
+
+
 def test_proxy_config_denies_open_relay_and_never_direct():
     path = Path(__file__).parents[1] / "deploy/configure-datadome.py"
     spec = importlib.util.spec_from_file_location("proxy_config", path)
@@ -286,7 +396,6 @@ async def test_oopif_retry_is_read_and_child_connection_always_detached():
 
     call = AsyncMock(
         side_effect=[
-            RuntimeError("cross_process"),
             {"sessionId": "child"},
             {"root": {"nodeId": 12}},
             {"outerHTML": "<button>Retry</button>"},
@@ -296,7 +405,7 @@ async def test_oopif_retry_is_read_and_child_connection_always_detached():
     html = await loaded_frame_document(call, "exact-frame")
     assert challenge_state(URL, html) == "RETRY"
     assert call.await_args.args == ("Target.detachFromTarget", {"sessionId": "child"})
-    assert call.await_args_list[2].kwargs == {"session_id": "child"}
+    assert call.await_args_list[1].kwargs == {"session_id": "child"}
 
 
 @pytest.mark.asyncio

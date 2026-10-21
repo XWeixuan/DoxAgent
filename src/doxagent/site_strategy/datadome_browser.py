@@ -105,6 +105,8 @@ def solution_cookie(raw, website):
 async def loaded_frame_document(call, frame_id):
     """Read only the original page's exact child; handle Chrome's cross-process iframe."""
     try:
+        child = await call("Target.attachToTarget", {"targetId": frame_id, "flatten": True})
+    except RuntimeError:
         context = await call(
             "Page.createIsolatedWorld", {"frameId": frame_id, "worldName": "doxagent-observe"}
         )
@@ -117,16 +119,14 @@ async def loaded_frame_document(call, frame_id):
             },
         )
         return result.get("result", {}).get("value", "")
-    except RuntimeError:
-        child = await call("Target.attachToTarget", {"targetId": frame_id, "flatten": True})
-        session = child["sessionId"]
-        try:
-            root = (await call("DOM.getDocument", {"depth": 0}, session_id=session))["root"]
-            return (await call("DOM.getOuterHTML", {"nodeId": root["nodeId"]}, session_id=session))[
-                "outerHTML"
-            ]
-        finally:
-            await call("Target.detachFromTarget", {"sessionId": session})
+    session = child["sessionId"]
+    try:
+        root = (await call("DOM.getDocument", {"depth": 0}, session_id=session))["root"]
+        return (await call("DOM.getOuterHTML", {"nodeId": root["nodeId"]}, session_id=session))[
+            "outerHTML"
+        ]
+    finally:
+        await call("Target.detachFromTarget", {"sessionId": session})
 
 
 class NativeChallenge:
@@ -153,7 +153,19 @@ class NativeChallenge:
             target.browser_instance_id,
         ) != (r.identity_id, r.original_target_id, r.original_instance_id):
             raise RuntimeError("solver_target_changed")
-        if target.model_dump() != t.model_dump() or identity.revision != self.identity.revision:
+        keys = (
+            "allocation_id",
+            "identity_id",
+            "browser_instance_id",
+            "target_id",
+            "owner_kind",
+            "owner_ref",
+            "state",
+        )
+        if (
+            any(getattr(target, k) != getattr(t, k) for k in keys)
+            or identity.revision != self.identity.revision
+        ):
             raise RuntimeError("solver_target_changed")
         if (
             not current
@@ -192,6 +204,9 @@ class NativeChallenge:
             response = await http.get(base + "/json/list")
             response.raise_for_status()
             tabs = response.json()
+            version = await http.get(base + "/json/version")
+            version.raise_for_status()
+            self.user_agent = version.json().get("User-Agent", "")
         tab = next(
             (t for t in tabs if t.get("id") == self.target.target_id and t.get("type") == "page"),
             None,
@@ -226,10 +241,9 @@ class NativeChallenge:
         async with self.connection() as call:
             root = (await call("DOM.getDocument", {"depth": 0}))["root"]
             html = (await call("DOM.getOuterHTML", {"nodeId": root["nodeId"]}))["outerHTML"]
-            ua = await call(
-                "Runtime.evaluate", {"expression": "navigator.userAgent", "returnByValue": True}
-            )
-            ua = ua.get("result", {}).get("value", "")
+            ua = (
+                self.user_agent
+            )  # Actual Chrome metadata; no override or busy-renderer JS dependency.
             url = captcha_url(html)
             frame_html = ""
             # Loaded OOPIF frame URL/DOM can provide RETRY, but main iframe src is authoritative for submission.

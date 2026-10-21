@@ -294,6 +294,7 @@ class WorkerSiteAccessRuntime(SiteAccessRuntime):
                 "retained_token": retained_token(GovernanceRepository(self.repository), recovery),
                 "target_id": recovery.original_target_id,
                 "expected_instance_id": recovery.original_instance_id,
+                "owner_ref": GovernanceRepository(self.repository).get_target(recovery.original_allocation_id).owner_ref,
             }, timeout=10,
         ))
 
@@ -337,6 +338,7 @@ class WorkerSiteAccessRuntime(SiteAccessRuntime):
             await self.workers.command(identity, self.repository.get_egress(identity.egress_id), "close_recovery", {
                 "retained_token": token,
                 "target_id": target.target_id, "expected_instance_id": target.browser_instance_id,
+                "owner_ref": target.owner_ref,
             }, timeout=10)
         store.save_target(target.model_copy(update={"state": "CLOSED", "updated_at": utc_now()}))
         handle = self.workers.workers.get(identity.identity_id)

@@ -754,7 +754,9 @@ class BrowserRecoveryCoordinator:
                         recovery = recovery.model_copy(
                             update={"next_probe_at": utc_now() + timedelta(seconds=delay)}
                         )
-                    if age >= 900 and recovery.handling_mode == "AUTO" and not open_writer:
+                    original = self.store.get_target(recovery.original_allocation_id or '')
+                    page_age = (utc_now() - original.created_at).total_seconds() if original else age
+                    if page_age >= 900 and recovery.handling_mode == "AUTO" and not open_writer:
                         await self._close_page(recovery, identity)
                         recovery = recovery.model_copy(update={"page_status": "LOST"})
                     if age >= spec.challenge.automatic_wait_seconds:

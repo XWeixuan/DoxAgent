@@ -177,6 +177,13 @@ class Worker:
         action = command["action"]
         identity = self.repository.identity
         egress = self.repository.egress
+        if action in {'observe_recovery','close_recovery','forget_recovery'}:
+            from .runtime import retained_entry
+            physical_token, maintained_page = retained_entry(self.runtime._maintenance_pages, identity.identity_id,
+                command['expected_instance_id'], command['target_id'], command['retained_token'])
+            command['retained_token'] = physical_token
+            if maintained_page and command.get('owner_ref'):
+                maintained_page.page._doxagent_owner_ref = command['owner_ref']
         if action == "execute":
             response = await execute_browser_operation(
                 self.runtime,

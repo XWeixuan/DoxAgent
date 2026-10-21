@@ -1059,6 +1059,18 @@ class _BrowserContentNotReady(RuntimeError):
     """The document arrived, but the expected publisher content did not."""
 
 
+def retained_entry(pages, identity_id, instance_id, target_id, preferred):
+    """Logical Task IDs may change; physical identity/instance/target never may."""
+    keys = [preferred, *(key for key in pages if key != preferred)]
+    for key in keys:
+        value = pages.get(key)
+        if value and (value.identity_id, value.lease.provenance.instance_id, value.gate.root_target_id) == (
+            identity_id, instance_id, target_id
+        ):
+            return key, value
+    return preferred, None
+
+
 def _verification_document(html, url, status, headers, resolved, request, *, recipe_result=None, inspection=None):
     """Classify the current document, not only legacy title/text WAF signatures."""
     from .challenge_detection import assess
@@ -1855,7 +1867,7 @@ class SiteAccessRuntime:
             await gate.close()
             if recovery.original_allocation_id != allocation_id:
                 await lease.__aexit__(None, None, None)
-                return recovery.challenge_task_id
+                return recovery.challenge_task_id if recovery.handling_mode == 'HUMAN' else None
             self._maintenance_pages[token] = _MaintenancePage(
                 lease,
                 page,
@@ -1876,7 +1888,7 @@ class SiteAccessRuntime:
                 ), name="challenge-evidence")
                 self._ownership_transfers.add(task)
                 task.add_done_callback(self._ownership_transfers.discard)
-            return recovery.challenge_task_id
+            return recovery.challenge_task_id if recovery.handling_mode == 'HUMAN' else None
 
         transfer_task = asyncio.create_task(transfer(), name="challenge-ownership-transfer")
         if not hasattr(self, "_ownership_transfers"):
@@ -1965,7 +1977,8 @@ class SiteAccessRuntime:
     async def observe_recovery(self, recovery, identity):
         from .recovery import retained_token
         from .governance_repository import GovernanceRepository
-        maintained = self._maintenance_pages.get(retained_token(GovernanceRepository(self.repository), recovery))
+        _, maintained = retained_entry(self._maintenance_pages, identity.identity_id, recovery.original_instance_id,
+            recovery.original_target_id, retained_token(GovernanceRepository(self.repository), recovery))
         if not maintained or maintained.page.is_closed():
             raise RuntimeError("original_challenge_target_lost")
         if maintained.identity_id != identity.identity_id:
@@ -1976,7 +1989,13 @@ class SiteAccessRuntime:
     async def close_recovery(self, recovery, identity):
         from .recovery import retained_token
         from .governance_repository import GovernanceRepository
-        await self.close_login(retained_token(GovernanceRepository(self.repository), recovery))
+        store = GovernanceRepository(self.repository)
+        token, maintained = retained_entry(self._maintenance_pages, identity.identity_id, recovery.original_instance_id,
+            recovery.original_target_id, retained_token(store, recovery))
+        target = store.get_target(recovery.original_allocation_id or '')
+        if maintained and target:
+            maintained.page._doxagent_owner_ref = target.owner_ref
+        await self.close_login(token)
 
     async def reset_egress(self, egress_id: str) -> None:
         stale = [key for key in self._http_sessions if key[1] == egress_id]

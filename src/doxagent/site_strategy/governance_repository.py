@@ -960,7 +960,8 @@ class GovernanceRepository:
             old = self.get_recovery(value.identity_id)
             if (old.generation if old else None) != expected_generation:
                 raise RuntimeError("stale_recovery_generation")
-            if old and old.handling_mode == 'AUTO' and value.handling_mode == 'HUMAN' and not value.challenge_task_id:
+            linked = self.get_challenge(value.challenge_task_id) if value.challenge_task_id else None
+            if old and old.handling_mode == 'AUTO' and value.handling_mode == 'HUMAN' and (not linked or linked.state == 'RESOLVED'):
                 target = self.get_target(value.original_allocation_id or '')
                 if target and target.state == 'LIVE' and value.affected_contexts:
                     context = value.affected_contexts[0]
@@ -1004,7 +1005,33 @@ class GovernanceRepository:
                             'maintenance_session_id': None, 'updated_at': utc_now()})
                         connection.execute('update browser_profiles set data_json=?,updated_at=? where profile_id=?',
                             (profile.model_dump_json(), utc_now().isoformat(), profile.profile_id))
+            if value.handling_mode == 'AUTO':
+                self._retire_automatic_task(connection, value)
             return self._write_recovery(connection, value)
+
+    def _retire_automatic_task(self, connection, value):
+        """Retire human work, not business recovery; keep its token as physical-page history."""
+        task = self.get_challenge(value.challenge_task_id) if value.challenge_task_id else None
+        if not task or task.state == 'RESOLVED' or task.scope_id != value.scope_id or task.identity_id != value.identity_id or any(
+            s.identity_id == value.identity_id and s.state == 'OPEN' for s in self.list_sessions()
+        ):
+            return
+        self._write_task(connection, task.model_copy(update={'state':'RESOLVED', 'resolved_at':utc_now(),
+            'resolution_reason':'RECLASSIFIED_AUTOMATIC_VERIFICATION', 'resolved_by':'classification'}))
+        identity = self.repository.get_identity(value.identity_id)
+        profile = self.repository.get_profile(identity.profile_id)
+        retired_tokens = {task.task_id, *(s.control_token for s in self.list_sessions()
+            if s.identity_id == value.identity_id and s.task_id == task.task_id and s.state != 'OPEN')}
+        if profile.maintenance_session_id and profile.maintenance_session_id in retired_tokens:
+            from .schema import ProfileOperationalState
+            profile = profile.model_copy(update={'operational_state':ProfileOperationalState.AVAILABLE,
+                'maintenance_session_id':None, 'updated_at':utc_now()})
+            connection.execute('update browser_profiles set data_json=?,updated_at=? where profile_id=?',
+                (profile.model_dump_json(),utc_now().isoformat(),profile.profile_id))
+        target = self.get_target(task.allocation_id)
+        if target and target.state == 'LIVE' and target.owner_kind == 'CHALLENGE' and target.owner_ref == task.task_id:
+            self._write_target(connection, target.model_copy(update={'owner_kind':'RECOVERY',
+                'owner_ref':value.recovery_id, 'updated_at':utc_now()}))
 
     def begin_recovery(self, value):
         """Commit a retained page and its policy before business cleanup can run."""
@@ -1066,6 +1093,7 @@ class GovernanceRepository:
                 ), _connection=connection)
                 value = value.model_copy(update={"challenge_task_id": task.task_id})
             else:
+                self._retire_automatic_task(connection, value)
                 self._write_target(connection, target.model_copy(update={
                     "owner_kind": "RECOVERY", "owner_ref": value.recovery_id, "updated_at": utc_now(),
                 }))
