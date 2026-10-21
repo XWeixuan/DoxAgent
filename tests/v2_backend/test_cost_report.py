@@ -393,3 +393,52 @@ def test_embedding_input_only_usage_is_billable_and_not_a_cache_miss():
     assert values["usage_known_attempts"] == 1 and values["unpriced_requests"] == 0
     assert values["cache_ratio_input_tokens_samples"] == 0
     assert values["cache_inapplicable_attempts"] == 1
+
+
+def test_backfill_yields_to_sqlite_writer_and_reloads_same_batch(tmp_path, monkeypatch):
+    import sqlite3
+    from doxagent.v2_read.cost_backfill import CostBackfillStore, run
+
+    store = CostBackfillStore(tmp_path / "retry.db")
+    store.migrate()
+    store.ingest(
+        "fixture",
+        "call",
+        [
+            {
+                "kind": "usage",
+                "ticker": "MU",
+                "id": "embedding",
+                "day": "2026-10-20",
+                "data": {
+                    "scope": "API",
+                    "node": "EMBEDDING",
+                    "provider": "bailian",
+                    "model": "qwen3.7-text-embedding",
+                    "usage": {"input_tokens": 1000000, "total_tokens": 1000000},
+                },
+            }
+        ],
+    )
+    original = store.ingest
+    attempts = []
+
+    def interrupted(*args, **kwargs):
+        attempts.append(kwargs["expected_usage_versions"])
+        if len(attempts) == 1:
+            error = sqlite3.OperationalError("database is locked")
+            error.sqlite_errorcode = sqlite3.SQLITE_BUSY
+            raise error
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(store, "ingest", interrupted)
+    monkeypatch.setattr("doxagent.v2_read.cost_backfill.time.sleep", lambda _: None)
+    result = run(store, batch_size=8, delay=0)
+    assert result["scanned"] == result["reprojected"] == 1
+    assert result["busy_retries"] == 1
+    assert attempts[0] == attempts[1]
+    with store.connect() as db:
+        value = db.execute(
+            "SELECT value FROM metric_buckets_current WHERE ticker='MU' AND day='*' AND metric='requests'"
+        ).fetchone()[0]
+    assert value == "1"

@@ -153,6 +153,8 @@ def run(
     if not 1 <= batch_size <= 100 or delay < 0 or max_batches < 0:
         raise ValueError("invalid cost backfill limits")
     batches = seen = changed = conflicts = missing_runtime = 0
+    busy_retries = busy_streak = 0
+    busy_since = None
     started = time.monotonic()
     minimum_batch = min(8, batch_size)
     cpu_started = time.process_time()
@@ -217,6 +219,21 @@ def run(
                     raise RuntimeError("cost backfill repeatedly raced the projector") from exc
                 time.sleep(delay)
                 continue  # Re-read this batch before moving the cursor.
+            except sqlite3.OperationalError as exc:
+                if (getattr(exc, "sqlite_errorcode", 0) & 255) not in {
+                    sqlite3.SQLITE_BUSY,
+                    sqlite3.SQLITE_LOCKED,
+                }:
+                    raise
+                busy_retries += 1
+                busy_streak += 1
+                busy_since = busy_since or time.monotonic()
+                if time.monotonic() - busy_since > 30:
+                    raise  # Leave the last atomic checkpoint for a later resume.
+                time.sleep(min(1.0, 0.1 * 2 ** min(busy_streak - 1, 4)))
+                continue  # Never advance a failed transaction; refresh receipt versions.
+            busy_since = None
+            busy_streak = 0
             batch_wall_seconds = time.monotonic() - write_at
             write_seconds = getattr(store, "last_write_seconds", batch_wall_seconds)
             if write_seconds > 0.1:
@@ -233,6 +250,7 @@ def run(
             reprojected=changed,
             missing_runtime=missing_runtime,
             conflicts=conflicts,
+            busy_retries=busy_retries,
             seconds=round(time.monotonic() - started, 3),
             cpu_seconds=round(time.process_time() - cpu_started, 3),
             write_seconds=round(write_seconds, 4),
@@ -253,6 +271,7 @@ def run(
         reprojected=changed,
         missing_runtime=missing_runtime,
         conflicts=conflicts,
+        busy_retries=busy_retries,
     )
 
 
