@@ -29,6 +29,10 @@ def validator(name: str) -> Draft202012Validator:
 
 
 def validate(name: str, value: Any) -> Any:
+    if name == "CostReport":
+        from .cost_validation import accepts
+        if accepts(value):
+            return value
     error = next(validator(name).iter_errors(value), None)
     if error:
         # Never include an offending value: it might contain a native secret or path.

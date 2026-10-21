@@ -96,3 +96,10 @@ profile 只影响新 Case 的 model manifest；Vertex project 同样冻结到 ma
 CPU profile定位全历史报告逐条解码约19,912个标的桶，和响应schema验证共同占用CPU；撤掉回填后四并发仍有1个队列繁忙。将跨ticker归并前移到同一SQL SELECT，连接私有Decimal聚合保持费用精确；原生内容解码不用于纯标量结果。requests桶同时提供标的候选，无新增SQL查询或服务。移除requests已归零的旧轮次行／候选和空趋势日。16项相关测试通过，含大于IEEE整数精确范围的费用、全局与单标的精确一致、候选保留和旧轮次不再显示。
 
 报告归并采用局部64位Decimal精度，避免大量既有有限小数相加时在默认28位上下文逐项截尾；原始报价和计价规则不改。新增超过28位合计精度回归，16项相关API/schema测试通过。
+
+
+### 资源预算的最终收敛
+
+全量前半程出现临时MVCC/history增长超过500MiB及写事务超过100ms，已暂停；既有GC有正确expiry索引，瓶颈是写锁占用及回收赶不上新增历史。单条50调用试验5.35秒，大多写锁几十毫秒。改为keyset每次最多读100条，按ticker/day/round/provider/model分组，每个短事务最多8条，同桶只写一次；超过100ms缩组，低于50ms逐步恢复到最多8条，逐组让出写锁。整批全部提交才推进原断点；部分已提交后锁重试重新读取版本且不双计，已用回归验证。保留原MVCC与既有GC，不做truncate/vacuum或全库副本。
+
+profile确认解释型schema遍历占报告约一半CPU。对CostReport使用fastjsonschema 2.22.2编译当前draft-07可表达子集，价格/数值/schema原文不变。格式仍调用原FormatChecker；关闭default注入；出现2020-12新增关键字、引用附加约束或编译校验失败时，继续原Canonical验证。普通成功响应只校验一次，失败仍保留原语义与脱敏错误。对正常夹具、负数/布尔计数、非法时间、缺字段、未知字段、换行小数及未来dependentRequired验证对照通过；schema和响应不被修改。官方机制说明：https://horejsek.github.io/python-fastjsonschema/ 。本地初测10次夹具校验CPU由0.109秒降至0.016秒，最终以生产实测为准。

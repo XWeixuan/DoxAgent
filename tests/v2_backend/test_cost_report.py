@@ -481,3 +481,57 @@ def test_sql_decimal_reduction_preserves_money_ticker_facets_and_omits_retired_r
         assert data["filter_choices"]["nodes"] == ["W1R2"]
         assert data["row_count"] == 1
         assert data["rows"][0]["round"] == "R2"
+
+
+def test_cohort_backfill_resumes_partial_batch_without_double_counting(tmp_path, monkeypatch):
+    import sqlite3
+
+    from doxagent.v2_read.cost_backfill import CostBackfillStore, run
+
+    store = CostBackfillStore(tmp_path / "cohort.db")
+    store.migrate()
+    records = [
+        {
+            "kind": "usage",
+            "ticker": "MU",
+            "id": f"item{i}",
+            "day": "2026-10-20" if i < 4 else "2026-10-21",
+            "data": {
+                "scope": "API",
+                "node": "EMBEDDING",
+                "model": "qwen3.7-text-embedding",
+                "provider": "bailian",
+                "usage": {"input_tokens": 1},
+            },
+        }
+        for i in range(8)
+    ]
+    store.ingest("fixture", "cohorts", records)
+    original = store.ingest
+    attempts = []
+    checkpoint = tmp_path / "checkpoint.json"
+
+    def interrupt_second(*args, **kwargs):
+        attempts.append(kwargs["expected_usage_versions"])
+        if len(attempts) == 2:
+            assert not checkpoint.exists()
+            error = sqlite3.OperationalError("database is locked")
+            error.sqlite_errorcode = sqlite3.SQLITE_BUSY
+            raise error
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(store, "ingest", interrupt_second)
+    monkeypatch.setattr("doxagent.v2_read.cost_backfill.time.sleep", lambda _: None)
+    result = run(store, batch_size=100, delay=0, checkpoint=checkpoint)
+    assert result["scanned"] == 8 and result["busy_retries"] == 1
+    assert len(attempts[0]) == len(attempts[1]) == 4
+    assert [r[:2] for r in attempts[0]] == [r[:2] for r in attempts[2]]
+    assert attempts[0] != attempts[2]  # Refresh revisions after the first committed cohort.
+    assert json.loads(checkpoint.read_text())["cursor"] == ["MU", "item7"]
+    with store.connect() as db:
+        assert (
+            db.execute(
+                "SELECT value FROM metric_buckets_current WHERE metric='requests' AND day='*'"
+            ).fetchone()[0]
+            == "8"
+        )

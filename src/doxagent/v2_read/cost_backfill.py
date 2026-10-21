@@ -159,7 +159,8 @@ def run(
     busy_retries = busy_streak = 0
     busy_since = None
     started = time.monotonic()
-    minimum_batch = min(8, batch_size)
+    write_limit = min(8, batch_size)
+    write_batches = 0
     cpu_started = time.process_time()
     write_seconds = 0.0
     while not max_batches or batches < max_batches:
@@ -205,15 +206,52 @@ def run(
             counts.extend(contributions)
             revisions.append((ticker, identity, revision))
         if records and not dry_run:
-            write_at = time.monotonic()
-            try:
-                store.ingest(
-                    "cost_backfill",
-                    VERSION + ":" + hashlib.sha256(json.dumps(revisions).encode()).hexdigest(),
-                    records,
-                    contributions=counts,
-                    expected_usage_versions=revisions,
+            # Co-locate bucket replacements inside a short transaction. Random
+            # invocation IDs otherwise update the same day/model bucket repeatedly.
+            cohorts, by_identity = {}, {}
+            for record, revision in zip(records, revisions, strict=True):
+                data = record["data"]
+                key = (
+                    record["ticker"],
+                    record["day"],
+                    *(data[k] for k in ("scope", "node", "round", "provider", "model")),
                 )
+                cohorts.setdefault(key, []).append((record, revision))
+            for item in counts:
+                by_identity.setdefault((item["ticker"], item["entity"]), []).append(item)
+            write_seconds = 0.0
+            try:
+                for cohort in cohorts.values():
+                    offset = 0
+                    while offset < len(cohort):
+                        segment = cohort[offset : offset + write_limit]
+                        group_records, group_revisions = map(list, zip(*segment, strict=True))
+                        group_counts = [
+                            item
+                            for record in group_records
+                            for item in by_identity[(record["ticker"], record["id"])]
+                        ]
+                        write_at = time.monotonic()
+                        store.ingest(
+                            "cost_backfill",
+                            VERSION
+                            + ":"
+                            + hashlib.sha256(json.dumps(group_revisions).encode()).hexdigest(),
+                            group_records,
+                            contributions=group_counts,
+                            expected_usage_versions=group_revisions,
+                        )
+                        elapsed = getattr(store, "last_write_seconds", time.monotonic() - write_at)
+                        write_seconds = max(write_seconds, elapsed)
+                        write_batches += 1
+                        offset += len(segment)
+                        if elapsed > 0.1:
+                            write_limit = max(1, write_limit // 2)
+                        elif elapsed < 0.05:
+                            write_limit = min(8, batch_size, write_limit + 1)
+                        busy_since = None
+                        busy_streak = 0
+                        time.sleep(delay)
             except ValueError as exc:
                 if str(exc) != "COST_BACKFILL_CONCURRENT_UPDATE":
                     raise
@@ -235,12 +273,6 @@ def run(
                     raise  # Leave the last atomic checkpoint for a later resume.
                 time.sleep(min(1.0, 0.1 * 2 ** min(busy_streak - 1, 4)))
                 continue  # Never advance a failed transaction; refresh receipt versions.
-            busy_since = None
-            busy_streak = 0
-            batch_wall_seconds = time.monotonic() - write_at
-            write_seconds = getattr(store, "last_write_seconds", batch_wall_seconds)
-            if write_seconds > 0.1:
-                batch_size = max(minimum_batch, batch_size // 2)
         seen += len(rows)
         changed += len(records)
         batches += 1
@@ -258,6 +290,8 @@ def run(
             cpu_seconds=round(time.process_time() - cpu_started, 3),
             write_seconds=round(write_seconds, 4),
             batch_size=batch_size,
+            write_batch_size=write_limit,
+            write_batches=write_batches,
             dry_run=dry_run,
         )
         if checkpoint and not dry_run:
@@ -266,8 +300,6 @@ def run(
             temporary.write_text(json.dumps(status), encoding="utf-8")
             temporary.replace(target)
         print(json.dumps(status), flush=True)
-        if not dry_run:
-            time.sleep(delay)
     return dict(
         cursor=cursor,
         scanned=seen,
