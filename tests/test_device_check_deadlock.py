@@ -60,6 +60,28 @@ async def test_actual_slider_gate_exposes_human_task_not_generic_device_wait(set
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize('lost', [False, True])
+async def test_no_dom_forever_still_has_bounded_manual_exit(setup, lost):
+    value, _, _ = retained(setup)
+    _, service, store, _ = setup
+    value = value.model_copy(update={
+        'opened_at':utc_now()-timedelta(minutes=6),
+        'next_probe_at':utc_now()+timedelta(hours=1),
+    })
+    store.save_recovery(value, expected_generation=value.generation)
+    service.recovery._observe = AsyncMock(side_effect=(
+        RuntimeError('original_challenge_target_lost') if lost else TimeoutError()))
+    service.recovery.datadome_solver.tick = AsyncMock(return_value=False)
+    await service.recovery._run(value.identity_id)
+    service.recovery._observe.assert_awaited_once()
+    final = store.get_recovery(value.identity_id)
+    assert final.handling_mode == 'HUMAN'
+    assert final.manual_review_reason == 'verification_observation_unavailable'
+    task = store.current_challenge(value.identity_id)
+    assert task.state == ('TARGET_LOST' if lost else 'WAITING_HUMAN')
+
+
+@pytest.mark.asyncio
 async def test_manual_review_drains_inflight_work_instead_of_failing_busy(setup):
     repo, service, _, scope = setup
     identity = repo.get_identity(scope.primary_identity_id)

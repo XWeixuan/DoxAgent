@@ -541,6 +541,21 @@ class BrowserRecoveryCoordinator:
                                 self.event(recovery, "TARGET_LOST", reason="exact_original_absent")
                             else:
                                 recovery = recovery.model_copy(update={"page_status": "UNKNOWN"})
+                    if capture is None and recovery.handling_mode == "AUTO" and (
+                        utc_now() - recovery.opened_at
+                    ).total_seconds() >= max(180, min(300, spec.challenge.automatic_wait_seconds * 3)):
+                        # The deadline must also work when a busy/dead renderer
+                        # never supplies any DOM. No successful read is required
+                        # to expose a retained/lost original for manual review.
+                        recovery = recovery.model_copy(update={
+                            "handling_mode": "HUMAN",
+                            "manual_review_reason": "verification_observation_unavailable",
+                            "manual_review_at": recovery.manual_review_at or utc_now(),
+                        })
+                        self.event(recovery, "CLASSIFICATION_CHANGED",
+                                   kind=recovery.assessment.get("kind", "UNKNOWN"),
+                                   handling_mode="HUMAN", reason=recovery.manual_review_reason)
+                        self.store.save_recovery(recovery, expected_generation=recovery.generation)
                     if capture is not None:
                         report = verify_capture(
                             self.service, scope, context, capture, observed=True
