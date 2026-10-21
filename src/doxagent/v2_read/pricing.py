@@ -35,7 +35,7 @@ def normalize(provider: str, usage: dict, *, ttl: str | None = None) -> dict:
         raw = {}
     native = raw.get("usage", raw)
     native = native if isinstance(native, dict) else {}
-    vertex = provider == "vertex" and usage.get("normalization_version") != VERSION
+    vertex = provider == "vertex" and not usage.get("normalization_version")
     result = {
         key: count(usage.get(key))
         for key in (
@@ -110,6 +110,7 @@ def normalize(provider: str, usage: dict, *, ttl: str | None = None) -> dict:
     )
     if (
         usage.get("total_tokens") is not None
+        and result["total_tokens"] is not None
         and count(usage["total_tokens"]) != result["total_tokens"]
     ):
         result.update(
@@ -205,6 +206,9 @@ def price(
         rule = None  # A missing billed total does not prove which upstream tariff applied.
     if rule:
         currency = rule["currency"]
+        result["usage_kind"] = rule.get("kind", "GENERATION")
+        if result["usage_kind"] == "EMBEDDING":
+            result["price_source"] = RULES["sources"]["embedding"]
         divisor = MILLION * (FX if currency == "CNY" else 1)
 
         def component(tokens, key):

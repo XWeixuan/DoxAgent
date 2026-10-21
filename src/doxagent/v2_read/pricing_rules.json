@@ -1,5 +1,5 @@
 {
-  "version": "cost-audit-20261021-v1",
+  "version": "cost-audit-20261021-v2",
   "usd_cny": "6.8",
   "fx_version": "product-fixed-6.8",
   "bailian": {
@@ -36,6 +36,13 @@
       "read": "0.2",
       "output": "8",
       "offpeak_multiplier": "0.5"
+    },
+    "qwen3.7-text-embedding": {
+      "currency": "CNY",
+      "input": "0.5",
+      "read": "0",
+      "output": "0",
+      "kind": "EMBEDDING"
     }
   },
   "haiku": {
@@ -61,6 +68,7 @@
   "sources": {
     "haiku": "https://cloud.google.com/gemini-enterprise-agent-platform/generative-ai/pricing",
     "glm": "https://help.aliyun.com/zh/model-studio/glm-5-3-flashx-by-zhipu",
-    "bailian": "https://help.aliyun.com/zh/model-studio/models"
+    "bailian": "https://help.aliyun.com/zh/model-studio/models",
+    "embedding": "https://help.aliyun.com/zh/model-studio/qwen3-7-text-embedding"
   }
 }

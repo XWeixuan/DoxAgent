@@ -149,9 +149,13 @@ def test_snapshot_preserves_retired_catalog_and_usage_after_process_exit(tmp_pat
     report=rebuild_current([s],tmp_path/'rebuilt'/'read.db')
     target=ReadStore(report['path'])
     assert target.get('policy_catalog','MU','old-policy')==catalog['data']
-    assert target.get('usage','MU','call')==usage['data']
+    restored=target.get('usage','MU','call')
+    reduction=restored.pop('_cost_reduction')
+    assert restored==usage['data']
+    assert reduction['values']['input_tokens']=='100'
     with target.connect() as db:
-        assert db.execute("SELECT value FROM contributions_current WHERE metric='input_tokens' AND entity='call'").fetchone()[0]=='100'
+        assert db.execute("SELECT value FROM metric_buckets_current WHERE metric='input_tokens' AND ticker='MU' AND day='*'").fetchone()[0]=='100'
+        assert db.execute("SELECT count(*) FROM contributions_current WHERE metric='input_tokens' AND entity='call'").fetchone()[0]==0
 
 
 def test_snapshot_seeds_membership_before_current_activation(tmp_path,monkeypatch):
@@ -332,3 +336,22 @@ def test_old_native_owner_refs_exit_in_bounded_pages_and_keep_external_and_curre
     with closing(s.connection(write=True)) as db,db:db.execute("DELETE FROM artifact_ref WHERE owner_type='external-recovery'")
     assert gc.collect(s)['quarantined']==1
     assert json.loads(s.content.text(raw))==current
+
+
+def test_snapshot_preserves_reported_cost_and_round_without_repricing(tmp_path):
+    from decimal import Decimal
+    from doxagent.v2_read.cost_backfill import reproject
+    s=fixture_source(tmp_path);s=SourceOutbox(s.path,'runtime');s.migrate(('poll_states',))
+    live=ReadStore(tmp_path/'live'/'read.db');live.migrate();s.claim_serving_facts(live.path)
+    usage=dict(kind='usage',ticker='MU',id='charged-call',day='2026-10-20',data={
+        'scope':'API','node':'W2','round':'R1','provider':'openrouter','model':'anthropic/claude-haiku-5.5',
+        'usage':{'input_tokens':100,'cached_input_tokens':0,'output_tokens':20,'cache_write_input_tokens':0,
+                 'provider_usage':{'cost':'0.004'}},'timing':{'first_started_at':{'value':'2026-10-20T12:00:00Z'}}})
+    record,counts=reproject(usage)
+    live.ingest('fixture','charged',[record],contributions=counts);sync_business_facts(s,live)
+    report=rebuild_current([s],tmp_path/'rebuilt'/'read.db')
+    target=ReadStore(report['path'])
+    assert target.get('usage','MU','charged-call')['_cost_reduction']['dimensions']['round']=='R1'
+    with target.connect() as db:
+        amount=db.execute("SELECT value FROM metric_buckets_current WHERE metric='total_cost_usd' AND ticker='MU' AND day='*'").fetchone()[0]
+    assert Decimal(amount)==Decimal('0.004')

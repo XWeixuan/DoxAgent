@@ -114,6 +114,7 @@ def total(costs, view, args, sums):
     # Only paired known samples enter both sides of the cache ratio.
     n = int(sums.get("cache_ratio_input_tokens_samples", 0))
     denominator = sums.get("cache_ratio_input_tokens", Decimal(0))
+    applicable = attempts - int(sums.get("cache_inapplicable_attempts", 0))
     ratio = field("cache_hit_ratio", "RATIO")
     ratio["current"] = (
         available(format(sums.get("cache_ratio_read_tokens", Decimal(0)) / denominator, "f"))
@@ -121,11 +122,13 @@ def total(costs, view, args, sums):
         else missing("NO_SAMPLES")
     )
     ratio["current_coverage"] = coverage(
-        complete=n == attempts and not reasons,
+        complete=n == applicable and not reasons,
         count=n,
         at=view["as_of"],
-        reasons=reasons + (["NOT_RECORDED"] if n < attempts else []),
+        reasons=reasons + (["NOT_RECORDED"] if n < applicable else []),
     )
+    if attempts and not applicable:
+        ratio["current"] = missing("NOT_APPLICABLE", "NOT_APPLICABLE")
     base.update(
         cache_hit_ratio=ratio,
         observed_attempts=attempts,

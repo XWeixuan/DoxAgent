@@ -11,6 +11,10 @@ from .pricing import normalize, price
 
 
 def accounting(model, provider, channel, started_at, usage):
+    if provider == "bailian" and model == "qwen3.7-text-embedding":
+        # An embedding endpoint has no generated text or prompt cache. These are
+        # protocol-inapplicable zeros, not guesses about an incomplete chat response.
+        usage = {**usage, "output_tokens": 0, "cached_input_tokens": 0}
     normalized = normalize(provider, usage, ttl=usage.get("cache_ttl"))
     money = price(
         model,
@@ -61,11 +65,17 @@ def cost(model: str, at: datetime, usage: dict[str, Any], *, channel="API"):
 
 def observations(model, provider, channel, started_at, usage):
     normalized, money = accounting(model, provider, channel, started_at, usage)
+    return observation_values(normalized, money, channel)
+
+
+def observation_values(normalized, money, channel):
+    """Reduce an already frozen quote without repricing or losing reported charges."""
     values = {key: value for key, value in normalized.items() if key != "normalization_version"}
     values.update({key: value for key, value in money.items() if key.endswith("_cost_usd")})
     values["api_token_cost"] = money["total_cost_usd"]
     incoming, cached = normalized["input_tokens"], normalized["cached_input_tokens"]
-    pair_known = incoming is not None and cached is not None
+    cache_inapplicable = money.get("usage_kind") == "EMBEDDING"
+    pair_known = incoming is not None and cached is not None and not cache_inapplicable
     values.update(
         cache_ratio_input_tokens=incoming if pair_known else None,
         cache_ratio_read_tokens=cached if pair_known else None,
@@ -75,6 +85,7 @@ def observations(model, provider, channel, started_at, usage):
         reported_cost_attempts=int(money["cost_basis"] == "REPORTED"),
         estimated_cost_attempts=int(money["cost_basis"] == "ESTIMATED"),
         normalization_v1_attempts=1,
+        cache_inapplicable_attempts=int(cache_inapplicable),
         unknown_model_price_attempts=int(
             channel == "API" and money["reason"] == "UNKNOWN_MODEL_PRICE"
         ),
@@ -86,6 +97,7 @@ def observations(model, provider, channel, started_at, usage):
         "reported_cost_attempts",
         "estimated_cost_attempts",
         "normalization_v1_attempts",
+        "cache_inapplicable_attempts",
         "unknown_model_price_attempts",
     }
     for key, value in list(values.items()):
@@ -108,3 +120,11 @@ def observations(model, provider, channel, started_at, usage):
             currency == code and value is not None
         )
     return values
+
+
+def fact_observations(data):
+    money = data.get("accounting")
+    if money:
+        return observation_values(normalize(data["provider"], data["usage"]), money, data["scope"])
+    started = (data.get("timing", {}).get("first_started_at") or {}).get("value")
+    return observations(data["model"], data["provider"], data["scope"], started, data["usage"])

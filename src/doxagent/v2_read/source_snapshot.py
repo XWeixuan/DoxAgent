@@ -75,7 +75,8 @@ def settle_cases(store):
 
 def restore_business_facts(store, db):
     """Restore compact historical settlements, catalogs and usage, not Context."""
-    from .usage import observations
+    from .usage import fact_observations
+    from .cost_contributions import KEY as COST_KEY
     count=0
     for kind,ticker,identity,raw in db.execute('SELECT kind,ticker,id,payload FROM v2_serving_business_facts'):
         value=json.loads(raw)
@@ -90,10 +91,11 @@ def restore_business_facts(store, db):
             counts=[]
             if kind=='usage':
                 data=value['data']
-                dimensions={k:data[k] for k in ('scope','node','model','provider')}
-                started=(data.get('timing',{}).get('first_started_at') or {}).get('value')
+                compact=data.get(COST_KEY)
+                dimensions=compact['dimensions'] if compact else {**{k:data[k] for k in ('scope','node','model','provider')}, 'round':data.get('round') or ('AGENT' if data['scope']=='CODEX' else 'UNKNOWN_ROUND')}
+                amounts=compact['values'] if compact else fact_observations(data)
                 counts=[dict(metric=name,ticker=ticker,entity=identity,day=value['day'],dimensions=dimensions,value=amount)
-                        for name,amount in observations(data['model'],data['provider'],data['scope'],started,data['usage']).items()]
+                        for name,amount in amounts.items()]
             store.ingest('business-baseline',uuid4().hex,[value],contributions=counts)
         count+=1
     return count

@@ -321,3 +321,75 @@ def test_global_cost_http_and_scope_binding(tmp_path):
         client.get(PREFIX + "/read-context?page=RUNTIME&period=ALL", headers=headers).status_code
         == 422
     )
+
+
+def test_compact_cost_ledger_late_usage_and_stale_receipt_preserve_frozen_totals(tmp_path):
+    store = ReadStore(tmp_path / "read.db")
+    store.migrate()
+    costs = Costs(store, None)
+
+    def settle(event, position, incoming):
+        record = {
+            "kind": "usage",
+            "ticker": "MU",
+            "id": "call",
+            "day": "2026-10-20",
+            "data": {
+                "scope": "API",
+                "node": "W1",
+                "provider": "bailian",
+                "model": "qwen3.8-flash",
+                "round": "R2",
+                "usage": {"input_tokens": incoming, "cached_input_tokens": 0, "output_tokens": 10},
+                "timing": {"first_started_at": {"value": "2026-10-20T06:00:00Z"}},
+            },
+        }
+        record, counts = reproject(record)
+        return store.ingest("runtime", event, [record], position=position, contributions=counts)
+
+    first = settle("first", 1, 100)
+    second = settle("later", 2, 150)
+    assert (
+        report(costs, view(first), {"scope": "API"})["totals"]["input_tokens"]["current"]["value"]
+        == "100"
+    )
+    assert (
+        report(costs, view(second), {"scope": "API"})["totals"]["input_tokens"]["current"]["value"]
+        == "150"
+    )
+    settle("stale", 1, 1)
+    with store.connect() as db:
+        seq = store.highwater(db)
+        assert (
+            db.execute("SELECT count(*) FROM contributions_current WHERE entity='call'").fetchone()[
+                0
+            ]
+            == 0
+        )
+        assert (
+            db.execute("SELECT count(*) FROM object_current WHERE kind='usage'").fetchone()[0] == 1
+        )
+    assert (
+        report(costs, view(seq), {"scope": "API"})["totals"]["input_tokens"]["current"]["value"]
+        == "150"
+    )
+
+
+def test_embedding_input_only_usage_is_billable_and_not_a_cache_miss():
+    from doxagent.v2_read.usage import accounting
+
+    usage = {
+        "input_tokens": 1000000,
+        "output_tokens": None,
+        "cached_input_tokens": None,
+        "total_tokens": 1000000,
+    }
+    normalized, money = accounting(
+        "qwen3.7-text-embedding", "bailian", "API", "2026-10-20T06:00:00Z", usage
+    )
+    assert normalized["input_tokens"] == normalized["total_tokens"] == 1000000
+    assert money["calculated_cost_native"] == Decimal("0.5")
+    values = observations("qwen3.7-text-embedding", "bailian", "API", "2026-10-20T06:00:00Z", usage)
+    assert values["usage_known_attempts"] == 1 and values["unpriced_requests"] == 0
+    assert values["cache_ratio_input_tokens_samples"] == 0
+    assert values["cache_inapplicable_attempts"] == 1

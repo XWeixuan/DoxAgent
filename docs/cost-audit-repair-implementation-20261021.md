@@ -58,3 +58,20 @@ profile 只影响新 Case 的 model manifest；Vertex project 同样冻结到 ma
 通用 ingest 逐 metric/entity 查旧值，试跑25条约1.3秒，单向缩批退化到1条并固定休眠0.5秒，不适合49,324条保留调用。
 改为只对带 usage 版本保护的 cost_backfill 路径预取旧贡献、executemany 批量移动与插入；桶结算和 MVCC 语义不变，在线普通投影路径不变。
 自适应缩批最低8条（显式更小配置仍被尊重），批间延时由运维明确配置，不再自动抬至0.5秒；输出实际write/CPU时间用于确认资源影响。
+
+
+### 控制派生成本数据的长期体积
+
+试跑确认旧方案一条调用展开几十条 contributions_current 并产生逐字段 history／watermark，不能按此方式扩展全部保留历史。
+成本调用现在在既有 usage 对象中保存一份紧凑 `_cost_reduction` 精确贡献快照；同 ID 更新从旧快照减、新快照加到原 metric_buckets，不再为成本单独新增几十条 SQL 贡献和水位行。
+首次迁移仍把旧逐调用贡献按 MVCC 移到原 contributions_history，旧 usage 与 bucket 版本也保留；原始调用账本完全不改。Policy／graph 身份贡献保持原存储与算法。
+代码确认成本和 Overview 读 metric_buckets，未依赖逐调用 cost contributions 列表；非成本 distinct 仍读原贡献表。
+回退 API／Web 可以使用兼容的桶读取版本；**迁移后投影器须保留紧凑成本贡献实现，不能直接回退到旧逐行贡献写入镜像**。不需要恢复或复制整库。
+
+
+### 保留历史的 Embedding 计价补齐
+
+全账本模型核查发现1,670次 qwen3.7-text-embedding 调用，usage为 input=total、output/cache=None。
+其协议没有文本输出和上下文缓存，按输入专属模型处理，而不是把 input 也作废；缓存比率排除该类调用。
+北京在线输入公开价 CNY0.5/百万token，Batch价格不套在线请求；依据 https://help.aliyun.com/zh/model-studio/qwen3-7-text-embedding 。
+规则版本提升为 cost-audit-20261021-v2；其它既有价格未改，黄金样本仍完全一致。

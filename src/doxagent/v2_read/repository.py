@@ -420,6 +420,9 @@ class ReadStore:
                 raise ValueError("conflicting representations in one source receipt")
             unique[key] = record
         records = list(unique.values())
+        from .cost_contributions import KEY as COST_KEY, prepare as prepare_costs, previous as previous_costs
+        records, folded_costs = prepare_costs(records, contributions)
+        prior_costs, skipped_costs = {}, set()
         with self.connect(write=True) as db:
             # A cost backfill must not overwrite a receipt updated by the live projector.
             for ticker, identity, revision in expected_usage_versions or ():
@@ -455,6 +458,8 @@ class ReadStore:
                         (source, kind, ticker, identity),
                     ).fetchone()
                     if last and last[0] >= position:
+                        if kind == "usage":
+                            skipped_costs.add((ticker, identity))
                         continue
                     db.execute(
                         "INSERT INTO entity_watermarks VALUES(?,?,?,?,?) "
@@ -468,6 +473,8 @@ class ReadStore:
                     (kind, ticker, identity),
                 ).fetchone()
                 previous = json.loads(old[0]) if old else None
+                if kind == "usage" and (ticker, identity) in folded_costs:
+                    prior_costs[(ticker, identity)] = previous_costs((previous or {}).get(COST_KEY))
                 if normalized and previous is not None:
                     previous=self.content_codec.decode(previous,expand_definitions=False)
                 comparable = dict(payload) if isinstance(payload, dict) else payload
@@ -558,21 +565,31 @@ class ReadStore:
             # Cost history migration already checks all receipt revisions under this
             # writer lock. Fetch its old contribution sets in one indexed join, then
             # move/insert rows in prepared batches instead of thousands of round trips.
+            folded_bases = set()
+            if folded_costs:
+                for identity, metrics in prior_costs.items():
+                    for metric in metrics:
+                        groups.setdefault((metric, *identity), [])
+                from .cost_contributions import metric_names as cost_metric_names
+                names = cost_metric_names()
+                folded_bases = {base for base in groups if base[0] in names and base[1:] in folded_costs}
+                groups = {base:items for base,items in groups.items() if base[1:] not in skipped_costs or base not in folded_bases}
             bulk_cost = source == "cost_backfill" and expected_usage_versions is not None
             old_sets, closing, inserting = {}, [], []
-            if bulk_cost and groups:
+            queried = [base for base in groups if base not in folded_bases or not prior_costs.get(base[1:])] if bulk_cost or folded_bases else []
+            if (bulk_cost or folded_bases) and queried:
                 for row in db.execute(
                     "SELECT c.metric,c.ticker,c.entity,c.day,c.dimensions,c.value "
                     "FROM json_each(?) AS requested JOIN contributions_current AS c "
                     "ON c.metric=json_extract(requested.value,'$[0]') "
                     "AND c.ticker=json_extract(requested.value,'$[1]') "
                     "AND c.entity=json_extract(requested.value,'$[2]')",
-                    (encode(list(groups)),),
+                    (encode(queried),),
                 ):
                     old_sets.setdefault(tuple(row[:3]), []).append(tuple(row[3:]))
             for base, items in groups.items():
                 identity = (source, *base)
-                if position is not None:
+                if position is not None and base not in folded_bases:
                     last = db.execute("SELECT position FROM contribution_watermarks WHERE source=? AND metric=? AND ticker=? AND entity=?", identity).fetchone()
                     if last and last[0] >= position:
                         continue
@@ -589,9 +606,16 @@ class ReadStore:
                         raise ValueError("conflicting contribution set")
                     if amount:
                         expected[member] = amount
-                old_values = old_sets.get(base, []) if bulk_cost else db.execute("SELECT day,dimensions,value FROM contributions_current WHERE metric=? AND ticker=? AND entity=?", base).fetchall()
+                virtual = base in folded_bases and bool(prior_costs.get(base[1:]))
+                if virtual:
+                    old_values = prior_costs[base[1:]].get(base[0], [])
+                elif bulk_cost or base in folded_bases:
+                    old_values = old_sets.get(base, [])
+                else:
+                    old_values = db.execute("SELECT day,dimensions,value FROM contributions_current WHERE metric=? AND ticker=? AND entity=?", base).fetchall()
                 previous = {(row[0], row[1]): Decimal(row[2]) for row in old_values}
-                if previous == expected:
+                retire_rows = base in folded_bases and not virtual and old_values
+                if previous == expected and not retire_rows:
                     continue
                 mutated = True
                 allocate()
@@ -599,7 +623,7 @@ class ReadStore:
                     for bucket_day in (day, "*"):
                         bucket = (base[0], base[1], bucket_day, dimensions)
                         deltas[bucket] = deltas.get(bucket, Decimal(0)) - amount
-                if old_values:
+                if old_values and not virtual:
                     if bulk_cost:
                         closing.append(base)
                     else:
@@ -609,6 +633,8 @@ class ReadStore:
                         bucket = (base[0], base[1], bucket_day, dimensions)
                         deltas[bucket] = deltas.get(bucket, Decimal(0)) + amount
                     row = (*base, day, dimensions, format(amount, "f"), seq)
+                    if base in folded_bases:
+                        continue
                     if bulk_cost:
                         inserting.append(row)
                     else:
