@@ -8,6 +8,8 @@
 
 # changelog
 
+2026-10-22 Device Check closeout: publish Site Access 6dbdb4e9 only, verify 18 committed-source hashes and unchanged Supervisor/Profile/network binding; final 229 regressions pass. InvestorsHub redirect recovery resolves with repeated crawler and FULL body receipts. Paid Reuters acceptance uncovers/fixes apex-only Cookie, restores one real 14-row search, then records a new challenge 37 seconds later; second paid task is APPLIED but business recovery remains unproven. Preserve both manual Viewer paths, existing read-only monitor deadline, release-window connection/budget errors and the explicit Reuters remaining limitation. Plan/receipt: docs/device-check-deadlock-repair-20261022.md.
+
 2026-10-22 Loaded verification overlay classification: do not discard a positively observed DataDome frame merely because the parent contains a large ordinary business DOM. Reuters can retain its complete search DOM behind a fixed full-screen CAPTCHA overlay; classify the exact loaded child rather than falling back to UNKNOWN/generic pending. Add the real-shape large-parent/slider regression; script-only business pages remain unblocked.
 
 2026-10-22 Unreadable-renderer recovery deadline: apply the automatic wait bound even when no original DOM can ever be read, not only after a successful classification. Busy/failed renderer observation and confirmed lost originals escalate to visible retained-page or TARGET_LOST manual review while background business proof remains active. Add full coordinator timeout/lost-target regressions; no synthetic interactive CAPTCHA classification.
