@@ -8,6 +8,8 @@
 
 # changelog
 
+2026-10-22 Actionable recovery deferrals: expose real interactive waiting as human_challenge_pending and paid processing as datadome_solver_pending, retaining terminal/manual-review reasons and Challenge Task IDs on all recovery admission paths. Preserve the recovery gate and retry policy; add a no-navigation regression for the exact human slider state instead of disguising it as generic Device Check waiting.
+
 2026-10-22 Paid solver Cookie scope repair: preserve Set-Cookie Domain semantics when converting to CDP parameters; Domain=.reuters.com must remain a domain cookie, not an apex-only reuters.com cookie invisible to www.reuters.com. Verify the returned token is visible to the actual publisher URL before reload/APPLIED, without logging values. Mark scope verification on paid receipts; add domain/no-domain and rejected-visibility regressions. Classify loaded DataDome t=fe Retry as an interactive slider rather than Device Check; retain one-purchase-per-incident and original-page protection.
 
 2026-10-22 DataDome live subtype regression: a real Reuters t=fe slider reuses the title 'You have been blocked'. Remove title-only terminal-denial inference; require actual t=bv navigation or a concrete denial sentence, retaining explicit slider precedence. Add the real-shape regression and align older Investing recovery fixtures with ChallengePolicy and the independent probe_recovery body-verification contract, eliminating unintended network calls in unit tests.

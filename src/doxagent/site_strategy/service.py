@@ -63,6 +63,16 @@ class ProfileUnavailableError(RuntimeError):
     pass
 
 
+def recovery_pending_reason(value):
+    if value.manual_review_reason:
+        return value.manual_review_reason
+    if value.last_error == "datadome_solver_pending":
+        return "datadome_solver_pending"
+    if value.handling_mode == "HUMAN" and value.assessment.get("kind") == "INTERACTIVE":
+        return "human_challenge_pending"
+    return "site_recovery_pending"
+
+
 class ProfileUseCoordinator:
     """Atomic in-process admission paired with persisted operational state."""
 
@@ -1606,7 +1616,7 @@ class SiteStrategyService:
                 if pending:
                     retry_at = max(pending.next_due_at, utc_now() + timedelta(seconds=60))
                     result = self._result(request, resolved, AccessDisposition.RECOVERY_PENDING,
-                                          reason=pending.manual_review_reason or "site_recovery_pending", started=started,
+                                          reason=recovery_pending_reason(pending), started=started,
                                           retry_not_before=retry_at, combination_skips=skips)
                     return result.model_copy(update={"recovery_id": pending.recovery_id,
                                                      "challenge_task_id": pending.challenge_task_id,
@@ -1826,11 +1836,12 @@ class SiteStrategyService:
                     result = self._result(request, resolved,
                         AccessDisposition.RECOVERY_PENDING if pending and pending.phase != "RESOLVED"
                         else AccessDisposition.BUDGET_DEFERRED,
-                        reason=(pending.manual_review_reason or "site_recovery_pending") if pending and pending.phase != "RESOLVED"
+                        reason=recovery_pending_reason(pending) if pending and pending.phase != "RESOLVED"
                         else "identity_control_busy", attempts=attempts,
                         retry_not_before=retry_at, started=started)
                     return result.model_copy(update={
                         "recovery_id": pending.recovery_id if pending else None,
+                        "challenge_task_id": pending.challenge_task_id if pending else None,
                         "handling_mode": pending.handling_mode if pending else None, "retry_at": retry_at})
                 unavailable += 1
                 continue
@@ -1871,9 +1882,10 @@ class SiteStrategyService:
                     self.failover.schedule(scope, request.purpose) if pending.handling_mode == "HUMAN" else None
                     result = self._result_from_response(
                         request, resolved, combination, profile, egress, response,
-                        AccessDisposition.RECOVERY_PENDING, category, pending.manual_review_reason or "site_recovery_pending", attempts, started,
+                        AccessDisposition.RECOVERY_PENDING, category, recovery_pending_reason(pending), attempts, started,
                     )
                     return result.model_copy(update={"recovery_id": pending.recovery_id,
+                                                     "challenge_task_id": pending.challenge_task_id,
                                                      "handling_mode": pending.handling_mode,
                                                      "retry_at": retry_at,
                                                      "retry_not_before": retry_at})

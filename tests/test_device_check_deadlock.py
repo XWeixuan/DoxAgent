@@ -44,6 +44,22 @@ retained = base.retained
 
 
 @pytest.mark.asyncio
+async def test_actual_slider_gate_exposes_human_task_not_generic_device_wait(setup):
+    value, _, _ = retained(setup, human=True)
+    _, service, store, scope = setup
+    value = value.model_copy(update={"assessment":{"provider":"DATADOME","kind":"INTERACTIVE"}})
+    store.save_recovery(value, expected_generation=value.generation)
+    service.runtime.execute = AsyncMock(side_effect=AssertionError('must not navigate'))
+    result = await service.execute(AccessRequest(
+        operation_id='real-slider-pending', url=base.URL, purpose='CRAWLER', mode='BROWSER',
+        origin_scope_id=scope.scope_id, excluded_combinations=[scope.fallback_identity_id],
+    ))
+    assert result.reason_code == 'human_challenge_pending'
+    assert result.challenge_task_id == value.challenge_task_id
+    service.runtime.execute.assert_not_awaited()
+
+
+@pytest.mark.asyncio
 async def test_manual_review_drains_inflight_work_instead_of_failing_busy(setup):
     repo, service, _, scope = setup
     identity = repo.get_identity(scope.primary_identity_id)
