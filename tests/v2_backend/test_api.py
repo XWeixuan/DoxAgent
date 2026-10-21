@@ -165,7 +165,7 @@ def test_overview_nonroutine_repairs_uses_projected_round_count(tmp_path, repair
     store = ReadStore(tmp_path / "read.db")
     store.migrate()
     # The view must still be live when the HTTP request reads it.
-    now = datetime.now(UTC).replace(hour=16, minute=0, second=0, microsecond=0)
+    now = datetime.now(UTC)
     while not PageCalendar().clock(now)["is_trading_day"]["value"]:
         now += timedelta(days=1)
     day = PageCalendar().clock(now)["semantic_day"]
