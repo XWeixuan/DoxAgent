@@ -307,6 +307,11 @@ async def test_pending_identity_returns_deferral_without_publisher_request(setup
     )
     assert result.disposition == AccessDisposition.RECOVERY_PENDING
     assert result.recovery_id == value.recovery_id
+    assert result.retry_at >= utc_now() + timedelta(seconds=59)
+    with service.repository._lock:
+        count = service.repository._connection.execute(
+            "select count(*) from access_events where category='ACCESS_RESULT'").fetchone()[0]
+    assert count == 0  # Gate reads are neither website attempts nor full event spam.
     service.runtime.execute.assert_not_awaited()
 
 

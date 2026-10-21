@@ -1254,7 +1254,7 @@ class SiteStrategyService:
                     else None
                 )
                 if blocked_task:
-                    if not result.attempts:
+                    if not result.attempts and result.disposition is not AccessDisposition.RECOVERY_PENDING:
                         store.save_challenge(
                             blocked_task.model_copy(
                                 update={
@@ -1288,7 +1288,9 @@ class SiteStrategyService:
             route = self.repository.get_runtime(result.runtime_key)
             if result.route_generation == route.generation and post_key != cache_key:
                 await self._put_cache(result, cache_key=post_key)
-            if created and blocked_task is None:
+            if created and blocked_task is None and not (
+                result.disposition is AccessDisposition.RECOVERY_PENDING and not result.attempts
+            ):
                 event_strategy_ref = request.recipe_ref
                 if event_strategy_ref is None and request.purpose is SitePurpose.CRAWLER:
                     event_site = self.resolve(request.url, revision=result.strategy_revision)
@@ -1529,12 +1531,13 @@ class SiteStrategyService:
                                 and r.phase != "RESOLVED" and any(
                                     x["purpose"] == request.purpose.value for x in r.affected_contexts)), None)
                 if pending:
+                    retry_at = max(pending.next_due_at, utc_now() + timedelta(seconds=60))
                     result = self._result(request, resolved, AccessDisposition.RECOVERY_PENDING,
                                           reason="site_recovery_pending", started=started,
-                                          retry_not_before=pending.next_due_at, combination_skips=skips)
+                                          retry_not_before=retry_at, combination_skips=skips)
                     return result.model_copy(update={"recovery_id": pending.recovery_id,
                                                      "handling_mode": pending.handling_mode,
-                                                     "retry_at": pending.next_due_at})
+                                                     "retry_at": retry_at})
             manual = any("manual_attention" in row["skip_reasons"] for row in skips)
             return self._result(
                 request,
@@ -1777,6 +1780,7 @@ class SiteStrategyService:
                     from .governance_repository import GovernanceRepository
 
                     pending = GovernanceRepository(self.repository).get_recovery(identity.identity_id)
+                    retry_at = max(pending.next_due_at, utc_now() + timedelta(seconds=60))
                     self.failover.schedule(scope, request.purpose) if pending.handling_mode == "HUMAN" else None
                     result = self._result_from_response(
                         request, resolved, combination, profile, egress, response,
@@ -1784,8 +1788,8 @@ class SiteStrategyService:
                     )
                     return result.model_copy(update={"recovery_id": pending.recovery_id,
                                                      "handling_mode": pending.handling_mode,
-                                                     "retry_at": pending.next_due_at,
-                                                     "retry_not_before": pending.next_due_at})
+                                                     "retry_at": retry_at,
+                                                     "retry_not_before": retry_at})
                 continue
             if category is FailureCategory.EGRESS_UNAVAILABLE:
                 unavailable += 1

@@ -547,7 +547,6 @@ class BrowserRecoveryCoordinator:
                         recovery = recovery.model_copy(
                             update={
                                 "attempt_count": recovery.attempt_count + 1,
-                                "last_real_probe_at": utc_now(),
                             }
                         )
                         self.store.save_recovery(recovery, expected_generation=claimed.generation)
@@ -574,7 +573,8 @@ class BrowserRecoveryCoordinator:
                         if not latest or latest.generation != recovery.generation:
                             return
                         # A lost original may have been replaced atomically by this probe.
-                        recovery = latest
+                        recovery = latest.model_copy(update={"last_real_probe_at": utc_now()})
+                        self.store.save_recovery(recovery, expected_generation=claimed.generation)
                         if recovery.original_allocation_id != previous_page.original_allocation_id:
                             try:
                                 await self._close_page(previous_page, identity)
