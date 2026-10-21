@@ -35,6 +35,13 @@ def test_loaded_datadome_retry_is_not_device_check():
     assert value.policy_reason == 'datadome_slider_frame'
 
 
+def test_loaded_slider_overlay_is_not_ignored_on_large_business_dom():
+    value = assess(PARENT + '<main>' + ('Search Results normal content ' * 300) + '</main>',
+        frame_html=['<title>You have been blocked</title>Slide right to secure your access'],
+        frame_urls=['https://geo.captcha-delivery.com/captcha/?t=fe'])
+    assert value.kind == 'INTERACTIVE' and value.interaction == 'SLIDER'
+
+
 @pytest.fixture
 def setup(tmp_path):
     yield from base.setup.__wrapped__(tmp_path)

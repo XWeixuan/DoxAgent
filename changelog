@@ -8,6 +8,8 @@
 
 # changelog
 
+2026-10-22 Loaded verification overlay classification: do not discard a positively observed DataDome frame merely because the parent contains a large ordinary business DOM. Reuters can retain its complete search DOM behind a fixed full-screen CAPTCHA overlay; classify the exact loaded child rather than falling back to UNKNOWN/generic pending. Add the real-shape large-parent/slider regression; script-only business pages remain unblocked.
+
 2026-10-22 Unreadable-renderer recovery deadline: apply the automatic wait bound even when no original DOM can ever be read, not only after a successful classification. Busy/failed renderer observation and confirmed lost originals escalate to visible retained-page or TARGET_LOST manual review while background business proof remains active. Add full coordinator timeout/lost-target regressions; no synthetic interactive CAPTCHA classification.
 
 2026-10-22 Actionable recovery deferrals: expose real interactive waiting as human_challenge_pending and paid processing as datadome_solver_pending, retaining terminal/manual-review reasons and Challenge Task IDs on all recovery admission paths. Preserve the recovery gate and retry policy; add a no-navigation regression for the exact human slider state instead of disguising it as generic Device Check waiting.

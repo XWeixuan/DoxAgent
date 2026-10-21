@@ -70,6 +70,14 @@ def assess(
     document = (
         blocked
         or (vendor and (auto or len(text) < 2500))
+        or (
+            base["provider"] == "DATADOME" and bool(frame_html)
+            and any(
+                (urlsplit(url).hostname or "").endswith(".captcha-delivery.com")
+                and urlsplit(url).path.startswith(("/captcha/", "/interstitial/"))
+                for url in frame_urls
+            )
+        )
         or bool(
             re.search(
                 r"just a moment|verification required|verify you are human|access.*restricted",
