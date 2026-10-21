@@ -317,14 +317,22 @@ def local_worker(worker_root: Path):
 
 
 class ReplayRunner:
-    def __init__(self, *, prompt_root=None, worker_factory=local_worker, timeout_seconds=1800):
+    def __init__(self, *, prompt_root=None, worker_factory=local_worker, timeout_seconds=1800,
+                 model=None, effort=None):
+        if effort is not None and model is None:
+            raise ValueError("effort requires a model override")
+        self.model_profile = (
+            dict(model=model, effort=effort or "medium", provider=None) if model else None
+        )
         self.prompt_root = Path(prompt_root or "prompts/persistent_runtime_v2/w3").resolve()
         self.worker_factory = worker_factory
         self.timeout_seconds = timeout_seconds
 
     def run_case(self, dataset: Path, case_key: str, run_root: Path, **_):
         marker = self.prompt_root / "contract.json"
-        replay_contract = asset_contract_version({"w3/contract.json": marker.read_text(encoding="utf-8")} if marker.exists() else {})
+        replay_contract = asset_contract_version(
+            {"w3/contract.json": marker.read_text(encoding="utf-8")} if marker.exists() else {}
+        )
         dataset, run_root = Path(dataset).resolve(), Path(run_root).resolve()
         case_dir = dataset / "inputs" / case_key
         raw = _read(case_dir / "case.json")
@@ -472,6 +480,7 @@ class ReplayRunner:
                 evidence,
                 window,
                 code_identity,
+                self.model_profile,
             ]
         )
         root = run_root / "cases" / case_key
@@ -497,7 +506,9 @@ class ReplayRunner:
         repository = SQLitePersistentRuntimeV2Repository(journal.path)
         case.frozen_inputs.update(
             w3_assets=assets,
-            w3_contracts=dict(w3_entry_version="w3-entry-v5", w3_contract_version=replay_contract,
+            # Replay uses file-delivered evidence even for the current direction schema.
+            # Do not opt into production's research MCP/market preparation entry.
+            w3_contracts=dict(w3_contract_version=replay_contract,
                 w3_trade_schema=contract_models(replay_contract)[0].model_json_schema(),
                 w3_operations_schema=contract_models(replay_contract)[1].model_json_schema()),
             projection=view,
@@ -525,6 +536,8 @@ class ReplayRunner:
                 if case.runtime_mode != "CLOSED"
                 else None,
             )
+        if self.model_profile is not None:
+            case.frozen_inputs["w3_execution_profile"] = dict(self.model_profile)
         freeze_case_profile(case)
         saved = repository.get_case(case.case_id)
         if saved:

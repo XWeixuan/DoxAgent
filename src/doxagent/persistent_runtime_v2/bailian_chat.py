@@ -23,7 +23,7 @@ def chat_body(request):
                 {"role": "assistant", "content": request.replay_parent[1]},
             )
         )
-    elif request.inherit_context or request.previous_response_id:
+    elif request.inherit_context:
         raise RuntimeResponsesError(
             "parent_context_missing",
             "GLM requires explicit frozen parent messages",

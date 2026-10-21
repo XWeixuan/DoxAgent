@@ -36,9 +36,9 @@ def test_closed_poll_once_and_slow_source_never_blocks_loop(tmp_path):
             repository=bus,
             service=service,
             _poll=poll,
-            _eligible_bindings=lambda *args, **kwargs: [(source, binding)],
-            _initialize_due_slots=lambda *args: None,
-            _update_capacity_alerts=lambda *args: None,
+            _prepare_poll_cycle=lambda at: ([(source, binding)], [(source, binding)], {
+                binding.binding_id: bus.get_poll_state(binding)
+            }),
             distribution_worker=None,
         )
         owner = BusOrchestration(journal)
@@ -82,9 +82,9 @@ def test_pending_sweep_does_not_block_realtime_poll(tmp_path):
             repository=bus,
             service=service,
             _poll=poll,
-            _eligible_bindings=lambda *args, **kwargs: [(source, binding)],
-            _initialize_due_slots=lambda *args: None,
-            _update_capacity_alerts=lambda *args: None,
+            _prepare_poll_cycle=lambda at: ([(source, binding)], [(source, binding)], {
+                binding.binding_id: bus.get_poll_state(binding)
+            }),
             distribution_worker=None,
         )
         journal.put_task(

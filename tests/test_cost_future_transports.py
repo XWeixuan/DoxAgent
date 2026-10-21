@@ -183,7 +183,8 @@ def test_glm_explicit_parent_context_and_profiles_stay_opt_in():
     assert "previous_response_id" not in body
     with pytest.raises(RuntimeResponsesError):
         chat_body(
-            replace(req, replay_parent=None, previous_response_id="response-from-other-provider")
+            replace(req, replay_parent=None, inherit_context=True,
+                    previous_response_id="response-from-other-provider")
         )
     profiles = bailian_glm_rounds(
         "https://workspace.cn-beijing.maas.aliyuncs.com/compatible-mode/v1"

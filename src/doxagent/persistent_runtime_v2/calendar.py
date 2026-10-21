@@ -16,10 +16,22 @@ class MarketCalendar:
         self.journal = journal
         self.name = name
         self._calendar: Any = None
+        self._version: str | None = None
 
     @property
     def calendar_version(self) -> str:
-        return f"{self.name}:{version('exchange-calendars')}"
+        if self._version is None:
+            self._version = f"{self.name}:{version('exchange-calendars')}"
+        return self._version
+
+    def _load_calendar(self):
+        if self._calendar is None:
+            import exchange_calendars  # type: ignore[import-untyped]
+
+            self._calendar = exchange_calendars.get_calendar(
+                self.name, start="2000-01-01", end="2040-12-31"
+            )
+        return self._calendar
 
     def is_session(self, day: date) -> bool:
         key = f"{self.name}:{day.isoformat()}"
@@ -28,13 +40,9 @@ class MarketCalendar:
             return bool(override["is_session"])
         cached = self.journal.get("calendar", key)
         try:
-            if self._calendar is None:
-                import exchange_calendars  # type: ignore[import-untyped]
-
-                self._calendar = exchange_calendars.get_calendar(
-                    self.name, start="2000-01-01", end="2040-12-31"
-                )
-            result = bool(self._calendar.is_session(day.isoformat()))
+            if cached is not None and cached.get("version") == self.calendar_version:
+                return bool(cached["session"])
+            result = bool(self._load_calendar().is_session(day.isoformat()))
             self.journal.set("calendar", key, {"session": result, "version": self.calendar_version})
             return result
         except Exception:
@@ -59,19 +67,28 @@ class MarketCalendar:
                 datetime.fromisoformat(override["open_at"]).astimezone(UTC),
                 datetime.fromisoformat(override["close_at"]).astimezone(UTC),
             )
+        cached = self.journal.get("calendar_bounds", key)
         try:
+            if cached and cached.get("version") == self.calendar_version:
+                return datetime.fromisoformat(cached["open"]), datetime.fromisoformat(
+                    cached["close"]
+                )
+            calendar = self._load_calendar()
             bounds = (
-                self._calendar.session_open(day.isoformat()).to_pydatetime(),
-                self._calendar.session_close(day.isoformat()).to_pydatetime(),
+                calendar.session_open(day.isoformat()).to_pydatetime(),
+                calendar.session_close(day.isoformat()).to_pydatetime(),
             )
             self.journal.set(
                 "calendar_bounds",
                 key,
-                {"open": bounds[0].isoformat(), "close": bounds[1].isoformat()},
+                {
+                    "open": bounds[0].isoformat(),
+                    "close": bounds[1].isoformat(),
+                    "version": self.calendar_version,
+                },
             )
             return bounds
         except Exception:
-            cached = self.journal.get("calendar_bounds", key)
             if not cached:
                 raise
             return datetime.fromisoformat(cached["open"]), datetime.fromisoformat(cached["close"])

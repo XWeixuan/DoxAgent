@@ -181,12 +181,8 @@ class RuntimeRecallOpenRouterClient:
         round_overrides: dict[str, Any] | None = None,
         vertex_project: str = "",
     ) -> None:
-        needs_openrouter = any(
-            model == HAIKU_MODEL and (round_overrides or {}).get(key, {}).get("provider", "openrouter") == "openrouter"
-            for key, model in (("W2:R1", w2_r1_model), ("W1:R1", w1_r1_model))
-        )
-        if needs_openrouter and not api_key:
-            raise ValueError("OPENROUTER_API_KEY is required for recall Haiku")
+        # A missing primary credential is handled as an attempt failure so the
+        # orchestrator can use its frozen Bailian fallback instead of failing startup.
         self.bailian = bailian
         self.model = bailian.model
         self.reasoning_effort = bailian.reasoning_effort
@@ -229,14 +225,39 @@ class RuntimeRecallOpenRouterClient:
             settings["rounds"].setdefault(key, {}).update(override)
         if self._vertex_project:
             settings["vertex_project"] = self._vertex_project
+        settings["recall_fallback"] = {
+            key: self.recall_fallback_settings(
+                {"timeout_seconds": settings["w12_timeout_seconds"], **config}
+            )
+            for key, config in settings["rounds"].items()
+            if key in {"W1:R1", "W2:R1"} and config.get("provider") == "openrouter"
+        }
         return settings
+
+    @staticmethod
+    def recall_fallback_settings(primary: dict[str, Any]) -> dict[str, Any]:
+        """Freeze a separate provider attempt; never hide two calls in one receipt."""
+        return dict(
+            model="qwen3.8-flash",
+            provider="bailian",
+            provider_endpoint=None,
+            reasoning_effort="low",
+            timeout_seconds=primary.get("timeout_seconds", 180),
+            transport="responses_json_schema",
+            cache_ttl=None,
+            provisional_cache_batch_size=None,
+        )
 
     def complete(self, request: RuntimeResponsesRequest[T]) -> RuntimeResponsesResult[T]:
         if request.provider == "vertex":
             if self._vertex is None:
                 import os
+
                 from .vertex import VertexClaudeClient
-                self._vertex = VertexClaudeClient(self._vertex_project or os.environ.get("DOXAGENT_VERTEX_PROJECT", ""))
+
+                self._vertex = VertexClaudeClient(
+                    self._vertex_project or os.environ.get("DOXAGENT_VERTEX_PROJECT", ""),
+                )
             return self._vertex.complete(request)
         if request.provider != "openrouter":
             return self.bailian.complete(request)

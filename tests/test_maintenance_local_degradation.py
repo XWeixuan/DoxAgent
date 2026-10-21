@@ -202,12 +202,12 @@ async def test_sweep_takes_next_slot_then_realtime_resumes(tmp_path, shared):
         repository=bus,
         service=service,
         _poll=poll,
-        _eligible_bindings=lambda *a, **kw: [(source, binding)],
-        _initialize_due_slots=lambda *a: None,
-        _update_capacity_alerts=lambda *a: None,
+        _prepare_poll_cycle=lambda at: ([(source, binding)], [(source, binding)], {
+            binding.binding_id: bus.get_poll_state(binding)
+        }),
         distribution_worker=None,
         _poll_distribution=poll,
-        distribution_due=lambda *args: True,
+        distribution_due=lambda *args, **kwargs: True,
         distribution=SimpleNamespace(
             pending_for_run=lambda *args: [], failures_for_run=lambda *args: []
         ),

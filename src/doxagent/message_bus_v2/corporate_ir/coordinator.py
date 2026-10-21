@@ -1,4 +1,5 @@
 import asyncio
+import json
 import logging
 import time
 from datetime import timedelta
@@ -35,19 +36,33 @@ class IrCoordinator:
             await asyncio.sleep(1)
 
     def _roster(self):
+        with self.repo.connection_scope():
+            return self._roster_snapshot()
+
+    def _roster_snapshot(self):
         source = self.repo.get_source(SOURCE_ID)
         if not source or not source.enabled:
             return []
         result = []
+        tickers = {s.ticker: s for s in self.repo.list_ticker_states()}
+        orchestration = self.scheduler.runtime_orchestration
+        pauses = {}
+        if orchestration:
+            with orchestration.journal.transaction(write=False) as db:
+                pauses = {
+                    r[0]: json.loads(r[1])
+                    for r in db.execute(
+                        "SELECT key,payload FROM runtime_values WHERE namespace='pause'"
+                    )
+                }
         for binding in self.repo.list_bindings(source_id=SOURCE_ID, active_only=True):
             if binding.source_id != SOURCE_ID or not binding.polling.enabled:
                 continue
-            ticker = self.repo.get_ticker_state(binding.ticker)
-            orchestration = self.scheduler.runtime_orchestration
+            ticker = tickers.get(binding.ticker)
             if (
                 not ticker
                 or ticker.status.value != "running"
-                or (orchestration and orchestration.journal.get("pause", binding.ticker) == "all")
+                or pauses.get(binding.ticker) == "all"
             ):
                 continue
             for spec in endpoints(source, binding):

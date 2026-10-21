@@ -4,7 +4,12 @@ import pytest
 
 from doxagent.codex_worker.local_client import LocalWorkspaceClient
 from doxagent.codex_worker.workspace_store import LocalWorkspaceStore
-from doxagent.persistent_runtime_v2.w3_contracts import OPERATIONS_PHASE, TRADE_PHASE, W3_CONTRACT, W3_LEGACY_CONTRACT
+from doxagent.persistent_runtime_v2.w3_contracts import (
+    OPERATIONS_PHASE,
+    TRADE_PHASE,
+    W3_CONTRACT,
+    W3_LEGACY_CONTRACT,
+)
 from doxagent.w3_backtest.legacy import LegacyReplayAdapter
 from doxagent.w3_backtest.runner import ReplayRunner, workspace_path
 from tests.test_runtime_policy_direction_usage import NOW, fixture_case
@@ -122,11 +127,19 @@ def test_replay_uses_production_two_stages_with_isolated_evidence(tmp_path, monk
 
 def test_unified_replay_uses_v5_and_preserves_web_broker_isolation(tmp_path, monkeypatch):
     dataset, runner, worker, _ = fixture(tmp_path, monkeypatch, contract=W3_CONTRACT)
+
+    async def forbidden_mcp(*args, **kwargs):
+        raise AssertionError("offline replay must retain file evidence delivery")
+
+    worker.bind_w3_context = forbidden_mcp
+    worker.prepare_w3_research = forbidden_mcp
     result = runner.run_case(dataset, "C1", tmp_path / "run")
     assert result["status"] == "SUCCEEDED", result["error"]
     assert result["decision"]["decision"] == "LONG"
     assert all(r.web_search_mode == "disabled" and not r.data_mcp_enabled for r in worker.requests)
     assert "policy" not in worker.requests[-1].output_schema["properties"]
+    assert all(not r.research_assets_mcp_enabled for r in worker.requests)
+    assert "evidence" in json.loads(worker.requests[1].prompt)
 
 
 def test_operations_failure_resumes_without_repeating_trade(tmp_path, monkeypatch):
@@ -260,3 +273,18 @@ def test_prior_intent_keeps_prior_judgement_but_omits_current_fill_state():
     assert item["execution"]["status"] == "UNKNOWN"
     assert match["policies"] == ["P1"]
     assert match["events"] == ['[null,"event","E7"]']
+
+
+@pytest.mark.parametrize("model,effort", [("gpt-6.1-sol", "medium"), ("gpt-6-luna", "max")])
+def test_replay_model_override_covers_both_phases_and_is_frozen(
+    tmp_path, monkeypatch, model, effort
+):
+    dataset, runner, worker, _ = fixture(tmp_path, monkeypatch, contract=W3_CONTRACT)
+    runner.model_profile = dict(model=model, effort=effort, provider=None)
+    result = runner.run_case(dataset, "C1", tmp_path / "run")
+    assert result["status"] == "SUCCEEDED", result["error"]
+    assert result["model"] == runner.model_profile
+    assert all(r.model == model and r.effort == effort for r in worker.requests)
+    runner.model_profile = dict(model="gpt-6-sol", effort="high", provider=None)
+    with pytest.raises(ValueError, match="create a new run"):
+        runner.run_case(dataset, "C1", tmp_path / "run")

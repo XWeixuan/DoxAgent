@@ -89,6 +89,7 @@ class _BorrowedConnection:
 class MessageBusV2Repository:
     def __init__(self, sqlite_path: str | Path) -> None:
         self._atomic_connection = ContextVar("bus_atomic_connection", default=None)
+        self._scope_connection = ContextVar("bus_scope_connection", default=None)
         self.path = Path(sqlite_path)
         from doxagent.v2_read.native_content import NativeContent
 
@@ -97,7 +98,7 @@ class MessageBusV2Repository:
         self._initialize()
 
     def _connect(self) -> sqlite3.Connection:
-        borrowed = self._atomic_connection.get()
+        borrowed = self._atomic_connection.get() or self._scope_connection.get()
         if borrowed is not None:
             return _BorrowedConnection(borrowed)
         connection = sqlite3.connect(
@@ -112,6 +113,25 @@ class MessageBusV2Repository:
         connection.execute("pragma foreign_keys = ON")
         connection.execute("pragma busy_timeout = 30000")
         return connection
+
+    @contextmanager
+    def connection_scope(self) -> Iterator[sqlite3.Connection]:
+        """Reuse one connection inside a synchronous owner-thread work unit.
+
+        Reads remain autocommit; writes still use their existing short transactions.
+        Never keep this scope open across async or external I/O.
+        """
+        existing = self._atomic_connection.get() or self._scope_connection.get()
+        if existing is not None:
+            yield existing
+            return
+        connection = self._connect()
+        token = self._scope_connection.set(connection)
+        try:
+            yield connection
+        finally:
+            self._scope_connection.reset(token)
+            connection.close()
 
     @contextmanager
     def transaction(self) -> Iterator[sqlite3.Connection]:

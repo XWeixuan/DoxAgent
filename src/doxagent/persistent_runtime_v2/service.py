@@ -37,7 +37,6 @@ from doxagent.workflows.codex_document3.schema import (
     RuntimePolicyRecord,
 )
 
-from .w3_contracts import is_two_phase_contract, is_unified_contract
 from . import policy_consumption
 from .execution_bundle import ExecutionBundles
 from .journal import LeaseLost, RuntimeJournal, RuntimeStopping, digest, is_sqlite_contention
@@ -93,6 +92,7 @@ from .transport import (
 )
 from .w2_alignment import W2_CONTRACT, assessment, validate_alignment
 from .w3 import W3Agent, W3Error
+from .w3_contracts import is_two_phase_contract, is_unified_contract
 
 if TYPE_CHECKING:
     from .projection import RuntimeV2ProjectionOutbox
@@ -662,6 +662,7 @@ class PersistentRuntimeV2Service:
             # Fresh, unbundled admissions use the current input contract too.
             # Existing bundles/previously frozen Cases retain their old format.
             case.frozen_inputs["models"].setdefault("w1_r1_input_view", "provisional-md-v1")
+            case.frozen_inputs["models"].setdefault("w1_r2_input_view", "w1-r2-fact-view-v1")
         if self.journal:
             ControlRepository(self.journal).admit(
                 case.case_id,
@@ -912,25 +913,32 @@ class PersistentRuntimeV2Service:
                     "W1 R2 returned a reference ID that was not loaded"
                 )
 
+        event_details = {
+            "canonical_events": [_w1_canonical_event_business_payload(e) for e in details.events],
+            "provisional_events": [
+                _w1_provisional_business_payload(p) for p in provisional_details
+            ],
+        }
+        r2_payload = {
+            "source_message": case.source.snapshot.model_dump(mode="json"),
+            "event_details": event_details,
+        }
+        reference_context = {}
+        if case.frozen_inputs.get("models", {}).get("w1_r2_input_view") == "w1-r2-fact-view-v1":
+            from .w1_r2_context import build_input
+
+            r2_payload, diagnostics = build_input(r2_payload["source_message"], event_details)
+            reference_context = {"event_details": event_details, "diagnostics": diagnostics}
         r2, r2_response_id = self._call_with_retry(
             case=case,
             lane="W1",
             round_name="R2",
             round_prompt=self.prompts.w1_r2,
-            payload={
-                "source_message": case.source.snapshot.model_dump(mode="json"),
-                "event_details": {
-                    "canonical_events": [
-                        _w1_canonical_event_business_payload(event) for event in details.events
-                    ],
-                    "provisional_events": [
-                        _w1_provisional_business_payload(item) for item in provisional_details
-                    ],
-                },
-            },
+            payload=r2_payload,
+            reference_context=reference_context,
             output_model=W1NoveltyResult,
             schema_name="w1_novelty_result",
-            cache_context_keys=("event_details",),
+            cache_context_keys=("known_fact_view",) if reference_context else ("event_details",),
             previous_response_id=r1_response_id,
             validate=validate,
         )
@@ -968,8 +976,11 @@ class PersistentRuntimeV2Service:
                 update={"policies": [p for p in projection.policies if p.policy_id in allowed]}
             )
         else:
-            recall_projection = (projection if is_unified_contract(case.w3_contract_version)
-                                 else self._without_consumed_policies(projection))
+            recall_projection = (
+                projection
+                if is_unified_contract(case.w3_contract_version)
+                else self._without_consumed_policies(projection)
+            )
         projected_ids = {item.policy_id for item in recall_projection.policies}
 
         def validate_r1(value: W2Round1RecallResult) -> None:
@@ -1054,7 +1065,8 @@ class PersistentRuntimeV2Service:
                                 if p["policy_id"] in requested_ids
                             ]
                         }
-                        if isinstance(details, PolicyDetailSnapshotV3) and not is_unified_contract(case.w3_contract_version)
+                        if isinstance(details, PolicyDetailSnapshotV3)
+                        and not is_unified_contract(case.w3_contract_version)
                         else {}
                     ),
                 },
@@ -1225,6 +1237,7 @@ class PersistentRuntimeV2Service:
         previous_response_id: str | None = None,
         inherit_context: bool = False,
         validate: Callable[[T], None] | None = None,
+        reference_context: dict[str, Any] | None = None,
     ) -> tuple[T, str]:
         model_settings = self._round_model_settings(case, lane, round_name)
         turns = [
@@ -1279,6 +1292,8 @@ class PersistentRuntimeV2Service:
                     "cache_context_keys": list(cache_context_keys),
                     "schema_hash": digest(output_model.model_json_schema()),
                     "inherit_context": inherit_context,
+                    "reference_context": reference_context or {},
+                    "model_settings": model_settings,
                 }
                 self.journal.set("round_inputs", round_key, frozen)
             schema = output_model.model_json_schema()
@@ -1301,15 +1316,53 @@ class PersistentRuntimeV2Service:
             previous_response_id = frozen["previous_response_id"]
             cache_context_keys = tuple(frozen.get("cache_context_keys", cache_context_keys))
         else:
-            frozen = {"instructions": prompt_set.instructions(frozen_round_prompt)}
-        if not self.journal:
-            frozen.update(
-                payload=payload,
-                previous_response_id=previous_response_id,
-                cache_context_keys=list(cache_context_keys),
-                inherit_context=inherit_context,
+            saved_round = case.frozen_inputs.get("round_inputs", {}).get(f"{lane}:{round_name}")
+            frozen = (
+                saved_round
+                if saved_round is not None
+                else {
+                    "instructions": prompt_set.instructions(frozen_round_prompt),
+                    "payload": payload,
+                    "previous_response_id": previous_response_id,
+                    "cache_context_keys": list(cache_context_keys),
+                    "inherit_context": inherit_context,
+                    "reference_context": reference_context or {},
+                    "model_settings": model_settings,
+                }
             )
+            payload = frozen["payload"]
+            previous_response_id = frozen.get("previous_response_id")
+            cache_context_keys = tuple(frozen.get("cache_context_keys", cache_context_keys))
+            inherit_context = frozen.get("inherit_context", False)
+        model_settings = frozen.get("model_settings", model_settings)
         case.frozen_inputs.setdefault("round_inputs", {})[f"{lane}:{round_name}"] = frozen
+        # Provider recovery is attempt-local: immutable business inputs/prompts
+        # remain unchanged, and every paid request retains its own provider receipt.
+        recall_fallback = None
+        if (
+            lane in {"W1", "W2"}
+            and round_name == "R1"
+            and model_settings.get("provider") == "openrouter"
+        ):
+            recall_fallback = (
+                case.frozen_inputs.get("models", {}).get("recall_fallback", {}).get(f"{lane}:R1")
+            )
+            if recall_fallback is None and hasattr(self.responses, "recall_fallback_settings"):
+                recall_fallback = self.responses.recall_fallback_settings(model_settings)
+        fallback_codes = {
+            "provider_auth_failed",
+            "provider_balance_unavailable",
+            "provider_rate_limited",
+            "provider_timeout",
+            "provider_request_failed",
+            "provider_stream_failed",
+            "incomplete_structured_output",
+        }
+        fallback_state = (
+            self.journal.get("round_provider_fallback", round_key)
+            if self.journal
+            else case.frozen_inputs.get("round_provider_fallback", {}).get(round_key)
+        )
         recovery = (
             self.journal.get("round_context_recovery", round_key)
             if self.journal
@@ -1335,6 +1388,28 @@ class PersistentRuntimeV2Service:
                     baseline = len(turns)
                     self.journal.set("round_budget", key, baseline)
                 budget = baseline + self.max_retry_attempts + 1
+
+        def activate_fallback(trigger_attempt: int, error_code: str) -> dict[str, Any]:
+            state = dict(
+                model_settings=recall_fallback,
+                trigger_attempt=trigger_attempt,
+                trigger_error=error_code,
+                retry_budget=trigger_attempt + self.max_retry_attempts + 1,
+            )
+            if self.journal:
+                self.journal.set("round_provider_fallback", round_key, state)
+            case.frozen_inputs.setdefault("round_provider_fallback", {})[round_key] = state
+            return state
+
+        if fallback_state is None and recall_fallback and turns:
+            latest = turns[-1]
+            if latest.provider == "openrouter" and latest.error_code in fallback_codes:
+                fallback_state = activate_fallback(len(turns), latest.error_code)
+        if fallback_state:
+            model_settings = fallback_state["model_settings"]
+            budget = max(budget, fallback_state["retry_budget"])
+            if len(turns) == fallback_state["trigger_attempt"]:
+                last_error = None
         if len(turns) >= budget:
             latest = turns[-1]
             raise RuntimeResponsesError(
@@ -1342,7 +1417,9 @@ class PersistentRuntimeV2Service:
                 latest.error_message or "Runtime model retry budget exhausted",
                 retryable=False,
             )
-        for attempt in range(len(turns) + 1, budget + 1):
+        attempt = len(turns)
+        while attempt < budget:
+            attempt += 1
             if self.journal:
                 ControlRepository(self.journal).dispatch(
                     f"{round_key}:{attempt}", case.ticker, case_id=case.case_id
@@ -1350,7 +1427,9 @@ class PersistentRuntimeV2Service:
             started = perf_counter()
             started_at = utc_now()
             result = None
-            stateless_parent = model_settings["transport"] == "chat_completions_json_object" and inherit_context
+            stateless_parent = (
+                model_settings["transport"] == "chat_completions_json_object" and inherit_context
+            )
             context_mode = (
                 "REPLAY_PARENT"
                 if recovery or stateless_parent
@@ -1359,7 +1438,9 @@ class PersistentRuntimeV2Service:
                 else "EXPLICIT"
             )
             try:
-                replay_parent = self._parent_replay(case, lane) if recovery or stateless_parent else None
+                replay_parent = (
+                    self._parent_replay(case, lane) if recovery or stateless_parent else None
+                )
                 result = self.responses.complete(
                     RuntimeResponsesRequest(
                         model=model_settings["model"],
@@ -1375,6 +1456,7 @@ class PersistentRuntimeV2Service:
                         instructions=frozen["instructions"]
                         + (_retry_correction_context(last_error) if last_error else ""),
                         payload=payload,
+                        reference_context=frozen.get("reference_context", {}),
                         output_model=output_model,
                         schema_name=schema_name,
                         cache_context_keys=cache_context_keys,
@@ -1382,7 +1464,9 @@ class PersistentRuntimeV2Service:
                         inherit_context=False if stateless_parent else inherit_context,
                         replay_parent=replay_parent,
                         metadata={
-                            "vertex_project": case.frozen_inputs.get("models", {}).get("vertex_project", ""),
+                            "vertex_project": case.frozen_inputs.get("models", {}).get(
+                                "vertex_project", ""
+                            ),
                             "runtime": "persistent_v2",
                             "case_id": case.case_id,
                             "lane": lane,
@@ -1405,6 +1489,7 @@ class PersistentRuntimeV2Service:
                     result=result,
                     started_at=started_at,
                     context_mode=context_mode,
+                    model_settings=model_settings,
                 )
                 return result.value, result.response_id
             except ValidationError as exc:
@@ -1422,6 +1507,9 @@ class PersistentRuntimeV2Service:
             except RuntimeResponsesError as exc:
                 error = exc
             last_error = error
+            switch_provider = (
+                not fallback_state and recall_fallback is not None and error.code in fallback_codes
+            )
             self.repository.append_turn(
                 RuntimeModelTurn(
                     case_id=case.case_id,
@@ -1431,7 +1519,7 @@ class PersistentRuntimeV2Service:
                     context_mode=context_mode,
                     status=(
                         RuntimeTechnicalStatus.PENDING_RETRY
-                        if error.retryable and attempt < budget
+                        if switch_provider or (error.retryable and attempt < budget)
                         else RuntimeTechnicalStatus.UNAVAILABLE
                         if not error.retryable
                         else RuntimeTechnicalStatus.FAILED
@@ -1465,6 +1553,12 @@ class PersistentRuntimeV2Service:
                     ),
                 )
             )
+            if switch_provider:
+                fallback_state = activate_fallback(attempt, error.code)
+                model_settings = fallback_state["model_settings"]
+                budget = fallback_state["retry_budget"]
+                last_error = None
+                continue
             if error.code == "provider_previous_response_unavailable" and inherit_context:
                 parent = next(
                     (
@@ -1542,6 +1636,7 @@ class PersistentRuntimeV2Service:
         previous_response_id: str | None,
         result: RuntimeResponsesResult[Any],
         started_at: datetime,
+        model_settings: dict[str, Any],
         context_mode: str = "EXPLICIT",
     ) -> None:
         self.repository.append_turn(
@@ -1554,7 +1649,7 @@ class PersistentRuntimeV2Service:
                 context_mode=context_mode,
                 response_id=result.response_id,
                 previous_response_id=previous_response_id,
-                **self._round_model_settings(case, lane, round_name),
+                **model_settings,
                 input_tokens=result.input_tokens,
                 output_tokens=result.output_tokens,
                 reasoning_tokens=result.reasoning_tokens,

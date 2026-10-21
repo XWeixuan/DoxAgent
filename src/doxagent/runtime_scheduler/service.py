@@ -52,7 +52,7 @@ class RuntimeModeUnavailable(RuntimeError):
 
 
 class UnifiedRuntimeSchedulerService:
-    """Consume streams under an immutable admitted activation; documents are initialized separately."""
+    """Consume streams under an admitted activation; documents initialize separately."""
 
     def __init__(
         self,
@@ -67,6 +67,7 @@ class UnifiedRuntimeSchedulerService:
         self.message_bus_v2_service = message_bus_v2_service
         self.message_bus_v2_enabled = message_bus_v2_enabled
         self.initialization_control_path: str | None = None
+        self._runtime_admission_proofs: dict[str, tuple[str, int | None, str | None]] = {}
 
     @classmethod
     def from_settings(
@@ -109,10 +110,16 @@ class UnifiedRuntimeSchedulerService:
             raise ValueError("Activated Runtime Index/Projection is unavailable")
         if bus.repository.get_ticker_state(normalized) is None:
             raise ValueError("Message Bus must admit the ticker before Runtime")
-        if isinstance(runtime.journal, RuntimeJournal) and isinstance(loader, ActivatedRuntimeInputs):
+        if isinstance(runtime.journal, RuntimeJournal) and isinstance(
+            loader, ActivatedRuntimeInputs
+        ):
             from doxagent.persistent_runtime_v2.policy_consumption import admit_revision
-            admit_revision(runtime.journal, revision=loader.control.revision(revision_id),
-                           policy_repository=loader.policies._policy_sets)
+
+            admit_revision(
+                runtime.journal,
+                revision=loader.control.revision(revision_id),
+                policy_repository=loader.policies._policy_sets,
+            )
         initial_offset = bus.initialize_runtime_cursor(RUNTIME_V2_CONSUMER_ID, normalized)
         current_time = _utc(now)
         state = self.repository.get_state(normalized) or TickerRunState(
@@ -153,6 +160,7 @@ class UnifiedRuntimeSchedulerService:
         *,
         now: datetime | None = None,
         event_limit: int = 100,
+        include_detail: bool = True,
     ) -> list[TickerRunDetail]:
         control_path = getattr(self, "initialization_control_path", None)
         admitted: set[str] | None = None
@@ -174,10 +182,17 @@ class UnifiedRuntimeSchedulerService:
         with consumer_heartbeat(
             InitializationRepository(control_path) if control_path else None, "runtime", usable
         ):
-            return self._run_admitted_once(admitted, now=now, event_limit=event_limit)
+            return self._run_admitted_once(
+                admitted, now=now, event_limit=event_limit, include_detail=include_detail
+            )
 
     def _run_admitted_once(
-        self, admitted: set[str] | None, *, now: datetime | None, event_limit: int
+        self,
+        admitted: set[str] | None,
+        *,
+        now: datetime | None,
+        event_limit: int,
+        include_detail: bool = True,
     ) -> list[TickerRunDetail]:
         details: list[TickerRunDetail] = []
         for state in self.repository.list_states():
@@ -189,7 +204,11 @@ class UnifiedRuntimeSchedulerService:
                 continue
             if state.status not in RUNNABLE_STATUSES:
                 continue
-            details.append(self.tick_ticker(state.ticker, now=now, event_limit=event_limit))
+            detail = self.tick_ticker(
+                state.ticker, now=now, event_limit=event_limit, include_detail=include_detail
+            )
+            if detail is not None:
+                details.append(detail)
         return details
 
     def tick_ticker(
@@ -198,7 +217,8 @@ class UnifiedRuntimeSchedulerService:
         *,
         now: datetime | None = None,
         event_limit: int = 100,
-    ) -> TickerRunDetail:
+        include_detail: bool = True,
+    ) -> TickerRunDetail | None:
         normalized = _ticker(ticker)
         state = self.repository.get_state(normalized)
         if state is None:
@@ -211,7 +231,7 @@ class UnifiedRuntimeSchedulerService:
                 "Ticker tick skipped because runtime is not runnable.",
                 payload={"status": state.status.value},
             )
-            return self.detail(normalized, now=current_time)
+            return self.detail(normalized, now=current_time) if include_detail else None
         phase = market_session_phase(current_time)
         state = state.model_copy(
             update={"session_phase": phase, "updated_at": current_time},
@@ -401,7 +421,7 @@ class UnifiedRuntimeSchedulerService:
             deep=True,
         )
         self.repository.upsert_state(state)
-        return self.detail(normalized, now=current_time)
+        return self.detail(normalized, now=current_time) if include_detail else None
 
     def detail(
         self,

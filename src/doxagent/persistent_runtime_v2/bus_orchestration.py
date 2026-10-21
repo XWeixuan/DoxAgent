@@ -22,9 +22,6 @@ class BusOrchestration:
 
     async def run_once(self, scheduler: Any) -> list[Any]:
         now = self.journal.clock()
-        eligible = await self._storage(scheduler, scheduler._eligible_bindings, now)
-        await self._storage(scheduler, scheduler._initialize_due_slots, eligible, now)
-        await self._storage(scheduler, scheduler._update_capacity_alerts, eligible)
         results = []
         for key, running in list(self._inflight.items()):
             if running.done():
@@ -54,8 +51,10 @@ class BusOrchestration:
                             raise
                 finally:
                     del self._inflight[key]
-        roster_eligible = await self._storage(
-            scheduler, scheduler._eligible_bindings, now, include_inactive_hours=True
+        # Completed tasks have committed their next due time. Read it only after
+        # removing them; tasks completing later retain their in-flight exclusion.
+        eligible, roster_eligible, poll_states = await self._storage(
+            scheduler, scheduler._prepare_poll_cycle, now
         )
         shared_realtime: dict[str, tuple[SourceDefinition, list[TickerSourceBinding]]] = {}
         # All bindings use the same semantic day. Do not perform two synchronous
@@ -153,9 +152,7 @@ class BusOrchestration:
                 if maintenance_enabled():
                     maintenance_scheduler(
                         binding,
-                        await self._storage(
-                            scheduler, scheduler.repository.get_poll_state, binding
-                        ),
+                        poll_states[binding.binding_id],
                         now,
                         binding.binding_id in self._inflight,
                     )
@@ -166,7 +163,7 @@ class BusOrchestration:
                         continue
                     shared_realtime.setdefault(source.source_id, (source, []))[1].append(binding)
                     continue
-                state = await self._storage(scheduler, scheduler.repository.get_poll_state, binding)
+                state = poll_states[binding.binding_id]
                 if state.next_dispatch_at is None or state.next_dispatch_at <= now:
                     if binding.binding_id not in self._inflight:
                         self._inflight[binding.binding_id] = asyncio.create_task(
@@ -174,8 +171,8 @@ class BusOrchestration:
                         )
         for source, bindings in shared_realtime.values():
             key = f"shared:{source.source_id}"
-            if key not in self._inflight and await self._storage(
-                scheduler, scheduler.distribution_due, bindings, now
+            if key not in self._inflight and scheduler.distribution_due(
+                bindings, now, poll_states=poll_states
             ):
                 self._inflight[key] = asyncio.create_task(
                     asyncio.wait_for(

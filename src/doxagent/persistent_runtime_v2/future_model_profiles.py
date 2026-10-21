@@ -1,7 +1,7 @@
 """Explicit opt-in manifests. No factory imports these defaults automatically."""
 
 
-def vertex_recall_rounds():
+def vertex_recall_rounds(*, w1_timeout=120, w2_timeout=180, provisional_batch_size=5):
     return {
         f"{lane}:R1": {
             "model": "claude-haiku-5-5",
@@ -10,8 +10,8 @@ def vertex_recall_rounds():
             "provider_endpoint": "global",
             "cache_ttl": "1h",
             "reasoning_effort": "high",
-            "timeout_seconds": 180,
-            **({"provisional_cache_batch_size": 5} if lane == "W1" else {}),
+            "timeout_seconds": w1_timeout if lane == "W1" else w2_timeout,
+            **({"provisional_cache_batch_size": provisional_batch_size} if lane == "W1" else {}),
         }
         for lane in ("W1", "W2")
     }
@@ -43,7 +43,15 @@ def configured_rounds(settings):
     if profile in {"vertex_recall", "vertex_glm"}:
         if not settings.vertex_project:
             raise ValueError("Vertex profile requires DOXAGENT_VERTEX_PROJECT")
-        result.update(vertex_recall_rounds())
+        result.update(
+            vertex_recall_rounds(
+                w1_timeout=getattr(settings, "persistent_runtime_v2_timeout_seconds", 120),
+                w2_timeout=getattr(settings, "persistent_runtime_v2_w2_r1_timeout_seconds", 180),
+                provisional_batch_size=getattr(
+                    settings, "persistent_runtime_v2_w1_provisional_cache_batch_size", 5
+                ),
+            )
+        )
     if profile in {"bailian_glm", "vertex_glm"}:
         result.update(bailian_glm_rounds(settings.bailian_glm_endpoint))
     return result

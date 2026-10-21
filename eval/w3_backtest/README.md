@@ -1,3 +1,5 @@
+> Gold更新（2026-10-21）：用户最终图片标注已补齐36条，现有73条全部可评分（7 LONG、4 SHORT、62 NO_TRADE）。下文首轮基线的37条评分/29条空白/7条条件结果是历史口径；最终标注出处与原Gold备份见 [录入回执](annotation/20261021/final_gold/README.md)。
+
 # 本地 W3 历史情景回放
 
 入口为 `python -m doxagent.w3_backtest`，从仓库根目录运行。此入口不接入生产 scheduler、HTTP Worker 或交易执行器。本地 SQLite 记录模拟意图/候选、WATCH、PIN、Delta 和阶段回执。
@@ -62,3 +64,24 @@ Windows 的 read-only 进程策略会拦截 `Get-Content`，因此本地 SDK 使
 本仓库保存两个冻结数据集的输入、版本研究、Gold、来源时间审核和 `reports/baseline-20261014/` 的报告/汇总/最终审计。SDK 私有状态、逐案运行数据库、重复原始远端导出与准备阶段原始模型回执继续留在原本机位置。重新回放只需已冻结输入；重新准备需要远端与模型账号权限。原始完整 run 仍在 `D:/DoxAgentBacktest/runs/baseline-20261014/`，这里的报告归档不作为可 resume 的运行目录。
 
 首次重跑先检查可用空间；建议用绝对 `--run-id` 指向充足空间，并为当前进程设置 `LOCALAPPDATA`、`TEMP/TMP`，不覆盖原 baseline。当前生产默认能力保持不变；MAIN 的维护 MCP 60 秒/W3 90 秒预算和 writer 所有权修复均保留。
+
+## 最新提示词离线评测（2026-10-21发起）
+
+最新提示词的 `contract.json` 与 AGENTS.md、skills/skill.md 一起冻结；它只选择输出schema，不启用生产研究MCP。离线runner不声明生产的w3-entry-v5能力入口，继续从文件读取旧研究、预采集Web和K线，因此可以使用现行LONG/SHORT/NO_TRADE结构而不依赖新增MCP或行情快照。任务环境明确以预采集证据替代网络，不修改被测提示词。
+
+本轮run为 `D:/DoxAgentBacktest/runs/latest-prompt-20261021/`，启动脚本 `D:/DoxAgentBacktest/run_prompt_20261021.py`。完整Gold快照位于run根目录，仅供宿主评分，不复制给模型。普通case依现行选择器为gpt-6-luna/max；Policy相关case依现行选择器为gpt-6.1-sol/medium，以实际model_selection回执为准。
+
+```powershell
+.venv/Scripts/python.exe D:/DoxAgentBacktest/run_prompt_20261021.py resume
+.venv/Scripts/python.exe D:/DoxAgentBacktest/run_prompt_20261021.py report
+```
+
+上述命令面向该次已冻结运行；其他新版提示词应创建不同的run-id及独立快照，勿覆盖本轮快照或旧基线。
+
+本轮已完成：73/73两阶段成功，完整Gold匹配61/73（83.56%），误交易4、漏交易8、方向错误0。11个交易正样本命中3个；旧基线同Gold为63/73，本轮下降2.74个百分点。详情见 [完整评测回执](reports/latest-prompt-20261021/evaluation_receipt.md)。
+
+## 模型对照
+
+本地入口可用 `run --model gpt-6.1-sol --effort medium --case <key> ...` 覆盖所选Case的Template/决策/运营模型；覆盖进入run与Case身份，resume保持原配置。省略参数仍沿用现行Case模型选择，不影响生产。
+
+2026-10-22对上一轮12个错误Case完成同提示词/输入/Gold的Sol medium重测：纠正4个，误交易4→1、漏交易8→7，12条两阶段均成功。详见[评测回执](reports/sol61-medium-20261022/evaluation_receipt.md)。这不是全量73条的Sol准确率。

@@ -128,6 +128,9 @@ def admit_runtime_revisions(
     scheduler: UnifiedRuntimeSchedulerService,
 ) -> set[str]:
     ready: set[str] = set()
+    proofs = getattr(scheduler, "_runtime_admission_proofs", None)
+    if proofs is None:
+        proofs = scheduler._runtime_admission_proofs = {}
     for revision in control.active_revisions():
         ticker, identity = revision["ticker"], revision["revision_id"]
         if not control.revision_acknowledged(ticker, identity, "bus"):
@@ -145,8 +148,36 @@ def admit_runtime_revisions(
                 desired and desired.get("admission_allowed")
             ):
                 continue
+        proof = (
+            (identity, desired.get("epoch"), desired.get("requested_mode"))
+            if desired
+            else (identity, None, None)
+        )
         try:
-            scheduler.admit_activation(ticker, identity)
+            current = bool(
+                state
+                and state.status in {TickerRunStatus.RUNNING, TickerRunStatus.DEGRADED}
+                and state.metadata.get("activation_revision_id") == identity
+                and state.metadata.get("v2_control_epoch") == proof[1]
+                and state.metadata.get("v2_control_mode") == proof[2]
+                and proofs.get(ticker) == proof
+                and control.revision_acknowledged(ticker, identity, "runtime")
+            )
+            if current and isinstance(journal, RuntimeJournal):
+                from doxagent.persistent_runtime_v2.policy_consumption import get_value
+
+                with journal.transaction(write=False) as db:
+                    current = (
+                        get_value(db, "policy_authorization_head", ticker) == identity
+                        and db.execute(
+                            "SELECT 1 FROM runtime_values WHERE namespace=? AND key=?",
+                            ("policy_authorization_applied", identity),
+                        ).fetchone()
+                        is not None
+                    )
+            if not current:
+                proofs.pop(ticker, None)
+                scheduler.admit_activation(ticker, identity)
         except Exception as exc:
             control.admission_error(ticker, identity, "runtime", exc)
             logging.getLogger(__name__).warning(
@@ -154,5 +185,6 @@ def admit_runtime_revisions(
             )
             continue
         if control.acknowledge_revision(ticker, identity, "runtime"):
+            proofs[ticker] = proof
             ready.add(ticker)
     return ready

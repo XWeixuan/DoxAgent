@@ -733,7 +733,9 @@ class CodexW3AgentRunner:
         saved = self._journal.get("w3_citation_scope", case.case_id)
         if saved is None:
             frozen = self._journal.get("round_inputs", case.case_id + ":W1:R2", {})
-            details = frozen.get("payload", {}).get("event_details", {})
+            from .w1_r2_context import frozen_event_details
+
+            details = frozen_event_details(frozen)
             events = {}
             for event in details.get("canonical_events", []):
                 identity = event.get("event_id")

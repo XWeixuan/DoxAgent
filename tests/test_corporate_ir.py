@@ -285,8 +285,10 @@ def test_ir_does_not_consult_calendar_and_wire_keeps_internal_states(tmp_path):
     from doxagent.message_bus_v2.corporate_ir.repository import aggregate
 
     repo, bus, source, binding, adapter, coordinator = configured(tmp_path)
+    from doxagent.persistent_runtime_v2.journal import RuntimeJournal
+
     coordinator.scheduler.runtime_orchestration = SimpleNamespace(
-        journal=SimpleNamespace(get=lambda *a: None)
+        journal=RuntimeJournal(tmp_path / "runtime.db")
     )
     assert len(coordinator._roster()) == 2
     now = utc_now()

@@ -424,11 +424,12 @@ def test_service_runs_parallel_hot_path_then_w3_owned_delta(tmp_path: Path) -> N
     w1_r2_request = next(
         request for request in responses.calls if request.output_model is W1NoveltyResult
     )
-    assert w1_r2_request.payload["event_details"] == {
+    assert w1_r2_request.reference_context["event_details"] == {
         "canonical_events": [],
         "provisional_events": [],
     }
-    assert w1_r2_request.cache_context_keys == ("event_details",)
+    assert set(w1_r2_request.payload) == {"known_fact_view", "source_message"}
+    assert w1_r2_request.cache_context_keys == ("known_fact_view",)
 
     assert service.process_pending_effects() == 1
     completed = repository.get_case(adjudicated.case_id)

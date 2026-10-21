@@ -85,9 +85,10 @@ class RuntimeCoordinator:
     def reconcile(self, ticker: str, now: datetime | None = None) -> None:
         at = now or self.journal.clock()
         day = semantic_day(at)
-        state = self.journal.get("schedule", ticker)
-        if state is None:
-            state = {"last_boundary": day.isoformat(), "started_at": at.isoformat()}
+        previous_state = self.journal.get("schedule", ticker)
+        state = dict(previous_state) if previous_state is not None else {
+            "last_boundary": day.isoformat(), "started_at": at.isoformat()
+        }
         last = date.fromisoformat(state["last_boundary"])
         # Bound catch-up per tick; never shift an existing schedule's cutoff.
         for offset in range(1, min((day - last).days, 32) + 1):
@@ -134,7 +135,8 @@ class RuntimeCoordinator:
                 )
             state["last_boundary"] = current.isoformat()
         state["mode"], state["closed_cycle_id"] = self.mode(ticker, at)
-        self.journal.set("schedule", ticker, state)
+        if state != previous_state:
+            self.journal.set("schedule", ticker, state)
 
     def _schedule(
         self,

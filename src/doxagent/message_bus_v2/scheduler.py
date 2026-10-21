@@ -32,6 +32,7 @@ from doxagent.message_bus_v2.schema import (
     OperationalAlert,
     PollContext,
     PollExecutionResult,
+    PollState,
     PollStatus,
     SchedulerConstraints,
     SharedPollContext,
@@ -142,12 +143,10 @@ class GlobalPollScheduler:
         if orchestration is not None:
             return await orchestration.run_once(self)
         now = utc_now()
-        eligible = await self.storage_call(self._eligible_bindings, now)
-        await self.storage_call(self._initialize_due_slots, eligible, now)
-        await self.storage_call(self._update_capacity_alerts, eligible)
+        eligible, _, poll_states = await self.storage_call(self._prepare_poll_cycle, now)
         due: list[tuple[SourceDefinition, TickerSourceBinding]] = []
         for source, binding in eligible:
-            state = await self.storage_call(self.repository.get_poll_state, binding)
+            state = poll_states[binding.binding_id]
             if state.next_dispatch_at is None or state.next_dispatch_at <= now:
                 due.append((source, binding))
         shared: dict[str, tuple[SourceDefinition, list[TickerSourceBinding]]] = {}
@@ -163,7 +162,7 @@ class GlobalPollScheduler:
             if source.acquisition_mode is AcquisitionMode.BY_DISTRIBUTION:
                 shared.setdefault(source.source_id, (source, []))[1].append(binding)
         for source, bindings in shared.values():
-            if await self.storage_call(self.distribution_due, bindings, now):
+            if self.distribution_due(bindings, now, poll_states=poll_states):
                 tasks.append(asyncio.create_task(self._poll_distribution(source, bindings, now)))
         results = await asyncio.gather(*tasks) if tasks else []
         if self.distribution_worker is not None and (
@@ -226,10 +225,31 @@ class GlobalPollScheduler:
             result.append((source, binding))
         return result
 
+    def _prepare_poll_cycle(self, now: datetime):
+        """One storage work unit, fresh each cycle; no connection escapes to I/O."""
+        with self.repository.connection_scope():
+            roster = self._eligible_bindings(now, include_inactive_hours=True)
+            eligible = [(s, b) for s, b in roster if b.polling.active_at(now)]
+            states = {p.binding_id: p for p in self.repository.list_poll_states()}
+            for _, binding in roster:
+                states.setdefault(
+                    binding.binding_id,
+                    PollState(
+                        binding_id=binding.binding_id,
+                        source_id=binding.source_id,
+                        ticker=binding.ticker,
+                    ),
+                )
+            self._initialize_due_slots(eligible, now, poll_states=states)
+            self._update_capacity_alerts(eligible)
+        return eligible, roster, states
+
     def _initialize_due_slots(
         self,
         bindings: list[tuple[SourceDefinition, TickerSourceBinding]],
         now: datetime,
+        *,
+        poll_states: dict[str, PollState] | None = None,
     ) -> None:
         grouped: dict[str, list[tuple[SourceDefinition, TickerSourceBinding]]] = defaultdict(list)
         for pair in bindings:
@@ -254,19 +274,24 @@ class GlobalPollScheduler:
             group_state = self.repository.get_scheduler_group_state(group)
             rephase = group_state.schedule_signature != signature
             for index, (_, binding) in enumerate(ordered):
-                state = self.repository.get_poll_state(binding)
+                state = (
+                    poll_states[binding.binding_id]
+                    if poll_states is not None
+                    else self.repository.get_poll_state(binding)
+                )
                 if state.next_dispatch_at is not None and not rephase:
                     continue
                 phase = binding.polling.target_interval_seconds * index / max(count, 1)
-                self.repository.save_poll_state(
-                    state.model_copy(
-                        update={
-                            "target_due_at": now + timedelta(seconds=phase),
-                            "next_dispatch_at": now + timedelta(seconds=phase),
-                            "updated_at": now,
-                        }
-                    )
+                updated = state.model_copy(
+                    update={
+                        "target_due_at": now + timedelta(seconds=phase),
+                        "next_dispatch_at": now + timedelta(seconds=phase),
+                        "updated_at": now,
+                    }
                 )
+                self.repository.save_poll_state(updated)
+                if poll_states is not None:
+                    poll_states[binding.binding_id] = updated
             if rephase:
                 self.repository.save_scheduler_group_state(
                     group_state.model_copy(
@@ -274,9 +299,22 @@ class GlobalPollScheduler:
                     )
                 )
 
-    def distribution_due(self, bindings: list[TickerSourceBinding], now: datetime) -> bool:
+    def distribution_due(
+        self,
+        bindings: list[TickerSourceBinding],
+        now: datetime,
+        *,
+        poll_states: dict[str, PollState] | None = None,
+    ) -> bool:
         return any(
-            (state := self.repository.get_poll_state(binding)).next_dispatch_at is None
+            (
+                state := (
+                    poll_states[binding.binding_id]
+                    if poll_states is not None
+                    else self.repository.get_poll_state(binding)
+                )
+            ).next_dispatch_at
+            is None
             or state.next_dispatch_at <= now
             for binding in bindings
         )
@@ -595,14 +633,23 @@ class GlobalPollScheduler:
                 )
             if source.source_id == "corporate_ir_press_releases":
                 execution = await self.storage_call(
-                    self.service._accept_poll_result, source=source, binding=binding,
-                    result=result, attempted_at=attempted_at, admission_context=admission_context,
-                    persist_poll_state=False, bootstrap_override=False, strict_intake=True,
+                    self.service._accept_poll_result,
+                    source=source,
+                    binding=binding,
+                    result=result,
+                    attempted_at=attempted_at,
+                    admission_context=admission_context,
+                    persist_poll_state=False,
+                    bootstrap_override=False,
+                    strict_intake=True,
                 )
             else:
                 execution = await self.service.accept_poll_result(
-                    source=source, binding=binding, result=result,
-                    attempted_at=attempted_at, admission_context=admission_context,
+                    source=source,
+                    binding=binding,
+                    result=result,
+                    attempted_at=attempted_at,
+                    admission_context=admission_context,
                 )
             if window_cutoff is not None:
                 return execution
@@ -715,9 +762,13 @@ class GlobalPollScheduler:
         self._limiters[source.scheduler_group] = (constraints, limiter)
         return limiter
 
-    def _effective_constraints(self, group: str) -> SchedulerConstraints:
+    def _effective_constraints(
+        self, group: str, *, sources: list[SourceDefinition] | None = None
+    ) -> SchedulerConstraints:
         sources = [
-            source for source in self.repository.list_sources() if source.scheduler_group == group
+            source
+            for source in (self.repository.list_sources() if sources is None else sources)
+            if source.scheduler_group == group
         ]
         if not sources:
             return SchedulerConstraints()
@@ -734,8 +785,9 @@ class GlobalPollScheduler:
         grouped: dict[str, list[TickerSourceBinding]] = defaultdict(list)
         for source, binding in bindings:
             grouped[source.scheduler_group].append(binding)
+        sources = self.repository.list_sources()
         for group, values in grouped.items():
-            constraints = self._effective_constraints(group)
+            constraints = self._effective_constraints(group, sources=sources)
             demand = sum(1 / value.polling.target_interval_seconds for value in values)
             gap = constraints.minimum_request_gap_seconds
             capacity = float("inf") if gap == 0 else 1 / gap

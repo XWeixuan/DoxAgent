@@ -60,6 +60,7 @@ class RuntimeResponsesRequest(Generic[T]):
     provider_endpoint: str | None = None
     cache_ttl: str | None = None
     provisional_cache_batch_size: int | None = None
+    reference_context: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -385,7 +386,9 @@ def normalize_w1_attributions(
         return text, []
     if not isinstance(value, dict) or not isinstance(value.get("fact_attributions"), list):
         return text, []
-    details = request.payload.get("event_details", {})
+    details = request.reference_context.get(
+        "event_details", request.payload.get("event_details", {})
+    )
     provisional = {e["provisional_event_id"] for e in details.get("provisional_events", [])}
     canonical = {e["event_id"] for e in details.get("canonical_events", [])}
     warnings = []
@@ -414,6 +417,12 @@ def _cache_optimized_input(
         raise ValueError(f"Cache context keys are missing from payload: {missing}")
     stable = {key: payload[key] for key in cache_context_keys}
     dynamic = {key: value for key, value in payload.items() if key not in stable}
+    if cache_context_keys == ("known_fact_view",) and isinstance(payload.get("known_fact_view"), str):
+        prefix = payload["known_fact_view"]
+        return (
+            prefix + "\n# Current Case Input\n" + _json_text(dynamic),
+            sha256(prefix.encode("utf-8")).hexdigest(),
+        )
     if cache_context_keys == ("published_known_event_index",) and isinstance(
         payload.get("today_provisional_facts"), str
     ):

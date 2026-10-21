@@ -384,10 +384,22 @@
     "incomplete": [],
     "gold": {
       "cases": 73,
-      "reviewed": 44,
-      "scorable": 37,
-      "unreviewed": 29
+      "reviewed": 73,
+      "scorable": 73,
+      "unreviewed": 0
     }
   },
-  "input_fingerprint": "84c93cd621df911193c96a8129bd27185475f2e44db22d2e184f3b4c30af159c"
+  "input_fingerprint": "84c93cd621df911193c96a8129bd27185475f2e44db22d2e184f3b4c30af159c",
+  "gold_revision": {
+    "version": "user-final-20261021",
+    "cases": 73,
+    "scorable": 73,
+    "counts": {
+      "SHORT": 4,
+      "NO_TRADE": 62,
+      "LONG": 7
+    },
+    "sha256": "df8c7decb5b3055ba4430f02bd78cd80ec914ea7db20479d6cca5080565c3353",
+    "source": "../../annotation/20261021/final_gold/labels_transcribed.jsonl"
+  }
 }

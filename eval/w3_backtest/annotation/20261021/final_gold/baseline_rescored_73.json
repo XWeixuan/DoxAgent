@@ -1,0 +1,524 @@
+{
+  "run_id": "baseline-20261014",
+  "gold_revision": "user-final-20261021",
+  "cases": 73,
+  "categories": {
+    "MISSED_OPPORTUNITY": 7,
+    "MATCH": 63,
+    "WRONG_TRADE": 3
+  },
+  "accuracy": 0.863013698630137,
+  "rows": [
+    {
+      "case_key": "BE-01-01",
+      "actual": "NO_TRADE",
+      "expected": "SHORT",
+      "score": false,
+      "category": "MISSED_OPPORTUNITY"
+    },
+    {
+      "case_key": "BE-01-02",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "BE-01-03",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "BE-01-04",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "BE-01-05",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "BE-02-01",
+      "actual": "SHORT",
+      "expected": "SHORT",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "BE-02-02",
+      "actual": "NO_TRADE",
+      "expected": "LONG",
+      "score": false,
+      "category": "MISSED_OPPORTUNITY"
+    },
+    {
+      "case_key": "BE-02-03",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "BE-02-04",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "BE-02-05",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "BE-03-01",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "BE-03-02",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "BE-03-03",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "BE-03-04",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "BE-03-05",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "EXTRA-INTC-OPENAI",
+      "actual": "NO_TRADE",
+      "expected": "SHORT",
+      "score": false,
+      "category": "MISSED_OPPORTUNITY"
+    },
+    {
+      "case_key": "EXTRA-INTC-TERAFAB",
+      "actual": "LONG",
+      "expected": "LONG",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "EXTRA-RKLB-NASA",
+      "actual": "NO_TRADE",
+      "expected": "LONG",
+      "score": false,
+      "category": "MISSED_OPPORTUNITY"
+    },
+    {
+      "case_key": "EXTRA-RKLB-SYNSPECTIVE",
+      "actual": "LONG",
+      "expected": "LONG",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "INTC-01-01",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "INTC-01-02",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "INTC-01-03",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "INTC-01-04",
+      "actual": "NO_TRADE",
+      "expected": "LONG",
+      "score": false,
+      "category": "MISSED_OPPORTUNITY"
+    },
+    {
+      "case_key": "INTC-01-05",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "INTC-02-01",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "INTC-02-02",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "INTC-02-03",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "INTC-02-04",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "MU-01-01",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "MU-01-02",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "MU-01-03",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "MU-01-04",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "MU-01-05",
+      "actual": "LONG",
+      "expected": "NO_TRADE",
+      "score": false,
+      "category": "WRONG_TRADE"
+    },
+    {
+      "case_key": "MU-02-01",
+      "actual": "NO_TRADE",
+      "expected": "SHORT",
+      "score": false,
+      "category": "MISSED_OPPORTUNITY"
+    },
+    {
+      "case_key": "MU-02-02",
+      "actual": "LONG",
+      "expected": "LONG",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "MU-02-03",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "MU-02-04",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "MU-02-05",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "MU-03-01",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "MU-03-02",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "MU-03-03",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "MU-03-04",
+      "actual": "LONG",
+      "expected": "NO_TRADE",
+      "score": false,
+      "category": "WRONG_TRADE"
+    },
+    {
+      "case_key": "MU-03-05",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "MU-04-01",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "NOISE-01",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "NOISE-02",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "NOISE-03",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "NOISE-04",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "NOISE-05",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "NOISE-06",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "NOISE-07",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "NOISE-08",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "NOISE-09",
+      "actual": "NO_TRADE",
+      "expected": "LONG",
+      "score": false,
+      "category": "MISSED_OPPORTUNITY"
+    },
+    {
+      "case_key": "NOISE-10",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "NOISE-11",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "NOISE-12",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "NOISE-13",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "NOISE-14",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "NOISE-15",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "NOISE-16",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "NOISE-17",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "NOISE-18",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "NOISE-19",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "NOISE-20",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "NOISE-21",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "NOISE-22",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "NOISE-23",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "NOISE-24",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "NOISE-25",
+      "actual": "LONG",
+      "expected": "NO_TRADE",
+      "score": false,
+      "category": "WRONG_TRADE"
+    },
+    {
+      "case_key": "RKLB-01-01",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "RKLB-01-02",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "RKLB-01-03",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    },
+    {
+      "case_key": "RKLB-01-04",
+      "actual": "NO_TRADE",
+      "expected": "NO_TRADE",
+      "score": true,
+      "category": "MATCH"
+    }
+  ]
+}

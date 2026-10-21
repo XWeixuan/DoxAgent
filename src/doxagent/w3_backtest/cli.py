@@ -104,12 +104,16 @@ def build_dataset(dataset: Path) -> dict:
 
 
 def execute_run(
-    dataset: Path, root: Path, *, keys=None, concurrency=4, prompt_root=None, timeout_seconds=1800
+    dataset: Path, root: Path, *, keys=None, concurrency=4, prompt_root=None,
+    timeout_seconds=1800, model=None, effort=None
 ) -> dict:
     from .dataset import input_fingerprint, load_cases, read_json, write_json
     from .report import render_report
     from .runner import run_case
 
+    if effort is not None and model is None:
+        raise ValueError("--effort requires --model")
+    model_profile = dict(model=model, effort=effort or "medium") if model else None
     if not 1 <= concurrency <= 16:
         raise ValueError("concurrency must be between 1 and 16")
     cases = load_cases(dataset)
@@ -118,9 +122,13 @@ def execute_run(
         raise ValueError(f"unknown case keys: {sorted(set(keys) - available)}")
     selected = [c for c in cases if not keys or c["case_key"] in keys]
     prompts = Path(prompt_root or "prompts/persistent_runtime_v2/w3").resolve()
+    prompt_files = ["AGENTS.md", "skills/skill.md"]
+    if (prompts / "contract.json").exists():
+        # The schema marker is part of the frozen prompt pack, not a new capability.
+        prompt_files.append("contract.json")
     prompt_hashes = {
         name: hashlib.sha256((prompts / name).read_bytes()).hexdigest()
-        for name in ("AGENTS.md", "skills/skill.md")
+        for name in prompt_files
     }
     signature = input_fingerprint(dataset)
     try:
@@ -147,6 +155,7 @@ def execute_run(
         prompt_hashes=prompt_hashes,
         code_fingerprint=code_hash.hexdigest(),
         case_keys=[c["case_key"] for c in selected],
+        model_profile=model_profile,
     )
     marker = root / "run_manifest.json"
     if marker.exists():
@@ -197,6 +206,8 @@ def execute_run(
                 root,
                 prompt_root=frozen_prompts,
                 timeout_seconds=timeout_seconds,
+                model=model,
+                effort=effort,
             ): c
             for c in selected
             if not (
@@ -263,6 +274,8 @@ def parser() -> argparse.ArgumentParser:
             command.add_argument("--concurrency", type=int, default=4)
             command.add_argument("--prompt-root")
             command.add_argument("--timeout-seconds", type=int, default=1800)
+            command.add_argument("--model")
+            command.add_argument("--effort", choices=("low", "medium", "high", "max"))
     for name in ("resume", "report"):
         command = commands.add_parser(name)
         command.add_argument("--run-id", required=True)
@@ -311,6 +324,8 @@ def main(argv=None):
             concurrency=args.concurrency,
             prompt_root=args.prompt_root,
             timeout_seconds=args.timeout_seconds,
+            model=args.model,
+            effort=args.effort,
         )
     elif args.command == "resume":
         root = run_path(args.run_id)
@@ -322,6 +337,8 @@ def main(argv=None):
             concurrency=manifest["concurrency"],
             prompt_root=manifest["prompt_root"],
             timeout_seconds=manifest["timeout_seconds"],
+            model=(manifest.get("model_profile") or {}).get("model"),
+            effort=(manifest.get("model_profile") or {}).get("effort"),
         )
     elif args.command == "report":
         from .report import render_report

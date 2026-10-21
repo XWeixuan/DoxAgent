@@ -247,6 +247,7 @@ def build_persistent_runtime_v2_service(
         assets["runtime_models.json"] = json.dumps(
             {
                 **responses.model_settings(),
+                "w1_r2_input_view": "w1-r2-fact-view-v1",
                 "w3_model": settings.persistent_runtime_v2_w3_model,
                 "w3_effort": settings.persistent_runtime_v2_w3_reasoning_effort,
                 "codex_model": settings.codex_model,

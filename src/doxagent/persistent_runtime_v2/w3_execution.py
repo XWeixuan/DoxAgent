@@ -182,7 +182,9 @@ class W3Execution:
         from .service import _w1_canonical_event_business_payload, _w1_provisional_business_payload
 
         frozen = self.journal.get("round_inputs", f"{case.case_id}:W1:R2", {})
-        details = frozen.get("payload", {}).get("event_details", {})
+        from .w1_r2_context import frozen_event_details
+
+        details = frozen_event_details(frozen)
         events = details.get("canonical_events", []) + details.get("provisional_events", [])
         if not events and case.w1_final.reference_ids:
             loaded = self.service._known_for_case(case).details(

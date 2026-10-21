@@ -16,7 +16,7 @@ from .service import UnifiedRuntimeSchedulerService
 
 
 class V2Scheduler(UnifiedRuntimeSchedulerService):
-    def _run_admitted_once(self, admitted, *, now, event_limit):
+    def _run_admitted_once(self, admitted, *, now, event_limit, include_detail=True):
         from doxagent.v2_control.repository import ControlRepository
 
         control = ControlRepository(self.runtime_v2_service.journal)
@@ -26,7 +26,11 @@ class V2Scheduler(UnifiedRuntimeSchedulerService):
             if not state or not state["analysis_allowed"]:
                 continue
             try:
-                result.append(self.tick_ticker(ticker, now=now, event_limit=event_limit))
+                detail = self.tick_ticker(
+                    ticker, now=now, event_limit=event_limit, include_detail=include_detail
+                )
+                if detail is not None:
+                    result.append(detail)
             except Exception:
                 logging.getLogger(__name__).exception("V2 ticker tick deferred: %s", ticker)
         return result
@@ -66,7 +70,8 @@ def main():
     if not 0.1 <= args.interval <= 60 or not 1 <= args.limit <= 500:
         parser.error("interval must be 0.1..60 and limit 1..500")
     logging.basicConfig(
-        level=logging.WARNING, format="%(asctime)s %(levelname)s %(name)s %(message)s",
+        level=logging.WARNING,
+        format="%(asctime)s %(levelname)s %(name)s %(message)s",
     )
     logging.getLogger("doxagent.persistent_runtime_v2.service").setLevel(logging.INFO)
     logging.getLogger("doxagent.persistent_runtime_v2.w3_execution").setLevel(logging.INFO)
@@ -78,7 +83,7 @@ def main():
         scheduler = build(settings)
         try:
             while not stop.is_set():
-                scheduler.run_due_once(event_limit=args.limit)
+                scheduler.run_due_once(event_limit=args.limit, include_detail=False)
                 if args.once:
                     break
                 stop.wait(args.interval)
