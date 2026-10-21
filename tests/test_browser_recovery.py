@@ -474,6 +474,90 @@ async def test_original_recovers_after_handoff_without_verify_or_new_navigation(
 
 
 @pytest.mark.asyncio
+async def test_live_human_original_does_not_block_a_successful_fresh_business_probe(setup):
+    _, service, store, _ = setup
+    value, _, _ = retained(setup, human=True)
+    store.save_recovery(value.model_copy(update={"next_probe_at": utc_now()}), expected_generation=value.generation)
+    service.recovery._observe = AsyncMock(return_value=RuntimeResponse(403, URL, {},
+        '<iframe src="https://geo.captcha-delivery.com/"/>Slide right to secure your access',
+        provenance=SimpleNamespace(instance_id="chrome")))
+    service.runtime.probe_recovery = AsyncMock(return_value=RuntimeResponse(200, URL, {}, LISTING,
+        provenance=SimpleNamespace(instance_id="chrome")))
+    service.runtime.close_recovery = AsyncMock()
+    await service.recovery._run(value.identity_id)
+    current = store.get_recovery(value.identity_id)
+    assert current.phase == "RESOLVED", current.last_error
+    assert store.get_challenge(value.challenge_task_id).resolution_reason == "BUSINESS_RECOVERED_ON_NEW_PAGE"
+
+
+def test_old_instance_proof_cannot_clear_current_runtime_gate(setup):
+    repo, _, store, _ = setup
+    value, _, context = retained(setup, human=True)
+    claimed = store.claim_recovery(value.identity_id, owner="old-worker")
+    runtime = repo.get_identity_runtime(value.identity_id)
+    repo.save_identity_runtime(runtime.model_copy(update={"instance_id": "replacement-chrome",
+        "generation": runtime.generation + 1}), expected_generation=runtime.generation)
+    with pytest.raises(RuntimeError, match="stale_recovery_browser_or_configuration"):
+        store.finish_recovery(claimed, VerificationReport(challenge="CLEARED", crawler="READY",
+            runtime_instance_id="chrome"), context=context, resolved_by="fresh_probe")
+    assert store.current_challenge(value.identity_id).state == "WAITING_HUMAN"
+
+
+@pytest.mark.asyncio
+async def test_recovery_is_exclusive_for_browser_but_not_public_http(setup):
+    repo, service, store, _ = setup
+    value, _, _ = retained(setup)
+    claimed = store.claim_recovery(value.identity_id, owner="recovery")
+    identity = repo.get_identity(value.identity_id)
+    async with service.profile_use.recovery(identity, value.recovery_id, claimed.generation):
+        with pytest.raises(ProfileUnavailableError, match="profile_control_in_progress"):
+            async with service.profile_use.business(identity.profile_id):
+                raise AssertionError("must not overlap browser writers")
+        async with service.profile_use.business(identity.profile_id, browser=False):
+            assert service.profile_use._active[identity.profile_id] == 2
+        assert service.profile_use._active[identity.profile_id] == 1
+    assert identity.profile_id not in service.profile_use._active
+
+
+@pytest.mark.asyncio
+async def test_body_recovery_does_not_freeze_crawler_candidates(setup):
+    from doxagent.site_strategy.schema import AccessMode, SitePurpose
+
+    repo, service, _, scope = setup
+    value, _, _ = retained(setup, purpose="BODY")
+    route = repo.get_runtime(f"scope:{scope.scope_id}")
+    route.combinations[value.identity_id].state = "COOLDOWN"
+    route.combinations[value.identity_id].cooldown_until = utc_now() + timedelta(minutes=30)
+    repo.save_runtime(route, expected_generation=route.generation)
+    resolved = service._resolve_request(AccessRequest(operation_id="crawl", url=URL,
+        purpose="CRAWLER", mode="BROWSER", origin_scope_id=scope.scope_id))
+    _, crawler, _ = await service.health.candidates(resolved.runtime_key, resolved.access.combinations,
+        excluded=set(), transport=AccessMode.BROWSER, purpose=SitePurpose.CRAWLER)
+    assert any(c.identity_id == value.identity_id for c in crawler)
+    _, body, _ = await service.health.candidates(resolved.runtime_key, resolved.access.combinations,
+        excluded=set(), transport=AccessMode.BROWSER, purpose=SitePurpose.BODY)
+    assert all(c.identity_id != value.identity_id for c in body)
+
+
+@pytest.mark.asyncio
+async def test_late_browser_failure_cannot_refreeze_committed_recovery(setup):
+    from doxagent.site_strategy.schema import AccessMode, FailureCategory
+
+    repo, service, store, scope = setup
+    value, _, context = retained(setup)
+    claimed = store.claim_recovery(value.identity_id, owner="recovery")
+    route = repo.get_runtime(f"scope:{scope.scope_id}")
+    old_generation = route.generation
+    store.finish_recovery(claimed, VerificationReport(challenge="CLEARED", crawler="READY",
+        runtime_instance_id="chrome"), context=context, resolved_by="fresh_probe")
+    await service.health.mark_failure(route.runtime_key, value.identity_id, FailureCategory.ACCESS_CHALLENGE,
+        "old_page_challenge", assigned_generation=old_generation, transport=AccessMode.BROWSER,
+        handling_mode="HUMAN")
+    member = repo.get_runtime(route.runtime_key).combinations[value.identity_id]
+    assert member.state == "READY" and not member.manual_attention_required
+
+
+@pytest.mark.asyncio
 async def test_fresh_probe_replaces_lost_original_with_a_real_new_human_target(setup):
     _, service, store, scope = setup
     value, old, context = retained(setup, human=True)

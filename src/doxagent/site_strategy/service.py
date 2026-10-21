@@ -70,6 +70,7 @@ class ProfileUseCoordinator:
         self.repository = repository
         self._condition = asyncio.Condition()
         self._active: dict[str, int] = {}
+        self._exclusive: set[str] = set()
         self._maintenance_profile: str | None = None
         self._challenge_profiles: set[str] = set()
         self._accepting = True
@@ -206,16 +207,35 @@ class ProfileUseCoordinator:
                 value.recovery_id, value.generation
             ) != (recovery_id, expected_generation) or not value.lease_until or value.lease_until <= utc_now():
                 raise ProfileUnavailableError("stale_recovery_lease")
-            if self._active.get(identity.profile_id, 0) or any(
-                s.identity_id == identity.identity_id and s.state == "OPEN" for s in store.list_sessions()
+        async with self.control(identity.profile_id, identity.identity_id) as profile:
+            value = store.get_recovery(identity.identity_id)
+            if value.generation != expected_generation or not value.lease_until or value.lease_until <= utc_now():
+                raise ProfileUnavailableError("stale_recovery_lease")
+            yield profile
+
+    @asynccontextmanager
+    async def control(self, profile_id, identity_id):
+        """Short exclusive browser writer for recovery or cold activation, never Viewer."""
+        from .governance_repository import GovernanceRepository
+
+        async with self._condition:
+            if not self._accepting or self._active.get(profile_id, 0) or profile_id in self._exclusive or any(
+                s.identity_id == identity_id and s.state == "OPEN"
+                for s in GovernanceRepository(self.repository).list_sessions()
             ):
                 raise ProfileUnavailableError("user_maintenance_or_business_active")
-            self._active[identity.profile_id] = 1
+            self._exclusive.add(profile_id)
+            self._active[profile_id] = 1
         try:
-            yield self.repository.get_profile(identity.profile_id)
+            yield self.repository.get_profile(profile_id)
         finally:
             async with self._condition:
-                self._active.pop(identity.profile_id, None)
+                self._exclusive.discard(profile_id)
+                remaining = self._active.get(profile_id, 1) - 1
+                if remaining:
+                    self._active[profile_id] = remaining
+                else:
+                    self._active.pop(profile_id, None)
                 self._condition.notify_all()
 
     async def release_recovered(self, identity):
@@ -224,8 +244,10 @@ class ProfileUseCoordinator:
             self._condition.notify_all()
 
     @asynccontextmanager
-    async def business(self, profile_id: str) -> AsyncIterator[BrowserProfile]:
+    async def business(self, profile_id: str, *, browser=True) -> AsyncIterator[BrowserProfile]:
         async with self._condition:
+            if browser and profile_id in self._exclusive:
+                raise ProfileUnavailableError("profile_control_in_progress")
             profile = self.repository.get_profile(profile_id)
             if profile is None:
                 raise ProfileUnavailableError("profile_not_found")
@@ -1684,7 +1706,7 @@ class SiteStrategyService:
             try:
                 async with permit as queue_wait_ms:
                     current = self.repository.get_runtime(resolved.runtime_key)
-                    async with self.profile_use.business(profile.profile_id) as current_profile:
+                    async with self.profile_use.business(profile.profile_id, browser=request.mode is not AccessMode.HTTP_PUBLIC) as current_profile:
                         if (
                             self._auth_required(resolved, request.purpose)
                             and self._auth_state(resolved, combination, current_profile)
@@ -1744,7 +1766,20 @@ class SiteStrategyService:
                         ),
                     )
                     attempts.append(attempt)
-            except ProfileUnavailableError:
+            except ProfileUnavailableError as exc:
+                if str(exc) == "profile_control_in_progress":
+                    from .governance_repository import GovernanceRepository
+                    pending = GovernanceRepository(self.repository).get_recovery(identity.identity_id)
+                    retry_at = utc_now() + timedelta(seconds=60)
+                    result = self._result(request, resolved,
+                        AccessDisposition.RECOVERY_PENDING if pending and pending.phase != "RESOLVED"
+                        else AccessDisposition.BUDGET_DEFERRED,
+                        reason="site_recovery_pending" if pending and pending.phase != "RESOLVED"
+                        else "identity_control_busy", attempts=attempts,
+                        retry_not_before=retry_at, started=started)
+                    return result.model_copy(update={
+                        "recovery_id": pending.recovery_id if pending else None,
+                        "handling_mode": pending.handling_mode if pending else None, "retry_at": retry_at})
                 unavailable += 1
                 continue
             except TimeoutError:

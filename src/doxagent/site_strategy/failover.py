@@ -227,17 +227,17 @@ class FailoverCoordinator:
             ):
                 return {"ready": False, "reason": "fallback_same_region_unverified"}
         cold = not primary and before.active_combination_id != identity_id
-        if cold:
-            stopped = await service.runtime.browser_runtimes.stop_identity(
-                identity, reason="cold_fallback_canary"
-            )
-            if not stopped:
-                return {"ready": False, "reason": "cold_shutdown_unconfirmed"}
-        remaining = min(35, deadline - time.monotonic())
-        if remaining <= 0:
-            return {"ready": False, "reason": "cold_start_budget_exhausted"}
-        request = request.model_copy(update={"remaining_budget_ms": max(1, int(remaining * 1000))})
-        async with service.profile_use.business(profile.profile_id):
+        async with service.profile_use.control(profile.profile_id, identity_id):
+            if cold:
+                stopped = await service.runtime.browser_runtimes.stop_identity(
+                    identity, reason="cold_fallback_canary"
+                )
+                if not stopped:
+                    return {"ready": False, "reason": "cold_shutdown_unconfirmed"}
+            remaining = min(35, deadline - time.monotonic())
+            if remaining <= 0:
+                return {"ready": False, "reason": "cold_start_budget_exhausted"}
+            request = request.model_copy(update={"remaining_budget_ms": max(1, int(remaining * 1000))})
             response, category, reason, _ = await service._attempt(
                 request, resolved, combination, profile, egress
             )
@@ -262,6 +262,7 @@ class FailoverCoordinator:
                 assigned_generation=before.generation,
                 transport=AccessMode.BROWSER,
                 retry_after_seconds=response.retry_after_seconds,
+                handling_mode=(response.assessment or {}).get("handling_mode"),
             )
             return {"ready": False, "reason": reason}
         proof = (

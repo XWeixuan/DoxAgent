@@ -94,7 +94,7 @@ class CombinationHealthManager:
                         continue
                     if runtime.manual_attention_required and not recovering:
                         continue
-                    if runtime.state == "COOLDOWN":
+                    if runtime.state == "COOLDOWN" and not recovering:
                         if runtime.cooldown_until and (
                             next_retry is None or runtime.cooldown_until < next_retry
                         ):
@@ -266,6 +266,9 @@ class CombinationHealthManager:
         async with self._locks[runtime_key]:
             state = self.repository.get_runtime(runtime_key)
             runtime = state.combinations.setdefault(combination_id, CombinationRuntime())
+            if (runtime_key.startswith("scope:") and transport in {AccessMode.BROWSER, AccessMode.BROWSER_FETCH}
+                    and assigned_generation != state.generation):
+                return state  # A late page cannot refreeze a newer business proof/recovery gate.
             runtime.last_failure = reason
             runtime.last_failure_at = utc_now()
             if transport in {AccessMode.BROWSER, AccessMode.BROWSER_FETCH}:
@@ -294,9 +297,7 @@ class CombinationHealthManager:
                         FailureCategory.ACCESS_BLOCK,
                     }:
                         runtime.manual_attention_required = (
-                            handling_mode != "AUTO" and (category is FailureCategory.ACCESS_CHALLENGE
-                            or runtime.risk_strikes >= 2
-                            )
+                            handling_mode != "AUTO" and category is FailureCategory.ACCESS_CHALLENGE
                         )
                 if (
                     assigned_generation == state.generation
