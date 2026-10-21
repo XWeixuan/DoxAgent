@@ -267,15 +267,19 @@ def _report(costs, view, args):
         cursor = db.cursor()
         cursor.row_factory = None  # Only scalar buckets; no native content to decode.
         for owners, day, metric, value, dimensions in cursor.execute(
-            "SELECT json_group_array(DISTINCT ticker) "
-            "FILTER (WHERE metric='requests' AND CAST(value AS INTEGER)>0),"
-            "day,metric,cost_decimal_sum(CASE WHEN ?='ALL' OR ticker=? THEN value END),"
-            "dimensions FROM "
+            "WITH leaf AS (SELECT ticker,day,dimensions,"
+            "json_group_object(metric,value) AS fields FROM "
             + costs.store.metric_table(view["seq"])
             + " WHERE "
             + " AND ".join(where)
-            + " GROUP BY day,metric,dimensions",
-            [selected_ticker, selected_ticker, *params],
+            + " GROUP BY ticker,day,dimensions "
+            "HAVING MAX(CASE WHEN metric='requests' THEN CAST(value AS INTEGER) ELSE 0 END)>0) "
+            "SELECT json_group_array(DISTINCT ticker) "
+            "FILTER (WHERE field.key='requests'),"
+            "day,field.key,cost_decimal_sum(CASE WHEN ?='ALL' OR ticker=? THEN field.value END),"
+            "dimensions FROM leaf,json_each(leaf.fields) AS field "
+            "GROUP BY day,field.key,dimensions",
+            [*params, selected_ticker, selected_ticker],
         ):
             dims = facets.get(dimensions)
             if dims is None:

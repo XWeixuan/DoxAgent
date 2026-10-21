@@ -105,3 +105,5 @@ CPU profile定位全历史报告逐条解码约19,912个标的桶，和响应sch
 profile确认解释型schema遍历占报告约一半CPU。对CostReport使用fastjsonschema 2.22.2编译当前draft-07可表达子集，价格/数值/schema原文不变。格式仍调用原FormatChecker；关闭default注入；出现2020-12新增关键字、引用附加约束或编译校验失败时，继续原Canonical验证。普通成功响应只校验一次，失败仍保留原语义与脱敏错误。对正常夹具、负数/布尔计数、非法时间、缺字段、未知字段、换行小数及未来dependentRequired验证对照通过；schema和响应不被修改。官方机制说明：https://horejsek.github.io/python-fastjsonschema/ 。本地初测10次夹具校验CPU由0.109秒降至0.016秒，最终以生产实测为准。
 
 原始OpenRouter envelope已过保留期时，沿用同usage事实中明确标为REPORTED的冻结已报费用；若真实raw仍在则始终优先raw。不能因为归一化usage未再带provider envelope而丢掉已证实费用。保留缺原始回执标记，反复归一化费用不变；35项成本／来源重建测试通过。
+
+精确生产对账发现旧粗粒度桶requests归零后，有限精度历史减法仍留有约1e-28美元残差；仅隐藏空行会使全局与行／ticker小计出现这个极小差值。现在同一SQL先选requests>0的ticker/day/dimensions叶子，再做精确全局归并，所有层级采用同一调用集合。没有epsilon清零，不重写原报价，失败调用和已知零费用仍保留。新增旧轮次及同轮次不同ticker的残差回归，20项相关测试通过。

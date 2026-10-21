@@ -465,7 +465,25 @@ def test_sql_decimal_reduction_preserves_money_ticker_facets_and_omits_retired_r
                 },
             )
         )
-    counts.extend(contributions("retired", "OLD", "UNKNOWN_ROUND", {"requests": 0}))
+    counts.extend(
+        contributions(
+            "retired",
+            "OLD",
+            "UNKNOWN_ROUND",
+            {"requests": 0, "total_cost_usd": "0.000000000000000000000000001"},
+        )
+    )
+    counts.extend(
+        contributions(
+            "retired-same",
+            "OLD",
+            "R2",
+            {
+                "requests": 0,
+                "total_cost_usd": "0.000000000000000000000000002",
+            },
+        )
+    )
     seq = store.ingest("test", "exact", [], contributions=counts)
     costs = Costs(store, None)
     for ticker in ["ALL", *amounts]:
