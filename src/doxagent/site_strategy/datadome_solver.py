@@ -14,6 +14,11 @@ class SolverError(RuntimeError):
     pass
 
 
+def scene_key(scene):
+    # Presentation state may change while the same paid challenge is processing.
+    return digest_json({key: scene.get(key) for key in ("url", "website", "user_agent")})
+
+
 class TwoCaptcha:
     async def request(self, key, method, **payload):
         try:
@@ -88,7 +93,7 @@ class DataDomeSolver:
                 "identity_id": recovery.identity_id,
                 "created_at": now,
                 "status": "PREPARING",
-                "scene": digest_json(scene),
+                "scene": scene_key(scene),
                 "binding": binding,
                 "task_id": None,
             }
@@ -157,7 +162,7 @@ class DataDomeSolver:
                     return False
                 if self.coordinator.service.resolve(scene["website"]).site_id != recovery.site_id:
                     return False
-                signature = digest_json(scene)
+                signature = scene_key(scene)
                 route = digest_json(
                     [
                         identity.revision,
@@ -190,7 +195,7 @@ class DataDomeSolver:
                         self.fail(active, recovery, "EGRESS_CHANGED")
                         return False
                     latest_scene = await browser.inspect()
-                    if digest_json(latest_scene) != signature or not await self.egress_matches(
+                    if scene_key(latest_scene) != signature or not await self.egress_matches(
                         binding, current_egress
                     ):
                         self.fail(active, recovery, "SCENE_OR_EGRESS_CHANGED")

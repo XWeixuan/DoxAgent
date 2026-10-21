@@ -251,6 +251,7 @@ async def test_paid_task_resumes_and_cookie_does_not_mark_business_success(solve
     solver.provider.request.return_value = {"status": "processing"}
     assert await solver.tick(value, scope, identity, egress)
     assert solver.provider.request.await_args.args[1] == "getTaskResult"
+    browser.inspect.return_value["state"] = "RETRY"
     solver.provider.request.return_value = {
         "status": "ready",
         "solution": {"cookie": "datadome=secret"},

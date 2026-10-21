@@ -8,6 +8,8 @@
 
 # changelog
 
+2026-10-22 Paid challenge scene continuity: fence purchased results by the actual iframe URL, publisher and native Chrome UA rather than changing presentation labels; RETRY/SOLVABLE text changes alone cannot discard an otherwise identical paid result. Keep target/instance/lease/egress checks intact and add regression coverage.
+
 2026-10-22 DataDome paid recovery: add opt-in 2Captcha tasks to the existing recovery coordinator with durable task IDs, short polling, exact native target/lease/egress fencing, one bounded RETRY refresh and publisher-only Cookie application. Real business proof still gates recovery; failures preserve the human original/fallback. Add a non-root authenticated, source/domain-restricted Squid ingress pinned per identity to existing Clash listeners, no TLS MITM or direct fallback. Store secrets outside Git and expose only sanitized task diagnostics; implementation and real acceptance are recorded separately.
 
 2026-10-22 DataDome bootstrap handoff: retain explicit 403 DataDome bootstraps before their iframe loads, without classifying normal embedded scripts as CAPTCHA. Preserve the vendor header in Reuters recipe errors, allow one bounded recovery refresh for unloaded widgets, and add status/reason/size diagnostics for failed canaries. Add an admin-only retry scheduler that reuses the incident's original context and all admission/lease gates, never clears health or accepts arbitrary URLs.
