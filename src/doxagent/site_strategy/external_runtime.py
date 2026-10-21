@@ -401,9 +401,10 @@ class ExternalChromeRuntime:
                     "state", {"allocation_id": allocation_id, "state": "LOST"}
                 )
                 continue
-            if record["owner_kind"] != "BUSINESS":
+            if record["owner_kind"] != "BUSINESS" and record["state"] != "CLOSE_PENDING":
                 continue
-            claim = await self.target_owner.event("close_claim", {"allocation_id": allocation_id})
+            claim = await self.target_owner.event("close_claim", {"allocation_id": allocation_id,
+                "owner_ref": record.get("owner_ref") if record["state"] == "CLOSE_PENDING" else None})
             if not claim["claimed"]:
                 continue
             try:

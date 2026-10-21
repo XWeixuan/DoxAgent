@@ -107,7 +107,7 @@ class TargetOwner:
                     and (not task or task.allocation_id != value.allocation_id)
                     and value.allocation_id not in sessions):
                 values[index] = self.store.save_target(value.model_copy(update={
-                    "owner_kind": "BUSINESS", "owner_ref": None, "state": "CLOSE_PENDING"}))
+                    "state": "CLOSE_PENDING"}))
         return values
 
     async def reconcile(self, cdp, identity_id, instance_id):
@@ -126,8 +126,9 @@ class TargetOwner:
                 task = self.store.current_challenge(identity_id)
                 if task and task.allocation_id == target.allocation_id:
                     self.store.save_challenge(task.model_copy(update={"state": "TARGET_LOST"}))
-            elif target.owner_kind == "BUSINESS":
-                claimed = await self.event("close_claim", {"allocation_id": target.allocation_id})
+            elif target.owner_kind == "BUSINESS" or target.state == "CLOSE_PENDING":
+                claimed = await self.event("close_claim", {"allocation_id": target.allocation_id,
+                    "owner_ref": target.owner_ref if target.state == "CLOSE_PENDING" else None})
                 if not claimed["claimed"]:
                     continue
                 pending = self.store.get_target(target.allocation_id)

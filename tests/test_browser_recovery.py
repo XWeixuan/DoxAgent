@@ -410,6 +410,25 @@ def test_auto_login_is_throttled_by_account_not_identity(setup):
 
 
 @pytest.mark.asyncio
+async def test_replaced_auto_scene_cleanup_keeps_ownership_and_cannot_close_new_human(setup):
+    from doxagent.site_strategy.targets import TargetOwner
+
+    repo, _, store, scope = setup
+    value, old, context = retained(setup)
+    new = store.save_target(OwnedBrowserTarget(identity_id=scope.primary_identity_id,
+        browser_instance_id="chrome", worker_epoch=1, target_id="new-human", state="LIVE"))
+    store.begin_recovery(value.model_copy(update={"original_allocation_id": new.allocation_id,
+        "original_target_id": new.target_id, "handling_mode": "HUMAN"}))
+    cdp = SimpleNamespace(send=AsyncMock(side_effect=[{"targetInfos": [
+        {"targetId": "original"}, {"targetId": "new-human"}]}, {"success": True}]))
+    await TargetOwner(repo).reconcile(cdp, value.identity_id, "chrome")
+    assert store.get_target(old.allocation_id).owner_kind == "RECOVERY"
+    assert store.get_target(old.allocation_id).state == "CLOSED"
+    assert store.get_target(new.allocation_id).state == "LIVE"
+    assert cdp.send.await_args_list[-1].args == ("Target.closeTarget", {"targetId": "original"})
+
+
+@pytest.mark.asyncio
 async def test_original_recovers_after_handoff_without_verify_or_new_navigation(setup):
     _, service, store, _ = setup
     value, _, _ = retained(setup, human=True)
