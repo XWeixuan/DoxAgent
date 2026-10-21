@@ -951,7 +951,8 @@ async def test_recovery_browser_capacity_is_independent_and_released():
 
 
 @pytest.mark.asyncio
-async def test_automatic_check_waits_for_native_document_without_navigation(setup, monkeypatch):
+@pytest.mark.parametrize("clears", [True, False])
+async def test_automatic_check_waits_for_native_document_without_navigation(setup, monkeypatch, clears):
     import doxagent.site_strategy.runtime as module
     from doxagent.site_strategy.schema import ChallengePolicy
 
@@ -969,7 +970,7 @@ async def test_automatic_check_waits_for_native_document_without_navigation(setu
         if method == "DOM.getOuterHTML":
             return {
                 "outerHTML": LISTING
-                if clock[0] >= 8
+                if clears and clock[0] >= 8
                 else "<title>Just a moment</title>Checking your browser"
             }
         return {}
@@ -984,4 +985,7 @@ async def test_automatic_check_waits_for_native_document_without_navigation(setu
         "<title>Just a moment</title>Checking your browser",
         75,
     )
-    assert result == LISTING and clock[0] == 8
+    if clears:
+        assert result == LISTING and clock[0] == 8
+    else:
+        assert "Checking your browser" in result and clock[0] == 60

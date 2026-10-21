@@ -8,6 +8,8 @@
 
 # changelog
 
+2026-10-22 Automatic-check handoff budget: foreground the exact recovery tab without reloading it and reserve 15 seconds of the existing parent deadline for frame classification, durable page ownership and IPC return. Bound both cleared and persistent automatic documents in regression tests; never clear a gate because waiting expired.
+
 2026-10-22 Recovery browser admission: reserve one bounded Worker-runtime probe seat outside ordinary business browser capacity so a lost-original recovery can actually start a worker under sustained acquisition load. Keep per-identity ownership/maintenance exclusion and the coordinator's recovery concurrency limit; normal business capacity is unchanged.
 
 2026-10-22 Paid challenge scene continuity: fence purchased results by the actual iframe URL, publisher and native Chrome UA rather than changing presentation labels; RETRY/SOLVABLE text changes alone cannot discard an otherwise identical paid result. Keep target/instance/lease/egress checks intact and add regression coverage.

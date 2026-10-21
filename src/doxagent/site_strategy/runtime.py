@@ -1763,7 +1763,11 @@ class SiteAccessRuntime:
     async def _wait_automatic_document(self, lease, page, gate, resolved, html, deadline):
         from .challenge_detection import assess
 
-        end = min(deadline - 5, time.monotonic() + resolved.challenge.automatic_wait_seconds)
+        # Leave time for frame assessment, durable ownership ACKs and the IPC
+        # response. Consuming the whole parent budget discards a real new scene.
+        end = min(deadline - 15, time.monotonic() + resolved.challenge.automatic_wait_seconds)
+        if lease.browser_cdp is not None and time.monotonic() < end:
+            await self._focus_maintenance_target(lease.browser_cdp, gate.root_target_id)
         while time.monotonic() < end:
             assessment = assess(html, policy=resolved.challenge, blocked=True)
             if assessment.handling_mode == "HUMAN" or assessment.kind == "ACCESS_BLOCK":
