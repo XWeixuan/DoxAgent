@@ -27,7 +27,7 @@ HAIKU_MODEL = "anthropic/claude-haiku-5.5"
 HAIKU_ENDPOINT = "google-vertex/global"
 
 
-def _recall_system(request: RuntimeResponsesRequest[Any]) -> str:
+def _recall_system(request: RuntimeResponsesRequest[Any], *, contract_first: bool = False) -> str:
     schema = bailian_strict_wire_schema(request.output_model.model_json_schema())
     contract = (
         "\n\n# Exact Output Contract\n"
@@ -37,6 +37,8 @@ def _recall_system(request: RuntimeResponsesRequest[Any]) -> str:
         "object, or emit Markdown.\n"
         + json.dumps(schema, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     )
+    if contract_first:
+        return contract.lstrip() + "\n\n" + request.instructions
     return request.instructions + contract
 
 

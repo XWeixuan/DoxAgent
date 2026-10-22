@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from hashlib import sha256
 from time import perf_counter
 
 from .openrouter import _recall_system
@@ -14,8 +15,13 @@ from .transport import (
 
 
 def chat_body(request):
-    text, fingerprint = _cache_optimized_input(request.payload, request.cache_context_keys)
-    messages = [{"role": "system", "content": _recall_system(request)}]
+    text, _ = _cache_optimized_input(request.payload, request.cache_context_keys)
+    # A deterministic contract + prompt prefix precedes every case-specific
+    # parent, source message and dynamically appended W1R3 identity list.
+    # GLM uses native implicit caching; no Qwen/Anthropic cache flags are sent.
+    system = _recall_system(request, contract_first=True)
+    fingerprint = sha256(system.encode("utf-8")).hexdigest()
+    messages = [{"role": "system", "content": system}]
     if request.replay_parent:
         messages.extend(
             (

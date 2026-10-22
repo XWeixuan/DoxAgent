@@ -18,18 +18,18 @@ def vertex_recall_rounds(*, w1_timeout=120, w2_timeout=180, provisional_batch_si
 
 
 def bailian_glm_rounds(workspace_endpoint):
-    if (
-        not workspace_endpoint.startswith("https://")
-        or ".cn-beijing.maas.aliyuncs.com/compatible-mode/v1" not in workspace_endpoint
+    if not workspace_endpoint.startswith("https://") or not (
+        workspace_endpoint == "https://dashscope.aliyuncs.com/compatible-mode/v1"
+        or workspace_endpoint.endswith(".cn-beijing.maas.aliyuncs.com/compatible-mode/v1")
     ):
-        raise ValueError("GLM requires the configured Beijing Model Studio workspace endpoint")
+        raise ValueError("GLM requires a Beijing Model Studio compatible endpoint")
     return {
         f"{lane}:{rnd}": {
             "model": "ZHIPU/GLM-5.3-FlashX",
             "provider": "bailian",
             "transport": "chat_completions_json_object",
             "provider_endpoint": workspace_endpoint,
-            "reasoning_effort": "low" if (lane, rnd) == ("W2", "R3") else "high",
+            "reasoning_effort": "high",
             "timeout_seconds": 120,
         }
         for lane in ("W1", "W2")
@@ -53,5 +53,7 @@ def configured_rounds(settings):
             )
         )
     if profile in {"bailian_glm", "vertex_glm"}:
-        result.update(bailian_glm_rounds(settings.bailian_glm_endpoint))
+        result.update(
+            bailian_glm_rounds(settings.bailian_glm_endpoint or settings.dashscope_chat_base_url)
+        )
     return result
