@@ -66,6 +66,28 @@ def test_monitoring_terms_atomic_cas_retry_and_preview(tmp_path):
     assert repo.get_source("reuters_site_search") is not None
 
 
+def test_defense_hebrew_requirement_is_scoped_in_api_control(tmp_path):
+    from scripts.ops.configure_defense_sources import configure
+
+    repo = MessageBusV2Repository(tmp_path / "bus.db")
+    bus = MessageBusV2Service(repo)
+    bus.bootstrap()
+    for ticker in ("RKLB", "ONDS", "MU"):
+        bus.start_ticker(ticker)
+    configure(bus)
+    control = MonitoringTermsControl(repo.path)
+    assert "he" in control.get_terms("ONDS")["required_languages"]
+    assert "he" not in control.get_terms("RKLB")["required_languages"]
+    mu = control.get_terms("MU")
+    assert "he" not in mu["required_languages"]
+    config = _terms().model_dump(mode="json")
+    config.pop("ticker")
+    config.pop("expected_revision")
+    assert control.validate_config("MU", config)["valid"]
+    saved = control.put_terms("MU", config, "tester", "scoped-sector-language", mu["control_etag"])
+    assert saved["revision"] == 1
+
+
 def test_monitoring_terms_http_contract(tmp_path, monkeypatch):
     class Auth:
         async def authenticate(self, token):

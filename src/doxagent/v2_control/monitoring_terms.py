@@ -49,12 +49,21 @@ class MonitoringTermsControl(Bindings):
     def _snapshot(self, db, ticker: str, configuration_override=None):
         repo = TransactionRepository(self.path, db)
         source_map = {source.source_id: source for source in repo.list_sources()}
+        subscribed = {
+            binding.source_id
+            for binding in repo.list_bindings(ticker=ticker)
+            if binding.enabled
+        }
         requirements: dict[str, list[str]] = {"en": []}
         for source in source_map.values():
             if (
                 source.acquisition_mode
                 in {AcquisitionMode.BY_SEARCH, AcquisitionMode.BY_DISTRIBUTION}
                 and source.content_language
+                and (
+                    source.adapter_ref != "builtin:defense_public@1"
+                    or source.source_id in subscribed
+                )
             ):
                 requirements.setdefault(source.content_language, []).append(source.source_id)
         head = db.execute(

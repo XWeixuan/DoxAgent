@@ -94,3 +94,7 @@ HTTP 429 保存真实失败，并按 Retry-After（至少 60 秒）延期，不�
 已只读核对现有 Registry，没有 Aviation Week/Shephard 当前专项 Site；本次未取得可验证的付费 BODY 访问能力，不新增空身份或谎报登录。Aviation Week 和 Shephard 的付费文章均需另有有效订阅访问能力。
 
 旧 Shephard 的 5 条 READY 在正文质量证明上不可直接相信；检查时该源 Raw 消息数为 0，没有错误正文进入 ticker 流。受限复核工具 `eval/defense_sources_20261024/reclassify_shephard_results.py` 逐条真实访问，仅在确认订阅声明后将当前质量改为 PARTIAL/FAILED，保留原内容、原执行收据及新增审计，不创建 Stream 或重投旧新闻。最终逐条结果见发布回执。付费策略与原有缓存回归 **47 项通过**。
+
+### API 语言范围兼容
+
+API 的 MonitoringTermsControl 有独立 snapshot/validate 路径，已同步按有效订阅限制可选国防源的语言要求：ONDS 需要 he，RKLB、MU 等未订阅 Calcalist 的 ticker 不需要 he。真实 CAS、校验和 HTTP 合同相关 **8 项通过**。前端语言列表动态读取 API，无需重建 Web；API 组件需要同步新版本，避免只更新 Collector 而遗留配置页校验回归。

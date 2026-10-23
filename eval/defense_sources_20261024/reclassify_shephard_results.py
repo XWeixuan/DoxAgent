@@ -94,11 +94,21 @@ async def main():
                 row["action"] = "reclassified"
         return row
 
+    async def guarded_review(old):
+        try:
+            return await review(old)
+        except Exception as exc:
+            return {
+                "fetch_key": old["fetch_key"],
+                "action": "unverified",
+                "error": type(exc).__name__ + ":" + str(exc)[:180],
+            }
+
     try:
         report = {
             "apply": args.apply,
             "raw_messages": raw_count,
-            "reviews": await asyncio.gather(*(review(old) for old in originals)),
+            "reviews": await asyncio.gather(*(guarded_review(old) for old in originals)),
         }
     finally:
         await http.close()
