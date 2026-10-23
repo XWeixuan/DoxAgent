@@ -376,6 +376,7 @@ def create_app(
         url: str,
         revision: int | None = Query(default=None, ge=1),
         x_site_access_protocol: Annotated[str | None, Header()] = None,
+        x_site_access_capture_metadata: Annotated[str | None, Header()] = None,
     ):
         try:
             value = service.resolve(url, revision=revision)
@@ -384,6 +385,9 @@ def create_app(
             )
             if x_site_access_protocol != "3":
                 data["auth"].pop("auto_login", None)
+            if x_site_access_capture_metadata != "1" and "challenge" in data:
+                data["challenge"].pop("probation_seconds", None)
+                data["challenge"].pop("probation_interval_ms", None)
             return JSONResponse(data)
         except (ValueError, RuntimeError) as exc:
             raise HTTPException(status_code=422, detail=str(exc)) from exc

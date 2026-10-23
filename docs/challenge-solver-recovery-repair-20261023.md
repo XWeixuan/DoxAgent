@@ -58,3 +58,5 @@
 ### 窄发布的旧客户端兼容
 
 发布后多个源的旧Message Bus报ValidationError，核实其AccessResult仍extra=forbid，而新服务默认输出capture_id/served_from_shared_capture。这不是网站风控。修复为仅在客户端显式发送X-Site-Access-Capture-Metadata: 1时返回新增字段；协议2/3旧消费者保持原始字段集合，物理/复用审计仍在服务端记录，不需重建Bus/Enrichment。新客户端通过同一可选请求头协商，增加既有协议回归正反例。以后新增可选模型字段不能直接等同于旧严格客户端的线兼容。
+
+自然轮询进一步证实还须覆盖resolve的嵌套ChallengePolicy：新增probation_seconds/probation_interval_ms同样被旧模型拒绝。两处响应统一显式协商，回归覆盖resolve和execute，不能只修顶层字段。

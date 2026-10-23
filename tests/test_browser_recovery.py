@@ -882,6 +882,12 @@ def test_protocol_two_downgrades_pending_without_breaking_old_readers(setup):
         headers={"Authorization": "Bearer worker", "X-Site-Access-Protocol": "2"},
     ).json()
     assert "challenge" not in resolved and "auto_login" not in resolved["auth"]
+    resolved_three = client.get(
+        "/v1/resolve", params={"url": URL},
+        headers={"Authorization": "Bearer worker", "X-Site-Access-Protocol": "3"},
+    ).json()
+    assert "probation_seconds" not in resolved_three["challenge"]
+    assert "probation_interval_ms" not in resolved_three["challenge"]
 
 
 @pytest.mark.asyncio
