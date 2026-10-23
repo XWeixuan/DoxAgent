@@ -432,16 +432,29 @@ class GlobalPollScheduler:
             shared_poll = getattr(adapter, "poll_shared", None)
             if shared_poll is None:
                 raise TypeError(f"distribution adapter lacks poll_shared: {source.adapter_ref}")
+            shared_checkpoint = __import__("json").loads(run["checkpoint_json"])
+            if (
+                not shared_checkpoint
+                and mode == "REALTIME"
+                and source.adapter_ref == "builtin:defense_public@1"
+            ):
+                previous_state = await self.storage_call(self.repository.get_poll_state, roster[0][0])
+                saved = previous_state.checkpoint.get("defense_public", {})
+                if saved.get("source_version") == source.version:
+                    shared_checkpoint = saved.get("checkpoint", {})
             context = SharedPollContext(
                 run_id=run["run_id"],
                 source=source,
-                checkpoint=__import__("json").loads(run["checkpoint_json"]),
+                checkpoint=shared_checkpoint,
                 window_start=window_start,
                 window_cutoff=window_cutoff,
                 requested_at=attempted_at,
                 request_permit=(await self.storage_call(self._limiter, source)).permit,
             )
             result = await shared_poll(context)
+            if source.adapter_ref == "builtin:defense_public@1":
+                for failure in result.failures:
+                    await self.storage_call(self.repository.save_failure, failure)
             from doxagent.source_maintenance.signals import shared
 
             shared(source, [b for b, _, _ in roster], run["run_id"], attempted_at, mode, result)
@@ -496,6 +509,7 @@ class GlobalPollScheduler:
                     run,
                     coverage=result.window_coverage,
                     observed_at=attempted_at,
+                    acquisition_checkpoint=result.next_checkpoint,
                 )
             return PollExecutionResult(
                 binding_id=f"shared:{source.source_id}",
@@ -554,6 +568,7 @@ class GlobalPollScheduler:
         *,
         coverage: str | None = None,
         observed_at: datetime | None = None,
+        acquisition_checkpoint: JsonObject | None = None,
     ) -> None:
         """Project one shared acquisition onto its subscribed ticker poll states."""
         observed_at = observed_at or datetime.fromisoformat(str(run["created_at"]))
@@ -563,6 +578,19 @@ class GlobalPollScheduler:
             previous = self.repository.get_poll_state(binding)
             if previous.last_attempt_at and previous.last_attempt_at >= observed_at:
                 continue
+            checkpoint = previous.checkpoint
+            if (
+                source.adapter_ref == "builtin:defense_public@1"
+                and acquisition_checkpoint is not None
+                and run["mode"] == "REALTIME"
+            ):
+                checkpoint = {
+                    **checkpoint,
+                    "defense_public": {
+                        "source_version": source.version,
+                        "checkpoint": acquisition_checkpoint,
+                    },
+                }
             self.repository.save_poll_state(
                 previous.model_copy(
                     update={
@@ -579,6 +607,7 @@ class GlobalPollScheduler:
                         "target_due_at": next_due,
                         "next_dispatch_at": next_due,
                         "updated_at": utc_now(),
+                        "checkpoint": checkpoint,
                     }
                 )
             )

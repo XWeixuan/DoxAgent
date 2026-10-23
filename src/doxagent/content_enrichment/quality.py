@@ -46,7 +46,8 @@ def tokens(text: str) -> set[str]:
         for run in re.findall(r"[\u3400-\u9fff\uac00-\ud7a3]+", text.casefold())
         for index in range(max(1, len(run) - 1))
     }
-    return latin | cjk
+    hebrew = set(re.findall(r"[\u05d0-\u05ea]{2,}", text))
+    return latin | cjk | hebrew
 
 
 def title_match(left: str, right: str) -> bool:

@@ -1,0 +1,30 @@
+<rss>
+  <channel>
+    <item xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:wfw="http://wellformedweb.org/CommentAPI/" xmlns:slash="http://purl.org/rss/1.0/modules/slash/">
+      <title>Rethinking networks in space with Aalyria’s Brian Barritt</title>
+      <link>https://spacenews.com/rethinking-networks-in-space-with-aalyrias-brian-barritt/</link>
+      <comments>https://spacenews.com/rethinking-networks-in-space-with-aalyrias-brian-barritt/#respond</comments>
+      <dc:creator>SpaceNews Editor</dc:creator>
+      <pubDate>Thu, 22 Oct 2026 18:13:38 +0000</pubDate>
+      <category>Video</category>
+      <category>Space Minds</category>
+      <category>Space Minds Podcast</category>
+      <guid isPermaLink="false">https://spacenews.com/?p=622594</guid>
+      <wfw:commentRss>https://spacenews.com/rethinking-networks-in-space-with-aalyrias-brian-barritt/feed/</wfw:commentRss>
+      <slash:comments>0</slash:comments>
+      <source url="https://spacenews.com">0?ds=true&amp;seed=1792773530</source>
+      <post-id xmlns="com-wordpress:feed-additions:1">622594</post-id>
+    </item>
+    <item xmlns:dc="http://purl.org/dc/elements/1.1/">
+      <title>TechnoMile Recognized as a 2026 Inc. Power Partner Award Winner</title>
+      <link>https://spacenews.com/technomile-recognized-as-a-2026-inc-power-partner-award-winner/</link>
+      <dc:creator>TechnoMile</dc:creator>
+      <pubDate>Wed, 21 Oct 2026 15:26:29 +0000</pubDate>
+      <category>Press Release</category>
+      <category>Technomile</category>
+      <guid isPermaLink="false">https://spacenews.com/?p=622288</guid>
+      <source url="https://spacenews.com">1?ds=true&amp;seed=1792773530</source>
+      <post-id xmlns="com-wordpress:feed-additions:1">622288</post-id>
+    </item>
+  </channel>
+</rss>

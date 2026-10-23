@@ -123,22 +123,30 @@ class MonitoringTermsService:
         with repository.transaction() as db:
             migrate(db)
 
-    def required_languages(self) -> set[str]:
+    def required_languages(self, ticker: str | None = None) -> set[str]:
         from .schema import AcquisitionMode
 
+        # Preserve legacy shared-language requirements. Optional sector sources
+        # contribute languages only for subscribed tickers, so adding Hebrew
+        # Calcalist cannot invalidate unrelated semiconductor ticker settings.
+        subscribed = {
+            b.source_id for b in self.repository.list_bindings()
+            if b.enabled and (ticker is None or b.ticker == ticker.upper())
+        }
         return {
             source.content_language
             for source in self.repository.list_sources()
             if source.acquisition_mode
             in {AcquisitionMode.BY_SEARCH, AcquisitionMode.BY_DISTRIBUTION}
             and source.content_language
+            and (source.adapter_ref != "builtin:defense_public@1" or source.source_id in subscribed)
         }
 
     def apply(self, terms: TickerMonitoringTerms, *, actor: str) -> int:
         payload = canonical_json(terms.model_dump(mode="json"))
         if len(payload.encode("utf-8")) > 65536:
             raise ValueError("monitoring terms exceed 64 KiB")
-        validate_terms(terms, self.required_languages())
+        validate_terms(terms, self.required_languages(terms.ticker))
         created_at = utc_now().isoformat()
         with self.repository.transaction() as db:
             row = db.execute(

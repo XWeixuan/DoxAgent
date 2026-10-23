@@ -1,0 +1,3 @@
+{"route": "http://doxagent-egress-clash:18081", "status": 200, "bytes": 35072, "results": 10}
+{"route": "http://doxagent-egress-clash:18083", "status": 200, "bytes": 35072, "results": 10}
+{"route": null, "status": 200, "bytes": 35072, "results": 10}

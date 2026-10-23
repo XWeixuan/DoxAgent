@@ -1,0 +1,202 @@
+[
+  {
+    "id": "aviation_rocketlab",
+    "url": "https://aviationweek.com/term/rocket-lab",
+    "status": 200,
+    "final_url": "https://aviationweek.com/term/rocket-lab",
+    "bytes": 153858,
+    "content_type": "text/html; charset=UTF-8",
+    "etag": null,
+    "last_modified": "Fri, 23 Oct 2026 17:52:51 GMT",
+    "ms": 1139
+  },
+  {
+    "id": "aviation_feed",
+    "url": "https://aviationweek.com/awn/rss-feed-by-content-source",
+    "status": 200,
+    "final_url": "https://aviationweek.com/awn/rss-feed-by-content-source",
+    "bytes": 236446,
+    "content_type": "application/rss+xml; charset=utf-8",
+    "etag": "\"1792777603\"",
+    "last_modified": "Fri, 23 Oct 2026 17:46:43 GMT",
+    "ms": 1267
+  },
+  {
+    "id": "breaking_space",
+    "url": "https://breakingdefense.com/category/space/feed/",
+    "status": 403,
+    "final_url": "https://breakingdefense.com/category/space/feed/",
+    "bytes": 5373,
+    "content_type": "text/html; charset=UTF-8",
+    "etag": null,
+    "last_modified": null,
+    "ms": 88
+  },
+  {
+    "id": "scoop_space",
+    "url": "https://defensescoop.com/news/space/feed/",
+    "status": 200,
+    "final_url": "https://defensescoop.com/news/space/feed/",
+    "bytes": 80524,
+    "content_type": "application/rss+xml; charset=UTF-8",
+    "etag": "\"a4b883e9c45db9737bce7cbc4dad4de3\"",
+    "last_modified": "Fri, 23 Oct 2026 17:03:41 GMT",
+    "ms": 589
+  },
+  {
+    "id": "air_space",
+    "url": "https://www.airandspaceforces.com/category/space/feed/",
+    "status": 200,
+    "final_url": "https://www.airandspaceforces.com/category/space/feed/",
+    "bytes": 30051,
+    "content_type": "application/rss+xml; charset=UTF-8",
+    "etag": "\"7a0eb4028d9bb5e0255e6b8f0857d37b\"",
+    "last_modified": "Fri, 23 Oct 2026 16:12:46 GMT",
+    "ms": 489
+  },
+  {
+    "id": "spacecom",
+    "url": "https://www.space.com/feeds/tag/launches-spacecraft",
+    "error": "TimeoutError:The read operation timed out",
+    "ms": 8385
+  },
+  {
+    "id": "spacenews",
+    "url": "https://spacenews.com/feed/",
+    "status": 200,
+    "final_url": "https://spacenews.com/feed/",
+    "bytes": 41100,
+    "content_type": "application/rss+xml; charset=UTF-8",
+    "etag": "\"26ce5ed80bcaaa9a1e7fead7497f99ec\"",
+    "last_modified": "Fri, 23 Oct 2026 16:38:46 GMT",
+    "ms": 31
+  },
+  {
+    "id": "ssc",
+    "url": "https://www.ssc.spaceforce.mil/Newsroom",
+    "error": "URLError:<urlopen error [Errno -3] Temporary failure in name resolution>",
+    "ms": 19718
+  },
+  {
+    "id": "nasa",
+    "url": "https://www.nasa.gov/2026-news-releases/",
+    "status": 200,
+    "final_url": "https://www.nasa.gov/2026-news-releases/",
+    "bytes": 349926,
+    "content_type": "text/html; charset=UTF-8",
+    "etag": null,
+    "last_modified": null,
+    "ms": 31
+  },
+  {
+    "id": "dod_contracts",
+    "url": "https://www.war.gov/DesktopModules/ArticleCS/RSS.ashx?ContentType=400&Site=945&max=10",
+    "status": 200,
+    "final_url": "https://www.war.gov/DesktopModules/ArticleCS/RSS.ashx?ContentType=400&Site=945&max=10",
+    "bytes": 6191,
+    "content_type": "text/xml; charset=utf-8",
+    "etag": null,
+    "last_modified": null,
+    "ms": 61
+  },
+  {
+    "id": "dod_releases",
+    "url": "https://www.war.gov/news/rss_releases2.xml",
+    "status": 403,
+    "final_url": "https://www.war.gov/news/rss_releases2.xml",
+    "bytes": 399,
+    "content_type": "text/html",
+    "etag": null,
+    "last_modified": null,
+    "ms": 41
+  },
+  {
+    "id": "iridium",
+    "url": "https://investor.iridium.com/press-releases",
+    "status": 200,
+    "final_url": "https://investor.iridium.com/press-releases",
+    "bytes": 159961,
+    "content_type": "text/html; charset=UTF-8",
+    "etag": null,
+    "last_modified": "Fri, 23 Oct 2026 17:36:53 GMT",
+    "ms": 94
+  },
+  {
+    "id": "calcalist",
+    "url": "https://www.calcalist.co.il/category/3735?cx=partner-pub-0047680307646695:9309925491&cof=FORID:10&ie=UTF-8&q=Ondas",
+    "status": 403,
+    "final_url": "https://www.calcalist.co.il/category/3735?cx=partner-pub-0047680307646695:9309925491&cof=FORID:10&ie=UTF-8&q=Ondas",
+    "bytes": 397,
+    "content_type": "text/html",
+    "etag": null,
+    "last_modified": null,
+    "ms": 39
+  },
+  {
+    "id": "scoop_drones",
+    "url": "https://defensescoop.com/tag/drones/feed/",
+    "status": 200,
+    "final_url": "https://defensescoop.com/tag/drones/feed/",
+    "bytes": 78089,
+    "content_type": "application/rss+xml; charset=UTF-8",
+    "etag": "\"a4b883e9c45db9737bce7cbc4dad4de3\"",
+    "last_modified": "Fri, 23 Oct 2026 17:03:41 GMT",
+    "ms": 453
+  },
+  {
+    "id": "scoop_counter",
+    "url": "https://defensescoop.com/tag/counter-drone/feed/",
+    "status": 200,
+    "final_url": "https://defensescoop.com/tag/counter-drone/feed/",
+    "bytes": 79703,
+    "content_type": "application/rss+xml; charset=UTF-8",
+    "etag": "\"a4b883e9c45db9737bce7cbc4dad4de3\"",
+    "last_modified": "Fri, 23 Oct 2026 17:03:41 GMT",
+    "ms": 516
+  },
+  {
+    "id": "unmanned_systems",
+    "url": "https://www.unmannedairspace.info/category/counter-uas-systems-and-policies/feed/",
+    "status": 200,
+    "final_url": "https://www.unmannedairspace.info/category/counter-uas-systems-and-policies/feed/",
+    "bytes": 58207,
+    "content_type": "application/rss+xml; charset=UTF-8",
+    "etag": "\"bbb56bc3d34eb3c0f53b4f7caf354e98\"",
+    "last_modified": "Fri, 23 Oct 2026 14:17:38 GMT",
+    "ms": 1551
+  },
+  {
+    "id": "unmanned_tenders",
+    "url": "https://www.unmannedairspace.info/category/counter-uas-systems-tenders/feed/",
+    "status": 200,
+    "final_url": "https://www.unmannedairspace.info/category/counter-uas-systems-tenders/feed/",
+    "bytes": 60831,
+    "content_type": "application/rss+xml; charset=UTF-8",
+    "etag": "\"bbb56bc3d34eb3c0f53b4f7caf354e98\"",
+    "last_modified": "Fri, 23 Oct 2026 14:17:38 GMT",
+    "ms": 1432
+  },
+  {
+    "id": "shephard",
+    "url": "https://www.shephardmedia.com/news/uv-online/feed/",
+    "status": 200,
+    "final_url": "https://www.shephardmedia.com/news/uv-online/feed/",
+    "bytes": 9904,
+    "content_type": "application/rss+xml; charset=utf-8",
+    "etag": null,
+    "last_modified": null,
+    "ms": 665
+  },
+  {
+    "id": "army_releases",
+    "url": "https://www.army.mil/news/newsreleases",
+    "error": "URLError:<urlopen error [Errno -3] Temporary failure in name resolution>",
+    "ms": 19440
+  },
+  {
+    "id": "army_feed",
+    "url": "https://www.army.mil/rss/static/0.xml",
+    "error": "URLError:<urlopen error [Errno -3] Temporary failure in name resolution>",
+    "ms": 18782
+  }
+]

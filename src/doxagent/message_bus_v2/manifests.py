@@ -85,6 +85,8 @@ def _source(
 
 
 def initial_sources() -> list[SourceDefinition]:
+    from .defense_sources import initial_sources as defense_sources
+
     string_array = {"type": "array", "items": {"type": "string", "minLength": 1}}
     ticker_locator = {
         "listing_url": {"type": "string", "minLength": 1},
@@ -92,6 +94,7 @@ def initial_sources() -> list[SourceDefinition]:
         "exchange": {"type": "string", "enum": ["NASDAQ", "NYSE", "AMEX"]},
     }
     return [
+        *defense_sources(),
         initial_ir_source(),
         _source(
             "benzinga_news",

@@ -55,6 +55,7 @@ class ContentEnrichmentHub:
         self.site_access_client = site_access_client
         self._last_outbox_flush = 0.0
         self.ir_body_reader = None
+        self.defense_body_reader = None
 
     async def run_once(self, *, now: datetime | None = None) -> int:
         await self._flush_outcomes(force=True)
@@ -144,6 +145,8 @@ class ContentEnrichmentHub:
             await asyncio.gather(*active, return_exceptions=True)
 
     async def close(self) -> None:
+        if self.defense_body_reader is not None:
+            await self.defense_body_reader.close()
         if self.ir_body_reader is not None:
             await self.ir_body_reader.close()
         close = getattr(self.extractor, "close", None)
@@ -246,6 +249,13 @@ class ContentEnrichmentHub:
                     self.ir_body_reader = IrBodyReader()
                 async with asyncio.timeout(seconds):
                     result = await self.ir_body_reader.extract(job,record)
+            elif job.source.adapter_ref == "builtin:defense_public@1" and seconds > 0:
+                from doxagent.message_bus_v2.defense_body import DefenseBodyReader
+
+                if self.defense_body_reader is None:
+                    self.defense_body_reader = DefenseBodyReader()
+                async with asyncio.timeout(seconds):
+                    result = await self.defense_body_reader.extract(job, record)
             elif native:
                 result = MediaExtractionResult(
                     record=record,
@@ -377,12 +387,14 @@ class ContentEnrichmentHub:
         publisher = job.message.publisher_name or job.message.source or job.source.display_name
         publication_updates: dict[str, object] = {}
         stamp = result.diagnostics.get("publisher_published_at")
+        public_defense = job.source.adapter_ref == "builtin:defense_public@1"
         if (
-            job.source.source_id in {
+            (job.source.source_id in {
                 "investorshub_ticker_news", "investing_ticker_news", "corporate_ir_press_releases"
-            }
+            } or public_defense)
             and (
                 job.message.publication_time_basis == "DATE"
+                or (public_defense and job.message.publication_time_basis == "UNKNOWN_FIRST_SEEN")
                 or job.source.source_id == "investing_ticker_news"
             )
             and result.succeeded

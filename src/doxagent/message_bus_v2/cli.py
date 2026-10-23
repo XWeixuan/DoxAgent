@@ -97,7 +97,7 @@ def main() -> None:
                 parser.error("--file is required")
             data = yaml.safe_load(Path(args.file).read_text(encoding="utf-8"))
             terms = TickerMonitoringTerms.model_validate(data)
-            validate_terms(terms, service.required_languages())
+            validate_terms(terms, service.required_languages(terms.ticker))
             revision = (
                 service.apply(terms, actor=args.actor)
                 if args.action == "apply"
