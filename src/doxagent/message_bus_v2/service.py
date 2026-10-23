@@ -1258,9 +1258,11 @@ class MessageBusV2Service:
             bootstrap_suppressed=bootstrap,
         )
         decision, persisted = (
-            self.repository.record_raw(raw, enrichment_claim=enrichment_claim)
+            self.repository.record_raw(raw, enrichment_claim=enrichment_claim,
+                **({"known_article_raw_id":known_article_raw_id} if known_article_raw_id else {}))
             if enrichment_claim
-            else self.repository.record_raw(raw)
+            else self.repository.record_raw(raw,
+                **({"known_article_raw_id":known_article_raw_id} if known_article_raw_id else {}))
         )
         if known_article_raw_id and (
             decision is not IngestDecision.DUPLICATE or persisted.raw_message_id != known_article_raw_id

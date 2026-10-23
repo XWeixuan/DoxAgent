@@ -703,7 +703,7 @@ class MessageBusV2Repository:
             return reusable is not None
 
     def _dedup_candidate(
-        self, connection: sqlite3.Connection, candidate: RawMessage
+        self, connection: sqlite3.Connection, candidate: RawMessage, known_article_raw_id: str | None = None
     ) -> tuple[RawMessage, RawMessage | None]:
         """Reserve a logical version or merge an observation, under BEGIN IMMEDIATE."""
         if "content_evidence" not in candidate.metadata:
@@ -763,9 +763,16 @@ class MessageBusV2Repository:
                     matches.append(old)
         # Multiple incompatible candidate identities: do not force an ambiguous merge.
         old = matches[0] if len(matches) == 1 else None
+        if known_article_raw_id:
+            anchor = connection.execute("SELECT r.data_json FROM raw_messages r JOIN standard_messages s ON s.raw_message_id=r.raw_message_id JOIN stream_members sm ON sm.standard_message_id=s.standard_message_id WHERE r.raw_message_id=? AND r.ticker=? AND r.binding_id=? LIMIT 1",
+                (known_article_raw_id,candidate.ticker,candidate.binding_id)).fetchone()
+            anchored = RawMessage.model_validate_json(anchor[0]) if anchor else None
+            if anchored is None or dedup.context_conflict(anchored,candidate):
+                raise RuntimeError("known_article_revision_identity_changed")
+            old = anchored if anchored.metadata.get("message_version") else self._adopt_legacy(connection,anchored)
         fingerprint = candidate.metadata["content_evidence"].get("body_fingerprint")
         content_matched = False
-        if not matches and fingerprint:
+        if old is None and not matches and fingerprint:
             rows = connection.execute(
                 """select r.data_json from logical_message_versions v join raw_messages r
                    on r.raw_message_id=v.raw_message_id where v.ticker=? and v.body_fingerprint=?
@@ -824,8 +831,9 @@ class MessageBusV2Repository:
                     prior = self._adopt_legacy(connection, prior)
                 if dedup.classify(prior, candidate) == "SAME_VERSION":
                     classification = "SAME_VERSION"
-                    old = prior
-                    version = prior.metadata.get("message_version", version)
+                    if not known_article_raw_id:
+                        old = prior
+                        version = prior.metadata.get("message_version", version)
                     break
         # Article identity owns publication. Content differences are audited in place,
         # never a second Stream/Runtime admission for an already matched article.
@@ -1443,13 +1451,15 @@ class MessageBusV2Repository:
                 return raw
         return None
 
-    def mark_article_check_pending(self, raw_id):
+    def mark_article_check_pending(self, raw_id, *, pending=True, error=None):
         with self.transaction() as db:
             row = db.execute("SELECT data_json FROM raw_messages WHERE raw_message_id=?",(raw_id,)).fetchone()
             if not row:
                 return
             raw = RawMessage.model_validate_json(row[0])
-            state = {**raw.metadata.get("body_update_state",{}),"pending":True}
+            state = {**raw.metadata.get("body_update_state",{}),"pending":pending}
+            if error is not None:
+                state.update(last_error=error,last_checked_at=utc_now().isoformat())
             if raw.metadata.get("body_update_state") == state:
                 return
             metadata = {**raw.metadata,"body_update_state":state}
@@ -1458,6 +1468,13 @@ class MessageBusV2Repository:
             for row in db.execute("SELECT data_json FROM standard_messages WHERE raw_message_id=?",(raw_id,)):
                 standard = StandardMessage.model_validate_json(row[0]).model_copy(update={"metadata":metadata})
                 db.execute("UPDATE standard_messages SET data_json=? WHERE standard_message_id=?",(self._json(standard),standard.standard_message_id))
+
+    def reject_known_article_update(self, job, reason):
+        with self.atomic_intake():
+            self.mark_article_check_pending(job.known_article_raw_id,pending=False,error=reason)
+            self.complete_enrichment_job_with_outcome(job.job_id,job.claim_token,{
+                "job_id":job.job_id,"execution_id":job.execution_id,"outcome":"UPDATE_REJECTED",
+                "reason":reason,"payload":{"site_outcome":False}})
 
     def enqueue_enrichment_job(self, job: EnrichmentJob) -> tuple[EnrichmentJob, bool]:
         """Insert one active intake job, or return the already queued equivalent."""
@@ -1860,14 +1877,15 @@ class MessageBusV2Repository:
         return row is not None
 
     def record_raw(
-        self, candidate: RawMessage, *, enrichment_claim: tuple[str, str] | None = None
+        self, candidate: RawMessage, *, enrichment_claim: tuple[str, str] | None = None,
+        known_article_raw_id: str | None = None,
     ) -> tuple[IngestDecision, RawMessage]:
         site_outcome = self._body_outcome_payload(candidate)
         with self.transaction() as connection:
             try:
                 if enrichment_claim:
                     self._assert_enrichment_claim(connection, *enrichment_claim)
-                candidate, duplicate = self._dedup_candidate(connection, candidate)
+                candidate, duplicate = self._dedup_candidate(connection, candidate, known_article_raw_id)
                 if duplicate is not None:
                     self._record_body_attempt(connection, candidate, duplicate)
                     return IngestDecision.DUPLICATE, duplicate

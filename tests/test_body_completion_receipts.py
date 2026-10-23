@@ -162,3 +162,53 @@ async def test_legacy_adoption_cannot_cross_paid_publisher_scope(tmp_path):
     )
     row = results.adopt_legacy(other, "different-source", "MU", now=datetime.now(UTC))
     assert not row.get("content")
+
+
+async def test_known_update_uses_published_anchor_with_ambiguous_legacy_aliases(tmp_path):
+    import json
+
+    from doxagent.message_bus_v2.deduplication import aliases
+    repo,bus,source,binding=_setup(tmp_path)
+    original=_message(9030,summary="Initial company investment.")
+    extractor=Extractor();hub=ContentEnrichmentHub(repo,bus,extractor=extractor)
+    bus.enqueue_enrichment(source=source,binding=binding,message=original,bootstrap=False,poll_run_id="initial")
+    await hub.run_once()
+    raw=repo.list_raw(ticker="MU")[0]
+    metadata={**raw.metadata,"message_version":{**raw.metadata["message_version"],"logical_message_id":"legacy-duplicate"}}
+    duplicate=raw.model_copy(update={"raw_message_id":"raw-legacy-duplicate","content_hash":"legacy-content-hash","raw_hash":"legacy-provider-hash","metadata":metadata,"revision":2})
+    with repo.transaction() as db:
+        db.execute("INSERT INTO raw_messages VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",(duplicate.raw_message_id,duplicate.ticker,duplicate.source_id,duplicate.binding_id,duplicate.identity_key,duplicate.content_hash,duplicate.raw_hash,duplicate.revision,duplicate.processing_status.value,duplicate.published_at.isoformat(),duplicate.collected_at.isoformat(),repo._json(duplicate)))
+        db.execute("INSERT INTO logical_message_versions VALUES(?,?,?,?,?,?)",(duplicate.ticker,"legacy-duplicate",1,duplicate.raw_message_id,duplicate.metadata["content_evidence"].get("body_fingerprint"),json.dumps(metadata["message_version"])))
+        for alias in aliases(duplicate):db.execute("INSERT OR IGNORE INTO message_identity_aliases VALUES(?,?,?)",(duplicate.ticker,alias,"legacy-duplicate"))
+    update=original.model_copy(update={"summary":"Company doubles the investment."})
+    job,_=bus.enqueue_enrichment(source=source,binding=binding,message=update,bootstrap=False,poll_run_id="update")
+    assert job.known_article_raw_id==raw.raw_message_id
+    await hub.run_once()
+    assert repo.latest_stream_offset("MU")==1
+    assert "investment 2" in repo.get_raw(raw.raw_message_id).body
+    assert len(repo.list_raw(ticker="MU"))==2
+    assert all(j.status.value=="completed" for j in repo.list_enrichment_jobs(include_terminal=True))
+
+
+async def test_rejected_article_update_is_terminal_and_does_not_stop_sibling(tmp_path,monkeypatch):
+    repo,bus,source,binding=_setup(tmp_path)
+    original=_message(9031,summary="First company update.")
+    extractor=Extractor();hub=ContentEnrichmentHub(repo,bus,extractor=extractor)
+    bus.enqueue_enrichment(source=source,binding=binding,message=original,bootstrap=False,poll_run_id="initial")
+    await hub.run_once()
+    raw=repo.list_raw(ticker="MU")[0]
+    bad,_=bus.enqueue_enrichment(source=source,binding=binding,message=original.model_copy(update={"summary":"Changed investment amount."}),bootstrap=False,poll_run_id="rejected")
+    bus.enqueue_enrichment(source=source,binding=binding,message=_message(9032),bootstrap=False,poll_run_id="healthy")
+    accept=bus._accept_message
+    def reject_one(**kwargs):
+        if kwargs.get("known_article_raw_id"):
+            raise RuntimeError("known_article_revision_identity_changed")
+        return accept(**kwargs)
+    monkeypatch.setattr(bus,"_accept_message",reject_one)
+    assert await hub.run_once()==2
+    failed=next(j for j in repo.list_enrichment_jobs(include_terminal=True) if j.job_id==bad.job_id)
+    assert failed.status.value=="failed" and failed.result["outcome"]=="UPDATE_REJECTED"
+    current=repo.get_raw(raw.raw_message_id)
+    assert current.body==raw.body and current.metadata["body_update_state"]["pending"] is False
+    assert current.metadata["body_update_state"]["last_error"]=="known_article_revision_identity_changed"
+    assert repo.latest_stream_offset("MU")==2

@@ -435,7 +435,16 @@ class ContentEnrichmentHub:
                 )
                 self.repository.complete_enrichment_job_with_outcome(
                     job.job_id, job.claim_token, self._outcome_payload(job, message))
-        await self.bus.storage.call(finalize_binding)
+        try:
+            await self.bus.storage.call(finalize_binding)
+        except RuntimeError as exc:
+            if not job.known_article_raw_id or str(exc) not in {
+                "known_article_revision_identity_changed", "known_article_revision_not_authorized"
+            }:
+                raise
+            await self.bus.storage.call(self.repository.reject_known_article_update,job,str(exc))
+            logger.warning("article update rejected job_id=%s reason=%s",job.job_id,str(exc))
+            return
         await self.bus.storage.call(body, job, message)
 
     @staticmethod
