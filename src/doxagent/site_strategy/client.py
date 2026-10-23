@@ -46,7 +46,7 @@ class SiteAccessClient:
             httpx.AsyncClient(
                 base_url=self.base_url,
                 timeout=timeout_seconds,
-                headers={"X-Site-Access-Protocol": "3", **({"Authorization": f"Bearer {token}"} if token else {})},
+                headers={"X-Site-Access-Protocol": "3", "X-Site-Access-Capture-Metadata": "1", **({"Authorization": f"Bearer {token}"} if token else {})},
             )
             if self.base_url
             else None

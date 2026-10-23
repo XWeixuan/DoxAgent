@@ -1269,6 +1269,26 @@ class GovernanceRepository:
             }:
                 raise ValueError("recovery identity is outside scope")
             previous = self.get_recovery(value.identity_id)
+            # A recovered capability may relapse while another purpose still
+            # awaits login. Keep separate incidents, without stealing a human original.
+            if (
+                previous
+                and previous.phase != "RESOLVED"
+                and not self.current_challenge(value.identity_id)
+            ):
+                runtime = self.repository.get_identity_runtime(value.identity_id)
+                incoming = {c["purpose"] for c in value.affected_contexts}
+                pending = {c["purpose"] for c in previous.affected_contexts}
+                if runtime.last_recovery_id == previous.recovery_id and incoming - pending:
+                    value = value.model_copy(
+                        update={
+                            "affected_contexts": [
+                                *value.affected_contexts,
+                                *previous.affected_contexts,
+                            ][:8]
+                        }
+                    )
+                    previous = None
             if not previous or previous.phase == "RESOLVED":
                 runtime = self.repository.get_identity_runtime(value.identity_id)
                 if (

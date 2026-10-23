@@ -396,6 +396,7 @@ def create_app(
     async def execute(
         request: AccessRequest,
         x_site_access_protocol: Annotated[str | None, Header()] = None,
+        x_site_access_capture_metadata: Annotated[str | None, Header()] = None,
     ):
         result = await service.execute(request)
         excluded = (
@@ -409,6 +410,9 @@ def create_app(
         )
         if x_site_access_protocol != "3":
             excluded |= {"recovery_id", "handling_mode", "retry_at"}
+        # Protocol-3 consumers predate capture metadata and forbid unknown fields.
+        if x_site_access_capture_metadata != "1":
+            excluded |= {"served_from_shared_capture", "capture_id"}
         data = result.model_dump(mode="json", exclude=excluded)
         if x_site_access_protocol != "3" and data["disposition"] == "RECOVERY_PENDING":
             data["disposition"] = "BUDGET_DEFERRED"

@@ -867,6 +867,15 @@ def test_protocol_two_downgrades_pending_without_breaking_old_readers(setup):
     ).json()
     assert old["disposition"] == "BUDGET_DEFERRED" and "recovery_id" not in old
     assert new["disposition"] == "RECOVERY_PENDING" and new["recovery_id"] == "test-recovery"
+    assert "capture_id" not in old and "served_from_shared_capture" not in new
+    negotiated = client.post(
+        "/v1/access/execute",
+        json=payload,
+        headers={"Authorization": "Bearer worker", "X-Site-Access-Protocol": "3",
+                 "X-Site-Access-Capture-Metadata": "1"},
+    ).json()
+    assert negotiated["capture_id"] is None
+    assert negotiated["served_from_shared_capture"] is False
     resolved = client.get(
         "/v1/resolve",
         params={"url": URL},

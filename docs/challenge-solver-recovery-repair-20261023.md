@@ -50,3 +50,11 @@
 原生只读复核备用`F01CB50E...`：URL为`/site-search/?query=Ondas&offset=0`，有main但无日期文章链接，实际可见文案为`No search results match the term “Ondas”`，assessment=NONE。这不是Challenge。原recipe仅接受旧式`Search results for ... 0 results`，因此每次等待12秒后抛TimeoutError，恢复则一直拒绝零结果原页，旧记录误导为Runtime不可用。
 
 采集recipe及纯DOM验证现在同时接受两种明确零结果；仍要求真实Reuters搜索URL与query/offset一致、页面无阻断。增加3项正反链路回归，新增用例累计30项。该recipe文件位于message_bus_v2包，但在生产Site Access浏览器Worker中执行，不修改Bus调度/消费逻辑；新增窄Dockerfile明确复制该文件，源码验收扩大为53文件，不为此重建Message Bus。正常零条是有效采集，不是伪造有消息。
+
+### 快速复发与部分恢复
+
+`9c95fd75`在12:40:20 UTC发布后，备用原页证明了CRAWLER恢复，随后出现4次真实CRAWLER SUCCESS；再访问其他查询时又遭真实阻断，因此九ticker并未全部恢复，不能用这4次成功交付“持续可用”。观察同时发现：BODY仍待恢复时，CRAWLER的新阻断会被并入旧事件，遗漏fast_relapse。补齐这一路径：此前已恢复的purpose再次受阻且没有未解决人工原页时，创建独立新事件并携带仍未完成的BODY上下文；存在未解决人工Task则保留其现场，不抢占。新增一项复合回归，累计31项。旧窗口不回填虚假的新事件/费用。
+
+### 窄发布的旧客户端兼容
+
+发布后多个源的旧Message Bus报ValidationError，核实其AccessResult仍extra=forbid，而新服务默认输出capture_id/served_from_shared_capture。这不是网站风控。修复为仅在客户端显式发送X-Site-Access-Capture-Metadata: 1时返回新增字段；协议2/3旧消费者保持原始字段集合，物理/复用审计仍在服务端记录，不需重建Bus/Enrichment。新客户端通过同一可选请求头协商，增加既有协议回归正反例。以后新增可选模型字段不能直接等同于旧严格客户端的线兼容。

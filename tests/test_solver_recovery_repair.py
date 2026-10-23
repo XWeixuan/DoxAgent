@@ -555,3 +555,45 @@ async def test_reuters_live_recipe_accepts_same_zero_result_contract():
         evaluate=AsyncMock(return_value=[]),
     )
     assert await capture_reuters_search(page, "Ondas", 0) == []
+
+
+def test_crawler_relapse_gets_new_incident_while_body_is_pending(setup):
+    repo, _, store, _ = setup
+    old, _, context = base.retained(setup)
+    old = store.save_recovery(
+        old.model_copy(update={"affected_contexts": [context, {**context, "purpose": "BODY"}]}),
+        expected_generation=old.generation,
+    )
+    claimed = store.claim_recovery(old.identity_id, owner="proof")
+    partial = store.finish_recovery(
+        claimed,
+        VerificationReport(challenge="CLEARED", crawler="READY", runtime_instance_id="chrome"),
+        context=context,
+        resolved_by="fresh_probe",
+    )
+    assert partial.phase == "BACKOFF" and partial.affected_contexts[0]["purpose"] == "BODY"
+    target = store.save_target(
+        OwnedBrowserTarget(
+            identity_id=old.identity_id,
+            browser_instance_id="chrome",
+            worker_epoch=1,
+            target_id="new-crawler-challenge",
+            state="LIVE",
+        )
+    )
+    new = store.begin_recovery(
+        old.model_copy(
+            update={
+                "recovery_id": "new-after-partial",
+                "affected_contexts": [context],
+                "original_allocation_id": target.allocation_id,
+                "original_target_id": target.target_id,
+            }
+        )
+    )
+    assert new.recovery_id == "new-after-partial"
+    assert {c["purpose"] for c in new.affected_contexts} == {"CRAWLER", "BODY"}
+    assert (
+        repo.get_identity_runtime(old.identity_id).recent_relapses[-1]["previous_recovery_id"]
+        == old.recovery_id
+    )
