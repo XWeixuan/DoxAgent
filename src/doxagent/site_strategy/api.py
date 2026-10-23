@@ -385,7 +385,7 @@ def create_app(
             )
             if x_site_access_protocol != "3":
                 data["auth"].pop("auto_login", None)
-            if x_site_access_capture_metadata != "1" and "challenge" in data:
+            if x_site_access_capture_metadata not in {"1", "2"} and "challenge" in data:
                 data["challenge"].pop("probation_seconds", None)
                 data["challenge"].pop("probation_interval_ms", None)
             return JSONResponse(data)
@@ -415,9 +415,14 @@ def create_app(
         if x_site_access_protocol != "3":
             excluded |= {"recovery_id", "handling_mode", "retry_at"}
         # Protocol-3 consumers predate capture metadata and forbid unknown fields.
-        if x_site_access_capture_metadata != "1":
+        if x_site_access_capture_metadata not in {"1", "2"}:
             excluded |= {"served_from_shared_capture", "capture_id"}
+        if x_site_access_capture_metadata != "2":
+            excluded |= {"capture_acquired_at", "capture_age_ms", "consumer_elapsed_ms", "stage_timings"}
         data = result.model_dump(mode="json", exclude=excluded)
+        if x_site_access_capture_metadata != "2":
+            for attempt in data.get("attempts", []):
+                attempt.pop("stage_timings", None)
         if x_site_access_protocol != "3" and data["disposition"] == "RECOVERY_PENDING":
             data["disposition"] = "BUDGET_DEFERRED"
         return JSONResponse(data)
@@ -653,15 +658,32 @@ def create_app(
     @app.post("/v1/identities:apply", dependencies=[Depends(admin)])
     async def apply_identity(request: ApplyIdentityRequest) -> dict[str, object]:
         try:
-            value = service.apply_identity(
-                request.spec,
-                expected_revision=request.expected_revision,
-                actor=request.actor,
-                enabled=request.enabled,
-            )
+            workers = getattr(service.runtime,"workers",None)
+            handle = workers.workers.get(request.spec.identity_id) if workers else None
+            def apply():
+                return service.apply_identity(request.spec,expected_revision=request.expected_revision,
+                    actor=request.actor,enabled=request.enabled)
+            if handle:
+                async with handle.operations.enter(read=False):
+                    value = apply()
+                    await workers.retire(request.spec.identity_id)
+            else:
+                value = apply()
         except (ValueError, RuntimeError) as exc:
             raise HTTPException(status_code=409, detail=str(exc)) from exc
         return value.model_dump(mode="json", exclude={"owner_scope_id"})
+
+    @app.post("/v1/identities/{identity_id}:detach-controller", dependencies=[Depends(admin)])
+    async def detach_identity_controller(identity_id: str) -> dict[str, object]:
+        workers = getattr(service.runtime, "workers", None)
+        if workers is None:
+            raise HTTPException(status_code=409, detail="identity workers are not enabled")
+        # Retire just the Python/Node controller. The Supervisor retains Chrome/profile.
+        handle = workers.workers.get(identity_id)
+        if handle:
+            async with handle.operations.enter(read=False):
+                await workers.retire(identity_id)
+        return {"identity_id":identity_id,"detached":True}
 
     @app.post("/v1/identities/{identity_id}:drain", dependencies=[Depends(admin)])
     async def drain_identity(identity_id: str) -> dict[str, object]:

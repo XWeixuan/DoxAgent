@@ -8,7 +8,7 @@ import math
 import socket
 import time
 from contextvars import ContextVar
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from email.utils import parsedate_to_datetime
 from typing import Any
@@ -21,6 +21,27 @@ from doxagent.monitoring.media_enrichment import (
 )
 
 DEADLINE: ContextVar[float | None] = ContextVar("body_completion_deadline", default=None)
+WORK_CLASS: ContextVar[str] = ContextVar("body_work_class", default="foreground")
+WORK_AGE: ContextVar[float] = ContextVar("body_work_age", default=0)
+REVALIDATION: ContextVar[dict | None] = ContextVar("body_revalidation",default=None)
+
+
+def conditional_headers(url):
+    cached = REVALIDATION.get() or {}
+    if url not in {cached.get("url"),cached.get("final_url")}:
+        return {}
+    validators = cached.get("validators",{})
+    return {name:value for name,value in (("If-None-Match",validators.get("etag")),
+        ("If-Modified-Since",validators.get("last-modified"))) if value}
+
+
+def normalize_reason(reason: str | None) -> str | None:
+    if reason and reason.lower() in {
+        "timeout", "timeouterror", "readtimeout", "connecttimeout", "render_timeout",
+        "browser_attempt_timeout", "transport_timeout",
+    }:
+        return "transport_timeout"
+    return reason
 
 
 def browser_session_factory(proxy_url: str | None = None) -> Any:
@@ -100,6 +121,7 @@ class Observation:
     text: str
     status: int
     reason: str | None = None
+    headers: dict[str, str] = field(default_factory=dict)
 
 
 class PublicTransport:
@@ -188,13 +210,13 @@ class PublicTransport:
                     )
                     if reason:
                         return Observation(current, text, status, reason)
-                    if 300 <= status < 400:
+                    if 300 <= status < 400 and status != 304:
                         location = headers.get("location")
                         if not location:
                             return Observation(current, text, status, "redirect_location_missing")
                         current = urljoin(current, location)
                         continue
-                    return Observation(current, text, status)
+                    return Observation(current, text, status,headers=headers)
             except Exception as exc:
                 reason = (
                     "deadline_exceeded"
@@ -227,6 +249,7 @@ class PublicTransport:
                 if phase == "reader"
                 else "text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.8",
                 "Accept-Language": "en-US,en;q=0.9",
+                **(conditional_headers(url) if phase == "direct" else {}),
             },
             "allow_redirects": False,
             "timeout": remaining(12),

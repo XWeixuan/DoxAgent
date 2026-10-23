@@ -571,6 +571,10 @@ async def test_challenge_reconnect_failure_preserves_original_pause(
 async def test_browser_challenge_preserves_primary_and_allows_fallback(
     service: SiteStrategyService, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    # Profile ownership/fallback test; pacing is covered by budget tests.
+    spec = service.repository.get_strategy("yahoo_finance")
+    service.apply_strategy(spec.model_copy(update={"access":spec.access.model_copy(update={"min_interval_ms":0})}),
+        expected_revision=spec.revision,actor="test")
     calls = []
     token = "c" * 32
     article = "https://finance.yahoo.com/markets/stocks/articles/example.html"

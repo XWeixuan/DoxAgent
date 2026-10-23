@@ -9,6 +9,7 @@ from uuid import uuid4
 
 from .browser_operations import decode_response
 from .browser_runtime import RuntimeProvenance
+from .budget import BROWSER_ADMITTED
 from .runtime import SiteAccessRuntime
 from .schema import AccessMode, AccessRequest, BrowserRuntimeKind, IdentityOperationalState, utc_now
 from .worker_manager import IdentityOperationError, IdentityWorkerManager
@@ -198,12 +199,17 @@ class WorkerSiteAccessRuntime(SiteAccessRuntime):
             self._recovery_slots.release()
 
     async def _browser(self, request, resolved, identity, egress, *, capacity=None):
+        admitted_at = time.monotonic()
         slots = capacity if capacity is not None else self._business_slots
         deadline = time.monotonic() + request.remaining_budget_ms / 1000
-        reserved = slots is self._recovery_slots and self._reserved_recovery.get()
+        reserved = (slots is self._recovery_slots and self._reserved_recovery.get()) or (
+            capacity is None and BROWSER_ADMITTED.get()
+        )
         if not reserved:
             async with asyncio.timeout_at(deadline):
                 await slots.acquire()
+        slot_wait_ms = int((time.monotonic()-admitted_at)*1000)
+        worker_started = time.monotonic()
         try:
             for recovery in range(2):
                 remaining = deadline - time.monotonic()
@@ -248,6 +254,8 @@ class WorkerSiteAccessRuntime(SiteAccessRuntime):
                     ):
                         raise
                     await self.workers.retire(identity.identity_id, graceful=False)
+            response.stage_timings["global_wait_ms"] = slot_wait_ms
+            response.stage_timings["worker_roundtrip_ms"] = int((time.monotonic()-worker_started)*1000)
             if response.provenance:
                 state = self.repository.get_identity_runtime(identity.identity_id)
                 if (

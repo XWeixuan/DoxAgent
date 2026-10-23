@@ -10,6 +10,7 @@ CONTROL={
     'initialization_repair_incidents','initialization_repair_rounds',
     'te_executions','te_jobs','te_attempts','te_fills','te_events','te_allocations',
     'te_lots','te_lot_adjustments',
+    'article_body_results',
 }
 CASE_FIELDS={
     'case_id','runtime_mode','version_pin','trading_date','w1_final','w1_extraction','w2_alignment',

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import hashlib
+from contextvars import ContextVar
 from datetime import datetime
 from typing import Protocol
 
@@ -17,6 +18,15 @@ from .schema import (
     ResolvedSite,
     SitePurpose,
 )
+
+ACCESS_RESULTS = ContextVar("poll_site_access_results", default=None)
+
+
+def _observed(result):
+    observations = ACCESS_RESULTS.get()
+    if observations is not None:
+        observations.append(result)
+    return result
 
 
 class SiteAccessServiceLike(Protocol):
@@ -46,7 +56,7 @@ class SiteAccessClient:
             httpx.AsyncClient(
                 base_url=self.base_url,
                 timeout=timeout_seconds,
-                headers={"X-Site-Access-Protocol": "3", "X-Site-Access-Capture-Metadata": "1", **({"Authorization": f"Bearer {token}"} if token else {})},
+                headers={"X-Site-Access-Protocol": "3", "X-Site-Access-Capture-Metadata": "2", **({"Authorization": f"Bearer {token}"} if token else {})},
             )
             if self.base_url
             else None
@@ -83,7 +93,7 @@ class SiteAccessClient:
                 }
             )
         if self.service is not None:
-            return await self.service.execute(request)
+            return _observed(await self.service.execute(request))
         assert self._client is not None
         payload = request.model_dump(mode="json", exclude_none=True)
         # The RPC owns a request budget, not a fresh multi-minute timeout per retry.
@@ -113,7 +123,7 @@ class SiteAccessClient:
                 f"Site Access RPC exceeded {seconds:g}s including cleanup"
             ) from exc
         response.raise_for_status()
-        return AccessResult.model_validate(response.json())
+        return _observed(AccessResult.model_validate(response.json()))
 
     async def submit_outcomes(self, outcomes: list[BodyOutcome]) -> int:
         if not outcomes:
@@ -145,13 +155,14 @@ class SiteManagedBrowser:
         remaining_budget_ms: int = 30_000,
         recipe_ref: str | None = None,
         recipe_parameters: dict[str, object] | None = None,
+        mode: AccessMode = AccessMode.BROWSER,
     ) -> tuple[int, str, dict[str, str], str]:
         result = await self.client.execute(
             AccessRequest(
                 operation_id=operation_id or f"crawler-browser:{_url_key(url)}",
                 purpose=SitePurpose.CRAWLER,
                 url=url,
-                mode=AccessMode.BROWSER,
+                mode=mode,
                 recipe_ref=recipe_ref,
                 recipe_parameters=recipe_parameters or {},
                 remaining_budget_ms=remaining_budget_ms,
@@ -167,6 +178,9 @@ class SiteManagedBrowser:
         *,
         timeout_seconds: int = 20,
         snippet_count: int = 20,
+        known_dates: dict[str, str] | None = None,
+        pending_rows: list[dict] | None = None,
+        probe_offset: int = 0,
         operation_id: str | None = None,
     ) -> tuple[list[dict[str, object]], dict[str, object]]:
         result = await self.client.execute(
@@ -180,8 +194,11 @@ class SiteManagedBrowser:
                     "ticker": ticker,
                     "timeout_seconds": timeout_seconds,
                     "snippet_count": snippet_count,
+                    "known_dates": known_dates or {},
+                    "pending_rows": pending_rows or [],
+                    "probe_offset": probe_offset,
                 },
-                remaining_budget_ms=max(1, timeout_seconds * 1000 + 25_000),
+                remaining_budget_ms=max(1, timeout_seconds * 1000),
             )
         )
         if result.disposition.value != "SUCCESS":

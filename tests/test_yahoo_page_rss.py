@@ -43,7 +43,7 @@ async def test_ncp_429_rss_success_retains_api_circuit(tmp_path):
                 DoxAgentSettings(_env_file=None), client, transport=transport
             )
             for _ in range(2):
-                result = await adapter.poll(context)
+                result = await adapter._poll_supplement(context)
                 assert result.acquisition_metadata["query_mode"] == "legacy_headline_rss"
                 assert result.window_coverage == "PARTIAL"
                 assert result.messages[0].summary == "Real summary"
@@ -304,3 +304,27 @@ def test_rss_rejects_html_and_keeps_missing_fields():
         RSS.replace("<description><![CDATA[<p>Real summary</p>]]></description>", "")
     )[0]
     assert row["description"] is None and row["uuid"] == "article-guid"
+
+
+async def test_rss_is_accepted_before_browser_supplement_starts(tmp_path):
+    transport,_ = make_transport(lambda request:httpx.Response(200,text=RSS))
+    context,_ = _context(tmp_path,"yahoo_finance_news",{})
+    accepted = []
+    async def on_page(messages,**kwargs):
+        accepted.extend(messages)
+    context.on_page = on_page
+    class Browser:
+        site_managed = True
+        async def yahoo_latest_news(self,*args,**kwargs):
+            assert len(accepted) == 1
+            return [],{"capture_method":"native_network"}
+    try:
+        async with httpx.AsyncClient() as client:
+            adapter = YahooFinanceNewsAdapter(DoxAgentSettings(_env_file=None),client,
+                transport=transport,browser=Browser())
+            result = await adapter.poll(context)
+        assert len(result.messages) == 1
+        assert result.messages[0].external_id == accepted[0].external_id
+        assert result.next_checkpoint["browser_captured_at"]
+    finally:
+        transport.close()

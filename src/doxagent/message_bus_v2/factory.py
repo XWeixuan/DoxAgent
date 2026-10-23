@@ -93,7 +93,8 @@ def build_message_bus_v2_service(
         finally:
             registry.close()
 
-    repository = MessageBusV2Repository(settings.message_bus_v2_sqlite_path)
+    repository = MessageBusV2Repository(settings.message_bus_v2_sqlite_path,
+        terminal_receipts_enabled=settings.message_bus_enrichment_terminal_receipts_enabled)
     service = MessageBusV2Service(
         repository,
         enrichment_queue_enabled=(

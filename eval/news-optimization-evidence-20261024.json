@@ -1,0 +1,113 @@
+{
+  "recorded_at": "2026-10-23T16:36:42.243007+00:00",
+  "production_deployed": false,
+  "configuration_applied": false,
+  "python_regression": {
+    "tests": "358",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "1",
+    "time": "191.610"
+  },
+  "extra_real_chromium": {
+    "passed": 1,
+    "scope": "local temporary profile; no production profile access"
+  },
+  "frontend_unit": {
+    "passed": 67,
+    "files": 15
+  },
+  "frontend_browser": {
+    "passed": 2,
+    "widths": [
+      1262,
+      1559
+    ],
+    "synthetic_fixture": true
+  },
+  "cohort_target_accepted": false,
+  "live_source_samples": {
+    "news-light-paths-current.json": [
+      {
+        "source": "globenewswire_search",
+        "ticker": "MU",
+        "http_status": 403,
+        "http_ms": 138,
+        "browser_disposition": "SUCCESS",
+        "browser_queue_ms": 0,
+        "browser_runtime_ms": 4352,
+        "browser_ms": 4576
+      },
+      {
+        "source": "globenewswire_search",
+        "ticker": "INTC",
+        "http_status": 403,
+        "http_ms": 42,
+        "browser_disposition": "SUCCESS",
+        "browser_queue_ms": 1344,
+        "browser_runtime_ms": 2396,
+        "browser_ms": 3905
+      },
+      {
+        "source": "investorshub_ticker_news",
+        "ticker": "MU",
+        "http_status": 403,
+        "http_ms": 1045,
+        "browser_disposition": "SUCCESS",
+        "browser_queue_ms": 14995,
+        "browser_runtime_ms": 11825,
+        "browser_ms": 27036
+      }
+    ],
+    "news-globe-http-coverage.json": [
+      {
+        "query": "Micron",
+        "page": 1,
+        "disposition": "SUCCESS",
+        "runtime_ms": 433,
+        "items": 10
+      },
+      {
+        "query": "Micron",
+        "page": 2,
+        "disposition": "SUCCESS",
+        "runtime_ms": 381,
+        "items": 10
+      },
+      {
+        "query": "Intel",
+        "page": 1,
+        "disposition": "SUCCESS",
+        "runtime_ms": 620,
+        "items": 10
+      },
+      {
+        "query": "Intel",
+        "page": 2,
+        "disposition": "SUCCESS",
+        "runtime_ms": 475,
+        "items": 10
+      }
+    ],
+    "news-etnews-current.json": {
+      "url": "https://www.etnews.com/20261022000126",
+      "status": 200,
+      "outcome": "SHORT_FULL",
+      "reason": "complete_article",
+      "candidate_chars": [
+        178
+      ]
+    }
+  },
+  "post_regression_checks": {
+    "body_scope_legacy_dedup": {
+      "passed": 28
+    },
+    "timeliness_cdc_ops": {
+      "passed": 4
+    },
+    "ruff_F_I": "passed",
+    "typescript": "passed"
+  },
+  "skip_reason": "Windows account cannot create symbolic links"
+}

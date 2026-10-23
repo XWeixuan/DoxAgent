@@ -706,7 +706,7 @@ class SiteStrategyRepository:
                    reason=excluded.reason,completed_at=excluded.completed_at,
                    payload_json=excluded.payload_json""",
                 (
-                    value.job_id,
+                    value.execution_id or value.job_id,
                     value.final_site_id,
                     value.strategy_ref,
                     value.combination_id,

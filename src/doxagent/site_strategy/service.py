@@ -651,6 +651,8 @@ class SiteStrategyService:
         browser_channel: str | None = None,
         browser_max_processes: int = 4,
         browser_max_pages: int = 4,
+        browser_body_max_pages: int = 2,
+        browser_body_borrow: bool = True,
         browser_idle_seconds: float = 43_200,
         safety_path: str | Path | None = None,
         supervisor_socket: str | Path | None = None,
@@ -660,6 +662,9 @@ class SiteStrategyService:
         self.repository = repository
         self.resolver = SiteResolver(repository)
         self.budgets = SiteBudgetManager()
+        self.budgets.joint.max_concurrency = browser_max_pages
+        self.budgets.joint.body_max_concurrency = browser_body_max_pages
+        self.budgets.joint.body_borrow = browser_body_borrow
         self.health = CombinationHealthManager(repository)
         self.profile_use = ProfileUseCoordinator(repository)
         self.profile_storage = ProfileSnapshotManager(profile_root, repository)
@@ -1364,6 +1369,7 @@ class SiteStrategyService:
         )
 
     async def execute(self, request: AccessRequest) -> AccessResult:
+        consumed_at = time.monotonic()
         if self.repository.storage.diagnostics()["unavailable"]:
             return self._storage_deferred(request)
         if not self.profile_use.accepting:
@@ -1390,7 +1396,8 @@ class SiteStrategyService:
             result = await asyncio.shield(task)
             if result.disposition is AccessDisposition.SUCCESS:
                 result = result.model_copy(
-                    update={"capture_id": result.capture_id or result.request_id}
+                    update={"capture_id": result.capture_id or result.request_id,
+                            "capture_acquired_at": result.capture_acquired_at or utc_now()}
                 )
                 await self._put_cache(result, cache_key=self._shared_key(request), ttl=15)
         if shared:
@@ -1403,6 +1410,8 @@ class SiteStrategyService:
                         "capture_id": result.capture_id or result.request_id,
                         "identity_id": result.identity_id,
                         "purpose": request.purpose.value,
+                        "capture_acquired_at": result.capture_acquired_at.isoformat() if result.capture_acquired_at else None,
+                        "consumer_elapsed_ms": int((time.monotonic() - consumed_at)*1000),
                     },
                 )
             )
@@ -1411,6 +1420,8 @@ class SiteStrategyService:
                 "request_id": request.request_id,
                 "operation_id": request.operation_id,
                 "served_from_shared_capture": shared,
+                "consumer_elapsed_ms": int((time.monotonic() - consumed_at)*1000),
+                "capture_age_ms": max(0, int((utc_now() - result.capture_acquired_at).total_seconds()*1000)) if result.capture_acquired_at else None,
             }
         )
 
@@ -1547,6 +1558,9 @@ class SiteStrategyService:
                             "strategy_ref": event_strategy_ref or result.body_strategy_ref,
                             "generation": result.generation,
                             "network_ms": result.network_ms,
+                            "queue_wait_ms": result.queue_wait_ms,
+                            "stage_timings": result.stage_timings,
+                            "work_class": request.work_class,
                         },
                     )
                 )
@@ -1943,6 +1957,7 @@ class SiteStrategyService:
                 if request.purpose is SitePurpose.BODY
                 else resolved.access.crawler_queue_timeout_ms
             ) / 1000
+            queue_cap = min(queue_cap, 3.0)
             permit = (
                 budget.permit(request.purpose, timeout_seconds=min(remaining, queue_cap))
                 if request.mode is AccessMode.HTTP_PUBLIC
@@ -1955,9 +1970,12 @@ class SiteStrategyService:
                     identity_max_concurrency=identity.access.max_concurrency,
                     identity_min_interval_ms=identity.access.min_interval_ms,
                     timeout_seconds=min(remaining, queue_cap),
+                    work_class=request.work_class,
+                    work_age_seconds=request.work_age_seconds,
                 )
             )
             attempting = False
+            queue_started = time.monotonic()
             try:
                 async with permit as queue_wait_ms:
                     current = self.repository.get_runtime(resolved.runtime_key)
@@ -2006,6 +2024,7 @@ class SiteStrategyService:
                         reason_code=reason,
                         queue_wait_ms=queue_wait_ms,
                         network_ms=network_ms,
+                        stage_timings=response.stage_timings,
                         exit_ip=egress.observed_ip,
                         identity_id=(
                             response.provenance.identity_id
@@ -2055,15 +2074,26 @@ class SiteStrategyService:
                 unavailable += 1
                 continue
             except TimeoutError:
-                return self._result(
+                waited = max(0,int((time.monotonic()-queue_started)*1000))
+                if attempting:
+                    attempts.append(AccessAttempt(combination_id=combination.combination_id,
+                        generation=current.generation,transport=request.mode,
+                        failure_category=FailureCategory.TRANSIENT_TRANSPORT,
+                        reason_code="transport_timeout",queue_wait_ms=queue_wait_ms,
+                        network_ms=max(0,waited-queue_wait_ms),identity_id=identity.identity_id))
+                deferred_result = self._result(
                     request,
                     resolved,
                     AccessDisposition.BUDGET_DEFERRED,
                     category=FailureCategory.BUDGET_DEFERRED,
                     reason="browser_attempt_timeout" if attempting else "site_queue_timeout",
                     attempts=attempts,
+                    retry_not_before=utc_now()+timedelta(seconds=1) if not attempting else None,
                     started=started,
                 )
+                if not attempting:
+                    deferred_result.queue_wait_ms += waited
+                return deferred_result
             if category in RISK_FAILURES:
                 risk_failures += 1
                 await self.health.mark_failure(
@@ -2371,6 +2401,7 @@ class SiteStrategyService:
         egress: ProxyEgress,
     ) -> tuple[RuntimeResponse, FailureCategory | None, str, int]:
         last: tuple[RuntimeResponse, FailureCategory | None, str, int] | None = None
+        total_started = time.monotonic()
         for retry in range(2):
             started = time.monotonic()
             try:
@@ -2459,6 +2490,8 @@ class SiteStrategyService:
                         if identity and identity.runtime_kind is BrowserRuntimeKind.EXTERNAL_CHROME:
                             self._schedule_native_drain(identity)
             elapsed = int((time.monotonic() - started) * 1000)
+            response.stage_timings["attempt_ms"] = elapsed
+            response.stage_timings["prior_retry_ms"] = max(0,int((time.monotonic()-total_started)*1000)-elapsed)
             if category in {
                 FailureCategory.CONTENT_ERROR,
                 FailureCategory.EXTRACTION_ERROR,
@@ -2490,7 +2523,7 @@ class SiteStrategyService:
                     category.value,
                     url=request.url,
                 )
-            last = response, category, reason, elapsed
+            last = response, category, reason, int((time.monotonic() - total_started)*1000)
             if category is not FailureCategory.TRANSIENT_TRANSPORT or retry == 1:
                 break
         assert last is not None
@@ -3769,6 +3802,7 @@ class SiteStrategyService:
             route_generation=generation,
             attempts=attempts or [],
             network_ms=sum(item.network_ms for item in (attempts or [])),
+            queue_wait_ms=sum(item.queue_wait_ms for item in (attempts or [])),
         )
 
     @staticmethod
@@ -3827,6 +3861,7 @@ class SiteStrategyService:
             attempts=attempts,
             queue_wait_ms=sum(item.queue_wait_ms for item in attempts),
             network_ms=sum(item.network_ms for item in attempts),
+            stage_timings={key: sum(a.stage_timings.get(key, 0) for a in attempts) for key in {k for a in attempts for k in a.stage_timings}},
         )
 
 

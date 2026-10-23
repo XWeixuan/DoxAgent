@@ -99,7 +99,7 @@ async def test_ncp_block_or_service_failure_tries_only_rss(tmp_path, status):
                 DoxAgentSettings(_env_file=None), client, transport=transport
             )
             with pytest.raises((YahooRateLimited, httpx.HTTPStatusError)):
-                await adapter.poll(context)
+                await adapter._poll_supplement(context)
         assert len(requests) == 2
         assert requests[0].url.path == "/xhr/ncp"
         assert requests[1].url.host == "feeds.finance.yahoo.com"
@@ -127,7 +127,7 @@ async def test_ncp_poll_size_and_empty_success(tmp_path, bootstrap, recovery, co
         async with httpx.AsyncClient() as client:
             result = await YahooFinanceNewsAdapter(
                 DoxAgentSettings(_env_file=None), client, transport=transport
-            ).poll(context)
+            )._poll_supplement(context)
         assert result.acquisition_metadata["requested_count"] == count
         assert len(requests) == 1
     finally:

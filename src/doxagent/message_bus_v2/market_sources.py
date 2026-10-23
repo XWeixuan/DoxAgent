@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+import time
 from datetime import UTC, datetime, timedelta
 from typing import Any
 from urllib.parse import quote, urljoin, urlparse
@@ -255,123 +256,111 @@ class MarketTickerAdapter:
 
 
 class GlobeNewswireSearchAdapter:
-    def __init__(self, browser: Any) -> None:
-        self.browser = browser
+    def __init__(self, browser: Any, client=None) -> None:
+        self.browser, self.client = browser, client
+        self._http_retry_at = 0
+
+    async def _page(self, context, url, key, page):
+        if time.monotonic() >= self._http_retry_at and context.binding.source_parameters.get("http_listing_verified",context.source.default_parameters.get("http_listing_verified",False)):
+            try:
+                async with context.request_permit():
+                    if getattr(self.browser,"site_managed",False):
+                        from doxagent.site_strategy.schema import AccessMode
+                        status, final, _, html = await self.browser.get(url,mode=AccessMode.HTTP_PUBLIC,
+                            operation_id=f"{context.poll_run_id}:{key}:{page}:http",remaining_budget_ms=8000)
+                    else:
+                        response = await self.client.get(url,timeout=8)
+                        status, final, html = response.status_code, str(response.url), response.text
+                if status == 200 and urlparse(final).hostname == "www.globenewswire.com":
+                    messages = parse_globenewswire(html, now=context.requested_at)
+                    if messages or "no results" in html.lower():
+                        return messages, "http"
+                self._http_retry_at = time.monotonic()+300
+            except Exception:
+                self._http_retry_at = time.monotonic()+300
+        if self.browser is None:
+            raise RuntimeError("GlobeNewswire browser fallback unavailable")
+        async with context.request_permit():
+            status, final, _, html = await self.browser.get(url,
+                operation_id=f"{context.poll_run_id}:{key}:{page}", remaining_budget_ms=15_000)
+        if status != 200 or urlparse(final).hostname != "www.globenewswire.com":
+            raise RuntimeError("globenewswire_search_redirect_or_http_error")
+        return parse_globenewswire(html, now=context.requested_at), "browser"
 
     async def poll(self, context: PollContext) -> PollResult:
-        if self.browser is None:
-            raise RuntimeError("GlobeNewswire search requires Site Access")
-        queries = (context.query_plan or {}).get("queries") or [
-            {"query": context.ticker, "query_key": "legacy-ticker"}
-        ]
-        prior = context.checkpoint.get("queries", {}) if context.is_gap_recovery else {}
-        checkpoints, rows, failures = {}, {}, []
+        queries = (context.query_plan or {}).get("queries") or [{"query": context.ticker, "query_key": "legacy-ticker"}]
+        prior = context.checkpoint.get("queries", {})
+        checkpoints = {str(q["query_key"]): dict(prior.get(str(q["query_key"]), {})) for q in queries}
         lower = context.window_start or context.requested_at - timedelta(minutes=30)
-        max_pages = int(context.binding.source_parameters.get("max_pages", 3))
-        deferred, retry_at = False, None
-        outcomes = []
-        storage_unavailable = False
-        for query in queries:
+        started, requests = time.monotonic(), 0
+        successes = int(context.checkpoint.get("page_success_seq", 0))
+        rows, failures, outcomes = {}, [], []
+        retry_at, deferred = None, False
+        while requests < 2 and time.monotonic() - started < 15:
+            heads, tails = [], []
+            for query in queries:
+                key = str(query["query_key"])
+                saved = checkpoints[key]
+                head_at = saved.get("head_at")
+                head_due = not head_at or (not context.is_gap_recovery and
+                    (context.requested_at - datetime.fromisoformat(head_at)).total_seconds() >= 60)
+                if head_due:
+                    heads.append(query)
+                elif not saved.get("done", False):
+                    tails.append(query)
+            if not heads and not tails:
+                break
+            # At least every fourth successful request services an existing tail.
+            candidates = tails if tails and (not heads or successes % 4 == 3) else heads
+            query = min(candidates, key=lambda q: checkpoints[str(q["query_key"])].get("last_serviced_at", ""))
             key = str(query["query_key"])
-            saved = dict(prior.get(key, {}))
-            if saved.get("done"):
-                checkpoints[key] = saved
-                continue
-            page = int(saved.get("page", 1))
-            if storage_unavailable:
-                saved.update(page=page, done=False, coverage="PARTIAL")
-                checkpoints[key] = saved
-                outcomes.append(
-                    {
-                        "query_key": key,
-                        "status": "DEFERRED",
-                        "reason": "storage_unavailable",
-                        "attempted": False,
-                    }
-                )
-                continue
-            outcome = {"query_key": key, "status": "SUCCESS", "attempted": True}
+            saved = checkpoints[key]
+            is_head = query in heads and candidates is heads
+            page = 1 if is_head else int(saved.get("page", 2))
+            url = "https://www.globenewswire.com/en/search/keyword/" + quote(str(query["query"]), safe="") + f"/load/more?page={page}&pageSize=10"
+            requests += 1
+            outcome = {"query_key": key, "page": page, "attempted": True, "status": "SUCCESS"}
             try:
-                for _ in range(max_pages):
-                    url = (
-                        "https://www.globenewswire.com/en/search/keyword/"
-                        + quote(str(query["query"]), safe="")
-                        + f"/load/more?page={page}&pageSize=10"
-                    )
-                    async with context.request_permit():
-                        status, final, _, html = await self.browser.get(
-                            url,
-                            operation_id=f"{context.poll_run_id}:{key}:{page}",
-                            remaining_budget_ms=45_000,
-                        )
-                    if status != 200 or urlparse(final).hostname != "www.globenewswire.com":
-                        raise RuntimeError("globenewswire_search_redirect_or_http_error")
-                    messages = parse_globenewswire(html, now=context.requested_at)
-                    rows.update({m.url: m for m in messages})
-                    ordered = all(
-                        a.published_at >= b.published_at
-                        for a, b in zip(messages, messages[1:], strict=False)
-                    )
-                    complete = len(messages) < 10 or (ordered and messages[-1].published_at < lower)
-                    page += 1
-                    saved = {
-                        "page": page,
-                        "done": complete,
-                        "coverage": "COMPLETE" if complete else "PARTIAL",
-                    }
-                    if complete:
-                        break
+                messages, transport = await self._page(context, url, key, page)
+                ordered = all(a.published_at >= b.published_at for a,b in zip(messages,messages[1:]))
+                complete = len(messages) < 10 or (ordered and messages[-1].published_at < lower)
+                next_saved = {**saved, "last_serviced_at": datetime.now(UTC).isoformat()}
+                if is_head:
+                    next_saved["head_at"] = context.requested_at.isoformat()
+                    if saved.get("done", True) or "page" not in saved:
+                        next_saved.update(page=2, done=complete, coverage="COMPLETE" if complete else "PARTIAL")
                 else:
-                    saved["done"] = (
-                        True  # Finite recovery; never block healthy sources indefinitely.
-                    )
+                    next_saved.update(page=page+1, done=complete, coverage="COMPLETE" if complete else "PARTIAL")
+                next_checkpoints = {**checkpoints, key: next_saved}
+                if context.on_page:
+                    await context.on_page(messages, checkpoint={"queries": next_checkpoints, "page_success_seq": successes+1},
+                                          query_key=key, page=page, transport=transport)
+                checkpoints = next_checkpoints
+                rows.update({m.url:m for m in messages})
+                successes += 1
+                outcome["transport"] = transport
             except SiteAccessError as exc:
-                outcome.update(
-                    disposition=exc.result.disposition.value,
-                    category=exc.result.failure_category.value
-                    if exc.result.failure_category
-                    else None,
-                    reason=exc.result.reason_code,
-                )
-                if exc.site_access_deferred:
-                    outcome["status"] = "DEFERRED"
-                    storage_unavailable = exc.result.reason_code == "storage_unavailable"
-                    deferred, retry_at = True, exc.result.retry_not_before
-                    saved.update(page=page, done=False, coverage="PARTIAL")
-                else:
-                    outcome["status"] = "FAILED"
-                    count = int(saved.get("failures", 0)) + 1
-                    saved.update(page=page, failures=count, done=count >= 2, coverage="PARTIAL")
-                    failures.append(
-                        _failure(context, "search_query_failed", str(exc), {"query_key": key})
-                    )
+                outcome.update(status="DEFERRED" if exc.site_access_deferred else "FAILED", reason=exc.result.reason_code)
+                deferred, retry_at = exc.site_access_deferred, exc.result.retry_not_before
+                if not exc.site_access_deferred:
+                    failures.append(_failure(context,"search_query_failed",str(exc),{"query_key":key,"page":page}))
+                saved.update(last_serviced_at=datetime.now(UTC).isoformat(), done=False, coverage="PARTIAL")
+                outcomes.append(outcome)
+                break
             except Exception as exc:
                 outcome.update(status="FAILED", reason=type(exc).__name__)
-                count = int(saved.get("failures", 0)) + 1
-                saved.update(page=page, failures=count, done=count >= 2, coverage="PARTIAL")
-                failures.append(
-                    _failure(context, "search_query_failed", type(exc).__name__, {"query_key": key})
-                )
-            checkpoints[key] = saved
+                failures.append(_failure(context,"search_query_failed",str(exc),{"query_key":key,"page":page}))
+                saved.update(last_serviced_at=datetime.now(UTC).isoformat(), done=False, coverage="PARTIAL")
+                outcomes.append(outcome)
+                break
             outcomes.append(outcome)
-        return PollResult(
-            messages=list(rows.values()),
-            failures=failures,
-            next_checkpoint={"queries": checkpoints},
-            window_done=all(v.get("done") for v in checkpoints.values()),
-            window_coverage="COMPLETE"
-            if all(v.get("coverage") == "COMPLETE" for v in checkpoints.values())
-            else "PARTIAL",
-            site_access_deferred=deferred,
-            site_access_retry_not_before=retry_at,
-            acquisition_metadata={
-                "provider": "globenewswire",
-                "terms_revision": (context.query_plan or {}).get("terms_revision"),
-                "queries": queries,
-                "query_attempt_count": sum(bool(o["attempted"]) for o in outcomes),
-                "query_success_count": sum(o["status"] == "SUCCESS" for o in outcomes),
-                "query_failure_count": sum(o["status"] == "FAILED" for o in outcomes),
-                "query_deferred_count": sum(o["status"] == "DEFERRED" for o in outcomes),
-                "query_outcomes": outcomes,
-            },
-        )
+        done = all(v.get("done") and v.get("head_at") for v in checkpoints.values())
+        return PollResult(messages=list(rows.values()), failures=failures,
+            next_checkpoint={"queries":checkpoints,"page_success_seq":successes},
+            window_done=done, window_coverage="COMPLETE" if done else "PARTIAL",
+            site_access_deferred=deferred, site_access_retry_not_before=retry_at,
+            acquisition_metadata={"provider":"globenewswire","query_outcomes":outcomes,
+                "query_attempt_count":requests,"query_success_count":sum(o["status"]=="SUCCESS" for o in outcomes),
+                "query_failure_count":sum(o["status"]=="FAILED" for o in outcomes),
+                "query_deferred_count":sum(o["status"]=="DEFERRED" for o in outcomes),
+                "terms_revision":(context.query_plan or {}).get("terms_revision")})

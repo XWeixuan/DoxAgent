@@ -48,6 +48,8 @@ class YahooTransport:
         self._clock, self._wall_clock, self._sleep = clock, wall_clock, sleep
         self._proxy_url = proxy_url
         self._session = None
+        self._public_session = None
+        self._scope_locks = {}
         self._http_routes = approved_routes(http_routes) if http_routes is not None else None
         self._route_sessions = {}
         self.last_http_route = "legacy"
@@ -68,7 +70,7 @@ class YahooTransport:
     async def _request(self, method: str, url: str, *, rate_scope="api", **kwargs: Any):
         if self._lock is None:
             self._lock = asyncio.Lock()
-        async with self._lock:
+        async with self._scope_locks.setdefault(rate_scope, asyncio.Lock()):
             endpoint_until, endpoint_status = self._endpoint_circuits.get(url, (0, 0))
             if self._clock() < endpoint_until:
                 raise YahooEndpointUnavailable(
@@ -79,7 +81,9 @@ class YahooTransport:
             until, strikes = self._circuits.get(rate_scope, (0, 0))
             if self._clock() < until:
                 raise YahooRateLimited(until - self._clock())
-            await self._sleep(max(0, self._next_start - self._clock()))
+            async with self._lock:
+                await self._sleep(max(0, self._next_start - self._clock()))
+                self._next_start = self._clock() + self._gap + random.uniform(0, self._jitter)
             if self._clock() < until:
                 raise YahooRateLimited(until - self._clock())
             if self._session is None and self._http_routes is None:
@@ -87,22 +91,30 @@ class YahooTransport:
                 if self._proxy_url:
                     options["proxy"] = self._proxy_url
                 self._session = self._factory(**options)
-            self._next_start = self._clock() + self._gap + random.uniform(0, self._jitter)
             try:
                 if self._http_routes is None:
-                    response = await self._session.request(method, url, **kwargs)
+                    session = self._session
+                    if rate_scope == "rss":
+                        if self._public_session is None:
+                            options = {"impersonate": "chrome", "max_clients": 1}
+                            if self._proxy_url:
+                                options["proxy"] = self._proxy_url
+                            self._public_session = self._factory(**options)
+                        session = self._public_session
+                    response = await session.request(method, url, **kwargs)
                 else:
 
                     async def send(proxy):
-                        if proxy not in self._route_sessions:
-                            self._route_sessions[proxy] = self._factory(
+                        key = (rate_scope, proxy)
+                        if key not in self._route_sessions:
+                            self._route_sessions[key] = self._factory(
                                 impersonate="chrome",
                                 max_clients=1,
                                 proxy=proxy or "",
                                 trust_env=False,
                             )
                         options = {**kwargs, "timeout": min(10, float(kwargs.get("timeout") or 30))}
-                        return await self._route_sessions[proxy].request(method, url, **options)
+                        return await self._route_sessions[key].request(method, url, **options)
 
                     async with asyncio.timeout(float(kwargs.get("timeout") or 30)):
                         response, self.last_http_route = await transport_routes(
@@ -146,6 +158,10 @@ class YahooTransport:
             return response
 
     async def _close(self):
+        if self._public_session is not None:
+            close = getattr(self._public_session, "aclose", None) or self._public_session.close
+            await close()
+            self._public_session = None
         for session in self._route_sessions.values():
             close = getattr(session, "aclose", None) or session.close
             await close()

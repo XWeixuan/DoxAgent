@@ -67,7 +67,7 @@ def _source(
         distribution_policy=distribution_policy,
         parameter_schema={
             "type": "object",
-            "properties": properties or {},
+            "properties": {**(properties or {}), **({"http_listing_verified": {"type":"boolean"}} if source_id in {"globenewswire_search","investorshub_ticker_news","investing_ticker_news"} else {})},
             "required": required or [],
             "additionalProperties": False,
         },
@@ -75,7 +75,7 @@ def _source(
         scheduler_group=scheduler_group or source_id,
         scheduler_constraints=SchedulerConstraints(
             minimum_request_gap_seconds=minimum_request_gap_seconds,
-            max_concurrency=1,
+            max_concurrency=2 if source_id in {"yahoo_finance_news","investorshub_ticker_news","investing_ticker_news","barrons_ticker_news","globenewswire_search"} else 1,
         ),
         default_polling_config=default_polling or PollingConfig(),
         content_enrichment_mode=content_enrichment_mode,
@@ -137,6 +137,7 @@ def initial_sources() -> list[SourceDefinition]:
         _source(
             "yahoo_finance_news",
             "Yahoo Finance News",
+            default_polling=PollingConfig(target_interval_seconds=30),
             properties={
                 "snippet_count": {"type": "integer", "minimum": 10, "maximum": 200},
                 "page_network_enabled": {"type": "boolean", "default": True},
@@ -331,7 +332,7 @@ def initial_sources() -> list[SourceDefinition]:
             adapter_ref="site:auto",
             search_policy=SearchPolicy(mode="separate"),
             properties={"max_pages": {"type": "integer", "minimum": 1, "maximum": 10}},
-            default_parameters={"max_pages": 3},
+            default_parameters={"max_pages": 3,"http_listing_verified":True},
             minimum_request_gap_seconds=0,
         ),
         _source(

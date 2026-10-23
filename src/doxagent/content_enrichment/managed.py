@@ -3,10 +3,19 @@
 from __future__ import annotations
 
 import time
+from contextvars import ContextVar
 from datetime import UTC, datetime
 from urllib.parse import urlparse
 
-from doxagent.content_enrichment.transport import DEADLINE, Observation, remaining
+from doxagent.content_enrichment.transport import (
+    DEADLINE,
+    WORK_AGE,
+    WORK_CLASS,
+    Observation,
+    conditional_headers,
+    normalize_reason,
+    remaining,
+)
 from doxagent.monitoring.media_enrichment import DomainFetchController, FetchAttempt
 from doxagent.site_strategy.client import SiteAccessClient
 from doxagent.site_strategy.schema import AccessMode, AccessRequest, AccessResult, SitePurpose
@@ -17,7 +26,23 @@ class SiteAccessTransport:
         self.client = client
         self.controller = DomainFetchController()
         self.cooldowns: dict[str, float] = {}
-        self.access_trace: list[dict[str, object]] = []
+        self._trace: ContextVar[list[dict[str, object]] | None] = ContextVar(
+            f"site_access_trace_{id(self)}", default=None
+        )
+
+    @property
+    def access_trace(self) -> list[dict[str, object]]:
+        trace = self._trace.get()
+        if trace is None:
+            trace = []
+            self._trace.set(trace)
+        return trace
+
+    def begin_trace(self):
+        return self._trace.set([])
+
+    def end_trace(self, token) -> None:
+        self._trace.reset(token)
 
     async def fetch(
         self,
@@ -33,13 +58,15 @@ class SiteAccessTransport:
             AccessRequest(
                 operation_id=f"body:{phase}:{_key(url)}",
                 purpose=SitePurpose.BODY,
+                work_class=WORK_CLASS.get(),
+                work_age_seconds=WORK_AGE.get(),
                 url=url,
                 mode=AccessMode.HTTP_PUBLIC,
                 remaining_budget_ms=max(1, int(remaining(180) * 1000)),
                 allowed_headers=(
                     {"Accept": "text/markdown,text/plain;q=0.9,*/*;q=0.8"}
                     if phase == "reader"
-                    else {}
+                    else conditional_headers(url)
                 ),
             )
         )
@@ -72,7 +99,7 @@ class SiteAccessTransport:
         if result.redirect_url:
             # The owner intentionally stops before crossing a publisher boundary.
             return await self.fetch(result.redirect_url, attempts, phase=phase)
-        return Observation(result.final_url or url, result.body, result.status_code or 0, reason)
+        return Observation(result.final_url or url, result.body, result.status_code or 0, reason,result.headers)
 
 
 class SiteAccessBrowserReader:
@@ -87,13 +114,16 @@ class SiteAccessBrowserReader:
         *,
         expand: bool = False,
         parameters: dict[str, object] | None = None,
+        mode: str = "BROWSER",
     ) -> tuple[Observation, dict[str, object]]:
         result = await self.client.execute(
             AccessRequest(
                 operation_id=f"body:browser:{_key(url)}",
                 purpose=SitePurpose.BODY,
+                work_class=WORK_CLASS.get(),
+                work_age_seconds=WORK_AGE.get(),
                 url=url,
-                mode=AccessMode.BROWSER,
+                mode=AccessMode(mode),
                 recipe_parameters={"expand": expand, **(parameters or {})},
                 remaining_budget_ms=max(1, int(remaining(180) * 1000)),
             )
@@ -122,6 +152,8 @@ def _reason(result: AccessResult) -> str | None:
         return None
     if result.disposition.value == "RECOVERY_PENDING":
         return "site_recovery_pending"
+    if result.reason_code == "browser_attempt_timeout":
+        return "transport_timeout"
     if result.disposition.value == "BUDGET_DEFERRED":
         deadline = DEADLINE.get()
         return (
@@ -129,7 +161,7 @@ def _reason(result: AccessResult) -> str | None:
             if deadline is not None and deadline <= time.monotonic()
             else "site_budget_deferred"
         )
-    return result.reason_code or result.disposition.value.casefold()
+    return normalize_reason(result.reason_code or result.disposition.value.casefold())
 
 
 def _retry_seconds(result: AccessResult) -> float | None:
@@ -158,6 +190,9 @@ def _trace(result: AccessResult, phase: str) -> dict[str, object]:
         "generation": result.generation,
         "disposition": result.disposition.value,
         "reason": result.reason_code,
+        "queue_wait_ms": result.queue_wait_ms,
+        "network_ms": result.network_ms,
+        "stage_timings": result.stage_timings,
     }
 
 

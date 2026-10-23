@@ -61,6 +61,9 @@ TABLES = {
         "ir_endpoint_states",
         "acquisition_failures",
         "audit_log",
+        "article_body_results",
+        "message_observations",
+        "content_enrichment_jobs",
     ),
     "research": ("codex_runtime_records",),
     "events": (
@@ -232,6 +235,19 @@ class SourceOutbox:
                                 f'json_remove(OLD.data_json,{volatile}) IS NOT '
                                 f'json_remove(NEW.data_json,{volatile})'
                             )
+                        if table == "message_observations":
+                            changed = " OR ".join(
+                                f"OLD.{field} IS NOT NEW.{field}" for field in (
+                                    "canonical_raw_id", "logical_message_id", "classification"
+                                )
+                            ) + " OR json_extract(OLD.data_json,'$.metadata.article_body_result_key') IS NOT json_extract(NEW.data_json,'$.metadata.article_body_result_key')"
+                        if table == "article_body_results":
+                            changed = " OR ".join(
+                                f"json_extract(OLD.data_json,'$.{field}') IS NOT json_extract(NEW.data_json,'$.{field}')"
+                                for field in ("status", "outcome", "content_hash", "acquired_at", "checked_at", "last_error", "check_pending", "next_check_at")
+                            )
+                        if table == "content_enrichment_jobs":
+                            changed = "OLD.status IS NOT NEW.status"
                         condition += (" AND " if condition else "WHEN ") + f"({changed})"
                     db.execute(
                         "CREATE TRIGGER IF NOT EXISTS "

@@ -19,6 +19,7 @@ class BusOrchestration:
         self.journal = journal
         self.calendar = MarketCalendar(journal)
         self._inflight: dict[str, asyncio.Task[Any]] = {}
+        self._inflight_groups = {}
 
     async def run_once(self, scheduler: Any) -> list[Any]:
         now = self.journal.clock()
@@ -51,11 +52,16 @@ class BusOrchestration:
                             raise
                 finally:
                     del self._inflight[key]
+                    self._inflight_groups.pop(key, None)
         # Completed tasks have committed their next due time. Read it only after
         # removing them; tasks completing later retain their in-flight exclusion.
         eligible, roster_eligible, poll_states = await self._storage(
             scheduler, scheduler._prepare_poll_cycle, now
         )
+        eligible.sort(key=lambda pair: (
+            poll_states[pair[1].binding_id].next_dispatch_at or now,
+            poll_states[pair[1].binding_id].last_success_at or now - timedelta(days=365),
+        ))
         shared_realtime: dict[str, tuple[SourceDefinition, list[TickerSourceBinding]]] = {}
         # All bindings use the same semantic day. Do not perform two synchronous
         # calendar/SQLite lookups per binding on the network event loop.
@@ -116,7 +122,12 @@ class BusOrchestration:
                 pending = await self._journal_call(self.journal.get_task, identity)
                 assert pending is not None
                 key = pending["inputs"]["binding"]["binding_id"]
+                if pending.get("receipt", {}).get("poll_done"):
+                    key = f"sweep:{identity}"
                 shared_key = f"shared:{pending['inputs']['source']['source_id']}"
+                group = pending["inputs"]["source"]["scheduler_group"]
+                if not key.startswith("sweep:") and sum(g == group for g in self._inflight_groups.values()) >= getattr(scheduler, "group_limits", {}).get(group, 1):
+                    continue
                 if key in self._inflight or shared_key in self._inflight:
                     continue
                 task = await self._journal_call(self.journal.claim, identity, seconds=1800)
@@ -127,6 +138,8 @@ class BusOrchestration:
                     ):
                         sweep_distribution_sources.add(task["inputs"]["source"]["source_id"])
                     self._inflight[key] = asyncio.create_task(self._source(scheduler, task))
+                    if not key.startswith("sweep:"):
+                        self._inflight_groups[key] = group
         for source, binding in eligible:
             if source.source_id == "corporate_ir_press_releases":
                 continue  # Its independent endpoint coordinator runs 7x24 before this lane.
@@ -166,9 +179,13 @@ class BusOrchestration:
                 state = poll_states[binding.binding_id]
                 if state.next_dispatch_at is None or state.next_dispatch_at <= now:
                     if binding.binding_id not in self._inflight:
+                        group = source.scheduler_group
+                        if sum(g == group for g in self._inflight_groups.values()) >= getattr(scheduler, "group_limits", {}).get(group, source.scheduler_constraints.max_concurrency):
+                            continue
                         self._inflight[binding.binding_id] = asyncio.create_task(
                             asyncio.wait_for(scheduler._poll(source, binding, now), timeout=600)
                         )
+                        self._inflight_groups[binding.binding_id] = group
         for source, bindings in shared_realtime.values():
             key = f"shared:{source.source_id}"
             if key not in self._inflight and scheduler.distribution_due(
@@ -312,6 +329,12 @@ class BusOrchestration:
                     await self._journal_call(self._yield_source, task)
                     return result
             receipt = task["receipt"]
+            if receipt["poll_done"]:
+                live_key = binding.binding_id
+                running = self._inflight.get(live_key)
+                if running is asyncio.current_task():
+                    self._inflight[f"sweep:{task['id']}"] = self._inflight.pop(live_key)
+                    self._inflight_groups.pop(live_key, None)
             pending = await self._storage(
                 scheduler, scheduler.repository.pending_enrichment_ids, receipt["job_ids"]
             )

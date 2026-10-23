@@ -114,7 +114,11 @@ def apply_candidate_overrides(
         bodies = root.xpath('//*[@itemprop="articleBody"]')
         if bodies:
             text = node_text(bodies[0])
-            text = re.sub(r"\n\n[^\n]{1,80}\s기자(?:\s+\S+@\S+)?$", "", text).strip()
+            text = re.sub(
+                r"(?:\n\s*\n|\n|(?<=[.!?다])\s+)[^\n]{1,40}?\s*기자\s*"
+                r"(?:[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})?\s*$",
+                "", text,
+            ).strip()
             if text:
                 result.candidates = [
                     candidate_type(text, "etnews_article_body", True, result.headline, 30)

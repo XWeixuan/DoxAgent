@@ -125,7 +125,7 @@ class _ConcurrentExtractor:
         self.calls += 1
         self.active += 1
         self.max_active = max(self.max_active, self.active)
-        await asyncio.sleep(0.01)
+        await asyncio.sleep(1)
         self.active -= 1
         return MediaExtractionResult(
             record=record,
@@ -156,6 +156,7 @@ class _GovernedExtractor:
             content="Governed full article body",
             final_url=record.url,
             source_name="example.test",
+            attempts=(FetchAttempt("browser",record.url,status_code=200),),
             diagnostics={
                 "site_id": "generic",
                 "strategy_ref": "builtin:generic_body@1",
@@ -300,10 +301,10 @@ async def test_worker_surfaces_finalization_infrastructure_failure(
         poll_run_id="poll-failure",
     )
 
-    async def fail_finalization(**_kwargs):
+    def fail_finalization(**_kwargs):
         raise RuntimeError("sqlite unavailable")
 
-    monkeypatch.setattr(bus, "accept_message", fail_finalization)
+    monkeypatch.setattr(bus, "_accept_message", fail_finalization)
     hub = ContentEnrichmentHub(repository, bus, extractor=_ConcurrentExtractor())
 
     with pytest.raises(RuntimeError, match="sqlite unavailable"):
@@ -423,7 +424,9 @@ async def test_storage_deferral_preserves_content_retry_budget_and_deadline(tmp_
     assert await hub.run_once() == 1
     queued = repository.list_enrichment_jobs()[0]
     assert queued.attempt_count == 0
-    assert queued.deadline_at == initial.deadline_at
+    assert queued.budget_started_at is not None
+    assert queued.deadline_at == queued.budget_started_at + timedelta(seconds=180)
+    assert queued.created_at == initial.created_at
     assert queued.not_before > initial.not_before
     assert repository.list_raw(ticker="MU") == []
 
@@ -526,7 +529,7 @@ async def test_expired_retry_is_discarded_to_fallback(tmp_path: Path) -> None:
         message=_message(4, summary="deadline fallback"),
         bootstrap=False,
         poll_run_id=new_id("poll"),
-        collected_at=datetime.now(UTC) - timedelta(seconds=181),
+        collected_at=datetime.now(UTC) - timedelta(minutes=11),
     )
     extractor = _RetryExtractor()
     hub = ContentEnrichmentHub(repository, bus, extractor=extractor, retry_delay_seconds=0)

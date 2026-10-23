@@ -11,6 +11,7 @@ import os
 import re
 import time
 from collections import OrderedDict
+from contextvars import ContextVar
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -45,6 +46,7 @@ from .schema import (
 logger = logging.getLogger(__name__)
 EXPECTED_PLAYWRIGHT_VERSION = "1.63.0"
 EXPECTED_CHROMIUM_REVISION = "1243"
+_BROWSER_TIMINGS = ContextVar("browser_stage_timings", default=None)
 
 
 @dataclass
@@ -65,6 +67,7 @@ class RuntimeResponse:
     subscription_verified: bool = False
     recovery_id: str | None = None
     assessment: dict | None = None
+    stage_timings: dict[str, int] = field(default_factory=dict)
 
 
 class OwnerFileLock:
@@ -1265,6 +1268,20 @@ class SiteAccessRuntime:
         )
 
     async def _browser(
+        self, request, resolved, identity, egress,
+    ) -> RuntimeResponse:
+        timings = {}
+        token = _BROWSER_TIMINGS.set(timings)
+        started = time.monotonic()
+        try:
+            result = await self._browser_impl(request, resolved, identity, egress)
+            result.stage_timings.update(timings)
+            result.stage_timings["browser_runtime_ms"] = int((time.monotonic()-started)*1000)
+            return result
+        finally:
+            _BROWSER_TIMINGS.reset(token)
+
+    async def _browser_impl(
         self,
         request: AccessRequest,
         resolved: ResolvedSite,
@@ -1273,7 +1290,9 @@ class SiteAccessRuntime:
     ) -> RuntimeResponse:
         await public_url(request.url, trusted_proxy_dns=True)
         deadline = time.monotonic() + request.remaining_budget_ms / 1000
+        lease_started = time.monotonic()
         lease = await self.browser_runtimes.page(identity, egress, deadline=deadline)
+        _BROWSER_TIMINGS.get()["page_acquire_ms"] = int((time.monotonic()-lease_started)*1000)
         current_runtime = self.repository.get_identity_runtime(identity.identity_id)
         if (
             current_runtime.instance_id != lease.provenance.instance_id
@@ -1367,12 +1386,35 @@ class SiteAccessRuntime:
                     # from human maintenance. Let its native document checks run
                     # in the real active tab, not an indefinitely backgrounded tab.
                     await self._focus_maintenance_target(lease.browser_cdp, gate.root_target_id)
+                if request.mode is AccessMode.BROWSER_FETCH and request.purpose is SitePurpose.BODY and not request.recipe_ref:
+                    parsed = urlsplit(request.url)
+                    await page.goto(f"{parsed.scheme}://{parsed.netloc}/",wait_until="commit",
+                        timeout=max(1,min(3000,int((deadline-time.monotonic())*1000))))
+                    fetched = await page.evaluate("""async ({url,budget,maxBytes}) => {
+                      const controller=new AbortController();
+                      const timer=setTimeout(()=>controller.abort(),budget);
+                      try {
+                        const r=await fetch(url,{credentials:'include',signal:controller.signal});
+                        const text=await r.text();
+                        if(new TextEncoder().encode(text).length>maxBytes)throw new Error('response_too_large');
+                        return {status:r.status,url:r.url,headers:Object.fromEntries(r.headers),text};
+                      } finally {clearTimeout(timer);}
+                    }""",{"url":request.url,"budget":max(1,int((deadline-time.monotonic())*1000)),
+                           "maxBytes":request.max_response_bytes})
+                    if gate.blocked or not await gate._allowed(fetched["url"]):
+                        return RuntimeResponse(0,request.url,{},redirect_url=fetched["url"],
+                            reason="cross_site_navigation",provenance=lease.provenance)
+                    return RuntimeResponse(fetched["status"],fetched["url"],_filtered_headers(fetched["headers"]),
+                        fetched["text"],provenance=lease.provenance)
                 if request.recipe_ref == "builtin:yahoo_latest_news@1":
                     rows, metadata = await capture_latest_news(
                         page,
                         str(request.recipe_parameters["ticker"]),
                         timeout_seconds=int(request.recipe_parameters.get("timeout_seconds", 20)),
                         snippet_count=int(request.recipe_parameters.get("snippet_count", 20)),
+                        known_dates=request.recipe_parameters.get("known_dates", {}),
+                        pending_rows=request.recipe_parameters.get("pending_rows", []),
+                        probe_offset=request.recipe_parameters.get("probe_offset", 0),
                     )
                     return await recipe_capture(rows, metadata)
                 if request.recipe_ref == "builtin:reuters_search@1":
@@ -1382,6 +1424,7 @@ class SiteAccessRuntime:
                         int(request.recipe_parameters.get("offset", 0)),
                     )
                     return await recipe_capture(rows)
+                navigation_started = time.monotonic()
                 response = await page.goto(
                     request.url,
                     # These ad-heavy publishers can keep DOMContentLoaded pending
@@ -1395,6 +1438,7 @@ class SiteAccessRuntime:
                     ),
                     timeout=min(request.remaining_budget_ms, 20_000),
                 )
+                _BROWSER_TIMINGS.get()["navigation_ms"] = int((time.monotonic()-navigation_started)*1000)
                 page._doxagent_challenge_status = response.status if response else 0
                 page._doxagent_challenge_headers = getattr(response, "headers", {})
                 if response is not None and response.status == 403 and not native_investing:
@@ -1450,7 +1494,7 @@ class SiteAccessRuntime:
                         response = observed_response
                         status = response.status
                     if gate.blocked or urlsplit(native_document[1]).hostname not in {
-                        "investing.com", "www.investing.com"
+                        "investing.com", "www.investing.com", "in.investing.com", "uk.investing.com", "ca.investing.com", "ng.investing.com"
                     }:
                         return RuntimeResponse(
                             0, request.url, {}, redirect_url=native_document[1],
@@ -1805,10 +1849,11 @@ class SiteAccessRuntime:
     ) -> str | None:
         # One path for ordinary documents and recipes: preserve the actual tab,
         # remove navigation instrumentation, and let the service pause its identity.
-        from .governance_models import BrowserRecovery
-        from .challenge_detection import assess, observe_frames, allowed_frame_url
-        from .recovery import recovery_context
         from datetime import timedelta
+
+        from .challenge_detection import allowed_frame_url, assess, observe_frames
+        from .governance_models import BrowserRecovery
+        from .recovery import recovery_context
         from .schema import utc_now
 
         page._doxagent_handoff_pending = True
@@ -1988,8 +2033,8 @@ class SiteAccessRuntime:
             }), resolved, identity, egress)
 
     async def observe_recovery(self, recovery, identity):
-        from .recovery import retained_token
         from .governance_repository import GovernanceRepository
+        from .recovery import retained_token
         _, maintained = retained_entry(self._maintenance_pages, identity.identity_id, recovery.original_instance_id,
             recovery.original_target_id, retained_token(GovernanceRepository(self.repository), recovery))
         if not maintained or maintained.page.is_closed():
@@ -2000,8 +2045,8 @@ class SiteAccessRuntime:
                                provenance=maintained.lease.provenance)
 
     async def close_recovery(self, recovery, identity):
-        from .recovery import retained_token
         from .governance_repository import GovernanceRepository
+        from .recovery import retained_token
         store = GovernanceRepository(self.repository)
         token, maintained = retained_entry(self._maintenance_pages, identity.identity_id, recovery.original_instance_id,
             recovery.original_target_id, retained_token(store, recovery))

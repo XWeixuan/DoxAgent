@@ -118,6 +118,11 @@ def bootstrap_seed(repository: SiteStrategyRepository, service: SiteStrategyServ
                     auth_updates["crawler_requirement"] = "none"
                 if spec.site_id == "barrons" and current.auth.crawler_requirement != "required":
                     auth_updates["crawler_requirement"] = "required"
+                domains = list(current.domains)
+                known_domains = {(r.match,r.host,r.role) for r in domains}
+                for rule in spec.domains:
+                    if (rule.match,rule.host,rule.role) not in known_domains:
+                        domains.append(rule)
                 support = list(current.support_hosts)
                 known_support = {(item.match, item.host, item.role) for item in support}
                 for rule in spec.support_hosts:
@@ -133,6 +138,8 @@ def bootstrap_seed(repository: SiteStrategyRepository, service: SiteStrategyServ
                 if spec.site_id == "barrons" and current.access.overrides != spec.access.overrides:
                     access_updates["overrides"] = spec.access.overrides
                 body = current.body
+                if spec.site_id == "yahoo_finance" and current.body.access_order == ["browser", "http_public", "reader"]:
+                    body = current.body.model_copy(update={"access_order": spec.body.access_order})
                 crawler = current.crawler or spec.crawler
                 if (
                     spec.body.access_order
@@ -142,6 +149,7 @@ def bootstrap_seed(repository: SiteStrategyRepository, service: SiteStrategyServ
                     body = current.body.model_copy(update={"access_order": spec.body.access_order})
                 if (
                     not auth_updates
+                    and len(domains) == len(current.domains)
                     and len(support) == len(current.support_hosts)
                     and not access_updates
                     and body is current.body
@@ -152,6 +160,7 @@ def bootstrap_seed(repository: SiteStrategyRepository, service: SiteStrategyServ
                     update={
                         "auth": current.auth.model_copy(update=auth_updates),
                         "support_hosts": support,
+                        "domains": domains,
                         "access": current.access.model_copy(update=access_updates),
                         "body": body,
                         "crawler": crawler,
@@ -192,7 +201,7 @@ def seed_specs() -> list[SiteStrategySpec]:
                 "consent.yahoo.com",
                 "guce.yahoo.com",
             ),
-            access_order=["browser", "http_public", "reader"],
+            access_order=["http_public", "browser", "reader"],
             body_parameters={
                 "body_xpath": [
                     '//*[@data-testid="article-body"]',
@@ -451,7 +460,7 @@ def seed_specs() -> list[SiteStrategySpec]:
         ),
         _site(
             "investing",
-            ["www.investing.com", "investing.com"],
+            ["www.investing.com", "investing.com", "in.investing.com", "uk.investing.com", "ca.investing.com", "ng.investing.com"],
             "builtin:generic@1",
             crawler="builtin:investing_ticker@1",
             egresses=("server-direct", "de-standard-1"),
@@ -533,17 +542,12 @@ def _site(
                 1
                 if site_id
                 in {
-                    "yahoo_finance",
                     "reuters",
-                    "barrons",
                     "wsj",
                     "seeking_alpha",
                     "marketwatch",
                     "digitimes",
                     "digitimes_tw",
-                    "investorshub",
-                    "investing",
-                    "globenewswire",
                 }
                 else 2
             ),

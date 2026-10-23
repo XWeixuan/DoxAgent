@@ -10,6 +10,8 @@ from urllib.parse import urlsplit
 from doxagent.content_enrichment.quality import choose_candidate, inspect_html
 
 logger = logging.getLogger(__name__)
+INVESTING_HOSTS = frozenset({"investing.com","www.investing.com","in.investing.com",
+                           "uk.investing.com","ca.investing.com","ng.investing.com"})
 
 
 def listing_ticker(html, url):
@@ -19,7 +21,7 @@ def listing_ticker(html, url):
 
     from doxagent.message_bus_v2.market_sources import parse_investing
 
-    if urlsplit(url).hostname not in {"investing.com", "www.investing.com"}:
+    if urlsplit(url).hostname not in INVESTING_HOSTS:
         return None
     if inspect_html(html, url, "", generic_extraction=False).access_reason:
         return None
@@ -124,7 +126,7 @@ async def capture_document(
                 if final_url.startswith("about:"):
                     await asyncio.sleep(0.25)
                     continue
-                if urlsplit(final_url).hostname not in {"investing.com", "www.investing.com"}:
+                if urlsplit(final_url).hostname not in INVESTING_HOSTS:
                     return last, final_url
                 info = inspect_html(
                     last,

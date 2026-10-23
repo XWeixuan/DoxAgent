@@ -599,6 +599,12 @@ class DoxAgentSettings(BaseSettings):
         ge=1,
         validation_alias="DOXAGENT_SITE_ACCESS_BROWSER_IDLE_SECONDS",
     )
+    site_access_body_browser_max_pages: int = Field(default=2,ge=1,le=8,
+        validation_alias="DOXAGENT_SITE_ACCESS_BODY_BROWSER_MAX_PAGES")
+    site_access_body_browser_borrow: bool = Field(default=True,
+        validation_alias="DOXAGENT_SITE_ACCESS_BODY_BROWSER_BORROW")
+    message_bus_enrichment_terminal_receipts_enabled: bool = Field(default=True,
+        validation_alias="DOXAGENT_MESSAGE_BUS_ENRICHMENT_TERMINAL_RECEIPTS_ENABLED")
     openrouter_api_key: SecretStr | None = Field(
         default=None, validation_alias="OPENROUTER_API_KEY"
     )

@@ -19,7 +19,7 @@ from xml.etree import ElementTree
 _ARTICLE_DATES: dict[str, tuple[float, str]] = {}
 
 
-async def capture_dom_news(page, ticker: str, *, count: int):
+async def capture_dom_news(page, ticker: str, *, count: int, known_dates=None, pending_rows=None, probe_offset=0):
     """Current Yahoo SSR cards no longer contain the old latestNews NCP JSON."""
     cards = await page.locator('[data-testid="storyitem"]').evaluate_all(
         """els => els.flatMap(e => {
@@ -33,10 +33,21 @@ async def capture_dom_news(page, ticker: str, *, count: int):
         })"""
     )
     cards = list({r["link"]: r for r in cards}.values())[: max(1, min(count, 20))]
+    cards = list({row["link"]: row for row in [*(pending_rows or []), *cards]}.values())
     if not cards:
         return None
     now = time.monotonic()
+    for url, stamp in (known_dates or {}).items():
+        try:
+            parsed = datetime.fromisoformat(stamp.replace("Z", "+00:00"))
+            if parsed.tzinfo is not None and len(stamp) > 10:
+                _ARTICLE_DATES[url] = (now + 86400, parsed.isoformat())
+        except (AttributeError, ValueError, TypeError):
+            pass
     missing = [r["link"] for r in cards if _ARTICLE_DATES.get(r["link"], (0, ""))[0] <= now]
+    article_html = {}
+    start = int(probe_offset) % len(missing) if missing else 0
+    probe_urls = (missing[start:] + missing[:start])[:3]
     if missing:
         # Same-origin browser fetch retains actual browser TLS/cookies/cache.
         # Never infer an exact publication time from a relative "2h ago" label.
@@ -48,7 +59,8 @@ async def capture_dom_news(page, ticker: str, *, count: int):
                 const timer=setTimeout(()=>controller.abort(),6000);
                 try {
                   const r=await fetch(url,{credentials:'include',signal:controller.signal});
-                  const d=new DOMParser().parseFromString(await r.text(),'text/html');
+                  const html=await r.text();
+                  const d=new DOMParser().parseFromString(html,'text/html');
                   let date=null;
                   function visit(v){
                     if(Array.isArray(v)){v.forEach(visit);return;}
@@ -62,14 +74,14 @@ async def capture_dom_news(page, ticker: str, *, count: int):
                     try{visit(JSON.parse(s.textContent));}catch{}
                   }
                   if(!date)date=d.querySelector('meta[property="article:published_time"]')?.content;
-                  results.push({url,status:r.status,date});
+                  results.push({url,status:r.status,date,html:html.length<2000000?html:null,final_url:r.url});
                 }catch{results.push({url,status:0,date:null});}
                 finally{clearTimeout(timer);}
               }}
               await Promise.all(Array.from({length:Math.min(3,urls.length)},worker));
               return results;
             }""",
-            missing,
+            probe_urls,
         )
         for item in dates:
             if item["status"] in {401, 403, 429}:
@@ -84,17 +96,16 @@ async def capture_dom_news(page, ticker: str, *, count: int):
                 valid = False
             if item["status"] == 200 and valid:
                 _ARTICLE_DATES[item["url"]] = (now + 86400, parsed.isoformat())
+                if item.get("html") and item.get("final_url", item["url"]) == item["url"]:
+                    article_html[item["url"]] = item["html"]
         while len(_ARTICLE_DATES) > 512:
             _ARTICLE_DATES.pop(next(iter(_ARTICLE_DATES)))
     rows = [
-        {**row, "pubDate": _ARTICLE_DATES[row["link"]][1]}
+        {**row, "pubDate": _ARTICLE_DATES[row["link"]][1],
+         **({"captured_article_html": article_html[row["link"]]} if row["link"] in article_html else {})}
         for row in cards
         if _ARTICLE_DATES.get(row["link"], (0, ""))[0] > now
     ]
-    if not rows:
-        raise YahooPageUnavailable(
-            "Yahoo cards have no verified publication timestamps", phase="dom_article_metadata"
-        )
     return rows, {
         "capture_method": "ssr_dom_article_metadata",
         "network_status": 200,
@@ -102,6 +113,8 @@ async def capture_dom_news(page, ticker: str, *, count: int):
         "ticker": ticker,
         "article_date_failures": len(cards) - len(rows),
         "parsed_cards": len(cards),
+        "timestamp_probe_offset": start + len(probe_urls),
+        "pending_timestamp_rows": [row for row in cards if row["link"] not in {r["link"] for r in rows}],
     }
 
 
@@ -180,7 +193,7 @@ def latest_news_response(response, ticker: str) -> bool:
     return False  # Do not consume unrelated/global ticker requests.
 
 
-async def capture_latest_news(page, ticker: str, *, timeout_seconds=20, snippet_count=20):
+async def capture_latest_news(page, ticker: str, *, timeout_seconds=20, snippet_count=20, known_dates=None, pending_rows=None, probe_offset=0):
     from .news_adapters import _yahoo_contents
 
     captured = asyncio.get_running_loop().create_future()
@@ -268,7 +281,8 @@ async def capture_latest_news(page, ticker: str, *, timeout_seconds=20, snippet_
                         "endpoint": "sveltekit_latest_news",
                     }
                 else:
-                    dom = await capture_dom_news(page, ticker, count=snippet_count)
+                    dom = await capture_dom_news(page, ticker, count=snippet_count, known_dates=known_dates,
+                                                 pending_rows=pending_rows, probe_offset=probe_offset)
                     if dom is not None:
                         rows, metadata = dom
                         return rows, {

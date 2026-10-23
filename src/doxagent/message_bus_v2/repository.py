@@ -87,7 +87,8 @@ class _BorrowedConnection:
 
 
 class MessageBusV2Repository:
-    def __init__(self, sqlite_path: str | Path) -> None:
+    def __init__(self, sqlite_path: str | Path, *, terminal_receipts_enabled: bool = True) -> None:
+        self.terminal_receipts_enabled = terminal_receipts_enabled
         self._atomic_connection = ContextVar("bus_atomic_connection", default=None)
         self._scope_connection = ContextVar("bus_scope_connection", default=None)
         self.path = Path(sqlite_path)
@@ -349,6 +350,18 @@ class MessageBusV2Repository:
                     created_at text not null,
                     data_json text not null
                 );
+                create table if not exists article_body_results (
+                    fetch_key text primary key,
+                    first_observed_at text not null,
+                    status text not null,
+                    next_check_at text not null,
+                    data_json text not null
+                );
+                create index if not exists idx_body_results_cohort
+                    on article_body_results(first_observed_at,status);
+                create index if not exists idx_body_results_verified_url on article_body_results(
+                    json_extract(data_json,'$.final_canonical_url'),json_extract(data_json,'$.access_scope'),
+                    coalesce(json_extract(data_json,'$.language'),'')) WHERE status='READY';
                 create index if not exists idx_mbv2_enrichment_ready
                     on content_enrichment_jobs(status, not_before, created_at);
                 create table if not exists site_strategy_result_outbox (
@@ -463,6 +476,8 @@ class MessageBusV2Repository:
                 );
                 create index if not exists idx_mbv2_audit_entity
                     on audit_log(entity_type, entity_id, created_at desc);
+                create index if not exists idx_mbv2_audit_window
+                    on audit_log(entity_type,created_at);
                 """
             )
             connection.executescript(dedup.SCHEMA)
@@ -884,6 +899,8 @@ class MessageBusV2Repository:
             evidence = dict(old.metadata.get("content_evidence", {}))
             evidence["checked_at"] = utc_now().isoformat()
             new_evidence = candidate.metadata["content_evidence"]
+            new_complete = bool(candidate.metadata.get("media_enrichment", {}).get("succeeded") and
+                                candidate.metadata.get("media_enrichment", {}).get("outcome") in {"FULL", "SHORT_FULL"})
             refresh = classification in {"BUSINESS_UPDATE", "CONTENT_SUPPLEMENT"}
             explicit_update = any(
                 new_evidence.get("input_fields", {}).get(k)
@@ -894,14 +911,14 @@ class MessageBusV2Repository:
                 if new_evidence.get("article_body") and (
                     evidence.get("kind") != "FULL"
                     or new_evidence.get("kind") == "FULL"
-                    or explicit_update
+                    or new_complete
                 ):
                     evidence = {**new_evidence, "checked_at": utc_now().isoformat()}
                     if not evidence.get("summary"):
                         evidence["summary"] = old.metadata.get("content_evidence", {}).get(
                             "summary"
                         )
-                elif explicit_update and new_evidence.get("summary"):
+                elif explicit_update and new_evidence.get("summary") and not candidate.metadata.get("media_enrichment", {}).get("reason"):
                     evidence = {
                         **new_evidence,
                         "previous_article_body": evidence.get("article_body"),
@@ -953,6 +970,11 @@ class MessageBusV2Repository:
                         "message_sources": sources,
                         "content_evidence": evidence,
                         "identity_evidence": identity_evidence,
+                        "body_update_state": {
+                            "last_checked_at": utc_now().isoformat(),
+                            "last_error": candidate.metadata.get("media_enrichment", {}).get("reason") if not new_complete else None,
+                            "pending": not new_complete and explicit_update,
+                        },
                     },
                     "duplicate_seen_count": old.duplicate_seen_count + 1,
                     "last_seen_at": utc_now(),
@@ -1400,6 +1422,40 @@ class MessageBusV2Repository:
 
     # -- Raw, Standard and buffering -------------------------------------------------
 
+    def known_published_article(self, binding, message):
+        from .schema import identity_key_for
+
+        with self._connect() as db:
+            rows = db.execute(
+                """SELECT r.data_json FROM raw_messages r JOIN standard_messages s
+                   ON s.raw_message_id=r.raw_message_id JOIN stream_members sm
+                   ON sm.standard_message_id=s.standard_message_id
+                   WHERE r.binding_id=? AND r.identity_key=? ORDER BY r.revision DESC LIMIT 4""",
+                (binding.binding_id, identity_key_for(binding.source_id, message)),
+            ).fetchall()
+        for row in rows:
+            raw = RawMessage.model_validate_json(row[0])
+            comparable = message.model_copy(update={"identity_key": identity_key_for(binding.source_id, message)})
+            if not dedup.context_conflict(raw, comparable):
+                return raw
+        return None
+
+    def mark_article_check_pending(self, raw_id):
+        with self.transaction() as db:
+            row = db.execute("SELECT data_json FROM raw_messages WHERE raw_message_id=?",(raw_id,)).fetchone()
+            if not row:
+                return
+            raw = RawMessage.model_validate_json(row[0])
+            state = {**raw.metadata.get("body_update_state",{}),"pending":True}
+            if raw.metadata.get("body_update_state") == state:
+                return
+            metadata = {**raw.metadata,"body_update_state":state}
+            db.execute("UPDATE raw_messages SET data_json=? WHERE raw_message_id=?",
+                (self._json(raw.model_copy(update={"metadata":metadata})),raw_id))
+            for row in db.execute("SELECT data_json FROM standard_messages WHERE raw_message_id=?",(raw_id,)):
+                standard = StandardMessage.model_validate_json(row[0]).model_copy(update={"metadata":metadata})
+                db.execute("UPDATE standard_messages SET data_json=? WHERE standard_message_id=?",(self._json(standard),standard.standard_message_id))
+
     def enqueue_enrichment_job(self, job: EnrichmentJob) -> tuple[EnrichmentJob, bool]:
         """Insert one active intake job, or return the already queued equivalent."""
 
@@ -1410,6 +1466,8 @@ class MessageBusV2Repository:
             ).fetchone()
             if existing_row is not None:
                 existing = EnrichmentJob.model_validate_json(existing_row["data_json"])
+                if existing.status in {EnrichmentJobStatus.COMPLETED, EnrichmentJobStatus.FAILED}:
+                    return existing, False
                 from .admission import evaluate_admission
 
                 expired = evaluate_admission(
@@ -1506,7 +1564,7 @@ class MessageBusV2Repository:
             while ready and len(selected) < max(1, limit):
                 existing = min(
                     ready,
-                    key=lambda item: host_counts.get(urlparse(item.message.url).hostname or "", 0),
+                    key=lambda item: (item.work_kind == "recheck", host_counts.get(urlparse(item.message.url).hostname or "", 0)),
                 )
                 ready.remove(existing)
                 selected.append(existing)
@@ -1518,12 +1576,9 @@ class MessageBusV2Repository:
                 # not consume the entire finite fetch/retry budget before the
                 # first claim. Reclaims/retries never renew this deadline;
                 # original publication-window admission remains unchanged.
-                closed_work = existing.owner_kind == "distribution_article" or (
-                    existing.message.admission_context is not None
-                    and existing.message.admission_context.mode == "CLOSED_SWEEP"
-                )
                 deadline_at = existing.deadline_at
-                if closed_work and existing.attempt_count == 0:
+                budget_started_at = existing.budget_started_at
+                if budget_started_at is None and existing.attempt_count == 0:
                     retry_budget = max(
                         timedelta(seconds=1), existing.deadline_at - existing.created_at
                     )
@@ -1536,6 +1591,8 @@ class MessageBusV2Repository:
                         "lease_expires_at": lease_until,
                         "updated_at": current,
                         "deadline_at": deadline_at,
+                        "budget_started_at": budget_started_at,
+                        "execution_seq": existing.execution_seq + 1,
                     }
                 )
                 connection.execute(
@@ -1561,22 +1618,54 @@ class MessageBusV2Repository:
                 (job.status.value, job.not_before.isoformat(), self._json(job), job.job_id),
             )
 
+    def start_enrichment_fetch(self, job):
+        with self.transaction() as db:
+            current = self._assert_enrichment_claim(db, job.job_id, job.claim_token)
+            if current.budget_started_at is not None:
+                return current
+            now = utc_now()
+            started = current.model_copy(update={"budget_started_at":now,"first_fetch_at":now,
+                "deadline_at":now+timedelta(seconds=current.fetch_budget_seconds)})
+            db.execute("UPDATE content_enrichment_jobs SET data_json=? WHERE job_id=?", (self._json(started),job.job_id))
+            return started
+
     def pending_enrichment_ids(self, identities: list[str]) -> list[str]:
         with self._connect() as connection:
             return [
                 row[0]
                 for row in connection.execute(
                     "select job_id from content_enrichment_jobs where job_id in "
-                    "(select value from json_each(?))",
+                    "(select value from json_each(?)) and status in ('queued','running','retry_wait')",
                     (json.dumps(identities),),
                 )
             ]
 
     def delete_enrichment_job(self, job_id: str, *, claim_token: str | None = None) -> None:
-        with self.transaction() as connection:
-            if claim_token:
-                self._assert_enrichment_claim(connection, job_id, claim_token)
-            connection.execute("delete from content_enrichment_jobs where job_id=?", (job_id,))
+        """Legacy completion entry point: preserve the durable idempotency receipt."""
+        self.complete_enrichment_job_with_outcome(job_id, claim_token, None)
+
+    def _finish_enrichment(self, connection, job_id, payload=None):
+        row = connection.execute(
+            "SELECT data_json FROM content_enrichment_jobs WHERE job_id=?", (job_id,)
+        ).fetchone()
+        if row is None:
+            return
+        job = EnrichmentJob.model_validate_json(row[0])
+        if job.status in {EnrichmentJobStatus.COMPLETED, EnrichmentJobStatus.FAILED}:
+            return
+        if not self.terminal_receipts_enabled:
+            connection.execute("DELETE FROM content_enrichment_jobs WHERE job_id=?",(job_id,))
+            return
+        succeeded = payload and payload.get("outcome") in {"FULL", "SHORT_FULL", "SKIPPED"}
+        final = job.model_copy(update={
+            "status": EnrichmentJobStatus.COMPLETED if succeeded else EnrichmentJobStatus.FAILED,
+            "lease_expires_at": None, "claim_token": None,
+            "updated_at": utc_now(), "result": payload or {},
+        })
+        connection.execute(
+            "UPDATE content_enrichment_jobs SET status=?,lease_expires_at=NULL,data_json=? WHERE job_id=?",
+            (final.status.value, self._json(final), job_id),
+        )
 
     def list_site_strategy_outbox(self, *, limit: int = 100) -> list[dict[str, Any]]:
         now = utc_now().isoformat()
@@ -1604,20 +1693,20 @@ class MessageBusV2Repository:
     ) -> None:
         with self.transaction() as connection:
             row = connection.execute(
-                "select 1 from content_enrichment_jobs where job_id=?", (job_id,)
+                "select status from content_enrichment_jobs where job_id=?", (job_id,)
             ).fetchone()
-            if row is None:
+            if row is None or row[0] in {"completed", "failed"}:
                 return
             if claim_token:
                 self._assert_enrichment_claim(connection, job_id, claim_token)
-            if payload:
+            if payload and payload.get("payload",{}).get("site_outcome",True) and not payload.get("payload", {}).get("cache_reused"):
                 now = utc_now().isoformat()
                 connection.execute(
                     """insert or ignore into site_strategy_result_outbox(
                            outbox_id,kind,status,attempts,next_attempt_at,created_at,payload_json
                        ) values(?,?,?,?,?,?,?)""",
                     (
-                        job_id,
+                        payload.get("execution_id") or payload["job_id"],
                         "body",
                         "PENDING",
                         0,
@@ -1626,7 +1715,7 @@ class MessageBusV2Repository:
                         json.dumps(payload, ensure_ascii=False, default=str),
                     ),
                 )
-            connection.execute("delete from content_enrichment_jobs where job_id=?", (job_id,))
+            self._finish_enrichment(connection, job_id, payload)
 
     def confirm_site_strategy_outbox(self, outbox_ids: list[str]) -> None:
         if not outbox_ids:
@@ -1674,7 +1763,8 @@ class MessageBusV2Repository:
     def _body_outcome_payload(candidate: RawMessage) -> dict[str, Any] | None:
         enrichment = candidate.metadata.get("media_enrichment", {})
         completion = candidate.metadata.get("v2_body_completion", {})
-        if enrichment.get("pipeline_version") != "body_v2.2":
+        if (enrichment.get("pipeline_version") != "body_v2.2" or enrichment.get("reused_from_execution_id")
+                or completion.get("network_attempted") is False):
             return None
         job_id = completion.get("attempt_id")
         if not isinstance(job_id, str) or not job_id:
@@ -1683,6 +1773,8 @@ class MessageBusV2Repository:
         final_access = trace[-1] if isinstance(trace, list) and trace else {}
         return {
             "job_id": job_id,
+            "execution_id": completion.get("execution_id"),
+            "logical_job_id": completion.get("logical_job_id"),
             "final_site_id": enrichment.get("site_id")
             or final_access.get("site_id")
             or candidate.resolved_domain
@@ -1733,10 +1825,11 @@ class MessageBusV2Repository:
                 (renewed.lease_expires_at.isoformat(), self._json(renewed), job_id),
             )
 
-    def list_enrichment_jobs(self, *, limit: int = 100) -> list[EnrichmentJob]:
+    def list_enrichment_jobs(self, *, limit: int = 100, include_terminal: bool = False) -> list[EnrichmentJob]:
+        where = "" if include_terminal else "where status in ('queued','running','retry_wait')"
         with self._connect() as connection:
             rows = connection.execute(
-                "select data_json from content_enrichment_jobs order by created_at limit ?",
+                f"select data_json from content_enrichment_jobs {where} order by created_at limit ?",
                 (max(1, limit),),
             ).fetchall()
         return self._models(EnrichmentJob, rows)
@@ -1773,6 +1866,7 @@ class MessageBusV2Repository:
                     self._assert_enrichment_claim(connection, *enrichment_claim)
                 candidate, duplicate = self._dedup_candidate(connection, candidate)
                 if duplicate is not None:
+                    self._record_body_attempt(connection, candidate, duplicate)
                     return IngestDecision.DUPLICATE, duplicate
                 matching_row = connection.execute(
                     """select data_json from raw_messages
@@ -1798,7 +1892,7 @@ class MessageBusV2Repository:
                                outbox_id,kind,status,attempts,next_attempt_at,created_at,payload_json
                            ) values(?,?,?,?,?,?,?)""",
                         (
-                            site_outcome["job_id"],
+                            site_outcome.get("execution_id") or site_outcome["job_id"],
                             "body",
                             "PENDING",
                             0,
@@ -1807,10 +1901,7 @@ class MessageBusV2Repository:
                             json.dumps(site_outcome, ensure_ascii=False, default=str),
                         ),
                     )
-                    connection.execute(
-                        "delete from content_enrichment_jobs where job_id=?",
-                        (enrichment_claim[0],),
-                    )
+                    self._finish_enrichment(connection, enrichment_claim[0], site_outcome)
             if matching_row is not None:
                 # A conservative ambiguity fallback may find an exact legacy hash.
                 # Remove only this uncommitted reservation, never historical evidence.
@@ -1976,6 +2067,45 @@ class MessageBusV2Repository:
                 self._json(audit),
             ),
         )
+
+    def record_enrichment_execution(self, job, result, *, started_at, reused=False):
+        """An execution exists even when admission/publication never produces a Raw."""
+        network = not reused and any(a.reason not in {
+            "site_budget_deferred", "site_recovery_pending", "storage_unavailable", "domain_cooldown"
+        } for a in result.attempts)
+        if not network and not reused and result.reason in {"site_budget_deferred", "site_recovery_pending", "storage_unavailable"}:
+            return
+        payload = {
+            "attempt_id":job.execution_id,"execution_id":job.execution_id,"logical_job_id":job.job_id,
+            "ticker":job.binding.ticker if job.binding else "", "source_id":job.source.source_id,
+            "binding_id":job.binding.binding_id if job.binding else None,
+            "raw_message_id":job.known_article_raw_id or job.job_id,
+            "body_result_key":job.body_result_key,"work_kind":job.work_kind,
+            "started_at":started_at.isoformat(),"completed_at":utc_now().isoformat(),
+            "succeeded":result.succeeded,"outcome":result.diagnostics.get("outcome"),
+            "reason":result.reason,"network_attempted":network,"cache_reused":reused,
+            "intake_owned":True,"stage_timings":result.diagnostics.get("stage_timings", []),
+        }
+        with self.transaction() as db:
+            if job.claim_token:
+                self._assert_enrichment_claim(db, job.job_id, job.claim_token)
+            record = AuditRecord(audit_id=job.execution_id,entity_type="body_completion",
+                entity_id=job.job_id,action="completed",actor=UpdateActor.SYSTEM,payload=payload)
+            db.execute("INSERT OR IGNORE INTO audit_log VALUES(?,?,?,?,?,?)", (
+                record.audit_id,record.entity_type,record.entity_id,record.action,
+                record.created_at.isoformat(),self._json(record)))
+            if network and (job.pipeline_version or result.diagnostics.get("pipeline_version")) == "body_v2.2":
+                trace = result.diagnostics.get("site_access_trace") or []
+                access = trace[-1] if trace else {}
+                outcome = {"job_id":job.job_id,"logical_job_id":job.job_id,"execution_id":job.execution_id,
+                    "final_site_id":result.diagnostics.get("site_id") or access.get("site_id") or "generic",
+                    "strategy_ref":result.diagnostics.get("strategy_ref") or access.get("strategy_ref") or "builtin:generic@1",
+                    "combination_id":access.get("combination_id"),"outcome":result.diagnostics.get("outcome") or "UNAVAILABLE",
+                    "reason":result.reason,"completed_at":payload["completed_at"],
+                    "payload":{"source_id":job.source.source_id,"ticker":payload["ticker"],
+                               "url":result.final_url or job.message.url,"access_trace":trace}}
+                db.execute("INSERT OR IGNORE INTO site_strategy_result_outbox(outbox_id,kind,status,attempts,next_attempt_at,created_at,payload_json) VALUES(?,?,'PENDING',0,?,?,?)",
+                    (job.execution_id,"body",payload["completed_at"],payload["completed_at"],json.dumps(outcome,ensure_ascii=False)))
 
     def save_raw(self, raw: RawMessage) -> None:
         with self.transaction() as connection:

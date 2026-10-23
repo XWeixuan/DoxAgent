@@ -602,6 +602,8 @@ class PollState(BusModel):
     target_due_at: datetime | None = None
     next_dispatch_at: datetime | None = None
     last_attempt_at: datetime | None = None
+    last_dispatch_at: datetime | None = None
+    last_window_coverage: Literal["COMPLETE", "PARTIAL", "UNKNOWN"] = "UNKNOWN"
     last_success_at: datetime | None = None
     last_failure_at: datetime | None = None
     failure_since: datetime | None = None
@@ -609,6 +611,11 @@ class PollState(BusModel):
     last_error_message: str | None = None
     consecutive_failures: int = 0
     last_latency_ms: int | None = Field(default=None, ge=0)
+    last_stage_timings: dict[str, int] = Field(default_factory=dict)
+    last_capture_at: datetime | None = None
+    last_first_capture_at: datetime | None = None
+    last_first_intake_at: datetime | None = None
+    last_final_intake_at: datetime | None = None
     filtered_count: int = 0
     collected_count: int = 0
     published_count: int = 0
@@ -685,6 +692,7 @@ class PollContext(BusModel):
     query_plan: JsonObject | None = None
     requested_at: datetime = Field(default_factory=utc_now)
     request_permit: RequestPermitFactory = Field(exclude=True)
+    on_page: Callable[..., Any] | None = Field(default=None, exclude=True)
 
     model_config = ConfigDict(extra="forbid", arbitrary_types_allowed=True)
 

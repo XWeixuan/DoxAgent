@@ -339,10 +339,16 @@ async def test_single_http_429_switches_candidate_without_freezing_browser_ident
         )
     )
 
+    if result.disposition is AccessDisposition.BUDGET_DEFERRED:
+        assert result.reason_code == "site_queue_timeout" and result.queue_wait_ms >= 2900
+        # Resume on a later scheduler turn; this unit test isolates routing from wall-clock pacing.
+        site_service.budgets.get("yahoo_finance",max_concurrency=2,min_interval_ms=0)._next_start = 0
+        result = await site_service.execute(AccessRequest(operation_id="poll-next",purpose=SitePurpose.CRAWLER,
+            url="https://finance.yahoo.com/story",mode=AccessMode.HTTP_PUBLIC))
     assert result.disposition is AccessDisposition.SUCCESS
     assert calls == ["yahoo_finance-1", "yahoo_finance-2"]
     state = site_service.repository.get_runtime("yahoo_finance")
-    assert state.active_combination_id == "yahoo_finance-2"
+    assert state.active_combination_id == "yahoo_finance-1"  # HTTP fallback preserves the browser identity route.
     assert state.combinations["yahoo_finance-1"].state == "READY"
     assert state.combinations["yahoo_finance-1"].http_state == "COOLDOWN"
 
@@ -403,6 +409,8 @@ async def test_single_digitimes_article_entitlement_does_not_revoke_valid_profil
     for index, expected in enumerate(
         (AccessDisposition.AUTH_REQUIRED, AccessDisposition.SUCCESS)
     ):
+        site_service.budgets.joint._site_next.clear()
+        site_service.budgets.joint._identity_next.clear()
         result = await site_service.execute(
             AccessRequest(
                 operation_id=f"digitimes-entitlement-{index}",

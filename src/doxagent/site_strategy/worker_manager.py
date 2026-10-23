@@ -14,6 +14,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from .browser_operations import MAX_FRAME_BYTES
+from .operation_gate import OperationGate
 from .schema import BrowserRuntimeKind, IdentityOperationalState, SiteStrategySpec, digest_json
 from .targets import TargetOwner
 
@@ -34,6 +35,7 @@ class WorkerHandle:
     pending: dict = field(default_factory=dict)
     write_lock: asyncio.Lock = field(default_factory=asyncio.Lock)
     operation_lock: asyncio.Lock = field(default_factory=asyncio.Lock)
+    operations: OperationGate = field(default_factory=OperationGate)
     reader_task: asyncio.Task | None = None
     stage: str = "STARTING"
     last_used: float = field(default_factory=time.monotonic)
@@ -106,6 +108,9 @@ class IdentityWorkerManager:
         }
 
     async def ensure(self, identity, egress):
+        current_spec = self.repository.get_identity(identity.identity_id)
+        if current_spec is not None and current_spec.revision != identity.revision:
+            raise IdentityOperationError("RUNTIME_UNAVAILABLE","identity_configuration_changed_requires_drain")
         lock = self._locks.setdefault(identity.identity_id, asyncio.Lock())
         async with lock:
             fingerprint = digest_json([identity.model_dump(mode="json"), egress.generation])
@@ -138,6 +143,7 @@ class IdentityWorkerManager:
                         for h in candidates
                         if h.stage == "IDLE"
                         and not h.operation_lock.locked()
+                        and not h.pending
                         and not h.ownership_pending
                         and not self.repository.get_profile(
                             self.repository.get_identity(h.identity_id).profile_id
@@ -348,54 +354,53 @@ class IdentityWorkerManager:
             if not done:
                 raise TimeoutError("identity_worker_deadline")
             return future.result()
+        except (TimeoutError, asyncio.CancelledError):
+            # Cancel only the command actually sent. Admission waiters never reach here.
+            await self._write(handle, {"action": "cancel", "command_id": operation_id})
+            done, _ = await asyncio.wait({future}, timeout=3)
+            if not done and not handle.ownership_pending:
+                await self.retire(handle.identity_id, graceful=False)
+            elif done and not future.cancelled():
+                future.exception()  # Consume a cancellation receipt, preserving the caller error.
+            raise
         finally:
             handle.pending.pop(operation_id, None)
             if not future.done():
                 future.cancel()
+
+    def _current(self, handle, identity_id):
+        return (
+            self.workers.get(identity_id) is handle and handle.process.returncode is None
+            and handle.process.stdin is not None and not handle.process.stdin.is_closing()
+            and (handle.reader_task is None or not handle.reader_task.done())
+        )
 
     async def command(self, identity, egress, action, payload, *, timeout):
         deadline = time.monotonic() + timeout
         async with asyncio.timeout_at(deadline):
             while True:
                 handle = await self.ensure(identity, egress)
-                await handle.operation_lock.acquire()
-                if (
-                    self.workers.get(identity.identity_id) is handle
-                    and handle.process.returncode is None
-                    and handle.process.stdin is not None
-                    and not handle.process.stdin.is_closing()
-                    and (handle.reader_task is None or not handle.reader_task.done())
-                ):
-                    break
-                # A prewarm/previous command can retire this handle while we
-                # wait on its lock. Re-resolve control ownership, not the site
-                # request, within the original command deadline.
-                handle.operation_lock.release()
-                await asyncio.sleep(0)
-        try:
-            handle.stage = action.upper()
-            remaining = deadline - time.monotonic()
-            return await self._roundtrip(
-                handle,
-                action,
-                {
-                    **payload,
-                    "snapshot": self.snapshot(identity, egress),
-                },
-                timeout=remaining,
-            )
-        except (TimeoutError, asyncio.CancelledError):
-            await self._write(handle, {"action": "cancel"})
-            # Cancellation of a Playwright RPC may never finish. Only this
-            # registered controller is replaced; never kill a process group.
-            if not handle.ownership_pending:
-                await self.retire(identity.identity_id, graceful=False)
-            raise
-        finally:
-            handle.last_used = time.monotonic()
-            if handle.process.returncode is None:
-                handle.stage = "STORAGE_PENDING" if handle.ownership_pending else "IDLE"
-            handle.operation_lock.release()
+                async with handle.operation_lock:
+                    current = self._current(handle,identity.identity_id)
+                if not current:
+                    continue
+                waited_at = time.monotonic()
+                async with handle.operations.enter(read=action == "execute", limit=getattr(getattr(identity,"access",None),"max_concurrency",1)):
+                    if not self._current(handle,identity.identity_id):
+                        continue
+                    try:
+                        handle.stage = action.upper()
+                        wait_ms = int((time.monotonic()-waited_at)*1000)
+                        value = await self._roundtrip(handle,action,
+                            {**payload,"snapshot":self.snapshot(identity,egress)},
+                            timeout=deadline-time.monotonic())
+                        if action == "execute" and isinstance(value,dict) and "status_code" in value:
+                            value.setdefault("stage_timings",{})["worker_wait_ms"] = wait_ms
+                        return value
+                    finally:
+                        handle.last_used = time.monotonic()
+                        if handle.process.returncode is None:
+                            handle.stage = "STORAGE_PENDING" if handle.ownership_pending else "EXECUTE" if handle.pending else "IDLE"
 
     def status(self):
         return {
@@ -408,6 +413,7 @@ class IdentityWorkerManager:
                 "age_seconds": time.monotonic() - h.started_at,
                 "node_rss": h.node_rss,
                 "high_rss_samples": h.high_rss_samples,
+                "active_commands": len(h.pending),
             }
             for name, h in self.workers.items()
         }

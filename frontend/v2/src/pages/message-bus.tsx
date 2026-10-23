@@ -367,20 +367,24 @@ function MessageStream({
         <article>
           <span>
             <CircleCheck aria-hidden="true" />
-            正文补全成功率
+            {metrics?.new_article_body ? "新文章正文成功率" : "正文补全成功率（旧口径）"}
           </span>
           <strong>
-            {metrics
+            {metrics?.new_article_body
+              ? metrics.new_article_body.ratio === null ? "—" : (metrics.new_article_body.ratio * 100).toFixed(1) + "%"
+              : metrics
               ? valueText(
                   metrics.body_completion_success_ratio.current,
                   (v) => (Number(v) * 100).toFixed(1) + "%",
                 )
               : "—"}
           </strong>
-          {metrics && period !== "ALL" && (
+          {metrics?.new_article_body && <small>完整 {metrics.new_article_body.full} / {metrics.new_article_body.total} · 待完成 {metrics.new_article_body.pending} · 失败 {metrics.new_article_body.failed}</small>}
+          {metrics?.new_article_body && <small>网络成功 {metrics.new_article_body.network_succeeded} / {metrics.new_article_body.network_attempts} · 正文复用 {metrics.new_article_body.cache_reuses}</small>}
+          {metrics && !metrics.new_article_body && period !== "ALL" && (
             <Comparison metric={metrics.body_completion_success_ratio} />
           )}
-          {metrics && (
+          {metrics && !metrics.new_article_body && (
             <MetricNote metric={metrics.body_completion_success_ratio} />
           )}
         </article>
@@ -408,16 +412,19 @@ function MessageStream({
         <article>
           <span>
             <Clock3 aria-hidden="true" />
-            平均轮询延迟
+            {status?.timeliness ? "近30分钟轮询耗时" : "启用源最近耗时均值"}
           </span>
           <strong>
-            {status
+            {status?.timeliness
+              ? status.timeliness.mean_seconds === null ? "—" : status.timeliness.mean_seconds.toFixed(2) + "s"
+              : status
               ? valueText(
                   status.average_poll_latency_seconds,
                   (v) => v.toFixed(2) + "s",
                 )
               : "—"}
           </strong>
+          {status?.timeliness && <small>P95 {status.timeliness.p95_seconds?.toFixed(2) ?? "—"}s · {status.timeliness.samples} 次 · 延期 {status.timeliness.deferred}</small>}
         </article>
       </div>
       {streamError && <Notice danger>{streamError}</Notice>}
@@ -684,10 +691,13 @@ export function SourceCard({
           </dd>
           <dt>当天新增</dt>
           <dd>{today ? metricText(today) : "未记录"}</dd>
-          <dt>轮询延迟</dt>
-          <dd>
+          <dt>轮询耗时</dt>
+          <dd title={s.stage_timings_ms ? `源排队 ${s.stage_timings_ms.source_wait_ms ?? 0}ms · Site排队 ${s.stage_timings_ms.site_wait_ms ?? 0}ms · 执行 ${s.stage_timings_ms.runtime_ms ?? 0}ms · 接纳 ${s.stage_timings_ms.accept_ms ?? 0}ms` : undefined}>
             {valueText(s.last_poll_latency_seconds, (v) => v.toFixed(2) + "s")}
           </dd>
+          {s.capture_age_seconds != null && <><dt>采集距今</dt><dd title={s.capture_to_first_intake_seconds == null ? undefined : `采集至首次接纳 ${s.capture_to_first_intake_seconds.toFixed(2)}s`}>{s.capture_age_seconds.toFixed(1)}s</dd></>}
+          {!!s.pending_query_count && <><dt>待覆盖查询</dt><dd>{s.pending_query_count}</dd></>}
+          {!!s.pending_timestamp_count && <><dt>待核验时间</dt><dd>{s.pending_timestamp_count}</dd></>}
         </dl>
       </div>
 
@@ -769,6 +779,9 @@ function MessageCard({
             <span>{m.source.kind === "api" ? "API" : "爬虫"}</span>
             <span>发布 {formatInstant(m.source_published_at)}</span>
             <span>抓取 {formatInstant(m.collected_at)}</span>
+            {m.content_update && m.content_update.revision > 1 && <span>已更新 · 正文修订 {m.content_update.revision}</span>}
+            {m.content_update?.pending && <span>待核查更新</span>}
+            {m.content_update?.last_error && <span title={m.content_update.last_error}>最近正文检查失败</span>}
           </div>
         </div>
         <span className={"domain-tag route-tag route-" + route}>{route}</span>

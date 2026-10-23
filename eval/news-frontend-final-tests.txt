@@ -1,0 +1,9 @@
+$ vitest run
+
+ RUN  v4.1.11 C:/Users/WEIXUANXIE/Desktop/DoxAgent/frontend/v2
+
+
+ Test Files  15 passed (15)
+      Tests  67 passed (67)
+   Start at  00:20:54
+   Duration  1.51s (transform 1.93s, setup 0ms, import 7.38s, tests 297ms, environment 1ms)

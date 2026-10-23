@@ -13,7 +13,7 @@ from typing import Protocol
 from doxagent.content_enrichment.extractor import SharedContentExtractor
 from doxagent.content_enrichment.native import native_article
 from doxagent.content_enrichment.schema import EnrichmentJob, EnrichmentJobStatus
-from doxagent.content_enrichment.transport import DEADLINE
+from doxagent.content_enrichment.transport import DEADLINE, REVALIDATION, WORK_AGE, WORK_CLASS
 from doxagent.message_bus_v2.repository import MessageBusV2Repository
 from doxagent.message_bus_v2.schema import ContentEnrichmentMode, RawMessageInput, utc_now
 from doxagent.message_bus_v2.service import MessageBusV2Service
@@ -72,6 +72,8 @@ class ContentEnrichmentHub:
         return len(jobs)
 
     async def _process_guarded(self, job: EnrichmentJob, now: datetime) -> None:
+        work_token = WORK_CLASS.set("recheck" if job.work_kind == "recheck" else "backfill" if job.bootstrap else "foreground")
+        age_token = WORK_AGE.set(max(0, (utc_now() - job.created_at).total_seconds()))
         heartbeat = asyncio.create_task(self._renew(job))
         try:
             await self._process(job, now)
@@ -87,9 +89,17 @@ class ContentEnrichmentHub:
             )
             raise
         finally:
+            WORK_CLASS.reset(work_token)
+            WORK_AGE.reset(age_token)
             heartbeat.cancel()
             with suppress(asyncio.CancelledError):
                 await heartbeat
+            if job.body_result_key:
+                from doxagent.message_bus_v2.body_results import ArticleBodyResults
+
+                await self.bus.storage.call(
+                    ArticleBodyResults(self.repository).release, job.body_result_key, job.execution_id
+                )
 
     async def _renew(self, job: EnrichmentJob) -> None:
         while job.claim_token:
@@ -154,7 +164,7 @@ class ContentEnrichmentHub:
                 job.message.publication_time_basis,
             )
         )
-        if reason and job.binding:
+        if reason and job.binding and not job.known_article_raw_id:
             await self.bus.storage.call(
                 self.repository.record_admission,
                 job.message,
@@ -196,9 +206,40 @@ class ContentEnrichmentHub:
                 job.message.publisher_name or job.message.source or job.source.display_name
             ),
         )
+        from doxagent.message_bus_v2.body_results import ArticleBodyResults
+
+        body_results = ArticleBodyResults(self.repository)
+        cached = None
+        reused = False
+        if job.body_result_key:
+            cached, reused, acquired = await self.bus.storage.call(
+                body_results.prepare, job.body_result_key, job.execution_id, job.message
+            )
+            if not acquired and not reused:
+                await self.bus.storage.call(self.repository.requeue_enrichment_job, job.model_copy(update={
+                    "status": EnrichmentJobStatus.RETRY_WAIT,
+                    "attempt_count": max(0, job.attempt_count - 1),
+                    "not_before": utc_now() + timedelta(seconds=1), "lease_expires_at": None,
+                }))
+                return
+        revalidation_token = REVALIDATION.set(cached if not reused else None)
         try:
             seconds = (job.deadline_at - max(now, utc_now())).total_seconds()
-            if job.source.source_id == "corporate_ir_press_releases" and seconds > 0:
+            queue_expired = job.budget_started_at is None and utc_now()-job.created_at > timedelta(minutes=10)
+            if not reused and job.claim_token and not queue_expired:
+                job = await self.bus.storage.call(self.repository.start_enrichment_fetch,job)
+                seconds = (job.deadline_at-utc_now()).total_seconds()
+            if queue_expired:
+                seconds = 0
+            if reused:
+                result = MediaExtractionResult(
+                    record=record, content=cached["content"], final_url=cached.get("final_url"),
+                    extraction_method="article_body_cache",
+                    diagnostics={**cached.get("diagnostics", {}), "site_access_trace": [],
+                                 "reused_from_execution_id": cached.get("execution_id"),
+                                 "body_acquired_at": cached.get("acquired_at")},
+                )
+            elif job.source.source_id == "corporate_ir_press_releases" and seconds > 0:
                 from doxagent.message_bus_v2.corporate_ir.body import IrBodyReader
 
                 if self.ir_body_reader is None:
@@ -249,12 +290,16 @@ class ContentEnrichmentHub:
             )
         except Exception as exc:
             result = MediaExtractionResult(record=record, reason=type(exc).__name__.lower())
+        finally:
+            REVALIDATION.reset(revalidation_token)
 
         finished_at = utc_now()
+        await self.bus.storage.call(self.repository.record_enrichment_execution,
+            job, result, started_at=now, reused=reused)
         attempts = [*job.prior_attempts, *(item.to_payload() for item in result.attempts)]
-        if not result.succeeded and result.reason in {"storage_unavailable", "site_recovery_pending"}:
+        if not result.succeeded and result.reason in {"storage_unavailable", "site_recovery_pending", "site_budget_deferred"}:
             delay = max((item.retry_after_seconds or 0 for item in result.attempts), default=60)
-            not_before = finished_at + timedelta(seconds=max(1, delay) if result.reason == "site_recovery_pending" else 60)
+            not_before = finished_at + timedelta(seconds=max(1, delay) if result.reason == "site_recovery_pending" else 1 if result.reason == "site_budget_deferred" else 60)
             if not_before < job.deadline_at:
                 await self.bus.storage.call(
                     self.repository.requeue_enrichment_job,
@@ -294,6 +339,12 @@ class ContentEnrichmentHub:
                 await self.bus.storage.call(self.repository.requeue_enrichment_job, requeued)
                 return
 
+        if job.body_result_key and not reused:
+            stored_result = await self.bus.storage.call(
+                body_results.finish, job.body_result_key, job.execution_id, job.message, result
+            )
+            if result.succeeded and stored_result and stored_result.get("acquired_at"):
+                result.diagnostics["body_acquired_at"] = stored_result["acquired_at"]
         metadata = media_enrichment_metadata(job.message.metadata, result)
         enrichment = dict(metadata.get("media_enrichment", {}))
         enrichment["attempts"] = attempts
@@ -301,12 +352,21 @@ class ContentEnrichmentHub:
         enrichment.setdefault("pipeline_version", job.pipeline_version or "legacy")
         enrichment.setdefault("reason_code", result.reason)
         enrichment.setdefault("outcome", "FULL" if result.succeeded else "UNAVAILABLE")
+        if result.succeeded:
+            enrichment.setdefault("body_acquired_at",finished_at.isoformat())
         failure_index = enrichment.get("failure_attempt_id")
         if isinstance(failure_index, int):
             enrichment["failure_attempt_id"] = len(job.prior_attempts) + failure_index
         metadata["media_enrichment"] = enrichment
         metadata["v2_body_completion"] = {
-            "attempt_id": job.job_id,
+            "attempt_id": job.execution_id,
+            "execution_id": job.execution_id,
+            "logical_job_id": job.job_id,
+            "network_attempted": not reused and any(
+                a.reason not in {"site_budget_deferred", "site_recovery_pending", "storage_unavailable", "domain_cooldown"}
+                for a in result.attempts
+            ),
+            "reused_from_execution_id": cached.get("execution_id") if reused else None,
             "started_at": now.isoformat(),
             "completed_at": finished_at.isoformat(),
             "succeeded": result.succeeded,
@@ -364,33 +424,29 @@ class ContentEnrichmentHub:
             await self.bus.storage.call(finalize)
             return
         assert job.binding is not None
-        await self.bus.accept_message(
-            source=job.source,
-            binding=job.binding,
-            message=message,
-            bootstrap=job.bootstrap,
-            collected_at=job.created_at,
-            trusted_enrichment=True,
-            enrichment_input=job.message,
-            enrichment_claim=(job.job_id, job.claim_token) if job.claim_token else None,
-        )
-        await self.bus.storage.call(
-            self.repository.complete_enrichment_job_with_outcome,
-            job.job_id,
-            job.claim_token,
-            self._outcome_payload(job, message),
-        )
+        def finalize_binding():
+            with self.repository.atomic_intake():
+                self.bus._accept_message(
+                    source=job.source, binding=job.binding, message=message,
+                    bootstrap=job.bootstrap, collected_at=job.created_at,
+                    trusted_enrichment=True, enrichment_input=job.message,
+                    enrichment_claim=(job.job_id, job.claim_token) if job.claim_token else None,
+                    known_article_raw_id=job.known_article_raw_id,
+                )
+                self.repository.complete_enrichment_job_with_outcome(
+                    job.job_id, job.claim_token, self._outcome_payload(job, message))
+        await self.bus.storage.call(finalize_binding)
         await self.bus.storage.call(body, job, message)
 
     @staticmethod
     def _outcome_payload(job: EnrichmentJob, message: RawMessageInput) -> dict[str, object] | None:
         enrichment = message.metadata.get("media_enrichment", {})
-        if enrichment.get("pipeline_version") != "body_v2.2":
-            return None
         trace = enrichment.get("site_access_trace") or []
         final_access = trace[-1] if isinstance(trace, list) and trace else {}
         return {
             "job_id": job.job_id,
+            "execution_id": job.execution_id,
+            "logical_job_id": job.job_id,
             "final_site_id": enrichment.get("site_id") or final_access.get("site_id") or "generic",
             "strategy_ref": enrichment.get("strategy_ref")
             or final_access.get("strategy_ref")
@@ -400,6 +456,8 @@ class ContentEnrichmentHub:
             "reason": enrichment.get("reason_code"),
             "completed_at": utc_now().isoformat(),
             "payload": {
+                "cache_reused": bool(enrichment.get("reused_from_execution_id")),
+                "site_outcome": enrichment.get("pipeline_version") == "body_v2.2" and message.metadata.get("v2_body_completion",{}).get("network_attempted",True),
                 "source_id": job.source.source_id,
                 "ticker": job.binding.ticker if job.binding else None,
                 "article_id": job.article_id,

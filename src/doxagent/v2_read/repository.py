@@ -59,6 +59,13 @@ class ReadStore:
     def migrate_projection_indexes(self):
         """Explicit worker release migration, never DDL inside an HTTP read."""
         with self.connect(write=True, timeout=30) as db:
+            from .serving_schema import history_relation
+
+            for relation in ("object_current",history_relation(db)):
+                db.execute("CREATE INDEX IF NOT EXISTS "+relation+"_body_cohort ON "+relation+
+                    "(kind,json_extract(payload,'$.first_observed_at'),id) WHERE kind='native:article_body_results'")
+                db.execute("CREATE INDEX IF NOT EXISTS "+relation+"_body_execution_key ON "+relation+
+                    "(kind,ticker,json_extract(payload,'$.body_result_key'),valid_from) WHERE kind='body_attempt'")
             db.execute("CREATE INDEX IF NOT EXISTS current_kind_revision ON object_current(kind,valid_from)")
             db.execute("CREATE INDEX IF NOT EXISTS contribution_metric_revision "
                        "ON contributions_current(metric,valid_from)")
@@ -292,7 +299,8 @@ class ReadStore:
                 END;
             """)
             migrate_case_evidence_indexes(db)
-            from .artifact_registry import migrate as migrate_artifacts, native_triggers
+            from .artifact_registry import migrate as migrate_artifacts
+            from .artifact_registry import native_triggers
             migrate_artifacts(db)
             native_triggers(db, "objects", ["payload"], "json_array(NEW.kind,NEW.ticker,NEW.id,NEW.valid_from)")
             for table in ("contributions", "metric_buckets"):
@@ -420,7 +428,9 @@ class ReadStore:
                 raise ValueError("conflicting representations in one source receipt")
             unique[key] = record
         records = list(unique.values())
-        from .cost_contributions import KEY as COST_KEY, prepare as prepare_costs, previous as previous_costs
+        from .cost_contributions import KEY as COST_KEY
+        from .cost_contributions import prepare as prepare_costs
+        from .cost_contributions import previous as previous_costs
         records, folded_costs = prepare_costs(records, contributions)
         prior_costs, skipped_costs = {}, set()
         with self.connect(write=True) as db:

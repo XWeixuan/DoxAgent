@@ -172,6 +172,43 @@ class YahooFinanceNewsAdapter:
 
     async def poll(self, context: PollContext) -> PollResult:
         from .yahoo_sources import acquire_yahoo_rss
+
+        rss = None
+        try:
+            async with context.request_permit():
+                rows, metadata = await acquire_yahoo_rss(self.transport, context.ticker, timeout_seconds=8)
+            rss = self._map_result(context, rows, "legacy_headline_rss", 20, metadata)
+        except (httpx.HTTPError, ValueError, RuntimeError, ElementTree.ParseError) as exc:
+            rss_error = type(exc).__name__
+        else:
+            rss_error = None
+        if rss is not None and context.on_page:
+            await context.on_page(rss.messages, observed_at=datetime.now(UTC), phase="rss")
+        previous_capture = _dt(context.checkpoint.get("browser_captured_at"))
+        browser_due = not previous_capture or (context.requested_at - previous_capture).total_seconds() >= 60
+        if rss is not None and not browser_due and not context.is_gap_recovery:
+            return rss.model_copy(update={"next_checkpoint": context.checkpoint,
+                "acquisition_metadata": {**rss.acquisition_metadata, "browser_captured_at": previous_capture.isoformat()}})
+        supplement = await self._poll_supplement(context, rss_result=rss)
+        captured = supplement.acquisition_metadata.get("query_mode") == "page_network_ncp"
+        checkpoint = {**context.checkpoint, **supplement.next_checkpoint}
+        if captured:
+            checkpoint["browser_captured_at"] = datetime.now(UTC).isoformat()
+        combined = {(m.external_id, m.url): m for m in [*(rss.messages if rss else []), *supplement.messages]}
+        dates = {**context.checkpoint.get("verified_article_dates", {}),
+                 **{m.url:m.published_at.isoformat() for m in combined.values() if m.publication_time_basis == "EXACT"}}
+        checkpoint["verified_article_dates"] = dict(list(dates.items())[-256:])
+        if captured:
+            checkpoint["pending_timestamp_rows"] = supplement.acquisition_metadata.get("pending_timestamp_rows", [])
+            checkpoint["timestamp_probe_offset"] = supplement.acquisition_metadata.get("timestamp_probe_offset", 0)
+        return supplement.model_copy(update={
+            "messages": list(combined.values()), "next_checkpoint": checkpoint,
+            "acquisition_metadata": {**supplement.acquisition_metadata, "rss_error": rss_error,
+                "browser_coverage_pending": not captured, "browser_captured_at": checkpoint.get("browser_captured_at")},
+        })
+
+    async def _poll_supplement(self, context: PollContext, *, rss_result=None) -> PollResult:
+        from .yahoo_sources import acquire_yahoo_rss
         from .yahoo_transport import YahooRateLimited
 
         count = (
@@ -199,6 +236,10 @@ class YahooFinanceNewsAdapter:
                             context.ticker,
                             snippet_count=count,
                             operation_id=context.poll_run_id,
+                            pending_rows=context.checkpoint.get("pending_timestamp_rows", []),
+                            probe_offset=context.checkpoint.get("timestamp_probe_offset", 0),
+                            known_dates={**context.checkpoint.get("verified_article_dates", {}),
+                                         **{m.url:m.published_at.isoformat() for m in (rss_result.messages if rss_result else [])}},
                         )
                     else:
                         rows, metadata = await self.browser.yahoo_latest_news(
@@ -249,6 +290,8 @@ class YahooFinanceNewsAdapter:
                         "diagnostics": getattr(exc, "diagnostics", {}),
                     }
                 )
+        if rss_result is not None:
+            return rss_result.model_copy(update={"window_coverage": "PARTIAL"})
         try:
             if not managed_browser and monotonic_time.monotonic() < self._page_api_retry_at:
                 raise YahooRateLimited(self._page_api_retry_at - monotonic_time.monotonic())

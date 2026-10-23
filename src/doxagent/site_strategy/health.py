@@ -300,7 +300,8 @@ class CombinationHealthManager:
                             handling_mode != "AUTO" and category is FailureCategory.ACCESS_CHALLENGE
                         )
                 if (
-                    assigned_generation == state.generation
+                    transport is not AccessMode.HTTP_PUBLIC
+                    and assigned_generation == state.generation
                     and state.active_combination_id == combination_id
                 ):
                     if not runtime_key.startswith("scope:"):

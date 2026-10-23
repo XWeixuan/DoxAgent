@@ -13,6 +13,13 @@ def native_article(message: RawMessageInput) -> Candidate | None:
     """Only the two article APIs' body fields qualify; summaries and URLs never qualify."""
     payload = message.raw_payload
     provider = message.metadata.get("provider")
+    if provider == "yahoo_finance" and isinstance(payload.get("captured_article_html"), str):
+        from .quality import choose_candidate, inspect_html
+
+        info = inspect_html(payload["captured_article_html"], message.url, message.title,
+                            strategy_ref="builtin:yahoo@1")
+        candidate, _, _ = choose_candidate(info, message.title)
+        return candidate
     if provider == "ibkr" and payload.get("articleType") == 0 and payload.get("articleId"):
         raw = payload.get("articleText")
     elif provider == "benzinga" and payload.get("id"):

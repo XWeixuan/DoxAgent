@@ -81,9 +81,9 @@ def test_strict_sites_have_browser_first_and_shared_three_second_budget() -> Non
         "marketwatch",
     }:
         spec = specs[site_id]
-        assert spec.access.max_concurrency == 1
+        assert spec.access.max_concurrency == (2 if site_id in {"yahoo_finance","barrons"} else 1)
         assert spec.access.min_interval_ms == 3000
-        assert spec.body.access_order[0] == "browser"
+        assert spec.body.access_order[0] == ("http_public" if site_id == "yahoo_finance" else "browser")
     assert specs["reuters"].auth.maintenance_url
     assert specs["reuters"].auth.verification_kind == "public_access"
 

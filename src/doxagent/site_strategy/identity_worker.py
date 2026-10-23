@@ -9,8 +9,10 @@ import os
 import signal
 import struct
 import sys
+from contextvars import ContextVar
 
 from .browser_operations import MAX_FRAME_BYTES, encode_response, execute_browser_operation
+from .operation_gate import OperationGate
 from .resolver import SiteResolver
 from .runtime import OwnerFileLock, SiteAccessRuntime
 from .schema import (
@@ -29,25 +31,37 @@ class SnapshotRepository:
     """Approved in-memory read model; no sqlite path, token or write connection."""
 
     def __init__(self, snapshot):
+        self._snapshot = ContextVar("identity_snapshot", default=None)
         self.update(snapshot)
-        self.runtime = BrowserIdentityRuntime(identity_id=self.identity.identity_id)
+        self._base_snapshot = self._snapshot.get()
+        self._runtime = ContextVar("identity_runtime_snapshot", default=BrowserIdentityRuntime(identity_id=self.identity.identity_id))
+
+    runtime = property(lambda self: self._runtime.get(), lambda self, value: self._runtime.set(value))
 
     def update(self, snapshot):
         identity = BrowserIdentitySpec.model_validate(snapshot["identity"])
-        if hasattr(self, "identity") and identity.identity_id != self.identity.identity_id:
+        if self._view() and identity.identity_id != self.identity.identity_id:
             raise ValueError("worker identity cannot change")
-        self.identity = identity
-        self.profile = BrowserProfile.model_validate(snapshot["profile"])
-        self.egress = ProxyEgress.model_validate(snapshot["egress"])
+        profile = BrowserProfile.model_validate(snapshot["profile"])
+        egress = ProxyEgress.model_validate(snapshot["egress"])
         if (identity.profile_id, identity.egress_id) != (
-            self.profile.profile_id,
-            self.egress.egress_id,
+            profile.profile_id,
+            egress.egress_id,
         ):
             raise ValueError("worker binding mismatch")
-        self.strategies = [
+        strategies = [
             (SiteStrategyHead.model_validate(v["head"]), SiteStrategySpec.model_validate(v["spec"]))
             for v in snapshot["strategies"]
         ]
+        self._snapshot.set((identity, profile, egress, strategies))
+
+    def _view(self):
+        return self._snapshot.get() or getattr(self, "_base_snapshot", None)
+
+    identity = property(lambda self: self._view()[0])
+    profile = property(lambda self: self._view()[1])
+    egress = property(lambda self: self._view()[2])
+    strategies = property(lambda self: self._view()[3])
 
     def get_identity(self, identity_id):
         return self.identity if identity_id == self.identity.identity_id else None
@@ -95,7 +109,8 @@ class Worker:
         self._events = {}
         self._event_counter = 0
         self._write_lock = asyncio.Lock()
-        self._active = None
+        self._active = {}
+        self._operations = OperationGate()
         self._node_record = None
 
     async def send(self, message):
@@ -394,7 +409,11 @@ class Worker:
 
     async def handle(self, command):
         try:
-            result = await self.dispatch(command)
+            async with self._operations.enter(
+                read=command["action"] == "execute",
+                limit=(command.get("snapshot", {}).get("identity", {}).get("access", {}).get("max_concurrency", 1)),
+            ):
+                result = await self.dispatch(command)
             await self.send(
                 {
                     "kind": "result",
@@ -404,6 +423,9 @@ class Worker:
                     "result": result,
                 }
             )
+        except asyncio.CancelledError:
+            await self.send({"kind": "result", "id": command["id"], "epoch": self.epoch,
+                             "ok": False, "failure_category": "TRANSIENT", "reason_code": "operation_cancelled"})
         except Exception as exc:
             from .service import classify_exception
 
@@ -439,26 +461,18 @@ class Worker:
                         future.set_exception(error("ownership commit failed"))
                 continue
             if message.get("action") == "cancel":
-                if self._active:
-                    self._active.cancel()
+                task = self._active.get(message.get("command_id"))
+                if task:
+                    task.cancel()
                 continue
-            if self._active and not self._active.done():
-                await self.send(
-                    {
-                        "kind": "result",
-                        "id": message["id"],
-                        "epoch": self.epoch,
-                        "ok": False,
-                        "error": "IdentityBusy",
-                    }
-                )
-                continue
-            self._active = asyncio.create_task(self.handle(message))
+            task = asyncio.create_task(self.handle(message))
+            self._active[message["id"]] = task
+            task.add_done_callback(lambda done, key=message["id"]: self._active.pop(key, None))
         # Parent EOF is not an invitation to wait forever inside SDK cancellation.
         # Only our registered Node is terminated; External Chrome belongs to the
         # supervisor and no process group is signalled.
-        if self._active:
-            self._active.cancel()
+        for task in self._active.values():
+            task.cancel()
         if self.runtime:
             cleanup = asyncio.create_task(self.runtime.close())
             await asyncio.wait({cleanup}, timeout=3)

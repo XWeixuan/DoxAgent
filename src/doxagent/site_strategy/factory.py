@@ -18,6 +18,8 @@ def build_site_strategy_service(settings: DoxAgentSettings) -> SiteStrategyServi
         browser_channel=settings.site_access_browser_channel,
         browser_max_processes=settings.site_access_browser_max_processes,
         browser_max_pages=settings.site_access_browser_max_pages,
+        browser_body_max_pages=settings.site_access_body_browser_max_pages,
+        browser_body_borrow=settings.site_access_body_browser_borrow,
         browser_idle_seconds=settings.site_access_browser_idle_seconds,
         safety_path=settings.safety_state_path,
         supervisor_socket=settings.site_access_chrome_supervisor_socket,

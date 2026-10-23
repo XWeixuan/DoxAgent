@@ -109,7 +109,7 @@ async def test_yahoo_ncp_filters_24h_and_preserves_publisher_domain(tmp_path: Pa
 
     context, _ = _context(tmp_path, "yahoo_finance_news", {})
     client = httpx.AsyncClient(transport=httpx.MockTransport(handler))
-    result = await YahooFinanceNewsAdapter(DoxAgentSettings(_env_file=None), client).poll(context)
+    result = await YahooFinanceNewsAdapter(DoxAgentSettings(_env_file=None), client)._poll_supplement(context)
     assert [item.external_id for item in result.messages] == ["new"]
     assert result.messages[0].metadata["publisher_domain"] == "reuters.com"
     assert result.acquisition_metadata["query_mode"] == "ncp_latest_news"

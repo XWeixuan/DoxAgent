@@ -561,3 +561,36 @@ async def test_yahoo_revised_headline_requires_same_article_and_summary(
         assert len(result.content or "") >= 800
     else:
         assert result.reason == "publisher_identity_mismatch"
+
+
+async def test_conditional_304_reuses_only_verified_same_url_full_body():
+    from doxagent.content_enrichment.transport import REVALIDATION
+    from doxagent.monitoring.media_enrichment import MediaEnrichmentRecord
+    url = "https://example.com/news/conditional"
+    captured = {}
+    class ConditionalSession(Session):
+        async def get(self, target, **kwargs):
+            captured.update(kwargs.get("headers",{}))
+            return await super().get(target, **kwargs)
+    session = ConditionalSession({url:response(url,status=304)})
+    cached = {"url":url,"content":BODY,"outcome":"FULL","validators":{"etag":"version1"},
+              "acquired_at":"2026-10-23T10:00:00+00:00"}
+    token = REVALIDATION.set(cached)
+    try:
+        result = await ArticlePipeline(PublicTransport(session,DomainFetchController(),validate_urls=False),
+            reader_enabled=False).extract(MediaEnrichmentRecord("id","id","source","MU",TITLE,"",url))
+    finally:
+        REVALIDATION.reset(token)
+    assert result.succeeded and result.content == BODY
+    assert result.diagnostics["http_not_modified"] is True
+    assert result.diagnostics["body_acquired_at"] == cached["acquired_at"]
+    assert captured["If-None-Match"] == "version1"
+    assert len(result.attempts) == 1
+
+
+def test_apple_atom_html_link_wins_over_image_enclosure():
+    from doxagent.message_bus_v2.adapters import _rss_rows
+    xml = '<feed xmlns="http://www.w3.org/2005/Atom"><entry><title>Apple release</title><link rel="enclosure" type="image/jpeg" href="https://cdn.apple.com/photo.jpg"/><link rel="self" href="https://apple.com/feed/entry"/><link rel="alternate" type="text/html" href="https://www.apple.com/newsroom/release/"/></entry></feed>'
+    row = _rss_rows(xml,"https://www.apple.com/newsroom/rss-feed.rss")[0]
+    assert row["link"] == "https://www.apple.com/newsroom/release/"
+    assert row["enclosures"][0]["href"].endswith("photo.jpg")

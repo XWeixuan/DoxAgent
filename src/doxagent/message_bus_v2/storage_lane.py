@@ -18,6 +18,7 @@ class StorageLane:
 
     async def call(self, operation: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
         lock = self._locks.setdefault(asyncio.get_running_loop(), asyncio.Lock())
+        queued_at = time.monotonic()
         async with lock:
             started = time.monotonic()
             work = asyncio.create_task(asyncio.to_thread(operation, *args, **kwargs))
@@ -30,9 +31,11 @@ class StorageLane:
                 raise
             finally:
                 elapsed = time.monotonic() - started
-                if elapsed >= 1:
+                wait = started - queued_at
+                if elapsed >= 1 or wait >= 1:
                     logging.getLogger(__name__).warning(
-                        "bus_storage_slow operation=%s elapsed_ms=%s",
+                        "bus_storage_slow operation=%s elapsed_ms=%s wait_ms=%s",
                         getattr(operation, "__name__", type(operation).__name__),
                         round(elapsed * 1000),
+                        round(wait * 1000),
                     )

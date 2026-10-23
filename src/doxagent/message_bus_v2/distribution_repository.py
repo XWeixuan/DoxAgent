@@ -450,6 +450,10 @@ class DistributionRepository:
                     "SELECT body_state FROM distribution_articles WHERE article_id=?", (article_id,)
                 ).fetchone()
             if needs_body and article and article[0] == "WAIT_BODY":
+                from .body_results import ArticleBodyResults
+
+                message = message.model_copy(update={"metadata":{**message.metadata,"body_observation_source_id":source.source_id}})
+                body_result, work_kind = ArticleBodyResults(self.bus).schedule(message, source.source_id)
                 intake_key = sha256_text(canonical_json(["distribution", article_id]))
                 job = EnrichmentJob(
                     job_id="enrich-" + intake_key,
@@ -463,6 +467,8 @@ class DistributionRepository:
                     created_at=utc_now(),
                     deadline_at=utc_now() + timedelta(seconds=deadline_seconds),
                     pipeline_version=pipeline_version,
+                    body_result_key=body_result["fetch_key"],
+                    work_kind="new_article" if work_kind == "reuse" else work_kind,
                 )
                 self.bus.enqueue_enrichment_job(job)
                 job_ids.append(job.job_id)
@@ -528,15 +534,15 @@ class DistributionRepository:
                 "AND state='WAIT_BODY'",
                 ("PENDING" if state == "READY" else state, job.article_id),
             )
-            if outcome_payload:
+            if outcome_payload and outcome_payload.get("payload", {}).get("site_outcome", True) and not outcome_payload.get("payload", {}).get("cache_reused"):
                 now = utc_now().isoformat()
                 db.execute(
                     "INSERT OR IGNORE INTO site_strategy_result_outbox "
                     "(outbox_id,kind,status,attempts,next_attempt_at,created_at,payload_json) "
                     "VALUES(?,?,?,?,?,?,?)",
-                    (job.job_id, "body", "PENDING", 0, now, now, canonical_json(outcome_payload)),
+                    (job.execution_id, "body", "PENDING", 0, now, now, canonical_json(outcome_payload)),
                 )
-            db.execute("DELETE FROM content_enrichment_jobs WHERE job_id=?", (job.job_id,))
+            self.bus._finish_enrichment(db, job.job_id, outcome_payload)
 
     def claim_deliveries(self, *, limit: int = 16) -> list[dict[str, Any]]:
         now = utc_now()

@@ -124,7 +124,7 @@ class AdapterRegistry:
                 crawler_plane.browser if crawler_plane is not None else None, "investing"
             ),
             "globenewswire_search": GlobeNewswireSearchAdapter(
-                crawler_plane.browser if crawler_plane is not None else None
+                crawler_plane.browser if crawler_plane is not None else None, self.client
             ),
             "globenewswire_semiconductors_rss": SharedFeedAdapter(
                 self.client,
@@ -1092,8 +1092,18 @@ def _rss_rows(xml_text: str, feed_url: str) -> list[JsonObject]:
         for child in item:
             key = child.tag.rsplit("}", 1)[-1]
             text = (child.text or "").strip()
-            if key == "link" and not text:
-                text = child.attrib.get("href", "").strip()
+            if key == "link":
+                text = text or child.attrib.get("href", "").strip()
+                rel = child.attrib.get("rel", "alternate").lower()
+                media_type = child.attrib.get("type", "").lower()
+                if rel == "enclosure":
+                    row.setdefault("enclosures", []).append(dict(child.attrib))
+                    continue
+                if rel != "alternate" or media_type not in {"", "text/html", "application/xhtml+xml"}:
+                    continue
+                if text:
+                    row.setdefault("link", text)
+                continue
             if text:
                 row[key] = text
         rows.append(row)

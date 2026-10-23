@@ -2060,3 +2060,9 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-23 Challenge repair acceptance: apply explicit wire negotiation to nested resolve ChallengePolicy fields as well as execute results. Verify unchanged production Bus models and renewed natural Barrons/Investing/InvestorsHub crawler receipts; retain Reuters human originals and report provider UNSOLVABLE and transient recovery honestly. Final runtime 937d7159 preserves Supervisor/Bus/Enrichment; 24-hour read-only acceptance remains pending.
 
 2026-10-23 Runtime temporary DeepSeek recovery: add explicit bailian_deepseek profile for W1R2/W1R3/W2R2/W2R3, model deepseek-v4.1-flash-1017, medium, primary Bailian key. Retain deterministic prompt-prefix caching, JSON-object validation and explicit frozen R2 replay for R3. Preserve native provider error diagnostics/retryability in chat transport instead of hiding permanent product activation errors. Historical frozen model manifests remain unchanged; no automatic replay of terminal cases. 153 relevant offline checks passed; real primary-key DeepSeek probe succeeded.
+
+2026-10-23 消息时效优化（开发中）：修复 Atom 主链接、任务局部 Site trace 与按序有界 fallback；新增持久正文结果/下载 lease、执行 ID、任务终态和首次 claim 预算；增加同身份有界读并发、精确取消、维护写互斥，以及全局/Site/Identity 原子准入与 CRAWLER 优先。逐页接纳和即时 continuation 接线进入回归，尚未发布或宣称达成线上成功率目标。
+
+2026-10-23 消息时效优化（二）：上线前开发完成逐页持久接纳、Globe 两页时间片与跨 query 续跑、Yahoo RSS 优先及持久时间证据、按来源更新线索和条件 HTTP 核对；补全终态/执行收据、Read 新文章 cohort 与原消息修订投影、前端 30 分钟轮询均值/P95。新增只读审计和 Owner/CAS 配置工具，生产 HTTP 路径对照及 ETNews 短稿实测证据保存在 eval，生产代码与身份配置尚未更改。
+
+2026-10-24 消息时效优化验证：357项Python回归通过、1项跳过，另1项真实Chromium同profile双页/单页取消测试通过；前端67项及1262/1559两宽度检查通过。补齐验证跳转的索引别名与付费scope隔离、HTTP限流不切浏览器路由、分页累计和首次capture/接纳时间对应、同正文取得时间保留。新增Owner/CAS dry-run与有界只读审计，开发/测试/上线回滚回执见docs/message-source-polling-and-body-completion-optimization-implementation-20261024.md；未发布生产，P0/P1自然流量验收和未恢复账户BODY能力仍待验证。

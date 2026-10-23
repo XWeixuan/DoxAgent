@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import asyncio
 import time
+from contextlib import asynccontextmanager
 from typing import Any, Protocol
 from urllib.parse import urlparse
 
@@ -16,7 +18,15 @@ from doxagent.content_enrichment.quality import (
     inspect_reader,
     yahoo_revised_title_verified,
 )
-from doxagent.content_enrichment.transport import Observation, PublicTransport
+from doxagent.content_enrichment.transport import (
+    DEADLINE,
+    REVALIDATION,
+    Observation,
+    PublicTransport,
+    conditional_headers,
+    normalize_reason,
+    remaining,
+)
 from doxagent.monitoring.media_enrichment import (
     FetchAttempt,
     MediaEnrichmentRecord,
@@ -25,6 +35,22 @@ from doxagent.monitoring.media_enrichment import (
 )
 
 PIPELINE_VERSION = "body_v2.1"
+
+
+@asynccontextmanager
+async def _no_wait():
+    yield
+
+
+@asynccontextmanager
+async def _stage_budget(cap):
+    deadline = time.monotonic() + remaining(cap)
+    token = DEADLINE.set(deadline)
+    try:
+        async with asyncio.timeout_at(deadline):
+            yield
+    finally:
+        DEADLINE.reset(token)
 
 
 class BrowserReader(Protocol):
@@ -56,6 +82,15 @@ class ArticlePipeline:
         self.pipeline_version = pipeline_version
 
     async def extract(self, record: MediaEnrichmentRecord) -> MediaExtractionResult:
+        begin = getattr(self.transport, "begin_trace", None)
+        token = begin() if begin else None
+        try:
+            return await self._extract(record)
+        finally:
+            if begin:
+                self.transport.end_trace(token)
+
+    async def _extract(self, record: MediaEnrichmentRecord) -> MediaExtractionResult:
         started = time.monotonic()
         attempts: list[FetchAttempt] = []
         source_chain: list[dict[str, Any]] = []
@@ -69,20 +104,14 @@ class ArticlePipeline:
         }
         info = Inspection()
         outcome, reason = "UNAVAILABLE", "missing_url"
-        status = 0
-        method = None
-        content = None
-        specific_body_source = None
+        status, method, content, specific_body_source = 0, None, None, None
         visited = set()
         for hop in range(3):
-            if not url:
-                break
-            if url in visited:
-                reason = "publisher_loop"
+            if not url or url in visited:
+                reason = "publisher_loop" if url in visited else "missing_url"
                 break
             visited.add(url)
-            strategy_ref: str | None = None
-            strategy_parameters: dict[str, object] = {}
+            strategy_ref, strategy_parameters = None, {}
             access_order = ["http_public", "browser", "reader"]
             auth_requirement = "none"
             if self.site_client is not None:
@@ -93,253 +122,140 @@ class ArticlePipeline:
                 auth_requirement = resolved.auth.body_requirement
                 if auth_requirement == "inherit":
                     auth_requirement = resolved.auth.requirement
-                diagnostics.update(
-                    {
-                        "site_id": resolved.site_id,
-                        "strategy_revision": resolved.strategy_revision,
-                        "strategy_ref": strategy_ref,
-                        "runtime_key": resolved.runtime_key,
-                    }
-                )
+                diagnostics.update(site_id=resolved.site_id, strategy_revision=resolved.strategy_revision,
+                                   strategy_ref=strategy_ref, runtime_key=resolved.runtime_key)
             identities = getattr(self.browser, "authenticated_hosts", None)
-            identity_path = (
-                auth_requirement == "required"
-                or isinstance(identities, set)
-                and urlparse(url).hostname in identities
+            identity_path = auth_requirement == "required" or (
+                isinstance(identities, set) and urlparse(url).hostname in identities
             )
             if identity_path:
-                # Access policy selects the identity browser; this is not a synthetic HTTP error.
-                cooling = self.transport.cooldowns.get(urlparse(url).hostname or "", 0)
-                observation = Observation(
-                    url,
-                    "",
-                    0,
-                    "domain_cooldown" if cooling > time.monotonic() else "identity_required",
-                )
                 diagnostics["access_path"] = "publisher_identity_browser"
-            elif "http_public" in access_order:
-                observation = await self.transport.fetch(url, attempts)
-            else:
-                observation = Observation(url, "", 0, "browser_required")
-            url, status = observation.url, observation.status
-            if observation.reason:
-                reason = observation.reason
-                info = inspect_html(
-                    observation.text,
-                    url,
-                    record.title,
-                    strategy_ref=strategy_ref,
-                    strategy_parameters=strategy_parameters,
-                )
-                if info.access_reason:
-                    reason = info.access_reason
-            else:
-                info = inspect_html(
-                    observation.text,
-                    url,
-                    record.title,
-                    strategy_ref=strategy_ref,
-                    strategy_parameters=strategy_parameters,
-                )
-                candidate, outcome, reason = self._choose_article(
-                    info, record, url, strategy_ref, diagnostics
-                )
-                if candidate:
-                    content, method = candidate.text, candidate.method
+                access_order = [stage for stage in access_order if stage in {"browser", "browser_fetch"}]
+            follow = None
+            for stage in access_order:
+                # Admission/recovery deferrals release the Hub slot; no extra path may race recovery.
+                if reason in {"site_budget_deferred", "site_recovery_pending", "storage_unavailable"}:
                     break
-            # Publisher follow-up has stronger evidence than a reader's retry of the same teaser.
-            if info.publisher_links and hop < 2:
-                target = info.publisher_links[0]
-                source_chain.append(
-                    {"from_url": url, "to_url": target, "evidence": "original_article_link"}
-                )
-                url = target
-                continue
-            browser_reason = reason
-            caption_source = cnbc_caption_source(observation.text, url, record.title)
-            if caption_source and reason == "unsupported_media":
-                headline, target, duration = caption_source
-                captions = await self.transport.fetch(target, attempts, phase="captions")
-                text = caption_text(captions.text, duration=duration) if not captions.reason else ""
-                if text:
-                    caption_info = Inspection(
-                        candidates=[Candidate(text, "cnbc_public_captions", True, headline, 20)],
-                        headline=headline,
-                        page_kind="media",
-                    )
-                    candidate, caption_outcome, _ = choose_candidate(caption_info, record.title)
-                    if candidate:
-                        info, outcome = caption_info, caption_outcome
-                        content, method = candidate.text, candidate.method
-                        specific_body_source = target
-                        diagnostics["content_role"] = "video_transcript"
-                        source_chain.append(
-                            {
-                                "from_url": url,
-                                "to_url": target,
-                                "evidence": "current_free_video_caption_encoding",
-                            }
-                        )
-                        break
-            api_url = public_article_api(url)
-            if api_url and reason in {"http_403", "challenge_required", "empty_extract"}:
-                api = await self.transport.fetch(api_url, attempts, phase="publisher_api")
-                html = public_api_html(api.text, url) if not api.reason else None
-                if html:
-                    api_info = inspect_html(
-                        html,
-                        url,
-                        record.title,
-                        strategy_ref=strategy_ref,
-                        strategy_parameters=strategy_parameters,
-                    )
-                    candidate, api_outcome, _ = choose_candidate(api_info, record.title)
-                    if candidate:
-                        info, outcome = api_info, api_outcome
-                        content, method = candidate.text, "public_wp_article_api"
-                        specific_body_source = api_url
-                        source_chain.append(
-                            {
-                                "from_url": url,
-                                "to_url": api_url,
-                                "evidence": "public_wp_article_api",
-                            }
-                        )
-                        break
-            if (
-                self.browser
-                and "browser" in access_order
-                and reason
-                in {
-                    "expand_required",
-                    "render_required",
-                    "login_required",
-                    "subscription_required",
-                    "challenge_required",
-                    "http_401",
-                    "http_403",
-                    "identity_required",
-                    "browser_required",
-                    "empty_extract",
-                    "incomplete_extract",
-                    "article_identity_unknown",
-                }
-            ):
-                async with self.transport.controller.enter(url, phase="browser"):
-                    if getattr(self.browser, "site_managed", False):
-                        rendered, auth = await self.browser.read(
-                            url,
-                            expand=info.expansion_required,
-                            parameters=strategy_parameters,
-                        )
-                    else:
-                        rendered, auth = await self.browser.read(
-                            url, expand=info.expansion_required
-                        )
+                if stage in {"browser", "browser_fetch"} and self.browser is None:
+                    continue
+                if stage == "reader" and (
+                    not self.reader_enabled or identity_path
+                    or reason in {"subscription_required", "login_required", "entitlement_missing",
+                                  "non_article_target", "publisher_identity_mismatch", "unsupported_media"}
+                    or diagnostics.get("credential_ref") or info.page_kind in {"quote", "listing", "media"}
+                ):
+                    continue
+                if reason in {"non_article_target", "publisher_identity_mismatch", "unsupported_content_type"}:
+                    break
+                phase_started = time.monotonic()
+                article_deadline = DEADLINE.get()
+                cap = float(strategy_parameters.get(stage + "_timeout_seconds", {
+                    "http_public": 8, "browser": 25, "browser_fetch": 8, "reader": 12,
+                }[stage]))
+                auth = {}
+                try:
+                    async with _stage_budget(cap):
+                        if stage == "http_public":
+                            observation = await self.transport.fetch(url, attempts)
+                        elif stage == "reader":
+                            observation = await self.transport.fetch(
+                                "https://r.jina.ai/" + url, attempts, phase="reader", publisher_url=url)
+                        else:
+                            # Site owner already coordinates this browser with CRAWLER work.
+                            gate = _no_wait() if getattr(self.browser, "site_managed", False) else self.transport.controller.enter(url, phase="browser")
+                            async with gate:
+                                if getattr(self.browser, "site_managed", False):
+                                    observation, auth = await self.browser.read(
+                                        url, expand=info.expansion_required, parameters=strategy_parameters,
+                                        **({"mode": "BROWSER_FETCH"} if stage == "browser_fetch" else {}))
+                                else:
+                                    observation, auth = await self.browser.read(url, expand=info.expansion_required)
+                            attempts.append(FetchAttempt(stage, url, final_url=observation.url,
+                                status_code=observation.status or None, reason=observation.reason,
+                                latency_ms=int((time.monotonic()-phase_started)*1000)))
+                except TimeoutError:
+                    observation = Observation(url, "", 0, "transport_timeout")
+                    attempts.append(FetchAttempt(stage, url, reason="transport_timeout",
+                        latency_ms=int((time.monotonic()-phase_started)*1000)))
+                except Exception as exc:
+                    observation = Observation(url, "", 0, normalize_reason(type(exc).__name__))
+                    attempts.append(FetchAttempt(stage, url, reason=observation.reason,
+                        latency_ms=int((time.monotonic()-phase_started)*1000)))
                 diagnostics.update(auth)
-                status = rendered.status
-                attempts.append(
-                    FetchAttempt(
-                        "browser",
-                        url,
-                        final_url=rendered.url,
-                        status_code=rendered.status or None,
-                        reason=rendered.reason,
-                    )
-                )
-                if rendered.reason:
-                    diagnostics["browser_failure_reason"] = rendered.reason
-                    reason = (
-                        browser_reason
-                        if not identity_path
-                        and rendered.reason
-                        in {"browser_unavailable", "browser_runtime_missing", "render_timeout"}
-                        else rendered.reason
-                    )
+                diagnostics.setdefault("stage_timings", []).append({"phase": stage,
+                    "elapsed_ms": int((time.monotonic()-phase_started)*1000),
+                    "reason": normalize_reason(observation.reason)})
+                status = observation.status
+                cached = REVALIDATION.get()
+                if stage == "http_public" and status == 304 and conditional_headers(url) and cached and cached.get("outcome") in {"FULL","SHORT_FULL"} and cached.get("content"):
+                    content, outcome, method = cached["content"],cached["outcome"],"http_not_modified"
+                    diagnostics.update(http_not_modified=True,body_acquired_at=cached.get("acquired_at"),
+                        validators=cached.get("validators",{}))
+                    break
+                reason = normalize_reason(observation.reason)
+                if reason == "deadline_exceeded" and (article_deadline is None or article_deadline > time.monotonic()):
+                    reason = "transport_timeout"
+                if stage == "reader":
+                    info = inspect_reader(observation.text, url, record.title, strategy_ref=strategy_ref)
                 else:
-                    info = inspect_html(
-                        rendered.text,
-                        rendered.url,
-                        record.title,
-                        strategy_ref=strategy_ref,
-                        strategy_parameters=strategy_parameters,
-                    )
-                    candidate, outcome, reason = self._choose_article(
-                        info, record, rendered.url, strategy_ref, diagnostics
-                    )
-                    status = rendered.status
+                    url = observation.url or url
+                    info = inspect_html(observation.text, url, record.title,
+                        strategy_ref=strategy_ref, strategy_parameters=strategy_parameters)
+                if reason:
+                    reason = info.access_reason or reason
+                else:
+                    candidate, outcome, reason = self._choose_article(info, record, url, strategy_ref, diagnostics)
                     if candidate:
-                        content, method = candidate.text, "browser_" + candidate.method
-                        url = rendered.url
+                        content = candidate.text
+                        if stage == "http_public":
+                            diagnostics["validators"] = {k.lower():v for k,v in observation.headers.items() if k.lower() in {"etag","last-modified"}}
+                        method = ("browser_" if stage in {"browser", "browser_fetch"} else "") + candidate.method
                         if auth.get("credential_ref"):
                             verified = getattr(self.browser, "verified", None)
                             if verified:
                                 diagnostics.update(verified(urlparse(url).hostname or "") or {})
                             diagnostics["auth_state"] = "VALID"
                         break
-                    if info.publisher_links and hop < 2:
-                        target = info.publisher_links[0]
-                        source_chain.append(
-                            {
-                                "from_url": rendered.url,
-                                "to_url": target,
-                                "evidence": "browser_original_article_link",
-                            }
-                        )
-                        url = target
-                        continue
-            # Never route authenticated / subscription content through a third-party reader.
-            if (
-                self.reader_enabled
-                and "reader" in access_order
-                and not identity_path
-                and reason
-                in {
-                    "empty_extract",
-                    "incomplete_extract",
-                    "article_identity_unknown",
-                    "http_403",
-                    "http_404",
-                    "http_429",
-                    "domain_cooldown",
-                    "http_500",
-                    "http_502",
-                    "http_503",
-                    "http_504",
-                    "timeout",
-                    "render_required",
-                    "challenge_required",
-                }
-                and browser_reason not in {"subscription_required", "login_required"}
-                and not diagnostics.get("credential_ref")
-                and info.page_kind not in {"quote", "listing", "media"}
-            ):
-                reader = await self.transport.fetch(
-                    "https://r.jina.ai/" + url, attempts, phase="reader", publisher_url=url
-                )
-                status = reader.status
-                if reader.reason:
-                    reason = reader.reason
-                else:
-                    reader_info = inspect_reader(
-                        reader.text, url, record.title, strategy_ref=strategy_ref
-                    )
-                    candidate, outcome, reason = choose_candidate(reader_info, record.title)
-                    info = reader_info
-                    if candidate:
-                        content, method = candidate.text, candidate.method
-                        break
-                    if info.publisher_links and hop < 2:
-                        target = info.publisher_links[0]
-                        source_chain.append(
-                            {
-                                "from_url": url,
-                                "to_url": target,
-                                "evidence": "reader_original_article_link",
-                            }
-                        )
-                        url = target
-                        continue
+                if stage in {"browser", "browser_fetch"} and observation.reason:
+                    diagnostics["browser_failure_reason"] = observation.reason
+                if info.publisher_links and hop < 2:
+                    follow = info.publisher_links[0]
+                    source_chain.append({"from_url": url, "to_url": follow,
+                                         "evidence": "original_article_link"})
+                    break
+                caption_source = cnbc_caption_source(observation.text, url, record.title)
+                if caption_source and reason == "unsupported_media":
+                    headline, target, duration = caption_source
+                    captions = await self.transport.fetch(target, attempts, phase="captions")
+                    text = caption_text(captions.text, duration=duration) if not captions.reason else ""
+                    if text:
+                        caption_info = Inspection(candidates=[Candidate(text, "cnbc_public_captions", True, headline, 20)],
+                                                  headline=headline, page_kind="media")
+                        candidate, caption_outcome, _ = choose_candidate(caption_info, record.title)
+                        if candidate:
+                            info, outcome, content, method = caption_info, caption_outcome, candidate.text, candidate.method
+                            specific_body_source = target
+                            diagnostics["content_role"] = "video_transcript"
+                            source_chain.append({"from_url": url, "to_url": target, "evidence": "current_free_video_caption_encoding"})
+                            break
+                api_url = public_article_api(url)
+                if api_url and reason in {"http_403", "challenge_required", "empty_extract"}:
+                    api = await self.transport.fetch(api_url, attempts, phase="publisher_api")
+                    html = public_api_html(api.text, url) if not api.reason else None
+                    if html:
+                        api_info = inspect_html(html, url, record.title, strategy_ref=strategy_ref,
+                                                strategy_parameters=strategy_parameters)
+                        candidate, api_outcome, _ = choose_candidate(api_info, record.title)
+                        if candidate:
+                            info, outcome = api_info, api_outcome
+                            content, method, specific_body_source = candidate.text, "public_wp_article_api", api_url
+                            source_chain.append({"from_url": url, "to_url": api_url, "evidence": "public_wp_article_api"})
+                            break
+            if content:
+                break
+            if follow:
+                url = follow
+                continue
             break
         if reason == "source_summary_only" and info.publisher_links and len(source_chain) >= 2:
             reason = "publisher_hop_limit"

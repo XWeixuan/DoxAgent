@@ -74,7 +74,7 @@ def metrics(store, ticker, view, filters):
     previous = (
         counts(store, ticker, view["seq"], filters, prior_days) if prior_days else (None, None)
     )
-    return {
+    result = {
         name: {
             "metric_id": name,
             "unit": "COUNT" if i == 0 else "RATIO",
@@ -93,3 +93,7 @@ def metrics(store, ticker, view, filters):
         }
         for i, name in enumerate(("published_revisions", "body_completion_success_ratio"))
     }
+    from .news_timeliness import body_cohort
+
+    result["new_article_body"] = body_cohort(store,ticker,view["seq"],filters,days)
+    return result

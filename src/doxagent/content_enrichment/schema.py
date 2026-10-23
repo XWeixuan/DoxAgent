@@ -21,6 +21,8 @@ class EnrichmentJobStatus(StrEnum):
     QUEUED = "queued"
     RUNNING = "running"
     RETRY_WAIT = "retry_wait"
+    COMPLETED = "completed"
+    FAILED = "failed"
 
 
 class EnrichmentJob(BusModel):
@@ -45,6 +47,18 @@ class EnrichmentJob(BusModel):
     lease_expires_at: datetime | None = None
     claim_token: str | None = None
     pipeline_version: str | None = None
+    execution_seq: int = Field(default=0, ge=0)
+    budget_started_at: datetime | None = None
+    first_fetch_at: datetime | None = None
+    fetch_budget_seconds: int = Field(default=180, ge=1, le=1800)
+    body_result_key: str | None = None
+    known_article_raw_id: str | None = None
+    work_kind: Literal["new_article", "content_update", "recheck"] = "new_article"
+    result: dict[str, object] = Field(default_factory=dict)
+
+    @property
+    def execution_id(self) -> str:
+        return f"{self.job_id}:{self.execution_seq}"
 
     @model_validator(mode="after")
     def _owner(self) -> EnrichmentJob:

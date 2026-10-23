@@ -151,8 +151,9 @@ async def test_stable_input_noise_and_bounded_recheck(bus):
         bootstrap=False,
         poll_run_id="poll",
     )
-    assert not svc.enqueue_enrichment(**args, collected_at=NOW + timedelta(minutes=1))[1]
-    assert svc.enqueue_enrichment(**args, collected_at=NOW + timedelta(minutes=31))[1]
+    # A summary-only Raw is not a completed download. One durable fetch is still due.
+    assert svc.enqueue_enrichment(**args, collected_at=NOW + timedelta(minutes=1))[1]
+    assert not svc.enqueue_enrichment(**args, collected_at=NOW + timedelta(minutes=31))[1]
     assert svc.enqueue_enrichment(
         **{**args, "message": noisy.model_copy(update={"summary": "New facts."})},
         collected_at=NOW + timedelta(minutes=2),

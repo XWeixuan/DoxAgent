@@ -560,6 +560,7 @@ export interface CaseLink {
 }
 export type MessageRouteFilter = "ALL" | "ARCHIVE" | "TRADE" | "ADD_TO_DELTA" | "W3_PENDING" | "FAILED" | "NOT_PROCESSED";
 export interface MessageSummary extends MessageKey {
+  content_update?: { revision: Count; pending: boolean; last_error: string | null; last_checked_at: Instant | null; body_acquired_at: Instant | null };
   source_name?: string | null;
   row_revision: Count;
   title: Value<string>; source: SourceLabel; url: string;
@@ -570,7 +571,16 @@ export interface MessageSummary extends MessageKey {
   body: ContentRef;
 }
 export interface MessageBaseline { messages: Page<MessageSummary>; stream_cursor: string }
-export interface BusMetrics { published_revisions: Metric; body_completion_success_ratio: Metric }
+export interface BusMetrics { published_revisions: Metric; body_completion_success_ratio: Metric; new_article_body?: ArticleBodyCohort }
+export interface ArticleBodyCohort {
+  total: Count; full: Count; pending: Count; failed: Count; ratio: number | null;
+  network_attempts: Count; network_succeeded: Count; cache_reuses: Count;
+  basis: "FIRST_OBSERVED_ARTICLE"; legacy_excluded: boolean;
+}
+export interface PollTimeliness {
+  window_seconds: Count; samples: Count; mean_seconds: number | null; p95_seconds: number | null;
+  deferred: Count; failed: Count; sample_limit_reached: boolean;
+}
 export interface BusStatus {
   run_state: RunState;
   continuous_run_started_at: Value<Instant>;
@@ -578,8 +588,14 @@ export interface BusStatus {
   source_counts: SourceCounts;
   average_poll_latency_seconds: Value<number>;
   latency_sample_count: Count;
+  timeliness?: PollTimeliness;
 }
 export interface SourceStatus {
+  coverage_state?: "COMPLETE" | "PARTIAL" | "UNKNOWN";
+  pending_query_count?: Count; pending_timestamp_count?: Count;
+  stage_timings_ms?: { [stage: string]: number };
+  capture_age_seconds?: number | null;
+  capture_to_first_intake_seconds?: number | null;
   internal_endpoints?: IrEndpointStatus[];
   source: SourceLabel; binding_version: Count; source_version: Count;
   publication_mode: "immediate" | "buffered";

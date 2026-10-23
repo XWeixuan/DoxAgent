@@ -63,7 +63,7 @@ def test_manifests_and_global_defaults():
         assert SOURCES[source_id].adapter_ref == "site:auto"
     assert "globenewswire_semiconductors_rss" not in ids
     for source_id in [*ids, "globenewswire_semiconductors_rss"]:
-        assert SOURCES[source_id].default_polling_config.target_interval_seconds == 60
+        assert SOURCES[source_id].default_polling_config.target_interval_seconds == (30 if source_id == "yahoo_finance_news" else 60)
 
 
 def test_market_locator_seed_upgrade_is_idempotent_and_preserves_custom_urls(tmp_path):
@@ -258,7 +258,8 @@ async def test_search_queries_isolated_failure_and_recovery_checkpoint():
             checkpoint=first.next_checkpoint,
         )
     )
-    assert second.window_done and second.window_coverage == "PARTIAL"
+    assert not second.window_done and second.window_coverage == "PARTIAL"
+    assert second.next_checkpoint["queries"]["bad"]["done"] is False
     assert sum("micron" in url for url in calls) == 1
     assert "page=1" in calls[0] and "page=3" not in calls[0]
 

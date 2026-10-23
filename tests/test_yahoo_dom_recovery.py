@@ -55,8 +55,10 @@ async def test_dom_exact_article_date_is_stable_cached_and_stale_item_is_not_fre
 
 @pytest.mark.parametrize("stamp", [None, "2h ago", "2026-10-18", "2026-10-18T16:04:00"])
 async def test_dom_never_replaces_missing_exact_time_with_first_seen(stamp):
-    with pytest.raises(yahoo_sources.YahooPageUnavailable, match="timestamps"):
-        await yahoo_sources.capture_dom_news(Page(stamp=stamp), "MU", count=20)
+    rows, metadata = await yahoo_sources.capture_dom_news(Page(stamp=stamp), "MU", count=20)
+    assert rows == []
+    assert len(metadata["pending_timestamp_rows"]) == 1
+    assert "pubDate" not in metadata["pending_timestamp_rows"][0]
 
 
 async def test_dom_challenge_is_not_empty_success():
@@ -64,3 +66,21 @@ async def test_dom_challenge_is_not_empty_success():
         await yahoo_sources.capture_dom_news(Page(status=403), "MU", count=20)
     assert result.value.status_code == 403
     assert result.value.diagnostics["phase"] == "dom_article_metadata"
+
+
+async def test_timestamp_probes_rotate_and_keep_rows_no_longer_on_listing():
+    class MissingPage(Page):
+        def __init__(self):
+            super().__init__(stamp=None)
+            self.requested = []
+        async def evaluate(self, script, urls):
+            self.requested.append(urls)
+            return await super().evaluate(script, urls)
+    page = MissingPage()
+    pending = [{"link":f"https://finance.yahoo.com/news/{i}.html", "title":f"News {i}"}
+               for i in range(7)]
+    _, first = await yahoo_sources.capture_dom_news(page,"MU", count=20, pending_rows=pending)
+    _, second = await yahoo_sources.capture_dom_news(page,"MU", count=20,
+        pending_rows=first["pending_timestamp_rows"], probe_offset=first["timestamp_probe_offset"])
+    assert set(page.requested[0]).isdisjoint(page.requested[1])
+    assert len(second["pending_timestamp_rows"]) == 8

@@ -9,6 +9,7 @@ import time
 from collections import defaultdict
 from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
+from contextvars import ContextVar
 from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING
 
@@ -49,6 +50,7 @@ from doxagent.message_bus_v2.service import MessageBusV2Service
 
 MonotonicClock = Callable[[], float]
 Sleeper = Callable[[float], Awaitable[None]]
+POLL_TIMINGS = ContextVar("poll_timings", default=None)
 
 
 class SchedulerGroupLimiter:
@@ -73,6 +75,7 @@ class SchedulerGroupLimiter:
 
     @asynccontextmanager
     async def permit(self) -> AsyncIterator[None]:
+        waiting_at = self._clock()
         async with self._semaphore:
             async with self._spacing_lock:
                 now = self._clock()
@@ -85,6 +88,9 @@ class SchedulerGroupLimiter:
                     recorded = self._on_request()
                     if inspect.isawaitable(recorded):
                         await recorded
+            timings = POLL_TIMINGS.get()
+            if timings is not None:
+                timings["source_wait_ms"] = timings.get("source_wait_ms",0) + int((self._clock()-waiting_at)*1000)
             yield
 
 
@@ -151,19 +157,48 @@ class GlobalPollScheduler:
                 due.append((source, binding))
         shared: dict[str, tuple[SourceDefinition, list[TickerSourceBinding]]] = {}
         tasks = []
+        long_running = getattr(self, "_long_running", False)
+        inflight = getattr(self, "_standalone_inflight", {})
+        self._standalone_inflight = inflight
+        completed = []
+        for key, task in list(inflight.items()):
+            if task.done():
+                completed.append(task.result())
+                del inflight[key]
+        due.sort(key=lambda pair: poll_states[pair[1].binding_id].next_dispatch_at or now)
+        group_active = defaultdict(int)
+        for current_source,current_binding in eligible:
+            if current_binding.binding_id in inflight:
+                group_active[current_source.scheduler_group] += 1
         for source, binding in due:
             if source.source_id == "corporate_ir_press_releases":
                 continue
             if source.acquisition_mode is AcquisitionMode.BY_DISTRIBUTION:
                 continue
             else:
-                tasks.append(asyncio.create_task(self._poll(source, binding, now)))
+                if binding.binding_id in inflight:
+                    continue
+                if long_running and group_active[source.scheduler_group] >= self.group_limits.get(source.scheduler_group,1):
+                    continue
+                task = asyncio.create_task(self._poll(source, binding, now))
+                if long_running:
+                    inflight[binding.binding_id] = task
+                    group_active[source.scheduler_group] += 1
+                else:
+                    tasks.append(task)
         for source, binding in eligible:
             if source.acquisition_mode is AcquisitionMode.BY_DISTRIBUTION:
                 shared.setdefault(source.source_id, (source, []))[1].append(binding)
         for source, bindings in shared.values():
             if self.distribution_due(bindings, now, poll_states=poll_states):
-                tasks.append(asyncio.create_task(self._poll_distribution(source, bindings, now)))
+                key = "shared:" + source.source_id
+                if key in inflight:
+                    continue
+                task = asyncio.create_task(self._poll_distribution(source, bindings, now))
+                if long_running:
+                    inflight[key] = task
+                else:
+                    tasks.append(task)
         results = await asyncio.gather(*tasks) if tasks else []
         if self.distribution_worker is not None and (
             self._distribution_task is None or self._distribution_task.done()
@@ -173,9 +208,10 @@ class GlobalPollScheduler:
             self._distribution_task = asyncio.create_task(self.distribution_worker.run_once())
         await self.storage_call(self.service.flush_due_buffers, now=now)
         await self.storage_call(self.service.retry_pending_raw)
-        return list(results)
+        return [*completed, *results]
 
     async def run_forever(self, *, loop_sleep_seconds: float, stop: asyncio.Event) -> None:
+        self._long_running = True
         while not stop.is_set():
             try:
                 await self.run_once()
@@ -193,6 +229,10 @@ class GlobalPollScheduler:
                 pass
 
     async def close(self) -> None:
+        tasks = list(getattr(self, "_standalone_inflight", {}).values())
+        for task in tasks:
+            task.cancel()
+        await asyncio.gather(*tasks, return_exceptions=True)
         if getattr(self, "ir_coordinator", None) is not None:
             await self.ir_coordinator.close()
         if self.runtime_orchestration is not None:
@@ -229,6 +269,11 @@ class GlobalPollScheduler:
         """One storage work unit, fresh each cycle; no connection escapes to I/O."""
         with self.repository.connection_scope():
             roster = self._eligible_bindings(now, include_inactive_hours=True)
+            sources = self.repository.list_sources()
+            self.group_limits = {
+                source.scheduler_group: self._effective_constraints(source.scheduler_group, sources=sources).max_concurrency
+                for source in sources
+            }
             eligible = [(s, b) for s, b in roster if b.polling.active_at(now)]
             states = {p.binding_id: p for p in self.repository.list_poll_states()}
             for _, binding in roster:
@@ -540,6 +585,19 @@ class GlobalPollScheduler:
 
     @source_routed
     async def _poll(
+        self, source, binding, attempted_at, **kwargs,
+    ):
+        from doxagent.site_strategy.client import ACCESS_RESULTS
+
+        access_token = ACCESS_RESULTS.set([])
+        timing_token = POLL_TIMINGS.set({})
+        try:
+            return await self._poll_impl(source,binding,attempted_at,**kwargs)
+        finally:
+            ACCESS_RESULTS.reset(access_token)
+            POLL_TIMINGS.reset(timing_token)
+
+    async def _poll_impl(
         self,
         source: SourceDefinition,
         binding: TickerSourceBinding,
@@ -578,6 +636,32 @@ class GlobalPollScheduler:
                     window_coverage="PARTIAL",
                 )
             raise
+        page_receipts = []
+        page_intakes = []
+        page_captures = []
+        accept_elapsed_ms = 0
+        observed = set()
+
+        async def on_page(messages, *, checkpoint=None, observed_at=None, **evidence):
+            nonlocal accept_elapsed_ms
+            from doxagent.site_strategy.client import ACCESS_RESULTS
+
+            intake_started = self._clock()
+            access = ACCESS_RESULTS.get() or []
+            captured_at = observed_at or (access[-1].capture_acquired_at if access else None) or utc_now()
+            receipt = await self.storage_call(
+                self.service.accept_observations, source=source, binding=binding,
+                messages=messages, observed_at=observed_at or utc_now(), poll_run_id=poll_run_id,
+                admission_context=admission_context, checkpoint=checkpoint,
+                bootstrap=not state.bootstrap_complete,
+            )
+            page_receipts.append(receipt)
+            page_captures.append(captured_at)
+            page_intakes.append(utc_now())
+            accept_elapsed_ms += int((self._clock()-intake_started)*1000)
+            observed.update((m.external_id, m.url) for m in messages)
+            return receipt
+
         context = PollContext(
             is_bootstrap=not state.bootstrap_complete,
             is_gap_recovery=window_start is not None or window_cutoff is not None,
@@ -591,10 +675,17 @@ class GlobalPollScheduler:
             window_cutoff=window_cutoff,
             requested_at=attempted_at,
             request_permit=limiter.permit,
+            on_page=on_page,
         )
         try:
             adapter = self.adapters.resolve(source.adapter_ref, source_version=source.version)
+            acquisition_started = self._clock()
             result = await adapter.poll(context)
+            acquisition_ms = int((self._clock()-acquisition_started)*1000)
+            final_accept_started = self._clock()
+            result = result.model_copy(update={
+                "messages": [m for m in result.messages if (m.external_id, m.url) not in observed]
+            })
             result = result.model_copy(
                 update={
                     "acquisition_metadata": {
@@ -603,7 +694,7 @@ class GlobalPollScheduler:
                     }
                 }
             )
-            if result.site_access_deferred:
+            if result.site_access_deferred and not page_receipts and not result.messages:
                 retry_at = result.site_access_retry_not_before or (
                     attempted_at + timedelta(seconds=5)
                 )
@@ -613,6 +704,7 @@ class GlobalPollScheduler:
                     state.model_copy(
                         update={
                             "next_dispatch_at": retry_at,
+                            "last_dispatch_at": attempted_at,
                             "last_latency_ms": max(0, int((self._clock() - started_at) * 1000)),
                             "updated_at": attempted_at,
                             "last_error_code": "SOURCE_DEFERRED:"
@@ -651,6 +743,13 @@ class GlobalPollScheduler:
                     attempted_at=attempted_at,
                     admission_context=admission_context,
                 )
+            accept_elapsed_ms += int((self._clock()-final_accept_started)*1000)
+            for receipt in page_receipts:
+                execution.enrichment_job_ids.extend(receipt.enrichment_job_ids)
+                for field in ("collected_count", "filtered_count", "queued_count", "inserted_count",
+                              "duplicate_count", "revision_count", "invalid_count", "published_count",
+                              "bootstrap_suppressed_count"):
+                    setattr(execution, field, getattr(execution, field) + getattr(receipt, field))
             if window_cutoff is not None:
                 return execution
             if execution.crawler_execution_id and self.adapters.crawler_plane is not None:
@@ -660,14 +759,26 @@ class GlobalPollScheduler:
                     execution.model_dump(mode="json"),
                 )
             refreshed = await self.storage_call(self.repository.get_poll_state, binding)
+            from doxagent.site_strategy.client import ACCESS_RESULTS
+
+            accesses = ACCESS_RESULTS.get() or []
+            timing = {**(POLL_TIMINGS.get() or {}),"acquisition_ms":acquisition_ms,
+                      "accept_ms":accept_elapsed_ms,
+                      "site_wait_ms":sum(a.queue_wait_ms for a in accesses if not a.served_from_shared_capture),
+                      "runtime_ms":sum(a.network_ms for a in accesses if not a.served_from_shared_capture)}
+            captures = [a.capture_acquired_at for a in accesses if a.capture_acquired_at] + page_captures
             target_due = self._next_due(
                 refreshed.target_due_at or attempted_at,
                 attempted_at,
                 binding.polling.target_interval_seconds,
             )
             next_dispatch = target_due
-            if result.optional_next_poll_hint and result.optional_next_poll_hint > next_dispatch:
+            if not result.window_done:
+                next_dispatch = utc_now() + timedelta(seconds=1)
+            if result.optional_next_poll_hint:
                 next_dispatch = result.optional_next_poll_hint
+            if result.site_access_retry_not_before:
+                next_dispatch = max(next_dispatch, result.site_access_retry_not_before)
             await self.storage_call(
                 self.repository.save_poll_state,
                 refreshed.model_copy(
@@ -675,6 +786,11 @@ class GlobalPollScheduler:
                         "target_due_at": target_due,
                         "next_dispatch_at": next_dispatch,
                         "last_latency_ms": max(0, int((self._clock() - started_at) * 1000)),
+                        "last_stage_timings": timing,
+                        "last_first_capture_at": page_captures[0] if page_captures else max(captures) if captures else utc_now(),
+                        "last_first_intake_at": page_intakes[0] if page_intakes else utc_now(),
+                        "last_final_intake_at": utc_now(),
+                        "last_capture_at": max(captures) if captures else utc_now(),
                         "updated_at": attempted_at,
                     }
                 ),

@@ -524,6 +524,8 @@ class AccessRequest(SiteModel):
     origin_scope_id: str | None = None
     scope_revision: int | None = Field(default=None, ge=1)
     purpose: SitePurpose
+    work_class: Literal["foreground", "backfill", "recheck"] = "foreground"
+    work_age_seconds: float = Field(default=0, ge=0)
     url: str
     method: Literal["GET", "POST"] = "GET"
     parameters: JsonObject = Field(default_factory=dict)
@@ -564,6 +566,7 @@ class AccessAttempt(SiteModel):
     reason_code: str | None = None
     queue_wait_ms: int = 0
     network_ms: int = 0
+    stage_timings: dict[str, int] = Field(default_factory=dict)
     exit_ip: str | None = None
     identity_id: str | None = None
     runtime_kind: BrowserRuntimeKind | None = None
@@ -575,6 +578,10 @@ class AccessAttempt(SiteModel):
 class AccessResult(SiteModel):
     served_from_shared_capture: bool = False
     capture_id: str | None = None
+    capture_acquired_at: datetime | None = None
+    capture_age_ms: int | None = None
+    consumer_elapsed_ms: int | None = None
+    stage_timings: dict[str, int] = Field(default_factory=dict)
     request_id: str
     operation_id: str
     effective_scope_id: str | None = None
@@ -625,6 +632,8 @@ class AccessEvent(SiteModel):
 
 class BodyOutcome(SiteModel):
     job_id: str
+    execution_id: str | None = None
+    logical_job_id: str | None = None
     final_site_id: str
     strategy_ref: str
     combination_id: str | None = None

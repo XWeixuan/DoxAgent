@@ -180,6 +180,12 @@ class DomainProjectors:
             identity = row["namespace"] + ":" + row["key"]
         if table in {"ticker_source_bindings", "poll_states"}:
             identity = value["binding_id"]
+        if table == "article_body_results":
+            identity = value["fetch_key"]
+            value = {k:v for k,v in value.items() if k not in {"content", "diagnostics"}}
+        if table in {"message_observations", "content_enrichment_jobs"}:
+            identity = event["entity_id"]
+            ticker = row.get("ticker") or (value.get("binding") or {}).get("ticker", "")
         if table == "ir_endpoint_states":
             ticker = value["binding_id"].split(":",1)[0]
             identity = value["binding_id"]+":"+value["endpoint_id"]
@@ -218,6 +224,25 @@ class DomainProjectors:
             "source_id": value.get("source_id"),
         }
         records, metrics = [record], []
+        if table == "content_enrichment_jobs":
+            records.append({"kind":"body_job","ticker":ticker,"id":value["job_id"],
+                "parent":value.get("body_result_key"), "source_id":value["source"]["source_id"],
+                "data":{k:value.get(k) for k in ("job_id","status","work_kind","execution_seq",
+                    "body_result_key","created_at","budget_started_at","first_fetch_at","updated_at","result")}})
+        if table == "message_observations":
+            key = value.get("metadata", {}).get("article_body_result_key")
+            if key:
+                source_id = row["source_id"]
+                observation_id = source_id + ":" + key
+                prior = self.store.get("article_observation", ticker, observation_id) or {}
+                first = min(prior.get("first_observed_at", row["first_seen_at"]), row["first_seen_at"])
+                records.append({"kind":"article_observation", "ticker":ticker, "id":observation_id,
+                    "parent":key,"source_id":source_id,"day":semantic_day(datetime.fromisoformat(first)).isoformat(),
+                    "search":(value.get("title") or "").casefold(),
+                    "data":{"fetch_key":key,"source_id":source_id,"first_observed_at":first,
+                            "title":value.get("title"),"url":value.get("url")}})
+        if table == "poll_states" and (value.get("last_dispatch_at") or value.get("last_attempt_at")):
+            record["day"] = semantic_day(datetime.fromisoformat(value.get("last_dispatch_at") or value["last_attempt_at"])).isoformat()
         if table == "initialization_repair_rounds":
             metrics.append(
                 {
@@ -457,6 +482,11 @@ class DomainProjectors:
         elif table == "standard_messages":
             content = self.store.put_content(ticker, value["body"], "text/plain")
             record["data"] = {**value, "body_ref": content}
+            current_message = self.store.get("message",ticker,value["standard_message_id"])
+            if current_message:
+                records.extend(self.message({"standard_message_id":value["standard_message_id"],
+                    "stream_item_id":current_message["stream_item_id"],"member_index":current_message["member_index"]},
+                    event["seq"],override_message=record["data"]))
             records.append(
                 {
                     "kind": "message_raw_link",
@@ -468,7 +498,7 @@ class DomainProjectors:
             )
         elif table == "audit_log" and value["entity_type"] == "body_completion":
             attempt = value["payload"]
-            if attempt.get("v2_control_origin"):
+            if attempt.get("v2_control_origin") or (attempt.get("intake_owned") and attempt.get("body_result_key")):
                 records.append(
                     {
                         "kind": "body_attempt",
@@ -608,7 +638,12 @@ class DomainProjectors:
         return records, metrics
 
     def case(self, value: dict[str, Any], revision: int, *, reconstruct_archive: bool = False) -> list[dict[str, Any]]:
-        from doxagent.persistent_runtime_v2.case_outcomes import (effective_novelty, effective_policy, decision_direction, historical_archive)
+        from doxagent.persistent_runtime_v2.case_outcomes import (
+            decision_direction,
+            effective_novelty,
+            effective_policy,
+            historical_archive,
+        )
         from doxagent.persistent_runtime_v2.w3_contracts import is_unified_contract
 
         source, ticker = value["source"], value["source"]["snapshot"]["ticker"]
@@ -795,7 +830,7 @@ class DomainProjectors:
             body = "".join(chunks)
         return (message.get("title") or "") + "\n" + body
 
-    def message(self, member: dict[str, Any], revision: int) -> list[dict[str, Any]]:
+    def message(self, member: dict[str, Any], revision: int, *, override_message=None) -> list[dict[str, Any]]:
         # stream_members has no ticker; the stream identity is indexed on publication.
         with self.store.connect() as db:
             row = db.execute(
@@ -806,7 +841,7 @@ class DomainProjectors:
         if not row:
             raise ValueError("stream not indexed")
         ticker, stream = row[0], json.loads(row[1])
-        message = self.store.get("native:standard_messages", ticker, member["standard_message_id"])
+        message = override_message or self.store.get("native:standard_messages", ticker, member["standard_message_id"])
         if not message:
             raise ValueError("standard message not indexed")
         if not message.get("metadata", {}).get("v2_control_origin") and not self.store.get(
@@ -834,6 +869,13 @@ class DomainProjectors:
             exact_duplicate_count=missing(),
             case=self.case_link(case),
             body=body_ref,
+            content_update={
+                "revision":message.get("metadata",{}).get("message_version",{}).get("content_revision",1),
+                "pending":message.get("metadata",{}).get("body_update_state",{}).get("pending",False),
+                "last_error":message.get("metadata",{}).get("body_update_state",{}).get("last_error"),
+                "last_checked_at":timestamp(message["metadata"]["body_update_state"]["last_checked_at"]) if message.get("metadata",{}).get("body_update_state",{}).get("last_checked_at") else None,
+                "body_acquired_at":timestamp(message["metadata"]["media_enrichment"]["body_acquired_at"]) if message.get("metadata",{}).get("media_enrichment",{}).get("body_acquired_at") else None,
+            },
         )
         validate("MessageSummary", summary)
         return [

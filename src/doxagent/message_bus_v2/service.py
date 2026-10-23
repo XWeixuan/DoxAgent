@@ -768,6 +768,29 @@ class MessageBusV2Service:
             admission_context=admission_context,
         )
 
+    def accept_observations(self, *, source, binding, messages, observed_at, poll_run_id,
+                            admission_context=None, checkpoint=None, bootstrap=False):
+        """Commit page observations/jobs before its cursor; leave poll health untouched."""
+        with self.repository.atomic_intake():
+            receipt = self._accept_poll_result(
+                source=source, binding=binding,
+                result=PollResult(messages=messages, acquisition_metadata={"poll_run_id": poll_run_id}),
+                attempted_at=observed_at, admission_context=admission_context,
+                persist_poll_state=False, bootstrap_override=bootstrap, strict_intake=True,
+            )
+            state = self.repository.get_poll_state(binding)
+            updates = {
+                "collected_count": state.collected_count + receipt.collected_count,
+                "filtered_count": state.filtered_count + receipt.filtered_count,
+                "published_count": state.published_count + receipt.published_count,
+            }
+            if checkpoint is not None and not (
+                admission_context and admission_context.mode == "CLOSED_SWEEP"
+            ):
+                updates["checkpoint"] = checkpoint
+            self.repository.save_poll_state(state.model_copy(update=updates))
+            return receipt
+
     def _accept_poll_result(
         self,
         *,
@@ -808,6 +831,7 @@ class MessageBusV2Service:
             self._upsert_failure_alert(failure)
             output = output.model_copy(update={"invalid_count": output.invalid_count + 1})
         rejected = []
+        observed_at = utc_now()
         for input_message in self.repository.resolve_first_seen_many(
             result.messages, binding.binding_id
         ):
@@ -820,7 +844,7 @@ class MessageBusV2Service:
                 utc_now(),
                 input_message.publication_time_basis,
             )
-            if reason:
+            if reason and not (self.enrichment_queue_enabled and self.repository.known_published_article(binding, input_message)):
                 rejected.append((input_message, reason))
                 output.filtered_count += 1
                 continue
@@ -832,7 +856,7 @@ class MessageBusV2Service:
                         message=input_message,
                         bootstrap=bootstrap,
                         poll_run_id=output.poll_run_id,
-                        collected_at=now,
+                        collected_at=observed_at,
                     )
                     if job is None:
                         continue
@@ -926,6 +950,7 @@ class MessageBusV2Service:
                 "checkpoint": checkpoint,
                 "bootstrap_complete": True,
                 "last_attempt_at": now,
+                "last_dispatch_at": now,
                 "last_success_at": state.last_success_at
                 if all_queries_failed or deferred_only
                 else now,
@@ -940,6 +965,7 @@ class MessageBusV2Service:
                     if all_queries_failed
                     else 0
                 ),
+                "last_window_coverage": result.window_coverage,
                 "collected_count": state.collected_count + output.collected_count,
                 "filtered_count": state.filtered_count + output.filtered_count,
                 "published_count": state.published_count + output.published_count,
@@ -994,60 +1020,85 @@ class MessageBusV2Service:
     ) -> tuple[EnrichmentJob | None, bool]:
         """Durably stage provider output before any network enrichment work."""
 
-        now = collected_at or utc_now()
-        message = self.repository.resolve_first_seen(message, binding.binding_id)
-        reason = evaluate_admission(
-            message.published_at,
-            message.admission_context,
-            utc_now(),
-            message.publication_time_basis,
-        )
-        if reason:
-            self.repository.record_admission(
-                message, reason, "ENRICHMENT_INTAKE", binding.binding_id
+        with self.repository.atomic_intake():
+            now = collected_at or utc_now()
+            message = self.repository.resolve_first_seen(message, binding.binding_id)
+            known_article = self.repository.known_published_article(binding, message)
+            reason = evaluate_admission(
+                message.published_at,
+                message.admission_context,
+                utc_now(),
+                message.publication_time_basis,
             )
-            return None, False
-        clean_metadata = dict(message.metadata)
-        clean_metadata.pop("v2_body_completion", None)
-        clean = message.model_copy(update={"metadata": clean_metadata})
-        identity_key = identity_key_for(source.source_id, clean)
-        provider_raw_hash = sha256_text(canonical_json(clean.raw_payload))
-        reused = self.repository.observe_input(
-            clean,
-            ticker=binding.ticker,
-            source_id=source.source_id,
-            identity_key=identity_key,
-            now=now,
-        )
-        intake_key = sha256_text(
-            canonical_json(
-                {
-                    "binding_id": binding.binding_id,
-                    "identity_key": identity_key,
-                    "input_fingerprint": dedup.stable_fingerprint(clean),
-                    "recheck_window": int(now.timestamp()) // 1800,
-                }
+            if reason and not known_article:
+                self.repository.record_admission(
+                    message, reason, "ENRICHMENT_INTAKE", binding.binding_id
+                )
+                return None, False
+            clean_metadata = dict(message.metadata)
+            clean_metadata.pop("v2_body_completion", None)
+            clean_metadata["body_observation_source_id"] = source.source_id
+            from doxagent.content_enrichment.native import native_article
+
+            clean_metadata["body_not_applicable"] = source.content_enrichment_mode.value == "skip" or (
+                clean_metadata.get("identity_evidence",{}).get("url_kind") == "generic" and not native_article(message))
+            clean = message.model_copy(update={"metadata": clean_metadata})
+            from .body_results import ArticleBodyResults
+
+            body_results = ArticleBodyResults(self.repository)
+            body_result, work_kind = body_results.schedule(clean, source.source_id, now=utc_now())
+            clean = clean.model_copy(update={"metadata": {
+                **clean.metadata, "article_body_result_key": body_result["fetch_key"],
+            }})
+            identity_key = identity_key_for(source.source_id, clean)
+            provider_raw_hash = sha256_text(canonical_json(clean.raw_payload))
+            reused = self.repository.observe_input(
+                clean,
+                ticker=binding.ticker,
+                source_id=source.source_id,
+                identity_key=identity_key,
+                now=now,
             )
-        )
-        job = EnrichmentJob(
-            job_id="enrich-" + intake_key,
-            intake_key=intake_key,
-            poll_run_id=poll_run_id,
-            source=source,
-            binding=binding,
-            message=clean,
-            provider_raw_hash=provider_raw_hash,
-            bootstrap=bootstrap,
-            created_at=now,
-            updated_at=now,
-            last_seen_at=now,
-            not_before=now,
-            deadline_at=now + timedelta(seconds=self.enrichment_retry_deadline_seconds),
-            pipeline_version=self.enrichment_pipeline_version,
-        )
-        if reused:
-            return job, False
-        return self.repository.enqueue_enrichment_job(job)
+            if reused and not body_result.get("content"):
+                body_result = body_results.adopt_legacy(clean, source.source_id, binding.ticker, now=utc_now())
+                if body_results.reusable(body_result,clean,utc_now()):
+                    work_kind = "reuse"
+            intake_key = sha256_text(
+                canonical_json(
+                    {
+                        "binding_id": binding.binding_id,
+                        "identity_key": identity_key,
+                        "fetch_key": body_result["fetch_key"],
+                        "check_seq": body_result["check_seq"],
+                    }
+                )
+            )
+            job = EnrichmentJob(
+                job_id="enrich-" + intake_key,
+                intake_key=intake_key,
+                poll_run_id=poll_run_id,
+                source=source,
+                binding=binding,
+                message=clean,
+                provider_raw_hash=provider_raw_hash,
+                bootstrap=bootstrap,
+                created_at=now,
+                updated_at=now,
+                last_seen_at=now,
+                not_before=now,
+                deadline_at=now + timedelta(seconds=self.enrichment_retry_deadline_seconds),
+                pipeline_version=self.enrichment_pipeline_version,
+                fetch_budget_seconds=self.enrichment_retry_deadline_seconds,
+                body_result_key=body_result["fetch_key"],
+                known_article_raw_id=known_article.raw_message_id if known_article else None,
+                work_kind="new_article" if work_kind == "reuse" else work_kind,
+            )
+            if reused and work_kind == "reuse":
+                return job, False
+            saved, created = self.repository.enqueue_enrichment_job(job)
+            if created and known_article and work_kind != "reuse":
+                self.repository.mark_article_check_pending(known_article.raw_message_id)
+            return saved,created
 
     @staticmethod
     def _validate_source_adapter(source: SourceDefinition) -> None:
@@ -1074,6 +1125,7 @@ class MessageBusV2Service:
         trusted_enrichment: bool = False,
         enrichment_input: RawMessageInput | None = None,
         enrichment_claim: tuple[str, str] | None = None,
+        known_article_raw_id: str | None = None,
     ) -> IngestResult:
         return await self.storage.call(
             self._accept_message,
@@ -1085,6 +1137,7 @@ class MessageBusV2Service:
             trusted_enrichment=trusted_enrichment,
             enrichment_input=enrichment_input,
             enrichment_claim=enrichment_claim,
+            known_article_raw_id=known_article_raw_id,
         )
 
     def _accept_message(
@@ -1098,6 +1151,7 @@ class MessageBusV2Service:
         trusted_enrichment: bool = False,
         enrichment_input: RawMessageInput | None = None,
         enrichment_claim: tuple[str, str] | None = None,
+        known_article_raw_id: str | None = None,
     ) -> IngestResult:
         now = collected_at or utc_now()
         message = self.repository.resolve_first_seen(message, binding.binding_id)
@@ -1107,7 +1161,15 @@ class MessageBusV2Service:
             utc_now(),
             message.publication_time_basis,
         )
-        if reason:
+        if known_article_raw_id:
+            known = self.repository.known_published_article(binding, message)
+            live_binding = self.repository.get_binding(binding.binding_id)
+            live_source = self.repository.get_source(source.source_id)
+            if (not trusted_enrichment or not live_binding or not live_binding.enabled
+                    or not live_source or not live_source.enabled
+                    or not known or known.raw_message_id != known_article_raw_id):
+                raise RuntimeError("known_article_revision_not_authorized")
+        if reason and not known_article_raw_id:
             self.repository.record_admission(message, reason, "RAW_INTAKE", binding.binding_id)
             return IngestResult(decision=IngestDecision.FILTERED, error_code=reason)
         # Provider metadata cannot forge internal completion-attempt evidence. Network
@@ -1200,6 +1262,10 @@ class MessageBusV2Service:
             if enrichment_claim
             else self.repository.record_raw(raw)
         )
+        if known_article_raw_id and (
+            decision is not IngestDecision.DUPLICATE or persisted.raw_message_id != known_article_raw_id
+        ):
+            raise RuntimeError("known_article_revision_identity_changed")
         if decision is IngestDecision.DUPLICATE:
             if persisted.processing_status in {
                 RawProcessingStatus.PENDING,
@@ -1587,6 +1653,7 @@ class MessageBusV2Service:
                 "status": PollStatus.FAILED,
                 "last_standard_revision_count": None,
                 "last_attempt_at": now,
+                "last_dispatch_at": now,
                 "last_failure_at": now,
                 "failure_since": state.failure_since or now,
                 "last_error_code": code,

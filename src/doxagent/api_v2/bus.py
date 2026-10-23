@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from datetime import datetime
 import json
+from datetime import datetime
 
 from fastapi import FastAPI, Request
 
@@ -12,6 +12,7 @@ from doxagent.v2_read.repository import instant
 
 from .dto import available, missing, validate
 from .errors import ApiFailure
+from .news_timeliness import poll_window
 
 
 def source_status(store, binding, seq, view):
@@ -79,6 +80,12 @@ def source_status(store, binding, seq, view):
             ),
             "last_published_count": observed("last_standard_revision_count"),
             "last_poll_latency_seconds": observed("last_latency_ms", lambda value: value / 1000),
+            "coverage_state":poll.get("last_window_coverage","UNKNOWN"),
+            "pending_query_count":sum(not q.get("done",False) for q in poll.get("checkpoint",{}).get("queries",{}).values()),
+            "pending_timestamp_count":len(poll.get("checkpoint",{}).get("pending_timestamp_rows",[])),
+            "stage_timings_ms":poll.get("last_stage_timings",{}),
+            "capture_age_seconds": max(0,(now-datetime.fromisoformat(poll["last_capture_at"])).total_seconds()) if poll.get("last_capture_at") else None,
+            "capture_to_first_intake_seconds": max(0,(datetime.fromisoformat(poll["last_first_intake_at"])-datetime.fromisoformat(poll["last_first_capture_at"])).total_seconds()) if poll.get("last_first_intake_at") and poll.get("last_first_capture_at") else None,
             "current_error": ApiFailure(
                 poll["last_error_code"], retryable=deferred
             ).payload(native.binding_id)["error"]
@@ -201,5 +208,6 @@ def install(app: FastAPI):
             else missing(),
             "average_poll_latency_seconds": latency,
             "latency_sample_count": samples,
+            "timeliness": poll_window(store,ticker,view["seq"],view["as_of"]),
         }
         return app.state.respond(request, "BusStatus", data, view_id=args["view_id"])
