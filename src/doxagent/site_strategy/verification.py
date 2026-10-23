@@ -216,7 +216,15 @@ def reuters_listing_rows(html, request, actual_url):
     if rows:
         return rows
     text = main[0].text_content()
-    return [] if re.search(r"Search results for[\s\S]*?\b0 results\b", text, re.I) else None
+    return (
+        []
+        if re.search(
+            r"Search results for[\s\S]*?\b0 results\b|No search results match the term\b",
+            text,
+            re.I,
+        )
+        else None
+    )
 
 
 def crawler_capture_items(source_id, response, request):

@@ -511,3 +511,47 @@ def test_reuters_original_document_proves_only_matching_unblocked_query(setup, k
     )
     report = verify_capture(service, scope, recovery_context(request), capture, observed=True)
     assert (report.crawler == "READY") is ready
+
+
+@pytest.mark.parametrize(
+    "text", ["Search results for Ondas 0 results", "No search results match the term “Ondas”"]
+)
+def test_reuters_legitimate_zero_results_are_business_proof(setup, text):
+    from doxagent.site_strategy.recovery import recovery_context, verify_capture
+    from doxagent.site_strategy.runtime import RuntimeResponse
+
+    _, service, store, _ = setup
+    scope = store.get_scope("source:reuters_site_search")
+    request = AccessRequest(
+        operation_id="zero-results",
+        url="https://www.reuters.com/site-search/?query=Ondas&offset=0",
+        purpose="CRAWLER",
+        mode="BROWSER",
+        recipe_ref="builtin:reuters_search@1",
+        recipe_parameters={"query": "Ondas"},
+    )
+    capture = RuntimeResponse(
+        0,
+        request.url,
+        {},
+        body="<main>" + text + "</main>",
+        assessment={"kind": "NONE"},
+        provenance=SimpleNamespace(instance_id="chrome"),
+    )
+    report = verify_capture(service, scope, recovery_context(request), capture, observed=True)
+    assert report.challenge == "CLEARED" and report.crawler == "READY"
+
+
+@pytest.mark.asyncio
+async def test_reuters_live_recipe_accepts_same_zero_result_contract():
+    from doxagent.message_bus_v2.reuters_sources import capture_reuters_search
+
+    async def wait(expression, **kwargs):
+        assert "No search results match the term" in expression
+
+    page = SimpleNamespace(
+        goto=AsyncMock(return_value=SimpleNamespace(status=200)),
+        wait_for_function=wait,
+        evaluate=AsyncMock(return_value=[]),
+    )
+    assert await capture_reuters_search(page, "Ondas", 0) == []

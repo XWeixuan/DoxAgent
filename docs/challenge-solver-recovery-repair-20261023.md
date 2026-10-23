@@ -44,3 +44,9 @@
 3. Reuters过去只接受recipe_result，纯原页DOM没有对应的可信listing parser，导致正常原页仍要重新导航。增加与现有recipe对应的main文章链接/日期、明确零结果以及精确query/offset契约；可见遮罩/UNKNOWN仍拒绝，主备/查询不能互相证明。人工Verify使用原Task的查询而不是固定Micron，并接纳offset=0的canonical差异，避免为证明已恢复再触发验证。
 
 以上补充均在既有Site Access包内，无新增服务。新增回归累计27项，后续最小版本及验收结果在最终收尾补记。24小时只读验收已复用自动化24；新观察窗口为10-23 12:17:55至10-24 12:17:55 UTC，保留原10-21窗口，不因收尾发布延长截止。OpenAI Docs用于安排只读计划任务，不改变修复或购买授权；原页、费用与业务回执分别统计。
+
+### Reuters正常零结果被误作失败（实证）
+
+原生只读复核备用`F01CB50E...`：URL为`/site-search/?query=Ondas&offset=0`，有main但无日期文章链接，实际可见文案为`No search results match the term “Ondas”`，assessment=NONE。这不是Challenge。原recipe仅接受旧式`Search results for ... 0 results`，因此每次等待12秒后抛TimeoutError，恢复则一直拒绝零结果原页，旧记录误导为Runtime不可用。
+
+采集recipe及纯DOM验证现在同时接受两种明确零结果；仍要求真实Reuters搜索URL与query/offset一致、页面无阻断。增加3项正反链路回归，新增用例累计30项。该recipe文件位于message_bus_v2包，但在生产Site Access浏览器Worker中执行，不修改Bus调度/消费逻辑；新增窄Dockerfile明确复制该文件，源码验收扩大为53文件，不为此重建Message Bus。正常零条是有效采集，不是伪造有消息。

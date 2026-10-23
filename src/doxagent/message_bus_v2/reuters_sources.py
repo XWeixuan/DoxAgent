@@ -65,7 +65,8 @@ async def capture_reuters_search(page: Any, query: str, offset: int) -> list[dic
           const articlePath = /\/[^/]+\/[^/]+-\d{4}-\d{2}-\d{2}\//;
           const hasArticle = [...document.querySelectorAll('main a[href]')]
             .some(link => articlePath.test(link.getAttribute('href') || ''));
-          return hasArticle || /Search results for[\s\S]*?\b0 results\b/i.test(body);
+          return hasArticle || /Search results for[\s\S]*?\b0 results\b/i.test(body)
+            || /No search results match the term\b/i.test(body);
         }""",
         polling=250,  # Native Chrome background tabs do not reliably run requestAnimationFrame.
         timeout=12_000,
