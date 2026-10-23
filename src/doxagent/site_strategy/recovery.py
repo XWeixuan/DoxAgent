@@ -3,6 +3,7 @@
 import asyncio
 import logging
 import time
+from contextlib import AsyncExitStack
 from datetime import timedelta
 from types import SimpleNamespace
 from uuid import uuid4
@@ -235,36 +236,58 @@ async def reuters_login_form(page, credentials):
 def recovery_listing_url_matches(scope, request, actual):
     if actual == request.url:
         return True
-    if scope.source_id == 'investorshub_ticker_news':
-        from urllib.parse import urlsplit
+    if scope.source_id == "investorshub_ticker_news":
         import re
+        from urllib.parse import urlsplit
+
         expected, final = urlsplit(request.url), urlsplit(actual)
-        pattern = r'/stock-market/(NASDAQ|NYSE|AMEX)/([^/]+)/news/?'
+        pattern = r"/stock-market/(NASDAQ|NYSE|AMEX)/([^/]+)/news/?"
         parts = [re.fullmatch(pattern, p.path) for p in (expected, final)]
-        ticker = str(request.recipe_parameters.get('ticker') or '').upper()
-        return bool(ticker and all(p.scheme == 'https' and p.hostname == 'investorshub.advfn.com'
-            and not p.username and p.port in {None, 443} and not p.query and not p.fragment
-            for p in (expected, final)) and all(parts) and parts[0][1] == parts[1][1]
-            and all(p[2].rsplit('-', 1)[-1].upper() == ticker for p in parts))
+        ticker = str(request.recipe_parameters.get("ticker") or "").upper()
+        return bool(
+            ticker
+            and all(
+                p.scheme == "https"
+                and p.hostname == "investorshub.advfn.com"
+                and not p.username
+                and p.port in {None, 443}
+                and not p.query
+                and not p.fragment
+                for p in (expected, final)
+            )
+            and all(parts)
+            and parts[0][1] == parts[1][1]
+            and all(p[2].rsplit("-", 1)[-1].upper() == ticker for p in parts)
+        )
     # The trusted Reuters recipe always adds offset=0; old incidents omitted it.
     # Compare the declared query/offset, not arbitrary same-site navigation.
-    if scope.source_id != 'reuters_site_search' or request.recipe_ref != 'builtin:reuters_search@1':
+    if scope.source_id != "reuters_site_search" or request.recipe_ref != "builtin:reuters_search@1":
         return False
-    from urllib.parse import urlsplit, parse_qs
+    from urllib.parse import parse_qs, urlsplit
+
     expected, final = urlsplit(request.url), urlsplit(actual)
-    if any(p.scheme != 'https' or p.hostname != 'www.reuters.com' or p.port not in {None, 443}
-           or p.username or p.path != '/site-search/' or p.fragment for p in (expected, final)):
+    if any(
+        p.scheme != "https"
+        or p.hostname != "www.reuters.com"
+        or p.port not in {None, 443}
+        or p.username
+        or p.path != "/site-search/"
+        or p.fragment
+        for p in (expected, final)
+    ):
         return False
-    query = str(request.recipe_parameters.get('query', ''))
-    offset = str(request.recipe_parameters.get('offset', 0))
+    query = str(request.recipe_parameters.get("query", ""))
+    offset = str(request.recipe_parameters.get("offset", 0))
     if not query:
         return False
-    wanted = {'query': [query], 'offset': [offset]}
+    wanted = {"query": [query], "offset": [offset]}
+
     def canonical(p):
         values = parse_qs(p.query, keep_blank_values=True)
-        if offset == '0':
-            values.setdefault('offset', ['0'])
+        if offset == "0":
+            values.setdefault("offset", ["0"])
         return values
+
     return canonical(expected) == canonical(final) == wanted
 
 
@@ -330,9 +353,11 @@ class BrowserRecoveryCoordinator:
         self.owner = "recovery-owner:" + uuid4().hex
         self.slots = asyncio.Semaphore(2)
         self.tasks = {}
+        self._billing_task = None
         self._last_legacy_scan = 0.0
         self._legacy_migration_enabled = False
         from .datadome_solver import DataDomeSolver
+
         self.datadome_solver = DataDomeSolver(self)
 
     @staticmethod
@@ -342,6 +367,11 @@ class BrowserRecoveryCoordinator:
     def event(self, recovery, category, **payload):
         self.service.repository.append_event(
             AccessEvent(
+                **(
+                    {"event_id": "probe_finish:" + digest_json(payload["probe_id"])}
+                    if category == "PROBE_FINISHED" and payload.get("probe_id")
+                    else {}
+                ),
                 operation_id=recovery.recovery_id,
                 site_id=recovery.site_id,
                 category=category,
@@ -356,12 +386,16 @@ class BrowserRecoveryCoordinator:
 
     async def close(self):
         tasks = list(self.tasks.values())
+        if self._billing_task:
+            tasks.append(self._billing_task)
         for task in tasks:
             task.cancel()
         if tasks:
             await asyncio.gather(*tasks, return_exceptions=True)
 
     async def run_once(self):
+        if self._billing_task is None or self._billing_task.done():
+            self._billing_task = asyncio.create_task(self.datadome_solver.collect_orphan_results())
         if time.monotonic() - self._last_legacy_scan >= 60:
             # An OPEN user session is deferred by migration, never stolen. Once
             # released, the same bounded scan brings it under autonomous recovery.
@@ -461,8 +495,14 @@ class BrowserRecoveryCoordinator:
                 return
             recovery = claimed
             started = time.monotonic()
+            deadline = started + 90
+            probe = None
+            probe_result, request_sent, stage = "SUPERSEDED", False, "OBSERVING"
+            probe_timing = {"queue_ms": 0, "control_ms": 0, "site_ms": 0}
+            stage_started = started
+            capture = None
             try:
-                async with asyncio.timeout(90):
+                async with asyncio.timeout_at(deadline):
                     scope = self.store.maintenance_scope(recovery.scope_id)
                     identity = self.service.repository.get_identity(identity_id)
                     spec = self.service.repository.get_strategy(recovery.site_id)
@@ -481,15 +521,23 @@ class BrowserRecoveryCoordinator:
                             }
                         )
                         self.store.save_recovery(recovery, expected_generation=claimed.generation)
-                    context = next((c for c in recovery.affected_contexts if c['purpose'] == 'CRAWLER'),
-                        recovery.affected_contexts[0] if recovery.affected_contexts else None)
+                    context = next(
+                        (c for c in recovery.affected_contexts if c["purpose"] == "CRAWLER"),
+                        recovery.affected_contexts[0] if recovery.affected_contexts else None,
+                    )
                     if context is None:
                         await self._defer(recovery, "recovery_request_unavailable", delay=600)
                         return
-                    if await self.datadome_solver.tick(recovery, scope, identity, egress):
-                        self.service.failover.schedule(scope, SitePurpose(context['purpose']))
+                    solver_pending = await self.datadome_solver.tick(
+                        recovery, scope, identity, egress
+                    )
+                    if (
+                        solver_pending
+                        or recovery.recovery_id in self.datadome_solver.provider_ticks
+                    ):
+                        self.service.failover.schedule(scope, SitePurpose(context["purpose"]))
                         recovery = recovery.model_copy(update={"next_probe_at": utc_now()})
-                        await self._defer(recovery, "datadome_solver_pending", delay=15)
+                        await self._defer(recovery, "datadome_solver_pending", delay=5)
                         return
                     if (
                         scope.source_id == "ctee_semiconductor"
@@ -506,7 +554,9 @@ class BrowserRecoveryCoordinator:
                     capture = None
                     if recovery.page_status != "LOST" and not configuration_changed:
                         try:
-                            async with asyncio.timeout(12):
+                            async with asyncio.timeout(
+                                min(10, max(0, deadline - time.monotonic() - 10))
+                            ):
                                 capture = await self._observe(recovery, identity)
                         except Exception as exc:
                             reason = str(exc)
@@ -540,25 +590,42 @@ class BrowserRecoveryCoordinator:
                                 )
                                 self.event(recovery, "TARGET_LOST", reason="exact_original_absent")
                             else:
-                                recovery = recovery.model_copy(update={"page_status": "UNKNOWN"})
-                    if capture is None and recovery.handling_mode == "AUTO" and (
-                        utc_now() - recovery.opened_at
-                    ).total_seconds() >= max(180, min(300, spec.challenge.automatic_wait_seconds * 3)):
+                                recovery = recovery.model_copy(update={"page_status": "PRESENT_BUT_UNREADABLE"
+                                    if reason == "original_document_present_but_unreadable" else "UNKNOWN",
+                                    "page_checked_at": utc_now()})
+                    if (
+                        capture is None
+                        and recovery.handling_mode == "AUTO"
+                        and (utc_now() - recovery.opened_at).total_seconds()
+                        >= max(180, min(300, spec.challenge.automatic_wait_seconds * 3))
+                    ):
                         # The deadline must also work when a busy/dead renderer
                         # never supplies any DOM. No successful read is required
                         # to expose a retained/lost original for manual review.
-                        recovery = recovery.model_copy(update={
-                            "handling_mode": "HUMAN",
-                            "manual_review_reason": "verification_observation_unavailable",
-                            "manual_review_at": recovery.manual_review_at or utc_now(),
-                        })
-                        self.event(recovery, "CLASSIFICATION_CHANGED",
-                                   kind=recovery.assessment.get("kind", "UNKNOWN"),
-                                   handling_mode="HUMAN", reason=recovery.manual_review_reason)
+                        recovery = recovery.model_copy(
+                            update={
+                                "handling_mode": "HUMAN",
+                                "manual_review_reason": "verification_observation_unavailable",
+                                "manual_review_at": recovery.manual_review_at or utc_now(),
+                            }
+                        )
+                        self.event(
+                            recovery,
+                            "CLASSIFICATION_CHANGED",
+                            kind=recovery.assessment.get("kind", "UNKNOWN"),
+                            handling_mode="HUMAN",
+                            reason=recovery.manual_review_reason,
+                        )
                         self.store.save_recovery(recovery, expected_generation=recovery.generation)
                     if capture is not None:
+                        recovery = recovery.model_copy(update={"page_status": "PRESENT" if capture.body
+                            else "PRESENT_BUT_UNREADABLE", "page_checked_at": utc_now()})
+                        self.store.save_recovery(recovery, expected_generation=claimed.generation)
                         report = verify_capture(
                             self.service, scope, context, capture, observed=True
+                        )
+                        confirmation_delay = self.datadome_solver.confirmation_delay(
+                            recovery, report
                         )
                         if report.challenge == "CLEARED":
                             await self._commit(
@@ -566,6 +633,18 @@ class BrowserRecoveryCoordinator:
                             )
                             return
                         recovery = self._classify(recovery, capture, spec, report)
+                        if confirmation_delay:
+                            await self._defer(
+                                recovery, "solver_original_confirmation", delay=confirmation_delay
+                            )
+                            return
+                    else:
+                        confirmation_delay = self.datadome_solver.confirmation_delay(recovery)
+                        if confirmation_delay:
+                            await self._defer(
+                                recovery, "solver_original_unreadable", delay=confirmation_delay
+                            )
+                            return
                     open_writer = any(
                         s.identity_id == identity_id and s.state == "OPEN"
                         for s in self.store.list_sessions()
@@ -576,13 +655,26 @@ class BrowserRecoveryCoordinator:
                         and recovery.next_probe_at
                         and recovery.next_probe_at <= utc_now()
                     ):
+                        if deadline - time.monotonic() < 20:
+                            self.event(
+                                recovery, "PROBE_DEFERRED", reason="BUDGET", request_sent=False
+                            )
+                            await self._defer(recovery, "probe_budget_unavailable", delay=60)
+                            return
                         safety = self.service.runtime.browser_pool._safety.read()
                         if safety.level.value == "CRITICAL":
                             await self._defer(recovery, "RESOURCE_DEFERRED", delay=60)
                             return
+                        probe = f"{recovery.recovery_id}:{recovery.generation}:{recovery.attempt_count + 1}"
+                        self.datadome_solver.bind_confirmation_probe(recovery, probe)
+                        stage = "QUEUE"
+                        stage_started = time.monotonic()
                         self.event(
                             recovery,
                             "PROBE_STARTED",
+                            probe_id=probe,
+                            stage=stage,
+                            request_sent=False,
                             purpose=context["purpose"],
                             queue_ms=max(
                                 0, int((utc_now() - recovery.next_due_at).total_seconds() * 1000)
@@ -592,6 +684,11 @@ class BrowserRecoveryCoordinator:
                         recovery = recovery.model_copy(
                             update={
                                 "attempt_count": recovery.attempt_count + 1,
+                                "probe_id": probe,
+                                "probe_stage": stage,
+                                "probe_started_at": utc_now(),
+                                "last_probe_attempt_at": utc_now(),
+                                "probe_finished_at": None,
                             }
                         )
                         self.store.save_recovery(recovery, expected_generation=claimed.generation)
@@ -607,17 +704,27 @@ class BrowserRecoveryCoordinator:
                                 "scope_revision": scope.revision,
                                 "recipe_parameters": parameters,
                             },
-                            remaining_budget_ms=75000,
+                            remaining_budget_ms=max(
+                                1, int(min(75, deadline - time.monotonic() - 10) * 1000)
+                            ),
                         )
                         from .verification import body_verification_url, crawler_capture_items
 
                         discovery = bool(
                             context["purpose"] == "BODY"
                             and scope.verification_plan.get("crawler")
-                            and (body_verification_url(
-                                scope, context["url"], excluded_urls=(spec.auth.login_url,)
+                            and (
+                                body_verification_url(
+                                    scope, context["url"], excluded_urls=(spec.auth.login_url,)
+                                )
+                                is None
+                                or (
+                                    recovery.manual_review_reason
+                                    and not context.get("recipe_parameters", {}).get(
+                                        "_recovery_sample_selected"
+                                    )
+                                )
                             )
-                            is None or (recovery.manual_review_reason and not context.get('recipe_parameters', {}).get('_recovery_sample_selected')))
                         )
                         if discovery:
                             request = AccessRequest(
@@ -627,22 +734,72 @@ class BrowserRecoveryCoordinator:
                                 operation_id=recovery.recovery_id,
                                 origin_scope_id=recovery.scope_id,
                                 scope_revision=scope.revision,
-                                remaining_budget_ms=75000,
+                                remaining_budget_ms=request.remaining_budget_ms,
                             )
-                            request = request.model_copy(update={"recipe_parameters": {
-                                **request.recipe_parameters, "_retain_recovery_probe": True}})
+                            request = request.model_copy(
+                                update={
+                                    "recipe_parameters": {
+                                        **request.recipe_parameters,
+                                        "_retain_recovery_probe": True,
+                                    }
+                                }
+                            )
                         previous_page = recovery
-                        async with self.service.profile_use.recovery(
-                            identity, recovery.recovery_id, recovery.generation
-                        ):
+                        capture = None  # Original DOM is not a receipt for the new network probe.
+                        async with AsyncExitStack() as stack:
+                            capacity = getattr(self.service.runtime, "recovery_capacity", None)
+                            if capacity:
+                                await stack.enter_async_context(capacity(deadline=deadline - 10))
+                            probe_timing["queue_ms"] = int(
+                                (time.monotonic() - stage_started) * 1000
+                            )
+                            stage = "CONTROL"
+                            stage_started = time.monotonic()
+                            recovery = recovery.model_copy(update={"probe_stage": stage})
+                            self.store.save_recovery(recovery, expected_generation=claimed.generation)
+                            await stack.enter_async_context(
+                                self.service.profile_use.recovery(
+                                    identity,
+                                    recovery.recovery_id,
+                                    recovery.generation,
+                                    deadline=deadline - 10,
+                                )
+                            )
+                            remaining = min(75, deadline - time.monotonic() - 10)
+                            if remaining < 10:
+                                probe_result = "QUEUE_DEFERRED"
+                                await self._defer(recovery, "probe_budget_unavailable", delay=60)
+                                return
+                            request = request.model_copy(
+                                update={"remaining_budget_ms": int(remaining * 1000)}
+                            )
+                            probe_timing["control_ms"] = int(
+                                (time.monotonic() - stage_started) * 1000
+                            )
+                            stage, request_sent = "SITE", "unknown"
+                            stage_started = time.monotonic()
+                            recovery = recovery.model_copy(update={"probe_stage": stage})
+                            self.store.save_recovery(recovery, expected_generation=claimed.generation)
                             capture = await self.service.runtime.probe_recovery(
                                 request, identity, egress
                             )
+                            request_sent = (
+                                bool(capture.status_code) if capture.status_code else "unknown"
+                            )
+                            probe_timing["site_ms"] = int((time.monotonic() - stage_started) * 1000)
+                            stage = "PARSER"
+                            probe_result = "STILL_BLOCKED"
                         latest = self.store.get_recovery(identity_id)
                         if not latest or latest.generation != recovery.generation:
                             return
                         # A lost original may have been replaced atomically by this probe.
-                        recovery = latest.model_copy(update={"last_real_probe_at": utc_now()})
+                        recovery = latest.model_copy(
+                            update={
+                                "last_real_probe_at": utc_now()
+                                if capture.status_code
+                                else latest.last_real_probe_at
+                            }
+                        )
                         self.store.save_recovery(recovery, expected_generation=claimed.generation)
                         if (
                             discovery
@@ -667,14 +824,16 @@ class BrowserRecoveryCoordinator:
                                     if self.service.resolve(url).site_id == scope.owner_site_id:
                                         articles.append(url)
                             article = body_verification_url(
-                                scope, *articles, excluded_urls=(spec.auth.login_url, context['url'])
+                                scope,
+                                *articles,
+                                excluded_urls=(spec.auth.login_url, context["url"]),
                             )
                             if article:
                                 context = {
                                     **context,
                                     "url": article,
                                     "recipe_ref": None,
-                                    "recipe_parameters": {'_recovery_sample_selected': True},
+                                    "recipe_parameters": {"_recovery_sample_selected": True},
                                 }
                                 recovery = recovery.model_copy(
                                     update={
@@ -710,21 +869,8 @@ class BrowserRecoveryCoordinator:
                             capture,
                             observed=capture.reason == "observed_document_after_verification",
                         )
-                        self.event(
-                            recovery,
-                            "PROBE_FINISHED",
-                            http_status=capture.status_code,
-                            capture_reason=capture.reason,
-                            html_bytes=len((capture.body or '').encode('utf-8')),
-                            retained=bool(capture.recovery_id),
-                            recipe_rows=len(capture.recipe_result.get('rows', [])) if capture.recipe_result else None,
-                            purpose=context["purpose"],
-                            result=report.crawler
-                            if context["purpose"] == "CRAWLER"
-                            else report.body,
-                            elapsed_ms=int((time.monotonic() - started) * 1000),
-                        )
                         if report.challenge == "CLEARED":
+                            probe_result = "BUSINESS_READY"
                             await self._commit(recovery, report, context, "fresh_probe", identity)
                             return
                         recovery = self._classify(recovery, capture, spec, report)
@@ -736,8 +882,10 @@ class BrowserRecoveryCoordinator:
                         recovery = recovery.model_copy(
                             update={"next_probe_at": utc_now() + timedelta(seconds=delay)}
                         )
-                    original = self.store.get_target(recovery.original_allocation_id or '')
-                    page_age = (utc_now() - original.created_at).total_seconds() if original else age
+                    original = self.store.get_target(recovery.original_allocation_id or "")
+                    page_age = (
+                        (utc_now() - original.created_at).total_seconds() if original else age
+                    )
                     if page_age >= 900 and recovery.handling_mode == "AUTO" and not open_writer:
                         await self._close_page(recovery, identity)
                         recovery = recovery.model_copy(update={"page_status": "LOST"})
@@ -745,19 +893,35 @@ class BrowserRecoveryCoordinator:
                         self.service.failover.schedule(scope, SitePurpose(context["purpose"]))
                     await self._defer(
                         recovery,
-                        "user_maintenance" if open_writer else recovery.manual_review_reason or "verification_pending",
+                        "user_maintenance"
+                        if open_writer
+                        else recovery.manual_review_reason or "verification_pending",
                         delay=2
                         if recovery.handling_mode == "AUTO"
                         and age < spec.challenge.automatic_wait_seconds
                         else 60,
                     )
             except asyncio.CancelledError:
+                probe_result = "CANCELLED"
                 await self._defer(recovery, "controller_shutdown", delay=5)
                 raise
             except Exception as exc:
+                probe_result = (
+                    "QUEUE_DEFERRED"
+                    if stage == "QUEUE"
+                    else "CONTROL_DEFERRED"
+                    if stage == "CONTROL"
+                    else "TIMEOUT"
+                    if isinstance(exc, TimeoutError)
+                    else "PARSER_ERROR"
+                    if stage == "PARSER"
+                    else "RUNTIME_UNAVAILABLE"
+                )
                 # No exception contains credentials/HTML/URLs in persisted diagnostics.
                 delay = (
-                    600
+                    60
+                    if probe_result in {"QUEUE_DEFERRED", "CONTROL_DEFERRED", "RUNTIME_UNAVAILABLE"}
+                    else 600
                     if recovery.handling_mode == "HUMAN"
                     else (60, 120, 300, 600)[min(max(recovery.attempt_count - 1, 0), 3)]
                 )
@@ -767,26 +931,86 @@ class BrowserRecoveryCoordinator:
                 await self._defer(
                     recovery, getattr(exc, "reason_code", None) or type(exc).__name__, delay=60
                 )
+            finally:
+                if probe:
+                    timing_key = {
+                        "QUEUE": "queue_ms",
+                        "CONTROL": "control_ms",
+                        "SITE": "site_ms",
+                    }.get(stage)
+                    if timing_key:
+                        probe_timing[timing_key] = int((time.monotonic() - stage_started) * 1000)
+                    self.event(
+                        recovery,
+                        "PROBE_FINISHED",
+                        probe_id=probe,
+                        stage=stage,
+                        result=probe_result,
+                        request_sent=request_sent,
+                        **probe_timing,
+                        http_status=capture.status_code if capture else None,
+                        retained=bool(capture and capture.recovery_id),
+                        total_ms=int((time.monotonic() - started) * 1000),
+                    )
+                    current = self.store.get_recovery(identity_id)
+                    if current and current.generation == claimed.generation:
+                        self.store.save_recovery(
+                            current.model_copy(
+                                update={
+                                    "probe_finished_at": utc_now(),
+                                    "probe_stage": probe_result,
+                                }
+                            ),
+                            expected_generation=claimed.generation,
+                        )
 
     def _classify(self, recovery, capture, spec, report):
         from .challenge_detection import VerificationAssessment
+
         data = capture.assessment or {}
-        assessment = (VerificationAssessment.model_validate(data)
-            if data.get('kind') in {'AUTO_CHECK', 'INTERACTIVE', 'ACCESS_BLOCK'} else assess(
-                capture.body, status=capture.status_code, headers=capture.headers,
-                policy=spec.challenge, blocked=report.challenge == 'BLOCKED'))
+        assessment = (
+            VerificationAssessment.model_validate(data)
+            if data.get("kind") in {"AUTO_CHECK", "INTERACTIVE", "ACCESS_BLOCK"}
+            else assess(
+                capture.body,
+                status=capture.status_code,
+                headers=capture.headers,
+                policy=spec.challenge,
+                blocked=report.challenge == "BLOCKED",
+            )
+        )
         reason = recovery.manual_review_reason
-        if assessment.kind == 'ACCESS_BLOCK':
+        if assessment.kind == "ACCESS_BLOCK":
             reason = assessment.policy_reason
-        elif assessment.handling_mode == 'AUTO' and (
-            utc_now() - recovery.opened_at).total_seconds() >= max(180, min(300, spec.challenge.automatic_wait_seconds * 3)):
-            reason = reason or ('recovery_contract_not_satisfied' if assessment.kind == 'NONE' else 'automatic_verification_stalled')
-        mode = 'HUMAN' if reason else assessment.handling_mode
-        value = recovery.model_copy(update={'assessment':assessment.model_dump(mode='json'),
-            'handling_mode':mode, 'manual_review_reason':reason,
-            'manual_review_at': (recovery.manual_review_at or utc_now()) if reason else None})
-        if (recovery.assessment.get('kind'), recovery.handling_mode, recovery.manual_review_reason) != (assessment.kind, mode, reason):
-            self.event(value, 'CLASSIFICATION_CHANGED', kind=assessment.kind, handling_mode=mode, reason=reason)
+        elif assessment.handling_mode == "AUTO" and (
+            utc_now() - recovery.opened_at
+        ).total_seconds() >= max(180, min(300, spec.challenge.automatic_wait_seconds * 3)):
+            reason = reason or (
+                "recovery_contract_not_satisfied"
+                if assessment.kind == "NONE"
+                else "automatic_verification_stalled"
+            )
+        mode = "HUMAN" if reason else assessment.handling_mode
+        value = recovery.model_copy(
+            update={
+                "assessment": assessment.model_dump(mode="json"),
+                "handling_mode": mode,
+                "manual_review_reason": reason,
+                "manual_review_at": (recovery.manual_review_at or utc_now()) if reason else None,
+            }
+        )
+        if (
+            recovery.assessment.get("kind"),
+            recovery.handling_mode,
+            recovery.manual_review_reason,
+        ) != (assessment.kind, mode, reason):
+            self.event(
+                value,
+                "CLASSIFICATION_CHANGED",
+                kind=assessment.kind,
+                handling_mode=mode,
+                reason=reason,
+            )
         return self.store.save_recovery(value, expected_generation=recovery.generation)
 
     async def _defer(self, recovery, reason, *, delay):
@@ -855,6 +1079,24 @@ class BrowserRecoveryCoordinator:
         value = self.store.finish_recovery(
             recovery, report, context=context, resolved_by=resolved_by
         )
+        from .datadome_solver import mark_solver_outcome
+
+        if resolved_by == "original_document":
+            mark_solver_outcome(
+                self.service.repository,
+                identity.identity_id,
+                "original_cleared_at",
+                recovery_id=recovery.recovery_id,
+            )
+        mark_solver_outcome(
+            self.service.repository,
+            identity.identity_id,
+            "business_verified_at",
+            recovery_id=recovery.recovery_id,
+            purpose=context["purpose"],
+            probe_id=recovery.probe_id,
+        )
+        self.service.failover.reconcile(scope, SitePurpose(context["purpose"]))
         await self.service.profile_use.release_recovered(identity)
         self.service._cache.clear()
         self.service._cache_bytes = 0
@@ -886,6 +1128,7 @@ class BrowserRecoveryCoordinator:
 def migrate_recoveries(service, *, apply=False, update_policies=True):
     """Explicit, idempotent conversion. No browsing and no changes to identities/cookies."""
     from html import escape
+
     from .governance_models import BrowserRecovery
     from .schema import CombinationRuntime, ProfileOperationalState
 

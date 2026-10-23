@@ -28,7 +28,7 @@ from doxagent.site_strategy.schema import ChallengePolicy
             "AUTO_CHECK",
             "AUTO",
         ),
-        ("<title>Access is temporarily restricted</title>", {}, True, "ACCESS_BLOCK", "AUTO"),
+        ("<title>Access is temporarily restricted</title>", {}, True, "ACCESS_BLOCK", "HUMAN"),
         ("<article>News about Cloudflare CAPTCHA technology.</article>", {}, False, "NONE", "AUTO"),
         (
             '<script src="/cdn-cgi/challenge-platform/jsd.js"></script><article>News</article>',

@@ -85,7 +85,8 @@ class BrowserRecovery(SiteModel):
     original_target_id: str | None = None
     original_instance_id: str | None = None
     original_url: str | None = None
-    page_status: Literal["PRESENT", "LOST", "UNKNOWN"] = "UNKNOWN"
+    page_status: Literal["PRESENT", "PRESENT_BUT_UNREADABLE", "LOST", "UNKNOWN"] = "UNKNOWN"
+    page_checked_at: datetime | None = None
     opened_at: datetime = Field(default_factory=utc_now)
     updated_at: datetime = Field(default_factory=utc_now)
     next_due_at: datetime = Field(default_factory=utc_now)
@@ -93,6 +94,11 @@ class BrowserRecovery(SiteModel):
     resolved_at: datetime | None = None
     attempt_count: int = 0
     last_real_probe_at: datetime | None = None
+    last_probe_attempt_at: datetime | None = None
+    probe_id: str | None = None
+    probe_stage: str | None = None
+    probe_started_at: datetime | None = None
+    probe_finished_at: datetime | None = None
     last_error: str | None = None
     resolved_by: str | None = None
     affected_contexts: list[dict] = Field(default_factory=list, max_length=8)

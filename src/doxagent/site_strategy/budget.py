@@ -134,6 +134,26 @@ class JointBudget:
         self._identity_active: dict[str, int] = {}
         self._site_next: dict[str, float] = {}
         self._identity_next: dict[str, float] = {}
+        self.identity_interval = lambda identity_id, configured: configured
+
+    @asynccontextmanager
+    async def control_navigation(self, identity_id, *, interval_ms, deadline):
+        """Same pacing clock, no second business-capacity queue. Profile is drained."""
+        async with asyncio.timeout_at(deadline):
+            async with self._condition:
+                while True:
+                    now = time.monotonic()
+                    delay = self._identity_next.get(identity_id, 0) - now
+                    if delay <= 0:
+                        interval = self.identity_interval(identity_id, interval_ms)
+                        self._identity_next[identity_id] = now + interval / 1000
+                        break
+                    try:
+                        async with asyncio.timeout(delay):
+                            await self._condition.wait()
+                    except TimeoutError:
+                        pass
+        yield
 
     @asynccontextmanager
     async def permit(
@@ -197,7 +217,11 @@ class JointBudget:
                                 self._identity_active.get(identity_id, 0) + 1
                             )
                             self._site_next[site_key] = now + site_min_interval_ms / 1000
-                            self._identity_next[identity_id] = now + identity_min_interval_ms / 1000
+                            self._identity_next[identity_id] = (
+                                now
+                                + self.identity_interval(identity_id, identity_min_interval_ms)
+                                / 1000
+                            )
                             acquired = True
                             break
                         try:

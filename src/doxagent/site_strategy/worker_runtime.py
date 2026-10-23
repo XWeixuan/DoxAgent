@@ -2,6 +2,8 @@
 
 import asyncio
 import time
+from contextlib import asynccontextmanager
+from contextvars import ContextVar
 from pathlib import Path
 from uuid import uuid4
 
@@ -64,17 +66,22 @@ class WorkerRuntimeFacade:
                 continue
             profile = self.runtime.repository.get_profile(identity.profile_id)
             recovery = store.get_recovery(identity_id)
-            recovering_page = bool(recovery and recovery.phase != "RESOLVED" and recovery.page_status != "LOST")
+            recovering_page = bool(
+                recovery and recovery.phase != "RESOLVED" and recovery.page_status != "LOST"
+            )
             challenge = store.current_challenge(identity_id)
             lost_scene = challenge is not None and challenge.state == "TARGET_LOST"
             human = bool(profile and profile.maintenance_session_id and not lost_scene)
-            if (human or recovering_page) and identity.runtime_kind is BrowserRuntimeKind.MANAGED_PLAYWRIGHT:
+            if (
+                human or recovering_page
+            ) and identity.runtime_kind is BrowserRuntimeKind.MANAGED_PLAYWRIGHT:
                 continue
             timeout = min(identity.lifecycle.idle_seconds, 600 if identity_id in active else 120)
             rotate = status["age_seconds"] >= 4 * 3600 or status["high_rss_samples"] >= 3
             driver_idle = status["idle_seconds"] >= 600
             native_idle = (
-                not human and not recovering_page
+                not human
+                and not recovering_page
                 and (identity_id not in hot or lost_scene)
                 and status["idle_seconds"] >= timeout
             )
@@ -90,8 +97,13 @@ class WorkerRuntimeFacade:
         live = self.runtime.workers.status()
         for _, identity in self.runtime.repository.list_active_identities():
             recovery = store.get_recovery(identity.identity_id)
-            if recovery and recovery.phase != "RESOLVED" and (
-                recovery.page_status != "LOST" or (recovery.lease_until and recovery.lease_until > utc_now())
+            if (
+                recovery
+                and recovery.phase != "RESOLVED"
+                and (
+                    recovery.page_status != "LOST"
+                    or (recovery.lease_until and recovery.lease_until > utc_now())
+                )
             ):
                 continue
             challenge = store.current_challenge(identity.identity_id)
@@ -155,6 +167,8 @@ class WorkerRuntimeFacade:
 
 
 class WorkerSiteAccessRuntime(SiteAccessRuntime):
+    _reserved_recovery = ContextVar("reserved_recovery_default", default=False)
+
     def __init__(self, repository, resolver, **options):
         super().__init__(repository, resolver, **options)
         self.supervisor_socket = options.get("supervisor_socket")
@@ -168,12 +182,28 @@ class WorkerSiteAccessRuntime(SiteAccessRuntime):
         self._business_slots = asyncio.Semaphore(options.get("browser_max_pages", 4))
         self._recovery_slots = asyncio.Semaphore(1)
         self._tokens = {}
+        self._reserved_recovery = ContextVar("reserved_recovery", default=False)
+
+    @asynccontextmanager
+    async def recovery_capacity(self, *, deadline):
+        # Capacity first, Profile writer second. Never drain a Profile then wait
+        # behind another identity's potentially slow browser operation.
+        async with asyncio.timeout_at(min(deadline, time.monotonic() + 5)):
+            await self._recovery_slots.acquire()
+        token = self._reserved_recovery.set(True)
+        try:
+            yield
+        finally:
+            self._reserved_recovery.reset(token)
+            self._recovery_slots.release()
 
     async def _browser(self, request, resolved, identity, egress, *, capacity=None):
         slots = capacity if capacity is not None else self._business_slots
         deadline = time.monotonic() + request.remaining_budget_ms / 1000
-        async with asyncio.timeout_at(deadline):
-            await slots.acquire()
+        reserved = slots is self._recovery_slots and self._reserved_recovery.get()
+        if not reserved:
+            async with asyncio.timeout_at(deadline):
+                await slots.acquire()
         try:
             for recovery in range(2):
                 remaining = deadline - time.monotonic()
@@ -246,7 +276,8 @@ class WorkerSiteAccessRuntime(SiteAccessRuntime):
                 self._tokens[response.challenge_token] = (resolved.site_id, identity.identity_id)
             return response
         finally:
-            slots.release()
+            if not reserved:
+                slots.release()
 
     def _binding(self, token):
         binding = self._tokens.get(token)
@@ -286,71 +317,145 @@ class WorkerSiteAccessRuntime(SiteAccessRuntime):
         return binding[0], identity, egress
 
     async def observe_recovery(self, recovery, identity):
-        from .recovery import retained_token
         from .governance_repository import GovernanceRepository
+        from .recovery import retained_token
+
         handle = self.workers.workers.get(identity.identity_id)
         if handle is None or handle.process.returncode is not None:
             raise RuntimeError("original_browser_state_unverified")
-        return decode_response(await self.workers.command(
-            identity, self.repository.get_egress(identity.egress_id), "observe_recovery", {
-                "retained_token": retained_token(GovernanceRepository(self.repository), recovery),
-                "target_id": recovery.original_target_id,
-                "expected_instance_id": recovery.original_instance_id,
-                "owner_ref": GovernanceRepository(self.repository).get_target(recovery.original_allocation_id).owner_ref,
-            }, timeout=10,
-        ))
+        return decode_response(
+            await self.workers.command(
+                identity,
+                self.repository.get_egress(identity.egress_id),
+                "observe_recovery",
+                {
+                    "retained_token": retained_token(
+                        GovernanceRepository(self.repository), recovery
+                    ),
+                    "target_id": recovery.original_target_id,
+                    "expected_instance_id": recovery.original_instance_id,
+                    "owner_ref": GovernanceRepository(self.repository)
+                    .get_target(recovery.original_allocation_id)
+                    .owner_ref,
+                },
+                timeout=10,
+            )
+        )
 
     async def auto_login_reuters(self, identity, egress, credentials, request):
         try:
-            return await self.workers.command(identity, egress, "auto_login_reuters", {
-                "credentials": credentials, "request": request.model_dump(mode="json"),
-            }, timeout=40)
+            return await self.workers.command(
+                identity,
+                egress,
+                "auto_login_reuters",
+                {
+                    "credentials": credentials,
+                    "request": request.model_dump(mode="json"),
+                },
+                timeout=40,
+            )
         finally:
             credentials.clear()
 
     async def probe_recovery(self, request, identity, egress):
-        request = request.model_copy(update={"recipe_parameters": {
-            **request.recipe_parameters, "_maintenance_canary": True, "_recovery_probe": True,
-        }})
+        from contextlib import AsyncExitStack
+
+        request = request.model_copy(
+            update={
+                "recipe_parameters": {
+                    **request.recipe_parameters,
+                    "_maintenance_canary": True,
+                    "_recovery_probe": True,
+                }
+            }
+        )
         resolved = self.resolver.resolve(request.url)
         if request.origin_scope_id:
-            resolved = resolved.model_copy(update={"match_evidence": {
-                **resolved.match_evidence, "scope_id": request.origin_scope_id}})
-        return await self._browser(
-            request, resolved, identity, egress, capacity=self._recovery_slots
-        )
+            resolved = resolved.model_copy(
+                update={
+                    "match_evidence": {
+                        **resolved.match_evidence,
+                        "scope_id": request.origin_scope_id,
+                    }
+                }
+            )
+        deadline = time.monotonic() + request.remaining_budget_ms / 1000
+        async with AsyncExitStack() as stack:
+            if getattr(self, "navigation_pacer", None):
+                await stack.enter_async_context(
+                    self.navigation_pacer.control_navigation(
+                        identity.identity_id,
+                        interval_ms=identity.access.min_interval_ms,
+                        deadline=deadline,
+                    )
+                )
+            return await self._browser(
+                request.model_copy(
+                    update={
+                        "remaining_budget_ms": max(1, int((deadline - time.monotonic()) * 1000))
+                    }
+                ),
+                resolved,
+                identity,
+                egress,
+                capacity=self._recovery_slots,
+            )
 
     async def close_recovery(self, recovery, identity):
         from .governance_repository import GovernanceRepository
 
         store = GovernanceRepository(self.repository)
         from .recovery import retained_token
+
         token = retained_token(store, recovery)
         target = store.get_target(recovery.original_allocation_id or "")
         if not target or target.state in {"CLOSED", "LOST"}:
             return
         if identity.runtime_kind is BrowserRuntimeKind.EXTERNAL_CHROME:
             from types import SimpleNamespace
+
             from .maintenance_document import close_original_document
             from .supervisor_client import ChromeSupervisorClient
 
             await close_original_document(
-                ChromeSupervisorClient(self.supervisor_socket, owner_id=self.controller_id), identity,
-                SimpleNamespace(target_id=target.target_id, browser_instance_id=target.browser_instance_id), target,
+                ChromeSupervisorClient(self.supervisor_socket, owner_id=self.controller_id),
+                identity,
+                SimpleNamespace(
+                    target_id=target.target_id, browser_instance_id=target.browser_instance_id
+                ),
+                target,
             )
         else:
-            await self.workers.command(identity, self.repository.get_egress(identity.egress_id), "close_recovery", {
-                "retained_token": token,
-                "target_id": target.target_id, "expected_instance_id": target.browser_instance_id,
-                "owner_ref": target.owner_ref,
-            }, timeout=10)
+            await self.workers.command(
+                identity,
+                self.repository.get_egress(identity.egress_id),
+                "close_recovery",
+                {
+                    "retained_token": token,
+                    "target_id": target.target_id,
+                    "expected_instance_id": target.browser_instance_id,
+                    "owner_ref": target.owner_ref,
+                },
+                timeout=10,
+            )
         store.save_target(target.model_copy(update={"state": "CLOSED", "updated_at": utc_now()}))
         handle = self.workers.workers.get(identity.identity_id)
-        if identity.runtime_kind is BrowserRuntimeKind.EXTERNAL_CHROME and handle and handle.process.returncode is None:
-            await self.workers.command(identity, self.repository.get_egress(identity.egress_id), "forget_recovery", {
-                "retained_token": token,
-                "target_id": target.target_id, "expected_instance_id": target.browser_instance_id,
-            }, timeout=3)
+        if (
+            identity.runtime_kind is BrowserRuntimeKind.EXTERNAL_CHROME
+            and handle
+            and handle.process.returncode is None
+        ):
+            await self.workers.command(
+                identity,
+                self.repository.get_egress(identity.egress_id),
+                "forget_recovery",
+                {
+                    "retained_token": token,
+                    "target_id": target.target_id,
+                    "expected_instance_id": target.browser_instance_id,
+                },
+                timeout=3,
+            )
 
     async def open_login(self, profile, egress, url, *, token=None, identity=None, site_id=None):
         if identity is None or token is None:
@@ -519,7 +624,7 @@ class WorkerSiteAccessRuntime(SiteAccessRuntime):
                                 identity,
                                 session,
                                 store.get_target(session.allocation_id),
-                                  evidence_store=self.evidence_store,
+                                evidence_store=self.evidence_store,
                             )
                             info = inspect_html(
                                 capture.body, capture.final_url, "", generic_extraction=False
@@ -556,13 +661,19 @@ class WorkerSiteAccessRuntime(SiteAccessRuntime):
             # done by the controller. Do not reconstruct its old Playwright Page.
             expected_instance = self._maintenance_refs(token).get("expected_instance_id")
             response = await self._browser(
-                request.model_copy(update={
-                    "recipe_parameters": {**request.recipe_parameters, "_maintenance_canary": True},
-                }),
-                self.resolver.resolve(request.url), identity, egress,
+                request.model_copy(
+                    update={
+                        "recipe_parameters": {
+                            **request.recipe_parameters,
+                            "_maintenance_canary": True,
+                        },
+                    }
+                ),
+                self.resolver.resolve(request.url),
+                identity,
+                egress,
             )
-            if (not response.provenance
-                or response.provenance.instance_id != expected_instance):
+            if not response.provenance or response.provenance.instance_id != expected_instance:
                 raise RuntimeError("original_browser_changed_during_verification")
             return response
         return decode_response(

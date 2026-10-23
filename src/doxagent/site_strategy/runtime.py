@@ -1977,7 +1977,15 @@ class SiteAccessRuntime:
         if request.origin_scope_id:
             resolved = resolved.model_copy(update={"match_evidence": {
                 **resolved.match_evidence, "scope_id": request.origin_scope_id}})
-        return await self._browser(request, resolved, identity, egress)
+        from contextlib import AsyncExitStack
+        deadline = time.monotonic() + request.remaining_budget_ms / 1000
+        async with AsyncExitStack() as stack:
+            if getattr(self, "navigation_pacer", None):
+                await stack.enter_async_context(self.navigation_pacer.control_navigation(
+                    identity.identity_id, interval_ms=identity.access.min_interval_ms, deadline=deadline))
+            return await self._browser(request.model_copy(update={
+                "remaining_budget_ms": max(1, int((deadline - time.monotonic()) * 1000)),
+            }), resolved, identity, egress)
 
     async def observe_recovery(self, recovery, identity):
         from .recovery import retained_token

@@ -23,8 +23,10 @@ def body_verification_url(scope, *candidates, excluded_urls=()):
             parsed.hostname in {"investing.com", "www.investing.com"}
             and parsed.path.startswith("/equities/")
             and parsed.path.rstrip("/").endswith("-news")
-        ) or (parsed.hostname == 'investorshub.advfn.com' and bool(re.fullmatch(
-            r'/stock-market/(NASDAQ|NYSE|AMEX)/[^/]+/news/?', parsed.path)))
+        ) or (
+            parsed.hostname == "investorshub.advfn.com"
+            and bool(re.fullmatch(r"/stock-market/(NASDAQ|NYSE|AMEX)/[^/]+/news/?", parsed.path))
+        )
 
     return next(
         (
@@ -55,6 +57,13 @@ class VerificationReport:
     crawler_reason: str | None = None
     body_reason: str | None = None
     original_page_kind: str | None = None
+    verification_kind: str | None = None
+    presence_state: str | None = None
+    presence_checked_at: str | None = None
+    route_ready: bool | None = None
+    route_identity_id: str | None = None
+    solver_state: str | None = None
+    solver_cost: str | None = None
 
     def as_dict(self):
         return asdict(self)
@@ -165,7 +174,7 @@ def crawler_capture_items(source_id, response, request):
         return rows if isinstance(rows, list) else None  # Helpers prove explicit empty results.
     now = utc_now()
     if source_id == "ctee_semiconductor":
-        from doxagent.message_bus_v2.ctee import parse_category_response, parse_category_item
+        from doxagent.message_bus_v2.ctee import parse_category_item, parse_category_response
 
         if not re.fullmatch(r"/api/category/semi/\d+", urlsplit(request.url).path):
             return None

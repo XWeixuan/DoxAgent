@@ -216,11 +216,27 @@ class MaintenanceController:
                         "auth_last_check_at": auth.last_check_at,
                         "auth_last_check_result": auth.last_check_result,
                         "auth_last_check_reason": auth.last_check_reason,
-                        "recovery_state": (r.phase if (r := self.store.get_recovery(member)) and r.phase != "RESOLVED" else None),
-                        "recovery_handling": r.handling_mode if r and r.phase != "RESOLVED" else None,
-                        "recovery_review_reason": r.manual_review_reason if r and r.phase != "RESOLVED" else None,
-                        "recovery_next_due_at": r.next_due_at if r and r.phase != "RESOLVED" else None,
+                        "recovery_state": (
+                            r.phase
+                            if (r := self.store.get_recovery(member)) and r.phase != "RESOLVED"
+                            else None
+                        ),
+                        "recovery_handling": r.handling_mode
+                        if r and r.phase != "RESOLVED"
+                        else None,
+                        "recovery_review_reason": r.manual_review_reason
+                        if r and r.phase != "RESOLVED"
+                        else None,
+                        "recovery_next_due_at": r.next_due_at
+                        if r and r.phase != "RESOLVED"
+                        else None,
                         "last_network_probe_at": r.last_real_probe_at if r else None,
+                        "original_presence": r.page_status if r else "UNKNOWN",
+                        "presence_checked_at": r.page_checked_at if r else None,
+                        "candidate_status": {
+                            purpose.value: self.service.failover.candidate_status(cold_scope, member, purpose)
+                            for purpose in (SitePurpose.CRAWLER, SitePurpose.BODY)
+                        } if cold_scope else {},
                     }
                 )
         return {
@@ -228,11 +244,19 @@ class MaintenanceController:
             "snapshot_at": utc_now().isoformat(),
             "stale": False,
             "profiles": rows,
-            "challenges": [{**t.model_dump(mode="json"),
-                            "review_reason": r.manual_review_reason if (r := self.store.get_recovery(t.identity_id)) else None,
-                            "challenge_type": "MANUAL_REVIEW: " + r.manual_review_reason if r and r.manual_review_reason else self.service.runtime.evidence_store.summary(t)}
-                           for t in self.store.list_challenges()
-                           if not (r := self.store.get_recovery(t.identity_id)) or r.handling_mode == "HUMAN"],
+            "challenges": [
+                {
+                    **t.model_dump(mode="json"),
+                    "review_reason": r.manual_review_reason
+                    if (r := self.store.get_recovery(t.identity_id))
+                    else None,
+                    "challenge_type": "MANUAL_REVIEW: " + r.manual_review_reason
+                    if r and r.manual_review_reason
+                    else self.service.runtime.evidence_store.summary(t),
+                }
+                for t in self.store.list_challenges()
+                if not (r := self.store.get_recovery(t.identity_id)) or r.handling_mode == "HUMAN"
+            ],
             "vnc_ready": True,
             "sessions": [
                 s.model_dump(mode="json", exclude={"control_token"})
@@ -582,12 +606,16 @@ class MaintenanceController:
                     report.reason = "second_subscription_article_required"
                     return report.as_dict()
             # A cleared Challenge ends independently of entitlement/parser health.
-            completed = report.challenge == "CLEARED" and not report.challenge_task_id and (
-                session.kind == "CHALLENGE"
-                or report.authentication in {"VALID", "NOT_REQUIRED"}
-                or (
-                    required != "required"
-                    and (report.crawler == "READY" or report.body in {"FULL", "SHORT_FULL"})
+            completed = (
+                report.challenge == "CLEARED"
+                and not report.challenge_task_id
+                and (
+                    session.kind == "CHALLENGE"
+                    or report.authentication in {"VALID", "NOT_REQUIRED"}
+                    or (
+                        required != "required"
+                        and (report.crawler == "READY" or report.body in {"FULL", "SHORT_FULL"})
+                    )
                 )
             )
             if completed:
@@ -599,11 +627,24 @@ class MaintenanceController:
                 except Exception:
                     report.cleanup_pending = True
                 try:
-                    await self.service.profile_use.end_maintenance(identity.profile_id, session.control_token)
+                    await self.service.profile_use.end_maintenance(
+                        identity.profile_id, session.control_token
+                    )
                 finally:
                     current_session = self.store.get_session(session.session_id)
                     self.store.save_session(current_session.model_copy(update={"state": "CLOSED"}))
                     report.session_closed = True
+                self.service.failover.reconcile(
+                    scope, SitePurpose.CRAWLER if report.crawler == "READY" else SitePurpose.BODY
+                )
+            route = self.service.repository.get_runtime(f"scope:{scope.scope_id}")
+            report.route_identity_id = route.active_combination_id
+            if route.active_combination_id:
+                report.route_ready = self.service.failover.candidate_status(
+                    scope,
+                    route.active_combination_id,
+                    SitePurpose.CRAWLER if report.crawler == "READY" else SitePurpose.BODY,
+                )["selectable"]
             return report.as_dict()
         if operation.action in {"OPEN_CHALLENGE", "REOPEN_LOST_CHALLENGE"}:
             task = next(
@@ -611,15 +652,22 @@ class MaintenanceController:
             )
             if not task:
                 raise KeyError("challenge")
-            if operation.action == "OPEN_CHALLENGE" and getattr(self.service.runtime, "supervisor_socket", None):
+            if operation.action == "OPEN_CHALLENGE" and getattr(
+                self.service.runtime, "supervisor_socket", None
+            ):
                 from .maintenance_document import reconcile_original_target
                 from .supervisor_client import ChromeSupervisorClient
 
                 identity = self.service.repository.get_identity(task.identity_id)
                 if identity.runtime_kind.value == "external_chrome":
-                    if not await reconcile_original_target(ChromeSupervisorClient(
-                        self.service.runtime.supervisor_socket, owner_id="maintenance-presence"
-                    ), identity, task, self.store):
+                    if not await reconcile_original_target(
+                        ChromeSupervisorClient(
+                            self.service.runtime.supervisor_socket, owner_id="maintenance-presence"
+                        ),
+                        identity,
+                        task,
+                        self.store,
+                    ):
                         raise RuntimeError("original_challenge_target_lost")
                     task = self.store.get_challenge(task.task_id)
             if operation.action == "REOPEN_LOST_CHALLENGE":
@@ -800,7 +848,6 @@ class MaintenanceController:
         if operation.action == "ACTIVATE_PRIMARY":
             if not scope:
                 raise KeyError("scope")
-            from .schema import SitePurpose
 
             key = f"scope:{scope.scope_id}"
             self.service._switching_scopes.add(key)

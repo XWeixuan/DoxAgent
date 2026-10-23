@@ -166,60 +166,107 @@ def create_app(
 
     @app.get("/v1/recoveries", dependencies=[Depends(admin)])
     async def recoveries():
-        return [r.model_dump(mode="json", exclude={"affected_contexts"})
-                for r in service.recovery.store.list_recoveries(active_only=False)]
+        return [
+            r.model_dump(mode="json", exclude={"affected_contexts"})
+            for r in service.recovery.store.list_recoveries(active_only=False)
+        ]
 
     @app.post("/v1/recoveries:migrate", dependencies=[Depends(admin)])
     async def recovery_migrate(request: RecoveryMigrationRequest):
         from .recovery import migrate_recoveries
+
         return await asyncio.to_thread(migrate_recoveries, service, apply=request.apply)
 
     @app.get("/v1/recoveries/{recovery_id}/solver", dependencies=[Depends(admin)])
     async def recovery_solver(recovery_id: str):
         jobs = service.recovery.datadome_solver.jobs(recovery_id)
-        fields = {'job_id', 'created_at', 'updated_at', 'status', 'task_id', 'reason', 'cost'}
+        fields = {
+            "job_id",
+            "created_at",
+            "updated_at",
+            "status",
+            "task_id",
+            "reason",
+            "cost",
+            "provider_ready_at",
+            "provider_cost",
+            "applied_at",
+            "verification_state",
+            "verification_reason",
+            "original_cleared_at",
+            "business_verified_at",
+            "business_probe_id",
+            "verified_purposes",
+            "route_activated_at",
+            "natural_success_at",
+            "recurrence_at",
+        }
         return [{k: v for k, v in job.items() if k in fields} for job in jobs]
 
     @app.post("/v1/recoveries/{recovery_id}:retry", dependencies=[Depends(admin)])
     async def retry_recovery(recovery_id: str):
         from .schema import utc_now
+
         store = service.recovery.store
         value = next((r for r in store.list_recoveries() if r.recovery_id == recovery_id), None)
         if value is None:
-            raise HTTPException(status_code=404, detail='Active recovery not found')
+            raise HTTPException(status_code=404, detail="Active recovery not found")
         if value.lease_until and value.lease_until > utc_now():
-            raise HTTPException(status_code=409, detail='Recovery is already running')
-        value = value.model_copy(update={'next_due_at': utc_now(), 'next_probe_at': utc_now()})
+            raise HTTPException(status_code=409, detail="Recovery is already running")
+        value = value.model_copy(update={"next_due_at": utc_now(), "next_probe_at": utc_now()})
         store.save_recovery(value, expected_generation=value.generation)
-        return {'scheduled': True, 'recovery_id': recovery_id}
+        return {"scheduled": True, "recovery_id": recovery_id}
 
     @app.post("/v1/recoveries:rollback-export", dependencies=[Depends(admin)])
     async def recovery_rollback():
         from .recovery import rollback_export
+
         return await asyncio.to_thread(rollback_export, service)
 
     @app.get("/v1/recoveries/{recovery_id}/evidence", dependencies=[Depends(admin)])
     async def recovery_evidence(recovery_id: str):
         from types import SimpleNamespace
-        value = next((r for r in service.recovery.store.list_recoveries(active_only=False)
-                      if r.recovery_id == recovery_id), None)
+
+        value = next(
+            (
+                r
+                for r in service.recovery.store.list_recoveries(active_only=False)
+                if r.recovery_id == recovery_id
+            ),
+            None,
+        )
         if value is None:
             raise HTTPException(status_code=404, detail="Recovery not found")
-        record = service.runtime.evidence_store.for_task(SimpleNamespace(
-            original_target_id=value.original_target_id, browser_instance_id=value.original_instance_id,
-            identity_id=value.identity_id, scope_id=value.scope_id, site_id=value.site_id,
-        ))
+        record = service.runtime.evidence_store.for_task(
+            SimpleNamespace(
+                original_target_id=value.original_target_id,
+                browser_instance_id=value.original_instance_id,
+                identity_id=value.identity_id,
+                scope_id=value.scope_id,
+                site_id=value.site_id,
+            )
+        )
         return JSONResponse({"evidence": record}, headers={"Cache-Control": "no-store"})
 
     @app.get("/v1/recoveries/{recovery_id}/evidence/{phase}", dependencies=[Depends(admin)])
     async def recovery_evidence_image(recovery_id: str, phase: Literal["first", "confirmed"]):
         import json
+
         result = await recovery_evidence(recovery_id)
         record = json.loads(result.body).get("evidence")
-        path = service.runtime.evidence_store.image_path(record["evidence_id"], phase) if record else None
-        return JSONResponse({"record": record, "phase": phase,
-            "image_base64": base64.b64encode(path.read_bytes()).decode() if path else None},
-            headers={"Cache-Control": "no-store"})
+        path = (
+            service.runtime.evidence_store.image_path(record["evidence_id"], phase)
+            if record
+            else None
+        )
+        return JSONResponse(
+            {
+                "record": record,
+                "phase": phase,
+                "image_base64": base64.b64encode(path.read_bytes()).decode() if path else None,
+            },
+            headers={"Cache-Control": "no-store"},
+        )
 
     @app.get("/v2/scopes", dependencies=[Depends(admin)])
     async def scopes():
@@ -325,11 +372,16 @@ def create_app(
         response_model=ResolvedSite,
         dependencies=[Depends(worker)],
     )
-    async def resolve(url: str, revision: int | None = Query(default=None, ge=1),
-                      x_site_access_protocol: Annotated[str | None, Header()] = None):
+    async def resolve(
+        url: str,
+        revision: int | None = Query(default=None, ge=1),
+        x_site_access_protocol: Annotated[str | None, Header()] = None,
+    ):
         try:
             value = service.resolve(url, revision=revision)
-            data = value.model_dump(mode="json", exclude=set() if x_site_access_protocol == "3" else {"challenge"})
+            data = value.model_dump(
+                mode="json", exclude=set() if x_site_access_protocol == "3" else {"challenge"}
+            )
             if x_site_access_protocol != "3":
                 data["auth"].pop("auto_login", None)
             return JSONResponse(data)
@@ -399,7 +451,8 @@ def create_app(
                 offset=offset,
                 limit=limit,
             )
-            if not (r := maintenance.store.get_recovery(item.identity_id)) or r.handling_mode == "HUMAN"
+            if not (r := maintenance.store.get_recovery(item.identity_id))
+            or r.handling_mode == "HUMAN"
         ]
 
     @app.get("/v1/challenge-evidence", dependencies=[Depends(admin)])
@@ -425,8 +478,12 @@ def create_app(
             record = evidence_for_task(task_id)
             chosen = phase if phase in record["frames"] else "first"
             path = service.runtime.evidence_store.image_path(record["evidence_id"], chosen)
-            return {"record": record, "phase": chosen,
-                    "image_base64": base64.b64encode(path.read_bytes()).decode() if path else None}
+            return {
+                "record": record,
+                "phase": chosen,
+                "image_base64": base64.b64encode(path.read_bytes()).decode() if path else None,
+            }
+
         return JSONResponse(await asyncio.to_thread(read), headers={"Cache-Control": "no-store"})
 
     @app.post("/v1/outcomes:batch", dependencies=[Depends(worker)])

@@ -384,9 +384,11 @@ async def test_changed_scene_rejects_stale_paid_result(solver_setup):
     solver, value, scope, identity, egress, browser = solver_setup
     assert await solver.tick(value, scope, identity, egress)
     browser.inspect.return_value["url"] += "&new=scene"
+    solver.provider.request.return_value = {"status": "ready", "cost": "0.00145", "solution": {"cookie": "secret"}}
     assert not await solver.tick(value, scope, identity, egress)
     browser.apply.assert_not_awaited()
     assert solver.jobs(value.recovery_id)[0]["reason"] == "SCENE_OR_EGRESS_CHANGED"
+    assert solver.jobs(value.recovery_id)[0]["provider_cost"] == "0.00145"
 
 
 @pytest.mark.asyncio

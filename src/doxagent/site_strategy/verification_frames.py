@@ -69,12 +69,35 @@ async def observe_verification_frames(call, root, html):
             for node_id in nodes.get("nodeIds", [])[:3]:
                 node = (await call("DOM.describeNode", {"nodeId": node_id, "depth": 0}))["node"]
                 attributes = node.get("attributes", [])
-                src = dict(zip(attributes[::2], attributes[1::2])).get("src", "")
+                src = dict(zip(attributes[::2], attributes[1::2], strict=False)).get("src", "")
                 if not trusted_frame(src):
                     continue
                 frame_id = node.get("frameId")
-                item = {"url": src, "html": "", "loaded": False}
+                item = {
+                    "url": src,
+                    "html": "",
+                    "loaded": False,
+                    "visible": None,
+                    "frame_read_state": "UNREADABLE",
+                }
                 result.append(item)
+                attrs = dict(zip(attributes[::2], attributes[1::2], strict=False))
+                style = attrs.get("style", "").lower().replace(" ", "")
+                if (
+                    "hidden" in attrs
+                    or attrs.get("aria-hidden") == "true"
+                    or any(
+                        value in style
+                        for value in ("display:none", "visibility:hidden", "opacity:0;")
+                    )
+                ):
+                    item["visible"] = False
+                else:
+                    try:
+                        box = (await call("DOM.getBoxModel", {"nodeId": node_id})).get("model", {})
+                        item["visible"] = bool(box["width"] > 0 and box["height"] > 0)
+                    except (RuntimeError, KeyError):
+                        pass
                 if not frame_id:
                     continue
                 document = node.get("contentDocument")
@@ -83,6 +106,7 @@ async def observe_verification_frames(call, root, html):
                     item["html"] = (
                         await call("DOM.getOuterHTML", {"backendNodeId": document["backendNodeId"]})
                     )["outerHTML"]
+                    item["frame_read_state"] = "READABLE" if item["html"].strip() else "EMPTY"
                     continue
                 try:
                     target = (await call("Target.getTargetInfo", {"targetId": frame_id}))[
@@ -97,8 +121,53 @@ async def observe_verification_frames(call, root, html):
                     # The DOM owner supplies this ID; never scan unrelated browser targets.
                     item.update(url=target["url"], loaded=True)
                     item["html"] = await loaded_frame_document(call, frame_id)
+                    item["frame_read_state"] = "READABLE" if item["html"].strip() else "EMPTY"
                 except RuntimeError:
                     pass
     except (TimeoutError, RuntimeError, KeyError):
         pass  # Missing child evidence stays unknown, not an invented passing check.
     return result
+
+
+async def observe_verification_document(call, *, root=None, html=None):
+    """One exact-owner observation contract shared by maintenance and paid recovery.
+
+    Unknown visibility/readability never certifies a payable slider or a clear
+    page; definitely hidden vendor assets are excluded from the assessment.
+    """
+    from .challenge_detection import assess
+
+    if root is None:
+        root = (await call("DOM.getDocument", {"depth": 0}))["root"]
+    if html is None:
+        html = (await call("DOM.getOuterHTML", {"nodeId": root["nodeId"]}))["outerHTML"]
+    frames = await observe_verification_frames(call, root, html)
+    present = [f for f in frames if f["loaded"] and f["visible"] is not False]
+    assessment_html = html
+    if any(f["visible"] is False for f in frames):
+        from lxml import html as H
+
+        tree = H.fromstring(html or "<html/>")
+        hidden = {f["url"] for f in frames if f["visible"] is False}
+        for frame in tree.xpath("//iframe[@src]"):
+            if frame.get("src") in hidden and frame.getparent() is not None:
+                frame.getparent().remove(frame)
+        assessment_html = H.tostring(tree, encoding="unicode")
+    assessment = assess(
+        assessment_html,
+        frame_html=[f["html"] for f in present],
+        frame_urls=[f["url"] for f in present],
+    )
+    if (
+        present
+        and any(not f["html"].strip() or f["visible"] is None for f in present)
+        and assessment.kind == "NONE"
+    ):
+        assessment.kind, assessment.policy_reason = "UNKNOWN", "verification_frame_unreadable"
+    return {
+        "root": root,
+        "html": html,
+        "frames": frames,
+        "assessment": assessment,
+        "presence_state": "PRESENT" if html.strip() else "PRESENT_BUT_UNREADABLE",
+    }

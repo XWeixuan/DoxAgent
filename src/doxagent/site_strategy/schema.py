@@ -184,6 +184,8 @@ class ChallengePolicy(SiteModel):
     unknown_handling: Literal["auto", "human"] = "auto"
     automatic_wait_seconds: int = Field(default=60, ge=5, le=120)
     recovery_enabled: bool = True
+    probation_seconds: int = Field(default=300, ge=0, le=900)
+    probation_interval_ms: int = Field(default=10000, ge=0, le=60000)
 
 
 class SiteStrategySpec(SiteModel):
@@ -365,6 +367,12 @@ class BrowserIdentityRuntime(SiteModel):
     generation: int = Field(default=0, ge=0)
     instance_id: str | None = None
     diagnostic: str | None = None
+    recovered_at: datetime | None = None
+    probation_until: datetime | None = None
+    probation_interval_ms: int = 10000
+    recent_relapses: list[dict] = Field(default_factory=list, max_length=8)
+    last_recovery_id: str | None = None
+    natural_success_at: datetime | None = None
     updated_at: datetime = Field(default_factory=utc_now)
 
 
@@ -565,6 +573,8 @@ class AccessAttempt(SiteModel):
 
 
 class AccessResult(SiteModel):
+    served_from_shared_capture: bool = False
+    capture_id: str | None = None
     request_id: str
     operation_id: str
     effective_scope_id: str | None = None

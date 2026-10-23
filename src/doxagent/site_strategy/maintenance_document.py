@@ -44,9 +44,13 @@ async def original_target_exists(client, identity, session, target):
 async def reconcile_original_target(client, identity, task, store):
     """Repair a LOST projection only after exact native presence is established."""
     target = store.get_target(task.allocation_id)
-    if not target or target.state == "CLOSED" or target.owner_kind != "CHALLENGE" or (
-        target.identity_id, target.browser_instance_id, target.target_id, target.owner_ref
-    ) != (identity.identity_id, task.browser_instance_id, task.original_target_id, task.task_id):
+    if (
+        not target
+        or target.state == "CLOSED"
+        or target.owner_kind != "CHALLENGE"
+        or (target.identity_id, target.browser_instance_id, target.target_id, target.owner_ref)
+        != (identity.identity_id, task.browser_instance_id, task.original_target_id, task.task_id)
+    ):
         raise RuntimeError("exact_maintenance_target_ownership_required")
     status = await client.status(identity.identity_id)
     if not status.get("running") and status.get("known_missing") is False:
@@ -55,8 +59,12 @@ async def reconcile_original_target(client, identity, task, store):
         present = False
     else:
         from .challenge_inspector import _target_ids
-        present = task.original_target_id in await asyncio.to_thread(_target_ids, status["cdp_http_url"])
+
+        present = task.original_target_id in await asyncio.to_thread(
+            _target_ids, status["cdp_http_url"]
+        )
     from .schema import AccessEvent, utc_now
+
     with store.repository.transaction() as connection:
         latest = store.get_target(task.allocation_id)
         current = store.current_challenge(identity.identity_id)
@@ -64,14 +72,27 @@ async def reconcile_original_target(client, identity, task, store):
             raise RuntimeError("maintenance_target_changed_during_presence_check")
         state = "LIVE" if present else "LOST"
         if latest.state != state:
-            store._write_target(connection, latest.model_copy(update={"state": state, "updated_at": utc_now()}))
-        store._write_task(connection, current.model_copy(update={
-            "state": "WAITING_HUMAN" if present else "TARGET_LOST", "last_check": utc_now(),
-        }))
+            store._write_target(
+                connection, latest.model_copy(update={"state": state, "updated_at": utc_now()})
+            )
+        store._write_task(
+            connection,
+            current.model_copy(
+                update={
+                    "state": "WAITING_HUMAN" if present else "TARGET_LOST",
+                    "last_check": utc_now(),
+                }
+            ),
+        )
     if present and target.state == "LOST":
-        store.repository.append_event(AccessEvent(operation_id=task.task_id, site_id=task.site_id,
-            category="TARGET_RECONCILED", payload={"identity_id": identity.identity_id,
-                                                   "target_id": task.original_target_id}))
+        store.repository.append_event(
+            AccessEvent(
+                operation_id=task.task_id,
+                site_id=task.site_id,
+                category="TARGET_RECONCILED",
+                payload={"identity_id": identity.identity_id, "target_id": task.original_target_id},
+            )
+        )
     return present
 
 
@@ -187,37 +208,57 @@ async def read_original_document(client, identity, session, target, *, evidence_
 
             # DOM commands do not depend on the publisher's main JS execution
             # context being responsive during a native challenge/navigation.
-            root = (await call(1, "DOM.getDocument", {"depth": 0}))["root"]
-            html = (await call(2, "DOM.getOuterHTML", {"nodeId": root["nodeId"]}))["outerHTML"]
-            from .verification_frames import observe_verification_frames
-            from .challenge_detection import assess
+            try:
+                root = (await call(1, "DOM.getDocument", {"depth": 0}))["root"]
+                html = (await call(2, "DOM.getOuterHTML", {"nodeId": root["nodeId"]}))["outerHTML"]
+            except (RuntimeError, KeyError) as exc:
+                raise RuntimeError("original_document_present_but_unreadable") from exc
+            from .verification_frames import observe_verification_document
+
             counter = 10
+
             async def frame_call(method, parameters=None, *, session_id=None):
                 nonlocal counter
                 counter += 1
                 return await call(counter, method, parameters or {}, session_id=session_id)
-            frames = await observe_verification_frames(frame_call, root, html)
-            assessment = assess(html, frame_html=[f["html"] for f in frames if f["loaded"]],
-                frame_urls=[f["url"] for f in frames if f["loaded"]])
+
+            document = await observe_verification_document(frame_call, root=root, html=html)
+            assessment = document["assessment"]
             if evidence_store is not None:
                 from doxagent.content_enrichment.quality import inspect_html
 
-                if inspect_html(html, root.get("documentURL") or tab["url"], "",
-                                generic_extraction=False).access_reason == "challenge_required":
+                if (
+                    inspect_html(
+                        html, root.get("documentURL") or tab["url"], "", generic_extraction=False
+                    ).access_reason
+                    == "challenge_required"
+                ):
+
                     async def screenshot():
-                        value = await call(3, "Page.captureScreenshot", {
-                            "format": "png", "captureBeyondViewport": False,
-                        })
+                        value = await call(
+                            3,
+                            "Page.captureScreenshot",
+                            {
+                                "format": "png",
+                                "captureBeyondViewport": False,
+                            },
+                        )
                         return base64.b64decode(value["data"], validate=True)
 
-                    await evidence_store.capture({
-                        "scope_id": session.scope_id, "site_id": session.site_id,
-                        "identity_id": identity.identity_id,
-                        "browser_instance_id": status["instance_id"],
-                        "target_id": session.target_id,
-                        "operation_id": "maintenance:" + session.session_id,
-                        "url": root.get("documentURL") or tab["url"],
-                    }, html, phase="first", screenshot=screenshot)
+                    await evidence_store.capture(
+                        {
+                            "scope_id": session.scope_id,
+                            "site_id": session.site_id,
+                            "identity_id": identity.identity_id,
+                            "browser_instance_id": status["instance_id"],
+                            "target_id": session.target_id,
+                            "operation_id": "maintenance:" + session.session_id,
+                            "url": root.get("documentURL") or tab["url"],
+                        },
+                        html,
+                        phase="first",
+                        screenshot=screenshot,
+                    )
         return RuntimeResponse(
             0,
             root.get("documentURL") or str(tab["url"]),

@@ -803,6 +803,10 @@ async def test_cold_fallback_uses_formal_parser_then_sticky_activation(seeded, t
 
     async def execute(request, resolved, combination, profile, egress):
         calls.append(("formal-recipe", combination.identity_id))
+        from doxagent.site_strategy.browser_runtime import RuntimeProvenance
+        identity = repository.get_identity(combination.identity_id)
+        state = repository.get_identity_runtime(identity.identity_id)
+        repository.save_identity_runtime(state.model_copy(update={"instance_id": "fixture-chrome"}), expected_generation=state.generation)
         return RuntimeResponse(
             200,
             request.url,
@@ -810,6 +814,7 @@ async def test_cold_fallback_uses_formal_parser_then_sticky_activation(seeded, t
             body="""<html><div class="insight-list-item">
           <a class="title-link" href="/news/2026/10/17/semiconductor-capacity/">
           Semiconductor manufacturing capacity expands</a></div></html>""",
+            provenance=RuntimeProvenance(identity.identity_id, identity.revision, identity.runtime_kind, "fixture-chrome", 1),
         )
 
     service.runtime.browser_runtimes.stop_identity = stop
@@ -968,7 +973,12 @@ async def test_body_cold_canary_can_use_the_primary_verified_article(seeded, tmp
 
     async def attempt(request, *args):
         assert request.url == url
-        return RuntimeResponse(200, url, {}, body="capture", body_quality="FULL"), None, "ok", None
+        from doxagent.site_strategy.browser_runtime import RuntimeProvenance
+        identity = repository.get_identity(scope.fallback_identity_id)
+        state = repository.get_identity_runtime(identity.identity_id)
+        repository.save_identity_runtime(state.model_copy(update={"instance_id": "fixture-chrome"}), expected_generation=state.generation)
+        return RuntimeResponse(200, url, {}, body="capture", body_quality="FULL", provenance=RuntimeProvenance(
+            identity.identity_id, identity.revision, identity.runtime_kind, "fixture-chrome", 1)), None, "ok", None
 
     service.runtime.browser_runtimes.stop_identity = stop
     monkeypatch.setattr(service, "_attempt", attempt)

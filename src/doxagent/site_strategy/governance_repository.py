@@ -4,13 +4,13 @@ Schema creation is explicitly called by the Registry's startup migration, never
 by inventory readers or a browser control worker.
 """
 
-from urllib.parse import urlsplit, urlunsplit
 from contextlib import nullcontext
 from datetime import datetime, timedelta
+from urllib.parse import urlsplit, urlunsplit
 
 from .governance_models import (
-    ChallengeTask,
     BrowserRecovery,
+    ChallengeTask,
     MaintenanceOperation,
     MaintenanceSession,
     OwnedBrowserTarget,
@@ -104,19 +104,25 @@ class GovernanceRepository:
         """One account attempt per 30 minutes, shared by its primary/fallback."""
         now = utc_now()
         with self.repository.transaction() as connection:
-            row = connection.execute("select attempted_at from site_auto_login_attempts where credential_id=?",
-                                     (credential_id,)).fetchone()
+            row = connection.execute(
+                "select attempted_at from site_auto_login_attempts where credential_id=?",
+                (credential_id,),
+            ).fetchone()
             if row and datetime.fromisoformat(row[0]) > now - timedelta(minutes=30):
                 return False
-            connection.execute("insert into site_auto_login_attempts values(?,?,?) on conflict(credential_id) "
-                               "do update set attempted_at=excluded.attempted_at,result=excluded.result",
-                               (credential_id, now.isoformat(), "STARTED"))
+            connection.execute(
+                "insert into site_auto_login_attempts values(?,?,?) on conflict(credential_id) "
+                "do update set attempted_at=excluded.attempted_at,result=excluded.result",
+                (credential_id, now.isoformat(), "STARTED"),
+            )
             return True
 
     def finish_auto_login(self, credential_id, result):
         with self.repository.transaction() as connection:
-            connection.execute("update site_auto_login_attempts set result=? where credential_id=?",
-                               (result, credential_id))
+            connection.execute(
+                "update site_auto_login_attempts set result=? where credential_id=?",
+                (result, credential_id),
+            )
 
     def _read(self, table, key, value, model):
         with self.repository._lock:
@@ -393,7 +399,9 @@ class GovernanceRepository:
 
     def handoff_challenge(self, task: ChallengeTask, *, session=None, _connection=None):
         """Task + ownership commit together, before a business permit is released."""
-        with (nullcontext(_connection) if _connection is not None else self.repository.transaction()) as connection:
+        with (
+            nullcontext(_connection) if _connection is not None else self.repository.transaction()
+        ) as connection:
             existing = self.current_challenge(task.identity_id)
             if existing and existing.state != "TARGET_LOST":
                 return existing
@@ -431,18 +439,27 @@ class GovernanceRepository:
                 # A queued human Task is not an active Viewer. Shared recovery
                 # independently gates each unproven purpose; do not freeze the
                 # entire Profile (and its already-proven crawler) on escalation.
-                passive_recovery = bool(task.recovery_id and not session and not any(
-                    s.identity_id == stored.identity_id and s.state == "OPEN"
-                    for s in self.list_sessions()
-                ))
+                passive_recovery = bool(
+                    task.recovery_id
+                    and not session
+                    and not any(
+                        s.identity_id == stored.identity_id and s.state == "OPEN"
+                        for s in self.list_sessions()
+                    )
+                )
                 blocked = profile.model_copy(
                     update={
-                        "operational_state": (ProfileOperationalState.AVAILABLE
-                                              if passive_recovery else ProfileOperationalState.MAINTENANCE),
+                        "operational_state": (
+                            ProfileOperationalState.AVAILABLE
+                            if passive_recovery
+                            else ProfileOperationalState.MAINTENANCE
+                        ),
                         "operational_revision": profile.operational_revision + 1,
                         "maintenance_session_id": session.control_token
                         if session
-                        else None if passive_recovery else stored.task_id,
+                        else None
+                        if passive_recovery
+                        else stored.task_id,
                         # Compatibility projection, not an independently editable task.
                         "challenge_url": task.original_url,
                         "challenge_site_id": stored.site_id,
@@ -648,8 +665,16 @@ class GovernanceRepository:
         )
 
     def commit_verification(
-        self, scope, identity_id, report, *, session=None, credential_change=False,
-        passive_task=None, _connection=None, recovering_purpose=None,
+        self,
+        scope,
+        identity_id,
+        report,
+        *,
+        session=None,
+        credential_change=False,
+        passive_task=None,
+        _connection=None,
+        recovering_purpose=None,
     ):
         """Proof, relevant gates and current Task resolve in one short owner transaction."""
         from .schema import (
@@ -660,7 +685,9 @@ class GovernanceRepository:
         )
 
         now = utc_now()
-        with (nullcontext(_connection) if _connection is not None else self.repository.transaction()) as connection:
+        with (
+            nullcontext(_connection) if _connection is not None else self.repository.transaction()
+        ) as connection:
             current_scope = self.maintenance_scope(scope.scope_id)
             if current_scope is None or current_scope.revision != scope.revision:
                 raise RuntimeError("scope changed during verification")
@@ -669,36 +696,61 @@ class GovernanceRepository:
                 target = self.get_target(passive_task.allocation_id)
                 sessions = self.list_sessions()
                 if (
-                    scope.source_id != "investing_ticker_news" or not current_scope.enabled
-                    or passive_task.purpose != "CRAWLER" or not current
-                    or (current.task_id, current.browser_instance_id, current.original_target_id,
-                        current.allocation_id, current.original_url)
-                    != (passive_task.task_id, passive_task.browser_instance_id,
-                        passive_task.original_target_id, passive_task.allocation_id,
-                        passive_task.original_url)
-                    or current.state != "WAITING_HUMAN" or current.scope_id != scope.scope_id
-                    or current.site_id != scope.owner_site_id or not target
-                    or target.state != "LIVE" or target.owner_kind != "CHALLENGE"
+                    scope.source_id != "investing_ticker_news"
+                    or not current_scope.enabled
+                    or passive_task.purpose != "CRAWLER"
+                    or not current
+                    or (
+                        current.task_id,
+                        current.browser_instance_id,
+                        current.original_target_id,
+                        current.allocation_id,
+                        current.original_url,
+                    )
+                    != (
+                        passive_task.task_id,
+                        passive_task.browser_instance_id,
+                        passive_task.original_target_id,
+                        passive_task.allocation_id,
+                        passive_task.original_url,
+                    )
+                    or current.state != "WAITING_HUMAN"
+                    or current.scope_id != scope.scope_id
+                    or current.site_id != scope.owner_site_id
+                    or not target
+                    or target.state != "LIVE"
+                    or target.owner_kind != "CHALLENGE"
                     or target.owner_ref != current.task_id
                     or (target.identity_id, target.browser_instance_id, target.target_id)
                     != (identity_id, current.browser_instance_id, current.original_target_id)
                     or report.runtime_instance_id != current.browser_instance_id
-                    or report.challenge != "CLEARED" or report.crawler != "READY"
+                    or report.challenge != "CLEARED"
+                    or report.crawler != "READY"
                     or report.original_page_kind != "listing"
                     or report.verification_url != current.original_url
                     or any(s.identity_id == identity_id and s.state == "OPEN" for s in sessions)
                 ):
                     raise RuntimeError("passive challenge proof became stale")
-                session = next((s for s in sessions if s.task_id == current.task_id
-                                and s.state == "RELEASED"), None)
+                session = next(
+                    (s for s in sessions if s.task_id == current.task_id and s.state == "RELEASED"),
+                    None,
+                )
                 if session is None:
-                    session = self._save_session(connection, MaintenanceSession(
-                        kind="CHALLENGE", state="RELEASED", scope_id=scope.scope_id,
-                        site_id=current.site_id, identity_id=identity_id,
-                        task_id=current.task_id, control_token=current.task_id,
-                        allocation_id=target.allocation_id, target_id=target.target_id,
-                        browser_instance_id=target.browser_instance_id,
-                    ))
+                    session = self._save_session(
+                        connection,
+                        MaintenanceSession(
+                            kind="CHALLENGE",
+                            state="RELEASED",
+                            scope_id=scope.scope_id,
+                            site_id=current.site_id,
+                            identity_id=identity_id,
+                            task_id=current.task_id,
+                            control_token=current.task_id,
+                            allocation_id=target.allocation_id,
+                            target_id=target.target_id,
+                            browser_instance_id=target.browser_instance_id,
+                        ),
+                    )
             if session:
                 current_session = self.get_session(session.session_id)
                 if (
@@ -785,7 +837,11 @@ class GovernanceRepository:
                         and session.browser_instance_id == task.browser_instance_id
                     )
                 )
-                if task and recovering_purpose and task.purpose not in {recovering_purpose, "LOGIN"}:
+                if (
+                    task
+                    and recovering_purpose
+                    and task.purpose not in {recovering_purpose, "LOGIN"}
+                ):
                     task_cleared = False
                 # LOGIN and CHALLENGE are separate workflows. A lost historical
                 # page cannot be inspected again, but new same-scope business
@@ -857,8 +913,11 @@ class GovernanceRepository:
                 site_id=scope.owner_site_id,
                 identity_id=identity_id,
                 auth_state=auth_state,
-                verified_at=(now if report.authentication in {"VALID", "REAUTH_REQUIRED", "ENTITLEMENT_MISSING"}
-                             else old_auth.verified_at),
+                verified_at=(
+                    now
+                    if report.authentication in {"VALID", "REAUTH_REQUIRED", "ENTITLEMENT_MISSING"}
+                    else old_auth.verified_at
+                ),
                 reason_code=report.reason,
                 observed_session_revision=runtime.session_revision,
                 last_check_at=now,
@@ -885,7 +944,9 @@ class GovernanceRepository:
                     (profile.model_dump_json(), now.isoformat(), profile.profile_id),
                 )
             if session and report.challenge == "CLEARED" and task_cleared:
-                self._commit_manual_recovery(connection, scope, identity_id, report, fingerprint, runtime)
+                self._commit_manual_recovery(
+                    connection, scope, identity_id, report, fingerprint, runtime
+                )
         report.health_applied = True
         return report
 
@@ -913,31 +974,62 @@ class GovernanceRepository:
             return
         remaining = [c for c in current.affected_contexts if c["purpose"] not in proven]
         now = utc_now()
-        target = self.get_target(current.original_allocation_id) if current.original_allocation_id else None
-        value = current.model_copy(update={
-            "phase": "BACKOFF" if remaining else "RESOLVED",
-            "generation": current.generation + 1, "fingerprint": fingerprint,
-            "verified_contexts": list(dict.fromkeys([
-                *current.verified_contexts, *(context_key(c) for c in covered),
-            ]))[-8:],
-            "affected_contexts": remaining or current.affected_contexts,
-            "resolved_at": None if remaining else now, "resolved_by": "manual_verification",
-            "lease_owner": None, "lease_until": None, "last_error": None,
-            "next_due_at": now + timedelta(seconds=60), "updated_at": now,
-            "cleanup_pending": bool(not remaining and target and target.state not in {"CLOSED", "LOST"}),
-        })
+        target = (
+            self.get_target(current.original_allocation_id)
+            if current.original_allocation_id
+            else None
+        )
+        value = current.model_copy(
+            update={
+                "phase": "BACKOFF" if remaining else "RESOLVED",
+                "generation": current.generation + 1,
+                "fingerprint": fingerprint,
+                "verified_contexts": list(
+                    dict.fromkeys(
+                        [
+                            *current.verified_contexts,
+                            *(context_key(c) for c in covered),
+                        ]
+                    )
+                )[-8:],
+                "affected_contexts": remaining or current.affected_contexts,
+                "resolved_at": None if remaining else now,
+                "resolved_by": "manual_verification",
+                "lease_owner": None,
+                "lease_until": None,
+                "last_error": None,
+                "next_due_at": now + timedelta(seconds=60),
+                "updated_at": now,
+                "cleanup_pending": bool(
+                    not remaining and target and target.state not in {"CLOSED", "LOST"}
+                ),
+            }
+        )
         self._write_recovery(connection, value)
+        self._record_recovered_window(connection, current, runtime)
         event = AccessEvent(
-            operation_id=value.recovery_id, site_id=value.site_id, combination_id=identity_id,
+            operation_id=value.recovery_id,
+            site_id=value.site_id,
+            combination_id=identity_id,
             category="RECOVERY_RESOLVED" if not remaining else "CAPABILITY_RECOVERED",
-            payload={"recovery_id": value.recovery_id, "resolved_by": "manual_verification",
-                     "purposes": sorted(proven)},
+            payload={
+                "recovery_id": value.recovery_id,
+                "resolved_by": "manual_verification",
+                "purposes": sorted(proven),
+            },
         )
         connection.execute(
             "insert or ignore into access_events(event_id,operation_id,site_id,combination_id,"
             "occurred_at,category,payload_json) values(?,?,?,?,?,?,?)",
-            (event.event_id, event.operation_id, event.site_id, event.combination_id,
-             event.occurred_at.isoformat(), event.category, canonical_json(event.payload)),
+            (
+                event.event_id,
+                event.operation_id,
+                event.site_id,
+                event.combination_id,
+                event.occurred_at.isoformat(),
+                event.category,
+                canonical_json(event.payload),
+            ),
         )
 
     def get_recovery(self, identity_id):
@@ -958,8 +1050,15 @@ class GovernanceRepository:
             "do update set scope_id=excluded.scope_id,phase=excluded.phase,"
             "next_due_at=excluded.next_due_at,generation=excluded.generation,"
             "data_json=excluded.data_json,updated_at=excluded.updated_at",
-            (value.identity_id, value.scope_id, value.phase, value.next_due_at.isoformat(),
-             value.generation, value.model_dump_json(), value.updated_at.isoformat()),
+            (
+                value.identity_id,
+                value.scope_id,
+                value.phase,
+                value.next_due_at.isoformat(),
+                value.generation,
+                value.model_dump_json(),
+                value.updated_at.isoformat(),
+            ),
         )
         return value
 
@@ -968,91 +1067,193 @@ class GovernanceRepository:
             old = self.get_recovery(value.identity_id)
             if (old.generation if old else None) != expected_generation:
                 raise RuntimeError("stale_recovery_generation")
-            linked = self.get_challenge(value.challenge_task_id) if value.challenge_task_id else None
-            if old and value.handling_mode == 'HUMAN' and (old.handling_mode == 'AUTO' or value.manual_review_reason) and (not linked or linked.state == 'RESOLVED') and not any(s.identity_id == value.identity_id and s.state == 'OPEN' for s in self.list_sessions()):
-                target = self.get_target(value.original_allocation_id or '')
-                if target and target.state == 'LIVE' and value.affected_contexts:
+            linked = (
+                self.get_challenge(value.challenge_task_id) if value.challenge_task_id else None
+            )
+            if (
+                old
+                and value.handling_mode == "HUMAN"
+                and (old.handling_mode == "AUTO" or value.manual_review_reason)
+                and (not linked or linked.state == "RESOLVED")
+                and not any(
+                    s.identity_id == value.identity_id and s.state == "OPEN"
+                    for s in self.list_sessions()
+                )
+            ):
+                target = self.get_target(value.original_allocation_id or "")
+                if target and target.state == "LIVE" and value.affected_contexts:
                     context = value.affected_contexts[0]
-                    task = self.handoff_challenge(ChallengeTask(
-                        scope_id=value.scope_id, identity_id=value.identity_id, site_id=value.site_id,
-                        purpose=context['purpose'], operation_id=context['operation_id'],
-                        original_url=value.original_url or context['url'],
-                        original_target_id=target.target_id, browser_instance_id=target.browser_instance_id,
-                        allocation_id=target.allocation_id, reason=value.manual_review_reason or 'device_check_escalated_to_interactive',
-                        recovery_id=value.recovery_id), _connection=connection)
+                    task = self.handoff_challenge(
+                        ChallengeTask(
+                            scope_id=value.scope_id,
+                            identity_id=value.identity_id,
+                            site_id=value.site_id,
+                            purpose=context["purpose"],
+                            operation_id=context["operation_id"],
+                            original_url=value.original_url or context["url"],
+                            original_target_id=target.target_id,
+                            browser_instance_id=target.browser_instance_id,
+                            allocation_id=target.allocation_id,
+                            reason=value.manual_review_reason
+                            or "device_check_escalated_to_interactive",
+                            recovery_id=value.recovery_id,
+                        ),
+                        _connection=connection,
+                    )
                     value.challenge_task_id = task.task_id
                     scope = self.maintenance_scope(value.scope_id)
-                    key = scope.verification_plan.get('legacy_runtime_key', f'scope:{scope.scope_id}')
+                    key = scope.verification_plan.get(
+                        "legacy_runtime_key", f"scope:{scope.scope_id}"
+                    )
                     state = self.repository.get_runtime(key)
                     member = state.combinations.get(value.identity_id)
                     if member:
                         member.manual_attention_required = True
                         state.generation += 1
-                        connection.execute('update site_runtime set data_json=?,generation=?,updated_at=? where runtime_key=?',
-                            (state.model_dump_json(), state.generation, utc_now().isoformat(), key))
+                        connection.execute(
+                            "update site_runtime set data_json=?,generation=?,updated_at=? where runtime_key=?",
+                            (state.model_dump_json(), state.generation, utc_now().isoformat(), key),
+                        )
                 elif target and value.manual_review_reason and value.affected_contexts:
                     context = value.affected_contexts[0]
-                    task = ChallengeTask(scope_id=value.scope_id, identity_id=value.identity_id,
-                        site_id=value.site_id, purpose=context['purpose'], operation_id=context['operation_id'],
-                        original_url=value.original_url or context['url'], original_target_id=target.target_id,
-                        browser_instance_id=target.browser_instance_id, allocation_id=target.allocation_id,
-                        state='TARGET_LOST', reason=value.manual_review_reason, recovery_id=value.recovery_id)
+                    task = ChallengeTask(
+                        scope_id=value.scope_id,
+                        identity_id=value.identity_id,
+                        site_id=value.site_id,
+                        purpose=context["purpose"],
+                        operation_id=context["operation_id"],
+                        original_url=value.original_url or context["url"],
+                        original_target_id=target.target_id,
+                        browser_instance_id=target.browser_instance_id,
+                        allocation_id=target.allocation_id,
+                        state="TARGET_LOST",
+                        reason=value.manual_review_reason,
+                        recovery_id=value.recovery_id,
+                    )
                     self._write_task(connection, task)
                     value.challenge_task_id = task.task_id
-            if old and old.handling_mode == 'HUMAN' and value.handling_mode == 'AUTO':
+            if old and old.handling_mode == "HUMAN" and value.handling_mode == "AUTO":
                 # Reclassification releases only the obsolete manual projection.
                 # BrowserRecovery remains authoritative for every affected purpose.
                 scope = self.maintenance_scope(value.scope_id)
-                key = scope.verification_plan.get('legacy_runtime_key', f'scope:{scope.scope_id}')
+                key = scope.verification_plan.get("legacy_runtime_key", f"scope:{scope.scope_id}")
                 state = self.repository.get_runtime(key)
                 member = state.combinations.get(value.identity_id)
                 if member:
                     member.manual_attention_required = False
-                    if member.last_browser_result == 'ACCESS_CHALLENGE':
-                        member.state, member.cooldown_until = 'READY', None
+                    if member.last_browser_result == "ACCESS_CHALLENGE":
+                        member.state, member.cooldown_until = "READY", None
                     state.generation += 1
-                    connection.execute('update site_runtime set data_json=?,generation=?,updated_at=? where runtime_key=?',
-                        (state.model_dump_json(), state.generation, utc_now().isoformat(), key))
-                if not any(s.identity_id == value.identity_id and s.state == 'OPEN' for s in self.list_sessions()):
+                    connection.execute(
+                        "update site_runtime set data_json=?,generation=?,updated_at=? where runtime_key=?",
+                        (state.model_dump_json(), state.generation, utc_now().isoformat(), key),
+                    )
+                if not any(
+                    s.identity_id == value.identity_id and s.state == "OPEN"
+                    for s in self.list_sessions()
+                ):
                     identity = self.repository.get_identity(value.identity_id)
                     profile = self.repository.get_profile(identity.profile_id)
-                    if profile.maintenance_session_id and profile.maintenance_session_id == value.challenge_task_id:
+                    if (
+                        profile.maintenance_session_id
+                        and profile.maintenance_session_id == value.challenge_task_id
+                    ):
                         from .schema import ProfileOperationalState
-                        profile = profile.model_copy(update={'operational_state': ProfileOperationalState.AVAILABLE,
-                            'maintenance_session_id': None, 'updated_at': utc_now()})
-                        connection.execute('update browser_profiles set data_json=?,updated_at=? where profile_id=?',
-                            (profile.model_dump_json(), utc_now().isoformat(), profile.profile_id))
-            if value.handling_mode == 'AUTO':
+
+                        profile = profile.model_copy(
+                            update={
+                                "operational_state": ProfileOperationalState.AVAILABLE,
+                                "maintenance_session_id": None,
+                                "updated_at": utc_now(),
+                            }
+                        )
+                        connection.execute(
+                            "update browser_profiles set data_json=?,updated_at=? where profile_id=?",
+                            (profile.model_dump_json(), utc_now().isoformat(), profile.profile_id),
+                        )
+            if value.handling_mode == "AUTO":
                 self._retire_automatic_task(connection, value)
             elif value.manual_review_reason and value.challenge_task_id:
                 current_task = self.get_challenge(value.challenge_task_id)
-                if current_task and current_task.state != 'RESOLVED' and current_task.reason != value.manual_review_reason:
-                    self._write_task(connection, current_task.model_copy(update={'reason': value.manual_review_reason}))
+                if (
+                    current_task
+                    and current_task.state != "RESOLVED"
+                    and current_task.reason != value.manual_review_reason
+                ):
+                    self._write_task(
+                        connection,
+                        current_task.model_copy(update={"reason": value.manual_review_reason}),
+                    )
             return self._write_recovery(connection, value)
 
     def _retire_automatic_task(self, connection, value):
         """Retire human work, not business recovery; keep its token as physical-page history."""
         task = self.get_challenge(value.challenge_task_id) if value.challenge_task_id else None
-        if not task or task.state == 'RESOLVED' or task.scope_id != value.scope_id or task.identity_id != value.identity_id or any(
-            s.identity_id == value.identity_id and s.state == 'OPEN' for s in self.list_sessions()
+        if (
+            not task
+            or task.state == "RESOLVED"
+            or task.scope_id != value.scope_id
+            or task.identity_id != value.identity_id
+            or any(
+                s.identity_id == value.identity_id and s.state == "OPEN"
+                for s in self.list_sessions()
+            )
         ):
             return
-        self._write_task(connection, task.model_copy(update={'state':'RESOLVED', 'resolved_at':utc_now(),
-            'resolution_reason':'RECLASSIFIED_AUTOMATIC_VERIFICATION', 'resolved_by':'classification'}))
+        self._write_task(
+            connection,
+            task.model_copy(
+                update={
+                    "state": "RESOLVED",
+                    "resolved_at": utc_now(),
+                    "resolution_reason": "RECLASSIFIED_AUTOMATIC_VERIFICATION",
+                    "resolved_by": "classification",
+                }
+            ),
+        )
         identity = self.repository.get_identity(value.identity_id)
         profile = self.repository.get_profile(identity.profile_id)
-        retired_tokens = {task.task_id, *(s.control_token for s in self.list_sessions()
-            if s.identity_id == value.identity_id and s.task_id == task.task_id and s.state != 'OPEN')}
+        retired_tokens = {
+            task.task_id,
+            *(
+                s.control_token
+                for s in self.list_sessions()
+                if s.identity_id == value.identity_id
+                and s.task_id == task.task_id
+                and s.state != "OPEN"
+            ),
+        }
         if profile.maintenance_session_id and profile.maintenance_session_id in retired_tokens:
             from .schema import ProfileOperationalState
-            profile = profile.model_copy(update={'operational_state':ProfileOperationalState.AVAILABLE,
-                'maintenance_session_id':None, 'updated_at':utc_now()})
-            connection.execute('update browser_profiles set data_json=?,updated_at=? where profile_id=?',
-                (profile.model_dump_json(),utc_now().isoformat(),profile.profile_id))
+
+            profile = profile.model_copy(
+                update={
+                    "operational_state": ProfileOperationalState.AVAILABLE,
+                    "maintenance_session_id": None,
+                    "updated_at": utc_now(),
+                }
+            )
+            connection.execute(
+                "update browser_profiles set data_json=?,updated_at=? where profile_id=?",
+                (profile.model_dump_json(), utc_now().isoformat(), profile.profile_id),
+            )
         target = self.get_target(task.allocation_id)
-        if target and target.state == 'LIVE' and target.owner_kind == 'CHALLENGE' and target.owner_ref == task.task_id:
-            self._write_target(connection, target.model_copy(update={'owner_kind':'RECOVERY',
-                'owner_ref':value.recovery_id, 'updated_at':utc_now()}))
+        if (
+            target
+            and target.state == "LIVE"
+            and target.owner_kind == "CHALLENGE"
+            and target.owner_ref == task.task_id
+        ):
+            self._write_target(
+                connection,
+                target.model_copy(
+                    update={
+                        "owner_kind": "RECOVERY",
+                        "owner_ref": value.recovery_id,
+                        "updated_at": utc_now(),
+                    }
+                ),
+            )
 
     def begin_recovery(self, value):
         """Commit a retained page and its policy before business cleanup can run."""
@@ -1062,9 +1263,35 @@ class GovernanceRepository:
             if not identity:
                 raise ValueError("unknown recovery identity")
             scope = self.maintenance_scope(value.scope_id)
-            if not scope or value.identity_id not in {scope.primary_identity_id, scope.fallback_identity_id}:
+            if not scope or value.identity_id not in {
+                scope.primary_identity_id,
+                scope.fallback_identity_id,
+            }:
                 raise ValueError("recovery identity is outside scope")
             previous = self.get_recovery(value.identity_id)
+            if not previous or previous.phase == "RESOLVED":
+                runtime = self.repository.get_identity_runtime(value.identity_id)
+                if (
+                    runtime.recovered_at
+                    and runtime.last_recovery_id != value.recovery_id
+                    and (utc_now() - runtime.recovered_at).total_seconds() <= 300
+                ):
+                    relapse = {
+                        "previous_recovery_id": runtime.last_recovery_id,
+                        "recovery_id": value.recovery_id,
+                        "at": utc_now().isoformat(),
+                    }
+                    updated = runtime.model_copy(
+                        update={
+                            "recent_relapses": [*runtime.recent_relapses, relapse][-8:],
+                        }
+                    )
+                    self._write_identity_window(connection, updated)
+                    from .datadome_solver import mark_solver_outcome
+
+                    mark_solver_outcome(
+                        self.repository, value.identity_id, "recurrence_at", _connection=connection
+                    )
             if previous and previous.phase != "RESOLVED":
                 from .recovery import context_key
 
@@ -1077,59 +1304,101 @@ class GovernanceRepository:
                 bounded = list(representatives.values())
                 bounded += [c for c in contexts.values() if c not in bounded]
                 existing_target = self.get_target(previous.original_allocation_id or "")
-                keep = existing_target and existing_target.state == "LIVE" and not (
-                    previous.handling_mode == "AUTO" and value.handling_mode == "HUMAN")
-                value = previous.model_copy(update={
-                    "affected_contexts": bounded[:8],
-                    "updated_at": utc_now(),
-                    **({} if keep else {
-                        "original_allocation_id": value.original_allocation_id,
-                        "original_target_id": value.original_target_id,
-                        "original_instance_id": value.original_instance_id,
-                        "original_url": value.original_url,
-                        "page_status": value.page_status,
-                        "assessment": value.assessment,
-                        "handling_mode": "HUMAN" if previous.manual_review_reason else value.handling_mode,
-                    }),
-                })
+                keep = (
+                    existing_target
+                    and existing_target.state == "LIVE"
+                    and not (previous.handling_mode == "AUTO" and value.handling_mode == "HUMAN")
+                )
+                value = previous.model_copy(
+                    update={
+                        "affected_contexts": bounded[:8],
+                        "updated_at": utc_now(),
+                        **(
+                            {}
+                            if keep
+                            else {
+                                "original_allocation_id": value.original_allocation_id,
+                                "original_target_id": value.original_target_id,
+                                "original_instance_id": value.original_instance_id,
+                                "original_url": value.original_url,
+                                "page_status": value.page_status,
+                                "assessment": value.assessment,
+                                "handling_mode": "HUMAN"
+                                if previous.manual_review_reason
+                                else value.handling_mode,
+                            }
+                        ),
+                    }
+                )
                 if keep:
                     return self._write_recovery(connection, value)
             target = self.get_target(value.original_allocation_id or "")
-            if not target or target.state != "LIVE" or target.owner_kind != "BUSINESS" or (
-                target.identity_id, target.browser_instance_id, target.target_id
-            ) != (value.identity_id, value.original_instance_id, value.original_target_id):
+            if (
+                not target
+                or target.state != "LIVE"
+                or target.owner_kind != "BUSINESS"
+                or (target.identity_id, target.browser_instance_id, target.target_id)
+                != (value.identity_id, value.original_instance_id, value.original_target_id)
+            ):
                 raise RuntimeError("OWNERSHIP_HANDOFF_FAILED")
             egress = self.repository.get_egress(identity.egress_id)
-            value = value.model_copy(update={"fingerprint": capability_fingerprint(
-                self.repository, scope, identity, egress
-            )})
+            value = value.model_copy(
+                update={
+                    "fingerprint": capability_fingerprint(self.repository, scope, identity, egress)
+                }
+            )
             if value.handling_mode == "HUMAN":
                 context = value.affected_contexts[0]
-                task = self.handoff_challenge(ChallengeTask(
-                    scope_id=value.scope_id, identity_id=value.identity_id, site_id=value.site_id,
-                    purpose=context["purpose"], operation_id=context["operation_id"],
-                    original_url=value.original_url or context["url"], original_target_id=target.target_id,
-                    browser_instance_id=target.browser_instance_id, allocation_id=target.allocation_id,
-                    reason="interactive_challenge", recovery_id=value.recovery_id,
-                ), _connection=connection)
+                task = self.handoff_challenge(
+                    ChallengeTask(
+                        scope_id=value.scope_id,
+                        identity_id=value.identity_id,
+                        site_id=value.site_id,
+                        purpose=context["purpose"],
+                        operation_id=context["operation_id"],
+                        original_url=value.original_url or context["url"],
+                        original_target_id=target.target_id,
+                        browser_instance_id=target.browser_instance_id,
+                        allocation_id=target.allocation_id,
+                        reason="interactive_challenge",
+                        recovery_id=value.recovery_id,
+                    ),
+                    _connection=connection,
+                )
                 value = value.model_copy(update={"challenge_task_id": task.task_id})
             else:
                 self._retire_automatic_task(connection, value)
-                self._write_target(connection, target.model_copy(update={
-                    "owner_kind": "RECOVERY", "owner_ref": value.recovery_id, "updated_at": utc_now(),
-                }))
+                self._write_target(
+                    connection,
+                    target.model_copy(
+                        update={
+                            "owner_kind": "RECOVERY",
+                            "owner_ref": value.recovery_id,
+                            "updated_at": utc_now(),
+                        }
+                    ),
+                )
             value = value.model_copy(update={"page_status": "PRESENT"})
             self._write_recovery(connection, value)
-            state = self.repository.get_runtime(f"scope:{scope.scope_id}" if not scope.verification_plan.get(
-                "legacy_runtime_key") else scope.verification_plan["legacy_runtime_key"])
+            state = self.repository.get_runtime(
+                f"scope:{scope.scope_id}"
+                if not scope.verification_plan.get("legacy_runtime_key")
+                else scope.verification_plan["legacy_runtime_key"]
+            )
             from .schema import CombinationRuntime
+
             member = state.combinations.setdefault(value.identity_id, CombinationRuntime())
             member.manual_attention_required = value.handling_mode == "HUMAN"
             state.generation += 1
             connection.execute(
                 "insert into site_runtime values(?,?,?,?) on conflict(runtime_key) do update set "
                 "data_json=excluded.data_json,generation=excluded.generation,updated_at=excluded.updated_at",
-                (state.runtime_key, state.model_dump_json(), state.generation, utc_now().isoformat()),
+                (
+                    state.runtime_key,
+                    state.model_dump_json(),
+                    state.generation,
+                    utc_now().isoformat(),
+                ),
             )
             return value
 
@@ -1137,19 +1406,66 @@ class GovernanceRepository:
         now = now or utc_now()
         with self.repository.transaction() as connection:
             old = self.get_recovery(identity_id)
-            if not old or old.phase == "RESOLVED" or old.next_due_at > now or (
-                old.lease_until and old.lease_until > now
+            if (
+                not old
+                or old.phase == "RESOLVED"
+                or old.next_due_at > now
+                or (old.lease_until and old.lease_until > now)
             ):
                 return None
             scope = self.maintenance_scope(old.scope_id)
             identity = self.repository.get_identity(identity_id)
             spec = self.repository.get_strategy(old.site_id)
-            if not scope or not scope.enabled or not identity or not identity.enabled or not spec.challenge.recovery_enabled:
+            if (
+                not scope
+                or not scope.enabled
+                or not identity
+                or not identity.enabled
+                or not spec.challenge.recovery_enabled
+            ):
                 return None
-            value = old.model_copy(update={
-                "generation": old.generation + 1, "phase": "PROBING", "lease_owner": owner,
-                "lease_until": now + timedelta(seconds=100), "updated_at": now,
-            })
+            if old.probe_id and old.probe_started_at and not old.probe_finished_at:
+                from .schema import AccessEvent, digest_json
+
+                event = AccessEvent(
+                    event_id="probe_finish:" + digest_json(old.probe_id),
+                    operation_id=old.recovery_id,
+                    site_id=old.site_id,
+                    category="PROBE_FINISHED",
+                    payload={
+                        "recovery_id": old.recovery_id,
+                        "identity_id": identity_id,
+                        "generation": old.generation,
+                        "probe_id": old.probe_id,
+                        "result": "INTERRUPTED",
+                        "stage": old.probe_stage,
+                        "request_sent": "unknown",
+                    },
+                )
+                from .schema import canonical_json
+
+                connection.execute(
+                    "insert or ignore into access_events values(?,?,?,?,?,?,?)",
+                    (
+                        event.event_id,
+                        event.operation_id,
+                        event.site_id,
+                        event.combination_id,
+                        event.occurred_at.isoformat(),
+                        event.category,
+                        canonical_json(event.payload),
+                    ),
+                )
+            value = old.model_copy(
+                update={
+                    "generation": old.generation + 1,
+                    "phase": "PROBING",
+                    "lease_owner": owner,
+                    "lease_until": now + timedelta(seconds=100),
+                    "updated_at": now,
+                    "probe_finished_at": now if old.probe_id else None,
+                }
+            )
             return self._write_recovery(connection, value)
 
     def promote_recovery(self, value):
@@ -1157,47 +1473,78 @@ class GovernanceRepository:
         with self.repository.transaction() as connection:
             current = self.get_recovery(value.identity_id)
             target = self.get_target(value.original_allocation_id or "")
-            if not current or current.generation != value.generation or not target or target.state != "LIVE":
+            if (
+                not current
+                or current.generation != value.generation
+                or not target
+                or target.state != "LIVE"
+            ):
                 raise RuntimeError("stale_recovery_generation")
             context = value.affected_contexts[0]
-            task = self.handoff_challenge(ChallengeTask(
-                scope_id=value.scope_id, identity_id=value.identity_id, site_id=value.site_id,
-                purpose=context["purpose"], operation_id=context["operation_id"], original_url=context["url"],
-                original_target_id=target.target_id, browser_instance_id=target.browser_instance_id,
-                allocation_id=target.allocation_id, reason="interactive_requirement_observed",
-                recovery_id=value.recovery_id,
-            ), _connection=connection)
-            value = value.model_copy(update={"challenge_task_id": task.task_id, "handling_mode": "HUMAN"})
+            task = self.handoff_challenge(
+                ChallengeTask(
+                    scope_id=value.scope_id,
+                    identity_id=value.identity_id,
+                    site_id=value.site_id,
+                    purpose=context["purpose"],
+                    operation_id=context["operation_id"],
+                    original_url=context["url"],
+                    original_target_id=target.target_id,
+                    browser_instance_id=target.browser_instance_id,
+                    allocation_id=target.allocation_id,
+                    reason="interactive_requirement_observed",
+                    recovery_id=value.recovery_id,
+                ),
+                _connection=connection,
+            )
+            value = value.model_copy(
+                update={"challenge_task_id": task.task_id, "handling_mode": "HUMAN"}
+            )
             return self._write_recovery(connection, value)
 
     def finish_recovery(self, claimed, report, *, context, resolved_by):
         """A lease cannot clear another incident, identity or configuration."""
-        from .schema import ProfileOperationalState
         from .recovery import context_key
+        from .schema import ProfileOperationalState
 
         with self.repository.transaction() as connection:
             current = self.get_recovery(claimed.identity_id)
-            if not current or (current.recovery_id, current.generation, current.lease_owner) != (
-                claimed.recovery_id, claimed.generation, claimed.lease_owner
-            ) or not current.lease_until or current.lease_until <= utc_now():
+            if (
+                not current
+                or (current.recovery_id, current.generation, current.lease_owner)
+                != (claimed.recovery_id, claimed.generation, claimed.lease_owner)
+                or not current.lease_until
+                or current.lease_until <= utc_now()
+            ):
                 raise RuntimeError("stale_recovery_generation")
             scope = self.maintenance_scope(current.scope_id)
             identity = self.repository.get_identity(current.identity_id)
-            fingerprint = capability_fingerprint(self.repository, scope, identity,
-                                                self.repository.get_egress(identity.egress_id))
+            fingerprint = capability_fingerprint(
+                self.repository, scope, identity, self.repository.get_egress(identity.egress_id)
+            )
             runtime = self.repository.get_identity_runtime(current.identity_id)
-            if current.fingerprint != fingerprint or not report.runtime_instance_id or (
-                runtime.instance_id and runtime.instance_id != report.runtime_instance_id
+            if (
+                current.fingerprint != fingerprint
+                or not report.runtime_instance_id
+                or (runtime.instance_id and runtime.instance_id != report.runtime_instance_id)
             ):
                 raise RuntimeError("stale_recovery_browser_or_configuration")
             if report.challenge != "CLEARED":
                 raise RuntimeError("recovery_requires_business_proof")
             verified = list(dict.fromkeys([*current.verified_contexts, context_key(context)]))[-8:]
             proven_purposes = {context["purpose"]}
-            remaining = [c for c in current.affected_contexts if c["purpose"] not in proven_purposes
-                         and context_key(c) not in verified]
-            report = self.commit_verification(scope, current.identity_id, report, _connection=connection,
-                                              recovering_purpose=context["purpose"])
+            remaining = [
+                c
+                for c in current.affected_contexts
+                if c["purpose"] not in proven_purposes and context_key(c) not in verified
+            ]
+            report = self.commit_verification(
+                scope,
+                current.identity_id,
+                report,
+                _connection=connection,
+                recovering_purpose=context["purpose"],
+            )
             route_key = scope.verification_plan.get("legacy_runtime_key", f"scope:{scope.scope_id}")
             route = self.repository.get_runtime(route_key)
             member = route.combinations[current.identity_id]
@@ -1206,39 +1553,104 @@ class GovernanceRepository:
             member.state, member.cooldown_until = "READY", None
             member.manual_attention_required = False
             route.generation += 1
-            connection.execute("update site_runtime set data_json=?,generation=?,updated_at=? where runtime_key=?",
-                               (route.model_dump_json(), route.generation, utc_now().isoformat(), route_key))
+            connection.execute(
+                "update site_runtime set data_json=?,generation=?,updated_at=? where runtime_key=?",
+                (route.model_dump_json(), route.generation, utc_now().isoformat(), route_key),
+            )
             task = self.current_challenge(current.identity_id)
             # commit_verification may already have resolved this exact identity's task.
             if not task and current.challenge_task_id:
                 task = self.get_challenge(current.challenge_task_id)
                 if task and task.state == "RESOLVED":
-                    self._write_task(connection, task.model_copy(update={
-                        "resolution_reason": "BUSINESS_RECOVERED_ON_NEW_PAGE" if resolved_by == "fresh_probe"
-                        else "ORIGINAL_DOCUMENT_RECOVERED", "resolved_by": resolved_by,
-                    }))
+                    self._write_task(
+                        connection,
+                        task.model_copy(
+                            update={
+                                "resolution_reason": "BUSINESS_RECOVERED_ON_NEW_PAGE"
+                                if resolved_by == "fresh_probe"
+                                else "ORIGINAL_DOCUMENT_RECOVERED",
+                                "resolved_by": resolved_by,
+                            }
+                        ),
+                    )
             now = utc_now()
-            value = current.model_copy(update={
-                "phase": "BACKOFF" if remaining else "RESOLVED", "verified_contexts": verified,
-                "affected_contexts": remaining or current.affected_contexts,
-                "resolved_at": None if remaining else now, "resolved_by": resolved_by,
-                "lease_owner": None, "lease_until": None, "last_error": None,
-                "next_due_at": now + timedelta(seconds=60), "updated_at": now,
-            })
+            self._record_recovered_window(connection, current, runtime)
+            value = current.model_copy(
+                update={
+                    "phase": "BACKOFF" if remaining else "RESOLVED",
+                    "verified_contexts": verified,
+                    "affected_contexts": remaining or current.affected_contexts,
+                    "resolved_at": None if remaining else now,
+                    "resolved_by": resolved_by,
+                    "lease_owner": None,
+                    "lease_until": None,
+                    "last_error": None,
+                    "next_due_at": now + timedelta(seconds=60),
+                    "updated_at": now,
+                }
+            )
             self._write_recovery(connection, value)
-            if not any(s.identity_id == current.identity_id and s.state == "OPEN" for s in self.list_sessions()):
+            if not any(
+                s.identity_id == current.identity_id and s.state == "OPEN"
+                for s in self.list_sessions()
+            ):
                 profile = self.repository.get_profile(identity.profile_id)
-                sessions = {s.control_token for s in self.list_sessions() if s.identity_id == identity.identity_id
-                            and s.kind == "CHALLENGE"}
+                sessions = {
+                    s.control_token
+                    for s in self.list_sessions()
+                    if s.identity_id == identity.identity_id and s.kind == "CHALLENGE"
+                }
                 if profile.maintenance_session_id in {current.challenge_task_id, *sessions}:
-                    profile = profile.model_copy(update={
-                        "operational_state": ProfileOperationalState.AVAILABLE,
-                        "maintenance_session_id": None, "challenge_url": None,
-                        "challenge_target_id": None, "updated_at": now,
-                    })
-                    connection.execute("update browser_profiles set data_json=?,updated_at=? where profile_id=?",
-                                       (profile.model_dump_json(), now.isoformat(), profile.profile_id))
+                    profile = profile.model_copy(
+                        update={
+                            "operational_state": ProfileOperationalState.AVAILABLE,
+                            "maintenance_session_id": None,
+                            "challenge_url": None,
+                            "challenge_target_id": None,
+                            "updated_at": now,
+                        }
+                    )
+                    connection.execute(
+                        "update browser_profiles set data_json=?,updated_at=? where profile_id=?",
+                        (profile.model_dump_json(), now.isoformat(), profile.profile_id),
+                    )
             return value
+
+    def _record_recovered_window(self, connection, recovery, runtime):
+        if runtime.last_recovery_id == recovery.recovery_id:
+            return
+        now = utc_now()
+        policy = self.repository.get_strategy(recovery.site_id).challenge
+        seconds = policy.probation_seconds if recovery.site_id == "reuters" else 0
+        if (
+            seconds
+            and len(runtime.recent_relapses) >= 2
+            and all(
+                now - datetime.fromisoformat(r["at"]) <= timedelta(minutes=30)
+                for r in runtime.recent_relapses[-2:]
+            )
+        ):
+            seconds = max(seconds, 900)
+        self._write_identity_window(
+            connection,
+            runtime.model_copy(
+                update={
+                    "recovered_at": now,
+                    "probation_until": now + timedelta(seconds=seconds) if seconds else None,
+                    "probation_interval_ms": policy.probation_interval_ms if seconds else 0,
+                    "last_recovery_id": recovery.recovery_id,
+                    "natural_success_at": None,
+                }
+            ),
+        )
+
+    @staticmethod
+    def _write_identity_window(connection, value):
+        connection.execute(
+            "insert into identity_runtime values(?,?,?,?) on conflict(identity_id) do update set "
+            "data_json=excluded.data_json,generation=excluded.generation,updated_at=excluded.updated_at",
+            (value.identity_id, value.model_dump_json(), value.generation, utc_now().isoformat()),
+        )
 
     def record_capability(
         self,

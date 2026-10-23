@@ -26,13 +26,108 @@ class FailoverCoordinator:
         egress = self.service.repository.get_egress(identity.egress_id)
         expected = capability_fingerprint(self.service.repository, scope, identity, egress)
         checked = capability.get("checked_at")
+        runtime = self.service.repository.get_identity_runtime(identity_id)
         return (
-            capability.get("state") == "VERIFIED_COLD"
+            capability.get("state") in {"VERIFIED_COLD", "VERIFIED_WARM"}
             and capability.get("result") in {"READY", "FULL", "SHORT_FULL"}
             and capability.get("fingerprint") == expected
             and checked is not None
             and utc_now() - datetime.fromisoformat(checked) <= timedelta(hours=24)
+            and bool(capability.get("instance_id"))
+            and capability.get("instance_id") == runtime.instance_id
         )
+
+    def candidate_status(self, scope, identity_id, purpose):
+        """Pure common admission explanation; no Chrome start or route writes."""
+        repo = self.service.repository
+        reasons = []
+        if identity_id not in {scope.primary_identity_id, scope.fallback_identity_id}:
+            return {"selectable": False, "skip_reasons": ["not_scope_member"], "proof_ready": False}
+        identity = repo.get_identity(identity_id)
+        profile = repo.get_profile(identity.profile_id) if identity else None
+        egress = repo.get_egress(identity.egress_id) if identity else None
+        if not scope.enabled or not identity or not identity.enabled:
+            reasons.append("identity_disabled")
+        if (
+            not profile
+            or profile.operational_state.value != "AVAILABLE"
+            or any(
+                s.identity_id == identity_id and s.state == "OPEN"
+                for s in self.store.list_sessions()
+            )
+        ):
+            reasons.append("identity_in_maintenance")
+        if not egress or not egress.enabled or egress.status in {"CONFIG_MISSING", "UNAVAILABLE"}:
+            reasons.append("egress_unavailable")
+        recovery = self.store.get_recovery(identity_id)
+        recovering = recovery and recovery.phase != "RESOLVED"
+        if recovering and any(c["purpose"] == purpose.value for c in recovery.affected_contexts):
+            reasons.append("recovery_pending")
+        state = repo.get_runtime(f"scope:{scope.scope_id}")
+        member = state.combinations.get(identity_id)
+        if member:
+            if member.purpose_rejected_until.get(purpose.value, utc_now()) > utc_now():
+                reasons.append("purpose_cooldown")
+            if not recovering and member.manual_attention_required:
+                reasons.append("manual_attention")
+            if not recovering and member.state in {"COOLDOWN", "HALF_OPEN"}:
+                reasons.append("cooldown")
+        spec = repo.get_strategy(scope.owner_site_id)
+        required = (
+            spec.auth.crawler_requirement
+            if purpose is SitePurpose.CRAWLER
+            else spec.auth.body_requirement
+        )
+        if required == "inherit":
+            required = spec.auth.requirement
+        if identity and required == "required":
+            auth = repo.get_site_identity_auth(scope.owner_site_id, identity_id)
+            runtime = repo.get_identity_runtime(identity_id)
+            if (
+                auth.auth_state.value != "VALID"
+                or auth.observed_session_revision != runtime.session_revision
+            ):
+                reasons.append("auth_required")
+            if (
+                purpose is SitePurpose.BODY
+                and identity_id == scope.fallback_identity_id
+                and (
+                    not member
+                    or len(member.capabilities.get("BODY", {}).get("subscription_samples", [])) < 2
+                )
+            ):
+                reasons.append("two_subscription_article_checks_required")
+        proof = bool(identity and self.usable(scope, identity_id, purpose))
+        eligible = not reasons
+        if (
+            identity_id != state.active_combination_id
+            and not proof
+            and (
+                identity_id == scope.fallback_identity_id or state.active_combination_id is not None
+            )
+        ):
+            reasons.append("candidate_activation_required")
+        return {
+            "selectable": not reasons,
+            "eligible": eligible,
+            "skip_reasons": reasons,
+            "proof_ready": proof,
+        }
+
+    def reconcile(self, scope, purpose):
+        if not scope:
+            return None
+        state = self.service.repository.get_runtime(f"scope:{scope.scope_id}")
+        active = state.active_combination_id or scope.primary_identity_id
+        # BODY may borrow a proven identity without stealing a healthy crawler route.
+        if self.candidate_status(scope, active, purpose)["selectable"]:
+            return None
+        if (
+            purpose is SitePurpose.BODY
+            and self.candidate_status(scope, active, SitePurpose.CRAWLER)["selectable"]
+        ):
+            return None
+        return self.schedule(scope, purpose)
 
     async def close(self):
         for task in self.tasks.values():
@@ -40,34 +135,51 @@ class FailoverCoordinator:
         if self.tasks:
             await asyncio.wait(tuple(self.tasks.values()), timeout=3)
 
-    def schedule(self, scope, purpose):
+    def schedule(self, scope, purpose, candidate_id=None):
         if scope is None:
+            return None
+        state = self.service.repository.get_runtime(f"scope:{scope.scope_id}")
+        active_id = state.active_combination_id or scope.primary_identity_id
+        if candidate_id is None and self.candidate_status(scope, active_id, purpose)["selectable"]:
+            return None
+        candidate_id = candidate_id or (
+            scope.primary_identity_id
+            if active_id == scope.fallback_identity_id
+            else scope.fallback_identity_id
+        )
+        if not candidate_id or candidate_id == active_id:
             return None
         key = (scope.scope_id, purpose)
         if not scope.fallback_identity_id:
             return None
-        recovery = self.store.get_recovery(scope.fallback_identity_id)
+        if not self.candidate_status(scope, candidate_id, purpose).get("eligible", False):
+            return None
+        recovery = self.store.get_recovery(candidate_id)
         if recovery and recovery.phase != "RESOLVED":
             return None  # Recovery owns this identity; a cold canary must not erase its original.
-        if self.store.current_challenge(scope.fallback_identity_id):
+        if self.store.current_challenge(candidate_id) and not self.usable(
+            scope, candidate_id, purpose
+        ):
             return None
         repo = self.service.repository
-        identity = repo.get_identity(scope.fallback_identity_id)
+        identity = repo.get_identity(candidate_id)
         profile = repo.get_profile(identity.profile_id) if identity else None
         if not profile or profile.operational_state.value != "AVAILABLE":
             return None
         state = repo.get_runtime(f"scope:{scope.scope_id}")
-        if state.active_combination_id == scope.fallback_identity_id:
-            return None  # Sticky successor failure never means silently retrying primary.
         main = repo.get_identity(scope.primary_identity_id)
         main_egress = repo.get_egress(main.egress_id)
         egress = repo.get_egress(identity.egress_id)
-        if main_egress.node_ref != "DIRECT" and (
-            not self.store.egress_region(main_egress)
-            or self.store.egress_region(main_egress) != self.store.egress_region(egress)
-            or not main_egress.observed_ip
-            or not egress.observed_ip
-            or main_egress.observed_ip == egress.observed_ip
+        if (
+            candidate_id == scope.fallback_identity_id
+            and main_egress.node_ref != "DIRECT"
+            and (
+                not self.store.egress_region(main_egress)
+                or self.store.egress_region(main_egress) != self.store.egress_region(egress)
+                or not main_egress.observed_ip
+                or not egress.observed_ip
+                or main_egress.observed_ip == egress.observed_ip
+            )
         ):
             return None
         spec = repo.get_strategy(scope.owner_site_id)
@@ -99,17 +211,52 @@ class FailoverCoordinator:
         if existing and not existing.done():
             return existing
         task = asyncio.create_task(
-            self.activate(scope, purpose), name=f"cold-fallback:{scope.scope_id}"
+            self.activate(scope, purpose, candidate_id=candidate_id),
+            name=f"identity-failover:{scope.scope_id}",
         )
         self.tasks[key] = task
         return task
 
-    async def activate(self, scope, purpose, *, primary=False):
-        identity_id = scope.primary_identity_id if primary else scope.fallback_identity_id
+    async def activate(self, scope, purpose, *, primary=False, candidate_id=None):
+        identity_id = candidate_id or (
+            scope.primary_identity_id if primary else scope.fallback_identity_id
+        )
         if not identity_id:
             return {"ready": False, "reason": "fallback_unprovisioned"}
+        if identity_id not in {scope.primary_identity_id, scope.fallback_identity_id}:
+            return {"ready": False, "reason": "not_scope_member"}
+        primary = identity_id == scope.primary_identity_id
         lock = self._locks.setdefault(scope.scope_id, asyncio.Lock())
         async with lock:
+            status = self.candidate_status(scope, identity_id, purpose)
+            if not status.get("eligible", False):
+                return {"ready": False, "reason": status["skip_reasons"][0]}
+            if status["proof_ready"]:
+                before = self.service.repository.get_runtime(f"scope:{scope.scope_id}")
+                active = before.active_combination_id or scope.primary_identity_id
+                if (
+                    purpose is not SitePurpose.BODY
+                    or not self.candidate_status(scope, active, SitePurpose.CRAWLER)["selectable"]
+                ):
+                    try:
+                        await self.service.health.activate(
+                            before.runtime_key, identity_id, expected_generation=before.generation
+                        )
+                    except RuntimeError:
+                        return {"ready": False, "reason": "route_changed_during_activation"}
+                from .datadome_solver import mark_solver_outcome
+
+                if (
+                    self.service.repository.get_runtime(before.runtime_key).active_combination_id
+                    == identity_id
+                ):
+                    mark_solver_outcome(self.service.repository, identity_id, "route_activated_at")
+                return {
+                    "ready": True,
+                    "identity_id": identity_id,
+                    "canary": purpose.value,
+                    "warm": True,
+                }
             operation = self.store.save_operation(
                 MaintenanceOperation(
                     action="ACTIVATE_PRIMARY" if primary else "ACTIVATE_FALLBACK",
@@ -243,7 +390,13 @@ class FailoverCoordinator:
             remaining = min(35, deadline - time.monotonic())
             if remaining <= 0:
                 return {"ready": False, "reason": "cold_start_budget_exhausted"}
-            request = request.model_copy(update={"remaining_budget_ms": max(1, int(remaining * 1000))})
+            request = request.model_copy(
+                update={"remaining_budget_ms": max(1, int(remaining * 1000))}
+            )
+            async with service.budgets.joint.control_navigation(
+                identity_id, interval_ms=identity.access.min_interval_ms, deadline=deadline - 5
+            ):
+                pass
             response, category, reason, _ = await service._attempt(
                 request, resolved, combination, profile, egress
             )
@@ -298,14 +451,19 @@ class FailoverCoordinator:
             transport=AccessMode.BROWSER,
         )
         await service.health.clear_purpose_denial(resolved.runtime_key, identity_id, purpose)
-        try:
-            await service.health.activate(
-                resolved.runtime_key, identity_id, expected_generation=before.generation
-            )
-        except RuntimeError:
-            current = service.repository.get_runtime(resolved.runtime_key)
-            if current.active_combination_id != identity_id:
-                return {"ready": False, "reason": "route_changed_during_activation"}
+        active = before.active_combination_id or scope.primary_identity_id
+        if (
+            purpose is not SitePurpose.BODY
+            or not self.candidate_status(scope, active, SitePurpose.CRAWLER)["selectable"]
+        ):
+            try:
+                await service.health.activate(
+                    resolved.runtime_key, identity_id, expected_generation=before.generation
+                )
+            except RuntimeError:
+                current = service.repository.get_runtime(resolved.runtime_key)
+                if current.active_combination_id != identity_id:
+                    return {"ready": False, "reason": "route_changed_during_activation"}
         return {
             "ready": True,
             "identity_id": identity_id,

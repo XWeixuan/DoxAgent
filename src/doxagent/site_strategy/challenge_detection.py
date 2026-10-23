@@ -91,6 +91,7 @@ def assess(
     result.kind, result.interaction = "UNKNOWN", "UNKNOWN"
     if denied:
         result.kind = "ACCESS_BLOCK"
+        result.interaction, result.handling_mode = "ACCESS_BLOCK", "HUMAN"
         result.confidence = "HIGH"
         result.policy_reason = "explicit_access_denial"
         return result

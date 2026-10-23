@@ -9,7 +9,8 @@ from urllib.parse import parse_qs, urlsplit
 
 import httpx
 from lxml import html as H
-from .verification_frames import loaded_frame_document, observe_verification_frames
+
+from .verification_frames import loaded_frame_document as loaded_frame_document
 
 
 def captcha_url(html):
@@ -159,8 +160,9 @@ class NativeChallenge:
 
     @asynccontextmanager
     async def connection(self):
-        from .supervisor_client import ChromeSupervisorClient
         from websockets.asyncio.client import connect
+
+        from .supervisor_client import ChromeSupervisorClient
 
         self.check()
         client = ChromeSupervisorClient(
@@ -215,36 +217,39 @@ class NativeChallenge:
             yield call
 
     async def inspect(self):
+        from .verification_frames import observe_verification_document
+
         async with self.connection() as call:
-            root = (await call("DOM.getDocument", {"depth": 0}))["root"]
-            html = (await call("DOM.getOuterHTML", {"nodeId": root["nodeId"]}))["outerHTML"]
+            document = await observe_verification_document(call)
+            root, html = document["root"], document["html"]
             ua = (
                 self.user_agent
             )  # Actual Chrome metadata; no override or busy-renderer JS dependency.
             url = captcha_url(html)
             frame_html = ""
-            observations = await observe_verification_frames(call, root, html)
+            observations = document["frames"]
+            visible = None
             for frame in observations:
-                if frame["loaded"] and loaded_challenge_url(frame["url"]):
+                if (
+                    frame["loaded"]
+                    and frame["visible"] is not False
+                    and loaded_challenge_url(frame["url"])
+                ):
                     url, frame_html = frame["url"], frame["html"]
+                    visible = frame["visible"]
                     break
-            # Legacy same-process fallback; OOPIF is absent from Page.getFrameTree.
-            tree = await call("Page.getFrameTree")
-            for frame in ([] if any(f["loaded"] for f in observations) else tree.get("frameTree", {}).get("childFrames", [])):
-                node = frame.get("frame", {})
-                loaded_url = loaded_challenge_url(node.get("url", ""))
-                if url and loaded_url:
-                    url = loaded_url
-                    try:
-                        frame_html = await loaded_frame_document(call, node["id"])
-                    except RuntimeError:
-                        pass  # An OOPIF is not necessarily addressable on this page session.
+            state = challenge_state(url, frame_html) if frame_html else "UNAVAILABLE"
+            if state == "SOLVABLE" and (
+                visible is not True or document["assessment"].kind != "INTERACTIVE"
+            ):
+                state = "UNAVAILABLE"
             self.check()
             return {
                 "url": url,
                 "website": root.get("documentURL"),
                 "user_agent": ua,
-                "state": challenge_state(url, frame_html or html),
+                "state": state,
+                "presence_state": document["presence_state"],
             }
 
     async def reload(self):
@@ -284,8 +289,11 @@ class NativeChallenge:
             if result.get("success") is False:
                 raise RuntimeError("solver_cookie_rejected")
             visible = await call("Network.getCookies", {"urls": [website]})
-            if not any(c.get("name") == params["name"] and c.get("value") == params["value"]
-                       and c.get("domain") == params["domain"]
-                       for c in visible.get("cookies", [])):
+            if not any(
+                c.get("name") == params["name"]
+                and c.get("value") == params["value"]
+                and c.get("domain") == params["domain"]
+                for c in visible.get("cookies", [])
+            ):
                 raise RuntimeError("solver_cookie_not_visible_to_publisher")
             await call("Page.reload", {"ignoreCache": False})

@@ -54,20 +54,31 @@ def viewer_binding_matches(expected, sessions):
 def verification_message(details):
     if "challenge" not in details:
         return None
-    if details.get("reason") == "automatic_verification_pending":
-        return "Automatic verification is running. No CAPTCHA interaction is required."
-    if details.get("reason") == "original_page_unavailable":
-        return "Original page unavailable; business verification continues separately."
-    if details["challenge"] == "BLOCKED":
-        return "Challenge still blocks this page. Complete it in the Viewer, then verify again."
     prefix = (
         "Original page challenge cleared. " if details["challenge"] == "CLEARED" else
         "Original page is not yet recognized as ready. "
     )
+    if details.get("reason") == "automatic_verification_pending":
+        prefix = "Automatic verification is running. No CAPTCHA interaction is required. "
+    elif details.get("reason") == "original_page_unavailable":
+        prefix = "Original page unavailable; business verification continues separately. "
+    elif details["challenge"] == "BLOCKED":
+        prefix = {
+            "ACCESS_BLOCK": "Access was rejected. Check the identity/egress; this is not a solvable CAPTCHA. ",
+            "AUTO_CHECK": "Automatic check stalled. Manual review is available; no interactive CAPTCHA confirmed. ",
+            "UNKNOWN": "Verification evidence is incomplete. Recheck or release the Viewer. ",
+        }.get(details.get("verification_kind"), "Challenge still blocks this page. Complete it in the Viewer, then verify again. ")
+    if details["challenge"] == "CLEARED" and details.get("authentication") == "REAUTH_REQUIRED":
+        prefix += "Use Open Login separately to restore the account. "
     return (
         prefix + "Login: " + details.get("authentication", "UNKNOWN")
         + "; crawler: " + details.get("crawler", "NOT_TESTED")
         + "; body: " + details.get("body", "NOT_TESTED")
+        + "; route: " + ("ready" if details.get("route_ready") else "pending")
+        + "; original: " + str(details.get("presence_state") or "UNKNOWN")
+        + " (" + str(details.get("presence_checked_at") or "not checked") + ")"
+        + "; solver: " + str(details.get("solver_state") or "not used")
+        + "; cost: " + str(details.get("solver_cost") or "unknown")
         + ". " + str(details.get("crawler_reason") or "")
         + " " + str(details.get("body_reason") or "")
     ).strip()
