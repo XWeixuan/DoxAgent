@@ -60,3 +60,16 @@
 发布后多个源的旧Message Bus报ValidationError，核实其AccessResult仍extra=forbid，而新服务默认输出capture_id/served_from_shared_capture。这不是网站风控。修复为仅在客户端显式发送X-Site-Access-Capture-Metadata: 1时返回新增字段；协议2/3旧消费者保持原始字段集合，物理/复用审计仍在服务端记录，不需重建Bus/Enrichment。新客户端通过同一可选请求头协商，增加既有协议回归正反例。以后新增可选模型字段不能直接等同于旧严格客户端的线兼容。
 
 自然轮询进一步证实还须覆盖resolve的嵌套ChallengePolicy：新增probation_seconds/probation_interval_ms同样被旧模型拒绝。两处响应统一显式协商，回归覆盖resolve和execute，不能只修顶层字段。
+
+## 最终交付与未完成的长期验收
+
+- 最终运行代码`937d7159`，UTC12:57:10发布；镜像`doxagent-site-access:challenge-repair-937d7159`，53个源码文件逐一匹配，聚合hash=`8c3fedc3831144cb2de58e99abdabe6cdabf1bc9d55a2946381a674ced4d58eb`。私有回滚manifest位于`/var/lib/doxagent/releases/challenge-solver-repair-20261023-wire/manifest.json`，不回滚SQLite/Profile。
+- Site Access=`8f3cc6438754...`且healthy；Supervisor=`5042aeafd5d9...`、Bus=`f1f1eb2a8d9b...`、Enrichment=`0cf9ad0b0438...`与本次发布前相同，网络命名空间绑定当前Supervisor。本次没有重建这三个组件、captcha-proxy或Clash。英文桌面脚本已原位安装。
+- 最终原生只读确认：主`7FDE4CC6...`/`83135655...`及备用`E9462773...`/`e73d9680...`均exact_target_present=true。没有把数据库LIVE当成物理存在证明。人工可通过对应Task的Open Original继续处理，未替用户完成验证码。
+- 发布后用**未重建的Bus内旧模型**读取三站Registry resolve，均验证通过，无新闻网站请求。随后自然回执确认Barron’s/Investing/InvestorsHub均再次CRAWLER SUCCESS，BE/SNOW等PollState恢复succeeded；InvestorsHub另有一条真实FULL。不是所有ticker均完成完整轮次，不能以此代替24小时验收。
+- 最终复合回归：`test_solver_recovery_repair.py`+`test_browser_recovery.py` **71 passed/69.03s**；线兼容收尾后32项focused通过，再补nested resolve用例1项通过。生产改动模块Ruff通过（忽略既有SQL长行E501）；既有browser测试文件仍有导入排序I001，不作为业务通过证据。此前宽回归及其独立维护Worker固定时钟排除项见上。
+- 初始发布窗口至12:54:51共17个PROBE_STARTED/17个PROBE_FINISHED，含受控发布取消，不能把所有终态当网站成功。`acceptance-release.json`与`final-wire-release.json`分别记录完整首发窗口与最终版本短窗口；快照不是小时分位。
+- Reuters仅观察到4次短暂真实采集后再次阻断；本窗口未有Reuters FULL。新付费任务明确UNSOLVABLE，费用未知，无ready/APPLIED/业务成功。**内部修复交付，不宣称Reuters持续可用或本轮solver端到端成功。** 当前仍需人工处理主备原页；既有后台恢复和真实候选接替保留。
+- 自动化24继续只读观察至**2026-10-24 12:17:55 UTC（北京时间20:17:55）**，不随收尾重置；仅有实质恢复/重要故障/需人工或最终截止才汇报。不会额外请求网站、购买测试、换IP、部署、重启或删除。24小时稳定性、跨3轮查询覆盖、复发频率及长期资源曲线尚未验收。
+
+脱敏记录：`eval/challenge_solver_repair_20261023/`；未将大体积JSON与其他会话产物提交Git。其他会话原有changelog改动保留未提交。
