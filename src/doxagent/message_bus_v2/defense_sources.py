@@ -229,6 +229,7 @@ class Capture:
     url: str
     text: str
     headers: dict
+    transport_retries: int = 0
 
 
 class DefenseHttp:
@@ -242,6 +243,19 @@ class DefenseHttp:
         self.started = {}
 
     async def fetch(self, url, endpoint, *, headers=None):
+        for attempt in range(2):
+            try:
+                capture = await self._fetch(url, endpoint, headers=headers)
+                capture.transport_retries = attempt
+                return capture
+            except Exception as exc:
+                if attempt or getattr(exc, "code", None) != 35:
+                    raise
+                # Retry the same TLS route once; HTTP refusals never rotate
+                # exits or consume extra browser/identity resources.
+                await asyncio.sleep(0.2)
+
+    async def _fetch(self, url, endpoint, *, headers=None):
         from .http_routes import HTTP_EGRESSES
 
         allowed = {endpoint.host}
@@ -694,6 +708,7 @@ class DefenseAdapter:
                         "items": len(rows),
                         "unchanged_items": unchanged,
                         "route": e.route,
+                        "transport_retries": capture.transport_retries,
                     }
                 )
             except Exception as exc:

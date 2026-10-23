@@ -98,3 +98,7 @@ HTTP 429 保存真实失败，并按 Retry-After（至少 60 秒）延期，不�
 ### API 语言范围兼容
 
 API 的 MonitoringTermsControl 有独立 snapshot/validate 路径，已同步按有效订阅限制可选国防源的语言要求：ONDS 需要 he，RKLB、MU 等未订阅 Calcalist 的 ticker 不需要 he。真实 CAS、校验和 HTTP 合同相关 **8 项通过**。前端语言列表动态读取 API，无需重建 Web；API 组件需要同步新版本，避免只更新 Collector 而遗留配置页校验回归。
+
+### 运行时传输抖动
+
+持续采样捕获到 Breaking Defense 的 curl 35 TLS 握手失败。公开 HTTP 客户端现在只对该握手错误做一次同一出口的 200ms 短重试，原请求释放许可后重试；不轮换身份/出口，不重试 HTTP 403/429。采集证据和正文诊断记录 transport_retries。相关消息源、缓存及 IR 传输 **48 项通过**。部分窗口覆盖与真实网络失败仍如实保存，不以某次全成功快照冒充永久 SLA。

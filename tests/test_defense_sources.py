@@ -141,6 +141,22 @@ async def test_publisher_rate_limit_defers_without_busy_retry():
     assert http.fetch.await_count == 1 and not result.messages
 
 
+async def test_tls_handshake_retries_same_route_once_but_not_http_refusals():
+    class HandshakeError(Exception):
+        code = 35
+
+    e = ENDPOINTS["breakingdefense_space"]
+    client = DefenseHttp()
+    response = Capture(200, e.urls[0], "valid", {})
+    client._fetch = AsyncMock(side_effect=[HandshakeError("TLS"), response])
+    assert (await client.fetch(e.urls[0], e)).transport_retries == 1
+    assert client._fetch.await_count == 2
+    assert client._fetch.await_args_list[0].args == client._fetch.await_args_list[1].args
+    client._fetch = AsyncMock(return_value=Capture(403, e.urls[0], "refused", {}))
+    assert (await client.fetch(e.urls[0], e)).status == 403
+    assert client._fetch.await_count == 1
+
+
 async def test_shephard_html_supplements_stale_undated_feed():
     e = ENDPOINTS["shephard_uncrewed"]
 

@@ -2090,3 +2090,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-24 Shephard付费质量门禁：当前文章HTTP200虽有2362字符，明确isAccessibleForFree=False且页面要求Defence Insight订阅，公开路径不得按长度误报FULL；subscription_required终结且不走Reader，新scope隔离旧未验证缓存。付费声明与缓存47项回归通过；增有界真实访问复核工具，仅纠正已证实付费的旧READY质量，保留正文/原收据/审计，无消息重投；核对Raw计数0。
 
 2026-10-24 消息源API语言兼容：发现API MonitoringTermsControl有独立全局语言计算，同步按ticker有效订阅限制可选国防源语言；仅ONDS要求he，MU/RKLB配置编辑不受Calcalist影响，真实CAS/校验/HTTP合同8项通过并窄发布API。付费缓存真实逐条复核5条READY，2条订阅声明确认后改PARTIAL并已投影，另3条保留；Raw计数0且不重投。
+
+2026-10-24 国防消息源传输恢复：自然轮询捕获Breaking Defense curl35 TLS握手抖动，仅增加一次同固定出口200ms重试，原请求先释放许可；403/429不重试、不切身份。采集和正文诊断保存transport_retries，48项源/缓存/IR传输回归通过；保留部分覆盖和终态失败真实审计，不宣称永不失败。

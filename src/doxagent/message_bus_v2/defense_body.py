@@ -112,6 +112,7 @@ class DefenseBodyReader:
             "outcome": outcome,
             "body_source": "official_article_api" if native else "defense_public_http",
             "http_route": e.route,
+            "transport_retries": capture.transport_retries if capture else 0,
             "pipeline_version": "defense_public_v1",
             "publisher_published_at": info.publisher_published_at,
             "public_access_free": not info.subscription_article,
