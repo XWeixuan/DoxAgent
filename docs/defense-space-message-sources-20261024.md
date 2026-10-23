@@ -49,7 +49,7 @@
 - SpaceNews RSS direct 可读；Chrome TLS 正文被拦截，标准库 TLS 的同一文章返回正常 HTML，因而选择固定标准库传输，无浏览器回退。
 - Calcalist 原页面只是 CSE 搜索壳，不能把 HTTP 200 当作有结果。临时浏览器用于观察公开搜索请求，随后纯 HTTP token + 搜索请求已在生产 direct/美国/德国三个路径分别取得真实结果；正式采集不启动浏览器。详情页使用已验证德国 HTTP 路径。
 - Aviation Week 的两个付费样本均明确 subscription_required。列表覆盖保留，但没有用户可用付费身份/权益时无法承诺这些文章 FULL；不会伪造成功或创建空身份反复尝试。
-- 普通文章样本包括 DefenseScoop、Air & Space Forces、space.com、SSC、NASA、Iridium、Unmanned Airspace、Shephard，已通过真实正文质量检查。Army RSS 也会返回外部报道摘要类条目，应保留 source_summary_only，不能把它们当作完整官方文章。
+- 普通文章样本包括 DefenseScoop、Air & Space Forces、space.com、SSC、NASA、Iridium、Unmanned Airspace，已通过真实正文质量检查。Shephard 的旧版绿色结果需要下述付费质量复核。Army RSS 的图片链接误判已修复，但真正外部摘要仍保留 source_summary_only。
 
 ## 配置、测试与发布
 
@@ -86,3 +86,11 @@ HTTP 429 保存真实失败，并按 Retry-After（至少 60 秒）延期，不�
 同时核对发现，Shephard RSS 不带日期，包含 2025 年旧文章；同栏目 HTML 已有 2026-10-22 等新文章。仅使用所给 RSS 会漏新消息，因此保留 RSS 并增加同一栏目的 article-card HTML 补采，解析明确日期，不抓侧栏“热门”列表。不虚构精确时刻；同日 DATE 不能被合成中午后用于证明盘中窗口覆盖。该源的两个入口是同栏目的补充路径，可由有日期 HTML 证明覆盖，其他不同 tag 的多个 feed 仍需分别满足覆盖。
 
 5 个历史失败结果保留，不删除、不伪装恢复，也不批量重投旧新闻。新增真实 HTML 精简合同、站点/全局容量所有权和 DATE 覆盖回归。其他相关回归 149 项通过；一项新测试原先依赖 Windows 40ms 调度而波动，改为确定性事件验证后，最终 **42 项源/传输专项全部通过**。
+
+### 付费声明与公开正文质量复核
+
+进一步检查 Shephard 当前文章发现：虽然 HTTP 返回 2362 字符，JSON-LD 明确 isAccessibleForFree=False，正文页也写明需要 Defence Insight 订阅。仅凭长文本不能证明完整；因此公开抓取路径只要遇到该订阅声明，就返回 subscription_required，不把长预览计作 FULL，也不走 Reader。新的公开正文访问 scope 为 `public:shephard_verified_free_v2`，隔离旧版未验证缓存。
+
+已只读核对现有 Registry，没有 Aviation Week/Shephard 当前专项 Site；本次未取得可验证的付费 BODY 访问能力，不新增空身份或谎报登录。Aviation Week 和 Shephard 的付费文章均需另有有效订阅访问能力。
+
+旧 Shephard 的 5 条 READY 在正文质量证明上不可直接相信；检查时该源 Raw 消息数为 0，没有错误正文进入 ticker 流。受限复核工具 `eval/defense_sources_20261024/reclassify_shephard_results.py` 逐条真实访问，仅在确认订阅声明后将当前质量改为 PARTIAL/FAILED，保留原内容、原执行收据及新增审计，不创建 Stream 或重投旧新闻。最终逐条结果见发布回执。付费策略与原有缓存回归 **47 项通过**。

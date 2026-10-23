@@ -101,6 +101,10 @@ class DefenseBodyReader:
             job.message.title,
             strategy_parameters={"body_xpath": body_xpath},
         )
+        if e.source_id == "shephard_uncrewed" and info.subscription_article:
+            # Public HTTP has no verified subscriber entitlement. A long
+            # preview must not pass merely because it exceeds 800 characters.
+            info.access_reason = "subscription_required"
         if job.message.metadata.get("defense_media_format") == "video_or_podcast":
             info.page_kind = "media"
         candidate, outcome, reason = choose_candidate(info, job.message.title)
@@ -110,6 +114,7 @@ class DefenseBodyReader:
             "http_route": e.route,
             "pipeline_version": "defense_public_v1",
             "publisher_published_at": info.publisher_published_at,
+            "public_access_free": not info.subscription_article,
             "validators": {
                 k.lower(): v
                 for k, v in (capture.headers if capture else {}).items()

@@ -574,3 +574,37 @@ async def test_feed_video_intro_is_not_a_complete_transcript():
     )
     result = await DefenseBodyReader(http).extract(job, record)
     assert not result.succeeded and result.reason == "unsupported_media"
+
+
+async def test_shephard_paid_declaration_rejects_long_public_preview():
+    e = ENDPOINTS["shephard_uncrewed"]
+    title = "Defence industry advances a new autonomous platform"
+    url = "https://" + e.host + "/news/uv-online/example/"
+    raw = (
+        "<h1>" + title + '</h1><script type="application/ld+json">'
+        '{"@type":"Article","headline":"' + title + '","isAccessibleForFree":"False"}'
+        "</script><article><p>"
+        + (
+            "This platform will support new operations. "
+            "The programme covers development and testing. "
+        )
+        * 30
+        + "</p></article>"
+    )
+    job = SimpleNamespace(
+        source=next(s for s in initial_sources() if s.source_id == e.source_id),
+        message=RawMessageInput(title=title, url=url, raw_payload={}),
+    )
+    http = SimpleNamespace(fetch=AsyncMock(return_value=Capture(200, url, raw, {})))
+    record = MediaEnrichmentRecord(
+        standard_message_id="s",
+        raw_message_id="r",
+        source_id=e.source_id,
+        ticker="ONDS",
+        title=title,
+        body="",
+        url=url,
+    )
+    result = await DefenseBodyReader(http).extract(job, record)
+    assert not result.succeeded and result.reason == "subscription_required"
+    assert result.diagnostics["public_access_free"] is False

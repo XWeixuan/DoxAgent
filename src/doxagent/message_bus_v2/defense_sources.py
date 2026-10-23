@@ -632,6 +632,8 @@ class DefenseAdapter:
                         defense_http_route=e.route,
                         content_language=e.language,
                     )
+                    if e.source_id == "shephard_uncrewed":
+                        m.metadata["body_access_scope"] = "public:shephard_verified_free_v2"
                     signature = sha256_text(
                         canonical_json(
                             [
