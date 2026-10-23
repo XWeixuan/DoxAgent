@@ -1,0 +1,1 @@
+{"items": 24, "dated_html_items": 14, "endpoint_count": 2, "failures": [], "coverage": "COMPLETE", "body_access_scope": "public:shephard_verified_free_v2", "body": {"outcome": "UNAVAILABLE", "reason": "subscription_required", "succeeded": false, "public_access_free": false}}

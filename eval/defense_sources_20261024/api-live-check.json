@@ -1,0 +1,1 @@
+{"languages": {"MU": ["en", "ko", "zh-Hant"], "RKLB": ["en", "ko", "zh-Hant"], "ONDS": ["en", "he", "ko", "zh-Hant"]}, "http_health": {"/healthz": 200, "/readyz": 200}}

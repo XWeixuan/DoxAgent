@@ -102,3 +102,23 @@ API 的 MonitoringTermsControl 有独立 snapshot/validate 路径，已同步按
 ### 运行时传输抖动
 
 持续采样捕获到 Breaking Defense 的 curl 35 TLS 握手失败。公开 HTTP 客户端现在只对该握手错误做一次同一出口的 200ms 短重试，原请求释放许可后重试；不轮换身份/出口，不重试 HTTP 403/429。采集证据和正文诊断记录 transport_retries。相关消息源、缓存及 IR 传输 **48 项通过**。部分窗口覆盖与真实网络失败仍如实保存，不以某次全成功快照冒充永久 SLA。
+
+
+## 生产发布完成记录
+
+截至北京时间 **2026-10-24 04:02:49**（UTC 20:02:49），18 个外部源、21 个内部入口已配置，RKLB 12 条、ONDS 8 条订阅全部启用，目标轮询间隔 60 秒；最新 20 条订阅状态均 succeeded。Army 曾返回空文档，下一正常轮询已恢复；此前的 TLS 抖动与失败仍保留记录。此快照不等于长期可用率或 60 秒发现 SLA。
+
+- Message Bus、Content Enrichment、Scheduler 运行 `d5084277`，镜像 `sha256:06366b863f8771befc9e1d0a0534b9e8c16ac9fcb822853b08098d231e37ae8c`；API 运行 `0731297c`，镜像 `sha256:dd01f0205f13c60306188692433628f432c0f6e056abf226d6cb53e0508cf267`。四组件运行正常、重启计数均为 0，API healthz/readyz 均 200。后续本节归档提交只包含文档和验证证据，不需要重建镜像。
+- 配置重复 apply：0 个来源变更、0 个词表变更、20 条绑定 unchanged；RKLB 词表 revision 1，ONDS revision 2。读侧已见 18 个 source definitions、20 条绑定。API 实测 MU/RKLB 仍要求 en/ko/zh-Hant，仅 ONDS 增加 he。
+- 正式适配器全部采用 RSS、HTTP HTML 或 JSON，共享客户端及同站容量；未新增 Chrome 身份、常驻页或服务。Chrome Supervisor 保持原容器与原启动时间，Site Access 未重新发布；资源维护 timer 已恢复 active。
+- Shephard 最终双入口 canary 返回 24 项，其中 14 项有日期，两入口均成功、覆盖 COMPLETE；明确付费文章返回 subscription_required。旧 5 条 READY 经逐篇复核，仅 2 条确认订阅声明后修正为 PARTIAL/FAILED，另 3 条保留；修正已投影。复核时该源 Raw 为 0，未创建消息流、未重投历史新闻，原正文与执行收据保留，新增质量审计。
+- 航空周刊及 Shephard 的付费稿仍需有效订阅访问能力；不能把列表可见或长预览当作 FULL。SpaceNews 普通新闻 FULL 3540 字符等公开正文样本已验证；视频简介另列 unsupported_media。
+- 分发模型全局开关已开启且 key 已配置（仅检查布尔状态）；本次没有以此宣称单独验证了供应商模型响应。DoD 合同继续共享补正文后按 ticker 相关性分发，避免泛标题丢失承包商消息。
+- 自然运行台账为 18 completed / 7 failed 作业、12 READY / 9 FAILED 当前正文结果。包含启动时旧 RSS、付费和质量复核，分母不同且阶段不同，不能据此计算真实新文章 FULL 成功率。未删除失败或通过回放制造验收成功。
+- 中间版本的单点资源样本：Bus 253.6 MiB、Enrichment 177.3 MiB、Scheduler 389.2 MiB；这是承载全部原有业务的进程快照，不是新增源增量，也不是最终镜像的前后因果对照。资源上的确定变化是未增加浏览器进程或身份。
+
+最终代码验证包括 48 项消息源/正文缓存/IR 传输回归、8 项 API/CAS/HTTP 合同；前述 149 项其他回归与去除计时依赖后的专项结果分开保留，不拼成一次全套通过记录。Ruff 与 diff 检查通过。
+
+证据目录 `eval/defense_sources_20261024/`：`production-status-final.json`、`configuration-idempotence-final.json`、`api-live-check.json`、`distribution-capability.json`、`shephard-final-canary.json`、`shephard-quality-review.json`、`quality-projection-check.json`、`spacenews-ordinary-body.json`、`transport-recovery-tests.txt`。早期候选误判保留为排查证据，由后续明确质量检查结论取代。
+
+服务器发布和配置日志保存在 `/var/lib/doxagent/defense-sources-20261024/`；含运行环境的 private manifests 仅留受限目录，不进入仓库。若需回退，先通过现有 Owner/CAS 停用本次 20 条绑定，再按该目录保存的旧镜像经标准发布入口回退相关组件；保留词表、历史正文和审计，不覆盖数据库、不删除数据或重发旧消息。
