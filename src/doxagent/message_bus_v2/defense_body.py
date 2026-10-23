@@ -5,6 +5,8 @@ from dataclasses import replace
 from html import escape
 from urllib.parse import urlsplit
 
+from lxml import html
+
 from doxagent.content_enrichment.quality import choose_candidate, inspect_html
 from doxagent.content_enrichment.transport import REVALIDATION, conditional_headers
 from doxagent.monitoring.media_enrichment import FetchAttempt, MediaExtractionResult
@@ -78,7 +80,28 @@ class DefenseBodyReader:
                     ],
                 )
             raw = capture.text
-        info = await asyncio.to_thread(inspect_html, raw, record.url, job.message.title)
+        body_xpath = {
+            "breakingdefense_space": [
+                '//div[contains(concat(" ",normalize-space(@class)," ")," post-single__content ")]'
+            ],
+            "calcalist_search": ['//*[@id="ArticleBodyComponent"]'],
+        }.get(e.source_id, [])
+        if body_xpath and not any(html.fromstring(raw).xpath(selector) for selector in body_xpath):
+            return MediaExtractionResult(
+                record=record,
+                reason="article_body_scope_missing",
+                http_status=capture.status if capture else None,
+                diagnostics={"outcome": "PARTIAL", "body_source": "defense_public_http"},
+            )
+        info = await asyncio.to_thread(
+            inspect_html,
+            raw,
+            record.url,
+            job.message.title,
+            strategy_parameters={"body_xpath": body_xpath},
+        )
+        if job.message.metadata.get("defense_media_format") == "video_or_podcast":
+            info.page_kind = "media"
         candidate, outcome, reason = choose_candidate(info, job.message.title)
         diagnostics = {
             "outcome": outcome,

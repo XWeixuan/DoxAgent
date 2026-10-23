@@ -416,6 +416,8 @@ def inspect_html(
         if len(label) > 100:
             continue
         href = urljoin(url, link.get("href"))
+        if re.search(r"\.(?:jpg|jpeg|png|gif|webp|svg|avif)$", urlparse(href).path, re.I):
+            continue
         if EXPAND.fullmatch(label) or re.search(
             r"read (?:the )?(?:original|full) article|view original", label, re.I
         ):

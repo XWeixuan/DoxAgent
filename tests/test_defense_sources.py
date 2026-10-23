@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from doxagent.content_enrichment.quality import title_match
+from doxagent.content_enrichment.quality import choose_candidate, inspect_html, title_match
 from doxagent.message_bus_v2.defense_body import DefenseBodyReader
 from doxagent.message_bus_v2.defense_sources import (
     CATALOG,
@@ -88,6 +88,8 @@ def test_real_endpoint_contracts(source_id):
         else True
     )
     assert all(m.body is None for m in rows)
+    if source_id == "spacenews_rss":
+        assert rows[0].metadata["defense_media_format"] == "video_or_podcast"
 
 
 def test_same_site_shares_scheduler_and_no_default_ticker_fanout():
@@ -336,3 +338,112 @@ async def test_missing_feed_date_is_replaced_only_with_exact_article_evidence():
     result = await DefenseBodyReader(http).extract(job, record)
     assert result.succeeded
     assert result.diagnostics["publisher_published_at"] == "2026-05-20T14:55:00+01:00"
+
+
+def test_initial_company_terms_are_created_only_when_absent(tmp_path):
+    repo = MessageBusV2Repository(tmp_path / "bus.sqlite3")
+    bus = MessageBusV2Service(repo)
+    bus.bootstrap()
+    for ticker in ["RKLB", "ONDS"]:
+        bus.start_ticker(ticker)
+    first = configure(bus)
+    assert {r["ticker"] for r in first["initial_terms"]} == {"RKLB", "ONDS"}
+    assert len(first["bindings"]) == 20
+    second = configure(bus)
+    assert second["initial_terms"] == [] and second["terms"] is None
+
+
+@pytest.mark.parametrize("source_id", ["breakingdefense_space", "calcalist_search"])
+async def test_primary_body_is_selected_instead_of_structured_sidebar(source_id):
+    e = ENDPOINTS[source_id]
+    title = "Rocket Lab wins a new launch contract"
+    body = (
+        "The government awarded Rocket Lab a new launch contract for scientific satellites. "
+        "The mission will deploy several payloads after the qualification campaign. "
+    ) * 15
+    primary = (
+        '<div class="post-single__content"><p>' + body + "</p></div>"
+        if source_id == "breakingdefense_space"
+        else '<div id="ArticleBodyComponent"><span>' + body + "</span></div>"
+    )
+    raw = (
+        "<html><h1>"
+        + title
+        + "</h1>"
+        + primary
+        + '<aside><div class="article-body"><p>Sidebar preview. '
+        + "Read this unrelated defense story for a short overview. " * 4
+        + "</p></div></aside></html>"
+    )
+    url = "https://" + e.host + "/article/example"
+    http = SimpleNamespace(fetch=AsyncMock(return_value=Capture(200, url, raw, {})))
+    message = RawMessageInput(title=title, url=url, raw_payload={})
+    job = SimpleNamespace(
+        source=next(s for s in initial_sources() if s.source_id == source_id), message=message
+    )
+    record = MediaEnrichmentRecord(
+        standard_message_id="s",
+        raw_message_id="r",
+        source_id=source_id,
+        ticker=e.tickers[0],
+        title=title,
+        body="",
+        url=url,
+    )
+    result = await DefenseBodyReader(http).extract(job, record)
+    assert result.succeeded
+    assert "government awarded" in result.content
+    assert "Sidebar preview" not in result.content
+
+
+def test_view_original_image_is_not_a_publisher_redirect():
+    title = "Army announces a new unmanned systems program"
+    body = (
+        "The Army has announced an unmanned systems program to support field units. "
+        "Engineers will evaluate the platform during exercises before procurement. "
+    ) * 12
+    raw = (
+        "<html><h1>"
+        + title
+        + '</h1><div class="article-body"><p>'
+        + body
+        + '</p><a href="https://api.army.mil/images/original.jpg">View original</a></div></html>'
+    )
+    info = inspect_html(raw, "https://www.army.mil/article/123/example", title)
+    assert info.publisher_links == []
+    assert choose_candidate(info, title)[0] is not None
+
+
+async def test_feed_video_intro_is_not_a_complete_transcript():
+    e = ENDPOINTS["spacenews_rss"]
+    title = "Interview about new satellite networks"
+    url = "https://spacenews.com/interview-about-new-satellite-networks/"
+    raw = (
+        "<h1>"
+        + title
+        + "</h1><article><p>"
+        + (
+            "This interview introduces the company's satellite network program. "
+            "The discussion covers development schedules and new customers. "
+        )
+        * 12
+        + "</p></article>"
+    )
+    message = RawMessageInput(
+        title=title, url=url, raw_payload={}, metadata={"defense_media_format": "video_or_podcast"}
+    )
+    job = SimpleNamespace(
+        source=next(s for s in initial_sources() if s.source_id == e.source_id), message=message
+    )
+    http = SimpleNamespace(fetch=AsyncMock(return_value=Capture(200, url, raw, {})))
+    record = MediaEnrichmentRecord(
+        standard_message_id="s",
+        raw_message_id="r",
+        source_id=e.source_id,
+        ticker="RKLB",
+        title=title,
+        body="",
+        url=url,
+    )
+    result = await DefenseBodyReader(http).extract(job, record)
+    assert not result.succeeded and result.reason == "unsupported_media"

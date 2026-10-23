@@ -35,15 +35,24 @@ def hebrew_terms(current, revision):
 
 def configure(service):
     repo = service.repository
-    report = {"applied": True, "sources": [], "bindings": [], "terms": None}
+    report = {"applied": True, "sources": [], "bindings": [], "terms": None, "initial_terms": []}
     with repo.atomic_intake():
         for ticker in ("RKLB", "ONDS"):
             if repo.get_ticker_state(ticker) is None:
                 raise ValueError("ticker not registered:" + ticker)
         terms_service = MonitoringTermsService(repo)
+        seeds = json.loads(
+            Path(__file__)
+            .with_name("defense-monitoring-terms-20261024.json")
+            .read_text(encoding="utf-8")
+        )
         for ticker in ("RKLB", "ONDS"):
             if terms_service.get(ticker) is None:
-                raise ValueError("existing unified monitoring terms required:" + ticker)
+                revision = terms_service.apply(
+                    TickerMonitoringTerms.model_validate(seeds[ticker]),
+                    actor="defense-source-onboarding",
+                )
+                report["initial_terms"].append({"ticker": ticker, "revision": revision})
         revision, current = terms_service.get("ONDS")
         desired = hebrew_terms(current, revision)
         old = current.model_dump(mode="json")

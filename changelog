@@ -2078,3 +2078,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-24 消息时效优化生产发布：同步origin/main并通过标准release构建发布七个相关组件，启用五源组/五Site/十有效Identity容量2及Yahoo九ticker 30秒配置；完成CDC/Read迁移、固定SQLite备份与观察结果引用修复。发布期间修复配置CAS顺序、历史文章查找扫描、重复写入和旧文更新Worker退出；最终服务运行且重启0，配置dry-run零差异，原Supervisor和身份保留、维护任务恢复。发布回执见docs/message-source-polling-and-body-completion-optimization-release-20261024.md；真实采集间隔和延期仍偏高，短窗2篇正文成功不足以验收P0/P1。
 
 2026-10-24 国防航天消息源：新增统一轻量HTTP适配器承载18外部源/20栏目，按站共用调度和连接池、端点失败隔离及条件轮询，BODY独立补全并复用既有正文结果。实现NASA官方同年API原文复用、Calcalist公开CSE搜索与ONDS希伯来词表、SpaceNews标准库TLS和固定已验证出口；DoD日汇总合同按完整正文共享分发给RKLB/ONDS。新增20条订阅的Owner事务配置工具；135项相关回归通过，未将付费墙/摘要当全文，生产候选验证与启用回执见docs/defense-space-message-sources-20261024.md。
+
+2026-10-24 国防航天候选验证修正：为Breaking Defense/Calcalist固定主正文范围，防止侧栏短文误报SHORT_FULL；图片原图链接不再触发原文外跳拒绝，视频/播客简介不得冒充完整逐字稿。DoD Releases改用官方重定向所指HTTPS ArticleCS ContentType=9；初始配置在RKLB/ONDS词表缺失时建立可审阅公司级规则，不覆盖已有词表。139项完整相关回归及32项最终源专项通过，保留付费正文和资源限流失败的真实结果。

@@ -29,7 +29,7 @@
 |ssc_newsroom|RKLB|by_ticker；原 Newsroom HTML，美国 HTTP 出口|
 |nasa_2026_releases|RKLB|by_distribution；官方同年 press-release API|
 |dod_contracts|RKLB、ONDS|共享每日合同 RSS，完整正文后分别判断相关性|
-|dod_releases|RKLB、ONDS|by_distribution；用户指定 RSS，德国 HTTP 出口|
+|dod_releases|RKLB、ONDS|by_distribution；用户 RSS 所指向的官方 HTTPS ArticleCS ContentType=9，德国 HTTP 出口|
 |iridium_press_releases|RKLB|by_ticker；Iridium 原 Press Releases HTML|
 |calcalist_search|ONDS|by_search；原页面 CSE，希伯来语|
 |defensescoop_drones|ONDS|by_distribution；Drones 与 Counter-drone 两个 RSS|
@@ -58,3 +58,13 @@
 本地相关测试 135 项通过，覆盖真实精简 RSS/列表合同、端点失败隔离、304 基线、无日期首次发现稳定、共享跨 run checkpoint、闭市 sweep 隔离、希伯来语身份、20 条订阅幂等、官方 API 正文复用和付费墙拒绝，以及现有 BODY/分发回归。初版 NASA 测试把去重后的 SHORT_FULL 错预期为 FULL，已修正测试口径并全部重跑通过。
 
 生产候选验证与实际启用回执见下方追加记录。没有以本地测试或一次 HTTP 200 宣称长期稳定；尚未出现的新文章和付费正文能力分别列出边界。
+
+### 候选镜像验证后的修正
+
+- 首轮候选实际运行中，Breaking Defense 和 Calcalist 被通用解析器选中侧栏短文，分别误报 169/271 字符 SHORT_FULL。已明确选择主正文 `post-single__content` / `ArticleBodyComponent`，缺失主正文时失败，不回退到侧栏；新增冲突样本回归。
+- Army 的“查看原图”图片链接此前被泛用门禁误判为原文外跳，现明确排除图片资源链接，保留真正原文跳转门禁。
+- DoD Releases 旧 URL 301 到 HTTP ArticleCS **ContentType=9**；采用同一官方终点的 HTTPS 版本并增大至 50 条，未放开 HTTP 降级或任意主机跳转。
+- SpaceNews RSS 的 Video/Podcast 项显式标记媒体，介绍文字不能算完整采访逐字稿；没有 transcript 时保留 unsupported_media。首轮快速重复探测触发一次 429，不能算稳定性通过；后续以合理间隔重测。
+- 生产读取发现 RKLB、ONDS 原本没有统一词表，因而配置工具也支持仅在缺失时创建初始词表；已有词表不覆盖。可审阅的完整规则为 `scripts/ops/defense-monitoring-terms-20261024.json`，RKLB L1 为 Rocket Lab，ONDS 为 Ondas / Airobotics / American Robotics。L2 监测公司、已核实业务公司及带发射上下文的产品名称，不将泛行业词单独设为正则命中。公司/产品依据 [Rocket Lab 官网](https://rocketlabcorp.com/)、[Ondas 业务公司](https://www.ondas.com/our-business-units) 及 [Ondas 官方披露](https://ir.ondas.com/press-releases/detail/282/ondas-announces-10-million-strategic-investment-in-world)。统一词表也供原有已订阅搜索来源使用，没有改动其绑定参数或开关。
+
+修正后的相关完整回归 **139 项通过**；补充视频完整性与 RSS 摘要清理后，消息源专项 **32 项通过**。配置和质量改动继续使用既有 Owner、准入和审计路径。

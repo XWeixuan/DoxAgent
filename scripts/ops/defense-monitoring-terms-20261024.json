@@ -1,0 +1,277 @@
+{
+  "RKLB": {
+    "ticker": "RKLB",
+    "expected_revision": 0,
+    "l1_concepts": [
+      {
+        "concept_id": "company-1",
+        "expressions": {
+          "en": "Rocket Lab",
+          "ko": "Rocket Lab",
+          "zh-Hant": "Rocket Lab"
+        }
+      }
+    ],
+    "l2": {
+      "en": {
+        "groups": [
+          {
+            "id": "direct-company-and-portfolio",
+            "any": [
+              {
+                "regex": "(?i)\\bRocket\\s*Lab(?:\\s+USA)?\\b|\\bRKLB\\b"
+              },
+              {
+                "literal": "Iridium"
+              },
+              {
+                "literal": "火箭实验室"
+              },
+              {
+                "literal": "火箭實驗室"
+              },
+              {
+                "literal": "로켓랩"
+              }
+            ]
+          },
+          {
+            "id": "launch-product-context",
+            "all": [
+              {
+                "regex": "(?i)\\b(?:Neutron|Electron|HASTE)\\b"
+              },
+              {
+                "regex": "(?i)\\b(?:launch|rocket|spacecraft|hypersonic)\\b"
+              }
+            ]
+          }
+        ]
+      },
+      "ko": {
+        "groups": [
+          {
+            "id": "direct-company-and-portfolio",
+            "any": [
+              {
+                "regex": "(?i)\\bRocket\\s*Lab(?:\\s+USA)?\\b|\\bRKLB\\b"
+              },
+              {
+                "literal": "Iridium"
+              },
+              {
+                "literal": "火箭实验室"
+              },
+              {
+                "literal": "火箭實驗室"
+              },
+              {
+                "literal": "로켓랩"
+              }
+            ]
+          },
+          {
+            "id": "launch-product-context",
+            "all": [
+              {
+                "regex": "(?i)\\b(?:Neutron|Electron|HASTE)\\b"
+              },
+              {
+                "regex": "(?i)\\b(?:launch|rocket|spacecraft|hypersonic)\\b"
+              }
+            ]
+          }
+        ]
+      },
+      "zh-Hant": {
+        "groups": [
+          {
+            "id": "direct-company-and-portfolio",
+            "any": [
+              {
+                "regex": "(?i)\\bRocket\\s*Lab(?:\\s+USA)?\\b|\\bRKLB\\b"
+              },
+              {
+                "literal": "Iridium"
+              },
+              {
+                "literal": "火箭实验室"
+              },
+              {
+                "literal": "火箭實驗室"
+              },
+              {
+                "literal": "로켓랩"
+              }
+            ]
+          },
+          {
+            "id": "launch-product-context",
+            "all": [
+              {
+                "regex": "(?i)\\b(?:Neutron|Electron|HASTE)\\b"
+              },
+              {
+                "regex": "(?i)\\b(?:launch|rocket|spacecraft|hypersonic)\\b"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "definition": {
+      "relevant": "Rocket Lab or its launch vehicles, spacecraft, space systems, or Iridium; government launch and satellite procurement, mission milestones, and competitive or regulatory changes with a concrete implication for these businesses.",
+      "irrelevant": "Unrelated uses of company or product names; general sector stories with no concrete business, procurement, competitive or regulatory connection."
+    }
+  },
+  "ONDS": {
+    "ticker": "ONDS",
+    "expected_revision": 0,
+    "l1_concepts": [
+      {
+        "concept_id": "company-1",
+        "expressions": {
+          "en": "Ondas",
+          "ko": "Ondas",
+          "zh-Hant": "Ondas"
+        }
+      },
+      {
+        "concept_id": "company-2",
+        "expressions": {
+          "en": "Airobotics",
+          "ko": "Airobotics",
+          "zh-Hant": "Airobotics"
+        }
+      },
+      {
+        "concept_id": "company-3",
+        "expressions": {
+          "en": "American Robotics",
+          "ko": "American Robotics",
+          "zh-Hant": "American Robotics"
+        }
+      }
+    ],
+    "l2": {
+      "en": {
+        "groups": [
+          {
+            "id": "direct-company-and-portfolio",
+            "any": [
+              {
+                "regex": "(?i)\\b(?:Ondas|ONDS|Airobotics|Sentrycs|Roboteam|Cyberhawk|Rotron)\\b"
+              },
+              {
+                "literal": "American Robotics"
+              },
+              {
+                "literal": "Apeiro Motion"
+              },
+              {
+                "literal": "Iron Drone"
+              },
+              {
+                "literal": "BIRD Aerosystems"
+              },
+              {
+                "literal": "4M Defense"
+              }
+            ]
+          },
+          {
+            "id": "mistral-defense-context",
+            "all": [
+              {
+                "literal": "Mistral"
+              },
+              {
+                "regex": "(?i)\\b(?:defense|drone|military|contract|unmanned)\\b"
+              }
+            ]
+          }
+        ]
+      },
+      "ko": {
+        "groups": [
+          {
+            "id": "direct-company-and-portfolio",
+            "any": [
+              {
+                "regex": "(?i)\\b(?:Ondas|ONDS|Airobotics|Sentrycs|Roboteam|Cyberhawk|Rotron)\\b"
+              },
+              {
+                "literal": "American Robotics"
+              },
+              {
+                "literal": "Apeiro Motion"
+              },
+              {
+                "literal": "Iron Drone"
+              },
+              {
+                "literal": "BIRD Aerosystems"
+              },
+              {
+                "literal": "4M Defense"
+              }
+            ]
+          },
+          {
+            "id": "mistral-defense-context",
+            "all": [
+              {
+                "literal": "Mistral"
+              },
+              {
+                "regex": "(?i)\\b(?:defense|drone|military|contract|unmanned)\\b"
+              }
+            ]
+          }
+        ]
+      },
+      "zh-Hant": {
+        "groups": [
+          {
+            "id": "direct-company-and-portfolio",
+            "any": [
+              {
+                "regex": "(?i)\\b(?:Ondas|ONDS|Airobotics|Sentrycs|Roboteam|Cyberhawk|Rotron)\\b"
+              },
+              {
+                "literal": "American Robotics"
+              },
+              {
+                "literal": "Apeiro Motion"
+              },
+              {
+                "literal": "Iron Drone"
+              },
+              {
+                "literal": "BIRD Aerosystems"
+              },
+              {
+                "literal": "4M Defense"
+              }
+            ]
+          },
+          {
+            "id": "mistral-defense-context",
+            "all": [
+              {
+                "literal": "Mistral"
+              },
+              {
+                "regex": "(?i)\\b(?:defense|drone|military|contract|unmanned)\\b"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "definition": {
+      "relevant": "Ondas, its named operating companies and autonomous aerial or ground platforms, counter-UAS systems, mission-critical networks; defense procurements, certifications, deployments and competitive or regulatory changes with a concrete implication for those businesses.",
+      "irrelevant": "Unrelated uses of company or product names; general sector stories with no concrete business, procurement, competitive or regulatory connection."
+    }
+  }
+}

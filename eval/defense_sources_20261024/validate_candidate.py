@@ -23,6 +23,7 @@ async def main():
      record=MediaEnrichmentRecord(standard_message_id="validation",raw_message_id="validation",source_id=e.source_id,ticker=e.tickers[0],title=message.title,body="",url=message.url)
      outcome=await reader.extract(SimpleNamespace(source=sources[e.source_id],message=message),record)
      row["body"]={"succeeded":outcome.succeeded,"outcome":outcome.diagnostics.get("outcome"),"reason":outcome.reason,"http_status":outcome.http_status,"chars":len(outcome.content or ""),"published_at":outcome.diagnostics.get("publisher_published_at"),"method":outcome.extraction_method}
+    if e.source_id == "spacenews_rss": await asyncio.sleep(3)
     again=await adapter.poll_shared(SimpleNamespace(**{**vars(ctx),"checkpoint":result.next_checkpoint}))
     row["repeat"]={"items":len(again.messages),"endpoints":again.acquisition_metadata,"failures":[f.error_message for f in again.failures]}
    except Exception as exc:row["error"]=type(exc).__name__+":"+str(exc)[:250]

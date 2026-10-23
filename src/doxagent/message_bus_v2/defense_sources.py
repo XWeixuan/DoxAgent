@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from html import unescape
 from urllib.parse import urlencode, urljoin, urlsplit
+from xml.etree import ElementTree as ET
 from zoneinfo import ZoneInfo
 
 from lxml import html
@@ -119,7 +120,7 @@ CATALOG = (
     Endpoint(
         "dod_releases",
         "DoD / News Releases",
-        ("https://www.war.gov/news/rss_releases2.xml",),
+        ("https://www.war.gov/DesktopModules/ArticleCS/RSS.ashx?ContentType=9&Site=945&max=50",),
         ("RKLB", "ONDS"),
         route="de-standard-1",
     ),
@@ -335,9 +336,21 @@ def _row(e, url, title, date, *, summary=None, raw=None, now):
 
 def parse_listing(e, raw, url, now):
     if e.parser == "rss":
-        return parse_shared_feed(
+        messages = parse_shared_feed(
             raw, feed_url=url, publisher=e.publisher, language=e.language, now=now
         )
+        formats = {
+            item.findtext("link"): {
+                (c.text or "").strip().casefold() for c in item.findall("category")
+            }
+            for item in ET.fromstring(raw).findall(".//item")
+        }
+        for message in messages:
+            if message.summary:
+                message.summary = _plain(message.summary)
+            if formats.get(message.url, set()) & {"video", "podcast", "podcasts"}:
+                message.metadata["defense_media_format"] = "video_or_podcast"
+        return messages
     if e.parser == "nasa":
         rows = json.loads(raw)
         if not isinstance(rows, list) or not rows:
