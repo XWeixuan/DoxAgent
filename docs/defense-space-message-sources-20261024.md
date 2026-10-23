@@ -68,3 +68,9 @@
 - 生产读取发现 RKLB、ONDS 原本没有统一词表，因而配置工具也支持仅在缺失时创建初始词表；已有词表不覆盖。可审阅的完整规则为 `scripts/ops/defense-monitoring-terms-20261024.json`，RKLB L1 为 Rocket Lab，ONDS 为 Ondas / Airobotics / American Robotics。L2 监测公司、已核实业务公司及带发射上下文的产品名称，不将泛行业词单独设为正则命中。公司/产品依据 [Rocket Lab 官网](https://rocketlabcorp.com/)、[Ondas 业务公司](https://www.ondas.com/our-business-units) 及 [Ondas 官方披露](https://ir.ondas.com/press-releases/detail/282/ondas-announces-10-million-strategic-investment-in-world)。统一词表也供原有已订阅搜索来源使用，没有改动其绑定参数或开关。
 
 修正后的相关完整回归 **139 项通过**；补充视频完整性与 RSS 摘要清理后，消息源专项 **32 项通过**。配置和质量改动继续使用既有 Owner、准入和审计路径。
+
+### 接纳成本与限流
+
+候选实测表明，NASA/Army/Shephard 等返回 200 时会重复带回数十条原记录。最终适配器为每条记录保存内容指纹，变化立即接纳，未变化记录五分钟强制重送一次以保留重试和复查；请求仍按 60 秒目标执行，新消息不等待五分钟。强制重送时不发送条件校验器，closed sweep 始终完整处理返回记录。NASA 采用正文文本 hash 作为 provider version，纯 modified 时间变化不触发正文更新。新增相关接纳/分发回归 **44 项通过**，最终源专项 **34 项通过**。
+
+HTTP 429 保存真实失败，并按 Retry-After（至少 60 秒）延期，不紧循环或切浏览器尝试。正文阶段也把 Retry-After 交给原有有限重试预算。SpaceNews 的视频/播客与付费墙等边界在候选结果中单列，不能混入普通新闻全文通过率。

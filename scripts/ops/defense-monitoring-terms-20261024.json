@@ -39,10 +39,10 @@
             "id": "launch-product-context",
             "all": [
               {
-                "regex": "(?i)\\b(?:Neutron|Electron|HASTE)\\b"
+                "regex": "\\b(?:Neutron|Electron|HASTE)\\b"
               },
               {
-                "regex": "(?i)\\b(?:launch|rocket|spacecraft|hypersonic)\\b"
+                "regex": "(?i)\\b(?:launch(?:es|ed|ing)?|rocket|hypersonic)\\b"
               }
             ]
           }
@@ -74,10 +74,10 @@
             "id": "launch-product-context",
             "all": [
               {
-                "regex": "(?i)\\b(?:Neutron|Electron|HASTE)\\b"
+                "regex": "\\b(?:Neutron|Electron|HASTE)\\b"
               },
               {
-                "regex": "(?i)\\b(?:launch|rocket|spacecraft|hypersonic)\\b"
+                "regex": "(?i)\\b(?:launch(?:es|ed|ing)?|rocket|hypersonic)\\b"
               }
             ]
           }
@@ -109,10 +109,10 @@
             "id": "launch-product-context",
             "all": [
               {
-                "regex": "(?i)\\b(?:Neutron|Electron|HASTE)\\b"
+                "regex": "\\b(?:Neutron|Electron|HASTE)\\b"
               },
               {
-                "regex": "(?i)\\b(?:launch|rocket|spacecraft|hypersonic)\\b"
+                "regex": "(?i)\\b(?:launch(?:es|ed|ing)?|rocket|hypersonic)\\b"
               }
             ]
           }
@@ -180,13 +180,16 @@
             ]
           },
           {
-            "id": "mistral-defense-context",
-            "all": [
+            "id": "qualified-mistral-company",
+            "any": [
               {
-                "literal": "Mistral"
+                "literal": "Mistral Inc."
               },
               {
-                "regex": "(?i)\\b(?:defense|drone|military|contract|unmanned)\\b"
+                "literal": "Mistral, Inc."
+              },
+              {
+                "literal": "Mistral USA"
               }
             ]
           }
@@ -218,13 +221,16 @@
             ]
           },
           {
-            "id": "mistral-defense-context",
-            "all": [
+            "id": "qualified-mistral-company",
+            "any": [
               {
-                "literal": "Mistral"
+                "literal": "Mistral Inc."
               },
               {
-                "regex": "(?i)\\b(?:defense|drone|military|contract|unmanned)\\b"
+                "literal": "Mistral, Inc."
+              },
+              {
+                "literal": "Mistral USA"
               }
             ]
           }
@@ -256,13 +262,16 @@
             ]
           },
           {
-            "id": "mistral-defense-context",
-            "all": [
+            "id": "qualified-mistral-company",
+            "any": [
               {
-                "literal": "Mistral"
+                "literal": "Mistral Inc."
               },
               {
-                "regex": "(?i)\\b(?:defense|drone|military|contract|unmanned)\\b"
+                "literal": "Mistral, Inc."
+              },
+              {
+                "literal": "Mistral USA"
               }
             ]
           }

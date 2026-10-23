@@ -28,6 +28,7 @@ from .schema import (
     SharedPollContext,
     SourceDefinition,
     SourceKind,
+    canonical_json,
     sha256_text,
 )
 
@@ -355,7 +356,7 @@ def parse_listing(e, raw, url, now):
         rows = json.loads(raw)
         if not isinstance(rows, list) or not rows:
             raise ValueError("nasa_release_contract_empty")
-        return [
+        messages = [
             _row(
                 e,
                 r["link"],
@@ -372,6 +373,11 @@ def parse_listing(e, raw, url, now):
             for r in rows
             if r["date_gmt"].startswith("2026-")
         ]
+        for message in messages:
+            version = sha256_text(_plain(message.raw_payload.get("article_html")))
+            message.raw_payload["updated_at"] = version
+            message.metadata["identity_evidence"]["provider_version"] = version
+        return messages
     doc = html.fromstring(raw)
     rows = []
     if e.parser == "aviation":
@@ -526,6 +532,7 @@ class DefenseAdapter:
         states = dict(checkpoint.get("endpoints", {}))
         messages, failures, evidence = {}, [], []
         covered_endpoints = []
+        retry_times = []
         requests = list(e.urls)
         if e.parser == "calcalist":
             queries = (context.query_plan or {}).get("queries", [])
@@ -536,12 +543,17 @@ class DefenseAdapter:
         async def one(key):
             state = dict(states.get(key, {}))
             try:
+                refresh = (
+                    getattr(context, "window_cutoff", None) is not None
+                    or not state.get("next_refresh_at")
+                    or context.requested_at >= datetime.fromisoformat(state["next_refresh_at"])
+                )
                 async with context.request_permit():
                     if e.parser == "calcalist":
                         capture = await self._search(e, key, int(state.get("page", 0)))
                     else:
                         headers = {}
-                        if state.get("baseline"):
+                        if state.get("baseline") and not refresh:
                             if state.get("etag"):
                                 headers["If-None-Match"] = state["etag"]
                             if state.get("last_modified"):
@@ -552,6 +564,13 @@ class DefenseAdapter:
                         raise ValueError("defense_304_without_baseline")
                     rows = []
                 elif capture.status != 200:
+                    if capture.status == 429:
+                        from doxagent.content_enrichment.transport import retry_after
+
+                        delay = retry_after(capture.headers.get("retry-after"))
+                        retry_times.append(
+                            context.requested_at + timedelta(seconds=max(60, delay or 60))
+                        )
                     raise RuntimeError(f"defense_listing_http_{capture.status}")
                 else:
                     rows = (
@@ -568,6 +587,8 @@ class DefenseAdapter:
                         last_modified=capture.headers.get("last-modified"),
                     )
                 first_seen = dict(state.get("first_seen", {}))
+                seen = dict(state.get("seen", {}))
+                unchanged = 0
                 for m in rows:
                     if m.publication_time_basis == "UNKNOWN_FIRST_SEEN":
                         old = first_seen.setdefault(m.url, context.requested_at.isoformat())
@@ -578,7 +599,26 @@ class DefenseAdapter:
                         defense_http_route=e.route,
                         content_language=e.language,
                     )
-                    messages[m.url] = m
+                    signature = sha256_text(
+                        canonical_json(
+                            [
+                                m.title,
+                                m.summary,
+                                m.url,
+                                m.published_at.isoformat(),
+                                m.publication_time_basis,
+                                m.raw_payload,
+                            ]
+                        )
+                    )
+                    previous = seen.get(m.url, {})
+                    # A bounded heartbeat retains retries/rechecks, but unchanged
+                    # old feed rows must not rewrite the shared Bus every minute.
+                    if not refresh and previous.get("signature") == signature:
+                        unchanged += 1
+                    else:
+                        messages[m.url] = m
+                    seen[m.url] = {"signature": signature}
                 if e.parser == "calcalist":
                     # Refresh the head every other visit while continuing deeper search pages.
                     cursor = parse_search(capture.text, e, context.requested_at)[1]
@@ -591,7 +631,12 @@ class DefenseAdapter:
                     first_seen=dict(list(first_seen.items())[-500:]),
                     last_success_at=context.requested_at.isoformat(),
                     error=None,
+                    seen=dict(list(seen.items())[-500:]),
                 )
+                if refresh:
+                    state["next_refresh_at"] = (
+                        context.requested_at + timedelta(minutes=5)
+                    ).isoformat()
                 if rows:
                     known_dates = [
                         m.published_at
@@ -609,6 +654,7 @@ class DefenseAdapter:
                         "endpoint": key,
                         "http_status": capture.status,
                         "items": len(rows),
+                        "unchanged_items": unchanged,
                         "route": e.route,
                     }
                 )
@@ -631,6 +677,15 @@ class DefenseAdapter:
 
         await asyncio.gather(*(one(key) for key in requests))
         if len(failures) == len(requests):
+            if retry_times:
+                return PollResult(
+                    window_done=False,
+                    window_coverage="PARTIAL",
+                    site_access_deferred=True,
+                    site_access_deferred_reason="publisher_http_429",
+                    site_access_retry_not_before=max(retry_times),
+                    failures=failures,
+                )
             raise RuntimeError(
                 "defense_all_endpoints_failed:" + ";".join(f.error_message for f in failures)
             )

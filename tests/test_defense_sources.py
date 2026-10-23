@@ -129,6 +129,17 @@ async def test_sibling_feed_failure_preserves_healthy_rows_and_validator():
     assert "baseline" not in result.next_checkpoint["endpoints"][e.urls[1]]
 
 
+async def test_publisher_rate_limit_defers_without_busy_retry():
+    e = ENDPOINTS["spacenews_rss"]
+    http = SimpleNamespace(
+        fetch=AsyncMock(return_value=Capture(429, e.urls[0], "limited", {"retry-after": "180"}))
+    )
+    result = await DefenseAdapter(http).poll_shared(context(e.source_id))
+    assert result.site_access_deferred and not result.window_done
+    assert result.site_access_retry_not_before == NOW + timedelta(seconds=180)
+    assert http.fetch.await_count == 1 and not result.messages
+
+
 async def test_304_requires_parsed_baseline_and_unknown_date_never_moves():
     e = ENDPOINTS["shephard_uncrewed"]
     raw = (FIXTURES / "shephard.xml").read_text(encoding="utf8")
@@ -146,6 +157,36 @@ async def test_304_requires_parsed_baseline_and_unknown_date_never_moves():
     result = await adapter.poll_shared(context(e.source_id, later.next_checkpoint))
     assert not result.messages and not result.failures
     assert http.fetch.call_args.kwargs["headers"] == {"If-None-Match": "abc"}
+
+
+async def test_unchanged_json_rows_skip_bus_intake_but_changes_and_heartbeat_remain():
+    e = ENDPOINTS["nasa_2026_releases"]
+    raw = (FIXTURES / "nasa.json").read_text(encoding="utf8")
+    http = SimpleNamespace(fetch=AsyncMock(return_value=Capture(200, e.urls[0], raw, {})))
+    adapter = DefenseAdapter(http)
+    first = await adapter.poll_shared(context(e.source_id))
+    second = await adapter.poll_shared(
+        context(e.source_id, first.next_checkpoint, NOW + timedelta(seconds=60))
+    )
+    assert first.messages and not second.messages
+    assert second.acquisition_metadata["endpoints"][0]["unchanged_items"] == len(first.messages)
+    import json
+
+    changed = json.loads(raw)
+    changed[0]["content"]["rendered"] += "<p>A new mission milestone was announced.</p>"
+    http.fetch.return_value = Capture(200, e.urls[0], json.dumps(changed), {})
+    third = await adapter.poll_shared(
+        context(e.source_id, second.next_checkpoint, NOW + timedelta(seconds=120))
+    )
+    assert len(third.messages) == 1
+    assert (
+        third.messages[0].metadata["identity_evidence"]["provider_version"]
+        != first.messages[0].metadata["identity_evidence"]["provider_version"]
+    )
+    heartbeat = await adapter.poll_shared(
+        context(e.source_id, third.next_checkpoint, NOW + timedelta(minutes=5))
+    )
+    assert len(heartbeat.messages) == len(first.messages)
 
 
 def test_hebrew_headline_identity_is_not_empty_or_universal():

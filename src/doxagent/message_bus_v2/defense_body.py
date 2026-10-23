@@ -8,7 +8,7 @@ from urllib.parse import urlsplit
 from lxml import html
 
 from doxagent.content_enrichment.quality import choose_candidate, inspect_html
-from doxagent.content_enrichment.transport import REVALIDATION, conditional_headers
+from doxagent.content_enrichment.transport import REVALIDATION, conditional_headers, retry_after
 from doxagent.monitoring.media_enrichment import FetchAttempt, MediaExtractionResult
 
 from .defense_sources import ENDPOINTS, DefenseHttp
@@ -76,6 +76,7 @@ class DefenseBodyReader:
                             phase="direct",
                             status_code=capture.status,
                             reason=f"http_{capture.status}",
+                            retry_after_seconds=retry_after(capture.headers.get("retry-after")),
                         )
                     ],
                 )
