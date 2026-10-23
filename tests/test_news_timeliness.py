@@ -182,3 +182,20 @@ def test_read_only_operations_audit_deduplicates_poll_snapshots(tmp_path):
     assert result["poll_ms"]["samples"] == 1
     assert result["capture_to_first_intake_ms"]["mean"] == 200
     assert not window["sample_limit_reached"]
+
+
+def test_known_article_probe_has_bounded_cost_with_unrelated_history(tmp_path):
+    repo,bus,source,binding = _setup(tmp_path)
+    now=datetime.now(UTC).isoformat()
+    with repo.transaction() as db:
+        db.executemany("INSERT INTO raw_messages(raw_message_id,ticker,source_id,binding_id,identity_key,content_hash,raw_hash,revision,processing_status,published_at,collected_at,data_json) VALUES(?,?,?,?,?,?,?,1,'normalized',?,?,'{}')",
+            [(f"history-{i}",binding.ticker,source.source_id,binding.binding_id,f"other-{i}","hash","raw",now,now) for i in range(3000)])
+    steps=0
+    def progress():
+        nonlocal steps
+        steps+=100
+    with repo.connection_scope() as db:
+        db.set_progress_handler(progress,100)
+        assert repo.known_published_article(binding,_message(9999)) is None
+        db.set_progress_handler(None,0)
+    assert steps<1000, f"known article check scanned history: {steps} VM steps"

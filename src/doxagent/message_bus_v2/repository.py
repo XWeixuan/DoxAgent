@@ -1430,8 +1430,9 @@ class MessageBusV2Repository:
                 """SELECT r.data_json FROM raw_messages r JOIN standard_messages s
                    ON s.raw_message_id=r.raw_message_id JOIN stream_members sm
                    ON sm.standard_message_id=s.standard_message_id
-                   WHERE r.binding_id=? AND r.identity_key=? ORDER BY r.revision DESC LIMIT 4""",
-                (binding.binding_id, identity_key_for(binding.source_id, message)),
+                   WHERE r.ticker=? AND r.source_id=? AND r.binding_id=? AND r.identity_key=?
+                   ORDER BY r.revision DESC LIMIT 4""",
+                (binding.ticker, binding.source_id, binding.binding_id, identity_key_for(binding.source_id, message)),
             ).fetchall()
         for row in rows:
             raw = RawMessage.model_validate_json(row[0])
