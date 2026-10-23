@@ -91,7 +91,13 @@ CATALOG = (
         ("RKLB",),
         route="us-standard-5",
     ),
-    Endpoint("spacenews_rss", "SpaceNews", ("https://spacenews.com/feed/",), ("RKLB",)),
+    Endpoint(
+        "spacenews_rss",
+        "SpaceNews",
+        ("https://spacenews.com/feed/",),
+        ("RKLB",),
+        route="us-standard-5",
+    ),
     Endpoint(
         "ssc_newsroom",
         "Space Systems Command",
@@ -262,6 +268,7 @@ class DefenseHttp:
                             PublicHttp._stdlib_read,
                             url,
                             {"User-Agent": "Mozilla/5.0", **(headers or {})},
+                            HTTP_EGRESSES[endpoint.route],
                         )
                     )
                     try:

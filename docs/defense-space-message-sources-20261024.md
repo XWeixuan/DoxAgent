@@ -25,7 +25,7 @@
 |defensescoop_space|RKLB|by_distribution；原 Space RSS|
 |airspaceforces_space|RKLB|by_distribution；原 Space RSS|
 |spacecom_launches|RKLB|by_distribution；原 Launches & Spacecraft RSS，美国 HTTP 出口|
-|spacenews_rss|RKLB|by_distribution；原 RSS，标准库 TLS 读取列表和正文|
+|spacenews_rss|RKLB|by_distribution；原 RSS，固定美国出口 + 标准库 TLS 读取列表和正文|
 |ssc_newsroom|RKLB|by_ticker；原 Newsroom HTML，美国 HTTP 出口|
 |nasa_2026_releases|RKLB|by_distribution；官方同年 press-release API|
 |dod_contracts|RKLB、ONDS|共享每日合同 RSS，完整正文后分别判断相关性|
@@ -74,3 +74,7 @@
 候选实测表明，NASA/Army/Shephard 等返回 200 时会重复带回数十条原记录。最终适配器为每条记录保存内容指纹，变化立即接纳，未变化记录五分钟强制重送一次以保留重试和复查；请求仍按 60 秒目标执行，新消息不等待五分钟。强制重送时不发送条件校验器，closed sweep 始终完整处理返回记录。NASA 采用正文文本 hash 作为 provider version，纯 modified 时间变化不触发正文更新。新增相关接纳/分发回归 **44 项通过**，最终源专项 **34 项通过**。
 
 HTTP 429 保存真实失败，并按 Retry-After（至少 60 秒）延期，不紧循环或切浏览器尝试。正文阶段也把 Retry-After 交给原有有限重试预算。SpaceNews 的视频/播客与付费墙等边界在候选结果中单列，不能混入普通新闻全文通过率。
+
+### SpaceNews 路径补充
+
+后续受限探测验证：固定美国/德国出口的标准库 TLS 均能读取 RSS，而不是使用受拦截的 Chrome TLS；选择固定美国出口用于正式列表和正文。普通 DARPA 新闻样本返回 HTTP 200、FULL、3540 字符；此前 1051 字符样本是视频简介，不计入普通新闻正文通过证明。原标准库传输增加可选 approved proxy 参数，旧 IR 默认直连行为保留，相关 IR/消息源回归 **39 项通过**。

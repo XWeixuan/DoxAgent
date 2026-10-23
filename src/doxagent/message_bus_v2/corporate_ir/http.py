@@ -64,13 +64,14 @@ class PublicHttp:
             raise
 
     @staticmethod
-    def _stdlib_read(url, headers):
+    def _stdlib_read(url, headers, proxy=None):
         class NoRedirect(urllib.request.HTTPRedirectHandler):
             def redirect_request(self, *args, **kwargs):
                 return None
 
         deadline = time.monotonic() + 12
-        opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect())
+        proxies = {"http": proxy, "https": proxy} if proxy else {}
+        opener = urllib.request.build_opener(urllib.request.ProxyHandler(proxies), NoRedirect())
         request = urllib.request.Request(
             url,
             headers={

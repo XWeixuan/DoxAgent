@@ -2082,3 +2082,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-24 国防航天候选验证修正：为Breaking Defense/Calcalist固定主正文范围，防止侧栏短文误报SHORT_FULL；图片原图链接不再触发原文外跳拒绝，视频/播客简介不得冒充完整逐字稿。DoD Releases改用官方重定向所指HTTPS ArticleCS ContentType=9；初始配置在RKLB/ONDS词表缺失时建立可审阅公司级规则，不覆盖已有词表。139项完整相关回归及32项最终源专项通过，保留付费正文和资源限流失败的真实结果。
 
 2026-10-24 国防航天接纳成本修正：保持60秒HTTP发现目标，用持久文章指纹抑制未变化列表向Bus逐条重送，五分钟强制重送保留重试/复查、closed sweep不抑制；NASA正文文本hash驱动实质更新而非modified噪声。HTTP429按Retry-After延期并交由有限BODY预算重试。接纳/分发44项与最终源专项34项通过；保留真实候选验证中SpaceNews限流记录。
+
+2026-10-24 SpaceNews生产路径补全：受限探测确认美国/德国固定出口配合标准库TLS可读RSS，选定美国出口；普通DARPA新闻200/FULL/3540字符，视频简介不计全文证明。标准库传输增加可选代理参数，保留旧IR默认直连。39项IR/消息源回归通过；RKLB12条、ONDS8条订阅及初始统一词表已写入生产，随后滚动发布已验证路径。

@@ -19,7 +19,8 @@ async def main():
     ctx=SimpleNamespace(source=sources[e.source_id],checkpoint={},requested_at=datetime.now(UTC),window_start=None,request_permit=permit,query_plan={"queries":[{"query":"אונדס"}]})
     result=await adapter.poll_shared(ctx); row.update(items=len(result.messages),failures=[f.error_message for f in result.failures],poll_ms=int((time.monotonic()-t)*1000),endpoints=result.acquisition_metadata)
     if result.messages:
-     message=result.messages[0]
+     message=next((m for m in result.messages if not m.metadata.get("defense_media_format")),result.messages[0])
+     if e.source_id == "spacenews_rss": await asyncio.sleep(3)
      record=MediaEnrichmentRecord(standard_message_id="validation",raw_message_id="validation",source_id=e.source_id,ticker=e.tickers[0],title=message.title,body="",url=message.url)
      outcome=await reader.extract(SimpleNamespace(source=sources[e.source_id],message=message),record)
      row["body"]={"succeeded":outcome.succeeded,"outcome":outcome.diagnostics.get("outcome"),"reason":outcome.reason,"http_status":outcome.http_status,"chars":len(outcome.content or ""),"published_at":outcome.diagnostics.get("publisher_published_at"),"method":outcome.extraction_method}
