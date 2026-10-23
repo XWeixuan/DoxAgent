@@ -2066,3 +2066,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-23 消息时效优化（二）：上线前开发完成逐页持久接纳、Globe 两页时间片与跨 query 续跑、Yahoo RSS 优先及持久时间证据、按来源更新线索和条件 HTTP 核对；补全终态/执行收据、Read 新文章 cohort 与原消息修订投影、前端 30 分钟轮询均值/P95。新增只读审计和 Owner/CAS 配置工具，生产 HTTP 路径对照及 ETNews 短稿实测证据保存在 eval，生产代码与身份配置尚未更改。
 
 2026-10-24 消息时效优化验证：357项Python回归通过、1项跳过，另1项真实Chromium同profile双页/单页取消测试通过；前端67项及1262/1559两宽度检查通过。补齐验证跳转的索引别名与付费scope隔离、HTTP限流不切浏览器路由、分页累计和首次capture/接纳时间对应、同正文取得时间保留。新增Owner/CAS dry-run与有界只读审计，开发/测试/上线回滚回执见docs/message-source-polling-and-body-completion-optimization-implementation-20261024.md；未发布生产，P0/P1自然流量验收和未恢复账户BODY能力仍待验证。
+
+2026-10-24 消息时效优化发布修正：生产apply实测发现source默认更新会级联提升binding revision，后续binding CAS被本次自身变更拦截；配置迁移改为binding先于source，保留Owner/CAS和原始失败回执。新增真实Owner级联迁移测试通过，未绕过版本校验。

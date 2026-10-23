@@ -166,6 +166,11 @@ def plan(bus_path, registry_path):
                     **({"skip_reason": skip} if skip else {}),
                 }
             )
+    # Source default updates can cascade binding revisions. Apply explicit binding
+    # overrides first so our own source update cannot invalidate their CAS.
+    changes.sort(
+        key=lambda change: {"binding": 0, "source": 1, "site": 2, "identity": 3}[change["kind"]]
+    )
     return changes
 
 
