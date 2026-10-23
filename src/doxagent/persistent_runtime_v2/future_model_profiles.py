@@ -56,4 +56,19 @@ def configured_rounds(settings):
         result.update(
             bailian_glm_rounds(settings.bailian_glm_endpoint or settings.dashscope_chat_base_url)
         )
+    if profile == "bailian_deepseek":
+        result.update(
+            {
+                f"{lane}:{rnd}": dict(
+                    model="deepseek-v4.1-flash-1017",
+                    provider="bailian",
+                    transport="chat_completions_json_object",
+                    provider_endpoint=settings.dashscope_chat_base_url,
+                    reasoning_effort="medium",
+                    timeout_seconds=120,
+                )
+                for lane in ("W1", "W2")
+                for rnd in ("R2", "R3")
+            }
+        )
     return result

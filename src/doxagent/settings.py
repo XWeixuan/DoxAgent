@@ -864,7 +864,9 @@ class DoxAgentSettings(BaseSettings):
         gt=0,
         validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_TIMEOUT_SECONDS",
     )
-    persistent_runtime_v2_api_profile: Literal["current", "vertex_recall", "bailian_glm", "vertex_glm"] = Field(
+    persistent_runtime_v2_api_profile: Literal[
+        "current", "vertex_recall", "bailian_glm", "vertex_glm", "bailian_deepseek"
+    ] = Field(
         default="current", validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_API_PROFILE"
     )
     vertex_project: str = Field(default="", validation_alias="DOXAGENT_VERTEX_PROJECT")

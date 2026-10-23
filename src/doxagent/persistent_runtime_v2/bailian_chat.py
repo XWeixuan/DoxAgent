@@ -1,4 +1,4 @@
-"""Bailian GLM JSON-object protocol; schema remains strict at our boundary."""
+"""Bailian stateless JSON-object transport with strict local schema validation."""
 
 from __future__ import annotations
 
@@ -10,6 +10,7 @@ from .transport import (
     RuntimeResponsesError,
     RuntimeResponsesResult,
     _cache_optimized_input,
+    _safe_transport_error,
     _validation_error_summary,
 )
 
@@ -36,11 +37,16 @@ def chat_body(request):
             retryable=False,
         )
     messages.append({"role": "user", "content": text})
-    if request.reasoning_effort not in {"low", "high", "max"}:
+    supported = {"low", "high", "max"}
+    if request.model == "deepseek-v4.1-flash-1017":
+        supported.add("medium")
+    if request.reasoning_effort not in supported:
         raise RuntimeResponsesError(
-            "provider_route_invalid", "GLM-5.3 requires low/high/max effort", retryable=False
+            "provider_route_invalid",
+            "Unsupported reasoning effort for Bailian chat model",
+            retryable=False,
         )
-    # GLM-5.3 always thinks. Its native effort is explicit in the frozen profile.
+    # Preserve the exact model/effort frozen in the selected profile.
     return {
         "model": request.model,
         "messages": messages,
@@ -80,18 +86,16 @@ def complete(client, request):
                     if choice.finish_reason:
                         finished = choice.finish_reason == "stop"
     except Exception as exc:
+        error = _safe_transport_error(exc)
         raise RuntimeResponsesError(
-            "provider_request_failed",
-            "Bailian GLM stream did not complete",
-            retryable=True,
-            usage=receipt(),
+            error.code, str(error), retryable=error.retryable, usage=receipt()
         ) from exc
     text = "".join(parts)
     known = receipt()
     if not finished or not response_id:
         raise RuntimeResponsesError(
             "provider_request_failed",
-            "Bailian GLM returned an incomplete result",
+            "Bailian chat returned an incomplete result",
             retryable=True,
             usage=known,
         )
