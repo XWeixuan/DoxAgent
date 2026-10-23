@@ -641,7 +641,8 @@ class MessageBusV2Repository:
                 """insert into message_observations(ticker,source_id,identity_key,raw_hash,
                      input_fingerprint,first_seen_at,last_seen_at,data_json,canonical_raw_id,logical_message_id,classification)
                    values(?,?,?,?,?,?,?,?,?,?,?) on conflict(ticker,source_id,identity_key,raw_hash)
-                   do update set last_seen_at=excluded.last_seen_at,seen_count=seen_count+1""",
+                   do update set last_seen_at=excluded.last_seen_at,seen_count=seen_count+1,
+                     data_json=excluded.data_json""",
                 (
                     ticker,
                     source_id,
@@ -650,7 +651,7 @@ class MessageBusV2Repository:
                     dedup.stable_fingerprint(message),
                     now.isoformat(),
                     now.isoformat(),
-                    self.content.encode(message.model_dump(mode="json")),
+                    self.content.encode(message.model_dump(mode="json"), keep=("metadata",)),
                     reusable.raw_message_id if reusable else None,
                     reusable.metadata.get("message_version", {}).get("logical_message_id")
                     if reusable
@@ -680,24 +681,25 @@ class MessageBusV2Repository:
                 ]:
                     if item not in sources:
                         sources.append(item)
-                metadata = {**reusable.metadata, "message_sources": sources}
-                reusable = reusable.model_copy(update={"metadata": metadata})
-                connection.execute(
-                    "update raw_messages set data_json=? where raw_message_id=?",
-                    (self._json(reusable), reusable.raw_message_id),
-                )
-                for row in connection.execute(
-                    "select data_json from standard_messages where raw_message_id=?",
-                    (reusable.raw_message_id,),
-                ):
-                    standard = StandardMessage.model_validate_json(row["data_json"])
+                if sources != reusable.metadata.get("message_sources", []):
+                    metadata = {**reusable.metadata, "message_sources": sources}
+                    reusable = reusable.model_copy(update={"metadata": metadata})
                     connection.execute(
-                        "update standard_messages set data_json=? where standard_message_id=?",
-                        (
-                            self._json(standard.model_copy(update={"metadata": metadata})),
-                            standard.standard_message_id,
-                        ),
+                        "update raw_messages set data_json=? where raw_message_id=?",
+                        (self._json(reusable), reusable.raw_message_id),
                     )
+                    for row in connection.execute(
+                        "select data_json from standard_messages where raw_message_id=?",
+                        (reusable.raw_message_id,),
+                    ):
+                        standard = StandardMessage.model_validate_json(row["data_json"])
+                        connection.execute(
+                            "update standard_messages set data_json=? where standard_message_id=?",
+                            (
+                                self._json(standard.model_copy(update={"metadata": metadata})),
+                                standard.standard_message_id,
+                            ),
+                        )
             return reusable is not None
 
     def _dedup_candidate(

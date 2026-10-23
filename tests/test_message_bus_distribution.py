@@ -116,6 +116,10 @@ async def test_shared_article_one_body_job_independent_ticker_decisions(tmp_path
         pipeline_version="body_v2.2",
     )
     assert len(job_ids) == 1
+    with repository._connect() as db:
+        observed=db.execute("SELECT ticker,json_extract(data_json,'$.metadata.article_body_result_key') FROM message_observations WHERE source_id=?",(source.source_id,)).fetchall()
+    assert {row[0] for row in observed}=={"MU","NVDA"}
+    assert len({row[1] for row in observed})==1 and observed[0][1]
     jobs = repository.claim_enrichment_jobs(limit=5)
     assert len(jobs) == 1 and jobs[0].binding is None
     enriched = message.model_copy(update={"body": "Micron memory production rose."})

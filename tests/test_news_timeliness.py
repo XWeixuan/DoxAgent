@@ -199,3 +199,34 @@ def test_known_article_probe_has_bounded_cost_with_unrelated_history(tmp_path):
         assert repo.known_published_article(binding,_message(9999)) is None
         db.set_progress_handler(None,0)
     assert steps<1000, f"known article check scanned history: {steps} VM steps"
+
+
+def test_existing_large_observation_gets_body_reference_and_business_cdc(tmp_path):
+    from doxagent.message_bus_v2.schema import identity_key_for
+    from doxagent.v2_read.outbox import SourceOutbox
+    repo,bus,source,binding = _setup(tmp_path)
+    message=_message(9020).model_copy(update={"metadata":{"captured_article_html":"x"*20000}})
+    repo.observe_input(message,ticker=binding.ticker,source_id=source.source_id,
+        identity_key=identity_key_for(source.source_id,message),now=datetime.now(UTC))
+    outbox=SourceOutbox(repo.path,"bus");outbox.migrate()
+    job,_=bus.enqueue_enrichment(source=source,binding=binding,message=message,bootstrap=False,poll_run_id="old-observation")
+    rows=[event for event in outbox.read(0) if event["table_name"]=="message_observations"]
+    assert len(rows)==1
+    import json
+    value=json.loads(rows[0]["row"]["data_json"])
+    assert value["metadata"]["article_body_result_key"]==job.body_result_key
+    assert value["metadata"]["captured_article_html"]=="x"*20000
+
+
+async def test_identical_reused_input_does_not_rewrite_standard_message(tmp_path):
+    from doxagent.content_enrichment.service import ContentEnrichmentHub
+    from doxagent.v2_read.outbox import SourceOutbox
+    from tests.test_body_completion_receipts import Extractor
+    repo,bus,source,binding=_setup(tmp_path)
+    message=_message(9021)
+    bus.enqueue_enrichment(source=source,binding=binding,message=message,bootstrap=False,poll_run_id="first")
+    await ContentEnrichmentHub(repo,bus,extractor=Extractor()).run_once()
+    bus.enqueue_enrichment(source=source,binding=binding,message=message,bootstrap=False,poll_run_id="prime")
+    outbox=SourceOutbox(repo.path,"bus");outbox.migrate()
+    bus.enqueue_enrichment(source=source,binding=binding,message=message,bootstrap=False,poll_run_id="identical")
+    assert not [event for event in outbox.read(0) if event["table_name"]=="standard_messages"]

@@ -2070,3 +2070,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-24 消息时效优化发布修正：生产apply实测发现source默认更新会级联提升binding revision，后续binding CAS被本次自身变更拦截；配置迁移改为binding先于source，保留Owner/CAS和原始失败回执。新增真实Owner级联迁移测试通过，未绕过版本校验。
 
 2026-10-24 消息时效优化生产P0修正：首次线上审计发现known_published_article按binding/identity查询走SCAN raw_messages，增加ticker/source精确前置条件后复用现有idx_mbv2_raw_identity，保留binding及文章冲突门禁。新增3000条无关历史下VM步骤有界回归，相关29项通过；按消息组件滚动发布修正，避免每条输入全表扫描拖慢接纳。
+
+2026-10-24 消息时效优化生产Read对账修正：已有message_observations的upsert同步保存新body结果引用，并保持metadata查询字段内联、长HTML继续NativeContent引用；共享distribution在获取前登记各ticker候选观察。相同已复用输入不再无条件重写Raw/Standard和制造CDC。42项机制回归、10项distribution/retention检查及8项分发cohort回归通过，补齐上线期间既有任务观察引用，不重投消息。

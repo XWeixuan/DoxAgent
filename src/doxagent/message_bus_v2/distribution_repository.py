@@ -450,28 +450,36 @@ class DistributionRepository:
                     "SELECT body_state FROM distribution_articles WHERE article_id=?", (article_id,)
                 ).fetchone()
             if needs_body and article and article[0] == "WAIT_BODY":
-                from .body_results import ArticleBodyResults
+                with self.bus.atomic_intake():
+                    from .body_results import ArticleBodyResults
 
-                message = message.model_copy(update={"metadata":{**message.metadata,"body_observation_source_id":source.source_id}})
-                body_result, work_kind = ArticleBodyResults(self.bus).schedule(message, source.source_id)
-                intake_key = sha256_text(canonical_json(["distribution", article_id]))
-                job = EnrichmentJob(
-                    job_id="enrich-" + intake_key,
-                    intake_key=intake_key,
-                    poll_run_id=run_id,
-                    source=source,
-                    binding=None,
-                    owner_kind="distribution_article",
-                    article_id=article_id,
-                    message=message,
-                    created_at=utc_now(),
-                    deadline_at=utc_now() + timedelta(seconds=deadline_seconds),
-                    pipeline_version=pipeline_version,
-                    body_result_key=body_result["fetch_key"],
-                    work_kind="new_article" if work_kind == "reuse" else work_kind,
-                )
-                self.bus.enqueue_enrichment_job(job)
-                job_ids.append(job.job_id)
+                    message = message.model_copy(update={"metadata":{**message.metadata,"body_observation_source_id":source.source_id}})
+                    body_result, work_kind = ArticleBodyResults(self.bus).schedule(message, source.source_id)
+                    message = message.model_copy(update={"metadata":{**message.metadata,
+                        "article_body_result_key":body_result["fetch_key"]}})
+                    from .schema import identity_key_for
+                    for target in roster:
+                        if _admission_reason(message,target["admission"]) is None:
+                            self.bus.observe_input(message,ticker=target["binding"]["ticker"],
+                                source_id=source.source_id,identity_key=identity_key_for(source.source_id,message),now=utc_now())
+                    intake_key = sha256_text(canonical_json(["distribution", article_id]))
+                    job = EnrichmentJob(
+                        job_id="enrich-" + intake_key,
+                        intake_key=intake_key,
+                        poll_run_id=run_id,
+                        source=source,
+                        binding=None,
+                        owner_kind="distribution_article",
+                        article_id=article_id,
+                        message=message,
+                        created_at=utc_now(),
+                        deadline_at=utc_now() + timedelta(seconds=deadline_seconds),
+                        pipeline_version=pipeline_version,
+                        body_result_key=body_result["fetch_key"],
+                        work_kind="new_article" if work_kind == "reuse" else work_kind,
+                    )
+                    self.bus.enqueue_enrichment_job(job)
+                    job_ids.append(job.job_id)
         with self.bus.transaction() as db:
             changed = db.execute(
                 "UPDATE distribution_runs SET checkpoint_json=?,coverage=?,status=?,"
