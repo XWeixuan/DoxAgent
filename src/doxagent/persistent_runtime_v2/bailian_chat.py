@@ -88,7 +88,10 @@ def complete(client, request):
     except Exception as exc:
         error = _safe_transport_error(exc)
         raise RuntimeResponsesError(
-            error.code, str(error), retryable=error.retryable, usage=receipt()
+            error.code,
+            str(error),
+            retryable=error.retryable or getattr(exc, "status_code", None) is None,
+            usage=receipt(),
         ) from exc
     text = "".join(parts)
     known = receipt()
