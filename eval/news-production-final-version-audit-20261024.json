@@ -1,0 +1,6477 @@
+{
+  "window": {
+    "since": "2026-10-23T17:41:41+00:00",
+    "until": "2026-10-23T17:49:19.699968+00:00"
+  },
+  "cohort_basis": "first observed canonical article",
+  "new_articles": {
+    "total": 2,
+    "full": 2,
+    "ratio": 1.0,
+    "statuses": {
+      "READY": 2
+    }
+  },
+  "latest_poll_states": [
+    {
+      "binding_id": "BE:barrons_ticker_news",
+      "status": "succeeded",
+      "latency_ms": 23611,
+      "stages": "{\"source_wait_ms\":7720,\"acquisition_ms\":33956,\"accept_ms\":14093,\"site_wait_ms\":2501,\"runtime_ms\":17707}",
+      "capture_at": "2026-10-23T17:45:39.420465Z",
+      "next_dispatch_at": "2026-10-23T17:48:38.698554Z"
+    },
+    {
+      "binding_id": "BE:benzinga_news",
+      "status": "succeeded",
+      "latency_ms": 5613,
+      "stages": "{\"source_wait_ms\":1289,\"acquisition_ms\":2357,\"accept_ms\":913,\"site_wait_ms\":0,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:48:54.470591Z",
+      "next_dispatch_at": "2026-10-23T17:49:21.291094Z"
+    },
+    {
+      "binding_id": "BE:corporate_ir_press_releases",
+      "status": "succeeded",
+      "latency_ms": 537,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:49:38.154307Z"
+    },
+    {
+      "binding_id": "BE:digitimes_semiconductors",
+      "status": "failed",
+      "latency_ms": null,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:48:19.530372Z"
+    },
+    {
+      "binding_id": "BE:digitimes_tw_rss",
+      "status": "succeeded",
+      "latency_ms": null,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:50:00Z"
+    },
+    {
+      "binding_id": "BE:etnews_rss",
+      "status": "succeeded",
+      "latency_ms": null,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:50:00Z"
+    },
+    {
+      "binding_id": "BE:finnhub_company_news",
+      "status": "succeeded",
+      "latency_ms": 8971,
+      "stages": "{\"source_wait_ms\":421,\"acquisition_ms\":1535,\"accept_ms\":3188,\"site_wait_ms\":0,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:47:25.200017Z",
+      "next_dispatch_at": "2026-10-23T17:47:21.291094Z"
+    },
+    {
+      "binding_id": "BE:globenewswire_search",
+      "status": "succeeded",
+      "latency_ms": 35296,
+      "stages": "{\"source_wait_ms\":1137,\"acquisition_ms\":20864,\"accept_ms\":9197,\"site_wait_ms\":404,\"runtime_ms\":9254}",
+      "capture_at": "2026-10-23T17:48:40.893217Z",
+      "next_dispatch_at": "2026-10-23T17:48:52.259108Z"
+    },
+    {
+      "binding_id": "BE:globenewswire_semiconductors_rss",
+      "status": "succeeded",
+      "latency_ms": null,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:48:05.789355Z"
+    },
+    {
+      "binding_id": "BE:google_news_search_rss",
+      "status": "succeeded",
+      "latency_ms": 579443,
+      "stages": "{\"source_wait_ms\":2199886,\"acquisition_ms\":567083,\"accept_ms\":8525,\"site_wait_ms\":0,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:24:48.072445Z",
+      "next_dispatch_at": "2026-10-23T17:15:29.994837Z"
+    },
+    {
+      "binding_id": "BE:huggingnews_rss",
+      "status": "succeeded",
+      "latency_ms": null,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:50:00Z"
+    },
+    {
+      "binding_id": "BE:ibkr_news",
+      "status": "succeeded",
+      "latency_ms": 1008,
+      "stages": "{\"source_wait_ms\":92,\"acquisition_ms\":568,\"accept_ms\":279,\"site_wait_ms\":0,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:49:02.062085Z",
+      "next_dispatch_at": "2026-10-23T17:49:21.291094Z"
+    },
+    {
+      "binding_id": "BE:investing_ticker_news",
+      "status": "succeeded",
+      "latency_ms": 6305,
+      "stages": "{\"source_wait_ms\":5709,\"acquisition_ms\":23483,\"accept_ms\":7141,\"site_wait_ms\":0,\"runtime_ms\":15364}",
+      "capture_at": "2026-10-23T17:42:15.991310Z",
+      "next_dispatch_at": "2026-10-23T17:48:01.587206Z"
+    },
+    {
+      "binding_id": "BE:investorshub_ticker_news",
+      "status": "succeeded",
+      "latency_ms": 33438,
+      "stages": "{\"source_wait_ms\":3202,\"acquisition_ms\":31085,\"accept_ms\":1813,\"site_wait_ms\":2835,\"runtime_ms\":17956}",
+      "capture_at": "2026-10-23T17:48:11.785659Z",
+      "next_dispatch_at": "2026-10-23T17:48:21.291094Z"
+    },
+    {
+      "binding_id": "BE:newswire_rss",
+      "status": "succeeded",
+      "latency_ms": 9702,
+      "stages": "{\"source_wait_ms\":2515,\"acquisition_ms\":3549,\"accept_ms\":4299,\"site_wait_ms\":0,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:47:25.872758Z",
+      "next_dispatch_at": "2026-10-23T17:48:10.532400Z"
+    },
+    {
+      "binding_id": "BE:reuters_site_search",
+      "status": "succeeded",
+      "latency_ms": 17425,
+      "stages": "{\"source_wait_ms\":3801,\"acquisition_ms\":18631,\"accept_ms\":3905,\"site_wait_ms\":8755,\"runtime_ms\":4085}",
+      "capture_at": "2026-10-23T17:32:12.892401Z",
+      "next_dispatch_at": "2026-10-23T17:50:05.925441Z"
+    },
+    {
+      "binding_id": "BE:thelec_semiconductors_rss",
+      "status": "succeeded",
+      "latency_ms": null,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:50:00Z"
+    },
+    {
+      "binding_id": "BE:tomshardware_rss",
+      "status": "succeeded",
+      "latency_ms": null,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:50:00Z"
+    },
+    {
+      "binding_id": "BE:trendforce_news",
+      "status": "succeeded",
+      "latency_ms": null,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:49:00Z"
+    },
+    {
+      "binding_id": "BE:trendforce_press_releases",
+      "status": "succeeded",
+      "latency_ms": null,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:48:19.530483Z"
+    },
+    {
+      "binding_id": "BE:yahoo_finance_news",
+      "status": "succeeded",
+      "latency_ms": 54630,
+      "stages": "{\"source_wait_ms\":2685,\"acquisition_ms\":39627,\"accept_ms\":4159,\"site_wait_ms\":0,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:46:46.065928Z",
+      "next_dispatch_at": "2026-10-23T17:46:43.652661Z"
+    },
+    {
+      "binding_id": "CEG:barrons_ticker_news",
+      "status": "succeeded",
+      "latency_ms": 39666,
+      "stages": "{\"source_wait_ms\":7876,\"acquisition_ms\":32203,\"accept_ms\":1677,\"site_wait_ms\":1504,\"runtime_ms\":11617}",
+      "capture_at": "2026-10-23T17:48:52.584055Z",
+      "next_dispatch_at": "2026-10-23T17:48:27.957761Z"
+    },
+    {
+      "binding_id": "CEG:benzinga_news",
+      "status": "succeeded",
+      "latency_ms": 2439,
+      "stages": "{\"source_wait_ms\":160,\"acquisition_ms\":1305,\"accept_ms\":163,\"site_wait_ms\":0,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:48:59.234009Z",
+      "next_dispatch_at": "2026-10-23T17:49:27.957761Z"
+    },
+    {
+      "binding_id": "CEG:corporate_ir_press_releases",
+      "status": "succeeded",
+      "latency_ms": 1300,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:49:40.154307Z"
+    },
+    {
+      "binding_id": "CEG:finnhub_company_news",
+      "status": "succeeded",
+      "latency_ms": 4013,
+      "stages": "{\"source_wait_ms\":249,\"acquisition_ms\":1134,\"accept_ms\":1041,\"site_wait_ms\":0,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:47:42.321275Z",
+      "next_dispatch_at": "2026-10-23T17:47:27.957761Z"
+    },
+    {
+      "binding_id": "CEG:globenewswire_search",
+      "status": "succeeded",
+      "latency_ms": 10706,
+      "stages": "{\"source_wait_ms\":2470,\"acquisition_ms\":9131,\"accept_ms\":5854,\"site_wait_ms\":0,\"runtime_ms\":787}",
+      "capture_at": "2026-10-23T17:44:18.620363Z",
+      "next_dispatch_at": "2026-10-23T17:47:49.526700Z"
+    },
+    {
+      "binding_id": "CEG:ibkr_news",
+      "status": "succeeded",
+      "latency_ms": 667,
+      "stages": "{\"source_wait_ms\":309,\"acquisition_ms\":310,\"accept_ms\":132,\"site_wait_ms\":0,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:49:15.321393Z",
+      "next_dispatch_at": "2026-10-23T17:49:27.957761Z"
+    },
+    {
+      "binding_id": "CEG:investing_ticker_news",
+      "status": "succeeded",
+      "latency_ms": 15906,
+      "stages": "{\"source_wait_ms\":3502,\"acquisition_ms\":17491,\"accept_ms\":1347,\"site_wait_ms\":2531,\"runtime_ms\":11309}",
+      "capture_at": "2026-10-23T17:39:41.729386Z",
+      "next_dispatch_at": "2026-10-23T17:47:54.776959Z"
+    },
+    {
+      "binding_id": "CEG:investorshub_ticker_news",
+      "status": "succeeded",
+      "latency_ms": 18856,
+      "stages": "{\"source_wait_ms\":1673,\"acquisition_ms\":38306,\"accept_ms\":1054,\"site_wait_ms\":1265,\"runtime_ms\":34919}",
+      "capture_at": "2026-10-23T17:47:07.238405Z",
+      "next_dispatch_at": "2026-10-23T17:49:12.959854Z"
+    },
+    {
+      "binding_id": "CEG:newswire_rss",
+      "status": "failed",
+      "latency_ms": 4170,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:48:15.986945Z"
+    },
+    {
+      "binding_id": "CEG:reuters_site_search",
+      "status": "succeeded",
+      "latency_ms": 1103,
+      "stages": "{\"source_wait_ms\":112,\"acquisition_ms\":13113,\"accept_ms\":6369,\"site_wait_ms\":1102,\"runtime_ms\":4582}",
+      "capture_at": "2026-10-23T17:23:16.130340Z",
+      "next_dispatch_at": "2026-10-23T17:49:00.798688Z"
+    },
+    {
+      "binding_id": "CEG:yahoo_finance_news",
+      "status": "succeeded",
+      "latency_ms": 8880,
+      "stages": "{\"source_wait_ms\":534,\"acquisition_ms\":5846,\"accept_ms\":3350,\"site_wait_ms\":3060,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:47:05.883922Z",
+      "next_dispatch_at": "2026-10-23T17:47:16.985994Z"
+    },
+    {
+      "binding_id": "COHR:barrons_ticker_news",
+      "status": "succeeded",
+      "latency_ms": 11252,
+      "stages": "{\"source_wait_ms\":5775,\"acquisition_ms\":9847,\"accept_ms\":1793,\"site_wait_ms\":1,\"runtime_ms\":3901}",
+      "capture_at": "2026-10-23T17:38:01.086440Z",
+      "next_dispatch_at": "2026-10-23T17:48:05.775606Z"
+    },
+    {
+      "binding_id": "COHR:benzinga_news",
+      "status": "succeeded",
+      "latency_ms": 1587,
+      "stages": "{\"source_wait_ms\":88,\"acquisition_ms\":982,\"accept_ms\":423,\"site_wait_ms\":0,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:49:02.657436Z",
+      "next_dispatch_at": "2026-10-23T17:49:34.624427Z"
+    },
+    {
+      "binding_id": "COHR:corporate_ir_press_releases",
+      "status": "succeeded",
+      "latency_ms": 735,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:49:39.154307Z"
+    },
+    {
+      "binding_id": "COHR:ctee_semiconductor",
+      "status": "succeeded",
+      "latency_ms": null,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:50:00Z"
+    },
+    {
+      "binding_id": "COHR:digitimes_semiconductors",
+      "status": "failed",
+      "latency_ms": null,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:48:19.530372Z"
+    },
+    {
+      "binding_id": "COHR:digitimes_tw_rss",
+      "status": "succeeded",
+      "latency_ms": null,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:50:00Z"
+    },
+    {
+      "binding_id": "COHR:etnews_rss",
+      "status": "succeeded",
+      "latency_ms": null,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:50:00Z"
+    },
+    {
+      "binding_id": "COHR:finnhub_company_news",
+      "status": "succeeded",
+      "latency_ms": 4137,
+      "stages": "{\"source_wait_ms\":137,\"acquisition_ms\":1397,\"accept_ms\":2305,\"site_wait_ms\":0,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:47:49.872490Z",
+      "next_dispatch_at": "2026-10-23T17:48:34.624427Z"
+    },
+    {
+      "binding_id": "COHR:globenewswire_search",
+      "status": "succeeded",
+      "latency_ms": 24909,
+      "stages": "{\"source_wait_ms\":685,\"acquisition_ms\":20852,\"accept_ms\":7488,\"site_wait_ms\":0,\"runtime_ms\":13015}",
+      "capture_at": "2026-10-23T17:49:05.828837Z",
+      "next_dispatch_at": "2026-10-23T17:49:14.759021Z"
+    },
+    {
+      "binding_id": "COHR:globenewswire_semiconductors_rss",
+      "status": "succeeded",
+      "latency_ms": null,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:48:05.789355Z"
+    },
+    {
+      "binding_id": "COHR:huggingnews_rss",
+      "status": "succeeded",
+      "latency_ms": null,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:50:00Z"
+    },
+    {
+      "binding_id": "COHR:ibkr_news",
+      "status": "succeeded",
+      "latency_ms": 271,
+      "stages": "{\"source_wait_ms\":57,\"acquisition_ms\":58,\"accept_ms\":83,\"site_wait_ms\":0,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:49:04.264743Z",
+      "next_dispatch_at": "2026-10-23T17:49:34.624427Z"
+    },
+    {
+      "binding_id": "COHR:investing_ticker_news",
+      "status": "succeeded",
+      "latency_ms": 5593,
+      "stages": "{\"source_wait_ms\":4405,\"acquisition_ms\":36992,\"accept_ms\":10984,\"site_wait_ms\":2089,\"runtime_ms\":23616}",
+      "capture_at": "2026-10-23T17:45:59.088485Z",
+      "next_dispatch_at": "2026-10-23T17:48:05.788752Z"
+    },
+    {
+      "binding_id": "COHR:investorshub_ticker_news",
+      "status": "succeeded",
+      "latency_ms": 22963,
+      "stages": "{\"source_wait_ms\":4111,\"acquisition_ms\":46352,\"accept_ms\":4905,\"site_wait_ms\":2315,\"runtime_ms\":33966}",
+      "capture_at": "2026-10-23T17:46:17.088148Z",
+      "next_dispatch_at": "2026-10-23T17:48:38.698121Z"
+    },
+    {
+      "binding_id": "COHR:newswire_rss",
+      "status": "succeeded",
+      "latency_ms": 7326,
+      "stages": "{\"source_wait_ms\":3187,\"acquisition_ms\":3897,\"accept_ms\":2545,\"site_wait_ms\":0,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:47:53.049633Z",
+      "next_dispatch_at": "2026-10-23T17:48:21.441491Z"
+    },
+    {
+      "binding_id": "COHR:optical_systems_official_rss",
+      "status": "succeeded",
+      "latency_ms": 2552,
+      "stages": "{\"source_wait_ms\":150,\"acquisition_ms\":176,\"accept_ms\":708,\"site_wait_ms\":0,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:47:57.056153Z",
+      "next_dispatch_at": "2026-10-23T17:48:26.896036Z"
+    },
+    {
+      "binding_id": "COHR:reuters_site_search",
+      "status": "succeeded",
+      "latency_ms": 13816,
+      "stages": "{\"source_wait_ms\":10184,\"acquisition_ms\":24999,\"accept_ms\":2486,\"site_wait_ms\":5275,\"runtime_ms\":8956}",
+      "capture_at": "2026-10-23T17:34:23.432658Z",
+      "next_dispatch_at": "2026-10-23T17:48:45.061146Z"
+    },
+    {
+      "binding_id": "COHR:thelec_semiconductors_rss",
+      "status": "succeeded",
+      "latency_ms": null,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:50:00Z"
+    },
+    {
+      "binding_id": "COHR:tomshardware_rss",
+      "status": "succeeded",
+      "latency_ms": null,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:50:00Z"
+    },
+    {
+      "binding_id": "COHR:trendforce_news",
+      "status": "succeeded",
+      "latency_ms": null,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:49:00Z"
+    },
+    {
+      "binding_id": "COHR:trendforce_press_releases",
+      "status": "succeeded",
+      "latency_ms": null,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:48:19.530483Z"
+    },
+    {
+      "binding_id": "COHR:yahoo_finance_news",
+      "status": "succeeded",
+      "latency_ms": 22139,
+      "stages": "{\"source_wait_ms\":3145,\"acquisition_ms\":17227,\"accept_ms\":9277,\"site_wait_ms\":4584,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:47:18.001434Z",
+      "next_dispatch_at": "2026-10-23T17:47:20.319328Z"
+    },
+    {
+      "binding_id": "INTC:barrons_ticker_news",
+      "status": "succeeded",
+      "latency_ms": 39883,
+      "stages": "{\"source_wait_ms\":1689,\"acquisition_ms\":26050,\"accept_ms\":10588,\"site_wait_ms\":0,\"runtime_ms\":12539}",
+      "capture_at": "2026-10-23T17:46:42.109575Z",
+      "next_dispatch_at": "2026-10-23T17:46:41.291094Z"
+    },
+    {
+      "binding_id": "INTC:benzinga_news",
+      "status": "succeeded",
+      "latency_ms": 9280,
+      "stages": "{\"source_wait_ms\":299,\"acquisition_ms\":1688,\"accept_ms\":4623,\"site_wait_ms\":0,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:47:25.469807Z",
+      "next_dispatch_at": "2026-10-23T17:47:41.291094Z"
+    },
+    {
+      "binding_id": "INTC:corporate_ir_press_releases",
+      "status": "succeeded",
+      "latency_ms": 286,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:49:40.154307Z"
+    },
+    {
+      "binding_id": "INTC:digitimes_semiconductors",
+      "status": "failed",
+      "latency_ms": null,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:48:19.530372Z"
+    },
+    {
+      "binding_id": "INTC:digitimes_tw_rss",
+      "status": "succeeded",
+      "latency_ms": null,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:50:00Z"
+    },
+    {
+      "binding_id": "INTC:etnews_rss",
+      "status": "succeeded",
+      "latency_ms": null,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:50:00Z"
+    },
+    {
+      "binding_id": "INTC:finnhub_company_news",
+      "status": "succeeded",
+      "latency_ms": 4896,
+      "stages": "{\"source_wait_ms\":190,\"acquisition_ms\":1474,\"accept_ms\":2758,\"site_wait_ms\":0,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:47:59.456046Z",
+      "next_dispatch_at": "2026-10-23T17:48:41.291094Z"
+    },
+    {
+      "binding_id": "INTC:globenewswire_search",
+      "status": "succeeded",
+      "latency_ms": 18817,
+      "stages": "{\"source_wait_ms\":18537,\"acquisition_ms\":39081,\"accept_ms\":14190,\"site_wait_ms\":0,\"runtime_ms\":1649}",
+      "capture_at": "2026-10-23T17:43:56.763053Z",
+      "next_dispatch_at": "2026-10-23T17:49:16.529222Z"
+    },
+    {
+      "binding_id": "INTC:globenewswire_semiconductors_rss",
+      "status": "succeeded",
+      "latency_ms": null,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:48:05.789355Z"
+    },
+    {
+      "binding_id": "INTC:google_news_search_rss",
+      "status": "succeeded",
+      "latency_ms": 422115,
+      "stages": "{\"source_wait_ms\":1626031,\"acquisition_ms\":414275,\"accept_ms\":5515,\"site_wait_ms\":0,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:35:21.238997Z",
+      "next_dispatch_at": "2026-10-23T17:28:59.994837Z"
+    },
+    {
+      "binding_id": "INTC:huggingnews_rss",
+      "status": "succeeded",
+      "latency_ms": null,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:50:00Z"
+    },
+    {
+      "binding_id": "INTC:ibkr_news",
+      "status": "succeeded",
+      "latency_ms": 3938,
+      "stages": "{\"source_wait_ms\":128,\"acquisition_ms\":920,\"accept_ms\":1719,\"site_wait_ms\":0,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:47:49.697564Z",
+      "next_dispatch_at": "2026-10-23T17:48:41.291094Z"
+    },
+    {
+      "binding_id": "INTC:investing_ticker_news",
+      "status": "succeeded",
+      "latency_ms": 22925,
+      "stages": "{\"source_wait_ms\":96,\"acquisition_ms\":8173,\"accept_ms\":2915,\"site_wait_ms\":0,\"runtime_ms\":7828}",
+      "capture_at": "2026-10-23T17:39:54.718355Z",
+      "next_dispatch_at": "2026-10-23T17:48:38.698324Z"
+    },
+    {
+      "binding_id": "INTC:investorshub_ticker_news",
+      "status": "succeeded",
+      "latency_ms": 39152,
+      "stages": "{\"source_wait_ms\":1380,\"acquisition_ms\":24898,\"accept_ms\":13846,\"site_wait_ms\":2010,\"runtime_ms\":19894}",
+      "capture_at": "2026-10-23T17:44:10.691610Z",
+      "next_dispatch_at": "2026-10-23T17:47:11.337950Z"
+    },
+    {
+      "binding_id": "INTC:newswire_rss",
+      "status": "succeeded",
+      "latency_ms": 2684,
+      "stages": "{\"source_wait_ms\":245,\"acquisition_ms\":614,\"accept_ms\":591,\"site_wait_ms\":0,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:48:05.686062Z",
+      "next_dispatch_at": "2026-10-23T17:48:32.350582Z"
+    },
+    {
+      "binding_id": "INTC:reuters_site_search",
+      "status": "succeeded",
+      "latency_ms": 10510,
+      "stages": "{\"source_wait_ms\":5105,\"acquisition_ms\":25523,\"accept_ms\":965,\"site_wait_ms\":6011,\"runtime_ms\":11714}",
+      "capture_at": "2026-10-23T17:35:05.540460Z",
+      "next_dispatch_at": "2026-10-23T17:49:05.644941Z"
+    },
+    {
+      "binding_id": "INTC:thelec_semiconductors_rss",
+      "status": "succeeded",
+      "latency_ms": null,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:50:00Z"
+    },
+    {
+      "binding_id": "INTC:tomshardware_rss",
+      "status": "succeeded",
+      "latency_ms": null,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:50:00Z"
+    },
+    {
+      "binding_id": "INTC:trendforce_news",
+      "status": "succeeded",
+      "latency_ms": null,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:49:00Z"
+    },
+    {
+      "binding_id": "INTC:trendforce_press_releases",
+      "status": "succeeded",
+      "latency_ms": null,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:48:19.530483Z"
+    },
+    {
+      "binding_id": "INTC:yahoo_finance_news",
+      "status": "succeeded",
+      "latency_ms": 14889,
+      "stages": "{\"source_wait_ms\":1189,\"acquisition_ms\":13037,\"accept_ms\":2219,\"site_wait_ms\":3777,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:47:39.020776Z",
+      "next_dispatch_at": "2026-10-23T17:47:53.652661Z"
+    },
+    {
+      "binding_id": "MU:barrons_ticker_news",
+      "status": "succeeded",
+      "latency_ms": 18112,
+      "stages": "{\"source_wait_ms\":1069,\"acquisition_ms\":4061,\"accept_ms\":2098,\"site_wait_ms\":0,\"runtime_ms\":2745}",
+      "capture_at": "2026-10-23T17:40:14.942740Z",
+      "next_dispatch_at": "2026-10-23T17:49:17.900081Z"
+    },
+    {
+      "binding_id": "MU:benzinga_news",
+      "status": "succeeded",
+      "latency_ms": 4005,
+      "stages": "{\"source_wait_ms\":261,\"acquisition_ms\":1359,\"accept_ms\":2350,\"site_wait_ms\":0,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:47:42.326535Z",
+      "next_dispatch_at": "2026-10-23T17:47:47.957761Z"
+    },
+    {
+      "binding_id": "MU:corporate_ir_press_releases",
+      "status": "succeeded",
+      "latency_ms": 732,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:49:40.154307Z"
+    },
+    {
+      "binding_id": "MU:digitimes_semiconductors",
+      "status": "failed",
+      "latency_ms": null,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:48:19.530372Z"
+    },
+    {
+      "binding_id": "MU:digitimes_tw_rss",
+      "status": "succeeded",
+      "latency_ms": null,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:50:00Z"
+    },
+    {
+      "binding_id": "MU:etnews_rss",
+      "status": "succeeded",
+      "latency_ms": null,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:50:00Z"
+    },
+    {
+      "binding_id": "MU:finnhub_company_news",
+      "status": "succeeded",
+      "latency_ms": 7131,
+      "stages": "{\"source_wait_ms\":204,\"acquisition_ms\":1494,\"accept_ms\":3773,\"site_wait_ms\":0,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:48:10.205961Z",
+      "next_dispatch_at": "2026-10-23T17:48:47.957761Z"
+    },
+    {
+      "binding_id": "MU:globenewswire_search",
+      "status": "succeeded",
+      "latency_ms": 9157,
+      "stages": "{\"source_wait_ms\":2317,\"acquisition_ms\":34829,\"accept_ms\":33027,\"site_wait_ms\":0,\"runtime_ms\":5068}",
+      "capture_at": "2026-10-23T17:45:24.329444Z",
+      "next_dispatch_at": "2026-10-23T17:48:03.821039Z"
+    },
+    {
+      "binding_id": "MU:globenewswire_semiconductors_rss",
+      "status": "succeeded",
+      "latency_ms": null,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:48:05.789355Z"
+    },
+    {
+      "binding_id": "MU:huggingnews_rss",
+      "status": "succeeded",
+      "latency_ms": null,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:50:00Z"
+    },
+    {
+      "binding_id": "MU:ibkr_news",
+      "status": "succeeded",
+      "latency_ms": 4750,
+      "stages": "{\"source_wait_ms\":225,\"acquisition_ms\":1095,\"accept_ms\":2005,\"site_wait_ms\":0,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:47:59.317134Z",
+      "next_dispatch_at": "2026-10-23T17:48:47.957761Z"
+    },
+    {
+      "binding_id": "MU:investing_ticker_news",
+      "status": "succeeded",
+      "latency_ms": 33375,
+      "stages": "{\"source_wait_ms\":3781,\"acquisition_ms\":28018,\"accept_ms\":3973,\"site_wait_ms\":0,\"runtime_ms\":20884}",
+      "capture_at": "2026-10-23T17:48:36.465627Z",
+      "next_dispatch_at": "2026-10-23T17:48:47.957761Z"
+    },
+    {
+      "binding_id": "MU:investorshub_ticker_news",
+      "status": "succeeded",
+      "latency_ms": 8453,
+      "stages": "{\"source_wait_ms\":65,\"acquisition_ms\":18473,\"accept_ms\":2874,\"site_wait_ms\":0,\"runtime_ms\":17979}",
+      "capture_at": "2026-10-23T17:41:09.536281Z",
+      "next_dispatch_at": "2026-10-23T17:47:20.359160Z"
+    },
+    {
+      "binding_id": "MU:reuters_site_search",
+      "status": "succeeded",
+      "latency_ms": 21777,
+      "stages": "{\"source_wait_ms\":3332,\"acquisition_ms\":18957,\"accept_ms\":5668,\"site_wait_ms\":7074,\"runtime_ms\":8105}",
+      "capture_at": "2026-10-23T17:33:05.848996Z",
+      "next_dispatch_at": "2026-10-23T17:48:05.727823Z"
+    },
+    {
+      "binding_id": "MU:thelec_semiconductors_rss",
+      "status": "succeeded",
+      "latency_ms": null,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:50:00Z"
+    },
+    {
+      "binding_id": "MU:tikhub_x_user_posts",
+      "status": "succeeded",
+      "latency_ms": 6954,
+      "stages": "{\"source_wait_ms\":222,\"acquisition_ms\":3836,\"accept_ms\":1134,\"site_wait_ms\":0,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:40:10.835860Z",
+      "next_dispatch_at": "2026-10-23T17:50:02.553832Z"
+    },
+    {
+      "binding_id": "MU:tomshardware_rss",
+      "status": "succeeded",
+      "latency_ms": null,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:50:00Z"
+    },
+    {
+      "binding_id": "MU:trendforce_news",
+      "status": "succeeded",
+      "latency_ms": null,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:49:00Z"
+    },
+    {
+      "binding_id": "MU:trendforce_press_releases",
+      "status": "succeeded",
+      "latency_ms": null,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:48:19.530483Z"
+    },
+    {
+      "binding_id": "MU:yahoo_finance_news",
+      "status": "succeeded",
+      "latency_ms": 29483,
+      "stages": "{\"source_wait_ms\":833,\"acquisition_ms\":27830,\"accept_ms\":1710,\"site_wait_ms\":0,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:47:42.945427Z",
+      "next_dispatch_at": "2026-10-23T17:47:56.985994Z"
+    },
+    {
+      "binding_id": "NBIS:barrons_ticker_news",
+      "status": "succeeded",
+      "latency_ms": 33359,
+      "stages": "{\"source_wait_ms\":8801,\"acquisition_ms\":30069,\"accept_ms\":959,\"site_wait_ms\":2267,\"runtime_ms\":15742}",
+      "capture_at": "2026-10-23T17:47:46.263075Z",
+      "next_dispatch_at": "2026-10-23T17:47:54.624427Z"
+    },
+    {
+      "binding_id": "NBIS:benzinga_news",
+      "status": "succeeded",
+      "latency_ms": 4065,
+      "stages": "{\"source_wait_ms\":80,\"acquisition_ms\":1199,\"accept_ms\":1932,\"site_wait_ms\":0,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:47:49.843978Z",
+      "next_dispatch_at": "2026-10-23T17:47:54.624427Z"
+    },
+    {
+      "binding_id": "NBIS:corporate_ir_press_releases",
+      "status": "succeeded",
+      "latency_ms": 352,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:49:39.154307Z"
+    },
+    {
+      "binding_id": "NBIS:ctee_semiconductor",
+      "status": "succeeded",
+      "latency_ms": null,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:50:00Z"
+    },
+    {
+      "binding_id": "NBIS:digitimes_semiconductors",
+      "status": "failed",
+      "latency_ms": null,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:48:19.530372Z"
+    },
+    {
+      "binding_id": "NBIS:digitimes_tw_rss",
+      "status": "succeeded",
+      "latency_ms": null,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:50:00Z"
+    },
+    {
+      "binding_id": "NBIS:etnews_rss",
+      "status": "succeeded",
+      "latency_ms": null,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:50:00Z"
+    },
+    {
+      "binding_id": "NBIS:finnhub_company_news",
+      "status": "succeeded",
+      "latency_ms": 19434,
+      "stages": "{\"source_wait_ms\":7478,\"acquisition_ms\":9019,\"accept_ms\":2046,\"site_wait_ms\":0,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:48:35.363850Z",
+      "next_dispatch_at": "2026-10-23T17:48:54.624427Z"
+    },
+    {
+      "binding_id": "NBIS:globenewswire_search",
+      "status": "succeeded",
+      "latency_ms": 18887,
+      "stages": "{\"source_wait_ms\":5654,\"acquisition_ms\":24222,\"accept_ms\":6235,\"site_wait_ms\":0,\"runtime_ms\":7054}",
+      "capture_at": "2026-10-23T17:45:13.085822Z",
+      "next_dispatch_at": "2026-10-23T17:47:59.241402Z"
+    },
+    {
+      "binding_id": "NBIS:globenewswire_semiconductors_rss",
+      "status": "succeeded",
+      "latency_ms": null,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:48:05.789355Z"
+    },
+    {
+      "binding_id": "NBIS:huggingnews_rss",
+      "status": "succeeded",
+      "latency_ms": null,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:50:00Z"
+    },
+    {
+      "binding_id": "NBIS:ibkr_news",
+      "status": "succeeded",
+      "latency_ms": 5576,
+      "stages": "{\"source_wait_ms\":166,\"acquisition_ms\":890,\"accept_ms\":1416,\"site_wait_ms\":0,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:48:08.678321Z",
+      "next_dispatch_at": "2026-10-23T17:48:54.624427Z"
+    },
+    {
+      "binding_id": "NBIS:investing_ticker_news",
+      "status": "succeeded",
+      "latency_ms": 22023,
+      "stages": "{\"source_wait_ms\":9904,\"acquisition_ms\":36648,\"accept_ms\":4956,\"site_wait_ms\":940,\"runtime_ms\":12493}",
+      "capture_at": "2026-10-23T17:47:25.892669Z",
+      "next_dispatch_at": "2026-10-23T17:49:16.431084Z"
+    },
+    {
+      "binding_id": "NBIS:investorshub_ticker_news",
+      "status": "succeeded",
+      "latency_ms": 6636,
+      "stages": "{\"source_wait_ms\":3851,\"acquisition_ms\":20636,\"accept_ms\":6696,\"site_wait_ms\":1505,\"runtime_ms\":15076}",
+      "capture_at": "2026-10-23T17:39:25.791869Z",
+      "next_dispatch_at": "2026-10-23T17:47:23.577423Z"
+    },
+    {
+      "binding_id": "NBIS:nbis_official_actor_rss",
+      "status": "succeeded",
+      "latency_ms": 17793,
+      "stages": "{\"source_wait_ms\":1304,\"acquisition_ms\":2029,\"accept_ms\":11169,\"site_wait_ms\":0,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:48:49.734685Z",
+      "next_dispatch_at": "2026-10-23T17:49:15.950254Z"
+    },
+    {
+      "binding_id": "NBIS:newswire_rss",
+      "status": "succeeded",
+      "latency_ms": 20557,
+      "stages": "{\"source_wait_ms\":9472,\"acquisition_ms\":10106,\"accept_ms\":3025,\"site_wait_ms\":0,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:48:36.438997Z",
+      "next_dispatch_at": "2026-10-23T17:48:37.805127Z"
+    },
+    {
+      "binding_id": "NBIS:reuters_site_search",
+      "status": "succeeded",
+      "latency_ms": 35551,
+      "stages": "{\"source_wait_ms\":7871,\"acquisition_ms\":26365,\"accept_ms\":811,\"site_wait_ms\":3021,\"runtime_ms\":13790}",
+      "capture_at": "2026-10-23T17:36:27.140370Z",
+      "next_dispatch_at": "2026-10-23T17:49:30.738764Z"
+    },
+    {
+      "binding_id": "NBIS:thelec_semiconductors_rss",
+      "status": "succeeded",
+      "latency_ms": null,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:50:00Z"
+    },
+    {
+      "binding_id": "NBIS:tomshardware_rss",
+      "status": "succeeded",
+      "latency_ms": null,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:50:00Z"
+    },
+    {
+      "binding_id": "NBIS:trendforce_news",
+      "status": "succeeded",
+      "latency_ms": null,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:49:00Z"
+    },
+    {
+      "binding_id": "NBIS:trendforce_press_releases",
+      "status": "succeeded",
+      "latency_ms": null,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:48:19.530483Z"
+    },
+    {
+      "binding_id": "NBIS:yahoo_finance_news",
+      "status": "succeeded",
+      "latency_ms": 8075,
+      "stages": "{\"source_wait_ms\":2053,\"acquisition_ms\":7237,\"accept_ms\":1251,\"site_wait_ms\":3017,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:47:55.219413Z",
+      "next_dispatch_at": "2026-10-23T17:48:00.319328Z"
+    },
+    {
+      "binding_id": "ONDS:barrons_ticker_news",
+      "status": "succeeded",
+      "latency_ms": 29604,
+      "stages": "{\"source_wait_ms\":449,\"acquisition_ms\":28896,\"accept_ms\":431,\"site_wait_ms\":2063,\"runtime_ms\":25200}",
+      "capture_at": "2026-10-23T17:47:44.906788Z",
+      "next_dispatch_at": "2026-10-23T17:48:01.291094Z"
+    },
+    {
+      "binding_id": "ONDS:benzinga_news",
+      "status": "succeeded",
+      "latency_ms": 5207,
+      "stages": "{\"source_wait_ms\":1947,\"acquisition_ms\":3654,\"accept_ms\":1137,\"site_wait_ms\":0,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:47:59.727597Z",
+      "next_dispatch_at": "2026-10-23T17:48:01.291094Z"
+    },
+    {
+      "binding_id": "ONDS:corporate_ir_press_releases",
+      "status": "succeeded",
+      "latency_ms": 562,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:49:41.154307Z"
+    },
+    {
+      "binding_id": "ONDS:finnhub_company_news",
+      "status": "succeeded",
+      "latency_ms": 3680,
+      "stages": "{\"source_wait_ms\":561,\"acquisition_ms\":1428,\"accept_ms\":699,\"site_wait_ms\":0,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:48:52.504455Z",
+      "next_dispatch_at": "2026-10-23T17:49:01.291094Z"
+    },
+    {
+      "binding_id": "ONDS:globenewswire_search",
+      "status": "succeeded",
+      "latency_ms": 11809,
+      "stages": "{\"source_wait_ms\":1243,\"acquisition_ms\":12707,\"accept_ms\":4312,\"site_wait_ms\":0,\"runtime_ms\":993}",
+      "capture_at": "2026-10-23T17:44:52.918224Z",
+      "next_dispatch_at": "2026-10-23T17:47:50.146272Z"
+    },
+    {
+      "binding_id": "ONDS:ibkr_news",
+      "status": "succeeded",
+      "latency_ms": 14495,
+      "stages": "{\"source_wait_ms\":7583,\"acquisition_ms\":7613,\"accept_ms\":955,\"site_wait_ms\":0,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:48:30.446893Z",
+      "next_dispatch_at": "2026-10-23T17:49:01.291094Z"
+    },
+    {
+      "binding_id": "ONDS:investing_ticker_news",
+      "status": "succeeded",
+      "latency_ms": 23571,
+      "stages": "{\"source_wait_ms\":829,\"acquisition_ms\":16637,\"accept_ms\":13778,\"site_wait_ms\":0,\"runtime_ms\":14205}",
+      "capture_at": "2026-10-23T17:44:42.993917Z",
+      "next_dispatch_at": "2026-10-23T17:49:17.901623Z"
+    },
+    {
+      "binding_id": "ONDS:investorshub_ticker_news",
+      "status": "succeeded",
+      "latency_ms": 20910,
+      "stages": "{\"source_wait_ms\":691,\"acquisition_ms\":17254,\"accept_ms\":1747,\"site_wait_ms\":563,\"runtime_ms\":10212}",
+      "capture_at": "2026-10-23T17:47:59.237811Z",
+      "next_dispatch_at": "2026-10-23T17:48:01.291094Z"
+    },
+    {
+      "binding_id": "ONDS:newswire_rss",
+      "status": "succeeded",
+      "latency_ms": 1872,
+      "stages": null,
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-20T12:18:51.291094Z"
+    },
+    {
+      "binding_id": "ONDS:reuters_site_search",
+      "status": "succeeded",
+      "latency_ms": 4852,
+      "stages": "{\"source_wait_ms\":454,\"acquisition_ms\":3908,\"accept_ms\":1025,\"site_wait_ms\":0,\"runtime_ms\":2969}",
+      "capture_at": "2026-10-23T17:32:49.765633Z",
+      "next_dispatch_at": "2026-10-23T17:47:29.800851Z"
+    },
+    {
+      "binding_id": "ONDS:yahoo_finance_news",
+      "status": "succeeded",
+      "latency_ms": 20077,
+      "stages": "{\"source_wait_ms\":1120,\"acquisition_ms\":16354,\"accept_ms\":2177,\"site_wait_ms\":3051,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:48:13.350333Z",
+      "next_dispatch_at": "2026-10-23T17:48:33.652661Z"
+    },
+    {
+      "binding_id": "RKLB:barrons_ticker_news",
+      "status": "succeeded",
+      "latency_ms": 19060,
+      "stages": "{\"source_wait_ms\":415,\"acquisition_ms\":12747,\"accept_ms\":4077,\"site_wait_ms\":30,\"runtime_ms\":9636}",
+      "capture_at": "2026-10-23T17:48:05.755830Z",
+      "next_dispatch_at": "2026-10-23T17:48:07.957761Z"
+    },
+    {
+      "binding_id": "RKLB:benzinga_news",
+      "status": "succeeded",
+      "latency_ms": 7029,
+      "stages": "{\"source_wait_ms\":250,\"acquisition_ms\":1352,\"accept_ms\":1975,\"site_wait_ms\":0,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:48:10.058941Z",
+      "next_dispatch_at": "2026-10-23T17:48:07.957761Z"
+    },
+    {
+      "binding_id": "RKLB:corporate_ir_press_releases",
+      "status": "succeeded",
+      "latency_ms": 1188,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:49:38.154307Z"
+    },
+    {
+      "binding_id": "RKLB:finnhub_company_news",
+      "status": "succeeded",
+      "latency_ms": 4030,
+      "stages": "{\"source_wait_ms\":123,\"acquisition_ms\":2134,\"accept_ms\":552,\"site_wait_ms\":0,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:49:00.777816Z",
+      "next_dispatch_at": "2026-10-23T17:49:07.957761Z"
+    },
+    {
+      "binding_id": "RKLB:globenewswire_search",
+      "status": "succeeded",
+      "latency_ms": 20194,
+      "stages": "{\"source_wait_ms\":1193,\"acquisition_ms\":16407,\"accept_ms\":1839,\"site_wait_ms\":66,\"runtime_ms\":13534}",
+      "capture_at": "2026-10-23T17:48:28.295597Z",
+      "next_dispatch_at": "2026-10-23T17:49:07.957761Z"
+    },
+    {
+      "binding_id": "RKLB:ibkr_news",
+      "status": "succeeded",
+      "latency_ms": 3396,
+      "stages": "{\"source_wait_ms\":1182,\"acquisition_ms\":1182,\"accept_ms\":508,\"site_wait_ms\":0,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:48:52.234942Z",
+      "next_dispatch_at": "2026-10-23T17:49:07.957761Z"
+    },
+    {
+      "binding_id": "RKLB:investing_ticker_news",
+      "status": "succeeded",
+      "latency_ms": 6344,
+      "stages": "{\"source_wait_ms\":11719,\"acquisition_ms\":22204,\"accept_ms\":4610,\"site_wait_ms\":0,\"runtime_ms\":9854}",
+      "capture_at": "2026-10-23T17:40:59.424133Z",
+      "next_dispatch_at": "2026-10-23T17:47:23.192221Z"
+    },
+    {
+      "binding_id": "RKLB:investorshub_ticker_news",
+      "status": "succeeded",
+      "latency_ms": 33394,
+      "stages": "{\"source_wait_ms\":3792,\"acquisition_ms\":27486,\"accept_ms\":3449,\"site_wait_ms\":336,\"runtime_ms\":20315}",
+      "capture_at": "2026-10-23T17:48:36.453430Z",
+      "next_dispatch_at": "2026-10-23T17:48:07.957761Z"
+    },
+    {
+      "binding_id": "RKLB:reuters_site_search",
+      "status": "succeeded",
+      "latency_ms": 1279,
+      "stages": "{\"source_wait_ms\":164,\"acquisition_ms\":3221,\"accept_ms\":1875,\"site_wait_ms\":0,\"runtime_ms\":2854}",
+      "capture_at": "2026-10-23T17:33:43.695730Z",
+      "next_dispatch_at": "2026-10-23T17:48:55.756892Z"
+    },
+    {
+      "binding_id": "RKLB:yahoo_finance_news",
+      "status": "succeeded",
+      "latency_ms": 34009,
+      "stages": "{\"source_wait_ms\":8405,\"acquisition_ms\":18872,\"accept_ms\":10663,\"site_wait_ms\":6397,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:48:28.461784Z",
+      "next_dispatch_at": "2026-10-23T17:48:36.985994Z"
+    },
+    {
+      "binding_id": "SNOW:aws_platform_marketplace_rss",
+      "status": "succeeded",
+      "latency_ms": 4423,
+      "stages": "{\"source_wait_ms\":1195,\"acquisition_ms\":1835,\"accept_ms\":1207,\"site_wait_ms\":0,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:48:57.762297Z",
+      "next_dispatch_at": "2026-10-23T17:49:43.259673Z"
+    },
+    {
+      "binding_id": "SNOW:barrons_ticker_news",
+      "status": "succeeded",
+      "latency_ms": 5260,
+      "stages": "{\"source_wait_ms\":499,\"acquisition_ms\":3587,\"accept_ms\":11085,\"site_wait_ms\":0,\"runtime_ms\":3004}",
+      "capture_at": "2026-10-23T17:38:28.800208Z",
+      "next_dispatch_at": "2026-10-23T17:47:14.413218Z"
+    },
+    {
+      "binding_id": "SNOW:benzinga_news",
+      "status": "succeeded",
+      "latency_ms": 16046,
+      "stages": "{\"source_wait_ms\":7481,\"acquisition_ms\":8508,\"accept_ms\":1264,\"site_wait_ms\":0,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:48:31.983703Z",
+      "next_dispatch_at": "2026-10-23T17:49:14.624427Z"
+    },
+    {
+      "binding_id": "SNOW:corporate_ir_press_releases",
+      "status": "succeeded",
+      "latency_ms": 1069,
+      "stages": "{}",
+      "capture_at": null,
+      "next_dispatch_at": "2026-10-23T17:49:40.154307Z"
+    },
+    {
+      "binding_id": "SNOW:enterprise_apps_official_rss",
+      "status": "succeeded",
+      "latency_ms": 5029,
+      "stages": "{\"source_wait_ms\":1061,\"acquisition_ms\":3628,\"accept_ms\":1010,\"site_wait_ms\":0,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:49:04.074862Z",
+      "next_dispatch_at": "2026-10-23T17:49:48.714218Z"
+    },
+    {
+      "binding_id": "SNOW:finnhub_company_news",
+      "status": "succeeded",
+      "latency_ms": 9390,
+      "stages": "{\"source_wait_ms\":47,\"acquisition_ms\":2479,\"accept_ms\":5859,\"site_wait_ms\":0,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:49:13.356479Z",
+      "next_dispatch_at": "2026-10-23T17:49:14.624427Z"
+    },
+    {
+      "binding_id": "SNOW:globenewswire_search",
+      "status": "succeeded",
+      "latency_ms": 6368,
+      "stages": "{\"source_wait_ms\":8633,\"acquisition_ms\":27266,\"accept_ms\":15268,\"site_wait_ms\":0,\"runtime_ms\":1829}",
+      "capture_at": "2026-10-23T17:44:27.712859Z",
+      "next_dispatch_at": "2026-10-23T17:47:23.192486Z"
+    },
+    {
+      "binding_id": "SNOW:ibkr_news",
+      "status": "succeeded",
+      "latency_ms": 1963,
+      "stages": "{\"source_wait_ms\":126,\"acquisition_ms\":131,\"accept_ms\":834,\"site_wait_ms\":0,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:48:58.719139Z",
+      "next_dispatch_at": "2026-10-23T17:49:14.624427Z"
+    },
+    {
+      "binding_id": "SNOW:investing_ticker_news",
+      "status": "succeeded",
+      "latency_ms": 10684,
+      "stages": "{\"source_wait_ms\":815,\"acquisition_ms\":9554,\"accept_ms\":463,\"site_wait_ms\":0,\"runtime_ms\":8484}",
+      "capture_at": "2026-10-23T17:41:01.073684Z",
+      "next_dispatch_at": "2026-10-23T17:47:49.526126Z"
+    },
+    {
+      "binding_id": "SNOW:investorshub_ticker_news",
+      "status": "failed",
+      "latency_ms": 60992,
+      "stages": "{\"source_wait_ms\":32908,\"acquisition_ms\":61508,\"accept_ms\":1822,\"site_wait_ms\":2236,\"runtime_ms\":22243}",
+      "capture_at": "2026-10-23T17:43:25.029013Z",
+      "next_dispatch_at": "2026-10-23T17:46:14.624427Z"
+    },
+    {
+      "binding_id": "SNOW:lakehouse_platform_official_rss",
+      "status": "succeeded",
+      "latency_ms": 11619,
+      "stages": "{\"source_wait_ms\":2714,\"acquisition_ms\":3904,\"accept_ms\":2319,\"site_wait_ms\":0,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:46:28.680958Z",
+      "next_dispatch_at": "2026-10-23T17:45:54.168764Z"
+    },
+    {
+      "binding_id": "SNOW:newswire_rss",
+      "status": "succeeded",
+      "latency_ms": 4064,
+      "stages": "{\"source_wait_ms\":210,\"acquisition_ms\":549,\"accept_ms\":1188,\"site_wait_ms\":0,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:46:52.085773Z",
+      "next_dispatch_at": "2026-10-23T17:46:59.623309Z"
+    },
+    {
+      "binding_id": "SNOW:observability_vendors_official_rss",
+      "status": "succeeded",
+      "latency_ms": 4924,
+      "stages": "{\"source_wait_ms\":895,\"acquisition_ms\":1401,\"accept_ms\":2356,\"site_wait_ms\":0,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:47:13.134735Z",
+      "next_dispatch_at": "2026-10-23T17:48:05.077855Z"
+    },
+    {
+      "binding_id": "SNOW:reuters_site_search",
+      "status": "succeeded",
+      "latency_ms": 6086,
+      "stages": "{\"source_wait_ms\":1774,\"acquisition_ms\":6822,\"accept_ms\":13009,\"site_wait_ms\":1892,\"runtime_ms\":2729}",
+      "capture_at": "2026-10-23T17:28:26.890284Z",
+      "next_dispatch_at": "2026-10-23T17:48:19.258918Z"
+    },
+    {
+      "binding_id": "SNOW:yahoo_finance_news",
+      "status": "succeeded",
+      "latency_ms": 24400,
+      "stages": "{\"source_wait_ms\":1253,\"acquisition_ms\":15800,\"accept_ms\":7022,\"site_wait_ms\":3469,\"runtime_ms\":0}",
+      "capture_at": "2026-10-23T17:48:50.689458Z",
+      "next_dispatch_at": "2026-10-23T17:48:40.319328Z"
+    }
+  ],
+  "latest_poll_states_basis": "latest per binding, not a time-window average",
+  "jobs": [
+    {
+      "status": "completed",
+      "count": 124
+    },
+    {
+      "status": "failed",
+      "count": 118
+    },
+    {
+      "status": "queued",
+      "count": 8
+    },
+    {
+      "status": "retry_wait",
+      "count": 2
+    },
+    {
+      "status": "running",
+      "count": 5
+    }
+  ],
+  "executions": [
+    {
+      "source_id": "aws_platform_marketplace_rss",
+      "executions": 4,
+      "succeeded": 3,
+      "network_attempts": 3,
+      "cache_reuses": 0
+    },
+    {
+      "source_id": "barrons_ticker_news",
+      "executions": 100,
+      "succeeded": 22,
+      "network_attempts": 0,
+      "cache_reuses": 22
+    },
+    {
+      "source_id": "benzinga_news",
+      "executions": 58,
+      "succeeded": 58,
+      "network_attempts": 0,
+      "cache_reuses": 6
+    },
+    {
+      "source_id": "enterprise_apps_official_rss",
+      "executions": 20,
+      "succeeded": 15,
+      "network_attempts": 14,
+      "cache_reuses": 1
+    },
+    {
+      "source_id": "finnhub_company_news",
+      "executions": 28,
+      "succeeded": 12,
+      "network_attempts": 13,
+      "cache_reuses": 3
+    },
+    {
+      "source_id": "globenewswire_search",
+      "executions": 48,
+      "succeeded": 44,
+      "network_attempts": 37,
+      "cache_reuses": 9
+    },
+    {
+      "source_id": "google_news_search_rss",
+      "executions": 40,
+      "succeeded": 27,
+      "network_attempts": 28,
+      "cache_reuses": 0
+    },
+    {
+      "source_id": "huggingnews_rss",
+      "executions": 1,
+      "succeeded": 1,
+      "network_attempts": 1,
+      "cache_reuses": 0
+    },
+    {
+      "source_id": "ibkr_news",
+      "executions": 35,
+      "succeeded": 35,
+      "network_attempts": 0,
+      "cache_reuses": 1
+    },
+    {
+      "source_id": "investing_ticker_news",
+      "executions": 53,
+      "succeeded": 6,
+      "network_attempts": 2,
+      "cache_reuses": 6
+    },
+    {
+      "source_id": "investorshub_ticker_news",
+      "executions": 9,
+      "succeeded": 7,
+      "network_attempts": 0,
+      "cache_reuses": 7
+    },
+    {
+      "source_id": "lakehouse_platform_official_rss",
+      "executions": 30,
+      "succeeded": 6,
+      "network_attempts": 5,
+      "cache_reuses": 3
+    },
+    {
+      "source_id": "nbis_official_actor_rss",
+      "executions": 8,
+      "succeeded": 7,
+      "network_attempts": 7,
+      "cache_reuses": 0
+    },
+    {
+      "source_id": "newswire_rss",
+      "executions": 59,
+      "succeeded": 53,
+      "network_attempts": 48,
+      "cache_reuses": 5
+    },
+    {
+      "source_id": "observability_vendors_official_rss",
+      "executions": 2,
+      "succeeded": 1,
+      "network_attempts": 1,
+      "cache_reuses": 0
+    },
+    {
+      "source_id": "yahoo_finance_news",
+      "executions": 87,
+      "succeeded": 47,
+      "network_attempts": 42,
+      "cache_reuses": 4
+    }
+  ],
+  "poll_window": {
+    "bindings": {
+      "MU:barrons_ticker_news": {
+        "deferred": 3,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "ONDS:investing_ticker_news": {
+        "deferred": 2,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 1,
+          "mean": 32319.0,
+          "p95": 32319
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 1,
+          "mean": 0.003,
+          "p95": 0.003
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 1,
+            "mean": 13778.0,
+            "p95": 13778
+          },
+          "acquisition_ms": {
+            "samples": 1,
+            "mean": 16637.0,
+            "p95": 16637
+          },
+          "runtime_ms": {
+            "samples": 1,
+            "mean": 14205.0,
+            "p95": 14205
+          },
+          "site_wait_ms": {
+            "samples": 1,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "source_wait_ms": {
+            "samples": 1,
+            "mean": 829.0,
+            "p95": 829
+          }
+        }
+      },
+      "INTC:benzinga_news": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 1,
+          "mean": 199.050208,
+          "p95": 199.050208
+        },
+        "poll_ms": {
+          "samples": 3,
+          "mean": 18257.666666666668,
+          "p95": 36213
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 3,
+          "mean": 0.013666666666666666,
+          "p95": 0.019
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 3,
+            "mean": 7393.666666666667,
+            "p95": 12935
+          },
+          "acquisition_ms": {
+            "samples": 3,
+            "mean": 1678.0,
+            "p95": 1688
+          },
+          "runtime_ms": {
+            "samples": 3,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "site_wait_ms": {
+            "samples": 3,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "source_wait_ms": {
+            "samples": 3,
+            "mean": 285.0,
+            "p95": 299
+          }
+        }
+      },
+      "INTC:globenewswire_search": {
+        "deferred": 2,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 1,
+          "mean": 41304.0,
+          "p95": 41304
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 1,
+          "mean": 13050.988,
+          "p95": 13050.988
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 1,
+            "mean": 14190.0,
+            "p95": 14190
+          },
+          "acquisition_ms": {
+            "samples": 1,
+            "mean": 39081.0,
+            "p95": 39081
+          },
+          "runtime_ms": {
+            "samples": 1,
+            "mean": 1649.0,
+            "p95": 1649
+          },
+          "site_wait_ms": {
+            "samples": 1,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "source_wait_ms": {
+            "samples": 1,
+            "mean": 18537.0,
+            "p95": 18537
+          }
+        }
+      },
+      "NBIS:investing_ticker_news": {
+        "deferred": 2,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 1,
+          "mean": 54572.0,
+          "p95": 54572
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 1,
+          "mean": 0.004,
+          "p95": 0.004
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 1,
+            "mean": 4956.0,
+            "p95": 4956
+          },
+          "acquisition_ms": {
+            "samples": 1,
+            "mean": 36648.0,
+            "p95": 36648
+          },
+          "runtime_ms": {
+            "samples": 1,
+            "mean": 12493.0,
+            "p95": 12493
+          },
+          "site_wait_ms": {
+            "samples": 1,
+            "mean": 940.0,
+            "p95": 940
+          },
+          "source_wait_ms": {
+            "samples": 1,
+            "mean": 9904.0,
+            "p95": 9904
+          }
+        }
+      },
+      "CEG:ibkr_news": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 2,
+          "mean": 134.0048955,
+          "p95": 175.363678
+        },
+        "poll_ms": {
+          "samples": 3,
+          "mean": 1787.3333333333333,
+          "p95": 4561
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 3,
+          "mean": 0.0033333333333333335,
+          "p95": 0.004
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 3,
+            "mean": 473.0,
+            "p95": 1227
+          },
+          "acquisition_ms": {
+            "samples": 3,
+            "mean": 521.0,
+            "p95": 1232
+          },
+          "runtime_ms": {
+            "samples": 3,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "site_wait_ms": {
+            "samples": 3,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "source_wait_ms": {
+            "samples": 3,
+            "mean": 214.33333333333334,
+            "p95": 313
+          }
+        }
+      },
+      "CEG:corporate_ir_press_releases": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 15,
+          "mean": 1147.3333333333333,
+          "p95": 1300
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "RKLB:corporate_ir_press_releases": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 30,
+          "mean": 1385.5333333333333,
+          "p95": 3161
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "SNOW:corporate_ir_press_releases": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 15,
+          "mean": 844.8666666666667,
+          "p95": 1219
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "NBIS:ctee_semiconductor": {
+        "deferred": 1,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "COHR:ctee_semiconductor": {
+        "deferred": 1,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "BE:reuters_site_search": {
+        "deferred": 2,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "COHR:corporate_ir_press_releases": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 31,
+          "mean": 661.516129032258,
+          "p95": 854
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "MU:corporate_ir_press_releases": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 17,
+          "mean": 620.0,
+          "p95": 1178
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "ONDS:corporate_ir_press_releases": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 16,
+          "mean": 368.0,
+          "p95": 691
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "BE:corporate_ir_press_releases": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 15,
+          "mean": 672.2666666666667,
+          "p95": 1193
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "COHR:globenewswire_search": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 2,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 2,
+          "mean": 165.85937,
+          "p95": 214.23873
+        },
+        "poll_ms": {
+          "samples": 3,
+          "mean": 36182.333333333336,
+          "p95": 43273
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 3,
+          "mean": 8749.300333333333,
+          "p95": 19886.501
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 3,
+            "mean": 13889.333333333334,
+            "p95": 33373
+          },
+          "acquisition_ms": {
+            "samples": 3,
+            "mean": 23973.0,
+            "p95": 27792
+          },
+          "runtime_ms": {
+            "samples": 3,
+            "mean": 4780.0,
+            "p95": 13015
+          },
+          "site_wait_ms": {
+            "samples": 3,
+            "mean": 1021.3333333333334,
+            "p95": 3064
+          },
+          "source_wait_ms": {
+            "samples": 3,
+            "mean": 3964.6666666666665,
+            "p95": 9503
+          }
+        }
+      },
+      "NBIS:corporate_ir_press_releases": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 15,
+          "mean": 556.4666666666667,
+          "p95": 1264
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "INTC:corporate_ir_press_releases": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 15,
+          "mean": 101.26666666666667,
+          "p95": 286
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "SNOW:finnhub_company_news": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 2,
+          "mean": 177.1166025,
+          "p95": 234.031482
+        },
+        "poll_ms": {
+          "samples": 3,
+          "mean": 9740.0,
+          "p95": 14975
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 3,
+          "mean": 0.0036666666666666666,
+          "p95": 0.004
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 3,
+            "mean": 3899.0,
+            "p95": 5859
+          },
+          "acquisition_ms": {
+            "samples": 3,
+            "mean": 2083.6666666666665,
+            "p95": 2479
+          },
+          "runtime_ms": {
+            "samples": 3,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "site_wait_ms": {
+            "samples": 3,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "source_wait_ms": {
+            "samples": 3,
+            "mean": 285.6666666666667,
+            "p95": 590
+          }
+        }
+      },
+      "SNOW:yahoo_finance_news": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 2,
+          "mean": 209.445328,
+          "p95": 277.608548
+        },
+        "poll_ms": {
+          "samples": 3,
+          "mean": 39906.333333333336,
+          "p95": 74285
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 3,
+          "mean": 1252.1270000000002,
+          "p95": 2338.056
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 3,
+            "mean": 13902.333333333334,
+            "p95": 23209
+          },
+          "acquisition_ms": {
+            "samples": 3,
+            "mean": 23476.333333333332,
+            "p95": 47343
+          },
+          "runtime_ms": {
+            "samples": 3,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "site_wait_ms": {
+            "samples": 3,
+            "mean": 2222.6666666666665,
+            "p95": 3469
+          },
+          "source_wait_ms": {
+            "samples": 3,
+            "mean": 9041.333333333334,
+            "p95": 23673
+          }
+        }
+      },
+      "CEG:investorshub_ticker_news": {
+        "deferred": 1,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 1,
+          "mean": 176.903008,
+          "p95": 176.903008
+        },
+        "poll_ms": {
+          "samples": 2,
+          "mean": 54168.0,
+          "p95": 66171
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 2,
+          "mean": 0.0035,
+          "p95": 0.004
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 2,
+            "mean": 11365.5,
+            "p95": 21677
+          },
+          "acquisition_ms": {
+            "samples": 2,
+            "mean": 38990.0,
+            "p95": 39674
+          },
+          "runtime_ms": {
+            "samples": 2,
+            "mean": 34957.5,
+            "p95": 34996
+          },
+          "site_wait_ms": {
+            "samples": 2,
+            "mean": 632.5,
+            "p95": 1265
+          },
+          "source_wait_ms": {
+            "samples": 2,
+            "mean": 2817.5,
+            "p95": 3962
+          }
+        }
+      },
+      "NBIS:digitimes_tw_rss": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "MU:digitimes_tw_rss": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "INTC:digitimes_tw_rss": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "COHR:digitimes_tw_rss": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "BE:digitimes_tw_rss": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "NBIS:tomshardware_rss": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "MU:tomshardware_rss": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "INTC:tomshardware_rss": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "COHR:tomshardware_rss": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "BE:tomshardware_rss": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "NBIS:huggingnews_rss": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "MU:huggingnews_rss": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "INTC:huggingnews_rss": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "COHR:huggingnews_rss": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "BE:huggingnews_rss": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "NBIS:thelec_semiconductors_rss": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "MU:thelec_semiconductors_rss": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "INTC:thelec_semiconductors_rss": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "COHR:thelec_semiconductors_rss": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "BE:thelec_semiconductors_rss": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "NBIS:etnews_rss": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "MU:etnews_rss": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "INTC:etnews_rss": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "COHR:etnews_rss": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "BE:etnews_rss": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "COHR:ibkr_news": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 2,
+          "mean": 148.886991,
+          "p95": 212.339845
+        },
+        "poll_ms": {
+          "samples": 3,
+          "mean": 12368.333333333334,
+          "p95": 36293
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 3,
+          "mean": 0.0030000000000000005,
+          "p95": 0.004
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 3,
+            "mean": 5016.333333333333,
+            "p95": 14806
+          },
+          "acquisition_ms": {
+            "samples": 3,
+            "mean": 793.6666666666666,
+            "p95": 2086
+          },
+          "runtime_ms": {
+            "samples": 3,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "site_wait_ms": {
+            "samples": 3,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "source_wait_ms": {
+            "samples": 3,
+            "mean": 182.33333333333334,
+            "p95": 256
+          }
+        }
+      },
+      "SNOW:enterprise_apps_official_rss": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 1,
+          "mean": 223.229073,
+          "p95": 223.229073
+        },
+        "poll_ms": {
+          "samples": 2,
+          "mean": 9348.5,
+          "p95": 13668
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 2,
+          "mean": 0.003,
+          "p95": 0.003
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 2,
+            "mean": 2187.5,
+            "p95": 3365
+          },
+          "acquisition_ms": {
+            "samples": 2,
+            "mean": 5872.5,
+            "p95": 8117
+          },
+          "runtime_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "site_wait_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "source_wait_ms": {
+            "samples": 2,
+            "mean": 3366.0,
+            "p95": 5671
+          }
+        }
+      },
+      "COHR:benzinga_news": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 2,
+          "mean": 171.9535995,
+          "p95": 233.686425
+        },
+        "poll_ms": {
+          "samples": 3,
+          "mean": 6769.0,
+          "p95": 14612
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 3,
+          "mean": 0.0026666666666666666,
+          "p95": 0.003
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 3,
+            "mean": 1498.6666666666667,
+            "p95": 3582
+          },
+          "acquisition_ms": {
+            "samples": 3,
+            "mean": 1234.0,
+            "p95": 1524
+          },
+          "runtime_ms": {
+            "samples": 3,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "site_wait_ms": {
+            "samples": 3,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "source_wait_ms": {
+            "samples": 3,
+            "mean": 289.3333333333333,
+            "p95": 567
+          }
+        }
+      },
+      "BE:ibkr_news": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 2,
+          "mean": 170.83822500000002,
+          "p95": 242.329437
+        },
+        "poll_ms": {
+          "samples": 3,
+          "mean": 8880.666666666666,
+          "p95": 16230
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 3,
+          "mean": 0.0030000000000000005,
+          "p95": 0.004
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 3,
+            "mean": 2252.6666666666665,
+            "p95": 4959
+          },
+          "acquisition_ms": {
+            "samples": 3,
+            "mean": 2817.0,
+            "p95": 4274
+          },
+          "runtime_ms": {
+            "samples": 3,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "site_wait_ms": {
+            "samples": 3,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "source_wait_ms": {
+            "samples": 3,
+            "mean": 458.6666666666667,
+            "p95": 650
+          }
+        }
+      },
+      "RKLB:finnhub_company_news": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 2,
+          "mean": 183.8245435,
+          "p95": 242.246902
+        },
+        "poll_ms": {
+          "samples": 3,
+          "mean": 15687.333333333334,
+          "p95": 35734
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 3,
+          "mean": 0.0036666666666666666,
+          "p95": 0.004
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 3,
+            "mean": 7134.666666666667,
+            "p95": 18675
+          },
+          "acquisition_ms": {
+            "samples": 3,
+            "mean": 1994.6666666666667,
+            "p95": 2454
+          },
+          "runtime_ms": {
+            "samples": 3,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "site_wait_ms": {
+            "samples": 3,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "source_wait_ms": {
+            "samples": 3,
+            "mean": 273.6666666666667,
+            "p95": 436
+          }
+        }
+      },
+      "CEG:benzinga_news": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 2,
+          "mean": 190.954621,
+          "p95": 257.505225
+        },
+        "poll_ms": {
+          "samples": 3,
+          "mean": 9716.333333333334,
+          "p95": 19950
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 3,
+          "mean": 0.0036666666666666666,
+          "p95": 0.004
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 3,
+            "mean": 895.6666666666666,
+            "p95": 1692
+          },
+          "acquisition_ms": {
+            "samples": 3,
+            "mean": 1342.3333333333333,
+            "p95": 1534
+          },
+          "runtime_ms": {
+            "samples": 3,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "site_wait_ms": {
+            "samples": 3,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "source_wait_ms": {
+            "samples": 3,
+            "mean": 260.3333333333333,
+            "p95": 448
+          }
+        }
+      },
+      "SNOW:ibkr_news": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 2,
+          "mean": 193.82930499999998,
+          "p95": 277.780534
+        },
+        "poll_ms": {
+          "samples": 3,
+          "mean": 5408.333333333333,
+          "p95": 13641
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 3,
+          "mean": 0.0030000000000000005,
+          "p95": 0.003
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 3,
+            "mean": 635.3333333333334,
+            "p95": 905
+          },
+          "acquisition_ms": {
+            "samples": 3,
+            "mean": 503.6666666666667,
+            "p95": 1158
+          },
+          "runtime_ms": {
+            "samples": 3,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "site_wait_ms": {
+            "samples": 3,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "source_wait_ms": {
+            "samples": 3,
+            "mean": 253.66666666666666,
+            "p95": 414
+          }
+        }
+      },
+      "SNOW:aws_platform_marketplace_rss": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 1,
+          "mean": 232.309278,
+          "p95": 232.309278
+        },
+        "poll_ms": {
+          "samples": 2,
+          "mean": 5977.0,
+          "p95": 7531
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 2,
+          "mean": 0.004,
+          "p95": 0.005
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 2,
+            "mean": 2360.5,
+            "p95": 3514
+          },
+          "acquisition_ms": {
+            "samples": 2,
+            "mean": 2021.5,
+            "p95": 2208
+          },
+          "runtime_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "site_wait_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "source_wait_ms": {
+            "samples": 2,
+            "mean": 930.0,
+            "p95": 1195
+          }
+        }
+      },
+      "BE:yahoo_finance_news": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 1,
+          "mean": 224.332028,
+          "p95": 224.332028
+        },
+        "poll_ms": {
+          "samples": 2,
+          "mean": 45132.0,
+          "p95": 54630
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 2,
+          "mean": 1669.6245,
+          "p95": 1850.447
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 2,
+            "mean": 4021.5,
+            "p95": 4159
+          },
+          "acquisition_ms": {
+            "samples": 2,
+            "mean": 33511.5,
+            "p95": 39627
+          },
+          "runtime_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "site_wait_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "source_wait_ms": {
+            "samples": 2,
+            "mean": 3847.5,
+            "p95": 5010
+          }
+        }
+      },
+      "CEG:barrons_ticker_news": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 2,
+          "mean": 177.8688865,
+          "p95": 186.605195
+        },
+        "poll_ms": {
+          "samples": 3,
+          "mean": 48081.333333333336,
+          "p95": 60007
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 3,
+          "mean": 9231.282666666666,
+          "p95": 19560.048
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 3,
+            "mean": 6811.333333333333,
+            "p95": 14557
+          },
+          "acquisition_ms": {
+            "samples": 3,
+            "mean": 35843.666666666664,
+            "p95": 39348
+          },
+          "runtime_ms": {
+            "samples": 3,
+            "mean": 11235.333333333334,
+            "p95": 11619
+          },
+          "site_wait_ms": {
+            "samples": 3,
+            "mean": 1138.6666666666667,
+            "p95": 1912
+          },
+          "source_wait_ms": {
+            "samples": 3,
+            "mean": 16628.666666666668,
+            "p95": 21333
+          }
+        }
+      },
+      "BE:benzinga_news": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 2,
+          "mean": 210.0512705,
+          "p95": 289.142813
+        },
+        "poll_ms": {
+          "samples": 3,
+          "mean": 11705.333333333334,
+          "p95": 18462
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 3,
+          "mean": 0.0026666666666666666,
+          "p95": 0.003
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 3,
+            "mean": 1536.6666666666667,
+            "p95": 2891
+          },
+          "acquisition_ms": {
+            "samples": 3,
+            "mean": 3575.6666666666665,
+            "p95": 5369
+          },
+          "runtime_ms": {
+            "samples": 3,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "site_wait_ms": {
+            "samples": 3,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "source_wait_ms": {
+            "samples": 3,
+            "mean": 2134.0,
+            "p95": 3428
+          }
+        }
+      },
+      "ONDS:finnhub_company_news": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 2,
+          "mean": 209.0844485,
+          "p95": 277.02881
+        },
+        "poll_ms": {
+          "samples": 3,
+          "mean": 6999.666666666667,
+          "p95": 10951
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 3,
+          "mean": 0.0036666666666666666,
+          "p95": 0.004
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 3,
+            "mean": 1364.0,
+            "p95": 2664
+          },
+          "acquisition_ms": {
+            "samples": 3,
+            "mean": 3037.3333333333335,
+            "p95": 5169
+          },
+          "runtime_ms": {
+            "samples": 3,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "site_wait_ms": {
+            "samples": 3,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "source_wait_ms": {
+            "samples": 3,
+            "mean": 1762.6666666666667,
+            "p95": 3336
+          }
+        }
+      },
+      "RKLB:ibkr_news": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 2,
+          "mean": 200.98918749999999,
+          "p95": 280.874062
+        },
+        "poll_ms": {
+          "samples": 3,
+          "mean": 11076.666666666666,
+          "p95": 26745
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 3,
+          "mean": 0.0033333333333333335,
+          "p95": 0.004
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 3,
+            "mean": 881.6666666666666,
+            "p95": 1720
+          },
+          "acquisition_ms": {
+            "samples": 3,
+            "mean": 2876.6666666666665,
+            "p95": 7039
+          },
+          "runtime_ms": {
+            "samples": 3,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "site_wait_ms": {
+            "samples": 3,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "source_wait_ms": {
+            "samples": 3,
+            "mean": 1713.3333333333333,
+            "p95": 3784
+          }
+        }
+      },
+      "NBIS:reuters_site_search": {
+        "deferred": 2,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "BE:globenewswire_search": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 2,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 2,
+          "mean": 165.3086865,
+          "p95": 200.403608
+        },
+        "poll_ms": {
+          "samples": 3,
+          "mean": 38451.0,
+          "p95": 48120
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 3,
+          "mean": 7258.748666666666,
+          "p95": 12724.335
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 3,
+            "mean": 11721.0,
+            "p95": 14933
+          },
+          "acquisition_ms": {
+            "samples": 3,
+            "mean": 26656.333333333332,
+            "p95": 41366
+          },
+          "runtime_ms": {
+            "samples": 3,
+            "mean": 3809.3333333333335,
+            "p95": 9254
+          },
+          "site_wait_ms": {
+            "samples": 3,
+            "mean": 1287.6666666666667,
+            "p95": 3459
+          },
+          "source_wait_ms": {
+            "samples": 3,
+            "mean": 3630.3333333333335,
+            "p95": 6079
+          }
+        }
+      },
+      "RKLB:yahoo_finance_news": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 9,
+        "fresh_capture_interval_seconds": {
+          "samples": 2,
+          "mean": 199.4369635,
+          "p95": 239.95843
+        },
+        "poll_ms": {
+          "samples": 3,
+          "mean": 42270.0,
+          "p95": 60102
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 3,
+          "mean": 3506.896666666667,
+          "p95": 7001.469
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 3,
+            "mean": 15442.666666666666,
+            "p95": 18562
+          },
+          "acquisition_ms": {
+            "samples": 3,
+            "mean": 24089.0,
+            "p95": 39308
+          },
+          "runtime_ms": {
+            "samples": 3,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "site_wait_ms": {
+            "samples": 3,
+            "mean": 4233.333333333333,
+            "p95": 6397
+          },
+          "source_wait_ms": {
+            "samples": 3,
+            "mean": 13810.666666666666,
+            "p95": 27260
+          }
+        }
+      },
+      "NBIS:trendforce_press_releases": {
+        "deferred": 1,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "NBIS:digitimes_semiconductors": {
+        "deferred": 1,
+        "failed": 1,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "NBIS:nbis_official_actor_rss": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 7,
+          "mean": 56.405771,
+          "p95": 98.901405
+        },
+        "poll_ms": {
+          "samples": 8,
+          "mean": 28785.625,
+          "p95": 57880
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 8,
+          "mean": 0.0038750000000000004,
+          "p95": 0.005
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 8,
+            "mean": 15604.625,
+            "p95": 29188
+          },
+          "acquisition_ms": {
+            "samples": 8,
+            "mean": 6335.625,
+            "p95": 27652
+          },
+          "runtime_ms": {
+            "samples": 8,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "site_wait_ms": {
+            "samples": 8,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "source_wait_ms": {
+            "samples": 8,
+            "mean": 5513.0,
+            "p95": 26735
+          }
+        }
+      },
+      "NBIS:trendforce_news": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "MU:trendforce_news": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "INTC:trendforce_news": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "COHR:trendforce_news": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "BE:trendforce_news": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "BE:barrons_ticker_news": {
+        "deferred": 1,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 1,
+          "mean": 213.404106,
+          "p95": 213.404106
+        },
+        "poll_ms": {
+          "samples": 2,
+          "mean": 43231.5,
+          "p95": 53888
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 2,
+          "mean": 14135.660000000002,
+          "p95": 18349.401
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 2,
+            "mean": 11109.0,
+            "p95": 14093
+          },
+          "acquisition_ms": {
+            "samples": 2,
+            "mean": 27793.0,
+            "p95": 33956
+          },
+          "runtime_ms": {
+            "samples": 2,
+            "mean": 15192.0,
+            "p95": 17707
+          },
+          "site_wait_ms": {
+            "samples": 2,
+            "mean": 1773.5,
+            "p95": 2501
+          },
+          "source_wait_ms": {
+            "samples": 2,
+            "mean": 6554.5,
+            "p95": 7720
+          }
+        }
+      },
+      "COHR:investorshub_ticker_news": {
+        "deferred": 2,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 1,
+          "mean": 69877.0,
+          "p95": 69877
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 1,
+          "mean": 0.003,
+          "p95": 0.003
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 1,
+            "mean": 4905.0,
+            "p95": 4905
+          },
+          "acquisition_ms": {
+            "samples": 1,
+            "mean": 46352.0,
+            "p95": 46352
+          },
+          "runtime_ms": {
+            "samples": 1,
+            "mean": 33966.0,
+            "p95": 33966
+          },
+          "site_wait_ms": {
+            "samples": 1,
+            "mean": 2315.0,
+            "p95": 2315
+          },
+          "source_wait_ms": {
+            "samples": 1,
+            "mean": 4111.0,
+            "p95": 4111
+          }
+        }
+      },
+      "INTC:investing_ticker_news": {
+        "deferred": 3,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "MU:trendforce_press_releases": {
+        "deferred": 1,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "MU:digitimes_semiconductors": {
+        "deferred": 1,
+        "failed": 1,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "INTC:trendforce_press_releases": {
+        "deferred": 1,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "INTC:digitimes_semiconductors": {
+        "deferred": 1,
+        "failed": 1,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "MU:investing_ticker_news": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 2,
+          "mean": 167.591548,
+          "p95": 201.833055
+        },
+        "poll_ms": {
+          "samples": 3,
+          "mean": 45790.333333333336,
+          "p95": 60097
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 3,
+          "mean": 0.0036666666666666666,
+          "p95": 0.004
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 3,
+            "mean": 4769.666666666667,
+            "p95": 5970
+          },
+          "acquisition_ms": {
+            "samples": 3,
+            "mean": 36863.0,
+            "p95": 48716
+          },
+          "runtime_ms": {
+            "samples": 3,
+            "mean": 18334.666666666668,
+            "p95": 22430
+          },
+          "site_wait_ms": {
+            "samples": 3,
+            "mean": 273.6666666666667,
+            "p95": 821
+          },
+          "source_wait_ms": {
+            "samples": 3,
+            "mean": 14385.666666666666,
+            "p95": 21022
+          }
+        }
+      },
+      "RKLB:investorshub_ticker_news": {
+        "deferred": 2,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 1,
+          "mean": 33394.0,
+          "p95": 33394
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 1,
+          "mean": 0.004,
+          "p95": 0.004
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 1,
+            "mean": 3449.0,
+            "p95": 3449
+          },
+          "acquisition_ms": {
+            "samples": 1,
+            "mean": 27486.0,
+            "p95": 27486
+          },
+          "runtime_ms": {
+            "samples": 1,
+            "mean": 20315.0,
+            "p95": 20315
+          },
+          "site_wait_ms": {
+            "samples": 1,
+            "mean": 336.0,
+            "p95": 336
+          },
+          "source_wait_ms": {
+            "samples": 1,
+            "mean": 3792.0,
+            "p95": 3792
+          }
+        }
+      },
+      "NBIS:newswire_rss": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 1,
+          "mean": 226.188705,
+          "p95": 226.188705
+        },
+        "poll_ms": {
+          "samples": 2,
+          "mean": 14079.5,
+          "p95": 20557
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 2,
+          "mean": 0.003,
+          "p95": 0.003
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 2,
+            "mean": 2871.5,
+            "p95": 3025
+          },
+          "acquisition_ms": {
+            "samples": 2,
+            "mean": 7135.0,
+            "p95": 10106
+          },
+          "runtime_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "site_wait_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "source_wait_ms": {
+            "samples": 2,
+            "mean": 6261.0,
+            "p95": 9472
+          }
+        }
+      },
+      "COHR:trendforce_press_releases": {
+        "deferred": 1,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "COHR:digitimes_semiconductors": {
+        "deferred": 1,
+        "failed": 1,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "NBIS:finnhub_company_news": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 1,
+          "mean": 137.953552,
+          "p95": 137.953552
+        },
+        "poll_ms": {
+          "samples": 2,
+          "mean": 36962.5,
+          "p95": 54491
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 2,
+          "mean": 0.004,
+          "p95": 0.004
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 2,
+            "mean": 4052.5,
+            "p95": 6059
+          },
+          "acquisition_ms": {
+            "samples": 2,
+            "mean": 19157.0,
+            "p95": 29295
+          },
+          "runtime_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "site_wait_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "source_wait_ms": {
+            "samples": 2,
+            "mean": 14922.5,
+            "p95": 22367
+          }
+        }
+      },
+      "SNOW:benzinga_news": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 1,
+          "mean": 149.495377,
+          "p95": 149.495377
+        },
+        "poll_ms": {
+          "samples": 2,
+          "mean": 27877.0,
+          "p95": 39708
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 2,
+          "mean": 0.004,
+          "p95": 0.004
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 2,
+            "mean": 4228.0,
+            "p95": 7192
+          },
+          "acquisition_ms": {
+            "samples": 2,
+            "mean": 15971.5,
+            "p95": 23435
+          },
+          "runtime_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "site_wait_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "source_wait_ms": {
+            "samples": 2,
+            "mean": 14923.5,
+            "p95": 22366
+          }
+        }
+      },
+      "RKLB:globenewswire_search": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 2,
+          "mean": 162.437841,
+          "p95": 175.303667
+        },
+        "poll_ms": {
+          "samples": 3,
+          "mean": 32159.666666666668,
+          "p95": 60246
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 3,
+          "mean": 6924.912666666667,
+          "p95": 18593.462
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 3,
+            "mean": 8803.666666666666,
+            "p95": 22609
+          },
+          "acquisition_ms": {
+            "samples": 3,
+            "mean": 15969.333333333334,
+            "p95": 28079
+          },
+          "runtime_ms": {
+            "samples": 3,
+            "mean": 5175.333333333333,
+            "p95": 13534
+          },
+          "site_wait_ms": {
+            "samples": 3,
+            "mean": 22.0,
+            "p95": 66
+          },
+          "source_wait_ms": {
+            "samples": 3,
+            "mean": 2514.0,
+            "p95": 5806
+          }
+        }
+      },
+      "ONDS:yahoo_finance_news": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 1,
+          "mean": 171.722034,
+          "p95": 171.722034
+        },
+        "poll_ms": {
+          "samples": 2,
+          "mean": 30645.0,
+          "p95": 41213
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 2,
+          "mean": 1003.42,
+          "p95": 1062.503
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 2,
+            "mean": 10793.5,
+            "p95": 19410
+          },
+          "acquisition_ms": {
+            "samples": 2,
+            "mean": 14972.5,
+            "p95": 16354
+          },
+          "runtime_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "site_wait_ms": {
+            "samples": 2,
+            "mean": 3423.0,
+            "p95": 3795
+          },
+          "source_wait_ms": {
+            "samples": 2,
+            "mean": 3610.5,
+            "p95": 6101
+          }
+        }
+      },
+      "ONDS:ibkr_news": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 1,
+          "mean": 120.171701,
+          "p95": 120.171701
+        },
+        "poll_ms": {
+          "samples": 2,
+          "mean": 9903.5,
+          "p95": 14495
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 2,
+          "mean": 0.003,
+          "p95": 0.003
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 2,
+            "mean": 724.0,
+            "p95": 955
+          },
+          "acquisition_ms": {
+            "samples": 2,
+            "mean": 4822.0,
+            "p95": 7613
+          },
+          "runtime_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "site_wait_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "source_wait_ms": {
+            "samples": 2,
+            "mean": 4501.0,
+            "p95": 7583
+          }
+        }
+      },
+      "BE:trendforce_press_releases": {
+        "deferred": 1,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "BE:digitimes_semiconductors": {
+        "deferred": 1,
+        "failed": 1,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "INTC:reuters_site_search": {
+        "deferred": 2,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "NBIS:globenewswire_search": {
+        "deferred": 1,
+        "failed": 0,
+        "pending_queries": 1,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 1,
+          "mean": 198.863133,
+          "p95": 198.863133
+        },
+        "poll_ms": {
+          "samples": 2,
+          "mean": 30628.0,
+          "p95": 32652
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 2,
+          "mean": 9890.4445,
+          "p95": 16564.611
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 2,
+            "mean": 13565.5,
+            "p95": 20896
+          },
+          "acquisition_ms": {
+            "samples": 2,
+            "mean": 23577.5,
+            "p95": 24222
+          },
+          "runtime_ms": {
+            "samples": 2,
+            "mean": 4286.5,
+            "p95": 7054
+          },
+          "site_wait_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "source_wait_ms": {
+            "samples": 2,
+            "mean": 3984.5,
+            "p95": 5654
+          }
+        }
+      },
+      "MU:yahoo_finance_news": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 8,
+        "fresh_capture_interval_seconds": {
+          "samples": 1,
+          "mean": 172.191952,
+          "p95": 172.191952
+        },
+        "poll_ms": {
+          "samples": 2,
+          "mean": 23800.5,
+          "p95": 29483
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 2,
+          "mean": 1028.078,
+          "p95": 1580.1380000000001
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 2,
+            "mean": 1748.5,
+            "p95": 1787
+          },
+          "acquisition_ms": {
+            "samples": 2,
+            "mean": 22629.5,
+            "p95": 27830
+          },
+          "runtime_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "site_wait_ms": {
+            "samples": 2,
+            "mean": 2367.0,
+            "p95": 4734
+          },
+          "source_wait_ms": {
+            "samples": 2,
+            "mean": 2584.0,
+            "p95": 4335
+          }
+        }
+      },
+      "BE:investorshub_ticker_news": {
+        "deferred": 2,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 1,
+          "mean": 33438.0,
+          "p95": 33438
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 1,
+          "mean": 0.004,
+          "p95": 0.004
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 1,
+            "mean": 1813.0,
+            "p95": 1813
+          },
+          "acquisition_ms": {
+            "samples": 1,
+            "mean": 31085.0,
+            "p95": 31085
+          },
+          "runtime_ms": {
+            "samples": 1,
+            "mean": 17956.0,
+            "p95": 17956
+          },
+          "site_wait_ms": {
+            "samples": 1,
+            "mean": 2835.0,
+            "p95": 2835
+          },
+          "source_wait_ms": {
+            "samples": 1,
+            "mean": 3202.0,
+            "p95": 3202
+          }
+        }
+      },
+      "RKLB:barrons_ticker_news": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 1,
+          "mean": 194.247017,
+          "p95": 194.247017
+        },
+        "poll_ms": {
+          "samples": 2,
+          "mean": 31197.5,
+          "p95": 43335
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 2,
+          "mean": 5566.561,
+          "p95": 5663.815
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 2,
+            "mean": 4341.5,
+            "p95": 4606
+          },
+          "acquisition_ms": {
+            "samples": 2,
+            "mean": 25242.0,
+            "p95": 37737
+          },
+          "runtime_ms": {
+            "samples": 2,
+            "mean": 15800.5,
+            "p95": 21965
+          },
+          "site_wait_ms": {
+            "samples": 2,
+            "mean": 1306.0,
+            "p95": 2582
+          },
+          "source_wait_ms": {
+            "samples": 2,
+            "mean": 4694.0,
+            "p95": 8973
+          }
+        }
+      },
+      "MU:finnhub_company_news": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 1,
+          "mean": 175.526667,
+          "p95": 175.526667
+        },
+        "poll_ms": {
+          "samples": 2,
+          "mean": 7308.0,
+          "p95": 7485
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 2,
+          "mean": 0.0035,
+          "p95": 0.004
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 2,
+            "mean": 4181.5,
+            "p95": 4590
+          },
+          "acquisition_ms": {
+            "samples": 2,
+            "mean": 1563.0,
+            "p95": 1632
+          },
+          "runtime_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "site_wait_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "source_wait_ms": {
+            "samples": 2,
+            "mean": 204.0,
+            "p95": 204
+          }
+        }
+      },
+      "RKLB:benzinga_news": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 1,
+          "mean": 176.031122,
+          "p95": 176.031122
+        },
+        "poll_ms": {
+          "samples": 2,
+          "mean": 6935.5,
+          "p95": 7029
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 2,
+          "mean": 0.0035,
+          "p95": 0.004
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 2,
+            "mean": 2105.0,
+            "p95": 2235
+          },
+          "acquisition_ms": {
+            "samples": 2,
+            "mean": 1376.0,
+            "p95": 1400
+          },
+          "runtime_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "site_wait_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "source_wait_ms": {
+            "samples": 2,
+            "mean": 227.0,
+            "p95": 250
+          }
+        }
+      },
+      "NBIS:ibkr_news": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 1,
+          "mean": 139.514058,
+          "p95": 139.514058
+        },
+        "poll_ms": {
+          "samples": 2,
+          "mean": 19241.5,
+          "p95": 32907
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 2,
+          "mean": 0.0035,
+          "p95": 0.004
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 2,
+            "mean": 3098.0,
+            "p95": 4780
+          },
+          "acquisition_ms": {
+            "samples": 2,
+            "mean": 2472.0,
+            "p95": 4054
+          },
+          "runtime_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "site_wait_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "source_wait_ms": {
+            "samples": 2,
+            "mean": 1154.5,
+            "p95": 2143
+          }
+        }
+      },
+      "COHR:barrons_ticker_news": {
+        "deferred": 3,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "INTC:newswire_rss": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 1,
+          "mean": 221.675826,
+          "p95": 221.675826
+        },
+        "poll_ms": {
+          "samples": 2,
+          "mean": 6590.0,
+          "p95": 10496
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 2,
+          "mean": 0.0035,
+          "p95": 0.004
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 2,
+            "mean": 3801.0,
+            "p95": 7011
+          },
+          "acquisition_ms": {
+            "samples": 2,
+            "mean": 1106.0,
+            "p95": 1598
+          },
+          "runtime_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "site_wait_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "source_wait_ms": {
+            "samples": 2,
+            "mean": 236.5,
+            "p95": 245
+          }
+        }
+      },
+      "COHR:investing_ticker_news": {
+        "deferred": 1,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 1,
+          "mean": 159.791657,
+          "p95": 159.791657
+        },
+        "poll_ms": {
+          "samples": 2,
+          "mean": 39042.5,
+          "p95": 51885
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 2,
+          "mean": 0.003,
+          "p95": 0.003
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 2,
+            "mean": 6895.0,
+            "p95": 10984
+          },
+          "acquisition_ms": {
+            "samples": 2,
+            "mean": 24182.5,
+            "p95": 36992
+          },
+          "runtime_ms": {
+            "samples": 2,
+            "mean": 15277.5,
+            "p95": 23616
+          },
+          "site_wait_ms": {
+            "samples": 2,
+            "mean": 1044.5,
+            "p95": 2089
+          },
+          "source_wait_ms": {
+            "samples": 2,
+            "mean": 3969.0,
+            "p95": 4405
+          }
+        }
+      },
+      "MU:globenewswire_search": {
+        "deferred": 1,
+        "failed": 0,
+        "pending_queries": 1,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 1,
+          "mean": 209.686662,
+          "p95": 209.686662
+        },
+        "poll_ms": {
+          "samples": 2,
+          "mean": 44011.0,
+          "p95": 54934
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 2,
+          "mean": 10361.3515,
+          "p95": 17969.315000000002
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 2,
+            "mean": 27105.0,
+            "p95": 33027
+          },
+          "acquisition_ms": {
+            "samples": 2,
+            "mean": 29819.5,
+            "p95": 34829
+          },
+          "runtime_ms": {
+            "samples": 2,
+            "mean": 2576.5,
+            "p95": 5068
+          },
+          "site_wait_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "source_wait_ms": {
+            "samples": 2,
+            "mean": 3440.0,
+            "p95": 4563
+          }
+        }
+      },
+      "NBIS:yahoo_finance_news": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 1,
+          "mean": 179.909755,
+          "p95": 179.909755
+        },
+        "poll_ms": {
+          "samples": 2,
+          "mean": 15969.5,
+          "p95": 23864
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 2,
+          "mean": 1120.5065,
+          "p95": 1508.097
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 2,
+            "mean": 2208.5,
+            "p95": 3166
+          },
+          "acquisition_ms": {
+            "samples": 2,
+            "mean": 12735.5,
+            "p95": 18234
+          },
+          "runtime_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "site_wait_ms": {
+            "samples": 2,
+            "mean": 3779.0,
+            "p95": 4541
+          },
+          "source_wait_ms": {
+            "samples": 2,
+            "mean": 3473.5,
+            "p95": 4894
+          }
+        }
+      },
+      "CEG:reuters_site_search": {
+        "deferred": 2,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "BE:investing_ticker_news": {
+        "deferred": 2,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 1,
+          "mean": 32708.0,
+          "p95": 32708
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 1,
+          "mean": 0.003,
+          "p95": 0.003
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 1,
+            "mean": 7141.0,
+            "p95": 7141
+          },
+          "acquisition_ms": {
+            "samples": 1,
+            "mean": 23483.0,
+            "p95": 23483
+          },
+          "runtime_ms": {
+            "samples": 1,
+            "mean": 15364.0,
+            "p95": 15364
+          },
+          "site_wait_ms": {
+            "samples": 1,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "source_wait_ms": {
+            "samples": 1,
+            "mean": 5709.0,
+            "p95": 5709
+          }
+        }
+      },
+      "ONDS:benzinga_news": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 1,
+          "mean": 174.127897,
+          "p95": 174.127897
+        },
+        "poll_ms": {
+          "samples": 2,
+          "mean": 6436.0,
+          "p95": 7665
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 2,
+          "mean": 0.0035,
+          "p95": 0.004
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 2,
+            "mean": 2384.5,
+            "p95": 3632
+          },
+          "acquisition_ms": {
+            "samples": 2,
+            "mean": 3075.5,
+            "p95": 3654
+          },
+          "runtime_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "site_wait_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "source_wait_ms": {
+            "samples": 2,
+            "mean": 1290.5,
+            "p95": 1947
+          }
+        }
+      },
+      "INTC:finnhub_company_news": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 1,
+          "mean": 174.1673,
+          "p95": 174.1673
+        },
+        "poll_ms": {
+          "samples": 2,
+          "mean": 6151.0,
+          "p95": 7406
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 2,
+          "mean": 0.0035,
+          "p95": 0.004
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 2,
+            "mean": 2547.0,
+            "p95": 2758
+          },
+          "acquisition_ms": {
+            "samples": 2,
+            "mean": 1777.5,
+            "p95": 2081
+          },
+          "runtime_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "site_wait_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "source_wait_ms": {
+            "samples": 2,
+            "mean": 192.5,
+            "p95": 195
+          }
+        }
+      },
+      "MU:ibkr_news": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 1,
+          "mean": 173.01391,
+          "p95": 173.01391
+        },
+        "poll_ms": {
+          "samples": 2,
+          "mean": 6553.5,
+          "p95": 8357
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 2,
+          "mean": 0.0025,
+          "p95": 0.003
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 2,
+            "mean": 3060.5,
+            "p95": 4116
+          },
+          "acquisition_ms": {
+            "samples": 2,
+            "mean": 2003.0,
+            "p95": 2911
+          },
+          "runtime_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "site_wait_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "source_wait_ms": {
+            "samples": 2,
+            "mean": 184.5,
+            "p95": 225
+          }
+        }
+      },
+      "ONDS:investorshub_ticker_news": {
+        "deferred": 1,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 1,
+          "mean": 20910.0,
+          "p95": 20910
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 1,
+          "mean": 0.002,
+          "p95": 0.002
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 1,
+            "mean": 1747.0,
+            "p95": 1747
+          },
+          "acquisition_ms": {
+            "samples": 1,
+            "mean": 17254.0,
+            "p95": 17254
+          },
+          "runtime_ms": {
+            "samples": 1,
+            "mean": 10212.0,
+            "p95": 10212
+          },
+          "site_wait_ms": {
+            "samples": 1,
+            "mean": 563.0,
+            "p95": 563
+          },
+          "source_wait_ms": {
+            "samples": 1,
+            "mean": 691.0,
+            "p95": 691
+          }
+        }
+      },
+      "COHR:optical_systems_official_rss": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 1,
+          "mean": 250.041754,
+          "p95": 250.041754
+        },
+        "poll_ms": {
+          "samples": 2,
+          "mean": 9692.0,
+          "p95": 16832
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 2,
+          "mean": 0.004,
+          "p95": 0.004
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 2,
+            "mean": 1215.5,
+            "p95": 1723
+          },
+          "acquisition_ms": {
+            "samples": 2,
+            "mean": 216.5,
+            "p95": 257
+          },
+          "runtime_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "site_wait_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "source_wait_ms": {
+            "samples": 2,
+            "mean": 191.5,
+            "p95": 233
+          }
+        }
+      },
+      "RKLB:reuters_site_search": {
+        "deferred": 2,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "CEG:investing_ticker_news": {
+        "deferred": 3,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "INTC:yahoo_finance_news": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 1,
+          "mean": 205.099683,
+          "p95": 205.099683
+        },
+        "poll_ms": {
+          "samples": 2,
+          "mean": 23213.0,
+          "p95": 31537
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 2,
+          "mean": 1108.4995,
+          "p95": 1542.036
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 2,
+            "mean": 8711.5,
+            "p95": 15204
+          },
+          "acquisition_ms": {
+            "samples": 2,
+            "mean": 14672.0,
+            "p95": 16307
+          },
+          "runtime_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "site_wait_ms": {
+            "samples": 2,
+            "mean": 3795.5,
+            "p95": 3814
+          },
+          "source_wait_ms": {
+            "samples": 2,
+            "mean": 4783.0,
+            "p95": 8377
+          }
+        }
+      },
+      "COHR:newswire_rss": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 1,
+          "mean": 267.780044,
+          "p95": 267.780044
+        },
+        "poll_ms": {
+          "samples": 2,
+          "mean": 14233.5,
+          "p95": 21141
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 2,
+          "mean": 0.003,
+          "p95": 0.003
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 2,
+            "mean": 3233.0,
+            "p95": 3921
+          },
+          "acquisition_ms": {
+            "samples": 2,
+            "mean": 9115.0,
+            "p95": 14333
+          },
+          "runtime_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "site_wait_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "source_wait_ms": {
+            "samples": 2,
+            "mean": 7936.0,
+            "p95": 12685
+          }
+        }
+      },
+      "COHR:reuters_site_search": {
+        "deferred": 2,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "ONDS:globenewswire_search": {
+        "deferred": 1,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 1,
+          "mean": 14681.0,
+          "p95": 14681
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 1,
+          "mean": 3504.212,
+          "p95": 3504.212
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 1,
+            "mean": 4312.0,
+            "p95": 4312
+          },
+          "acquisition_ms": {
+            "samples": 1,
+            "mean": 12707.0,
+            "p95": 12707
+          },
+          "runtime_ms": {
+            "samples": 1,
+            "mean": 993.0,
+            "p95": 993
+          },
+          "site_wait_ms": {
+            "samples": 1,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "source_wait_ms": {
+            "samples": 1,
+            "mean": 1243.0,
+            "p95": 1243
+          }
+        }
+      },
+      "COHR:finnhub_company_news": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 1,
+          "mean": 182.350024,
+          "p95": 182.350024
+        },
+        "poll_ms": {
+          "samples": 2,
+          "mean": 4487.5,
+          "p95": 4838
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 2,
+          "mean": 0.003,
+          "p95": 0.003
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 2,
+            "mean": 2028.5,
+            "p95": 2305
+          },
+          "acquisition_ms": {
+            "samples": 2,
+            "mean": 1800.0,
+            "p95": 2203
+          },
+          "runtime_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "site_wait_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "source_wait_ms": {
+            "samples": 2,
+            "mean": 255.5,
+            "p95": 374
+          }
+        }
+      },
+      "NBIS:benzinga_news": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 1,
+          "mean": 182.481445,
+          "p95": 182.481445
+        },
+        "poll_ms": {
+          "samples": 2,
+          "mean": 4362.5,
+          "p95": 4660
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 2,
+          "mean": 0.0035,
+          "p95": 0.004
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 2,
+            "mean": 1908.5,
+            "p95": 1932
+          },
+          "acquisition_ms": {
+            "samples": 2,
+            "mean": 1358.5,
+            "p95": 1518
+          },
+          "runtime_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "site_wait_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "source_wait_ms": {
+            "samples": 2,
+            "mean": 231.5,
+            "p95": 383
+          }
+        }
+      },
+      "INTC:ibkr_news": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 1,
+          "mean": 205.598844,
+          "p95": 205.598844
+        },
+        "poll_ms": {
+          "samples": 2,
+          "mean": 7237.5,
+          "p95": 10537
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 2,
+          "mean": 0.004,
+          "p95": 0.004
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 2,
+            "mean": 4496.0,
+            "p95": 7273
+          },
+          "acquisition_ms": {
+            "samples": 2,
+            "mean": 1512.0,
+            "p95": 2104
+          },
+          "runtime_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "site_wait_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "source_wait_ms": {
+            "samples": 2,
+            "mean": 248.5,
+            "p95": 369
+          }
+        }
+      },
+      "NBIS:barrons_ticker_news": {
+        "deferred": 1,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 1,
+          "mean": 33359.0,
+          "p95": 33359
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 1,
+          "mean": 3348.8030000000003,
+          "p95": 3348.8030000000003
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 1,
+            "mean": 959.0,
+            "p95": 959
+          },
+          "acquisition_ms": {
+            "samples": 1,
+            "mean": 30069.0,
+            "p95": 30069
+          },
+          "runtime_ms": {
+            "samples": 1,
+            "mean": 15742.0,
+            "p95": 15742
+          },
+          "site_wait_ms": {
+            "samples": 1,
+            "mean": 2267.0,
+            "p95": 2267
+          },
+          "source_wait_ms": {
+            "samples": 1,
+            "mean": 8801.0,
+            "p95": 8801
+          }
+        }
+      },
+      "CEG:globenewswire_search": {
+        "deferred": 1,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 1,
+          "mean": 11008.0,
+          "p95": 11008
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 1,
+          "mean": 4805.998,
+          "p95": 4805.998
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 1,
+            "mean": 5854.0,
+            "p95": 5854
+          },
+          "acquisition_ms": {
+            "samples": 1,
+            "mean": 9131.0,
+            "p95": 9131
+          },
+          "runtime_ms": {
+            "samples": 1,
+            "mean": 787.0,
+            "p95": 787
+          },
+          "site_wait_ms": {
+            "samples": 1,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "source_wait_ms": {
+            "samples": 1,
+            "mean": 2470.0,
+            "p95": 2470
+          }
+        }
+      },
+      "SNOW:investing_ticker_news": {
+        "deferred": 2,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "ONDS:barrons_ticker_news": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 1,
+          "mean": 203.246466,
+          "p95": 203.246466
+        },
+        "poll_ms": {
+          "samples": 2,
+          "mean": 21748.0,
+          "p95": 29604
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 2,
+          "mean": 1896.5035,
+          "p95": 2897.382
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 2,
+            "mean": 1335.0,
+            "p95": 2239
+          },
+          "acquisition_ms": {
+            "samples": 2,
+            "mean": 19642.5,
+            "p95": 28896
+          },
+          "runtime_ms": {
+            "samples": 2,
+            "mean": 16740.5,
+            "p95": 25200
+          },
+          "site_wait_ms": {
+            "samples": 2,
+            "mean": 1031.5,
+            "p95": 2063
+          },
+          "source_wait_ms": {
+            "samples": 2,
+            "mean": 665.0,
+            "p95": 881
+          }
+        }
+      },
+      "CEG:newswire_rss": {
+        "deferred": 0,
+        "failed": 2,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "MU:benzinga_news": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 1,
+          "mean": 198.844799,
+          "p95": 198.844799
+        },
+        "poll_ms": {
+          "samples": 2,
+          "mean": 6954.5,
+          "p95": 9904
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 2,
+          "mean": 0.003,
+          "p95": 0.004
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 2,
+            "mean": 4122.0,
+            "p95": 5894
+          },
+          "acquisition_ms": {
+            "samples": 2,
+            "mean": 1435.5,
+            "p95": 1512
+          },
+          "runtime_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "site_wait_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "source_wait_ms": {
+            "samples": 2,
+            "mean": 321.0,
+            "p95": 381
+          }
+        }
+      },
+      "CEG:finnhub_company_news": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 1,
+          "mean": 198.987717,
+          "p95": 198.987717
+        },
+        "poll_ms": {
+          "samples": 2,
+          "mean": 6911.0,
+          "p95": 9809
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 2,
+          "mean": 0.003,
+          "p95": 0.003
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 2,
+            "mean": 1757.0,
+            "p95": 2473
+          },
+          "acquisition_ms": {
+            "samples": 2,
+            "mean": 1255.5,
+            "p95": 1377
+          },
+          "runtime_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "site_wait_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "source_wait_ms": {
+            "samples": 2,
+            "mean": 243.0,
+            "p95": 249
+          }
+        }
+      },
+      "COHR:yahoo_finance_news": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 1,
+          "mean": 185.795636,
+          "p95": 185.795636
+        },
+        "poll_ms": {
+          "samples": 2,
+          "mean": 27258.0,
+          "p95": 32377
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 2,
+          "mean": 2680.2360000000003,
+          "p95": 4700.637000000001
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 2,
+            "mean": 7910.0,
+            "p95": 9277
+          },
+          "acquisition_ms": {
+            "samples": 2,
+            "mean": 21041.0,
+            "p95": 24855
+          },
+          "runtime_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "site_wait_ms": {
+            "samples": 2,
+            "mean": 2292.0,
+            "p95": 4584
+          },
+          "source_wait_ms": {
+            "samples": 2,
+            "mean": 2103.5,
+            "p95": 3145
+          }
+        }
+      },
+      "BE:newswire_rss": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 1,
+          "mean": 315.407034,
+          "p95": 315.407034
+        },
+        "poll_ms": {
+          "samples": 2,
+          "mean": 18462.5,
+          "p95": 27223
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 2,
+          "mean": 0.0035,
+          "p95": 0.004
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 2,
+            "mean": 3283.5,
+            "p95": 4299
+          },
+          "acquisition_ms": {
+            "samples": 2,
+            "mean": 5557.0,
+            "p95": 7565
+          },
+          "runtime_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "site_wait_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "source_wait_ms": {
+            "samples": 2,
+            "mean": 4616.5,
+            "p95": 6718
+          }
+        }
+      },
+      "BE:finnhub_company_news": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 1,
+          "mean": 198.765389,
+          "p95": 198.765389
+        },
+        "poll_ms": {
+          "samples": 2,
+          "mean": 22608.0,
+          "p95": 36245
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 2,
+          "mean": 0.0035,
+          "p95": 0.004
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 2,
+            "mean": 8906.5,
+            "p95": 14625
+          },
+          "acquisition_ms": {
+            "samples": 2,
+            "mean": 1744.0,
+            "p95": 1953
+          },
+          "runtime_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "site_wait_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "source_wait_ms": {
+            "samples": 2,
+            "mean": 334.0,
+            "p95": 421
+          }
+        }
+      },
+      "NBIS:investorshub_ticker_news": {
+        "deferred": 2,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "SNOW:globenewswire_search": {
+        "deferred": 1,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 1,
+          "mean": 29800.0,
+          "p95": 29800
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 1,
+          "mean": 13835.699999999999,
+          "p95": 13835.699999999999
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 1,
+            "mean": 15268.0,
+            "p95": 15268
+          },
+          "acquisition_ms": {
+            "samples": 1,
+            "mean": 27266.0,
+            "p95": 27266
+          },
+          "runtime_ms": {
+            "samples": 1,
+            "mean": 1829.0,
+            "p95": 1829
+          },
+          "site_wait_ms": {
+            "samples": 1,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "source_wait_ms": {
+            "samples": 1,
+            "mean": 8633.0,
+            "p95": 8633
+          }
+        }
+      },
+      "RKLB:investing_ticker_news": {
+        "deferred": 2,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "SNOW:reuters_site_search": {
+        "deferred": 2,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "MU:investorshub_ticker_news": {
+        "deferred": 2,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "SNOW:barrons_ticker_news": {
+        "deferred": 2,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "CEG:yahoo_finance_news": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 9,
+        "fresh_capture_interval_seconds": {
+          "samples": 1,
+          "mean": 239.746326,
+          "p95": 239.746326
+        },
+        "poll_ms": {
+          "samples": 2,
+          "mean": 16269.5,
+          "p95": 23659
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 2,
+          "mean": 2360.7749999999996,
+          "p95": 3628.1349999999998
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 2,
+            "mean": 4893.0,
+            "p95": 6436
+          },
+          "acquisition_ms": {
+            "samples": 2,
+            "mean": 11689.5,
+            "p95": 17533
+          },
+          "runtime_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "site_wait_ms": {
+            "samples": 2,
+            "mean": 3033.5,
+            "p95": 3060
+          },
+          "source_wait_ms": {
+            "samples": 2,
+            "mean": 5040.0,
+            "p95": 9546
+          }
+        }
+      },
+      "SNOW:observability_vendors_official_rss": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 1,
+          "mean": 4924.0,
+          "p95": 4924
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 1,
+          "mean": 0.003,
+          "p95": 0.003
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 1,
+            "mean": 2356.0,
+            "p95": 2356
+          },
+          "acquisition_ms": {
+            "samples": 1,
+            "mean": 1401.0,
+            "p95": 1401
+          },
+          "runtime_ms": {
+            "samples": 1,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "site_wait_ms": {
+            "samples": 1,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "source_wait_ms": {
+            "samples": 1,
+            "mean": 895.0,
+            "p95": 895
+          }
+        }
+      },
+      "INTC:investorshub_ticker_news": {
+        "deferred": 1,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 1,
+          "mean": 40475.0,
+          "p95": 40475
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 1,
+          "mean": 0.004,
+          "p95": 0.004
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 1,
+            "mean": 13846.0,
+            "p95": 13846
+          },
+          "acquisition_ms": {
+            "samples": 1,
+            "mean": 24898.0,
+            "p95": 24898
+          },
+          "runtime_ms": {
+            "samples": 1,
+            "mean": 19894.0,
+            "p95": 19894
+          },
+          "site_wait_ms": {
+            "samples": 1,
+            "mean": 2010.0,
+            "p95": 2010
+          },
+          "source_wait_ms": {
+            "samples": 1,
+            "mean": 1380.0,
+            "p95": 1380
+          }
+        }
+      },
+      "MU:reuters_site_search": {
+        "deferred": 1,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "INTC:barrons_ticker_news": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 1,
+          "mean": 212.649684,
+          "p95": 212.649684
+        },
+        "poll_ms": {
+          "samples": 2,
+          "mean": 33586.0,
+          "p95": 39883
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 2,
+          "mean": 16891.286999999997,
+          "p95": 22831.610999999997
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 2,
+            "mean": 9827.0,
+            "p95": 10588
+          },
+          "acquisition_ms": {
+            "samples": 2,
+            "mean": 19036.0,
+            "p95": 26050
+          },
+          "runtime_ms": {
+            "samples": 2,
+            "mean": 9832.0,
+            "p95": 12539
+          },
+          "site_wait_ms": {
+            "samples": 2,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "source_wait_ms": {
+            "samples": 2,
+            "mean": 2617.0,
+            "p95": 3545
+          }
+        }
+      },
+      "SNOW:newswire_rss": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 1,
+          "mean": 4064.0,
+          "p95": 4064
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 1,
+          "mean": 0.004,
+          "p95": 0.004
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 1,
+            "mean": 1188.0,
+            "p95": 1188
+          },
+          "acquisition_ms": {
+            "samples": 1,
+            "mean": 549.0,
+            "p95": 549
+          },
+          "runtime_ms": {
+            "samples": 1,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "site_wait_ms": {
+            "samples": 1,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "source_wait_ms": {
+            "samples": 1,
+            "mean": 210.0,
+            "p95": 210
+          }
+        }
+      },
+      "ONDS:reuters_site_search": {
+        "deferred": 1,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "stages_ms": {}
+      },
+      "SNOW:lakehouse_platform_official_rss": {
+        "deferred": 0,
+        "failed": 0,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 1,
+          "mean": 11619.0,
+          "p95": 11619
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 1,
+          "mean": 0.003,
+          "p95": 0.003
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 1,
+            "mean": 2319.0,
+            "p95": 2319
+          },
+          "acquisition_ms": {
+            "samples": 1,
+            "mean": 3904.0,
+            "p95": 3904
+          },
+          "runtime_ms": {
+            "samples": 1,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "site_wait_ms": {
+            "samples": 1,
+            "mean": 0.0,
+            "p95": 0
+          },
+          "source_wait_ms": {
+            "samples": 1,
+            "mean": 2714.0,
+            "p95": 2714
+          }
+        }
+      },
+      "SNOW:investorshub_ticker_news": {
+        "deferred": 0,
+        "failed": 1,
+        "pending_queries": 0,
+        "pending_timestamps": 0,
+        "fresh_capture_interval_seconds": {
+          "samples": 0,
+          "mean": null,
+          "p95": null
+        },
+        "poll_ms": {
+          "samples": 1,
+          "mean": 67617.0,
+          "p95": 67617
+        },
+        "capture_to_first_intake_ms": {
+          "samples": 1,
+          "mean": 0.003,
+          "p95": 0.003
+        },
+        "stages_ms": {
+          "accept_ms": {
+            "samples": 1,
+            "mean": 1822.0,
+            "p95": 1822
+          },
+          "acquisition_ms": {
+            "samples": 1,
+            "mean": 61508.0,
+            "p95": 61508
+          },
+          "runtime_ms": {
+            "samples": 1,
+            "mean": 22243.0,
+            "p95": 22243
+          },
+          "site_wait_ms": {
+            "samples": 1,
+            "mean": 2236.0,
+            "p95": 2236
+          },
+          "source_wait_ms": {
+            "samples": 1,
+            "mean": 32908.0,
+            "p95": 32908
+          }
+        }
+      }
+    },
+    "sample_limit_reached": false,
+    "stage_basis": "nested stage durations overlap; do not add them as independent percentages"
+  },
+  "process_resources": []
+}

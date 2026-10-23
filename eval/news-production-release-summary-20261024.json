@@ -1,0 +1,386 @@
+{
+  "window": {
+    "since": "2026-10-23T17:41:41+00:00",
+    "until": "2026-10-23T17:49:19.699968+00:00"
+  },
+  "new_articles": {
+    "total": 2,
+    "full": 2,
+    "ratio": 1.0,
+    "statuses": {
+      "READY": 2
+    }
+  },
+  "jobs": [
+    {
+      "status": "completed",
+      "count": 124
+    },
+    {
+      "status": "failed",
+      "count": 118
+    },
+    {
+      "status": "queued",
+      "count": 8
+    },
+    {
+      "status": "retry_wait",
+      "count": 2
+    },
+    {
+      "status": "running",
+      "count": 5
+    }
+  ],
+  "executions": [
+    {
+      "source_id": "aws_platform_marketplace_rss",
+      "executions": 4,
+      "succeeded": 3,
+      "network_attempts": 3,
+      "cache_reuses": 0
+    },
+    {
+      "source_id": "barrons_ticker_news",
+      "executions": 100,
+      "succeeded": 22,
+      "network_attempts": 0,
+      "cache_reuses": 22
+    },
+    {
+      "source_id": "benzinga_news",
+      "executions": 58,
+      "succeeded": 58,
+      "network_attempts": 0,
+      "cache_reuses": 6
+    },
+    {
+      "source_id": "enterprise_apps_official_rss",
+      "executions": 20,
+      "succeeded": 15,
+      "network_attempts": 14,
+      "cache_reuses": 1
+    },
+    {
+      "source_id": "finnhub_company_news",
+      "executions": 28,
+      "succeeded": 12,
+      "network_attempts": 13,
+      "cache_reuses": 3
+    },
+    {
+      "source_id": "globenewswire_search",
+      "executions": 48,
+      "succeeded": 44,
+      "network_attempts": 37,
+      "cache_reuses": 9
+    },
+    {
+      "source_id": "google_news_search_rss",
+      "executions": 40,
+      "succeeded": 27,
+      "network_attempts": 28,
+      "cache_reuses": 0
+    },
+    {
+      "source_id": "huggingnews_rss",
+      "executions": 1,
+      "succeeded": 1,
+      "network_attempts": 1,
+      "cache_reuses": 0
+    },
+    {
+      "source_id": "ibkr_news",
+      "executions": 35,
+      "succeeded": 35,
+      "network_attempts": 0,
+      "cache_reuses": 1
+    },
+    {
+      "source_id": "investing_ticker_news",
+      "executions": 53,
+      "succeeded": 6,
+      "network_attempts": 2,
+      "cache_reuses": 6
+    },
+    {
+      "source_id": "investorshub_ticker_news",
+      "executions": 9,
+      "succeeded": 7,
+      "network_attempts": 0,
+      "cache_reuses": 7
+    },
+    {
+      "source_id": "lakehouse_platform_official_rss",
+      "executions": 30,
+      "succeeded": 6,
+      "network_attempts": 5,
+      "cache_reuses": 3
+    },
+    {
+      "source_id": "nbis_official_actor_rss",
+      "executions": 8,
+      "succeeded": 7,
+      "network_attempts": 7,
+      "cache_reuses": 0
+    },
+    {
+      "source_id": "newswire_rss",
+      "executions": 59,
+      "succeeded": 53,
+      "network_attempts": 48,
+      "cache_reuses": 5
+    },
+    {
+      "source_id": "observability_vendors_official_rss",
+      "executions": 2,
+      "succeeded": 1,
+      "network_attempts": 1,
+      "cache_reuses": 0
+    },
+    {
+      "source_id": "yahoo_finance_news",
+      "executions": 87,
+      "succeeded": 47,
+      "network_attempts": 42,
+      "cache_reuses": 4
+    }
+  ],
+  "sources": {
+    "barrons_ticker_news": {
+      "samples": 12,
+      "poll_mean_ms": 36427.4,
+      "capture_intake_mean_ms": 9001.9,
+      "capture_interval_mean_s": 196.5,
+      "capture_interval_samples": 6,
+      "deferred": 10,
+      "failed": 0
+    },
+    "investing_ticker_news": {
+      "samples": 8,
+      "poll_mean_ms": 41881.9,
+      "capture_intake_mean_ms": 0.0,
+      "capture_interval_mean_s": 165.0,
+      "capture_interval_samples": 3,
+      "deferred": 17,
+      "failed": 0
+    },
+    "benzinga_news": {
+      "samples": 22,
+      "poll_mean_ms": 11112.5,
+      "capture_intake_mean_ms": 0.0,
+      "capture_interval_mean_s": 185.5,
+      "capture_interval_samples": 12,
+      "deferred": 0,
+      "failed": 0
+    },
+    "globenewswire_search": {
+      "samples": 17,
+      "poll_mean_ms": 33320.6,
+      "capture_intake_mean_ms": 8500.0,
+      "capture_interval_mean_s": 174.5,
+      "capture_interval_samples": 8,
+      "deferred": 7,
+      "failed": 0
+    },
+    "ibkr_news": {
+      "samples": 23,
+      "poll_mean_ms": 8888.5,
+      "capture_intake_mean_ms": 0.0,
+      "capture_interval_mean_s": 166.8,
+      "capture_interval_samples": 14,
+      "deferred": 0,
+      "failed": 0
+    },
+    "corporate_ir_press_releases": {
+      "samples": 169,
+      "poll_mean_ms": 759.4,
+      "capture_intake_mean_ms": null,
+      "capture_interval_mean_s": null,
+      "capture_interval_samples": 0,
+      "deferred": 0,
+      "failed": 0
+    },
+    "ctee_semiconductor": {
+      "samples": 0,
+      "poll_mean_ms": null,
+      "capture_intake_mean_ms": null,
+      "capture_interval_mean_s": null,
+      "capture_interval_samples": 0,
+      "deferred": 2,
+      "failed": 0
+    },
+    "reuters_site_search": {
+      "samples": 0,
+      "poll_mean_ms": null,
+      "capture_intake_mean_ms": null,
+      "capture_interval_mean_s": null,
+      "capture_interval_samples": 0,
+      "deferred": 16,
+      "failed": 0
+    },
+    "finnhub_company_news": {
+      "samples": 21,
+      "poll_mean_ms": 12673.2,
+      "capture_intake_mean_ms": 0.0,
+      "capture_interval_mean_s": 184.0,
+      "capture_interval_samples": 12,
+      "deferred": 0,
+      "failed": 0
+    },
+    "yahoo_finance_news": {
+      "samples": 20,
+      "poll_mean_ms": 30555.2,
+      "capture_intake_mean_ms": 1811.0,
+      "capture_interval_mean_s": 199.7,
+      "capture_interval_samples": 11,
+      "deferred": 0,
+      "failed": 0
+    },
+    "investorshub_ticker_news": {
+      "samples": 8,
+      "poll_mean_ms": 46755.9,
+      "capture_intake_mean_ms": 0.0,
+      "capture_interval_mean_s": 176.9,
+      "capture_interval_samples": 1,
+      "deferred": 13,
+      "failed": 1
+    },
+    "digitimes_tw_rss": {
+      "samples": 0,
+      "poll_mean_ms": null,
+      "capture_intake_mean_ms": null,
+      "capture_interval_mean_s": null,
+      "capture_interval_samples": 0,
+      "deferred": 0,
+      "failed": 0
+    },
+    "tomshardware_rss": {
+      "samples": 0,
+      "poll_mean_ms": null,
+      "capture_intake_mean_ms": null,
+      "capture_interval_mean_s": null,
+      "capture_interval_samples": 0,
+      "deferred": 0,
+      "failed": 0
+    },
+    "huggingnews_rss": {
+      "samples": 0,
+      "poll_mean_ms": null,
+      "capture_intake_mean_ms": null,
+      "capture_interval_mean_s": null,
+      "capture_interval_samples": 0,
+      "deferred": 0,
+      "failed": 0
+    },
+    "thelec_semiconductors_rss": {
+      "samples": 0,
+      "poll_mean_ms": null,
+      "capture_intake_mean_ms": null,
+      "capture_interval_mean_s": null,
+      "capture_interval_samples": 0,
+      "deferred": 0,
+      "failed": 0
+    },
+    "etnews_rss": {
+      "samples": 0,
+      "poll_mean_ms": null,
+      "capture_intake_mean_ms": null,
+      "capture_interval_mean_s": null,
+      "capture_interval_samples": 0,
+      "deferred": 0,
+      "failed": 0
+    },
+    "enterprise_apps_official_rss": {
+      "samples": 2,
+      "poll_mean_ms": 9348.5,
+      "capture_intake_mean_ms": 0.0,
+      "capture_interval_mean_s": 223.2,
+      "capture_interval_samples": 1,
+      "deferred": 0,
+      "failed": 0
+    },
+    "aws_platform_marketplace_rss": {
+      "samples": 2,
+      "poll_mean_ms": 5977.0,
+      "capture_intake_mean_ms": 0.0,
+      "capture_interval_mean_s": 232.3,
+      "capture_interval_samples": 1,
+      "deferred": 0,
+      "failed": 0
+    },
+    "trendforce_press_releases": {
+      "samples": 0,
+      "poll_mean_ms": null,
+      "capture_intake_mean_ms": null,
+      "capture_interval_mean_s": null,
+      "capture_interval_samples": 0,
+      "deferred": 5,
+      "failed": 0
+    },
+    "digitimes_semiconductors": {
+      "samples": 0,
+      "poll_mean_ms": null,
+      "capture_intake_mean_ms": null,
+      "capture_interval_mean_s": null,
+      "capture_interval_samples": 0,
+      "deferred": 5,
+      "failed": 5
+    },
+    "nbis_official_actor_rss": {
+      "samples": 8,
+      "poll_mean_ms": 28785.6,
+      "capture_intake_mean_ms": 0.0,
+      "capture_interval_mean_s": 56.4,
+      "capture_interval_samples": 7,
+      "deferred": 0,
+      "failed": 0
+    },
+    "trendforce_news": {
+      "samples": 0,
+      "poll_mean_ms": null,
+      "capture_intake_mean_ms": null,
+      "capture_interval_mean_s": null,
+      "capture_interval_samples": 0,
+      "deferred": 0,
+      "failed": 0
+    },
+    "newswire_rss": {
+      "samples": 9,
+      "poll_mean_ms": 12310.6,
+      "capture_intake_mean_ms": 0.0,
+      "capture_interval_mean_s": 257.8,
+      "capture_interval_samples": 4,
+      "deferred": 0,
+      "failed": 2
+    },
+    "optical_systems_official_rss": {
+      "samples": 2,
+      "poll_mean_ms": 9692.0,
+      "capture_intake_mean_ms": 0.0,
+      "capture_interval_mean_s": 250.0,
+      "capture_interval_samples": 1,
+      "deferred": 0,
+      "failed": 0
+    },
+    "observability_vendors_official_rss": {
+      "samples": 1,
+      "poll_mean_ms": 4924.0,
+      "capture_intake_mean_ms": 0.0,
+      "capture_interval_mean_s": null,
+      "capture_interval_samples": 0,
+      "deferred": 0,
+      "failed": 0
+    },
+    "lakehouse_platform_official_rss": {
+      "samples": 1,
+      "poll_mean_ms": 11619.0,
+      "capture_intake_mean_ms": 0.0,
+      "capture_interval_mean_s": null,
+      "capture_interval_samples": 0,
+      "deferred": 0,
+      "failed": 0
+    }
+  }
+}

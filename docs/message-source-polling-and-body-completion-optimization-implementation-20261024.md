@@ -4,7 +4,7 @@
 
 ## 1. 交付状态与边界
 
-本轮完成代码、配置迁移工具、只读审计工具及本地回归；生产仅进行有界抓取对照、身份状态读取、配置 dry-run 与一次资源采样。尚未发布镜像或 apply 生产配置。
+以下为开发阶段记录，当时尚未发布镜像或 apply 生产配置。2026-10-24 后续已完成 origin/main 同步和七个相关生产组件发布、配置启用及线上修正，详见 [生产发布回执](message-source-polling-and-body-completion-optimization-release-20261024.md)。P0/P1 自然流量目标尚未验收。
 
 开发测试通过不等于线上 P0/P1 已验收。生产同身份双页的风控表现、九 ticker 自然发现时延及三个交易日新文章 FULL/SHORT_FULL >80%，仍须在正式发布后验证。Reuters/DIGITIMES 的历史 VALID 标签不作为当前权益或 BODY 成功证明。
 
