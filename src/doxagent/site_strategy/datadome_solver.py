@@ -129,17 +129,25 @@ class DataDomeSolver:
         with repo.transaction() as db:
             rows = db.execute(
                 "select data_json from datadome_solver_jobs where "
-                "json_extract(data_json,'$.status')='APPLIED' and "
-                "json_extract(data_json,'$.verification_state') is null limit 200"
+                "(json_extract(data_json,'$.status')='APPLIED' and "
+                "json_extract(data_json,'$.verification_state') is null) or "
+                "(json_extract(data_json,'$.status')='FAILED' and "
+                "coalesce(json_extract(data_json,'$.verification_state'),'PENDING')='PENDING') limit 200"
             ).fetchall()
             for row in rows:
                 job = json.loads(row[0])
-                job.update(verification_state="INDETERMINATE",
-                           verification_reason="legacy_application_without_proof")
-                if job.get('cost') not in {None, 'unknown'}:
-                    job['provider_cost'] = job['cost']
-                db.execute("update datadome_solver_jobs set data_json=? where job_id=?",
-                           (json.dumps(job), job['job_id']))
+                job.update(
+                    verification_state="STILL_BLOCKED"
+                    if job.get("reason") == "ERROR_CAPTCHA_UNSOLVABLE"
+                    else "INDETERMINATE",
+                    verification_reason=job.get("reason") or "legacy_application_without_proof",
+                )
+                if job.get("cost") not in {None, "unknown"}:
+                    job["provider_cost"] = job["cost"]
+                db.execute(
+                    "update datadome_solver_jobs set data_json=? where job_id=?",
+                    (json.dumps(job), job["job_id"]),
+                )
 
     def save(self, job):
         job["updated_at"] = utc_now().isoformat()
@@ -572,7 +580,16 @@ class DataDomeSolver:
             self.save(job)
 
     def fail(self, job, recovery, reason):
-        job.update(status="FAILED", reason=reason)
+        job.update(
+            status="FAILED",
+            reason=reason,
+            verification_state="STILL_BLOCKED"
+            if reason == "ERROR_CAPTCHA_UNSOLVABLE"
+            else "SUPERSEDED"
+            if reason in {"SCENE_OR_EGRESS_CHANGED", "EGRESS_CHANGED"}
+            else "INDETERMINATE",
+            verification_reason=reason,
+        )
         self.save(job)
         self.coordinator.event(
             recovery, "DATADOME_SOLVER_FAILED", reason=reason, task_id=job.get("task_id")

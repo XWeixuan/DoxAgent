@@ -30,3 +30,17 @@
 11:58 UTC原 Supervisor=`36804dfd...`，Reuters备用精确原页 `C8480BB8...` / instance `3c11550b...` 原生 CDP 确认存在。随后生产发生本轮之外的整批容器重建；12:03 UTC Supervisor变为`5042aeaf...`，旧页已丢失，随后出现新 target `F01CB50E...`。`external-restart.json`保留前后证据。该重建不是本轮修复发布，不能把其后新页当作原页连续保留。
 
 本次发布只允许 Site Access 和英文桌面脚本，禁止重建 Supervisor、Message Bus、Enrichment、Clash 或 captcha-proxy；以新 Supervisor 基线做发布前后 instance/target 比较。生产真实结果、最终版本和遗留操作在完成发布后补记。
+
+## 自然验收驱动的收尾
+
+第一版 `a2c9854e` 已于12:17:55 UTC发布，52个文件哈希一致，Site Access健康；Supervisor `5042aeaf...`、备用原页`F01CB50E...` / instance `e73d9680...` 保持不变，Bus/Enrichment没有重建，英文GUI原位安装。发布前另有在线Registry备份，文件路径及摘要见`prepublish.json`。
+
+自然发生的主身份新事件 `recovery_c4f2a6f7...` 加载了真实滑块；作业`dd_f7b62925...`、供应商任务`84215160824`在12:19:14 UTC进入PENDING，12:22:53返回`ERROR_CAPTCHA_UNSOLVABLE`。没有ready/Cookie应用/业务恢复证明，费用未知，不当0。该事件没有第二次购买，原页`7FDE4CC6...` / instance `83135655...`保留并转入人工Task。不能以此宣称新版本打码端到端成功。
+
+本次真实观察还补上三项闭环：
+
+1. FAILED作业不得仍显示verification_state=PENDING；供应商明确无解为STILL_BLOCKED，场景/出口变化为SUPERSEDED，技术结果不确定为INDETERMINATE。启动兼容补齐旧FAILED元数据，不重购、不伪造费用。
+2. 只靠布局尺寸不够，增加原生computed style观察；CSS隐藏资源不参与判定，CSS/子DOM不可读保持UNKNOWN。HTML仅在内存中去除已确认隐藏的vendor iframe用于验证，不修改浏览器页面、不保存Cookie。
+3. Reuters过去只接受recipe_result，纯原页DOM没有对应的可信listing parser，导致正常原页仍要重新导航。增加与现有recipe对应的main文章链接/日期、明确零结果以及精确query/offset契约；可见遮罩/UNKNOWN仍拒绝，主备/查询不能互相证明。人工Verify使用原Task的查询而不是固定Micron，并接纳offset=0的canonical差异，避免为证明已恢复再触发验证。
+
+以上补充均在既有Site Access包内，无新增服务。新增回归累计27项，后续最小版本及验收结果在最终收尾补记。24小时只读验收已复用自动化24；新观察窗口为10-23 12:17:55至10-24 12:17:55 UTC，保留原10-21窗口，不因收尾发布延长截止。OpenAI Docs用于安排只读计划任务，不改变修复或购买授权；原页、费用与业务回执分别统计。

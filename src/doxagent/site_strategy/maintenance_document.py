@@ -263,7 +263,7 @@ async def read_original_document(client, identity, session, target, *, evidence_
             0,
             root.get("documentURL") or str(tab["url"]),
             {},
-            body=html,
+            body=document["assessment_html"],
             provenance=RuntimeProvenance(
                 identity.identity_id,
                 identity.revision,

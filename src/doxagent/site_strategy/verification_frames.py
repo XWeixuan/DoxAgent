@@ -96,8 +96,23 @@ async def observe_verification_frames(call, root, html):
                     try:
                         box = (await call("DOM.getBoxModel", {"nodeId": node_id})).get("model", {})
                         item["visible"] = bool(box["width"] > 0 and box["height"] > 0)
+                        if item["visible"]:
+                            await call("DOM.enable")
+                            await call("CSS.enable")
+                            computed = (
+                                await call("CSS.getComputedStyleForNode", {"nodeId": node_id})
+                            ).get("computedStyle", [])
+                            css = {entry["name"]: entry["value"] for entry in computed}
+                            if not css:
+                                item["visible"] = None
+                            elif (
+                                css.get("visibility") in {"hidden", "collapse"}
+                                or css.get("display") == "none"
+                                or css.get("opacity") == "0"
+                            ):
+                                item["visible"] = False
                     except (RuntimeError, KeyError):
-                        pass
+                        item["visible"] = None
                 if not frame_id:
                     continue
                 document = node.get("contentDocument")
@@ -161,12 +176,14 @@ async def observe_verification_document(call, *, root=None, html=None):
     if (
         present
         and any(not f["html"].strip() or f["visible"] is None for f in present)
-        and assessment.kind == "NONE"
+        and assessment.kind != "ACCESS_BLOCK"
     ):
-        assessment.kind, assessment.policy_reason = "UNKNOWN", "verification_frame_unreadable"
+        assessment.kind, assessment.handling_mode = "UNKNOWN", "AUTO"
+        assessment.policy_reason, assessment.confidence = "verification_frame_unreadable", "UNKNOWN"
     return {
         "root": root,
         "html": html,
+        "assessment_html": assessment_html,
         "frames": frames,
         "assessment": assessment,
         "presence_state": "PRESENT" if html.strip() else "PRESENT_BUT_UNREADABLE",

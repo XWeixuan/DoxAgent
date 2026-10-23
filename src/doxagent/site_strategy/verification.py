@@ -89,6 +89,13 @@ def validate_capture(
 ):
     """No networking, publishing, lease acquisition or model requests here."""
     report = VerificationReport()
+    kind = (response.assessment or {}).get("kind")
+    if kind in {"AUTO_CHECK", "INTERACTIVE", "ACCESS_BLOCK", "UNKNOWN"}:
+        report.challenge = "UNKNOWN" if kind == "UNKNOWN" else "BLOCKED"
+        report.reason = (
+            "verification_evidence_incomplete" if kind == "UNKNOWN" else "challenge_required"
+        )
+        return report
     info = inspect_html(
         response.body,
         response.final_url,
@@ -148,7 +155,68 @@ def validate_capture(
 
 
 def validate_crawler_capture(source_id, response, request):
+    if response.recovery_id or (response.assessment or {}).get("kind") in {
+        "AUTO_CHECK",
+        "INTERACTIVE",
+        "ACCESS_BLOCK",
+        "UNKNOWN",
+    }:
+        return False
     return crawler_capture_items(source_id, response, request) is not None
+
+
+def reuters_listing_rows(html, request, actual_url):
+    """Read-only counterpart of the trusted recipe's main-link/card contract."""
+    from urllib.parse import parse_qs
+
+    from lxml import html as H
+    from lxml.etree import ParserError
+
+    query = str(request.recipe_parameters.get("query") or "")
+    offset = str(request.recipe_parameters.get("offset", 0))
+    if not query or request.recipe_ref != "builtin:reuters_search@1":
+        return None
+    for url in (request.url, actual_url):
+        p = urlsplit(url)
+        values = parse_qs(p.query)
+        values.setdefault("offset", ["0"])
+        if (
+            p.scheme != "https"
+            or p.hostname != "www.reuters.com"
+            or p.path != "/site-search/"
+            or p.username
+            or p.fragment
+            or p.port not in {None, 443}
+            or values != {"query": [query], "offset": [offset]}
+        ):
+            return None
+    try:
+        root = H.fromstring((html or "")[:2_000_000])
+    except (ValueError, ParserError):
+        return None
+    main = root.xpath("//main")
+    if not main:
+        return None
+    article_path = re.compile(r"/[^/]+/[^/]+-\d{4}-\d{2}-\d{2}/")
+    rows, seen = [], set()
+    for link in main[0].xpath(".//a[@href]"):
+        href, title = link.get("href", ""), " ".join(link.text_content().split())
+        if (
+            not href.startswith("/")
+            or not article_path.search(href)
+            or len(title) < 15
+            or href in seen
+        ):
+            continue
+        stamp = re.search(r"-(\d{4}-\d{2}-\d{2})/$", href)
+        if not stamp:
+            continue
+        seen.add(href)
+        rows.append({"url": href, "title": title, "date": stamp[1], "date_basis": "url_date"})
+    if rows:
+        return rows
+    text = main[0].text_content()
+    return [] if re.search(r"Search results for[\s\S]*?\b0 results\b", text, re.I) else None
 
 
 def crawler_capture_items(source_id, response, request):
@@ -173,6 +241,8 @@ def crawler_capture_items(source_id, response, request):
         rows = response.recipe_result.get("rows")
         return rows if isinstance(rows, list) else None  # Helpers prove explicit empty results.
     now = utc_now()
+    if source_id == "reuters_site_search":
+        return reuters_listing_rows(response.body, request, response.final_url)
     if source_id == "ctee_semiconductor":
         from doxagent.message_bus_v2.ctee import parse_category_item, parse_category_response
 

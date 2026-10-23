@@ -276,10 +276,18 @@ async def test_identical_queries_coalesce_but_consumer_ids_stay_independent(setu
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "visible,readable,expected",
-    [(True, True, "INTERACTIVE"), (False, True, "NONE"), (True, False, "UNKNOWN")],
+    "visible,readable,css_visibility,expected",
+    [
+        (True, True, "visible", "INTERACTIVE"),
+        (False, True, "visible", "NONE"),
+        (True, False, "visible", "UNKNOWN"),
+        (True, True, "hidden", "NONE"),
+        (True, True, None, "UNKNOWN"),
+    ],
 )
-async def test_shared_observation_hidden_asset_vs_real_oopif(visible, readable, expected):
+async def test_shared_observation_hidden_asset_vs_real_oopif(
+    visible, readable, css_visibility, expected
+):
     url = "https://geo.captcha-delivery.com/captcha/?t=fe"
     html = '<article>Normal news</article><iframe src="' + url + '"></iframe>'
 
@@ -290,6 +298,15 @@ async def test_shared_observation_hidden_asset_vs_real_oopif(visible, readable, 
             return {"node": {"frameId": "owner-frame", "attributes": ["src", url]}}
         if method == "DOM.getBoxModel":
             return {"model": {"width": 900 if visible else 0, "height": 600 if visible else 0}}
+        if method == "CSS.getComputedStyleForNode":
+            return {
+                "computedStyle": [
+                    {"name": "visibility", "value": css_visibility},
+                    {"name": "opacity", "value": "1"},
+                ]
+                if css_visibility is not None
+                else []
+            }
         if method == "Target.getTargetInfo":
             return {"targetInfo": {"targetId": "owner-frame", "type": "iframe", "url": url}}
         if method == "Target.attachToTarget":
@@ -396,18 +413,39 @@ def test_probation_fields_persist_and_do_not_end_without_natural_success(setup):
 def test_fast_relapse_persists_across_incident_and_updates_only_old_job(setup):
     repo, service, store, _ = setup
     old, _, _ = base.retained(setup)
-    store.save_recovery(old.model_copy(update={"phase": "RESOLVED"}), expected_generation=old.generation)
+    store.save_recovery(
+        old.model_copy(update={"phase": "RESOLVED"}), expected_generation=old.generation
+    )
     runtime = repo.get_identity_runtime(old.identity_id)
-    repo.save_identity_runtime(runtime.model_copy(update={"recovered_at": utc_now(),
-        "last_recovery_id": old.recovery_id}), expected_generation=runtime.generation)
+    repo.save_identity_runtime(
+        runtime.model_copy(update={"recovered_at": utc_now(), "last_recovery_id": old.recovery_id}),
+        expected_generation=runtime.generation,
+    )
     solver = service.recovery.datadome_solver
     job = solver.new_job(old, {}, "binding")
-    job.update(status="APPLIED", verification_state="BUSINESS_VERIFIED", verified_purposes=["CRAWLER"])
+    job.update(
+        status="APPLIED", verification_state="BUSINESS_VERIFIED", verified_purposes=["CRAWLER"]
+    )
     solver.save(job)
-    target = store.save_target(OwnedBrowserTarget(identity_id=old.identity_id, browser_instance_id="chrome",
-        worker_epoch=1, target_id="new-scene", state="LIVE"))
-    new = store.begin_recovery(old.model_copy(update={"recovery_id": "new-incident", "phase": "OBSERVING",
-        "original_allocation_id": target.allocation_id, "original_target_id": target.target_id}))
+    target = store.save_target(
+        OwnedBrowserTarget(
+            identity_id=old.identity_id,
+            browser_instance_id="chrome",
+            worker_epoch=1,
+            target_id="new-scene",
+            state="LIVE",
+        )
+    )
+    new = store.begin_recovery(
+        old.model_copy(
+            update={
+                "recovery_id": "new-incident",
+                "phase": "OBSERVING",
+                "original_allocation_id": target.allocation_id,
+                "original_target_id": target.target_id,
+            }
+        )
+    )
     assert new.recovery_id == "new-incident"
     runtime = repo.get_identity_runtime(old.identity_id)
     assert runtime.recent_relapses[-1]["previous_recovery_id"] == old.recovery_id
@@ -427,3 +465,49 @@ def test_legacy_applied_migration_is_additive_and_idempotent(solver_setup):
     assert len(saved) == 1 and saved[0]["task_id"] == 123
     assert saved[0]["status"] == "APPLIED" and saved[0]["verification_state"] == "INDETERMINATE"
     assert "business_verified_at" not in saved[0]
+
+
+def test_provider_unsolvable_has_terminal_verification_state(solver_setup, monkeypatch):
+    solver, recovery, *_ = solver_setup
+    job = solver.new_job(recovery, {}, "binding")
+    job.update(status="PENDING", task_id=123)
+    monkeypatch.setattr(solver.coordinator.service.failover, "schedule", lambda *args: None)
+    solver.fail(job, recovery, "ERROR_CAPTCHA_UNSOLVABLE")
+    saved = solver.jobs(recovery.recovery_id)[0]
+    assert saved["status"] == "FAILED" and saved["verification_state"] == "STILL_BLOCKED"
+    assert saved.get("provider_cost") is None
+
+
+@pytest.mark.parametrize(
+    "kind,query,ready",
+    [
+        ("NONE", "Micron", True),
+        ("INTERACTIVE", "Micron", False),
+        ("UNKNOWN", "Micron", False),
+        ("NONE", "Samsung", False),
+    ],
+)
+def test_reuters_original_document_proves_only_matching_unblocked_query(setup, kind, query, ready):
+    from doxagent.site_strategy.recovery import recovery_context, verify_capture
+    from doxagent.site_strategy.runtime import RuntimeResponse
+
+    _, service, store, _ = setup
+    scope = store.get_scope("source:reuters_site_search")
+    request = AccessRequest(
+        operation_id="read-original",
+        url="https://www.reuters.com/site-search/?query=Micron",
+        purpose="CRAWLER",
+        mode="BROWSER",
+        recipe_ref="builtin:reuters_search@1",
+        recipe_parameters={"query": "Micron"},
+    )
+    capture = RuntimeResponse(
+        0,
+        "https://www.reuters.com/site-search/?query=" + query + "&offset=0",
+        {},
+        body='<main><h1>Search results for Micron</h1><a href="/technology/micron-earnings-2026-10-23/">Micron announces new earnings outlook</a></main>',
+        assessment={"kind": kind},
+        provenance=SimpleNamespace(instance_id="chrome"),
+    )
+    report = verify_capture(service, scope, recovery_context(request), capture, observed=True)
+    assert (report.crawler == "READY") is ready

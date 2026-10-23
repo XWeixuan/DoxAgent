@@ -304,7 +304,15 @@ def verify_capture(service, scope, context, capture, *, observed=False):
         report.reason = "recovery_cross_publisher_redirect"
         return report
     info = inspect_html(capture.body, capture.final_url, "", generic_extraction=False)
-    if capture.recovery_id or info.access_reason == "challenge_required":
+    observed_kind = (capture.assessment or {}).get("kind")
+    if observed_kind == "UNKNOWN":
+        report.reason = "verification_evidence_incomplete"
+        return report
+    if (
+        capture.recovery_id
+        or observed_kind in {"AUTO_CHECK", "INTERACTIVE", "ACCESS_BLOCK"}
+        or (not capture.assessment and info.access_reason == "challenge_required")
+    ):
         report.challenge, report.reason = "BLOCKED", "challenge_required"
         return report
     if context["purpose"] == "CRAWLER":
@@ -590,9 +598,14 @@ class BrowserRecoveryCoordinator:
                                 )
                                 self.event(recovery, "TARGET_LOST", reason="exact_original_absent")
                             else:
-                                recovery = recovery.model_copy(update={"page_status": "PRESENT_BUT_UNREADABLE"
-                                    if reason == "original_document_present_but_unreadable" else "UNKNOWN",
-                                    "page_checked_at": utc_now()})
+                                recovery = recovery.model_copy(
+                                    update={
+                                        "page_status": "PRESENT_BUT_UNREADABLE"
+                                        if reason == "original_document_present_but_unreadable"
+                                        else "UNKNOWN",
+                                        "page_checked_at": utc_now(),
+                                    }
+                                )
                     if (
                         capture is None
                         and recovery.handling_mode == "AUTO"
@@ -618,8 +631,14 @@ class BrowserRecoveryCoordinator:
                         )
                         self.store.save_recovery(recovery, expected_generation=recovery.generation)
                     if capture is not None:
-                        recovery = recovery.model_copy(update={"page_status": "PRESENT" if capture.body
-                            else "PRESENT_BUT_UNREADABLE", "page_checked_at": utc_now()})
+                        recovery = recovery.model_copy(
+                            update={
+                                "page_status": "PRESENT"
+                                if capture.body
+                                else "PRESENT_BUT_UNREADABLE",
+                                "page_checked_at": utc_now(),
+                            }
+                        )
                         self.store.save_recovery(recovery, expected_generation=claimed.generation)
                         report = verify_capture(
                             self.service, scope, context, capture, observed=True
@@ -756,7 +775,9 @@ class BrowserRecoveryCoordinator:
                             stage = "CONTROL"
                             stage_started = time.monotonic()
                             recovery = recovery.model_copy(update={"probe_stage": stage})
-                            self.store.save_recovery(recovery, expected_generation=claimed.generation)
+                            self.store.save_recovery(
+                                recovery, expected_generation=claimed.generation
+                            )
                             await stack.enter_async_context(
                                 self.service.profile_use.recovery(
                                     identity,
@@ -779,7 +800,9 @@ class BrowserRecoveryCoordinator:
                             stage, request_sent = "SITE", "unknown"
                             stage_started = time.monotonic()
                             recovery = recovery.model_copy(update={"probe_stage": stage})
-                            self.store.save_recovery(recovery, expected_generation=claimed.generation)
+                            self.store.save_recovery(
+                                recovery, expected_generation=claimed.generation
+                            )
                             capture = await self.service.runtime.probe_recovery(
                                 request, identity, egress
                             )
@@ -970,7 +993,7 @@ class BrowserRecoveryCoordinator:
         data = capture.assessment or {}
         assessment = (
             VerificationAssessment.model_validate(data)
-            if data.get("kind") in {"AUTO_CHECK", "INTERACTIVE", "ACCESS_BLOCK"}
+            if data.get("kind") in {"NONE", "UNKNOWN", "AUTO_CHECK", "INTERACTIVE", "ACCESS_BLOCK"}
             else assess(
                 capture.body,
                 status=capture.status_code,

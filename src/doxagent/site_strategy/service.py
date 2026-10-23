@@ -3156,6 +3156,29 @@ class SiteStrategyService:
         crawler = scope.verification_plan.get("crawler")
         triggering_task = store.current_challenge(session.identity_id)
         if (
+            scope.source_id == "reuters_site_search"
+            and session.kind == "CHALLENGE"
+            and triggering_task
+            and triggering_task.purpose == "CRAWLER"
+        ):
+            from urllib.parse import parse_qs
+
+            parts = urlsplit(triggering_task.original_url)
+            values = parse_qs(parts.query)
+            query, offset = values.get("query", [None])[0], values.get("offset", ["0"])[0]
+            if (
+                parts.scheme == "https"
+                and parts.hostname == "www.reuters.com"
+                and parts.path == "/site-search/"
+                and query
+                and offset.isdigit()
+            ):
+                crawler = {
+                    "url": triggering_task.original_url,
+                    "recipe_ref": "builtin:reuters_search@1",
+                    "recipe_parameters": {"query": query, "offset": int(offset)},
+                }
+        if (
             session.kind == "CHALLENGE"
             and triggering_task
             and triggering_task.purpose == "BODY"
@@ -3193,8 +3216,16 @@ class SiteStrategyService:
                 remaining_budget_ms=max(1, min(75000, int((deadline - time.monotonic()) * 1000))),
             )
             try:
+                from .recovery import recovery_listing_url_matches
+
                 if (
-                    original.final_url == request.url
+                    (
+                        original.final_url == request.url
+                        or (
+                            scope.source_id == "reuters_site_search"
+                            and recovery_listing_url_matches(scope, request, original.final_url)
+                        )
+                    )
                     and original.provenance
                     and report.challenge != "BLOCKED"
                 ):
