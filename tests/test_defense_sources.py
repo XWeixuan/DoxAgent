@@ -13,6 +13,7 @@ from doxagent.message_bus_v2.defense_sources import (
     ENDPOINTS,
     Capture,
     DefenseAdapter,
+    DefenseHttp,
     initial_sources,
     parse_listing,
     parse_search,
@@ -138,6 +139,91 @@ async def test_publisher_rate_limit_defers_without_busy_retry():
     assert result.site_access_deferred and not result.window_done
     assert result.site_access_retry_not_before == NOW + timedelta(seconds=180)
     assert http.fetch.await_count == 1 and not result.messages
+
+
+async def test_shephard_html_supplements_stale_undated_feed():
+    e = ENDPOINTS["shephard_uncrewed"]
+
+    async def fetch(url, endpoint, **kwargs):
+        name = "shephard.xml" if url.endswith("/feed/") else "shephard_category.html"
+        return Capture(200, url, (FIXTURES / name).read_text(encoding="utf8"), {})
+
+    result = await DefenseAdapter(SimpleNamespace(fetch=fetch)).poll_shared(context(e.source_id))
+    assert len(result.messages) == 4
+    assert sum(m.publication_time_basis == "DATE" for m in result.messages) == 2
+    assert len(result.acquisition_metadata["endpoints"]) == 2
+    assert result.window_coverage == "COMPLETE"
+
+
+async def test_date_only_today_does_not_prove_complete_intraday_coverage():
+    import re
+
+    e = ENDPOINTS["ssc_newsroom"]
+    raw = re.sub(r"2026-10-\d\d", "2026-10-24", (FIXTURES / "ssc.html").read_text(encoding="utf8"))
+    http = SimpleNamespace(fetch=AsyncMock(return_value=Capture(200, e.urls[0], raw, {})))
+    result = await DefenseAdapter(http).poll_shared(
+        context(e.source_id, at=NOW + timedelta(hours=23))
+    )
+    assert result.messages and result.window_coverage == "PARTIAL"
+
+
+async def test_host_wait_never_holds_global_slot_or_consumes_network_timer(monkeypatch):
+    import asyncio
+
+    from doxagent.message_bus_v2 import defense_sources
+
+    active = 0
+    entered = asyncio.Event()
+    release = asyncio.Event()
+
+    class Response:
+        status_code = 200
+        headers = {}
+        encoding = "utf8"
+
+        async def aiter_content(self):
+            await release.wait()
+            yield b"valid"
+
+    class Session:
+        @asynccontextmanager
+        async def stream(self, *args, **kwargs):
+            nonlocal active
+            active += 1
+            if active == 2:
+                entered.set()
+            try:
+                yield Response()
+            finally:
+                active -= 1
+
+    async def paced(delay):
+        await asyncio.sleep(min(delay, 0.001))
+
+    @asynccontextmanager
+    async def network_budget(_):
+        assert client.global_slots._value < 4
+        assert client.host_slots[e.host]._value < 2
+        yield
+
+    monkeypatch.setattr(
+        defense_sources,
+        "asyncio",
+        SimpleNamespace(
+            Semaphore=asyncio.Semaphore,
+            Lock=asyncio.Lock,
+            timeout=network_budget,
+            sleep=paced,
+        ),
+    )
+    client = DefenseHttp(Session())
+    e = ENDPOINTS["defensescoop_space"]
+    tasks = [asyncio.create_task(client.fetch(e.urls[0], e)) for _ in range(5)]
+    await entered.wait()
+    assert client.global_slots._value == 2
+    release.set()
+    results = await asyncio.gather(*tasks)
+    assert len(results) == 5 and all(r.status == 200 for r in results)
 
 
 async def test_304_requires_parsed_baseline_and_unknown_date_never_moves():

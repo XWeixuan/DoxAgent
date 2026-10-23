@@ -293,10 +293,15 @@ class ContentEnrichmentHub:
                 finally:
                     DEADLINE.reset(token)
         except TimeoutError:
+            transport_timeout = (
+                job.source.adapter_ref == "builtin:defense_public@1"
+                and utc_now() < job.deadline_at
+            )
             result = MediaExtractionResult(
                 record=record,
-                reason="deadline_exceeded",
-                diagnostics={"outcome": "UNAVAILABLE", "stage": "fetch", "budget_exhausted": True},
+                reason="transport_timeout" if transport_timeout else "deadline_exceeded",
+                diagnostics={"outcome": "UNAVAILABLE", "stage": "fetch",
+                             "budget_exhausted": not transport_timeout},
             )
         except Exception as exc:
             result = MediaExtractionResult(record=record, reason=type(exc).__name__.lower())

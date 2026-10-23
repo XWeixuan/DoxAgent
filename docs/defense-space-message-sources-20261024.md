@@ -1,6 +1,6 @@
 # RKLB / ONDS 国防航天消息源实施记录
 
-日期：2026-10-24。范围：用户列出的 18 个外部源、20 个栏目入口，RKLB 12 条订阅、ONDS 8 条订阅；不加入其他 ticker 默认模板。
+日期：2026-10-24。范围：用户列出的 18 个外部源、原 20 个入口，加上 Shephard 必要的栏目 HTML 补采，共 21 个内部入口；RKLB 12 条订阅、ONDS 8 条订阅，不加入其他 ticker 默认模板。
 
 ## 实现
 
@@ -34,7 +34,7 @@
 |calcalist_search|ONDS|by_search；原页面 CSE，希伯来语|
 |defensescoop_drones|ONDS|by_distribution；Drones 与 Counter-drone 两个 RSS|
 |unmannedairspace_counteruas|ONDS|by_distribution；Systems/Policies 与 Tenders 两个 RSS|
-|shephard_uncrewed|ONDS|by_distribution；原 UV Online RSS|
+|shephard_uncrewed|ONDS|by_distribution；原 UV Online RSS + 同栏目 HTML 补采|
 |army_news_releases|ONDS|by_distribution；原 Press Releases HTML，美国 HTTP 出口|
 |army_news_rss|ONDS|by_distribution；原 Army RSS，美国 HTTP 出口|
 
@@ -78,3 +78,11 @@ HTTP 429 保存真实失败，并按 Retry-After（至少 60 秒）延期，不�
 ### SpaceNews 路径补充
 
 后续受限探测验证：固定美国/德国出口的标准库 TLS 均能读取 RSS，而不是使用受拦截的 Chrome TLS；选择固定美国出口用于正式列表和正文。普通 DARPA 新闻样本返回 HTTP 200、FULL、3540 字符；此前 1051 字符样本是视频简介，不计入普通新闻正文通过证明。原标准库传输增加可选 approved proxy 参数，旧 IR 默认直连行为保留，相关 IR/消息源回归 **39 项通过**。
+
+### 首批自然作业与 Shephard 修正
+
+生产首次登记的 12 个正文结果中，7 个 READY（Shephard 5、SSC 2）、5 个失败，失败均是 Shephard 的旧 RSS 文章。作业在 18:45:27 UTC 开始预算，截止 18:48:27，却在约 12 秒后被记成 deadline_exceeded，证明失败来自新 HTTP 层把容量排队计入请求计时，不能归因于 180 秒正文预算用尽。最终改为先取得 host/global 槽位，再启动 12 秒网络计时；等待同站点容量不占全局槽位。正文网络超时发生在整体预算尚有余额时，记录 transport_timeout 并走既有限次重试。
+
+同时核对发现，Shephard RSS 不带日期，包含 2025 年旧文章；同栏目 HTML 已有 2026-10-22 等新文章。仅使用所给 RSS 会漏新消息，因此保留 RSS 并增加同一栏目的 article-card HTML 补采，解析明确日期，不抓侧栏“热门”列表。不虚构精确时刻；同日 DATE 不能被合成中午后用于证明盘中窗口覆盖。该源的两个入口是同栏目的补充路径，可由有日期 HTML 证明覆盖，其他不同 tag 的多个 feed 仍需分别满足覆盖。
+
+5 个历史失败结果保留，不删除、不伪装恢复，也不批量重投旧新闻。新增真实 HTML 精简合同、站点/全局容量所有权和 DATE 覆盖回归。其他相关回归 149 项通过；一项新测试原先依赖 Windows 40ms 调度而波动，改为确定性事件验证后，最终 **42 项源/传输专项全部通过**。

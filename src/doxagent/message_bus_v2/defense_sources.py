@@ -171,7 +171,10 @@ CATALOG = (
     Endpoint(
         "shephard_uncrewed",
         "Shephard / Uncrewed Vehicles",
-        ("https://www.shephardmedia.com/news/uv-online/feed/",),
+        (
+            "https://www.shephardmedia.com/news/uv-online/feed/",
+            "https://www.shephardmedia.com/news/uv-online/",
+        ),
         ("ONDS",),
     ),
     Endpoint(
@@ -254,7 +257,7 @@ class DefenseHttp:
                 self.session = AsyncSession(impersonate="chrome", trust_env=False)
             slots = self.host_slots.setdefault(host, asyncio.Semaphore(2))
             lock = self.host_locks.setdefault(host, asyncio.Lock())
-            async with asyncio.timeout(12), self.global_slots, slots:
+            async with slots, self.global_slots, asyncio.timeout(12):
                 async with lock:
                     await asyncio.sleep(max(0, self.started.get(host, 0) + 0.5 - time.monotonic()))
                     self.started[host] = time.monotonic()
@@ -343,6 +346,28 @@ def _row(e, url, title, date, *, summary=None, raw=None, now):
 
 
 def parse_listing(e, raw, url, now):
+    if e.source_id == "shephard_uncrewed" and not urlsplit(url).path.endswith("/feed/"):
+        doc = html.fromstring(raw)
+        rows = []
+        for card in doc.xpath('//article[contains(concat(" ",@class," ")," article-card ")]'):
+            links = card.xpath(".//h2/a[@href]")
+            dates = card.xpath('.//p[@class="date"]/text()')
+            if not links or not dates:
+                continue
+            date = re.sub(r"(\d+)(?:st|nd|rd|th)\b", r"\1", dates[0].strip())
+            stamp = datetime.strptime(date, "%d %B %Y").replace(tzinfo=ZoneInfo("Europe/London"))
+            message = _row(
+                e,
+                urljoin(url, links[0].get("href")),
+                links[0].text_content(),
+                stamp.date().isoformat(),
+                now=now,
+            )
+            message.published_at, message.publication_time_basis = stamp, "DATE"
+            rows.append(message)
+        if not rows:
+            raise ValueError("shephard_category_listing_empty_or_changed")
+        return rows
     if e.parser == "rss":
         messages = parse_shared_feed(
             raw, feed_url=url, publisher=e.publisher, language=e.language, now=now
@@ -553,6 +578,7 @@ class DefenseAdapter:
                 refresh = (
                     getattr(context, "window_cutoff", None) is not None
                     or not state.get("next_refresh_at")
+                    or "oldest_basis" not in state
                     or context.requested_at >= datetime.fromisoformat(state["next_refresh_at"])
                 )
                 async with context.request_permit():
@@ -645,15 +671,18 @@ class DefenseAdapter:
                         context.requested_at + timedelta(minutes=5)
                     ).isoformat()
                 if rows:
-                    known_dates = [
-                        m.published_at
-                        for m in rows
-                        if m.publication_time_basis != "UNKNOWN_FIRST_SEEN"
-                    ]
-                    state["oldest"] = min(known_dates).isoformat() if known_dates else None
+                    dated = [m for m in rows if m.publication_time_basis != "UNKNOWN_FIRST_SEEN"]
+                    oldest = min(dated, key=lambda m: m.published_at) if dated else None
+                    state["oldest"] = oldest.published_at.isoformat() if oldest else None
+                    state["oldest_basis"] = oldest.publication_time_basis if oldest else None
                 lower = context.window_start or context.requested_at - timedelta(minutes=30)
                 covered_endpoints.append(
-                    bool(state.get("oldest")) and datetime.fromisoformat(state["oldest"]) <= lower
+                    bool(state.get("oldest"))
+                    and (
+                        datetime.fromisoformat(state["oldest"]).date() < lower.date()
+                        if state.get("oldest_basis") == "DATE"
+                        else datetime.fromisoformat(state["oldest"]) <= lower
+                    )
                 )
                 states[key] = state
                 evidence.append(
@@ -697,7 +726,9 @@ class DefenseAdapter:
                 "defense_all_endpoints_failed:" + ";".join(f.error_message for f in failures)
             )
         checkpoint["endpoints"] = states
-        covered = len(covered_endpoints) == len(requests) and all(covered_endpoints)
+        covered = len(covered_endpoints) == len(requests) and (
+            any(covered_endpoints) if e.source_id == "shephard_uncrewed" else all(covered_endpoints)
+        )
         return PollResult(
             messages=list(messages.values()),
             failures=failures,

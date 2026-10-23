@@ -2084,3 +2084,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-24 国防航天接纳成本修正：保持60秒HTTP发现目标，用持久文章指纹抑制未变化列表向Bus逐条重送，五分钟强制重送保留重试/复查、closed sweep不抑制；NASA正文文本hash驱动实质更新而非modified噪声。HTTP429按Retry-After延期并交由有限BODY预算重试。接纳/分发44项与最终源专项34项通过；保留真实候选验证中SpaceNews限流记录。
 
 2026-10-24 SpaceNews生产路径补全：受限探测确认美国/德国固定出口配合标准库TLS可读RSS，选定美国出口；普通DARPA新闻200/FULL/3540字符，视频简介不计全文证明。标准库传输增加可选代理参数，保留旧IR默认直连。39项IR/消息源回归通过；RKLB12条、ONDS8条订阅及初始统一词表已写入生产，随后滚动发布已验证路径。
+
+2026-10-24 Shephard上线数据修正：自然样本确认RSS无日期且包含2025旧文，增加同栏目当前HTML补采，不用侧栏热门代替栏目；DATE同日不再伪装盘中覆盖。5个旧文HTTP作业约12秒失败却整体180秒未耗尽，修正为host先行、等待host不占global槽，获槽后启动网络计时；整体预算未尽的请求超时记transport_timeout。保留历史失败且不重投旧新闻；其他149项回归通过，消除测试40ms调度依赖后最终42项源/传输专项通过。
