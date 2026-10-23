@@ -19,7 +19,11 @@ def audit(path, since, until):
         }
         if "article_body_results" in tables:
             rows = db.execute(
-                "SELECT status,count(*),sum(json_extract(data_json,'$.outcome') IN ('FULL','SHORT_FULL')) FROM article_body_results WHERE first_observed_at>=? AND first_observed_at<? AND coalesce(json_extract(data_json,'$.eligible'),1)=1 AND coalesce(json_extract(data_json,'$.legacy_result'),0)=0 GROUP BY status",
+                "SELECT status,count(*),sum(json_extract(data_json,'$.outcome') IN "
+                "('FULL','SHORT_FULL')) FROM article_body_results WHERE "
+                "first_observed_at>=? AND first_observed_at<? AND "
+                "coalesce(json_extract(data_json,'$.eligible'),1)=1 AND "
+                "coalesce(json_extract(data_json,'$.legacy_result'),0)=0 GROUP BY status",
                 (since, until),
             ).fetchall()
             total = sum(r[1] for r in rows)
@@ -34,7 +38,11 @@ def audit(path, since, until):
             result["new_articles"] = {"status": "NOT_INSTRUMENTED_LEGACY"}
         # Limit business row materialization; technical timing does not read stored bodies.
         polls = db.execute(
-            "SELECT binding_id,status,json_extract(data_json,'$.last_latency_ms') AS latency_ms,json_extract(data_json,'$.last_stage_timings') AS stages,json_extract(data_json,'$.last_capture_at') AS capture_at,json_extract(data_json,'$.next_dispatch_at') AS next_dispatch_at FROM poll_states ORDER BY binding_id LIMIT 1000"
+            "SELECT binding_id,status,json_extract(data_json,'$.last_latency_ms') AS "
+            "latency_ms,json_extract(data_json,'$.last_stage_timings') AS "
+            "stages,json_extract(data_json,'$.last_capture_at') AS "
+            "capture_at,json_extract(data_json,'$.next_dispatch_at') AS "
+            "next_dispatch_at FROM poll_states ORDER BY binding_id LIMIT 1000"
         ).fetchall()
         result["latest_poll_states"] = [dict(r) for r in polls]
         result["latest_poll_states_basis"] = "latest per binding, not a time-window average"
@@ -42,15 +50,125 @@ def audit(path, since, until):
             result["jobs"] = [
                 dict(r)
                 for r in db.execute(
-                    "SELECT status,count(*) AS count FROM content_enrichment_jobs WHERE created_at>=? AND created_at<? GROUP BY status",
+                    "SELECT status,count(*) AS count FROM content_enrichment_jobs WHERE "
+                    "created_at>=? AND created_at<? GROUP BY status",
                     (since, until),
                 )
             ]
         attempts = db.execute(
-            "SELECT json_extract(data_json,'$.payload.source_id') AS source_id,count(*) AS executions,sum(json_extract(data_json,'$.payload.succeeded')) AS succeeded,sum(json_extract(data_json,'$.payload.network_attempted')) AS network_attempts,sum(json_extract(data_json,'$.payload.cache_reused')) AS cache_reuses FROM audit_log WHERE entity_type='body_completion' AND created_at>=? AND created_at<? GROUP BY source_id",
+            "SELECT json_extract(data_json,'$.payload.source_id') AS "
+            "source_id,count(*) AS "
+            "executions,sum(json_extract(data_json,'$.payload.succeeded')) AS "
+            "succeeded,sum(json_extract(data_json,'$.payload.network_attempted')) AS "
+            "network_attempts,sum(json_extract(data_json,'$.payload.cache_reused')) AS "
+            "cache_reuses FROM audit_log WHERE entity_type='body_completion' AND "
+            "created_at>=? AND created_at<? GROUP BY source_id",
             (since, until),
         ).fetchall()
         result["executions"] = [dict(r) for r in attempts]
+        result["cadence"] = audit_cadence(db, tables, since, until)
+    return result
+
+
+def audit_cadence(db, tables, since, until):
+    """Physical capture/request ledger; missing cycles remain in the denominator."""
+    if not {"poll_runs", "poll_captures"} <= tables:
+        return {"status": "NOT_INSTRUMENTED_LEGACY"}
+    from doxagent.message_bus_v2.cadence import cadence, distribution
+
+    limit = 100000
+    runs = [
+        dict(r)
+        for r in db.execute(
+            "SELECT * FROM poll_runs WHERE status!='SCHEDULE' AND dispatch_at>=? AND "
+            "dispatch_at<? "
+            "ORDER BY dispatch_at DESC LIMIT ?",
+            (since, until, limit),
+        )
+    ]
+    schedules = [
+        dict(r)
+        for r in db.execute(
+            "SELECT * FROM poll_runs WHERE status='SCHEDULE' AND dispatch_at<? "
+            "ORDER BY dispatch_at DESC LIMIT 20000",
+            (until,),
+        )
+    ]
+    for row in [*schedules, *runs]:
+        row.update(json.loads(row.pop("data_json")))
+    columns = (
+        "capture_id,run_id,binding_id,source_id,ticker,unit,observed_at,committed_at,"
+        "status,message_count,intake_position,first_intake_at,completed_at,targets_json,request_started_at,"
+        "source_version,binding_version"
+    )
+    captures = [
+        dict(r)
+        for r in db.execute(
+            f"SELECT {columns} FROM poll_captures WHERE observed_at>=? AND observed_at<? "
+            "ORDER BY observed_at DESC LIMIT ?",
+            (since, until, limit),
+        )
+    ]
+    for binding, unit in {(r["binding_id"], r["unit"]) for r in [*runs, *schedules]}:
+        prior = db.execute(
+            f"SELECT {columns} FROM poll_captures WHERE binding_id=? AND unit=? "
+            "AND observed_at<? ORDER BY observed_at DESC LIMIT 1",
+            (binding, unit, since),
+        ).fetchone()
+        if prior:
+            captures.append(dict(prior))
+    fanout = []
+    for row in captures:
+        targets = json.loads(row.get("targets_json") or "[]")
+        fanout.extend({**row, **target} for target in (targets or [{}]))
+    result = cadence(
+        [*schedules, *runs], fanout, datetime.fromisoformat(since), datetime.fromisoformat(until)
+    )
+    result["sample_limit_reached"] = (
+        len(runs) >= limit or len(captures) >= limit or len(schedules) >= 20000
+    )
+    # Do not multiply shared network cost by its subscribed tickers.
+    requests = {}
+    for row in runs:
+        for request in row.get("requests", []):
+            key = request.get("request_key"), request.get("request_started_at")
+            requests[key] = request
+    costs = []
+    for request in requests.values():
+        if request.get("response_received_at") and request.get("request_started_at"):
+            costs.append(
+                (
+                    datetime.fromisoformat(request["response_received_at"])
+                    - datetime.fromisoformat(request["request_started_at"])
+                ).total_seconds()
+            )
+    result["physical_request_cost_seconds"] = distribution(costs)
+    result["physical_requests"] = len(requests)
+    result["capture_intake"] = [
+        dict(r)
+        for r in db.execute(
+            "SELECT status,count(*) AS captures,sum(message_count-intake_position) AS "
+            "remaining_candidates,"
+            "min(observed_at) AS oldest_observed_at FROM poll_captures "
+            "WHERE status NOT IN ('COMPLETED','CANCELLED') GROUP BY status"
+        )
+    ]
+    intake = [
+        (
+            datetime.fromisoformat(r["first_intake_at"]) - datetime.fromisoformat(r["observed_at"])
+        ).total_seconds()
+        for r in captures
+        if r.get("first_intake_at") and r["observed_at"] >= since
+    ]
+    complete = [
+        (
+            datetime.fromisoformat(r["completed_at"]) - datetime.fromisoformat(r["observed_at"])
+        ).total_seconds()
+        for r in captures
+        if r.get("completed_at") and r["observed_at"] >= since
+    ]
+    result["capture_to_first_intake_seconds"] = distribution(intake)
+    result["capture_to_complete_intake_seconds"] = distribution(complete)
     return result
 
 

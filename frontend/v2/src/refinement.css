@@ -2246,6 +2246,29 @@
   }
 }
 
+.source-status-list .source-status-body {
+  gap: 12px;
+}
+.source-status-list .poll-dial {
+  width: 80px;
+  height: 80px;
+  flex-basis: 80px;
+}
+.source-status-list .source-status-body dl {
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 10px 8px;
+  min-width: 0;
+  font-size: 14px;
+}
+.source-status-list .source-status-body dt {
+  white-space: nowrap;
+  align-self: start;
+}
+.source-status-list .source-status-body dd {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
 /* Binding configuration: channel navigation and a complete selected editor. */
 .binding-workspace {
   display: grid;

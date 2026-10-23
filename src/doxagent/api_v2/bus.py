@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from fastapi import FastAPI, Request
 
@@ -12,15 +12,17 @@ from doxagent.v2_read.repository import instant
 
 from .dto import available, missing, validate
 from .errors import ApiFailure
-from .news_timeliness import poll_window
+from .news_timeliness import poll_cadence, poll_window
 
 
-def source_status(store, binding, seq, view):
+def source_status(store, binding, seq, view, cadences=None):
     native = TickerSourceBinding.model_validate(binding)
     source = store.get("native:source_definitions", "", native.source_id, seq)
     if source is None:
         raise ApiFailure("SOURCE_GAP", 503, retryable=True)
     poll = store.get("native:poll_states", native.ticker, native.binding_id, seq) or {}
+    checkpoints = [poll.get('checkpoint',{}),*[value.get('checkpoint',{})
+        for unit,value in poll.get('units',{}).items() if not unit.startswith('TAIL:')]]
     ticker = store.get("ticker", native.ticker, native.ticker, seq) or {}
     status = poll.get("status", "never_polled")
     enabled = native.enabled and native.polling.enabled and source["enabled"]
@@ -52,6 +54,7 @@ def source_status(store, binding, seq, view):
     return validate(
         "SourceStatus",
         {
+            **({"cadence":cadences.get(native.binding_id)} if cadences and native.binding_id in cadences else {}),
             "internal_endpoints": [
                 {"endpoint_id":s["endpoint_id"],"name":s["display_name"],"url":s["entry_url"],
                  "method":s.get("method_used") or "HTTP", "status":s["status"],
@@ -81,8 +84,8 @@ def source_status(store, binding, seq, view):
             "last_published_count": observed("last_standard_revision_count"),
             "last_poll_latency_seconds": observed("last_latency_ms", lambda value: value / 1000),
             "coverage_state":poll.get("last_window_coverage","UNKNOWN"),
-            "pending_query_count":sum(not q.get("done",False) for q in poll.get("checkpoint",{}).get("queries",{}).values()),
-            "pending_timestamp_count":len(poll.get("checkpoint",{}).get("pending_timestamp_rows",[])),
+            "pending_query_count":len({key for cp in checkpoints for key,q in cp.get('queries',{}).items() if not q.get('done',False)}),
+            "pending_timestamp_count":len({r['link'] for cp in checkpoints for r in cp.get('pending_timestamp_rows',[])}),
             "stage_timings_ms":poll.get("last_stage_timings",{}),
             "capture_age_seconds": max(0,(now-datetime.fromisoformat(poll["last_capture_at"])).total_seconds()) if poll.get("last_capture_at") else None,
             "capture_to_first_intake_seconds": max(0,(datetime.fromisoformat(poll["last_first_intake_at"])-datetime.fromisoformat(poll["last_first_capture_at"])).total_seconds()) if poll.get("last_first_intake_at") and poll.get("last_first_capture_at") else None,
@@ -176,9 +179,9 @@ def install(app: FastAPI):
             limit=int(args.get("limit", 20)),
             cursor=args.get("cursor"),
         )
-        page["items"] = [
-            source_status(store, binding, view["seq"], view) for binding in page["items"]
-        ]
+        until = datetime.fromisoformat(view['as_of'])
+        cadences = poll_cadence(store,ticker,view['seq'],until-timedelta(minutes=30),until,by_binding=True)
+        page["items"] = [source_status(store,binding,view["seq"],view,cadences) for binding in page["items"]]
         return app.state.respond(request, "SourceStatusPage", page, view_id=args["view_id"])
 
     @app.get(prefix + "/status")

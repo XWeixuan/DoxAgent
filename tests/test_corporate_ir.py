@@ -346,3 +346,31 @@ async def test_anchor_recovery_keeps_head_validator_and_clears_real_gap(tmp_path
         assert adapter.http.fetch.await_count == 2
     finally:
         await adapter.close()
+
+
+@pytest.mark.asyncio
+async def test_binding_interval_change_preserves_consumed_ir_baseline(tmp_path):
+    repo, bus, source, binding, adapter, coordinator = configured(tmp_path, "INTC")
+    endpoint_id = "intc.press"
+    state = get_state(repo, binding.binding_id, endpoint_id).model_copy(update={
+        "bootstrap_complete": True, "representation_hash": "consumed", "etag": "old-etag",
+        "checkpoint": {"items": {"https://www.intc.com/old": "digest"}},
+        "schedule_interval_seconds": 30,
+    })
+    save_state(repo, state)
+    updated = binding.model_copy(update={"version": binding.version + 1,
+        "polling": binding.polling.model_copy(update={"target_interval_seconds": 10})})
+    repo.save_binding(updated)
+    adapter.http.fetch = AsyncMock(return_value=Capture(304, "", "", {}, 0))
+    try:
+        await coordinator.tick()
+        await asyncio.gather(*(item[0] for item in coordinator.inflight.values()))
+        latest = get_state(repo, binding.binding_id, endpoint_id)
+        assert latest.schedule_interval_seconds == 10
+        assert latest.bootstrap_complete and latest.etag == "old-etag"
+        assert latest.representation_hash == "consumed" and latest.checkpoint == state.checkpoint
+        assert latest.next_due_at is not None
+        assert (latest.next_due_at - utc_now()).total_seconds() <= 10
+    finally:
+        await coordinator.close()
+        await adapter.close()

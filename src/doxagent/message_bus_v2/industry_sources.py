@@ -350,11 +350,13 @@ def parse_barrons_ticker_listing(html: str, *, ticker: str, now: datetime) -> li
     if not rows:
         if candidate_count:
             return []
-        if scope.get("data-barrons-feed") == "complete" and {
+        expected_sections = set((scope.get("data-feed-channels") or "barrons,other").split(","))
+        if (expected_sections and expected_sections <= {"barrons", "other"}
+            and scope.get("data-barrons-feed") == "complete" and {
             node.get("data-dj-section")
             for node in wrapped
             if node.get("data-feed-complete") == "true"
-        } == {"barrons", "other"}:
+        } == expected_sections):
             return []  # Both native tab contracts succeeded, with no eligible stories.
         raise RuntimeError("barrons_ticker_news_empty_or_changed")
     return list(rows.values())
@@ -374,6 +376,11 @@ class IndustryListingAdapter:
                 recipe_options = (
                     {"recipe_ref": "builtin:barrons_ticker@1"} if self.variant == "barrons" else {}
                 )
+                if self.variant == "barrons" and isinstance(context, PollContext):
+                    channel = {"HEAD":"Barrons", "OTHER_HEAD":"BarronsDowJonesNetwork"}.get(
+                        context.acquisition_unit)
+                    if channel:
+                        recipe_options["recipe_parameters"] = {"channel":channel}
                 status, final_url, _headers, html = await self.browser.get(
                     url,
                     operation_id=f"{run_id}:{self.variant}",

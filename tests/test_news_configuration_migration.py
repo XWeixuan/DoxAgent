@@ -18,7 +18,7 @@ def test_explicit_binding_migration_survives_source_revision_cascade(tmp_path):
                     update={"target_interval_seconds": 60}
                 ),
                 "scheduler_constraints": source.scheduler_constraints.model_copy(
-                    update={"max_concurrency": 1}
+                    update={"max_concurrency": 1, "minimum_request_gap_seconds": 5}
                 ),
             }
         )
@@ -58,4 +58,8 @@ def test_explicit_binding_migration_survives_source_revision_cascade(tmp_path):
         repo.get_binding(identity).polling.target_interval_seconds == 30
         for identity in applied_bindings
     )
-    assert repo.get_source("yahoo_finance_news").scheduler_constraints.max_concurrency == 2
+    assert repo.get_source("yahoo_finance_news").scheduler_constraints.max_concurrency == 8
+    assert repo.get_source("yahoo_finance_news").scheduler_constraints.capacity_mode == "adaptive"
+    assert repo.get_source("yahoo_finance_news").scheduler_constraints.minimum_request_gap_seconds == 0
+    assert repo.get_source("barrons_ticker_news").scheduler_constraints.minimum_request_gap_seconds == 0
+    assert repo.get_source("investorshub_ticker_news").scheduler_constraints.minimum_request_gap_seconds == 0

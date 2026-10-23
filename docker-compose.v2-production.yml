@@ -83,7 +83,7 @@ x-backend: &backend
 
 services:
   v2-site-access:
-    cpu_shares: 512
+    cpu_shares: 1536
     image: ${DOXAGENT_SITE_ACCESS_IMAGE:-doxagent-site-access:production}
     build:
       context: .
@@ -138,7 +138,7 @@ services:
       options: {max-size: "20m", max-file: "3"}
 
   v2-chrome-supervisor:
-    cpu_shares: 256
+    cpu_shares: 1536
     image: ${DOXAGENT_CHROME_SUPERVISOR_IMAGE:-doxagent-chrome-supervisor:production}
     build:
       context: .
@@ -225,6 +225,7 @@ services:
     depends_on:
       v2-migrate: {condition: service_completed_successfully}
   v2-message-bus:
+    cpu_shares: 1536
     environment:
       <<: *environment
       DASHSCOPE_API_KEY: ${DASHSCOPE_API_KEY:-}
@@ -237,6 +238,7 @@ services:
       v2-migrate: {condition: service_completed_successfully}
       v2-site-access: {condition: service_healthy}
   v2-content-enrichment:
+    cpu_shares: 1024
     <<: *backend
     command: [python, -m, doxagent.content_enrichment.cli, run-worker]
     secrets: [site_access_worker_token]
@@ -262,15 +264,18 @@ services:
       v2-migrate: {condition: service_completed_successfully}
       codex-worker: {condition: service_healthy}
   v2-projector:
+    cpu_shares: 512
     <<: *backend
     command: [python, -m, doxagent.v2_read.cli, project, --read-db, /data/read/v2.sqlite3, --source, research=/data/research/research.sqlite3, --source, initialization=/data/initialization/control.sqlite3, --source, bus=/data/bus/bus.sqlite3, --source, runtime=/data/runtime/runtime.sqlite3, --event-root, /data/events]
   v2-delivery:
     <<: *backend
     command: [python, -m, doxagent.persistent_runtime_v2.delivery_worker, --runtime-db, /data/runtime/runtime.sqlite3]
   v2-maintenance:
+    cpu_shares: 256
     <<: *backend
     command: [python, -m, doxagent.v2_read.cli, gc-worker, --read-db, /data/read/v2.sqlite3]
   v2-transport-maintenance:
+    cpu_shares: 256
     <<: *backend
     command: [python, -m, doxagent.v2_read.transport_archive, --source, research=/data/research/research.sqlite3, --source, initialization=/data/initialization/control.sqlite3, --source, bus=/data/bus/bus.sqlite3, --source, runtime=/data/runtime/runtime.sqlite3]
   v2-executor:

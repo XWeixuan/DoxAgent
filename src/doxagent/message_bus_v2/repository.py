@@ -97,6 +97,9 @@ class MessageBusV2Repository:
         self.content = NativeContent(self.path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self._initialize()
+        from .polling import PollJournal
+
+        self.polling = PollJournal(self)
 
     def _connect(self) -> sqlite3.Connection:
         borrowed = self._atomic_connection.get() or self._scope_connection.get()
@@ -132,6 +135,22 @@ class MessageBusV2Repository:
             yield connection
         finally:
             self._scope_connection.reset(token)
+            connection.close()
+
+    def read_only(self, operation, *args, **kwargs):
+        """Fresh WAL snapshot, never inherit a business writer across threads."""
+        connection = sqlite3.connect(self.path.resolve().as_uri() + '?mode=ro', uri=True,
+                                     isolation_level=None, factory=_ClosingConnection)
+        connection.row_factory = self.content.row
+        connection.execute('PRAGMA query_only=ON')
+        connection.execute('BEGIN')
+        scoped = self._scope_connection.set(connection)
+        atomic = self._atomic_connection.set(None)
+        try:
+            return operation(*args, **kwargs)
+        finally:
+            self._atomic_connection.reset(atomic)
+            self._scope_connection.reset(scoped)
             connection.close()
 
     @contextmanager
@@ -215,7 +234,7 @@ class MessageBusV2Repository:
             (
                 key,
                 (
-                    utc_now()
+                    (message.admission_context.observed_at if message.admission_context and message.admission_context.observed_at else utc_now())
                     if message.publication_time_basis == "UNKNOWN_FIRST_SEEN"
                     else message.published_at
                 )
@@ -554,6 +573,37 @@ class MessageBusV2Repository:
                 (raw.ticker, key, logical_id),
             )
         return adopted
+
+    def reuse_unchanged_observation(self, message, binding, policy, now):
+        """Scalar-only completed receipt probe: no native body/HTML decode or alias walk."""
+        from .body_results import access_scope, update_hint
+        from .schema import canonical_json, identity_key_for, sha256_text
+
+        with self.transaction() as db:
+            row = db.execute("""
+                SELECT o.raw_hash, json_extract(b.data_json,'$.verified_hints') hints
+                FROM message_observations o JOIN article_body_results b
+                  ON b.fetch_key=json_extract(o.data_json,'$.metadata.article_body_result_key')
+                WHERE o.ticker=? AND o.source_id=? AND o.identity_key=? AND o.raw_hash=?
+                  AND o.input_fingerprint=? AND json_extract(o.data_json,'$.metadata.intake_policy')=?
+                  AND b.status='READY' AND json_extract(b.data_json,'$.outcome') IN ('FULL','SHORT_FULL')
+                  AND json_extract(b.data_json,'$.next_check_at')>?
+                  AND json_extract(b.data_json,'$.access_scope') IN (?,?)
+                  AND EXISTS(SELECT 1 FROM raw_messages r WHERE r.raw_message_id=o.canonical_raw_id
+                    AND (json_extract(r.data_json,'$.bootstrap_suppressed')=1 OR EXISTS(
+                      SELECT 1 FROM standard_messages s JOIN stream_members m ON m.standard_message_id=s.standard_message_id
+                      WHERE s.raw_message_id=r.raw_message_id))) LIMIT 1
+            """, (binding.ticker, binding.source_id, identity_key_for(binding.source_id, message),
+                  sha256_text(canonical_json(message.raw_payload)), dedup.stable_fingerprint(message),
+                  policy, now.isoformat(), access_scope(message, binding.source_id),
+                  'scope:source:' + binding.source_id)).fetchone()
+            if not row or json.loads(row['hints'] or '{}').get(binding.source_id) != update_hint(message):
+                return False
+            db.execute("UPDATE message_observations SET last_seen_at=?,seen_count=seen_count+1 "
+                       "WHERE ticker=? AND source_id=? AND identity_key=? AND raw_hash=?",
+                       (now.isoformat(), binding.ticker, binding.source_id,
+                        identity_key_for(binding.source_id, message), row['raw_hash']))
+            return True
 
     def observe_input(
         self,
@@ -1531,13 +1581,15 @@ class MessageBusV2Repository:
         return job, True
 
     def claim_enrichment_jobs(
-        self, *, limit: int, now: datetime | None = None, lease_seconds: int = 60
+        self, *, limit: int, now: datetime | None = None, lease_seconds: int = 60,
+        allow_rechecks: bool = True,
     ) -> list[EnrichmentJob]:
         """Atomically claim ready jobs and recover expired worker leases."""
 
         current = (now or utc_now()).astimezone(UTC)
         lease_until = current + timedelta(seconds=lease_seconds)
         with self.transaction() as connection:
+            allow_rechecks = allow_rechecks and not self.polling.backlogged(now=current)
             expired = connection.execute(
                 """select data_json from content_enrichment_jobs
                    where status=? and lease_expires_at is not null and lease_expires_at<=?""",
@@ -1560,7 +1612,8 @@ class MessageBusV2Repository:
             rows = connection.execute(
                 """select data_json from content_enrichment_jobs
                    where status in (?,?) and not_before<=?
-                   order by created_at limit ?""",
+                """ + (" AND coalesce(json_extract(data_json,'$.work_kind'),'new_article')!='recheck' "
+                       if not allow_rechecks else " ") + "order by created_at limit ?",
                 (
                     EnrichmentJobStatus.QUEUED.value,
                     EnrichmentJobStatus.RETRY_WAIT.value,
@@ -2740,6 +2793,69 @@ class MessageBusV2Repository:
                     self._json(state),
                 ),
             )
+
+    def save_poll_unit_state(self, state, unit="HEAD"):
+        from .polling import COUNTERS
+        from .schema import PollStatus
+        unit = "HEAD" if unit == "ALL" else unit
+        with self.atomic_intake():
+            if state.source_definition_version is not None and not self.poll_generation_matches(
+                state.source_id,state.source_definition_version,state.binding_id,state.binding_version
+            ):
+                return False
+            binding = self.get_binding(state.binding_id)
+            current = self.get_poll_state(binding) if binding else state
+            snapshot = state.model_dump(mode="json", exclude={"units", *COUNTERS})
+            units = {**current.units, unit:snapshot}
+            changed = {"units":units}
+            if unit in {"HEAD","SHARED"}:
+                changed.update(state.model_dump(exclude={"units", *COUNTERS}))
+            for name in ("last_capture_at", "last_attempt_at", "last_success_at"):
+                value, old = getattr(state,name), getattr(current,name)
+                if not unit.startswith('TAIL:') and value and (not old or value > old):
+                    changed[name] = value
+            expected = [key[1] for key,value in (self.polling._schedule_cache or {}).items()
+                        if key[0] == state.binding_id and value[-1] and not key[1].startswith('TAIL:')]
+            expected = expected or [key for key in units if not key.startswith('TAIL:')]
+            primary = [units.get(key,{}) for key in expected]
+            statuses = [value.get('status') for value in primary]
+            if primary:
+                changed['status'] = PollStatus('succeeded' if all(value=='succeeded' for value in statuses) else (
+                    'failed' if all(value=='failed' for value in statuses) else 'partial'))
+                changed['bootstrap_complete'] = all(value.get('bootstrap_complete',False) for value in primary)
+                failures = [value for value in primary if value.get('status')!='succeeded'
+                            and value.get('last_error_code')]
+                if failures:
+                    failed = max(failures,key=lambda value:value.get('updated_at') or '')
+                    changed.update({key:failed.get(key) for key in
+                                    ('last_error_code','last_error_message','failure_since')})
+                elif all(value=='succeeded' for value in statuses):
+                    changed.update(last_error_code=None,last_error_message=None,failure_since=None)
+                for name in ('next_dispatch_at','target_due_at'):
+                    times = [datetime.fromisoformat(value[name]) for value in primary if value.get(name)]
+                    if times:
+                        changed[name] = min(times)
+            self.save_poll_state(current.model_copy(update=changed))
+        return True
+
+    def poll_generation_matches(self,source_id,source_version,binding_id,binding_version):
+        with self._connect() as db:
+            return db.execute('SELECT 1 FROM source_definitions s JOIN ticker_source_bindings b '
+                'ON b.source_id=s.source_id WHERE s.source_id=? AND s.version=? AND b.binding_id=? '
+                'AND b.version=? AND s.enabled=1 AND b.enabled=1 AND b.tombstoned_at IS NULL',
+                (source_id,source_version,binding_id,binding_version)).fetchone() is not None
+
+    def get_poll_unit_state(self, binding, unit="HEAD"):
+        base = self.get_poll_state(binding)
+        unit = "HEAD" if unit == "ALL" else unit
+        value = base.units.get(unit)
+        if value:
+            return PollState.model_validate({**base.model_dump(), **value, "units": {}})
+        if unit == "HEAD":
+            return base
+        return base.model_copy(update={"units": {}, "checkpoint": {},
+                                       "last_capture_at": None, "last_success_at": None,
+                                       "bootstrap_complete": False})
 
     def get_poll_state(self, binding: TickerSourceBinding) -> PollState:
         with self._connect() as connection:

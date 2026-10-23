@@ -81,6 +81,9 @@ class PublicHttp:
                 **headers,
             },
         )
+        from ..poll_trace import request_started
+        from ..schema import utc_now
+        event = request_started("GET", url, "ir_urllib")
         try:
             response = opener.open(request, timeout=3)
         except urllib.error.HTTPError as exc:
@@ -102,6 +105,8 @@ class PublicHttp:
                 if len(raw) > 4 * 1024 * 1024:
                     raise ValueError("IR response exceeds 4 MiB")
             charset = response.headers.get_content_charset() or "utf-8"
+            if event is not None:
+                event.update(response_received_at=utc_now().isoformat(), status_code=response.status)
             return Capture(
                 response.status,
                 response.url,
@@ -136,6 +141,9 @@ class PublicHttp:
                             url = urljoin(url, capture.headers["location"])
                             continue
                         return capture
+                    from ..poll_trace import request_started
+                    from ..schema import utc_now
+                    event = request_started("GET", url, "ir_http")
                     async with self.client.stream(
                         "GET", url, headers={**HEADERS, **(headers or {})}
                     ) as response:
@@ -150,6 +158,8 @@ class PublicHttp:
                             if len(raw) > 4 * 1024 * 1024:
                                 raise ValueError("IR response exceeds 4 MiB")
                         body = bytes(raw).decode(response.encoding or "utf-8", errors="replace")
+                        if event is not None:
+                            event.update(response_received_at=utc_now().isoformat(),status_code=response.status_code)
                         return Capture(
                             response.status_code,
                             str(response.url),

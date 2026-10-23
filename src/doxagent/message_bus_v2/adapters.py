@@ -76,7 +76,11 @@ class AdapterRegistry:
     ) -> None:
         self.settings = settings
         self.adapter_root = Path(adapter_root).resolve()
-        self.client = client or httpx.AsyncClient(timeout=settings.tool_http_timeout_seconds)
+        self.client = client or httpx.AsyncClient(timeout=settings.tool_http_timeout_seconds,
+                                                limits=httpx.Limits(max_connections=16, max_keepalive_connections=16))
+        from .poll_trace import install
+
+        install(self.client)
         self._owns_client = client is None
         self.crawler_plane = crawler_plane
         self._builtins: dict[str, SourceAdapter] = {

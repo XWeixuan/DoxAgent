@@ -77,6 +77,7 @@ async def capture_document(
     body_parameters=None,
     challenge_grace_seconds=25,
     on_challenge=None,
+    listing_only=False,
 ):
     """No JS evaluation, interception, resource blocking, navigation or CAPTCHA clicks."""
     deadline = time.monotonic() + timeout
@@ -150,9 +151,10 @@ async def capture_document(
                     return last, final_url
                 else:
                     challenge_since = None
-                candidate, quality, _ = choose_candidate(info, "")
-                if candidate and quality in {"FULL", "SHORT_FULL"}:
-                    return last, final_url
+                if not listing_only:
+                    candidate, quality, _ = choose_candidate(info, "")
+                    if candidate and quality in {"FULL", "SHORT_FULL"}:
+                        return last, final_url
                 # Extra time is for an observed check, not every ad-heavy
                 # incomplete document. Preserve the previous healthy-path cap.
                 read_deadline = (
@@ -180,3 +182,31 @@ async def capture_document(
                     await cdp.send("Target.detachFromTarget", {"sessionId": session_id})
             except Exception:
                 pass
+
+
+async def capture_listing(page,response,cdp,target_id,url,ticker,*,timeout,max_bytes,
+                          body_parameters=None,on_challenge=None):
+    """Race exact native response proof with the current DOM; keep live denials authoritative."""
+    document = asyncio.create_task(capture_document(cdp,target_id,url,timeout=timeout,
+        body_parameters=body_parameters,on_challenge=on_challenge,listing_only=True))
+    native = asyncio.create_task(response_listing(response,url,ticker,
+        timeout=min(2,timeout),max_bytes=max_bytes))
+    try:
+        done,_ = await asyncio.wait({document,native},return_when=asyncio.FIRST_COMPLETED)
+        if document in done:
+            html,final = await document
+            if inspect_html(html,final,'',generic_extraction=False).access_reason or listing_ticker(html,final)==ticker:
+                return html,final
+            complete = await native
+            return (complete,url) if complete else (html,final)
+        complete = await native
+        if complete:
+            current = await page.content()
+            if not inspect_html(current,page.url,'',generic_extraction=False).access_reason:
+                return complete,url
+        return await document
+    finally:
+        for task in (document,native):
+            if not task.done():
+                task.cancel()
+        await asyncio.gather(document,native,return_exceptions=True)

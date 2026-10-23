@@ -652,7 +652,7 @@ class SiteStrategyService:
         browser_max_processes: int = 4,
         browser_max_pages: int = 4,
         browser_body_max_pages: int = 2,
-        browser_body_borrow: bool = True,
+        browser_body_borrow: bool = False,
         browser_idle_seconds: float = 43_200,
         safety_path: str | Path | None = None,
         supervisor_socket: str | Path | None = None,
@@ -1355,12 +1355,13 @@ class SiteStrategyService:
                     egress.observed_ip,
                 )
             )
+        wire = request.model_dump(mode='json',exclude={
+            'request_id','operation_id','parent_id','remaining_budget_ms'})
+        wire['recipe_parameters'] = {key:value for key,value in wire['recipe_parameters'].items()
+                                     if key not in {'_poll_due_at','_poll_rate','_work_class'}}
         return "capture:" + digest_json(
             {
-                "request": request.model_dump(
-                    mode="json",
-                    exclude={"request_id", "operation_id", "parent_id", "remaining_budget_ms"},
-                ),
+                "request": wire,
                 "site_revision": resolved.strategy_revision,
                 "bindings": binding,
                 "route_generation": self.repository.get_runtime(resolved.runtime_key).generation,
@@ -1740,7 +1741,7 @@ class SiteStrategyService:
                 AccessDisposition.BUDGET_DEFERRED,
                 reason="scope_activation_in_progress",
                 category=FailureCategory.BUDGET_DEFERRED,
-                retry_not_before=utc_now() + timedelta(seconds=60),
+                retry_not_before=utc_now() + timedelta(seconds=2),
                 started=started,
             )
         if not resolved.enabled:
@@ -1864,7 +1865,7 @@ class SiteStrategyService:
                     category=FailureCategory.BUDGET_DEFERRED,
                     reason="fallback_activation_pending" if activation else "fallback_not_ready",
                     attempts=attempts,
-                    retry_not_before=utc_now() + timedelta(seconds=60),
+                    retry_not_before=utc_now() + timedelta(seconds=5),
                     started=started,
                 )
             if remaining <= 0.003:
@@ -1943,7 +1944,7 @@ class SiteStrategyService:
                     category=FailureCategory.BUDGET_DEFERRED,
                     reason="fallback_activation_pending" if activation else "fallback_not_ready",
                     attempts=attempts,
-                    retry_not_before=utc_now() + timedelta(seconds=60),
+                    retry_not_before=utc_now() + timedelta(seconds=5),
                     started=started,
                 )
             budget = self.budgets.get(
@@ -1972,6 +1973,8 @@ class SiteStrategyService:
                     timeout_seconds=min(remaining, queue_cap),
                     work_class=request.work_class,
                     work_age_seconds=request.work_age_seconds,
+                    due_at=request.recipe_parameters.get('_poll_due_at'),
+                    expected_rate=float(request.recipe_parameters.get('_poll_rate', 0)),
                 )
             )
             attempting = False

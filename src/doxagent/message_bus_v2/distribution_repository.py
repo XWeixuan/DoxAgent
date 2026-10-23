@@ -109,6 +109,9 @@ class DistributionRepository:
                 CREATE TABLE IF NOT EXISTS distribution_snapshots (
                     snapshot_id TEXT PRIMARY KEY, payload TEXT NOT NULL
                 );
+                CREATE TABLE IF NOT EXISTS distribution_acquisitions (
+                    run_id TEXT PRIMARY KEY, observed_at TEXT NOT NULL
+                );
                 CREATE TABLE IF NOT EXISTS distribution_delivery_keys (
                     business_key TEXT PRIMARY KEY, delivery_id TEXT NOT NULL,
                     first_seen_at TEXT NOT NULL, last_seen_at TEXT NOT NULL,
@@ -142,8 +145,9 @@ class DistributionRepository:
         # and eligibility transitions (future -> eligible -> expired) remain distinct.
         scope = run["run_id"] if run["mode"] == "CLOSED_SWEEP" else "REALTIME"
         source_json = self._expand(db, run["source_json"])
+        eligibility = {k: v for k, v in admission.items() if k != "observed_at"}
         key = sha256_text(canonical_json([scope, article_id, binding, revision,
-                                         source_json, admission, reason, "classifier:v1"]))
+                                         source_json, eligibility, reason, "classifier:v1"]))
         identity = "delivery-" + key[:32]
         row = db.execute("SELECT delivery_id FROM distribution_delivery_keys WHERE business_key=?",
                          (key,)).fetchone()
@@ -163,7 +167,8 @@ class DistributionRepository:
                 (article_id, binding["ticker"], revision)).fetchone()
             if legacy and all((
                 json.loads(self._expand(db, legacy["binding_json"])) == binding,
-                json.loads(self._expand(db, legacy["admission_json"])) == admission,
+                {k: v for k, v in json.loads(self._expand(db, legacy["admission_json"])).items()
+                 if k != "observed_at"} == eligibility,
                 json.loads(self._expand(db, legacy["source_json"])) == json.loads(source_json),
             )):
                 identity = legacy["delivery_id"]
@@ -552,7 +557,7 @@ class DistributionRepository:
                 )
             self.bus._finish_enrichment(db, job.job_id, outcome_payload)
 
-    def claim_deliveries(self, *, limit: int = 16) -> list[dict[str, Any]]:
+    def claim_deliveries(self, *, limit: int = 16, article_limit: int | None = None) -> list[dict[str, Any]]:
         now = utc_now()
         with self.bus.transaction() as db:
             db.execute(
@@ -561,14 +566,27 @@ class DistributionRepository:
                 "result_json=? WHERE state='RUNNING' AND lease_until<=? AND attempts>=3",
                 (canonical_json({"reason": "DELIVERY_RETRY_EXHAUSTED"}), now.isoformat()),
             )
+            group_filter = ""
+            params = [now.isoformat()]
+            if article_limit is not None:
+                group_filter = (
+                    "AND (d.article_id,d.terms_revision) IN ("
+                    "SELECT d2.article_id,d2.terms_revision FROM distribution_deliveries d2 "
+                    "JOIN distribution_runs r2 USING(run_id) "
+                    "WHERE r2.status NOT IN ('EXPIRED','ABANDONED') AND "
+                    "(d2.state='PENDING' OR (d2.state='RUNNING' AND d2.lease_until<=?)) "
+                    "GROUP BY d2.article_id,d2.terms_revision ORDER BY min(d2.created_at) LIMIT ?) "
+                )
+                params.extend([now.isoformat(), article_limit])
+            params.append(1000 if article_limit is not None else limit)
             rows = db.execute(
                 "SELECT d.*,a.enriched_json,a.original_json,a.content_version,r.source_json "
                 "FROM distribution_deliveries d JOIN distribution_articles a USING(article_id) "
                 "JOIN distribution_runs r USING(run_id) "
                 "WHERE r.status NOT IN ('EXPIRED','ABANDONED') AND "
                 "(d.state='PENDING' OR (d.state='RUNNING' AND d.lease_until<=?)) "
-                "ORDER BY d.created_at LIMIT ?",
-                (now.isoformat(), limit),
+                + group_filter + "ORDER BY d.created_at LIMIT ?",
+                params,
             ).fetchall()
             claimed = []
             for row in rows:

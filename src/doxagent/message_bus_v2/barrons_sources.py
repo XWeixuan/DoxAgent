@@ -23,14 +23,17 @@ class BarronsNewsFeedError(RuntimeError):
         super().__init__(reason)
 
 
-def render_news_feeds(feeds: list[dict]) -> str:
+CHANNELS = {"Barrons": "barrons", "BarronsDowJonesNetwork": "other"}
+
+
+def render_news_feeds(feeds: list[dict], *, channels=None) -> str:
     """Validate both tab contracts before emitting HTML for the existing parser."""
     sections = []
-    if len(feeds) != 2:
+    channels = list(CHANNELS) if channels is None else list(channels)
+    if not channels or any(c not in CHANNELS for c in channels) or len(feeds) != len(channels):
         raise BarronsNewsFeedError("barrons_news_feed_incomplete")
-    for feed, channel, section in zip(
-        feeds, ("Barrons", "BarronsDowJonesNetwork"), ("barrons", "other"), strict=True
-    ):
+    for feed, channel in zip(feeds, channels, strict=True):
+        section = CHANNELS[channel]
         status = feed.get("status", 0)
         if status != 200:
             error = BarronsNewsFeedError(f"barrons_news_feed_http_{int(status)}")
@@ -84,22 +87,27 @@ def render_news_feeds(feeds: list[dict]) -> str:
             + "</section>"
         )
     return (
-        '<html><title>Barron\'s ticker news</title><main data-barrons-feed="complete">'
+        '<html><title>Barron\'s ticker news</title><main data-barrons-feed="complete" '
+        f'data-feed-channels="{",".join(CHANNELS[c] for c in channels)}">'
         + "".join(sections)
         + "</main></html>"
     )
 
 
-async def capture_barrons_ticker_news(page, url: str, *, timeout_seconds: float = 12) -> str:
+async def capture_barrons_ticker_news(page, url: str, *, timeout_seconds: float = 12,
+                                    channel: str | None = None) -> str:
     parsed = urlsplit(url)
     match = re.fullmatch(r"/market-data/stocks/([A-Za-z0-9.^-]+)/?", parsed.path)
     if parsed.hostname != "www.barrons.com" or not match:
         raise BarronsNewsFeedError("barrons_news_invalid_ticker_url")
     ticker = quote(match.group(1).lower(), safe="")
+    channels = list(CHANNELS) if channel is None else [channel]
+    if any(c not in CHANNELS for c in channels):
+        raise BarronsNewsFeedError("barrons_news_invalid_channel")
     paths = [
         f"/market-data/api/news?channel={channel}&chartingSymbol=stock%2F%2F%2F{ticker}"
         "&pageNumber=0&count=40"
-        for channel in ("Barrons", "BarronsDowJonesNetwork")
+        for channel in channels
     ]
     async with asyncio.timeout(timeout_seconds):
         feeds = await page.evaluate(
@@ -117,4 +125,4 @@ async def capture_barrons_ticker_news(page, url: str, *, timeout_seconds: float 
             }""",
             paths,
         )
-    return render_news_feeds(feeds)
+    return render_news_feeds(feeds, channels=channels)

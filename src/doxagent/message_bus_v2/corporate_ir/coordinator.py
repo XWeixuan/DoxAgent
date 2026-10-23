@@ -4,7 +4,7 @@ import logging
 import time
 from datetime import timedelta
 
-from ..schema import PollResult, canonical_json, sha256_text, utc_now
+from ..schema import PollResult, PollStatus, canonical_json, new_id, sha256_text, utc_now
 from . import SOURCE_ID
 from .parsers import parse_listing
 from .repository import aggregate, get_state, save_state
@@ -19,6 +19,7 @@ class IrCoordinator:
         self.bus = scheduler.service
         self.repo = scheduler.repository
         self.inflight = {}
+        self.recovery = {}
         self.runner = None
 
     def start(self):
@@ -79,7 +80,35 @@ class IrCoordinator:
 
     async def tick(self):
         now = utc_now()
-        roster = await self.bus.storage.call(self._roster)
+        roster = await self.bus.storage.read(self.repo.read_only, self._roster)
+        await self.bus.storage.call(
+            self.repo.polling.schedules,
+            [
+                (
+                    source,
+                    binding.model_copy(
+                        update={
+                            "polling": binding.polling.model_copy(
+                                update={"target_interval_seconds": spec.target_interval_seconds}
+                            )
+                        }
+                    ),
+                    "IR:" + spec.endpoint_id,
+                    (state.next_due_at or now)
+                    if state.config_revision == spec.fingerprint
+                    else now
+                    + timedelta(
+                        seconds=int(sha256_text(spec.endpoint_id)[:4], 16)
+                        % min(4, spec.target_interval_seconds)
+                    ),
+                    True,
+                )
+                for source, binding, spec, state in roster
+            ],
+            now,
+            owner="ir",
+            _lane_priority=0,
+        )
         desired = {
             (b.binding_id, s.endpoint_id): (source.version, b.version, s.fingerprint)
             for source, b, s, _ in roster
@@ -96,17 +125,43 @@ class IrCoordinator:
                         type(task.exception()).__name__,
                     )
                 del self.inflight[key]
+        for key, (task, generation) in list(self.recovery.items()):
+            if desired.get(key) != generation:
+                task.cancel()
+            if task.done():
+                if not task.cancelled() and task.exception():
+                    logger.warning(
+                        "ir_archive_recovery_pending endpoint=%s error=%s",
+                        key,
+                        type(task.exception()).__name__,
+                    )
+                del self.recovery[key]
         for source, binding, spec, state in roster:
             key = (binding.binding_id, spec.endpoint_id)
             if key in self.inflight:
                 continue
             if state.config_revision != spec.fingerprint:
-                state = type(state)(
-                    binding_id=binding.binding_id,
-                    endpoint_id=spec.endpoint_id,
-                    config_revision=spec.fingerprint,
-                    next_due_at=now
-                    + timedelta(seconds=int(sha256_text(spec.endpoint_id)[:4], 16) % 4),
+                baseline = next(
+                    row.get("target_interval_seconds", 30)
+                    for row in source.default_parameters["endpoints"]
+                    if row["endpoint_id"] == spec.endpoint_id
+                )
+                previous = spec.model_copy(
+                    update={"target_interval_seconds": state.schedule_interval_seconds or baseline}
+                )
+                if state.config_revision != previous.fingerprint:
+                    state = type(state)(binding_id=binding.binding_id, endpoint_id=spec.endpoint_id)
+                due = now + timedelta(
+                    seconds=int(sha256_text(spec.endpoint_id)[:4], 16)
+                    % min(4, spec.target_interval_seconds)
+                )
+                state = state.model_copy(
+                    update={
+                        "config_revision": spec.fingerprint,
+                        "schedule_interval_seconds": spec.target_interval_seconds,
+                        "next_due_at": due,
+                        "next_dispatch_at": due,
+                    }
                 )
                 await self.bus.storage.call(save_state, self.repo, state)
             if state.next_dispatch_at and state.next_dispatch_at > now:
@@ -139,11 +194,14 @@ class IrCoordinator:
             and not (orchestration and orchestration.journal.get("pause", binding.ticker) == "all")
         )
 
-    def _commit(self, source, binding, spec, state, messages=None):
+    def _commit(self, source, binding, spec, state, messages=None, prepared=None):
         with self.repo.atomic_intake():
             if not self._current(source, binding, spec):
                 return
             execution = None
+            if prepared is not None:
+                self.repo.polling.commit(prepared)
+                state = state.model_copy(update={"bootstrap_complete": True})
             if messages is not None:
                 execution = self.bus._accept_poll_result(
                     source=source,
@@ -157,8 +215,67 @@ class IrCoordinator:
                 state = state.model_copy(update={"bootstrap_complete": True})
             save_state(self.repo, state)
             aggregate(self.repo, source, binding, utc_now(), execution)
+            unit = "IR:" + spec.endpoint_id
+            clock = self.repo.get_poll_unit_state(binding, unit)
+            self.repo.save_poll_unit_state(
+                clock.model_copy(
+                    update={
+                        "status": PollStatus.PARTIAL
+                        if state.status == "deferred"
+                        else PollStatus(state.status),
+                        "last_attempt_at": state.last_attempt_at,
+                        "last_success_at": state.last_success_at,
+                        "bootstrap_complete": state.bootstrap_complete,
+                        "next_dispatch_at": state.next_dispatch_at,
+                        "target_due_at": state.next_due_at,
+                        "last_error_code": state.last_error_code,
+                        "last_error_message": state.last_error_message,
+                    }
+                ),
+                unit,
+            )
 
     async def _run(self, source, binding, spec, state):
+        from ..poll_trace import REQUESTS
+
+        requests = []
+        trace = REQUESTS.set(requests)
+        run_id = new_id("poll-ir")
+        now = utc_now()
+        clock_binding = binding.model_copy(
+            update={
+                "polling": binding.polling.model_copy(
+                    update={"target_interval_seconds": spec.target_interval_seconds}
+                )
+            }
+        )
+        await self.bus.storage.call(
+            self.repo.polling.start,
+            run_id,
+            source,
+            clock_binding,
+            state.next_due_at or now,
+            now,
+            "IR:" + spec.endpoint_id,
+            _lane_priority=0,
+        )
+        status, reason = "CANCELLED", None
+        try:
+            final = await self._run_endpoint(source, binding, spec, state, run_id)
+            status = "CAPTURED" if final.status == "succeeded" else "FAILED"
+            reason = final.last_error_code
+        finally:
+            await self.bus.storage.call(
+                self.repo.polling.update_run,
+                run_id,
+                status=status,
+                reason=reason,
+                requests=requests,
+                _lane_priority=0,
+            )
+            REQUESTS.reset(trace)
+
+    async def _run_endpoint(self, source, binding, spec, state, run_id):
         now = utc_now()
         started = time.monotonic()
         adapter = self.scheduler.adapters.resolve(source.adapter_ref, source_version=source.version)
@@ -180,6 +297,7 @@ class IrCoordinator:
                 raise ValueError(f"HTTP_{capture.status}")
             if capture.status == 304 and not state.representation_hash:
                 raise ValueError("IR_304_WITHOUT_CONSUMED_BASELINE")
+            observed_at = utc_now()
             changed = capture.status == 200 and capture.digest != state.representation_hash
             messages = []
             checkpoint = dict(state.checkpoint)
@@ -231,19 +349,46 @@ class IrCoordinator:
                     "updated_at": utc_now(),
                 }
             )
-            await self.bus.storage.call(self._commit, source, binding, spec, updated, messages)
+            realtime = getattr(self.scheduler, "_long_running", False)
+            prepared = await self.bus.storage.prepare(
+                self.repo.polling.prepare,
+                source=source,
+                binding=binding,
+                result=PollResult(messages=messages if realtime else []),
+                run_id=run_id,
+                observed_at=observed_at,
+                unit="IR:" + spec.endpoint_id,
+                bootstrap=not state.bootstrap_complete,
+            )
+            await self.bus.storage.call(
+                self._commit,
+                source,
+                binding,
+                spec,
+                updated,
+                messages=None if realtime else messages,
+                prepared=prepared,
+                _lane_priority=0,
+            )
+            if realtime:
+                self.scheduler.intake.start()
             # Head results are durable before a bounded archive page is attempted.
-            if checkpoint.get("recovery_url"):
-                try:
-                    await self._recover_one(source, binding, spec, adapter)
-                except asyncio.CancelledError:
-                    raise
-                except Exception as exc:
-                    logger.warning(
-                        "ir_archive_recovery_pending endpoint=%s error=%s",
-                        spec.endpoint_id,
-                        type(exc).__name__,
-                    )
+            key = binding.binding_id, spec.endpoint_id
+            from ..pressure import background_allowed
+
+            if checkpoint.get("recovery_url") and not realtime:
+                await self._recover_one(source, binding, spec, adapter)
+            elif (
+                checkpoint.get("recovery_url")
+                and key not in self.recovery
+                and background_allowed()
+                and not getattr(self.scheduler, "_intake_backlogged", False)
+            ):
+                self.recovery[key] = (
+                    asyncio.create_task(self._recover_one(source, binding, spec, adapter)),
+                    (source.version, binding.version, spec.fingerprint),
+                )
+            return updated
         except asyncio.CancelledError:
             raise
         except Exception as exc:
@@ -275,8 +420,56 @@ class IrCoordinator:
                 }
             )
             await self.bus.storage.call(self._commit, source, binding, spec, failed)
+            return failed
+
+    def _commit_recovery(self, source, binding, spec, previous, checkpoint, messages, prepared):
+        with self.repo.atomic_intake():
+            current = get_state(self.repo, binding.binding_id, spec.endpoint_id)
+            if current.representation_hash == previous.representation_hash:
+                merged = {
+                    **current.checkpoint,
+                    **{
+                        k: v
+                        for k, v in checkpoint.items()
+                        if k in {"recovery_url", "coverage", "recovery_anchors"}
+                    },
+                }
+                if "recovery_anchors" not in checkpoint:
+                    merged.pop("recovery_anchors", None)
+                current = current.model_copy(update={"checkpoint": merged, "updated_at": utc_now()})
+            self._commit(source, binding, spec, current, messages, prepared)
 
     async def _recover_one(self, source, binding, spec, adapter):
+        from ..poll_trace import REQUESTS
+
+        requests = []
+        trace = REQUESTS.set(requests)
+        run_id, now = new_id("poll-ir-tail"), utc_now()
+        await self.bus.storage.call(
+            self.repo.polling.start,
+            run_id,
+            source,
+            binding,
+            now,
+            now,
+            "TAIL:IR:" + spec.endpoint_id,
+            _lane_priority=0,
+        )
+        status = "FAILED"
+        try:
+            await self._recover_impl(source, binding, spec, adapter, run_id)
+            status = "CAPTURED"
+        finally:
+            await self.bus.storage.call(
+                self.repo.polling.update_run,
+                run_id,
+                status=status,
+                requests=requests,
+                _lane_priority=0,
+            )
+            REQUESTS.reset(trace)
+
+    async def _recover_impl(self, source, binding, spec, adapter, run_id):
         state = await self.bus.storage.call(
             get_state, self.repo, binding.binding_id, spec.endpoint_id
         )
@@ -284,10 +477,11 @@ class IrCoordinator:
         url = checkpoint.get("recovery_url")
         if not url:
             return
-        async with adapter.endpoint_lock(binding.binding_id, spec.endpoint_id):
+        async with adapter.endpoint_lock(binding.binding_id, spec.endpoint_id + ":archive"):
             capture = await adapter.http.fetch(spec, url=url)
         if capture.status != 200:
             return
+        observed_at = utc_now()
         parser_spec = (
             spec.model_copy(update={"parser_ref": "coherent"})
             if (spec.endpoint_id == "rklb.ir" and url != spec.entry_url)
@@ -301,8 +495,29 @@ class IrCoordinator:
         if found or not following:
             checkpoint.pop("recovery_anchors", None)
             checkpoint["coverage"] = "COMPLETE" if found else "PARTIAL_HISTORY_EXHAUSTED"
-        state = state.model_copy(update={"checkpoint": checkpoint, "updated_at": utc_now()})
-        await self.bus.storage.call(self._commit, source, binding, spec, state, messages)
+        realtime = getattr(self.scheduler, "_long_running", False)
+        prepared = await self.bus.storage.prepare(
+            self.repo.polling.prepare,
+            source=source,
+            binding=binding,
+            result=PollResult(messages=messages if realtime else []),
+            run_id=run_id,
+            observed_at=observed_at,
+            unit="TAIL:IR:" + spec.endpoint_id,
+            bootstrap=not state.bootstrap_complete,
+        )
+        await self.bus.storage.call(
+            self._commit_recovery,
+            source,
+            binding,
+            spec,
+            state,
+            checkpoint,
+            None if realtime else messages,
+            prepared,
+        )
+        if realtime:
+            self.scheduler.intake.start()
 
     async def close(self):
         if self.runner is not None:
@@ -313,3 +528,7 @@ class IrCoordinator:
                 task.cancel()
         await asyncio.gather(*(task for task, _ in self.inflight.values()), return_exceptions=True)
         self.inflight.clear()
+        for task, _ in self.recovery.values():
+            task.cancel()
+        await asyncio.gather(*(task for task, _ in self.recovery.values()), return_exceptions=True)
+        self.recovery.clear()

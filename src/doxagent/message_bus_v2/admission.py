@@ -15,6 +15,7 @@ class AdmissionContext(BaseModel):
     source_task_id: str | None = None
     window_start: datetime | None = None
     cutoff: datetime | None = None
+    observed_at: datetime | None = None
 
     @model_validator(mode="after")
     def validate_window(self) -> "AdmissionContext":
@@ -37,6 +38,12 @@ def evaluate_admission(
     context = context or AdmissionContext()
     if published_at.tzinfo is None or now.tzinfo is None:
         return "INVALID_TIMEZONE"
+    if context.observed_at is not None:
+        if context.observed_at.tzinfo is None or context.observed_at > now + timedelta(seconds=60):
+            return "INVALID_OBSERVATION_TIME"
+        # Durable intake can be replayed after an outage; publication eligibility
+        # is fixed at the original capture, never refreshed at replay time.
+        now = min(now, context.observed_at)
     if basis in {"DATE", "UNKNOWN_FIRST_SEEN"}:
         # Calendar dates, not a rolling 48h window. ET matches the US news workflow.
         today = (context.cutoff or now).astimezone(ZoneInfo("America/New_York")).date()

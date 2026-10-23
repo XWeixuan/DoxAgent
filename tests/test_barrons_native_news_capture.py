@@ -132,6 +132,34 @@ async def test_capture_uses_same_origin_browser_fetch_no_locator_or_interception
 
 
 @pytest.mark.asyncio
+async def test_channels_are_independent_and_empty_success_has_explicit_contract():
+    page = SimpleNamespace(evaluate=AsyncMock(return_value=feeds(main=[])[0:1]))
+    html = await capture_barrons_ticker_news(
+        page, "https://www.barrons.com/market-data/stocks/MU", channel="Barrons"
+    )
+    assert parse(html) == []
+    assert len(page.evaluate.call_args.args[1]) == 1
+    other = feeds(other=[story("https://www.wsj.com/articles/chips-123")])[1:]
+    page.evaluate.return_value = other
+    assert (
+        len(
+            parse(
+                await capture_barrons_ticker_news(
+                    page,
+                    "https://www.barrons.com/market-data/stocks/MU",
+                    channel="BarronsDowJonesNetwork",
+                )
+            )
+        )
+        == 1
+    )
+    with pytest.raises(BarronsNewsFeedError, match="invalid_channel"):
+        await capture_barrons_ticker_news(
+            page, "https://www.barrons.com/market-data/stocks/MU", channel="Untrusted"
+        )
+
+
+@pytest.mark.asyncio
 async def test_hung_page_script_is_bounded_without_another_request_path():
     async def hang(*args):
         await asyncio.Event().wait()
@@ -190,6 +218,7 @@ async def test_runtime_recipe_checks_document_denial_before_native_feed(
     )
     page = SimpleNamespace(
         url=url,
+        is_closed=lambda: False,
         goto=AsyncMock(),
         all_headers=AsyncMock(return_value={}),
         status=200,
@@ -257,6 +286,7 @@ async def test_runtime_recipe_checks_document_denial_before_native_feed(
         page.evaluate.assert_not_awaited()
         retained.assert_awaited_once()
     finally:
+        await service.runtime.fetch_anchors.close()
         repository.close()
 
 
@@ -282,6 +312,105 @@ def test_login_home_and_crawler_urls_cannot_be_subscription_body_proof():
         )
         == article
     )
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('site',['barrons','yahoo_finance'])
+async def test_real_chromium_reuses_owned_anchor_across_tickers(tmp_path, monkeypatch,site):
+    from pathlib import Path
+    from urllib.parse import parse_qs, urlsplit
+
+    from playwright.async_api import async_playwright
+
+    from doxagent.site_strategy.repository import SiteStrategyRepository
+    from doxagent.site_strategy.schema import AccessRequest, BrowserRuntimeKind
+    from doxagent.site_strategy.seeds import bootstrap_seed
+    from doxagent.site_strategy.service import SiteStrategyService
+
+    async with async_playwright() as browser_tool:
+        if not Path(browser_tool.chromium.executable_path).exists():
+            pytest.skip("local Chromium is not installed")
+    repo = SiteStrategyRepository(tmp_path / "site.db")
+    service = SiteStrategyService(repo, profile_root=tmp_path / "profiles")
+    bootstrap_seed(repo, service)
+    runtime = service.runtime
+    identity = repo.get_identity(site+"-1").model_copy(
+        update={"runtime_kind": BrowserRuntimeKind.MANAGED_PLAYWRIGHT}
+    )
+    egress = repo.get_egress(identity.egress_id)
+    acquired, requested = [], []
+    original = runtime.browser_runtimes.page
+
+    async def route(request):
+        url = request.request.url
+        requested.append(url)
+        parsed = urlsplit(url)
+        if site == 'yahoo_finance' and parsed.path.endswith('.html'):
+            await request.fulfill(status=200,content_type='text/html',body=
+                '<html><title>Company news</title><script type="application/ld+json">'
+                '{"@type":"NewsArticle","datePublished":"2026-10-24T10:00:00Z"}</script>'
+                '<article><h1>Company investment</h1><p>Company announced a new project.</p></article></html>')
+        elif parsed.path == "/market-data/api/news":
+            channel = parse_qs(parsed.query)["channel"][0]
+            index = 0 if channel == "Barrons" else 1
+            await request.fulfill(
+                status=200, content_type="application/json", body=feeds()[index]["text"]
+            )
+        else:
+            await request.fulfill(
+                status=200,
+                content_type="text/html",
+                body="<html><title>Stock Overview</title></html>",
+            )
+
+    async def page(*args, **kwargs):
+        lease = await original(*args, **kwargs)
+        acquired.append(lease)
+        await lease.page.route("**/*", route)
+        return lease
+
+    monkeypatch.setattr(runtime.browser_runtimes, "page", page)
+    monkeypatch.setattr("doxagent.site_strategy.runtime.public_url", AsyncMock())
+    monkeypatch.setattr('doxagent.message_bus_v2.yahoo_sources._ARTICLE_DATES',{})
+    try:
+        for ticker in ["MU", "INTC"]:
+            request = AccessRequest(
+                operation_id="anchor-" + ticker,
+                purpose="CRAWLER",
+                mode="BROWSER",
+                url="https://www.barrons.com/market-data/stocks/" + ticker,
+                recipe_ref="builtin:barrons_ticker@1",
+                recipe_parameters={"channel": "Barrons"},
+            )
+            if site == 'yahoo_finance':
+                request = request.model_copy(update={
+                    'url':f'https://finance.yahoo.com/quote/{ticker}/latest-news/',
+                    'recipe_ref':'builtin:yahoo_latest_news@1',
+                    'recipe_parameters':{'ticker':ticker,'timestamp_only':True,
+                        'pending_rows':[{'link':f'https://finance.yahoo.com/news/{ticker.lower()}.html',
+                                         'title':'Company investment','id':ticker}]}})
+            response = await runtime._browser(
+                request, service.resolve(request.url), identity, egress
+            )
+            assert len(parse(response.body) if site=='barrons' else response.recipe_result['rows']) == 1
+            assert response.final_url == request.url
+            assert response.stage_timings["fetch_anchor_reused"] == int(ticker == "INTC")
+        assert len(acquired) == 1 and len(runtime.fetch_anchors.idle) == 1
+        assert sum(("/stocks/" if site=='barrons' else '/quote/') in url for url in requested) == 1
+        assert any(("stock%2F%2F%2Fintc" if site=='barrons' else '/intc.html') in url for url in requested)
+        target = acquired[0].page._doxagent_target_id
+        owned = runtime.target_owner.list_for_instance(
+            identity.identity_id, acquired[0].provenance.instance_id
+        )
+        assert any(
+            record.target_id == target and record.owner_kind == "BUSINESS" for record in owned
+        )
+        await runtime.fetch_anchors.close(identity.identity_id)
+        targets = await acquired[0].browser_cdp.send("Target.getTargets")
+        assert target not in {item["targetId"] for item in targets["targetInfos"]}
+    finally:
+        await runtime.close()
+        repo.close()
 
 
 @pytest.mark.asyncio

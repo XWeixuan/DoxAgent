@@ -19,7 +19,8 @@ from xml.etree import ElementTree
 _ARTICLE_DATES: dict[str, tuple[float, str]] = {}
 
 
-async def capture_dom_news(page, ticker: str, *, count: int, known_dates=None, pending_rows=None, probe_offset=0):
+async def capture_dom_news(page, ticker: str, *, count: int, known_dates=None, pending_rows=None,
+                           probe_offset=0,max_probes=3):
     """Current Yahoo SSR cards no longer contain the old latestNews NCP JSON."""
     cards = await page.locator('[data-testid="storyitem"]').evaluate_all(
         """els => els.flatMap(e => {
@@ -36,6 +37,15 @@ async def capture_dom_news(page, ticker: str, *, count: int, known_dates=None, p
     cards = list({row["link"]: row for row in [*(pending_rows or []), *cards]}.values())
     if not cards:
         return None
+    return await capture_timestamp_rows(page,ticker,cards,known_dates=known_dates,
+                                        probe_offset=probe_offset,max_probes=max_probes)
+
+
+async def capture_timestamp_rows(page,ticker,cards,*,known_dates=None,probe_offset=0,max_probes=3):
+    for row in cards:
+        parsed = urlparse(row['link'])
+        if parsed.scheme != 'https' or parsed.hostname != 'finance.yahoo.com' or not parsed.path.endswith('.html'):
+            raise YahooPageUnavailable('unapproved Yahoo timestamp target')
     now = time.monotonic()
     for url, stamp in (known_dates or {}).items():
         try:
@@ -47,8 +57,8 @@ async def capture_dom_news(page, ticker: str, *, count: int, known_dates=None, p
     missing = [r["link"] for r in cards if _ARTICLE_DATES.get(r["link"], (0, ""))[0] <= now]
     article_html = {}
     start = int(probe_offset) % len(missing) if missing else 0
-    probe_urls = (missing[start:] + missing[:start])[:3]
-    if missing:
+    probe_urls = (missing[start:] + missing[:start])[:max(0,min(3,max_probes))]
+    if probe_urls:
         # Same-origin browser fetch retains actual browser TLS/cookies/cache.
         # Never infer an exact publication time from a relative "2h ago" label.
         dates = await page.evaluate(
@@ -115,6 +125,7 @@ async def capture_dom_news(page, ticker: str, *, count: int, known_dates=None, p
         "parsed_cards": len(cards),
         "timestamp_probe_offset": start + len(probe_urls),
         "pending_timestamp_rows": [row for row in cards if row["link"] not in {r["link"] for r in rows}],
+        "verified_article_dates":{row['link']:row['pubDate'] for row in rows},
     }
 
 
@@ -193,7 +204,8 @@ def latest_news_response(response, ticker: str) -> bool:
     return False  # Do not consume unrelated/global ticker requests.
 
 
-async def capture_latest_news(page, ticker: str, *, timeout_seconds=20, snippet_count=20, known_dates=None, pending_rows=None, probe_offset=0):
+async def capture_latest_news(page, ticker: str, *, timeout_seconds=20, snippet_count=20,
+                              known_dates=None,pending_rows=None,probe_offset=0,max_probes=3):
     from .news_adapters import _yahoo_contents
 
     captured = asyncio.get_running_loop().create_future()
@@ -282,7 +294,7 @@ async def capture_latest_news(page, ticker: str, *, timeout_seconds=20, snippet_
                     }
                 else:
                     dom = await capture_dom_news(page, ticker, count=snippet_count, known_dates=known_dates,
-                                                 pending_rows=pending_rows, probe_offset=probe_offset)
+                                                 pending_rows=pending_rows, probe_offset=probe_offset,max_probes=max_probes)
                     if dom is not None:
                         rows, metadata = dom
                         return rows, {

@@ -50,11 +50,14 @@ class YahooTransport:
         self._session = None
         self._public_session = None
         self._scope_locks = {}
+        self._spacing_locks = {}
         self._http_routes = approved_routes(http_routes) if http_routes is not None else None
         self._route_sessions = {}
         self.last_http_route = "legacy"
-        self._next_start = 0.0
+        self._next_start = {}
+        self._circuit_versions = {}
         self._circuits = {}
+        self._half_open_scopes = set()
         self._endpoint_circuits = {}
         self._loop = asyncio.new_event_loop()
         self._thread = threading.Thread(
@@ -68,9 +71,25 @@ class YahooTransport:
         return await asyncio.wrap_future(future)
 
     async def _request(self, method: str, url: str, *, rate_scope="api", **kwargs: Any):
+        until, strikes = self._circuits.get(rate_scope, (0, 0))
+        probe = bool(strikes and self._clock() >= until)
+        if rate_scope in self._half_open_scopes:
+            raise YahooRateLimited(1)
+        if probe:
+            self._half_open_scopes.add(rate_scope)
+        try:
+            return await self._request_impl(method, url, rate_scope=rate_scope, **kwargs)
+        finally:
+            if probe:
+                self._half_open_scopes.discard(rate_scope)
+                # A failed probe cannot unleash all RSS readers on the next tick.
+                if rate_scope in self._circuits and self._circuits[rate_scope][0] <= self._clock():
+                    self._circuits[rate_scope] = (self._clock() + 5, strikes)
+
+    async def _request_impl(self, method: str, url: str, *, rate_scope="api", **kwargs: Any):
         if self._lock is None:
             self._lock = asyncio.Lock()
-        async with self._scope_locks.setdefault(rate_scope, asyncio.Lock()):
+        async with self._scope_locks.setdefault(rate_scope, asyncio.Semaphore(4 if rate_scope == "rss" else 1)):
             endpoint_until, endpoint_status = self._endpoint_circuits.get(url, (0, 0))
             if self._clock() < endpoint_until:
                 raise YahooEndpointUnavailable(
@@ -78,15 +97,19 @@ class YahooTransport:
                     request=httpx.Request(method, url),
                     response=httpx.Response(endpoint_status),
                 )
+            version = self._circuit_versions.get(rate_scope, 0)
             until, strikes = self._circuits.get(rate_scope, (0, 0))
             if self._clock() < until:
                 raise YahooRateLimited(until - self._clock())
-            async with self._lock:
-                await self._sleep(max(0, self._next_start - self._clock()))
-                self._next_start = self._clock() + self._gap + random.uniform(0, self._jitter)
+            async with self._spacing_locks.setdefault(rate_scope,asyncio.Lock()):
+                await self._sleep(max(0, self._next_start.get(rate_scope, 0) - self._clock()))
+                gap = min(self._gap, .25) if rate_scope == "rss" else self._gap
+                jitter = min(self._jitter, .05) if rate_scope == "rss" else self._jitter
+                self._next_start[rate_scope] = self._clock() + gap + random.uniform(0, jitter)
+            until, strikes = self._circuits.get(rate_scope, (0, 0))
             if self._clock() < until:
                 raise YahooRateLimited(until - self._clock())
-            if self._session is None and self._http_routes is None:
+            if rate_scope != 'rss' and self._session is None and self._http_routes is None:
                 options = {"impersonate": "chrome", "max_clients": 1}
                 if self._proxy_url:
                     options["proxy"] = self._proxy_url
@@ -96,12 +119,17 @@ class YahooTransport:
                     session = self._session
                     if rate_scope == "rss":
                         if self._public_session is None:
-                            options = {"impersonate": "chrome", "max_clients": 1}
+                            options = {"impersonate": "chrome", "max_clients": 4}
                             if self._proxy_url:
                                 options["proxy"] = self._proxy_url
                             self._public_session = self._factory(**options)
                         session = self._public_session
+                    from .poll_trace import request_started
+                    event = request_started(method, url, 'yahoo_curl')
                     response = await session.request(method, url, **kwargs)
+                    if event is not None:
+                        from .schema import utc_now
+                        event.update(response_received_at=utc_now().isoformat(), status_code=response.status_code)
                 else:
 
                     async def send(proxy):
@@ -109,12 +137,18 @@ class YahooTransport:
                         if key not in self._route_sessions:
                             self._route_sessions[key] = self._factory(
                                 impersonate="chrome",
-                                max_clients=1,
+                                max_clients=4 if rate_scope == "rss" else 1,
                                 proxy=proxy or "",
                                 trust_env=False,
                             )
                         options = {**kwargs, "timeout": min(10, float(kwargs.get("timeout") or 30))}
-                        return await self._route_sessions[key].request(method, url, **options)
+                        from .poll_trace import request_started
+                        from .schema import utc_now
+                        event = request_started(method, url, 'yahoo_curl')
+                        response = await self._route_sessions[key].request(method, url, **options)
+                        if event is not None:
+                            event.update(response_received_at=utc_now().isoformat(), status_code=response.status_code)
+                        return response
 
                     async with asyncio.timeout(float(kwargs.get("timeout") or 30)):
                         response, self.last_http_route = await transport_routes(
@@ -127,7 +161,8 @@ class YahooTransport:
                     "Yahoo browser transport request failed", request=httpx.Request(method, url)
                 ) from exc
             if response.status_code == 429:
-                strikes += 1
+                strikes = self._circuits.get(rate_scope, (0, 0))[1] + 1
+                self._circuit_versions[rate_scope] = self._circuit_versions.get(rate_scope, 0) + 1
                 delay = (300, 900, 1800)[min(strikes - 1, 2)]
                 retry = response.headers.get("Retry-After")
                 try:
@@ -154,7 +189,8 @@ class YahooTransport:
                     response=httpx.Response(response.status_code),
                 )
             # Only a successful request closes a half-open circuit.
-            self._circuits.pop(rate_scope, None)
+            if self._circuit_versions.get(rate_scope, 0) == version:
+                self._circuits.pop(rate_scope, None)
             return response
 
     async def _close(self):

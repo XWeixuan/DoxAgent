@@ -21,6 +21,8 @@ def test_shared_scheduler_respects_next_dispatch_after_failure(tmp_path):
     bus.bootstrap()
     bus.start_ticker("MU")
     binding = bus.configure_binding(ticker="MU", source_id="ctee_semiconductor", actor=UpdateActor.SYSTEM)
+    source = repository.get_source(binding.source_id)
+    repository.save_source(source.model_copy(update={"enabled": True}))
     scheduler = GlobalPollScheduler.__new__(GlobalPollScheduler)
     scheduler.repository = repository
     now = utc_now()

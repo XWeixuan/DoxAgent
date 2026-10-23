@@ -56,6 +56,8 @@ def test_cancelled_storage_commit_drains_before_next_writer():
         first.cancel()
         second = asyncio.create_task(lane.call(lambda: events.append("next")))
         await asyncio.sleep(0.02)
+        first.cancel()
+        await asyncio.sleep(0.02)
         assert not first.done() and not second.done()
         release.set()
         await asyncio.gather(first, second, return_exceptions=True)

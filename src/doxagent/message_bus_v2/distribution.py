@@ -50,6 +50,33 @@ class DistributionWorker:
         self._jev_retry_at = 0.0
         self._jev_half_open = False
         self._retirement_at = 0.0
+        self._active: set[asyncio.Task] = set()
+
+    async def run_available(self) -> int:
+        """Fill each released article slot without waiting for a slow batch peer."""
+        for task in tuple(self._active):
+            if task.done():
+                self._active.remove(task)
+                if not task.cancelled() and task.exception():
+                    logger.error("distribution article failed: %s", type(task.exception()).__name__)
+        if time.monotonic() >= self._retirement_at:
+            self._retirement_at = time.monotonic() + 60
+            await self.bus.storage.call(self.repository.expire_runs)
+        available = self.concurrency - len(self._active)
+        if available <= 0:
+            return 0
+        rows = await self.bus.storage.call(self.repository.claim_deliveries, article_limit=available)
+        groups = defaultdict(list)
+        for row in rows:
+            groups[(row["article_id"], int(row["terms_revision"]))].append(row)
+        self._active.update(asyncio.create_task(self._article(group)) for group in groups.values())
+        return len(rows)
+
+    async def close(self):
+        for task in self._active:
+            task.cancel()
+        await asyncio.gather(*self._active, return_exceptions=True)
+        self._active.clear()
 
     async def run_once(self) -> int:
         if time.monotonic() >= self._retirement_at:

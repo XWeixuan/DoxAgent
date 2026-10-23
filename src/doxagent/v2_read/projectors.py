@@ -106,6 +106,19 @@ class DomainProjectors:
 
     def __call__(self, event: dict[str, Any]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
         table, row, value = event["table_name"], event["row"], native(event)
+        if table in {'poll_runs', 'poll_captures'}:
+            value = {**row, **value}
+            for key in ('payload_json', 'receipt_json', 'data_json'):
+                value.pop(key, None)
+            kind = 'poll_schedule' if table == 'poll_runs' and row['status'] == 'SCHEDULE' else 'native:'+table
+            targets = json.loads(row.get('targets_json','[]')) if table == 'poll_captures' else []
+            targets = targets or [{'binding_id':row['binding_id'],'ticker':row['ticker']}]
+            return [{"kind":kind, "ticker":target['ticker'],
+                     "source_id":row['source_id'], "id":event['entity_id'],
+                     "sort_key":row.get('dispatch_at') or row['observed_at'],
+                     "day":semantic_day(datetime.fromisoformat(row.get('dispatch_at') or row['observed_at'])).isoformat(),
+                     "data":None if event['operation']=='DELETE' else {**value,**target}}
+                    for target in targets], []
         ticker = value.get("ticker", row.get("ticker", ""))
         if table == "runtime_values" and row["namespace"] == "policy_authorization_head":
             ticker = row["key"]

@@ -26,6 +26,35 @@ RSS = """<rss version="2.0"><channel><item>
 </item></channel></rss>"""
 
 
+@pytest.mark.parametrize('same_ticker', [False, True])
+async def test_missing_yahoo_page_cools_only_that_ticker_and_acquisition_unit(tmp_path, same_ticker):
+    from datetime import UTC, datetime
+
+    context,_ = _context(tmp_path,'yahoo_finance_news',{})
+    context = context.model_copy(update={'acquisition_unit':'TAIL:YAHOO_TIME' if same_ticker else 'SUPPLEMENT_HEAD'})
+    class MissingPage(RuntimeError):
+        status_code = 404
+    class Browser:
+        site_managed = True
+        calls = 0
+        async def yahoo_latest_news(self,*args,**kwargs):
+            self.calls += 1
+            if self.calls == 1:
+                raise MissingPage('missing one ticker page')
+            return [],{}
+    browser = Browser()
+    async with httpx.AsyncClient() as client:
+        adapter = YahooFinanceNewsAdapter(DoxAgentSettings(_env_file=None),client,
+            transport=object(),browser=browser)
+        first = await adapter.poll(context)
+        sibling = await adapter.poll(context.model_copy(update={'ticker':'MU' if same_ticker else 'INTC',
+            'acquisition_unit':'SUPPLEMENT_HEAD'}))
+        retry = await adapter.poll(context)
+    assert first.site_access_deferred and not sibling.site_access_deferred
+    assert browser.calls == 2 and retry.site_access_deferred_reason == 'browser_endpoint_unavailable'
+    assert (retry.site_access_retry_not_before-datetime.now(UTC)).total_seconds() > 500
+
+
 async def test_ncp_429_rss_success_retains_api_circuit(tmp_path):
     requests = []
 

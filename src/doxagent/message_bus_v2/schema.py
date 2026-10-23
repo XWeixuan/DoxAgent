@@ -136,6 +136,7 @@ class IngestDecision(StrEnum):
 
 
 class SchedulerConstraints(BusModel):
+    capacity_mode: Literal["fixed", "adaptive"] = "fixed"
     minimum_request_gap_seconds: float = Field(default=1.0, ge=0)
     max_concurrency: int = Field(default=1, ge=1, le=100)
 
@@ -592,6 +593,10 @@ class ConsumerOffset(BusModel):
 
 
 class PollState(BusModel):
+    source_definition_version: int | None = None
+    binding_version: int | None = None
+    units: JsonObject = Field(default_factory=dict)
+    schedule_interval_seconds: int | None = None
     last_standard_revision_count: int | None = Field(default=None, ge=0)
     binding_id: str
     source_id: str
@@ -679,6 +684,7 @@ RequestPermitFactory = Callable[[], AbstractAsyncContextManager[None]]
 
 
 class PollContext(BusModel):
+    acquisition_unit: str = "ALL"
     is_bootstrap: bool = False
     is_gap_recovery: bool = False
     window_start: datetime | None = None
@@ -743,6 +749,7 @@ class PollExecutionResult(BusModel):
     error_code: str | None = None
     error_message: str | None = None
     site_access_deferred: bool = False
+    site_access_deferred_reason: str | None = None
     site_access_retry_not_before: datetime | None = None
 
 

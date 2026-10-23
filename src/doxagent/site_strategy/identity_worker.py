@@ -192,6 +192,8 @@ class Worker:
         action = command["action"]
         identity = self.repository.identity
         egress = self.repository.egress
+        if action not in {"execute", "status", "observe_recovery"}:
+            await self.runtime.fetch_anchors.close(identity.identity_id)
         if action in {'observe_recovery','close_recovery','forget_recovery'}:
             from .runtime import retained_entry
             physical_token, maintained_page = retained_entry(self.runtime._maintenance_pages, identity.identity_id,

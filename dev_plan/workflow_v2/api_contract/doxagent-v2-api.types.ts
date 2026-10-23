@@ -580,6 +580,15 @@ export interface ArticleBodyCohort {
 export interface PollTimeliness {
   window_seconds: Count; samples: Count; mean_seconds: number | null; p95_seconds: number | null;
   deferred: Count; failed: Count; sample_limit_reached: boolean;
+  cadence?: PollCadence;
+}
+export interface PollCadence {
+  pending_cycles?: Count; settled_cycles?: Count;
+  pending_intake_candidates?: Count; failed_intake_candidates?: Count;
+  expected_cycles: Count; fresh_cycles: Count; missing_cycles: Count; coverage: number | null;
+  max_gap_seconds: number | null; worst_request_p95_seconds: number | null;
+  gap_mean_seconds: number | null; gap_p95_seconds: number | null; deferred: Count; failed: Count;
+  units: Count; eligibility_unknown: Count; sample_limit_reached: boolean;
 }
 export interface BusStatus {
   run_state: RunState;
@@ -591,6 +600,7 @@ export interface BusStatus {
   timeliness?: PollTimeliness;
 }
 export interface SourceStatus {
+  cadence?: PollCadence;
   coverage_state?: "COMPLETE" | "PARTIAL" | "UNKNOWN";
   pending_query_count?: Count; pending_timestamp_count?: Count;
   stage_timings_ms?: { [stage: string]: number };

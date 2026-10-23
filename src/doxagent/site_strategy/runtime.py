@@ -69,6 +69,11 @@ class RuntimeResponse:
     assessment: dict | None = None
     stage_timings: dict[str, int] = field(default_factory=dict)
 
+    def __post_init__(self):
+        if self.status_code or self.body or self.recipe_result is not None:
+            # Record the captured document before gate/target teardown.
+            self.stage_timings.setdefault("capture_acquired_epoch_ms",int(time.time()*1000))
+
 
 class OwnerFileLock:
     """Portable non-blocking writer lock held by an open descriptor."""
@@ -1155,6 +1160,8 @@ class SiteAccessRuntime:
         )
         self._http_sessions: dict[tuple[str, str], Any] = {}
         self._maintenance_pages: dict[str, _MaintenancePage] = {}
+        from .fetch_anchors import FetchAnchors
+        self.fetch_anchors = FetchAnchors()
         from .targets import TargetOwner
 
         self.target_owner = TargetOwner(repository)
@@ -1163,6 +1170,7 @@ class SiteAccessRuntime:
             external.target_owner = self.target_owner
 
     async def close(self) -> None:
+        await self.fetch_anchors.close()
         for token, maintained in list(self._maintenance_pages.items()):
             pending = getattr(self, "_ownership_transfers", set())
             if pending:
@@ -1246,6 +1254,7 @@ class SiteAccessRuntime:
             kwargs["params"] = request.parameters["query"]
         if "json" in request.parameters:
             kwargs["json"] = request.parameters["json"]
+        requested_epoch_ms = int(time.time() * 1000)
         response = await session.request(request.method, request.url, **kwargs)
         raw = bytes(response.content)
         if len(raw) > request.max_response_bytes:
@@ -1265,6 +1274,8 @@ class SiteAccessRuntime:
             raw.decode(response.encoding or "utf-8", errors="replace"),
             redirect_url=redirect,
             retry_after_seconds=_retry_after(headers.get("retry-after")),
+            stage_timings={"request_started_epoch_ms": requested_epoch_ms,
+                           "headers_received_epoch_ms": int(time.time() * 1000)},
         )
 
     async def _browser(
@@ -1288,11 +1299,23 @@ class SiteAccessRuntime:
         identity: BrowserIdentitySpec,
         egress: ProxyEgress,
     ) -> RuntimeResponse:
+        if request.purpose is SitePurpose.LOGIN or any(
+            key.startswith(("_maintenance", "_recovery")) for key in request.recipe_parameters
+        ):
+            await self.fetch_anchors.close(identity.identity_id)
         await public_url(request.url, trusted_proxy_dns=True)
         deadline = time.monotonic() + request.remaining_budget_ms / 1000
         lease_started = time.monotonic()
-        lease = await self.browser_runtimes.page(identity, egress, deadline=deadline)
+        anchor_eligible = (request.recipe_ref in {"builtin:barrons_ticker@1","builtin:yahoo_latest_news@1"}
+                           and request.purpose is SitePurpose.CRAWLER
+                           and (request.recipe_ref == 'builtin:barrons_ticker@1' or
+                                request.recipe_parameters.get('timestamp_only'))
+                           and not any(k.startswith("_maintenance") or k.startswith("_recovery")
+                                       for k in request.recipe_parameters))
+        anchor = await self.fetch_anchors.take(identity, egress) if anchor_eligible else None
+        lease = anchor.lease if anchor else await self.browser_runtimes.page(identity, egress, deadline=deadline)
         _BROWSER_TIMINGS.get()["page_acquire_ms"] = int((time.monotonic()-lease_started)*1000)
+        _BROWSER_TIMINGS.get()["fetch_anchor_reused"] = int(anchor is not None)
         current_runtime = self.repository.get_identity_runtime(identity.identity_id)
         if (
             current_runtime.instance_id != lease.provenance.instance_id
@@ -1312,11 +1335,37 @@ class SiteAccessRuntime:
                 )
             except RuntimeError:
                 pass
-        page = await lease.__aenter__()
-        gate = _DocumentNavigationGate(page, self.resolver, resolved, lease.browser_cdp)
+        page = anchor.page if anchor else await lease.__aenter__()
+        gate = anchor.gate if anchor else _DocumentNavigationGate(page, self.resolver, resolved, lease.browser_cdp)
         retained = False
-        response = None
+        keep_anchor = False
+        response = anchor.response if anchor else None
         native_document = None
+        command_timings = _BROWSER_TIMINGS.get()
+        tracked_requests = {}
+        def observe_request(value):
+            try:
+                if (value.is_navigation_request() and value.frame == page.main_frame) or (
+                    resolved.site_id == "barrons" and "/market-data/api/news?" in value.url
+                ) or (
+                    request.recipe_parameters.get('timestamp_only') and
+                    urlsplit(value.url).hostname == 'finance.yahoo.com' and
+                    urlsplit(value.url).path.endswith('.html')
+                ):
+                    at = int(time.time()*1000)
+                    index = len(tracked_requests)
+                    tracked_requests[id(value)] = index
+                    command_timings[f'request_{index}_started_epoch_ms'] = at
+                    command_timings.setdefault("request_started_epoch_ms", at)
+            except Exception:
+                pass
+        if hasattr(page, "on"):
+            page.on("request", observe_request)
+        def observe_finished(value):
+            if id(value) in tracked_requests:
+                command_timings[f'request_{tracked_requests[id(value)]}_body_epoch_ms'] = int(time.time()*1000)
+        if hasattr(page,'on'):
+            page.on('requestfinished',observe_finished)
         native_investing = (
             resolved.site_id == "investing" and lease.browser_cdp is not None
             and hasattr(page, "on")
@@ -1326,12 +1375,17 @@ class SiteAccessRuntime:
         def observe_response(value):
             nonlocal observed_response
             try:
+                if id(value.request) in tracked_requests:
+                    command_timings[f'request_{tracked_requests[id(value.request)]}_headers_epoch_ms'] = int(time.time()*1000)
                 if value.request.is_navigation_request() and value.frame == page.main_frame:
                     observed_response = value
+                    command_timings.setdefault("headers_received_epoch_ms",int(time.time()*1000))
+                elif resolved.site_id == "barrons" and "/market-data/api/news?" in value.url:
+                    command_timings.setdefault("headers_received_epoch_ms",int(time.time()*1000))
             except Exception:
                 pass  # A detached resource is not proof of a new main document.
 
-        if native_investing:
+        if hasattr(page,"on"):
             page.on("response", observe_response)
 
         async def recipe_capture(rows, metadata=None):
@@ -1380,11 +1434,11 @@ class SiteAccessRuntime:
 
         try:
             try:
-                await gate.start()
-                if native_investing and gate.root_target_id:
-                    # This identity is already single-concurrency and excluded
-                    # from human maintenance. Let its native document checks run
-                    # in the real active tab, not an indefinitely backgrounded tab.
+                if not anchor:
+                    await gate.start()
+                if native_investing and gate.root_target_id and request.purpose is not SitePurpose.CRAWLER:
+                    # Healthy listing capture does not need foreground ownership.
+                    # BODY and the challenge recovery flow retain native activation.
                     await self._focus_maintenance_target(lease.browser_cdp, gate.root_target_id)
                 if request.mode is AccessMode.BROWSER_FETCH and request.purpose is SitePurpose.BODY and not request.recipe_ref:
                     parsed = urlsplit(request.url)
@@ -1407,6 +1461,32 @@ class SiteAccessRuntime:
                     return RuntimeResponse(fetched["status"],fetched["url"],_filtered_headers(fetched["headers"]),
                         fetched["text"],provenance=lease.provenance)
                 if request.recipe_ref == "builtin:yahoo_latest_news@1":
+                    if request.recipe_parameters.get('timestamp_only'):
+                        from doxagent.message_bus_v2.yahoo_sources import (
+                            capture_timestamp_rows,
+                            page_http_failure,
+                        )
+                        if not anchor:
+                            response = await page.goto(request.url,wait_until='commit',
+                                                       timeout=min(request.remaining_budget_ms,10000))
+                            if response is not None and response.status>=400:
+                                raise page_http_failure(response.status,response.headers,phase='timestamp_navigation',url=page.url)
+                        html = await page.content()
+                        if _verification_document(html,page.url,200,{},resolved,request):
+                            return await recipe_capture([])
+                        rows, metadata = await capture_timestamp_rows(page,
+                            str(request.recipe_parameters['ticker']),
+                            request.recipe_parameters.get('pending_rows',[]),
+                            known_dates=request.recipe_parameters.get('known_dates',{}),
+                            probe_offset=request.recipe_parameters.get('probe_offset',0))
+                        result = await recipe_capture(rows,metadata)
+                        if result.recipe_result is not None and not retained:
+                            from .fetch_anchors import FetchAnchor
+                            keep_anchor = self.fetch_anchors.put(identity,FetchAnchor(lease,page,gate,
+                                response,identity.revision,egress.egress_id,
+                                anchor.created_at if anchor else time.monotonic()))
+                            result.final_url = request.url
+                        return result
                     rows, metadata = await capture_latest_news(
                         page,
                         str(request.recipe_parameters["ticker"]),
@@ -1415,6 +1495,7 @@ class SiteAccessRuntime:
                         known_dates=request.recipe_parameters.get("known_dates", {}),
                         pending_rows=request.recipe_parameters.get("pending_rows", []),
                         probe_offset=request.recipe_parameters.get("probe_offset", 0),
+                        max_probes=int(request.recipe_parameters.get('max_probes',3)),
                     )
                     return await recipe_capture(rows, metadata)
                 if request.recipe_ref == "builtin:reuters_search@1":
@@ -1425,7 +1506,7 @@ class SiteAccessRuntime:
                     )
                     return await recipe_capture(rows)
                 navigation_started = time.monotonic()
-                response = await page.goto(
+                response = response if anchor else await page.goto(
                     request.url,
                     # These ad-heavy publishers can keep DOMContentLoaded pending
                     # after the actual news document has arrived. Wait for the
@@ -1439,6 +1520,7 @@ class SiteAccessRuntime:
                     timeout=min(request.remaining_budget_ms, 20_000),
                 )
                 _BROWSER_TIMINGS.get()["navigation_ms"] = int((time.monotonic()-navigation_started)*1000)
+                _BROWSER_TIMINGS.get()["fetch_anchor_reused"] = int(anchor is not None)
                 page._doxagent_challenge_status = response.status if response else 0
                 page._doxagent_challenge_headers = getattr(response, "headers", {})
                 if response is not None and response.status == 403 and not native_investing:
@@ -1471,19 +1553,23 @@ class SiteAccessRuntime:
                     and lease.browser_cdp is not None
                     and gate.root_target_id
                 ):
-                    from .investing_document import capture_document
-
-                    native_document = await capture_document(
-                        lease.browser_cdp,
-                        gate.root_target_id,
-                        request.url,
-                        timeout=max(.001, min(30, deadline - time.monotonic() - 2)),
+                    from .investing_document import capture_document, capture_listing
+                    capture_options = dict(
+                        timeout=max(.001,min(30,deadline-time.monotonic()-2)),
                         body_parameters=resolved.body.parameters,
                         on_challenge=lambda html, url: self._capture_challenge_evidence(
                             lease, page, gate, identity, resolved, request, html,
                             phase="first", url=url,
                         ),
                     )
+                    if request.purpose is SitePurpose.CRAWLER:
+                        native_document = await capture_listing(page,observed_response or response,
+                            lease.browser_cdp,gate.root_target_id,request.url,
+                            request.recipe_parameters.get('ticker'),max_bytes=request.max_response_bytes,
+                            **capture_options)
+                    else:
+                        native_document = await capture_document(lease.browser_cdp,gate.root_target_id,
+                                                                  request.url,**capture_options)
                     if (
                         observed_response is not None
                         and 200 <= observed_response.status < 300
@@ -1583,7 +1669,6 @@ class SiteAccessRuntime:
                             state=(
                                 "attached"
                                 if resolved.site_id == "investorshub"
-                                and request.purpose.value != "CRAWLER"
                                 else "visible"
                             ),
                             timeout=min(request.remaining_budget_ms, 15_000),
@@ -1603,6 +1688,8 @@ class SiteAccessRuntime:
                         page,
                         request.url,
                         timeout_seconds=max(0.001, min(12, deadline - time.monotonic())),
+                        **({"channel":request.recipe_parameters["channel"]}
+                           if "channel" in request.recipe_parameters else {}),
                     )
                     native_html = await page.content()
                     if (
@@ -1611,9 +1698,13 @@ class SiteAccessRuntime:
                         ).access_reason
                         != "challenge_required"
                     ):
+                        from .fetch_anchors import FetchAnchor
+                        keep_anchor = anchor_eligible and self.fetch_anchors.put(identity,
+                            FetchAnchor(lease,page,gate,response,identity.revision,egress.egress_id,
+                                        anchor.created_at if anchor else time.monotonic()))
                         return RuntimeResponse(
                             int(status),
-                            page.url,
+                            request.url,
                             _filtered_headers({str(k).lower(): str(v) for k, v in headers.items()}),
                             body=html,
                             provenance=lease.provenance,
@@ -1796,12 +1887,15 @@ class SiteAccessRuntime:
                         )
                 raise
             finally:
-                if not retained and not getattr(page, "_doxagent_handoff_pending", False):
+                if not retained and not keep_anchor and not getattr(page, "_doxagent_handoff_pending", False):
                     await gate.close()
         finally:
-            if native_investing:
+            if hasattr(page, "remove_listener"):
+                page.remove_listener("request", observe_request)
+                page.remove_listener('requestfinished',observe_finished)
+            if hasattr(page,"remove_listener"):
                 page.remove_listener("response", observe_response)
-            if not retained and not getattr(page, "_doxagent_handoff_pending", False):
+            if not retained and not keep_anchor and not getattr(page, "_doxagent_handoff_pending", False):
                 await lease.__aexit__(None, None, None)
 
     async def _wait_automatic_document(self, lease, page, gate, resolved, html, deadline):

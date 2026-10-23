@@ -83,6 +83,27 @@ async def test_retry_after_http_date():
         transport.close()
 
 
+async def test_parallel_rss_has_only_one_half_open_recovery_probe():
+    now,calls = [0.0],[]
+    async def handler(request):
+        calls.append(request.url)
+        if len(calls)==1:
+            return httpx.Response(429)
+        await asyncio.sleep(.03)
+        return httpx.Response(200,text='<rss/>')
+    transport,_ = make_transport(handler,clock=lambda:now[0])
+    try:
+        with pytest.raises(YahooRateLimited):
+            await transport.request('GET','https://feeds.finance.yahoo.com/one',rate_scope='rss')
+        now[0] = 301
+        results = await asyncio.gather(*(transport.request('GET',
+            f'https://feeds.finance.yahoo.com/{i}',rate_scope='rss') for i in range(8)),return_exceptions=True)
+        assert len(calls)==2
+        assert sum(isinstance(r,YahooRateLimited) for r in results)==7
+    finally:
+        transport.close()
+
+
 @pytest.mark.parametrize("status", [429, 403, 401, 503])
 async def test_ncp_block_or_service_failure_tries_only_rss(tmp_path, status):
     requests = []

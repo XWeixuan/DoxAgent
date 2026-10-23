@@ -1,5 +1,6 @@
 """Runtime settings for DoxAgent."""
 
+from os import cpu_count
 from typing import Literal
 
 from pydantic import Field, SecretStr
@@ -589,7 +590,7 @@ class DoxAgentSettings(BaseSettings):
         validation_alias="DOXAGENT_SITE_ACCESS_BROWSER_MAX_PROCESSES",
     )
     site_access_browser_max_pages: int = Field(
-        default=4,
+        default_factory=lambda: min(8, max(2, cpu_count() or 4)),
         ge=1,
         le=16,
         validation_alias="DOXAGENT_SITE_ACCESS_BROWSER_MAX_PAGES",
@@ -601,7 +602,7 @@ class DoxAgentSettings(BaseSettings):
     )
     site_access_body_browser_max_pages: int = Field(default=2,ge=1,le=8,
         validation_alias="DOXAGENT_SITE_ACCESS_BODY_BROWSER_MAX_PAGES")
-    site_access_body_browser_borrow: bool = Field(default=True,
+    site_access_body_browser_borrow: bool = Field(default=False,
         validation_alias="DOXAGENT_SITE_ACCESS_BODY_BROWSER_BORROW")
     message_bus_enrichment_terminal_receipts_enabled: bool = Field(default=True,
         validation_alias="DOXAGENT_MESSAGE_BUS_ENRICHMENT_TERMINAL_RECEIPTS_ENABLED")

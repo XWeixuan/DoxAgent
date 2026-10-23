@@ -68,19 +68,49 @@ async def test_dom_challenge_is_not_empty_success():
     assert result.value.diagnostics["phase"] == "dom_article_metadata"
 
 
+async def test_head_returns_before_timestamp_fetch_and_pending_can_run_without_listing():
+    page = Page()
+    rows, metadata = await yahoo_sources.capture_dom_news(page, "MU", count=20, max_probes=0)
+    assert rows == [] and page.fetches == 0
+    pending = metadata["pending_timestamp_rows"]
+    # The follow-up consumes the durable locator, without another DOM/card read.
+    page.locator = lambda _: (_ for _ in ()).throw(AssertionError("timestamp job reloaded listing"))
+    rows, metadata = await yahoo_sources.capture_timestamp_rows(page, "MU", pending)
+    assert len(rows) == 1 and page.fetches == 1
+    assert metadata["pending_timestamp_rows"] == []
+    assert metadata["verified_article_dates"][rows[0]["link"]].startswith("2026-10-18")
+
+
+async def test_timestamp_job_rejects_external_urls_before_authenticated_fetch():
+    page = Page()
+    with pytest.raises(yahoo_sources.YahooPageUnavailable, match="unapproved"):
+        await yahoo_sources.capture_timestamp_rows(
+            page, "MU", [{"link": "https://other.example/article.html"}]
+        )
+    assert page.fetches == 0
+
+
 async def test_timestamp_probes_rotate_and_keep_rows_no_longer_on_listing():
     class MissingPage(Page):
         def __init__(self):
             super().__init__(stamp=None)
             self.requested = []
+
         async def evaluate(self, script, urls):
             self.requested.append(urls)
             return await super().evaluate(script, urls)
+
     page = MissingPage()
-    pending = [{"link":f"https://finance.yahoo.com/news/{i}.html", "title":f"News {i}"}
-               for i in range(7)]
-    _, first = await yahoo_sources.capture_dom_news(page,"MU", count=20, pending_rows=pending)
-    _, second = await yahoo_sources.capture_dom_news(page,"MU", count=20,
-        pending_rows=first["pending_timestamp_rows"], probe_offset=first["timestamp_probe_offset"])
+    pending = [
+        {"link": f"https://finance.yahoo.com/news/{i}.html", "title": f"News {i}"} for i in range(7)
+    ]
+    _, first = await yahoo_sources.capture_dom_news(page, "MU", count=20, pending_rows=pending)
+    _, second = await yahoo_sources.capture_dom_news(
+        page,
+        "MU",
+        count=20,
+        pending_rows=first["pending_timestamp_rows"],
+        probe_offset=first["timestamp_probe_offset"],
+    )
     assert set(page.requested[0]).isdisjoint(page.requested[1])
     assert len(second["pending_timestamp_rows"]) == 8

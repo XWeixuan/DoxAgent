@@ -258,10 +258,11 @@ class MarketTickerAdapter:
 class GlobeNewswireSearchAdapter:
     def __init__(self, browser: Any, client=None) -> None:
         self.browser, self.client = browser, client
-        self._http_retry_at = 0
+        self._http_retry_at = {}
 
     async def _page(self, context, url, key, page):
-        if time.monotonic() >= self._http_retry_at and context.binding.source_parameters.get("http_listing_verified",context.source.default_parameters.get("http_listing_verified",False)):
+        retry_key = (context.binding.binding_id, key)
+        if time.monotonic() >= self._http_retry_at.get(retry_key, 0) and context.binding.source_parameters.get("http_listing_verified",context.source.default_parameters.get("http_listing_verified",False)):
             try:
                 async with context.request_permit():
                     if getattr(self.browser,"site_managed",False):
@@ -275,9 +276,13 @@ class GlobeNewswireSearchAdapter:
                     messages = parse_globenewswire(html, now=context.requested_at)
                     if messages or "no results" in html.lower():
                         return messages, "http"
-                self._http_retry_at = time.monotonic()+300
+                self._http_retry_at[retry_key] = time.monotonic() + min(60, context.binding.polling.target_interval_seconds)
+            except SiteAccessError as exc:
+                if exc.site_access_deferred:
+                    raise
+                self._http_retry_at[retry_key] = time.monotonic() + min(60, context.binding.polling.target_interval_seconds)
             except Exception:
-                self._http_retry_at = time.monotonic()+300
+                self._http_retry_at[retry_key] = time.monotonic() + min(60, context.binding.polling.target_interval_seconds)
         if self.browser is None:
             raise RuntimeError("GlobeNewswire browser fallback unavailable")
         async with context.request_permit():
@@ -296,14 +301,17 @@ class GlobeNewswireSearchAdapter:
         successes = int(context.checkpoint.get("page_success_seq", 0))
         rows, failures, outcomes = {}, [], []
         retry_at, deferred = None, False
-        while requests < 2 and time.monotonic() - started < 15:
+        head_only = context.acquisition_unit.startswith("QUERY:")
+        tail_only = context.acquisition_unit.startswith("TAIL:")
+        while requests < (1 if head_only or tail_only else 2) and time.monotonic() - started < 15:
             heads, tails = [], []
             for query in queries:
                 key = str(query["query_key"])
                 saved = checkpoints[key]
                 head_at = saved.get("head_at")
                 head_due = not head_at or (not context.is_gap_recovery and
-                    (context.requested_at - datetime.fromisoformat(head_at)).total_seconds() >= 60)
+                    (context.requested_at - datetime.fromisoformat(head_at)).total_seconds() >= context.binding.polling.target_interval_seconds)
+                head_due = False if tail_only else True if head_only else head_due
                 if head_due:
                     heads.append(query)
                 elif not saved.get("done", False):
@@ -357,7 +365,8 @@ class GlobeNewswireSearchAdapter:
         done = all(v.get("done") and v.get("head_at") for v in checkpoints.values())
         return PollResult(messages=list(rows.values()), failures=failures,
             next_checkpoint={"queries":checkpoints,"page_success_seq":successes},
-            window_done=done, window_coverage="COMPLETE" if done else "PARTIAL",
+            window_done=True if head_only and not failures and not deferred else done,
+            window_coverage="COMPLETE" if done or (head_only and not failures and not deferred) else "PARTIAL",
             site_access_deferred=deferred, site_access_retry_not_before=retry_at,
             acquisition_metadata={"provider":"globenewswire","query_outcomes":outcomes,
                 "query_attempt_count":requests,"query_success_count":sum(o["status"]=="SUCCESS" for o in outcomes),

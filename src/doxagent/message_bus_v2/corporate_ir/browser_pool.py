@@ -40,10 +40,22 @@ class PublicBrowserPool:
                 browser = await self._ensure()
                 context = await browser.new_context()
                 page = await context.new_page()
+                from ..poll_trace import request_started
+                from ..schema import utc_now
+                events = []
+                def observe(request):
+                    if request.is_navigation_request() and request.frame == page.main_frame:
+                        event = request_started(request.method, request.url, "ir_browser")
+                        if event is not None:
+                            events.append(event)
+                page.on("request", observe)
                 response = await page.goto(spec.entry_url, wait_until="domcontentloaded")
                 selector = spec.parser_parameters.get("ready_selector")
                 if selector:
                     await page.locator(selector).first.wait_for()
+                if events:
+                    events[-1].update(response_received_at=utc_now().isoformat(),
+                                      status_code=response.status if response else 0)
                 return response.status if response else 0, await page.content(), page.url
         except Exception:
             # A page timeout alone is not evidence that sibling contexts are dead.

@@ -14,6 +14,7 @@ from doxagent.content_enrichment.extractor import SharedContentExtractor
 from doxagent.content_enrichment.native import native_article
 from doxagent.content_enrichment.schema import EnrichmentJob, EnrichmentJobStatus
 from doxagent.content_enrichment.transport import DEADLINE, REVALIDATION, WORK_AGE, WORK_CLASS
+from doxagent.message_bus_v2.pressure import background_allowed
 from doxagent.message_bus_v2.repository import MessageBusV2Repository
 from doxagent.message_bus_v2.schema import ContentEnrichmentMode, RawMessageInput, utc_now
 from doxagent.message_bus_v2.service import MessageBusV2Service
@@ -56,6 +57,8 @@ class ContentEnrichmentHub:
         self._last_outbox_flush = 0.0
         self.ir_body_reader = None
         self.defense_body_reader = None
+        from doxagent.message_bus_v2.distribution_repository import DistributionRepository
+        self.distribution = DistributionRepository(repository)
 
     async def run_once(self, *, now: datetime | None = None) -> int:
         await self._flush_outcomes(force=True)
@@ -65,6 +68,7 @@ class ContentEnrichmentHub:
             limit=self.concurrency,
             now=current,
             lease_seconds=60,
+            allow_rechecks=background_allowed(),
         )
         if not jobs:
             return 0
@@ -131,6 +135,7 @@ class ContentEnrichmentHub:
                         limit=self.concurrency - len(active),
                         now=now,
                         lease_seconds=60,
+                        allow_rechecks=background_allowed(),
                     )
                     active.update(
                         asyncio.create_task(self._process_guarded(job, now)) for job in jobs
@@ -430,10 +435,8 @@ class ContentEnrichmentHub:
         from doxagent.source_maintenance.signals import body
 
         if job.owner_kind == "distribution_article":
-            from doxagent.message_bus_v2.distribution_repository import DistributionRepository
-
             def finalize():
-                DistributionRepository(self.repository).finalize_article(
+                self.distribution.finalize_article(
                     job, message, self._outcome_payload(job, message)
                 )
                 body(job, message)

@@ -26,6 +26,30 @@ def _observed(result):
     observations = ACCESS_RESULTS.get()
     if observations is not None:
         observations.append(result)
+    from datetime import UTC
+
+    from doxagent.message_bus_v2.poll_trace import REQUESTS
+
+    requests = REQUESTS.get()
+    if requests is not None and not result.served_from_shared_capture:
+        for index,attempt in enumerate(result.attempts):
+            stages = attempt.stage_timings
+            indexes = sorted(int(key.split('_')[1]) for key in stages
+                if key.startswith('request_') and key.endswith('_started_epoch_ms') and key.split('_')[1].isdigit())
+            for physical in indexes or [None]:
+                started = stages.get(f'request_{physical}_started_epoch_ms' if physical is not None else 'request_started_epoch_ms')
+                if not started:
+                    continue
+                headers = stages.get(f'request_{physical}_headers_epoch_ms' if physical is not None else 'headers_received_epoch_ms')
+                body = stages.get(f'request_{physical}_body_epoch_ms' if physical is not None else 'capture_acquired_epoch_ms')
+                requests.append({
+                    'request_key':hashlib.sha256(f'{result.operation_id}:{index}:{physical}'.encode()).hexdigest(),
+                    'endpoint':result.site_id,
+                    'transport': 'site_access', 'request_started_at': datetime.fromtimestamp(started / 1000, UTC).isoformat(),
+                    'headers_received_at': datetime.fromtimestamp(headers / 1000, UTC).isoformat() if headers else None,
+                    'response_received_at':datetime.fromtimestamp(body / 1000, UTC).isoformat() if body else None,
+                    'identity_id': result.identity_id, 'status': result.disposition.value,
+                })
     return result
 
 
@@ -82,7 +106,15 @@ class SiteAccessClient:
         return ResolvedSite.model_validate(response.json())
 
     async def execute(self, request: AccessRequest) -> AccessResult:
+        from doxagent.message_bus_v2.poll_trace import DEMAND
+
         from .scope import current_routing
+
+        demand = DEMAND.get()
+        if demand:
+            request = request.model_copy(update={"work_class": demand["work_class"],
+                "recipe_parameters": {**request.recipe_parameters, "_poll_due_at": demand['due_at'],
+                                      "_poll_rate": demand['rate']}})
 
         context = current_routing()
         if request.origin_scope_id is None and context is not None:
@@ -182,6 +214,8 @@ class SiteManagedBrowser:
         pending_rows: list[dict] | None = None,
         probe_offset: int = 0,
         operation_id: str | None = None,
+        timestamp_only: bool = False,
+        max_probes: int = 3,
     ) -> tuple[list[dict[str, object]], dict[str, object]]:
         result = await self.client.execute(
             AccessRequest(
@@ -197,6 +231,8 @@ class SiteManagedBrowser:
                     "known_dates": known_dates or {},
                     "pending_rows": pending_rows or [],
                     "probe_offset": probe_offset,
+                    "timestamp_only":timestamp_only,
+                    "max_probes":max_probes,
                 },
                 remaining_budget_ms=max(1, timeout_seconds * 1000),
             )

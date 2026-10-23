@@ -167,12 +167,35 @@ class YahooFinanceNewsAdapter:
         self.browser = browser
         self._browser_retry_at = 0.0
         self._page_api_retry_at = 0.0
-        self._browser_endpoint_retry_at = 0.0
+        self._browser_endpoint_retry_at: dict[tuple[str, str], float] = {}
         self._page_strikes = 0
 
     async def poll(self, context: PollContext) -> PollResult:
         from .yahoo_sources import acquire_yahoo_rss
 
+        if context.acquisition_unit in {"SUPPLEMENT_HEAD","TAIL:YAHOO_TIME"}:
+            result = await self._poll_supplement(context)
+            if result.acquisition_metadata.get("query_mode") != "page_network_ncp":
+                return result.model_copy(update={"messages": [], "site_access_deferred": True,
+                    "site_access_deferred_reason": result.site_access_deferred_reason or "browser_coverage_pending",
+                    "site_access_retry_not_before": result.site_access_retry_not_before or context.requested_at + timedelta(seconds=5),
+                    "window_done": False})
+            previous_pending = {r['link']:r for r in context.checkpoint.get('pending_timestamp_rows',[])}
+            pending = [{**row,'_bootstrap':previous_pending.get(row['link'],{}).get('_bootstrap',context.is_bootstrap)}
+                       for row in result.acquisition_metadata.get('pending_timestamp_rows',[])]
+            if context.acquisition_unit == 'TAIL:YAHOO_TIME':
+                result = result.model_copy(update={'messages':[m.model_copy(update={'metadata':{
+                    **m.metadata,'_poll_bootstrap':previous_pending.get(m.url,{}).get('_bootstrap',context.is_bootstrap)}})
+                    for m in result.messages]})
+            checkpoint = {**context.checkpoint,
+                'pending_timestamp_rows':pending,
+                'timestamp_probe_offset':result.acquisition_metadata.get('timestamp_probe_offset',0),
+                'verified_article_dates':{**context.checkpoint.get('verified_article_dates',{}),
+                                         **result.acquisition_metadata.get('verified_article_dates',{}),
+                                         **{m.url:m.published_at.isoformat() for m in result.messages
+                                            if m.publication_time_basis=='EXACT'}}}
+            checkpoint['verified_article_dates'] = dict(list(checkpoint['verified_article_dates'].items())[-512:])
+            return result.model_copy(update={'next_checkpoint':checkpoint,'window_done':True})
         rss = None
         try:
             async with context.request_permit():
@@ -184,8 +207,14 @@ class YahooFinanceNewsAdapter:
             rss_error = None
         if rss is not None and context.on_page:
             await context.on_page(rss.messages, observed_at=datetime.now(UTC), phase="rss")
+        if context.acquisition_unit == "HEAD":
+            if rss is not None:
+                return rss.model_copy(update={"next_checkpoint": {**context.checkpoint,
+                    "verified_article_dates": {m.url:m.published_at.isoformat() for m in rss.messages
+                                               if m.publication_time_basis == "EXACT"}}})
+            raise RuntimeError("yahoo_rss_failed:" + str(rss_error))
         previous_capture = _dt(context.checkpoint.get("browser_captured_at"))
-        browser_due = not previous_capture or (context.requested_at - previous_capture).total_seconds() >= 60
+        browser_due = not previous_capture or (context.requested_at - previous_capture).total_seconds() >= context.binding.polling.target_interval_seconds
         if rss is not None and not browser_due and not context.is_gap_recovery:
             return rss.model_copy(update={"next_checkpoint": context.checkpoint,
                 "acquisition_metadata": {**rss.acquisition_metadata, "browser_captured_at": previous_capture.isoformat()}})
@@ -219,11 +248,17 @@ class YahooFinanceNewsAdapter:
         attempts: list[dict[str, Any]] = []
         browser_deferred = None
         managed_browser = bool(getattr(self.browser, "site_managed", False))
+        endpoint_key = context.ticker, context.acquisition_unit
+        endpoint_delay = self._browser_endpoint_retry_at.get(endpoint_key, 0) - monotonic_time.monotonic()
+        if endpoint_delay > 0 and context.acquisition_unit in {"SUPPLEMENT_HEAD", "TAIL:YAHOO_TIME"}:
+            return PollResult(window_done=False, site_access_deferred=True,
+                site_access_deferred_reason="browser_endpoint_unavailable",
+                site_access_retry_not_before=datetime.now(UTC)+timedelta(seconds=endpoint_delay))
         if (
             context.binding.source_parameters.get("page_network_enabled", True)
             and self.browser is not None
             and (managed_browser or monotonic_time.monotonic() >= self._browser_retry_at)
-            and monotonic_time.monotonic() >= self._browser_endpoint_retry_at
+            and endpoint_delay <= 0
         ):
             # Reserve the probe before awaiting: concurrent tickers must not queue
             # repeated browser probes while the first one is still running.
@@ -240,6 +275,8 @@ class YahooFinanceNewsAdapter:
                             probe_offset=context.checkpoint.get("timestamp_probe_offset", 0),
                             known_dates={**context.checkpoint.get("verified_article_dates", {}),
                                          **{m.url:m.published_at.isoformat() for m in (rss_result.messages if rss_result else [])}},
+                            **({'max_probes':0} if context.acquisition_unit=='SUPPLEMENT_HEAD' else
+                               {'timestamp_only':True} if context.acquisition_unit=='TAIL:YAHOO_TIME' else {}),
                         )
                     else:
                         rows, metadata = await self.browser.yahoo_latest_news(
@@ -252,7 +289,7 @@ class YahooFinanceNewsAdapter:
                 )
             except Exception as exc:
                 if getattr(exc, "status_code", None) in {404, 405, 410}:
-                    self._browser_endpoint_retry_at = monotonic_time.monotonic() + 600
+                    self._browser_endpoint_retry_at[endpoint_key] = monotonic_time.monotonic() + 600
                 if (
                     isinstance(exc, SiteAccessError)
                     and exc.site_access_deferred
@@ -290,6 +327,15 @@ class YahooFinanceNewsAdapter:
                         "diagnostics": getattr(exc, "diagnostics", {}),
                     }
                 )
+        if context.acquisition_unit in {"SUPPLEMENT_HEAD","TAIL:YAHOO_TIME"}:
+            endpoint_delay = self._browser_endpoint_retry_at.get(endpoint_key, 0) - monotonic_time.monotonic()
+            return PollResult(window_done=False, site_access_deferred=True,
+                site_access_deferred_reason="browser_endpoint_unavailable" if endpoint_delay > 0 else
+                    browser_deferred.reason_code if browser_deferred else "browser_coverage_pending",
+                site_access_retry_not_before=datetime.now(UTC)+timedelta(seconds=endpoint_delay)
+                    if endpoint_delay > 0 else browser_deferred.retry_not_before
+                    if browser_deferred else context.requested_at + timedelta(seconds=5),
+                acquisition_metadata={"attempts": attempts})
         if rss_result is not None:
             return rss_result.model_copy(update={"window_coverage": "PARTIAL"})
         try:

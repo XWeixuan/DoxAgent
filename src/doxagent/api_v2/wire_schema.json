@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "source_sha256": "db9ac109dd6c4254924ffaa0b7f713576f0c9719178a42e2467775bbbb6543bf",
+  "source_sha256": "6c32be0f4645da9c2e00ec0c0f696970292c0518213859c65392c3cd0feb1d15",
   "$defs": {
     "Id": {
       "type": "string"
@@ -6497,6 +6497,9 @@
         },
         "body_completion_success_ratio": {
           "$ref": "#/$defs/Metric"
+        },
+        "new_article_body": {
+          "$ref": "#/$defs/ArticleBodyCohort"
         }
       },
       "required": [
@@ -6512,19 +6515,22 @@
           "$ref": "#/$defs/RunState"
         },
         "continuous_run_started_at": {
-          "$ref": "#/$defs/Value__dad5025586c8"
+          "$ref": "#/$defs/Value%3CInstant%3E"
         },
         "continuous_run_seconds": {
-          "$ref": "#/$defs/Value__428f46b7789d"
+          "$ref": "#/$defs/Value%3Cnumber%3E"
         },
         "source_counts": {
           "$ref": "#/$defs/SourceCounts"
         },
         "average_poll_latency_seconds": {
-          "$ref": "#/$defs/Value__428f46b7789d"
+          "$ref": "#/$defs/Value%3Cnumber%3E"
         },
         "latency_sample_count": {
           "$ref": "#/$defs/Count"
+        },
+        "timeliness": {
+          "$ref": "#/$defs/PollTimeliness"
         }
       },
       "required": [
@@ -6540,6 +6546,41 @@
     "SourceStatus": {
       "type": "object",
       "properties": {
+        "cadence": {
+          "$ref": "#/$defs/PollCadence"
+        },
+        "coverage_state": {
+          "type": "string",
+          "enum": [
+            "COMPLETE",
+            "PARTIAL",
+            "UNKNOWN"
+          ]
+        },
+        "pending_query_count": {
+          "$ref": "#/$defs/Count"
+        },
+        "pending_timestamp_count": {
+          "$ref": "#/$defs/Count"
+        },
+        "stage_timings_ms": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "capture_age_seconds": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "capture_to_first_intake_seconds": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
         "internal_endpoints": {
           "type": "array",
           "items": {
@@ -6556,13 +6597,10 @@
           "$ref": "#/$defs/Count"
         },
         "publication_mode": {
-          "anyOf": [
-            {
-              "const": "immediate"
-            },
-            {
-              "const": "buffered"
-            }
+          "type": "string",
+          "enum": [
+            "immediate",
+            "buffered"
           ]
         },
         "enabled": {
@@ -6572,45 +6610,31 @@
           "type": "boolean"
         },
         "poll_status": {
-          "anyOf": [
-            {
-              "const": "never_polled"
-            },
-            {
-              "const": "succeeded"
-            },
-            {
-              "const": "partial"
-            },
-            {
-              "const": "failed"
-            },
-            {
-              "const": "disabled"
-            }
+          "type": "string",
+          "enum": [
+            "never_polled",
+            "succeeded",
+            "partial",
+            "failed",
+            "disabled"
           ]
         },
         "health_group": {
-          "anyOf": [
-            {
-              "const": "NORMAL"
-            },
-            {
-              "const": "ABNORMAL"
-            },
-            {
-              "const": "EXCLUDED"
-            }
+          "type": "string",
+          "enum": [
+            "NORMAL",
+            "ABNORMAL",
+            "EXCLUDED"
           ]
         },
         "last_success_at": {
-          "$ref": "#/$defs/Value__dad5025586c8"
+          "$ref": "#/$defs/Value%3CInstant%3E"
         },
         "last_published_count": {
-          "$ref": "#/$defs/Value__61b35f382dc9"
+          "$ref": "#/$defs/Value%3CCount%3E"
         },
         "last_poll_latency_seconds": {
-          "$ref": "#/$defs/Value__428f46b7789d"
+          "$ref": "#/$defs/Value%3Cnumber%3E"
         },
         "current_error": {
           "anyOf": [
@@ -6632,28 +6656,17 @@
           }
         },
         "next_target_at": {
-          "$ref": "#/$defs/Value__dad5025586c8"
+          "$ref": "#/$defs/Value%3CInstant%3E"
         },
         "countdown_state": {
-          "anyOf": [
-            {
-              "const": "SCHEDULED"
-            },
-            {
-              "const": "PAUSED"
-            },
-            {
-              "const": "DISABLED"
-            },
-            {
-              "const": "WINDOW_CLOSED"
-            },
-            {
-              "const": "CLOSED_SLEEP"
-            },
-            {
-              "const": "UNKNOWN"
-            }
+          "type": "string",
+          "enum": [
+            "SCHEDULED",
+            "PAUSED",
+            "DISABLED",
+            "WINDOW_CLOSED",
+            "CLOSED_SLEEP",
+            "UNKNOWN"
           ]
         }
       },
@@ -27081,6 +27094,296 @@
       ],
       "additionalProperties": false,
       "description": "Rows have no previous-period comparison; retain only their displayed evidence."
+    },
+    "Value<Instant>": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "state": {
+              "type": "string",
+              "const": "AVAILABLE"
+            },
+            "value": {
+              "$ref": "#/$defs/Instant"
+            },
+            "reason": {
+              "type": "null"
+            }
+          },
+          "required": [
+            "state",
+            "value",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "state": {
+              "type": "string",
+              "enum": [
+                "NOT_PRODUCED",
+                "NOT_RECORDED",
+                "UNAVAILABLE",
+                "NOT_APPLICABLE",
+                "FORBIDDEN",
+                "ERROR"
+              ]
+            },
+            "value": {
+              "type": "null"
+            },
+            "reason": {
+              "$ref": "#/$defs/Reason"
+            }
+          },
+          "required": [
+            "state",
+            "value",
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Value<number>": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "state": {
+              "type": "string",
+              "const": "AVAILABLE"
+            },
+            "value": {
+              "type": "number"
+            },
+            "reason": {
+              "type": "null"
+            }
+          },
+          "required": [
+            "state",
+            "value",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "state": {
+              "type": "string",
+              "enum": [
+                "NOT_PRODUCED",
+                "NOT_RECORDED",
+                "UNAVAILABLE",
+                "NOT_APPLICABLE",
+                "FORBIDDEN",
+                "ERROR"
+              ]
+            },
+            "value": {
+              "type": "null"
+            },
+            "reason": {
+              "$ref": "#/$defs/Reason"
+            }
+          },
+          "required": [
+            "state",
+            "value",
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "PollTimeliness": {
+      "type": "object",
+      "properties": {
+        "window_seconds": {
+          "$ref": "#/$defs/Count"
+        },
+        "samples": {
+          "$ref": "#/$defs/Count"
+        },
+        "mean_seconds": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "p95_seconds": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "deferred": {
+          "$ref": "#/$defs/Count"
+        },
+        "failed": {
+          "$ref": "#/$defs/Count"
+        },
+        "sample_limit_reached": {
+          "type": "boolean"
+        },
+        "cadence": {
+          "$ref": "#/$defs/PollCadence"
+        }
+      },
+      "required": [
+        "window_seconds",
+        "samples",
+        "mean_seconds",
+        "p95_seconds",
+        "deferred",
+        "failed",
+        "sample_limit_reached"
+      ],
+      "additionalProperties": false
+    },
+    "PollCadence": {
+      "type": "object",
+      "properties": {
+        "pending_cycles": {
+          "$ref": "#/$defs/Count"
+        },
+        "settled_cycles": {
+          "$ref": "#/$defs/Count"
+        },
+        "pending_intake_candidates": {
+          "$ref": "#/$defs/Count"
+        },
+        "failed_intake_candidates": {
+          "$ref": "#/$defs/Count"
+        },
+        "expected_cycles": {
+          "$ref": "#/$defs/Count"
+        },
+        "fresh_cycles": {
+          "$ref": "#/$defs/Count"
+        },
+        "missing_cycles": {
+          "$ref": "#/$defs/Count"
+        },
+        "coverage": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "max_gap_seconds": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "worst_request_p95_seconds": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "gap_mean_seconds": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "gap_p95_seconds": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "deferred": {
+          "$ref": "#/$defs/Count"
+        },
+        "failed": {
+          "$ref": "#/$defs/Count"
+        },
+        "units": {
+          "$ref": "#/$defs/Count"
+        },
+        "eligibility_unknown": {
+          "$ref": "#/$defs/Count"
+        },
+        "sample_limit_reached": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "expected_cycles",
+        "fresh_cycles",
+        "missing_cycles",
+        "coverage",
+        "max_gap_seconds",
+        "worst_request_p95_seconds",
+        "gap_mean_seconds",
+        "gap_p95_seconds",
+        "deferred",
+        "failed",
+        "units",
+        "eligibility_unknown",
+        "sample_limit_reached"
+      ],
+      "additionalProperties": false
+    },
+    "ArticleBodyCohort": {
+      "type": "object",
+      "properties": {
+        "total": {
+          "$ref": "#/$defs/Count"
+        },
+        "full": {
+          "$ref": "#/$defs/Count"
+        },
+        "pending": {
+          "$ref": "#/$defs/Count"
+        },
+        "failed": {
+          "$ref": "#/$defs/Count"
+        },
+        "ratio": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "network_attempts": {
+          "$ref": "#/$defs/Count"
+        },
+        "network_succeeded": {
+          "$ref": "#/$defs/Count"
+        },
+        "cache_reuses": {
+          "$ref": "#/$defs/Count"
+        },
+        "basis": {
+          "type": "string",
+          "const": "FIRST_OBSERVED_ARTICLE"
+        },
+        "legacy_excluded": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "total",
+        "full",
+        "pending",
+        "failed",
+        "ratio",
+        "network_attempts",
+        "network_succeeded",
+        "cache_reuses",
+        "basis",
+        "legacy_excluded"
+      ],
+      "additionalProperties": false
     }
   }
 }

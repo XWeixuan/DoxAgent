@@ -85,6 +85,11 @@ if (existsSync(backendPath)) {
     "CostReportTotals",
     "CostReportRow",
     "CostSummary",
+    "BusStatus",
+    "SourceStatus",
+    "PollTimeliness",
+    "PollCadence",
+    "BusMetrics",
   ])
     add(name, true);
   backend.source_sha256 = createHash("sha256").update(contract).digest("hex");

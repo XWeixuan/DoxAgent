@@ -19,7 +19,7 @@ class IrEndpointSpec(BusModel):
     fallback_urls: list[str] = Field(default_factory=list)
     date_timezone: str = "America/New_York"
     enabled: bool = True
-    target_interval_seconds: int = Field(default=30, ge=10)
+    target_interval_seconds: int = Field(default=30, ge=1)
     revision: int = Field(default=1, ge=1)
 
     @model_validator(mode="after")
@@ -40,6 +40,7 @@ class IrEndpointSpec(BusModel):
 
 
 class IrEndpointState(BusModel):
+    schedule_interval_seconds: int | None = None
     binding_id: str
     endpoint_id: str
     config_revision: str = ""
@@ -77,5 +78,6 @@ def endpoints(source: SourceDefinition, binding: TickerSourceBinding):
         spec = catalog.get(key)
         if spec is None or spec.owner_ticker != binding.ticker:
             raise ValueError(f"IR endpoint does not belong to {binding.ticker}: {key}")
-        selected.append(spec)
+        selected.append(spec.model_copy(update={
+            'target_interval_seconds':binding.polling.target_interval_seconds}))
     return selected

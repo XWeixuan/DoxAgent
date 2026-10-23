@@ -387,6 +387,12 @@ function MessageStream({
           {metrics && !metrics.new_article_body && (
             <MetricNote metric={metrics.body_completion_success_ratio} />
           )}
+          {status?.timeliness?.cadence &&
+            ((status.timeliness.cadence.pending_intake_candidates ?? 0) > 0 ||
+             (status.timeliness.cadence.failed_intake_candidates ?? 0) > 0) && <small>
+              候选待接纳 {status.timeliness.cadence.pending_intake_candidates ?? 0}
+              {" · 接纳异常 "}{status.timeliness.cadence.failed_intake_candidates ?? 0}
+            </small>}
         </article>
         <article>
           <span>
@@ -412,10 +418,12 @@ function MessageStream({
         <article>
           <span>
             <Clock3 aria-hidden="true" />
-            {status?.timeliness ? "近30分钟轮询耗时" : "启用源最近耗时均值"}
+            {status?.timeliness?.cadence ? "近30分钟实际刷新间隔" : status?.timeliness ? "近30分钟单次轮询耗时" : "启用源最近耗时均值"}
           </span>
           <strong>
-            {status?.timeliness
+            {status?.timeliness?.cadence
+              ? status.timeliness.cadence.gap_mean_seconds === null ? "—" : status.timeliness.cadence.gap_mean_seconds.toFixed(2) + "s"
+              : status?.timeliness
               ? status.timeliness.mean_seconds === null ? "—" : status.timeliness.mean_seconds.toFixed(2) + "s"
               : status
               ? valueText(
@@ -424,7 +432,13 @@ function MessageStream({
                 )
               : "—"}
           </strong>
-          {status?.timeliness && <small>P95 {status.timeliness.p95_seconds?.toFixed(2) ?? "—"}s · {status.timeliness.samples} 次 · 延期 {status.timeliness.deferred}</small>}
+          {status?.timeliness?.cadence ? <small>
+            <span className="whitespace-nowrap">P95 {status.timeliness.cadence.gap_p95_seconds?.toFixed(2) ?? "—"}s</span>
+            {" · "}<span className="whitespace-nowrap" title="已有结果或超过验收时限的周期；延期和失败保留在分母">兑现 {status.timeliness.cadence.coverage === null ? "—" : (status.timeliness.cadence.coverage * 100).toFixed(1) + "%"}</span>
+            {" · "}<span className="whitespace-nowrap">缺轮 {status.timeliness.cadence.missing_cycles}</span>
+            {" · "}<span className="whitespace-nowrap">延期 {status.timeliness.cadence.deferred} / 失败 {status.timeliness.cadence.failed}</span>
+            {!!status.timeliness.cadence.pending_cycles && <>{" · "}<span className="whitespace-nowrap">进行中 {status.timeliness.cadence.pending_cycles}</span></>}
+          </small> : status?.timeliness && <small>P95 {status.timeliness.p95_seconds?.toFixed(2) ?? "—"}s · {status.timeliness.samples} 次 · 延期 {status.timeliness.deferred}</small>}
         </article>
       </div>
       {streamError && <Notice danger>{streamError}</Notice>}
@@ -696,6 +710,12 @@ export function SourceCard({
             {valueText(s.last_poll_latency_seconds, (v) => v.toFixed(2) + "s")}
           </dd>
           {s.capture_age_seconds != null && <><dt>采集距今</dt><dd title={s.capture_to_first_intake_seconds == null ? undefined : `采集至首次接纳 ${s.capture_to_first_intake_seconds.toFixed(2)}s`}>{s.capture_age_seconds.toFixed(1)}s</dd></>}
+          {s.cadence && <>
+            <dt>实际间隔</dt><dd title={`P95 ${s.cadence.gap_p95_seconds?.toFixed(2) ?? "—"}s · 最长空窗 ${s.cadence.max_gap_seconds?.toFixed(2) ?? "—"}s · 请求启动P95 ${s.cadence.worst_request_p95_seconds?.toFixed(2) ?? "—"}s`}>
+              {s.cadence.gap_mean_seconds?.toFixed(2) ?? "—"}s
+            </dd>
+            <dt>周期兑现</dt><dd><span className="whitespace-nowrap">{s.cadence.coverage == null ? "—" : (s.cadence.coverage * 100).toFixed(1) + "%"}</span> · <span className="whitespace-nowrap">缺轮 {s.cadence.missing_cycles}</span></dd>
+          </>}
           {!!s.pending_query_count && <><dt>待覆盖查询</dt><dd>{s.pending_query_count}</dd></>}
           {!!s.pending_timestamp_count && <><dt>待核验时间</dt><dd>{s.pending_timestamp_count}</dd></>}
         </dl>

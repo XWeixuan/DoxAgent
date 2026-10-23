@@ -812,6 +812,9 @@ class MessageBusV2Service:
         if bootstrap_override is not None:
             bootstrap = bootstrap_override
         output = PollExecutionResult(
+            site_access_deferred=result.site_access_deferred,
+            site_access_deferred_reason=result.site_access_deferred_reason,
+            site_access_retry_not_before=result.site_access_retry_not_before,
             next_checkpoint=result.next_checkpoint,
             window_coverage=result.window_coverage,
             window_done=result.window_done,
@@ -832,12 +835,9 @@ class MessageBusV2Service:
             output = output.model_copy(update={"invalid_count": output.invalid_count + 1})
         rejected = []
         observed_at = utc_now()
-        for input_message in self.repository.resolve_first_seen_many(
-            result.messages, binding.binding_id
-        ):
-            input_message = input_message.model_copy(
-                update={"admission_context": admission_context or AdmissionContext()}
-            )
+        inputs = [message.model_copy(update={"admission_context":admission_context or AdmissionContext()})
+                  for message in result.messages]
+        for input_message in self.repository.resolve_first_seen_many(inputs, binding.binding_id):
             reason = evaluate_admission(
                 input_message.published_at,
                 input_message.admission_context,
@@ -849,14 +849,20 @@ class MessageBusV2Service:
                 output.filtered_count += 1
                 continue
             try:
+                input_bootstrap = bootstrap
+                if source.source_id == 'yahoo_finance_news' and isinstance(
+                    input_message.metadata.get('_poll_bootstrap'),bool
+                ):
+                    input_bootstrap = input_message.metadata['_poll_bootstrap']
                 if self.enrichment_queue_enabled:
                     job, created = self.enqueue_enrichment(
                         source=source,
                         binding=binding,
                         message=input_message,
-                        bootstrap=bootstrap,
+                        bootstrap=input_bootstrap,
                         poll_run_id=output.poll_run_id,
                         collected_at=observed_at,
+                        first_seen_resolved=True,
                     )
                     if job is None:
                         continue
@@ -868,7 +874,7 @@ class MessageBusV2Service:
                     source=source,
                     binding=binding,
                     message=input_message,
-                    bootstrap=bootstrap,
+                    bootstrap=input_bootstrap,
                     collected_at=now,
                 )
             except Exception as exc:
@@ -926,7 +932,8 @@ class MessageBusV2Service:
             and not poll_errors
             and not result.messages
         )
-        checkpoint = {} if source.kind is SourceKind.CRAWLER else dict(result.next_checkpoint)
+        checkpoint = (dict(state.checkpoint) if result.acquisition_metadata.get("durable_capture")
+                      else {} if source.kind is SourceKind.CRAWLER else dict(result.next_checkpoint))
         checkpoint["_health_consecutive_degraded"] = (
             int(state.checkpoint.get("_health_consecutive_degraded", 0))
             if deferred_only
@@ -1017,12 +1024,17 @@ class MessageBusV2Service:
         bootstrap: bool,
         poll_run_id: str,
         collected_at: datetime | None = None,
+        first_seen_resolved: bool = False,
     ) -> tuple[EnrichmentJob | None, bool]:
         """Durably stage provider output before any network enrichment work."""
 
         with self.repository.atomic_intake():
             now = collected_at or utc_now()
-            message = self.repository.resolve_first_seen(message, binding.binding_id)
+            if not first_seen_resolved:
+                message = self.repository.resolve_first_seen(message, binding.binding_id)
+            policy = f"{self.enrichment_pipeline_version}:{source.version}:{binding.version}"
+            if self.repository.reuse_unchanged_observation(message, binding, policy, now):
+                return None, False
             known_article = self.repository.known_published_article(binding, message)
             reason = evaluate_admission(
                 message.published_at,
@@ -1038,6 +1050,7 @@ class MessageBusV2Service:
             clean_metadata = dict(message.metadata)
             clean_metadata.pop("v2_body_completion", None)
             clean_metadata["body_observation_source_id"] = source.source_id
+            clean_metadata["intake_policy"] = policy
             from doxagent.content_enrichment.native import native_article
 
             clean_metadata["body_not_applicable"] = source.content_enrichment_mode.value == "skip" or (
@@ -1647,9 +1660,16 @@ class MessageBusV2Service:
         code: str,
         message: str,
         attempted_at: datetime | None = None,
+        acquisition_unit: str | None = None,
+        source_version: int | None = None,
     ) -> PollState:
         now = attempted_at or utc_now()
-        state = self.repository.get_poll_state(binding)
+        if source_version is not None and not self.repository.poll_generation_matches(
+            binding.source_id,source_version,binding.binding_id,binding.version
+        ):
+            return self.repository.get_poll_state(binding)
+        state = (self.repository.get_poll_unit_state(binding,acquisition_unit)
+                 if acquisition_unit else self.repository.get_poll_state(binding))
         updated = state.model_copy(
             update={
                 "status": PollStatus.FAILED,
@@ -1662,9 +1682,15 @@ class MessageBusV2Service:
                 "last_error_message": message[:1000],
                 "consecutive_failures": state.consecutive_failures + 1,
                 "updated_at": now,
+                'source_definition_version':source_version or state.source_definition_version,
+                'binding_version':binding.version,
             }
         )
-        self.repository.save_poll_state(updated)
+        if acquisition_unit:
+            if self.repository.save_poll_unit_state(updated,acquisition_unit) is False:
+                return self.repository.get_poll_state(binding)
+        else:
+            self.repository.save_poll_state(updated)
         from doxagent.source_maintenance.signals import poll_failure
 
         poll_failure(binding, code, message, now)

@@ -2094,3 +2094,9 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-24 国防消息源传输恢复：自然轮询捕获Breaking Defense curl35 TLS握手抖动，仅增加一次同固定出口200ms重试，原请求先释放许可；403/429不重试、不切身份。采集和正文诊断保存transport_retries，48项源/缓存/IR传输回归通过；保留部分覆盖和终态失败真实审计，不宣称永不失败。
 
 2026-10-24 国防航天消息源发布验收：18源/21入口、RKLB12与ONDS8订阅启用60秒轮询；最新20条均成功。生产三核心d5084277、API0731297c，配置复用幂等、读侧与语言兼容已核验；Shephard仅确认付费的2条旧READY修正并保留审计，另3条保留，无消息重投。补齐发布证据和付费/索引延迟/短期快照边界，Supervisor身份未变、维护timer恢复。
+
+2026-10-24 消息实际采集周期优化方案：复核两轮约束排查、现有代码及4核生产只读数据；按后续8核、最多20 ticker设计固定时点请求调度、持久捕获与分片接纳、短存储/只读旁路、轻量列表与同身份有界并发、需求和实测成本驱动容量、CRAWLER/BODY公平与全轮次端到端验收。方案docs/message-source-polling-cadence-and-latency-optimization-plan-20261024.md，证据及9/12/20容量算术见eval/news-polling-plan-20261024；本轮未修改生产配置、源代码或发布代码。
+
+2026-10-24 消息采集周期优化开发中：新增持久采集收据、可恢复分片接纳和全轮次请求/周期账；拆分Yahoo RSS/浏览器与搜索query，取消整轮源组占槽，增加短写公平队列、只读旁路、需求驱动容量和真实transport时点。保留ARTICLE_ONCE、完整正文与身份门禁；正在完成来源轻路径、Read/UI、20 ticker与故障回归，尚未发布。
+
+2026-10-24 消息实际采集周期优化开发完成：固定相位与独立首屏/频道/query调度，取消整轮源组占槽及五个重点来源的Bus重复gap；新增持久capture与16篇可恢复分片接纳、版本fencing、独立只读/准备池与短写公平。落地Yahoo异步日期核验及ticker/单元冷却隔离、Barron双feed同源anchor、Investing列表竞速、需求驱动容量与BODY服务机会、CPU/接纳积压暂停可选历史、全轮次周期账和Read/UI。保留ARTICLE_ONCE、覆盖与真实正文质量；最终299个唯一后端用例中298通过、1个Windows符号链接用例跳过，前端构建与两种宽度浏览器检查通过。回执docs/message-source-polling-cadence-implementation-20261024.md；本轮未同步origin main、未修改生产配置或发布，8核生产指标尚待验收。

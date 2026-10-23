@@ -28,7 +28,9 @@ def read(path, query):
         return [dict(row) for row in db.execute(query)]
 
 
-def plan(bus_path, registry_path):
+def plan(bus_path, registry_path, *, site_capacity=8, validated_identity_capacity=2):
+    if not 1 <= validated_identity_capacity <= site_capacity <= 8:
+        raise ValueError("capacity requires 1 <= validated identity <= site <= 8")
     codec = NativeContent(bus_path)
     sources = [
         codec.decode(json.loads(r["data_json"]))
@@ -39,7 +41,16 @@ def plan(bus_path, registry_path):
     for source in sources:
         if source["scheduler_group"] not in groups:
             continue
-        patch = {"scheduler_constraints": {**source["scheduler_constraints"], "max_concurrency": 2}}
+        patch = {
+            "scheduler_constraints": {
+                **source["scheduler_constraints"],
+                "max_concurrency": site_capacity,
+                "capacity_mode": "adaptive",
+                # Transport/host and Site/Identity own actual request pacing.
+                # A second Bus-wide gap would serialize independent ticker heads.
+                "minimum_request_gap_seconds": 0,
+            }
+        }
         if source["source_id"] == "globenewswire_search":
             patch["default_parameters"] = {
                 **source["default_parameters"],
@@ -72,7 +83,8 @@ def plan(bus_path, registry_path):
     codec = NativeContent(bus_path)
     for row in read(
         bus_path,
-        "SELECT data_json FROM ticker_source_bindings WHERE source_id='yahoo_finance_news' AND tombstoned_at IS NULL",
+        "SELECT data_json FROM ticker_source_bindings WHERE "
+        "source_id='yahoo_finance_news' AND tombstoned_at IS NULL",
     ):
         binding = codec.decode(json.loads(row["data_json"]))
         if binding["polling"]["target_interval_seconds"] == 60:
@@ -87,13 +99,17 @@ def plan(bus_path, registry_path):
             )
     sites = read(
         registry_path,
-        "SELECT r.spec_json FROM site_strategy_heads h JOIN site_strategy_revisions r ON r.site_id=h.site_id AND r.revision=h.active_revision",
+        "SELECT r.spec_json FROM site_strategy_heads h JOIN "
+        "site_strategy_revisions r ON r.site_id=h.site_id AND "
+        "r.revision=h.active_revision",
     )
     identities = {
         json.loads(r["spec_json"])["identity_id"]: json.loads(r["spec_json"])
         for r in read(
             registry_path,
-            "SELECT r.spec_json FROM browser_identity_heads h JOIN browser_identity_revisions r ON r.identity_id=h.identity_id AND r.revision=h.active_revision",
+            "SELECT r.spec_json FROM browser_identity_heads h JOIN "
+            "browser_identity_revisions r ON r.identity_id=h.identity_id AND "
+            "r.revision=h.active_revision",
         )
     }
     runtimes = {
@@ -119,7 +135,8 @@ def plan(bus_path, registry_path):
             **old,
             "access": {
                 **old["access"],
-                "max_concurrency": 2,
+                "max_concurrency": site_capacity,
+                "min_interval_ms": min(old["access"]["min_interval_ms"], 500),
                 "body_queue_timeout_ms": 3000,
                 "crawler_queue_timeout_ms": 3000,
             },
@@ -144,7 +161,18 @@ def plan(bus_path, registry_path):
             )
     for identity_id in sorted(desired_identities):
         old = identities.get(identity_id)
-        if old and old["access"]["max_concurrency"] != 2:
+        desired_access = (
+            {
+                **old["access"],
+                "max_concurrency": max(
+                    old["access"]["max_concurrency"], validated_identity_capacity
+                ),
+                "min_interval_ms": min(old["access"]["min_interval_ms"], 500),
+            }
+            if old
+            else None
+        )
+        if old and old["access"] != desired_access:
             runtime = runtimes.get(identity_id, {})
             skip = (
                 "identity_not_available"
@@ -162,7 +190,7 @@ def plan(bus_path, registry_path):
                     "id": identity_id,
                     "expected_revision": old["revision"],
                     "old": old,
-                    "spec": {**old, "access": {**old["access"], "max_concurrency": 2}},
+                    "spec": {**old, "access": desired_access},
                     **({"skip_reason": skip} if skip else {}),
                 }
             )
@@ -182,8 +210,20 @@ def main():
     parser.add_argument("--site-admin-token-file")
     parser.add_argument("--receipt", required=True)
     parser.add_argument("--apply", action="store_true")
+    parser.add_argument("--site-capacity", type=int, default=8)
+    parser.add_argument(
+        "--validated-identity-capacity",
+        type=int,
+        default=2,
+        help="Use 3/4 only after a same-identity canary; this is a validated ceiling.",
+    )
     args = parser.parse_args()
-    changes = plan(args.bus, args.registry)
+    changes = plan(
+        args.bus,
+        args.registry,
+        site_capacity=args.site_capacity,
+        validated_identity_capacity=args.validated_identity_capacity,
+    )
     receipt = {
         "created_at": datetime.now(UTC).isoformat(),
         "apply": args.apply,

@@ -6,6 +6,7 @@ from doxagent.site_strategy.schema import SitePurpose
 
 async def test_body_load_reserves_crawler_capacity_and_one_body_per_identity():
     budget = JointBudget(max_concurrency=4)
+    budget.body_borrow = True  # Explicit legacy opt-in; production defaults keep two BODY slots.
     release = asyncio.Event()
     entered = []
 

@@ -8,6 +8,8 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from contextvars import ContextVar
 from dataclasses import dataclass
+from datetime import datetime
+from math import ceil
 
 from .schema import SitePurpose
 
@@ -111,23 +113,20 @@ class _JointWaiter:
     aging_seconds: float = 5.0
     work_class: str = "foreground"
     work_age_seconds: float = 0
+    due_at: float = float('inf')
 
-    def rank(self, now: float) -> tuple[int, int]:
+    def rank(self, now: float) -> tuple[int, float, int]:
         # Aging must be reachable before the crawler queue deadline.
         # earlier BODY work. LOGIN remains interactive priority.
         if self.purpose is SitePurpose.LOGIN:
             priority = 0
-        elif self.purpose is SitePurpose.CRAWLER:
-            priority = 1
-        elif self.purpose is SitePurpose.BODY and self.work_class != "recheck" and (
-            self.work_age_seconds + now - self.enqueued_at >= 30
-        ):
+        elif self.purpose is SitePurpose.CRAWLER and self.work_class != "backfill":
             priority = 1
         elif self.purpose is SitePurpose.BODY and self.work_class != "recheck":
             priority = 2
         else:
             priority = 3
-        return priority, self.sequence
+        return priority, self.due_at, self.sequence
 
 
 class JointBudget:
@@ -143,11 +142,12 @@ class JointBudget:
         self._identity_next: dict[str, float] = {}
         self.identity_interval = lambda identity_id, configured: configured
         self.body_max_concurrency = 2
-        self.body_borrow = True
+        self.body_borrow = False
         self.max_concurrency = max_concurrency
         self._active = 0
         self._body_active = 0
         self._identity_body: dict[str, int] = {}
+        self._costs: dict[str, float] = {}
 
     @asynccontextmanager
     async def control_navigation(self, identity_id, *, interval_ms, deadline):
@@ -182,10 +182,16 @@ class JointBudget:
         timeout_seconds: float,
         work_class: str = "foreground",
         work_age_seconds: float = 0,
+        due_at: str | None = None,
+        expected_rate: float = 0,
     ) -> AsyncIterator[int]:
         started = time.monotonic()
         waiter: _JointWaiter | None = None
         acquired = False
+        executing_at = None
+        if expected_rate > 0 and purpose is SitePurpose.CRAWLER:
+            site_max_concurrency = min(site_max_concurrency, max(1,
+                ceil(expected_rate * self._costs.get(site_key, 1.0) / .75) + self._identity_body.get(identity_id, 0)))
         try:
             async with asyncio.timeout(timeout_seconds):
                 async with self._condition:
@@ -201,6 +207,7 @@ class JointBudget:
                         min(5.0, timeout_seconds / 2),
                         work_class,
                         work_age_seconds,
+                        datetime.fromisoformat(due_at).timestamp() if due_at else float('inf'),
                     )
                     self._waiters.append(waiter)
                     while True:
@@ -226,6 +233,10 @@ class JointBudget:
                             and self._identity_next.get(item.identity_id, 0.0) <= now
                         ]
                         best = min(eligible, key=lambda item: item.rank(now)) if eligible else None
+                        bodies = [w for w in eligible if w.purpose is SitePurpose.BODY
+                                  and w.work_class != 'recheck' and now-w.enqueued_at >= 1]
+                        if bodies and self._body_active == 0:
+                            best = min(bodies, key=lambda item: item.sequence)
                         capacity = (
                             self._site_active.get(site_key, 0) < site_max_concurrency
                             and self._identity_active.get(identity_id, 0) < identity_max_concurrency
@@ -254,6 +265,7 @@ class JointBudget:
                                 / 1000
                             )
                             acquired = True
+                            executing_at = time.monotonic()
                             break
                         try:
                             # Keep the condition wait and cancellation in this task;
@@ -274,6 +286,9 @@ class JointBudget:
                 if waiter is not None and waiter in self._waiters:
                     self._waiters.remove(waiter)
                 if acquired:
+                    if purpose is SitePurpose.CRAWLER and work_class != 'backfill':
+                        elapsed = time.monotonic() - executing_at
+                        self._costs[site_key] = .8*self._costs.get(site_key, elapsed) + .2*elapsed
                     self._active -= 1
                     if purpose is SitePurpose.BODY:
                         self._body_active -= 1

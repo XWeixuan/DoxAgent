@@ -55,9 +55,12 @@ class BusOrchestration:
                     self._inflight_groups.pop(key, None)
         # Completed tasks have committed their next due time. Read it only after
         # removing them; tasks completing later retain their in-flight exclusion.
-        eligible, roster_eligible, poll_states = await self._storage(
-            scheduler, scheduler._prepare_poll_cycle, now
-        )
+        if hasattr(scheduler, "prepare_cycle"):
+            eligible, roster_eligible, poll_states = await scheduler.prepare_cycle(now)
+        else:
+            eligible, roster_eligible, poll_states = await self._storage(
+                scheduler, scheduler._prepare_poll_cycle, now
+            )
         eligible.sort(key=lambda pair: (
             poll_states[pair[1].binding_id].next_dispatch_at or now,
             poll_states[pair[1].binding_id].last_success_at or now - timedelta(days=365),
@@ -90,7 +93,66 @@ class BusOrchestration:
             schedules = await self._journal_call(
                 lambda: {ticker: self.journal.get("schedule", ticker, {}) for ticker in tickers}
             )
+        schedule_entries = []
+        for source, binding in eligible:
+            if source.source_id == "corporate_ir_press_releases":
+                continue  # Its independent endpoint coordinator runs 7x24 before this lane.
+            if pauses.get(binding.ticker) == "all":
+                continue
+            if realtime_mode is None:
+                if binding.ticker not in calendar_failed_tickers:
+                    await self._journal_call(
+                        self.journal.gap,
+                        f"bus-calendar:{binding.ticker}",
+                        binding.ticker,
+                        "CALENDAR_UNAVAILABLE",
+                        calendar_error or "calendar unavailable",
+                    )
+                    calendar_failed_tickers.add(binding.ticker)
+                realtime = schedules[binding.ticker].get("mode") == "REALTIME"
+            else:
+                realtime = realtime_mode
+            if hasattr(scheduler, "work_units"):
+                schedule_entries.extend((source,binding,options['acquisition_unit'],
+                                         poll_states[binding.binding_id].target_due_at or now,
+                                         "UNKNOWN" if realtime_mode is None else realtime)
+                    for _,options in scheduler.work_units(source,binding,poll_states[binding.binding_id],now,include_all=True))
+            if realtime:
+                from doxagent.source_maintenance.settings import enabled as maintenance_enabled
+                from doxagent.source_maintenance.signals import scheduler as maintenance_scheduler
+
+                if maintenance_enabled():
+                    maintenance_scheduler(
+                        binding,
+                        poll_states[binding.binding_id],
+                        now,
+                        binding.binding_id in self._inflight,
+                    )
+                if source.acquisition_mode is AcquisitionMode.BY_DISTRIBUTION:
+                    shared_realtime.setdefault(source.source_id, (source, []))[1].append(binding)
+                    continue
+                state = poll_states[binding.binding_id]
+                units = scheduler.work_units(source, binding, state, now) if hasattr(scheduler, "work_units") else (
+                    [(binding.binding_id, {})] if state.next_dispatch_at is None or state.next_dispatch_at <= now else [])
+                for key, options in units:
+                    if key not in self._inflight:
+                        self._inflight[key] = asyncio.create_task(
+                            asyncio.wait_for(scheduler._poll(source, binding, now, **options), timeout=600)
+                        )
+        for source, bindings in shared_realtime.values():
+            key = f"shared:{source.source_id}"
+            if key not in self._inflight and scheduler.distribution_due(
+                bindings, now, poll_states=poll_states
+            ):
+                self._inflight[key] = asyncio.create_task(
+                    asyncio.wait_for(
+                        scheduler._poll_distribution(source, bindings, now), timeout=600
+                    )
+                )
         for sweep in sorted(sweeps, key=lambda item: item["inputs"]["cutoff"]):
+            from doxagent.message_bus_v2.pressure import background_allowed
+            if not background_allowed() or getattr(scheduler, '_intake_backlogged', False):
+                continue
             if sweep["status"] in {"SUCCEEDED", "FAILED"}:
                 continue
             if pauses.get(sweep["ticker"]) == "all":
@@ -121,14 +183,9 @@ class BusOrchestration:
             for identity in roster["source_tasks"]:
                 pending = await self._journal_call(self.journal.get_task, identity)
                 assert pending is not None
-                key = pending["inputs"]["binding"]["binding_id"]
-                if pending.get("receipt", {}).get("poll_done"):
-                    key = f"sweep:{identity}"
-                shared_key = f"shared:{pending['inputs']['source']['source_id']}"
+                key = f"sweep:{identity}"
                 group = pending["inputs"]["source"]["scheduler_group"]
-                if not key.startswith("sweep:") and sum(g == group for g in self._inflight_groups.values()) >= getattr(scheduler, "group_limits", {}).get(group, 1):
-                    continue
-                if key in self._inflight or shared_key in self._inflight:
+                if key in self._inflight:
                     continue
                 task = await self._journal_call(self.journal.claim, identity, seconds=1800)
                 if task:
@@ -140,69 +197,24 @@ class BusOrchestration:
                     self._inflight[key] = asyncio.create_task(self._source(scheduler, task))
                     if not key.startswith("sweep:"):
                         self._inflight_groups[key] = group
-        for source, binding in eligible:
-            if source.source_id == "corporate_ir_press_releases":
-                continue  # Its independent endpoint coordinator runs 7x24 before this lane.
-            if pauses.get(binding.ticker) == "all":
-                continue
-            if realtime_mode is None:
-                if binding.ticker not in calendar_failed_tickers:
-                    await self._journal_call(
-                        self.journal.gap,
-                        f"bus-calendar:{binding.ticker}",
-                        binding.ticker,
-                        "CALENDAR_UNAVAILABLE",
-                        calendar_error or "calendar unavailable",
-                    )
-                    calendar_failed_tickers.add(binding.ticker)
-                realtime = schedules[binding.ticker].get("mode") == "REALTIME"
-            else:
-                realtime = realtime_mode
-            if realtime:
-                from doxagent.source_maintenance.settings import enabled as maintenance_enabled
-                from doxagent.source_maintenance.signals import scheduler as maintenance_scheduler
 
-                if maintenance_enabled():
-                    maintenance_scheduler(
-                        binding,
-                        poll_states[binding.binding_id],
-                        now,
-                        binding.binding_id in self._inflight,
-                    )
-                if source.acquisition_mode is AcquisitionMode.BY_DISTRIBUTION:
-                    if source.source_id in sweep_distribution_sources or any(
-                        key.endswith(":" + source.source_id) for key in self._inflight
-                    ):
-                        continue
-                    shared_realtime.setdefault(source.source_id, (source, []))[1].append(binding)
-                    continue
-                state = poll_states[binding.binding_id]
-                if state.next_dispatch_at is None or state.next_dispatch_at <= now:
-                    if binding.binding_id not in self._inflight:
-                        group = source.scheduler_group
-                        if sum(g == group for g in self._inflight_groups.values()) >= getattr(scheduler, "group_limits", {}).get(group, source.scheduler_constraints.max_concurrency):
-                            continue
-                        self._inflight[binding.binding_id] = asyncio.create_task(
-                            asyncio.wait_for(scheduler._poll(source, binding, now), timeout=600)
-                        )
-                        self._inflight_groups[binding.binding_id] = group
-        for source, bindings in shared_realtime.values():
-            key = f"shared:{source.source_id}"
-            if key not in self._inflight and scheduler.distribution_due(
-                bindings, now, poll_states=poll_states
-            ):
-                self._inflight[key] = asyncio.create_task(
-                    asyncio.wait_for(
-                        scheduler._poll_distribution(source, bindings, now), timeout=600
-                    )
-                )
+        if hasattr(scheduler, "intake"):
+            await scheduler.service.storage.call(scheduler.repository.polling.schedules,
+                                                 schedule_entries, now, _lane_priority=0)
+        # Completion wakes the fixed-rate dispatcher without waiting for the next tick.
+        if hasattr(scheduler, "_wake"):
+            for task in self._inflight.values():
+                if not getattr(task, "_bus_wake_attached", False):
+                    task.add_done_callback(lambda _: scheduler._wake.set())
+                    task._bus_wake_attached = True
         # Let newly scheduled I/O start, without waiting for a source or model.
         if (
             scheduler.distribution_worker is not None
             and "distribution-worker" not in self._inflight
         ):
             self._inflight["distribution-worker"] = asyncio.create_task(
-                scheduler.distribution_worker.run_once()
+                getattr(scheduler.distribution_worker,"run_available",
+                        scheduler.distribution_worker.run_once)()
             )
         await asyncio.sleep(0)
         return results

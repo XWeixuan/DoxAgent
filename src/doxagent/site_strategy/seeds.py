@@ -129,12 +129,6 @@ def bootstrap_seed(repository: SiteStrategyRepository, service: SiteStrategyServ
                     if (rule.match, rule.host, rule.role) not in known_support:
                         support.append(rule)
                 access_updates: dict[str, object] = {}
-                if (
-                    spec.access.max_concurrency == 1
-                    and current.access.max_concurrency == 2
-                    and current.access.min_interval_ms == 500
-                ):
-                    access_updates.update(max_concurrency=1, min_interval_ms=3000)
                 if spec.site_id == "barrons" and current.access.overrides != spec.access.overrides:
                     access_updates["overrides"] = spec.access.overrides
                 body = current.body

@@ -176,7 +176,7 @@ def collect(store, *, now=None, limit=500, budget=.1, time_floor=None):
                 params = [*candidates, effective_floor]
                 if table == "objects" and not protected:
                     db.execute("INSERT OR IGNORE INTO business_revisions SELECT * FROM objects NOT INDEXED WHERE "
-                               + predicate + " AND kind NOT IN ('ticker','navigation','capture_coverage','native:runtime_tasks','native:runtime_values','native:poll_states')", params)
+                               + predicate + " AND kind NOT IN ('ticker','navigation','capture_coverage','native:runtime_tasks','native:runtime_values','native:poll_states','native:poll_runs','native:poll_captures','poll_schedule')", params)
                 counts[table] = db.execute(f"DELETE FROM {table} NOT INDEXED WHERE " + predicate, params).rowcount
             db.execute("INSERT INTO read_meta(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",
                        (key, next_cursor if next_cursor is not None else str(candidates[-1] if candidates else 0)))
@@ -253,7 +253,9 @@ def reproject_trade_outcomes(store, *, ticker=None, limit=100):
     if not 1 <= limit <= 500:
         raise ValueError("limit must be 1..500")
     from uuid import uuid4
+
     from doxagent.trade_execution.worker import WriterLock
+
     from .graph import project as project_graph
     from .trade_outcomes import project_case_trade, with_execution_state
 
@@ -401,7 +403,7 @@ def compact(source, target):
     finally:
         reader.close()
     with store.connect(write=True) as db:
-        db.execute("INSERT OR IGNORE INTO business_revisions SELECT * FROM objects WHERE valid_to IS NOT NULL AND kind NOT IN ('ticker','navigation','capture_coverage','native:runtime_tasks','native:runtime_values','native:poll_states')")
+        db.execute("INSERT OR IGNORE INTO business_revisions SELECT * FROM objects WHERE valid_to IS NOT NULL AND kind NOT IN ('ticker','navigation','capture_coverage','native:runtime_tasks','native:runtime_values','native:poll_states','native:poll_runs','native:poll_captures','poll_schedule')")
         # Replay reads exact version rows, not these historical duplicate payloads.
         db.execute("UPDATE changes SET before_payload=NULL,after_payload=NULL "
                    "WHERE before_payload IS NOT NULL OR after_payload IS NOT NULL")
@@ -418,6 +420,7 @@ def compact(source, target):
 
 def run_gc(store, *, once=False, interval=15, budget=2):
     import time
+
     from doxagent.trade_execution.worker import WriterLock
     with WriterLock(Path(str(store.path) + ".maintenance")):
         batch = 128

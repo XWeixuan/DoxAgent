@@ -1,6 +1,6 @@
 import asyncio
 from types import SimpleNamespace
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 
@@ -112,7 +112,8 @@ async def test_browser_context_failure_keeps_sibling_and_http_independent():
     async def new_context():
         index = len(contexts)
         page = SimpleNamespace(
-            url="https://www.intc.com/news", content=AsyncMock(return_value="<h1>ready</h1>")
+            url="https://www.intc.com/news", content=AsyncMock(return_value="<h1>ready</h1>"),
+            on=Mock(),
         )
 
         async def goto(*args, **kwargs):
@@ -151,7 +152,7 @@ async def test_browser_context_failure_keeps_sibling_and_http_independent():
 
 @pytest.mark.asyncio
 async def test_driver_failure_retires_only_owned_browser():
-    page = SimpleNamespace(goto=AsyncMock(side_effect=ConnectionError("driver closed pipe")))
+    page = SimpleNamespace(goto=AsyncMock(side_effect=ConnectionError("driver closed pipe")), on=Mock())
     context = SimpleNamespace(new_page=AsyncMock(return_value=page), close=AsyncMock())
     browser = SimpleNamespace(
         is_connected=lambda: True,

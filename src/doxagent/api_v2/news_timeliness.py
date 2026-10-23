@@ -112,6 +112,7 @@ def poll_window(store, ticker, seq, as_of):
     ]
     latencies = sorted(v["last_latency_ms"] / 1000 for v in succeeded)
     return {
+        "cadence": poll_cadence(store, ticker, seq, since, until),
         "window_seconds": 1800,
         "samples": len(latencies),
         "mean_seconds": sum(latencies) / len(latencies) if latencies else None,
@@ -124,4 +125,93 @@ def poll_window(store, ticker, seq, as_of):
         ),
         "failed": sum(v.get("status") == "failed" for v in captures.values()),
         "sample_limit_reached": len(rows) >= 4000,
+    }
+
+
+def poll_cadence(store, ticker, seq, since, until, binding_id=None, *, by_binding=False):
+    from doxagent.message_bus_v2.cadence import cadence
+
+    table = store.snapshot_table(seq)
+    args = [ticker, seq, seq]
+    where = "ticker=? AND valid_from<=? AND (valid_to IS NULL OR valid_to>?)"
+    if binding_id:
+        where += " AND json_extract(payload,'$.binding_id')=?"
+        args.append(binding_id)
+    with store.connect() as db:
+        schedules = db.execute(
+            f"SELECT payload FROM {table} WHERE kind='poll_schedule' AND "
+            + where
+            + " ORDER BY valid_from DESC LIMIT 4000",
+            args,
+        ).fetchall()
+        runs = db.execute(
+            f"SELECT payload FROM {table} WHERE kind='native:poll_runs' AND "
+            + where
+            + " AND sort_key>=? ORDER BY valid_from DESC LIMIT 16000",
+            [*args, since.isoformat()],
+        ).fetchall()
+        captures = db.execute(
+            f"SELECT payload FROM {table} WHERE kind='native:poll_captures' AND "
+            + where
+            + " ORDER BY valid_from DESC LIMIT 16000",
+            args,
+        ).fetchall()
+    capture_rows = [json.loads(r[0]) for r in captures]
+    run_rows = [json.loads(r[0]) for r in [*schedules, *runs]]
+    limited = len(runs) >= 16000 or len(captures) >= 16000 or len(schedules) >= 4000
+    if by_binding:
+        from collections import defaultdict
+
+        grouped = defaultdict(lambda: [[], []])
+        for row in run_rows:
+            grouped[row["binding_id"]][0].append(row)
+        for row in capture_rows:
+            grouped[row["binding_id"]][1].append(row)
+        return {
+            key: _cadence_summary(cadence(r, c, since, until), c, limited)
+            for key, (r, c) in grouped.items()
+        }
+    return _cadence_summary(cadence(run_rows, capture_rows, since, until), capture_rows, limited)
+
+
+def _cadence_summary(result, capture_rows, limited):
+    gaps = [
+        u["fresh_gap_seconds"]["max"]
+        for u in result["units"]
+        if u["fresh_gap_seconds"]["max"] is not None
+    ]
+    late = [
+        u["request_late_seconds"]["p95"]
+        for u in result["units"]
+        if u["request_late_seconds"]["p95"] is not None
+    ]
+    return {
+        "expected_cycles": result["expected_cycles"],
+        "fresh_cycles": result["fresh_cycles"],
+        "pending_cycles":result['pending_cycles'],
+        "settled_cycles":result['settled_cycles'],
+        "pending_intake_candidates": sum(
+            max(0, r["message_count"] - r["intake_position"])
+            for r in capture_rows
+            if r["status"] in {"PENDING", "RUNNING"}
+        ),
+        "failed_intake_candidates": sum(
+            max(0, r["message_count"] - r["intake_position"])
+            for r in capture_rows
+            if r["status"] == "FAILED"
+        ),
+        "missing_cycles": result["missing_cycles"],
+        "coverage": result["coverage"],
+        "max_gap_seconds": max(gaps) if gaps else None,
+        "gap_mean_seconds": result["fresh_gap_seconds"]["mean"],
+        "gap_p95_seconds": result["fresh_gap_seconds"]["p95"],
+        "deferred": sum(u["statuses"].get("DEFERRED", 0) for u in result["units"]),
+        "failed": sum(
+            u["statuses"].get("FAILED", 0) + u["statuses"].get("CANCELLED", 0)
+            for u in result["units"]
+        ),
+        "worst_request_p95_seconds": max(late) if late else None,
+        "units": len(result["units"]),
+        "eligibility_unknown": result["eligibility_unknown"],
+        "sample_limit_reached": limited,
     }

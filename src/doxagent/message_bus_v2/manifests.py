@@ -74,8 +74,12 @@ def _source(
         default_parameters=default_parameters or {},
         scheduler_group=scheduler_group or source_id,
         scheduler_constraints=SchedulerConstraints(
-            minimum_request_gap_seconds=minimum_request_gap_seconds,
-            max_concurrency=2 if source_id in {"yahoo_finance_news","investorshub_ticker_news","investing_ticker_news","barrons_ticker_news","globenewswire_search"} else 1,
+            minimum_request_gap_seconds=0 if source_id.endswith("_rss") or source_id in {
+                "yahoo_finance_news", "investorshub_ticker_news", "investing_ticker_news",
+                "barrons_ticker_news", "globenewswire_search",
+            } else minimum_request_gap_seconds,
+            max_concurrency=8 if source_id in {"yahoo_finance_news","investorshub_ticker_news","investing_ticker_news","barrons_ticker_news","globenewswire_search"} else 4 if source_id.endswith("_rss") else 1,
+            capacity_mode="adaptive" if source_id.endswith("_rss") or source_id in {"yahoo_finance_news","investorshub_ticker_news","investing_ticker_news","barrons_ticker_news","globenewswire_search"} else "fixed",
         ),
         default_polling_config=default_polling or PollingConfig(),
         content_enrichment_mode=content_enrichment_mode,

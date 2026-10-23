@@ -104,7 +104,8 @@ class ArticleBodyResults:
                 "source_id": source_id,
                 "url": message.url,
                 "title": dedup.text(message.title),
-                "first_observed_at": now.isoformat(),
+                "first_observed_at": min(now, message.admission_context.observed_at).isoformat()
+                if message.admission_context and message.admission_context.observed_at else now.isoformat(),
                 "status": "NOT_APPLICABLE"
                 if message.metadata.get("body_not_applicable")
                 else "PENDING",

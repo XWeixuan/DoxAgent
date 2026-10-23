@@ -58,6 +58,8 @@ TABLES = {
         "stream_items",
         "stream_members",
         "poll_states",
+        "poll_runs",
+        "poll_captures",
         "ir_endpoint_states",
         "acquisition_failures",
         "audit_log",
@@ -194,6 +196,9 @@ class SourceOutbox:
                             "UPDATE v2_backfill_checkpoint SET position=0 WHERE table_name='runtime_values'"
                         )
                 columns = list(db.execute(f"PRAGMA table_info({quoted(table)})"))
+                if table == 'poll_captures':
+                    columns = [r for r in columns if r[1] not in {
+                        'payload_json','receipt_json','claim_token','lease_until','queue_at','not_before'}]
                 primary = sorted((r for r in columns if r[5]), key=lambda r: r[5])
                 for operation in ("INSERT", "UPDATE", "DELETE"):
                     db.execute(
@@ -248,6 +253,14 @@ class SourceOutbox:
                             )
                         if table == "content_enrichment_jobs":
                             changed = "OLD.status IS NOT NEW.status"
+                        if table == 'poll_runs':
+                            changed = f"({changed}) AND (NEW.status!='DISPATCHED' OR OLD.status IS NOT NEW.status)"
+                        if table == "poll_captures":
+                            changed = " OR ".join(
+                                f'OLD.{quoted(r[1])} IS NOT NEW.{quoted(r[1])}'
+                                for r in columns if r[1] != 'status'
+                            ) + (" OR (CASE OLD.status WHEN 'RUNNING' THEN 'PENDING' ELSE OLD.status END) IS NOT "
+                                 "(CASE NEW.status WHEN 'RUNNING' THEN 'PENDING' ELSE NEW.status END)")
                         condition += (" AND " if condition else "WHEN ") + f"({changed})"
                     db.execute(
                         "CREATE TRIGGER IF NOT EXISTS "
@@ -546,6 +559,9 @@ class SourceOutbox:
             keys = [r[1] for r in sorted((r for r in columns if r[5]), key=lambda r: r[5])]
             for row in rows:
                 value = dict(row)
+                if table == 'poll_captures':
+                    for key in ('payload_json','receipt_json','claim_token','lease_until','queue_at','not_before'):
+                        value.pop(key,None)
                 position = value.pop("_v2_rowid")
                 if table == "runtime_values" and value["namespace"] not in {
                     "trade_intents",
