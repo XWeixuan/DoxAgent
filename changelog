@@ -2133,3 +2133,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-24 SEC生产验收完成：9个ticker启用30秒By Ticker且读侧投影齐全；自然293次CAPTURED无失败，最终54次耗时均值1.95s、P95 5.93s，同ticker间隔均值29.43s/P95 31.68s。生产隔离8-K/6-K/424B5各1条全链路FULL、未写生产Raw；最终48项SEC/Hub测试通过，Bus/BODY f7c2abaf运行，其他接入角色2b0819bc，Chrome/Site保持、timer恢复。归档正文图像/OCR与无自然新申报样本边界。
 
 2026-10-24 SEC监测范围扩展：新增13D/A官方SC/SCHEDULE标识、S-3/F-3及ASR、8-K Items3.01/3.03/2.06；按用户最新变更明确排除10-K/10-Q及/A。补结构化13D XML和issuerCIK校验，展示/原始XML同申报去重，持股数量比例与叙述完整保留。38项专项通过，6个官方真实样本FULL，沿用30秒轻量轮询及既有全部ticker订阅。
+
+2026-10-24 SEC范围扩展生产验收：Bus/BODY 00984c3a运行，9ticker保持30秒且轮询成功；97项相关测试通过，生产隔离13D XML/HTML、S-3、F-3ASR四条完整入库均FULL，最长466811字符未截断。运行时确认10-K/10-Q未启用；未注入历史生产消息，Chrome/Site未变、维护timer恢复。

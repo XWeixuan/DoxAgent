@@ -72,3 +72,12 @@ SEC 抓取失败在既有 BodyResults、执行/结果台账中保存，有限重
 真实官方 HTTP 样本均 FULL：RKLB XML 13D/A 20892 字符；ONDS HTML 13D 18318、S-3 140154；NBIS F-3ASR 466811（4 个文件，含 EX-4.3/EX-4.4）；ONDS 8-K Item 3.01 4236；MU 8-K Item 3.03 3039。Item 2.06 通过范围合同测试，未以不相关的历史文件冒充真实该项样本。RKLB 的一条包含 3.01/3.03 的历史申报实际为 8-K12B，本次按明确表单范围不纳入，另选真实 8-K 验证。既有 30 秒节流/发现与 BODY 分离、ARTICLE_ONCE、CIK 自动映射及所有 ticker 订阅不变；未回放历史申报到生产。
 
 扩展专项 38 项通过，真实 canary 与后续生产回执位于 `eval/sec_edgar_expansion_20261024/`。正式发布与自然轮询结果继续追加。
+
+
+### 扩展版本生产验收
+
+北京时间 **2026-10-24 20:08:09**：Bus 与 Content Enrichment 已运行 `00984c3a9b5cf1ccf2e12e9984b5beef302c2bc3`，镜像 `sha256:e0caba1f16b248a02965f7053f3259473fb0e111eea5acea8bd096882a33e7a1`，均 running、重启计数 0。仅发布这两个组件；9 个既有 SEC 绑定均 30 秒且 succeeded，无当前错误；Chrome/Site 镜像与启动时间未变，维护 timer active。
+
+最终相关回归 **97 项通过**（包含 38 项 SEC 专项），保留一个既有 Pydantic 测试样本序列化警告；没有源失败。新版本启动后 25 次自然轮询完成，平均 dispatch→finished 2.68 秒，最大 5.84 秒；16 个同 ticker 间隔均值 29.00 秒、P95 33.59 秒，含启动/验证期，只证明短期调度可用。运行时直接核对 FORMS/ITEMS，14 个 8-K Item 与全部约定新表单已生效，excluded_10k_10q=true。
+
+生产实际 HTTP 与隔离消息库 `/tmp/sec-expanded-isolated-20261024T120749.sqlite3` 验收：XML 13D/A、HTML 13D、S-3、F-3ASR 共 4 条均 BODY FULL、content_evidence FULL，得到 4 Raw / 4 Standard / 4 Stream；最长 466811 字符未截断。live 生产 Raw 仍为 0、无 SEC 正文任务，未以历史样本冒充自然新申报或触发下游。证据：`eval/sec_edgar_expansion_20261024/production-canary.json`、`runtime-scope.json`、`production-status.json`、`regression.txt`。发布 private manifests/日志在服务器 `/var/lib/doxagent/sec-edgar-20261024/expanded/`，后续归档提交不含业务代码变化。
