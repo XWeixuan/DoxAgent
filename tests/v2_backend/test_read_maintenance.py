@@ -6,6 +6,37 @@ from doxagent.v2_read.maintenance import atomic_json, collect
 from doxagent.v2_read.repository import ReadStore
 
 
+def test_gc_repeated_budget_interruptions_keep_a_valid_batch_across_cycles(tmp_path, monkeypatch):
+    import sqlite3
+    import time
+
+    from doxagent.v2_read import artifact_registry, maintenance
+
+    store = ReadStore(tmp_path / 'read.db')
+    limits, cycles = [], []
+
+    class StopCycles(Exception):
+        pass
+
+    def interrupted(store, *, limit, **kwargs):
+        if not 1 <= limit <= 5000:
+            raise ValueError('GC limit must be 1..5000')
+        limits.append(limit)
+        raise sqlite3.OperationalError('interrupted')
+
+    def next_cycle(seconds):
+        cycles.append(seconds)
+        if len(cycles) == 10:
+            raise StopCycles()
+
+    monkeypatch.setattr(maintenance, 'collect', interrupted)
+    monkeypatch.setattr(artifact_registry, 'collect_diagnostics', lambda *a, **kw: [])
+    monkeypatch.setattr(time, 'sleep', next_cycle)
+    with pytest.raises(StopCycles):
+        maintenance.run_gc(store)
+    assert len(cycles) == 10 and min(limits) == 10
+
+
 def test_gc_retains_pinned_snapshot_and_expires_tokens_after_deletion(tmp_path):
     store = ReadStore(tmp_path / "read.db")
     store.migrate()

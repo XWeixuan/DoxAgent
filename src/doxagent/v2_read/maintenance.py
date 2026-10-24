@@ -436,8 +436,8 @@ def run_gc(store, *, once=False, interval=15, budget=2):
                 except sqlite3.OperationalError as exc:
                     errors.append(str(exc))
                     if "locked" not in str(exc):
-                        batch //= 2
-                    if batch < 10:
+                        batch = max(10, batch // 2)
+                    if batch <= 10:
                         break
                     continue
                 for name, count in result["deleted"].items():
