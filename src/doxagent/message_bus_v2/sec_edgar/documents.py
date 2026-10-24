@@ -80,7 +80,25 @@ def _tag(node):
 
 
 def _visible(node):
-    return " ".join(" ".join(node.itertext()).replace("\xa0", " ").split())
+    parts = []
+
+    def visit(element):
+        if not isinstance(element.tag, str):
+            return
+        block = _tag(element) in BLOCKS | {"tr", "table", "br"}
+        if block:
+            parts.append(" ")
+        if element.text:
+            parts.append(element.text)
+        for child in element:
+            visit(child)
+            if child.tail:
+                parts.append(child.tail)
+        if block:
+            parts.append(" ")
+
+    visit(node)
+    return " ".join("".join(parts).replace("\xa0", " ").split())
 
 
 def extract_document(raw, name):
@@ -105,7 +123,12 @@ def extract_document(raw, name):
     if not name.lower().endswith((".htm", ".html", ".xhtml", ".txt")):
         raise ValueError("sec_material_document_unsupported_format")
     # Decode UTF-8 explicitly; lxml otherwise guesses Latin-1 on XML-less filings.
-    decoded = raw.decode("utf-8-sig", errors="replace")
+    try:
+        decoded = raw.decode("utf-8-sig")
+    except UnicodeDecodeError:
+        # Older EDGAR exhibit producers still emit Windows-1252 (including
+        # currency and smart quotes) without a reliable HTML charset header.
+        decoded = raw.decode("cp1252", errors="replace")
     if re.search(
         r"Your Request Originates from an Undeclared Automated Tool|"
         r"Request Rate Threshold Exceeded|SEC\.gov\s*\|\s*Access Denied",
@@ -116,6 +139,21 @@ def extract_document(raw, name):
     if "<" not in decoded:
         return decoded.strip()
     root = html.fromstring(re.sub(r"^\s*<\?xml[^>]*\?>", "", decoded))
+    for image in root.xpath("//img"):
+
+        def dimension(name, image=image):
+            match = re.match(r"\d+", image.get(name, ""))
+            return int(match[0]) if match else 0
+
+        style = image.get("style", "")
+        width = re.search(r"width\s*:\s*(\d+)", style)
+        height = re.search(r"height\s*:\s*(\d+)", style)
+        w = int(width[1]) if width else dimension("width")
+        h = int(height[1]) if height else dimension("height")
+        if w >= 400 and h >= 200 and len(image.get("alt", "")) < 80:
+            raise ValueError("sec_material_images_require_ocr")
+        if image.get("alt"):
+            image.text = " " + image.get("alt") + " "
     for node in list(root.iter()):
         if not isinstance(node.tag, str):
             continue

@@ -135,6 +135,10 @@ class SecEdgarAdapter:
             raise ValueError("sec_submissions_cik_mismatch")
         rows = recent_rows(data)
         since = context.window_start or context.requested_at - timedelta(minutes=30)
+        if context.window_start is None:
+            # Subscribe from registration time. A second poll must not suddenly
+            # replay older filings excluded from the first baseline.
+            since = max(since, context.binding.created_at)
         cutoff = context.window_cutoff or context.requested_at + timedelta(seconds=60)
         messages = []
         seen = dict(cp.get("seen", {}))

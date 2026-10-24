@@ -67,6 +67,7 @@ def context(cp=None, ticker="RKLB"):
         ticker=ticker,
         source_id=source.source_id,
         source_parameters={"cik": "1819994"},
+        created_at=NOW - timedelta(days=1),
     )
     return PollContext(
         ticker=ticker,
@@ -109,6 +110,46 @@ async def test_scope_revisions_timestamp_and_no_summary_body():
     assert len({m.external_id for m in r.messages}) == 4
     assert all(m.body is None and m.publication_time_basis == "EXACT" for m in r.messages)
     assert all(m.published_at == NOW - timedelta(seconds=90) for m in r.messages)
+
+
+async def test_subscription_boundary_does_not_replay_history_or_suppress_first_new_filing(tmp_path):
+    data = submissions(["8-K", "8-K"])
+    data["filings"]["recent"]["acceptanceDateTime"] = [
+        (NOW - timedelta(seconds=90)).isoformat(),
+        (NOW - timedelta(seconds=20)).isoformat(),
+    ]
+    ctx = context().model_copy(
+        update={
+            "binding": context().binding.model_copy(
+                update={"created_at": NOW - timedelta(seconds=60)}
+            ),
+            "is_bootstrap": True,
+        }
+    )
+    adapter = SecEdgarAdapter(FakeHttp(lambda _: json.dumps(data).encode()))
+    first = await adapter.poll(ctx)
+    assert len(first.messages) == 1 and first.messages[0].external_id.endswith("000068")
+    second = await adapter.poll(
+        ctx.model_copy(update={"checkpoint": first.next_checkpoint, "is_bootstrap": False})
+    )
+    assert not second.messages
+    repo = MessageBusV2Repository(tmp_path / "bus.db")
+    bus = MessageBusV2Service(repo, enrichment_queue_enabled=True)
+    bus.bootstrap()
+    bus.start_ticker("RKLB")
+    # Pass the actual subscription boundary so the first observed new filing
+    # proves bootstrap=False at the durable job boundary.
+    binding = repo.get_binding("RKLB:sec_edgar")
+    message = first.messages[0].model_copy(update={"published_at": binding.created_at})
+    job, created = bus.enqueue_enrichment(
+        source=bus.require_source("sec_edgar"),
+        binding=binding,
+        message=message,
+        bootstrap=True,
+        poll_run_id="new-first-head",
+    )
+    assert created and job.bootstrap is False
+    repo.close()
 
 
 async def test_missing_items_are_inspected_and_unknown_is_not_silently_dropped():
@@ -188,6 +229,26 @@ def test_tables_inline_xbrl_unicode_and_no_approximate_term_dedup():
     doc = Document(BASE + "main.htm", "main.htm", "EX-10.1", "Credit agreement")
     combined, removed = merge_documents([(doc, prose), (doc, prose + "\n" + changed)])
     assert removed == 1 and "$20" in combined and "$21" in combined
+
+
+def test_inline_numeric_fragments_in_table_cells_are_not_separated():
+    text = extract_document(
+        b"<table><tr><td><span>1</span><span>,000</span></td>"
+        b"<td><span>7</span><span>.5%</span></td></tr></table>",
+        "terms.htm",
+    )
+    assert "1,000 | 7.5%" in text
+
+
+def test_cp1252_currency_and_image_only_economic_slides():
+    text = extract_document(
+        "<p>€250 million; £10 conversion price; “covenants”.</p>".encode("cp1252"), "terms.htm"
+    )
+    assert "€250" in text and "£10" in text and "�" not in text
+    with pytest.raises(ValueError, match="material_images_require_ocr"):
+        extract_document(
+            b'<p>Slide 1</p><img style="width:850px;height:478px" src="slide.jpg">', "deck.htm"
+        )
 
 
 def test_scanned_pdf_does_not_count_as_full():

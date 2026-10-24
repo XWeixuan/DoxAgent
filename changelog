@@ -2127,3 +2127,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-24 升级失败后生产恢复完成：本地main/远端同步f2f0bcd6，六类镜像重建、18个生产组件统一版本并运行；修复旧O4等消费者不识别capacity_mode的版本不一致，49源解析与12个IR自然采集成功。20项研究/56项生产相关测试通过；删除7个已退出旧eval容器，按发布台账清理无引用镜像和旧缓存，保留卷、身份、前一版；实际仍4核。Gateway无Java/API需人工桌面登录，历史接纳积压未清零，不作性能达标声明。回执docs/server-upgrade-failure-recovery-20261024.md。
 
 2026-10-24 SEC EDGAR官方消息源：新增所有当前/未来ticker自动By Ticker订阅与30秒持续轮询，submissions精确筛选指定8-K Items、6-K/A及424B5；主文/经济附件按官方index走HTTP队列合并，保留表格金额条款、不摘要截断，完整性失败仅留任务审计不发布泛摘要。复用ARTICLE_ONCE/BodyResults/标准消息链，CIK校验、跨进程双lane节流和403/429冷却，无浏览器；真实8-K/6-K/424B5隔离入库3条均FULL。同步默认目录测试与此前Yahoo独立unit的PARTIAL状态期望。
+
+2026-10-24 SEC首次订阅与金融文本修正：实时发现从绑定创建时刻起算，订阅后第一轮新申报不再被baseline抑制，也不在后续轮询补发订阅前旧文；表格inline数字不插空格，Windows-1252保留货币字符。大幅无足够替代文本的图片/扫描PDF明确requires_ocr，不以部分文本冒充FULL。补充对应边界回归并保持原始时间与隔离历史验收。

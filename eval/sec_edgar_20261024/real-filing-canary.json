@@ -21,7 +21,7 @@
     },
     "succeeded": true,
     "reason": null,
-    "chars": 5687,
+    "chars": 5654,
     "diagnostics": {
       "outcome": "FULL",
       "pipeline_version": "sec_filing_v1",
@@ -92,7 +92,7 @@
     },
     "succeeded": true,
     "reason": null,
-    "chars": 8613,
+    "chars": 8612,
     "diagnostics": {
       "outcome": "FULL",
       "pipeline_version": "sec_filing_v1",
@@ -152,7 +152,7 @@
     },
     "succeeded": true,
     "reason": null,
-    "chars": 259385,
+    "chars": 256916,
     "diagnostics": {
       "outcome": "FULL",
       "pipeline_version": "sec_filing_v1",

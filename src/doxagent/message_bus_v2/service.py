@@ -1045,6 +1045,10 @@ class MessageBusV2Service:
 
         with self.repository.atomic_intake():
             now = collected_at or utc_now()
+            if source.source_id == "sec_edgar" and message.published_at >= binding.created_at:
+                # A filing accepted after subscription is new even when the
+                # first HEAD has not yet established its empty baseline.
+                bootstrap = False
             if not first_seen_resolved:
                 message = self.repository.resolve_first_seen(message, binding.binding_id)
             policy = f"{self.enrichment_pipeline_version}:{source.version}:{binding.version}"

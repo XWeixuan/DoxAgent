@@ -1,8 +1,9 @@
 """Narrow host release; private environment stays on the production host."""
 import copy,json,subprocess,sys,os
 from pathlib import Path
-ROOT=Path('/var/lib/doxagent/sec-edgar-20261024');RELEASE=Path('/var/lib/doxagent/releases');REPO=Path('/home/ubuntu/doxagent')
+ROOT=Path(os.environ.get('SEC_RELEASE_ROOT','/var/lib/doxagent/sec-edgar-20261024'));RELEASE=Path('/var/lib/doxagent/releases');REPO=Path('/home/ubuntu/doxagent')
 COMPONENTS=['v2-content-enrichment','v2-message-bus','v2-api','v2-control','v2-initialization','v2-scheduler']
+COMPONENTS=os.environ.get('SEC_RELEASE_COMPONENTS',','.join(COMPONENTS)).split(',')
 def run(args,**kwargs):return subprocess.check_output(args,text=True,**kwargs).strip()
 def atomic(path,data):
  path.write_text(json.dumps(data,indent=2));os.chmod(path,0o600)
