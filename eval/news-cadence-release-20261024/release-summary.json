@@ -1,0 +1,207 @@
+{
+  "at": "2026-10-24T00:39:23.436368+00:00",
+  "et": "2026-10-23T20:39:23.436368-04:00",
+  "cpus": 4,
+  "supervisor_preserved": true,
+  "site_limits": {
+    "DOXAGENT_SITE_ACCESS_BROWSER_MAX_PAGES": "4",
+    "DOXAGENT_SITE_ACCESS_BODY_BROWSER_MAX_PAGES": "2",
+    "DOXAGENT_SITE_ACCESS_BODY_BROWSER_BORROW": "false"
+  },
+  "captures": [
+    {
+      "status": "COMPLETED",
+      "count": 1060,
+      "remaining": 0
+    },
+    {
+      "status": "PENDING",
+      "count": 1604,
+      "remaining": 49980
+    },
+    {
+      "status": "RUNNING",
+      "count": 1,
+      "remaining": 930
+    }
+  ],
+  "read_poll_objects": [
+    {
+      "kind": "native:poll_captures",
+      "count": 2854
+    },
+    {
+      "kind": "native:poll_runs",
+      "count": 4159
+    },
+    {
+      "kind": "poll_schedule",
+      "count": 294
+    }
+  ],
+  "bus_head": 4588129,
+  "ir": [
+    {
+      "endpoint_id": "be.press",
+      "status": "succeeded",
+      "last_success_at": "2026-10-24T00:39:12.099329Z"
+    },
+    {
+      "endpoint_id": "ceg.press",
+      "status": "succeeded",
+      "last_success_at": "2026-10-24T00:39:15.141208Z"
+    },
+    {
+      "endpoint_id": "cohr.corporate",
+      "status": "succeeded",
+      "last_success_at": "2026-10-24T00:39:14.266575Z"
+    },
+    {
+      "endpoint_id": "cohr.financial",
+      "status": "succeeded",
+      "last_success_at": "2026-10-24T00:39:14.715267Z"
+    },
+    {
+      "endpoint_id": "intc.press",
+      "status": "succeeded",
+      "last_success_at": "2026-10-24T00:39:14.214738Z"
+    },
+    {
+      "endpoint_id": "mu.ir",
+      "status": "succeeded",
+      "last_success_at": "2026-10-24T00:39:14.503863Z"
+    },
+    {
+      "endpoint_id": "mu.newsroom",
+      "status": "succeeded",
+      "last_success_at": "2026-10-24T00:39:14.275385Z"
+    },
+    {
+      "endpoint_id": "nbis.press",
+      "status": "succeeded",
+      "last_success_at": "2026-10-24T00:39:14.366235Z"
+    },
+    {
+      "endpoint_id": "onds.press",
+      "status": "succeeded",
+      "last_success_at": "2026-10-24T00:39:14.542279Z"
+    },
+    {
+      "endpoint_id": "rklb.ir",
+      "status": "succeeded",
+      "last_success_at": "2026-10-24T00:39:11.665218Z"
+    },
+    {
+      "endpoint_id": "rklb.updates",
+      "status": "succeeded",
+      "last_success_at": "2026-10-24T00:39:15.008262Z"
+    },
+    {
+      "endpoint_id": "snow.press",
+      "status": "succeeded",
+      "last_success_at": "2026-10-24T00:39:14.817498Z"
+    }
+  ],
+  "acceptance": "SKIPPED_WEEKEND",
+  "roles": {
+    "v2-site-access": {
+      "id": "0f804df43e6f74493b43da5dcbd10134278684fcd72e1e2d0dbd9117117500a4",
+      "image": "sha256:fb8d0e9b4734d807b4f5afb8ad6944e8ae2e9b7cb8bb998f113500c69de2cca2",
+      "state": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "started_at": "2026-10-24T00:19:23.273919203Z",
+      "cpu_shares": 1536,
+      "commit": "03ee30a694dcadf3ff58f643f0c9c4cbff90f5c8"
+    },
+    "v2-message-bus": {
+      "id": "bcf8fe6fbc10dbfdcab2401ccf94dab0a2c39bb3884de3a1ca4067505cd86358",
+      "image": "sha256:9e46f867714661f015d6c215ba474fcbc91868e9c616e6f22194d9404d9e15fb",
+      "state": "running",
+      "health": null,
+      "restarts": 0,
+      "started_at": "2026-10-24T00:35:50.714247921Z",
+      "cpu_shares": 1536,
+      "commit": "1413e42d15b3ccbcb16e7408922743bbc8ec9b72"
+    },
+    "v2-content-enrichment": {
+      "id": "f56a2afadc52bb562fda70a46e038e6c52ff1d2c9d8f70d878ce790630a220a7",
+      "image": "sha256:1726b6f9574434d2a946d739871c50ec659737e2b5e7b6b37b04c9153d72114a",
+      "state": "running",
+      "health": null,
+      "restarts": 0,
+      "started_at": "2026-10-24T00:19:55.91445228Z",
+      "cpu_shares": 1024,
+      "commit": "03ee30a694dcadf3ff58f643f0c9c4cbff90f5c8"
+    },
+    "v2-scheduler": {
+      "id": "7408b4b17caffd4e0f21f6124916140b19fddb6e09953fb39a375acd7cabd0ae",
+      "image": "sha256:1726b6f9574434d2a946d739871c50ec659737e2b5e7b6b37b04c9153d72114a",
+      "state": "running",
+      "health": null,
+      "restarts": 0,
+      "started_at": "2026-10-24T00:20:06.907758192Z",
+      "cpu_shares": 0,
+      "commit": "03ee30a694dcadf3ff58f643f0c9c4cbff90f5c8"
+    },
+    "v2-api": {
+      "id": "26d4ec73950c52bd8b02549a65b05efee2417a2c1560e994f9ba31d9db4a097d",
+      "image": "sha256:1726b6f9574434d2a946d739871c50ec659737e2b5e7b6b37b04c9153d72114a",
+      "state": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "started_at": "2026-10-24T00:17:39.551622921Z",
+      "cpu_shares": 0,
+      "commit": "03ee30a694dcadf3ff58f643f0c9c4cbff90f5c8"
+    },
+    "v2-projector": {
+      "id": "a2d9ef9dc2cf8f453da1ac5e9e2ae368c361a943e6024b72f566428a068e1ce1",
+      "image": "sha256:1726b6f9574434d2a946d739871c50ec659737e2b5e7b6b37b04c9153d72114a",
+      "state": "running",
+      "health": null,
+      "restarts": 0,
+      "started_at": "2026-10-24T00:18:24.354048564Z",
+      "cpu_shares": 512,
+      "commit": "03ee30a694dcadf3ff58f643f0c9c4cbff90f5c8"
+    },
+    "v2-web": {
+      "id": "297092fd2daabc9b2d19fdb8f93d014142d55663a966085b4ac6ee64a1df79b3",
+      "image": "sha256:b8d9172ad253f70ee99ee549c2032cab7adb64603dc061ddc956ec8268f7c7c4",
+      "state": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "started_at": "2026-10-24T00:20:17.902366438Z",
+      "cpu_shares": 0,
+      "commit": "03ee30a694dcadf3ff58f643f0c9c4cbff90f5c8"
+    },
+    "v2-maintenance": {
+      "id": "9066bc42c16e206ca993d942bc8629303a75e0b5f29e8d2ac0f3f2861393c386",
+      "image": "sha256:24d5a23f5b7dc96bebb4afcde02b6703ba92b25d7dd935cbd9741441ed4b5f5c",
+      "state": "running",
+      "health": null,
+      "restarts": 0,
+      "started_at": "2026-10-24T00:24:55.616442078Z",
+      "cpu_shares": 256,
+      "commit": "9c479777895a70cd4106840d97e62edd96b7334d"
+    },
+    "v2-transport-maintenance": {
+      "id": "e1ad32b9256ad0b3ca3835b4e2609cd79043e4de0aa666211b5c0f913c534b63",
+      "image": "sha256:92bbeece85b432af3f2fa2791fe2d1074b923f761d18739835e960e6d443e850",
+      "state": "running",
+      "health": null,
+      "restarts": 0,
+      "started_at": "2026-10-24T00:23:06.283396188Z",
+      "cpu_shares": 256,
+      "commit": "3d0ae94cd85edd06df698345b6fe9eb1ee4baa7a"
+    }
+  },
+  "protected_targets_before": 3,
+  "protected_targets_after": 6,
+  "missing_protected_targets": [],
+  "read_bus_checkpoint": 4588060,
+  "limitations": [
+    "Weekend performance acceptance waived by user",
+    "Capture backlog still growing; no cadence or body-success SLO acceptance",
+    "Current host remains 4 CPUs"
+  ]
+}
