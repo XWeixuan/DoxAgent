@@ -7,7 +7,7 @@ import time
 from datetime import UTC, datetime, timedelta
 
 from ..schema import PollResult, RawMessageInput, sha256_text
-from . import FORMS, ITEMS
+from . import FORM_TOPICS, FORMS, ITEMS
 from .http import SecHttp, SecHttpError
 
 MAPPING_URL = "https://www.sec.gov/files/company_tickers.json"
@@ -20,11 +20,7 @@ def item_numbers(value):
 
 def filing_title(company, form, items):
     names = [ITEMS[n] for n in ITEMS if n in items]
-    topic = (
-        "; ".join(names)
-        if names
-        else ("Prospectus supplement" if form == "424B5" else "Foreign issuer report")
-    )
+    topic = "; ".join(names) if names else FORM_TOPICS[form]
     return f"{company} — {form}: {topic}"
 
 
@@ -154,7 +150,8 @@ class SecEdgarAdapter:
                 continue
             accession = row["accessionNumber"]
             root = filing_root(cik, accession)
-            primary = row["primaryDocument"]
+            reported_primary = row["primaryDocument"]
+            primary = re.sub(r"^xslSCHEDULE_13D_X\d{2}/", "", reported_primary)
             if not primary or "/" in primary or "\\" in primary or ".." in primary:
                 raise ValueError("sec_invalid_primary_document")
             items = item_numbers(row.get("items"))
@@ -184,6 +181,7 @@ class SecEdgarAdapter:
                 "selected_items": selected,
                 "company": data["name"],
                 "primary_document": primary,
+                "reported_primary_document": reported_primary,
                 "index_url": root + accession + "-index.html",
                 "acceptance_at": stamp.isoformat(),
             }

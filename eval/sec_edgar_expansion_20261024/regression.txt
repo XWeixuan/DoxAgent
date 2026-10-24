@@ -1,0 +1,10 @@
+........................................................................ [ 74%]
+.........................                                                [100%]
+============================== warnings summary ===============================
+tests/test_defense_sources.py::test_shared_state_survives_a_new_run_without_leaking_to_sweep
+  C:\Users\WEIXUANXIE\Desktop\DoxAgent\.venv\Lib\site-packages\pydantic\main.py:542: UserWarning: Pydantic serializer warnings:
+    PydanticSerializationUnexpectedValue(Expected `datetime` - serialized value may not be as expected [field_name='failure_since', input_value='2026-10-24T00:00:01Z', input_type=str])
+    return self.__pydantic_serializer__.to_json(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+97 passed, 1 warning in 65.41s (0:01:05)

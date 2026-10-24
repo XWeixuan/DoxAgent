@@ -1,0 +1,162 @@
+[
+  {
+    "ticker": "RKLB",
+    "form": "SCHEDULE 13D/A",
+    "accession": "0001753926-26-000566",
+    "items": [],
+    "title": "Rocket Lab Corp \u2014 SCHEDULE 13D/A: Amended beneficial ownership report",
+    "success": true,
+    "outcome": "FULL",
+    "reason": null,
+    "chars": 20892,
+    "documents": [
+      {
+        "url": "https://www.sec.gov/Archives/edgar/data/1819994/000175392626000566/primary_doc.xml",
+        "name": "primary_doc.xml",
+        "kind": "SCHEDULE 13D/A",
+        "description": ""
+      }
+    ],
+    "errors": []
+  },
+  {
+    "ticker": "ONDS",
+    "form": "SC 13D",
+    "accession": "0001213900-23-071415",
+    "items": [],
+    "title": "Ondas Inc. \u2014 SC 13D: Beneficial ownership report",
+    "success": true,
+    "outcome": "FULL",
+    "reason": null,
+    "chars": 18318,
+    "documents": [
+      {
+        "url": "https://www.sec.gov/Archives/edgar/data/1646188/000121390023071415/ea184297-13dcharles_ondas.htm",
+        "name": "ea184297-13dcharles_ondas.htm",
+        "kind": "SC 13D",
+        "description": "SCHEDULE 13D"
+      },
+      {
+        "url": "https://www.sec.gov/Archives/edgar/data/1646188/000121390023071415/ea184297ex99-1_ondas.htm",
+        "name": "ea184297ex99-1_ondas.htm",
+        "kind": "EX-99.1",
+        "description": "JOINT FILING AGREEMENT"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "ticker": "ONDS",
+    "form": "S-3",
+    "accession": "0001213900-25-033418",
+    "items": [],
+    "title": "Ondas Inc. \u2014 S-3: Shelf registration statement",
+    "success": true,
+    "outcome": "FULL",
+    "reason": null,
+    "chars": 140154,
+    "documents": [
+      {
+        "url": "https://www.sec.gov/Archives/edgar/data/1646188/000121390025033418/ea0238492-s3_ondas.htm",
+        "name": "ea0238492-s3_ondas.htm",
+        "kind": "S-3",
+        "description": "REGISTRATION STATEMENT"
+      },
+      {
+        "url": "https://www.sec.gov/Archives/edgar/data/1646188/000121390025033418/ea023849201ex-fee_ondas.htm",
+        "name": "ea023849201ex-fee_ondas.htm",
+        "kind": "EX-FILING FEES",
+        "description": "FILING FEE TABLE"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "ticker": "NBIS",
+    "form": "F-3ASR",
+    "accession": "0001104659-25-044092",
+    "items": [],
+    "title": "Nebius Group N.V. \u2014 F-3ASR: Automatically effective foreign issuer shelf registration statement",
+    "success": true,
+    "outcome": "FULL",
+    "reason": null,
+    "chars": 466811,
+    "documents": [
+      {
+        "url": "https://www.sec.gov/Archives/edgar/data/1513845/000110465925044092/tm2513807-3_f3asr.htm",
+        "name": "tm2513807-3_f3asr.htm",
+        "kind": "F-3ASR",
+        "description": "F-3ASR"
+      },
+      {
+        "url": "https://www.sec.gov/Archives/edgar/data/1513845/000110465925044092/tm2513807d4_ex4-3.htm",
+        "name": "tm2513807d4_ex4-3.htm",
+        "kind": "EX-4.3",
+        "description": "EXHIBIT 4.3"
+      },
+      {
+        "url": "https://www.sec.gov/Archives/edgar/data/1513845/000110465925044092/tm2513807d4_ex4-4.htm",
+        "name": "tm2513807d4_ex4-4.htm",
+        "kind": "EX-4.4",
+        "description": "EXHIBIT 4.4"
+      },
+      {
+        "url": "https://www.sec.gov/Archives/edgar/data/1513845/000110465925044092/tm2513807d3_ex-filingfees.htm",
+        "name": "tm2513807d3_ex-filingfees.htm",
+        "kind": "EX-FILING FEES",
+        "description": "EX-FILING FEES"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "ticker": "ONDS",
+    "form": "8-K",
+    "accession": "0001213900-25-044934",
+    "items": [
+      "3.01"
+    ],
+    "title": "Ondas Inc. \u2014 8-K: Delisting notice or failure to satisfy listing standards",
+    "success": true,
+    "outcome": "FULL",
+    "reason": null,
+    "chars": 4236,
+    "documents": [
+      {
+        "url": "https://www.sec.gov/Archives/edgar/data/1646188/000121390025044934/ea0242573-8k_ondas.htm",
+        "name": "ea0242573-8k_ondas.htm",
+        "kind": "8-K",
+        "description": "CURRENT REPORT"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "ticker": "MU",
+    "form": "8-K",
+    "accession": "0001104659-19-041113",
+    "items": [
+      "3.03"
+    ],
+    "title": "8-K \u2014 MICRON TECHNOLOGY ANNOUNCES EXPIRATION OF",
+    "success": true,
+    "outcome": "FULL",
+    "reason": null,
+    "chars": 3039,
+    "documents": [
+      {
+        "url": "https://www.sec.gov/Archives/edgar/data/723125/000110465919041113/a19-13014_18k.htm",
+        "name": "a19-13014_18k.htm",
+        "kind": "8-K",
+        "description": "8-K"
+      },
+      {
+        "url": "https://www.sec.gov/Archives/edgar/data/723125/000110465919041113/a19-13014_1ex99d1.htm",
+        "name": "a19-13014_1ex99d1.htm",
+        "kind": "EX-99.1",
+        "description": "EX-99.1"
+      }
+    ],
+    "errors": []
+  }
+]

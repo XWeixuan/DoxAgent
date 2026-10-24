@@ -9,7 +9,13 @@ import httpx
 from doxagent.monitoring.media_enrichment import FetchAttempt, MediaExtractionResult
 
 from .adapter import filing_root, filing_title
-from .documents import clean_main, document_manifest, extract_document, merge_documents
+from .documents import (
+    clean_main,
+    document_manifest,
+    extract_document,
+    extract_schedule_13d,
+    merge_documents,
+)
 from .http import SecHttp, SecHttpError
 
 
@@ -42,7 +48,12 @@ class SecBodyReader:
                     total_bytes += len(raw)
                     if total_bytes > 48 * 1024 * 1024:
                         raise ValueError("sec_filing_size_limit")
-                    text = await asyncio.to_thread(extract_document, raw, doc.name)
+                    if doc.name == primary and doc.name.endswith(".xml"):
+                        text = await asyncio.to_thread(
+                            extract_schedule_13d, raw, expected_cik=filing["cik"]
+                        )
+                    else:
+                        text = await asyncio.to_thread(extract_document, raw, doc.name)
                     if doc.name == primary:
                         text = clean_main(text, filing["form"])
                     if not text.strip():

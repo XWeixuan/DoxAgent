@@ -2131,3 +2131,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-24 SEC首次订阅与金融文本修正：实时发现从绑定创建时刻起算，订阅后第一轮新申报不再被baseline抑制，也不在后续轮询补发订阅前旧文；表格inline数字不插空格，Windows-1252保留货币字符。大幅无足够替代文本的图片/扫描PDF明确requires_ocr，不以部分文本冒充FULL。补充对应边界回归并保持原始时间与隔离历史验收。
 
 2026-10-24 SEC生产验收完成：9个ticker启用30秒By Ticker且读侧投影齐全；自然293次CAPTURED无失败，最终54次耗时均值1.95s、P95 5.93s，同ticker间隔均值29.43s/P95 31.68s。生产隔离8-K/6-K/424B5各1条全链路FULL、未写生产Raw；最终48项SEC/Hub测试通过，Bus/BODY f7c2abaf运行，其他接入角色2b0819bc，Chrome/Site保持、timer恢复。归档正文图像/OCR与无自然新申报样本边界。
+
+2026-10-24 SEC监测范围扩展：新增13D/A官方SC/SCHEDULE标识、S-3/F-3及ASR、8-K Items3.01/3.03/2.06；按用户最新变更明确排除10-K/10-Q及/A。补结构化13D XML和issuerCIK校验，展示/原始XML同申报去重，持股数量比例与叙述完整保留。38项专项通过，6个官方真实样本FULL，沿用30秒轻量轮询及既有全部ticker订阅。

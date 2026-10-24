@@ -1,0 +1,213 @@
+<?xml version='1.0' encoding='utf-8'?>
+<edgarSubmission xmlns="http://www.sec.gov/edgar/schedule13D" xmlns:com="http://www.sec.gov/edgar/common">
+  <schemaVersion>X0202</schemaVersion>
+<formData>
+    <coverPageHeader>
+      <amendmentNo>5</amendmentNo>
+      <securitiesClassTitle>Common Stock, $0.0001 par value per share</securitiesClassTitle>
+      <dateOfEvent>03/27/2026</dateOfEvent>
+      <previouslyFiledFlag>false</previouslyFiledFlag>
+      <issuerInfo>
+        <issuerCIK>0001819994</issuerCIK>
+        <issuerCusips>
+          <issuerCusipNumber>773121108</issuerCusipNumber>
+        </issuerCusips>
+        <issuerName>Rocket Lab Corp</issuerName>
+        <address>
+          <com:street1>3881 McGowen Street</com:street1>
+          <com:city>Long Beach</com:city>
+          <com:stateOrCountry>CA</com:stateOrCountry>
+          <com:zipCode>90808</com:zipCode>
+        </address>
+      </issuerInfo>
+      <authorizedPersons>
+        <notificationInfo>
+          <personName>Sir Peter Beck</personName>
+          <personPhoneNum>(714) 465-5737</personPhoneNum>
+          <personAddress>
+            <com:street1>c/o Rocket Lab Corporation</com:street1>
+            <com:street2>3881 McGowen Street</com:street2>
+            <com:city>Long Beach</com:city>
+            <com:stateOrCountry>CA</com:stateOrCountry>
+            <com:zipCode>90808</com:zipCode>
+          </personAddress>
+        </notificationInfo>
+      </authorizedPersons>
+    </coverPageHeader>
+    <reportingPersons>
+      <reportingPersonInfo>
+        <reportingPersonCIK>0001881842</reportingPersonCIK>
+        <reportingPersonNoCIK>N</reportingPersonNoCIK>
+        <reportingPersonName>Beck Peter</reportingPersonName>
+        <memberOfGroup>b</memberOfGroup>
+        <fundType>OO</fundType>
+        <legalProceedings>N</legalProceedings>
+        <citizenshipOrOrganization>Q2</citizenshipOrOrganization>
+        <soleVotingPower>491930.00</soleVotingPower>
+        <sharedVotingPower>45951250.00</sharedVotingPower>
+        <soleDispositivePower>491930.00</soleDispositivePower>
+        <sharedDispositivePower>45951250.00</sharedDispositivePower>
+        <aggregateAmountOwned>46443180.00</aggregateAmountOwned>
+        <isAggregateExcludeShares>N</isAggregateExcludeShares>
+        <percentOfClass>7.51</percentOfClass>
+        <typeOfReportingPerson>IN</typeOfReportingPerson>
+        <commentContent>(1) The amounts set forth in rows 7, 9 and 11 above consist of 491,930 shares of common stock, par value $0.0001 per share ("Common Stock") of Rocket Lab Corporation, a Delaware corporation (the "Company"), which Peter Beck has acquired through settlement of restricted stock units.
+(2) The amounts set forth in rows 8, 10 and 11 above include 45,951,250 shares of Common Stock issuable upon conversion of Series A Convertible Participating Preferred Stock of the Company, $0.0001 par value per share ("Preferred Stock"), held directly by Equatorial Trust (the "Trust").  Mr. Beck is one of three directors of Peek Street Equatorial Trustee Limited, the trustee of the Trust (the "Trustee"). The Trust, the Trustee and each of the three directors of the Trustee are deemed to beneficially own the shares, with each of the Trust and the Trustee having sole voting and dispositive powers over the shares and each director of the Trustee having shared voting and dispositive power over the shares.
+(3) The percentage of class set forth in row 13 above was calculated based on 572,468,968 shares of Common Stock, outstanding as of March 20, 2026, as set forth in the Company's Preliminary Proxy Statement filed with the Securities and Exchange Commission (the "Commission") on March 27, 2026.</commentContent>
+      </reportingPersonInfo>
+      <reportingPersonInfo>
+        <reportingPersonNoCIK>Y</reportingPersonNoCIK>
+        <reportingPersonName>Equatorial Trust</reportingPersonName>
+        <memberOfGroup>b</memberOfGroup>
+        <fundType>OO</fundType>
+        <legalProceedings>N</legalProceedings>
+        <citizenshipOrOrganization>Q2</citizenshipOrOrganization>
+        <soleVotingPower>45951250.00</soleVotingPower>
+        <sharedVotingPower>0.00</sharedVotingPower>
+        <soleDispositivePower>45951250.00</soleDispositivePower>
+        <sharedDispositivePower>0.00</sharedDispositivePower>
+        <aggregateAmountOwned>45951250.00</aggregateAmountOwned>
+        <isAggregateExcludeShares>N</isAggregateExcludeShares>
+        <percentOfClass>7.43</percentOfClass>
+        <typeOfReportingPerson>OO</typeOfReportingPerson>
+        <commentContent>(1) The amounts set forth in rows 7, 9 and 11 above consist of 45,951,250 shares of Common Stock issuable upon conversion of Preferred Stock held directly by the Trust. The Trust, the Trustee and each of the three directors of the Trustee are deemed to beneficially own the shares, with each of the Trust and the Trustee having sole voting and dispositive powers over the shares and each director of the Trustee having shared voting and dispositive power over the shares.
+(3) The percentage of class set forth in row 13 above was calculated based on 572,468,968 shares of Common Stock, outstanding as of March 20, 2026, as set forth in the Company's Preliminary Proxy Statement filed with the Commission on March 27, 2026.</commentContent>
+      </reportingPersonInfo>
+      <reportingPersonInfo>
+        <reportingPersonNoCIK>Y</reportingPersonNoCIK>
+        <reportingPersonName>Peek Street Equatorial Trustee Ltd</reportingPersonName>
+        <memberOfGroup>b</memberOfGroup>
+        <fundType>OO</fundType>
+        <legalProceedings>N</legalProceedings>
+        <citizenshipOrOrganization>Q2</citizenshipOrOrganization>
+        <soleVotingPower>45951250.00</soleVotingPower>
+        <sharedVotingPower>0.00</sharedVotingPower>
+        <soleDispositivePower>45951250.00</soleDispositivePower>
+        <sharedDispositivePower>0.00</sharedDispositivePower>
+        <aggregateAmountOwned>45951250.00</aggregateAmountOwned>
+        <isAggregateExcludeShares>N</isAggregateExcludeShares>
+        <percentOfClass>7.43</percentOfClass>
+        <typeOfReportingPerson>OO</typeOfReportingPerson>
+        <commentContent>(1) The amounts set forth in rows 7, 9 and 11 above consist of 45,951,250 shares of Common Stock issuable upon conversion of Preferred Stock held directly by the Trust. The Trust, the Trustee and each of the three directors of the Trustee are deemed to beneficially own the shares, with each of the Trust and the Trustee having sole voting and dispositive powers over the shares and each director of the Trustee having shared voting and dispositive power over the shares.
+(3) The percentage of class set forth in row 13 above was calculated based on 572,468,968 shares of Common Stock, outstanding as of March 20, 2026, as set forth in the Company's Preliminary Proxy Statement filed with the Commission on March 27, 2026.</commentContent>
+      </reportingPersonInfo>
+      <reportingPersonInfo>
+        <reportingPersonCIK>0001880895</reportingPersonCIK>
+        <reportingPersonNoCIK>N</reportingPersonNoCIK>
+        <reportingPersonName>Beck Kerryn</reportingPersonName>
+        <memberOfGroup>b</memberOfGroup>
+        <fundType>OO</fundType>
+        <legalProceedings>N</legalProceedings>
+        <citizenshipOrOrganization>Q2</citizenshipOrOrganization>
+        <soleVotingPower>0.00</soleVotingPower>
+        <sharedVotingPower>45951250.00</sharedVotingPower>
+        <soleDispositivePower>0.00</soleDispositivePower>
+        <sharedDispositivePower>45951250.00</sharedDispositivePower>
+        <aggregateAmountOwned>45951250.00</aggregateAmountOwned>
+        <isAggregateExcludeShares>N</isAggregateExcludeShares>
+        <percentOfClass>7.43</percentOfClass>
+        <typeOfReportingPerson>IN</typeOfReportingPerson>
+        <commentContent>(1) The amounts set forth in rows 8, 10 and 11 above consist of 45,951,250 shares of Common Stock issuable upon conversion of Preferred Stock held directly by the Trust. The Trust, the Trustee and each of the three directors of the Trustee are deemed to beneficially own the shares, with each of the Trust and the Trustee having sole voting and dispositive powers over the shares and each director of the Trustee having shared voting and dispositive power over the shares.
+(3) The percentage of class set forth in row 13 above was calculated based on 572,468,968 shares of Common Stock, outstanding as of March 20, 2026, as set forth in the Company's Preliminary Proxy Statement filed with the Commission on March 27, 2026.</commentContent>
+      </reportingPersonInfo>
+      <reportingPersonInfo>
+        <reportingPersonCIK>0001880893</reportingPersonCIK>
+        <reportingPersonNoCIK>N</reportingPersonNoCIK>
+        <reportingPersonName>Butler Warren</reportingPersonName>
+        <memberOfGroup>b</memberOfGroup>
+        <fundType>OO</fundType>
+        <legalProceedings>N</legalProceedings>
+        <citizenshipOrOrganization>Q2</citizenshipOrOrganization>
+        <soleVotingPower>0.00</soleVotingPower>
+        <sharedVotingPower>45951250.00</sharedVotingPower>
+        <soleDispositivePower>0.00</soleDispositivePower>
+        <sharedDispositivePower>45951250.00</sharedDispositivePower>
+        <aggregateAmountOwned>45951250.00</aggregateAmountOwned>
+        <isAggregateExcludeShares>N</isAggregateExcludeShares>
+        <percentOfClass>7.43</percentOfClass>
+        <typeOfReportingPerson>IN</typeOfReportingPerson>
+        <commentContent>(1) The amounts set forth in rows 8, 10 and 11 above consist of 45,951,250 shares of Common Stock issuable upon conversion of Preferred Stock held directly by the Trust. The Trust, the Trustee and each of the three directors of the Trustee are deemed to beneficially own the shares, with each of the Trust and the Trustee having sole voting and dispositive powers over the shares and each director of the Trustee having shared voting and dispositive power over the shares.
+(3) The percentage of class set forth in row 13 above was calculated based on 572,468,968 shares of Common Stock, outstanding as of March 20, 2026, as set forth in the Company's Preliminary Proxy Statement filed with the Commission on March 27, 2026.</commentContent>
+      </reportingPersonInfo>
+    </reportingPersons>
+    <items1To7>
+      <item1>
+        <securityTitle>Common Stock, $0.0001 par value per share</securityTitle>
+        <issuerName>Rocket Lab Corp</issuerName>
+        <issuerPrincipalAddress>
+          <com:street1>3881 McGowen Street</com:street1>
+          <com:city>Long Beach</com:city>
+          <com:stateOrCountry>CA</com:stateOrCountry>
+          <com:zipCode>90808</com:zipCode>
+        </issuerPrincipalAddress>
+        <commentText>This Amendment No. 5 (this "Amendment No. 5") amends and supplements the statement on Schedule 13D originally filed by the Reporting Persons on September 7, 2021 (the "Schedule 13D"), as amended by Amendment No. 1 to the Schedule 13D filed by the Reporting Persons on September 18, 2023 (the "Amendment No. 1"), Amendment No. 2 to the Schedule 13D filed by the Reporting Persons on December 5, 2024 (the "Amendment No. 2"), Amendment No. 3 to the Schedule 13D filed by the Reporting Persons on January 10, 2025 (the "Amendment No. 3"), and Amendment No. 4 to the Schedule 13D filed by the Reporting Persons on June 17, 2025 (the "Amendment No. 4" and, together with the Schedule 13D, Amendment No. 1, Amendment No. 2, Amendment No. 3, Amendment No. 4 and this Amendment No. 5, this "Statement"). Unless otherwise indicated, each capitalized term used but not defined in this Amendment No. 5 shall have the meaning assigned to such term in the Schedule 13D, Amendment No. 1, Amendment No. 2, Amendment No. 3 and Amendment No. 4. Except as otherwise specifically amended in this Amendment No. 5, items in the Schedule 13D, Amendment No. 1, Amendment No. 2, Amendment No. 3 and Amendment No. 4 remain unchanged.</commentText>
+      </item1>
+      <item4>
+        <transactionPurpose>Item 4 of the Statement is hereby amended and supplemented by adding the following:
+
+On March 27, 2026, the Trust entered into a 10b5-1 plan (the "Plan") in accordance with Rule 10b5-1 promulgated under the Exchange Act pursuant to which Goldman Sachs &amp; Co. LLC (the "Broker") has been appointed to sell up to 5,000,000 shares of Common Stock of the Company, subject to certain temporal, price and volume based parameters. The shares are not permitted to be sold under the Plan until the expiration of the required cooling off period set forth in Rule 10b5-1(c)(1)(ii)(B)(1) under the Securities Exchange Act of 1934, as amended, and the Plan will expire under its terms on July 8, 2026. The sales under the Plan, which represent just over 10% of Mr. Beck's direct and indirect beneficial ownership, are being made for continued diversification, estate planning purposes and to further support philanthropic pursuits.
+
+On March 30, 2026, Mr. Beck and the Company entered into a restricted stock unit ("RSU") cancellation agreement pursuant to which Mr. Beck voluntarily forfeited and cancelled all unvested RSUs held by Mr. Beck representing an aggregate of 392,155 shares of the Company's common stock. Mr. Beck's focus is the long-term appreciation of shareholder value rather than short-term cash or equity incentives. At Mr. Beck's request, the capital previously allocated for this compensation will be redirected toward Company priorities and strategic R&amp;D initiatives, reinforcing a shared commitment to disciplined fiscal management and growth</transactionPurpose>
+      </item4>
+      <item5>
+        <transactionDesc>Item 5(c) of the Statement is hereby amended and supplemented as follows:
+
+The information set forth in Item 4 of this Statement is incorporated by reference herein.
+
+During the past sixty days, Peter Beck sold an aggregate of 18,857 shares of Common Stock pursuant to a "sell-to-cover" transaction pursuant to a Rule 10b5-1 election adopted by Mr. Beck in order to satisfy applicable tax withholding obligations in connection with the vesting and settlement of restricted stock units previously granted to Mr. Beck as follows:
+On March 2, 2026, Mr. Beck sold 1,349 shares of Common Stock in the open market at a weighted average price of $66.8288.  These shares were sold in multiple transactions at prices ranging from $66.4700 to $67.4500.
+On March 2, 2026, Mr. Beck sold 951 shares of Common Stock in the open market at a weighted average price of $67.9207. These shares were sold in multiple transactions at prices ranging from $67.5000 to $68.4500.
+On March 2, 2026, Mr. Beck sold 3,465 shares of Common Stock in the open market at a weighted average price of $69.1034. These shares were sold in multiple transactions at prices ranging from $68.4800 to $69.4600.
+On March 2, 2026, Mr. Beck sold 11,010 shares of Common Stock in the open market at a weighted average price of $70.0313. These shares were sold in multiple transactions at prices ranging from $69.4700 to $70.4600.
+On March 2, 2026, Mr. Beck sold 2,082 shares of Common Stock in the open market at a weighted average price of $70.6170.  These shares were sold in multiple transactions at prices ranging from $70.4700 to $70.9450.
+
+The Reporting Persons undertake to provide the Company, any securityholder of the Company, or the Staff of the Commission, upon request, full information regarding the number of shares sold at each separate price within the ranges set forth above.</transactionDesc>
+      </item5>
+      <item6>
+        <contractDescription>Item 6 of the Statement is hereby amended and supplemented by adding the following: The information set forth in Item 4 of this Statement, including with respect to the terms of the Plan, are incorporated herein by reference.</contractDescription>
+      </item6>
+    </items1To7>
+    <signatureInfo>
+      <signaturePerson>
+        <signatureReportingPerson>Beck Peter</signatureReportingPerson>
+        <signatureDetails>
+          <signature>/s/ Peter Beck</signature>
+          <title>Peter Beck</title>
+          <date>03/30/2026</date>
+        </signatureDetails>
+      </signaturePerson>
+      <signaturePerson>
+        <signatureReportingPerson>Equatorial Trust</signatureReportingPerson>
+        <signatureDetails>
+          <signature>/s/ Peter Beck</signature>
+          <title>Peter Beck, Director and Attorney-in-Fact for Peek Street Equatorial Trustee Limited, its trustee</title>
+          <date>03/30/2026</date>
+        </signatureDetails>
+      </signaturePerson>
+      <signaturePerson>
+        <signatureReportingPerson>Peek Street Equatorial Trustee Ltd</signatureReportingPerson>
+        <signatureDetails>
+          <signature>/s/ Peter Beck</signature>
+          <title>Peter Beck, Director and Attorney-in-Fact for Peek Street Equatorial Trustee Limited</title>
+          <date>03/30/2026</date>
+        </signatureDetails>
+      </signaturePerson>
+      <signaturePerson>
+        <signatureReportingPerson>Beck Kerryn</signatureReportingPerson>
+        <signatureDetails>
+          <signature>/s/ Peter Beck</signature>
+          <title>Peter Beck, Attorney-in-Fact for Kerryn Beck</title>
+          <date>03/30/2026</date>
+        </signatureDetails>
+      </signaturePerson>
+      <signaturePerson>
+        <signatureReportingPerson>Butler Warren</signatureReportingPerson>
+        <signatureDetails>
+          <signature>/s/ Peter Beck</signature>
+          <title>Peter Beck, Attorney-in-Fact for Warren Butler</title>
+          <date>03/30/2026</date>
+        </signatureDetails>
+      </signaturePerson>
+    </signatureInfo>
+  </formData>
+</edgarSubmission>

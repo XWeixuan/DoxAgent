@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from io import BytesIO
 from urllib.parse import unquote, urljoin, urlsplit
 
-from lxml import html
+from lxml import etree, html
 
 
 @dataclass(frozen=True)
@@ -25,6 +25,10 @@ def archive_url(value, base):
 
         doc = parse_qs(parsed.query).get("doc", [""])[0]
         url = urljoin("https://www.sec.gov", doc)
+        parsed = urlsplit(url)
+    relative = parsed.path.removeprefix(urlsplit(base).path)
+    if re.fullmatch(r"xslSCHEDULE_13D_X\d{2}/primary_doc\.xml", relative):
+        url = base + "primary_doc.xml"
         parsed = urlsplit(url)
     if (
         parsed.scheme != "https"
@@ -102,6 +106,8 @@ def _visible(node):
 
 
 def extract_document(raw, name):
+    if name.lower().endswith(".xml"):
+        return extract_schedule_13d(raw)
     if name.lower().endswith(".pdf") or raw.startswith(b"%PDF-"):
         from pypdf import PdfReader
 
@@ -205,6 +211,44 @@ def extract_document(raw, name):
             r"(?:Field:.*|Document created using Wdesk|Copyright \d{4} Workiva)", line
         )
     )
+
+
+def extract_schedule_13d(raw, *, expected_cik=None):
+    """Keep labelled ownership facts and all narrative items, excluding transport headers."""
+    parser = etree.XMLParser(resolve_entities=False, no_network=True)
+    root = etree.fromstring(raw, parser=parser)
+    if root.getroottree().docinfo.doctype:
+        raise ValueError("sec_13d_external_document_type")
+    if root.tag != "{http://www.sec.gov/edgar/schedule13D}edgarSubmission":
+        raise ValueError("sec_unsupported_xml_document")
+    form = root.find("{*}formData")
+    if form is None:
+        raise ValueError("sec_13d_form_data_missing")
+    issuer = form.find(".//{*}issuerCIK")
+    if expected_cik and (issuer is None or int(issuer.text) != int(expected_cik)):
+        raise ValueError("sec_13d_issuer_cik_mismatch")
+    lines = []
+
+    def visit(node, path):
+        if not isinstance(node.tag, str):
+            return
+        label = etree.QName(node).localname
+        children = [c for c in node if isinstance(c.tag, str)]
+        here = path + [label]
+        if children:
+            for index, child in enumerate(children, 1):
+                visit(child, here + [str(index)])
+        elif node.text and node.text.strip():
+            text = node.text.strip()
+            if re.search(r"<(?:p|div|table|br)\b", text, re.I):
+                text = extract_document(text.encode(), "narrative.htm")
+            label_path = " / ".join(re.sub(r"(?<=[a-z])(?=[A-Z])", " ", p) for p in here)
+            lines.append(f"{label_path}: {text}")
+
+    visit(form, [])
+    if not lines:
+        raise ValueError("sec_13d_empty_form")
+    return "\n".join(lines)
 
 
 def clean_main(text, form):

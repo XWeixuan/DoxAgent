@@ -61,3 +61,14 @@ SEC 抓取失败在既有 BodyResults、执行/结果台账中保存，有限重
 证据：`eval/sec_edgar_20261024/production-status-final.json`、`production-poll-history.json`、`production-pipeline-canary-final.json`、`read-projection.json`、`configuration-idempotence.json`、`api-health.json`、`production-resources.jsonl`、`subscription-boundary-tests.txt`。较早候选字符数与最终略有区别，是金融 inline 文本/编码清洗修正，按最终镜像回执验收。
 
 服务器受限发布目录 `/var/lib/doxagent/sec-edgar-20261024/` 与 `boundary/` 保存 before/private manifests 和标准 build/deployment 日志；环境值不进入仓库。回退可先停用 sec_edgar 源及其绑定，再经标准发布入口回退相关镜像；已捕获正文任务应由具备 SEC reader 的 worker 收尾，不让旧通用抽取器代替 SEC 解析。保留词表、历史记录、失败与审计，不覆盖数据库、不重投旧新闻。
+
+
+## 范围扩展（2026-10-24，按后续变更排除 10-K / 10-Q）
+
+新增 8-K/8-K/A Item 3.01（退市通知/上市标准不合规）、3.03（证券持有人权利重大变更）、2.06（重大减值），旧 11 个 Item 继续适用。新增 13D/13D/A 的官方标识 SC 13D、SC 13D/A、SCHEDULE 13D、SCHEDULE 13D/A；新增 S-3、F-3 及其 ASR 自动生效版本。**10-K、10-Q 及其 /A 不加入**，有显式排除回归；没有新增 13G、S-3/F-3 的 /A 或其他变体。
+
+新版 Schedule 13D 使用 XML，submissions 的 primaryDocument 有时带 xslSCHEDULE_13D_X01/X02 展示前缀。采集将其正规化为同一 accession 下的原始 primary_doc.xml，index 中展示版/原始版两行合并为一个文件。新增带标签的结构化解析，保留各 reporting person 的主体、持股数量、比例、表决/处置权、Item 叙述及交易/合同说明，验证 issuerCIK 与订阅一致，排除提交传输 header；不通过浏览器执行 XSL。旧 HTML 13D 继续使用现有完整正文/附件链。依据：[SEC EDGAR 24.4 公告](https://www.sec.gov/submit-filings/edgar-news-announcements/edgar-release-24-4)。
+
+真实官方 HTTP 样本均 FULL：RKLB XML 13D/A 20892 字符；ONDS HTML 13D 18318、S-3 140154；NBIS F-3ASR 466811（4 个文件，含 EX-4.3/EX-4.4）；ONDS 8-K Item 3.01 4236；MU 8-K Item 3.03 3039。Item 2.06 通过范围合同测试，未以不相关的历史文件冒充真实该项样本。RKLB 的一条包含 3.01/3.03 的历史申报实际为 8-K12B，本次按明确表单范围不纳入，另选真实 8-K 验证。既有 30 秒节流/发现与 BODY 分离、ARTICLE_ONCE、CIK 自动映射及所有 ticker 订阅不变；未回放历史申报到生产。
+
+扩展专项 38 项通过，真实 canary 与后续生产回执位于 `eval/sec_edgar_expansion_20261024/`。正式发布与自然轮询结果继续追加。

@@ -16,8 +16,24 @@ ITEMS = {
     "5.02": "Directors, officers and compensation",
     "2.03": "Creation of financial obligations",
     "2.05": "Costs of exit or disposal activities",
+    "3.01": "Delisting notice or failure to satisfy listing standards",
+    "3.03": "Material modification to rights of security holders",
+    "2.06": "Material impairments",
 }
-FORMS = {"8-K", "8-K/A", "6-K", "6-K/A", "424B5"}
+FORM_TOPICS = {
+    "424B5": "Prospectus supplement",
+    "6-K": "Foreign issuer report",
+    "6-K/A": "Amended foreign issuer report",
+    "SC 13D": "Beneficial ownership report",
+    "SC 13D/A": "Amended beneficial ownership report",
+    "SCHEDULE 13D": "Beneficial ownership report",
+    "SCHEDULE 13D/A": "Amended beneficial ownership report",
+    "S-3": "Shelf registration statement",
+    "F-3": "Foreign issuer shelf registration statement",
+    "S-3ASR": "Automatically effective shelf registration statement",
+    "F-3ASR": "Automatically effective foreign issuer shelf registration statement",
+}
+FORMS = {"8-K", "8-K/A", *FORM_TOPICS}
 
 
 def initial_source():

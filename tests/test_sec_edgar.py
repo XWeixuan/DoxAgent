@@ -24,6 +24,7 @@ from doxagent.message_bus_v2.sec_edgar.documents import (
     archive_url,
     document_manifest,
     extract_document,
+    extract_schedule_13d,
     merge_documents,
 )
 from doxagent.message_bus_v2.sec_edgar.http import SecHttp, SecHttpError
@@ -110,6 +111,75 @@ async def test_scope_revisions_timestamp_and_no_summary_body():
     assert len({m.external_id for m in r.messages}) == 4
     assert all(m.body is None and m.publication_time_basis == "EXACT" for m in r.messages)
     assert all(m.published_at == NOW - timedelta(seconds=90) for m in r.messages)
+
+
+async def test_expanded_forms_and_explicit_annual_quarterly_exclusion():
+    accepted = [
+        "SC 13D",
+        "SC 13D/A",
+        "SCHEDULE 13D",
+        "SCHEDULE 13D/A",
+        "S-3",
+        "F-3",
+        "S-3ASR",
+        "F-3ASR",
+    ]
+    rejected = ["10-K", "10-Q", "10-K/A", "10-Q/A", "SC 13G", "SCHEDULE 13G/A", "NT 10-Q"]
+    data = submissions(accepted + rejected, [""] * (len(accepted) + len(rejected)))
+    result = await SecEdgarAdapter(FakeHttp(lambda _: json.dumps(data).encode())).poll(context())
+    assert [m.metadata["sec_filing"]["form"] for m in result.messages] == accepted
+    assert all("Foreign issuer report" not in m.title for m in result.messages)
+
+
+async def test_structured_13d_viewer_alias_complete_body_and_issuer_identity():
+    data = submissions(["SCHEDULE 13D/A"], [""])
+    data["filings"]["recent"]["primaryDocument"] = ["xslSCHEDULE_13D_X02/primary_doc.xml"]
+    acc = data["filings"]["recent"]["accessionNumber"][0]
+    real_index = (
+        (FIXTURES / "schedule13d-index.html")
+        .read_bytes()
+        .replace(b"000175392626000566", acc.replace("-", "").encode())
+    )
+    xml = (FIXTURES / "schedule13d.xml").read_bytes()
+    fake = FakeHttp(
+        lambda url: (
+            json.dumps(data).encode()
+            if "submissions" in url
+            else real_index
+            if url.endswith("-index.html")
+            else xml
+        )
+    )
+    message = (await SecEdgarAdapter(fake).poll(context())).messages[0]
+    assert message.url == BASE + "primary_doc.xml"
+    assert message.metadata["sec_filing"]["reported_primary_document"].startswith("xslSCHEDULE")
+    record = MediaEnrichmentRecord(
+        standard_message_id="13d",
+        raw_message_id="13d",
+        source_id="sec_edgar",
+        ticker="RKLB",
+        title=message.title,
+        body=message.summary,
+        url=message.url,
+    )
+    result = await SecBodyReader(fake).extract(SimpleNamespace(message=message), record)
+    assert result.succeeded and result.diagnostics["outcome"] == "FULL"
+    assert result.diagnostics["documents_extracted"] == 1  # rendered/raw index rows deduped
+    assert "46443180.00" in result.content and "7.51" in result.content
+    assert "45951250.00" in result.content and "7.43" in result.content
+    assert "purpose Of Transaction" in result.content or "item4" in result.content.lower()
+    with pytest.raises(ValueError, match="issuer_cik_mismatch"):
+        extract_schedule_13d(xml, expected_cik="1")
+
+
+def test_schedule13d_excludes_transport_header_but_keeps_narrative():
+    xml = (
+        (FIXTURES / "schedule13d.xml")
+        .read_bytes()
+        .replace(b"<formData>", b"<headerData><ccc>IGNORED-HEADER</ccc></headerData><formData>")
+    )
+    text = extract_schedule_13d(xml, expected_cik="1819994")
+    assert "IGNORED-HEADER" not in text and "46443180.00" in text
 
 
 async def test_subscription_boundary_does_not_replay_history_or_suppress_first_new_filing(tmp_path):
