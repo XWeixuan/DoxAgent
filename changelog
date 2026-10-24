@@ -2123,3 +2123,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-24 消息采集周期优化生产发布：03ee30a6 主改造、9c479777 维护批次下限、1413e42d 接纳空写及排队读取修正均同步 origin/main；标准分组件发布与增量迁移完成，18 项 Owner/CAS 配置幂等，Supervisor/人工目标保留。实际仍 4 核，维持全局浏览器4/BODY2；上线回归4项及59项通过。周末按用户要求跳过正式效果验收，明确记录持久接纳积压仍增长和队列等待，未宣称周期/端到端或正文80%达标；回执 docs/message-source-polling-cadence-production-release-20261024.md。
 
 2026-10-24 升级失败后全量恢复准备：按用户要求合并当前工作区其他会话已完成的交易审计、Beta对冲及自适应止盈研究报告/复算资料与既有诊断方案，保留历史原始运行目录；生产应用源码已与origin main一致。准备统一精确提交重建、恢复相关容器并按发布台账清退无引用旧资源，继续使用实际4核配置。
+
+2026-10-24 升级失败后生产恢复完成：本地main/远端同步f2f0bcd6，六类镜像重建、18个生产组件统一版本并运行；修复旧O4等消费者不识别capacity_mode的版本不一致，49源解析与12个IR自然采集成功。20项研究/56项生产相关测试通过；删除7个已退出旧eval容器，按发布台账清理无引用镜像和旧缓存，保留卷、身份、前一版；实际仍4核。Gateway无Java/API需人工桌面登录，历史接纳积压未清零，不作性能达标声明。回执docs/server-upgrade-failure-recovery-20261024.md。

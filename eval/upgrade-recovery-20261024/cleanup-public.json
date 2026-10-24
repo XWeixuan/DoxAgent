@@ -1,0 +1,23 @@
+{
+  "removed_containers": [
+    "/doxagent-eval-vertex-quota-20261022",
+    "/doxagent-eval-w2r1-vertex-adc-20261022",
+    "/doxagent-eval-vertex-deps-root-20261022",
+    "/doxagent-eval-vertex-deps-uv-20261022",
+    "/doxagent-eval-dependency-inventory-20261022",
+    "/doxagent-eval-vertex-deps-20261022",
+    "/doxagent-eval-w2r1-vertex-20261022"
+  ],
+  "resources": {
+    "at": 1792838925.6027179,
+    "available_before": 23717982208,
+    "retired": [
+      {
+        "tag": "doxagent-v2:storage-039d67758409",
+        "image": "sha256:9ca070bc1b5588ae2f1de750ad94182de1d4f9d4e216b377ccc0707e799988f1"
+      }
+    ],
+    "errors": [],
+    "available_after": 23732379648
+  }
+}

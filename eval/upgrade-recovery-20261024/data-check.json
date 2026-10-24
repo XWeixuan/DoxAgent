@@ -1,0 +1,82 @@
+{
+  "at": 1792838898.7322893,
+  "ir": [
+    {
+      "endpoint_id": "be.press",
+      "status": "succeeded",
+      "last_success_at": "2026-10-24T10:48:09.432685Z"
+    },
+    {
+      "endpoint_id": "ceg.press",
+      "status": "succeeded",
+      "last_success_at": "2026-10-24T10:48:13.311288Z"
+    },
+    {
+      "endpoint_id": "cohr.corporate",
+      "status": "succeeded",
+      "last_success_at": "2026-10-24T10:48:10.207844Z"
+    },
+    {
+      "endpoint_id": "cohr.financial",
+      "status": "succeeded",
+      "last_success_at": "2026-10-24T10:48:13.560730Z"
+    },
+    {
+      "endpoint_id": "intc.press",
+      "status": "succeeded",
+      "last_success_at": "2026-10-24T10:48:13.551070Z"
+    },
+    {
+      "endpoint_id": "mu.ir",
+      "status": "succeeded",
+      "last_success_at": "2026-10-24T10:48:12.942869Z"
+    },
+    {
+      "endpoint_id": "mu.newsroom",
+      "status": "succeeded",
+      "last_success_at": "2026-10-24T10:48:13.707803Z"
+    },
+    {
+      "endpoint_id": "nbis.press",
+      "status": "succeeded",
+      "last_success_at": "2026-10-24T10:48:10.133998Z"
+    },
+    {
+      "endpoint_id": "onds.press",
+      "status": "succeeded",
+      "last_success_at": "2026-10-24T10:48:13.825433Z"
+    },
+    {
+      "endpoint_id": "rklb.ir",
+      "status": "succeeded",
+      "last_success_at": "2026-10-24T10:48:09.233211Z"
+    },
+    {
+      "endpoint_id": "rklb.updates",
+      "status": "succeeded",
+      "last_success_at": "2026-10-24T10:48:14.396588Z"
+    },
+    {
+      "endpoint_id": "snow.press",
+      "status": "succeeded",
+      "last_success_at": "2026-10-24T10:48:13.646081Z"
+    }
+  ],
+  "captures": [
+    {
+      "status": "COMPLETED",
+      "count": 22869,
+      "remaining": 0
+    },
+    {
+      "status": "PENDING",
+      "count": 17732,
+      "remaining": 685470
+    },
+    {
+      "status": "RUNNING",
+      "count": 1,
+      "remaining": 0
+    }
+  ]
+}
