@@ -2102,3 +2102,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-24 消息实际采集周期优化开发完成：固定相位与独立首屏/频道/query调度，取消整轮源组占槽及五个重点来源的Bus重复gap；新增持久capture与16篇可恢复分片接纳、版本fencing、独立只读/准备池与短写公平。落地Yahoo异步日期核验及ticker/单元冷却隔离、Barron双feed同源anchor、Investing列表竞速、需求驱动容量与BODY服务机会、CPU/接纳积压暂停可选历史、全轮次周期账和Read/UI。保留ARTICLE_ONCE、覆盖与真实正文质量；最终299个唯一后端用例中298通过、1个Windows符号链接用例跳过，前端构建与两种宽度浏览器检查通过。回执docs/message-source-polling-cadence-implementation-20261024.md；本轮未同步origin main、未修改生产配置或发布，8核生产指标尚待验收。
 
 2026-10-24 周期优化上线修正：生产Read维护连续SQL预算中断使自适应batch跨轮次缩至0，触发GC参数错误并反复重启；将退避下限固定为10且小批失败即让出本轮。10轮连续中断回归与原Read维护共4项通过，仅滚动维护组件，不修改业务保留或删除范围。
+
+2026-10-24 周期优化上线接纳修正：实际持久队列显示空结果仍等待writer，移除已转交capture后无消息/无失败的健康接纳空调用；最终轮询状态改走只读快照，短调度提交与接纳claim使用短控制优先级，分片业务接纳保持原公平写通道。59项调度/重放/真实请求账/版本fencing与端到端回归通过；保留全部积压收据，不将候选计作完整正文。

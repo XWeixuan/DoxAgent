@@ -648,7 +648,7 @@ class CaptureIntake:
 
     async def run(self):
         while not self.stopping:
-            claim = await self.bus.storage.call(self.journal.claim)
+            claim = await self.bus.storage.call(self.journal.claim, _lane_priority=0)
             if not claim:
                 import time
 

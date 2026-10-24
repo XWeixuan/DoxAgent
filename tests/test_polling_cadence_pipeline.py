@@ -121,6 +121,35 @@ async def test_transport_request_times_are_not_invented_from_dummy_poll(tmp_path
         await scheduler.close()
 
 
+@pytest.mark.parametrize("message_count", [0, 1])
+async def test_captured_poll_does_not_enqueue_an_empty_health_intake(
+    tmp_path, monkeypatch, message_count
+):
+    repo, bus, source, binding = _setup(tmp_path)
+    original, accepted = bus._accept_poll_result, []
+
+    def accept(**kwargs):
+        accepted.append(len(kwargs["result"].messages))
+        return original(**kwargs)
+
+    monkeypatch.setattr(bus, "_accept_poll_result", accept)
+
+    class Adapter:
+        async def poll(self, context):
+            return PollResult(messages=[_message(87000)] if message_count else [])
+
+    scheduler = GlobalPollScheduler(
+        repo, bus, SimpleNamespace(resolve=lambda *a, **kw: Adapter(), crawler_plane=None)
+    )
+    try:
+        result = await scheduler._poll(source, binding, utc_now())
+        assert accepted == ([1] if message_count else [])
+        assert result.collected_count == message_count and result.queued_count == message_count
+        assert repo.get_poll_state(binding).status.value == "succeeded"
+    finally:
+        await scheduler.close()
+
+
 @pytest.mark.parametrize("partial", [False, True])
 async def test_deferred_reason_survives_empty_and_partial_intake_into_run_ledger(tmp_path, partial):
     repo, bus, source, binding = _setup(tmp_path)

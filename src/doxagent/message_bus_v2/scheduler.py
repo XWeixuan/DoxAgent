@@ -1365,15 +1365,21 @@ class GlobalPollScheduler:
                     bootstrap_override=False,
                     strict_intake=True,
                 )
-            elif acquisition_unit not in {"HEAD", "ALL"}:
-                execution = await self.storage_call(
-                    self.service._accept_poll_result,
-                    source=source,
-                    binding=binding,
-                    result=result,
-                    attempted_at=attempted_at,
-                    admission_context=admission_context,
-                    persist_poll_state=False,
+            elif not result.messages and not result.failures:
+                # Messages are already durable and owned by CaptureIntake. An
+                # empty health-only accept needlessly queues another DB writer.
+                execution = PollExecutionResult(
+                    binding_id=binding.binding_id,
+                    poll_run_id=poll_run_id,
+                    next_checkpoint=result.next_checkpoint,
+                    window_coverage=result.window_coverage,
+                    window_done=result.window_done,
+                    site_access_deferred=result.site_access_deferred,
+                    site_access_deferred_reason=result.site_access_deferred_reason,
+                    site_access_retry_not_before=result.site_access_retry_not_before,
+                    crawler_execution_id=str(value)
+                    if (value := result.acquisition_metadata.get("crawler_execution_id"))
+                    else None,
                 )
             else:
                 execution = await self.storage_call(
@@ -1422,7 +1428,7 @@ class GlobalPollScheduler:
                     execution.crawler_execution_id,
                     execution.model_dump(mode="json"),
                 )
-            refreshed = await self.storage_call(
+            refreshed = await self.read_call(
                 self.repository.get_poll_unit_state, binding, acquisition_unit
             )
             from doxagent.site_strategy.client import ACCESS_RESULTS
@@ -1499,6 +1505,7 @@ class GlobalPollScheduler:
                         "updated_at": attempted_at,
                     }
                 ),
+                _lane_priority=0,
             )
             return execution
         except Exception as exc:
