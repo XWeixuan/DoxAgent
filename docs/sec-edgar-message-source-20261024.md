@@ -16,7 +16,7 @@
 
 ## 开发与验收记录
 
-已完成接入代码。最终 SEC 专项 29 项通过；BODY/国防源/结果缓存/调度相关回归 94 项通过（含 SEC 专项，不能相加当作去重总数）；配置/现有源/初始化合同回归 44 项通过。默认源目录断言同步已上线国防源与本次 SEC；一个旧 Yahoo deferral 测试原先期望 never_polled，按既有独立 HEAD/SUPPLEMENT unit 的聚合语义改为 PARTIAL，未修改 Yahoo 调度逻辑。Ruff 与 diff 检查通过。
+已完成接入代码。首轮 SEC 专项 29 项通过；BODY/国防源/结果缓存/调度相关回归 94 项通过（含 SEC 专项，不能相加当作去重总数）；配置/现有源/初始化合同回归 44 项通过。默认源目录断言同步已上线国防源与本次 SEC；一个旧 Yahoo deferral 测试原先期望 never_polled，按既有独立 HEAD/SUPPLEMENT unit 的聚合语义改为 PARTIAL，未修改 Yahoo 调度逻辑。Ruff 与 diff 检查通过。
 
 真实官方样本经完整 EnrichmentHub → Raw → Standard → Stream 隔离库链路，3 条均 FULL，content_evidence 也均 FULL：
 
@@ -38,3 +38,26 @@ SEC 抓取失败在既有 BodyResults、执行/结果台账中保存，有限重
 复核识别到旧新闻源首次 HEAD 的 baseline 会抑制订阅后刚产生的申报。SEC 实时发现现在从绑定 created_at 起算，后续轮询也不把订阅前旧文件重新带入；订阅后接纳的新申报即使是首次 HEAD，持久正文任务也明确 bootstrap=False。显式隔离历史验收窗口保留，真实 acceptance 时间不变。
 
 表格中的相邻 inline 标签按可见文本连接，防止 1 + ,000 或 7 + .5% 被额外空格拆坏；Windows-1252 文档保留欧元、英镑和引号。大幅无充分替代文本的演示图、扫描 PDF 明确 requires_ocr，不将省掉图片数据的文本稿当 FULL；当前版本不部署 OCR。额外实测 RKLB 0001753926-26-001085：官方附件包含 EX-2.1、EX-10.1、EX-99.1 和带 12 张大图的 EX-99.2，故不得以“文本已下载”宣称整个图文申报 FULL。原始链接及失败清单保留，以便有 OCR 能力后处理。
+
+
+## 生产发布与实际验收完成
+
+北京时间 **2026-10-24 19:26:52** 最终快照：BE、CEG、COHR、INTC、MU、NBIS、ONDS、RKLB、SNOW 共 9 个 ticker 全部启用 SEC By Ticker，目标间隔 30 秒，最近轮询均 succeeded、无当前错误。初始化自动登记后重复配置工具报告 source_created=false、profile_changed=false、bindings_created=[]，没有反复提高配置 revision。读侧已投影 1 个 SEC 源与 9 条订阅。
+
+生产代码及镜像：
+
+- Message Bus、Content Enrichment：`f7c2abaf7a930af8f4f13cc816a3504d66d00614`，`sha256:18f706887b93e401230977367fdaac3c7bab5aee63853012b47c8af33a7d9017`。
+- API、Control、Initialization、Scheduler：首轮接入 `2b0819bc55321bc356b19bbbd76dad9687f73080`，`sha256:571494a03dedf526773c1d558e0aa5d93e0630a166440b39dd7a917b2890a96f`。后续边界/抽取修正只需更新 Bus 与 BODY；其余四角色已具备自动默认订阅能力。
+- 六个角色均 running、重启计数 0；API healthy，healthz/readyz 均 200。Site Access、Chrome Supervisor 的镜像与启动时间保持不变，资源维护 timer 已恢复 active。通用 Scheduler 按原 1200 秒优雅退出配置完成收尾，没有强制打断业务。
+
+自然轮询覆盖 11:10:36–11:26:55 UTC：293 次 CAPTURED，另 1 次仍 DISPATCHED，未见 FAILED/DEFERRED；该时段包含两次版本发布。最终镜像启动后 54 次已结束轮询的耗时均值 **1.95 秒**、P95 **5.93 秒**、最大 **6.02 秒**；45 个同 ticker 相邻轮询间隔均值 **29.43 秒**、P95 **31.68 秒**、最大 **33.01 秒**。耗时口径为持久 poll_run dispatch→finished，包含容量等待和捕获提交，间隔按实际 dispatch 时间计算，未拿配置值冒充实测。窗口较短且是星期六，不宣称长期 SLA 或新申报端到端延迟已被自然样本证明。
+
+最终生产镜像另在 `/tmp/sec-isolated-20261024T112445.sqlite3` 隔离库实际执行官方 HTTP → BODY → Raw → Standard → Stream：上述 8-K、6-K、424B5 各 1 条，分别 5654 / 8612 / 256916 字符，均 FULL 且 content_evidence=FULL，每条含 2 个官方文件。3 Raw、3 Standard、3 Stream，原始申报时间保留。生产 live Raw 为 0、正文任务为空：验收时未发现符合范围的新申报，未把历史样本注入生产，也没有触发历史下游研判。两个事实分别验收：自然发现调度正常；真实文件在生产运行环境的全链路处理正常。
+
+边界与抽取补充最终 **48 项 SEC/Hub 相关测试通过**（SEC 模块共 32 项），与首轮 94 项相关回归、44 项配置/现有源/初始化合同分别记录，不叠加成去重总数。最终 Ruff 与 diff 检查通过。
+
+资源单点样本为 Bus 162.5 MiB、Content Enrichment 127.1 MiB，二者承载原有所有来源，不能解释为 SEC 增量或前后因果对照；确定没有新增浏览器进程/身份或独立服务。company→CIK 缓存共享，未知 ticker 最多每分钟刷新映射；可通过绑定参数 cik 明确覆盖，映射失败如实报告而不模糊关联其他公司。显式停用/删除订阅不会被 bootstrap 重建。
+
+证据：`eval/sec_edgar_20261024/production-status-final.json`、`production-poll-history.json`、`production-pipeline-canary-final.json`、`read-projection.json`、`configuration-idempotence.json`、`api-health.json`、`production-resources.jsonl`、`subscription-boundary-tests.txt`。较早候选字符数与最终略有区别，是金融 inline 文本/编码清洗修正，按最终镜像回执验收。
+
+服务器受限发布目录 `/var/lib/doxagent/sec-edgar-20261024/` 与 `boundary/` 保存 before/private manifests 和标准 build/deployment 日志；环境值不进入仓库。回退可先停用 sec_edgar 源及其绑定，再经标准发布入口回退相关镜像；已捕获正文任务应由具备 SEC reader 的 worker 收尾，不让旧通用抽取器代替 SEC 解析。保留词表、历史记录、失败与审计，不覆盖数据库、不重投旧新闻。

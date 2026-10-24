@@ -1,0 +1,1 @@
+{"read_database": "/var/lib/docker/volumes/doxagent-v2_v2-data/_data/read/serving-v4-20261018/v2.sqlite3", "source_count": 1, "bindings": [["BE", "BE:sec_edgar"], ["CEG", "CEG:sec_edgar"], ["COHR", "COHR:sec_edgar"], ["INTC", "INTC:sec_edgar"], ["MU", "MU:sec_edgar"], ["NBIS", "NBIS:sec_edgar"], ["ONDS", "ONDS:sec_edgar"], ["RKLB", "RKLB:sec_edgar"], ["SNOW", "SNOW:sec_edgar"]]}

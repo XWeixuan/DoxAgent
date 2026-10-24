@@ -1,0 +1,2 @@
+{"BlockIO":"12.7MB / 73.2MB","CPUPerc":"78.51%","Container":"doxagent-v2-v2-message-bus-1","ID":"9a312b77fd01","MemPerc":"1.06%","MemUsage":"162.5MiB / 15GiB","Name":"doxagent-v2-v2-message-bus-1","NetIO":"1.81MB / 107kB","PIDs":"12"}
+{"BlockIO":"618kB / 6.89MB","CPUPerc":"6.38%","Container":"doxagent-v2-v2-content-enrichment-1","ID":"84a4c58a4865","MemPerc":"0.83%","MemUsage":"127.1MiB / 15GiB","Name":"doxagent-v2-v2-content-enrichment-1","NetIO":"14.9MB / 104kB","PIDs":"8"}
