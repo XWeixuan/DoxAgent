@@ -1,0 +1,13 @@
+test_beta_inputs_precede_every_entry (test_disclosure.DisclosureChecks.test_beta_inputs_precede_every_entry) ... ok
+test_both_legs_and_costs_reconcile_independently (test_disclosure.DisclosureChecks.test_both_legs_and_costs_reconcile_independently) ... ok
+test_coverage_and_identical_fixed_exits (test_disclosure.DisclosureChecks.test_coverage_and_identical_fixed_exits) ... ok
+test_delay_applies_to_both_legs_and_has_no_later_beta_leak (test_disclosure.DisclosureChecks.test_delay_applies_to_both_legs_and_has_no_later_beta_leak) ... ok
+test_exit_rule_changes_only_the_expected_two_cases (test_disclosure.DisclosureChecks.test_exit_rule_changes_only_the_expected_two_cases) ... ok
+test_known_seconds_are_never_rounded_backward (test_disclosure.DisclosureChecks.test_known_seconds_are_never_rounded_backward) ... ok
+test_overnight_has_real_historical_series_at_disclosure (test_disclosure.DisclosureChecks.test_overnight_has_real_historical_series_at_disclosure) ... ok
+test_previous_14_trade_results_reproduce_exactly (test_disclosure.DisclosureChecks.test_previous_14_trade_results_reproduce_exactly) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.022s
+
+OK

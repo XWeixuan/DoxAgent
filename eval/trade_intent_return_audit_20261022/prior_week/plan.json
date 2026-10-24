@@ -1,0 +1,115 @@
+{
+  "snapshot_at": "2026-10-13T16:00:00+00:00",
+  "rows": [
+    {
+      "intent_id": "trade:case_c24add34b3594b8aa8c356869a18f222",
+      "ticker": "INTC",
+      "direction": "LONG",
+      "status": "EXECUTION_ACCEPTED",
+      "origin": "W3",
+      "case_created_at": "2026-10-06T17:08:27.361865+00:00",
+      "released_at": "2026-10-06T17:13:38.428968+00:00",
+      "latency_minutes": 5.184451716666667,
+      "capped": true,
+      "entry_at": "2026-10-06T17:13:27.361865+00:00",
+      "exit_at": "2026-10-06T19:30:00+00:00",
+      "raw_exit_at": "2026-10-06T19:30:00+00:00",
+      "title": "Boosting Agentic AI Throughput with Intel® Xeon® CPUs - Intel",
+      "entry_result": "FAILED",
+      "entry_key": "INTC|2026-10-06T17:13:27.361865+00:00|entry",
+      "raw_entry_key": "INTC|2026-10-06T17:13:38.428968+00:00|entry",
+      "exit_key": "INTC|2026-10-06T19:30:00+00:00|exit",
+      "raw_exit_key": "INTC|2026-10-06T19:30:00+00:00|exit"
+    },
+    {
+      "intent_id": "trade:case_7b76ce24051a44c990d602d5db7b8027",
+      "ticker": "BE",
+      "direction": "LONG",
+      "status": "EXECUTION_ACCEPTED",
+      "origin": "POLICY",
+      "case_created_at": "2026-10-07T07:59:11.901670+00:00",
+      "released_at": "2026-10-07T08:01:51.930572+00:00",
+      "latency_minutes": 2.6671483666666664,
+      "capped": false,
+      "entry_at": "2026-10-07T08:01:51.930572+00:00",
+      "exit_at": "2026-10-07T19:30:00+00:00",
+      "raw_exit_at": "2026-10-07T19:30:00+00:00",
+      "title": "U.S. Data Center Power Crunch Poses Greater Risk to Memory and Optical Networking Than Nvidia - BigGo Finance",
+      "entry_result": "FILLED",
+      "entry_key": "BE|2026-10-07T08:01:51.930572+00:00|entry",
+      "raw_entry_key": "BE|2026-10-07T08:01:51.930572+00:00|entry",
+      "exit_key": "BE|2026-10-07T19:30:00+00:00|exit",
+      "raw_exit_key": "BE|2026-10-07T19:30:00+00:00|exit"
+    },
+    {
+      "intent_id": "trade:case_d92564598f294e6c91d3cee128cbe800",
+      "ticker": "MU",
+      "direction": "SHORT",
+      "status": "EXECUTION_ACCEPTED",
+      "origin": "W3",
+      "case_created_at": "2026-10-09T12:06:38.890499+00:00",
+      "released_at": "2026-10-09T12:13:34.447759+00:00",
+      "latency_minutes": 6.925954333333333,
+      "capped": true,
+      "entry_at": "2026-10-09T12:11:38.890499+00:00",
+      "exit_at": "2026-10-09T19:30:00+00:00",
+      "raw_exit_at": "2026-10-09T19:30:00+00:00",
+      "title": "Wall St futures up as oil slips; telecoms pressured by SpaceX spectrum deal",
+      "entry_result": "FAILED",
+      "entry_key": "MU|2026-10-09T12:11:38.890499+00:00|entry",
+      "raw_entry_key": "MU|2026-10-09T12:13:34.447759+00:00|entry",
+      "exit_key": "MU|2026-10-09T19:30:00+00:00|exit",
+      "raw_exit_key": "MU|2026-10-09T19:30:00+00:00|exit"
+    }
+  ],
+  "targets": [
+    {
+      "key": "INTC|2026-10-06T17:13:27.361865+00:00|entry",
+      "ticker": "INTC",
+      "at": "2026-10-06T17:13:27.361865+00:00",
+      "kind": "entry"
+    },
+    {
+      "key": "INTC|2026-10-06T17:13:38.428968+00:00|entry",
+      "ticker": "INTC",
+      "at": "2026-10-06T17:13:38.428968+00:00",
+      "kind": "entry"
+    },
+    {
+      "key": "INTC|2026-10-06T19:30:00+00:00|exit",
+      "ticker": "INTC",
+      "at": "2026-10-06T19:30:00+00:00",
+      "kind": "exit"
+    },
+    {
+      "key": "BE|2026-10-07T08:01:51.930572+00:00|entry",
+      "ticker": "BE",
+      "at": "2026-10-07T08:01:51.930572+00:00",
+      "kind": "entry"
+    },
+    {
+      "key": "BE|2026-10-07T19:30:00+00:00|exit",
+      "ticker": "BE",
+      "at": "2026-10-07T19:30:00+00:00",
+      "kind": "exit"
+    },
+    {
+      "key": "MU|2026-10-09T12:11:38.890499+00:00|entry",
+      "ticker": "MU",
+      "at": "2026-10-09T12:11:38.890499+00:00",
+      "kind": "entry"
+    },
+    {
+      "key": "MU|2026-10-09T12:13:34.447759+00:00|entry",
+      "ticker": "MU",
+      "at": "2026-10-09T12:13:34.447759+00:00",
+      "kind": "entry"
+    },
+    {
+      "key": "MU|2026-10-09T19:30:00+00:00|exit",
+      "ticker": "MU",
+      "at": "2026-10-09T19:30:00+00:00",
+      "kind": "exit"
+    }
+  ]
+}

@@ -1,0 +1,155 @@
+import json
+from datetime import datetime
+from pathlib import Path
+from zoneinfo import ZoneInfo
+ROOT=Path(__file__).parent;DOC=ROOT.parent.parent/'docs/sector-beta-disclosure-backtest-20261024.md';BJ=ZoneInfo('Asia/Shanghai')
+X=json.loads((ROOT/'results.json').read_text(encoding='utf8'));CLOCK={r['report_number']:r for r in json.loads((ROOT/'disclosure_clock.json').read_text(encoding='utf8'))}
+S=X['primary']['summaries'];P=X['matched_original']['summaries'];N=X['natural_exit']['summaries'];K=['0','0.66','1.0']
+def usd(v):return f'{v:+,.2f}'
+def num(v):return f'{v:,.2f}'
+def pct(v):return f'{v:+.3f}%'
+def timebj(t):return datetime.fromtimestamp(t,BJ).strftime('%m-%d %H:%M')
+text=[
+'# DoxAgent 按最早消息披露时点重算：板块 Beta 对冲理论收益',
+'',
+'日期：2026-10-24。基于[上一轮板块 Beta 对冲回测](sector-beta-alpha-backtest-20261023.md)的同一批16条意图，采用用户[所附披露时间表截图](../eval/sector_beta_disclosure_20261024/supplied_disclosure_times.png)作为时钟输入。本轮重新获取/补齐远端 IBKR 历史行情，**未独立重做新闻首发时间核查**。',
+'',
+'## 1. 结果',
+'',
+'主情景：按截图所列披露分钟的开盘价进行**零信息延迟的理论入场**，两腿同步；保持上一轮每笔原定退出时点不变，只检验“更早知道消息并入场”的效果。个股每笔 USD 10,000，初始权益 USD 100,000，仍比较不对冲/66%/100%相对ETF Beta对冲。',
+'',
+'| 方案 | 理论毛损益 USD | 模拟成本 USD | 理论净损益 USD | 账户净收益率 | 净胜率 | 最大回撤 |',
+'| --- | ---: | ---: | ---: | ---: | ---: | ---: |',
+]
+for k,label in [('0','不对冲'),('0.66','66% Beta'),('1.0','100% Beta')]:
+    s=S[k];text.append(f"| {label} | {usd(s['gross_pnl'])} | {num(s['total_cost'])} | **{usd(s['net_pnl'])}** | {pct(s['account_net_return_pct'])} | {s['wins']}/{s['trades']}（{s['win_rate_pct']:.1f}%） | {s['maximum_drawdown_pct']:.3f}% |")
+text += [
+'',
+'**这个理想化入场时钟下，100%对冲的理论净收益最高，三组均由原时钟的亏损转为小幅盈利。**但盈利极度依赖披露分钟内的入场价格，不能把结果直接视为生产可捕获收益：',
+'',
+'| 入场时点敏感性（保持原退出） | 不对冲净损益 USD | 66%净损益 USD | 100%净损益 USD |',
+'| --- | ---: | ---: | ---: |',
+'| 截图披露分钟开盘（主情景） | '+' | '.join(usd(S[k]['net_pnl']) for k in K)+' |',
+]
+for name,label in [('one_minute_after_disclosure','披露后下一分钟开盘'),('five_minutes_after_disclosure','披露后第5分钟开盘')]:
+    v=X['sensitivities'][name]['summaries'];text.append('| '+label+' | '+' | '.join(usd(v[k]['net_pnl']) for k in K)+' |')
+text += [
+'',
+'**仅把入场价格后移一分钟，三组重新全部亏损。**这不是额外加滑点，而是在核查分钟级披露时间和消息反应速度的不确定性。主要驱动是 #2 RKLB：披露分钟开盘价 **59.40**，下一分钟开盘价 **55.48**；保持同一退出价55.13，不对冲净盈利从约 **$716** 降至 **$61**。截图未提供多数消息的实际披露秒数，因此披露分钟开盘可能先于该分钟内真实发布的秒点，主表应理解为乐观理论上界情景。',
+'',
+'## 2. 与上一轮如何公平比较',
+'',
+'此次显式调用 IBKR `OVERNIGHT` 市场，补到了 #9 INTC 在原/新入场时点的价格；#16 MU、#10 MU 的新披露时点也落在夜盘，均有夜盘分钟行情。SMART 历史逐笔返回的下一笔是04:00，并不意味着所有IBKR市场均没有夜盘数据。',
+'',
+'所以本轮主样本为 **15条有效意图**，#3 RKLB重复策略拦截不计入合计；前轮主样本为14条，不能不调整样本就直接比较总额：',
+'',
+'| 同样本比较：净损益 USD | 不对冲 | 66% | 100% |',
+'| --- | ---: | ---: | ---: |',
+]
+for name,label in [('original_14_matched','原14条，原Case/意图入场时钟'),('disclosure_14_matched','同14条，披露入场时钟')]:
+    v=X['sensitivities'][name]['summaries'];text.append('| '+label+' | '+' | '.join(usd(v[k]['net_pnl']) for k in K)+' |')
+text += ['| 扩展15条，原时钟（补入#9夜盘价） | '+' | '.join(usd(P[k]['net_pnl']) for k in K)+' |','| 同15条，披露时钟（主情景） | '+' | '.join(usd(S[k]['net_pnl']) for k in K)+' |','| 同15条的提前入场增量 | '+' | '.join(usd(S[k]['net_pnl']-P[k]['net_pnl']) for k in K)+' |','',
+'原14条净损益与上一轮精确复算一致。新增夜盘数据也用于持仓期间的逐分钟估值，所以本轮回撤路径覆盖更完整；不将历史不同数据覆盖下的回撤数值直接当成交易参数变化。',
+'',
+'## 3. 统一假设与披露时钟',
+'',
+'- **ETF映射保持不变**：MU/INTC/BE/COHR→SOXX，RKLB/NBIS→QQQ。66%/100%的ETF名义金额仍为 `股票名义金额×相对ETF Beta×0.66/1`，LONG股票配SHORT ETF，SHORT股票配LONG ETF。',
+'- Beta仍按新入场日之前的30个已完成交易日、RTH同日连续30分钟收益回归估计；不使用新入场之后的数据。时间跨交易日的Case重新估计Beta；另提供“冻结上一轮Beta”敏感性，以区分入场价格和Beta更新的效果。ETF选择不重新优化。',
+'- 主表直接采用截图的**披露分钟开盘**，不再加5分钟Case处理时效；秒数未知时按该分钟起点进行理想化模拟。#9有明确秒数11:17:11，避免用披露前的11:17分钟开盘，向前不回填，改用 **11:18** 的共同分钟开盘。',
+'- 两腿用同一共同分钟的开盘价、同一退出分钟的开盘价；不模拟滑点，不在途中再平衡。部分分钟无成交时使用IBKR携带价作为理论价格代理：#15 BE/ETF约距最近有效成交8/1分钟，#16的SOXX约11分钟，#9的SOXX约1分钟，#10的SOXX约3分钟。另算两腿都有成交的首个共同分钟，避免这些携带价成为隐含的唯一结论来源。',
+'- 成本沿用上一轮：每腿每次按$0.005/股、最低$1、最高交易额1%；跨日历夜空头按假设年化2%借券费、360日基数。本样本佣金不对冲合计$30、对冲合计$60。基础账户资金足够，模拟融资利息为零；“净收益”是这些既定假设下的净额，不是实际IBKR账单。',
+'- **只提前最终W3方向，不重做历史W3推理**。截图部分是最早可核转载、二级记录或近似直播分钟，不能一律等同真正首发秒点；例如#4的降目标价是否已包含完整收入下修、#5事故是否已明确NF3、#12早期直播是否已披露完整最终规划，均未在本轮重新核验。这里是按给定时钟计算的条件性理论值。',
+'',
+'## 4. 各意图重算结果',
+'',
+'金额均为每笔$10,000股票腿的**净损益USD**，股价列为入场→原定退出；时间为北京时间。#3仅展示其假设结果，不计组合合计。',
+'',
+'| Case / 标的方向 | 截图披露时间 | 理论入场→原定退出 | 股票入场→退出价 | ETF / 新Beta | 不对冲 | 66% | 100% |',
+'| --- | --- | --- | ---: | --- | ---: | ---: | ---: |',
+]
+all16=X['sensitivities']['include_blocked_duplicate']['trades']
+for trio in zip(all16['0'],all16['0.66'],all16['1.0']):
+    r=trio[0];n=r['report_number'];dis=datetime.fromisoformat(CLOCK[n]['disclosure_bj']).strftime('%m-%d %H:%M:%S' if n==9 else '%m-%d %H:%M');tag='（重复，不计总额）' if n==3 else ''
+    text.append(f"| #{n} {r['ticker']} {r['direction']}{tag} | {dis} | {timebj(r['start'])} → {timebj(r['end'])} | {r['stock_entry']} → {r['stock_exit']} | {r['etf']} / {r['beta']:.3f} | "+' | '.join(usd(t['net_pnl']) for t in trio)+' |')
+text += [
+'',
+'主要变化：',
+'',
+'- **#2 RKLB首飞延期最敏感**：原回测约16:49美东才入场，对应股票54.06；现在按16:40披露分钟开盘59.40入场，理论上可以捕捉首轮急跌。100%对冲从原约-$194变为+$712。QQQ期间几乎平盘，这笔收益主要是个股变化。但若晚一分钟入场，大部分优势已经消失。',
+'- **#4 RKLB收入/估值预期下修**：提前到08:40美东，三种方案都减亏，但仍没有转正；不能仅用消息处理时效解释其失败。',
+'- **#11 NBIS**：采用截图的二级披露记录，从原15:35美东提前到08:32，反而更早开空，面对后续明显上涨。保持原退出时点时，不对冲约亏$641、全对冲仍亏$123；原时钟全对冲赚约$271，说明提前不一定更有利，且该披露分钟的证据强度有限。',
+'- **#1 INTC爆炸、#13 COHR CPO**：即使提前，100%对冲仍分别亏约$126/$104。剥离行业表现后，这两笔并未因“更早知道消息”自动获得正Alpha。',
+'- **#6/#7 Modal/Vera**：截图给定相同披露时点，提前回填后两笔入场、Beta、退出完全一致，全对冲各赚约$110。它们是同一催化，不应当作两次独立验证；移除第二笔的结果另列。',
+'- **#9 INTC**：以前因SMART夜盘缺价排除；本轮夜盘可定价后，原时钟全对冲约赚$19，按更早披露时钟则约亏$7。新增数据解决了覆盖问题，但不支持假定这条更早入场必然更赚钱。',
+'',
+'## 5. 保持退出时点，还是按规则重算退出',
+'',
+'如果将“披露时点”也视为真正的新交易起点，继续执行“入场后首个美东15:30退出”，只有两条退出日期需要变化：',
+'',
+'| Case | 新入场（北京） | 主表保留的原退出（北京） | 按原规则重新确定的退出（北京） |',
+'| --- | --- | --- | --- |',
+]
+for r,n in zip(X['primary']['trades']['0'],X['natural_exit']['trades']['0']):
+    if r['end']!=n['end']:text.append(f"| #{r['report_number']} {r['ticker']} {r['direction']} | {timebj(r['start'])} | {timebj(r['end'])} | {timebj(n['end'])} |")
+text += ['','| 退出口径：净损益USD | 不对冲 | 66% | 100% |','| --- | ---: | ---: | ---: |','| 保留原退出（只改变入场，主表） | '+' | '.join(usd(S[k]['net_pnl']) for k in K)+' |','| 披露入场后首个15:30退出 | '+' | '.join(usd(N[k]['net_pnl']) for k in K)+' |','',
+'**若完整沿用入场后首个15:30的退出规则，理论收益排名变为不对冲最高，而不是100%最高。**因此不能不说明退出口径，就把“提前披露入场＋100%对冲”认定为更优策略。',
+'',
+'## 6. 风险、成本和资金占用',
+'',
+'主情景指标：组合初始权益$100,000，逐分钟合并重叠持仓，含新增夜盘价格；保证金仍采用50%总毛敞口的比较代理，不是券商house margin重放。',
+'',
+'| 指标 | 不对冲 | 66% | 100% |',
+'| --- | ---: | ---: | ---: |',
+]
+metrics=[('佣金 USD','commissions',num),('借券费用 USD','borrow_cost',num),('盈亏比（平均盈利/平均亏损）','payoff_ratio',lambda v:f'{v:.3f}'),('Profit Factor','profit_factor',lambda v:f'{v:.3f}'),('逐笔收益标准差','trade_return_std_pct',lambda v:f'{v:.3f} 个百分点'),('每日账户收益标准差','daily_return_std_pct',lambda v:f'{v:.3f} 个百分点'),('日收益均值/标准差，未年化','daily_mean_std_ratio',lambda v:f'{v:.3f}'),('最大回撤 USD','maximum_drawdown_usd',num),('峰值总毛敞口 USD','peak_gross_exposure_usd',num),('峰值保证金代理 USD','peak_margin_proxy_usd',num),('净损益/峰值保证金代理','net_pnl_per_peak_margin_pct',pct)]
+for label,key,fmt in metrics:text.append('| '+label+' | '+' | '.join(fmt(S[k][key]) for k in K)+' |')
+text += [
+'',
+'对冲在本理论情景中同时改善总收益和风险指标，但100%占用的保证金代理最高。若把每笔**两腿合计名义金额**固定为$10,000（缩小股票腿，不再保持股票腿$10,000），结果为：',
+'',
+'| 同等总毛敞口：净损益USD | 不对冲 | 66% | 100% |',
+'| --- | ---: | ---: | ---: |',
+'| 两腿总额每笔$10,000 | '+' | '.join(usd(X['sensitivities']['same_gross_10000']['summaries'][k]['net_pnl']) for k in K)+' |',
+'',
+'相同股票腿下100%的总收益较高；同等总毛敞口下66%反而较高。资金预算不同，不能机械地比较绝对盈利金额。',
+'',
+'## 7. 按标的归因与敏感性',
+'',
+'| 标的 | 笔数 | 不对冲净损益USD | 66% | 100% |',
+'| --- | ---: | ---: | ---: | ---: |',
+]
+for ticker in ['INTC','MU','BE','RKLB','NBIS','COHR']:
+    g=X['attribution']['ticker'][ticker];text.append(f"| {ticker} | {g['0']['count']} | "+' | '.join(usd(g[k]['net_pnl']) for k in K)+' |')
+text += ['','| 敏感性：净损益USD | 不对冲 | 66% | 100% |','| --- | ---: | ---: | ---: |']
+for name,label in [('freeze_original_beta','冻结上一轮Beta，仅更改入场价格'),('nf3_explicit_1733','#5改用17:33明确NF3时点'),('first_common_traded_minute','改用两腿都实际成交的首个共同分钟'),('SMART_only_delay','只用SMART，闭市披露顺延至共同有价分钟'),('remove_second_modal','移除同催化第二条Modal #7'),('remove_neutron_case2','移除Neutron延期 #2，检验集中度'),('include_blocked_duplicate','连被拦截的重复#3也假设成交（非主样本）')]:
+    v=X['sensitivities'][name]['summaries'];text.append('| '+label+' | '+' | '.join(usd(v[k]['net_pnl']) for k in K)+' |')
+text += [
+'',
+'**所有净盈利都依赖 #2 Neutron 延期这一笔。**移除它后，不对冲、66%、100%均重新亏损；把同消息被拦截的#3也算作一笔独立成交，会不合理地放大这种集中度，所以没有将其计入主表。冻结旧Beta后结果变化很小，主要增益来自披露入场价格，而非重新拟合Beta。',
+'',
+'按美东披露日期成组重采样，只有7个披露日簇；100%对冲理论净损益的95% bootstrap区间约 **['+usd(X['bootstrap']['1.0']['net_pnl_ci95'][0])+', '+usd(X['bootstrap']['1.0']['net_pnl_ci95'][1])+'] USD**，跨过零。重采样仅作小样本不确定性展示，不是证明消息Alpha显著。',
+'',
+'## 8. 应如何理解这次重算',
+'',
+'在截图时钟、披露分钟开盘、保持原退出、忽略滑点等既定条件下，**确实能算出正的理论收益，并且100%对冲表现最好**。这说明消息发现与判定时效值得研究，但不证明提前几小时或几分钟都一定改善收益，也不证明该利润稳定可捕获。',
+'',
+'本次最重要的结果不是把原来的亏损数字改成盈利，而是定位到：利润高度集中在一条公告的首分钟，晚一分钟就发生整体正负翻转；改变退出口径又改变对冲强度排名。建议仍把它视为理想化时效上界研究，不能仅据此撤销上一轮“尚不支持直接生产默认上线”的判断。',
+'',
+'## 9. 数据、原始证据与复算',
+'',
+'原审计与原对冲回测保留；新数据和计算位于 `eval/sector_beta_disclosure_20261024/`。复用并冻结前轮30分钟Beta训练历史及25组SMART分钟序列，新取1组BE的SMART日期行情；夜盘使用显式OVERNIGHT市场，共13组分钟序列，覆盖本次披露和跨夜持仓路径。另保留6次SMART逐笔探测结果，它们的首个返回成交均晚于所需夜盘披露时间。',
+'',
+'- [截图原件](../eval/sector_beta_disclosure_20261024/supplied_disclosure_times.png)、[逐Case披露时钟及证据限制](../eval/sector_beta_disclosure_20261024/disclosure_clock.json)',
+'- [SMART新增行情](../eval/sector_beta_disclosure_20261024/minutes.jsonl)、[夜盘入场及SMART探测](../eval/sector_beta_disclosure_20261024/overnight.jsonl)、[完整夜盘持仓路径](../eval/sector_beta_disclosure_20261024/overnight_paths.jsonl)',
+'- [新时钟下Beta估计](../eval/sector_beta_disclosure_20261024/disclosure_beta.json)、[逐笔三方案CSV](../eval/sector_beta_disclosure_20261024/trades.csv)、[全部场景结果](../eval/sector_beta_disclosure_20261024/results.json)',
+'- [计算脚本](../eval/sector_beta_disclosure_20261024/recalculate.py)、[SHA-256清单](../eval/sector_beta_disclosure_20261024/sha256.json)',
+'',
+'```powershell',
+'python eval/sector_beta_disclosure_20261024/beta_model.py',
+'python eval/sector_beta_disclosure_20261024/recalculate.py',
+'python -m unittest discover -s eval/sector_beta_disclosure_20261024 -p test_disclosure.py -v',
+'```',
+'',
+'8项检查通过：15条样本/固定退出对应、夜盘数据覆盖、已知秒数不取披露前价格、Beta严格前置、两腿及成本独立公式对账、原14条收益精确复现、退出变更仅#8/#11、60秒延迟同步应用两腿。全程只读查询与本地计算，未改变生产策略或执行交易。',
+]
+DOC.write_text('\n'.join(text)+'\n',encoding='utf8');print(DOC)

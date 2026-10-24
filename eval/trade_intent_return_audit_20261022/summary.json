@@ -1,0 +1,114 @@
+{
+  "window_end": "2026-10-22T06:41:42.919330+00:00",
+  "capped_count": 10,
+  "all": {
+    "count": 13,
+    "priced": 12,
+    "unpriced": 1,
+    "positive": 7,
+    "negative": 5,
+    "zero": 0,
+    "mean_pct": -0.14590224346792308,
+    "median_pct": 0.39793647977094515,
+    "min_pct": -4.82961622054341,
+    "max_pct": 2.608399209486166
+  },
+  "excluding_blocked_duplicate": {
+    "count": 12,
+    "priced": 11,
+    "unpriced": 1,
+    "positive": 6,
+    "negative": 5,
+    "zero": 0,
+    "mean_pct": -0.24734806526497272,
+    "median_pct": 0.19333333333333333,
+    "min_pct": -4.82961622054341,
+    "max_pct": 2.608399209486166
+  },
+  "original_release_time": {
+    "count": 13,
+    "priced": 12,
+    "unpriced": 1,
+    "positive": 8,
+    "negative": 4,
+    "zero": 0,
+    "mean_pct": 0.011387356596292057,
+    "median_pct": 0.5898180547634309,
+    "min_pct": -5.0095238095238095,
+    "max_pct": 2.838820977917981
+  },
+  "first_any_tick_sensitivity": {
+    "count": 13,
+    "priced": 12,
+    "unpriced": 1,
+    "positive": 7,
+    "negative": 5,
+    "zero": 0,
+    "mean_pct": -0.12494030607289253,
+    "median_pct": 0.40449380146427855,
+    "min_pct": -4.819849795607947,
+    "max_pct": 2.7102960802728484
+  },
+  "by_ticker": {
+    "COHR": {
+      "count": 1,
+      "priced": 1,
+      "unpriced": 0,
+      "positive": 1,
+      "negative": 0,
+      "zero": 0,
+      "mean_pct": 0.19333333333333333,
+      "median_pct": 0.19333333333333333,
+      "min_pct": 0.19333333333333333,
+      "max_pct": 0.19333333333333333
+    },
+    "INTC": {
+      "count": 5,
+      "priced": 4,
+      "unpriced": 1,
+      "positive": 4,
+      "negative": 0,
+      "zero": 0,
+      "mean_pct": 1.598346734821444,
+      "median_pct": 1.4127272677490692,
+      "min_pct": 0.9595331943014715,
+      "max_pct": 2.608399209486166
+    },
+    "MU": {
+      "count": 3,
+      "priced": 3,
+      "unpriced": 0,
+      "positive": 1,
+      "negative": 2,
+      "zero": 0,
+      "mean_pct": -0.8027136080540777,
+      "median_pct": -0.3558011049723757,
+      "min_pct": -2.654879345398414,
+      "max_pct": 0.6025396262085569
+    },
+    "NBIS": {
+      "count": 1,
+      "priced": 1,
+      "unpriced": 0,
+      "positive": 0,
+      "negative": 1,
+      "zero": 0,
+      "mean_pct": -0.4000700852704123,
+      "median_pct": -0.4000700852704123,
+      "min_pct": -0.4000700852704123,
+      "max_pct": -0.4000700852704123
+    },
+    "RKLB": {
+      "count": 3,
+      "priced": 3,
+      "unpriced": 0,
+      "positive": 1,
+      "negative": 2,
+      "zero": 0,
+      "mean_pct": -1.843112094933847,
+      "median_pct": -1.6697218605577542,
+      "min_pct": -4.82961622054341,
+      "max_pct": 0.9700017962996228
+    }
+  }
+}

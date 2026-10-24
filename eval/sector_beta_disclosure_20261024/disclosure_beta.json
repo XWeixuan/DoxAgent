@@ -1,0 +1,364 @@
+{
+  "mapping": {
+    "MU": "SOXX",
+    "INTC": "SOXX",
+    "BE": "SOXX",
+    "RKLB": "QQQ",
+    "COHR": "SOXX",
+    "NBIS": "QQQ"
+  },
+  "fits": [
+    {
+      "report_number": 14,
+      "intent_id": "trade:case_c24add34b3594b8aa8c356869a18f222",
+      "primary": {
+        "stock": "INTC",
+        "etf": "SOXX",
+        "before_day": "2026-10-06",
+        "sessions": 30,
+        "observations": 360,
+        "first_day": "2026-08-24",
+        "last_day": "2026-10-05",
+        "max_bar_end_utc": "2026-10-05T20:00:00+00:00",
+        "beta": 1.3159030921775117,
+        "correlation": 0.7436274119888945,
+        "r_squared": 0.5529817278613011,
+        "intercept_per_bar": 5.7172362276948214e-06,
+        "beta_ci95_day_bootstrap": [
+          1.1429908828686244,
+          1.5123011693535484
+        ]
+      }
+    },
+    {
+      "report_number": 15,
+      "intent_id": "trade:case_7b76ce24051a44c990d602d5db7b8027",
+      "primary": {
+        "stock": "BE",
+        "etf": "SOXX",
+        "before_day": "2026-10-06",
+        "sessions": 30,
+        "observations": 360,
+        "first_day": "2026-08-24",
+        "last_day": "2026-10-05",
+        "max_bar_end_utc": "2026-10-05T20:00:00+00:00",
+        "beta": 1.265706260692972,
+        "correlation": 0.49908561493903736,
+        "r_squared": 0.24908645103907706,
+        "intercept_per_bar": -1.7634825558560628e-05,
+        "beta_ci95_day_bootstrap": [
+          0.8410192180648312,
+          1.6253009794978184
+        ]
+      }
+    },
+    {
+      "report_number": 16,
+      "intent_id": "trade:case_d92564598f294e6c91d3cee128cbe800",
+      "primary": {
+        "stock": "MU",
+        "etf": "SOXX",
+        "before_day": "2026-10-09",
+        "sessions": 30,
+        "observations": 360,
+        "first_day": "2026-08-27",
+        "last_day": "2026-10-08",
+        "max_bar_end_utc": "2026-10-08T20:00:00+00:00",
+        "beta": 0.9799803565740404,
+        "correlation": 0.6866611123610323,
+        "r_squared": 0.4715034832288903,
+        "intercept_per_bar": 0.00011367521557505757,
+        "beta_ci95_day_bootstrap": [
+          0.876029442767202,
+          1.1020003113162848
+        ]
+      }
+    },
+    {
+      "report_number": 1,
+      "intent_id": "trade:case_c5e73efb13bc4bf9b262e198fd4227cf",
+      "primary": {
+        "stock": "INTC",
+        "etf": "SOXX",
+        "before_day": "2026-10-14",
+        "sessions": 30,
+        "observations": 360,
+        "first_day": "2026-09-01",
+        "last_day": "2026-10-13",
+        "max_bar_end_utc": "2026-10-13T20:00:00+00:00",
+        "beta": 1.1983939685328249,
+        "correlation": 0.748886484252804,
+        "r_squared": 0.5608309662965253,
+        "intercept_per_bar": -7.664623756771925e-05,
+        "beta_ci95_day_bootstrap": [
+          1.0875638868556265,
+          1.3362591516440034
+        ]
+      }
+    },
+    {
+      "report_number": 2,
+      "intent_id": "trade:case_cf7cc11b11df4d298b1d15b94864196e",
+      "primary": {
+        "stock": "RKLB",
+        "etf": "QQQ",
+        "before_day": "2026-10-14",
+        "sessions": 30,
+        "observations": 360,
+        "first_day": "2026-09-01",
+        "last_day": "2026-10-13",
+        "max_bar_end_utc": "2026-10-13T20:00:00+00:00",
+        "beta": 2.0236417685427837,
+        "correlation": 0.47208464037481923,
+        "r_squared": 0.2228639076778224,
+        "intercept_per_bar": -0.0007515018147745961,
+        "beta_ci95_day_bootstrap": [
+          1.6563582045406462,
+          2.423269515663997
+        ]
+      }
+    },
+    {
+      "report_number": 3,
+      "intent_id": "trade:case_05b485b82f8e404e8849f28c88e79be0",
+      "primary": {
+        "stock": "RKLB",
+        "etf": "QQQ",
+        "before_day": "2026-10-14",
+        "sessions": 30,
+        "observations": 360,
+        "first_day": "2026-09-01",
+        "last_day": "2026-10-13",
+        "max_bar_end_utc": "2026-10-13T20:00:00+00:00",
+        "beta": 2.0236417685427837,
+        "correlation": 0.47208464037481923,
+        "r_squared": 0.2228639076778224,
+        "intercept_per_bar": -0.0007515018147745961,
+        "beta_ci95_day_bootstrap": [
+          1.6563582045406462,
+          2.423269515663997
+        ]
+      }
+    },
+    {
+      "report_number": 4,
+      "intent_id": "trade:case_bf3d4a7511414938b4787cf92683ff75",
+      "primary": {
+        "stock": "RKLB",
+        "etf": "QQQ",
+        "before_day": "2026-10-15",
+        "sessions": 30,
+        "observations": 360,
+        "first_day": "2026-09-02",
+        "last_day": "2026-10-14",
+        "max_bar_end_utc": "2026-10-14T20:00:00+00:00",
+        "beta": 2.0805469991463146,
+        "correlation": 0.48565729857693946,
+        "r_squared": 0.23586301166105053,
+        "intercept_per_bar": -0.0008387068321178635,
+        "beta_ci95_day_bootstrap": [
+          1.7232396362903264,
+          2.445443473397112
+        ]
+      }
+    },
+    {
+      "report_number": 5,
+      "intent_id": "trade:case_5877fc43d00e48539c392777b9c124e3",
+      "primary": {
+        "stock": "INTC",
+        "etf": "SOXX",
+        "before_day": "2026-10-19",
+        "sessions": 30,
+        "observations": 360,
+        "first_day": "2026-09-04",
+        "last_day": "2026-10-16",
+        "max_bar_end_utc": "2026-10-16T20:00:00+00:00",
+        "beta": 1.1692934839209899,
+        "correlation": 0.7596632607104701,
+        "r_squared": 0.5770882696732637,
+        "intercept_per_bar": -0.00016231460257494843,
+        "beta_ci95_day_bootstrap": [
+          1.0695818160486548,
+          1.2729538946851444
+        ]
+      }
+    },
+    {
+      "report_number": 6,
+      "intent_id": "trade:case_1b5ff10e445e4250a927a5913cbbfa7c",
+      "primary": {
+        "stock": "INTC",
+        "etf": "SOXX",
+        "before_day": "2026-10-19",
+        "sessions": 30,
+        "observations": 360,
+        "first_day": "2026-09-04",
+        "last_day": "2026-10-16",
+        "max_bar_end_utc": "2026-10-16T20:00:00+00:00",
+        "beta": 1.1692934839209899,
+        "correlation": 0.7596632607104701,
+        "r_squared": 0.5770882696732637,
+        "intercept_per_bar": -0.00016231460257494843,
+        "beta_ci95_day_bootstrap": [
+          1.0695818160486548,
+          1.2729538946851444
+        ]
+      }
+    },
+    {
+      "report_number": 7,
+      "intent_id": "trade:case_3893c2af514147feb5824f40aa5e4d01",
+      "primary": {
+        "stock": "INTC",
+        "etf": "SOXX",
+        "before_day": "2026-10-19",
+        "sessions": 30,
+        "observations": 360,
+        "first_day": "2026-09-04",
+        "last_day": "2026-10-16",
+        "max_bar_end_utc": "2026-10-16T20:00:00+00:00",
+        "beta": 1.1692934839209899,
+        "correlation": 0.7596632607104701,
+        "r_squared": 0.5770882696732637,
+        "intercept_per_bar": -0.00016231460257494843,
+        "beta_ci95_day_bootstrap": [
+          1.0695818160486548,
+          1.2729538946851444
+        ]
+      }
+    },
+    {
+      "report_number": 8,
+      "intent_id": "trade:case_de50d2fab25648638db8d58b448c0269",
+      "primary": {
+        "stock": "MU",
+        "etf": "SOXX",
+        "before_day": "2026-10-19",
+        "sessions": 30,
+        "observations": 360,
+        "first_day": "2026-09-04",
+        "last_day": "2026-10-16",
+        "max_bar_end_utc": "2026-10-16T20:00:00+00:00",
+        "beta": 0.9963694443972088,
+        "correlation": 0.7153345580676617,
+        "r_squared": 0.5117035299658568,
+        "intercept_per_bar": 0.00015310237294082445,
+        "beta_ci95_day_bootstrap": [
+          0.8630520793001891,
+          1.1545467282407107
+        ]
+      }
+    },
+    {
+      "report_number": 9,
+      "intent_id": "trade:case_0b5a60b35b174fbfa3f15a067d76a832",
+      "primary": {
+        "stock": "INTC",
+        "etf": "SOXX",
+        "before_day": "2026-10-19",
+        "sessions": 30,
+        "observations": 360,
+        "first_day": "2026-09-04",
+        "last_day": "2026-10-16",
+        "max_bar_end_utc": "2026-10-16T20:00:00+00:00",
+        "beta": 1.1692934839209899,
+        "correlation": 0.7596632607104701,
+        "r_squared": 0.5770882696732637,
+        "intercept_per_bar": -0.00016231460257494843,
+        "beta_ci95_day_bootstrap": [
+          1.0695818160486548,
+          1.2729538946851444
+        ]
+      }
+    },
+    {
+      "report_number": 10,
+      "intent_id": "trade:case_fef78df457004eff92e0b4704f5970cd",
+      "primary": {
+        "stock": "MU",
+        "etf": "SOXX",
+        "before_day": "2026-10-19",
+        "sessions": 30,
+        "observations": 360,
+        "first_day": "2026-09-04",
+        "last_day": "2026-10-16",
+        "max_bar_end_utc": "2026-10-16T20:00:00+00:00",
+        "beta": 0.9963694443972088,
+        "correlation": 0.7153345580676617,
+        "r_squared": 0.5117035299658568,
+        "intercept_per_bar": 0.00015310237294082445,
+        "beta_ci95_day_bootstrap": [
+          0.8630520793001891,
+          1.1545467282407107
+        ]
+      }
+    },
+    {
+      "report_number": 11,
+      "intent_id": "trade:case_2cd6c40c24d14879b437d308a4e09e7a",
+      "primary": {
+        "stock": "NBIS",
+        "etf": "QQQ",
+        "before_day": "2026-10-20",
+        "sessions": 30,
+        "observations": 360,
+        "first_day": "2026-09-08",
+        "last_day": "2026-10-19",
+        "max_bar_end_utc": "2026-10-19T20:00:00+00:00",
+        "beta": 2.851452742486817,
+        "correlation": 0.592733989528089,
+        "r_squared": 0.3513335823418847,
+        "intercept_per_bar": -0.00025492764592656403,
+        "beta_ci95_day_bootstrap": [
+          2.365904249868459,
+          3.310820618312835
+        ]
+      }
+    },
+    {
+      "report_number": 12,
+      "intent_id": "trade:case_833576107bc7446d85ee519c74f615db",
+      "primary": {
+        "stock": "MU",
+        "etf": "SOXX",
+        "before_day": "2026-10-20",
+        "sessions": 30,
+        "observations": 360,
+        "first_day": "2026-09-08",
+        "last_day": "2026-10-19",
+        "max_bar_end_utc": "2026-10-19T20:00:00+00:00",
+        "beta": 0.9929149970098209,
+        "correlation": 0.7199584603064862,
+        "r_squared": 0.5183401845668864,
+        "intercept_per_bar": 0.00011019059485971693,
+        "beta_ci95_day_bootstrap": [
+          0.8620003505138343,
+          1.1346409398822621
+        ]
+      }
+    },
+    {
+      "report_number": 13,
+      "intent_id": "trade:case_4586c36f021f45feb5f44213fb201ea6",
+      "primary": {
+        "stock": "COHR",
+        "etf": "SOXX",
+        "before_day": "2026-10-21",
+        "sessions": 30,
+        "observations": 360,
+        "first_day": "2026-09-09",
+        "last_day": "2026-10-20",
+        "max_bar_end_utc": "2026-10-20T20:00:00+00:00",
+        "beta": 1.2362482226941114,
+        "correlation": 0.5803085334419077,
+        "r_squared": 0.3367579939854977,
+        "intercept_per_bar": -0.00015571321822321338,
+        "beta_ci95_day_bootstrap": [
+          1.075147095044941,
+          1.3877583397653437
+        ]
+      }
+    }
+  ]
+}

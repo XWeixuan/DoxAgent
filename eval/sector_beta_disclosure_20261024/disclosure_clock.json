@@ -1,0 +1,162 @@
+[
+  {
+    "report_number": 14,
+    "intent_id": "trade:case_c24add34b3594b8aa8c356869a18f222",
+    "ticker": "INTC",
+    "direction": "LONG",
+    "disclosure_bj": "2026-10-07T01:05:00+08:00",
+    "disclosure_utc": "2026-10-06T17:05:00+00:00",
+    "target_entry_utc": "2026-10-06T17:05:00+00:00",
+    "note": "用户截图：Intel/Public Technologies公开分发；17:05 UTC"
+  },
+  {
+    "report_number": 15,
+    "intent_id": "trade:case_7b76ce24051a44c990d602d5db7b8027",
+    "ticker": "BE",
+    "direction": "LONG",
+    "disclosure_bj": "2026-10-07T06:28:00+08:00",
+    "disclosure_utc": "2026-10-06T22:28:00+00:00",
+    "target_entry_utc": "2026-10-06T22:28:00+00:00",
+    "note": "用户截图：新增供电观点的公开解读；机架功耗消息更早，未给更早分钟"
+  },
+  {
+    "report_number": 16,
+    "intent_id": "trade:case_d92564598f294e6c91d3cee128cbe800",
+    "ticker": "MU",
+    "direction": "SHORT",
+    "disclosure_bj": "2026-10-09T14:05:00+08:00",
+    "disclosure_utc": "2026-10-09T06:05:00+00:00",
+    "target_entry_utc": "2026-10-09T06:05:00+00:00",
+    "note": "用户截图：Reuters最早可核转载；Nikkei原稿分钟未知"
+  },
+  {
+    "report_number": 1,
+    "intent_id": "trade:case_c5e73efb13bc4bf9b262e198fd4227cf",
+    "ticker": "INTC",
+    "direction": "SHORT",
+    "disclosure_bj": "2026-10-14T19:30:00+08:00",
+    "disclosure_utc": "2026-10-14T11:30:00+00:00",
+    "target_entry_utc": "2026-10-14T11:30:00+00:00",
+    "note": "用户截图：Kiryat Gat Net首报事故"
+  },
+  {
+    "report_number": 2,
+    "intent_id": "trade:case_cf7cc11b11df4d298b1d15b94864196e",
+    "ticker": "RKLB",
+    "direction": "SHORT",
+    "disclosure_bj": "2026-10-15T04:40:00+08:00",
+    "disclosure_utc": "2026-10-14T20:40:00+00:00",
+    "target_entry_utc": "2026-10-14T20:40:00+00:00",
+    "note": "用户截图：公司/GlobeNewswire公告"
+  },
+  {
+    "report_number": 3,
+    "intent_id": "trade:case_05b485b82f8e404e8849f28c88e79be0",
+    "ticker": "RKLB",
+    "direction": "SHORT",
+    "disclosure_bj": "2026-10-15T04:40:00+08:00",
+    "disclosure_utc": "2026-10-14T20:40:00+00:00",
+    "target_entry_utc": "2026-10-14T20:40:00+00:00",
+    "note": "与#2同源同时间；原账本重复拦截"
+  },
+  {
+    "report_number": 4,
+    "intent_id": "trade:case_bf3d4a7511414938b4787cf92683ff75",
+    "ticker": "RKLB",
+    "direction": "SHORT",
+    "disclosure_bj": "2026-10-15T20:40:00+08:00",
+    "disclosure_utc": "2026-10-15T12:40:00+00:00",
+    "target_entry_utc": "2026-10-15T12:40:00+00:00",
+    "note": "用户截图：StreetInsider KeyBanc降目标价；原研报及收入下修首次完整披露分钟未核"
+  },
+  {
+    "report_number": 5,
+    "intent_id": "trade:case_5877fc43d00e48539c392777b9c124e3",
+    "ticker": "INTC",
+    "direction": "SHORT",
+    "disclosure_bj": "2026-10-19T17:15:00+08:00",
+    "disclosure_utc": "2026-10-19T09:15:00+00:00",
+    "target_entry_utc": "2026-10-19T09:15:00+00:00",
+    "note": "用户截图：17:15疑似泄漏；明确NF3为17:33，另做敏感性"
+  },
+  {
+    "report_number": 6,
+    "intent_id": "trade:case_1b5ff10e445e4250a927a5913cbbfa7c",
+    "ticker": "INTC",
+    "direction": "SHORT",
+    "disclosure_bj": "2026-10-19T22:11:00+08:00",
+    "disclosure_utc": "2026-10-19T14:11:00+00:00",
+    "target_entry_utc": "2026-10-19T14:11:00+00:00",
+    "note": "用户截图：Reuters美东10:11；Modal官方分钟未核"
+  },
+  {
+    "report_number": 7,
+    "intent_id": "trade:case_3893c2af514147feb5824f40aa5e4d01",
+    "ticker": "INTC",
+    "direction": "SHORT",
+    "disclosure_bj": "2026-10-19T22:11:00+08:00",
+    "disclosure_utc": "2026-10-19T14:11:00+00:00",
+    "target_entry_utc": "2026-10-19T14:11:00+00:00",
+    "note": "与#6同一催化同一披露时间"
+  },
+  {
+    "report_number": 8,
+    "intent_id": "trade:case_de50d2fab25648638db8d58b448c0269",
+    "ticker": "MU",
+    "direction": "LONG",
+    "disclosure_bj": "2026-10-20T03:24:00+08:00",
+    "disclosure_utc": "2026-10-19T19:24:00+00:00",
+    "target_entry_utc": "2026-10-19T19:24:00+00:00",
+    "note": "用户截图：Bloomberg 19:24 UTC"
+  },
+  {
+    "report_number": 9,
+    "intent_id": "trade:case_0b5a60b35b174fbfa3f15a067d76a832",
+    "ticker": "INTC",
+    "direction": "SHORT",
+    "disclosure_bj": "2026-10-20T11:17:11+08:00",
+    "disclosure_utc": "2026-10-20T03:17:11+00:00",
+    "target_entry_utc": "2026-10-20T03:18:00+00:00",
+    "note": "用户截图：经济日报11:17:11北京时间，分钟重算统一取11:18"
+  },
+  {
+    "report_number": 10,
+    "intent_id": "trade:case_fef78df457004eff92e0b4704f5970cd",
+    "ticker": "MU",
+    "direction": "SHORT",
+    "disclosure_bj": "2026-10-20T10:00:00+08:00",
+    "disclosure_utc": "2026-10-20T02:00:00+00:00",
+    "target_entry_utc": "2026-10-20T02:00:00+00:00",
+    "note": "用户截图：最早可核Reuters转载；工会首发分钟未核"
+  },
+  {
+    "report_number": 11,
+    "intent_id": "trade:case_2cd6c40c24d14879b437d308a4e09e7a",
+    "ticker": "NBIS",
+    "direction": "SHORT",
+    "disclosure_bj": "2026-10-20T20:32:00+08:00",
+    "disclosure_utc": "2026-10-20T12:32:00+00:00",
+    "target_entry_utc": "2026-10-20T12:32:00+00:00",
+    "note": "用户截图：AGI Pulse二级记录，未证实Google官方分钟"
+  },
+  {
+    "report_number": 12,
+    "intent_id": "trade:case_833576107bc7446d85ee519c74f615db",
+    "ticker": "MU",
+    "direction": "LONG",
+    "disclosure_bj": "2026-10-21T04:43:00+08:00",
+    "disclosure_utc": "2026-10-20T20:43:00+00:00",
+    "target_entry_utc": "2026-10-20T20:43:00+00:00",
+    "note": "用户截图：直播开始后约13分钟，即04:43；原先计划幅度表述不同，本轮仅改时钟不重判方向"
+  },
+  {
+    "report_number": 13,
+    "intent_id": "trade:case_4586c36f021f45feb5f44213fb201ea6",
+    "ticker": "COHR",
+    "direction": "LONG",
+    "disclosure_bj": "2026-10-21T18:33:00+08:00",
+    "disclosure_utc": "2026-10-21T10:33:00+00:00",
+    "target_entry_utc": "2026-10-21T10:33:00+00:00",
+    "note": "用户截图：NVIDIA/GlobeNewswire 06:33美东"
+  }
+]

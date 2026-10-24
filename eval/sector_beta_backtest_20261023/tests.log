@@ -1,0 +1,11 @@
+test_beta_only_uses_completed_pre_entry_sessions (test_backtest.BacktestChecks.test_beta_only_uses_completed_pre_entry_sessions) ... ok
+test_drawdown_uses_intratrade_path (test_backtest.BacktestChecks.test_drawdown_uses_intratrade_path) ... ok
+test_hedge_sign_and_relative_beta_not_dollar_neutral (test_backtest.BacktestChecks.test_hedge_sign_and_relative_beta_not_dollar_neutral) ... ok
+test_overnight_borrow_not_added_to_intraday_trades (test_backtest.BacktestChecks.test_overnight_borrow_not_added_to_intraday_trades) ... ok
+test_real_trade_reconciliation_and_matched_times (test_backtest.BacktestChecks.test_real_trade_reconciliation_and_matched_times) ... ok
+test_same_gross_preserves_capital_budget (test_backtest.BacktestChecks.test_same_gross_preserves_capital_budget) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.008s
+
+OK

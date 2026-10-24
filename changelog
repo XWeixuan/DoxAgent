@@ -2045,6 +2045,12 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 2026-10-22 W1R1/W2R1 provider fallback: OpenRouter authentication, balance, rate-limit, timeout, transport/stream or truncated-output failures switch immediately to Bailian qwen3.8-flash/low with the original timeout, prompt, payload and structured schema. Persist the transition and independent bounded repair budget; retain separate provider/model/token/cost receipts and resume directly on the fallback. Semantic/schema failures and cancellation/lease controls do not trigger switching. Preserve current OpenRouter primary and explicit 1h caching.
 
+2026-10-22 交易意图收益审计：只读核对北京时间10-14零点至10-22 14:41:42生产13条意图、W3决策及12条正式交易记录；10条Case耗时按5分钟封顶，远端IBKR 31次历史逐笔查询。12条可定价，7盈5亏，等名义金额平均-0.15%（剔除重复拦截为-0.25%）；1条凌晨INTC缺同期价。报告docs/trade-intent-return-audit-20261022.md，台账/原始证据/离线复算脚本eval/trade_intent_return_audit_20261022；未改生产代码或执行交易。
+
+2026-10-22 交易意图收益审计补充：在原MD追加入场后美东当日至20:00的最大有利空间及同区间SPY粗略超额；14组IBKR一分钟行情覆盖13条意图，12条可定价，平均最大空间2.03%，日末7条超额为正、平均约0.01个百分点。保留原15:30收益与缺价记录，明确极值后见偏差、分钟精度及消息非因果结论；原始证据与离线复算脚本归档eval/trade_intent_return_audit_20261022。只读行情，无生产代码或交易改动。
+
+2026-10-22 扩展交易意图审计至北京时间10-07零点：新增INTC LONG、BE LONG、MU SHORT共3条，兼容旧版w3_result及W2直接Policy记录，2条按5分钟封顶；补充8次IBKR逐笔和6组分钟行情/SPY对照。在原MD增加16条合并总览及#14–#16明细，15条可定价平均固定退出收益-0.10%，平均当日最大空间1.99%；原13条编号和证据保持。新增证据、离线复算及哈希存eval/trade_intent_return_audit_20261022/prior_week，未改生产代码或执行交易。
+
 2026-10-23 Runtime GLM rollout: configure W1R2/W1R3/W2R2/W2R3 as Bailian ZHIPU/GLM-5.3-FlashX high using the explicit bailian_glm profile. Accept the standard Beijing endpoint as well as workspace endpoints. Put deterministic JSON contract and fixed instructions before dynamic inputs/parent replay for native implicit cache reuse, preserving strict output validation, explicit R3 parent replay and frozen historical model profiles. Rotate local/remote OpenRouter credentials outside Git; minimal Haiku call and four GLM nodes passed; warm W2R2/W2R3/W1R3 cache reads observed, 117 related regressions passed.
 
 2026-10-23 Challenge solver recovery repair: implement symmetric capability-aware failover, deadline-bounded probes with durable terminal receipts, billing-before-cookie and bounded post-apply business confirmation, exact visible OOPIF observation, persistent Reuters probation, semantic crawler capture coalescing, per-identity paid limits and active incident retention. Extend English maintenance outcome feedback; preserve profiles, Supervisor and unrelated services on narrow release. Add compound offline regressions and docs/challenge-solver-recovery-repair-20261023.md; production acceptance is recorded separately from provider ready/APPLIED.
@@ -2063,11 +2069,14 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 2026-10-23 消息时效优化（开发中）：修复 Atom 主链接、任务局部 Site trace 与按序有界 fallback；新增持久正文结果/下载 lease、执行 ID、任务终态和首次 claim 预算；增加同身份有界读并发、精确取消、维护写互斥，以及全局/Site/Identity 原子准入与 CRAWLER 优先。逐页接纳和即时 continuation 接线进入回归，尚未发布或宣称达成线上成功率目标。
 
+2026-10-23 板块Beta对冲历史回测：冻结原审计16条Case，主样本14条（重复拦截/缺价各1条单列）；MU/INTC/BE→SOXX、RKLB→QQQ，COHR/NBIS按样本前历史联动固定为SOXX/QQQ。以每笔前30交易日RTH半小时收益估相对Beta，统一分钟同步双腿回放0/66/100%对冲，含成本、完整组合回撤、资金代理、逐笔/事件归因及20/60日等10组敏感性；固定股票腿1万美元时净损益-$326/-$474/-$535，降波动但未证实正Alpha。报告docs/sector-beta-alpha-backtest-20261023.md，原始IBKR数据、冻结输入、可复算脚本、6项通过检查和哈希见eval/sector_beta_backtest_20261023。只读行情与离线研究，未修改生产策略、账户或执行订单。
 2026-10-23 消息时效优化（二）：上线前开发完成逐页持久接纳、Globe 两页时间片与跨 query 续跑、Yahoo RSS 优先及持久时间证据、按来源更新线索和条件 HTTP 核对；补全终态/执行收据、Read 新文章 cohort 与原消息修订投影、前端 30 分钟轮询均值/P95。新增只读审计和 Owner/CAS 配置工具，生产 HTTP 路径对照及 ETNews 短稿实测证据保存在 eval，生产代码与身份配置尚未更改。
 
 2026-10-24 消息时效优化验证：357项Python回归通过、1项跳过，另1项真实Chromium同profile双页/单页取消测试通过；前端67项及1262/1559两宽度检查通过。补齐验证跳转的索引别名与付费scope隔离、HTTP限流不切浏览器路由、分页累计和首次capture/接纳时间对应、同正文取得时间保留。新增Owner/CAS dry-run与有界只读审计，开发/测试/上线回滚回执见docs/message-source-polling-and-body-completion-optimization-implementation-20261024.md；未发布生产，P0/P1自然流量验收和未恢复账户BODY能力仍待验证。
 
 2026-10-24 消息时效优化发布修正：生产apply实测发现source默认更新会级联提升binding revision，后续binding CAS被本次自身变更拦截；配置迁移改为binding先于source，保留Owner/CAS和原始失败回执。新增真实Owner级联迁移测试通过，未绕过版本校验。
+
+2026-10-24 披露时点对冲理论收益重算：按用户截图冻结16条Case披露时钟，显式IBKR OVERNIGHT补齐13组夜盘分钟行情（含此前缺价#9），主样本15条、重复拦截#3单列。保持原退出、披露分钟开盘的理论净损益为不对冲+$87.23、66%+$273.95、100%+$385.59；晚一分钟全部转亏，收益高度集中#2 RKLB首分钟。另列原14/扩展15同样本对照、首个15:30自然退出、携带价/共同成交分钟及冻结Beta等敏感性。报告docs/sector-beta-disclosure-backtest-20261024.md，原始截图/SMART及OVERNIGHT回包/冻结输入/脚本和哈希见eval/sector_beta_disclosure_20261024；8项检查通过，原证据未改动，只读行情无生产策略或交易改动。
 
 2026-10-24 消息时效优化生产P0修正：首次线上审计发现known_published_article按binding/identity查询走SCAN raw_messages，增加ticker/source精确前置条件后复用现有idx_mbv2_raw_identity，保留binding及文章冲突门禁。新增3000条无关历史下VM步骤有界回归，相关29项通过；按消息组件滚动发布修正，避免每条输入全表扫描拖慢接纳。
 
@@ -2091,13 +2100,19 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 2026-10-24 消息源API语言兼容：发现API MonitoringTermsControl有独立全局语言计算，同步按ticker有效订阅限制可选国防源语言；仅ONDS要求he，MU/RKLB配置编辑不受Calcalist影响，真实CAS/校验/HTTP合同8项通过并窄发布API。付费缓存真实逐条复核5条READY，2条订阅声明确认后改PARTIAL并已投影，另3条保留；Raw计数0且不重投。
 
+
+2026-10-24 消息轮询两轮只读排查归档：新增docs/message-source-polling-constraints-and-stage-latency-findings-20261024.md，汇总调度/源组/Site/Identity/Worker/BODY人工约束、四阶段阻塞机制、生产配置与耗时/CPU/SQL证据，区分版本窗口、条件适用项和未证实部分；仅记录事实，不含修复建议。本次未修改业务代码或生产配置。
+
 2026-10-24 国防消息源传输恢复：自然轮询捕获Breaking Defense curl35 TLS握手抖动，仅增加一次同固定出口200ms重试，原请求先释放许可；403/429不重试、不切身份。采集和正文诊断保存transport_retries，48项源/缓存/IR传输回归通过；保留部分覆盖和终态失败真实审计，不宣称永不失败。
 
 2026-10-24 国防航天消息源发布验收：18源/21入口、RKLB12与ONDS8订阅启用60秒轮询；最新20条均成功。生产三核心d5084277、API0731297c，配置复用幂等、读侧与语言兼容已核验；Shephard仅确认付费的2条旧READY修正并保留审计，另3条保留，无消息重投。补齐发布证据和付费/索引延迟/短期快照边界，Supervisor身份未变、维护timer恢复。
 
 2026-10-24 消息实际采集周期优化方案：复核两轮约束排查、现有代码及4核生产只读数据；按后续8核、最多20 ticker设计固定时点请求调度、持久捕获与分片接纳、短存储/只读旁路、轻量列表与同身份有界并发、需求和实测成本驱动容量、CRAWLER/BODY公平与全轮次端到端验收。方案docs/message-source-polling-cadence-and-latency-optimization-plan-20261024.md，证据及9/12/20容量算术见eval/news-polling-plan-20261024；本轮未修改生产配置、源代码或发布代码。
 
+2026-10-24 波动自适应止盈离线研究：新增 docs/adaptive-trailing-backtest-20261024.md 及 eval/adaptive_trailing_backtest_20261024，按用户指定最早披露时点假设入场，仅研究 #1/#2、不对冲与66%相对ETF Beta，对比固定退出、50%MFE+2.5ATR与40%MFE+2.25ATR。远端只读获取5秒SMART/OVERNIGHT买卖价及逐笔BBO；收紧版退出窗口经完整BBO核验，旧版完整刷新/数量验证限制显式保留。顺序重放含净组合ATR、单向止盈线及30秒确认，6项研究回归检查通过；未修改或部署生产交易逻辑。
+
 2026-10-24 消息采集周期优化开发中：新增持久采集收据、可恢复分片接纳和全轮次请求/周期账；拆分Yahoo RSS/浏览器与搜索query，取消整轮源组占槽，增加短写公平队列、只读旁路、需求驱动容量和真实transport时点。保留ARTICLE_ONCE、完整正文与身份门禁；正在完成来源轻路径、Read/UI、20 ticker与故障回归，尚未发布。
+
 
 2026-10-24 消息实际采集周期优化开发完成：固定相位与独立首屏/频道/query调度，取消整轮源组占槽及五个重点来源的Bus重复gap；新增持久capture与16篇可恢复分片接纳、版本fencing、独立只读/准备池与短写公平。落地Yahoo异步日期核验及ticker/单元冷却隔离、Barron双feed同源anchor、Investing列表竞速、需求驱动容量与BODY服务机会、CPU/接纳积压暂停可选历史、全轮次周期账和Read/UI。保留ARTICLE_ONCE、覆盖与真实正文质量；最终299个唯一后端用例中298通过、1个Windows符号链接用例跳过，前端构建与两种宽度浏览器检查通过。回执docs/message-source-polling-cadence-implementation-20261024.md；本轮未同步origin main、未修改生产配置或发布，8核生产指标尚待验收。
 
@@ -2106,3 +2121,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-24 周期优化上线接纳修正：实际持久队列显示空结果仍等待writer，移除已转交capture后无消息/无失败的健康接纳空调用；最终轮询状态改走只读快照，短调度提交与接纳claim使用短控制优先级，分片业务接纳保持原公平写通道。59项调度/重放/真实请求账/版本fencing与端到端回归通过；保留全部积压收据，不将候选计作完整正文。
 
 2026-10-24 消息采集周期优化生产发布：03ee30a6 主改造、9c479777 维护批次下限、1413e42d 接纳空写及排队读取修正均同步 origin/main；标准分组件发布与增量迁移完成，18 项 Owner/CAS 配置幂等，Supervisor/人工目标保留。实际仍 4 核，维持全局浏览器4/BODY2；上线回归4项及59项通过。周末按用户要求跳过正式效果验收，明确记录持久接纳积压仍增长和队列等待，未宣称周期/端到端或正文80%达标；回执 docs/message-source-polling-cadence-production-release-20261024.md。
+
+2026-10-24 升级失败后全量恢复准备：按用户要求合并当前工作区其他会话已完成的交易审计、Beta对冲及自适应止盈研究报告/复算资料与既有诊断方案，保留历史原始运行目录；生产应用源码已与origin main一致。准备统一精确提交重建、恢复相关容器并按发布台账清退无引用旧资源，继续使用实际4核配置。

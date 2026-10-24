@@ -1,0 +1,90 @@
+{
+  "window_end": "2026-10-13T16:00:00+00:00",
+  "capped_count": 2,
+  "all": {
+    "count": 3,
+    "priced": 3,
+    "unpriced": 0,
+    "positive": 1,
+    "negative": 2,
+    "zero": 0,
+    "mean_pct": 0.06500877463528218,
+    "median_pct": -0.008773469029654325,
+    "min_pct": -2.233858080310088,
+    "max_pct": 2.437657873245589
+  },
+  "excluding_blocked_duplicate": {
+    "count": 3,
+    "priced": 3,
+    "unpriced": 0,
+    "positive": 1,
+    "negative": 2,
+    "zero": 0,
+    "mean_pct": 0.06500877463528218,
+    "median_pct": -0.008773469029654325,
+    "min_pct": -2.233858080310088,
+    "max_pct": 2.437657873245589
+  },
+  "original_release_time": {
+    "count": 3,
+    "priced": 3,
+    "unpriced": 0,
+    "positive": 1,
+    "negative": 2,
+    "zero": 0,
+    "mean_pct": 0.06891277243645298,
+    "median_pct": -0.052617732175743226,
+    "min_pct": -2.233858080310088,
+    "max_pct": 2.49321412979519
+  },
+  "first_any_tick_sensitivity": {
+    "count": 3,
+    "priced": 3,
+    "unpriced": 0,
+    "positive": 1,
+    "negative": 2,
+    "zero": 0,
+    "mean_pct": 0.10037974840453237,
+    "median_pct": -0.001754693805930865,
+    "min_pct": -2.1338143207187583,
+    "max_pct": 2.4367082597382863
+  },
+  "by_ticker": {
+    "BE": {
+      "count": 1,
+      "priced": 1,
+      "unpriced": 0,
+      "positive": 0,
+      "negative": 1,
+      "zero": 0,
+      "mean_pct": -2.233858080310088,
+      "median_pct": -2.233858080310088,
+      "min_pct": -2.233858080310088,
+      "max_pct": -2.233858080310088
+    },
+    "INTC": {
+      "count": 1,
+      "priced": 1,
+      "unpriced": 0,
+      "positive": 0,
+      "negative": 1,
+      "zero": 0,
+      "mean_pct": -0.008773469029654325,
+      "median_pct": -0.008773469029654325,
+      "min_pct": -0.008773469029654325,
+      "max_pct": -0.008773469029654325
+    },
+    "MU": {
+      "count": 1,
+      "priced": 1,
+      "unpriced": 0,
+      "positive": 1,
+      "negative": 0,
+      "zero": 0,
+      "mean_pct": 2.437657873245589,
+      "median_pct": 2.437657873245589,
+      "min_pct": 2.437657873245589,
+      "max_pct": 2.437657873245589
+    }
+  }
+}

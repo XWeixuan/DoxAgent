@@ -1,0 +1,15 @@
+{
+  "validated_at": "2026-10-23T15:33:47.485056+00:00",
+  "python": "3.13.14",
+  "numpy": "2.4.2",
+  "minute_series": 25,
+  "history_symbols": 11,
+  "primary_trades": 14,
+  "unit_checks": 6,
+  "deterministic_beta": true,
+  "deterministic_results": true,
+  "prior_audit_copy_matches": true,
+  "report_sha256": "f5da76ec8f5c49a2215b5e3c4f5961b9b402ae29e8066193719a3c61c8124d77",
+  "test_result": "PASS",
+  "production_mutations": false
+}

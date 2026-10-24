@@ -1,0 +1,269 @@
+{
+  "coverage": {
+    "RKLB": "2026-10-14T22:13:42+00:00",
+    "QQQ": "2026-10-14T22:01:50+00:00"
+  },
+  "download_errors": [],
+  "case2": {
+    "unhedged": {
+      "previous_50_2.5": {
+        "position": {
+          "start": 1792010400,
+          "stock_entry": 59.4,
+          "etf_entry": 728.04,
+          "qs": -168.35016835016836,
+          "qe": 0.0,
+          "hedged": false,
+          "entry_stock_quote": {
+            "timestamp": "2026-10-14T20:39:57+00:00",
+            "bid_price": 59.4,
+            "ask_price": 59.5,
+            "bid_size": 300,
+            "ask_size": 100
+          },
+          "entry_etf_quote": {
+            "timestamp": "2026-10-14T20:39:58+00:00",
+            "bid_price": 728,
+            "ask_price": 728.04,
+            "bid_size": 240,
+            "ask_size": 40
+          },
+          "entry_commission": 1.0
+        },
+        "coef": 0.5,
+        "atr_multiplier": 2.5,
+        "data_through": "2026-10-14T22:01:50+00:00",
+        "warmup_valid_bars": 30,
+        "activation_utc": "2026-10-14T20:40:55+00:00",
+        "trigger": null,
+        "mfe_at_exit_or_coverage": 991.2659932659931,
+        "atr_ready_when_5pct_reached": true,
+        "valid_observations": 786,
+        "invalid_observations": 197,
+        "valid_fraction": 0.7995930824008138,
+        "status": "INCOMPLETE_DATA"
+      },
+      "new_40_2.25": {
+        "position": {
+          "start": 1792010400,
+          "stock_entry": 59.4,
+          "etf_entry": 728.04,
+          "qs": -168.35016835016836,
+          "qe": 0.0,
+          "hedged": false,
+          "entry_stock_quote": {
+            "timestamp": "2026-10-14T20:39:57+00:00",
+            "bid_price": 59.4,
+            "ask_price": 59.5,
+            "bid_size": 300,
+            "ask_size": 100
+          },
+          "entry_etf_quote": {
+            "timestamp": "2026-10-14T20:39:58+00:00",
+            "bid_price": 728,
+            "ask_price": 728.04,
+            "bid_size": 240,
+            "ask_size": 40
+          },
+          "entry_commission": 1.0
+        },
+        "coef": 0.4,
+        "atr_multiplier": 2.25,
+        "data_through": "2026-10-14T22:01:50+00:00",
+        "warmup_valid_bars": 30,
+        "activation_utc": "2026-10-14T20:40:55+00:00",
+        "trigger": {
+          "time": 1792011240,
+          "time_utc": "2026-10-14T20:54:00+00:00",
+          "net_pnl": 592.2760942760945,
+          "stock_ask": 55.87,
+          "etf_bid": 727.74,
+          "stop_line_net_usd": 594.7595959595958,
+          "confirmed_breaches": 6,
+          "observations": [
+            {
+              "time_utc": "2026-10-14T20:53:35+00:00",
+              "valid": true,
+              "breach": true
+            },
+            {
+              "time_utc": "2026-10-14T20:53:40+00:00",
+              "valid": true,
+              "breach": true
+            },
+            {
+              "time_utc": "2026-10-14T20:53:45+00:00",
+              "valid": true,
+              "breach": true
+            },
+            {
+              "time_utc": "2026-10-14T20:53:50+00:00",
+              "valid": true,
+              "breach": true
+            },
+            {
+              "time_utc": "2026-10-14T20:53:55+00:00",
+              "valid": true,
+              "breach": true
+            },
+            {
+              "time_utc": "2026-10-14T20:54:00+00:00",
+              "valid": true,
+              "breach": true
+            }
+          ],
+          "stock_quote": {
+            "timestamp": "2026-10-14T20:53:59+00:00",
+            "bid_price": 55.68,
+            "ask_price": 55.87,
+            "bid_size": 400,
+            "ask_size": 900
+          },
+          "etf_quote": {
+            "timestamp": "2026-10-14T20:53:59+00:00",
+            "bid_price": 727.74,
+            "ask_price": 727.8,
+            "bid_size": 40,
+            "ask_size": 1000
+          }
+        },
+        "mfe_at_exit_or_coverage": 991.2659932659931,
+        "atr_ready_when_5pct_reached": true,
+        "valid_observations": 121,
+        "invalid_observations": 48,
+        "valid_fraction": 0.7159763313609467,
+        "status": "TRIGGERED"
+      }
+    },
+    "beta66": {
+      "previous_50_2.5": {
+        "position": {
+          "start": 1792010400,
+          "stock_entry": 59.4,
+          "etf_entry": 728.04,
+          "qs": -168.35016835016836,
+          "qe": 18.345194868939032,
+          "hedged": true,
+          "entry_stock_quote": {
+            "timestamp": "2026-10-14T20:39:57+00:00",
+            "bid_price": 59.4,
+            "ask_price": 59.5,
+            "bid_size": 300,
+            "ask_size": 100
+          },
+          "entry_etf_quote": {
+            "timestamp": "2026-10-14T20:39:58+00:00",
+            "bid_price": 728,
+            "ask_price": 728.04,
+            "bid_size": 240,
+            "ask_size": 40
+          },
+          "entry_commission": 2.0
+        },
+        "coef": 0.5,
+        "atr_multiplier": 2.5,
+        "data_through": "2026-10-14T22:01:50+00:00",
+        "warmup_valid_bars": 30,
+        "activation_utc": "2026-10-14T20:40:55+00:00",
+        "trigger": null,
+        "mfe_at_exit_or_coverage": 980.6437516775933,
+        "atr_ready_when_5pct_reached": true,
+        "valid_observations": 424,
+        "invalid_observations": 559,
+        "valid_fraction": 0.4313326551373347,
+        "status": "INCOMPLETE_DATA"
+      },
+      "new_40_2.25": {
+        "position": {
+          "start": 1792010400,
+          "stock_entry": 59.4,
+          "etf_entry": 728.04,
+          "qs": -168.35016835016836,
+          "qe": 18.345194868939032,
+          "hedged": true,
+          "entry_stock_quote": {
+            "timestamp": "2026-10-14T20:39:57+00:00",
+            "bid_price": 59.4,
+            "ask_price": 59.5,
+            "bid_size": 300,
+            "ask_size": 100
+          },
+          "entry_etf_quote": {
+            "timestamp": "2026-10-14T20:39:58+00:00",
+            "bid_price": 728,
+            "ask_price": 728.04,
+            "bid_size": 240,
+            "ask_size": 40
+          },
+          "entry_commission": 2.0
+        },
+        "coef": 0.4,
+        "atr_multiplier": 2.25,
+        "data_through": "2026-10-14T22:01:50+00:00",
+        "warmup_valid_bars": 30,
+        "activation_utc": "2026-10-14T20:40:55+00:00",
+        "trigger": {
+          "time": 1792011240,
+          "time_utc": "2026-10-14T20:54:00+00:00",
+          "net_pnl": 584.7725358154136,
+          "stock_ask": 55.87,
+          "etf_bid": 727.74,
+          "stop_line_net_usd": 588.386251006556,
+          "confirmed_breaches": 6,
+          "observations": [
+            {
+              "time_utc": "2026-10-14T20:53:35+00:00",
+              "valid": true,
+              "breach": true
+            },
+            {
+              "time_utc": "2026-10-14T20:53:40+00:00",
+              "valid": true,
+              "breach": true
+            },
+            {
+              "time_utc": "2026-10-14T20:53:45+00:00",
+              "valid": true,
+              "breach": true
+            },
+            {
+              "time_utc": "2026-10-14T20:53:50+00:00",
+              "valid": true,
+              "breach": true
+            },
+            {
+              "time_utc": "2026-10-14T20:53:55+00:00",
+              "valid": true,
+              "breach": true
+            },
+            {
+              "time_utc": "2026-10-14T20:54:00+00:00",
+              "valid": true,
+              "breach": true
+            }
+          ],
+          "stock_quote": {
+            "timestamp": "2026-10-14T20:53:59+00:00",
+            "bid_price": 55.68,
+            "ask_price": 55.87,
+            "bid_size": 400,
+            "ask_size": 900
+          },
+          "etf_quote": {
+            "timestamp": "2026-10-14T20:53:59+00:00",
+            "bid_price": 727.74,
+            "ask_price": 727.8,
+            "bid_size": 40,
+            "ask_size": 1000
+          }
+        },
+        "mfe_at_exit_or_coverage": 980.6437516775933,
+        "atr_ready_when_5pct_reached": true,
+        "valid_observations": 120,
+        "invalid_observations": 49,
+        "valid_fraction": 0.7100591715976331,
+        "status": "TRIGGERED"
+      }
+    }
+  }
+}

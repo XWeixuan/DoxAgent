@@ -1,0 +1,52 @@
+{
+  "start": "2026-10-06T16:00:00+00:00",
+  "end": "2026-10-22T06:41:42.919330+00:00",
+  "all": {
+    "count": 16,
+    "priced": 15,
+    "unpriced": 1,
+    "positive": 8,
+    "negative": 7,
+    "mean_pct": -0.10372003984728204,
+    "median_pct": 0.19333333333333333,
+    "capped": 12
+  },
+  "excluding_blocked_duplicate": {
+    "count": 15,
+    "priced": 14,
+    "unpriced": 1,
+    "positive": 7,
+    "negative": 7,
+    "mean_pct": -0.1804144567149181,
+    "median_pct": 0.09227993215183951,
+    "capped": 11
+  },
+  "prior_week": {
+    "count": 3,
+    "priced": 3,
+    "unpriced": 0,
+    "positive": 1,
+    "negative": 2,
+    "mean_pct": 0.06500877463528218,
+    "median_pct": -0.008773469029654325,
+    "capped": 2
+  },
+  "original_window": {
+    "count": 13,
+    "priced": 12,
+    "unpriced": 1,
+    "positive": 7,
+    "negative": 5,
+    "mean_pct": -0.14590224346792308,
+    "median_pct": 0.39793647977094515,
+    "capped": 10
+  },
+  "upside": {
+    "priced": 15,
+    "mean_maximum_favorable_return_pct": 1.9859162654986995,
+    "median_maximum_favorable_return_pct": 1.987871159067034,
+    "mean_excess_at_peak_pp": 1.8374040549506088,
+    "positive_excess_at_end": 8,
+    "mean_excess_at_end_pp": 0.05689706626100577
+  }
+}

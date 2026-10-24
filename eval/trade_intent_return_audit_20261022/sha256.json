@@ -1,0 +1,9 @@
+{
+  "snapshot.json": "30ff70425ae819e86d0d76ce0ed436b2832ea3dd32a985b0533d4584ba19508b",
+  "crosscheck.json": "9c872c5442dd63931767c0acdf09b8665c01d752c2f162d2072fc50373f26ec4",
+  "plan.json": "57d12c4dda2663ac2bf723d2ea9888c235a22616cd27de90348dfda410ff8cab",
+  "market.jsonl": "20c0f4965273de5682be04658cdba81391317f61b027995a17365b4019ccfca6",
+  "results.json": "f3b99c17b36f53a5ccd530a245e505e05e92b777cd248517c14ad26333be1fa4",
+  "summary.json": "8ee6d09842cf2ee9e334309aabbce0be22cef62cafd700c97566c0045aa01aaf",
+  "intent_audit.csv": "80f6330bddd174e384c4b6375daaae95b177c8edcde37701499b2f6299faee8f"
+}

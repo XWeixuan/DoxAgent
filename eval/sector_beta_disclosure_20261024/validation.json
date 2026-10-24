@@ -1,0 +1,13 @@
+{
+  "validated_at": "2026-10-23T17:09:29.944099+00:00",
+  "primary_cases": 15,
+  "all_intent_records": 16,
+  "excluded_duplicate": 3,
+  "explicit_overnight_series": 13,
+  "checks_passed": 8,
+  "previous_14_pnl_reproduced": true,
+  "previous_evidence_unchanged": true,
+  "deterministic_results": true,
+  "report_sha256": "3602a8c0d9e6af3b3818d9dc9829886a6d652967fc4dfd638b83165d02d0ccfc",
+  "production_mutations": false
+}

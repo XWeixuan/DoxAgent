@@ -1,0 +1,11 @@
+{
+  "count": 3,
+  "priced": 3,
+  "unpriced": 0,
+  "average_maximum_favorable_return_pct": 1.8222536693088265,
+  "median_maximum_favorable_return_pct": 1.1142305667660946,
+  "positive_excess_at_peak": 3,
+  "positive_excess_at_end": 1,
+  "average_excess_at_peak_pp": 1.9689698331237053,
+  "average_excess_at_end_pp": 0.2628735933755566
+}
