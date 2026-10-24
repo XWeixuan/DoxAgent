@@ -112,6 +112,10 @@ class BusOrchestration:
                 realtime = schedules[binding.ticker].get("mode") == "REALTIME"
             else:
                 realtime = realtime_mode
+            if source.source_id == "sec_edgar":
+                # Filings are disseminated outside the trading session too.
+                # Keep the existing pause/disabled checks, not the market gate.
+                realtime = True
             if hasattr(scheduler, "work_units"):
                 schedule_entries.extend((source,binding,options['acquisition_unit'],
                                          poll_states[binding.binding_id].target_due_at or now,

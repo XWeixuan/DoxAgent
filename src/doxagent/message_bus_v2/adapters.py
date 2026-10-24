@@ -143,10 +143,14 @@ class AdapterRegistry:
         from .defense_sources import DefenseAdapter
 
         self._builtins["defense_public@1"] = DefenseAdapter()
+        from .sec_edgar.adapter import SecEdgarAdapter
+
+        self._builtins["sec_edgar@1"] = SecEdgarAdapter()
 
     async def close(self) -> None:
         await self._builtins["corporate_ir@1"].close()
         await self._builtins["defense_public@1"].close()
+        await self._builtins["sec_edgar@1"].close()
         ibkr = self._builtins.get("ibkr_news")
         close = getattr(ibkr, "close", None)
         if callable(close):

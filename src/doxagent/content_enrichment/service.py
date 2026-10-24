@@ -57,6 +57,7 @@ class ContentEnrichmentHub:
         self._last_outbox_flush = 0.0
         self.ir_body_reader = None
         self.defense_body_reader = None
+        self.sec_body_reader = None
         from doxagent.message_bus_v2.distribution_repository import DistributionRepository
         self.distribution = DistributionRepository(repository)
 
@@ -150,6 +151,8 @@ class ContentEnrichmentHub:
             await asyncio.gather(*active, return_exceptions=True)
 
     async def close(self) -> None:
+        if self.sec_body_reader is not None:
+            await self.sec_body_reader.close()
         if self.defense_body_reader is not None:
             await self.defense_body_reader.close()
         if self.ir_body_reader is not None:
@@ -261,6 +264,13 @@ class ContentEnrichmentHub:
                     self.defense_body_reader = DefenseBodyReader()
                 async with asyncio.timeout(seconds):
                     result = await self.defense_body_reader.extract(job, record)
+            elif job.source.adapter_ref == "builtin:sec_edgar@1" and seconds > 0:
+                from doxagent.message_bus_v2.sec_edgar.body import SecBodyReader
+
+                if self.sec_body_reader is None:
+                    self.sec_body_reader = SecBodyReader()
+                async with asyncio.timeout(seconds):
+                    result = await self.sec_body_reader.extract(job, record)
             elif native:
                 result = MediaExtractionResult(
                     record=record,
@@ -299,7 +309,7 @@ class ContentEnrichmentHub:
                     DEADLINE.reset(token)
         except TimeoutError:
             transport_timeout = (
-                job.source.adapter_ref == "builtin:defense_public@1"
+                job.source.adapter_ref in {"builtin:defense_public@1", "builtin:sec_edgar@1"}
                 and utc_now() < job.deadline_at
             )
             result = MediaExtractionResult(
@@ -421,6 +431,9 @@ class ContentEnrichmentHub:
                 pass
         message = job.message.model_copy(
             update={
+                **({"title": result.diagnostics["generated_title"]}
+                   if result.succeeded and job.source.adapter_ref == "builtin:sec_edgar@1"
+                   and result.diagnostics.get("generated_title") else {}),
                 "body": result.content if result.succeeded else job.message.body,
                 "source": publisher,
                 "publisher_name": publisher,
@@ -434,6 +447,19 @@ class ContentEnrichmentHub:
     async def _finalize(self, job: EnrichmentJob, message: RawMessageInput) -> None:
         from doxagent.source_maintenance.signals import body
 
+        if (
+            job.source.adapter_ref == "builtin:sec_edgar@1"
+            and not message.metadata.get("media_enrichment", {}).get("succeeded")
+        ):
+            # A generic filing title/snippet cannot replace missing economic
+            # exhibits. Keep the failed result/receipt; a later observation can
+            # retry through BodyResults without publishing incomplete news.
+            await self.bus.storage.call(
+                self.repository.complete_enrichment_job_with_outcome,
+                job.job_id, job.claim_token, self._outcome_payload(job, message),
+            )
+            await self.bus.storage.call(body, job, message)
+            return
         if job.owner_kind == "distribution_article":
             def finalize():
                 self.distribution.finalize_article(

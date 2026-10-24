@@ -90,6 +90,7 @@ def _source(
 
 def initial_sources() -> list[SourceDefinition]:
     from .defense_sources import initial_sources as defense_sources
+    from .sec_edgar import initial_source as initial_sec_source
 
     string_array = {"type": "array", "items": {"type": "string", "minLength": 1}}
     ticker_locator = {
@@ -98,6 +99,7 @@ def initial_sources() -> list[SourceDefinition]:
         "exchange": {"type": "string", "enum": ["NASDAQ", "NYSE", "AMEX"]},
     }
     return [
+        initial_sec_source(),
         *defense_sources(),
         initial_ir_source(),
         _source(
@@ -434,11 +436,16 @@ def initial_default_profile() -> DefaultMonitoringProfile:
                     "investing_ticker_news",
                 ]
             ],
+            DefaultProfileEntry(
+                source_id="sec_edgar",
+                polling=PollingConfig(target_interval_seconds=30),
+                streaming=StreamingConfig(),
+            ),
         ],
         updated_by=UpdateActor.SYSTEM,
         updated_reason=(
             "initial profile: Benzinga, Finnhub, Yahoo, IBKR, Reuters, Barron's, "
-            "InvestorsHub, GlobeNewswire Search and Investing.com; "
+            "InvestorsHub, GlobeNewswire Search, Investing.com and SEC EDGAR; "
             "shared calendar owns "
             "continuous-session "
             "polling and the 02:00 ET closed-day sweep"

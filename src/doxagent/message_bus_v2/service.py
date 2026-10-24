@@ -90,6 +90,19 @@ class MessageBusV2Service:
         self._migrate_legacy_default_news_windows()
         self._append_verified_ticker_locators()
         self._upgrade_rss_route_schema()
+        self._ensure_sec_bindings()
+
+    def _ensure_sec_bindings(self, ticker: str | None = None) -> None:
+        """Universal SEC default, including custom profiles; explicit opt-outs survive."""
+        from .sec_edgar import SOURCE_ID
+
+        tickers = [ticker] if ticker else [s.ticker for s in self.repository.list_ticker_states()]
+        for symbol in tickers:
+            if self.repository.get_binding(f"{symbol}:{SOURCE_ID}", include_tombstoned=True) is None:
+                self.configure_binding(
+                    ticker=symbol, source_id=SOURCE_ID, actor=UpdateActor.SYSTEM,
+                    reason="universal SEC EDGAR official filings subscription",
+                )
 
     def _upgrade_rss_route_schema(self) -> None:
         source = self.repository.get_source("newswire_rss")
@@ -539,6 +552,7 @@ class MessageBusV2Service:
         normalized = ticker.strip().upper()
         existing = self.repository.get_ticker_state(normalized)
         if existing is not None:
+            self._ensure_sec_bindings(normalized)
             resumed = existing.model_copy(
                 update={
                     "status": TickerMonitoringStatus.RUNNING,
@@ -587,6 +601,7 @@ class MessageBusV2Service:
                 source_version=source.version,
                 legacy_default_profile=True,
             )
+        self._ensure_sec_bindings(normalized)
         return profile
 
     def set_ticker_status(

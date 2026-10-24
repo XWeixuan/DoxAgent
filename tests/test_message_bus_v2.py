@@ -60,10 +60,13 @@ def _publication_clock(monkeypatch):
 
 
 def test_bootstrap_registry_profile_and_ticker_materialization(tmp_path: Path) -> None:
+    from doxagent.message_bus_v2.defense_sources import CATALOG
+
     repository, service = _bus(tmp_path / "bus.sqlite3")
 
     assert {source.source_id for source in repository.list_sources()} == {
         "corporate_ir_press_releases",
+        "sec_edgar",
         "benzinga_news",
         "finnhub_company_news",
         "stocktwits_messages",
@@ -88,7 +91,7 @@ def test_bootstrap_registry_profile_and_ticker_materialization(tmp_path: Path) -
         "globenewswire_search",
         "investing_ticker_news",
         "globenewswire_semiconductors_rss",
-    }
+    } | {entry.source_id for entry in CATALOG}
     profile = repository.get_default_profile("default")
     assert profile is not None
     assert [entry.source_id for entry in profile.entries] == [
@@ -101,6 +104,7 @@ def test_bootstrap_registry_profile_and_ticker_materialization(tmp_path: Path) -
         "investorshub_ticker_news",
         "globenewswire_search",
         "investing_ticker_news",
+        "sec_edgar",
     ]
 
     state = service.start_ticker("mu", actor=UpdateActor.AGENT)
@@ -116,12 +120,16 @@ def test_bootstrap_registry_profile_and_ticker_materialization(tmp_path: Path) -
         "investorshub_ticker_news",
         "globenewswire_search",
         "investing_ticker_news",
+        "sec_edgar",
     }
-    assert all(binding.polling.target_interval_seconds == 60 for binding in bindings)
+    assert all(
+        binding.polling.target_interval_seconds == (30 if binding.source_id == "sec_edgar" else 60)
+        for binding in bindings
+    )
 
     # Profiles are materialized templates, not live parents.
     service.save_default_profile(profile.model_copy(update={"entries": []}))
-    assert len(repository.list_bindings(ticker="MU")) == 9
+    assert len(repository.list_bindings(ticker="MU")) == 10
 
 
 def test_existing_default_profile_adds_barrons_once(tmp_path: Path) -> None:
@@ -1314,5 +1322,7 @@ async def test_site_access_deferral_preserves_checkpoint_and_skips_acceptance(
     assert refreshed.last_error_code == "SOURCE_DEFERRED:access_budget_deferred"
     assert refreshed.last_success_at == state.last_success_at
     assert refreshed.last_attempt_at == state.last_attempt_at
-    assert refreshed.status == state.status
+    # Yahoo now has independent HEAD/SUPPLEMENT units. A deferred unit is
+    # aggregate PARTIAL; it still does not fabricate a successful attempt.
+    assert refreshed.status.value == "partial"
     assert repository.list_raw(ticker="MU") == []

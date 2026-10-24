@@ -1,0 +1,209 @@
+[
+  {
+    "ticker": "RKLB",
+    "form": "8-K",
+    "filing": {
+      "cik": "0001819994",
+      "accession": "0001819994-26-000067",
+      "form": "8-K",
+      "items": [
+        "7.01",
+        "8.01",
+        "9.01"
+      ],
+      "selected_items": [
+        "8.01"
+      ],
+      "company": "Rocket Lab Corp",
+      "primary_document": "rklb-20261014.htm",
+      "index_url": "https://www.sec.gov/Archives/edgar/data/1819994/000181999426000067/0001819994-26-000067-index.html",
+      "acceptance_at": "2026-10-15T00:41:32+00:00"
+    },
+    "succeeded": true,
+    "reason": null,
+    "chars": 5687,
+    "diagnostics": {
+      "outcome": "FULL",
+      "pipeline_version": "sec_filing_v1",
+      "body_source": "sec_official_documents",
+      "generated_title": "8-K — Rocket Lab Provides Update on Neutron Development and Adjusts Target Launch Timing",
+      "sec_filing": {
+        "cik": "0001819994",
+        "accession": "0001819994-26-000067",
+        "form": "8-K",
+        "items": [
+          "7.01",
+          "8.01",
+          "9.01"
+        ],
+        "selected_items": [
+          "8.01"
+        ],
+        "company": "Rocket Lab Corp",
+        "primary_document": "rklb-20261014.htm",
+        "index_url": "https://www.sec.gov/Archives/edgar/data/1819994/000181999426000067/0001819994-26-000067-index.html",
+        "acceptance_at": "2026-10-15T00:41:32+00:00"
+      },
+      "documents": [
+        {
+          "url": "https://www.sec.gov/Archives/edgar/data/1819994/000181999426000067/rklb-20261014.htm",
+          "name": "rklb-20261014.htm",
+          "kind": "8-K",
+          "description": "8-K"
+        },
+        {
+          "url": "https://www.sec.gov/Archives/edgar/data/1819994/000181999426000067/rklb-10142026ex991.htm",
+          "name": "rklb-10142026ex991.htm",
+          "kind": "EX-99.1",
+          "description": "EX-99.1"
+        }
+      ],
+      "documents_extracted": 2,
+      "documents_skipped": [
+        {
+          "name": "rocketlablogoa.jpg",
+          "type": "GRAPHIC",
+          "reason": "non_economic_document"
+        },
+        {
+          "name": "0001819994-26-000067.txt",
+          "type": "",
+          "reason": "non_economic_document"
+        }
+      ],
+      "document_errors": [],
+      "bytes_downloaded": 36494,
+      "exact_duplicate_paragraphs_removed": 0
+    }
+  },
+  {
+    "ticker": "NBIS",
+    "form": "6-K",
+    "filing": {
+      "cik": "0001513845",
+      "accession": "0001104659-26-117978",
+      "form": "6-K",
+      "items": [],
+      "selected_items": [],
+      "company": "Nebius Group N.V.",
+      "primary_document": "tm2628078d1_6k.htm",
+      "index_url": "https://www.sec.gov/Archives/edgar/data/1513845/000110465926117978/0001104659-26-117978-index.html",
+      "acceptance_at": "2026-10-22T16:03:02+00:00"
+    },
+    "succeeded": true,
+    "reason": null,
+    "chars": 8613,
+    "diagnostics": {
+      "outcome": "FULL",
+      "pipeline_version": "sec_filing_v1",
+      "body_source": "sec_official_documents",
+      "generated_title": "6-K — Nebius secures $3.5 billion financing facility with Citi",
+      "sec_filing": {
+        "cik": "0001513845",
+        "accession": "0001104659-26-117978",
+        "form": "6-K",
+        "items": [],
+        "selected_items": [],
+        "company": "Nebius Group N.V.",
+        "primary_document": "tm2628078d1_6k.htm",
+        "index_url": "https://www.sec.gov/Archives/edgar/data/1513845/000110465926117978/0001104659-26-117978-index.html",
+        "acceptance_at": "2026-10-22T16:03:02+00:00"
+      },
+      "documents": [
+        {
+          "url": "https://www.sec.gov/Archives/edgar/data/1513845/000110465926117978/tm2628078d1_6k.htm",
+          "name": "tm2628078d1_6k.htm",
+          "kind": "6-K",
+          "description": "FORM 6-K"
+        },
+        {
+          "url": "https://www.sec.gov/Archives/edgar/data/1513845/000110465926117978/tm2628078d1_ex99-1.htm",
+          "name": "tm2628078d1_ex99-1.htm",
+          "kind": "EX-99.1",
+          "description": "EXHIBIT 99.1"
+        }
+      ],
+      "documents_extracted": 2,
+      "documents_skipped": [
+        {
+          "name": "0001104659-26-117978.txt",
+          "type": "",
+          "reason": "non_economic_document"
+        }
+      ],
+      "document_errors": [],
+      "bytes_downloaded": 25641,
+      "exact_duplicate_paragraphs_removed": 0
+    }
+  },
+  {
+    "ticker": "RKLB",
+    "form": "424B5",
+    "filing": {
+      "cik": "0001819994",
+      "accession": "0001753926-26-001459",
+      "form": "424B5",
+      "items": [],
+      "selected_items": [],
+      "company": "Rocket Lab Corp",
+      "primary_document": "g085845_424b5.htm",
+      "index_url": "https://www.sec.gov/Archives/edgar/data/1819994/000175392626001459/0001753926-26-001459-index.html",
+      "acceptance_at": "2026-08-13T14:24:14+00:00"
+    },
+    "succeeded": true,
+    "reason": null,
+    "chars": 259385,
+    "diagnostics": {
+      "outcome": "FULL",
+      "pipeline_version": "sec_filing_v1",
+      "body_source": "sec_official_documents",
+      "generated_title": "Rocket Lab Corp — 424B5: Prospectus supplement",
+      "sec_filing": {
+        "cik": "0001819994",
+        "accession": "0001753926-26-001459",
+        "form": "424B5",
+        "items": [],
+        "selected_items": [],
+        "company": "Rocket Lab Corp",
+        "primary_document": "g085845_424b5.htm",
+        "index_url": "https://www.sec.gov/Archives/edgar/data/1819994/000175392626001459/0001753926-26-001459-index.html",
+        "acceptance_at": "2026-08-13T14:24:14+00:00"
+      },
+      "documents": [
+        {
+          "url": "https://www.sec.gov/Archives/edgar/data/1819994/000175392626001459/g085845_424b5.htm",
+          "name": "g085845_424b5.htm",
+          "kind": "424B5",
+          "description": "424B5"
+        },
+        {
+          "url": "https://www.sec.gov/Archives/edgar/data/1819994/000175392626001459/g085845_ex107.htm",
+          "name": "g085845_ex107.htm",
+          "kind": "EX-FILING FEES",
+          "description": "EXHIBIT 107"
+        }
+      ],
+      "documents_extracted": 2,
+      "documents_skipped": [
+        {
+          "name": "img001_v1.jpg",
+          "type": "GRAPHIC",
+          "reason": "non_economic_document"
+        },
+        {
+          "name": "img002_v1.jpg",
+          "type": "GRAPHIC",
+          "reason": "non_economic_document"
+        },
+        {
+          "name": "0001753926-26-001459.txt",
+          "type": "",
+          "reason": "non_economic_document"
+        }
+      ],
+      "document_errors": [],
+      "bytes_downloaded": 671379,
+      "exact_duplicate_paragraphs_removed": 5
+    }
+  }
+]
