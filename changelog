@@ -2171,3 +2171,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-26 统一监测词动态语言生产发布完成：功能提交fd888664已推送origin/main并同步远端；仅API/Web精确构建发布，同版本镜像及健康/零重启通过，其他组件发布记录未变。生产9ticker语言及source_ids与独立SQL核算的启用绑定完全一致，ONDS=en/he、RKLB=en；首页/健康/代理200、未认证监测词401、实际前端产物已更新。提交后9项核心回归通过；验收记录docs/monitoring-terms-dynamic-languages-production-release-20261026.md。
 
 2026-10-26 实测写入占槽修复：同轮poll终态与状态合并一个原子writer提交，2/20ticker共享状态投影复用一个物理连接及事务，已解决告警不重复写入。BODY空队列改只读探测后再争用写锁，并为暂停recheck的前台领取添加匹配部分索引，真实领取仍重查租约。既有批量年龄门禁覆盖明确过期DATE，原日历/日期规则、当天/昨天、未来、UNKNOWN、历史sweep与已发布更新保留。79项正文/采集/存储回归、4项EXACT/DATE批量计数和边界专项通过；修正heartbeat专项过窄时限，以writer仍阻塞时独立完成作为断言，不改生产超时。
+
+2026-10-26 批量年龄过滤保留first_seen：准备阶段计算被过滤项的绑定级时间锚，持有原子游标事务后批量写入最早值，重复观察不重写；防止以后提供方时间降级为UNKNOWN时将旧新闻重新当新消息。完整capture和过滤计数继续保留，7项共享/ticker、EXACT/DATE、发布时间变化及发布竞态专项通过。

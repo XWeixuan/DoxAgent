@@ -6,7 +6,7 @@ import asyncio
 import json
 import logging
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 from .admission import AdmissionContext, evaluate_admission
 from .schema import (
@@ -387,6 +387,7 @@ class PollJournal:
         messages = payload["result"]["messages"][position : position + 16]
         advanced, filtered = len(messages), 0
         skipped_keys = []
+        skipped_times = []
         if context.mode == "REALTIME" and (not shared or all(
             t["admission"].get("mode", "REALTIME") == "REALTIME" for t in shared["roster"]
         )):
@@ -413,11 +414,15 @@ class PollJournal:
                     advanced += 1
                     filtered += 1
                     skipped_keys.append(key)
+                    skipped_times.append((message, message.published_at.astimezone(UTC).isoformat()))
                 elif len(messages) < 16:
                     messages.append(message)
                     advanced += 1
                 else:
                     break
+        bindings = [t['binding']['binding_id'] for t in shared['roster']] if shared else [binding.binding_id]
+        first_seen = [(identity_key_for(binding_id, message), at)
+                      for binding_id in bindings for message, at in skipped_times]
         result = PollResult.model_validate(
             {
                 **payload["result"],
@@ -425,7 +430,7 @@ class PollJournal:
                 "failures": [],
                 "acquisition_metadata": {"poll_run_id": row["run_id"],
                     "intake_advanced": advanced, "intake_prefiltered": filtered,
-                    "intake_skipped_keys": skipped_keys},
+                    "intake_skipped_keys": skipped_keys, "intake_first_seen": first_seen},
             }
         )
         result = result.model_copy(
@@ -495,6 +500,15 @@ class PollJournal:
                     (now, row["capture_id"]),
                 )
                 return
+            if result.acquisition_metadata.get("intake_first_seen"):
+                # Bulk rejection must still pin the original publication proof:
+                # a later provider fallback to UNKNOWN cannot make old news new.
+                db.executemany(
+                    "INSERT INTO message_first_seen VALUES(?,?) ON CONFLICT(id) DO UPDATE SET "
+                    "first_seen_at=excluded.first_seen_at "
+                    "WHERE excluded.first_seen_at < message_first_seen.first_seen_at",
+                    result.acquisition_metadata["intake_first_seen"],
+                )
             if shared:
                 claim = new_id("shared-intake")
                 live_run = db.execute(

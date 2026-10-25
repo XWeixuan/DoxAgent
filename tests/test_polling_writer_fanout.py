@@ -156,6 +156,8 @@ def test_old_shared_backlog_advances_in_bulk_without_dropping_live_candidate_or_
     assert receipt.collected_count == 261 and receipt.filtered_count == 260 and receipt.queued_count == 1
     assert len(repo.list_enrichment_jobs()) == 1
     assert len(json.loads(repo.polling.load(capture_id)['payload_json'])['result']['messages']) == 261
+    unknown = old[0].model_copy(update={'publication_time_basis':'UNKNOWN_FIRST_SEEN','published_at':now})
+    assert repo.resolve_first_seen(unknown,binding.binding_id).published_at == old[0].published_at
 
     # The same old item remains a real candidate for an explicitly owned sweep.
     context = AdmissionContext(mode='CLOSED_SWEEP',sweep_id='s',source_task_id='task',
@@ -190,6 +192,9 @@ def test_ticker_backlog_bulk_filter_preserves_counts_and_eligible_job(tmp_path,b
     assert (receipt.collected_count,receipt.filtered_count,receipt.queued_count) == (261,260,1)
     assert repo.get_poll_state(binding).checkpoint == {'cursor':'kept'}
     assert len(repo.list_enrichment_jobs()) == 1
+
+    unknown = messages[0].model_copy(update={'publication_time_basis':'UNKNOWN_FIRST_SEEN','published_at':now})
+    assert repo.resolve_first_seen(unknown,binding.binding_id).published_at == messages[0].published_at
 
 
 @pytest.mark.parametrize('shared', [False, True])
