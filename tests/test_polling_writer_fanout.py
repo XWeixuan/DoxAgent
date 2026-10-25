@@ -327,3 +327,29 @@ def test_bulk_age_gate_keeps_recent_dates_future_and_unresolved_first_seen(tmp_p
     piece=repo.polling.prepare_piece(row)[4]
     assert [m.external_id for m in piece.messages]==[m.external_id for m in messages]
     assert piece.acquisition_metadata['intake_prefiltered']==0
+
+
+async def test_intake_fuses_next_lease_without_requeuing_a_separate_claim(tmp_path):
+    from doxagent.message_bus_v2.polling import CaptureIntake
+    from tests.test_content_enrichment_hub import _message, _setup
+
+    repo,bus,source,binding=_setup(tmp_path)
+    for i in range(12):
+        repo.polling.commit(repo.polling.prepare(source=source,binding=binding,
+            result=PollResult(messages=[_message(80000+i)]),observed_at=utc_now(),run_id=f'fused-{i}'))
+    calls=[];nonempty_claims=[];original=bus.storage.call
+    async def call(operation,*args,**kwargs):
+        calls.append(operation.__name__)
+        value=await original(operation,*args,**kwargs)
+        if operation.__name__=='claim' and value is not None:nonempty_claims.append(value)
+        return value
+    bus.storage.call=call
+    worker=CaptureIntake(bus)
+    try:
+        worker.start()
+        await asyncio.wait_for(asyncio.gather(*(worker.wait(f'fused-{i}') for i in range(12))),10)
+        assert calls.count('accept_and_claim')==12
+        assert len(nonempty_claims)<=5
+        assert len(repo.list_enrichment_jobs())==12
+    finally:
+        await worker.close()

@@ -1091,6 +1091,13 @@ class MessageBusV2Service:
             }})
             identity_key = identity_key_for(source.source_id, clean)
             provider_raw_hash = sha256_text(canonical_json(clean.raw_payload))
+            intake_key = sha256_text(canonical_json({
+                "binding_id": binding.binding_id, "identity_key": identity_key,
+                "fetch_key": body_result["fetch_key"], "check_seq": body_result["check_seq"],
+            }))
+            clean = clean.model_copy(update={"metadata": {
+                **clean.metadata, "enrichment_intake_key": intake_key,
+            }})
             reused = self.repository.observe_input(
                 clean,
                 ticker=binding.ticker,
@@ -1102,16 +1109,6 @@ class MessageBusV2Service:
                 body_result = body_results.adopt_legacy(clean, source.source_id, binding.ticker, now=utc_now())
                 if body_results.reusable(body_result,clean,utc_now()):
                     work_kind = "reuse"
-            intake_key = sha256_text(
-                canonical_json(
-                    {
-                        "binding_id": binding.binding_id,
-                        "identity_key": identity_key,
-                        "fetch_key": body_result["fetch_key"],
-                        "check_seq": body_result["check_seq"],
-                    }
-                )
-            )
             job = EnrichmentJob(
                 job_id="enrich-" + intake_key,
                 intake_key=intake_key,

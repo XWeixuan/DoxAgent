@@ -594,6 +594,7 @@ class MessageBusV2Repository:
         with self.transaction() as db:
             row = db.execute("""
                 SELECT o.raw_hash, o.canonical_raw_id,b.fetch_key,b.status,b.next_check_at,
+                  json_extract(o.data_json,'$.metadata.enrichment_intake_key') intake_key,
                   json_extract(b.data_json,'$.verified_hints') hints,
                   json_extract(b.data_json,'$.scheduled_hint') scheduled_hint,
                   json_extract(b.data_json,'$.check_seq') check_seq,
@@ -622,12 +623,13 @@ class MessageBusV2Repository:
                             "SELECT 1 FROM standard_messages s JOIN stream_members m ON m.standard_message_id=s.standard_message_id "
                             "WHERE s.raw_message_id=r.raw_message_id))", (row['canonical_raw_id'],)).fetchone())
             if not complete:
-                if row['scheduled_hint'] != hint:
-                    return False
-                intake_key = sha256_text(canonical_json({'binding_id':binding.binding_id,
+                intake_key = row['intake_key'] or sha256_text(canonical_json({'binding_id':binding.binding_id,
                     'identity_key':identity_key_for(binding.source_id,message),
                     'fetch_key':row['fetch_key'],'check_seq':row['check_seq']}))
                 job = db.execute('SELECT status FROM content_enrichment_jobs WHERE intake_key=?', (intake_key,)).fetchone()
+                # Another provider can advance the shared body's sequence while
+                # this exact input's own durable job is still waiting. Its stored
+                # intake key is the proof; the current global hint is not.
                 if not job or not (job['status'] in {'queued','running','retry_wait'} or (
                         job['status'] in {'completed','failed'} and not row['check_pending']
                         and row['next_check_at'] > now.isoformat())):

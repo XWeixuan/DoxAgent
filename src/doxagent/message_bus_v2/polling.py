@@ -628,6 +628,12 @@ class PollJournal:
                 ),
             )
 
+    def accept_and_claim(self, bus, prepared, token, distribution, stopping):
+        """Commit a bounded piece and acquire the next lease in one writer visit."""
+        with self.repo.connection_scope():
+            self.accept_piece(bus, prepared, token, distribution)
+            return None if stopping() else self.claim()
+
     def run_receipt(self, run_id):
         with self.repo._connect() as db:
             rows = db.execute(
@@ -710,7 +716,10 @@ class CaptureIntake:
         self.journal = bus.repository.polling
         self.distribution = DistributionRepository(bus.repository)
         self.task = None
-        self.tasks = [None, None]
+        # Keep the existing storage stages occupied while another capture waits
+        # for its writer turn: two reads + two preparations + one commit.
+        # These are pipeline tickets, not extra read/browser/DB concurrency.
+        self.tasks = [None] * 5
         self.wake = asyncio.Event()
         self.stopping = False
         self._maintenance_at = 0.0
@@ -722,8 +731,7 @@ class CaptureIntake:
             token = REQUEST_GATE.set(None)
             try:
                 # Persisted intake is independent of the acquisition session.
-                # Match the existing two read/prepare slots. Writers remain
-                # single-owner; a slow payload must not stall every other capture.
+                # Read/prepare slots and the single writer still bound actual work.
                 for index, task in enumerate(self.tasks):
                     if task is None or task.done():
                         if task is not None and not task.cancelled():
@@ -735,8 +743,10 @@ class CaptureIntake:
         self.wake.set()
 
     async def run(self):
+        claim = None
         while not self.stopping:
-            claim = await self.bus.storage.call(self.journal.claim, _lane_priority=0)
+            if claim is None:
+                claim = await self.bus.storage.call(self.journal.claim, _lane_priority=0)
             if not claim:
                 import time
 
@@ -753,8 +763,9 @@ class CaptureIntake:
             try:
                 row = await self.bus.storage.read(self.journal.load, capture_id)
                 prepared = await self.bus.storage.prepare(self.journal.prepare_piece, row)
-                await self.bus.storage.call(
-                    self.journal.accept_piece, self.bus, prepared, token, self.distribution,
+                claim = await self.bus.storage.call(
+                    self.journal.accept_and_claim, self.bus, prepared, token, self.distribution,
+                    lambda: self.stopping,
                     _lane_priority=0,
                 )
             except asyncio.CancelledError:
@@ -765,6 +776,7 @@ class CaptureIntake:
                     "capture intake failed capture=%s", capture_id
                 )
                 await self.bus.storage.call(self.journal.retry, capture_id, token, exc)
+                claim = None
             await asyncio.sleep(0)
 
     async def wait(self, run_id):

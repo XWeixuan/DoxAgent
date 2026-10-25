@@ -546,6 +546,12 @@ def test_pending_durable_input_skips_rebuilding_body_job_without_claiming_succes
     message = _message(61001)
     job, created = bus.enqueue_enrichment(source=source,binding=binding,message=message,bootstrap=False,poll_run_id='receipt-test')
     assert created and job is not None
+    from doxagent.message_bus_v2.body_results import ArticleBodyResults
+    advanced,_=ArticleBodyResults(repo).schedule(
+        message.model_copy(update={'summary':'Another provider supplies a different teaser.'}),
+        'another-provider',now=utc_now(),
+    )
+    assert advanced['check_seq'] > 1
     monkeypatch.setattr(repo,'known_published_article',lambda *a,**k: (_ for _ in ()).throw(AssertionError('heavy body lookup')))
     assert bus.enqueue_enrichment(source=source,binding=binding,message=message,bootstrap=False,poll_run_id='receipt-test') == (None,False)
     assert len(repo.list_enrichment_jobs()) == 1
