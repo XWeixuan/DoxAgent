@@ -406,3 +406,25 @@ def test_legacy_capture_input_hash_backfill_is_bounded_and_closed_sweeps_stay_in
         assert db.execute('SELECT input_hash FROM poll_capture_inputs WHERE capture_id=?',(closed,)).fetchone()[0]==''
         db.execute('DELETE FROM poll_captures WHERE capture_id=?',(ids[0],))
         assert db.execute('SELECT count(*) FROM poll_capture_inputs WHERE capture_id=?',(ids[0],)).fetchone()[0]==0
+
+
+def test_partial_duplicate_reuses_only_unprocessed_suffix_and_keeps_prior_receipt(tmp_path):
+    from datetime import timedelta
+
+    from tests.test_content_enrichment_hub import _message, _setup
+
+    repo,bus,source,binding=_setup(tmp_path);now=utc_now()
+    messages=[_message(92000+i) for i in range(33)]
+    ids=[repo.polling.commit(repo.polling.prepare(source=source,binding=binding,
+        result=PollResult(messages=messages),observed_at=now-timedelta(seconds=10-i),run_id=f'partial-{i}')) for i in range(2)]
+    first_time=None
+    for expected in [ids[0],ids[1],ids[0],ids[1],ids[0]]:
+        capture,token=repo.polling.claim();assert capture==expected
+        repo.polling.accept_piece(bus,repo.polling.prepare_piece(repo.polling.load(capture)),token)
+        if capture==ids[1] and first_time is None:first_time=repo.polling.load(capture)['first_intake_at']
+    peer=repo.polling.load(ids[1]);receipt=repo.polling.run_receipt('partial-1')
+    assert peer['status']=='COMPLETED' and peer['intake_position']==33
+    assert peer['first_intake_at']==first_time
+    assert receipt.collected_count==33 and receipt.duplicate_count==1 and receipt.queued_count==0
+    assert repo.get_poll_state(binding).collected_count==66
+    assert len(repo.list_enrichment_jobs())==33 and repo.latest_stream_offset(binding.ticker)==0

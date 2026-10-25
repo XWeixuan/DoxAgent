@@ -377,15 +377,16 @@ class PollJournal:
                 (capture.capture_id,capture.binding.binding_id,capture.unit,capture.input_key))
         return capture.capture_id
 
-    def claim(self):
+    def claim(self, capture_id=None):
         now = utc_now()
         with self.repo.transaction() as db:
             row = db.execute(
                 "SELECT capture_id FROM poll_captures WHERE "
-                "(status='PENDING' AND not_before<=?) OR "
-                "(status='RUNNING' AND lease_until<=?) "
+                "((status='PENDING' AND not_before<=?) OR "
+                "(status='RUNNING' AND lease_until<=?)) "
+                + ("AND capture_id=? " if capture_id else "") +
                 "ORDER BY (unit LIKE 'TAIL:%' AND unit!='TAIL:YAHOO_TIME'),queue_at LIMIT 1",
-                (now.isoformat(), now.isoformat()),
+                (now.isoformat(), now.isoformat(), *([capture_id] if capture_id else [])),
             ).fetchone()
             if not row:
                 return None
@@ -649,30 +650,32 @@ class PollJournal:
     def reuse_waiting_inputs(self, db, parent, binding, input_key, now):
         if not input_key:
             return
-        peers = db.execute("SELECT p.capture_id,p.run_id,p.message_count,p.observed_at "
+        peers = db.execute("SELECT p.capture_id,p.run_id,p.message_count,p.intake_position,p.receipt_json,p.observed_at "
             "FROM poll_capture_inputs k JOIN poll_captures p ON p.capture_id=k.capture_id "
             "WHERE k.binding_id=? AND k.unit=? AND k.input_hash=? AND p.status='PENDING' "
-            "AND p.intake_position=0 AND julianday(p.observed_at)>=julianday(?) "
+            "AND julianday(p.observed_at)>=julianday(?) "
             "AND julianday(p.observed_at)<=julianday(?) "
             "AND p.capture_id!=? ORDER BY p.observed_at LIMIT 64",
             (binding.binding_id,parent['unit'],input_key,parent['observed_at'],now,parent['capture_id'])).fetchall()
         if not peers:
             return
         for peer in peers:
-            receipt = PollExecutionResult(binding_id=binding.binding_id,poll_run_id=peer['run_id'],
-                collected_count=peer['message_count'],duplicate_count=peer['message_count'])
+            remaining = peer['message_count']-peer['intake_position']
+            receipt = PollExecutionResult.model_validate_json(peer['receipt_json'])
+            receipt.collected_count += remaining
+            receipt.duplicate_count += remaining
             db.execute("UPDATE poll_captures SET status='COMPLETED',intake_position=message_count,"
-                "receipt_json=?,first_intake_at=?,completed_at=? WHERE capture_id=?",
+                "receipt_json=?,first_intake_at=coalesce(first_intake_at,?),completed_at=? WHERE capture_id=?",
                 (receipt.model_dump_json(),now,now,peer['capture_id']))
             db.execute("UPDATE poll_capture_inputs SET reused_from=? WHERE capture_id=?",
                 (parent['capture_id'],peer['capture_id']))
         state = self.repo.get_poll_state(binding)
         self.repo.save_poll_state(state.model_copy(update={
-            'collected_count':state.collected_count+sum(p['message_count'] for p in peers)}))
+            'collected_count':state.collected_count+sum(p['message_count']-p['intake_position'] for p in peers)}))
         unit = self.repo.get_poll_unit_state(binding,parent['unit'])
         if unit.last_capture_at and unit.last_capture_at.isoformat() in {p['observed_at'] for p in peers}:
             self.repo.save_poll_unit_state(unit.model_copy(update={
-                'last_first_capture_at':unit.last_capture_at,'last_first_intake_at':utc_now(),
+                'last_first_capture_at':unit.last_capture_at,'last_first_intake_at':unit.last_first_intake_at or utc_now(),
                 'last_final_intake_at':utc_now()}),parent['unit'])
 
     def backfill_input_keys(self, limit=16):
@@ -705,11 +708,17 @@ class PollJournal:
                 ),
             )
 
-    def accept_and_claim(self, bus, prepared, token, distribution, stopping):
+    def accept_and_claim(self, bus, prepared, token, distribution, stopping, continue_capture=False):
         """Commit a bounded piece and acquire the next lease in one writer visit."""
         with self.repo.connection_scope():
             self.accept_piece(bus, prepared, token, distribution)
-            return None if stopping() else self.claim()
+            if stopping():
+                return None
+            if continue_capture and prepared[4].acquisition_metadata.get('intake_input_key'):
+                following = self.claim(prepared[0]['capture_id'])
+                if following:
+                    return following
+            return self.claim()
 
     def run_receipt(self, run_id):
         with self.repo._connect() as db:
@@ -821,6 +830,7 @@ class CaptureIntake:
 
     async def run(self):
         claim = None
+        previous_capture, burst = None, 0
         while not self.stopping:
             if claim is None:
                 claim = await self.bus.storage.call(self.journal.claim, _lane_priority=0)
@@ -837,12 +847,15 @@ class CaptureIntake:
                     pass
                 continue
             capture_id, token = claim
+            burst = burst+1 if previous_capture == capture_id else 1
+            previous_capture = capture_id
             try:
                 row = await self.bus.storage.read(self.journal.load, capture_id)
                 prepared = await self.bus.storage.prepare(self.journal.prepare_piece, row)
                 claim = await self.bus.storage.call(
                     self.journal.accept_and_claim, self.bus, prepared, token, self.distribution,
                     lambda: self.stopping,
+                    continue_capture=burst<4,
                     _lane_priority=0,
                 )
             except asyncio.CancelledError:
