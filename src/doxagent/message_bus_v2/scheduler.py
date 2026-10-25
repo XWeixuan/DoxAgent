@@ -209,11 +209,13 @@ class GlobalPollScheduler:
             "bus",
             lambda revision: bus_revision_usable(self.service, revision),
         )
-        await self.storage_call(heartbeat.__enter__)
+        # This lifecycle reads/writes the initialization owner, not Bus business
+        # state. It must not wait behind every intake shard or occupy its writer.
+        await asyncio.to_thread(heartbeat.__enter__)
         try:
             return await self._run_admitted_once()
         finally:
-            await self.storage_call(heartbeat.__exit__, None, None, None)
+            await asyncio.to_thread(heartbeat.__exit__, None, None, None)
 
     async def _run_admitted_once(self) -> list[PollExecutionResult]:
         self.intake.start()
@@ -698,20 +700,20 @@ class GlobalPollScheduler:
         result = None
         error = None
         try:
-            for binding in bindings:
-                state = await self.read_call(self.repository.get_poll_state, binding)
-                run_id = new_id("poll")
-                await self.service.storage.call(
-                    self.repository.polling.start,
-                    run_id,
-                    source,
-                    binding,
-                    state.target_due_at or attempted_at,
-                    attempted_at,
-                    "TAIL:SHARED" if kwargs.get("window_cutoff") else "SHARED",
-                    _lane_priority=0,
-                )
-                ids.append(run_id)
+            states = await self.read_call(
+                lambda: [self.repository.get_poll_state(binding) for binding in bindings]
+            )
+            ids = [new_id("poll") for _ in bindings]
+
+            def start_runs():
+                with self.repository.atomic_intake():
+                    for run_id, binding, state in zip(ids, bindings, states, strict=True):
+                        self.repository.polling.start(
+                            run_id, source, binding, state.target_due_at or attempted_at,
+                            attempted_at, "TAIL:SHARED" if kwargs.get("window_cutoff") else "SHARED",
+                        )
+
+            await self.service.storage.call(start_runs, _lane_priority=0)
             result = await self._poll_distribution_impl(source, bindings, attempted_at, **kwargs)
             return result
         except CollectionStopped:
@@ -724,26 +726,25 @@ class GlobalPollScheduler:
             error = type(exc).__name__
             raise
         finally:
-            for run_id in ids:
-                status = (
-                    "FAILED"
-                    if error or (result and result.error_code)
-                    else "DEFERRED"
-                    if result and result.site_access_deferred
-                    else "CAPTURED"
-                )
-                await self.service.storage.call(
-                    self.repository.polling.update_run,
-                    run_id,
-                    status=status,
-                    reason=error
-                    or (
-                        result.error_code or result.site_access_deferred_reason if result else None
-                    ),
-                    requests=requests,
-                    shared_run_id=result.poll_run_id if result else None,
-                    _lane_priority=0,
-                )
+            status = (
+                "FAILED"
+                if error or (result and result.error_code)
+                else "DEFERRED"
+                if result and result.site_access_deferred
+                else "CAPTURED"
+            )
+
+            def finish_runs():
+                with self.repository.atomic_intake():
+                    for run_id in ids:
+                        self.repository.polling.update_run(
+                            run_id, status=status, reason=error or (
+                                result.error_code or result.site_access_deferred_reason if result else None
+                            ), requests=requests, shared_run_id=result.poll_run_id if result else None,
+                        )
+
+            if ids:
+                await self.service.storage.call(finish_runs, _lane_priority=0)
             REQUESTS.reset(trace)
             ACCESS_RESULTS.reset(access)
             DEMAND.reset(demand)
@@ -771,9 +772,11 @@ class GlobalPollScheduler:
                 f"{source.source_id}:{source.version}:CLOSED_SWEEP:"
                 f"{window_start.isoformat()}:{window_cutoff.isoformat()}"
             )
+        definitions = await self.read_call(
+            lambda: [self.terms.get(binding.ticker) for binding in bindings]
+        )
         roster = []
-        for binding in bindings:
-            found = await self.storage_call(self.terms.get, binding.ticker)
+        for binding, found in zip(bindings, definitions, strict=True):
             if found is None:
                 continue
             admission = admission_context or AdmissionContext()
@@ -782,19 +785,16 @@ class GlobalPollScheduler:
             return PollExecutionResult(
                 binding_id=f"shared:{source.source_id}", error_code="CONFIG_INCOMPLETE"
             )
-        run = await self.storage_call(
-            self.distribution.get_or_create_run,
+        run = await self.service.storage.call(
+            self._prepare_distribution_run,
             work_key=work_key,
             source=source,
             mode=mode,
             window_start=window_start,
             cutoff=window_cutoff,
             roster=roster,
+            _lane_priority=0,
         )
-        for binding, revision, admission_payload in roster:
-            await self.storage_call(
-                self.distribution.attach_target, run["run_id"], binding, revision, admission_payload
-            )
         if run["status"] == "DONE" or await self.read_call(
             self.repository.polling.pending, run["run_id"]
         ):
@@ -805,7 +805,7 @@ class GlobalPollScheduler:
                 window_done=True,
                 window_coverage=run["coverage"],
             )
-        token = await self.storage_call(self.distribution.claim_run, run["run_id"])
+        token = await self.service.storage.call(self.distribution.claim_run, run["run_id"], _lane_priority=0)
         if token is None:
             return PollExecutionResult(
                 binding_id=f"shared:{source.source_id}",
@@ -823,7 +823,7 @@ class GlobalPollScheduler:
                 and mode == "REALTIME"
                 and source.adapter_ref == "builtin:defense_public@1"
             ):
-                previous_state = await self.storage_call(
+                previous_state = await self.read_call(
                     self.repository.get_poll_state, roster[0][0]
                 )
                 saved = previous_state.checkpoint.get("defense_public", {})
@@ -852,7 +852,7 @@ class GlobalPollScheduler:
                         source
                     )
                     for binding, _, _ in roster:
-                        state = await self.storage_call(self.repository.get_poll_state, binding)
+                        state = await self.read_call(self.repository.get_poll_state, binding)
                         await self.storage_call(
                             self.repository.save_poll_state,
                             state.model_copy(
@@ -992,6 +992,15 @@ class GlobalPollScheduler:
     def _next_distribution_due(source: SourceDefinition) -> datetime:
         interval = source.default_polling_config.target_interval_seconds
         return datetime.fromtimestamp((int(utc_now().timestamp()) // interval + 1) * interval, UTC)
+
+    def _prepare_distribution_run(self, **kwargs):
+        # One short owner transaction; ticker fanout must not round-trip through
+        # the application queue once for every subscription before fetching.
+        with self.repository.atomic_intake():
+            run = self.distribution.get_or_create_run(**kwargs)
+            for binding, revision, admission in kwargs["roster"]:
+                self.distribution.attach_target(run["run_id"], binding, revision, admission)
+            return run
 
     def _record_distribution_poll(
         self,
@@ -1216,7 +1225,7 @@ class GlobalPollScheduler:
                 else (
                     build_query_plan(source, found[1], found[0]).model_dump(mode="json")
                     if source.acquisition_mode is AcquisitionMode.BY_SEARCH
-                    and (found := await self.storage_call(self.terms.get, binding.ticker))
+                    and (found := await self.read_call(self.terms.get, binding.ticker))
                     is not None
                     else None
                 )
@@ -1539,7 +1548,7 @@ class GlobalPollScheduler:
                 source_version=source.version,
             )
             if window_cutoff is None:
-                refreshed = await self.storage_call(
+                refreshed = await self.read_call(
                     self.repository.get_poll_unit_state, binding, acquisition_unit
                 )
                 await self.storage_call(

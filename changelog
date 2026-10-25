@@ -2145,3 +2145,7 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-26 Bus休市临时采集：新增仅Bus持久开关和CLI enable/disable/status/history，支持时区截止与ticker/source交集范围、原因及操作审计；调度和实际请求前复核会话，过期/关闭不启动新请求，在途及持久接纳/BODY正常收尾，保留checkpoint/去重/正文复用/ARTICLE_ONCE与共享日历。恢复8核生产全局浏览器8，BODY2/借槽关闭及身份实测能力保留；必要生命周期与衔接测试和生产发布回执同步归档。
 
 2026-10-26 Bus临时采集统一生产发布：main整合提交450c17d4已推送并同步远端，backend/site精确重建，Site/Bus/BODY/scheduler四组件滚动完成，实际全局浏览器4恢复8。8核15.24GiB主机、四组件运行/零重启、Site健康、Supervisor/2个人工挑战目标、身份Site与订阅配置保留已核验；12IR端点成功、capture/Read推进。生产MU/finnhub短开启与持久重新读取/提前关闭验证后最终DISABLED；122项主回归、28项W3及22项资源/客户端通过，重叠复核不累加。记录W3资产pending门禁、SQL等待/housekeeping告警，未宣称性能或W3业务验收达标；发布回执docs/message-bus-temporary-collection-production-release-20261026.md。
+
+2026-10-26: User-authorized BE production asset activation completed via formal activation plan, D1/D2 refreshed and D3 v43/63 policies; Bus/Runtime acknowledgements verified. Preserved existing Event Library v37 and monitoring configuration; no research rerun, configuration rebuild or application-code deployment.
+
+2026-10-26 休市全源管线实测修复第一轮：真实启动后发现请求前5-50秒等待、共享来源逐ticker多次writer往返及接纳积压。将词表/状态等纯读移出writer；共享轮次开始/结束与roster准备按源合并短事务，20ticker不增加应用排队次数；初始化heartbeat生命周期脱离Bus writer；重复first_seen仅有更早证据才更新。73项相关回归及4项2/20ticker、writer阻塞/first_seen行为专项通过；保留原覆盖、正文质量、身份与ARTICLE_ONCE，生产对比继续进行。

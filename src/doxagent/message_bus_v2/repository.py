@@ -247,7 +247,8 @@ class MessageBusV2Repository:
         with self.transaction() as db:
             db.executemany(
                 "INSERT INTO message_first_seen VALUES(?,?) ON CONFLICT(id) DO UPDATE SET "
-                "first_seen_at=min(first_seen_at,excluded.first_seen_at)",
+                "first_seen_at=excluded.first_seen_at "
+                "WHERE excluded.first_seen_at < message_first_seen.first_seen_at",
                 values,
             )
             for start in range(0, len(keys), 400):

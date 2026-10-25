@@ -52,6 +52,9 @@ class DistributionWorker:
         self._retirement_at = 0.0
         self._active: set[asyncio.Task] = set()
 
+    async def _read(self, operation, *args):
+        return await self.bus.storage.read(self.bus.repository.read_only, operation, *args)
+
     async def run_available(self) -> int:
         """Fill each released article slot without waiting for a slow batch peer."""
         for task in tuple(self._active):
@@ -105,7 +108,7 @@ class DistributionWorker:
     async def _article(self, rows: list[dict[str, Any]]) -> None:
         message = RawMessageInput.model_validate_json(rows[0]["enriched_json"])
         source = SourceDefinition.model_validate_json(rows[0]["source_json"])
-        current_source = await self.bus.storage.call(
+        current_source = await self._read(
             self.bus.repository.get_source, source.source_id
         )
         if _complete_body_required(current_source or source) and not _complete_body_verified(
@@ -142,7 +145,7 @@ class DistributionWorker:
         definitions: dict[str, TickerMonitoringTerms] = {}
         relevant: dict[str, bool] = {}
         for row in eligible_rows:
-            found = await self.bus.storage.call(
+            found = await self._read(
                 self.terms.get, row["ticker"], int(row["terms_revision"])
             )
             if found is None:
@@ -333,8 +336,8 @@ class DistributionWorker:
             )
             return
         snapshot = TickerSourceBinding.model_validate_json(row["binding_json"])
-        current = await self.bus.storage.call(self.bus.repository.get_binding, snapshot.binding_id)
-        ticker_state = await self.bus.storage.call(
+        current = await self._read(self.bus.repository.get_binding, snapshot.binding_id)
+        ticker_state = await self._read(
             self.bus.repository.get_ticker_state, snapshot.ticker
         )
         if (
