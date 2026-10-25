@@ -2167,3 +2167,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-26 统一监测词动态语言发布准备：按用户要求提交并推送main，同步新加坡生产仓库；精确构建backend/web，仅滚动v2-api与v2-web，沿用现有生产配置、数据库和订阅。发布后核验镜像版本、健康状态及各ticker语言要求与实际启用绑定一致性。
 
 2026-10-26 接纳重复输入热路径修复：在既有input/policy/scope/语言指纹相同且任务已持久化的条件下，pending/running/retry_wait及尚未到复查时点的终态输入直接复用收据，不反复展开旧正文、构建同一任务；不把其判为正文成功。输入变化、策略变化、语言差异、重试到期和CLOSED_SWEEP保持原路径，过期已发布输入在加载全文前命中相同收据。99项正文/去重/接纳/开关回归通过，含未发布pending、失败重试窗口及scope/语言隔离。
+
+2026-10-26 统一监测词动态语言生产发布完成：功能提交fd888664已推送origin/main并同步远端；仅API/Web精确构建发布，同版本镜像及健康/零重启通过，其他组件发布记录未变。生产9ticker语言及source_ids与独立SQL核算的启用绑定完全一致，ONDS=en/he、RKLB=en；首页/健康/代理200、未认证监测词401、实际前端产物已更新。提交后9项核心回归通过；验收记录docs/monitoring-terms-dynamic-languages-production-release-20261026.md。
