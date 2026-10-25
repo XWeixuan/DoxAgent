@@ -398,7 +398,8 @@ class PollJournal:
                         if shared else [context])
             candidates = [RawMessageInput.model_validate(raw)
                           for raw in payload["result"]["messages"][position : position + 256]]
-            published = self.repo.published_identity_keys(binding, candidates) if not shared else set()
+            tickers = sorted({t['binding']['ticker'] for t in shared['roster']}) if shared else None
+            published = self.repo.published_identity_keys(binding, candidates, tickers=tickers)
             messages, advanced = [], 0
             for message in candidates:
                 key = identity_key_for(source.source_id, message)
@@ -455,17 +456,21 @@ class PollJournal:
             ).fetchone()
             if not live or live["claim_token"] != token or live["status"] != "RUNNING":
                 return
-            if not shared and result.acquisition_metadata.get("intake_skipped_keys"):
+            if result.acquisition_metadata.get("intake_skipped_keys"):
                 skipped = set(result.acquisition_metadata["intake_skipped_keys"])
                 # A BODY completion may publish while the preparation snapshot
                 # waits for the writer. Reprepare instead of losing its update.
+                tickers = sorted({t['binding']['ticker'] for t in shared['roster']}) if shared else None
+                scope = ("r.ticker IN (" + ",".join("?" for _ in tickers) + ") AND r.source_id=?"
+                         if tickers else "r.ticker=? AND r.source_id=? AND r.binding_id=?")
+                args = (*tickers, source.source_id) if tickers else (binding.ticker, binding.source_id, binding.binding_id)
                 matches = db.execute(
                     "SELECT 1 FROM raw_messages r JOIN standard_messages s "
                     "ON s.raw_message_id=r.raw_message_id JOIN stream_members m "
                     "ON m.standard_message_id=s.standard_message_id "
-                    "WHERE r.ticker=? AND r.source_id=? AND r.binding_id=? "
+                    "WHERE " + scope + " "
                     "AND r.identity_key IN (" + ",".join("?" for _ in skipped) + ") LIMIT 1",
-                    (binding.ticker, binding.source_id, binding.binding_id, *sorted(skipped)),
+                    (*args, *sorted(skipped)),
                 ).fetchone()
                 if matches:
                     raise RuntimeError("intake_publication_changed_reprepare")

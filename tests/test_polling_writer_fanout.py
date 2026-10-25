@@ -188,9 +188,12 @@ def test_ticker_backlog_bulk_filter_preserves_counts_and_eligible_job(tmp_path):
     assert len(repo.list_enrichment_jobs()) == 1
 
 
-async def test_old_published_identity_is_retained_and_publication_race_reprepares(tmp_path):
+@pytest.mark.parametrize('shared', [False, True])
+async def test_old_published_identity_is_retained_and_publication_race_reprepares(tmp_path, shared):
+    import json
     from datetime import timedelta
 
+    from doxagent.message_bus_v2.admission import AdmissionContext
     from tests.fixtures.message_bus_v2 import _input
     from tests.test_content_enrichment_hub import _setup
 
@@ -202,14 +205,20 @@ async def test_old_published_identity_is_retained_and_publication_race_reprepare
         observed_at=now,run_id='publication-race')
     capture_id = repo.polling.commit(capture)
     _, token = repo.polling.claim()
-    prepared = repo.polling.prepare_piece(repo.polling.load(capture_id))
+    row = repo.polling.load(capture_id)
+    if shared:
+        payload = json.loads(row['payload_json'])
+        payload['distribution'] = {'roster': [{'binding': binding.model_dump(mode='json'),
+            'admission': AdmissionContext(observed_at=now).model_dump(mode='json')}]}
+        row = {**row, 'payload_json': json.dumps(payload)}
+    prepared = repo.polling.prepare_piece(row)
     assert prepared[4].messages == []
     await bus.accept_message(source=source,binding=binding,message=live,bootstrap=False,collected_at=now)
     assert repo.latest_stream_offset(binding.ticker) == 1
     with pytest.raises(RuntimeError,match='intake_publication_changed'):
         repo.polling.accept_piece(bus,prepared,token)
     assert repo.polling.load(capture_id)['intake_position'] == 0
-    refreshed = repo.polling.prepare_piece(repo.polling.load(capture_id))
+    refreshed = repo.polling.prepare_piece(row)
     assert len(refreshed[4].messages) == 1
     assert refreshed[4].acquisition_metadata['intake_prefiltered'] == 0
 
