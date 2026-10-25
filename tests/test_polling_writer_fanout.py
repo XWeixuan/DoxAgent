@@ -84,3 +84,82 @@ def test_identical_first_seen_is_not_an_update_but_earlier_evidence_is(tmp_path)
     repo.resolve_first_seen_many([earlier], 'MU:source')
     with repo._connect() as db:
         assert db.execute('SELECT n FROM seen_updates').fetchone()[0] == 1
+
+
+def test_distribution_membership_is_snapshotted_once_per_piece_and_survives_resume(tmp_path):
+    import json
+    from datetime import timedelta
+
+    from doxagent.message_bus_v2.admission import AdmissionContext
+    from doxagent.message_bus_v2.distribution_repository import DistributionRepository
+    from tests.test_content_enrichment_hub import _message
+
+    repo, bus = _bus(tmp_path / 'bus.db')
+    bus.start_ticker('MU')
+    source = bus.update_source('ctee_semiconductor', {'enabled':True}, actor=UpdateActor.SYSTEM)
+    binding = bus.configure_binding(ticker='MU', source_id=source.source_id, actor=UpdateActor.SYSTEM)
+    distribution = DistributionRepository(repo)
+    run = distribution.get_or_create_run(work_key='pieces', source=source, mode='REALTIME',
+        window_start=None, cutoff=None, roster=[(binding,1,AdmissionContext().model_dump(mode='json'))])
+    writes = []
+    original = distribution._snapshot
+    def snapshot(db, value):
+        if isinstance(value,list) and value and isinstance(value[0],str):
+            writes.append(len(value))
+        return original(db,value)
+    distribution._snapshot = snapshot
+    messages = [_message(i).model_copy(update={'published_at':utc_now()-timedelta(days=2)}) for i in range(5)]
+    for index, piece in enumerate((messages[:3],messages[3:])):
+        token = distribution.claim_run(run['run_id'])
+        distribution.ingest(run['run_id'],token,source,piece,checkpoint={'piece':index+1},
+            coverage='COMPLETE',done=index==1,deadline_seconds=180,pipeline_version=None)
+    assert writes == [3,5]
+    with repo._connect() as db:
+        data = db.execute('SELECT articles_json FROM distribution_observation_sets WHERE run_id=?',(run['run_id'],)).fetchone()[0]
+        assert len(json.loads(distribution._expand(db,data))) == 5
+
+
+def test_old_shared_backlog_advances_in_bulk_without_dropping_live_candidate_or_receipt(tmp_path):
+    import json
+    from datetime import timedelta
+
+    from doxagent.message_bus_v2.admission import AdmissionContext
+    from doxagent.message_bus_v2.distribution_repository import DistributionRepository
+    from tests.test_content_enrichment_hub import _message
+
+    repo, bus = _bus(tmp_path / 'bus.db')
+    bus.start_ticker('MU')
+    source = bus.update_source('ctee_semiconductor', {'enabled':True}, actor=UpdateActor.SYSTEM)
+    binding = bus.configure_binding(ticker='MU',source_id=source.source_id,actor=UpdateActor.SYSTEM)
+    now = utc_now()
+    admission = AdmissionContext(observed_at=now).model_dump(mode='json')
+    distribution = DistributionRepository(repo)
+    run = distribution.get_or_create_run(work_key='old-backlog',source=source,mode='REALTIME',
+        window_start=None,cutoff=None,roster=[(binding,1,admission)])
+    token = distribution.claim_run(run['run_id'])
+    info = {'run_id':run['run_id'],'fetch_token':token,'checkpoint':{},'coverage':'COMPLETE','done':True,
+            'roster':[{'binding':binding.model_dump(mode='json'),'terms_revision':1,'admission':admission}],
+            'targets':[{'binding_id':binding.binding_id,'ticker':binding.ticker,'binding_version':binding.version}]}
+    old = [_message(i).model_copy(update={'published_at':now-timedelta(days=2)}) for i in range(260)]
+    prepared = repo.polling.prepare(source=source,binding=binding,result=PollResult(messages=old+[_message(9999)]),
+        observed_at=now,run_id=run['run_id'],unit='SHARED',distribution=info)
+    capture_id = repo.polling.commit(prepared)
+    for expected in [256,261]:
+        _, claim = repo.polling.claim()
+        piece = repo.polling.prepare_piece(repo.polling.load(capture_id))
+        repo.polling.accept_piece(bus,piece,claim,distribution)
+        assert repo.polling.load(capture_id)['intake_position'] == expected
+    receipt = repo.polling.run_receipt(run['run_id'])
+    assert receipt.collected_count == 261 and receipt.filtered_count == 260 and receipt.queued_count == 1
+    assert len(repo.list_enrichment_jobs()) == 1
+    assert len(json.loads(repo.polling.load(capture_id)['payload_json'])['result']['messages']) == 261
+
+    # The same old item remains a real candidate for an explicitly owned sweep.
+    context = AdmissionContext(mode='CLOSED_SWEEP',sweep_id='s',source_task_id='task',
+        window_start=now-timedelta(days=3),cutoff=now,observed_at=now).model_dump(mode='json')
+    info['roster'][0]['admission'] = context
+    payload = json.loads(repo.polling.load(capture_id)['payload_json'])
+    payload['distribution'] = info
+    row = {**repo.polling.load(capture_id),'intake_position':0,'payload_json':json.dumps(payload)}
+    piece = repo.polling.prepare_piece(row)
+    assert len(piece[4].messages) == 16 and piece[4].acquisition_metadata['intake_prefiltered'] == 0

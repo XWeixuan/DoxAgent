@@ -8,10 +8,11 @@ import logging
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
-from .admission import AdmissionContext
+from .admission import AdmissionContext, evaluate_admission
 from .schema import (
     PollExecutionResult,
     PollResult,
+    RawMessageInput,
     SourceDefinition,
     TickerSourceBinding,
     new_id,
@@ -380,15 +381,41 @@ class PollJournal:
         source = SourceDefinition.model_validate(payload["source"])
         binding = TickerSourceBinding.model_validate(payload["binding"])
         position = row["intake_position"]
+        context = AdmissionContext.model_validate(payload["admission"])
+        shared = payload.get("distribution")
+        messages = payload["result"]["messages"][position : position + 16]
+        advanced, filtered = len(messages), 0
+        if shared and all(t["admission"].get("mode", "REALTIME") == "REALTIME" for t in shared["roster"]):
+            # Old large RSS lists must not create per-article/per-ticker delivery
+            # work merely to reject it. Keep the original durable payload and
+            # count every input; only the existing unequivocal EXACT age gate
+            # is evaluated here, outside the writer. Real candidates stay <=16.
+            contexts = [AdmissionContext.model_validate(t["admission"]) for t in shared["roster"]]
+            messages, advanced = [], 0
+            for raw in payload["result"]["messages"][position : position + 256]:
+                message = RawMessageInput.model_validate(raw)
+                expired = message.publication_time_basis == "EXACT" and contexts and all(
+                    evaluate_admission(message.published_at, target, context.observed_at,
+                                       message.publication_time_basis) == "EXPIRED_PUBLICATION"
+                    for target in contexts
+                )
+                if expired:
+                    advanced += 1
+                    filtered += 1
+                elif len(messages) < 16:
+                    messages.append(message)
+                    advanced += 1
+                else:
+                    break
         result = PollResult.model_validate(
             {
                 **payload["result"],
-                "messages": payload["result"]["messages"][position : position + 16],
+                "messages": messages,
                 "failures": [],
-                "acquisition_metadata": {"poll_run_id": row["run_id"]},
+                "acquisition_metadata": {"poll_run_id": row["run_id"],
+                    "intake_advanced": advanced, "intake_prefiltered": filtered},
             }
         )
-        context = AdmissionContext.model_validate(payload["admission"])
         result = result.model_copy(
             update={
                 "messages": [
@@ -409,6 +436,7 @@ class PollJournal:
 
     def accept_piece(self, bus, prepared, token, distribution=None):
         row, bootstrap, source, binding, result, context, shared = prepared
+        advanced = result.acquisition_metadata.get("intake_advanced", len(result.messages))
         now = utc_now().isoformat()
         with self.repo.atomic_intake() as db:
             live = db.execute(
@@ -464,7 +492,7 @@ class PollJournal:
                         shared["run_id"],
                     ),
                 )
-                last = row["intake_position"] + len(result.messages) >= row["message_count"]
+                last = row["intake_position"] + advanced >= row["message_count"]
                 jobs = distribution.ingest(
                     shared["run_id"],
                     claim,
@@ -479,7 +507,8 @@ class PollJournal:
                 receipt = PollExecutionResult(
                     binding_id=binding.binding_id,
                     poll_run_id=row["run_id"],
-                    collected_count=len(result.messages),
+                    collected_count=advanced,
+                    filtered_count=result.acquisition_metadata.get("intake_prefiltered", 0),
                     queued_count=len(jobs),
                     enrichment_job_ids=jobs,
                 )
@@ -519,7 +548,7 @@ class PollJournal:
                         }
                     )
                     self.repo.save_poll_unit_state(unit_state, row["unit"])
-            following = row["intake_position"] + len(result.messages)
+            following = row["intake_position"] + advanced
             done = following >= row["message_count"]
             db.execute(
                 "UPDATE poll_captures SET status=?,intake_position=?,queue_at=?,claim_token=NULL,"

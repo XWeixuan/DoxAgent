@@ -2151,3 +2151,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-26 休市全源管线实测修复第一轮：真实启动后发现请求前5-50秒等待、共享来源逐ticker多次writer往返及接纳积压。将词表/状态等纯读移出writer；共享轮次开始/结束与roster准备按源合并短事务，20ticker不增加应用排队次数；初始化heartbeat生命周期脱离Bus writer；重复first_seen仅有更早证据才更新。73项相关回归及4项2/20ticker、writer阻塞/first_seen行为专项通过；保留原覆盖、正文质量、身份与ARTICLE_ONCE，生产对比继续进行。
 
 2026-10-26 管线实测正文根因修复：隔离重放真实Microsoft Fabric失败页，确认SiteAccessBrowserReader把stage_timings字典扁平覆盖pipeline阶段列表，浏览器回退后append抛AttributeError。将物理timings另存site_stage_timings，保留原site_access_trace与pipeline列表；异常增加job/source栈日志。HTTP→浏览器与HTTP→浏览器→Reader真实适配器组合及正文管线/Hub共59项通过，不绕过质量检查。
+
+2026-10-26 管线积压实测修复第三轮：共享列表单轮约930项旧候选导致接纳积压超过8万。准备阶段对所有实时目标均已明确EXACT过期的项复用原接纳规则，单片最多推进256旧项、真实业务候选仍至多16；完整capture原文和collected/filtered计数保留，DATE/UNKNOWN/未来项及CLOSED_SWEEP不作该优化。分发文章集合改为每片一次快照而非逐篇重写；合并poll终态/阶段账为一次提交。47项原分发/采集回归、6项2/20ticker及混合261项计数/恢复/历史sweep专项、11项开关衔接通过，未放宽身份或正文质量。

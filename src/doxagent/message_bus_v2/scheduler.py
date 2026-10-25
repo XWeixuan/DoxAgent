@@ -1114,10 +1114,11 @@ class GlobalPollScheduler:
         demand_token = DEMAND.set(demand)
         run_id = new_id("poll")
         result, error = None, None
+        run_details = {}
         try:
             check_request_allowed()
             result = await self._poll_impl(
-                source, binding, attempted_at, poll_run_id=run_id, **kwargs
+                source, binding, attempted_at, poll_run_id=run_id, run_details=run_details, **kwargs
             )
             return result
         except CollectionStopped:
@@ -1151,6 +1152,7 @@ class GlobalPollScheduler:
                 status=status,
                 reason=reason,
                 requests=requests,
+                **run_details,
                 _lane_priority=0,
             )
             ACCESS_RESULTS.reset(access_token)
@@ -1173,6 +1175,7 @@ class GlobalPollScheduler:
         freeze_query_plan: bool = False,
         poll_run_id: str | None = None,
         acquisition_unit: str = "ALL",
+        run_details: dict | None = None,
     ) -> PollExecutionResult:
         # Snapshot source and binding for this poll. Updates become visible on the next poll.
         state = await self.read_call(self.repository.get_poll_unit_state, binding, acquisition_unit)
@@ -1434,20 +1437,22 @@ class GlobalPollScheduler:
                     "bootstrap_suppressed_count",
                 ):
                     setattr(execution, field, getattr(execution, field) + getattr(receipt, field))
-            await self.service.storage.call(
-                self.repository.polling.update_run,
-                poll_run_id,
+            details = dict(
                 outcome_status="DEFERRED"
                 if result.site_access_deferred
                 else "FAILED"
                 if result.failures
                 else "CAPTURED",
-                reason=result.site_access_deferred_reason,
                 capture_count=len(page_captures),
                 intake_pending=deferred_intake,
                 acquisition_ms=acquisition_ms,
-                _lane_priority=0,
             )
+            if run_details is not None:
+                run_details.update(details)
+            else:
+                await self.service.storage.call(
+                    self.repository.polling.update_run, poll_run_id, **details, _lane_priority=0
+                )
             if window_cutoff is not None:
                 return execution
             if execution.crawler_execution_id and self.adapters.crawler_plane is not None:

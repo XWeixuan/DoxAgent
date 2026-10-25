@@ -340,6 +340,13 @@ class DistributionRepository:
         row = self.run(run_id)
         if row is None or row["claim_token"] != token:
             raise RuntimeError("distribution_run_lease_lost")
+        identities = None
+        if row["mode"] == "REALTIME":
+            with self.bus._connect() as db:
+                prior = db.execute(
+                    "SELECT articles_json FROM distribution_observation_sets WHERE run_id=?", (run_id,)
+                ).fetchone()
+                identities = set(json.loads(self._expand(db, prior[0]))) if prior else set()
         job_ids: list[str] = []
         for message in messages:
             article_key = sha256_text(
@@ -442,14 +449,8 @@ class DistributionRepository:
                 if new_work or active_run["mode"] == "CLOSED_SWEEP":
                     db.execute("INSERT OR IGNORE INTO distribution_observations VALUES(?,?,?)",
                                (run_id, article_id, now))
-                if active_run["mode"] == "REALTIME":
-                    prior = db.execute("SELECT articles_json FROM distribution_observation_sets WHERE run_id=?",
-                                       (run_id,)).fetchone()
-                    identities = set(json.loads(self._expand(db, prior[0]))) if prior else set()
+                if identities is not None:
                     identities.add(article_id)
-                    db.execute("INSERT INTO distribution_observation_sets VALUES(?,?) "
-                               "ON CONFLICT(run_id) DO UPDATE SET articles_json=excluded.articles_json",
-                               (run_id, self._snapshot(db, sorted(identities))))
             with self.bus._connect() as db:
                 article = db.execute(
                     "SELECT body_state FROM distribution_articles WHERE article_id=?", (article_id,)
@@ -500,6 +501,12 @@ class DistributionRepository:
             ).rowcount
             if not changed:
                 raise RuntimeError("distribution_run_lease_lost")
+            if identities is not None:
+                db.execute(
+                    "INSERT INTO distribution_observation_sets VALUES(?,?) "
+                    "ON CONFLICT(run_id) DO UPDATE SET articles_json=excluded.articles_json",
+                    (run_id, self._snapshot(db, sorted(identities))),
+                )
         return job_ids
 
     def finalize_article(
