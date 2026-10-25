@@ -2185,3 +2185,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-26 休市补采收尾修复：GlobeNewswire TAIL:SWEEP对缺少head_at的旧游标先补取第1页，保留已完成/未完成尾页进度，再正确结算窗口，避免已完成查询每5秒重复空capture及遗漏首页。SOURCE_SWEEP延期沿用Site Access retry_not_before；缺失时使用绑定周期，不追加虚假UNKNOWN页覆盖。补充旧游标、首页、尾页、重复完成与延期时间专项；校正旧测试对SEC/IR既有30秒默认值的断言。
 
 2026-10-26 补采取消恢复：生产最后一个GlobeNewswire任务保留了旧Bus容器的30分钟租约。正常关闭/替换时捕获取消，保留capture/checkpoint和任务证据，按原5秒交接释放自己的fenced补采claim；不放宽崩溃/其他owner租约。增加取消后可恢复且不增加失败计数的回归。
+
+2026-10-26 Message Bus约三小时生产实测归档：多轮代码修复已同步origin/main并组件发布；临时采集revision4于05:11:12自动到期。历史接纳积压由约1.33万轮/32.4万原始候选降至正常轮次，并在到期后核验为空；真实BE新消息采集至发布37.18秒、BODY4.08秒。报告明确全源新鲜周期70.6%、Yahoo尾部/访问认证/传输证据缺口及正文80%尚未验收；4个已发布URL变体正文cohort时间经证据核验并审计修正，不修改成功状态或正文。附精简收据、固定窗口测量脚本、旧claim恢复审计与排查报告。
