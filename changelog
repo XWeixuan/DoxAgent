@@ -2135,3 +2135,11 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-24 SEC监测范围扩展：新增13D/A官方SC/SCHEDULE标识、S-3/F-3及ASR、8-K Items3.01/3.03/2.06；按用户最新变更明确排除10-K/10-Q及/A。补结构化13D XML和issuerCIK校验，展示/原始XML同申报去重，持股数量比例与叙述完整保留。38项专项通过，6个官方真实样本FULL，沿用30秒轻量轮询及既有全部ticker订阅。
 
 2026-10-24 SEC范围扩展生产验收：Bus/BODY 00984c3a运行，9ticker保持30秒且轮询成功；97项相关测试通过，生产隔离13D XML/HTML、S-3、F-3ASR四条完整入库均FULL，最长466811字符未截断。运行时确认10-K/10-Q未启用；未注入历史生产消息，Chrome/Site未变、维护timer恢复。
+
+2026-10-25: Added scoped BE earnings-refresh operator scripts and audit record; remote formal D1/D2/D3-only run uses production image and frozen active Event Library v37, excludes CDECR/O2/O4/configuration. Dedicated control DB, same-run recovery, hourly monitoring; no production application-code change.
+
+2026-10-25: Completed BE D1/D2/D3 refresh and added checksum-verified export/verification scripts. D2 COMPLETE 3 Shell/11 Unit; D3 candidate v43 PARTIAL 63 policies; 115 real Worker jobs succeeded, rejected final-edit and coverage gaps explicitly retained; no production activation/configuration change.
+
+2026-10-26 W3跨会话整合：保留其他会话AGENTS/skill修改，强化ticker级Surprise、外部传导概率/分量和独立时效判断；原输出schema、行情权限及冻结Case不变，28项单Skill/合同/Case路由回归通过。归档BE重初始化7个运维脚本与审计，未重复执行或激活研究候选。
+
+2026-10-26 Bus休市临时采集：新增仅Bus持久开关和CLI enable/disable/status/history，支持时区截止与ticker/source交集范围、原因及操作审计；调度和实际请求前复核会话，过期/关闭不启动新请求，在途及持久接纳/BODY正常收尾，保留checkpoint/去重/正文复用/ARTICLE_ONCE与共享日历。恢复8核生产全局浏览器8，BODY2/借槽关闭及身份实测能力保留；必要生命周期与衔接测试和生产发布回执同步归档。

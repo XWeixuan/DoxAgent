@@ -64,7 +64,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="DoxAgent Message Bus v2 worker")
     parser.add_argument(
         "command",
-        choices=("run-worker", "run-once", "status", "terms", "distribution", "migration"),
+        choices=("run-worker", "run-once", "status", "terms", "distribution", "migration", "collection"),
     )
     parser.add_argument("action", nargs="?")
     parser.add_argument("--file")
@@ -75,9 +75,34 @@ def main() -> None:
     parser.add_argument("--backup-dir")
     parser.add_argument("--article")
     parser.add_argument("--language")
+    parser.add_argument("--until", help="ISO 8601 deadline including timezone")
+    parser.add_argument("--reason")
     args = parser.parse_args()
     settings = DoxAgentSettings()
     output: Any
+    if args.command == "collection":
+        from datetime import datetime
+
+        from .collection_override import CollectionControl
+
+        control = CollectionControl(MessageBusV2Repository(settings.message_bus_v2_sqlite_path))
+        try:
+            if args.action == "status":
+                output = control.status()
+            elif args.action == "history":
+                output = control.history(args.limit)
+            elif args.action in {"enable", "disable"}:
+                output = control.update(
+                    enabled=args.action == "enable", actor=args.actor, reason=args.reason or "",
+                    expires_at=datetime.fromisoformat(args.until) if args.until else None,
+                    tickers=(args.ticker or "").split(","), sources=(args.source or "").split(","),
+                )
+            else:
+                parser.error("collection action must be enable/disable/status/history")
+        except ValueError as exc:
+            parser.error(str(exc))
+        print(json.dumps(output, ensure_ascii=False))
+        return
     if args.command == "migration":
         from doxagent.message_bus_v2.migration import apply, preview
 

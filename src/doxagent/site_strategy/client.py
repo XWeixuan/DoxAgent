@@ -106,6 +106,7 @@ class SiteAccessClient:
         return ResolvedSite.model_validate(response.json())
 
     async def execute(self, request: AccessRequest) -> AccessResult:
+        from doxagent.message_bus_v2.collection_override import check_request_allowed
         from doxagent.message_bus_v2.poll_trace import DEMAND
 
         from .scope import current_routing
@@ -124,6 +125,7 @@ class SiteAccessClient:
                     "scope_revision": context.scope_revision,
                 }
             )
+        check_request_allowed()
         if self.service is not None:
             return _observed(await self.service.execute(request))
         assert self._client is not None
@@ -143,6 +145,7 @@ class SiteAccessClient:
                 except (httpx.ReadError, httpx.RemoteProtocolError):
                     if request.method != "GET":
                         raise
+                    check_request_allowed()
                     # Same ID preserves server-side deduplication if the response was lost.
                     response = await self._client.post(
                         "/v1/access/execute",

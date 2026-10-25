@@ -277,7 +277,10 @@ class MessageBusV2Repository:
                     self.record_admission(message, reason, "INTAKE", binding_id, connection=db)
 
     def _initialize(self) -> None:
+        from .collection_override import SCHEMA as collection_schema
+
         with self.transaction() as connection:
+            connection.executescript(collection_schema)
             connection.execute(
                 "CREATE TABLE IF NOT EXISTS ir_endpoint_states "
                 "(id TEXT PRIMARY KEY, binding_id TEXT NOT NULL, endpoint_id TEXT NOT NULL, "

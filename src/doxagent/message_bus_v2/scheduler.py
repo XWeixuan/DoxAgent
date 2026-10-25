@@ -17,6 +17,7 @@ from doxagent.site_strategy.scope import source_routed
 
 from .admission import AdmissionContext
 from .capacity import RequestCost, required_capacity
+from .collection_override import CollectionStopped, check_request_allowed
 from .polling import CaptureIntake
 
 if TYPE_CHECKING:
@@ -99,6 +100,7 @@ class SchedulerGroupLimiter:
                 acquired = False
             # Persistence must never hold the pacing lock. The scheduler callback
             # only updates an in-memory batch; a caller-supplied awaitable is tracked.
+            check_request_allowed()
             if self._on_request:
                 recorded = self._on_request()
                 if inspect.isawaitable(recorded):
@@ -712,6 +714,12 @@ class GlobalPollScheduler:
                 ids.append(run_id)
             result = await self._poll_distribution_impl(source, bindings, attempted_at, **kwargs)
             return result
+        except CollectionStopped:
+            result = PollExecutionResult(
+                binding_id=f"shared:{source.source_id}", site_access_deferred=True,
+                site_access_deferred_reason="TEMPORARY_COLLECTION_ENDED", window_done=False,
+            )
+            return result
         except BaseException as exc:
             error = type(exc).__name__
             raise
@@ -943,6 +951,9 @@ class GlobalPollScheduler:
                 window_done=result.window_done,
                 window_coverage=result.window_coverage,
             )
+        except CollectionStopped:
+            await self.storage_call(self.distribution.release_run, run["run_id"], token)
+            raise
         except Exception as exc:
             await self.storage_call(self.distribution.release_run, run["run_id"], token)
             from doxagent.source_maintenance.signals import shared
@@ -1095,8 +1106,16 @@ class GlobalPollScheduler:
         run_id = new_id("poll")
         result, error = None, None
         try:
+            check_request_allowed()
             result = await self._poll_impl(
                 source, binding, attempted_at, poll_run_id=run_id, **kwargs
+            )
+            return result
+        except CollectionStopped:
+            result = PollExecutionResult(
+                binding_id=binding.binding_id, poll_run_id=run_id,
+                site_access_deferred=True, site_access_deferred_reason="TEMPORARY_COLLECTION_ENDED",
+                window_done=False,
             )
             return result
         except BaseException as exc:

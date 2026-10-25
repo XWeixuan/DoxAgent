@@ -14,6 +14,9 @@ _HTTP_POOLS = WeakKeyDictionary()
 
 
 def request_started(method, url, transport="http"):
+    from .collection_override import check_request_allowed
+
+    check_request_allowed()
     events = REQUESTS.get()
     if events is None:
         return None
@@ -63,6 +66,9 @@ def install(client):
             slots, hosts = _HTTP_POOLS.setdefault(loop, (asyncio.Semaphore(16), {}))
             host = request.url.host
             async with hosts.setdefault(host, asyncio.Semaphore(4)), slots:
+                from .collection_override import check_request_allowed
+
+                check_request_allowed()
                 return await send(request, **kwargs)
 
         client.send = bounded_send

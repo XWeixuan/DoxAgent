@@ -7,6 +7,12 @@ import logging
 from datetime import timedelta
 from typing import Any
 
+from doxagent.message_bus_v2.collection_override import (
+    REQUEST_GATE,
+    CollectionControl,
+    CollectionLease,
+    matches,
+)
 from doxagent.message_bus_v2.schema import AcquisitionMode, SourceDefinition, TickerSourceBinding
 from doxagent.semantic_clock import boundary, semantic_day
 
@@ -94,6 +100,10 @@ class BusOrchestration:
                 lambda: {ticker: self.journal.get("schedule", ticker, {}) for ticker in tickers}
             )
         schedule_entries = []
+        override = await self._journal_call(
+            CollectionControl(scheduler.repository, clock=self.journal.clock).status
+        )
+        temporary_bindings = set()
         for source, binding in eligible:
             if source.source_id == "corporate_ir_press_releases":
                 continue  # Its independent endpoint coordinator runs 7x24 before this lane.
@@ -116,6 +126,12 @@ class BusOrchestration:
                 # Filings are disseminated outside the trading session too.
                 # Keep the existing pause/disabled checks, not the market gate.
                 realtime = True
+            temporary = not realtime and realtime_mode is False and matches(
+                override, binding.ticker, source.source_id, now
+            )
+            if temporary:
+                realtime = True
+                temporary_bindings.add(binding.binding_id)
             if hasattr(scheduler, "work_units"):
                 schedule_entries.extend((source,binding,options['acquisition_unit'],
                                          poll_states[binding.binding_id].target_due_at or now,
@@ -141,7 +157,10 @@ class BusOrchestration:
                 for key, options in units:
                     if key not in self._inflight:
                         self._inflight[key] = asyncio.create_task(
-                            asyncio.wait_for(scheduler._poll(source, binding, now, **options), timeout=600)
+                            asyncio.wait_for(self._acquire(
+                                scheduler, override if temporary else None, [binding],
+                                scheduler._poll, source, binding, now, **options
+                            ), timeout=600)
                         )
         for source, bindings in shared_realtime.values():
             key = f"shared:{source.source_id}"
@@ -150,7 +169,10 @@ class BusOrchestration:
             ):
                 self._inflight[key] = asyncio.create_task(
                     asyncio.wait_for(
-                        scheduler._poll_distribution(source, bindings, now), timeout=600
+                        self._acquire(
+                            scheduler, override if any(b.binding_id in temporary_bindings for b in bindings) else None,
+                            bindings, scheduler._poll_distribution, source, bindings, now
+                        ), timeout=600
                     )
                 )
         for sweep in sorted(sweeps, key=lambda item: item["inputs"]["cutoff"]):
@@ -222,6 +244,17 @@ class BusOrchestration:
             )
         await asyncio.sleep(0)
         return results
+
+    async def _acquire(self, scheduler, override, bindings, operation, *args, **kwargs):
+        gate = CollectionLease(
+            scheduler.repository.path, override, bindings, clock=self.journal.clock
+        ) if override else None
+        token = REQUEST_GATE.set(gate)
+        try:
+            # Actual adapters check again at permits/transport, after any waiting.
+            return await operation(*args, **kwargs)
+        finally:
+            REQUEST_GATE.reset(token)
 
     @staticmethod
     async def _storage(scheduler: Any, operation: Any, *args: Any, **kwargs: Any) -> Any:

@@ -643,7 +643,14 @@ class CaptureIntake:
             if self.task is not None and not self.task.cancelled():
                 self.task.result()
             self.wake = asyncio.Event()
-            self.task = asyncio.create_task(self.run())
+            from .collection_override import REQUEST_GATE
+
+            token = REQUEST_GATE.set(None)
+            try:
+                # Persisted intake is independent of the acquisition session.
+                self.task = asyncio.create_task(self.run())
+            finally:
+                REQUEST_GATE.reset(token)
         self.wake.set()
 
     async def run(self):
