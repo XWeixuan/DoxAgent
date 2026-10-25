@@ -1,0 +1,11 @@
+<rss version="2.0"><channel><title>VentureBeat / Data</title><item><title>CTGT releases open source tool Concordance to trace why AI agents make inconsistent decisions</title>
+            <link>https://venturebeat.com/data/ctgt-releases-open-source-tool-concordance-to-trace-why-ai-agents-make-inconsistent-decisions</link>
+            <guid isPermaLink="false">50cbTIN3W4zaSj55zjzKcN</guid>
+            <pubDate>Wed, 21 Oct 2026 15:42:08 GMT</pubDate>
+            <description>&lt;p&gt;Generative AI is an incredible business advance, giving companies the opportunity to handle a wide variety of knowledge work tasks with ever-changing, inconsistent input data. But what about ensuring the outputs remain consistent and are in-line with the business goals? That&amp;#39;s a much harder task, given, by the fundamental way in which it is designed, gen AI is &amp;quot;non-deterministic&amp;quot; — that is, outputs are constructed on the fly and may vary wildly even with the same or similar input information.&lt;/p&gt;&lt;p&gt;&lt;a href="https://venturebeat.com/data/ctgt-releases-open-source-tool-concordance-to-trace-why-ai-agents-make-inconsistent-decisions"&gt;Read more&lt;/a&gt;&lt;/p&gt;</description>
+            </item><item><title>Decision models like Jev handle what SQL rules cannot. Here's how data teams use them</title>
+            <link>https://venturebeat.com/data/decision-models-like-jev-handle-what-sql-rules-cannot-heres-how-data-teams-use-them</link>
+            <guid isPermaLink="false">4XSW24vc7feGgaBljs6qqs</guid>
+            <pubDate>Mon, 19 Oct 2026 14:00:00 GMT</pubDate>
+            <description>&lt;p&gt;Data platforms make decisions all day. An SQL query keeps the rows over a threshold, matches a keyword, and joins two tables on a shared ID. A pipeline sends a failed job down a retry path. Rules like these work when the answer sits in the data in a clean form.&lt;/p&gt;&lt;p&gt;&lt;a href="https://venturebeat.com/data/decision-models-like-jev-handle-what-sql-rules-cannot-heres-how-data-teams-use-them"&gt;Read more&lt;/a&gt;&lt;/p&gt;</description>
+            </item></channel></rss>

@@ -54,6 +54,10 @@ from doxagent.message_bus_v2.service import MessageBusV2Service
 MonotonicClock = Callable[[], float]
 Sleeper = Callable[[float], Awaitable[None]]
 POLL_TIMINGS = ContextVar("poll_timings", default=None)
+SHARED_HTTP_CHECKPOINTS = {
+    "builtin:defense_public@1": "defense_public",
+    "builtin:technology_public@1": "technology_public",
+}
 
 
 class SchedulerGroupLimiter:
@@ -822,12 +826,12 @@ class GlobalPollScheduler:
             if (
                 not shared_checkpoint
                 and mode == "REALTIME"
-                and source.adapter_ref == "builtin:defense_public@1"
+                and source.adapter_ref in SHARED_HTTP_CHECKPOINTS
             ):
                 previous_state = await self.read_call(
                     self.repository.get_poll_state, roster[0][0]
                 )
-                saved = previous_state.checkpoint.get("defense_public", {})
+                saved = previous_state.checkpoint.get(SHARED_HTTP_CHECKPOINTS[source.adapter_ref], {})
                 if saved.get("source_version") == source.version:
                     shared_checkpoint = saved.get("checkpoint", {})
             context = SharedPollContext(
@@ -840,7 +844,7 @@ class GlobalPollScheduler:
                 request_permit=self._limiter(source).permit,
             )
             result = await shared_poll(context)
-            if source.adapter_ref == "builtin:defense_public@1":
+            if source.adapter_ref in SHARED_HTTP_CHECKPOINTS:
                 for failure in result.failures:
                     await self.storage_call(self.repository.save_failure, failure)
             from doxagent.source_maintenance.signals import shared
@@ -867,6 +871,13 @@ class GlobalPollScheduler:
                                     ),
                                     "last_error_message": "Acquisition deferred until "
                                     + retry_at.isoformat(),
+                                    "checkpoint": {
+                                        **state.checkpoint,
+                                        SHARED_HTTP_CHECKPOINTS[source.adapter_ref]: {
+                                            "source_version": source.version,
+                                            "checkpoint": result.next_checkpoint,
+                                        },
+                                    } if source.adapter_ref in SHARED_HTTP_CHECKPOINTS else state.checkpoint,
                                 }
                             ),
                         )
@@ -1046,13 +1057,13 @@ class GlobalPollScheduler:
                     continue
                 checkpoint = previous.checkpoint
                 if (
-                    source.adapter_ref == "builtin:defense_public@1"
+                    source.adapter_ref in SHARED_HTTP_CHECKPOINTS
                     and acquisition_checkpoint is not None
                     and run["mode"] == "REALTIME"
                 ):
                     checkpoint = {
                         **checkpoint,
-                        "defense_public": {
+                        SHARED_HTTP_CHECKPOINTS[source.adapter_ref]: {
                             "source_version": source.version,
                             "checkpoint": acquisition_checkpoint,
                         },

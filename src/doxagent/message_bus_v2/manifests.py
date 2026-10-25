@@ -91,6 +91,8 @@ def _source(
 def initial_sources() -> list[SourceDefinition]:
     from .defense_sources import initial_sources as defense_sources
     from .sec_edgar import initial_source as initial_sec_source
+    from .technology_sources import initial_sources as technology_sources
+    from .thefly_source import initial_source as initial_fly_source
 
     string_array = {"type": "array", "items": {"type": "string", "minLength": 1}}
     ticker_locator = {
@@ -101,6 +103,8 @@ def initial_sources() -> list[SourceDefinition]:
     return [
         initial_sec_source(),
         *defense_sources(),
+        *technology_sources(),
+        initial_fly_source(),
         initial_ir_source(),
         _source(
             "benzinga_news",

@@ -1,0 +1,67 @@
+{
+  "accessType": "anonymous",
+  "news": [
+    {
+      "id": "4448423",
+      "date": "2026-10-23 16:11:41",
+      "title": "What You Missed On Wall Street On Friday",
+      "description": "<p>The major averages closed broadly lower as oil prices jumped and investors increasingly demand evidence that massive capital investments for AI will translate into sustainable profits. Next week's results from Microsoft, Alphabet and Amazon are likely to provide important signals in that ongoing debate, which is key to the market's direction.&nbsp;</p><p>Meanwhile, oil prices are surging once again, surpassing the $100 per barrel threshold as uncertainty over efforts to resume U.S.-Iran negotiations raises concerns about further supply disruptions.&nbsp;</p><p>Get caught up quickly on the top news and calls moving stocks with these five Top Five lists.&nbsp;</p><p><b>1. STOCK NEWS:&nbsp;&nbsp;</b></p><ul><li>SpaceX <a href=\"/SPCX\">(SPCX)</a> is seeking to secure at least 80,000 cell sites across the U.S. and is in talks with Crown Castle <a href=\"/CCI\">(CCI)</a> to achieve that goal as the company aims to establish a nationwide wireless carrier, Bloomberg reports</li><li>American Express <a href=\"/AXP\">(AXP)</a> reported upbeat Q3 earnings, provided guidance for FY26, and announced it will cut 5% of its workforce as part of a restructuring effort</li><li>Apple's <a href=\"/AAPL\">(AAPL)</a> new foldable iPhone Duo is arriving in stores Friday</li><li>Western Digital <a href=\"/WDC\">(WDC)</a> reported better-than-expected Q1 results and provided an upbeat outlook for Q2</li><li>Bristol Myers <a href=\"/BMY\">(BMY)</a> disclosed that one patient with highly active relapsing multiple sclerosis experienced a fatal event of septic pneumonia in an early stage trial</li></ul><p><b>2. WALL STREET CALLS:&nbsp;</b></p><ul><li>Phillip Securities upgraded SpaceX <a href=\"/SPCX\">(SPCX)</a> to Buy from Sell</li><li>Norwegian Cruise Line <a href=\"/NCLH\">(NCLH)</a> downgraded to Underweight at JPMorgan ahead of Q3 report</li><li>JPMorgan upgraded Skydance <a href=\"/SKYD\">(SKYD)</a> to Neutral from Underweight</li><li>Deckers Outdoor <a href=\"/DECK\">(DECK)</a> downgraded to Underweight at Piper Sandler</li><li>MSC Industrial <a href=\"/MSM\">(MSM)</a> upgraded to Buy at Jeffries</li></ul><p><b>3. AROUND THE WEB:</b></p><ul><li>The Trump administration will remove 50% tariffs on certain Canadian products on certain agricultural and forestry products, WSJ reports</li><li>An Australian federal judge has ruled that Apple <a href=\"/AAPL\">(AAPL)</a> must let Australian iPhone users install apps from third-party app stores starting March 1, 2027, 9to5Mac says</li><li>A Micron <a href=\"/MU\">(MU)</a> labor union staged Taiwan's first-ever strike in the semiconductor industry on Thursday, Nikkei Asia reports</li><li>Citi <a href=\"/C\">(C)</a> has received Chinese regulatory approval to establish a wholly owned securities business in Shanghai, Reuters reports</li><li>Instacart <a href=\"/CART\">(CART)</a> is working with bankers to explore a sale, The Information reports</li></ul><p><b>4. MOVERS:</b></p><ul><li>RingCentral <a href=\"/RNG\">(RNG)</a> gains after reporting Q3 results, providing guidance for Q4, and raising its outlook for FY26</li><li>Rithm Capital <a href=\"/RITM\">(RITM)</a> increases after reporting Q3 results, with EPS and revenue beating consensus</li><li>Bloom Energy <a href=\"/BE\">(BE)</a> falls after reporting Q3 results and raising its outlook for FY26</li><li>Phathom Pharmaceuticals <a href=\"/PHAT\">(PHAT)</a> lower after giving an update on its litigation filed by BDR Pharmaceuticals</li><li>Tango Therapeutics <a href=\"/TNGX\">(TNGX)</a> declines after announcing results from its ongoing study of vopimetostat</li></ul><p><b>5. EARNINGS/GUIDANCE:</b></p><ul><li>Booz Allen <a href=\"/BAH\">(BAH)</a> reported Q2 results and raised its guidance for FY27</li><li>Flagstar Bank <a href=\"/FLG\">(FLG)</a> reported Q3 results and lowered its outlook for FY26 and FY27</li><li>First National Corp. <a href=\"/FXNC\">(FXNC)</a> reported Q3 results, with CEO Scott Harvard noting he was \"extremely pleased with our record financial performance\"</li><li>LKQ <a href=\"/LKQ\">(LKQ)</a> reported preliminary Q3 results and withdrew its guidance for FY26</li><li>Autoliv <a href=\"/ALV\">(ALV)</a> reported Q3 results and reaffirmed its guidance for FY26</li></ul><p><b>INDEXES:&nbsp;</b></p><p>The Dow fell 652.82, or 1.23%, to 52,215.16, the Nasdaq lost 53.52, or 0.21%, to 25,955.34, and the S&amp;P 500 declined 39.75, or 0.52%, to 7,623.68.</p>",
+      "stocks": [
+        "SPCX",
+        "CCI",
+        "AXP",
+        "AAPL",
+        "WDC",
+        "BMY",
+        "NCLH",
+        "SKYD",
+        "DECK",
+        "MSM",
+        "ADM",
+        "ANDE",
+        "BG",
+        "CF",
+        "CMP",
+        "IPI",
+        "MOS",
+        "WFG",
+        "LPX",
+        "UFPI",
+        "BCC",
+        "MU",
+        "C",
+        "RNG",
+        "RITM",
+        "BE",
+        "PHAT",
+        "TNGX",
+        "BAH",
+        "FLG",
+        "FXNC",
+        "LKQ",
+        "ALV",
+        "CART"
+      ],
+      "topic": "OnTheFly",
+      "highlight": false,
+      "subtype": "Mid/Close Wrap"
+    },
+    {
+      "id": "4448405",
+      "date": "2026-10-23 15:44:09",
+      "title": "Citizens technology analysts hold a dinner meeting",
+      "description": "Technology Analysts hold&hellip;",
+      "stocks": [
+        "SNOW",
+        "MDB",
+        "ORCL",
+        "TDC",
+        "IBM",
+        "MSFT"
+      ],
+      "topic": "Conference/Events",
+      "highlight": false,
+      "subtype": ""
+    }
+  ]
+}

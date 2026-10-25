@@ -1,0 +1,15 @@
+<rss version="2.0"><channel><title>Wccftech / AI</title><item><title>Exclusive: “Buying More [NVIDIA] B200s And Fixing Runtimes Are Orthogonal” – How INT21’s AI Swarm Killed Python, Outcoded Human Experts, And Rewrote the Drama 3 Runtime In 60 Minutes</title>
+		<link>https://wccftech.com/exclusive-buying-more-nvidia-b200s-and-fixing-runtimes-are-orthogonal-how-int21s-ai-swarm-killed-python-outcoded-human-experts-and-rewrote-the-drama-3-runtime-in-60-minutes/</link>
+
+		<pubDate>Sun, 25 Oct 2026 21:53:53 +0000</pubDate>
+				<guid isPermaLink="false">https://wccftech.com/?p=1752876</guid>
+
+					<description>INT21, a self-improving infrastructure startup that 'uses compute to improve compute,' has just refocused the proverbial spotlight on the software and away from the increasingly scarce NVIDIA GPUs, managing to dramatically speed up Fish Audio's Drama 3 model by engineering customized inference runtimes in the Rust coding language via a swarm of AI agents that constructed a viable inference engine in just around an hour. INT21's unique methodology: AI swarms, Rust coding language instead of Python, and a looped workflow INT21’s core methodology, one that pivots around 'Self-Improving Infrastructure,' flips the traditional software engineering paradigm on its head. Instead of [&amp;#8230;]</description>
+										</item><item><title>Total War: Rome II CPU Performance Fix Mod Boosts FPS By 20%, Improves 0.1% Lows By 33%</title>
+		<link>https://wccftech.com/total-war-rome-ii-cpu-performance-fix-mod-boosts-fps-by-20-improves-0-1-lows-by-33/</link>
+
+		<pubDate>Sun, 25 Oct 2026 21:00:00 +0000</pubDate>
+				<guid isPermaLink="false">https://wccftech.com/?p=1752892</guid>
+
+					<description>More than 13 years after its release, Total War: Rome II has received a new community-developed CPU performance fix that delivers substantially higher frame rates and smoother gameplay, particularly during large-scale battles. Created by modder JGdaCaesar, the Rome 2 CPU Performance Fix addresses several CPU bottlenecks in Creative Assembly's aging Warscape engine, delivering up to 20% higher average FPS and 33% better 0.1% lows, according to the developer's benchmarks. Interestingly, this is the same modder behind the Total War: Attila CPU Performance Fix, which delivered massive performance improvements by addressing a severe multithreading bottleneck. Rome II doesn't suffer from the [&amp;#8230;]</description>
+										</item></channel></rss>

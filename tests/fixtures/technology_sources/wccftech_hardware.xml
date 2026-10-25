@@ -1,0 +1,15 @@
+<rss version="2.0"><channel><title>Wccftech / Hardware</title><item><title>Exclusive: “Buying More [NVIDIA] B200s And Fixing Runtimes Are Orthogonal” – How INT21’s AI Swarm Killed Python, Outcoded Human Experts, And Rewrote the Drama 3 Runtime In 60 Minutes</title>
+		<link>https://wccftech.com/exclusive-buying-more-nvidia-b200s-and-fixing-runtimes-are-orthogonal-how-int21s-ai-swarm-killed-python-outcoded-human-experts-and-rewrote-the-drama-3-runtime-in-60-minutes/</link>
+
+		<pubDate>Sun, 25 Oct 2026 21:53:53 +0000</pubDate>
+				<guid isPermaLink="false">https://wccftech.com/?p=1752876</guid>
+
+					<description>INT21, a self-improving infrastructure startup that 'uses compute to improve compute,' has just refocused the proverbial spotlight on the software and away from the increasingly scarce NVIDIA GPUs, managing to dramatically speed up Fish Audio's Drama 3 model by engineering customized inference runtimes in the Rust coding language via a swarm of AI agents that constructed a viable inference engine in just around an hour. INT21's unique methodology: AI swarms, Rust coding language instead of Python, and a looped workflow INT21’s core methodology, one that pivots around 'Self-Improving Infrastructure,' flips the traditional software engineering paradigm on its head. Instead of [&amp;#8230;]</description>
+										</item><item><title>Second MSI RTX 5090 Seemed Fine On Arrival Until Safeguard+ Helped User Identify Uneven Load On Pins Before The Connector Melted</title>
+		<link>https://wccftech.com/second-msi-rtx-5090-seemed-fine-on-arrival-until-safeguard-helped-user-identify-uneven-load/</link>
+
+		<pubDate>Sun, 25 Oct 2026 19:36:18 +0000</pubDate>
+				<guid isPermaLink="false">https://wccftech.com/?p=1752900</guid>
+
+					<description>MSI's new Safeguard+ equipped power supply helped this user identify the problem his new RTX 5090 had. User Gets His RTX 5090 RMA'd, and Didn't Had Any Errors, But Swapping the PSU Helped Him Knowing the Pin Not Carrying Any Current The typical problem associated with the 12V-2x6 connector is that it easily melts due to uneven load. Many vendors have tried to mitigate the problem since it has caused the deaths of probably thousands of RTX 50-series GPUs, especially the RTX 5090, which is rated at a much higher power. From cables with built-in sensors to monitoring devices, we [&amp;#8230;]</description>
+										</item></channel></rss>

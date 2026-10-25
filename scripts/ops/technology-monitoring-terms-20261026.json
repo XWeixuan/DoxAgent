@@ -1,0 +1,44 @@
+{
+  "SNOW": {
+    "ticker": "SNOW",
+    "expected_revision": 0,
+    "l1_concepts": [{"concept_id": "snowflake", "expressions": {"en": "Snowflake"}}],
+    "l2": {"en": {"groups": [
+      {"id": "snowflake-platform", "any": [
+        {"literal": "Snowflake"}, {"literal": "Snowpark"}, {"literal": "Snowpipe"},
+        {"literal": "$SNOW"}, {"literal": "Snowflake Cortex"}
+      ]},
+      {"id": "enterprise-data-platform-drivers", "any": [
+        {"literal": "Databricks"}, {"literal": "BigQuery"}, {"literal": "Redshift"},
+        {"literal": "Microsoft Fabric"}, {"literal": "Apache Iceberg"}, {"literal": "Apache Polaris"},
+        {"literal": "lakehouse"}, {"literal": "data warehouse"}, {"literal": "data warehousing"},
+        {"literal": "data engineering"}, {"literal": "data residency"}, {"literal": "cloud repatriation"}
+      ]}
+    ]}},
+    "definition": {
+      "relevant": "Developments affecting Snowflake enterprise data and AI platform demand, consumption, pricing, margins, competitive position or customer security: Snowflake products, cloud and data platform budgets, major enterprise AI deployments, Databricks/BigQuery/Redshift/Microsoft Fabric competition, open table formats, data governance, and material incidents or regulations with an explainable transmission to Snowflake.",
+      "irrelevant": "Unrelated consumer applications or gaming, generic software/security news without an explainable enterprise data platform impact, and weather or other non-company uses of snowflake."
+    }
+  },
+  "IONQ": {
+    "ticker": "IONQ",
+    "expected_revision": 0,
+    "l1_concepts": [
+      {"concept_id": "ionq", "expressions": {"en": "IonQ"}},
+      {"concept_id": "quantum-computing", "expressions": {"en": "quantum computing"}}
+    ],
+    "l2": {"en": {"groups": [
+      {"id": "ionq-companies", "any": [{"literal": "IonQ"}, {"literal": "Oxford Ionics"}, {"literal": "Qubitekk"}, {"literal": "$IONQ"}]},
+      {"id": "quantum-industry-drivers", "any": [
+        {"literal": "quantum computing"}, {"literal": "quantum computer"}, {"literal": "quantum networking"},
+        {"literal": "trapped ion"}, {"literal": "trapped-ion"}, {"literal": "logical qubit"},
+        {"literal": "quantum error correction"}, {"literal": "DARPA"}, {"literal": "Quantum Benchmarking"},
+        {"literal": "Quantinuum"}, {"literal": "Rigetti"}, {"literal": "D-Wave"}, {"literal": "neutral atom"}
+      ]}
+    ]}},
+    "definition": {
+      "relevant": "IonQ and its acquired businesses, trapped-ion computing performance, fidelity, logical qubits and error correction; competing quantum architectures and commercial cloud adoption; quantum networking; government procurement, funding and DARPA benchmarking; capital, contracts, partnerships or export controls with a plausible material impact on IonQ.",
+      "irrelevant": "Use of quantum as a marketing metaphor, unrelated physics without an identifiable computing/networking/commercial implication, and quantum-themed consumer products."
+    }
+  }
+}

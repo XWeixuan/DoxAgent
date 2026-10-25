@@ -58,6 +58,7 @@ class ContentEnrichmentHub:
         self.ir_body_reader = None
         self.defense_body_reader = None
         self.sec_body_reader = None
+        self.technology_body_reader = None
         from doxagent.message_bus_v2.distribution_repository import DistributionRepository
         self.distribution = DistributionRepository(repository)
 
@@ -153,6 +154,8 @@ class ContentEnrichmentHub:
     async def close(self) -> None:
         if self.sec_body_reader is not None:
             await self.sec_body_reader.close()
+        if self.technology_body_reader is not None:
+            await self.technology_body_reader.close()
         if self.defense_body_reader is not None:
             await self.defense_body_reader.close()
         if self.ir_body_reader is not None:
@@ -271,6 +274,16 @@ class ContentEnrichmentHub:
                     self.sec_body_reader = SecBodyReader()
                 async with asyncio.timeout(seconds):
                     result = await self.sec_body_reader.extract(job, record)
+            elif (
+                job.source.adapter_ref in {"builtin:technology_public@1", "builtin:thefly_public@1"}
+                and seconds > 0
+            ):
+                from doxagent.message_bus_v2.technology_body import TechnologyBodyReader
+
+                if self.technology_body_reader is None:
+                    self.technology_body_reader = TechnologyBodyReader()
+                async with asyncio.timeout(seconds):
+                    result = await self.technology_body_reader.extract(job, record)
             elif native:
                 result = MediaExtractionResult(
                     record=record,
@@ -309,7 +322,10 @@ class ContentEnrichmentHub:
                     DEADLINE.reset(token)
         except TimeoutError:
             transport_timeout = (
-                job.source.adapter_ref in {"builtin:defense_public@1", "builtin:sec_edgar@1"}
+                job.source.adapter_ref in {
+                    "builtin:defense_public@1", "builtin:sec_edgar@1",
+                    "builtin:technology_public@1", "builtin:thefly_public@1",
+                }
                 and utc_now() < job.deadline_at
             )
             result = MediaExtractionResult(
@@ -408,7 +424,9 @@ class ContentEnrichmentHub:
         publisher = job.message.publisher_name or job.message.source or job.source.display_name
         publication_updates: dict[str, object] = {}
         stamp = result.diagnostics.get("publisher_published_at")
-        public_defense = job.source.adapter_ref == "builtin:defense_public@1"
+        public_defense = job.source.adapter_ref in {
+            "builtin:defense_public@1", "builtin:technology_public@1"
+        }
         if (
             (job.source.source_id in {
                 "investorshub_ticker_news", "investing_ticker_news", "corporate_ir_press_releases"
@@ -436,6 +454,9 @@ class ContentEnrichmentHub:
                    if result.succeeded and job.source.adapter_ref == "builtin:sec_edgar@1"
                    and result.diagnostics.get("generated_title") else {}),
                 "body": result.content if result.succeeded else job.message.body,
+                **({"title": result.diagnostics["publisher_title"]}
+                   if result.succeeded and job.source.adapter_ref == "builtin:technology_public@1"
+                   and result.diagnostics.get("publisher_title") else {}),
                 "source": publisher,
                 "publisher_name": publisher,
                 "url": final_url,
@@ -449,11 +470,11 @@ class ContentEnrichmentHub:
         from doxagent.source_maintenance.signals import body
 
         if (
-            job.source.adapter_ref == "builtin:sec_edgar@1"
+            job.source.adapter_ref in {"builtin:sec_edgar@1", "builtin:thefly_public@1"}
             and not message.metadata.get("media_enrichment", {}).get("succeeded")
         ):
-            # A generic filing title/snippet cannot replace missing economic
-            # exhibits. Keep the failed result/receipt; a later observation can
+            # Filing snippets and Fly previews cannot replace full economic content.
+            # Keep the failed result/receipt; a later observation can
             # retry through BodyResults without publishing incomplete news.
             await self.bus.storage.call(
                 self.repository.complete_enrichment_job_with_outcome,
