@@ -96,6 +96,10 @@ class MessageBusV2Repository:
 
         self.content = NativeContent(self.path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
+        # WAL is persistent database state. Reissuing journal_mode on every
+        # short read/write connection adds schema-lock negotiation under load.
+        with self._connect() as connection:
+            connection.execute("pragma journal_mode = WAL")
         self._initialize()
         from .polling import PollJournal
 
@@ -112,7 +116,6 @@ class MessageBusV2Repository:
             factory=_ClosingConnection,
         )
         connection.row_factory = self.content.row
-        connection.execute("pragma journal_mode = WAL")
         connection.execute("pragma synchronous = NORMAL")
         connection.execute("pragma foreign_keys = ON")
         connection.execute("pragma busy_timeout = 30000")

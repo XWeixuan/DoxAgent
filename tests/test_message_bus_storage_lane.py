@@ -150,3 +150,47 @@ def test_ibkr_cancel_drains_socket_operation_before_adapter_close():
         assert events == ["poll_finished", "closed"]
 
     asyncio.run(scenario())
+
+
+def test_writer_queue_keeps_priority_fairness_and_survives_cancelled_waiter():
+    async def scenario():
+        lane = StorageLane()
+        entered, release = threading.Event(), threading.Event()
+        events = []
+
+        def blocked():
+            entered.set()
+            assert release.wait(5)
+
+        first = asyncio.create_task(lane.call(blocked))
+        while not entered.is_set():
+            await asyncio.sleep(.001)
+        cancelled = asyncio.create_task(lane.call(lambda: events.append('cancelled')))
+        ordinary = [asyncio.create_task(lane.call(lambda i=i: events.append(f'ordinary{i}'))) for i in range(2)]
+        urgent = [asyncio.create_task(lane.call(lambda i=i: events.append(f'urgent{i}'), _lane_priority=0)) for i in range(20)]
+        await asyncio.sleep(.01)
+        cancelled.cancel()
+        await asyncio.gather(cancelled, return_exceptions=True)
+        release.set()
+        await asyncio.wait_for(asyncio.gather(first, *ordinary, *urgent), 5)
+        assert events[:8] == [f'urgent{i}' for i in range(8)]
+        assert events[8] == 'ordinary0' and events[17] == 'ordinary1'
+        assert 'cancelled' not in events
+        assert len(events) == 22
+        assert await lane.call(lambda: 'still-usable') == 'still-usable'
+
+    asyncio.run(scenario())
+
+
+def test_cancelled_queued_future_is_not_granted_before_its_finally_runs():
+    async def scenario():
+        lane = StorageLane()
+        async with lane._lane().writer(1):
+            waiter = asyncio.create_task(lane.call(lambda: 'must-not-run'))
+            await asyncio.sleep(0)
+            waiter.cancel()
+            # Release synchronously before the cancelled task gets a turn.
+        await asyncio.gather(waiter, return_exceptions=True)
+        assert waiter.cancelled()
+        assert await lane.call(lambda: 'healthy') == 'healthy'
+    asyncio.run(scenario())

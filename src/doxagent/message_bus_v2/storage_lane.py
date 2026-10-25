@@ -12,40 +12,44 @@ from weakref import WeakKeyDictionary
 
 @dataclass
 class _Lane:
-    condition: asyncio.Condition = field(default_factory=asyncio.Condition)
     readers: asyncio.Semaphore = field(default_factory=lambda: asyncio.Semaphore(2))
     preparation: asyncio.Semaphore = field(default_factory=lambda: asyncio.Semaphore(2))
     waiting: list = field(default_factory=list)
-    active: bool = False
+    owner: tuple | None = None
     sequence: int = 0
     urgent_streak: int = 0
 
+    def _grant_next(self):
+        if self.owner is not None:
+            return
+        self.waiting[:] = [ticket for ticket in self.waiting if not ticket[2].cancelled()]
+        if not self.waiting:
+            return
+        ordinary = [ticket for ticket in self.waiting if ticket[0] > 0]
+        best = min(ordinary if ordinary and self.urgent_streak >= 8 else self.waiting)
+        self.waiting.remove(best)
+        self.owner = best
+        self.urgent_streak = self.urgent_streak + 1 if best[0] == 0 else 0
+        best[2].set_result(None)
+
     @asynccontextmanager
     async def writer(self, priority):
-        ticket = None
-        admitted = False
+        # All queue mutations run synchronously on this event loop. Wake only
+        # the next owner; notify_all otherwise makes every queued poll rescan
+        # the full queue on each short commit (quadratic scheduling work).
+        self.sequence += 1
+        ticket = (priority, self.sequence, asyncio.get_running_loop().create_future())
+        self.waiting.append(ticket)
+        self._grant_next()
         try:
-            async with self.condition:
-                self.sequence += 1
-                ticket = (priority, self.sequence)
-                self.waiting.append(ticket)
-                while True:
-                    ordinary = [t for t in self.waiting if t[0] > 0]
-                    best = min(ordinary if ordinary and self.urgent_streak >= 8 else self.waiting)
-                    if not self.active and best == ticket:
-                        self.waiting.remove(ticket)
-                        self.active = admitted = True
-                        self.urgent_streak = self.urgent_streak + 1 if priority == 0 else 0
-                        break
-                    await self.condition.wait()
+            await ticket[2]
             yield
         finally:
-            async with self.condition:
-                if ticket in self.waiting:
-                    self.waiting.remove(ticket)
-                if admitted:
-                    self.active = False
-                self.condition.notify_all()
+            if ticket in self.waiting:
+                self.waiting.remove(ticket)
+            if self.owner is ticket:
+                self.owner = None
+            self._grant_next()
 
 
 class StorageLane:
@@ -53,7 +57,11 @@ class StorageLane:
         self._lanes: WeakKeyDictionary = WeakKeyDictionary()
 
     def _lane(self):
-        return self._lanes.setdefault(asyncio.get_running_loop(), _Lane())
+        loop = asyncio.get_running_loop()
+        lane = self._lanes.get(loop)
+        if lane is None:
+            lane = self._lanes[loop] = _Lane()
+        return lane
 
     @staticmethod
     async def _execute(operation, args, kwargs):
@@ -93,7 +101,7 @@ class StorageLane:
                 if elapsed >= budget or wait >= 1:
                     logging.getLogger(__name__).warning(
                         "bus_storage_slow operation=%s elapsed_ms=%s wait_ms=%s",
-                        getattr(operation, "__name__", type(operation).__name__),
+                        getattr(operation, "__qualname__", type(operation).__name__),
                         round(elapsed * 1000),
                         round(wait * 1000),
                     )

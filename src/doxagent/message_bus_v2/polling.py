@@ -739,7 +739,8 @@ class CaptureIntake:
                 row = await self.bus.storage.read(self.journal.load, capture_id)
                 prepared = await self.bus.storage.prepare(self.journal.prepare_piece, row)
                 await self.bus.storage.call(
-                    self.journal.accept_piece, self.bus, prepared, token, self.distribution
+                    self.journal.accept_piece, self.bus, prepared, token, self.distribution,
+                    _lane_priority=0,
                 )
             except asyncio.CancelledError:
                 # Claim expires on process loss; a drained commit remains durable.
