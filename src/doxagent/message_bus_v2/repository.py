@@ -582,30 +582,53 @@ class MessageBusV2Repository:
         return adopted
 
     def reuse_unchanged_observation(self, message, binding, policy, now):
-        """Scalar-only completed receipt probe: no native body/HTML decode or alias walk."""
+        """Scalar durable-input receipt; never a claim that a body is complete."""
         from .body_results import access_scope, update_hint
         from .schema import canonical_json, identity_key_for, sha256_text
 
+        if message.admission_context and message.admission_context.mode == "CLOSED_SWEEP":
+            return False
         with self.transaction() as db:
             row = db.execute("""
-                SELECT o.raw_hash, json_extract(b.data_json,'$.verified_hints') hints
+                SELECT o.raw_hash, o.canonical_raw_id,b.fetch_key,b.status,b.next_check_at,
+                  json_extract(b.data_json,'$.verified_hints') hints,
+                  json_extract(b.data_json,'$.scheduled_hint') scheduled_hint,
+                  json_extract(b.data_json,'$.check_seq') check_seq,
+                  json_extract(b.data_json,'$.check_pending') check_pending,
+                  json_extract(b.data_json,'$.outcome') outcome
                 FROM message_observations o JOIN article_body_results b
                   ON b.fetch_key=json_extract(o.data_json,'$.metadata.article_body_result_key')
                 WHERE o.ticker=? AND o.source_id=? AND o.identity_key=? AND o.raw_hash=?
                   AND o.input_fingerprint=? AND json_extract(o.data_json,'$.metadata.intake_policy')=?
-                  AND b.status='READY' AND json_extract(b.data_json,'$.outcome') IN ('FULL','SHORT_FULL')
-                  AND json_extract(b.data_json,'$.next_check_at')>?
                   AND json_extract(b.data_json,'$.access_scope') IN (?,?)
-                  AND EXISTS(SELECT 1 FROM raw_messages r WHERE r.raw_message_id=o.canonical_raw_id
-                    AND (json_extract(r.data_json,'$.bootstrap_suppressed')=1 OR EXISTS(
-                      SELECT 1 FROM standard_messages s JOIN stream_members m ON m.standard_message_id=s.standard_message_id
-                      WHERE s.raw_message_id=r.raw_message_id))) LIMIT 1
+                  AND coalesce(json_extract(b.data_json,'$.language'),'')=?
+                  LIMIT 1
             """, (binding.ticker, binding.source_id, identity_key_for(binding.source_id, message),
                   sha256_text(canonical_json(message.raw_payload)), dedup.stable_fingerprint(message),
-                  policy, now.isoformat(), access_scope(message, binding.source_id),
-                  'scope:source:' + binding.source_id)).fetchone()
-            if not row or json.loads(row['hints'] or '{}').get(binding.source_id) != update_hint(message):
+                  policy, access_scope(message, binding.source_id),
+                  'scope:source:' + binding.source_id,
+                  message.metadata.get('language') or message.metadata.get('identity_evidence',{}).get('language') or '')).fetchone()
+            if not row:
                 return False
+            hint = update_hint(message)
+            complete = (row['status'] == 'READY' and row['outcome'] in {'FULL','SHORT_FULL'}
+                        and row['next_check_at'] > now.isoformat()
+                        and json.loads(row['hints'] or '{}').get(binding.source_id) == hint
+                        and db.execute("SELECT 1 FROM raw_messages r WHERE r.raw_message_id=? "
+                            "AND (json_extract(r.data_json,'$.bootstrap_suppressed')=1 OR EXISTS("
+                            "SELECT 1 FROM standard_messages s JOIN stream_members m ON m.standard_message_id=s.standard_message_id "
+                            "WHERE s.raw_message_id=r.raw_message_id))", (row['canonical_raw_id'],)).fetchone())
+            if not complete:
+                if row['scheduled_hint'] != hint:
+                    return False
+                intake_key = sha256_text(canonical_json({'binding_id':binding.binding_id,
+                    'identity_key':identity_key_for(binding.source_id,message),
+                    'fetch_key':row['fetch_key'],'check_seq':row['check_seq']}))
+                job = db.execute('SELECT status FROM content_enrichment_jobs WHERE intake_key=?', (intake_key,)).fetchone()
+                if not job or not (job['status'] in {'queued','running','retry_wait'} or (
+                        job['status'] in {'completed','failed'} and not row['check_pending']
+                        and row['next_check_at'] > now.isoformat())):
+                    return False
             db.execute("UPDATE message_observations SET last_seen_at=?,seen_count=seen_count+1 "
                        "WHERE ticker=? AND source_id=? AND identity_key=? AND raw_hash=?",
                        (now.isoformat(), binding.ticker, binding.source_id,

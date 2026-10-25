@@ -859,6 +859,11 @@ class MessageBusV2Service:
                 utc_now(),
                 input_message.publication_time_basis,
             )
+            if reason and self.enrichment_queue_enabled and self.repository.reuse_unchanged_observation(
+                input_message, binding,
+                f"{self.enrichment_pipeline_version}:{source.version}:{binding.version}", observed_at
+            ):
+                continue
             if reason and not (self.enrichment_queue_enabled and self.repository.known_published_article(binding, input_message)):
                 rejected.append((input_message, reason))
                 output.filtered_count += 1
@@ -1125,7 +1130,7 @@ class MessageBusV2Service:
                 fetch_budget_seconds=self.enrichment_retry_deadline_seconds,
                 body_result_key=body_result["fetch_key"],
                 known_article_raw_id=known_article.raw_message_id if known_article else None,
-                work_kind="new_article" if work_kind == "reuse" else work_kind,
+                work_kind=("recheck" if known_article else "new_article") if work_kind == "reuse" else work_kind,
             )
             if reused and work_kind == "reuse":
                 return job, False

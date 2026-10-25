@@ -14,6 +14,7 @@ from doxagent.message_bus_v2.schema import (
     RawMessageInput,
     SourceDefinition,
     new_id,
+    utc_now,
 )
 from doxagent.message_bus_v2.service import MessageBusV2Service
 from doxagent.monitoring.media_enrichment import (
@@ -538,3 +539,42 @@ async def test_expired_retry_is_discarded_to_fallback(tmp_path: Path) -> None:
     assert repository.list_enrichment_jobs() == []
     assert repository.list_raw(ticker="MU")[0].body == "deadline fallback"
     assert extractor.calls == 0
+
+
+def test_pending_durable_input_skips_rebuilding_body_job_without_claiming_success(tmp_path, monkeypatch):
+    repo, bus, source, binding = _setup(tmp_path)
+    message = _message(61001)
+    job, created = bus.enqueue_enrichment(source=source,binding=binding,message=message,bootstrap=False,poll_run_id='receipt-test')
+    assert created and job is not None
+    monkeypatch.setattr(repo,'known_published_article',lambda *a,**k: (_ for _ in ()).throw(AssertionError('heavy body lookup')))
+    assert bus.enqueue_enrichment(source=source,binding=binding,message=message,bootstrap=False,poll_run_id='receipt-test') == (None,False)
+    assert len(repo.list_enrichment_jobs()) == 1
+    assert repo.latest_stream_offset(binding.ticker) == 0
+    policy=f'{bus.enrichment_pipeline_version}:{source.version}:{binding.version}'
+    changed=message.model_copy(update={'summary':'Materially changed investment details'})
+    assert not repo.reuse_unchanged_observation(changed,binding,policy,utc_now())
+    other_language=message.model_copy(update={'metadata':{'language':'ko'}})
+    assert not repo.reuse_unchanged_observation(other_language,binding,policy,utc_now())
+    assert not repo.reuse_unchanged_observation(message,binding,'new-policy',utc_now())
+
+
+def test_failed_input_receipt_only_skips_inside_existing_retry_window(tmp_path):
+    from types import SimpleNamespace
+
+    from doxagent.content_enrichment.schema import EnrichmentJobStatus
+    from doxagent.message_bus_v2.admission import AdmissionContext
+    from doxagent.message_bus_v2.body_results import ArticleBodyResults
+
+    repo,bus,source,binding=_setup(tmp_path)
+    message=_message(61002); now=utc_now()
+    job,_=bus.enqueue_enrichment(source=source,binding=binding,message=message,bootstrap=False,poll_run_id='receipt-test')
+    results=ArticleBodyResults(repo)
+    assert results.acquire(job.body_result_key,'failure',now=now)
+    results.finish(job.body_result_key,'failure',job.message,SimpleNamespace(succeeded=False,reason='no_authenticated_profile_available',diagnostics={}),now=now)
+    repo.requeue_enrichment_job(job.model_copy(update={'status':EnrichmentJobStatus.FAILED}))
+    policy=f'{bus.enrichment_pipeline_version}:{source.version}:{binding.version}'
+    assert repo.reuse_unchanged_observation(message,binding,policy,now+timedelta(seconds=1))
+    assert not repo.reuse_unchanged_observation(message,binding,policy,now+timedelta(hours=1))
+    sweep=message.model_copy(update={'admission_context':AdmissionContext(mode='CLOSED_SWEEP',sweep_id='s',source_task_id='t',window_start=now-timedelta(days=1),cutoff=now)})
+    assert not repo.reuse_unchanged_observation(sweep,binding,policy,now+timedelta(seconds=1))
+    assert repo.latest_stream_offset(binding.ticker) == 0

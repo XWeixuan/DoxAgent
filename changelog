@@ -2165,3 +2165,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-26 正文URL变体复用修复：实测同一Yahoo稳定文章ID从原出版商URL切换至Yahoo分发URL后生成新正文键；在已验证发布身份的前提下关联原FULL/SHORT_FULL结果，保持scope/语言隔离、内容变更与30分钟复查，不重置复查时点。已知旧文章的新键回填真实first_seen并标记prior_publication，缺正文时也归recheck，避免污染真实新文章分母。42项正文/接纳/去重回归与范围、语言、到期复查、重要更新专项通过。
 
 2026-10-26 统一监测词动态语言发布准备：按用户要求提交并推送main，同步新加坡生产仓库；精确构建backend/web，仅滚动v2-api与v2-web，沿用现有生产配置、数据库和订阅。发布后核验镜像版本、健康状态及各ticker语言要求与实际启用绑定一致性。
+
+2026-10-26 接纳重复输入热路径修复：在既有input/policy/scope/语言指纹相同且任务已持久化的条件下，pending/running/retry_wait及尚未到复查时点的终态输入直接复用收据，不反复展开旧正文、构建同一任务；不把其判为正文成功。输入变化、策略变化、语言差异、重试到期和CLOSED_SWEEP保持原路径，过期已发布输入在加载全文前命中相同收据。99项正文/去重/接纳/开关回归通过，含未发布pending、失败重试窗口及scope/语言隔离。
