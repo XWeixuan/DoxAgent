@@ -63,7 +63,9 @@ def test_manifests_and_global_defaults():
         assert SOURCES[source_id].adapter_ref == "site:auto"
     assert "globenewswire_semiconductors_rss" not in ids
     for source_id in [*ids, "globenewswire_semiconductors_rss"]:
-        assert SOURCES[source_id].default_polling_config.target_interval_seconds == (30 if source_id == "yahoo_finance_news" else 60)
+        assert SOURCES[source_id].default_polling_config.target_interval_seconds == (
+            30 if source_id in {"yahoo_finance_news", "sec_edgar", "corporate_ir_press_releases"} else 60
+        )
 
 
 def test_market_locator_seed_upgrade_is_idempotent_and_preserves_custom_urls(tmp_path):
@@ -279,6 +281,65 @@ async def test_search_encodes_phrase_and_or_as_one_query():
     )
     assert result.window_done and result.window_coverage == "COMPLETE"
     assert len(calls) == 1 and "%22Bloom%20Energy%22%20OR%20fuel" in calls[0]
+
+
+@pytest.mark.asyncio
+async def test_globe_frozen_sweep_fetches_first_page_and_settles_legacy_done_cursor():
+    calls = []
+
+    class Browser:
+        async def get(self, url, **kwargs):
+            calls.append(url)
+            return 200, url, {}, "<main>No results found</main>"
+
+    adapter = GlobeNewswireSearchAdapter(Browser())
+    options = dict(is_gap_recovery=True, acquisition_unit="TAIL:SWEEP",
+                   query_plan={"queries": [{"query": "Micron", "query_key": "q"}]})
+    fresh = await adapter.poll(context("globenewswire_search", **options))
+    assert len(calls) == 1 and "?page=1&" in calls[0]
+    assert fresh.window_done and fresh.window_coverage == "COMPLETE"
+    calls.clear()
+    legacy = await adapter.poll(context("globenewswire_search", **options,
+        checkpoint={"queries": {"q": {"page": 3, "done": True, "coverage": "COMPLETE"}}}))
+    assert len(calls) == 1 and "?page=1&" in calls[0]
+    assert legacy.next_checkpoint["queries"]["q"]["page"] == 3
+    assert legacy.window_done and legacy.window_coverage == "COMPLETE"
+    calls.clear()
+    repeated = await adapter.poll(context("globenewswire_search", **options,
+                                         checkpoint=legacy.next_checkpoint))
+    assert not calls and repeated.window_done
+
+
+@pytest.mark.asyncio
+async def test_globe_sweep_repairs_head_without_resetting_completed_tail():
+    adapter = GlobeNewswireSearchAdapter(None)
+
+    async def page(*args):
+        row = parse_globenewswire(GNW, now=NOW)[0]
+        return [row.model_copy(update={"url": row.url + str(i)}) for i in range(10)], "http"
+
+    adapter._page = page
+    result = await adapter.poll(context("globenewswire_search", is_gap_recovery=True,
+        acquisition_unit="TAIL:SWEEP", query_plan={"queries": [{"query": "MU", "query_key": "q"}]},
+        checkpoint={"queries": {"q": {"page": 3, "done": True, "coverage": "COMPLETE"}}}))
+    assert result.window_done and result.next_checkpoint["queries"]["q"]["page"] == 3
+
+
+@pytest.mark.asyncio
+async def test_globe_frozen_sweep_continues_unfinished_legacy_tail():
+    calls = []
+
+    class Browser:
+        async def get(self, url, **kwargs):
+            calls.append(url)
+            return 200, url, {}, "<main>No results found</main>"
+
+    result = await GlobeNewswireSearchAdapter(Browser()).poll(context(
+        "globenewswire_search", is_gap_recovery=True, acquisition_unit="TAIL:SWEEP",
+        query_plan={"queries": [{"query": "Micron", "query_key": "q"}]},
+        checkpoint={"queries": {"q": {"page": 3, "done": False, "head_at": NOW.isoformat()}}}))
+    assert len(calls) == 1 and "?page=3&" in calls[0]
+    assert result.window_done
 
 
 @pytest.mark.parametrize(

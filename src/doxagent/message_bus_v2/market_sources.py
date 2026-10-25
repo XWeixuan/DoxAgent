@@ -311,7 +311,12 @@ class GlobeNewswireSearchAdapter:
                 head_at = saved.get("head_at")
                 head_due = not head_at or (not context.is_gap_recovery and
                     (context.requested_at - datetime.fromisoformat(head_at)).total_seconds() >= context.binding.polling.target_interval_seconds)
-                head_due = False if tail_only else True if head_only else head_due
+                if context.is_gap_recovery:
+                    # Frozen sweeps must also fetch page one. Legacy tail-only
+                    # cursors have no head_at even when later pages are done.
+                    head_due = not head_at
+                else:
+                    head_due = False if tail_only else True if head_only else head_due
                 if head_due:
                     heads.append(query)
                 elif not saved.get("done", False):
@@ -335,7 +340,12 @@ class GlobeNewswireSearchAdapter:
                 next_saved = {**saved, "last_serviced_at": datetime.now(UTC).isoformat()}
                 if is_head:
                     next_saved["head_at"] = context.requested_at.isoformat()
-                    if saved.get("done", True) or "page" not in saved:
+                    if context.is_gap_recovery and "page" in saved:
+                        # Repair missing head evidence without losing durable
+                        # progress through the remaining pages.
+                        if complete:
+                            next_saved.update(done=True, coverage="COMPLETE")
+                    elif saved.get("done", True) or "page" not in saved:
                         next_saved.update(page=2, done=complete, coverage="COMPLETE" if complete else "PARTIAL")
                 else:
                     next_saved.update(page=page+1, done=complete, coverage="COMPLETE" if complete else "PARTIAL")

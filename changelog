@@ -2181,3 +2181,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-26 正文更新优先级边界修正：已发布但尚无FULL缓存的文章，只有与上次scheduled_hint相同才归后台recheck；输入有变化或尚无可比hint时保留前台content_update，避免重要更新受旧文暂停门禁影响。旧first_seen分母口径保持，scope/语言变化重新获取；26项正文/接纳回归及无FULL重要更新专项通过。
 
 2026-10-26 部分完成的重复capture收尾：实测剩余NBIS约9.96万输入、135轮已部分接纳。精确重复复用扩展至PENDING已处理片段的剩余后缀，保留原收据/任务ID/首次接纳时点，只追加剩余输入计数；每个实时ticker capture最多连续处理4个有界分片，再回到全局队列，writer在各片间正常释放。65项采集/开关回归和部分收据累计/不重复入队专项通过，不增加实际资源并发。
+
+2026-10-26 休市补采收尾修复：GlobeNewswire TAIL:SWEEP对缺少head_at的旧游标先补取第1页，保留已完成/未完成尾页进度，再正确结算窗口，避免已完成查询每5秒重复空capture及遗漏首页。SOURCE_SWEEP延期沿用Site Access retry_not_before；缺失时使用绑定周期，不追加虚假UNKNOWN页覆盖。补充旧游标、首页、尾页、重复完成与延期时间专项；校正旧测试对SEC/IR既有30秒默认值的断言。

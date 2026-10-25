@@ -2,12 +2,54 @@ import asyncio
 from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
 
+import pytest
+
 from doxagent.persistent_runtime_v2.bus_orchestration import BusOrchestration
 from doxagent.persistent_runtime_v2.coordinator import RuntimeCoordinator
 from doxagent.persistent_runtime_v2.journal import RuntimeJournal
 from tests.fixtures.message_bus_v2 import _bus
 from tests.test_persistent_runtime_v2 import _source
 from tests.test_runtime_orchestration_execution import runtime_at
+
+
+@pytest.mark.parametrize("retry_seconds", [None, 180])
+@pytest.mark.parametrize("partial_page", [False, True])
+def test_sweep_deferral_preserves_page_evidence_and_provider_retry_boundary(tmp_path, retry_seconds, partial_page):
+    async def scenario():
+        from doxagent.message_bus_v2.schema import PollExecutionResult
+
+        now = datetime(2026, 10, 25, 21, tzinfo=UTC)
+        journal = RuntimeJournal(tmp_path / "runtime.db", clock=lambda: now)
+        bus, service = _bus(tmp_path / "bus.db")
+        service.start_ticker("MU")
+        binding = bus.list_bindings(ticker="MU", active_only=True)[0]
+        source = bus.get_source(binding.source_id)
+        journal.put_task("deferred-source", "MU", "SOURCE_SWEEP", {
+            "binding": binding.model_dump(mode="json"),
+            "source": source.model_dump(mode="json"), "cutoff": now.isoformat(),
+        })
+        task = journal.claim("deferred-source")
+        retry_at = now + timedelta(seconds=retry_seconds) if retry_seconds else None
+
+        async def poll(*args, **kwargs):
+            return PollExecutionResult(binding_id=binding.binding_id, window_done=False,
+                site_access_deferred=True, site_access_retry_not_before=retry_at,
+                enrichment_job_ids=["durable-job"] if partial_page else [],
+                collected_count=1 if partial_page else 0, window_coverage="PARTIAL",
+                next_checkpoint={"page": 2} if partial_page else {})
+
+        scheduler = SimpleNamespace(_poll=poll, terms=SimpleNamespace(get=lambda _: None))
+        await BusOrchestration(journal)._source(scheduler, task)
+        saved = journal.get_task("deferred-source")
+        assert saved["status"] == "PENDING" and saved["failures"] == 0
+        expected = retry_at or now + timedelta(seconds=binding.polling.target_interval_seconds)
+        assert saved["due_at"] == expected.isoformat()
+        assert saved["receipt"]["page_coverages"] == (["PARTIAL"] if partial_page else [])
+        assert saved["receipt"]["job_ids"] == (["durable-job"] if partial_page else [])
+        assert not saved["receipt"]["poll_done"]
+        assert journal.claim("deferred-source") is None
+
+    asyncio.run(scenario())
 
 
 def test_closed_poll_once_and_slow_source_never_blocks_loop(tmp_path):

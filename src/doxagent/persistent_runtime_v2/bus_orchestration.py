@@ -281,14 +281,15 @@ class BusOrchestration:
                     raise
                 await asyncio.sleep(0.1 * (attempt + 1))
 
-    def _yield_source(self, task: dict[str, Any]) -> None:
+    def _yield_source(self, task: dict[str, Any], not_before=None) -> None:
         from datetime import timedelta
 
         with self.journal.transaction() as db:
             self.journal.fence(db, task)
             db.execute(
                 "UPDATE runtime_tasks SET status='PENDING',due_at=? WHERE id=?",
-                ((self.journal.clock() + timedelta(seconds=5)).isoformat(), task["id"]),
+                (max(self.journal.clock() + timedelta(seconds=5),
+                     not_before or self.journal.clock()).isoformat(), task["id"]),
             )
 
     async def _source(self, scheduler: Any, task: dict[str, Any]) -> Any:
@@ -364,6 +365,24 @@ class BusOrchestration:
                 )
                 if result.error_code:
                     raise RuntimeError(result.error_code)
+                if getattr(result, "site_access_deferred", False):
+                    # Deferral is not a completed page and must retain the
+                    # provider's retry boundary, rather than append UNKNOWN
+                    # coverage and retry the challenge every five seconds.
+                    retry_at = getattr(result, "site_access_retry_not_before", None) or (
+                        self.journal.clock() + timedelta(
+                            seconds=binding.polling.target_interval_seconds
+                        )
+                    )
+                    if result.enrichment_job_ids or getattr(result, "collected_count", 0):
+                        await self._journal_call(
+                            self.journal.checkpoint, task,
+                            job_ids=sorted(set(receipt["job_ids"]) | set(result.enrichment_job_ids)),
+                            page_cursor=result.next_checkpoint,
+                            page_coverages=[*receipt["page_coverages"], result.window_coverage],
+                        )
+                    await self._journal_call(self._yield_source, task, retry_at)
+                    return result
                 # A replay may re-read this page after a crash. Intake identity deduplication
                 # returns the same live job IDs; completed provider payloads are also deduped.
                 await self._journal_call(
