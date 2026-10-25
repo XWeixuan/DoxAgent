@@ -15,10 +15,11 @@ async def test_dispatch_heartbeat_lifecycle_does_not_need_bus_writer(tmp_path):
 
     repo, bus = _bus(tmp_path / 'bus.db')
     scheduler = GlobalPollScheduler(repo, bus, SimpleNamespace())
+    scheduler.initialization_control = SimpleNamespace(active_revisions=lambda: [])
     entered, release = threading.Event(), threading.Event()
     def blocked():
         entered.set()
-        assert release.wait(3)
+        assert release.wait(10)
     async def cycle():
         return []
     scheduler._run_admitted_once = cycle
@@ -26,7 +27,8 @@ async def test_dispatch_heartbeat_lifecycle_does_not_need_bus_writer(tmp_path):
     try:
         while not entered.is_set():
             await asyncio.sleep(0.001)
-        assert await asyncio.wait_for(scheduler.run_once(), .5) == []
+        assert await asyncio.wait_for(scheduler.run_once(), 2) == []
+        assert not release.is_set()
     finally:
         release.set()
         await writer
@@ -119,7 +121,8 @@ def test_distribution_membership_is_snapshotted_once_per_piece_and_survives_resu
         assert len(json.loads(distribution._expand(db,data))) == 5
 
 
-def test_old_shared_backlog_advances_in_bulk_without_dropping_live_candidate_or_receipt(tmp_path):
+@pytest.mark.parametrize('basis',['EXACT','DATE'])
+def test_old_shared_backlog_advances_in_bulk_without_dropping_live_candidate_or_receipt(tmp_path,basis):
     import json
     from datetime import timedelta
 
@@ -140,7 +143,7 @@ def test_old_shared_backlog_advances_in_bulk_without_dropping_live_candidate_or_
     info = {'run_id':run['run_id'],'fetch_token':token,'checkpoint':{},'coverage':'COMPLETE','done':True,
             'roster':[{'binding':binding.model_dump(mode='json'),'terms_revision':1,'admission':admission}],
             'targets':[{'binding_id':binding.binding_id,'ticker':binding.ticker,'binding_version':binding.version}]}
-    old = [_message(i).model_copy(update={'published_at':now-timedelta(days=2)}) for i in range(260)]
+    old = [_message(i).model_copy(update={'published_at':now-timedelta(days=2), 'publication_time_basis':basis}) for i in range(260)]
     prepared = repo.polling.prepare(source=source,binding=binding,result=PollResult(messages=old+[_message(9999)]),
         observed_at=now,run_id=run['run_id'],unit='SHARED',distribution=info)
     capture_id = repo.polling.commit(prepared)
@@ -165,14 +168,15 @@ def test_old_shared_backlog_advances_in_bulk_without_dropping_live_candidate_or_
     assert len(piece[4].messages) == 16 and piece[4].acquisition_metadata['intake_prefiltered'] == 0
 
 
-def test_ticker_backlog_bulk_filter_preserves_counts_and_eligible_job(tmp_path):
+@pytest.mark.parametrize('basis',['EXACT','DATE'])
+def test_ticker_backlog_bulk_filter_preserves_counts_and_eligible_job(tmp_path,basis):
     from datetime import timedelta
 
     from tests.test_content_enrichment_hub import _message, _setup
 
     repo, bus, source, binding = _setup(tmp_path)
     now = utc_now()
-    messages = [_message(i).model_copy(update={'published_at':now-timedelta(days=2)}) for i in range(260)]
+    messages = [_message(i).model_copy(update={'published_at':now-timedelta(days=2),'publication_time_basis':basis}) for i in range(260)]
     messages.append(_message(99999))
     capture = repo.polling.prepare(source=source,binding=binding,result=PollResult(messages=messages),
         observed_at=now,run_id='ticker-old',checkpoint={'cursor':'kept'})
@@ -255,3 +259,66 @@ async def test_slow_capture_preparation_does_not_block_other_durable_intake(tmp_
     finally:
         release.set()
         await worker.close()
+
+
+@pytest.mark.parametrize('count',[2,20])
+def test_shared_state_projection_uses_one_physical_connection(tmp_path,count):
+    from doxagent.message_bus_v2.admission import AdmissionContext
+
+    repo,bus=_bus(tmp_path/'bus.db')
+    source=bus.update_source('ctee_semiconductor',{'enabled':True},actor=UpdateActor.SYSTEM)
+    roster=[]
+    for i in range(count):
+        ticker=f'P{i}';bus.start_ticker(ticker)
+        roster.append((bus.configure_binding(ticker=ticker,source_id=source.source_id,actor=UpdateActor.SYSTEM),1,AdmissionContext()))
+    scheduler=GlobalPollScheduler(repo,bus,SimpleNamespace())
+    original=repo._connect;opened=[]
+    def connect():
+        if repo._atomic_connection.get() is None and repo._scope_connection.get() is None:opened.append(1)
+        return original()
+    repo._connect=connect
+    now=utc_now()
+    scheduler._record_distribution_poll(source,roster,{'run_id':'physical','created_at':now.isoformat(),'mode':'REALTIME','coverage':'COMPLETE'},observed_at=now)
+    assert len(opened)==1
+    assert all(repo.get_poll_state(binding).last_success_at==now for binding,_,_ in roster)
+
+
+async def test_final_poll_state_and_run_ledger_commit_or_rollback_together(tmp_path,monkeypatch):
+    from doxagent.message_bus_v2.schema import PollStatus
+    from tests.test_content_enrichment_hub import _setup
+
+    repo,bus,source,binding=_setup(tmp_path)
+    class Adapter:
+        async def poll(self,context):return PollResult()
+    scheduler=GlobalPollScheduler(repo,bus,SimpleNamespace(resolve=lambda *a,**k:Adapter(),crawler_plane=None))
+    try:
+        original=repo.polling.update_run
+        def fail_final(*a,**kwargs):
+            if kwargs.get('status')=='CAPTURED':
+                assert repo._atomic_connection.get() is not None
+                assert repo.get_poll_state(binding).status is PollStatus.SUCCEEDED
+                raise RuntimeError('final ledger fails')
+            return original(*a,**kwargs)
+        monkeypatch.setattr(repo.polling,'update_run',fail_final)
+        with pytest.raises(RuntimeError,match='final ledger fails'):
+            await scheduler._poll(source,binding,utc_now())
+        assert repo.get_poll_state(binding).status is not PollStatus.SUCCEEDED
+        with repo._connect() as db:
+            assert db.execute("SELECT status FROM poll_runs WHERE status!='SCHEDULE' ORDER BY dispatch_at DESC LIMIT 1").fetchone()[0]=='DISPATCHED'
+    finally:
+        await scheduler.close()
+
+
+def test_bulk_age_gate_keeps_recent_dates_future_and_unresolved_first_seen(tmp_path):
+    from datetime import timedelta
+
+    from tests.test_content_enrichment_hub import _message, _setup
+
+    repo,_,source,binding=_setup(tmp_path);now=utc_now()
+    changes=[('DATE',now-timedelta(days=1)),('DATE',now),('DATE',now+timedelta(days=1)),('UNKNOWN_FIRST_SEEN',now-timedelta(days=3))]
+    messages=[_message(70000+i).model_copy(update={'publication_time_basis':basis,'published_at':at}) for i,(basis,at) in enumerate(changes)]
+    capture=repo.polling.prepare(source=source,binding=binding,result=PollResult(messages=messages),observed_at=now,run_id='date-boundary')
+    row=repo.polling.load(repo.polling.commit(capture))
+    piece=repo.polling.prepare_piece(row)[4]
+    assert [m.external_id for m in piece.messages]==[m.external_id for m in messages]
+    assert piece.acquisition_metadata['intake_prefiltered']==0

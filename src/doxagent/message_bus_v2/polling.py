@@ -392,7 +392,7 @@ class PollJournal:
         )):
             # Old large RSS lists must not create per-article/per-ticker delivery
             # work merely to reject it. Keep the original durable payload and
-            # count every input; only the existing unequivocal EXACT age gate
+            # count every input; only existing unequivocal exact/date age gates
             # is evaluated here, outside the writer. Real candidates stay <=16.
             contexts = ([AdmissionContext.model_validate(t["admission"]) for t in shared["roster"]]
                         if shared else [context])
@@ -403,11 +403,12 @@ class PollJournal:
             messages, advanced = [], 0
             for message in candidates:
                 key = identity_key_for(source.source_id, message)
-                expired = key not in published and message.publication_time_basis == "EXACT" and contexts and all(
+                expired = (key not in published and message.publication_time_basis in {"EXACT", "DATE"}
+                    and message.published_at <= context.observed_at and contexts and all(
                     evaluate_admission(message.published_at, target, context.observed_at,
-                                       message.publication_time_basis) == "EXPIRED_PUBLICATION"
+                                       message.publication_time_basis) in {"EXPIRED_PUBLICATION", "OUTSIDE_RECENT_DATES"}
                     for target in contexts
-                )
+                ))
                 if expired:
                     advanced += 1
                     filtered += 1

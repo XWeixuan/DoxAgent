@@ -179,24 +179,25 @@ class GlobalPollScheduler:
         )
 
     def _save_poll_scope_state(self, state, unit, source, binding):
-        saved = self.repository.save_poll_unit_state(
-            state.model_copy(
-                update={
-                    "source_definition_version": source.version,
-                    "binding_version": binding.version,
-                }
-            ),
-            unit,
-        )
-        if saved and state.status is PollStatus.SUCCEEDED and not unit.startswith("TAIL:"):
-            if self.repository.get_poll_state(binding).status is PollStatus.SUCCEEDED:
-                self.repository.resolve_alert("poll_failure:" + binding.binding_id)
-            refresh = getattr(self, "_health_refresh_at", {})
-            if self._clock() - refresh.get(source.source_id, -60) >= 60:
-                refresh[source.source_id] = self._clock()
-                self._health_refresh_at = refresh
-                self.service._refresh_source_failure_alert(source.source_id, now=utc_now())
-        return saved
+        with self.repository.connection_scope():
+            saved = self.repository.save_poll_unit_state(
+                state.model_copy(
+                    update={
+                        "source_definition_version": source.version,
+                        "binding_version": binding.version,
+                    }
+                ),
+                unit,
+            )
+            if saved and state.status is PollStatus.SUCCEEDED and not unit.startswith("TAIL:"):
+                if self.repository.get_poll_state(binding).status is PollStatus.SUCCEEDED:
+                    self.repository.resolve_alert("poll_failure:" + binding.binding_id)
+                refresh = getattr(self, "_health_refresh_at", {})
+                if self._clock() - refresh.get(source.source_id, -60) >= 60:
+                    refresh[source.source_id] = self._clock()
+                    self._health_refresh_at = refresh
+                    self.service._refresh_source_failure_alert(source.source_id, now=utc_now())
+            return saved
 
     async def run_once(self) -> list[PollExecutionResult]:
         admission = getattr(self, "activation_admission", None)
@@ -1013,72 +1014,73 @@ class GlobalPollScheduler:
         acquisition_checkpoint: JsonObject | None = None,
     ) -> None:
         """Project one shared acquisition onto its subscribed ticker poll states."""
-        with self.repository.transaction() as db:
-            if observed_at is not None and run.get("run_id"):
-                db.execute(
-                    "INSERT OR REPLACE INTO distribution_acquisitions VALUES(?,?)",
-                    (run["run_id"], observed_at.isoformat()),
+        with self.repository.atomic_intake():
+            with self.repository.transaction() as db:
+                if observed_at is not None and run.get("run_id"):
+                    db.execute(
+                        "INSERT OR REPLACE INTO distribution_acquisitions VALUES(?,?)",
+                        (run["run_id"], observed_at.isoformat()),
+                    )
+                acquired = (
+                    db.execute(
+                        "SELECT observed_at FROM distribution_acquisitions WHERE run_id=?",
+                        (run["run_id"],),
+                    ).fetchone()
+                    if run.get("run_id")
+                    else None
                 )
-            acquired = (
-                db.execute(
-                    "SELECT observed_at FROM distribution_acquisitions WHERE run_id=?",
-                    (run["run_id"],),
-                ).fetchone()
-                if run.get("run_id")
-                else None
+            observed_at = (
+                datetime.fromisoformat(acquired[0])
+                if acquired
+                else observed_at or datetime.fromisoformat(str(run["created_at"]))
             )
-        observed_at = (
-            datetime.fromisoformat(acquired[0])
-            if acquired
-            else observed_at or datetime.fromisoformat(str(run["created_at"]))
-        )
-        partial = (coverage or str(run["coverage"])) != "COMPLETE"
-        for binding, _, _ in roster:
-            previous = self.repository.get_poll_state(binding)
-            next_due = self._next_due(
-                previous.target_due_at or observed_at,
-                observed_at,
-                binding.polling.target_interval_seconds,
-            )
-            if previous.last_attempt_at and previous.last_attempt_at >= observed_at:
-                continue
-            checkpoint = previous.checkpoint
-            if (
-                source.adapter_ref == "builtin:defense_public@1"
-                and acquisition_checkpoint is not None
-                and run["mode"] == "REALTIME"
-            ):
-                checkpoint = {
-                    **checkpoint,
-                    "defense_public": {
-                        "source_version": source.version,
-                        "checkpoint": acquisition_checkpoint,
-                    },
-                }
-            self.repository.save_poll_unit_state(
-                previous.model_copy(
-                    update={
-                        "source_definition_version": source.version,
-                        "binding_version": binding.version,
-                        "last_capture_at": observed_at,
-                        "status": PollStatus.PARTIAL if partial else PollStatus.SUCCEEDED,
-                        "last_attempt_at": observed_at,
-                        "last_success_at": observed_at,
-                        "last_failure_at": observed_at if partial else None,
-                        "failure_since": observed_at if partial else None,
-                        "last_error_code": "SOURCE_WINDOW_PARTIAL" if partial else None,
-                        "last_error_message": "Shared source coverage is partial"
-                        if partial
-                        else None,
-                        "consecutive_failures": 0,
-                        "target_due_at": next_due,
-                        "next_dispatch_at": next_due,
-                        "updated_at": utc_now(),
-                        "checkpoint": checkpoint,
+            partial = (coverage or str(run["coverage"])) != "COMPLETE"
+            for binding, _, _ in roster:
+                previous = self.repository.get_poll_state(binding)
+                next_due = self._next_due(
+                    previous.target_due_at or observed_at,
+                    observed_at,
+                    binding.polling.target_interval_seconds,
+                )
+                if previous.last_attempt_at and previous.last_attempt_at >= observed_at:
+                    continue
+                checkpoint = previous.checkpoint
+                if (
+                    source.adapter_ref == "builtin:defense_public@1"
+                    and acquisition_checkpoint is not None
+                    and run["mode"] == "REALTIME"
+                ):
+                    checkpoint = {
+                        **checkpoint,
+                        "defense_public": {
+                            "source_version": source.version,
+                            "checkpoint": acquisition_checkpoint,
+                        },
                     }
-                ),
-                "SHARED",
-            )
+                self.repository.save_poll_unit_state(
+                    previous.model_copy(
+                        update={
+                            "source_definition_version": source.version,
+                            "binding_version": binding.version,
+                            "last_capture_at": observed_at,
+                            "status": PollStatus.PARTIAL if partial else PollStatus.SUCCEEDED,
+                            "last_attempt_at": observed_at,
+                            "last_success_at": observed_at,
+                            "last_failure_at": observed_at if partial else None,
+                            "failure_since": observed_at if partial else None,
+                            "last_error_code": "SOURCE_WINDOW_PARTIAL" if partial else None,
+                            "last_error_message": "Shared source coverage is partial"
+                            if partial
+                            else None,
+                            "consecutive_failures": 0,
+                            "target_due_at": next_due,
+                            "next_dispatch_at": next_due,
+                            "updated_at": utc_now(),
+                            "checkpoint": checkpoint,
+                        }
+                    ),
+                    "SHARED",
+                )
 
     @source_routed
     async def _poll(
@@ -1146,20 +1148,22 @@ class GlobalPollScheduler:
                 if error
                 else (result.error_code or result.site_access_deferred_reason if result else None)
             )
-            await self.service.storage.call(
-                self.repository.polling.update_run,
-                run_id,
-                status=status,
-                reason=reason,
-                requests=requests,
-                **run_details,
-                _lane_priority=0,
-            )
-            ACCESS_RESULTS.reset(access_token)
-            POLL_TIMINGS.reset(timing_token)
-            REQUESTS.reset(request_token)
-            DEMAND.reset(demand_token)
-            self._wake.set()
+            scope_state = run_details.pop("_scope_state", None)
+            def finish():
+                with self.repository.atomic_intake():
+                    if scope_state:
+                        self._save_poll_scope_state(*scope_state)
+                    self.repository.polling.update_run(
+                        run_id, status=status, reason=reason, requests=requests, **run_details
+                    )
+            try:
+                await self.service.storage.call(finish, _lane_priority=0)
+            finally:
+                ACCESS_RESULTS.reset(access_token)
+                POLL_TIMINGS.reset(timing_token)
+                REQUESTS.reset(request_token)
+                DEMAND.reset(demand_token)
+                self._wake.set()
 
     async def _poll_impl(
         self,
@@ -1493,9 +1497,7 @@ class GlobalPollScheduler:
                 next_dispatch = result.optional_next_poll_hint
             if result.site_access_retry_not_before:
                 next_dispatch = max(next_dispatch, result.site_access_retry_not_before)
-            await self.storage_call(
-                lambda value: self._save_poll_scope_state(value, acquisition_unit, source, binding),
-                refreshed.model_copy(
+            final_state = refreshed.model_copy(
                     update={
                         "target_due_at": target_due,
                         "next_dispatch_at": next_dispatch,
@@ -1537,9 +1539,14 @@ class GlobalPollScheduler:
                         ),
                         "updated_at": attempted_at,
                     }
-                ),
-                _lane_priority=0,
-            )
+                )
+            if run_details is not None:
+                run_details["_scope_state"] = (final_state, acquisition_unit, source, binding)
+            else:
+                await self.storage_call(
+                    self._save_poll_scope_state, final_state, acquisition_unit, source, binding,
+                    _lane_priority=0,
+                )
             return execution
         except Exception as exc:
             crawler_execution_id = getattr(exc, "crawler_execution_id", None)

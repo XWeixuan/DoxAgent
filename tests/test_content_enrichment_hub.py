@@ -578,3 +578,22 @@ def test_failed_input_receipt_only_skips_inside_existing_retry_window(tmp_path):
     sweep=message.model_copy(update={'admission_context':AdmissionContext(mode='CLOSED_SWEEP',sweep_id='s',source_task_id='t',window_start=now-timedelta(days=1),cutoff=now)})
     assert not repo.reuse_unchanged_observation(sweep,binding,policy,now+timedelta(seconds=1))
     assert repo.latest_stream_offset(binding.ticker) == 0
+
+
+def test_foreground_body_claim_skips_recheck_backlog_through_partial_index(tmp_path,monkeypatch):
+    from doxagent.content_enrichment.schema import EnrichmentJobStatus
+
+    repo,bus,source,binding=_setup(tmp_path)
+    now=utc_now()
+    job,_=bus.enqueue_enrichment(source=source,binding=binding,message=_message(61003),bootstrap=False,poll_run_id='claim-index')
+    recheck=job.model_copy(update={'work_kind':'recheck','status':EnrichmentJobStatus.QUEUED})
+    repo.requeue_enrichment_job(recheck)
+    with repo._connect() as db:
+        plan=' '.join(str(r[3]) for r in db.execute("EXPLAIN QUERY PLAN SELECT data_json FROM content_enrichment_jobs WHERE status IN ('queued','retry_wait') AND not_before<=? AND coalesce(json_extract(data_json,'$.work_kind'),'new_article')!='recheck' ORDER BY created_at LIMIT 1024",(now.isoformat(),)))
+        assert 'idx_mbv2_enrichment_foreground_ready' in plan
+    original=repo.transaction
+    monkeypatch.setattr(repo,'transaction',lambda: (_ for _ in ()).throw(AssertionError('empty claim reserves writer')))
+    assert repo.claim_enrichment_jobs(limit=8,now=now+timedelta(seconds=1),allow_rechecks=False)==[]
+    monkeypatch.setattr(repo,'transaction',original)
+    claimed=repo.claim_enrichment_jobs(limit=8,now=now+timedelta(seconds=1),allow_rechecks=True)
+    assert len(claimed)==1 and claimed[0].job_id==job.job_id

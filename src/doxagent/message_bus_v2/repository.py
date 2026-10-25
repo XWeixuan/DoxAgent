@@ -390,6 +390,9 @@ class MessageBusV2Repository:
                     coalesce(json_extract(data_json,'$.language'),'')) WHERE status='READY';
                 create index if not exists idx_mbv2_enrichment_ready
                     on content_enrichment_jobs(status, not_before, created_at);
+                create index if not exists idx_mbv2_enrichment_foreground_ready
+                    on content_enrichment_jobs(status, not_before, created_at)
+                    where coalesce(json_extract(data_json,'$.work_kind'),'new_article')!='recheck';
                 create table if not exists site_strategy_result_outbox (
                     outbox_id text primary key,
                     kind text not null,
@@ -1639,8 +1642,21 @@ class MessageBusV2Repository:
 
         current = (now or utc_now()).astimezone(UTC)
         lease_until = current + timedelta(seconds=lease_seconds)
+        allow_rechecks = allow_rechecks and not self.polling.backlogged(now=current)
+        foreground_filter = (" AND coalesce(json_extract(data_json,'$.work_kind'),'new_article')!='recheck' "
+                             if not allow_rechecks else " ")
+        # An idle BODY loop must not reserve the shared DB writer just to learn
+        # that only paused background checks remain. A new enqueue after this
+        # snapshot is picked up on the next loop; real claims still recheck below.
+        with self._connect() as probe:
+            due = probe.execute("SELECT 1 FROM content_enrichment_jobs WHERE status IN (?,?) "
+                "AND not_before<=?" + foreground_filter + "LIMIT 1",
+                (EnrichmentJobStatus.QUEUED.value,EnrichmentJobStatus.RETRY_WAIT.value,current.isoformat())).fetchone()
+            expired = probe.execute("SELECT 1 FROM content_enrichment_jobs WHERE status=? "
+                "AND lease_expires_at<=? LIMIT 1",(EnrichmentJobStatus.RUNNING.value,current.isoformat())).fetchone()
+        if not due and not expired:
+            return []
         with self.transaction() as connection:
-            allow_rechecks = allow_rechecks and not self.polling.backlogged(now=current)
             expired = connection.execute(
                 """select data_json from content_enrichment_jobs
                    where status=? and lease_expires_at is not null and lease_expires_at<=?""",
@@ -1663,8 +1679,7 @@ class MessageBusV2Repository:
             rows = connection.execute(
                 """select data_json from content_enrichment_jobs
                    where status in (?,?) and not_before<=?
-                """ + (" AND coalesce(json_extract(data_json,'$.work_kind'),'new_article')!='recheck' "
-                       if not allow_rechecks else " ") + "order by created_at limit ?",
+                """ + foreground_filter + "order by created_at limit ?",
                 (
                     EnrichmentJobStatus.QUEUED.value,
                     EnrichmentJobStatus.RETRY_WAIT.value,
@@ -3031,6 +3046,8 @@ class MessageBusV2Repository:
             if row is None:
                 return None
             current = OperationalAlert.model_validate_json(row["data_json"])
+            if current.resolved_at is not None:
+                return current
             resolved_at = utc_now()
             resolved = current.model_copy(update={"resolved_at": resolved_at})
             connection.execute(
