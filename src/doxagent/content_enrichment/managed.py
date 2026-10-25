@@ -130,6 +130,10 @@ class SiteAccessBrowserReader:
         )
         trace = _trace(result, "browser")
         self.transport.access_trace.append(trace)
+        metadata = dict(trace)
+        # Pipeline stage_timings is a list of phases; the owner's physical
+        # timings is a dict. Preserve both without clobbering the pipeline list.
+        metadata["site_stage_timings"] = metadata.pop("stage_timings")
         return (
             Observation(
                 result.final_url or url,
@@ -137,7 +141,7 @@ class SiteAccessBrowserReader:
                 result.status_code or 0,
                 _reason(result),
             ),
-            trace,
+            metadata,
         )
 
 

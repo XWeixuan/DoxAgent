@@ -319,6 +319,7 @@ class ContentEnrichmentHub:
                              "budget_exhausted": not transport_timeout},
             )
         except Exception as exc:
+            logger.exception("body extraction failed job_id=%s source_id=%s", job.job_id, job.source.source_id)
             result = MediaExtractionResult(record=record, reason=type(exc).__name__.lower())
         finally:
             REVALIDATION.reset(revalidation_token)
