@@ -441,6 +441,17 @@ class BusOrchestration:
                 ),
             )
             return result
+        except asyncio.CancelledError:
+            # Graceful Bus replacement must not strand its sweep claim for the
+            # full crash lease. Captures/checkpoints already remain durable.
+            try:
+                await asyncio.shield(self._journal_call(self._yield_source, task))
+            except Exception as release_exc:
+                logging.getLogger(__name__).warning(
+                    "cancelled sweep claim release failed task=%s error=%s",
+                    task["id"], type(release_exc).__name__,
+                )
+            raise
         except Exception as exc:
             if is_sqlite_contention(exc):
                 raise

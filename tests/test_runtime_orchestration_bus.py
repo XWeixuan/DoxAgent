@@ -52,6 +52,41 @@ def test_sweep_deferral_preserves_page_evidence_and_provider_retry_boundary(tmp_
     asyncio.run(scenario())
 
 
+def test_cancelled_sweep_releases_claim_without_losing_checkpoint(tmp_path):
+    async def scenario():
+        now = [datetime(2026, 10, 25, 21, tzinfo=UTC)]
+        journal = RuntimeJournal(tmp_path / "runtime.db", clock=lambda: now[0])
+        bus, service = _bus(tmp_path / "bus.db")
+        service.start_ticker("MU")
+        binding = bus.list_bindings(ticker="MU", active_only=True)[0]
+        source = bus.get_source(binding.source_id)
+        journal.put_task("cancel-source", "MU", "SOURCE_SWEEP", {
+            "binding": binding.model_dump(mode="json"),
+            "source": source.model_dump(mode="json"), "cutoff": now[0].isoformat(),
+        })
+        task = journal.claim("cancel-source")
+        entered = asyncio.Event()
+
+        async def poll(*args, **kwargs):
+            entered.set()
+            await asyncio.Event().wait()
+
+        owner = BusOrchestration(journal)
+        running = asyncio.create_task(owner._source(SimpleNamespace(
+            _poll=poll, terms=SimpleNamespace(get=lambda _: None)), task))
+        await asyncio.wait_for(entered.wait(), timeout=5)
+        running.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await running
+        saved = journal.get_task("cancel-source")
+        assert saved["status"] == "PENDING" and saved["failures"] == 0
+        assert "window_start" in saved["receipt"] and not saved["receipt"]["poll_done"]
+        now[0] += timedelta(seconds=5)
+        assert journal.claim("cancel-source") is not None
+
+    asyncio.run(scenario())
+
+
 def test_closed_poll_once_and_slow_source_never_blocks_loop(tmp_path):
     async def scenario():
         now = [datetime(2026, 9, 6, 6, tzinfo=UTC)]
