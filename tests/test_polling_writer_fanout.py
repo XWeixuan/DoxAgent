@@ -163,3 +163,86 @@ def test_old_shared_backlog_advances_in_bulk_without_dropping_live_candidate_or_
     row = {**repo.polling.load(capture_id),'intake_position':0,'payload_json':json.dumps(payload)}
     piece = repo.polling.prepare_piece(row)
     assert len(piece[4].messages) == 16 and piece[4].acquisition_metadata['intake_prefiltered'] == 0
+
+
+def test_ticker_backlog_bulk_filter_preserves_counts_and_eligible_job(tmp_path):
+    from datetime import timedelta
+
+    from tests.test_content_enrichment_hub import _message, _setup
+
+    repo, bus, source, binding = _setup(tmp_path)
+    now = utc_now()
+    messages = [_message(i).model_copy(update={'published_at':now-timedelta(days=2)}) for i in range(260)]
+    messages.append(_message(99999))
+    capture = repo.polling.prepare(source=source,binding=binding,result=PollResult(messages=messages),
+        observed_at=now,run_id='ticker-old',checkpoint={'cursor':'kept'})
+    capture_id = repo.polling.commit(capture)
+    for expected in [256,261]:
+        _, token = repo.polling.claim()
+        piece = repo.polling.prepare_piece(repo.polling.load(capture_id))
+        repo.polling.accept_piece(bus,piece,token)
+        assert repo.polling.load(capture_id)['intake_position'] == expected
+    receipt = repo.polling.run_receipt('ticker-old')
+    assert (receipt.collected_count,receipt.filtered_count,receipt.queued_count) == (261,260,1)
+    assert repo.get_poll_state(binding).checkpoint == {'cursor':'kept'}
+    assert len(repo.list_enrichment_jobs()) == 1
+
+
+async def test_old_published_identity_is_retained_and_publication_race_reprepares(tmp_path):
+    from datetime import timedelta
+
+    from tests.fixtures.message_bus_v2 import _input
+    from tests.test_content_enrichment_hub import _setup
+
+    repo, bus, source, binding = _setup(tmp_path)
+    now = utc_now()
+    live = _input('publication-race',published_at=now)
+    old = live.model_copy(update={'published_at':now-timedelta(days=2)})
+    capture = repo.polling.prepare(source=source,binding=binding,result=PollResult(messages=[old]),
+        observed_at=now,run_id='publication-race')
+    capture_id = repo.polling.commit(capture)
+    _, token = repo.polling.claim()
+    prepared = repo.polling.prepare_piece(repo.polling.load(capture_id))
+    assert prepared[4].messages == []
+    await bus.accept_message(source=source,binding=binding,message=live,bootstrap=False,collected_at=now)
+    assert repo.latest_stream_offset(binding.ticker) == 1
+    with pytest.raises(RuntimeError,match='intake_publication_changed'):
+        repo.polling.accept_piece(bus,prepared,token)
+    assert repo.polling.load(capture_id)['intake_position'] == 0
+    refreshed = repo.polling.prepare_piece(repo.polling.load(capture_id))
+    assert len(refreshed[4].messages) == 1
+    assert refreshed[4].acquisition_metadata['intake_prefiltered'] == 0
+
+
+async def test_slow_capture_preparation_does_not_block_other_durable_intake(tmp_path):
+    import threading
+
+    from doxagent.message_bus_v2.polling import CaptureIntake
+    from tests.test_content_enrichment_hub import _message, _setup
+
+    repo, bus, source, binding = _setup(tmp_path)
+    for index, run in enumerate(['slow-payload','healthy-payload']):
+        repo.polling.commit(repo.polling.prepare(source=source,binding=binding,
+            result=PollResult(messages=[_message(4000+index)]),observed_at=utc_now(),run_id=run))
+    entered, release = threading.Event(), threading.Event()
+    original = repo.polling.prepare_piece
+    def prepare(row):
+        if row['run_id'] == 'slow-payload':
+            entered.set()
+            assert release.wait(10)
+        return original(row)
+    repo.polling.prepare_piece = prepare
+    worker = CaptureIntake(bus)
+    try:
+        worker.start()
+        while not entered.is_set():
+            await asyncio.sleep(.001)
+        receipt = await asyncio.wait_for(worker.wait('healthy-payload'),3)
+        assert receipt.queued_count == 1
+        assert len(repo.list_enrichment_jobs()) == 1
+        release.set()
+        assert (await asyncio.wait_for(worker.wait('slow-payload'),3)).queued_count == 1
+        assert len(repo.list_enrichment_jobs()) == 2
+    finally:
+        release.set()
+        await worker.close()

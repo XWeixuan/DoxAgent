@@ -15,6 +15,7 @@ from .schema import (
     RawMessageInput,
     SourceDefinition,
     TickerSourceBinding,
+    identity_key_for,
     new_id,
     utc_now,
 )
@@ -385,16 +386,23 @@ class PollJournal:
         shared = payload.get("distribution")
         messages = payload["result"]["messages"][position : position + 16]
         advanced, filtered = len(messages), 0
-        if shared and all(t["admission"].get("mode", "REALTIME") == "REALTIME" for t in shared["roster"]):
+        skipped_keys = []
+        if context.mode == "REALTIME" and (not shared or all(
+            t["admission"].get("mode", "REALTIME") == "REALTIME" for t in shared["roster"]
+        )):
             # Old large RSS lists must not create per-article/per-ticker delivery
             # work merely to reject it. Keep the original durable payload and
             # count every input; only the existing unequivocal EXACT age gate
             # is evaluated here, outside the writer. Real candidates stay <=16.
-            contexts = [AdmissionContext.model_validate(t["admission"]) for t in shared["roster"]]
+            contexts = ([AdmissionContext.model_validate(t["admission"]) for t in shared["roster"]]
+                        if shared else [context])
+            candidates = [RawMessageInput.model_validate(raw)
+                          for raw in payload["result"]["messages"][position : position + 256]]
+            published = self.repo.published_identity_keys(binding, candidates) if not shared else set()
             messages, advanced = [], 0
-            for raw in payload["result"]["messages"][position : position + 256]:
-                message = RawMessageInput.model_validate(raw)
-                expired = message.publication_time_basis == "EXACT" and contexts and all(
+            for message in candidates:
+                key = identity_key_for(source.source_id, message)
+                expired = key not in published and message.publication_time_basis == "EXACT" and contexts and all(
                     evaluate_admission(message.published_at, target, context.observed_at,
                                        message.publication_time_basis) == "EXPIRED_PUBLICATION"
                     for target in contexts
@@ -402,6 +410,7 @@ class PollJournal:
                 if expired:
                     advanced += 1
                     filtered += 1
+                    skipped_keys.append(key)
                 elif len(messages) < 16:
                     messages.append(message)
                     advanced += 1
@@ -413,7 +422,8 @@ class PollJournal:
                 "messages": messages,
                 "failures": [],
                 "acquisition_metadata": {"poll_run_id": row["run_id"],
-                    "intake_advanced": advanced, "intake_prefiltered": filtered},
+                    "intake_advanced": advanced, "intake_prefiltered": filtered,
+                    "intake_skipped_keys": skipped_keys},
             }
         )
         result = result.model_copy(
@@ -445,6 +455,20 @@ class PollJournal:
             ).fetchone()
             if not live or live["claim_token"] != token or live["status"] != "RUNNING":
                 return
+            if not shared and result.acquisition_metadata.get("intake_skipped_keys"):
+                skipped = set(result.acquisition_metadata["intake_skipped_keys"])
+                # A BODY completion may publish while the preparation snapshot
+                # waits for the writer. Reprepare instead of losing its update.
+                matches = db.execute(
+                    "SELECT 1 FROM raw_messages r JOIN standard_messages s "
+                    "ON s.raw_message_id=r.raw_message_id JOIN stream_members m "
+                    "ON m.standard_message_id=s.standard_message_id "
+                    "WHERE r.ticker=? AND r.source_id=? AND r.binding_id=? "
+                    "AND r.identity_key IN (" + ",".join("?" for _ in skipped) + ") LIMIT 1",
+                    (binding.ticker, binding.source_id, binding.binding_id, *sorted(skipped)),
+                ).fetchone()
+                if matches:
+                    raise RuntimeError("intake_publication_changed_reprepare")
             current_source = self.repo.get_source(source.source_id)
             current_binding = self.repo.get_binding(binding.binding_id)
             if (
@@ -523,6 +547,9 @@ class PollJournal:
                     bootstrap_override=bootstrap,
                     strict_intake=True,
                 )
+                prefiltered = result.acquisition_metadata.get("intake_prefiltered", 0)
+                receipt.collected_count += prefiltered
+                receipt.filtered_count += prefiltered
             total = PollExecutionResult.model_validate_json(row["receipt_json"])
             add_receipt(total, receipt)
             state = self.repo.get_poll_state(binding)
@@ -543,7 +570,7 @@ class PollJournal:
                             "last_first_capture_at": context.observed_at,
                             "last_first_intake_at": unit_state.last_first_intake_at or utc_now(),
                             "last_final_intake_at": utc_now()
-                            if row["intake_position"] + len(result.messages) >= row["message_count"]
+                            if row["intake_position"] + advanced >= row["message_count"]
                             else None,
                         }
                     )
@@ -663,21 +690,26 @@ class CaptureIntake:
         self.journal = bus.repository.polling
         self.distribution = DistributionRepository(bus.repository)
         self.task = None
+        self.tasks = [None, None]
         self.wake = asyncio.Event()
         self.stopping = False
         self._maintenance_at = 0.0
 
     def start(self):
-        if self.task is None or self.task.done():
-            if self.task is not None and not self.task.cancelled():
-                self.task.result()
-            self.wake = asyncio.Event()
+        if any(task is None or task.done() for task in self.tasks):
             from .collection_override import REQUEST_GATE
 
             token = REQUEST_GATE.set(None)
             try:
                 # Persisted intake is independent of the acquisition session.
-                self.task = asyncio.create_task(self.run())
+                # Match the existing two read/prepare slots. Writers remain
+                # single-owner; a slow payload must not stall every other capture.
+                for index, task in enumerate(self.tasks):
+                    if task is None or task.done():
+                        if task is not None and not task.cancelled():
+                            task.result()
+                        self.tasks[index] = asyncio.create_task(self.run())
+                self.task = self.tasks[0]
             finally:
                 REQUEST_GATE.reset(token)
         self.wake.set()
@@ -725,6 +757,7 @@ class CaptureIntake:
     async def close(self):
         self.stopping = True
         self.wake.set()
-        if self.task:
-            self.task.cancel()
-            await asyncio.gather(self.task, return_exceptions=True)
+        tasks = [task for task in self.tasks if task is not None]
+        for task in tasks:
+            task.cancel()
+        await asyncio.gather(*tasks, return_exceptions=True)

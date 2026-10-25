@@ -1505,6 +1505,24 @@ class MessageBusV2Repository:
                 return raw
         return None
 
+    def published_identity_keys(self, binding, messages):
+        """Scalar-only batch existence proof, used before skipping expired input."""
+        from .schema import identity_key_for
+
+        keys = sorted({identity_key_for(binding.source_id, message) for message in messages})
+        if not keys:
+            return set()
+        with self._connect() as db:
+            rows = db.execute(
+                "SELECT DISTINCT r.identity_key FROM raw_messages r "
+                "JOIN standard_messages s ON s.raw_message_id=r.raw_message_id "
+                "JOIN stream_members m ON m.standard_message_id=s.standard_message_id "
+                "WHERE r.ticker=? AND r.source_id=? AND r.binding_id=? AND r.identity_key IN ("
+                + ",".join("?" for _ in keys) + ")",
+                (binding.ticker, binding.source_id, binding.binding_id, *keys),
+            ).fetchall()
+        return {row[0] for row in rows}
+
     def mark_article_check_pending(self, raw_id, *, pending=True, error=None):
         with self.transaction() as db:
             row = db.execute("SELECT data_json FROM raw_messages WHERE raw_message_id=?",(raw_id,)).fetchone()
