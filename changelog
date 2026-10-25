@@ -2175,3 +2175,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-26 批量年龄过滤保留first_seen：准备阶段计算被过滤项的绑定级时间锚，持有原子游标事务后批量写入最早值，重复观察不重写；防止以后提供方时间降级为UNKNOWN时将旧新闻重新当新消息。完整capture和过滤计数继续保留，7项共享/ticker、EXACT/DATE、发布时间变化及发布竞态专项通过。
 
 2026-10-26 接纳流水交接及任务收据修复：每片提交与下一片租约领取合并一次writer访问；用既有2读+2准备+1提交构成5个有界流水票据，实际存储/浏览器并发不变。持久观察记录对应intake_key，避免其他提供方推进共享正文check_seq后，原待处理输入再次构建任务。62项采集/开关回归、45项正文/去重回归与慢准备隔离、融合交接专项通过。
+
+2026-10-26 精确重复capture接纳复用：实测NBIS/Finnhub/Newswire连续16轮完整输入各自相同。新增轻量输入索引，实时ticker父输入完成时有界复用处理窗口内同binding/unit、版本、bootstrap、policy及完整消息数组一致的未开始轮次；每轮capture/请求时点保留，reused_from明示，重复输入不制造正文成功或发布。原始payload/摘要变更、未来轮次、共享run和历史sweep不合并；checkpoint与first_seen保留。72项采集/分发/开关回归及精确复用、legacy有界回填/级联清理专项通过；附低优先级一次性回填脚本。

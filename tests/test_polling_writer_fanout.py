@@ -353,3 +353,56 @@ async def test_intake_fuses_next_lease_without_requeuing_a_separate_claim(tmp_pa
         assert len(repo.list_enrichment_jobs())==12
     finally:
         await worker.close()
+
+
+def test_identical_waiting_captures_reuse_intake_without_erasing_captures_or_republishing(tmp_path):
+    from datetime import timedelta
+
+    from tests.test_content_enrichment_hub import _message, _setup
+
+    repo,bus,source,binding=_setup(tmp_path);now=utc_now();message=_message(90000)
+    ids=[]
+    for i in range(3):
+        ids.append(repo.polling.commit(repo.polling.prepare(source=source,binding=binding,
+            result=PollResult(messages=[message]),observed_at=now-timedelta(seconds=5-i),run_id=f'coalesce-{i}',checkpoint={'cursor':i})))
+    # Changed data, future observation and other bootstrap semantics remain real work.
+    for run,msg,observed,bootstrap in [('changed',message.model_copy(update={'summary':'New material facts'}),now,False),
+            ('raw-changed',message.model_copy(update={'raw_payload':{'new':'Important provider-only evidence'}}),now,False),
+            ('later',message,now+timedelta(minutes=1),False),('bootstrap',message,now,True)]:
+        repo.polling.commit(repo.polling.prepare(source=source,binding=binding,result=PollResult(messages=[msg]),observed_at=observed,run_id=run,bootstrap=bootstrap))
+    capture,token=repo.polling.claim();assert capture==ids[0]
+    repo.polling.accept_piece(bus,repo.polling.prepare_piece(repo.polling.load(capture)),token)
+    assert len(repo.list_enrichment_jobs())==1
+    assert repo.get_poll_state(binding).collected_count==3
+    for capture_id in ids[1:]:
+        row=repo.polling.load(capture_id);receipt=repo.polling.run_receipt(row['run_id'])
+        assert row['status']=='COMPLETED' and row['intake_position']==row['message_count']==1
+        assert receipt.collected_count==receipt.duplicate_count==1 and receipt.queued_count==0
+        assert len(__import__('json').loads(row['payload_json'])['result']['messages'])==1
+    with repo._connect() as db:
+        assert db.execute('SELECT count(*) FROM poll_capture_inputs WHERE reused_from=?',(ids[0],)).fetchone()[0]==2
+        assert db.execute("SELECT count(*) FROM poll_captures WHERE status='PENDING'").fetchone()[0]==4
+    assert repo.get_poll_state(binding).checkpoint=={'cursor':2}
+    assert repo.latest_stream_offset(binding.ticker)==0  # No fabricated publication or FULL.
+
+
+def test_legacy_capture_input_hash_backfill_is_bounded_and_closed_sweeps_stay_independent(tmp_path):
+    from datetime import timedelta
+
+    from doxagent.message_bus_v2.admission import AdmissionContext
+    from tests.test_content_enrichment_hub import _message, _setup
+
+    repo,bus,source,binding=_setup(tmp_path);now=utc_now();ids=[]
+    for i in range(4):
+        ids.append(repo.polling.commit(repo.polling.prepare(source=source,binding=binding,
+            result=PollResult(messages=[_message(91000)]),observed_at=now,run_id=f'legacy-{i}')))
+    sweep=AdmissionContext(mode='CLOSED_SWEEP',sweep_id='s',source_task_id='t',window_start=now-timedelta(days=1),cutoff=now)
+    closed=repo.polling.commit(repo.polling.prepare(source=source,binding=binding,result=PollResult(messages=[_message(91000)]),observed_at=now,run_id='closed',admission_context=sweep))
+    with repo.transaction() as db:db.execute('DELETE FROM poll_capture_inputs')
+    assert repo.polling.backfill_input_keys(limit=2)==2
+    assert repo.polling.backfill_input_keys(limit=8)==3
+    assert repo.polling.backfill_input_keys(limit=8)==0
+    with repo._connect() as db:
+        assert db.execute('SELECT input_hash FROM poll_capture_inputs WHERE capture_id=?',(closed,)).fetchone()[0]==''
+        db.execute('DELETE FROM poll_captures WHERE capture_id=?',(ids[0],))
+        assert db.execute('SELECT count(*) FROM poll_capture_inputs WHERE capture_id=?',(ids[0],)).fetchone()[0]==0

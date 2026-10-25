@@ -15,8 +15,10 @@ from .schema import (
     RawMessageInput,
     SourceDefinition,
     TickerSourceBinding,
+    canonical_json,
     identity_key_for,
     new_id,
+    sha256_text,
     utc_now,
 )
 
@@ -52,6 +54,19 @@ class PreparedCapture:
     distribution: dict | None = None
     request_started_at: str | None = None
     source_version: int | None = None
+    input_key: str = ""
+
+
+def capture_input_key(payload, unit):
+    """Exact full input; shared and historical runs retain independent intake."""
+    if payload.get("distribution") or payload["admission"].get("mode", "REALTIME") != "REALTIME":
+        return ""
+    return sha256_text(canonical_json([
+        payload["source"]["source_id"], payload["source"]["version"],
+        payload["binding"]["binding_id"], payload["binding"]["version"],
+        unit, payload["bootstrap"], payload["admission"].get("policy_version", 1),
+        payload["result"]["messages"],
+    ]))
 
 
 class PollJournal:
@@ -92,6 +107,13 @@ class PollJournal:
                     ON poll_captures(status,completed_at);
                 CREATE INDEX IF NOT EXISTS poll_captures_binding_time
                     ON poll_captures(binding_id,unit,observed_at);
+                CREATE TABLE IF NOT EXISTS poll_capture_inputs (
+                    capture_id TEXT PRIMARY KEY REFERENCES poll_captures(capture_id) ON DELETE CASCADE,
+                    binding_id TEXT NOT NULL,unit TEXT NOT NULL,input_hash TEXT NOT NULL,
+                    reused_from TEXT
+                );
+                CREATE INDEX IF NOT EXISTS poll_capture_inputs_match
+                    ON poll_capture_inputs(binding_id,unit,input_hash);
             """)
             if "targets_json" not in {r[1] for r in db.execute("PRAGMA table_info(poll_captures)")}:
                 db.execute(
@@ -242,6 +264,7 @@ class PollJournal:
             update={"observed_at": observed_at}
         )
         payload = "{}"
+        input_key = ""
         if result.messages or distribution:
             value = {
                 "source": source.model_dump(mode="json"),
@@ -254,6 +277,7 @@ class PollJournal:
             }
             # File compression/hash/fsync happen before taking the business writer.
             payload = self.repo.content.encode(value)
+            input_key = capture_input_key(value, unit)
         from .poll_trace import REQUESTS
 
         requests = REQUESTS.get() or []
@@ -277,6 +301,7 @@ class PollJournal:
             distribution,
             request_at,
             source.version,
+            input_key,
         )
 
     def commit(self, capture):
@@ -348,6 +373,8 @@ class PollJournal:
                             last_final_intake_at=None,
                         )
                     self.repo.save_poll_unit_state(state.model_copy(update=changed), capture.unit)
+            db.execute("INSERT OR IGNORE INTO poll_capture_inputs VALUES(?,?,?,?,NULL)",
+                (capture.capture_id,capture.binding.binding_id,capture.unit,capture.input_key))
         return capture.capture_id
 
     def claim(self):
@@ -373,7 +400,8 @@ class PollJournal:
     def load(self, capture_id):
         with self.repo._connect() as db:
             row = db.execute(
-                "SELECT * FROM poll_captures WHERE capture_id=?", (capture_id,)
+                "SELECT p.*,k.input_hash FROM poll_captures p LEFT JOIN poll_capture_inputs k "
+                "ON k.capture_id=p.capture_id WHERE p.capture_id=?", (capture_id,)
             ).fetchone()
         return dict(row) if row else None
 
@@ -384,6 +412,7 @@ class PollJournal:
         position = row["intake_position"]
         context = AdmissionContext.model_validate(payload["admission"])
         shared = payload.get("distribution")
+        input_key = row.get("input_hash") or capture_input_key(payload, row["unit"])
         messages = payload["result"]["messages"][position : position + 16]
         advanced, filtered = len(messages), 0
         skipped_keys = []
@@ -430,7 +459,8 @@ class PollJournal:
                 "failures": [],
                 "acquisition_metadata": {"poll_run_id": row["run_id"],
                     "intake_advanced": advanced, "intake_prefiltered": filtered,
-                    "intake_skipped_keys": skipped_keys, "intake_first_seen": first_seen},
+                    "intake_skipped_keys": skipped_keys, "intake_first_seen": first_seen,
+                    "intake_input_key": input_key},
             }
         )
         result = result.model_copy(
@@ -462,6 +492,8 @@ class PollJournal:
             ).fetchone()
             if not live or live["claim_token"] != token or live["status"] != "RUNNING":
                 return
+            db.execute("INSERT OR IGNORE INTO poll_capture_inputs VALUES(?,?,?,?,NULL)",
+                (row['capture_id'],binding.binding_id,row['unit'],result.acquisition_metadata['intake_input_key']))
             if result.acquisition_metadata.get("intake_skipped_keys"):
                 skipped = set(result.acquisition_metadata["intake_skipped_keys"])
                 # A BODY completion may publish while the preparation snapshot
@@ -611,6 +643,51 @@ class PollJournal:
                     row["capture_id"],
                 ),
             )
+            if done and not shared:
+                self.reuse_waiting_inputs(db,row,binding,result.acquisition_metadata['intake_input_key'],now)
+
+    def reuse_waiting_inputs(self, db, parent, binding, input_key, now):
+        if not input_key:
+            return
+        peers = db.execute("SELECT p.capture_id,p.run_id,p.message_count,p.observed_at "
+            "FROM poll_capture_inputs k JOIN poll_captures p ON p.capture_id=k.capture_id "
+            "WHERE k.binding_id=? AND k.unit=? AND k.input_hash=? AND p.status='PENDING' "
+            "AND p.intake_position=0 AND julianday(p.observed_at)>=julianday(?) "
+            "AND julianday(p.observed_at)<=julianday(?) "
+            "AND p.capture_id!=? ORDER BY p.observed_at LIMIT 64",
+            (binding.binding_id,parent['unit'],input_key,parent['observed_at'],now,parent['capture_id'])).fetchall()
+        if not peers:
+            return
+        for peer in peers:
+            receipt = PollExecutionResult(binding_id=binding.binding_id,poll_run_id=peer['run_id'],
+                collected_count=peer['message_count'],duplicate_count=peer['message_count'])
+            db.execute("UPDATE poll_captures SET status='COMPLETED',intake_position=message_count,"
+                "receipt_json=?,first_intake_at=?,completed_at=? WHERE capture_id=?",
+                (receipt.model_dump_json(),now,now,peer['capture_id']))
+            db.execute("UPDATE poll_capture_inputs SET reused_from=? WHERE capture_id=?",
+                (parent['capture_id'],peer['capture_id']))
+        state = self.repo.get_poll_state(binding)
+        self.repo.save_poll_state(state.model_copy(update={
+            'collected_count':state.collected_count+sum(p['message_count'] for p in peers)}))
+        unit = self.repo.get_poll_unit_state(binding,parent['unit'])
+        if unit.last_capture_at and unit.last_capture_at.isoformat() in {p['observed_at'] for p in peers}:
+            self.repo.save_poll_unit_state(unit.model_copy(update={
+                'last_first_capture_at':unit.last_capture_at,'last_first_intake_at':utc_now(),
+                'last_final_intake_at':utc_now()}),parent['unit'])
+
+    def backfill_input_keys(self, limit=16):
+        """Bounded metadata-only migration; decoding/hashing precedes its short write."""
+        with self.repo._connect() as db:
+            rows = db.execute("SELECT p.capture_id,p.binding_id,p.unit,p.payload_json AS encoded_payload "
+                "FROM poll_captures p LEFT JOIN poll_capture_inputs k ON k.capture_id=p.capture_id "
+                "WHERE p.status IN ('PENDING','RUNNING') AND k.capture_id IS NULL "
+                "LIMIT ?",(limit,)).fetchall()
+        values = [(r['capture_id'],r['binding_id'],r['unit'],capture_input_key(
+            self.repo.content.decode(json.loads(r['encoded_payload'])),r['unit'])) for r in rows]
+        if values:
+            with self.repo.transaction() as db:
+                db.executemany('INSERT OR IGNORE INTO poll_capture_inputs VALUES(?,?,?,?,NULL)',values)
+        return len(values)
 
     def retry(self, capture_id, token, error):
         with self.repo.transaction() as db:
