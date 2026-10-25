@@ -1,0 +1,202 @@
+{
+  "at": "2026-10-25T17:54:22.924320+00:00",
+  "code_commit": "450c17d4b33e185456c18351759fba766cccbc84",
+  "cpus": 8,
+  "memory": {
+    "MemTotal": "15977200 kB",
+    "MemAvailable": "8904404 kB",
+    "SwapTotal": "2097148 kB",
+    "SwapFree": "1154856 kB"
+  },
+  "cpu_pressure": "some avg10=6.23 avg60=8.46 avg300=7.37 total=932483037\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n",
+  "roles": {
+    "v2-site-access": {
+      "id": "02296b3167cdc84036f6cf04dace0125878a3bab8ec00ee3b9ec4c5c0a7ef169",
+      "image": "sha256:78d00dcb5e2abb220313619acccee7b35246b29d7858ca0ca37c928271ddb0da",
+      "state": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "started_at": "2026-10-25T17:51:18.598484256Z",
+      "commit": "450c17d4b33e185456c18351759fba766cccbc84",
+      "nano_cpus": 0,
+      "cpu_shares": 1536,
+      "limits": {
+        "DOXAGENT_SITE_ACCESS_BROWSER_MAX_PAGES": "8",
+        "DOXAGENT_SITE_ACCESS_BODY_BROWSER_MAX_PAGES": "2",
+        "DOXAGENT_SITE_ACCESS_BODY_BROWSER_BORROW": "false"
+      }
+    },
+    "v2-message-bus": {
+      "id": "d74b087fe0ee3c75a649262eb58c5794b7c53804885ff7ecb07feb1b88c6b9f8",
+      "image": "sha256:991ea503fffc84987ed30c6e714a30c2871c52a8170525321f6eafbfa2fc5966",
+      "state": "running",
+      "health": null,
+      "restarts": 0,
+      "started_at": "2026-10-25T17:51:31.712692835Z",
+      "commit": "450c17d4b33e185456c18351759fba766cccbc84",
+      "nano_cpus": 0,
+      "cpu_shares": 1536
+    },
+    "v2-content-enrichment": {
+      "id": "bbd0ea9aafaba14cd0f32bb393b92c6ca2beeb9c46454c59b4dc978488f74b32",
+      "image": "sha256:991ea503fffc84987ed30c6e714a30c2871c52a8170525321f6eafbfa2fc5966",
+      "state": "running",
+      "health": null,
+      "restarts": 0,
+      "started_at": "2026-10-25T17:51:40.586835964Z",
+      "commit": "450c17d4b33e185456c18351759fba766cccbc84",
+      "nano_cpus": 0,
+      "cpu_shares": 1024
+    },
+    "v2-scheduler": {
+      "id": "bc0801ac9185c74ccf3ffbefc77be9ec1a419c0837b932cabd91268a587a659a",
+      "image": "sha256:991ea503fffc84987ed30c6e714a30c2871c52a8170525321f6eafbfa2fc5966",
+      "state": "running",
+      "health": null,
+      "restarts": 0,
+      "started_at": "2026-10-25T17:51:54.5751886Z",
+      "commit": "450c17d4b33e185456c18351759fba766cccbc84",
+      "nano_cpus": 0,
+      "cpu_shares": 0
+    }
+  },
+  "preservation": {
+    "supervisor_preserved": true,
+    "identity_revisions_preserved": true,
+    "site_revisions_preserved": true,
+    "subscription_source_configuration_preserved": true,
+    "protected_targets_preserved": true
+  },
+  "protected_targets_before": 2,
+  "protected_targets_after": 2,
+  "captures_before": [
+    {
+      "status": "COMPLETED",
+      "count": 135129,
+      "remaining": 0
+    }
+  ],
+  "captures_after": [
+    {
+      "status": "COMPLETED",
+      "count": 135953,
+      "remaining": 0
+    }
+  ],
+  "bus_head_before": [
+    {
+      "head": 5588766
+    }
+  ],
+  "bus_head_after": [
+    {
+      "head": 5593365
+    }
+  ],
+  "read_checkpoints_before": [
+    {
+      "source": "bus",
+      "position": 5588765
+    },
+    {
+      "source": "runtime",
+      "position": 2299947
+    },
+    {
+      "source": "initialization",
+      "position": 139140
+    },
+    {
+      "source": "research",
+      "position": 14580
+    }
+  ],
+  "read_checkpoints_after": [
+    {
+      "source": "bus",
+      "position": 5593365
+    },
+    {
+      "source": "runtime",
+      "position": 2303030
+    },
+    {
+      "source": "initialization",
+      "position": 139140
+    },
+    {
+      "source": "research",
+      "position": 14580
+    }
+  ],
+  "ir": [
+    {
+      "endpoint_id": "be.press",
+      "status": "succeeded",
+      "last_success_at": "2026-10-25T17:54:09.976562Z"
+    },
+    {
+      "endpoint_id": "ceg.press",
+      "status": "succeeded",
+      "last_success_at": "2026-10-25T17:54:11.542564Z"
+    },
+    {
+      "endpoint_id": "cohr.corporate",
+      "status": "succeeded",
+      "last_success_at": "2026-10-25T17:54:09.852018Z"
+    },
+    {
+      "endpoint_id": "cohr.financial",
+      "status": "succeeded",
+      "last_success_at": "2026-10-25T17:54:11.746467Z"
+    },
+    {
+      "endpoint_id": "intc.press",
+      "status": "succeeded",
+      "last_success_at": "2026-10-25T17:54:10.524250Z"
+    },
+    {
+      "endpoint_id": "mu.ir",
+      "status": "succeeded",
+      "last_success_at": "2026-10-25T17:54:11.092167Z"
+    },
+    {
+      "endpoint_id": "mu.newsroom",
+      "status": "succeeded",
+      "last_success_at": "2026-10-25T17:54:11.850631Z"
+    },
+    {
+      "endpoint_id": "nbis.press",
+      "status": "succeeded",
+      "last_success_at": "2026-10-25T17:54:09.611265Z"
+    },
+    {
+      "endpoint_id": "onds.press",
+      "status": "succeeded",
+      "last_success_at": "2026-10-25T17:54:11.928655Z"
+    },
+    {
+      "endpoint_id": "rklb.ir",
+      "status": "succeeded",
+      "last_success_at": "2026-10-25T17:54:09.635016Z"
+    },
+    {
+      "endpoint_id": "rklb.updates",
+      "status": "succeeded",
+      "last_success_at": "2026-10-25T17:54:11.824199Z"
+    },
+    {
+      "endpoint_id": "snow.press",
+      "status": "succeeded",
+      "last_success_at": "2026-10-25T17:54:11.320759Z"
+    }
+  ],
+  "all_components_running": true,
+  "unhealthy_components": [],
+  "performance_acceptance": "NOT_PERFORMED_PER_USER_REQUEST",
+  "remaining_observations": [
+    "Runtime SQLite transaction wait warnings",
+    "W3 housekeeping failed=True marker remains; no W3 business acceptance performed",
+    "Bus Pydantic failure_since datetime serialization warning"
+  ]
+}

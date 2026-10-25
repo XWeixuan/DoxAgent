@@ -2143,3 +2143,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-26 W3跨会话整合：保留其他会话AGENTS/skill修改，强化ticker级Surprise、外部传导概率/分量和独立时效判断；原输出schema、行情权限及冻结Case不变，28项单Skill/合同/Case路由回归通过。归档BE重初始化7个运维脚本与审计，未重复执行或激活研究候选。
 
 2026-10-26 Bus休市临时采集：新增仅Bus持久开关和CLI enable/disable/status/history，支持时区截止与ticker/source交集范围、原因及操作审计；调度和实际请求前复核会话，过期/关闭不启动新请求，在途及持久接纳/BODY正常收尾，保留checkpoint/去重/正文复用/ARTICLE_ONCE与共享日历。恢复8核生产全局浏览器8，BODY2/借槽关闭及身份实测能力保留；必要生命周期与衔接测试和生产发布回执同步归档。
+
+2026-10-26 Bus临时采集统一生产发布：main整合提交450c17d4已推送并同步远端，backend/site精确重建，Site/Bus/BODY/scheduler四组件滚动完成，实际全局浏览器4恢复8。8核15.24GiB主机、四组件运行/零重启、Site健康、Supervisor/2个人工挑战目标、身份Site与订阅配置保留已核验；12IR端点成功、capture/Read推进。生产MU/finnhub短开启与持久重新读取/提前关闭验证后最终DISABLED；122项主回归、28项W3及22项资源/客户端通过，重叠复核不累加。记录W3资产pending门禁、SQL等待/housekeeping告警，未宣称性能或W3业务验收达标；发布回执docs/message-bus-temporary-collection-production-release-20261026.md。
