@@ -237,6 +237,7 @@ class ArticleBodyResults:
         with self.repository.atomic_intake() as db:
             result = self.observe(message, source_id, now=now, known_article=known_article)
             hint = update_hint(message)
+            previous_hint = result.get("scheduled_hint")
             hints = dict(result.get("verified_hints", {}))
             if (
                 result.get("content")
@@ -265,6 +266,8 @@ class ArticleBodyResults:
                 else "new_article"
                 if not known_article
                 else "recheck"
+                if previous_hint == hint
+                else "content_update"
             )
 
     def acquire(self, key: str, execution_id: str, *, now=None) -> bool:

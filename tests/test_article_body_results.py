@@ -171,5 +171,17 @@ def test_known_publication_cannot_cross_scope_or_language_and_is_not_new_article
             'metadata':{**original.metadata,**metadata}})
         actual,kind=results.schedule(changed,'source',now=now,known_article=proof)
         assert actual['fetch_key'] != key and not actual.get('content')
-        assert kind == 'recheck' and actual['first_observed_at'] == proof.first_seen_at.isoformat()
+        assert kind == 'content_update' and actual['first_observed_at'] == proof.first_seen_at.isoformat()
         assert actual['prior_publication_raw_id'] == 'old'
+
+
+def test_published_article_without_full_keeps_material_update_foreground(tmp_path):
+    results=ArticleBodyResults(MessageBusV2Repository(tmp_path/'bus.db'))
+    original,now=message(),datetime.now(UTC)
+    row,_=results.schedule(original,'source',now=now)
+    proof=SimpleNamespace(metadata={'article_body_result_key':row['fetch_key']},first_seen_at=now-timedelta(days=1),raw_message_id='published-incomplete')
+    assert results.schedule(original,'source',now=now,known_article=proof)[1]=='recheck'
+    changed=original.model_copy(update={'summary':'The investment is cancelled after a material problem.'})
+    updated,kind=results.schedule(changed,'source',now=now,known_article=proof)
+    assert kind=='content_update' and updated['check_seq']>row['check_seq']
+    assert updated['first_observed_at']==proof.first_seen_at.isoformat()
