@@ -40,6 +40,13 @@ if (new URLSearchParams(location.search).has("real")) {
     { token: () => "fixture", refresh: async () => false, invalidate: () => {} },
     (input, init) => fetch("http://127.0.0.1:8099" + String(input), init),
   );
+} else {
+  // Simulates the metadata refetch triggered by a binding save, without a new terms revision.
+  window.addEventListener("fixture:languages", (event) => {
+    const languages = (event as CustomEvent<string[]>).detail;
+    current = { ...current, required_languages: languages, language_requirements: languages.map((language) => ({ language, source_ids: [language + "-source"] })) };
+    void runtime.query.invalidateQueries({ queryKey: ["fixture", "read", "MonitoringTerms"] });
+  });
 }
 
 createRoot(document.getElementById("root")!).render(<RuntimeProvider runtime={runtime}><main style={{ maxWidth: 1200, margin: "24px auto", padding: "0 16px" }}><MonitoringTermsSettings ticker="MU" /><output id="saved-revision">1</output></main></RuntimeProvider>);

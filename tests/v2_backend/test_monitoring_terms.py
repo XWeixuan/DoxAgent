@@ -1,4 +1,6 @@
 import copy
+import json
+import sys
 import time
 from types import SimpleNamespace
 
@@ -10,6 +12,7 @@ from doxagent.api_v2.auth import Principal
 from doxagent.api_v2.errors import ApiFailure
 from doxagent.message_bus_v2.monitoring_terms import MonitoringTermsService
 from doxagent.message_bus_v2.repository import MessageBusV2Repository
+from doxagent.message_bus_v2.schema import TickerSourceBinding, utc_now
 from doxagent.message_bus_v2.service import MessageBusV2Service
 from doxagent.persistent_runtime_v2.journal import RuntimeJournal
 from doxagent.v2_control.bindings import Bindings
@@ -18,6 +21,79 @@ from doxagent.v2_control.repository import ControlRepository
 from doxagent.v2_read.outbox import SourceOutbox
 from doxagent.v2_read.repository import ReadStore
 from tests.test_message_bus_monitoring_terms import _terms
+
+
+def test_languages_follow_active_ticker_bindings_without_losing_saved_terms(
+    tmp_path, monkeypatch, capsys
+):
+    repo = MessageBusV2Repository(tmp_path / "bus.db")
+    MessageBusV2Service(repo).bootstrap()
+    service = MonitoringTermsService(repo)
+    control = MonitoringTermsControl(repo.path)
+    template = repo.get_source("google_news_search_rss")
+    # Arbitrary adapters/languages must work, rather than a Hebrew source exception.
+    for language in ("he", "fr"):
+        repo.save_source(template.model_copy(update={
+            "source_id": language + "-search", "content_language": language,
+        }))
+
+    def bind(ticker, source_id, **updates):
+        binding = TickerSourceBinding(
+            binding_id=f"{ticker}:{source_id}", ticker=ticker, source_id=source_id,
+        ).model_copy(update=updates)
+        repo.save_binding(binding)
+        return binding
+
+    bind("ONDS", "he-search")
+    bind("MU", "fr-search")
+    bind("ONDS", "google_news_search_rss", enabled=False)
+    # By Ticker sources do not consume unified search/distribution terms.
+    bind("ONDS", "sec_edgar")
+    snapshot = control.get_terms("ONDS")
+    assert snapshot["required_languages"] == ["he"]
+    assert snapshot["language_requirements"] == [{"language": "he", "source_ids": ["he-search"]}]
+    assert service.required_languages("onds") == {"he"}
+    assert service.required_languages("MU") == {"fr"}
+    assert control.get_terms("RKLB")["required_languages"] == []
+    assert service.required_languages() == {"fr", "he"}
+
+    config = {
+        "l1_concepts": [{"concept_id": "onds", "expressions": {"he": "אונדס"}}],
+        "l2": {"he": {"groups": [{"id": "onds", "any": [{"literal": "אונדס"}]}]}},
+        "definition": {"relevant": "Drones", "irrelevant": "Other products"},
+    }
+    assert control.validate_config("ONDS", config)["valid"]
+    saved = control.put_terms("ONDS", config, "tester", "he-only-terms", snapshot["control_etag"])
+    from doxagent.message_bus_v2 import cli
+
+    terms_file = tmp_path / "he-terms.json"
+    terms_file.write_text(json.dumps({
+        "ticker": "ONDS", "expected_revision": 1, **config,
+    }), encoding="utf-8")
+    monkeypatch.setattr(cli, "DoxAgentSettings", lambda: SimpleNamespace(
+        message_bus_v2_sqlite_path=repo.path,
+    ))
+    monkeypatch.setattr(sys, "argv", ["bus", "terms", "validate", "--file", str(terms_file)])
+    cli.main()
+    output = json.loads(capsys.readouterr().out)
+    assert output["languages"] == ["he"]
+    assert [plan["source_id"] for plan in output["search_plans"]] == ["he-search"]
+    bind("ONDS", "fr-search")
+    assert control.get_terms("ONDS")["required_languages"] == ["fr", "he"]
+    assert not control.validate_config("ONDS", config)["valid"]
+    bind("ONDS", "fr-search", tombstoned_at=utc_now())
+    assert control.get_terms("ONDS")["required_languages"] == ["he"]
+    source = repo.get_source("he-search")
+    repo.save_source(source.model_copy(update={"enabled": False}))
+    assert service.required_languages("ONDS") == set()
+    assert control.get_terms("ONDS")["required_languages"] == []
+    assert control.get_terms("ONDS")["configuration"] == saved["configuration"]
+    repo.save_source(source)
+    assert control.get_terms("ONDS")["required_languages"] == ["he"]
+    bind("ONDS", "he-search", enabled=False)
+    assert control.get_terms("ONDS")["required_languages"] == []
+    bind("ONDS", "he-search")
+    assert control.get_terms("ONDS")["configuration"] == saved["configuration"]
 
 
 def test_monitoring_terms_atomic_cas_retry_and_preview(tmp_path):

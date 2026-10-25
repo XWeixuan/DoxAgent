@@ -4,13 +4,41 @@ from __future__ import annotations
 
 import json
 import re
+from collections.abc import Iterable
 from typing import Literal
 
 import regex
 from pydantic import Field, field_validator, model_validator
 
 from .repository import MessageBusV2Repository
-from .schema import BusModel, canonical_json, sha256_text, utc_now
+from .schema import (
+    AcquisitionMode,
+    BusModel,
+    SourceDefinition,
+    TickerSourceBinding,
+    canonical_json,
+    sha256_text,
+    utc_now,
+)
+
+
+def language_requirements(
+    sources: Iterable[SourceDefinition], bindings: Iterable[TickerSourceBinding]
+) -> dict[str, list[str]]:
+    """Languages consumed by the supplied active subscriptions, regardless of adapter."""
+    subscribed = {
+        binding.source_id for binding in bindings
+        if binding.enabled and binding.tombstoned_at is None
+    }
+    requirements: dict[str, list[str]] = {}
+    for source in sources:
+        if (
+            source.source_id in subscribed and source.enabled and source.content_language
+            and source.acquisition_mode
+            in {AcquisitionMode.BY_SEARCH, AcquisitionMode.BY_DISTRIBUTION}
+        ):
+            requirements.setdefault(source.content_language, []).append(source.source_id)
+    return {language: sorted(ids) for language, ids in sorted(requirements.items())}
 
 
 class L1Concept(BusModel):
@@ -84,7 +112,7 @@ class TickerMonitoringTerms(BusModel):
         return self
 
     def validate_languages(self, languages: set[str]) -> None:
-        for language in languages | {"en"}:
+        for language in sorted(languages):
             if any(language not in concept.expressions for concept in self.l1_concepts):
                 raise ValueError(f"missing L1 language: {language}")
             if language not in self.l2 or not self.l2[language].groups:
@@ -124,23 +152,10 @@ class MonitoringTermsService:
             migrate(db)
 
     def required_languages(self, ticker: str | None = None) -> set[str]:
-        from .schema import AcquisitionMode
-
-        # Preserve legacy shared-language requirements. Optional sector sources
-        # contribute languages only for subscribed tickers, so adding Hebrew
-        # Calcalist cannot invalidate unrelated semiconductor ticker settings.
-        subscribed = {
-            b.source_id for b in self.repository.list_bindings()
-            if b.enabled and (ticker is None or b.ticker == ticker.upper())
-        }
-        return {
-            source.content_language
-            for source in self.repository.list_sources()
-            if source.acquisition_mode
-            in {AcquisitionMode.BY_SEARCH, AcquisitionMode.BY_DISTRIBUTION}
-            and source.content_language
-            and (source.adapter_ref != "builtin:defense_public@1" or source.source_id in subscribed)
-        }
+        return set(language_requirements(
+            self.repository.list_sources(),
+            self.repository.list_bindings(ticker=ticker.upper() if ticker else None),
+        ))
 
     def apply(self, terms: TickerMonitoringTerms, *, actor: str) -> int:
         payload = canonical_json(terms.model_dump(mode="json"))

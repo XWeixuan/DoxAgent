@@ -2163,3 +2163,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-26 实测writer饥饿修复：短时调用栈与5分钟日志确认接纳仅47片且writer每次notify_all引起全队列重扫；改为单个Future定向交接，保持8次紧急/1次普通公平、单写入者和取消后排空，接纳短片提升为采集同级。WAL模式仅仓库初始化设置，避免每次连接重复schema协商；惰性复用事件循环lane，慢日志显示qualname便于区分成本。61项采集/接纳/开关回归及7项writer含排队取消交接竞态通过，实际效果继续观测。
 
 2026-10-26 正文URL变体复用修复：实测同一Yahoo稳定文章ID从原出版商URL切换至Yahoo分发URL后生成新正文键；在已验证发布身份的前提下关联原FULL/SHORT_FULL结果，保持scope/语言隔离、内容变更与30分钟复查，不重置复查时点。已知旧文章的新键回填真实first_seen并标记prior_publication，缺正文时也归recheck，避免污染真实新文章分母。42项正文/接纳/去重回归与范围、语言、到期复查、重要更新专项通过。
+
+2026-10-26 统一监测词动态语言发布准备：按用户要求提交并推送main，同步新加坡生产仓库；精确构建backend/web，仅滚动v2-api与v2-web，沿用现有生产配置、数据库和订阅。发布后核验镜像版本、健康状态及各ticker语言要求与实际启用绑定一致性。

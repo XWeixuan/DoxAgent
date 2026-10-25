@@ -147,11 +147,13 @@ export function useRead<K extends keyof Endpoints>(
   name: K,
   path: string | null,
   view?: string,
+  options: { refetchOnWindowFocus?: boolean | "always" } = {},
 ) {
   const { api, scope } = useRuntime();
   return useQuery({
     queryKey: [scope, "read", name, path, view],
     enabled: !!path,
+    ...options,
     queryFn: async ({ signal }) => {
       const result = await api.request(name, path!, { signal, view });
       const data = result.data as unknown as Resource<unknown>;

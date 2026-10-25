@@ -338,7 +338,7 @@ function Editor({
       await query.invalidateQueries({
         predicate: (q) =>
           q.queryKey[0] === scope &&
-          ["Sources", "BusStatus", "AvailableSources", "Binding"].includes(
+          ["Sources", "BusStatus", "AvailableSources", "Binding", "MonitoringTerms"].includes(
             String(q.queryKey[2]),
           ),
       });

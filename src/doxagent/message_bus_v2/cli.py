@@ -64,7 +64,9 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="DoxAgent Message Bus v2 worker")
     parser.add_argument(
         "command",
-        choices=("run-worker", "run-once", "status", "terms", "distribution", "migration", "collection"),
+        choices=(
+            "run-worker", "run-once", "status", "terms", "distribution", "migration", "collection"
+        ),
     )
     parser.add_argument("action", nargs="?")
     parser.add_argument("--file")
@@ -131,12 +133,17 @@ def main() -> None:
             output = {
                 "ticker": terms.ticker,
                 "revision": revision,
-                "languages": sorted(service.required_languages() | {"en"}),
+                "languages": sorted(service.required_languages(terms.ticker)),
+            }
+            subscribed = {
+                binding.source_id for binding in repository.list_bindings(ticker=terms.ticker)
+                if binding.enabled
             }
             output["search_plans"] = [
                 build_query_plan(source, terms, revision).model_dump(mode="json")
                 for source in repository.list_sources()
-                if source.acquisition_mode is AcquisitionMode.BY_SEARCH and source.enabled
+                if source.source_id in subscribed
+                and source.acquisition_mode is AcquisitionMode.BY_SEARCH and source.enabled
             ]
         elif args.action == "test" and args.ticker and args.article:
             from doxagent.message_bus_v2.relevance import regex_relevant

@@ -41,7 +41,14 @@ def _terms(
 
 def test_terms_revision_language_and_search_plans(tmp_path) -> None:
     repository = MessageBusV2Repository(tmp_path / "bus.sqlite3")
-    MessageBusV2Service(repository).bootstrap()
+    bus = MessageBusV2Service(repository)
+    bus.bootstrap()
+    bus.start_ticker("MU")
+    repository.save_source(repository.get_source("ctee_semiconductor").model_copy(
+        update={"enabled": True}
+    ))
+    for source_id in ("ctee_semiconductor", "etnews_rss"):
+        bus.configure_binding(ticker="MU", source_id=source_id, actor=UpdateActor.SYSTEM)
     service = MonitoringTermsService(repository)
     assert service.required_languages() == {"en", "zh-Hant", "ko"}
     with pytest.raises(ValueError, match="missing L1 language"):

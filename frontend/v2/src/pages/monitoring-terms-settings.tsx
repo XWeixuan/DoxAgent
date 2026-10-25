@@ -16,11 +16,11 @@ export default function MonitoringTermsSettings({ ticker }: { ticker: string }) 
   const { api, query, scope } = useRuntime();
   const draftKey = `monitoring-terms:${scope}:${ticker}`;
   const path = tickerPath(ticker) + "/message-bus/monitoring-terms";
-  const read = useRead("MonitoringTerms", path);
+  const read = useRead("MonitoringTerms", path, undefined, { refetchOnWindowFocus: "always" });
   const saved = unwrap<MonitoringTermsConfig>(read.data);
   const [baseline, setBaseline] = useState<MonitoringTermsConfig>();
   const [draft, setDraft] = useState<MonitoringTermsValue>();
-  const [language, setLanguage] = useState("en");
+  const [selectedLanguage, setLanguage] = useState("en");
   const [mode, setMode] = useState<"RULES" | "JSON">("RULES");
   const [jsonText, setJsonText] = useState("");
   const [jsonInvalid, setJsonInvalid] = useState(false);
@@ -71,7 +71,10 @@ export default function MonitoringTermsSettings({ ticker }: { ticker: string }) 
     });
     setIssues([]); setPreview([]); setError("");
   };
-  const languages = Array.from(new Set([...baseline.required_languages, ...Object.keys(draft.l2), ...draft.l1_concepts.flatMap((c) => Object.keys(c.expressions))])).sort();
+  // Binding metadata stays live even while the configuration draft retains its baseline.
+  const languages = (saved ?? baseline).required_languages;
+  const language = languages.includes(selectedLanguage) ? selectedLanguage : languages[0];
+  if (!languages.length) return <section className="terms-settings" aria-label={`${ticker} 统一监测词`}><header><h2>{ticker} 统一监测词</h2></header><Notice>当前没有已启用且使用统一监测词的消息源。</Notice></section>;
   const remoteChanges = saved && saved.revision !== baseline.revision ? [
     ["搜索监测词", "l1_concepts"], ["分发匹配规则", "l2"], ["Jev 定义", "definition"],
   ].filter(([, key]) => JSON.stringify(baseline.configuration?.[key as keyof MonitoringTermsValue]) !== JSON.stringify(saved.configuration?.[key as keyof MonitoringTermsValue])).map(([label]) => label) : [];
@@ -116,12 +119,10 @@ export default function MonitoringTermsSettings({ ticker }: { ticker: string }) 
     <section className="terms-section" id="monitoring-keywords">
       <h3>搜索监测词 · By Keyword</h3>
       <div className="terms-table-wrap"><table><thead><tr><th>概念</th>{languages.map((lang) => <th key={lang}>{lang}</th>)}<th>操作</th></tr></thead><tbody>
-        {draft.l1_concepts.map((concept, index) => <tr key={concept.concept_id}><td>{index + 1}</td>{languages.map((lang) => <td key={lang}><input aria-label={`概念 ${index + 1} ${lang}`} value={concept.expressions[lang] ?? ""} onChange={(event) => edit((next) => { next.l1_concepts[index].expressions[lang] = event.target.value; })} /></td>)}<td><Button variant="outline" disabled={draft.l1_concepts.length === 1} onClick={() => edit((next) => { next.l1_concepts.splice(index, 1); })}>删除</Button></td></tr>)}
+        {draft.l1_concepts.map((concept, index) => <tr key={concept.concept_id}><td>{index + 1}</td>{languages.map((lang) => <td key={lang}><input dir="auto" lang={lang} aria-label={`概念 ${index + 1} ${lang}`} value={concept.expressions[lang] ?? ""} onChange={(event) => edit((next) => { next.l1_concepts[index].expressions[lang] = event.target.value; })} /></td>)}<td><Button variant="outline" disabled={draft.l1_concepts.length === 1} onClick={() => edit((next) => { next.l1_concepts.splice(index, 1); })}>删除</Button></td></tr>)}
       </tbody></table></div>
       <div className="terms-actions"><Button variant="outline" disabled={draft.l1_concepts.length >= 3} onClick={() => edit((next) => { next.l1_concepts.push({ concept_id: crypto.randomUUID(), expressions: Object.fromEntries(languages.map((lang) => [lang, ""])) }); })}>新增概念</Button>
-      <input aria-label="新增语言代码" placeholder="语言代码，如 ko" id="new-terms-language" />
-      <Button variant="outline" onClick={() => { const input = document.getElementById("new-terms-language") as HTMLInputElement; const lang = input.value.trim(); if (!lang || languages.includes(lang)) return; edit((next) => { next.l2[lang] = { groups: [] }; next.l1_concepts.forEach((concept) => { concept.expressions[lang] = ""; }); }); input.value = ""; }}>添加语言</Button></div>
-      {languages.filter((lang) => !baseline.required_languages.includes(lang)).map((lang) => <Button key={lang} variant="outline" onClick={() => edit((next) => { delete next.l2[lang]; next.l1_concepts.forEach((concept) => { delete concept.expressions[lang]; }); if (language === lang) setLanguage("en"); })}>移除 {lang}</Button>)}
+      </div>
     </section>
     <section className="terms-section" id="monitoring-distribution">
       <h3>分发匹配规则 · By Distribution</h3>
@@ -134,7 +135,7 @@ export default function MonitoringTermsSettings({ ticker }: { ticker: string }) 
         {rule.map((group, index) => <details key={index} className="terms-rule-group"><summary>{group.id} · {ruleSummary(group)}</summary><div className="terms-actions"><label>组 ID <input value={group.id} onChange={(event) => edit((next) => { next.l2[language].groups[index].id = event.target.value; })} /></label><Button variant="outline" onClick={() => edit((next) => { next.l2[language].groups.splice(index, 1); })}>删除组</Button></div>
           {buckets.map(([bucket, title]) => <div key={bucket} className="terms-rule-bucket"><h4>{title}</h4>{group[bucket].map((term, number) => <div className="terms-rule-row" key={number}>
             <select aria-label="条件类型" value={term.regex === null ? "literal" : "regex"} onChange={(event) => setTerm(index, bucket, number, (value) => { const text = value.literal ?? value.regex ?? ""; value.literal = event.target.value === "literal" ? text : null; value.regex = event.target.value === "regex" ? text : null; })}><option value="literal">文本</option><option value="regex">正则</option></select>
-            <input aria-label={`${title} 条件 ${number + 1}`} value={term.literal ?? term.regex ?? ""} onChange={(event) => setTerm(index, bucket, number, (value) => { if (value.regex === null) value.literal = event.target.value; else value.regex = event.target.value; })} />
+            <input dir="auto" lang={language} aria-label={`${title} 条件 ${number + 1}`} value={term.literal ?? term.regex ?? ""} onChange={(event) => setTerm(index, bucket, number, (value) => { if (value.regex === null) value.literal = event.target.value; else value.regex = event.target.value; })} />
             <select aria-label="匹配范围" value={term.field} onChange={(event) => setTerm(index, bucket, number, (value) => { value.field = event.target.value as MonitoringL2Term["field"]; })}>{fields.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
             <label><input type="checkbox" checked={term.case_sensitive} onChange={(event) => setTerm(index, bucket, number, (value) => { value.case_sensitive = event.target.checked; })} />区分大小写</label>
             <label title={term.regex !== null ? "仅对文本条件生效" : undefined}><input type="checkbox" disabled={term.regex !== null} checked={term.whole_word} onChange={(event) => setTerm(index, bucket, number, (value) => { value.whole_word = event.target.checked; })} />整词</label>
@@ -146,12 +147,12 @@ export default function MonitoringTermsSettings({ ticker }: { ticker: string }) 
     </section>
     <section className="terms-section" id="monitoring-jev"><h3>Jev 相关性定义 · By Distribution</h3>
       <div className="terms-jev"><label>相关条件<textarea value={draft.definition.relevant} onChange={(event) => edit((next) => { next.definition.relevant = event.target.value; })} /></label><label>不相关条件<textarea value={draft.definition.irrelevant} onChange={(event) => edit((next) => { next.definition.irrelevant = event.target.value; })} /></label></div>
-      <p className="terms-note">{baseline.consumers.filter((c) => c.acquisition_mode === "by_distribution").map((c) => `${c.name}：源配置${c.jev_source_enabled ? "已开启" : "未开启"}`).join("；") || "尚无分发消息源"}。实际运行还取决于 Worker 配置。</p>
+      <p className="terms-note">{(saved ?? baseline).consumers.filter((c) => c.acquisition_mode === "by_distribution").map((c) => `${c.name}：源配置${c.jev_source_enabled ? "已开启" : "未开启"}`).join("；") || "尚无分发消息源"}。实际运行还取决于 Worker 配置。</p>
     </section>
     {issues.length > 0 && <Notice danger><ul>{issues.map((issue, index) => <li key={index}>{issue.path}：{issue.message}</li>)}</ul></Notice>}
     {error && <Notice danger>{error}</Notice>}
     {saved && saved.revision !== baseline.revision && <div className="terms-actions"><Button variant="outline" onClick={() => { setBaseline(saved); setDraft(structuredClone(saved.configuration ?? blankTerms(saved.required_languages))); setError(""); retry.current = undefined; }}>读取最新版本</Button><Button variant="outline" onClick={() => { setBaseline(saved); retry.current = undefined; setError(""); }}>基于最新版本应用我的草稿</Button></div>}
-    <div className="terms-actions"><Button variant="outline" disabled={busy || jsonInvalid} onClick={() => void check()}>检查并预览</Button><Button disabled={!dirty || busy || jsonInvalid} onClick={() => void apply()}>{busy ? "处理中" : "应用更新"}</Button><Button variant="outline" disabled={!dirty || busy} onClick={() => { sessionStorage.removeItem(draftKey); setDraft(structuredClone(baseline.configuration ?? blankTerms(baseline.required_languages))); setJsonText(JSON.stringify(baseline.configuration?.l2 ?? {}, null, 2)); setJsonInvalid(false); setError(""); setIssues([]); retry.current = undefined; }}>放弃修改</Button></div>
+    <div className="terms-actions"><Button variant="outline" disabled={busy || jsonInvalid} onClick={() => void check()}>检查并预览</Button><Button disabled={!dirty || busy || jsonInvalid} onClick={() => void apply()}>{busy ? "处理中" : "应用更新"}</Button><Button variant="outline" disabled={!dirty || busy} onClick={() => { sessionStorage.removeItem(draftKey); setDraft(structuredClone(baseline.configuration ?? blankTerms(languages))); setJsonText(JSON.stringify(baseline.configuration?.l2 ?? {}, null, 2)); setJsonInvalid(false); setError(""); setIssues([]); retry.current = undefined; }}>放弃修改</Button></div>
     {preview.length > 0 && <div className="terms-previews"><h4>实际搜索语句预览</h4>{preview.map((c) => <div key={c.binding_id}><strong>{c.name} · {c.content_language ?? "en"} · {c.search_policy_mode ?? "separate"}{!c.binding_enabled || !c.source_enabled ? " · 已停用" : ""}</strong>{c.queries.map((q) => <code key={q.query_key}>{q.query}</code>)}{c.preview_issue && <span>{c.preview_issue}</span>}</div>)}</div>}
   </section>;
 }

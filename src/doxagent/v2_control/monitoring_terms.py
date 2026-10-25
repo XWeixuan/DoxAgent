@@ -11,6 +11,7 @@ from doxagent.api_v2.errors import ApiFailure
 from doxagent.message_bus_v2.monitoring_terms import (
     MonitoringTermsService,
     TickerMonitoringTerms,
+    language_requirements,
     validate_terms,
 )
 from doxagent.message_bus_v2.schema import AcquisitionMode
@@ -49,23 +50,8 @@ class MonitoringTermsControl(Bindings):
     def _snapshot(self, db, ticker: str, configuration_override=None):
         repo = TransactionRepository(self.path, db)
         source_map = {source.source_id: source for source in repo.list_sources()}
-        subscribed = {
-            binding.source_id
-            for binding in repo.list_bindings(ticker=ticker)
-            if binding.enabled
-        }
-        requirements: dict[str, list[str]] = {"en": []}
-        for source in source_map.values():
-            if (
-                source.acquisition_mode
-                in {AcquisitionMode.BY_SEARCH, AcquisitionMode.BY_DISTRIBUTION}
-                and source.content_language
-                and (
-                    source.adapter_ref != "builtin:defense_public@1"
-                    or source.source_id in subscribed
-                )
-            ):
-                requirements.setdefault(source.content_language, []).append(source.source_id)
+        bindings = repo.list_bindings(ticker=ticker)
+        requirements = language_requirements(source_map.values(), bindings)
         head = db.execute(
             "SELECT current_revision,updated_at FROM ticker_monitoring_terms WHERE ticker=?",
             (ticker,),
@@ -98,7 +84,7 @@ class MonitoringTermsControl(Bindings):
             except ValidationError:
                 pass  # A historical invalid definition remains readable and editable.
         consumers = []
-        for binding in repo.list_bindings(ticker=ticker):
+        for binding in bindings:
             source = source_map.get(binding.source_id)
             if not source or source.acquisition_mode not in {
                 AcquisitionMode.BY_SEARCH,
