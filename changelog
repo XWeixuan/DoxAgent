@@ -2188,4 +2188,4 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 
 2026-10-26 Message Bus约三小时生产实测归档：多轮代码修复已同步origin/main并组件发布；临时采集revision4于05:11:12自动到期。历史接纳积压由约1.33万轮/32.4万原始候选降至正常轮次，并在到期后核验为空；真实BE新消息采集至发布37.18秒、BODY4.08秒。报告明确全源新鲜周期70.6%、Yahoo尾部/访问认证/传输证据缺口及正文80%尚未验收；4个已发布URL变体正文cohort时间经证据核验并审计修正，不修改成功状态或正文。附精简收据、固定窗口测量脚本、旧claim恢复审计与排查报告。
 
-2026-10-26 科技/量子/硬件源接入：新增26个按栏目独立调度的RSS/HTTP分发源，同站共用2并发/0.5秒间隔与HTTP池，条件请求、变化检测、失败退避及跨轮checkpoint持久化；无新Chrome或身份。为6个指定ticker准备57个订阅，IONQ的5个源仅预留；SNOW缺失词表使用专用种子，保留已有词表。另接The Fly官方公开ticker JSON，纽约时区、稳定文章ID、原生完整正文复用及只读翻页；付费预览明确PARTIAL且不发布，不做无效浏览器重试。生产网络常规26/26入口及26/26正文样本通过；The Fly九ticker采集成功，440条样本85条公开FULL、355条权限预览。113项相关回归及同站物理并发专项通过，发布与订阅验收见docs/software-quantum-hardware-sources-20261026.md。
+2026-10-26 科技/量子/硬件源接入：新增26个按栏目独立调度的RSS/HTTP分发源，同站共用2并发/0.5秒间隔与HTTP池，条件请求、变化检测、失败退避及跨轮checkpoint持久化；无新Chrome或身份。为6个指定ticker准备57个订阅，IONQ的5个源仅预留；SNOW缺失词表使用专用种子，保留已有词表。另接The Fly官方公开ticker JSON，纽约时区、稳定文章ID、原生完整正文复用及只读翻页；付费预览明确PARTIAL且不发布，不做无效浏览器重试。生产网络常规26/26入口及26/26正文样本通过；The Fly九ticker采集成功，440条样本75条公开FULL、365条权限预览。113项相关回归及同站物理并发专项通过，发布与订阅验收见docs/software-quantum-hardware-sources-20261026.md。
