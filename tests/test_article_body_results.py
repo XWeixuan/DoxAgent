@@ -136,3 +136,40 @@ def test_verified_redirect_alias_reuses_large_body_without_crossing_paid_scope(t
     other, kind = results.schedule(original, "source_b")
     assert other["fetch_key"] != row["fetch_key"] and kind == "new_article"
     assert results.schedule(original, "source_a")[0]["fetch_key"] == row["fetch_key"]
+
+
+def test_published_identity_links_syndicated_url_without_resetting_recheck_or_new_cohort(tmp_path):
+    results = ArticleBodyResults(MessageBusV2Repository(tmp_path / 'bus.db'))
+    original, now = message(), datetime.now(UTC)
+    row, _ = results.schedule(original, 'source', now=now)
+    key = row['fetch_key']
+    assert results.acquire(key, 'original', now=now)
+    results.finish(key, 'original', original, SimpleNamespace(succeeded=True, content='Full verified body.',
+        diagnostics={'outcome':'FULL'},final_url=original.url), now=now)
+    proof = SimpleNamespace(metadata={'article_body_result_key':key},first_seen_at=now,raw_message_id='published')
+    syndicated = original.model_copy(update={'url':'https://syndication.test/articles/different-path'})
+    linked, kind = results.schedule(syndicated,'source',now=now+timedelta(minutes=10),known_article=proof)
+    assert linked['fetch_key'] == key and kind == 'reuse'
+    due, kind = results.schedule(syndicated,'source',now=now+timedelta(minutes=31),known_article=proof)
+    assert due['fetch_key'] == key and kind == 'recheck'
+    assert due['first_observed_at'] == now.isoformat()
+    changed = syndicated.model_copy(update={'summary':'Company cancels its investment.'})
+    updated, kind = results.schedule(changed,'source',now=now+timedelta(minutes=31),known_article=proof)
+    assert kind == 'content_update' and updated['check_seq'] == due['check_seq']+1
+
+
+def test_known_publication_cannot_cross_scope_or_language_and_is_not_new_article(tmp_path):
+    results = ArticleBodyResults(MessageBusV2Repository(tmp_path / 'bus.db'))
+    original, now = message(), datetime.now(UTC)
+    row, _ = results.schedule(original,'source',now=now)
+    key = row['fetch_key']; assert results.acquire(key,'original',now=now)
+    results.finish(key,'original',original,SimpleNamespace(succeeded=True,content='Verified body.',
+        diagnostics={'outcome':'FULL'},final_url=original.url),now=now)
+    proof = SimpleNamespace(metadata={'article_body_result_key':key},first_seen_at=now-timedelta(hours=1),raw_message_id='old')
+    for metadata in [{'body_access_scope':'account:other'}, {'language':'ko'}]:
+        changed=original.model_copy(update={'url':'https://syndication.test/articles/other',
+            'metadata':{**original.metadata,**metadata}})
+        actual,kind=results.schedule(changed,'source',now=now,known_article=proof)
+        assert actual['fetch_key'] != key and not actual.get('content')
+        assert kind == 'recheck' and actual['first_observed_at'] == proof.first_seen_at.isoformat()
+        assert actual['prior_publication_raw_id'] == 'old'

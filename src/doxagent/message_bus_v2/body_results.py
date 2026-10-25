@@ -58,9 +58,10 @@ class ArticleBodyResults:
     def __init__(self, repository):
         self.repository = repository
 
-    def observe(self, message, source_id: str, *, now: datetime | None = None) -> dict:
+    def observe(self, message, source_id: str, *, now: datetime | None = None, known_article=None) -> dict:
         now = now or utc_now()
         key, hint = article_key(message, source_id), update_hint(message)
+        language = message.metadata.get("language") or message.metadata.get("identity_evidence", {}).get("language") or ""
         with self.repository.transaction() as db:
             row = db.execute(
                 "SELECT data_json FROM article_body_results WHERE fetch_key=?", (key,)
@@ -70,6 +71,17 @@ class ArticleBodyResults:
                 row = db.execute(
                     "SELECT data_json FROM article_body_results WHERE fetch_key=?", (key,)
                 ).fetchone()
+            # The caller has proved ticker-local published identity/context.
+            # Its resolved publisher URL may differ from today's syndicated URL.
+            # Reuse that durable FULL identity instead of downloading a second
+            # copy, while keeping the existing scope, hint and recheck gates.
+            prior_key = known_article.metadata.get("article_body_result_key") if known_article else None
+            if prior_key and prior_key != key and (not row or not json.loads(row[0]).get("content")):
+                previous = db.execute("SELECT data_json FROM article_body_results WHERE fetch_key=?", (prior_key,)).fetchone()
+                prior = json.loads(previous[0]) if previous else None
+                if (prior and prior.get("content") and prior.get("outcome") in {"FULL", "SHORT_FULL"}
+                        and self.compatible(prior, message, source_id) and prior.get("language", "") == language):
+                    row = previous
             if not row and (
                 url := dedup.article_url(
                     message.url,
@@ -88,9 +100,16 @@ class ArticleBodyResults:
                 ).fetchone()
             if row:
                 result = json.loads(row[0])
+                changed = False
+                if known_article and known_article.first_seen_at.isoformat() < result["first_observed_at"]:
+                    result["first_observed_at"] = known_article.first_seen_at.isoformat()
+                    result["prior_publication_raw_id"] = known_article.raw_message_id
+                    changed = True
                 # Do not rewrite on every list observation or manufacture CDC traffic.
                 if result.get("pending_hint") != hint:
                     result["pending_hint"] = hint
+                    changed = True
+                if changed:
                     self._save(db, result)
                 return result
             result = {
@@ -114,6 +133,9 @@ class ArticleBodyResults:
                 "check_seq": 0,
                 "next_check_at": now.isoformat(),
             }
+            if known_article:
+                result["first_observed_at"] = min(result["first_observed_at"], known_article.first_seen_at.isoformat())
+                result["prior_publication_raw_id"] = known_article.raw_message_id
             self._save(db, result)
             return result
 
@@ -209,11 +231,11 @@ class ArticleBodyResults:
             and result.get("next_check_at", "") > (now or utc_now()).isoformat()
         )
 
-    def schedule(self, message, source_id: str, *, now=None) -> tuple[dict, str]:
+    def schedule(self, message, source_id: str, *, now=None, known_article=None) -> tuple[dict, str]:
         """One sequence per due content check, not one per polling observation."""
         now = now or utc_now()
         with self.repository.atomic_intake() as db:
-            result = self.observe(message, source_id, now=now)
+            result = self.observe(message, source_id, now=now, known_article=known_article)
             hint = update_hint(message)
             hints = dict(result.get("verified_hints", {}))
             if (
@@ -241,6 +263,8 @@ class ArticleBodyResults:
                 else "content_update"
                 if result.get("content")
                 else "new_article"
+                if not known_article
+                else "recheck"
             )
 
     def acquire(self, key: str, execution_id: str, *, now=None) -> bool:

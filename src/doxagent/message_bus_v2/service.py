@@ -1078,7 +1078,9 @@ class MessageBusV2Service:
             from .body_results import ArticleBodyResults
 
             body_results = ArticleBodyResults(self.repository)
-            body_result, work_kind = body_results.schedule(clean, source.source_id, now=utc_now())
+            body_result, work_kind = body_results.schedule(
+                clean, source.source_id, now=utc_now(), known_article=known_article
+            )
             clean = clean.model_copy(update={"metadata": {
                 **clean.metadata, "article_body_result_key": body_result["fetch_key"],
             }})
