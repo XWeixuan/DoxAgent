@@ -52,7 +52,7 @@ def cadence(runs, captures, since, until):
             last = floor(((end - epoch).total_seconds() - 0.000001) / period)
             expected += max(0, last - first + 1)
             active.append((epoch, period, start, end, instant(row["dispatch_at"])))
-        seen, started, fresh = set(), set(), set()
+        seen, started, fresh, late_recovered = set(), set(), set(), set()
         terminal, inflight = set(), set()
         dispatch_late, start_late = [], []
         statuses = defaultdict(int)
@@ -84,35 +84,37 @@ def cadence(runs, captures, since, until):
             if since <= instant(row["dispatch_at"]) <= until:
                 statuses[row["status"]] += 1
             due = instant(row["due_at"])
-            key = slot(max(due, instant(row["dispatch_at"])))
+            key = slot(due)
             if key:
                 seen.add(key)
                 (inflight if row["status"] == "DISPATCHED" else terminal).add(key)
             dispatch_late.append(max(0, (instant(row["dispatch_at"]) - due).total_seconds()))
-            requests = row.get("requests", [])
+            requests = [r for r in row.get("requests", []) if r.get("role", "listing") == "listing"]
             times = [
                 instant(r["request_started_at"]) for r in requests if r.get("request_started_at")
             ]
             if times:
                 start = min(times)
                 start_late.append(max(0, (start - due).total_seconds()))
-                current = slot(max(start, due))
+                current = slot(due)
                 if current and generation_matches(start, row):
                     started.add(current)
         times = []
         for row in data["captures"]:
             at = instant(row["observed_at"])
             run = by_run.get(row["run_id"])
-            proven = row.get("request_started_at") or (run and run.get("requests"))
+            listing_requests = [r for r in (run.get('requests', []) if run else [])
+                                if r.get('role', 'listing') == 'listing' and r.get('request_started_at')]
+            proven = row.get("request_started_at") or listing_requests
             valid = not run or run['status'] == 'CAPTURED'
             if at <= until and proven and valid and generation_matches(at, row):
                 times.append(at)
-            if run and valid and run.get("requests"):
+            if run and valid and listing_requests:
                 due = instant(run["due_at"])
                 starts = [
                     instant(r["request_started_at"])
                     for r in run["requests"]
-                    if r.get("request_started_at")
+                    if r.get("request_started_at") and r.get("role", "listing") == "listing"
                 ]
                 requested = (
                     instant(row["request_started_at"])
@@ -121,15 +123,14 @@ def cadence(runs, captures, since, until):
                     if starts
                     else due
                 )
-                key = slot(max(due, requested))
+                key = slot(due)
                 if (
                     key
                     and generation_matches(requested, run)
-                    and max(due, requested)
-                    <= at
-                    <= requested + timedelta(seconds=run["interval_seconds"])
+                    and due <= requested < due + timedelta(seconds=run["interval_seconds"])
+                    and requested <= at <= requested + timedelta(seconds=run["interval_seconds"])
                 ):
-                    fresh.add(key)
+                    (fresh if at < due + timedelta(seconds=run['interval_seconds']) else late_recovered).add(key)
         times = sorted(set(times))
         prior = [at for at in times if at < since]
         in_window = [at for at in times if since <= at <= until]
@@ -172,6 +173,7 @@ def cadence(runs, captures, since, until):
                 "dispatched_cycles": len(seen),
                 "request_cycles": len(started),
                 "fresh_cycles": len(fresh),
+                "late_recovered_cycles": len(late_recovered - fresh),
                 "pending_cycles": len(pending),
                 "settled_cycles": settled,
                 "missing_cycles": max(0, expected - len(seen) - len(pending - seen)),

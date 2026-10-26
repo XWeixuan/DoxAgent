@@ -274,6 +274,24 @@ async def test_identical_queries_coalesce_but_consumer_ids_stay_independent(setu
     )
 
 
+async def test_next_due_boundary_cannot_reuse_previous_cycle_capture(setup):
+    _, service, _, scope = setup
+    async def execute(request):
+        return service._result(request, service._resolve_request(request), AccessDisposition.SUCCESS,
+                               reason='ok', started=time.monotonic())
+    service._execute_idempotent = AsyncMock(side_effect=execute)
+    due = utc_now()
+    request = AccessRequest(operation_id='cycle-one', url=base.URL, purpose='CRAWLER', mode='BROWSER',
+        origin_scope_id=scope.scope_id, recipe_ref='builtin:investing_ticker@1',
+        recipe_parameters={'ticker':'RKLB','_poll_due_at':due.isoformat()})
+    first = await service.execute(request)
+    same = await service.execute(request.model_copy(update={'operation_id':'same-cycle','request_id':'same'}))
+    later = await service.execute(request.model_copy(update={'operation_id':'next-cycle','request_id':'next',
+        'recipe_parameters':{**request.recipe_parameters,'_poll_due_at':(due+timedelta(seconds=30)).isoformat()}}))
+    assert first.capture_id == same.capture_id and same.served_from_shared_capture
+    assert not later.served_from_shared_capture and service._execute_idempotent.await_count == 2
+
+
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "visible,readable,css_visibility,expected",

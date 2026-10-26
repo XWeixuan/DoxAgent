@@ -366,8 +366,101 @@ class IndustryListingAdapter:
     def __init__(self, browser: Any, variant: str) -> None:
         self.browser = browser
         self.variant = variant
+        self._public_session = None
+        self._public_slots = asyncio.Semaphore(4)
+        self._public_retry_at = 0.0
+
+    async def close(self):
+        if self._public_session is not None:
+            await self._public_session.close()
+
+    async def _barrons_http(self, context):
+        from curl_cffi.requests import AsyncSession
+        from .barrons_sources import render_news_feeds
+        from .poll_trace import request_started
+        from .schema import utc_now
+
+        channel = {"HEAD": "Barrons", "OTHER_HEAD": "BarronsDowJonesNetwork"}.get(
+            context.acquisition_unit
+        )
+        if channel is None:
+            return None
+        if self._public_session is None:
+            self._public_session = AsyncSession(impersonate="chrome", trust_env=False)
+        url = (
+            "https://www.barrons.com/market-data/api/news?channel="
+            + channel
+            + "&chartingSymbol=stock%2F%2F%2F"
+            + quote(context.ticker.lower(), safe="")
+            + "&pageNumber=0&count=40"
+        )
+        async with self._public_slots, context.request_permit():
+            event = request_started("GET", url, "curl_cffi")
+            response = await self._public_session.get(
+                url,
+                proxy=HTTP_EGRESSES["us-standard-5"],
+                timeout=8,
+                allow_redirects=False,
+                headers={"Cache-Control": "no-cache"},
+            )
+            received = utc_now()
+            if event is not None:
+                event.update(
+                    response_received_at=received.isoformat(),
+                    status_code=response.status_code,
+                    validators={
+                        k: response.headers[k]
+                        for k in ("date", "age", "etag", "last-modified")
+                        if k in response.headers
+                    },
+                )
+        html = render_news_feeds(
+            [{"status": response.status_code, "text": response.text}], channels=[channel]
+        )
+        messages = parse_barrons_ticker_listing(
+            html, ticker=context.ticker, now=context.requested_at
+        )
+        return PollResult(
+            messages=messages,
+            window_coverage="PARTIAL" if context.window_start else "COMPLETE",
+            acquisition_metadata={
+                "listing_variant": "barrons",
+                "listing_transport": "public_json",
+                "channel": channel,
+                "listing_received_at": received.isoformat(),
+            },
+        )
 
     async def _get(self, context: PollContext | SharedPollContext, url: str) -> PollResult:
+        deadline = time.monotonic() + 45
+        if self.variant == 'trendforce_press' and time.monotonic() >= self._public_retry_at:
+            try:
+                from curl_cffi.requests import AsyncSession
+                from .poll_trace import request_started
+                from .schema import utc_now
+                if self._public_session is None:
+                    self._public_session = AsyncSession(impersonate='chrome', trust_env=False)
+                async with self._public_slots, context.request_permit():
+                    event = request_started('GET', url, 'curl_cffi')
+                    response = await self._public_session.get(url, proxy=HTTP_EGRESSES['server-direct'],timeout=8)
+                    if event is not None:
+                        event.update(response_received_at=utc_now().isoformat(),status_code=response.status_code)
+                if response.status_code != 200 or urlparse(response.url).hostname != urlparse(url).hostname:
+                    raise RuntimeError('trendforce_public_listing_refused')
+                messages = parse_trendforce_listing(response.text,press=True,now=context.requested_at)
+                return PollResult(messages=messages,window_coverage='PARTIAL' if context.window_start else 'COMPLETE',
+                    acquisition_metadata={'listing_url':url,'listing_variant':self.variant,'listing_transport':'public_http'})
+            except Exception:
+                self._public_retry_at = time.monotonic()+60
+        if self.variant == "barrons" and isinstance(context, PollContext):
+            try:
+                result = await self._barrons_http(context) if time.monotonic() >= self._public_retry_at else None
+                if result is not None:
+                    self._public_retry_at = 0.0
+                    return result
+            except Exception:
+                # One existing identity-browser fallback; no exit rotation or retry cascade.
+                self._public_retry_at = time.monotonic() + 60
         if self.browser is None:
             raise RuntimeError("publisher listing requires Site Access browser")
         try:
@@ -384,7 +477,7 @@ class IndustryListingAdapter:
                 status, final_url, _headers, html = await self.browser.get(
                     url,
                     operation_id=f"{run_id}:{self.variant}",
-                    remaining_budget_ms=45_000,
+                    remaining_budget_ms=max(1, int((deadline - time.monotonic()) * 1000)),
                     **recipe_options,
                 )
         except SiteAccessError as exc:
@@ -559,6 +652,12 @@ class SharedFeedAdapter:
         self.client = client
         self.publisher = publisher
         self.browser = browser
+        self._route_clients = {}
+
+    async def close(self):
+        for client in self._route_clients.values():
+            await client.aclose()
+        self._route_clients.clear()
 
     async def poll(self, context: PollContext) -> PollResult:
         raise RuntimeError("shared publisher feed requires poll_shared")
@@ -590,10 +689,14 @@ class SharedFeedAdapter:
                 async def send(route_proxy):
                     timeout = httpx.Timeout(12, connect=5, pool=5)
                     if route_proxy:
-                        async with httpx.AsyncClient(
-                            proxy=str(route_proxy), timeout=timeout
-                        ) as client:
-                            return await client.get(source.entry_url)
+                        client = self._route_clients.get(str(route_proxy))
+                        if client is None:
+                            client = httpx.AsyncClient(proxy=str(route_proxy), timeout=timeout,
+                                limits=httpx.Limits(max_connections=4, max_keepalive_connections=4))
+                            from .poll_trace import install
+                            install(client)
+                            self._route_clients[str(route_proxy)] = client
+                        return await client.get(source.entry_url)
                     return await self.client.get(source.entry_url, timeout=timeout)
 
                 transport_errors = (

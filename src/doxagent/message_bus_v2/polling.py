@@ -5,6 +5,8 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import threading
+from collections import OrderedDict
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 
@@ -73,6 +75,9 @@ class PollJournal:
     def __init__(self, repository):
         self.repo = repository
         self._schedule_cache = None
+        self._decoded = OrderedDict()
+        self._decoded_bytes = 0
+        self._decoded_lock = threading.Lock()
         with repository.transaction() as db:
             db.executescript("""
                 CREATE TABLE IF NOT EXISTS poll_runs (
@@ -114,6 +119,13 @@ class PollJournal:
                 );
                 CREATE INDEX IF NOT EXISTS poll_capture_inputs_match
                     ON poll_capture_inputs(binding_id,unit,input_hash);
+                CREATE TABLE IF NOT EXISTS google_url_resolutions (
+                    wrapper TEXT PRIMARY KEY, final_url TEXT NOT NULL, resolved_at TEXT NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS poll_intake_reuse (
+                    input_hash TEXT PRIMARY KEY, capture_id TEXT NOT NULL, valid_until TEXT NOT NULL
+                );
+                CREATE INDEX IF NOT EXISTS poll_intake_reuse_expiry ON poll_intake_reuse(valid_until);
             """)
             if "targets_json" not in {r[1] for r in db.execute("PRAGMA table_info(poll_captures)")}:
                 db.execute(
@@ -126,6 +138,20 @@ class PollJournal:
             for name in ("source_version", "binding_version"):
                 if name not in {r[1] for r in db.execute("PRAGMA table_info(poll_captures)")}:
                     db.execute(f"ALTER TABLE poll_captures ADD COLUMN {name} INTEGER")
+
+    def google_url(self, wrapper, final_url=None):
+        if final_url is not None:
+            with self.repo.transaction() as db:
+                db.execute(
+                    "INSERT OR REPLACE INTO google_url_resolutions VALUES(?,?,?)",
+                    (wrapper, final_url, utc_now().isoformat()),
+                )
+            return final_url
+        with self.repo._connect() as db:
+            row = db.execute(
+                "SELECT final_url FROM google_url_resolutions WHERE wrapper=?", (wrapper,)
+            ).fetchone()
+        return row[0] if row else None
 
     def schedules(self, entries, now, *, owner="bus"):
         """Config/calendar transitions, not one write per overdue clock tick."""
@@ -204,7 +230,11 @@ class PollJournal:
         self._schedule_cache = cache
 
     def start(self, run_id, source, binding, due_at, dispatch_at, unit="HEAD"):
-        data = {"requests": [], "captures": [], "stages_ms": {}}
+        data = {"requests": [], "captures": [], "stages_ms": {},
+                "required": not unit.startswith('TAIL:'),
+                "unit_role": 'PUBLICATION_TIME_VERIFICATION' if unit == 'TAIL:YAHOO_TIME' else
+                             'WINDOW_COVERAGE' if unit.startswith('TAIL:') else 'LISTING',
+                "transport_plan": source.adapter_ref, "endpoint_key": unit}
         with self.repo.transaction() as db:
             db.execute(
                 "INSERT INTO poll_runs VALUES(?,?,?,?,?,?,?,?,?,?,? ,NULL,NULL,?)",
@@ -275,6 +305,8 @@ class PollJournal:
                 "checkpoint": checkpoint,
                 "distribution": distribution,
             }
+            if not distribution:
+                value["intake_order"] = self.candidate_order(binding, result.messages)
             # File compression/hash/fsync happen before taking the business writer.
             payload = self.repo.content.encode(value)
             input_key = capture_input_key(value, unit)
@@ -284,8 +316,8 @@ class PollJournal:
         request_at = next(
             (
                 r.get("request_started_at")
-                for r in reversed(requests)
-                if r.get("request_started_at")
+                for r in requests
+                if r.get("request_started_at") and r.get("role", "listing") == "listing"
             ),
             None,
         )
@@ -310,6 +342,24 @@ class PollJournal:
             binding_id=capture.binding.binding_id, poll_run_id=capture.run_id
         )
         with self.repo.atomic_intake() as db:
+            reusable = None
+            if capture.input_key and not capture.distribution:
+                reusable = db.execute(
+                    "SELECT r.capture_id FROM poll_intake_reuse r "
+                    "JOIN poll_captures p ON p.capture_id=r.capture_id WHERE r.input_hash=? "
+                    "AND r.valid_until>? AND p.status='COMPLETED'",
+                    (capture.input_key, now),
+                ).fetchone()
+                if reusable:
+                    due = db.execute("SELECT 1 FROM message_observations o JOIN article_body_results b "
+                        "ON b.fetch_key=json_extract(o.data_json,'$.metadata.article_body_result_key') "
+                        "WHERE o.ticker=? AND o.source_id=? AND b.next_check_at<=? LIMIT 1",
+                        (capture.binding.ticker, capture.binding.source_id, now)).fetchone()
+                    if due:
+                        reusable = None
+                if reusable:
+                    receipt.collected_count = capture.count
+                    receipt.duplicate_count = capture.count
             if capture.distribution:
                 info = capture.distribution
                 db.execute(
@@ -340,13 +390,15 @@ class PollJournal:
                     capture.unit,
                     capture.observed_at.isoformat(),
                     now,
-                    "COMPLETED" if not capture.count and not capture.distribution else "PENDING",
+                    "COMPLETED"
+                    if reusable or (not capture.count and not capture.distribution)
+                    else "PENDING",
                     capture.count,
                     now,
                     now,
                     capture.payload,
                     receipt.model_dump_json(),
-                    now if not capture.count and not capture.distribution else None,
+                    now if reusable or (not capture.count and not capture.distribution) else None,
                     json.dumps(
                         capture.distribution.get("targets", []) if capture.distribution else []
                     ),
@@ -375,6 +427,21 @@ class PollJournal:
                     self.repo.save_poll_unit_state(state.model_copy(update=changed), capture.unit)
             db.execute("INSERT OR IGNORE INTO poll_capture_inputs VALUES(?,?,?,?,NULL)",
                 (capture.capture_id,capture.binding.binding_id,capture.unit,capture.input_key))
+            if reusable:
+                db.execute(
+                    "UPDATE poll_captures SET intake_position=message_count,first_intake_at=? WHERE capture_id=?",
+                    (now, capture.capture_id),
+                )
+                db.execute(
+                    "UPDATE poll_capture_inputs SET reused_from=? WHERE capture_id=?",
+                    (reusable[0], capture.capture_id),
+                )
+                state = self.repo.get_poll_state(capture.binding)
+                self.repo.save_poll_state(
+                    state.model_copy(
+                        update={"collected_count": state.collected_count + capture.count}
+                    )
+                )
         return capture.capture_id
 
     def claim(self, capture_id=None):
@@ -398,37 +465,93 @@ class PollJournal:
             )
             return row[0], token
 
+    def candidate_order(self, binding, messages):
+        """Put absent/changed identities first; keep every original array offset durable."""
+        from .deduplication import stable_fingerprint
+
+        keys = [identity_key_for(binding.source_id, m) for m in messages]
+        known = {}
+        with self.repo._connect() as db:
+            for offset in range(0, len(keys), 400):
+                batch = keys[offset : offset + 400]
+                if not batch:
+                    continue
+                rows = db.execute(
+                    "SELECT identity_key,input_fingerprint FROM message_observations "
+                    "WHERE ticker=? AND source_id=? AND identity_key IN ("
+                    + ",".join("?" for _ in batch)
+                    + ")",
+                    (binding.ticker, binding.source_id, *batch),
+                ).fetchall()
+                known.update((r[0], r[1]) for r in rows)
+        return sorted(
+            range(len(messages)),
+            key=lambda i: keys[i] in known and known[keys[i]] == stable_fingerprint(messages[i]),
+        )
+
     def load(self, capture_id):
         with self.repo._connect() as db:
             row = db.execute(
-                "SELECT p.*,k.input_hash FROM poll_captures p LEFT JOIN poll_capture_inputs k "
-                "ON k.capture_id=p.capture_id WHERE p.capture_id=?", (capture_id,)
+                "SELECT p.capture_id,p.run_id,p.binding_id,p.source_id,p.ticker,p.unit,p.observed_at,"
+                "p.committed_at,p.status,p.intake_position,p.message_count,p.receipt_json,"
+                "p.payload_json AS encoded_payload,k.input_hash FROM poll_captures p LEFT JOIN poll_capture_inputs k "
+                "ON k.capture_id=p.capture_id WHERE p.capture_id=?",
+                (capture_id,),
             ).fetchone()
-        return dict(row) if row else None
+        if not row:
+            return None
+        result = dict(row)
+        encoded = result.pop("encoded_payload")
+        # Cache by immutable content, not capture ID. A repeated list shares decoding.
+        key = sha256_text(encoded)
+        with self._decoded_lock:
+            cached = self._decoded.get(key)
+            if cached is not None:
+                self._decoded.move_to_end(key)
+        if cached is None:
+            payload = self.repo.content.decode(json.loads(encoded))
+            size = 4 * len(canonical_json(payload).encode())  # Allow for Python object/string overhead.
+            cached = (payload, size)
+            with self._decoded_lock:
+                if key not in self._decoded and size <= 64 * 1024 * 1024:
+                    self._decoded[key] = cached
+                    self._decoded_bytes += size
+                    while self._decoded_bytes > 64 * 1024 * 1024:
+                        _, (_, removed) = self._decoded.popitem(last=False)
+                        self._decoded_bytes -= removed
+        result["decoded_payload"] = cached[0]
+        return result
 
     def prepare_piece(self, row):
-        payload = json.loads(row["payload_json"])
+        payload = row.get("decoded_payload") or json.loads(row["payload_json"])
         source = SourceDefinition.model_validate(payload["source"])
         binding = TickerSourceBinding.model_validate(payload["binding"])
         position = row["intake_position"]
         context = AdmissionContext.model_validate(payload["admission"])
         shared = payload.get("distribution")
         input_key = row.get("input_hash") or capture_input_key(payload, row["unit"])
-        messages = payload["result"]["messages"][position : position + 16]
+        original = payload["result"]["messages"]
+        order = payload.get("intake_order")
+        window = (
+            [original[i] for i in order[position : position + 256]]
+            if order is not None
+            else original[position : position + 256]
+        )
+        messages = window[:16]
         advanced, filtered = len(messages), 0
         skipped_keys = []
         skipped_times = []
-        if context.mode == "REALTIME" and (not shared or all(
-            t["admission"].get("mode", "REALTIME") == "REALTIME" for t in shared["roster"]
-        )):
+        if context.mode == "REALTIME" and (
+            not shared
+            or all(t["admission"].get("mode", "REALTIME") == "REALTIME" for t in shared["roster"])
+        ):
             # Old large RSS lists must not create per-article/per-ticker delivery
             # work merely to reject it. Keep the original durable payload and
             # count every input; only existing unequivocal exact/date age gates
             # is evaluated here, outside the writer. Real candidates stay <=16.
             contexts = ([AdmissionContext.model_validate(t["admission"]) for t in shared["roster"]]
                         if shared else [context])
-            candidates = [RawMessageInput.model_validate(raw)
-                          for raw in payload["result"]["messages"][position : position + 256]]
+            candidates = [RawMessageInput.model_validate(raw) for raw in window]
             tickers = sorted({t['binding']['ticker'] for t in shared['roster']}) if shared else None
             published = self.repo.published_identity_keys(binding, candidates, tickers=tickers)
             messages, advanced = [], 0
@@ -467,7 +590,21 @@ class PollJournal:
         result = result.model_copy(
             update={
                 "messages": [
-                    message.model_copy(update={"admission_context": context})
+                    message.model_copy(
+                        update={
+                            "admission_context": context,
+                            "metadata": {
+                                **message.metadata,
+                                "pipeline_trace": {
+                                    "capture_id": row["capture_id"],
+                                    "poll_run_id": row["run_id"],
+                                    "listing_received_at": row["observed_at"],
+                                    "capture_committed_at": row["committed_at"],
+                                    "candidate_prepared_at": utc_now().isoformat(),
+                                },
+                            },
+                        }
+                    )
                     for message in result.messages
                 ]
             }
@@ -605,19 +742,17 @@ class PollJournal:
                 receipt.filtered_count += prefiltered
             total = PollExecutionResult.model_validate_json(row["receipt_json"])
             add_receipt(total, receipt)
+            completing = row["intake_position"] + advanced >= row["message_count"]
             state = self.repo.get_poll_state(binding)
             if not shared:
-                self.repo.save_poll_state(
-                    state.model_copy(
-                        update={
-                            "collected_count": state.collected_count + receipt.collected_count,
-                            "filtered_count": state.filtered_count + receipt.filtered_count,
-                            "published_count": state.published_count + receipt.published_count,
-                        }
-                    )
-                )
+                self.repo.save_poll_state(state.model_copy(update={
+                    "collected_count": state.collected_count + receipt.collected_count,
+                    "filtered_count": state.filtered_count + receipt.filtered_count,
+                    "published_count": state.published_count + receipt.published_count}))
                 unit_state = self.repo.get_poll_unit_state(binding, row["unit"])
-                if unit_state.last_capture_at == context.observed_at:
+                if unit_state.last_capture_at == context.observed_at and (
+                    not unit_state.last_first_intake_at or completing
+                ):
                     unit_state = unit_state.model_copy(
                         update={
                             "last_first_capture_at": context.observed_at,
@@ -646,6 +781,30 @@ class PollJournal:
             )
             if done and not shared:
                 self.reuse_waiting_inputs(db,row,binding,result.acquisition_metadata['intake_input_key'],now)
+                key = result.acquisition_metadata["intake_input_key"]
+                if (
+                    key
+                    and not db.execute(
+                        "SELECT 1 FROM content_enrichment_jobs WHERE "
+                        "status IN ('queued','running','retry_wait') AND json_extract(data_json,'$.binding.binding_id')=? LIMIT 1",
+                        (binding.binding_id,),
+                    ).fetchone()
+                ):
+                    # Conservative source-wide fence: an earlier recheck in any related body disables reuse.
+                    due = db.execute(
+                        "SELECT min(b.next_check_at) FROM message_observations o "
+                        "JOIN article_body_results b ON b.fetch_key=json_extract(o.data_json,'$.metadata.article_body_result_key') "
+                        "WHERE o.ticker=? AND o.source_id=?",
+                        (binding.ticker, binding.source_id),
+                    ).fetchone()[0]
+                    until = min(
+                        due or (utc_now() + timedelta(seconds=60)).isoformat(),
+                        (utc_now() + timedelta(seconds=60)).isoformat(),
+                    )
+                    db.execute(
+                        "INSERT OR REPLACE INTO poll_intake_reuse VALUES(?,?,?)",
+                        (key, row["capture_id"], until),
+                    )
 
     def reuse_waiting_inputs(self, db, parent, binding, input_key, now):
         if not input_key:
@@ -764,6 +923,9 @@ class PollJournal:
         """Bound completed diagnostic history; unresolved input and boundary proof survive."""
         cutoff = ((now or utc_now()) - timedelta(days=3)).isoformat()
         with self.repo.atomic_intake() as db:
+            db.execute("DELETE FROM poll_intake_reuse WHERE input_hash IN (SELECT input_hash "
+                       "FROM poll_intake_reuse WHERE valid_until<? ORDER BY valid_until LIMIT ?)",
+                       ((now or utc_now()).isoformat(), limit))
             captures = db.execute(
                 "DELETE FROM poll_captures WHERE capture_id IN (SELECT p.capture_id "
                 "FROM poll_captures p WHERE p.status='COMPLETED' AND p.completed_at<? AND "

@@ -90,7 +90,17 @@ class MessageBusV2Service:
         self._migrate_legacy_default_news_windows()
         self._append_verified_ticker_locators()
         self._upgrade_rss_route_schema()
+        self._upgrade_google_listing_capacity()
         self._ensure_sec_bindings()
+
+    def _upgrade_google_listing_capacity(self):
+        from .schema import SchedulerConstraints
+
+        source = self.repository.get_source('google_news_search_rss')
+        if source and source.scheduler_constraints == SchedulerConstraints():
+            desired = next(s for s in initial_sources() if s.source_id == source.source_id)
+            self.update_source(source.source_id, {'scheduler_constraints': desired.scheduler_constraints.model_dump()},
+                actor=UpdateActor.SYSTEM, reason='Google list-only HTTP no longer shares serial wrapper decoding budget')
 
     def _ensure_sec_bindings(self, ticker: str | None = None) -> None:
         """Universal SEC default, including custom profiles; explicit opt-outs survive."""
@@ -1163,7 +1173,7 @@ class MessageBusV2Service:
         enrichment_claim: tuple[str, str] | None = None,
         known_article_raw_id: str | None = None,
     ) -> IngestResult:
-        return await self.storage.call(
+        result = await self.storage.call(
             self._accept_message,
             source=source,
             binding=binding,
@@ -1174,6 +1184,49 @@ class MessageBusV2Service:
             enrichment_input=enrichment_input,
             enrichment_claim=enrichment_claim,
             known_article_raw_id=known_article_raw_id,
+        )
+        await self.record_consumable(result, message)
+        return result
+
+    async def record_consumable(self, result, message):
+        """A fresh post-commit read proves availability; it does not claim consumer execution."""
+        if result.decision is not IngestDecision.INSERTED or not result.stream_item_ids:
+            return
+        items = await self.storage.read(
+            self.repository.read_only,
+            lambda: [self.repository.get_stream_item(key) for key in result.stream_item_ids],
+        )
+        readable = utc_now()
+        if not all(item and item.members for item in items):
+            raise RuntimeError("committed_stream_not_readable")
+        payload = {
+            "standard_message_id": result.standard_message_id,
+            "raw_message_id": result.raw_message_id,
+            "readable_at": readable.isoformat(),
+            "basis": "POST_COMMIT_BUS_STREAM_READ",
+            "consumer_claimed": False,
+            "pipeline_trace": message.metadata.get("pipeline_trace", {}),
+            "streams": [
+                {
+                    "ticker": item.item.ticker,
+                    "offset": item.item.stream_offset,
+                    "stream_item_id": item.item.stream_item_id,
+                    "body_outcomes": [
+                        m.metadata.get("media_enrichment", {}).get("outcome") for m in item.members
+                    ],
+                }
+                for item in items
+            ],
+        }
+        await self.storage.call(
+            self.repository.save_audit,
+            AuditRecord(
+                entity_type="message_delivery",
+                entity_id=result.standard_message_id or result.raw_message_id,
+                action="CONSUMABLE",
+                actor=UpdateActor.SYSTEM,
+                payload=payload,
+            ),
         )
 
     def _accept_message(

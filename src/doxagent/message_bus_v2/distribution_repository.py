@@ -112,6 +112,10 @@ class DistributionRepository:
                 CREATE TABLE IF NOT EXISTS distribution_acquisitions (
                     run_id TEXT PRIMARY KEY, observed_at TEXT NOT NULL
                 );
+                CREATE TABLE IF NOT EXISTS distribution_jev_continuations (
+                    id TEXT PRIMARY KEY, state TEXT NOT NULL, lease_until TEXT, claim_token TEXT,
+                    payload TEXT NOT NULL
+                );
                 CREATE TABLE IF NOT EXISTS distribution_delivery_keys (
                     business_key TEXT PRIMARY KEY, delivery_id TEXT NOT NULL,
                     first_seen_at TEXT NOT NULL, last_seen_at TEXT NOT NULL,
@@ -161,7 +165,7 @@ class DistributionRepository:
             legacy = db.execute(
                 "SELECT d.delivery_id,d.binding_json,d.admission_json,r.source_json "
                 "FROM distribution_deliveries d JOIN distribution_runs r USING(run_id) "
-                "WHERE d.state IN ('PUBLISHED','WAIT_BODY','PENDING','RUNNING') "
+                "WHERE d.state IN ('PUBLISHED','WAIT_BODY','PENDING','RUNNING','L2_WAIT') "
                 "AND d.article_id=? AND d.ticker=? AND d.terms_revision=? "
                 "AND r.mode='REALTIME' ORDER BY d.created_at DESC LIMIT 1",
                 (article_id, binding["ticker"], revision)).fetchone()
@@ -564,6 +568,45 @@ class DistributionRepository:
                 )
             self.bus._finish_enrichment(db, job.job_id, outcome_payload)
 
+    def defer_decisions(self, payload):
+        identity = payload["id"]
+        with self.bus.transaction() as db:
+            db.execute(
+                "INSERT OR IGNORE INTO distribution_jev_continuations VALUES(?,'PENDING',NULL,NULL,?)",
+                (identity, payload["encoded"]),
+            )
+            for row in payload["rows"]:
+                if not payload["relevant"].get(row["ticker"]):
+                    db.execute(
+                        "UPDATE distribution_deliveries SET state='L2_WAIT' WHERE delivery_id=? AND claim_token=?",
+                        (row["delivery_id"], row["claim_token"]),
+                    )
+
+    def claim_decisions(self, limit):
+        now = utc_now()
+        with self.bus.transaction() as db:
+            rows = db.execute(
+                "SELECT id,payload AS encoded FROM distribution_jev_continuations "
+                "WHERE state='PENDING' OR (state='RUNNING' AND lease_until<?) ORDER BY rowid LIMIT ?",
+                (now.isoformat(), limit),
+            ).fetchall()
+            result = []
+            for row in rows:
+                token = new_id("decision-lease")
+                db.execute(
+                    "UPDATE distribution_jev_continuations SET state='RUNNING',lease_until=?,claim_token=? WHERE id=?",
+                    ((now + timedelta(seconds=90)).isoformat(), token, row["id"]),
+                )
+                result.append((row["id"], token, row["encoded"]))
+        return result
+
+    def finish_decisions(self, identity, token):
+        with self.bus.transaction() as db:
+            db.execute(
+                "DELETE FROM distribution_jev_continuations WHERE id=? AND claim_token=?",
+                (identity, token),
+            )
+
     def claim_deliveries(self, *, limit: int = 16, article_limit: int | None = None) -> list[dict[str, Any]]:
         now = utc_now()
         with self.bus.transaction() as db:
@@ -627,7 +670,7 @@ class DistributionRepository:
                 pending = db.execute(
                     "SELECT d.delivery_id,d.state,d.lease_until,d.admission_json,a.original_json "
                     "FROM distribution_deliveries d JOIN distribution_articles a USING(article_id) "
-                    "WHERE d.run_id=? AND d.state IN ('WAIT_BODY','PENDING','RUNNING')",
+                    "WHERE d.run_id=? AND d.state IN ('WAIT_BODY','PENDING','RUNNING','L2_WAIT')",
                     (run["run_id"],),
                 ).fetchall()
                 expired = []
@@ -756,7 +799,7 @@ class DistributionRepository:
         with self.bus._connect() as db:
             rows = db.execute(
                 "SELECT delivery_id FROM distribution_deliveries WHERE run_id=? AND ticker=? "
-                "AND state IN ('WAIT_BODY','PENDING','RUNNING')",
+                "AND state IN ('WAIT_BODY','PENDING','RUNNING','L2_WAIT')",
                 (run_id, ticker),
             ).fetchall()
         return [row[0] for row in rows]

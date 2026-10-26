@@ -147,12 +147,21 @@ class AdapterRegistry:
 
         self._builtins["sec_edgar@1"] = SecEdgarAdapter()
         from .technology_sources import TechnologyAdapter
-        from .thefly_source import TheFlyAdapter
 
         self._builtins["technology_public@1"] = TechnologyAdapter()
+        from .thefly_source import TheFlyAdapter
+
         self._builtins["thefly_public@1"] = TheFlyAdapter(self._builtins["technology_public@1"].http)
 
+    def set_streaming_bindings(self, binding_ids):
+        self._builtins['ibkr_news']._active_bindings = set(binding_ids)
+
     async def close(self) -> None:
+        for adapter in self._builtins.values():
+            if isinstance(adapter, (SharedFeedAdapter, IndustryListingAdapter)):
+                await adapter.close()
+        for client in self._builtins['newswire_rss']._route_clients.values():
+            await client.aclose()
         await self._builtins["corporate_ir@1"].close()
         await self._builtins["defense_public@1"].close()
         await self._builtins["sec_edgar@1"].close()
@@ -160,7 +169,11 @@ class AdapterRegistry:
         ibkr = self._builtins.get("ibkr_news")
         close = getattr(ibkr, "close", None)
         if callable(close):
-            close()
+            import inspect
+
+            result = close()
+            if inspect.isawaitable(result):
+                await result
         if self._owns_client:
             await self.client.aclose()
 
@@ -864,6 +877,10 @@ class TikHubXUserPostsAdapter(TikHubXSearchAdapter):
 
 
 class NewswireRSSAdapter(_BaseAdapter):
+    def __init__(self, settings, client):
+        super().__init__(settings, client)
+        self._route_clients = {}
+
     async def _feed_text(self, context: PollContext, url: str) -> str:
         routes = context.binding.source_parameters.get("http_routes")
         headers = {"User-Agent": self.settings.monitoring_rss_user_agent}
@@ -875,10 +892,14 @@ class NewswireRSSAdapter(_BaseAdapter):
             async with context.request_permit():
                 if proxy is None:
                     return await self.client.get(url, headers=headers, timeout=10)
-                async with httpx.AsyncClient(
-                    proxy=proxy, timeout=10, follow_redirects=True, trust_env=False
-                ) as client:
-                    return await client.get(url, headers=headers)
+                client = self._route_clients.get(proxy)
+                if client is None:
+                    client = httpx.AsyncClient(proxy=proxy, timeout=10, follow_redirects=True, trust_env=False,
+                                              limits=httpx.Limits(max_connections=4, max_keepalive_connections=4))
+                    from .poll_trace import install
+                    install(client)
+                    self._route_clients[proxy] = client
+                return await client.get(url, headers=headers)
 
         async with asyncio.timeout(25):
             response, _ = await transport_routes(
@@ -892,8 +913,21 @@ class NewswireRSSAdapter(_BaseAdapter):
         messages: list[RawMessageInput] = []
         failures: list[AcquisitionFailure] = []
         for feed_url in context.binding.source_parameters.get("rss_urls", []):
+            if (
+                context.acquisition_unit.startswith("FEED:")
+                and context.acquisition_unit != "FEED:" + sha256_text(str(feed_url))[:24]
+            ):
+                continue
             value = await self._feed_text(context, str(feed_url))
-            for row in _rss_rows(value, str(feed_url)):
+            try:
+                rows = _rss_rows(value, str(feed_url))
+            except (ElementTree.ParseError, ValueError) as exc:
+                failures.append(AcquisitionFailure(source_id=context.source.source_id, binding_id=context.binding.binding_id, ticker=context.ticker,
+                    error_code='RSS_PARSE_ERROR', error_message=str(exc), raw_hash=sha256_text(value),
+                    original_payload={'feed_url': str(feed_url), 'response_sha256': sha256_text(value),
+                                      'parse_position': list(getattr(exc, 'position', ()))}))
+                continue
+            for row in rows:
                 message, failure = self._message(
                     context,
                     row,
@@ -1104,6 +1138,10 @@ def _html_to_text(value: object) -> str | None:
 
 def _rss_rows(xml_text: str, feed_url: str) -> list[JsonObject]:
     root = ElementTree.fromstring(xml_text)
+    if root.tag.rsplit('}', 1)[-1].lower() not in {'rss', 'feed', 'rdf'}:
+        raise ValueError('rss_feed_contract_changed')
+    if root.tag.rsplit('}', 1)[-1].lower() == 'rss' and root.find('channel') is None:
+        raise ValueError('rss_channel_contract_changed')
     rows: list[JsonObject] = []
     for item in [*root.findall(".//item"), *root.findall(".//{*}entry")]:
         row: JsonObject = {"feed_url": feed_url}

@@ -5,11 +5,13 @@ from contextvars import ContextVar
 from hashlib import sha256
 from urllib.parse import urlsplit
 from weakref import WeakKeyDictionary
+from uuid import uuid4
 
 from .schema import utc_now
 
 REQUESTS = ContextVar("poll_requests", default=None)
 DEMAND = ContextVar("poll_demand", default=None)
+REQUEST_ROLE = ContextVar("poll_request_role", default="listing")
 _HTTP_POOLS = WeakKeyDictionary()
 
 
@@ -23,9 +25,12 @@ def request_started(method, url, transport="http"):
     value = str(url)
     parsed = urlsplit(value)
     event = {
+        "physical_request_id": uuid4().hex,
+        "role": REQUEST_ROLE.get(),
         "request_key": sha256((method + ":" + value).encode()).hexdigest(),
-        "endpoint": ((parsed.hostname or "")
-                     + (f":{parsed.port}" if parsed.port else "") + parsed.path),
+        "endpoint": (
+            (parsed.hostname or "") + (f":{parsed.port}" if parsed.port else "") + parsed.path
+        ),
         "transport": transport,
         "request_started_at": utc_now().isoformat(),
     }
@@ -49,9 +54,15 @@ async def httpx_request(request):
 async def httpx_response(response):
     event = response.request.extensions.get("_bus_poll_event")
     if event is not None:
-        event.update(headers_received_at=utc_now().isoformat(), status_code=response.status_code)
+        event.update(headers_received_at=utc_now().isoformat(), status_code=response.status_code,
+                     content_type=response.headers.get('content-type'))
         await response.aread()
         event["response_received_at"] = utc_now().isoformat()
+        event["validators"] = {
+            key: response.headers[key]
+            for key in ("date", "age", "etag", "last-modified")
+            if key in response.headers
+        }
 
 
 def install(client):

@@ -447,20 +447,27 @@ class GlobalPollScheduler:
                         ticker=binding.ticker,
                     ),
                 )
-            self._query_plans = {}
-            terms = {}
-            for source, binding in eligible:
-                if source.acquisition_mode is AcquisitionMode.BY_SEARCH:
-                    if binding.ticker not in terms:
-                        terms[binding.ticker] = self.terms.get(binding.ticker)
-                    found = terms[binding.ticker]
-                    if found:
-                        try:
-                            self._query_plans[(source.source_id, binding.ticker)] = (
-                                build_query_plan(source, found[1], found[0]).model_dump(mode="json")
-                            )
-                        except ValueError:
-                            pass  # The individual source poll records CONFIG_INCOMPLETE.
+            with self.repository._connect() as db:
+                term_heads = tuple(tuple(r) for r in db.execute(
+                    'SELECT ticker,current_revision FROM ticker_monitoring_terms ORDER BY ticker'))
+            plan_signature = (term_heads, tuple((s.source_id,s.version,b.ticker)
+                for s,b in eligible if s.acquisition_mode is AcquisitionMode.BY_SEARCH))
+            if getattr(self, '_query_plan_signature', None) != plan_signature:
+                self._query_plans = {}
+                terms = {}
+                for source, binding in eligible:
+                    if source.acquisition_mode is AcquisitionMode.BY_SEARCH:
+                        if binding.ticker not in terms:
+                            terms[binding.ticker] = self.terms.get(binding.ticker)
+                        found = terms[binding.ticker]
+                        if found:
+                            try:
+                                self._query_plans[(source.source_id, binding.ticker)] = (
+                                    build_query_plan(source, found[1], found[0]).model_dump(mode="json")
+                                )
+                            except ValueError:
+                                pass  # The individual source poll records CONFIG_INCOMPLETE.
+                self._query_plan_signature = plan_signature
             demand = defaultdict(float)
             source_demand = defaultdict(float)
             for source, binding in eligible:
@@ -534,6 +541,14 @@ class GlobalPollScheduler:
                 )
         elif source.source_id == "barrons_ticker_news":
             units.append(("OTHER_HEAD", {}))
+        elif (
+            source.adapter_ref in {"builtin:newswire_rss", "builtin:newswire_rss@1"}
+            and len(binding.source_parameters.get("rss_urls", [])) > 1
+        ):
+            units = [
+                ("FEED:" + sha256_text(str(url))[:24], {})
+                for url in binding.source_parameters["rss_urls"]
+            ]
         elif source.acquisition_mode is AcquisitionMode.BY_SEARCH:
             plan = self._query_plans.get((source.source_id, binding.ticker))
             if plan:
@@ -565,6 +580,29 @@ class GlobalPollScheduler:
                             if not old or tail.get("done"):
                                 options["checkpoint"] = head_cp
                             units.append((unit, options))
+                if source.source_id == "calcalist_search":
+                    for query in plan["queries"]:
+                        head_cp = state.units.get("QUERY:" + query["query_key"], {}).get(
+                            "checkpoint", {}
+                        )
+                        if any(
+                            e.get("tail_pending") for e in head_cp.get("endpoints", {}).values()
+                        ):
+                            unit = "TAIL:" + query["query_key"]
+                            old = state.units.get(unit, {}).get("checkpoint", {})
+                            if not old or any(
+                                e.get("tail_pending") for e in old.get("endpoints", {}).values()
+                            ):
+                                units.append(
+                                    (
+                                        unit,
+                                        {
+                                            "freeze_query_plan": True,
+                                            "query_plan_override": {**plan, "queries": [query]},
+                                            "checkpoint": old or head_cp,
+                                        },
+                                    )
+                                )
         for unit, options in units:
             if (
                 not include_all
@@ -603,6 +641,48 @@ class GlobalPollScheduler:
         for group, pairs in grouped.items():
             ordered = sorted(pairs, key=lambda pair: pair[1].binding_id)
             count = len(ordered)
+            physical_units = [
+                (s, b, options["acquisition_unit"])
+                for s, b in ordered
+                for _, options in self.work_units(
+                    s,
+                    b,
+                    (
+                        poll_states[b.binding_id]
+                        if poll_states is not None
+                        else self.repository.get_poll_state(b)
+                    ),
+                    now,
+                    include_all=True,
+                )
+                if not options["acquisition_unit"].startswith("TAIL:")
+            ]
+            phases = {
+                (b.binding_id, unit): b.polling.target_interval_seconds
+                * index
+                / max(1, len(physical_units))
+                for index, (_, b, unit) in enumerate(physical_units)
+            }
+            for index, (s, b, unit) in enumerate(physical_units):
+                current = (
+                    poll_states[b.binding_id]
+                    if poll_states is not None
+                    else self.repository.get_poll_state(b)
+                )
+                if unit in current.units or (
+                    unit == "HEAD" and current.next_dispatch_at is not None
+                ):
+                    continue
+                phase = b.polling.target_interval_seconds * index / max(1, len(physical_units))
+                snapshot = self.repository.get_poll_unit_state(b, unit).model_copy(
+                    update={
+                        "target_due_at": now + timedelta(seconds=phase),
+                        "next_dispatch_at": now + timedelta(seconds=phase),
+                    }
+                )
+                self.repository.save_poll_unit_state(snapshot, unit)
+                if poll_states is not None:
+                    poll_states[b.binding_id] = self.repository.get_poll_state(b)
             signature = sha256_text(
                 canonical_json(
                     [
@@ -645,8 +725,26 @@ class GlobalPollScheduler:
                         "units": {
                             unit: {
                                 **snapshot,
-                                "target_due_at": (now + timedelta(seconds=phase)).isoformat(),
-                                "next_dispatch_at": (now + timedelta(seconds=phase)).isoformat(),
+                                "target_due_at": (
+                                    snapshot.get("target_due_at") if not interval_changed else None
+                                )
+                                or (
+                                    now
+                                    + timedelta(
+                                        seconds=phases.get((binding.binding_id, unit), phase)
+                                    )
+                                ).isoformat(),
+                                "next_dispatch_at": (
+                                    snapshot.get("next_dispatch_at")
+                                    if not interval_changed
+                                    else None
+                                )
+                                or (
+                                    now
+                                    + timedelta(
+                                        seconds=phases.get((binding.binding_id, unit), phase)
+                                    )
+                                ).isoformat(),
                             }
                             for unit, snapshot in state.units.items()
                         },
@@ -831,7 +929,9 @@ class GlobalPollScheduler:
                 previous_state = await self.read_call(
                     self.repository.get_poll_state, roster[0][0]
                 )
-                saved = previous_state.checkpoint.get(SHARED_HTTP_CHECKPOINTS[source.adapter_ref], {})
+                saved = previous_state.checkpoint.get(
+                    SHARED_HTTP_CHECKPOINTS[source.adapter_ref], {}
+                )
                 if saved.get("source_version") == source.version:
                     shared_checkpoint = saved.get("checkpoint", {})
             context = SharedPollContext(
@@ -877,7 +977,9 @@ class GlobalPollScheduler:
                                             "source_version": source.version,
                                             "checkpoint": result.next_checkpoint,
                                         },
-                                    } if source.adapter_ref in SHARED_HTTP_CHECKPOINTS else state.checkpoint,
+                                    }
+                                    if source.adapter_ref in SHARED_HTTP_CHECKPOINTS
+                                    else state.checkpoint,
                                 }
                             ),
                         )
@@ -1270,8 +1372,20 @@ class GlobalPollScheduler:
 
             intake_started = self._clock()
             access = ACCESS_RESULTS.get() or []
+            from .poll_trace import REQUESTS
+
+            listing = [
+                r
+                for r in REQUESTS.get() or []
+                if r.get("role", "listing") == "listing" and r.get("response_received_at")
+            ]
             captured_at = (
-                observed_at or (access[-1].capture_acquired_at if access else None) or utc_now()
+                observed_at
+                or (
+                    datetime.fromisoformat(listing[-1]["response_received_at"]) if listing else None
+                )
+                or (access[-1].capture_acquired_at if access else None)
+                or utc_now()
             )
             from .schema import PollResult
 
@@ -1284,9 +1398,8 @@ class GlobalPollScheduler:
                 run_id=poll_run_id,
                 admission_context=admission_context,
                 checkpoint=checkpoint if window_cutoff is None else None,
-                bootstrap=window_cutoff is None
-                and acquisition_unit != "TAIL:YAHOO_TIME"
-                and not state.bootstrap_complete,
+                bootstrap=(evidence['bootstrap'] if isinstance(evidence.get('bootstrap'), bool) else
+                    window_cutoff is None and acquisition_unit != 'TAIL:YAHOO_TIME' and not state.bootstrap_complete),
                 unit="HEAD" if acquisition_unit == "ALL" else acquisition_unit,
             )
             await self.service.storage.call(

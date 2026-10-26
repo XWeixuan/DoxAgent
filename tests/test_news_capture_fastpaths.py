@@ -35,6 +35,7 @@ async def test_investing_ready_native_response_does_not_wait_for_generic_dom(mon
     cancelled = asyncio.Event()
 
     async def stalled(*args, **kwargs):
+        kwargs['on_observation'](LISTING, URL)
         try:
             await asyncio.Event().wait()
         finally:
@@ -42,7 +43,7 @@ async def test_investing_ready_native_response_does_not_wait_for_generic_dom(mon
 
     monkeypatch.setattr(investing_document, "capture_document", stalled)
     monkeypatch.setattr(investing_document, "response_listing", AsyncMock(return_value=LISTING))
-    page = SimpleNamespace(content=AsyncMock(return_value=LISTING), url=URL)
+    page = SimpleNamespace(content=AsyncMock(side_effect=AssertionError('unbounded duplicate DOM read')), url=URL)
     result = await asyncio.wait_for(
         investing_document.capture_listing(
             page, None, None, "owned", URL, "INTC", timeout=10, max_bytes=8000000

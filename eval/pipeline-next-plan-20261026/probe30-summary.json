@@ -1,0 +1,96 @@
+{
+  "barrons_ticker_news": {
+    "calls": 8,
+    "shared_cache_calls": 0,
+    "physical_attempt_calls": 8,
+    "statuses": {
+      "SUCCESS": 8
+    },
+    "parse_errors": 0,
+    "physical_network_ms": {
+      "samples": 8,
+      "mean": 3013.25,
+      "p95": 3742,
+      "max": 3742
+    },
+    "queue_ms": {
+      "samples": 8,
+      "mean": 208.5,
+      "p95": 468,
+      "max": 468
+    },
+    "message_counts": [
+      19,
+      17,
+      17,
+      19,
+      19,
+      17,
+      17,
+      19
+    ],
+    "identities": {
+      "dowjones-main": 8
+    }
+  },
+  "investing_ticker_news": {
+    "calls": 4,
+    "shared_cache_calls": 1,
+    "physical_attempt_calls": 3,
+    "statuses": {
+      "SUCCESS": 4
+    },
+    "parse_errors": 0,
+    "physical_network_ms": {
+      "samples": 3,
+      "mean": 7891.333333333333,
+      "p95": 20253,
+      "max": 20253
+    },
+    "queue_ms": {
+      "samples": 3,
+      "mean": 0.0,
+      "p95": 0,
+      "max": 0
+    },
+    "message_counts": [
+      10,
+      10,
+      10,
+      10
+    ],
+    "identities": {
+      "investing-backup": 3
+    }
+  },
+  "investorshub_ticker_news": {
+    "calls": 4,
+    "shared_cache_calls": 0,
+    "physical_attempt_calls": 4,
+    "statuses": {
+      "SUCCESS": 4
+    },
+    "parse_errors": 0,
+    "physical_network_ms": {
+      "samples": 4,
+      "mean": 4712.75,
+      "p95": 5701,
+      "max": 5701
+    },
+    "queue_ms": {
+      "samples": 4,
+      "mean": 0.0,
+      "p95": 0,
+      "max": 0
+    },
+    "message_counts": [
+      14,
+      14,
+      14,
+      14
+    ],
+    "identities": {
+      "investorshub-backup": 4
+    }
+  }
+}

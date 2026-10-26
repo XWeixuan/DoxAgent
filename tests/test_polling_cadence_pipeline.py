@@ -517,7 +517,9 @@ def test_interval_change_rephases_units_without_erasing_checkpoint(tmp_path):
     scheduler = GlobalPollScheduler(repo, bus, SimpleNamespace())
     scheduler._initialize_due_slots([(source, binding)], now)
     saved = repo.get_poll_unit_state(binding, "SUPPLEMENT_HEAD")
-    assert saved.next_dispatch_at == now and saved.checkpoint == {"cursor": "keep"}
+    assert saved.next_dispatch_at == now + timedelta(seconds=30) and saved.checkpoint == {
+        "cursor": "keep"
+    }
 
 
 def test_unknown_calendar_still_counts_expected_cycles_and_unproven_capture_is_not_fresh():
@@ -558,7 +560,7 @@ async def test_distribution_fills_freed_slot_before_slow_article_finishes():
     from doxagent.message_bus_v2.distribution import DistributionWorker
     from doxagent.message_bus_v2.storage_lane import StorageLane
 
-    repo = SimpleNamespace(expire_runs=lambda: 0, claim_deliveries=lambda **kw: [])
+    repo = SimpleNamespace(expire_runs=lambda: 0, claim_deliveries=lambda **kw: [], claim_decisions=lambda limit: [])
     worker = DistributionWorker(repo, SimpleNamespace(storage=StorageLane()), None, concurrency=2)
 
     def row(name):
@@ -568,7 +570,7 @@ async def test_distribution_fills_freed_slot_before_slow_article_finishes():
     release = asyncio.Event()
     entered = []
 
-    async def article(rows):
+    async def article(rows, **kwargs):
         entered.append(rows[0]["article_id"])
         if rows[0]["article_id"] == "slow":
             await release.wait()
@@ -779,7 +781,11 @@ def test_old_shared_capture_never_creates_another_physical_request_observation()
         assert len(events) == 2 and all(r["response_received_at"] for r in events)
         result.served_from_shared_capture = True
         _observed(result)
-        assert len(events) == 2
+        assert len(events) == 4
+        assert [r["physical_request_id"] for r in events[:2]] == [
+            r["physical_request_id"] for r in events[2:]
+        ]
+        assert all(r["shared"] for r in events[2:])
     finally:
         REQUESTS.reset(token)
 

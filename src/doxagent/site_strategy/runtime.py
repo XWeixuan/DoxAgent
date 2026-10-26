@@ -1306,12 +1306,17 @@ class SiteAccessRuntime:
         await public_url(request.url, trusted_proxy_dns=True)
         deadline = time.monotonic() + request.remaining_budget_ms / 1000
         lease_started = time.monotonic()
-        anchor_eligible = (request.recipe_ref in {"builtin:barrons_ticker@1","builtin:yahoo_latest_news@1"}
-                           and request.purpose is SitePurpose.CRAWLER
-                           and (request.recipe_ref == 'builtin:barrons_ticker@1' or
-                                request.recipe_parameters.get('timestamp_only'))
-                           and not any(k.startswith("_maintenance") or k.startswith("_recovery")
-                                       for k in request.recipe_parameters))
+        anchor_eligible = (
+            (
+                request.recipe_ref in {"builtin:barrons_ticker@1", "builtin:yahoo_latest_news@1"}
+                or resolved.site_id in {"investorshub", "investing"}
+            )
+            and request.purpose is SitePurpose.CRAWLER
+            and not any(
+                k.startswith("_maintenance") or k.startswith("_recovery")
+                for k in request.recipe_parameters
+            )
+        )
         anchor = await self.fetch_anchors.take(identity, egress) if anchor_eligible else None
         lease = anchor.lease if anchor else await self.browser_runtimes.page(identity, egress, deadline=deadline)
         _BROWSER_TIMINGS.get()["page_acquire_ms"] = int((time.monotonic()-lease_started)*1000)
@@ -1343,27 +1348,46 @@ class SiteAccessRuntime:
         native_document = None
         command_timings = _BROWSER_TIMINGS.get()
         tracked_requests = {}
+
         def observe_request(value):
             try:
-                if (value.is_navigation_request() and value.frame == page.main_frame) or (
-                    resolved.site_id == "barrons" and "/market-data/api/news?" in value.url
-                ) or (
-                    request.recipe_parameters.get('timestamp_only') and
-                    urlsplit(value.url).hostname == 'finance.yahoo.com' and
-                    urlsplit(value.url).path.endswith('.html')
+                if (
+                    (value.is_navigation_request() and value.frame == page.main_frame)
+                    or (resolved.site_id == "barrons" and "/market-data/api/news?" in value.url)
+                    or (
+                        (
+                            request.recipe_parameters.get("timestamp_only")
+                            or request.recipe_ref == "builtin:yahoo_latest_news@1"
+                        )
+                        and urlsplit(value.url).hostname == "finance.yahoo.com"
+                        and (
+                            urlsplit(value.url).path.endswith(".html")
+                            or "/latest-news" in value.url
+                            or "/xhr/ncp" in value.url
+                        )
+                    )
+                    or (anchor_eligible and (value.url == request.url or (
+                        resolved.site_id == 'investorshub' and urlsplit(value.url).hostname == 'investorshub.advfn.com'
+                        and urlsplit(value.url).path.rstrip('/').split('/')[-1] == 'news'
+                        and urlsplit(value.url).path.rstrip('/').split('/')[-2].rsplit('-', 1)[-1].upper() == str(request.recipe_parameters.get('ticker', '')).upper())))
                 ):
                     at = int(time.time()*1000)
                     index = len(tracked_requests)
                     tracked_requests[id(value)] = index
+                    if resolved.site_id == 'yahoo_finance' and urlsplit(value.url).path.endswith('.html'):
+                        command_timings[f'request_{index}_auxiliary'] = 1
                     command_timings[f'request_{index}_started_epoch_ms'] = at
                     command_timings.setdefault("request_started_epoch_ms", at)
             except Exception:
                 pass
+
         if hasattr(page, "on"):
             page.on("request", observe_request)
+
         def observe_finished(value):
             if id(value) in tracked_requests:
                 command_timings[f'request_{tracked_requests[id(value)]}_body_epoch_ms'] = int(time.time()*1000)
+
         if hasattr(page,'on'):
             page.on('requestfinished',observe_finished)
         native_investing = (
@@ -1436,6 +1460,77 @@ class SiteAccessRuntime:
             try:
                 if not anchor:
                     await gate.start()
+                if (
+                    anchor
+                    and request.purpose is SitePurpose.CRAWLER
+                    and not request.recipe_parameters.get("timestamp_only")
+                    and (resolved.site_id in {'investorshub','investing'} or request.recipe_ref == 'builtin:yahoo_latest_news@1')
+                ):
+                    from .origin_listing import fetch, valid_market, yahoo_rows
+
+                    fetched = await fetch(
+                        page,
+                        request.url,
+                        budget_ms=max(1, min(8000, int((deadline - time.monotonic()) * 1000))),
+                        max_bytes=request.max_response_bytes,
+                    )
+                    if (
+                        fetched["status"] == 200
+                        and urlsplit(fetched['url']).netloc == urlsplit(request.url).netloc
+                        and (resolved.site_id in {'investorshub','investing'} or fetched['url'] == request.url)
+                        and not inspect_html(
+                            fetched["text"], fetched["url"], "", generic_extraction=False
+                        ).access_reason
+                    ):
+                        result = None
+                        if resolved.site_id in {"investorshub", "investing"} and valid_market(
+                            fetched["text"],
+                            fetched['url'],
+                            resolved.site_id,
+                            request.recipe_parameters.get("ticker"),
+                        ):
+                            result = RuntimeResponse(
+                                200,
+                                fetched['url'],
+                                _filtered_headers(fetched["headers"]),
+                                body=fetched["text"],
+                                provenance=lease.provenance,
+                            )
+                        elif request.recipe_ref == "builtin:yahoo_latest_news@1":
+                            try:
+                                rows, metadata = await yahoo_rows(page, fetched['text'], str(request.recipe_parameters['ticker']), request.recipe_parameters)
+                            except ValueError:
+                                rows, metadata = None, None
+                            result = RuntimeResponse(
+                                200,
+                                request.url,
+                                {},
+                                body="",
+                                recipe_result={
+                                    "rows": rows,
+                                    "metadata": {**metadata, "capture_method": "origin_fetch"},
+                                },
+                                provenance=lease.provenance,
+                            ) if rows is not None else None
+                        if result is not None:
+                            from .fetch_anchors import FetchAnchor
+
+                            keep_anchor = self.fetch_anchors.put(
+                                identity,
+                                FetchAnchor(
+                                    lease,
+                                    page,
+                                    gate,
+                                    response,
+                                    identity.revision,
+                                    egress.egress_id,
+                                    anchor.created_at,
+                                ),
+                            )
+                            return result
+                    # A real refusal or changed contract takes the normal navigation/recovery path.
+                    # Reusing an origin never means reusing its previous ticker result.
+                    anchor = None
                 if native_investing and gate.root_target_id and request.purpose is not SitePurpose.CRAWLER:
                     # Healthy listing capture does not need foreground ownership.
                     # BODY and the challenge recovery flow retain native activation.
@@ -1497,7 +1592,23 @@ class SiteAccessRuntime:
                         probe_offset=request.recipe_parameters.get("probe_offset", 0),
                         max_probes=int(request.recipe_parameters.get('max_probes',3)),
                     )
-                    return await recipe_capture(rows, metadata)
+                    result = await recipe_capture(rows, metadata)
+                    if result.recipe_result is not None and not retained:
+                        from .fetch_anchors import FetchAnchor
+
+                        keep_anchor = self.fetch_anchors.put(
+                            identity,
+                            FetchAnchor(
+                                lease,
+                                page,
+                                gate,
+                                response,
+                                identity.revision,
+                                egress.egress_id,
+                                anchor.created_at if anchor else time.monotonic(),
+                            ),
+                        )
+                    return result
                 if request.recipe_ref == "builtin:reuters_search@1":
                     rows = await capture_reuters_search(
                         page,
@@ -1782,6 +1893,34 @@ class SiteAccessRuntime:
                         lease, page, gate, identity, resolved, request
                     )
                     retained = True
+                if (
+                    anchor_eligible
+                    and not retained
+                    and status == 200
+                    and resolved.site_id in {"investorshub", "investing"}
+                ):
+                    from .origin_listing import valid_market
+
+                    if valid_market(
+                        html,
+                        native_document[1] if native_document else page.url,
+                        resolved.site_id,
+                        request.recipe_parameters.get("ticker"),
+                    ):
+                        from .fetch_anchors import FetchAnchor
+
+                        keep_anchor = self.fetch_anchors.put(
+                            identity,
+                            FetchAnchor(
+                                lease,
+                                page,
+                                gate,
+                                response,
+                                identity.revision,
+                                egress.egress_id,
+                                anchor.created_at if anchor else time.monotonic(),
+                            ),
+                        )
                 return RuntimeResponse(
                     int(status),
                     native_document[1] if native_document else page.url,

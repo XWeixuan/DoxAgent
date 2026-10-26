@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+import time
 from collections.abc import Iterator, Sequence
 from contextlib import contextmanager
 from contextvars import ContextVar
@@ -118,7 +119,9 @@ class MessageBusV2Repository:
         connection.row_factory = self.content.row
         connection.execute("pragma synchronous = NORMAL")
         connection.execute("pragma foreign_keys = ON")
-        connection.execute("pragma busy_timeout = 30000")
+        from .storage_lane import WRITE_ADMISSION
+
+        connection.execute("pragma busy_timeout = " + ("100" if WRITE_ADMISSION.get() else "30000"))
         return connection
 
     @contextmanager
@@ -164,9 +167,36 @@ class MessageBusV2Repository:
             return
         connection = self._connect()
         try:
-            connection.execute("begin immediate")
+            from .storage_lane import WRITE_ADMISSION, WRITE_TIMINGS, WriteAdmissionBusy
+
+            started = time.monotonic()
+            metrics = WRITE_TIMINGS.get()
+            try:
+                connection.execute("begin immediate")
+            except sqlite3.OperationalError as exc:
+                if WRITE_ADMISSION.get() and getattr(exc, "sqlite_errorcode", None) in {
+                    sqlite3.SQLITE_BUSY,
+                    sqlite3.SQLITE_LOCKED,
+                }:
+                    if not metrics or not metrics.get("commits"):
+                        raise WriteAdmissionBusy() from exc
+                    # A compound operation already committed a fact. Never replay it.
+                    connection.execute("pragma busy_timeout = 30000")
+                    connection.execute("begin immediate")
+                else:
+                    raise
+            finally:
+                metrics = WRITE_TIMINGS.get()
+                if metrics is not None:
+                    metrics["begin_wait_ms"] += round((time.monotonic() - started) * 1000, 3)
+            admitted = time.monotonic()
             yield connection
+            committing = time.monotonic()
             connection.commit()
+            if metrics is not None:
+                metrics["commits"] = metrics.get("commits", 0) + 1
+                metrics["transaction_ms"] += round((committing - admitted) * 1000, 3)
+                metrics["commit_ms"] += round((time.monotonic() - committing) * 1000, 3)
         except Exception:
             connection.rollback()
             raise

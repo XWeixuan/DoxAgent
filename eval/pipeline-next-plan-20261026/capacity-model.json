@@ -1,0 +1,144 @@
+{
+  "site_costs": {
+    "barrons": {
+      "samples": 179,
+      "required_units_per_ticker": 2,
+      "mean_slot_seconds": 1.9053575418994413,
+      "p95_slot_seconds": 3.375,
+      "scenarios": [
+        {
+          "tickers": 9,
+          "period": 60,
+          "rate": 0.3,
+          "slot_seconds_per_second": 0.5716072625698324,
+          "capacity_at_75_percent": 1,
+          "max_cost_for_two_slots_at_75_percent": 5.0
+        },
+        {
+          "tickers": 9,
+          "period": 30,
+          "rate": 0.6,
+          "slot_seconds_per_second": 1.1432145251396648,
+          "capacity_at_75_percent": 2,
+          "max_cost_for_two_slots_at_75_percent": 2.5
+        },
+        {
+          "tickers": 20,
+          "period": 30,
+          "rate": 1.3333333333333333,
+          "slot_seconds_per_second": 2.5404767225325884,
+          "capacity_at_75_percent": 4,
+          "max_cost_for_two_slots_at_75_percent": 1.125
+        }
+      ]
+    },
+    "investorshub": {
+      "samples": 93,
+      "required_units_per_ticker": 1,
+      "mean_slot_seconds": 7.13494623655914,
+      "p95_slot_seconds": 12.732,
+      "scenarios": [
+        {
+          "tickers": 9,
+          "period": 60,
+          "rate": 0.15,
+          "slot_seconds_per_second": 1.0702419354838708,
+          "capacity_at_75_percent": 2,
+          "max_cost_for_two_slots_at_75_percent": 10.0
+        },
+        {
+          "tickers": 9,
+          "period": 30,
+          "rate": 0.3,
+          "slot_seconds_per_second": 2.1404838709677416,
+          "capacity_at_75_percent": 3,
+          "max_cost_for_two_slots_at_75_percent": 5.0
+        },
+        {
+          "tickers": 20,
+          "period": 30,
+          "rate": 0.6666666666666666,
+          "slot_seconds_per_second": 4.75663082437276,
+          "capacity_at_75_percent": 7,
+          "max_cost_for_two_slots_at_75_percent": 2.25
+        }
+      ]
+    },
+    "investing": {
+      "samples": 89,
+      "required_units_per_ticker": 1,
+      "mean_slot_seconds": 2.4218426966292137,
+      "p95_slot_seconds": 4.565,
+      "scenarios": [
+        {
+          "tickers": 9,
+          "period": 60,
+          "rate": 0.15,
+          "slot_seconds_per_second": 0.36327640449438203,
+          "capacity_at_75_percent": 1,
+          "max_cost_for_two_slots_at_75_percent": 10.0
+        },
+        {
+          "tickers": 9,
+          "period": 30,
+          "rate": 0.3,
+          "slot_seconds_per_second": 0.7265528089887641,
+          "capacity_at_75_percent": 1,
+          "max_cost_for_two_slots_at_75_percent": 5.0
+        },
+        {
+          "tickers": 20,
+          "period": 30,
+          "rate": 0.6666666666666666,
+          "slot_seconds_per_second": 1.614561797752809,
+          "capacity_at_75_percent": 3,
+          "max_cost_for_two_slots_at_75_percent": 2.25
+        }
+      ]
+    },
+    "yahoo_finance": {
+      "samples": 132,
+      "required_units_per_ticker": 1,
+      "mean_slot_seconds": 6.637219696969697,
+      "p95_slot_seconds": 10.044,
+      "scenarios": [
+        {
+          "tickers": 9,
+          "period": 60,
+          "rate": 0.15,
+          "slot_seconds_per_second": 0.9955829545454545,
+          "capacity_at_75_percent": 2,
+          "max_cost_for_two_slots_at_75_percent": 10.0
+        },
+        {
+          "tickers": 9,
+          "period": 30,
+          "rate": 0.3,
+          "slot_seconds_per_second": 1.991165909090909,
+          "capacity_at_75_percent": 3,
+          "max_cost_for_two_slots_at_75_percent": 5.0
+        },
+        {
+          "tickers": 20,
+          "period": 30,
+          "rate": 0.6666666666666666,
+          "slot_seconds_per_second": 4.424813131313131,
+          "capacity_at_75_percent": 6,
+          "max_cost_for_two_slots_at_75_percent": 2.25
+        }
+      ]
+    }
+  },
+  "barrons_public_http": {
+    "attempts": 36,
+    "parse_success": 36,
+    "cost_seconds": {
+      "samples": 36,
+      "mean": 0.5363611111111111,
+      "p95": 1.168,
+      "max": 1.35
+    },
+    "no_age_header": 18
+  },
+  "warning": "Slot demand is not CPU demand. Browser cumulative CPU per source is not attributed by the current receipts; the 5s process sample cannot fill that gap."
+}

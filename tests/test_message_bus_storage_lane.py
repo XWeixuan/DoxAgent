@@ -136,7 +136,7 @@ def test_ibkr_cancel_drains_socket_operation_before_adapter_close():
         adapter = IbkrNewsAdapter(SimpleNamespace(), gateway=gateway)
         task = asyncio.create_task(
             adapter.poll(
-                SimpleNamespace(requested_at=utc_now(), ticker="MU", request_permit=permit)
+                SimpleNamespace(requested_at=utc_now(), ticker="MU", request_permit=permit, checkpoint={})
             )
         )
         while not started.is_set():
@@ -146,7 +146,7 @@ def test_ibkr_cancel_drains_socket_operation_before_adapter_close():
         assert not task.done()
         release.set()
         await asyncio.gather(task, return_exceptions=True)
-        adapter.close()
+        await adapter.close()
         assert events == ["poll_finished", "closed"]
 
     asyncio.run(scenario())

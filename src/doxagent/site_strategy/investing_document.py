@@ -78,6 +78,7 @@ async def capture_document(
     challenge_grace_seconds=25,
     on_challenge=None,
     listing_only=False,
+    on_observation=None,
 ):
     """No JS evaluation, interception, resource blocking, navigation or CAPTCHA clicks."""
     deadline = time.monotonic() + timeout
@@ -136,6 +137,8 @@ async def capture_document(
                     strategy_parameters=body_parameters,
                     generic_extraction=False,
                 )
+                if on_observation is not None:
+                    on_observation(last, final_url)
                 reads += 1
                 last_kind = info.page_kind
                 if info.access_reason == "challenge_required":
@@ -184,11 +187,38 @@ async def capture_document(
                 pass
 
 
-async def capture_listing(page,response,cdp,target_id,url,ticker,*,timeout,max_bytes,
-                          body_parameters=None,on_challenge=None):
+async def capture_listing(
+    page,
+    response,
+    cdp,
+    target_id,
+    url,
+    ticker,
+    *,
+    timeout,
+    max_bytes,
+    body_parameters=None,
+    on_challenge=None,
+):
     """Race exact native response proof with the current DOM; keep live denials authoritative."""
-    document = asyncio.create_task(capture_document(cdp,target_id,url,timeout=timeout,
-        body_parameters=body_parameters,on_challenge=on_challenge,listing_only=True))
+    observed = asyncio.get_running_loop().create_future()
+
+    def snapshot(html, final):
+        if not observed.done():
+            observed.set_result((html, final))
+
+    document = asyncio.create_task(
+        capture_document(
+            cdp,
+            target_id,
+            url,
+            timeout=timeout,
+            body_parameters=body_parameters,
+            on_challenge=on_challenge,
+            listing_only=True,
+            on_observation=snapshot,
+        )
+    )
     native = asyncio.create_task(response_listing(response,url,ticker,
         timeout=min(2,timeout),max_bytes=max_bytes))
     try:
@@ -201,9 +231,16 @@ async def capture_listing(page,response,cdp,target_id,url,ticker,*,timeout,max_b
             return (complete,url) if complete else (html,final)
         complete = await native
         if complete:
-            current = await page.content()
-            if not inspect_html(current,page.url,'',generic_extraction=False).access_reason:
-                return complete,url
+            try:
+                async with asyncio.timeout(min(1, timeout)):
+                    current, final = await asyncio.shield(observed)
+                if (
+                    final == url
+                    and not inspect_html(current, final, "", generic_extraction=False).access_reason
+                ):
+                    return complete, url
+            except TimeoutError:
+                pass
         return await document
     finally:
         for task in (document,native):

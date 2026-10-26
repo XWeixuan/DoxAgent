@@ -167,6 +167,7 @@ class SourceOutbox:
 
             migrate_artifacts(db)
             from .source_lifecycle import migrate as migrate_lifecycle
+
             migrate_lifecycle(db)
             names.add('v2_source_receipts')
             for native_table in sorted(names):
@@ -257,10 +258,13 @@ class SourceOutbox:
                             changed = f"({changed}) AND (NEW.status!='DISPATCHED' OR OLD.status IS NOT NEW.status)"
                         if table == "poll_captures":
                             changed = " OR ".join(
-                                f'OLD.{quoted(r[1])} IS NOT NEW.{quoted(r[1])}'
-                                for r in columns if r[1] != 'status'
-                            ) + (" OR (CASE OLD.status WHEN 'RUNNING' THEN 'PENDING' ELSE OLD.status END) IS NOT "
-                                 "(CASE NEW.status WHEN 'RUNNING' THEN 'PENDING' ELSE NEW.status END)")
+                                f"OLD.{quoted(r[1])} IS NOT NEW.{quoted(r[1])}"
+                                for r in columns
+                                if r[1] not in {"status", "intake_position"}
+                            ) + (
+                                " OR (CASE OLD.status WHEN 'RUNNING' THEN 'PENDING' ELSE OLD.status END) IS NOT "
+                                "(CASE NEW.status WHEN 'RUNNING' THEN 'PENDING' ELSE NEW.status END)"
+                            )
                         condition += (" AND " if condition else "WHEN ") + f"({changed})"
                     db.execute(
                         "CREATE TRIGGER IF NOT EXISTS "

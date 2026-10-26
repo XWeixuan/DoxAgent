@@ -1357,8 +1357,11 @@ class SiteStrategyService:
             )
         wire = request.model_dump(mode='json',exclude={
             'request_id','operation_id','parent_id','remaining_budget_ms'})
-        wire['recipe_parameters'] = {key:value for key,value in wire['recipe_parameters'].items()
-                                     if key not in {'_poll_due_at','_poll_rate','_work_class'}}
+        wire["recipe_parameters"] = {
+            key: value
+            for key, value in wire["recipe_parameters"].items()
+            if key not in {"_poll_rate", "_work_class"}
+        }
         return "capture:" + digest_json(
             {
                 "request": wire,

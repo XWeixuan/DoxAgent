@@ -31,8 +31,8 @@ def _observed(result):
     from doxagent.message_bus_v2.poll_trace import REQUESTS
 
     requests = REQUESTS.get()
-    if requests is not None and not result.served_from_shared_capture:
-        for index,attempt in enumerate(result.attempts):
+    if requests is not None:
+        for index, attempt in enumerate(result.attempts):
             stages = attempt.stage_timings
             indexes = sorted(int(key.split('_')[1]) for key in stages
                 if key.startswith('request_') and key.endswith('_started_epoch_ms') and key.split('_')[1].isdigit())
@@ -42,14 +42,35 @@ def _observed(result):
                     continue
                 headers = stages.get(f'request_{physical}_headers_epoch_ms' if physical is not None else 'headers_received_epoch_ms')
                 body = stages.get(f'request_{physical}_body_epoch_ms' if physical is not None else 'capture_acquired_epoch_ms')
-                requests.append({
-                    'request_key':hashlib.sha256(f'{result.operation_id}:{index}:{physical}'.encode()).hexdigest(),
-                    'endpoint':result.site_id,
-                    'transport': 'site_access', 'request_started_at': datetime.fromtimestamp(started / 1000, UTC).isoformat(),
-                    'headers_received_at': datetime.fromtimestamp(headers / 1000, UTC).isoformat() if headers else None,
-                    'response_received_at':datetime.fromtimestamp(body / 1000, UTC).isoformat() if body else None,
-                    'identity_id': result.identity_id, 'status': result.disposition.value,
-                })
+                requests.append(
+                    {
+                        "physical_request_id": hashlib.sha256(
+                            f"{getattr(result, 'capture_id', None) or result.operation_id}:{index}:{physical}".encode()
+                        ).hexdigest(),
+                        "original_acquisition_id": getattr(result, "capture_id", None)
+                        or result.operation_id,
+                        "shared": result.served_from_shared_capture,
+                        "role": "article" if stages.get(f'request_{physical}_auxiliary') else "listing",
+                        "request_key": hashlib.sha256(
+                            f"{result.operation_id}:{index}:{physical}".encode()
+                        ).hexdigest(),
+                        "endpoint": result.site_id,
+                        "transport": "site_access",
+                        "request_started_at": datetime.fromtimestamp(
+                            started / 1000, UTC
+                        ).isoformat(),
+                        "headers_received_at": datetime.fromtimestamp(
+                            headers / 1000, UTC
+                        ).isoformat()
+                        if headers
+                        else None,
+                        "response_received_at": datetime.fromtimestamp(body / 1000, UTC).isoformat()
+                        if body
+                        else None,
+                        "identity_id": result.identity_id,
+                        "status": result.disposition.value,
+                    }
+                )
     return result
 
 

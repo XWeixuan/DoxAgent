@@ -17,7 +17,6 @@ from zoneinfo import ZoneInfo
 import httpx
 
 from cdecr.kb_v2 import V2KnowledgeBase
-from doxagent.message_bus_v2.google_news import resolve_google_news_urls
 from doxagent.message_bus_v2.schema import (
     AcquisitionFailure,
     JsonObject,
@@ -571,6 +570,8 @@ class YahooFinanceNewsAdapter:
 
 def _rss_rows(xml_text: str) -> list[JsonObject]:
     root = ElementTree.fromstring(xml_text)
+    if root.tag.rsplit('}', 1)[-1].lower() != 'rss' or root.find('channel') is None:
+        raise ValueError('rss_channel_contract_changed')
     rows: list[JsonObject] = []
     for item in root.findall(".//item"):
         row: JsonObject = {}
@@ -589,7 +590,6 @@ class GoogleNewsSearchRssAdapter:
     def __init__(self, settings: DoxAgentSettings, client: httpx.AsyncClient) -> None:
         self.settings = settings
         self.client = client
-        self._resolved_urls: dict[str, str] = {}
 
     async def poll(self, context: PollContext) -> PollResult:
         plan = context.query_plan
@@ -625,17 +625,6 @@ class GoogleNewsSearchRssAdapter:
             )
             response.raise_for_status()
         rows = _rss_rows(response.text)
-        wrappers = [str(row.get("link")) for row in rows if row.get("link")]
-        unresolved = [item for item in wrappers if item not in self._resolved_urls]
-        try:
-            resolved = await resolve_google_news_urls(
-                self.client, unresolved, context.request_permit
-            )
-        except (httpx.HTTPError, ValueError, json.JSONDecodeError):
-            resolved = {}
-        self._resolved_urls.update(resolved)
-        while len(self._resolved_urls) > 5_000:
-            self._resolved_urls.pop(next(iter(self._resolved_urls)))
         messages: list[RawMessageInput] = []
         failures: list[AcquisitionFailure] = []
         for row in rows:
@@ -656,7 +645,7 @@ class GoogleNewsSearchRssAdapter:
             ):
                 continue
             wrapper = str(row.get("link") or "")
-            target = self._resolved_urls.get(wrapper, wrapper)
+            target = wrapper
             if not target.startswith(("http://", "https://")):
                 failures.append(
                     _failure(
@@ -669,9 +658,13 @@ class GoogleNewsSearchRssAdapter:
                 continue
             publisher = str(row.get("source") or "Google News")
             publisher_domain = _domain(str(row.get("source_url") or target))
-            if domains and not any(
-                publisher_domain == item or publisher_domain.endswith(f".{item}")
-                for item in domains
+            if (
+                domains
+                and publisher_domain not in {"", "news.google.com"}
+                and not any(
+                    publisher_domain == item or publisher_domain.endswith(f".{item}")
+                    for item in domains
+                )
             ):
                 failures.append(
                     _failure(
@@ -701,9 +694,13 @@ class GoogleNewsSearchRssAdapter:
                         "query": query,
                         "google_wrapper_url": wrapper,
                         "publisher_domain": publisher_domain,
-                        "canonical_resolution": (
-                            "resolved" if wrapper in self._resolved_urls else "unresolved"
-                        ),
+                        "canonical_resolution": "pending_body",
+                        "allowed_publisher_domains": domains,
+                        "identity_evidence": {
+                            "id_kind": "stable_article",
+                            "url_kind": "article",
+                            "mutable": True,
+                        },
                     },
                 )
             )

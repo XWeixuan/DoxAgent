@@ -275,6 +275,12 @@ class DefenseHttp:
                 async with lock:
                     await asyncio.sleep(max(0, self.started.get(host, 0) + 0.5 - time.monotonic()))
                     self.started[host] = time.monotonic()
+                from .poll_trace import request_started
+                from .schema import utc_now
+
+                event = request_started(
+                    "GET", url, "curl_cffi" if host != "spacenews.com" else "stdlib"
+                )
                 if host == "spacenews.com":
                     # Its public origin accepts standard-library TLS while the
                     # Chrome TLS fingerprint is challenged. Keep a fixed route.
@@ -300,6 +306,10 @@ class DefenseHttp:
                                 break
                         await asyncio.gather(work, return_exceptions=True)
                         raise
+                    if event is not None:
+                        event.update(
+                            response_received_at=utc_now().isoformat(), status_code=result.status
+                        )
                     if result.status in {301, 302, 303, 307, 308}:
                         url = urljoin(url, result.headers["location"])
                         continue
@@ -316,6 +326,11 @@ class DefenseHttp:
                         **(headers or {}),
                     },
                 ) as response:
+                    if event is not None:
+                        event.update(
+                            headers_received_at=utc_now().isoformat(),
+                            status_code=response.status_code,
+                        )
                     if response.status_code in {301, 302, 303, 307, 308}:
                         url = urljoin(url, response.headers["location"])
                         continue
@@ -324,6 +339,15 @@ class DefenseHttp:
                         data.extend(chunk)
                         if len(data) > 4 * 1024 * 1024:
                             raise ValueError("defense_response_exceeds_4mib")
+                    if event is not None:
+                        event.update(
+                            response_received_at=utc_now().isoformat(),
+                            validators={
+                                k: response.headers[k]
+                                for k in ("date", "age", "etag", "last-modified")
+                                if k in response.headers
+                            },
+                        )
                     return Capture(
                         response.status_code,
                         url,
@@ -597,7 +621,12 @@ class DefenseAdapter:
                 )
                 async with context.request_permit():
                     if e.parser == "calcalist":
-                        capture = await self._search(e, key, int(state.get("page", 0)))
+                        page = (
+                            int(state.get("page", 10) or 10)
+                            if context.acquisition_unit.startswith("TAIL:")
+                            else 0
+                        )
+                        capture = await self._search(e, key, page)
                     else:
                         headers = {}
                         if state.get("baseline") and not refresh:
@@ -669,13 +698,10 @@ class DefenseAdapter:
                         messages[m.url] = m
                     seen[m.url] = {"signature": signature}
                 if e.parser == "calcalist":
-                    # Refresh the head every other visit while continuing deeper search pages.
                     cursor = parse_search(capture.text, e, context.requested_at)[1]
-                    page = int(state.get("page", 0))
                     pages = cursor.get("pages", [])
-                    state["page"] = 0 if page or len(pages) <= 1 else int(state.get("tail", 10))
-                    if page:
-                        state["tail"] = page + 10 if len(pages) > page // 10 + 1 else 10
+                    state["tail_pending"] = len(pages) > page // 10 + 1
+                    state["page"] = page + 10 if page else 10
                 state.update(
                     first_seen=dict(list(first_seen.items())[-500:]),
                     last_success_at=context.requested_at.isoformat(),

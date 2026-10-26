@@ -430,8 +430,19 @@ class Worker:
                              "ok": False, "failure_category": "TRANSIENT", "reason_code": "operation_cancelled"})
         except Exception as exc:
             from .service import classify_exception
+            import traceback
+            from uuid import uuid4
 
             category, reason = classify_exception(exc)
+            trace_id = uuid4().hex[:16]
+            frames = traceback.extract_tb(exc.__traceback__)
+            logging.getLogger(__name__).error(
+                "identity_operation_failed trace=%s category=%s error=%s frames=%s",
+                trace_id,
+                category.value,
+                type(exc).__name__,
+                [(os.path.basename(f.filename), f.name, f.lineno) for f in frames[-8:]],
+            )
             await self.send(
                 {
                     "kind": "result",
@@ -439,6 +450,7 @@ class Worker:
                     "epoch": self.epoch,
                     "ok": False,
                     "error": type(exc).__name__,
+                    "traceback_id": trace_id,
                     "failure_category": category.value,
                     "reason_code": reason.split(":url=", 1)[0][:160],
                 }

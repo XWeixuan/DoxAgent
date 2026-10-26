@@ -6,6 +6,7 @@ from collections.abc import Mapping
 from typing import Any
 
 import httpx
+import asyncio
 
 from .monitoring_terms import TickerMonitoringTerms
 from .schema import RawMessageInput
@@ -33,7 +34,27 @@ class BailianDecisionClient:
         self, message: RawMessageInput, terms: Mapping[str, TickerMonitoringTerms]
     ) -> dict[str, float]:
         if len(terms) > 16:
-            raise ValueError("Decision model batch cannot exceed 16 tickers")
+            items = list(terms.items())
+            # The provider's limit applies to each request, not the monitored roster.
+            slots = asyncio.Semaphore(2)
+
+            async def batch(offset):
+                async with slots:
+                    return await self.classify(message, dict(items[offset : offset + 16]))
+
+            results = await asyncio.gather(
+                *(batch(i) for i in range(0, len(items), 16)), return_exceptions=True
+            )
+            answers = {}
+            for result in results:
+                if isinstance(result, dict):
+                    answers.update(result)
+            if not answers:
+                raise next(
+                    (r for r in results if isinstance(r, Exception)),
+                    ValueError("decision_empty_batches"),
+                )
+            return answers
         if not terms:
             return {}
         questions = {

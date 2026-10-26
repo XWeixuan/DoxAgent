@@ -24,6 +24,7 @@ DEADLINE: ContextVar[float | None] = ContextVar("body_completion_deadline", defa
 WORK_CLASS: ContextVar[str] = ContextVar("body_work_class", default="foreground")
 WORK_AGE: ContextVar[float] = ContextVar("body_work_age", default=0)
 REVALIDATION: ContextVar[dict | None] = ContextVar("body_revalidation",default=None)
+RESUME_STAGE = ContextVar("body_resume_stage", default=None)
 
 
 def conditional_headers(url):

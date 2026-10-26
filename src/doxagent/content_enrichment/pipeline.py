@@ -7,6 +7,7 @@ import time
 from contextlib import asynccontextmanager
 from typing import Any, Protocol
 from urllib.parse import urlparse
+from weakref import WeakKeyDictionary
 
 from doxagent.content_enrichment.captions import caption_text, cnbc_caption_source
 from doxagent.content_enrichment.publishers import public_api_html, public_article_api
@@ -21,6 +22,7 @@ from doxagent.content_enrichment.quality import (
 from doxagent.content_enrichment.transport import (
     DEADLINE,
     REVALIDATION,
+    RESUME_STAGE,
     Observation,
     PublicTransport,
     conditional_headers,
@@ -35,6 +37,7 @@ from doxagent.monitoring.media_enrichment import (
 )
 
 PIPELINE_VERSION = "body_v2.1"
+_BROWSER_SLOTS = WeakKeyDictionary()
 
 
 @asynccontextmanager
@@ -80,6 +83,18 @@ class ArticlePipeline:
         self.disabled_hosts = disabled_hosts or set()
         self.site_client = site_client
         self.pipeline_version = pipeline_version
+
+    async def _managed_browser_read(self, url, info, parameters, stage):
+        slots = _BROWSER_SLOTS.setdefault(asyncio.get_running_loop(), asyncio.Semaphore(2))
+        if slots.locked():
+            return Observation(url, "", 0, "site_budget_deferred"), {}
+        async with slots:
+            return await self.browser.read(
+                url,
+                expand=info.expansion_required,
+                parameters=parameters,
+                **({"mode": "BROWSER_FETCH"} if stage == "browser_fetch" else {}),
+            )
 
     async def extract(self, record: MediaEnrichmentRecord) -> MediaExtractionResult:
         begin = getattr(self.transport, "begin_trace", None)
@@ -132,6 +147,9 @@ class ArticlePipeline:
                 diagnostics["access_path"] = "publisher_identity_browser"
                 access_order = [stage for stage in access_order if stage in {"browser", "browser_fetch"}]
             follow = None
+            resume = RESUME_STAGE.get() if hop == 0 else None
+            if resume in access_order:
+                access_order = access_order[access_order.index(resume) :]
             for stage in access_order:
                 # Admission/recovery deferrals release the Hub slot; no extra path may race recovery.
                 if reason in {"site_budget_deferred", "site_recovery_pending", "storage_unavailable"}:
@@ -165,9 +183,9 @@ class ArticlePipeline:
                             gate = _no_wait() if getattr(self.browser, "site_managed", False) else self.transport.controller.enter(url, phase="browser")
                             async with gate:
                                 if getattr(self.browser, "site_managed", False):
-                                    observation, auth = await self.browser.read(
-                                        url, expand=info.expansion_required, parameters=strategy_parameters,
-                                        **({"mode": "BROWSER_FETCH"} if stage == "browser_fetch" else {}))
+                                    observation, auth = await self._managed_browser_read(
+                                        url, info, strategy_parameters, stage
+                                    )
                                 else:
                                     observation, auth = await self.browser.read(url, expand=info.expansion_required)
                             attempts.append(FetchAttempt(stage, url, final_url=observation.url,

@@ -7,13 +7,21 @@ import logging
 import time
 from collections.abc import Sequence
 from contextlib import suppress
+from contextlib import asynccontextmanager
+from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from typing import Protocol
 
 from doxagent.content_enrichment.extractor import SharedContentExtractor
 from doxagent.content_enrichment.native import native_article
 from doxagent.content_enrichment.schema import EnrichmentJob, EnrichmentJobStatus
-from doxagent.content_enrichment.transport import DEADLINE, REVALIDATION, WORK_AGE, WORK_CLASS
+from doxagent.content_enrichment.transport import (
+    DEADLINE,
+    REVALIDATION,
+    RESUME_STAGE,
+    WORK_AGE,
+    WORK_CLASS,
+)
 from doxagent.message_bus_v2.pressure import background_allowed
 from doxagent.message_bus_v2.repository import MessageBusV2Repository
 from doxagent.message_bus_v2.schema import ContentEnrichmentMode, RawMessageInput, utc_now
@@ -59,7 +67,11 @@ class ContentEnrichmentHub:
         self.defense_body_reader = None
         self.sec_body_reader = None
         self.technology_body_reader = None
+        self._google_slots = asyncio.Semaphore(4)
+        self._google_client = None
+        self._google_flights = {}
         from doxagent.message_bus_v2.distribution_repository import DistributionRepository
+
         self.distribution = DistributionRepository(repository)
 
     async def run_once(self, *, now: datetime | None = None) -> int:
@@ -152,6 +164,11 @@ class ContentEnrichmentHub:
             await asyncio.gather(*active, return_exceptions=True)
 
     async def close(self) -> None:
+        if self._google_client is not None:
+            await self._google_client.aclose()
+        for task in self._google_flights.values():
+            task.cancel()
+        await asyncio.gather(*self._google_flights.values(), return_exceptions=True)
         if self.sec_body_reader is not None:
             await self.sec_body_reader.close()
         if self.technology_body_reader is not None:
@@ -163,6 +180,39 @@ class ContentEnrichmentHub:
         close = getattr(self.extractor, "close", None)
         if close is not None:
             await close()
+
+    async def _google_url(self, wrapper):
+        """Resolve only accepted candidates; a shared durable mapping survives restarts."""
+        cached = await self.bus.storage.read(self.repository.polling.google_url, wrapper)
+        if cached:
+            return cached
+        task = self._google_flights.get(wrapper)
+        if task is None:
+
+            async def resolve():
+                import httpx
+                from doxagent.message_bus_v2.google_news import resolve_google_news_urls
+
+                if self._google_client is None:
+                    self._google_client = httpx.AsyncClient(timeout=8)
+
+                @asynccontextmanager
+                async def permit():
+                    yield
+
+                async with self._google_slots, asyncio.timeout(20):
+                    values = await resolve_google_news_urls(self._google_client, [wrapper], permit)
+                target = values.get(wrapper)
+                if not target or target == wrapper:
+                    raise ValueError("google_url_resolution_failed")
+                return await self.bus.storage.call(
+                    self.repository.polling.google_url, wrapper, target
+                )
+
+            task = asyncio.create_task(resolve())
+            self._google_flights[wrapper] = task
+            task.add_done_callback(lambda t: self._google_flights.pop(wrapper, None))
+        return await asyncio.shield(task)
 
     @source_routed
     async def _process(self, job: EnrichmentJob, now: datetime) -> None:
@@ -237,6 +287,15 @@ class ContentEnrichmentHub:
                 }))
                 return
         revalidation_token = REVALIDATION.set(cached if not reused else None)
+        continuation = next(
+            (
+                a.get("phase")
+                for a in reversed(job.prior_attempts)
+                if a.get("reason") == "site_budget_deferred"
+            ),
+            None,
+        )
+        continuation_token = RESUME_STAGE.set(continuation)
         try:
             seconds = (job.deadline_at - max(now, utc_now())).total_seconds()
             queue_expired = job.budget_started_at is None and utc_now()-job.created_at > timedelta(minutes=10)
@@ -274,10 +333,7 @@ class ContentEnrichmentHub:
                     self.sec_body_reader = SecBodyReader()
                 async with asyncio.timeout(seconds):
                     result = await self.sec_body_reader.extract(job, record)
-            elif (
-                job.source.adapter_ref in {"builtin:technology_public@1", "builtin:thefly_public@1"}
-                and seconds > 0
-            ):
+            elif job.source.adapter_ref in {"builtin:technology_public@1", "builtin:thefly_public@1"} and seconds > 0:
                 from doxagent.message_bus_v2.technology_body import TechnologyBodyReader
 
                 if self.technology_body_reader is None:
@@ -312,7 +368,27 @@ class ContentEnrichmentHub:
                 token = DEADLINE.set(time.monotonic() + seconds)
                 try:
                     async with asyncio.timeout(seconds):
-                        if isinstance(self.extractor, SharedContentExtractor):
+                        if job.message.metadata.get("canonical_resolution") == "pending_body":
+                            from urllib.parse import urlsplit
+
+                            target = await self._google_url(job.message.url)
+                            domains = job.message.metadata.get("allowed_publisher_domains", [])
+                            host = (urlsplit(target).hostname or "").removeprefix("www.").lower()
+                            if domains and not any(
+                                host == d or host.endswith("." + d) for d in domains
+                            ):
+                                raise ValueError("domain_constraint_unresolved")
+                            record = replace(record, url=target)
+                            alias_body = await self.bus.storage.read(body_results.resolved_reuse, job.message, job.source.source_id, target)
+                        else:
+                            alias_body = None
+                        if alias_body:
+                            result = MediaExtractionResult(record=record, content=alias_body['content'],
+                                final_url=target, extraction_method='resolved_article_cache',
+                                diagnostics={**alias_body.get('diagnostics', {}), 'site_access_trace': [],
+                                    'reused_from_execution_id': alias_body.get('execution_id'),
+                                    'body_acquired_at': alias_body.get('acquired_at')})
+                        elif isinstance(self.extractor, SharedContentExtractor):
                             result = await self.extractor.extract_version(
                                 record, job.pipeline_version
                             )
@@ -322,9 +398,11 @@ class ContentEnrichmentHub:
                     DEADLINE.reset(token)
         except TimeoutError:
             transport_timeout = (
-                job.source.adapter_ref in {
-                    "builtin:defense_public@1", "builtin:sec_edgar@1",
-                    "builtin:technology_public@1", "builtin:thefly_public@1",
+                job.source.adapter_ref
+                in {
+                    "builtin:defense_public@1",
+                    "builtin:sec_edgar@1",
+                    "builtin:technology_public@1",
                 }
                 and utc_now() < job.deadline_at
             )
@@ -336,9 +414,17 @@ class ContentEnrichmentHub:
             )
         except Exception as exc:
             logger.exception("body extraction failed job_id=%s source_id=%s", job.job_id, job.source.source_id)
-            result = MediaExtractionResult(record=record, reason=type(exc).__name__.lower())
+            result = MediaExtractionResult(
+                record=record,
+                reason=(
+                    str(exc)
+                    if str(exc) in {"google_url_resolution_failed", "domain_constraint_unresolved"}
+                    else type(exc).__name__.lower()
+                ),
+            )
         finally:
             REVALIDATION.reset(revalidation_token)
+            RESUME_STAGE.reset(continuation_token)
 
         finished_at = utc_now()
         await self.bus.storage.call(self.repository.record_enrichment_execution,
@@ -425,7 +511,8 @@ class ContentEnrichmentHub:
         publication_updates: dict[str, object] = {}
         stamp = result.diagnostics.get("publisher_published_at")
         public_defense = job.source.adapter_ref in {
-            "builtin:defense_public@1", "builtin:technology_public@1"
+            "builtin:defense_public@1",
+            "builtin:technology_public@1",
         }
         if (
             (job.source.source_id in {
@@ -473,8 +560,8 @@ class ContentEnrichmentHub:
             job.source.adapter_ref in {"builtin:sec_edgar@1", "builtin:thefly_public@1"}
             and not message.metadata.get("media_enrichment", {}).get("succeeded")
         ):
-            # Filing snippets and Fly previews cannot replace full economic content.
-            # Keep the failed result/receipt; a later observation can
+            # Filing snippets and Fly's premium previews cannot replace full
+            # economic content. Keep the failed result/receipt; a later observation can
             # retry through BodyResults without publishing incomplete news.
             await self.bus.storage.call(
                 self.repository.complete_enrichment_job_with_outcome,
@@ -492,19 +579,26 @@ class ContentEnrichmentHub:
             await self.bus.storage.call(finalize)
             return
         assert job.binding is not None
+
         def finalize_binding():
             with self.repository.atomic_intake():
-                self.bus._accept_message(
-                    source=job.source, binding=job.binding, message=message,
-                    bootstrap=job.bootstrap, collected_at=job.created_at,
-                    trusted_enrichment=True, enrichment_input=job.message,
+                accepted = self.bus._accept_message(
+                    source=job.source,
+                    binding=job.binding,
+                    message=message,
+                    bootstrap=job.bootstrap,
+                    collected_at=job.created_at,
+                    trusted_enrichment=True,
+                    enrichment_input=job.message,
                     enrichment_claim=(job.job_id, job.claim_token) if job.claim_token else None,
                     known_article_raw_id=job.known_article_raw_id,
                 )
                 self.repository.complete_enrichment_job_with_outcome(
                     job.job_id, job.claim_token, self._outcome_payload(job, message))
+            return accepted
+
         try:
-            await self.bus.storage.call(finalize_binding)
+            accepted = await self.bus.storage.call(finalize_binding)
         except RuntimeError as exc:
             if not job.known_article_raw_id or str(exc) not in {
                 "known_article_revision_identity_changed", "known_article_revision_not_authorized"
@@ -513,6 +607,7 @@ class ContentEnrichmentHub:
             await self.bus.storage.call(self.repository.reject_known_article_update,job,str(exc))
             logger.warning("article update rejected job_id=%s reason=%s",job.job_id,str(exc))
             return
+        await self.bus.record_consumable(accepted, message)
         await self.bus.storage.call(body, job, message)
 
     @staticmethod
@@ -605,6 +700,7 @@ class ContentEnrichmentHub:
                 "temporarily",
                 "rate_limit",
                 "domain_cooldown",
+                "google_url_resolution_failed",
             )
         )
 

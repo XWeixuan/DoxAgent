@@ -104,6 +104,7 @@ class BusOrchestration:
             CollectionControl(scheduler.repository, clock=self.journal.clock).status
         )
         temporary_bindings = set()
+        live_stream_bindings = set()
         for source, binding in eligible:
             if source.source_id == "corporate_ir_press_releases":
                 continue  # Its independent endpoint coordinator runs 7x24 before this lane.
@@ -138,6 +139,8 @@ class BusOrchestration:
                                          "UNKNOWN" if realtime_mode is None else realtime)
                     for _,options in scheduler.work_units(source,binding,poll_states[binding.binding_id],now,include_all=True))
             if realtime:
+                if source.source_id == 'ibkr_news':
+                    live_stream_bindings.add(binding.binding_id)
                 from doxagent.source_maintenance.settings import enabled as maintenance_enabled
                 from doxagent.source_maintenance.signals import scheduler as maintenance_scheduler
 
@@ -162,6 +165,9 @@ class BusOrchestration:
                                 scheduler._poll, source, binding, now, **options
                             ), timeout=600)
                         )
+        update_streams = getattr(getattr(scheduler, 'adapters', None), 'set_streaming_bindings', None)
+        if update_streams is not None:
+            update_streams(live_stream_bindings)
         for source, bindings in shared_realtime.values():
             key = f"shared:{source.source_id}"
             if key not in self._inflight and scheduler.distribution_due(

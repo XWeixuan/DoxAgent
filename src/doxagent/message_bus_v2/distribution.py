@@ -51,12 +51,28 @@ class DistributionWorker:
         self._jev_half_open = False
         self._retirement_at = 0.0
         self._active: set[asyncio.Task] = set()
+        self._active_decisions: set[asyncio.Task] = set()
 
     async def _read(self, operation, *args):
         return await self.bus.storage.read(self.bus.repository.read_only, operation, *args)
 
     async def run_available(self) -> int:
         """Fill each released article slot without waiting for a slow batch peer."""
+        for task in tuple(self._active_decisions):
+            if task.done():
+                self._active_decisions.remove(task)
+                if not task.cancelled() and task.exception():
+                    logger.error(
+                        "distribution continuation failed: %s", type(task.exception()).__name__
+                    )
+        available_decisions = 2 - len(self._active_decisions)
+        if available_decisions > 0:
+            decisions = await self.bus.storage.call(
+                self.repository.claim_decisions, available_decisions
+            )
+            self._active_decisions.update(
+                asyncio.create_task(self._continue_decisions(*row)) for row in decisions
+            )
         for task in tuple(self._active):
             if task.done():
                 self._active.remove(task)
@@ -72,13 +88,16 @@ class DistributionWorker:
         groups = defaultdict(list)
         for row in rows:
             groups[(row["article_id"], int(row["terms_revision"]))].append(row)
-        self._active.update(asyncio.create_task(self._article(group)) for group in groups.values())
+        self._active.update(
+            asyncio.create_task(self._article(group, offload_decisions=True))
+            for group in groups.values()
+        )
         return len(rows)
 
     async def close(self):
-        for task in self._active:
+        for task in self._active | self._active_decisions:
             task.cancel()
-        await asyncio.gather(*self._active, return_exceptions=True)
+        await asyncio.gather(*(self._active | self._active_decisions), return_exceptions=True)
         self._active.clear()
 
     async def run_once(self) -> int:
@@ -105,7 +124,7 @@ class DistributionWorker:
                 logger.error("distribution article worker failed: %s", type(outcome).__name__)
         return len(rows)
 
-    async def _article(self, rows: list[dict[str, Any]]) -> None:
+    async def _article(self, rows: list[dict[str, Any]], *, offload_decisions=False) -> None:
         message = RawMessageInput.model_validate_json(rows[0]["enriched_json"])
         source = SourceDefinition.model_validate_json(rows[0]["source_json"])
         current_source = await self._read(
@@ -161,10 +180,8 @@ class DistributionWorker:
             relevant[row["ticker"]] = regex_relevant(found[1], language, message)
 
         # Start the experimental comparison in parallel; deterministic positives need not wait.
-        jev_task = (
-            asyncio.create_task(self._jev(message, definitions))
-            if definitions and source.distribution_policy and source.distribution_policy.jev_enabled
-            else None
+        jev_enabled = bool(
+            definitions and source.distribution_policy and source.distribution_policy.jev_enabled
         )
         for row in eligible_rows:
             if relevant.get(row["ticker"]):
@@ -177,11 +194,57 @@ class DistributionWorker:
                     jev_attempts=0,
                     error_code=None,
                 )
+        if offload_decisions and jev_enabled:
+            from .schema import sha256_text, canonical_json
+
+            reduced = [
+                {k: v for k, v in row.items() if k not in {"enriched_json", "source_json"}}
+                for row in eligible_rows
+            ]
+            payload = {
+                "rows": reduced,
+                "message": message.model_dump(mode="json"),
+                "source": source.model_dump(mode="json"),
+                "relevant": relevant,
+                "definitions": {k: v.model_dump(mode="json") for k, v in definitions.items()},
+            }
+            encoded = await self.bus.storage.prepare(self.bus.repository.content.encode, payload)
+            await self.bus.storage.call(
+                self.repository.defer_decisions,
+                {
+                    "id": sha256_text(canonical_json([r["delivery_id"] for r in reduced])),
+                    "encoded": encoded,
+                    "rows": reduced,
+                    "relevant": relevant,
+                },
+            )
+            return
+        await self._finish_article_decisions(
+            message, source, eligible_rows, definitions, relevant, jev_enabled
+        )
+
+    async def _continue_decisions(self, identity, token, payload):
+        payload = json.loads(
+            await self.bus.storage.prepare(self.bus.repository.content.text, payload)
+        )
+        await self._finish_article_decisions(
+            RawMessageInput.model_validate(payload["message"]),
+            SourceDefinition.model_validate(payload["source"]),
+            payload["rows"],
+            {k: TickerMonitoringTerms.model_validate(v) for k, v in payload["definitions"].items()},
+            payload["relevant"],
+            True,
+        )
+        await self.bus.storage.call(self.repository.finish_decisions, identity, token)
+
+    async def _finish_article_decisions(
+        self, message, source, eligible_rows, definitions, relevant, jev_enabled
+    ):
         scores: dict[str, float] = {}
         attempts: dict[str, int] = {}
         errors: dict[str, str] = {}
-        if jev_task:
-            scores, attempts, errors = await jev_task
+        if jev_enabled:
+            scores, attempts, errors = await self._jev(message, definitions)
             for row in eligible_rows:
                 if relevant.get(row["ticker"]):
                     await self.bus.storage.call(

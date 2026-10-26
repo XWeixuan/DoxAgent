@@ -316,10 +316,13 @@ class IdentityWorkerManager:
                     if message.get("ok"):
                         future.set_result(message["result"])
                     else:
+                        reason = message.get('reason_code', 'identity_worker_operation_failed')
+                        if message.get('traceback_id') and reason == message.get('error'):
+                            reason += ':trace=' + message['traceback_id']
                         future.set_exception(
                             IdentityOperationError(
                                 message.get("failure_category", "RUNTIME_UNAVAILABLE"),
-                                message.get("reason_code", "identity_worker_operation_failed"),
+                                reason,
                             )
                         )
         except (asyncio.IncompleteReadError, OSError, ValueError, asyncio.CancelledError):

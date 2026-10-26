@@ -8,6 +8,14 @@ from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
 from typing import Any
 from weakref import WeakKeyDictionary
+from contextvars import ContextVar
+
+WRITE_ADMISSION = ContextVar("bus_write_admission", default=False)
+WRITE_TIMINGS = ContextVar("bus_write_timings", default=None)
+
+
+class WriteAdmissionBusy(Exception):
+    """BEGIN failed before any mutation; safe to release the lane and retry."""
 
 
 @dataclass
@@ -91,17 +99,30 @@ class StorageLane:
 
     async def call(self, operation: Callable[..., Any], *args, _lane_priority=1, **kwargs):
         queued_at = time.monotonic()
-        async with self._lane().writer(_lane_priority):
-            started = time.monotonic()
-            try:
-                return await self._execute(operation, args, kwargs)
-            finally:
-                elapsed, wait = time.monotonic() - started, started - queued_at
-                budget = 0.05 if getattr(operation, "__name__", "") == "accept_piece" else 1
-                if elapsed >= budget or wait >= 1:
-                    logging.getLogger(__name__).warning(
-                        "bus_storage_slow operation=%s elapsed_ms=%s wait_ms=%s",
-                        getattr(operation, "__qualname__", type(operation).__name__),
-                        round(elapsed * 1000),
-                        round(wait * 1000),
-                    )
+        timings = {"begin_wait_ms": 0, "transaction_ms": 0, "commit_ms": 0}
+        token = WRITE_ADMISSION.set(True)
+        trace = WRITE_TIMINGS.set(timings)
+        try:
+            while True:
+                try:
+                    async with self._lane().writer(_lane_priority):
+                        started = time.monotonic()
+                        try:
+                            return await self._execute(operation, args, kwargs)
+                        finally:
+                            elapsed, wait = time.monotonic() - started, started - queued_at
+                            if elapsed >= 0.05 or wait >= 1:
+                                logging.getLogger(__name__).warning(
+                                    "bus_storage_slow operation=%s elapsed_ms=%s wait_ms=%s phases=%s",
+                                    getattr(operation, "__qualname__", type(operation).__name__),
+                                    round(elapsed * 1000),
+                                    round(wait * 1000),
+                                    timings,
+                                )
+                except WriteAdmissionBusy:
+                    if time.monotonic() - queued_at >= 30:
+                        raise
+                    await asyncio.sleep(0.025)
+        finally:
+            WRITE_ADMISSION.reset(token)
+            WRITE_TIMINGS.reset(trace)

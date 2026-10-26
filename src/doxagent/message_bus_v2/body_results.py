@@ -58,6 +58,23 @@ class ArticleBodyResults:
     def __init__(self, repository):
         self.repository = repository
 
+    def resolved_reuse(self, message, source_id, final_url):
+        """A verified wrapper alias can reuse a compatible, unchanged publisher body."""
+        with self.repository._connect() as db:
+            rows = db.execute("SELECT data_json FROM article_body_results WHERE "
+                "json_extract(data_json,'$.final_canonical_url')=? AND status='READY' LIMIT 8",
+                (dedup.article_url(final_url, 'article'),)).fetchall()
+        language = message.metadata.get('language') or message.metadata.get('identity_evidence', {}).get('language') or ''
+        hint = update_hint(message)
+        for row in rows:
+            value = json.loads(row[0])
+            if (self.compatible(value, message, source_id) and value.get('language', '') == language
+                    and value.get('outcome') in {'FULL', 'SHORT_FULL'} and value.get('content')
+                    and hint in value.get('verified_hints', {}).values()
+                    and value.get('next_check_at', '') > utc_now().isoformat()):
+                return value
+        return None
+
     def observe(self, message, source_id: str, *, now: datetime | None = None, known_article=None) -> dict:
         now = now or utc_now()
         key, hint = article_key(message, source_id), update_hint(message)

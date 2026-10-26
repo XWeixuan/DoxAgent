@@ -1,0 +1,101 @@
+{
+  "runs": [
+    {
+      "file": "regression.xml",
+      "tests": 138,
+      "failed": 2,
+      "skipped": 0
+    },
+    {
+      "file": "regression-second.xml",
+      "tests": 110,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "targeted.xml",
+      "tests": 15,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "regression-third.xml",
+      "tests": 174,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "site-regression.xml",
+      "tests": 68,
+      "failed": 2,
+      "skipped": 1
+    },
+    {
+      "file": "targeted-final.xml",
+      "tests": 72,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "site-final.xml",
+      "tests": 75,
+      "failed": 0,
+      "skipped": 1
+    },
+    {
+      "file": "bus-final.xml",
+      "tests": 65,
+      "failed": 1,
+      "skipped": 0
+    },
+    {
+      "file": "bus-target-final.xml",
+      "tests": 46,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "core-final.xml",
+      "tests": 127,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "compatibility-final.xml",
+      "tests": 57,
+      "failed": 1,
+      "skipped": 0
+    },
+    {
+      "file": "new-final.xml",
+      "tests": 21,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "adapters-final.xml",
+      "tests": 27,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "lifecycle-final.xml",
+      "tests": 29,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "pre-release.xml",
+      "tests": 34,
+      "failed": 0,
+      "skipped": 0
+    }
+  ],
+  "latest_unique": {
+    "passed": 454,
+    "failed": 0,
+    "skipped": 1
+  },
+  "failed_cases": [],
+  "note": "Earlier failed artifacts retained; current per-case result uses most recent rerun. Two malformed-origin fallback canaries also passed."
+}
