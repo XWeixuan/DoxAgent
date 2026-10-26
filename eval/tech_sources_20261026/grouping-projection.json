@@ -1,0 +1,296 @@
+{
+  "endpoint_health": [
+    {
+      "source_id": "register_software_cloud_security",
+      "unit": "FEED:00413f3a19135f231b8ae777",
+      "status": "succeeded",
+      "last_success_at": "2026-10-26T11:51:45.218405Z"
+    },
+    {
+      "source_id": "register_software_cloud_security",
+      "unit": "FEED:87722ef01323172b688e1903",
+      "status": "succeeded",
+      "last_success_at": "2026-10-26T11:51:45.709515Z"
+    },
+    {
+      "source_id": "register_software_cloud_security",
+      "unit": "FEED:db04ef8e9dbfacc14a4850af",
+      "status": "succeeded",
+      "last_success_at": "2026-10-26T11:51:45.734959Z"
+    },
+    {
+      "source_id": "venturebeat_software",
+      "unit": "FEED:441fdfddf197e9fb50689a42",
+      "status": "succeeded",
+      "last_success_at": "2026-10-26T11:51:44.241518Z"
+    },
+    {
+      "source_id": "venturebeat_software",
+      "unit": "FEED:f7cc3b8c95e4530b3f4ecada",
+      "status": "succeeded",
+      "last_success_at": "2026-10-26T11:51:45.031630Z"
+    },
+    {
+      "source_id": "venturebeat_software",
+      "unit": "FEED:bf9f57a75deb1d399236fecd",
+      "status": "succeeded",
+      "last_success_at": "2026-10-26T11:51:46.049418Z"
+    },
+    {
+      "source_id": "siliconangle_software",
+      "unit": "FEED:55f3714dba9de22a93f2174f",
+      "status": "succeeded",
+      "last_success_at": "2026-10-26T11:51:45.111912Z"
+    },
+    {
+      "source_id": "siliconangle_software",
+      "unit": "FEED:bc3ad25f6ad69ad3de6e535b",
+      "status": "succeeded",
+      "last_success_at": "2026-10-26T11:51:44.801067Z"
+    },
+    {
+      "source_id": "siliconangle_software",
+      "unit": "FEED:fa00173fb6cc12df3d737987",
+      "status": "succeeded",
+      "last_success_at": "2026-10-26T11:51:46.226427Z"
+    },
+    {
+      "source_id": "crn_cloud_security_datacenter",
+      "unit": "FEED:a518927e703ee73b94eb2ec9",
+      "status": "succeeded",
+      "last_success_at": "2026-10-26T11:51:43.494096Z"
+    },
+    {
+      "source_id": "crn_cloud_security_datacenter",
+      "unit": "FEED:0f559d39370394f58715143f",
+      "status": "succeeded",
+      "last_success_at": "2026-10-26T11:51:44.204000Z"
+    },
+    {
+      "source_id": "crn_cloud_security_datacenter",
+      "unit": "FEED:ffdb14036507158e4b9c311e",
+      "status": "succeeded",
+      "last_success_at": "2026-10-26T11:51:45.017437Z"
+    },
+    {
+      "source_id": "darpa_news",
+      "unit": "FEED:af7ba198c9873a5485b197ea",
+      "status": "succeeded",
+      "last_success_at": "2026-10-26T11:51:53.353751Z"
+    },
+    {
+      "source_id": "siliconangle_ai",
+      "unit": "FEED:d9ad55ce52b684e69542146c",
+      "status": "succeeded",
+      "last_success_at": "2026-10-26T11:51:44.869398Z"
+    },
+    {
+      "source_id": "venturebeat_ai",
+      "unit": "FEED:39256bb1bf07839b572ac3da",
+      "status": "succeeded",
+      "last_success_at": "2026-10-26T11:51:43.278068Z"
+    },
+    {
+      "source_id": "sdxcentral_news",
+      "unit": "FEED:e62c5bd445d93e0ef716d408",
+      "status": "succeeded",
+      "last_success_at": "2026-10-26T11:51:43.477042Z"
+    },
+    {
+      "source_id": "wccftech_hardware",
+      "unit": "FEED:61c1a1e5da73c7015919486f",
+      "status": "succeeded",
+      "last_success_at": "2026-10-26T11:51:44.153626Z"
+    },
+    {
+      "source_id": "wccftech_hardware",
+      "unit": "FEED:7df2a446216b91089f06ad4c",
+      "status": "succeeded",
+      "last_success_at": "2026-10-26T11:51:44.252946Z"
+    },
+    {
+      "source_id": "wccftech_hardware",
+      "unit": "FEED:e83235960489ac42aea2149a",
+      "status": "succeeded",
+      "last_success_at": "2026-10-26T11:51:45.004709Z"
+    },
+    {
+      "source_id": "technews_hardware",
+      "unit": "FEED:2fcddd0f7ad7d5452dbc221e",
+      "status": "succeeded",
+      "last_success_at": "2026-10-26T11:51:43.252909Z"
+    },
+    {
+      "source_id": "technews_hardware",
+      "unit": "FEED:365211cf9af517cb87395484",
+      "status": "succeeded",
+      "last_success_at": "2026-10-26T11:51:43.464287Z"
+    }
+  ],
+  "read_projection_current": true,
+  "snow_source_ids": [
+    "crn_cloud_security_datacenter",
+    "darpa_news",
+    "register_software_cloud_security",
+    "sdxcentral_news",
+    "siliconangle_ai",
+    "siliconangle_software",
+    "thefly_ticker_news",
+    "venturebeat_ai",
+    "venturebeat_software"
+  ],
+  "retired_active_bindings": [],
+  "retired_acquisitions_after_release": 0,
+  "natural_poll_runs": [
+    [
+      "crn_cloud_security_datacenter",
+      "FEED:0f559d39370394f58715143f",
+      "CAPTURED",
+      5
+    ],
+    [
+      "crn_cloud_security_datacenter",
+      "FEED:a518927e703ee73b94eb2ec9",
+      "CAPTURED",
+      5
+    ],
+    [
+      "crn_cloud_security_datacenter",
+      "FEED:ffdb14036507158e4b9c311e",
+      "CAPTURED",
+      5
+    ],
+    [
+      "darpa_news",
+      "FEED:af7ba198c9873a5485b197ea",
+      "CAPTURED",
+      25
+    ],
+    [
+      "register_software_cloud_security",
+      "FEED:00413f3a19135f231b8ae777",
+      "CAPTURED",
+      5
+    ],
+    [
+      "register_software_cloud_security",
+      "FEED:87722ef01323172b688e1903",
+      "CAPTURED",
+      5
+    ],
+    [
+      "register_software_cloud_security",
+      "FEED:db04ef8e9dbfacc14a4850af",
+      "CAPTURED",
+      5
+    ],
+    [
+      "sdxcentral_news",
+      "FEED:e62c5bd445d93e0ef716d408",
+      "CAPTURED",
+      25
+    ],
+    [
+      "siliconangle_ai",
+      "FEED:d9ad55ce52b684e69542146c",
+      "CAPTURED",
+      25
+    ],
+    [
+      "siliconangle_software",
+      "FEED:55f3714dba9de22a93f2174f",
+      "CAPTURED",
+      5
+    ],
+    [
+      "siliconangle_software",
+      "FEED:bc3ad25f6ad69ad3de6e535b",
+      "CAPTURED",
+      5
+    ],
+    [
+      "siliconangle_software",
+      "FEED:fa00173fb6cc12df3d737987",
+      "CAPTURED",
+      5
+    ],
+    [
+      "technews_hardware",
+      "FEED:2fcddd0f7ad7d5452dbc221e",
+      "CAPTURED",
+      25
+    ],
+    [
+      "technews_hardware",
+      "FEED:365211cf9af517cb87395484",
+      "CAPTURED",
+      20
+    ],
+    [
+      "technews_hardware",
+      "FEED:365211cf9af517cb87395484",
+      "DEFERRED",
+      5
+    ],
+    [
+      "thefly_ticker_news",
+      "HEAD",
+      "CAPTURED",
+      42
+    ],
+    [
+      "venturebeat_ai",
+      "FEED:39256bb1bf07839b572ac3da",
+      "CAPTURED",
+      25
+    ],
+    [
+      "venturebeat_software",
+      "FEED:441fdfddf197e9fb50689a42",
+      "CAPTURED",
+      5
+    ],
+    [
+      "venturebeat_software",
+      "FEED:bf9f57a75deb1d399236fecd",
+      "CAPTURED",
+      5
+    ],
+    [
+      "venturebeat_software",
+      "FEED:f7cc3b8c95e4530b3f4ecada",
+      "CAPTURED",
+      5
+    ],
+    [
+      "wccftech_hardware",
+      "FEED:61c1a1e5da73c7015919486f",
+      "CAPTURED",
+      20
+    ],
+    [
+      "wccftech_hardware",
+      "FEED:61c1a1e5da73c7015919486f",
+      "DEFERRED",
+      5
+    ],
+    [
+      "wccftech_hardware",
+      "FEED:7df2a446216b91089f06ad4c",
+      "CAPTURED",
+      20
+    ],
+    [
+      "wccftech_hardware",
+      "FEED:7df2a446216b91089f06ad4c",
+      "DEFERRED",
+      5
+    ],
+    [
+      "wccftech_hardware",
+      "FEED:e83235960489ac42aea2149a",
+      "CAPTURED",
+      25
+    ]
+  ]
+}

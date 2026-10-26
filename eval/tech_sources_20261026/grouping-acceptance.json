@@ -1,0 +1,368 @@
+{
+  "at": "2026-10-26T11:48:25.972558+00:00",
+  "polls": [
+    {
+      "source_id": "quantum_zeitgeist",
+      "unit": "FEED:36ea93b1b1238527f70d7bb9",
+      "url": "https://quantumzeitgeist.com/feed/",
+      "items": 200,
+      "deferred": false,
+      "failures": [],
+      "elapsed_ms": 317
+    },
+    {
+      "source_id": "quantum_computing_report",
+      "unit": "FEED:580eb14015a8c19d636c9706",
+      "url": "https://quantumcomputingreport.com/feed/",
+      "items": 10,
+      "deferred": false,
+      "failures": [],
+      "elapsed_ms": 367
+    },
+    {
+      "source_id": "register_software_cloud_security",
+      "unit": "FEED:00413f3a19135f231b8ae777",
+      "url": "https://api.theregister.com/api/v1/article?orderBy=published&site_id=2&remapper=rss&limit=50&query=tag:software",
+      "items": 50,
+      "deferred": false,
+      "failures": [],
+      "elapsed_ms": 1150
+    },
+    {
+      "source_id": "venturebeat_software",
+      "unit": "FEED:441fdfddf197e9fb50689a42",
+      "url": "https://venturebeat.com/category/orchestration/feed",
+      "items": 7,
+      "deferred": false,
+      "failures": [],
+      "elapsed_ms": 1155
+    },
+    {
+      "source_id": "venturebeat_software",
+      "unit": "FEED:f7cc3b8c95e4530b3f4ecada",
+      "url": "https://venturebeat.com/category/data/feed",
+      "items": 7,
+      "deferred": false,
+      "failures": [],
+      "elapsed_ms": 1669
+    },
+    {
+      "source_id": "quantum_insider",
+      "unit": "FEED:f3acbc6223b037e4bb49bbc3",
+      "url": "https://thequantuminsider.com/category/daily/business/feed/",
+      "items": 10,
+      "deferred": false,
+      "failures": [],
+      "elapsed_ms": 1776
+    },
+    {
+      "source_id": "register_software_cloud_security",
+      "unit": "FEED:87722ef01323172b688e1903",
+      "url": "https://api.theregister.com/api/v1/article?orderBy=published&site_id=2&remapper=rss&limit=50&query=(tag:off-prem%20OR%20tag:off_prem)",
+      "items": 50,
+      "deferred": false,
+      "failures": [],
+      "elapsed_ms": 2059
+    },
+    {
+      "source_id": "crn_cloud_security_datacenter",
+      "unit": "FEED:a518927e703ee73b94eb2ec9",
+      "url": "https://www.crn.com/news/cloud/rss.xml",
+      "items": 10,
+      "deferred": false,
+      "failures": [],
+      "elapsed_ms": 2219
+    },
+    {
+      "source_id": "crn_cloud_security_datacenter",
+      "unit": "FEED:0f559d39370394f58715143f",
+      "url": "https://www.crn.com/news/security/rss.xml",
+      "items": 10,
+      "deferred": false,
+      "failures": [],
+      "elapsed_ms": 2655
+    },
+    {
+      "source_id": "siliconangle_software",
+      "unit": "FEED:55f3714dba9de22a93f2174f",
+      "url": "https://siliconangle.com/category/big-data/feed/",
+      "items": 30,
+      "deferred": false,
+      "failures": [],
+      "elapsed_ms": 2725
+    },
+    {
+      "source_id": "siliconangle_software",
+      "unit": "FEED:bc3ad25f6ad69ad3de6e535b",
+      "url": "https://siliconangle.com/category/cloud/feed/",
+      "items": 30,
+      "deferred": false,
+      "failures": [],
+      "elapsed_ms": 2864
+    },
+    {
+      "source_id": "sdxcentral_news",
+      "unit": "FEED:e62c5bd445d93e0ef716d408",
+      "url": "https://www.sdxcentral.com/news/",
+      "items": 28,
+      "deferred": false,
+      "failures": [],
+      "elapsed_ms": 3632
+    },
+    {
+      "source_id": "quantum_insider",
+      "unit": "FEED:730ddc4092a52278da63b348",
+      "url": "https://thequantuminsider.com/category/daily/national/feed/",
+      "items": 10,
+      "deferred": false,
+      "failures": [],
+      "elapsed_ms": 3847
+    },
+    {
+      "source_id": "technews_hardware",
+      "unit": "FEED:2fcddd0f7ad7d5452dbc221e",
+      "url": "https://technews.tw/category/semiconductor/feed/",
+      "items": 40,
+      "deferred": false,
+      "failures": [],
+      "elapsed_ms": 3884
+    },
+    {
+      "source_id": "wccftech_hardware",
+      "unit": "FEED:61c1a1e5da73c7015919486f",
+      "url": "https://wccftech.com/topic/ai/feed/",
+      "items": 20,
+      "deferred": false,
+      "failures": [],
+      "elapsed_ms": 3970
+    },
+    {
+      "source_id": "register_software_cloud_security",
+      "unit": "FEED:db04ef8e9dbfacc14a4850af",
+      "url": "https://api.theregister.com/api/v1/article?orderBy=published&site_id=2&remapper=rss&limit=50&query=tag:security",
+      "items": 50,
+      "deferred": false,
+      "failures": [],
+      "elapsed_ms": 4252
+    },
+    {
+      "source_id": "venturebeat_software",
+      "unit": "FEED:bf9f57a75deb1d399236fecd",
+      "url": "https://venturebeat.com/category/security/feed",
+      "items": 7,
+      "deferred": false,
+      "failures": [],
+      "elapsed_ms": 4255
+    },
+    {
+      "source_id": "technews_hardware",
+      "unit": "FEED:365211cf9af517cb87395484",
+      "url": "https://technews.tw/category/ai/feed/",
+      "items": 40,
+      "deferred": false,
+      "failures": [],
+      "elapsed_ms": 4399
+    },
+    {
+      "source_id": "venturebeat_ai",
+      "unit": "FEED:39256bb1bf07839b572ac3da",
+      "url": "https://venturebeat.com/category/ai/feed",
+      "items": 7,
+      "deferred": false,
+      "failures": [],
+      "elapsed_ms": 4742
+    },
+    {
+      "source_id": "crn_cloud_security_datacenter",
+      "unit": "FEED:ffdb14036507158e4b9c311e",
+      "url": "https://www.crn.com/news/data-center/rss.xml",
+      "items": 10,
+      "deferred": false,
+      "failures": [],
+      "elapsed_ms": 4827
+    },
+    {
+      "source_id": "wccftech_hardware",
+      "unit": "FEED:7df2a446216b91089f06ad4c",
+      "url": "https://wccftech.com/topic/industry/feed/",
+      "items": 20,
+      "deferred": false,
+      "failures": [],
+      "elapsed_ms": 5036
+    },
+    {
+      "source_id": "siliconangle_software",
+      "unit": "FEED:fa00173fb6cc12df3d737987",
+      "url": "https://siliconangle.com/category/security/feed/",
+      "items": 30,
+      "deferred": false,
+      "failures": [],
+      "elapsed_ms": 5192
+    },
+    {
+      "source_id": "quantum_insider",
+      "unit": "FEED:c60e3191aa57e6b2c12db770",
+      "url": "https://thequantuminsider.com/category/capital-markets/feed/",
+      "items": 10,
+      "deferred": false,
+      "failures": [],
+      "elapsed_ms": 5374
+    },
+    {
+      "source_id": "siliconangle_ai",
+      "unit": "FEED:d9ad55ce52b684e69542146c",
+      "url": "https://siliconangle.com/category/ai/feed/",
+      "items": 30,
+      "deferred": false,
+      "failures": [],
+      "elapsed_ms": 5694
+    },
+    {
+      "source_id": "wccftech_hardware",
+      "unit": "FEED:e83235960489ac42aea2149a",
+      "url": "https://wccftech.com/department/hardware/feed/",
+      "items": 20,
+      "deferred": false,
+      "failures": [],
+      "elapsed_ms": 6031
+    },
+    {
+      "source_id": "darpa_news",
+      "unit": "FEED:af7ba198c9873a5485b197ea",
+      "url": "https://www.darpa.mil/rss.xml",
+      "items": 10,
+      "deferred": false,
+      "failures": [],
+      "elapsed_ms": 8375
+    }
+  ],
+  "bodies": [
+    {
+      "source_id": "venturebeat_software",
+      "url": "https://venturebeat.com/orchestration/a-coding-agents-harness-can-triple-its-cost-without-making-it-more-accurate-study-finds",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 10560
+    },
+    {
+      "source_id": "venturebeat_ai",
+      "url": "https://venturebeat.com/ai/enterprise-ais-real-risk-isnt-autonomous-agents-its-the-complexity-between-them",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 5316
+    },
+    {
+      "source_id": "crn_cloud_security_datacenter",
+      "url": "https://www.crn.com/news/cloud/2026/ahead-hires-over-300-employees-to-drive-vmware-vcf-as-sales-soar",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 4520
+    },
+    {
+      "source_id": "quantum_computing_report",
+      "url": "https://quantumcomputingreport.com/new-york-deploys-360-million-for-stony-brook-and-regional-hubs-supported-by-1-37b-in-federal-foundry-commitments/",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 3851
+    },
+    {
+      "source_id": "quantum_zeitgeist",
+      "url": "https://quantumzeitgeist.com/quantum-multiprogramming-crosstalk-attack-mitigation-technique/",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 5086
+    },
+    {
+      "source_id": "siliconangle_software",
+      "url": "https://siliconangle.com/2026/10/20/agents-are-breaking-ai-economics-and-the-fix-starts-in-the-data-layer/",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 9292
+    },
+    {
+      "source_id": "wccftech_hardware",
+      "url": "https://wccftech.com/cleanyourtv-3-0-lets-you-remove-ads-and-bloatware-from-android-and-google-tvs-now-supports-300-models/",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 3426
+    },
+    {
+      "source_id": "register_software_cloud_security",
+      "url": "https://www.theregister.com/software/2026/10/23/arc-browser-on-its-way-out-as-makers-suggest-an-alternative/5305114",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 2867
+    },
+    {
+      "source_id": "darpa_news",
+      "url": "https://www.darpa.mil/news/2026/young-faculty-award-2027-topics-open-meet-2026-class",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 1985
+    },
+    {
+      "source_id": "siliconangle_ai",
+      "url": "https://siliconangle.com/2026/10/25/apollo-analysis-shows-that-no-one-apart-from-the-biggest-tech-giants-is-seeing-any-real-benefits-from-ai/",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 4899
+    },
+    {
+      "source_id": "technews_hardware",
+      "url": "https://technews.tw/2026/10/25/nanya-2028/",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 2073
+    },
+    {
+      "source_id": "quantum_insider",
+      "url": "https://thequantuminsider.com/2026/10/26/ramdeobaba-university-and-qclairvoyance-quantum-labs-to-set-up-quantum-software-and-quantum-communication-labs-in-nagpur/",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 5822
+    },
+    {
+      "source_id": "sdxcentral_news",
+      "url": "https://www.sdxcentral.com/news/ai-and-cloud-demand-propels-nokia-to-35-profit-despite-supply-chain-pressures/",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 4158
+    }
+  ],
+  "second": [
+    {
+      "unit": "FEED:55f3714dba9de22a93f2174f",
+      "items": 0,
+      "failures": 0
+    },
+    {
+      "unit": "FEED:bc3ad25f6ad69ad3de6e535b",
+      "items": 0,
+      "failures": 0
+    },
+    {
+      "unit": "FEED:fa00173fb6cc12df3d737987",
+      "items": 0,
+      "failures": 0
+    }
+  ],
+  "summary": {
+    "endpoints": 26,
+    "endpoint_success": 26,
+    "body_samples": 13,
+    "body_full": 13
+  }
+}

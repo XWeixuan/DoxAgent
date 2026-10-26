@@ -33,3 +33,22 @@
 覆盖：全部 26 个真实入口样本解析、合并后的源与订阅数、慢内部栏目不阻塞健康栏目提交、独立 429/Retry-After 与重启后退避、同站物理请求并发上限、检查点迁移及 Wccftech 身份碰撞、旧源历史保留、迁移幂等、合并前已发布文章在合并后不重复发布。
 
 219 项回归通过，涵盖技术源、The Fly、分发、持久运行调度、轮询指标、国防源、正文 Hub 和文章去重。测试记录为 `eval/tech_sources_20261026/grouping-regression.xml`。生产预检未发现本批来源的待处理分发任务；生产迁移验收补充于下方。
+
+## 生产迁移与验收
+
+运行提交：`4c05c00fc8af2beef471727ea0c665d8c587e160`。已推送 origin/main、同步新加坡仓库，通过标准发布锁与 storage_release 构建/发布，仅更新 Bus/BODY。2026-10-26 北京时间约 19:47 完成切换。实际镜像为 `sha256:529bd275640a6baff84e7c4b84e2252ca7bc8cb47be177525321a8792f4a1be1`，两个容器均运行、零重启，源代码文件哈希与该提交一致。
+
+停止旧 Bus/BODY 后再次确认本批来源待处理分发任务为零，然后在原事务内迁移 57 份入口状态、墓碑化 32 个旧绑定、停用 19 个碎片化源。常规源 13 个、入口 26 个、启用订阅 34 个；The Fly 9 个订阅保持不变。第二次执行无配置变化、无重复迁移。迁移范围外 211 个原绑定的哈希不变，全部既有词表修订和 ticker 运行状态不变，其他组件发布记录不变，资源回收 timer 已恢复。
+
+| Ticker | 本批来源当前订阅数（含 The Fly） |
+| --- | ---: |
+| SNOW | 9 |
+| INTC、MU、COHR、NBIS | 各 7 |
+| BE | 3 |
+| RKLB、ONDS、CEG | 各 1 |
+
+外网验收从新镜像按合并身份及独立 FEED 执行：26/26 入口成功，每个外部源抽取一篇实际文章，13/13 正文为 FULL。SiliconANGLE 软件源三个入口的第二轮均为零新消息、零失败，验证各自验证器及检查点生效。探针没有向生产入库历史样本。
+
+读模型核验确认 SNOW 当前为上述 9 个源、旧栏目绑定均已墓碑化，旧源不再出现在可用源列表。21 个已启用内部入口均已有生产自然 FEED 执行记录，最新状态全部 succeeded；量子 5 个入口仅作只读探针验收，没有启动 IONQ。短窗口内 TechNews AI、Wccftech AI/Industry 各发生一轮独立退避，随后自然恢复成功，其余入口继续采集；保留原始 DEFERRED 记录，没有抹除失败轮次。该窗口不是长期轮询 SLA 证明。
+
+公开回执：`eval/tech_sources_20261026/grouping-production-verification.json`、`grouping-acceptance.json`、`grouping-projection.json`。主机审计目录为 `/var/lib/doxagent/technology-grouping-20261026/`；含环境变量的发布快照和 manifest 仅留主机私有目录。

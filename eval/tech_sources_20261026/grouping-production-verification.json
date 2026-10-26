@@ -1,0 +1,115 @@
+{
+  "commit": "4c05c00fc8af2beef471727ea0c665d8c587e160",
+  "components": {
+    "v2-message-bus": {
+      "image": "sha256:529bd275640a6baff84e7c4b84e2252ca7bc8cb47be177525321a8792f4a1be1",
+      "running": true,
+      "restarts": 0,
+      "started_at": "2026-10-26T11:47:37.366807789Z"
+    },
+    "v2-content-enrichment": {
+      "image": "sha256:529bd275640a6baff84e7c4b84e2252ca7bc8cb47be177525321a8792f4a1be1",
+      "running": true,
+      "restarts": 0,
+      "started_at": "2026-10-26T11:47:29.859729166Z"
+    }
+  },
+  "configuration": {
+    "regular_sources": 13,
+    "internal_endpoints": 26,
+    "regular_bindings": 34,
+    "fly_bindings": 9,
+    "retired_source_ids": [
+      "crn_cloud",
+      "crn_data_center",
+      "crn_security",
+      "quantum_insider_business",
+      "quantum_insider_capital_markets",
+      "quantum_insider_national",
+      "register_cloud",
+      "register_security",
+      "register_software",
+      "siliconangle_big_data",
+      "siliconangle_cloud",
+      "siliconangle_security",
+      "technews_ai",
+      "technews_semiconductor",
+      "venturebeat_data",
+      "venturebeat_orchestration",
+      "venturebeat_security",
+      "wccftech_ai",
+      "wccftech_industry"
+    ],
+    "by_ticker": {
+      "SNOW": 9,
+      "NBIS": 7,
+      "INTC": 7,
+      "COHR": 7,
+      "MU": 7,
+      "BE": 3,
+      "ONDS": 1,
+      "CEG": 1,
+      "RKLB": 1
+    },
+    "required_languages": {
+      "MU": [
+        "en",
+        "ko",
+        "zh-Hant"
+      ],
+      "RKLB": [
+        "en"
+      ],
+      "BE": [
+        "en",
+        "ko",
+        "zh-Hant"
+      ],
+      "INTC": [
+        "en",
+        "ko",
+        "zh-Hant"
+      ],
+      "NBIS": [
+        "en",
+        "ko",
+        "zh-Hant"
+      ],
+      "COHR": [
+        "en",
+        "ko",
+        "zh-Hant"
+      ],
+      "ONDS": [
+        "en",
+        "he"
+      ],
+      "CEG": [
+        "en"
+      ],
+      "SNOW": [
+        "en"
+      ]
+    },
+    "ionq_not_started": true
+  },
+  "migration": {
+    "units": 57,
+    "retired_bindings": 32,
+    "retired_sources": 19
+  },
+  "unrelated_bindings_unchanged": 211,
+  "all_terms_unchanged": {
+    "BE": 2,
+    "INTC": 2,
+    "MU": 5,
+    "NBIS": 1,
+    "COHR": 1,
+    "RKLB": 2,
+    "ONDS": 3,
+    "SNOW": 1
+  },
+  "other_component_changes": [],
+  "idempotent": true,
+  "timer_active": true
+}
