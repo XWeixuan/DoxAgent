@@ -39,13 +39,34 @@
 
 - 在生产网络执行真实新适配器：常规 26/26 入口采集成功，各入口取 1 篇实际文章，26/26 获得完整正文。第二轮验证 RSS/HTML 304 和 API 未变化内容跳过，未写入生产消息或修改发布时间。
 - The Fly 九 ticker 均取得有效列表；单次批量提交的采集完成时间约 1.3–4.9 秒，包含共用限流等待。这是采样结果，不等于开盘后长期轮询 SLA。原生 BODY Reader 对公开全文和预览逐条分类。
-- 113 项相关源、正文 Hub、监测词及控制层回归通过，同站物理并发专项另 1 项通过。覆盖基线不污染、退避跨轮恢复、闭市隔离、栏目不互阻、预览不发布、文章正文复用和配置幂等。
+- 隔离检出中的 114 项相关源、正文 Hub、监测词及控制层回归全部通过。覆盖基线不污染、退避跨轮恢复、闭市隔离、栏目不互阻、同站物理并发上限、预览不发布、文章正文复用和配置幂等；不依赖其他会话尚未提交的修改。
 - 入口、固定路由和 parser 位于 `technology_sources.py`、`thefly_source.py`；正文入口为 `technology_body.py`，均接入既有 AdapterRegistry/ContentEnrichmentHub。
 - 配置脚本为 `scripts/ops/configure_technology_sources.py`，词表种子为同目录 `technology-monitoring-terms-20261026.json`。默认只预览；`--apply` 应用常规源和订阅；`--include-fly` 另外绑定现有 ticker 的 The Fly。
 - 现有 API/Web 已支持动态源语言及通用 DTO，本次只需发布 Bus/BODY，不调整浏览器容量、身份、日历或其他运行组件。
 
-生产配置命令（更新后的 Bus 镜像内）：
+运维脚本不打包到精简生产镜像。将该提交中的配置脚本和同目录种子文件一起复制到 Bus 容器的 `/tmp/technology-onboarding/` 后执行：
 
 ```sh
-/app/.venv/bin/python scripts/ops/configure_technology_sources.py --bus /data/bus/bus.sqlite3 --apply --include-fly --receipt /tmp/technology-source-configuration.json
+/app/.venv/bin/python /tmp/technology-onboarding/configure_technology_sources.py --bus /data/bus/bus.sqlite3 --apply --include-fly --receipt /tmp/technology-source-configuration.json
 ```
+
+## 生产发布与配置验收
+
+运行代码：`e2b308bc8aad4da29428e5648e573ca0e8da5861`，功能提交为 `5a0b2c4c`。已推送 origin/main 并同步新加坡仓库，通过标准 storage_release 锁及构建/发布函数更新 `v2-content-enrichment`、`v2-message-bus`。两组件实际镜像均为 `sha256:0e4864f33ab3ee293c0d390dc3fa04b783174417f265f6b8631f150f154f30b8`，运行正常、零重启；新增三个模块的实际文件 SHA256 与提交一致。其他组件发布记录不变，资源回收 timer 已恢复。
+
+已配置并启用 66 个新订阅：常规 57、The Fly 9；再次应用全部显示 unchanged，没有重复绑定或词表版本。
+
+| Ticker | 本次新增订阅数 |
+| --- | ---: |
+| SNOW | 17 |
+| INTC、MU、COHR、NBIS | 各 10 |
+| BE | 6 |
+| RKLB、ONDS、CEG | 各 1 |
+
+5 个量子栏目已注册，IONQ 的 ticker 状态和绑定均不存在，没有启动其监测。原有 182 个绑定的数据哈希全部不变，原有 7 个 ticker 词表版本不变；SNOW 从未配置状态建立词表 v1。统一监测词语言检查也通过：SNOW 为 en，原有半导体 ticker 保持 en/ko/zh-Hant，ONDS 保持 en/he。
+
+验收时处于休市，未调整日历、未把历史样本回灌生产。外网实测和正文样本验收、隔离全链路测试、生产镜像/绑定/幂等核验分别记录，不将它们表述为开盘后的长期自然轮询 SLA。
+
+生产核验快照中 Bus 约 163 MiB、BODY 约 93 MiB；这是当时快照，不作为长期峰值或优化幅度。实现没有引入新浏览器身份或常驻页面。
+
+主机回执位于 `/var/lib/doxagent/technology-sources-20261026/`：`verification.json`、`technology-configuration.json`、`technology-idempotent.json`。含环境变量的发布快照/manifest 仅留在主机私有目录，没有导出。公开实测回执及测试记录在本地 `eval/tech_sources_20261026/`。

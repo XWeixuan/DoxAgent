@@ -1,0 +1,164 @@
+[
+  {
+    "ticker": "COHR",
+    "items": 48,
+    "elapsed_ms": 2402,
+    "coverage": "COMPLETE",
+    "deferred": false,
+    "outcomes": {
+      "PARTIAL": 44,
+      "FULL": 4
+    },
+    "full_sample": [
+      {
+        "url": "https://tfb.thefly.com/news/get?date=2026-09-30+09%3A40%3A37&id=4433263",
+        "chars": 3896,
+        "outcome": "FULL"
+      }
+    ]
+  },
+  {
+    "ticker": "INTC",
+    "items": 50,
+    "elapsed_ms": 2115,
+    "coverage": "COMPLETE",
+    "deferred": false,
+    "outcomes": {
+      "PARTIAL": 38,
+      "FULL": 12
+    },
+    "full_sample": [
+      {
+        "url": "https://tfb.thefly.com/news/get?date=2026-10-22+14%3A29%3A47&id=4447323",
+        "chars": 7315,
+        "outcome": "FULL"
+      }
+    ]
+  },
+  {
+    "ticker": "MU",
+    "items": 50,
+    "elapsed_ms": 2079,
+    "coverage": "COMPLETE",
+    "deferred": false,
+    "outcomes": {
+      "FULL": 15,
+      "PARTIAL": 35
+    },
+    "full_sample": [
+      {
+        "url": "https://tfb.thefly.com/news/get?date=2026-10-23+16%3A11%3A41&id=4448423",
+        "chars": 3534,
+        "outcome": "FULL"
+      }
+    ]
+  },
+  {
+    "ticker": "SNOW",
+    "items": 42,
+    "elapsed_ms": 1274,
+    "coverage": "COMPLETE",
+    "deferred": false,
+    "outcomes": {
+      "PARTIAL": 35,
+      "FULL": 7
+    },
+    "full_sample": [
+      {
+        "url": "https://tfb.thefly.com/news/get?date=2026-10-22+14%3A29%3A47&id=4447323",
+        "chars": 7315,
+        "outcome": "FULL"
+      }
+    ]
+  },
+  {
+    "ticker": "NBIS",
+    "items": 50,
+    "elapsed_ms": 3241,
+    "coverage": "COMPLETE",
+    "deferred": false,
+    "outcomes": {
+      "PARTIAL": 42,
+      "FULL": 8
+    },
+    "full_sample": [
+      {
+        "url": "https://tfb.thefly.com/news/get?date=2026-10-08+09%3A43%3A23&id=4438156",
+        "chars": 4371,
+        "outcome": "FULL"
+      }
+    ]
+  },
+  {
+    "ticker": "BE",
+    "items": 50,
+    "elapsed_ms": 3647,
+    "coverage": "COMPLETE",
+    "deferred": false,
+    "outcomes": {
+      "PARTIAL": 44,
+      "FULL": 6
+    },
+    "full_sample": [
+      {
+        "url": "https://tfb.thefly.com/news/get?date=2026-10-23+16%3A11%3A41&id=4448423",
+        "chars": 3534,
+        "outcome": "FULL"
+      }
+    ]
+  },
+  {
+    "ticker": "RKLB",
+    "items": 50,
+    "elapsed_ms": 3998,
+    "coverage": "COMPLETE",
+    "deferred": false,
+    "outcomes": {
+      "PARTIAL": 42,
+      "FULL": 8
+    },
+    "full_sample": [
+      {
+        "url": "https://tfb.thefly.com/news/get?date=2026-10-15+12%3A03%3A28&id=4442628",
+        "chars": 3691,
+        "outcome": "FULL"
+      }
+    ]
+  },
+  {
+    "ticker": "ONDS",
+    "items": 50,
+    "elapsed_ms": 4650,
+    "coverage": "COMPLETE",
+    "deferred": false,
+    "outcomes": {
+      "PARTIAL": 43,
+      "FULL": 7
+    },
+    "full_sample": [
+      {
+        "url": "https://tfb.thefly.com/news/get?date=2026-10-12+13%3A50%3A34&id=4440031",
+        "chars": 4763,
+        "outcome": "FULL"
+      }
+    ]
+  },
+  {
+    "ticker": "CEG",
+    "items": 50,
+    "elapsed_ms": 4945,
+    "coverage": "COMPLETE",
+    "deferred": false,
+    "outcomes": {
+      "PARTIAL": 42,
+      "FULL": 8
+    },
+    "full_sample": [
+      {
+        "url": "https://tfb.thefly.com/news/get?date=2026-10-06+16%3A22%3A04&id=4436716",
+        "chars": 3140,
+        "outcome": "FULL"
+      }
+    ]
+  }
+]

@@ -1,0 +1,736 @@
+{
+  "polls": [
+    {
+      "source_id": "quantum_computing_report",
+      "items": 10,
+      "elapsed_ms": 232,
+      "failures": [],
+      "deferred": false,
+      "coverage": "COMPLETE",
+      "first_url": "https://quantumcomputingreport.com/new-york-deploys-360-million-for-stony-brook-and-regional-hubs-supported-by-1-37b-in-federal-foundry-commitments/",
+      "endpoints": [
+        {
+          "url": "https://quantumcomputingreport.com/feed/",
+          "http_status": 200,
+          "items": 10,
+          "route": "direct"
+        }
+      ]
+    },
+    {
+      "source_id": "quantum_zeitgeist",
+      "items": 200,
+      "elapsed_ms": 248,
+      "failures": [],
+      "deferred": false,
+      "coverage": "COMPLETE",
+      "first_url": "https://quantumzeitgeist.com/quantum-layers-improve-vision-ai-spatial-reasoning/",
+      "endpoints": [
+        {
+          "url": "https://quantumzeitgeist.com/feed/",
+          "http_status": 200,
+          "items": 200,
+          "route": "direct"
+        }
+      ]
+    },
+    {
+      "source_id": "register_software",
+      "items": 50,
+      "elapsed_ms": 1193,
+      "failures": [],
+      "deferred": false,
+      "coverage": "COMPLETE",
+      "first_url": "https://www.theregister.com/software/2026/10/23/arc-browser-on-its-way-out-as-makers-suggest-an-alternative/5305114",
+      "endpoints": [
+        {
+          "url": "https://api.theregister.com/api/v1/article?orderBy=published&site_id=2&remapper=rss&limit=50&query=tag:software",
+          "http_status": 200,
+          "items": 50,
+          "route": "us-standard-5"
+        }
+      ]
+    },
+    {
+      "source_id": "venturebeat_orchestration",
+      "items": 7,
+      "elapsed_ms": 1480,
+      "failures": [],
+      "deferred": false,
+      "coverage": "COMPLETE",
+      "first_url": "https://venturebeat.com/orchestration/a-coding-agents-harness-can-triple-its-cost-without-making-it-more-accurate-study-finds",
+      "endpoints": [
+        {
+          "url": "https://venturebeat.com/category/orchestration/feed",
+          "http_status": 200,
+          "items": 7,
+          "route": "direct"
+        }
+      ]
+    },
+    {
+      "source_id": "quantum_insider_business",
+      "items": 10,
+      "elapsed_ms": 1586,
+      "failures": [],
+      "deferred": false,
+      "coverage": "COMPLETE",
+      "first_url": "https://thequantuminsider.com/2026/10/23/governor-hochul-announces-new-study-highlighting-new-yorks-position-as-a-national-leader-in-quantum-technology/",
+      "endpoints": [
+        {
+          "url": "https://thequantuminsider.com/category/daily/business/feed/",
+          "http_status": 200,
+          "items": 10,
+          "route": "us-standard-5"
+        }
+      ]
+    },
+    {
+      "source_id": "venturebeat_data",
+      "items": 7,
+      "elapsed_ms": 1692,
+      "failures": [],
+      "deferred": false,
+      "coverage": "COMPLETE",
+      "first_url": "https://venturebeat.com/data/ctgt-releases-open-source-tool-concordance-to-trace-why-ai-agents-make-inconsistent-decisions",
+      "endpoints": [
+        {
+          "url": "https://venturebeat.com/category/data/feed",
+          "http_status": 200,
+          "items": 7,
+          "route": "direct"
+        }
+      ]
+    },
+    {
+      "source_id": "quantum_insider_national",
+      "items": 10,
+      "elapsed_ms": 2085,
+      "failures": [],
+      "deferred": false,
+      "coverage": "COMPLETE",
+      "first_url": "https://thequantuminsider.com/2026/10/23/governor-hochul-announces-new-study-highlighting-new-yorks-position-as-a-national-leader-in-quantum-technology/",
+      "endpoints": [
+        {
+          "url": "https://thequantuminsider.com/category/daily/national/feed/",
+          "http_status": 200,
+          "items": 10,
+          "route": "us-standard-5"
+        }
+      ]
+    },
+    {
+      "source_id": "register_cloud",
+      "items": 50,
+      "elapsed_ms": 2112,
+      "failures": [],
+      "deferred": false,
+      "coverage": "COMPLETE",
+      "first_url": "https://www.theregister.com/off-prem/2026/10/19/europes-cloud-sovereignty-rules-could-do-more-harm-than-good/5303890",
+      "endpoints": [
+        {
+          "url": "https://api.theregister.com/api/v1/article?orderBy=published&site_id=2&remapper=rss&limit=50&query=(tag:off-prem%20OR%20tag:off_prem)",
+          "http_status": 200,
+          "items": 50,
+          "route": "us-standard-5"
+        }
+      ]
+    },
+    {
+      "source_id": "crn_cloud",
+      "items": 10,
+      "elapsed_ms": 2256,
+      "failures": [],
+      "deferred": false,
+      "coverage": "COMPLETE",
+      "first_url": "https://www.crn.com/news/cloud/2026/ahead-hires-over-300-employees-to-drive-vmware-vcf-as-sales-soar",
+      "endpoints": [
+        {
+          "url": "https://www.crn.com/news/cloud/rss.xml",
+          "http_status": 200,
+          "items": 10,
+          "route": "direct"
+        }
+      ]
+    },
+    {
+      "source_id": "siliconangle_big_data",
+      "items": 30,
+      "elapsed_ms": 2299,
+      "failures": [],
+      "deferred": false,
+      "coverage": "COMPLETE",
+      "first_url": "https://siliconangle.com/2026/10/20/agents-are-breaking-ai-economics-and-the-fix-starts-in-the-data-layer/",
+      "endpoints": [
+        {
+          "url": "https://siliconangle.com/category/big-data/feed/",
+          "http_status": 200,
+          "items": 30,
+          "route": "direct"
+        }
+      ]
+    },
+    {
+      "source_id": "siliconangle_cloud",
+      "items": 30,
+      "elapsed_ms": 2451,
+      "failures": [],
+      "deferred": false,
+      "coverage": "COMPLETE",
+      "first_url": "https://siliconangle.com/2026/10/22/google-cloud-introduces-agent-compute-engine-to-host-ai-agents/",
+      "endpoints": [
+        {
+          "url": "https://siliconangle.com/category/cloud/feed/",
+          "http_status": 200,
+          "items": 30,
+          "route": "direct"
+        }
+      ]
+    },
+    {
+      "source_id": "crn_security",
+      "items": 10,
+      "elapsed_ms": 2691,
+      "failures": [],
+      "deferred": false,
+      "coverage": "COMPLETE",
+      "first_url": "https://www.crn.com/news/security/2026/php-threat-is-likely-far-from-over-despite-limited-exploitation-so-far-guidepoint-expert",
+      "endpoints": [
+        {
+          "url": "https://www.crn.com/news/security/rss.xml",
+          "http_status": 200,
+          "items": 10,
+          "route": "direct"
+        }
+      ]
+    },
+    {
+      "source_id": "sdxcentral_news",
+      "items": 28,
+      "elapsed_ms": 2967,
+      "failures": [],
+      "deferred": false,
+      "coverage": "COMPLETE",
+      "first_url": "https://www.sdxcentral.com/news/ai-and-cloud-demand-propels-nokia-to-35-profit-despite-supply-chain-pressures/",
+      "endpoints": [
+        {
+          "url": "https://www.sdxcentral.com/news/",
+          "http_status": 200,
+          "items": 28,
+          "route": "direct"
+        }
+      ]
+    },
+    {
+      "source_id": "technews_semiconductor",
+      "items": 40,
+      "elapsed_ms": 2979,
+      "failures": [],
+      "deferred": false,
+      "coverage": "COMPLETE",
+      "first_url": "https://technews.tw/2026/10/25/nanya-2028/",
+      "endpoints": [
+        {
+          "url": "https://technews.tw/category/semiconductor/feed/",
+          "http_status": 200,
+          "items": 40,
+          "route": "direct"
+        }
+      ]
+    },
+    {
+      "source_id": "wccftech_ai",
+      "items": 20,
+      "elapsed_ms": 3203,
+      "failures": [],
+      "deferred": false,
+      "coverage": "COMPLETE",
+      "first_url": "https://wccftech.com/exclusive-buying-more-nvidia-b200s-and-fixing-runtimes-are-orthogonal-how-int21s-ai-swarm-killed-python-outcoded-human-experts-and-rewrote-the-drama-3-runtime-in-60-minutes/",
+      "endpoints": [
+        {
+          "url": "https://wccftech.com/topic/ai/feed/",
+          "http_status": 200,
+          "items": 20,
+          "route": "us-standard-5"
+        }
+      ]
+    },
+    {
+      "source_id": "venturebeat_security",
+      "items": 7,
+      "elapsed_ms": 3461,
+      "failures": [],
+      "deferred": false,
+      "coverage": "COMPLETE",
+      "first_url": "https://venturebeat.com/security/ai-agents-are-about-to-put-least-privilege-to-the-test",
+      "endpoints": [
+        {
+          "url": "https://venturebeat.com/category/security/feed",
+          "http_status": 200,
+          "items": 7,
+          "route": "direct"
+        }
+      ]
+    },
+    {
+      "source_id": "register_security",
+      "items": 50,
+      "elapsed_ms": 3464,
+      "failures": [],
+      "deferred": false,
+      "coverage": "COMPLETE",
+      "first_url": "https://www.theregister.com/security/2026/10/24/autonomous-attack-agent-in-skynet-mode-hijacks-other-models-to-carry-out-its-evil-deeds/5305215",
+      "endpoints": [
+        {
+          "url": "https://api.theregister.com/api/v1/article?orderBy=published&site_id=2&remapper=rss&limit=50&query=tag:security",
+          "http_status": 200,
+          "items": 50,
+          "route": "us-standard-5"
+        }
+      ]
+    },
+    {
+      "source_id": "technews_ai",
+      "items": 40,
+      "elapsed_ms": 3473,
+      "failures": [],
+      "deferred": false,
+      "coverage": "COMPLETE",
+      "first_url": "https://technews.tw/2026/10/25/ai-brain-rot/",
+      "endpoints": [
+        {
+          "url": "https://technews.tw/category/ai/feed/",
+          "http_status": 200,
+          "items": 40,
+          "route": "direct"
+        }
+      ]
+    },
+    {
+      "source_id": "venturebeat_ai",
+      "items": 7,
+      "elapsed_ms": 3964,
+      "failures": [],
+      "deferred": false,
+      "coverage": "COMPLETE",
+      "first_url": "https://venturebeat.com/ai/enterprise-ais-real-risk-isnt-autonomous-agents-its-the-complexity-between-them",
+      "endpoints": [
+        {
+          "url": "https://venturebeat.com/category/ai/feed",
+          "http_status": 200,
+          "items": 7,
+          "route": "direct"
+        }
+      ]
+    },
+    {
+      "source_id": "crn_data_center",
+      "items": 10,
+      "elapsed_ms": 4076,
+      "failures": [],
+      "deferred": false,
+      "coverage": "COMPLETE",
+      "first_url": "https://www.crn.com/news/data-center/2026/gdt-exec-channel-can-benefit-from-nvidia-s-ai-financing-boom-but-hurdles-persist",
+      "endpoints": [
+        {
+          "url": "https://www.crn.com/news/data-center/rss.xml",
+          "http_status": 200,
+          "items": 10,
+          "route": "direct"
+        }
+      ]
+    },
+    {
+      "source_id": "quantum_insider_capital_markets",
+      "items": 10,
+      "elapsed_ms": 4241,
+      "failures": [],
+      "deferred": false,
+      "coverage": "COMPLETE",
+      "first_url": "https://thequantuminsider.com/2026/10/22/rhymeq-secures-2-2-million-to-simplify-quantum-software-development/",
+      "endpoints": [
+        {
+          "url": "https://thequantuminsider.com/category/capital-markets/feed/",
+          "http_status": 200,
+          "items": 10,
+          "route": "us-standard-5"
+        }
+      ]
+    },
+    {
+      "source_id": "siliconangle_security",
+      "items": 30,
+      "elapsed_ms": 4420,
+      "failures": [],
+      "deferred": false,
+      "coverage": "COMPLETE",
+      "first_url": "https://siliconangle.com/2026/10/23/ai-agent-governance-takes-shape-oktas-oktane-event-oktane/",
+      "endpoints": [
+        {
+          "url": "https://siliconangle.com/category/security/feed/",
+          "http_status": 200,
+          "items": 30,
+          "route": "direct"
+        }
+      ]
+    },
+    {
+      "source_id": "wccftech_hardware",
+      "items": 20,
+      "elapsed_ms": 4648,
+      "failures": [],
+      "deferred": false,
+      "coverage": "COMPLETE",
+      "first_url": "https://wccftech.com/exclusive-buying-more-nvidia-b200s-and-fixing-runtimes-are-orthogonal-how-int21s-ai-swarm-killed-python-outcoded-human-experts-and-rewrote-the-drama-3-runtime-in-60-minutes/",
+      "endpoints": [
+        {
+          "url": "https://wccftech.com/department/hardware/feed/",
+          "http_status": 200,
+          "items": 20,
+          "route": "us-standard-5"
+        }
+      ]
+    },
+    {
+      "source_id": "wccftech_industry",
+      "items": 20,
+      "elapsed_ms": 4730,
+      "failures": [],
+      "deferred": false,
+      "coverage": "COMPLETE",
+      "first_url": "https://wccftech.com/samsung-hbm-pricing-premium-data-center-supply-chain/",
+      "endpoints": [
+        {
+          "url": "https://wccftech.com/topic/industry/feed/",
+          "http_status": 200,
+          "items": 20,
+          "route": "us-standard-5"
+        }
+      ]
+    },
+    {
+      "source_id": "siliconangle_ai",
+      "items": 30,
+      "elapsed_ms": 4892,
+      "failures": [],
+      "deferred": false,
+      "coverage": "COMPLETE",
+      "first_url": "https://siliconangle.com/2026/10/23/moonshot-ai-launches-new-flagship-kim-k3-1-pro-model-with-3t-parameters/",
+      "endpoints": [
+        {
+          "url": "https://siliconangle.com/category/ai/feed/",
+          "http_status": 200,
+          "items": 30,
+          "route": "direct"
+        }
+      ]
+    },
+    {
+      "source_id": "darpa_news",
+      "items": 10,
+      "elapsed_ms": 8477,
+      "failures": [],
+      "deferred": false,
+      "coverage": "COMPLETE",
+      "first_url": "https://www.darpa.mil/news/2026/young-faculty-award-2027-topics-open-meet-2026-class",
+      "endpoints": [
+        {
+          "url": "https://www.darpa.mil/rss.xml",
+          "http_status": 200,
+          "items": 10,
+          "route": "us-standard-5"
+        }
+      ]
+    }
+  ],
+  "bodies": [
+    {
+      "source_id": "venturebeat_orchestration",
+      "url": "https://venturebeat.com/orchestration/a-coding-agents-harness-can-triple-its-cost-without-making-it-more-accurate-study-finds",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 10560,
+      "elapsed_ms": 1382
+    },
+    {
+      "source_id": "crn_cloud",
+      "url": "https://www.crn.com/news/cloud/2026/ahead-hires-over-300-employees-to-drive-vmware-vcf-as-sales-soar",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 4520,
+      "elapsed_ms": 1558
+    },
+    {
+      "source_id": "quantum_zeitgeist",
+      "url": "https://quantumzeitgeist.com/quantum-layers-improve-vision-ai-spatial-reasoning/",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 5735,
+      "elapsed_ms": 1636
+    },
+    {
+      "source_id": "venturebeat_data",
+      "url": "https://venturebeat.com/data/ctgt-releases-open-source-tool-concordance-to-trace-why-ai-agents-make-inconsistent-decisions",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 11361,
+      "elapsed_ms": 1653
+    },
+    {
+      "source_id": "crn_security",
+      "url": "https://www.crn.com/news/security/2026/php-threat-is-likely-far-from-over-despite-limited-exploitation-so-far-guidepoint-expert",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 3342,
+      "elapsed_ms": 1723
+    },
+    {
+      "source_id": "quantum_computing_report",
+      "url": "https://quantumcomputingreport.com/new-york-deploys-360-million-for-stony-brook-and-regional-hubs-supported-by-1-37b-in-federal-foundry-commitments/",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 3851,
+      "elapsed_ms": 1735
+    },
+    {
+      "source_id": "wccftech_ai",
+      "url": "https://wccftech.com/exclusive-buying-more-nvidia-b200s-and-fixing-runtimes-are-orthogonal-how-int21s-ai-swarm-killed-python-outcoded-human-experts-and-rewrote-the-drama-3-runtime-in-60-minutes/",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 9415,
+      "elapsed_ms": 1909
+    },
+    {
+      "source_id": "venturebeat_security",
+      "url": "https://venturebeat.com/security/ai-agents-are-about-to-put-least-privilege-to-the-test",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 6375,
+      "elapsed_ms": 1947
+    },
+    {
+      "source_id": "siliconangle_cloud",
+      "url": "https://siliconangle.com/2026/10/22/google-cloud-introduces-agent-compute-engine-to-host-ai-agents/",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 5187,
+      "elapsed_ms": 1970
+    },
+    {
+      "source_id": "siliconangle_big_data",
+      "url": "https://siliconangle.com/2026/10/20/agents-are-breaking-ai-economics-and-the-fix-starts-in-the-data-layer/",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 9292,
+      "elapsed_ms": 1981
+    },
+    {
+      "source_id": "register_software",
+      "url": "https://www.theregister.com/software/2026/10/23/arc-browser-on-its-way-out-as-makers-suggest-an-alternative/5305114",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 2920,
+      "elapsed_ms": 2018
+    },
+    {
+      "source_id": "technews_semiconductor",
+      "url": "https://technews.tw/2026/10/25/nanya-2028/",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 2073,
+      "elapsed_ms": 2036
+    },
+    {
+      "source_id": "crn_data_center",
+      "url": "https://www.crn.com/news/data-center/2026/gdt-exec-channel-can-benefit-from-nvidia-s-ai-financing-boom-but-hurdles-persist",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 8017,
+      "elapsed_ms": 2046
+    },
+    {
+      "source_id": "quantum_insider_national",
+      "url": "https://thequantuminsider.com/2026/10/23/governor-hochul-announces-new-study-highlighting-new-yorks-position-as-a-national-leader-in-quantum-technology/",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 10443,
+      "elapsed_ms": 2063
+    },
+    {
+      "source_id": "register_cloud",
+      "url": "https://www.theregister.com/off-prem/2026/10/19/europes-cloud-sovereignty-rules-could-do-more-harm-than-good/5303890",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 4726,
+      "elapsed_ms": 2068
+    },
+    {
+      "source_id": "quantum_insider_business",
+      "url": "https://thequantuminsider.com/2026/10/23/governor-hochul-announces-new-study-highlighting-new-yorks-position-as-a-national-leader-in-quantum-technology/",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 10443,
+      "elapsed_ms": 2113
+    },
+    {
+      "source_id": "quantum_insider_capital_markets",
+      "url": "https://thequantuminsider.com/2026/10/22/rhymeq-secures-2-2-million-to-simplify-quantum-software-development/",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 4390,
+      "elapsed_ms": 2151
+    },
+    {
+      "source_id": "technews_ai",
+      "url": "https://technews.tw/2026/10/25/ai-brain-rot/",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 1469,
+      "elapsed_ms": 2154
+    },
+    {
+      "source_id": "venturebeat_ai",
+      "url": "https://venturebeat.com/ai/enterprise-ais-real-risk-isnt-autonomous-agents-its-the-complexity-between-them",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 5316,
+      "elapsed_ms": 2162
+    },
+    {
+      "source_id": "sdxcentral_news",
+      "url": "https://www.sdxcentral.com/news/ai-and-cloud-demand-propels-nokia-to-35-profit-despite-supply-chain-pressures/",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 4202,
+      "elapsed_ms": 2166
+    },
+    {
+      "source_id": "wccftech_hardware",
+      "url": "https://wccftech.com/exclusive-buying-more-nvidia-b200s-and-fixing-runtimes-are-orthogonal-how-int21s-ai-swarm-killed-python-outcoded-human-experts-and-rewrote-the-drama-3-runtime-in-60-minutes/",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 9415,
+      "elapsed_ms": 2176
+    },
+    {
+      "source_id": "siliconangle_security",
+      "url": "https://siliconangle.com/2026/10/23/ai-agent-governance-takes-shape-oktas-oktane-event-oktane/",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 7751,
+      "elapsed_ms": 2281
+    },
+    {
+      "source_id": "register_security",
+      "url": "https://www.theregister.com/security/2026/10/24/autonomous-attack-agent-in-skynet-mode-hijacks-other-models-to-carry-out-its-evil-deeds/5305215",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 6036,
+      "elapsed_ms": 2298
+    },
+    {
+      "source_id": "wccftech_industry",
+      "url": "https://wccftech.com/samsung-hbm-pricing-premium-data-center-supply-chain/",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 2585,
+      "elapsed_ms": 2376
+    },
+    {
+      "source_id": "siliconangle_ai",
+      "url": "https://siliconangle.com/2026/10/23/moonshot-ai-launches-new-flagship-kim-k3-1-pro-model-with-3t-parameters/",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 3810,
+      "elapsed_ms": 2737
+    },
+    {
+      "source_id": "darpa_news",
+      "url": "https://www.darpa.mil/news/2026/young-faculty-award-2027-topics-open-meet-2026-class",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 1985,
+      "elapsed_ms": 6601
+    }
+  ],
+  "second_poll": [
+    {
+      "source_id": "siliconangle_ai",
+      "items": 0,
+      "failures": 0,
+      "endpoints": [
+        {
+          "url": "https://siliconangle.com/category/ai/feed/",
+          "http_status": 304,
+          "items": 0,
+          "route": "direct"
+        }
+      ]
+    },
+    {
+      "source_id": "quantum_computing_report",
+      "items": 0,
+      "failures": 0,
+      "endpoints": [
+        {
+          "url": "https://quantumcomputingreport.com/feed/",
+          "http_status": 304,
+          "items": 0,
+          "route": "direct"
+        }
+      ]
+    },
+    {
+      "source_id": "register_software",
+      "items": 0,
+      "failures": 0,
+      "endpoints": [
+        {
+          "url": "https://api.theregister.com/api/v1/article?orderBy=published&site_id=2&remapper=rss&limit=50&query=tag:software",
+          "http_status": 200,
+          "items": 50,
+          "route": "us-standard-5"
+        }
+      ]
+    },
+    {
+      "source_id": "sdxcentral_news",
+      "items": 0,
+      "failures": 0,
+      "endpoints": [
+        {
+          "url": "https://www.sdxcentral.com/news/",
+          "http_status": 304,
+          "items": 0,
+          "route": "direct"
+        }
+      ]
+    }
+  ]
+}

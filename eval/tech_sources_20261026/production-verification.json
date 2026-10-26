@@ -1,0 +1,106 @@
+{
+  "commit": "e2b308bc8aad4da29428e5648e573ca0e8da5861",
+  "components": {
+    "v2-message-bus": {
+      "image": "sha256:0e4864f33ab3ee293c0d390dc3fa04b783174417f265f6b8631f150f154f30b8",
+      "running": true,
+      "restarts": 0,
+      "started_at": "2026-10-25T23:58:40.694442268Z"
+    },
+    "v2-content-enrichment": {
+      "image": "sha256:0e4864f33ab3ee293c0d390dc3fa04b783174417f265f6b8631f150f154f30b8",
+      "running": true,
+      "restarts": 0,
+      "started_at": "2026-10-25T23:58:31.537142069Z"
+    }
+  },
+  "configuration": {
+    "regular_sources": 26,
+    "fly_sources": 1,
+    "regular_bindings": 57,
+    "fly_bindings": 9,
+    "by_ticker": {
+      "BE": 6,
+      "SNOW": 17,
+      "MU": 10,
+      "CEG": 1,
+      "NBIS": 10,
+      "INTC": 10,
+      "COHR": 10,
+      "ONDS": 1,
+      "RKLB": 1
+    },
+    "reserved_quantum_sources": [
+      "quantum_computing_report",
+      "quantum_insider_business",
+      "quantum_insider_national",
+      "quantum_insider_capital_markets",
+      "quantum_zeitgeist"
+    ],
+    "ionq_not_started": true,
+    "languages": {
+      "MU": [
+        "en",
+        "ko",
+        "zh-Hant"
+      ],
+      "RKLB": [
+        "en"
+      ],
+      "BE": [
+        "en",
+        "ko",
+        "zh-Hant"
+      ],
+      "INTC": [
+        "en",
+        "ko",
+        "zh-Hant"
+      ],
+      "NBIS": [
+        "en",
+        "ko",
+        "zh-Hant"
+      ],
+      "COHR": [
+        "en",
+        "ko",
+        "zh-Hant"
+      ],
+      "ONDS": [
+        "en",
+        "he"
+      ],
+      "CEG": [
+        "en"
+      ],
+      "SNOW": [
+        "en"
+      ]
+    },
+    "states": {
+      "MU": "running",
+      "RKLB": "running",
+      "BE": "running",
+      "INTC": "running",
+      "NBIS": "running",
+      "COHR": "running",
+      "ONDS": "running",
+      "CEG": "running",
+      "SNOW": "running"
+    }
+  },
+  "old_bindings_unchanged": 182,
+  "previous_terms_unchanged": {
+    "BE": 2,
+    "INTC": 2,
+    "MU": 5,
+    "NBIS": 1,
+    "COHR": 1,
+    "RKLB": 2,
+    "ONDS": 3
+  },
+  "snow_terms_revision": 1,
+  "other_component_changes": [],
+  "timer_active": true
+}
