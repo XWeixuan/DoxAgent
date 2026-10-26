@@ -269,6 +269,18 @@ def test_long_body_behind_expand_button_is_still_partial():
     assert choose_candidate(info, TITLE)[2] == "expand_required"
 
 
+def test_pcguide_product_expansion_is_not_article_expansion():
+    widgets='<div class="deal-blocks"><article class="deal deal-block"><p>Unrelated product.</p><button>Read more</button></article></div><div class="author-in-content"><h3>About the Author</h3><p>Biography.</p></div>'
+    info=inspect_html(article().replace('</article>',widgets+'</article>'),
+        'https://www.pcguide.com/news/company-news/',TITLE)
+    selected,outcome,_=choose_candidate(info,TITLE)
+    assert outcome=='FULL'
+    assert 'Unrelated product' not in selected.text and 'Biography' not in selected.text
+    info=inspect_html(article()+'<button>Continue Reading</button>',
+        'https://www.pcguide.com/news/company-news/',TITLE)
+    assert choose_candidate(info,TITLE)[2]=='expand_required'
+
+
 def test_finnhub_redirect_uses_explicit_target_not_external_asset():
     info = inspect_html(
         '<script src="https://cdn.example/player.js"></script>'

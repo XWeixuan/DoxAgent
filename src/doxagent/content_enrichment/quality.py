@@ -226,6 +226,15 @@ def inspect_html(
         return result
     strategy = strategy_ref or legacy_strategy_ref(url)
     parameters = strategy_parameters or {}
+    if (urlparse(url).hostname or '').lower() in {'pcguide.com','www.pcguide.com'}:
+        # Embedded deal cards expand their own product descriptions. They are
+        # neither missing article text nor material for the accepted news body.
+        for node in root.xpath('//*[contains(concat(" ",normalize-space(@class)," ")," deal-block ") '
+                               'or contains(concat(" ",normalize-space(@class)," ")," deal-blocks ") '
+                               'or contains(concat(" ",normalize-space(@class)," ")," author-in-content ") '
+                               'or contains(concat(" ",normalize-space(@class)," ")," infin-affiliate-info ")]'):
+            if node.getparent() is not None:
+                node.drop_tree()
     for selector in parameters.get("remove_xpath", []):
         if isinstance(selector, str):
             for node in root.xpath(selector):

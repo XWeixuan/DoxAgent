@@ -2236,3 +2236,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-27 By Distribution相关性只读勘察：提取10/23、10/26截至北京时间03:28:21的完整生产快照，审查2142篇去重外部召回、1047个新判定对象及342条真实stream，另核对56篇旧采集重复接纳补集。报告含正则/Decision/OR通过率、P/R、全量逐篇标签与分发清单；重放291个正则命中，定位observers/servers及unsanctioned/sanctions边界缺陷，未修改或部署业务逻辑。详见docs/by-distribution-relevance-performance-audit-20261027.md；证据与计算保存在eval/distribution_relevance_audit_20261027/。
 
 2026-10-27 生产实测补充：确认镜像更新不自动替换既有CDC触发器，新增显式Owner迁移脚本，保留旧定义后安装薄投影、不回填历史。修复精简JSON的SQLite子类型导致data_json从TEXT变对象的问题，50项真实Read/CDC回归通过。
+
+2026-10-27 正文实测修复：PCGuide公开文章导航恢复后，商品卡Read more和作者卡仍污染完整性判断；按明确DOM移除嵌入商品卡、联盟说明和作者卡，保留真正正文Continue Reading拦截。67项正文/发布者回归通过。
