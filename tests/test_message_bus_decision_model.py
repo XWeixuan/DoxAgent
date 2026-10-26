@@ -45,7 +45,9 @@ async def test_custom_workspace_partial_and_invalid_answers() -> None:
         terms = {ticker: definition(ticker) for ticker in ("MU", "NVDA", "BE", "INTC", "AMD")}
         assert await client.classify(message, terms) == {"MU": 0.8}
         assert await client.classify(message, {}) == {}
-        with pytest.raises(ValueError, match="16 tickers"):
+        # Large rosters are now batched. These synthetic mapping keys have no
+        # matching provider answers, so the combined result is still invalid.
+        with pytest.raises(ValueError, match="decision_empty_batches"):
             await client.classify(message, {str(i): definition("MU") for i in range(17)})
 
 
