@@ -14,8 +14,9 @@ from .technology_sources import SOURCES, TechnologyHttp
 
 
 class TechnologyBodyReader:
-    def __init__(self, http=None):
+    def __init__(self, http=None, *, sources=None):
         self.http = http or TechnologyHttp()
+        self.sources = sources if sources is not None else SOURCES
 
     async def close(self):
         await self.http.close()
@@ -25,7 +26,7 @@ class TechnologyBodyReader:
             from .thefly_source import TheFlyBodyReader
 
             return await TheFlyBodyReader(self.http).extract(job, record)
-        spec = SOURCES[job.source.source_id]
+        spec = self.sources[job.source.source_id]
         if not spec.accepts(record.url):
             raise ValueError("technology_body_host_not_approved")
         capture = await self.http.fetch(record.url, spec, headers=conditional_headers(record.url))

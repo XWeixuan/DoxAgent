@@ -1,0 +1,30 @@
+<rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:foaf="http://xmlns.com/foaf/0.1/" xmlns:og="http://ogp.me/ns#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" xmlns:schema="http://schema.org/" xmlns:sioc="http://rdfs.org/sioc/ns#" xmlns:sioct="http://rdfs.org/sioc/types#" xmlns:skos="http://www.w3.org/2004/02/skos/core#" xmlns:xsd="http://www.w3.org/2001/XMLSchema#" version="2.0" xml:base="https://www.nist.gov/">
+  <channel>
+    <title>NIST News</title>
+    <link>https://www.nist.gov/news-events/news</link>
+    <description/>
+    <language>en</language>
+    <atom:link href="https://www.nist.gov/news-events/news/rss.xml" rel="self" type="application/rss+xml"/>
+
+    <item>
+  <title>New Chip-Based ‘Tape Measure’ for Light Could Revolutionize Mobile Timekeeping and Enhance National Security</title>
+  <link>https://www.nist.gov/news-events/news/2026/10/new-chip-based-tape-measure-light-could-revolutionize-mobile-timekeeping</link>
+  <description>  The new device could help provide vital navigation signals when GPS is either unavailable or has been jammed.
+
+</description>
+  <pubDate>Fri, 16 Oct 2026 12:00:00 +0000</pubDate>
+    <dc:creator>Sarah Henderson</dc:creator>
+    <guid isPermaLink="true">https://www.nist.gov/node/1922796</guid>
+    </item>
+<item>
+  <title>NIST Joins White House Effort to Drive ‘A New Golden Age of Science’</title>
+  <link>https://www.nist.gov/news-events/news/2026/10/nist-joins-white-house-effort-drive-new-golden-age-science</link>
+  <description>  As the nation’s lead agency for measurement science and standards, NIST is uniquely positioned to bridge the distance between fundamental discovery and industrial capability.
+
+</description>
+  <pubDate>Thu, 08 Oct 2026 12:00:00 +0000</pubDate>
+    <dc:creator>Sarah Henderson</dc:creator>
+    <guid isPermaLink="true">https://www.nist.gov/node/1922336</guid>
+    </item>
+</channel>
+</rss>

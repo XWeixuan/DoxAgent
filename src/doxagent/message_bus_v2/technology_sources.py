@@ -232,10 +232,7 @@ SOURCES = {spec.source_id: spec for spec in (*LEGACY_CATALOG, *CATALOG)}
 
 def endpoint_units(source):
     """Internal units share the external source and the publisher's HTTP pool."""
-    return {
-        "FEED:" + sha256_text(url)[:24]: url
-        for url in SOURCES[source.source_id].urls
-    }
+    return {"FEED:" + sha256_text(url)[:24]: url for url in SOURCES[source.source_id].urls}
 
 
 def initial_sources():
@@ -324,26 +321,42 @@ class TechnologyHttp:
 
                             self.session = AsyncSession(impersonate="chrome", trust_env=False)
                         event = request_started(method, url, "technology_curl")
-                        async with self.session.stream(
-                            method,
-                            url,
-                            timeout=8,
-                            allow_redirects=False,
-                            proxy=HTTP_EGRESSES[spec.route],
-                            headers=headers or None,
-                            **({"json": json_body} if json_body is not None else {}),
-                        ) as response:
-                            data = bytearray()
-                            async for chunk in response.aiter_content():
-                                data.extend(chunk)
-                                if len(data) > 4 * 1024 * 1024:
-                                    raise ValueError("technology_response_exceeds_4mib")
-                            capture = Capture(
-                                response.status_code,
+                        data, oversized = bytearray(), False
+
+                        def receive(chunk, buffer=data):
+                            nonlocal oversized
+                            if len(buffer) + len(chunk) > 4 * 1024 * 1024:
+                                oversized = True
+                                return 0
+                            buffer.extend(chunk)
+                            return len(chunk)
+
+                        # curl_cffi 0.15's stream error path releases a failed handle
+                        # both inline and from its task callback. Non-stream request
+                        # has one finally-owned release; the callback still bounds RAM.
+                        try:
+                            response = await self.session.request(
+                                method,
                                 url,
-                                bytes(data).decode("utf-8", errors="replace"),
-                                {key.lower(): value for key, value in response.headers.items()},
+                                timeout=8,
+                                allow_redirects=False,
+                                proxy=HTTP_EGRESSES[spec.route],
+                                headers=headers or None,
+                                content_callback=receive,
+                                **({"json": json_body} if json_body is not None else {}),
                             )
+                        except Exception:
+                            if oversized:
+                                raise ValueError("technology_response_exceeds_4mib") from None
+                            raise
+                        if oversized:
+                            raise ValueError("technology_response_exceeds_4mib")
+                        capture = Capture(
+                            response.status_code,
+                            url,
+                            bytes(data).decode("utf-8", errors="replace"),
+                            {key.lower(): value for key, value in response.headers.items()},
+                        )
                         if event is not None:
                             event.update(
                                 response_received_at=utc_now().isoformat(),
@@ -441,8 +454,10 @@ def parse_listing(spec, raw, url, now):
 
 
 class TechnologyAdapter:
-    def __init__(self, http=None):
+    def __init__(self, http=None, *, sources=None, parser=None):
         self.http = http or TechnologyHttp()
+        self.sources = sources if sources is not None else SOURCES
+        self.parse_listing = parser or parse_listing
 
     async def close(self):
         await self.http.close()
@@ -451,9 +466,10 @@ class TechnologyAdapter:
         raise ValueError("technology_source_requires_shared_poll")
 
     async def poll_shared(self, context):
-        spec = SOURCES[context.source.source_id]
+        spec = self.sources[context.source.source_id]
         if context.acquisition_unit != "SHARED":
-            spec = replace(spec, urls=(endpoint_units(context.source)[context.acquisition_unit],))
+            units = {"FEED:" + sha256_text(url)[:24]: url for url in spec.urls}
+            spec = replace(spec, urls=(units[context.acquisition_unit],))
         states = {
             key: dict(value) for key, value in context.checkpoint.get("endpoints", {}).items()
         }
@@ -500,7 +516,7 @@ class TechnologyAdapter:
                     raise ValueError(f"technology_http_{capture.status}")
                 else:
                     rows = await asyncio.to_thread(
-                        parse_listing, spec, capture.text, capture.url, now
+                        self.parse_listing, spec, capture.text, capture.url, now
                     )
                     state.update(
                         baseline=True,

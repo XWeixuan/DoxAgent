@@ -74,6 +74,7 @@ class ContentEnrichmentHub:
         self.defense_body_reader = None
         self.sec_body_reader = None
         self.technology_body_reader = None
+        self.energy_body_reader = None
         self._google_slots = asyncio.Semaphore(4)
         self._google_client = None
         self._google_flights = {}
@@ -194,6 +195,8 @@ class ContentEnrichmentHub:
         await asyncio.gather(*self._google_flights.values(), return_exceptions=True)
         if self.sec_body_reader is not None:
             await self.sec_body_reader.close()
+        if self.energy_body_reader is not None:
+            await self.energy_body_reader.close()
         if self.technology_body_reader is not None:
             await self.technology_body_reader.close()
         if self.defense_body_reader is not None:
@@ -265,8 +268,12 @@ class ContentEnrichmentHub:
             return
         generic_url = job.message.metadata.get("identity_evidence", {}).get("url_kind") == "generic"
         native = native_article(job.message)
+        native_event = (
+            job.source.adapter_ref == "builtin:energy_public@1"
+            and job.source.source_id == "nrc_event_notifications"
+        )
         if job.source.content_enrichment_mode is ContentEnrichmentMode.SKIP or (
-            generic_url and not native
+            generic_url and not native and not native_event
         ):
             metadata = dict(job.message.metadata)
             metadata["media_enrichment"] = {
@@ -356,6 +363,16 @@ class ContentEnrichmentHub:
                     self.sec_body_reader = SecBodyReader()
                 async with asyncio.timeout(seconds):
                     result = await self.sec_body_reader.extract(job, record)
+            elif job.source.adapter_ref == "builtin:energy_public@1" and seconds > 0:
+                from doxagent.message_bus_v2.energy_body import EnergyBodyReader
+                from doxagent.message_bus_v2.technology_body import TechnologyBodyReader
+
+                if self.technology_body_reader is None:
+                    self.technology_body_reader = TechnologyBodyReader()
+                if self.energy_body_reader is None:
+                    self.energy_body_reader = EnergyBodyReader(self.technology_body_reader.http)
+                async with asyncio.timeout(seconds):
+                    result = await self.energy_body_reader.extract(job, record)
             elif job.source.adapter_ref in {"builtin:technology_public@1", "builtin:thefly_public@1"} and seconds > 0:
                 from doxagent.message_bus_v2.technology_body import TechnologyBodyReader
 
@@ -426,6 +443,7 @@ class ContentEnrichmentHub:
                     "builtin:defense_public@1",
                     "builtin:sec_edgar@1",
                     "builtin:technology_public@1",
+                    "builtin:energy_public@1",
                 }
                 and utc_now() < job.deadline_at
             )
@@ -536,6 +554,7 @@ class ContentEnrichmentHub:
         public_defense = job.source.adapter_ref in {
             "builtin:defense_public@1",
             "builtin:technology_public@1",
+            "builtin:energy_public@1",
         }
         if (
             (job.source.source_id in {
@@ -580,10 +599,13 @@ class ContentEnrichmentHub:
         from doxagent.source_maintenance.signals import body
 
         if (
-            job.source.adapter_ref in {"builtin:sec_edgar@1", "builtin:thefly_public@1"}
+            (
+                job.source.adapter_ref in {"builtin:sec_edgar@1", "builtin:thefly_public@1"}
+                or job.source.source_id == "nrc_event_notifications"
+            )
             and not message.metadata.get("media_enrichment", {}).get("succeeded")
         ):
-            # Filing snippets and Fly's premium previews cannot replace full
+            # Filing snippets, Fly previews and incomplete NRC events cannot replace full
             # economic content. Keep the failed result/receipt; a later observation can
             # retry through BodyResults without publishing incomplete news.
             await self.bus.storage.call(

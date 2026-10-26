@@ -1,0 +1,58 @@
+<rss xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:wfw="http://wellformedweb.org/CommentAPI/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:sy="http://purl.org/rss/1.0/modules/syndication/" xmlns:slash="http://purl.org/rss/1.0/modules/slash/" xmlns:media="http://search.yahoo.com/mrss/" version="2.0">
+
+<channel>
+	<title>O&amp;M Archives - Power Engineering</title>
+	<atom:link href="https://www.power-eng.com/operations-maintenance/feed/" rel="self" type="application/rss+xml"/>
+	<link>https://www.power-eng.com/operations-maintenance/</link>
+	<description>The Latest in Power Generation News</description>
+	<lastBuildDate>Wed, 14 Oct 2026 21:14:35 +0000</lastBuildDate>
+	<language>en-US</language>
+	<sy:updatePeriod>
+	hourly	</sy:updatePeriod>
+	<sy:updateFrequency>
+	1	</sy:updateFrequency>
+	<generator>https://wordpress.org/?v=7.1.3</generator>
+
+<image>
+	<url>https://www.power-eng.com/wp-content/uploads/2024/12/PowerEngIcon.svg</url>
+	<title>O&amp;M Archives - Power Engineering</title>
+	<link>https://www.power-eng.com/operations-maintenance/</link>
+	<width>32</width>
+	<height>32</height>
+</image>
+	<item>
+		<title>AI moves inside the plant: 1898 &amp; Co. previews its POWERGEN case study</title>
+		<link>https://www.power-eng.com/operations-maintenance/ai-moves-inside-the-plant-1898-co-previews-its-powergen-case-study/</link>
+
+		<dc:creator>Kevin Clark</dc:creator>
+		<pubDate>Wed, 14 Oct 2026 21:14:33 +0000</pubDate>
+				<category>News</category>
+		<category>O&amp;M</category>
+		<category>1898 &amp; Co.</category>
+		<category>POWERGEN News</category>
+		<guid isPermaLink="false">https://www.power-eng.com/?p=137107</guid>
+
+					<description>Chris Wiles explains how a Cleco pilot is pulling decades of scattered asset data into one searchable source, part of POWERGEN’s broader focus on AI in plant performance and efficiency. </description>
+										<media:content url="https://www.power-eng.com/wp-content/uploads/2026/10/image-4.png" type="image/png" fileSize="1128465" width="1895" height="908"/>
+<media:thumbnail url="https://www.power-eng.com/wp-content/uploads/2026/10/image-4.png" width="1895" height="908"/>
+<enclosure url="https://www.power-eng.com/wp-content/uploads/2026/10/image-4.png" length="1128465" type="image/png"/>
+	</item>
+		<item>
+		<title>Load growth, water challenges and lean staffs put plant chemistry in focus at POWERGEN 2027</title>
+		<link>https://www.power-eng.com/operations-maintenance/load-growth-water-challenges-and-lean-staffs-put-plant-chemistry-in-focus-at-powergen-2027/</link>
+
+		<dc:creator>Kevin Clark</dc:creator>
+		<pubDate>Tue, 29 Sep 2026 19:10:16 +0000</pubDate>
+				<category>News</category>
+		<category>O&amp;M</category>
+		<category>People</category>
+		<category>POWERGEN News</category>
+		<guid isPermaLink="false">https://www.power-eng.com/?p=136912</guid>
+
+					<description>The agenda is live for the 44th Electric Utility &amp;#038; Cogeneration Chemistry Workshop, co-located with POWERGEN 2027 in Salt Lake City, Jan. 19–20.</description>
+										<media:content url="https://www.power-eng.com/wp-content/uploads/2026/09/Screenshot-2026-09-29-141850-e1790706137638.png" type="image/png" fileSize="982852" width="1600" height="890"/>
+<media:thumbnail url="https://www.power-eng.com/wp-content/uploads/2026/09/Screenshot-2026-09-29-141850-e1790706137638.png" width="1600" height="890"/>
+<enclosure url="https://www.power-eng.com/wp-content/uploads/2026/09/Screenshot-2026-09-29-141850-e1790706137638.png" length="982852" type="image/png"/>
+	</item>
+		</channel>
+</rss>

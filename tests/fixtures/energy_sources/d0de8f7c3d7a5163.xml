@@ -1,0 +1,64 @@
+<rss xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:wfw="http://wellformedweb.org/CommentAPI/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:sy="http://purl.org/rss/1.0/modules/syndication/" xmlns:slash="http://purl.org/rss/1.0/modules/slash/" xmlns:media="http://search.yahoo.com/mrss/" version="2.0">
+
+<channel>
+	<title>Business Archives - Power Engineering</title>
+	<atom:link href="https://www.power-eng.com/business/feed/" rel="self" type="application/rss+xml"/>
+	<link>https://www.power-eng.com/business/</link>
+	<description>The Latest in Power Generation News</description>
+	<lastBuildDate>Fri, 16 Oct 2026 13:22:45 +0000</lastBuildDate>
+	<language>en-US</language>
+	<sy:updatePeriod>
+	hourly	</sy:updatePeriod>
+	<sy:updateFrequency>
+	1	</sy:updateFrequency>
+	<generator>https://wordpress.org/?v=7.1.3</generator>
+
+<image>
+	<url>https://www.power-eng.com/wp-content/uploads/2024/12/PowerEngIcon.svg</url>
+	<title>Business Archives - Power Engineering</title>
+	<link>https://www.power-eng.com/business/</link>
+	<width>32</width>
+	<height>32</height>
+</image>
+	<item>
+		<title>The turbine slot is the new critical path. POWERGEN 2027 examines what that means for plant execution</title>
+		<link>https://www.power-eng.com/gas/turbines/the-turbine-slot-is-the-new-critical-path-powergen-2027-examines-what-that-means-for-plant-execution/</link>
+
+		<dc:creator>Kevin Clark</dc:creator>
+		<pubDate>Mon, 19 Oct 2026 10:00:00 +0000</pubDate>
+				<category>Business</category>
+		<category>Gas Turbines</category>
+		<category>News</category>
+		<category>POWERGEN News</category>
+		<guid isPermaLink="false">https://www.power-eng.com/?p=137132</guid>
+
+					<description>With turbines sold out into 2029, Fluor’s James Brown says owners are buying powertrain equipment first and absorbing integration risk once covered by the wrapped EPC model.</description>
+										<media:content url="https://www.power-eng.com/wp-content/uploads/2026/10/maxresdefault.jpg" type="image/jpeg" fileSize="76337" width="1280" height="720"/>
+<media:thumbnail url="https://www.power-eng.com/wp-content/uploads/2026/10/maxresdefault.jpg" width="1280" height="720"/>
+<enclosure url="https://www.power-eng.com/wp-content/uploads/2026/10/maxresdefault.jpg" length="76337" type="image/jpeg"/>
+	</item>
+		<item>
+		<title>Entergy tackles power plant labor shortage with Mississippi training program</title>
+		<link>https://www.power-eng.com/business/people/entergy-power-plant-labor-shortage-mississippi-training-program/</link>
+
+		<dc:creator>Bethany Bashioum</dc:creator>
+		<pubDate>Tue, 13 Oct 2026 11:15:48 +0000</pubDate>
+				<category>Business</category>
+		<category>News</category>
+		<category>People</category>
+		<category>Entergy</category>
+		<category>JOBS</category>
+		<category>Kiewit</category>
+		<category>Mississippi</category>
+		<category>POWERGEN News</category>
+		<category>The Industrial Company</category>
+		<category>TIC</category>
+		<guid isPermaLink="false">https://www.power-eng.com/?p=137047</guid>
+
+					<description>Entergy, and Kiewit subsidiary, TIC, have trained nearly 100 young, local workers to support power plant construction in Mississippi.</description>
+										<media:content url="https://www.power-eng.com/wp-content/uploads/2026/10/image-3.png" type="image/png" fileSize="1670733" width="1280" height="630"/>
+<media:thumbnail url="https://www.power-eng.com/wp-content/uploads/2026/10/image-3.png" width="1280" height="630"/>
+<enclosure url="https://www.power-eng.com/wp-content/uploads/2026/10/image-3.png" length="1670733" type="image/png"/>
+	</item>
+		</channel>
+</rss>

@@ -1,0 +1,62 @@
+<rss xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:wfw="http://wellformedweb.org/CommentAPI/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:sy="http://purl.org/rss/1.0/modules/syndication/" xmlns:slash="http://purl.org/rss/1.0/modules/slash/" xmlns:media="http://search.yahoo.com/mrss/" version="2.0">
+
+<channel>
+	<title>Nuclear News - Power Engineering</title>
+	<atom:link href="https://www.power-eng.com/nuclear/feed/" rel="self" type="application/rss+xml"/>
+	<link>https://www.power-eng.com/nuclear/</link>
+	<description>The Latest in Power Generation News</description>
+	<lastBuildDate>Fri, 23 Oct 2026 17:46:46 +0000</lastBuildDate>
+	<language>en-US</language>
+	<sy:updatePeriod>
+	hourly	</sy:updatePeriod>
+	<sy:updateFrequency>
+	1	</sy:updateFrequency>
+	<generator>https://wordpress.org/?v=7.1.3</generator>
+
+<image>
+	<url>https://www.power-eng.com/wp-content/uploads/2024/12/PowerEngIcon.svg</url>
+	<title>Nuclear News - Power Engineering</title>
+	<link>https://www.power-eng.com/nuclear/</link>
+	<width>32</width>
+	<height>32</height>
+</image>
+	<item>
+		<title>Siemens Energy more than triples nuclear training as restarts and upgrades ramp up</title>
+		<link>https://www.power-eng.com/nuclear/siemens-energy-more-than-triples-nuclear-training-as-restarts-and-upgrades-ramp-up/</link>
+
+		<dc:creator>Siemens Energy</dc:creator>
+		<pubDate>Fri, 23 Oct 2026 17:45:58 +0000</pubDate>
+				<category>News</category>
+		<category>Nuclear</category>
+		<category>Siemens Energy</category>
+		<guid isPermaLink="false">https://www.power-eng.com/?p=137068</guid>
+
+					<description>The company’s nuclear sales chief says today’s upgrade and restart jobs are training the workforce for the next wave of new builds.</description>
+										<media:content url="https://www.power-eng.com/wp-content/uploads/2026/10/image-8.png" type="image/png" fileSize="734333" width="1315" height="680"/>
+<media:thumbnail url="https://www.power-eng.com/wp-content/uploads/2026/10/image-8.png" width="1315" height="680"/>
+<enclosure url="https://www.power-eng.com/wp-content/uploads/2026/10/image-8.png" length="734333" type="image/png"/>
+	</item>
+		<item>
+		<title>Indiana nuclear proposals target retired fossil plant sites</title>
+		<link>https://www.power-eng.com/nuclear/indiana-nuclear-proposals-target-retired-fossil-plant-sites/</link>
+
+		<dc:creator>Sean Wolfe</dc:creator>
+		<pubDate>Fri, 23 Oct 2026 14:32:38 +0000</pubDate>
+				<category>News</category>
+		<category>Nuclear</category>
+		<category>SMRs</category>
+		<category>AEP</category>
+		<category>Amazon</category>
+		<category>AtkinsRéalis</category>
+		<category>Hoosier Energy</category>
+		<category>Indiana Michigan Power</category>
+		<category>X-energy</category>
+		<guid isPermaLink="false">https://www.power-eng.com/?p=137147</guid>
+
+					<description>AtkinsRéalis, Indiana, and Hoosier Energy signed an MOU to explore eight CANDU reactors for 6.0 GW of power. Amazon, X-energy, and AEP will also develop 12 SMRs for 960 MW in Indiana.</description>
+										<media:content url="https://www.power-eng.com/wp-content/uploads/2026/10/download-1.jpg" type="image/jpeg" fileSize="209806" width="1320" height="743"/>
+<media:thumbnail url="https://www.power-eng.com/wp-content/uploads/2026/10/download-1.jpg" width="1320" height="743"/>
+<enclosure url="https://www.power-eng.com/wp-content/uploads/2026/10/download-1.jpg" length="209806" type="image/jpeg"/>
+	</item>
+		</channel>
+</rss>

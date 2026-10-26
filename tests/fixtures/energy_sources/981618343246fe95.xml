@@ -1,0 +1,29 @@
+<rss xmlns:dc="http://purl.org/dc/elements/1.1/" version="2.0" xml:base="https://www.nsf.gov/">
+  <channel>
+    <title>NSF News</title>
+    <link>https://www.nsf.gov/</link>
+    <description>News posted on the NSF website</description>
+    <language>en</language>
+
+    <item>
+  <title>Podcast: Can America's most powerful laser unlock the universe?</title>
+  <link>https://www.nsf.gov/news/podcast-can-americas-most-powerful-laser-unlock-universe</link>
+  <description>  U.S. National Science Foundation-supported researcher Louise Willingale discusses the most powerful laser in the United States, the NSF Zettawatt Equivalent Ultrashort Pulse Laser System, how it's being used to advance science, and how it will become…
+
+</description>
+  <pubDate>Tue, 20 Oct 2026 10:53:01 -0400</pubDate>
+    <dc:creator>NSF</dc:creator>
+    <guid isPermaLink="false">https://www.nsf.gov/news/podcast-can-americas-most-powerful-laser-unlock-universe</guid>
+    </item>
+<item>
+  <title>Podcast: The hidden DNA code that controls your genes</title>
+  <link>https://www.nsf.gov/news/podcast-hidden-dna-code-controls-your-genes</link>
+  <description>  From atoms and molecules to cells, understanding the building blocks of the natural world can lead to transformative technologies. NSF-supported researcher Torrey Rhyne-Carrigg discusses DNA initiators, using models for analysis, and her experience…
+
+</description>
+  <pubDate>Tue, 13 Oct 2026 15:57:51 -0400</pubDate>
+    <dc:creator>NSF</dc:creator>
+    <guid isPermaLink="false">https://www.nsf.gov/news/podcast-hidden-dna-code-controls-your-genes</guid>
+    </item>
+</channel>
+</rss>

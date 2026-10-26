@@ -1,0 +1,61 @@
+<rss xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:wfw="http://wellformedweb.org/CommentAPI/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:sy="http://purl.org/rss/1.0/modules/syndication/" xmlns:slash="http://purl.org/rss/1.0/modules/slash/" xmlns:media="http://search.yahoo.com/mrss/" version="2.0">
+
+<channel>
+	<title>Energy Storage News - Power Engineering</title>
+	<atom:link href="https://www.power-eng.com/energy-storage/feed/" rel="self" type="application/rss+xml"/>
+	<link>https://www.power-eng.com/energy-storage/</link>
+	<description>The Latest in Power Generation News</description>
+	<lastBuildDate>Fri, 23 Oct 2026 14:46:56 +0000</lastBuildDate>
+	<language>en-US</language>
+	<sy:updatePeriod>
+	hourly	</sy:updatePeriod>
+	<sy:updateFrequency>
+	1	</sy:updateFrequency>
+	<generator>https://wordpress.org/?v=7.1.3</generator>
+
+<image>
+	<url>https://www.power-eng.com/wp-content/uploads/2024/12/PowerEngIcon.svg</url>
+	<title>Energy Storage News - Power Engineering</title>
+	<link>https://www.power-eng.com/energy-storage/</link>
+	<width>32</width>
+	<height>32</height>
+</image>
+	<item>
+		<title>Battery storage failure rates plunge 98% as global deployment soars</title>
+		<link>https://www.power-eng.com/energy-storage/batteries/battery-storage-failure-rates-plunge-98-as-global-deployment-soars/</link>
+
+		<dc:creator>Bethany Bashioum</dc:creator>
+		<pubDate>Fri, 23 Oct 2026 14:46:54 +0000</pubDate>
+				<category>Batteries</category>
+		<category>Energy Storage</category>
+		<category>News</category>
+		<category>BATTERIES</category>
+		<category>BESS</category>
+		<category>EPRI</category>
+		<category>WHITE PAPER</category>
+		<guid isPermaLink="false">https://www.power-eng.com/?p=137154</guid>
+
+					<description>According to EPRI's white paper, Risk Factors and Failure Statistics of Lithium-Ion BESS, the annual failure rate for lithium-ion BESS plunged 98% between 2018 and 2025, even as global deployment skyrocketed.</description>
+										<media:content url="https://www.power-eng.com/wp-content/uploads/2025/03/battery2.png" type="image/png" fileSize="886854" width="1229" height="637"/>
+<media:thumbnail url="https://www.power-eng.com/wp-content/uploads/2025/03/battery2.png" width="1229" height="637"/>
+<enclosure url="https://www.power-eng.com/wp-content/uploads/2025/03/battery2.png" length="886854" type="image/png"/>
+	</item>
+		<item>
+		<title>New York goes big on storage, renewables awards to build 1.7 GW portfolio</title>
+		<link>https://www.power-eng.com/energy-storage/batteries/new-york-storage-renewable-awards/</link>
+
+		<dc:creator>Bethany Bashioum</dc:creator>
+		<pubDate>Wed, 30 Sep 2026 12:31:08 +0000</pubDate>
+				<category>Batteries</category>
+		<category>Energy Storage</category>
+		<category>News</category>
+		<category>Renewables</category>
+		<guid isPermaLink="false">https://www.power-eng.com/?p=136926</guid>
+
+					<description>Eight lithium-ion storage projects and 13 renewable generation contracts are slated to come online by 2030, with another storage solicitation planned by year-end.</description>
+										<media:content url="https://www.power-eng.com/wp-content/uploads/2026/09/Energy_Storage_Campaigne_1000x400.jpg" type="image/jpeg" fileSize="77551" width="1000" height="400"/>
+<media:thumbnail url="https://www.power-eng.com/wp-content/uploads/2026/09/Energy_Storage_Campaigne_1000x400.jpg" width="1000" height="400"/>
+<enclosure url="https://www.power-eng.com/wp-content/uploads/2026/09/Energy_Storage_Campaigne_1000x400.jpg" length="77551" type="image/jpeg"/>
+	</item>
+		</channel>
+</rss>

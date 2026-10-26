@@ -1,0 +1,30 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/" version="2.0"><channel>
+<title>Home | Data Center Frontier</title>
+<link>https://www.datacenterfrontier.com/</link>
+<atom:link href="https://www.datacenterfrontier.com/__rss/website-scheduled-content.xml?input=%7B%22sectionAlias%22%3A%22home%22%7D" rel="self" type="application/rss+xml"/>
+<description>Data Center Frontier reports on issues related to telecom, data centers, cloud computing, and the future of the internet for those working in facilities powering the cloud.</description>
+<language>EN</language>
+<item>
+<title>NVIDIA's DSX POD Pushes AI Factory Construction Toward the Assembly Line</title>
+<link>https://www.datacenterfrontier.com/machine-learning/article/55414295/nvidias-dsx-pod-pushes-ai-factory-construction-toward-the-assembly-line</link>
+<guid isPermaLink="true">https://www.datacenterfrontier.com/machine-learning/article/55414295/nvidias-dsx-pod-pushes-ai-factory-construction-toward-the-assembly-line</guid>
+<description>As NVIDIA targets two-week deployment of factory-integrated Vera Rubin infrastructure, announcements from Armada, Crusoe, Schneider Electric, Vertiv and other partners reveal the manufacturing capacity, engineering changes and real-world projects behind the industry&amp;apos;s shift toward industrialized AI data center construction.</description>
+<pubDate>26 Oct 2026 14:20:07 GMT</pubDate>
+<author>Matt Vincent</author>
+<category domain="datacenterfrontier.com">AI / Machine Learning</category>
+<media:content medium="image" url="https://img.datacenterfrontier.com/files/base/ebm/datacenterfrontier/image/2026/10/6adf5b3f6e50b304434b08de-nvidiadsxpod.png"/>
+<media:description>&lt;p&gt;&lt;em&gt;NVIDIA's DSX POD reference design packages Vera Rubin computing, networking, rack-level power and liquid cooling into factory-integrated modular containers, with partner deployments targeted for early 2027. (Rendering: NVIDIA)&lt;/em&gt;&lt;/p&gt;</media:description>
+</item>
+<item>
+<title>Big Tech's Next Nuclear Bet: More Power From Reactors Already Running</title>
+<link>https://www.datacenterfrontier.com/energy/article/55410654/big-techs-next-nuclear-bet-more-power-from-reactors-already-running</link>
+<guid isPermaLink="true">https://www.datacenterfrontier.com/energy/article/55410654/big-techs-next-nuclear-bet-more-power-from-reactors-already-running</guid>
+<description>Google, Amazon and Meta are backing billions in upgrades to existing U.S. nuclear plants, creating a new model for adding generating capacity as AI data center demand accelerates. But engineering timelines and grid constraints remain formidable obstacles.</description>
+<pubDate>23 Oct 2026 16:18:32 GMT</pubDate>
+<author>David Chernicoff</author>
+<category domain="datacenterfrontier.com">Power</category>
+<media:content medium="image" url="https://img.datacenterfrontier.com/files/base/ebm/datacenterfrontier/image/2026/10/6ac7e007d7f91f09c0a4a6ba-calvert_cliffs.png"/>
+<media:credit>Constellation Energy</media:credit>
+<media:description>&lt;p&gt;Calvert Cliffs Nuclear Power Station&lt;/p&gt;</media:description>
+</item>
+</channel></rss>

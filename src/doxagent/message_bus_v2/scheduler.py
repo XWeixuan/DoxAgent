@@ -57,6 +57,7 @@ POLL_TIMINGS = ContextVar("poll_timings", default=None)
 SHARED_HTTP_CHECKPOINTS = {
     "builtin:defense_public@1": "defense_public",
     "builtin:technology_public@1": "technology_public",
+    "builtin:energy_public@1": "energy_public",
 }
 
 
@@ -527,6 +528,10 @@ class GlobalPollScheduler:
             from .technology_sources import endpoint_units
 
             units = [(unit, {}) for unit in endpoint_units(source)]
+        elif source.adapter_ref == "builtin:energy_public@1":
+            from .energy_catalog import endpoint_units
+
+            units = [(unit, {}) for unit in endpoint_units(source, binding)]
         elif source.source_id == "yahoo_finance_news":
             units.append(("SUPPLEMENT_HEAD", {}))
             head = state.units.get("SUPPLEMENT_HEAD", {}).get("checkpoint", {})
@@ -639,7 +644,10 @@ class GlobalPollScheduler:
             value = PollState.model_validate(
                 {**state.model_dump(), **state.units.get(unit, {}), "units": {}}
             )
-            if source.adapter_ref == "builtin:technology_public@1" and unit not in state.units:
+            if (
+                source.adapter_ref in {"builtin:technology_public@1", "builtin:energy_public@1"}
+                and unit not in state.units
+            ):
                 value = value.model_copy(update={"next_dispatch_at": None})
             changed_timestamps = unit == "TAIL:YAHOO_TIME" and options["checkpoint"][
                 "pending_timestamp_rows"
@@ -655,7 +663,7 @@ class GlobalPollScheduler:
 
     def distribution_work_units(self, source, bindings, now, *, poll_states):
         """One shared acquisition per due endpoint, with its own ticker roster."""
-        if source.adapter_ref != "builtin:technology_public@1":
+        if source.adapter_ref not in {"builtin:technology_public@1", "builtin:energy_public@1"}:
             if self.distribution_due(bindings, now, poll_states=poll_states):
                 yield "shared:" + source.source_id, bindings, {}
             return
@@ -713,6 +721,9 @@ class GlobalPollScheduler:
                 / max(1, len(physical_units))
                 for index, (_, b, unit) in enumerate(physical_units)
             }
+            power_feeds = sorted({
+                unit for s, _, unit in physical_units if s.source_id == "power_magazine_energy"
+            })
             for index, (s, b, unit) in enumerate(physical_units):
                 current = (
                     poll_states[b.binding_id]
@@ -724,6 +735,10 @@ class GlobalPollScheduler:
                 ):
                     continue
                 phase = b.polling.target_interval_seconds * index / max(1, len(physical_units))
+                if s.source_id == "power_magazine_energy":
+                    phase = (
+                        b.polling.target_interval_seconds * power_feeds.index(unit) / len(power_feeds)
+                    )
                 snapshot = self.repository.get_poll_unit_state(b, unit).model_copy(
                     update={
                         "target_due_at": now + timedelta(seconds=phase),

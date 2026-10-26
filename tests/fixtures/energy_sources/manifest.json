@@ -1,0 +1,157 @@
+[
+  {
+    "source_id": "national_quantum_initiative",
+    "url": "https://www.quantum.gov/news/",
+    "fixture": "6898b4e46250477b.html"
+  },
+  {
+    "source_id": "nsf_news",
+    "url": "https://www.nsf.gov/rss/rss_www_news.xml",
+    "fixture": "981618343246fe95.xml"
+  },
+  {
+    "source_id": "dcd_energy_ticker",
+    "url": "https://www.datacenterdynamics.com/en/news/?company=bloom-energy",
+    "fixture": "fdbe4abf7101a681.html"
+  },
+  {
+    "source_id": "power_engineering_energy",
+    "url": "https://www.power-eng.com/nuclear/feed/",
+    "fixture": "1d260e200becdf60.xml"
+  },
+  {
+    "source_id": "power_engineering_energy",
+    "url": "https://www.power-eng.com/operations-maintenance/feed/",
+    "fixture": "6ec1b73774c1ba4e.xml"
+  },
+  {
+    "source_id": "dcd_energy_ticker",
+    "url": "https://www.datacenterdynamics.com/en/news/?company=constellation-energy",
+    "fixture": "d4867808738354c7.html"
+  },
+  {
+    "source_id": "nist_news",
+    "url": "https://www.nist.gov/news-events/news/rss.xml",
+    "fixture": "40bbf0a9b7927d1f.xml"
+  },
+  {
+    "source_id": "utility_dive",
+    "url": "https://www.utilitydive.com/feeds/news/",
+    "fixture": "f0fb325afe07ff21.xml"
+  },
+  {
+    "source_id": "canary_media",
+    "url": "https://www.canarymedia.com/rss.rss",
+    "fixture": "bd9f86f953b4a5cb.xml"
+  },
+  {
+    "source_id": "nrc_news_releases",
+    "url": "https://www.nrc.gov/about-nrc/news-releases/2026",
+    "fixture": "13558bfebc804201.html"
+  },
+  {
+    "source_id": "world_nuclear_news",
+    "url": "https://www.world-nuclear-news.org/rss",
+    "fixture": "7aeff12b5dff2df8.xml"
+  },
+  {
+    "source_id": "ans_nuclear_newswire",
+    "url": "https://www.ans.org/news/feed/",
+    "fixture": "391841846a827fda.xml"
+  },
+  {
+    "source_id": "nrc_event_notifications",
+    "url": "https://www.nrc.gov/documents-reports/document-collections/events-reports-associated-with/event-notification-reports/en",
+    "fixture": "nrc_events.html"
+  },
+  {
+    "source_id": "doe_energy_news",
+    "url": "https://www.energy.gov/ne/listings/ne-press-releases",
+    "fixture": "6ef71a729c05e0d5.html"
+  },
+  {
+    "source_id": "doe_energy_news",
+    "url": "https://www.energy.gov/edf/listings/edf-news",
+    "fixture": "e5d5acfcb3393759.html"
+  },
+  {
+    "source_id": "nro_press_releases",
+    "url": "https://www.nro.gov/news-media-featured-stories/news-media-press-releases/",
+    "fixture": "537f1e19d0f1fb31.html"
+  },
+  {
+    "source_id": "power_magazine_energy",
+    "url": "https://www.powermag.com/category/nuclear/feed/",
+    "fixture": "688954476fb78332.xml"
+  },
+  {
+    "source_id": "dcd_infrastructure_rss",
+    "url": "https://www.datacenterdynamics.com/en/rss/",
+    "fixture": "7278213ee8f6cdb7.xml"
+  },
+  {
+    "source_id": "power_engineering_energy",
+    "url": "https://www.power-eng.com/business/feed/",
+    "fixture": "d0de8f7c3d7a5163.xml"
+  },
+  {
+    "source_id": "doe_energy_news",
+    "url": "https://www.energy.gov/oe/listings/grid-deployment-office-news",
+    "fixture": "b6764e3fd2255cb7.html"
+  },
+  {
+    "source_id": "power_engineering_energy",
+    "url": "https://www.power-eng.com/onsite-power/feed/",
+    "fixture": "235e5a72b5dba92b.xml"
+  },
+  {
+    "source_id": "data_center_frontier",
+    "url": "https://www.datacenterfrontier.com/__rss/website-scheduled-content.xml?input=%7B%22sectionAlias%22:%22home%22%7D",
+    "fixture": "89de5d09f5f486ad.xml"
+  },
+  {
+    "source_id": "doe_energy_news",
+    "url": "https://www.energy.gov/oe/listings/news-highlights",
+    "fixture": "7977bdcae7432b20.html"
+  },
+  {
+    "source_id": "power_magazine_energy",
+    "url": "https://www.powermag.com/category/data-centers/feed/",
+    "fixture": "6a7ae168d38a67f3.xml"
+  },
+  {
+    "source_id": "power_engineering_energy",
+    "url": "https://www.power-eng.com/energy-storage/feed/",
+    "fixture": "400f9d2cc69c1b3f.xml"
+  },
+  {
+    "source_id": "power_engineering_energy",
+    "url": "https://www.power-eng.com/renewables/feed/",
+    "fixture": "d635e1b6f2a794fc.xml"
+  },
+  {
+    "source_id": "power_magazine_energy",
+    "url": "https://www.powermag.com/category/legal-regulatory/feed/",
+    "fixture": "06ac57747b943fda.xml"
+  },
+  {
+    "source_id": "power_magazine_energy",
+    "url": "https://www.powermag.com/category/safety/feed/",
+    "fixture": "65afdcc79ada3849.xml"
+  },
+  {
+    "source_id": "power_magazine_energy",
+    "url": "https://www.powermag.com/category/distributed-generation/feed/",
+    "fixture": "5f57ca2d9bbc4919.xml"
+  },
+  {
+    "source_id": "power_magazine_energy",
+    "url": "https://www.powermag.com/category/energy-storage-2/feed/",
+    "fixture": "f0d36bead962ddb9.xml"
+  },
+  {
+    "source_id": "power_magazine_energy",
+    "url": "https://www.powermag.com/category/hydrogen/feed/",
+    "fixture": "dfb1378278e648d1.xml"
+  }
+]

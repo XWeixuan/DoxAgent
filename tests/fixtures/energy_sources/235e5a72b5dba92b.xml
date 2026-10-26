@@ -1,0 +1,71 @@
+<rss xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:wfw="http://wellformedweb.org/CommentAPI/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:sy="http://purl.org/rss/1.0/modules/syndication/" xmlns:slash="http://purl.org/rss/1.0/modules/slash/" xmlns:media="http://search.yahoo.com/mrss/" version="2.0">
+
+<channel>
+	<title>Onsite Power Archives - Power Engineering</title>
+	<atom:link href="https://www.power-eng.com/onsite-power/feed/" rel="self" type="application/rss+xml"/>
+	<link>https://www.power-eng.com/onsite-power/</link>
+	<description>The Latest in Power Generation News</description>
+	<lastBuildDate>Fri, 09 Oct 2026 15:35:03 +0000</lastBuildDate>
+	<language>en-US</language>
+	<sy:updatePeriod>
+	hourly	</sy:updatePeriod>
+	<sy:updateFrequency>
+	1	</sy:updateFrequency>
+	<generator>https://wordpress.org/?v=7.1.3</generator>
+
+<image>
+	<url>https://www.power-eng.com/wp-content/uploads/2024/12/PowerEngIcon.svg</url>
+	<title>Onsite Power Archives - Power Engineering</title>
+	<link>https://www.power-eng.com/onsite-power/</link>
+	<width>32</width>
+	<height>32</height>
+</image>
+	<item>
+		<title>Black Hills to build 564 MW of new gas, manage 2.1 GW microgrid for Google data center in Wyoming</title>
+		<link>https://www.power-eng.com/onsite-power/microgrids/google-wyoming-data-center-black-hills-natural-gas/</link>
+
+		<dc:creator>Bethany Bashioum</dc:creator>
+		<pubDate>Fri, 09 Oct 2026 15:35:00 +0000</pubDate>
+				<category>Gas</category>
+		<category>Microgrids</category>
+		<category>News</category>
+		<category>Onsite Power</category>
+		<category>BLACK HILLS</category>
+		<category>DATA CENTER</category>
+		<category>GAS</category>
+		<category>Google</category>
+		<category>JESSE JENKINS</category>
+		<category>MICROGRID</category>
+		<category>TURBINE</category>
+		<category>Wyoming</category>
+		<guid isPermaLink="false">https://www.power-eng.com/?p=137020</guid>
+
+					<description>Black Hills Corp. plans $1.8 billion in natural gas generation and will manage a 2.1-GW microgrid to power Google's planned data center in Cheyenne, Wyoming.</description>
+										<media:content url="https://www.power-eng.com/wp-content/uploads/2026/10/image-1.png" type="image/png" fileSize="1235730" width="1140" height="760"/>
+<media:thumbnail url="https://www.power-eng.com/wp-content/uploads/2026/10/image-1.png" width="1140" height="760"/>
+<enclosure url="https://www.power-eng.com/wp-content/uploads/2026/10/image-1.png" length="1235730" type="image/png"/>
+	</item>
+		<item>
+		<title>America’s data center boom is running into a grid-sized problem</title>
+		<link>https://www.power-eng.com/renewables/america-data-center-construction-delays/</link>
+
+		<dc:creator>Bethany Bashioum</dc:creator>
+		<pubDate>Mon, 05 Oct 2026 19:39:51 +0000</pubDate>
+				<category>Gas</category>
+		<category>News</category>
+		<category>Onsite Power</category>
+		<category>Renewables</category>
+		<category>Microsoft</category>
+		<category>Oracle</category>
+		<category>Project Jupiter</category>
+		<category>Project Lighthouse</category>
+		<category>Stargate</category>
+		<guid isPermaLink="false">https://www.power-eng.com/?p=136964</guid>
+
+					<description>America’s data center boom is moving fast, but the infrastructure needed to power it isn’t always keeping pace. From transmission and fuel constraints to construction setbacks, major projects are finding that turning billions of dollars in investment into energized megawatts can take longer than planned.</description>
+										<media:content url="https://www.power-eng.com/wp-content/uploads/2024/08/pylons-5711002_1920-1.jpg" type="image/jpeg" fileSize="409938" width="1920" height="1280"/>
+<media:thumbnail url="https://www.power-eng.com/wp-content/uploads/2024/08/pylons-5711002_1920-1.jpg" width="1920" height="1280"/>
+<enclosure url="https://www.power-eng.com/wp-content/uploads/2024/08/pylons-5711002_1920-1.jpg" length="409938" type="image/jpeg"/>
+	</item>
+		</channel>
+</rss>

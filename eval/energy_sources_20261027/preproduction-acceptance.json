@@ -1,0 +1,825 @@
+{
+  "at": "2026-10-26T17:02:03.218431+00:00",
+  "polls": [
+    {
+      "source_id": "national_quantum_initiative",
+      "unit": "FEED:6898b4e46250477b1ffce3d3",
+      "url": "https://www.quantum.gov/news/",
+      "fixture": "6898b4e46250477b.txt",
+      "messages": 10,
+      "basis": [
+        "EXACT"
+      ],
+      "failures": [],
+      "deferred": false,
+      "elapsed_ms": 182,
+      "baseline": true
+    },
+    {
+      "source_id": "nsf_news",
+      "unit": "FEED:981618343246fe95aed86647",
+      "url": "https://www.nsf.gov/rss/rss_www_news.xml",
+      "fixture": "981618343246fe95.txt",
+      "messages": 15,
+      "basis": [
+        "EXACT"
+      ],
+      "failures": [],
+      "deferred": false,
+      "elapsed_ms": 1162,
+      "baseline": true
+    },
+    {
+      "source_id": "dcd_energy_ticker",
+      "unit": "FEED:fdbe4abf7101a6815b08c315",
+      "url": "https://www.datacenterdynamics.com/en/news/?company=bloom-energy",
+      "fixture": "fdbe4abf7101a681.txt",
+      "messages": 29,
+      "basis": [
+        "DATE"
+      ],
+      "failures": [],
+      "deferred": false,
+      "elapsed_ms": 2048,
+      "baseline": true
+    },
+    {
+      "source_id": "power_engineering_energy",
+      "unit": "FEED:1d260e200becdf607e2b4cf7",
+      "url": "https://www.power-eng.com/nuclear/feed/",
+      "fixture": "1d260e200becdf60.txt",
+      "messages": 10,
+      "basis": [
+        "EXACT"
+      ],
+      "failures": [],
+      "deferred": false,
+      "elapsed_ms": 2902,
+      "baseline": true
+    },
+    {
+      "source_id": "power_engineering_energy",
+      "unit": "FEED:6ec1b73774c1ba4ec0ad6176",
+      "url": "https://www.power-eng.com/operations-maintenance/feed/",
+      "fixture": "6ec1b73774c1ba4e.txt",
+      "messages": 10,
+      "basis": [
+        "EXACT"
+      ],
+      "failures": [],
+      "deferred": false,
+      "elapsed_ms": 3183,
+      "baseline": true
+    },
+    {
+      "source_id": "dcd_energy_ticker",
+      "unit": "FEED:d4867808738354c7d3f528d2",
+      "url": "https://www.datacenterdynamics.com/en/news/?company=constellation-energy",
+      "fixture": "d4867808738354c7.txt",
+      "messages": 28,
+      "basis": [
+        "DATE"
+      ],
+      "failures": [],
+      "deferred": false,
+      "elapsed_ms": 3207,
+      "baseline": true
+    },
+    {
+      "source_id": "nist_news",
+      "unit": "FEED:40bbf0a9b7927d1fd49d543e",
+      "url": "https://www.nist.gov/news-events/news/rss.xml",
+      "fixture": "40bbf0a9b7927d1f.txt",
+      "messages": 40,
+      "basis": [
+        "EXACT"
+      ],
+      "failures": [],
+      "deferred": false,
+      "elapsed_ms": 3370,
+      "baseline": true
+    },
+    {
+      "source_id": "utility_dive",
+      "unit": "FEED:f0fb325afe07ff21bf307014",
+      "url": "https://www.utilitydive.com/feeds/news/",
+      "fixture": "f0fb325afe07ff21.txt",
+      "messages": 10,
+      "basis": [
+        "EXACT"
+      ],
+      "failures": [],
+      "deferred": false,
+      "elapsed_ms": 3472,
+      "baseline": true
+    },
+    {
+      "source_id": "canary_media",
+      "unit": "FEED:bd9f86f953b4a5cb13216d0d",
+      "url": "https://www.canarymedia.com/rss.rss",
+      "fixture": "bd9f86f953b4a5cb.txt",
+      "messages": 100,
+      "basis": [
+        "EXACT"
+      ],
+      "failures": [],
+      "deferred": false,
+      "elapsed_ms": 4252,
+      "baseline": true
+    },
+    {
+      "source_id": "nrc_news_releases",
+      "unit": "FEED:13558bfebc804201ba5980ec",
+      "url": "https://www.nrc.gov/about-nrc/news-releases/2026",
+      "fixture": "13558bfebc804201.txt",
+      "messages": 162,
+      "basis": [
+        "DATE"
+      ],
+      "failures": [],
+      "deferred": false,
+      "elapsed_ms": 4382,
+      "baseline": true
+    },
+    {
+      "source_id": "world_nuclear_news",
+      "unit": "FEED:7aeff12b5dff2df82855fb85",
+      "url": "https://www.world-nuclear-news.org/rss",
+      "fixture": "7aeff12b5dff2df8.txt",
+      "messages": 46,
+      "basis": [
+        "EXACT"
+      ],
+      "failures": [],
+      "deferred": false,
+      "elapsed_ms": 4635,
+      "baseline": true
+    },
+    {
+      "source_id": "ans_nuclear_newswire",
+      "unit": "FEED:391841846a827fda0e706bd6",
+      "url": "https://www.ans.org/news/feed/",
+      "fixture": "391841846a827fda.txt",
+      "messages": 50,
+      "basis": [
+        "EXACT"
+      ],
+      "failures": [],
+      "deferred": false,
+      "elapsed_ms": 4755,
+      "baseline": true
+    },
+    {
+      "source_id": "nrc_event_notifications",
+      "unit": "FEED:6bbe84acf8686ebb137e8c53",
+      "url": "https://www.nrc.gov/documents-reports/document-collections/events-reports-associated-with/event-notification-reports/en",
+      "fixture": "6bbe84acf8686ebb.txt",
+      "messages": 2,
+      "basis": [
+        "EXACT"
+      ],
+      "failures": [],
+      "deferred": false,
+      "elapsed_ms": 5074,
+      "baseline": true
+    },
+    {
+      "source_id": "doe_energy_news",
+      "unit": "FEED:6ef71a729c05e0d5efee567c",
+      "url": "https://www.energy.gov/ne/listings/ne-press-releases",
+      "fixture": "6ef71a729c05e0d5.txt",
+      "messages": 10,
+      "basis": [
+        "EXACT"
+      ],
+      "failures": [],
+      "deferred": false,
+      "elapsed_ms": 5114,
+      "baseline": true
+    },
+    {
+      "source_id": "doe_energy_news",
+      "unit": "FEED:e5d5acfcb339375945d4a516",
+      "url": "https://www.energy.gov/edf/listings/edf-news",
+      "fixture": "e5d5acfcb3393759.txt",
+      "messages": 10,
+      "basis": [
+        "EXACT"
+      ],
+      "failures": [],
+      "deferred": false,
+      "elapsed_ms": 5311,
+      "baseline": true
+    },
+    {
+      "source_id": "nro_press_releases",
+      "unit": "FEED:537f1e19d0f1fb31bb25afa6",
+      "url": "https://www.nro.gov/news-media-featured-stories/news-media-press-releases/",
+      "fixture": "537f1e19d0f1fb31.txt",
+      "messages": 8,
+      "basis": [
+        "DATE"
+      ],
+      "failures": [],
+      "deferred": false,
+      "elapsed_ms": 5915,
+      "baseline": true
+    },
+    {
+      "source_id": "power_magazine_energy",
+      "unit": "FEED:688954476fb783325f0d3da7",
+      "url": "https://www.powermag.com/category/nuclear/feed/",
+      "fixture": "688954476fb78332.txt",
+      "messages": 10,
+      "basis": [
+        "EXACT"
+      ],
+      "failures": [],
+      "deferred": false,
+      "elapsed_ms": 6124,
+      "baseline": true
+    },
+    {
+      "source_id": "dcd_infrastructure_rss",
+      "unit": "FEED:7278213ee8f6cdb74ee2b957",
+      "url": "https://www.datacenterdynamics.com/en/rss/",
+      "fixture": "7278213ee8f6cdb7.txt",
+      "messages": 20,
+      "basis": [
+        "EXACT"
+      ],
+      "failures": [],
+      "deferred": false,
+      "elapsed_ms": 6261,
+      "baseline": true
+    },
+    {
+      "source_id": "power_engineering_energy",
+      "unit": "FEED:d0de8f7c3d7a516320f92e4d",
+      "url": "https://www.power-eng.com/business/feed/",
+      "fixture": "d0de8f7c3d7a5163.txt",
+      "messages": 10,
+      "basis": [
+        "EXACT"
+      ],
+      "failures": [],
+      "deferred": false,
+      "elapsed_ms": 6404,
+      "baseline": true
+    },
+    {
+      "source_id": "doe_energy_news",
+      "unit": "FEED:b6764e3fd2255cb78f61933a",
+      "url": "https://www.energy.gov/oe/listings/grid-deployment-office-news",
+      "fixture": "b6764e3fd2255cb7.txt",
+      "messages": 10,
+      "basis": [
+        "EXACT"
+      ],
+      "failures": [],
+      "deferred": false,
+      "elapsed_ms": 6599,
+      "baseline": true
+    },
+    {
+      "source_id": "power_engineering_energy",
+      "unit": "FEED:235e5a72b5dba92b980467f1",
+      "url": "https://www.power-eng.com/onsite-power/feed/",
+      "fixture": "235e5a72b5dba92b.txt",
+      "messages": 10,
+      "basis": [
+        "EXACT"
+      ],
+      "failures": [],
+      "deferred": false,
+      "elapsed_ms": 6914,
+      "baseline": true
+    },
+    {
+      "source_id": "data_center_frontier",
+      "unit": "FEED:89de5d09f5f486ad42605b0a",
+      "url": "https://www.datacenterfrontier.com/__rss/website-scheduled-content.xml?input=%7B%22sectionAlias%22:%22home%22%7D",
+      "fixture": "89de5d09f5f486ad.txt",
+      "messages": 25,
+      "basis": [
+        "EXACT"
+      ],
+      "failures": [],
+      "deferred": false,
+      "elapsed_ms": 7052,
+      "baseline": true
+    },
+    {
+      "source_id": "doe_energy_news",
+      "unit": "FEED:7977bdcae7432b207598cbbc",
+      "url": "https://www.energy.gov/oe/listings/news-highlights",
+      "fixture": "7977bdcae7432b20.txt",
+      "messages": 10,
+      "basis": [
+        "EXACT"
+      ],
+      "failures": [],
+      "deferred": false,
+      "elapsed_ms": 7088,
+      "baseline": true
+    },
+    {
+      "source_id": "power_magazine_energy",
+      "unit": "FEED:6a7ae168d38a67f3cdc374d5",
+      "url": "https://www.powermag.com/category/data-centers/feed/",
+      "fixture": "6a7ae168d38a67f3.txt",
+      "messages": 10,
+      "basis": [
+        "EXACT"
+      ],
+      "failures": [],
+      "deferred": false,
+      "elapsed_ms": 7283,
+      "baseline": true
+    },
+    {
+      "source_id": "power_engineering_energy",
+      "unit": "FEED:400f9d2cc69c1b3f88094a48",
+      "url": "https://www.power-eng.com/energy-storage/feed/",
+      "fixture": "400f9d2cc69c1b3f.txt",
+      "messages": 10,
+      "basis": [
+        "EXACT"
+      ],
+      "failures": [],
+      "deferred": false,
+      "elapsed_ms": 7415,
+      "baseline": true
+    },
+    {
+      "source_id": "power_engineering_energy",
+      "unit": "FEED:d635e1b6f2a794fcf3de63b4",
+      "url": "https://www.power-eng.com/renewables/feed/",
+      "fixture": "d635e1b6f2a794fc.txt",
+      "messages": 10,
+      "basis": [
+        "EXACT"
+      ],
+      "failures": [],
+      "deferred": false,
+      "elapsed_ms": 7908,
+      "baseline": true
+    },
+    {
+      "source_id": "power_magazine_energy",
+      "unit": "FEED:06ac57747b943fda8c48db5c",
+      "url": "https://www.powermag.com/category/legal-regulatory/feed/",
+      "fixture": "06ac57747b943fda.txt",
+      "messages": 10,
+      "basis": [
+        "EXACT"
+      ],
+      "failures": [],
+      "deferred": false,
+      "elapsed_ms": 8001,
+      "baseline": true
+    },
+    {
+      "source_id": "power_magazine_energy",
+      "unit": "FEED:65afdcc79ada3849d46bc36a",
+      "url": "https://www.powermag.com/category/safety/feed/",
+      "fixture": "65afdcc79ada3849.txt",
+      "messages": 10,
+      "basis": [
+        "EXACT"
+      ],
+      "failures": [],
+      "deferred": false,
+      "elapsed_ms": 8205,
+      "baseline": true
+    },
+    {
+      "source_id": "power_magazine_energy",
+      "unit": "FEED:5f57ca2d9bbc49199a5051bb",
+      "url": "https://www.powermag.com/category/distributed-generation/feed/",
+      "fixture": "5f57ca2d9bbc4919.txt",
+      "messages": 10,
+      "basis": [
+        "EXACT"
+      ],
+      "failures": [],
+      "deferred": false,
+      "elapsed_ms": 8796,
+      "baseline": true
+    },
+    {
+      "source_id": "power_magazine_energy",
+      "unit": "FEED:f0d36bead962ddb9312b970d",
+      "url": "https://www.powermag.com/category/energy-storage-2/feed/",
+      "fixture": "f0d36bead962ddb9.txt",
+      "messages": 10,
+      "basis": [
+        "EXACT"
+      ],
+      "failures": [],
+      "deferred": false,
+      "elapsed_ms": 9270,
+      "baseline": true
+    },
+    {
+      "source_id": "power_magazine_energy",
+      "unit": "FEED:dfb1378278e648d1d303df54",
+      "url": "https://www.powermag.com/category/hydrogen/feed/",
+      "fixture": "dfb1378278e648d1.txt",
+      "messages": 10,
+      "basis": [
+        "EXACT"
+      ],
+      "failures": [],
+      "deferred": false,
+      "elapsed_ms": 10108,
+      "baseline": true
+    }
+  ],
+  "bodies": [
+    {
+      "source_id": "nrc_event_notifications",
+      "unit": "FEED:6bbe84acf8686ebb137e8c53",
+      "url": "https://www.nrc.gov/documents-reports/document-collections/events-reports-associated-with/event-notification-reports/2026/20261026en?event=58499",
+      "title": "NRC EN 58499 | Whitestone Associates Inc. | AGREEMENT STATE REPORT - DAMAGED GAUGE",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": null,
+      "chars": 2287
+    },
+    {
+      "source_id": "national_quantum_initiative",
+      "unit": "FEED:6898b4e46250477b1ffce3d3",
+      "url": "https://www.quantum.gov/doe-launches-competition-accelerate-development-worlds-first-fault-tolerant/",
+      "title": "DOE Launches Competition to Accelerate Development of World\u2019s First Fault-Tolerant Quantum Computer",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 1244
+    },
+    {
+      "source_id": "dcd_energy_ticker",
+      "unit": "FEED:fdbe4abf7101a6815b08c315",
+      "url": "https://www.datacenterdynamics.com/en/news/meta-details-ohio-prometheus-data-center-campus-with-first-phase-live/",
+      "title": "Meta details Ohio Prometheus data center campus, with first phase live",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 2554
+    },
+    {
+      "source_id": "power_engineering_energy",
+      "unit": "FEED:1d260e200becdf607e2b4cf7",
+      "url": "https://www.power-eng.com/nuclear/siemens-energy-more-than-triples-nuclear-training-as-restarts-and-upgrades-ramp-up/",
+      "title": "Siemens Energy more than triples nuclear training as restarts and upgrades ramp up",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 3247
+    },
+    {
+      "source_id": "power_engineering_energy",
+      "unit": "FEED:6ec1b73774c1ba4ec0ad6176",
+      "url": "https://www.power-eng.com/operations-maintenance/ai-moves-inside-the-plant-1898-co-previews-its-powergen-case-study/",
+      "title": "AI moves inside the plant: 1898 & Co. previews its POWERGEN case study",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 3656
+    },
+    {
+      "source_id": "nsf_news",
+      "unit": "FEED:981618343246fe95aed86647",
+      "url": "https://www.nsf.gov/news/podcast-can-americas-most-powerful-laser-unlock-universe",
+      "title": "Podcast: Can America's most powerful laser unlock the universe?",
+      "outcome": "SHORT_FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 410
+    },
+    {
+      "source_id": "dcd_energy_ticker",
+      "unit": "FEED:d4867808738354c7d3f528d2",
+      "url": "https://www.datacenterdynamics.com/en/news/meta-details-ohio-prometheus-data-center-campus-with-first-phase-live/",
+      "title": "Meta details Ohio Prometheus data center campus, with first phase live",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 2554
+    },
+    {
+      "source_id": "utility_dive",
+      "unit": "FEED:f0fb325afe07ff21bf307014",
+      "url": "https://www.utilitydive.com/news/wind-turbine-orders-hit-28-gw-in-q2-ahead-of-tax-credit-deadline-woodmac/872757/",
+      "title": "Wind turbine orders hit 2.8 GW in Q2 ahead of tax credit deadline: WoodMac",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 2574
+    },
+    {
+      "source_id": "nrc_news_releases",
+      "unit": "FEED:13558bfebc804201ba5980ec",
+      "url": "https://www.nrc.gov/about-nrc/news-releases/2026/26-016-iii",
+      "title": "NRC Proposes $36,000 Civil Penalty Against Industrial Radiography Company for Safety Violations",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 1181
+    },
+    {
+      "source_id": "nist_news",
+      "unit": "FEED:40bbf0a9b7927d1fd49d543e",
+      "url": "https://www.nist.gov/news-events/news/2026/10/new-chip-based-tape-measure-light-could-revolutionize-mobile-timekeeping",
+      "title": "New Chip-Based \u2018Tape Measure\u2019 for Light Could Revolutionize Mobile Timekeeping and Enhance National Security",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 1601
+    },
+    {
+      "source_id": "doe_energy_news",
+      "unit": "FEED:6ef71a729c05e0d5efee567c",
+      "url": "https://www.energy.gov/ne/articles/doe-office-nuclear-energy-announces-50m-funding-revolutionize-reactor-cladding-material",
+      "title": "DOE Office of Nuclear Energy Announces $50M in Funding to Revolutionize Reactor Cladding Material",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 1973
+    },
+    {
+      "source_id": "canary_media",
+      "unit": "FEED:bd9f86f953b4a5cb13216d0d",
+      "url": "https://www.canarymedia.com/articles/electrification/group-buy-induction-cooking",
+      "title": "This group-buy campaign makes it easier to switch to induction cooking",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 6148
+    },
+    {
+      "source_id": "doe_energy_news",
+      "unit": "FEED:e5d5acfcb339375945d4a516",
+      "url": "https://www.energy.gov/articles/energy-department-announces-42-billion-investment-boost-nuclear-power-and-help-lower",
+      "title": "Energy Department Announces $4.2 Billion Investment to Boost Nuclear Power and Help Lower Energy Costs in Pennsylvania and Ohio",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 2798
+    },
+    {
+      "source_id": "world_nuclear_news",
+      "unit": "FEED:7aeff12b5dff2df82855fb85",
+      "url": "https://www.world-nuclear-news.org/articles/czech-smr-environmental-impact-assessment-submitted",
+      "title": "Czech SMR environmental impact assessment submitted",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 3205
+    },
+    {
+      "source_id": "power_magazine_energy",
+      "unit": "FEED:688954476fb783325f0d3da7",
+      "url": "https://www.powermag.com/nrc-finalizes-rule-allowing-reactor-applicants-to-use-doe-dow-demonstration-data/",
+      "title": "NRC Finalizes Rule Allowing Reactor Applicants to Use DOE, DOW Demonstration Data",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 10498
+    },
+    {
+      "source_id": "power_magazine_energy",
+      "unit": "FEED:6a7ae168d38a67f3cdc374d5",
+      "url": "https://www.powermag.com/why-flat-performance-matters-more-than-peak-efficiency-in-data-center-design/",
+      "title": "Why Flat Performance Matters More Than Peak Efficiency in Data Center Design",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 10415
+    },
+    {
+      "source_id": "dcd_infrastructure_rss",
+      "unit": "FEED:7278213ee8f6cdb74ee2b957",
+      "url": "https://www.datacenterdynamics.com/en/news/anthropic-files-s-1-for-ipo-with-417bn-in-compute-commitments/",
+      "title": "Anthropic files S-1 for IPO, with $417bn in compute commitments",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 3295
+    },
+    {
+      "source_id": "ans_nuclear_newswire",
+      "unit": "FEED:391841846a827fda0e706bd6",
+      "url": "https://www.ans.org/news/2026-10-26/article-8518/umich-psi-researchers-report-new-airborne-radiationdetection-method/",
+      "title": "UMich, PSI researchers report new airborne radiation-detection method",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 4713
+    },
+    {
+      "source_id": "power_engineering_energy",
+      "unit": "FEED:d0de8f7c3d7a516320f92e4d",
+      "url": "https://www.power-eng.com/gas/turbines/the-turbine-slot-is-the-new-critical-path-powergen-2027-examines-what-that-means-for-plant-execution/",
+      "title": "The turbine slot is the new critical path. POWERGEN 2027 examines what that means for plant execution",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 2950
+    },
+    {
+      "source_id": "data_center_frontier",
+      "unit": "FEED:89de5d09f5f486ad42605b0a",
+      "url": "https://www.datacenterfrontier.com/machine-learning/article/55414295/nvidias-dsx-pod-pushes-ai-factory-construction-toward-the-assembly-line",
+      "title": "NVIDIA's DSX POD Pushes AI Factory Construction Toward the Assembly Line",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 21398
+    },
+    {
+      "source_id": "doe_energy_news",
+      "unit": "FEED:b6764e3fd2255cb78f61933a",
+      "url": "https://www.energy.gov/articles/energy-department-announces-new-investments-strengthen-americas-power-grid-and-lower",
+      "title": "Energy Department Announces New Investments to Strengthen America's Power Grid and Lower Electricity Costs",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 2000
+    },
+    {
+      "source_id": "power_magazine_energy",
+      "unit": "FEED:06ac57747b943fda8c48db5c",
+      "url": "https://www.powermag.com/stop-viewing-battery-passports-as-compliance-theyre-the-missing-link-to-monetize-second-life-batteries/",
+      "title": "Stop Viewing Battery Passports as Compliance: They\u2019re the Missing Link to Monetize Second-Life Batteries",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 6428
+    },
+    {
+      "source_id": "power_engineering_energy",
+      "unit": "FEED:235e5a72b5dba92b980467f1",
+      "url": "https://www.power-eng.com/onsite-power/microgrids/google-wyoming-data-center-black-hills-natural-gas/",
+      "title": "Black Hills to build 564 MW of new gas, manage 2.1 GW microgrid for Google data center in Wyoming",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 4139
+    },
+    {
+      "source_id": "doe_energy_news",
+      "unit": "FEED:7977bdcae7432b207598cbbc",
+      "url": "https://www.energy.gov/oe/articles/innovative-solutions-grid-equipment-shortages",
+      "title": "Innovative Solutions for Grid Equipment Shortages",
+      "outcome": "SHORT_FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 361
+    },
+    {
+      "source_id": "power_magazine_energy",
+      "unit": "FEED:65afdcc79ada3849d46bc36a",
+      "url": "https://www.powermag.com/beyond-the-contract-how-rabigh-reinforcement-reached-first-fire-14-months-after-award/",
+      "title": "Beyond the Contract: How Rabigh Reinforcement Reached First Fire 14 Months After Award",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 7670
+    },
+    {
+      "source_id": "power_engineering_energy",
+      "unit": "FEED:400f9d2cc69c1b3f88094a48",
+      "url": "https://www.power-eng.com/energy-storage/batteries/battery-storage-failure-rates-plunge-98-as-global-deployment-soars/",
+      "title": "Battery storage failure rates plunge 98% as global deployment soars",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 6001
+    },
+    {
+      "source_id": "power_magazine_energy",
+      "unit": "FEED:5f57ca2d9bbc49199a5051bb",
+      "url": "https://www.powermag.com/fit-energy-will-use-gas-powered-fuel-cells-for-pennsylvania-data-center-project/",
+      "title": "Fit Energy Will Use Gas-Powered Fuel Cells For Pennsylvania Data Center Project",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 4746
+    },
+    {
+      "source_id": "power_magazine_energy",
+      "unit": "FEED:f0d36bead962ddb9312b970d",
+      "url": "https://www.powermag.com/stop-viewing-battery-passports-as-compliance-theyre-the-missing-link-to-monetize-second-life-batteries/",
+      "title": "Stop Viewing Battery Passports as Compliance: They\u2019re the Missing Link to Monetize Second-Life Batteries",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 6428
+    },
+    {
+      "source_id": "power_engineering_energy",
+      "unit": "FEED:d635e1b6f2a794fcf3de63b4",
+      "url": "https://www.power-eng.com/renewables/hydropower/doe-selects-second-round-of-hydropower-projects-for-technical-support-with-modernization-in-mind/",
+      "title": "DOE selects second round of hydropower projects for technical support, with modernization in mind",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 12437
+    },
+    {
+      "source_id": "power_magazine_energy",
+      "unit": "FEED:dfb1378278e648d1d303df54",
+      "url": "https://www.powermag.com/hydrogen-award-finalist-total-hydrogen-solutions-texas-production-facility/",
+      "title": "Hydrogen Award Finalist: Total Hydrogen Solutions\u2019 Texas Production Facility",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 3946
+    },
+    {
+      "source_id": "nro_press_releases",
+      "unit": "FEED:537f1e19d0f1fb31bb25afa6",
+      "url": "https://www.nro.gov/news-media-featured-stories/news-media-press-releases/Archived-Press-Releases/Press-Release-Article/Article/4616581/nro-successfully-launches-nrol-97-aboard-its-first-spacex-falcon-heavy-mission/",
+      "title": "NRO successfully launches NROL-97 aboard its first SpaceX Falcon Heavy mission",
+      "outcome": "FULL",
+      "reason": null,
+      "http_status": 200,
+      "chars": 3866
+    }
+  ],
+  "second": [
+    {
+      "source_id": "doe_energy_news",
+      "unit": "FEED:6ef71a729c05e0d5efee567c",
+      "messages": 0,
+      "failures": 0
+    },
+    {
+      "source_id": "doe_energy_news",
+      "unit": "FEED:e5d5acfcb339375945d4a516",
+      "messages": 0,
+      "failures": 0
+    },
+    {
+      "source_id": "power_magazine_energy",
+      "unit": "FEED:688954476fb783325f0d3da7",
+      "messages": 0,
+      "failures": 0
+    },
+    {
+      "source_id": "doe_energy_news",
+      "unit": "FEED:b6764e3fd2255cb78f61933a",
+      "messages": 0,
+      "failures": 0
+    },
+    {
+      "source_id": "doe_energy_news",
+      "unit": "FEED:7977bdcae7432b207598cbbc",
+      "messages": 0,
+      "failures": 0
+    },
+    {
+      "source_id": "power_magazine_energy",
+      "unit": "FEED:6a7ae168d38a67f3cdc374d5",
+      "messages": 0,
+      "failures": 0
+    },
+    {
+      "source_id": "power_magazine_energy",
+      "unit": "FEED:06ac57747b943fda8c48db5c",
+      "messages": 0,
+      "failures": 0
+    },
+    {
+      "source_id": "power_magazine_energy",
+      "unit": "FEED:65afdcc79ada3849d46bc36a",
+      "messages": 0,
+      "failures": 0
+    },
+    {
+      "source_id": "power_magazine_energy",
+      "unit": "FEED:5f57ca2d9bbc49199a5051bb",
+      "messages": 0,
+      "failures": 0
+    },
+    {
+      "source_id": "power_magazine_energy",
+      "unit": "FEED:f0d36bead962ddb9312b970d",
+      "messages": 0,
+      "failures": 0
+    },
+    {
+      "source_id": "power_magazine_energy",
+      "unit": "FEED:dfb1378278e648d1d303df54",
+      "messages": 0,
+      "failures": 0
+    }
+  ],
+  "summary": {
+    "endpoints": 31,
+    "endpoint_success": 31,
+    "body_samples": 31,
+    "body_full": 31
+  }
+}

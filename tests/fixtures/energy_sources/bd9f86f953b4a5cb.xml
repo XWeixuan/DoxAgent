@@ -1,0 +1,32 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>Canary Media</title>
+        <link>https://www.canarymedia.com/</link>
+        <atom:link href="https://www.canarymedia.com/rss.rss" rel="self" type="application/rss+xml"/>
+        <description>The leading newsroom covering the transition to clean energy, electrification and climate solutions. We report on how the world is decarbonizing with a critical focus on finding out what works and what doesn't.</description>
+        <language>en-US</language>
+        <pubDate>Mon, 26 Oct 2026 12:10:43 -0400</pubDate>
+        <lastBuildDate>Mon, 26 Oct 2026 12:10:43 -0400</lastBuildDate>
+
+                                            <item>
+                <title>This group-buy campaign makes it easier to switch to induction cooking</title>
+                <link>https://www.canarymedia.com/articles/electrification/group-buy-induction-cooking</link>
+                <pubDate>Mon, 26 Oct 2026 03:30:00 -0400</pubDate>
+                <guid>https://www.canarymedia.com/articles/electrification/group-buy-induction-cooking</guid>
+                <description>
+                     Word is getting out about electric induction ranges. More and more chefs say the appliances cook just as well as or better than their gas counterparts. The stoves don’t burn climate-warming fossil fuels or release  harmful indoor air pollutants like gas ones do. And because they’re vastly more efficient, they also…
+                </description>
+                <author>Elizabeth Ouzts</author>
+            </item>
+                                            <item>
+                <title>Massachusetts sets big battery goals — and the policies to back them up</title>
+                <link>https://www.canarymedia.com/articles/batteries/massachusetts-sets-big-battery-goals</link>
+                <pubDate>Mon, 26 Oct 2026 03:30:00 -0400</pubDate>
+                <guid>https://www.canarymedia.com/articles/batteries/massachusetts-sets-big-battery-goals</guid>
+                <description>
+                     Just outside Boston, a developer is getting set to build a  700-megawatt storage facility that is expected to dwarf every other battery project in New England. One town over, another energy company  just closed on $850 million in financing to build a 250-MW battery. Down near the Rhode Island border, ground has been…
+                </description>
+                <author>Sarah Shemkus</author>
+            </item>
+                                            </channel>
+</rss>

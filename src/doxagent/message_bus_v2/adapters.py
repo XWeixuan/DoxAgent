@@ -152,6 +152,9 @@ class AdapterRegistry:
         from .thefly_source import TheFlyAdapter
 
         self._builtins["thefly_public@1"] = TheFlyAdapter(self._builtins["technology_public@1"].http)
+        from .energy_sources import EnergyAdapter
+
+        self._builtins["energy_public@1"] = EnergyAdapter(self._builtins["technology_public@1"].http)
 
     def set_streaming_bindings(self, binding_ids):
         self._builtins['ibkr_news']._active_bindings = set(binding_ids)
@@ -165,6 +168,7 @@ class AdapterRegistry:
         await self._builtins["corporate_ir@1"].close()
         await self._builtins["defense_public@1"].close()
         await self._builtins["sec_edgar@1"].close()
+        await self._builtins["energy_public@1"].close()
         await self._builtins["technology_public@1"].close()
         ibkr = self._builtins.get("ibkr_news")
         close = getattr(ibkr, "close", None)

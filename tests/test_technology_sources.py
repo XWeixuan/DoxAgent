@@ -351,20 +351,17 @@ async def test_http_pool_caps_same_publisher_across_separate_column_sources():
         status_code = 200
         headers = {}
 
-        async def aiter_content(self):
-            await release.wait()
-            yield b"<rss/>"
-
     class Session:
-        @asynccontextmanager
-        async def stream(self, *args, **kwargs):
+        async def request(self, *args, **kwargs):
             nonlocal active, maximum
             active += 1
             maximum = max(maximum, active)
             if active == 2:
                 entered.set()
             try:
-                yield Response()
+                await release.wait()
+                kwargs["content_callback"](b"<rss/>")
+                return Response()
             finally:
                 active -= 1
 
@@ -376,6 +373,22 @@ async def test_http_pool_caps_same_publisher_across_separate_column_sources():
     release.set()
     assert all(result.status == 200 for result in await asyncio.gather(*tasks))
     assert maximum == 2 and active == 0
+
+
+@pytest.mark.parametrize("write_error", [True, False])
+async def test_public_http_bounds_nonstream_response_even_when_curl_aborts_callback(write_error):
+    class Session:
+        async def request(self, *args, **kwargs):
+            callback = kwargs["content_callback"]
+            assert callback(b"head") == 4
+            assert callback(b"x" * (4 * 1024 * 1024)) == 0
+            if write_error:
+                raise RuntimeError("curl write callback aborted")
+            return SimpleNamespace(status_code=200, headers={})
+
+    spec = SOURCES["siliconangle_ai"]
+    with pytest.raises(ValueError, match="exceeds_4mib"):
+        await TechnologyHttp(Session()).fetch(spec.urls[0], spec)
 
 
 async def test_grouped_endpoint_runs_commit_independently_and_keep_separate_backoff(
