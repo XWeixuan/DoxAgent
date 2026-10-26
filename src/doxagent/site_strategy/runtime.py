@@ -1321,6 +1321,7 @@ class SiteAccessRuntime:
         lease = anchor.lease if anchor else await self.browser_runtimes.page(identity, egress, deadline=deadline)
         _BROWSER_TIMINGS.get()["page_acquire_ms"] = int((time.monotonic()-lease_started)*1000)
         _BROWSER_TIMINGS.get()["fetch_anchor_reused"] = int(anchor is not None)
+        _BROWSER_TIMINGS.get()['fetch_anchor_thawed'] = int(bool(anchor and anchor.thawed))
         current_runtime = self.repository.get_identity_runtime(identity.identity_id)
         if (
             current_runtime.instance_id != lease.provenance.instance_id

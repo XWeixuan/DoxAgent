@@ -206,7 +206,7 @@ class GlobalPollScheduler:
     async def run_once(self) -> list[PollExecutionResult]:
         admission = getattr(self, "activation_admission", None)
         if admission is not None:
-            await self.storage_call(admission)
+            await self.storage_call(admission, _lane_priority=0)
         from doxagent.ticker_initialization.consumers import bus_revision_usable, consumer_heartbeat
 
         heartbeat = consumer_heartbeat(

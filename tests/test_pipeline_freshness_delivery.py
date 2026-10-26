@@ -622,3 +622,25 @@ def test_schedule_tracks_unit_phase_changes_without_writing_each_period(tmp_path
         assert db.execute("select count(*) from poll_runs where status='SCHEDULE'").fetchone()[0]==2
     state=repo.get_poll_state(binding).model_copy(update={"target_due_at":at,"units":{"OTHER_HEAD":{"target_due_at":(at+timedelta(seconds=7)).isoformat()}}})
     assert GlobalPollScheduler.schedule_epoch(state,"OTHER_HEAD")==at+timedelta(seconds=7)
+
+
+async def test_idle_fetch_documents_match_identity_slots_and_freeze_then_resume():
+    import time
+    from doxagent.site_strategy.fetch_anchors import FetchAnchor,FetchAnchors
+    pool=FetchAnchors()
+    identity=SimpleNamespace(identity_id="existing",revision=1,access=SimpleNamespace(max_concurrency=2))
+    egress=SimpleNamespace(egress_id="approved")
+    anchors=[];commands=[]
+    for i in range(3):
+        async def send(method,params):commands.append((method,params["state"]))
+        session=SimpleNamespace(send=send,detach=AsyncMock())
+        page=SimpleNamespace(context=SimpleNamespace(new_cdp_session=AsyncMock(return_value=session)),is_closed=lambda:False)
+        anchors.append(FetchAnchor(SimpleNamespace(__aexit__=AsyncMock()),page,SimpleNamespace(blocked=False,close=AsyncMock()),None,1,"approved",time.monotonic()))
+    assert pool.put(identity,anchors[0]) and pool.put(identity,anchors[1])
+    assert not pool.put(identity,anchors[2])
+    taken=await pool.take(identity,egress)
+    assert taken in anchors[:2] and not taken.frozen
+    assert ("Page.setWebLifecycleState","active") in commands
+    assert pool.put(identity,taken)
+    await pool.close()
+    for anchor in anchors[:2]:anchor.lease.__aexit__.assert_awaited_once()
