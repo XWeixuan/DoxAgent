@@ -1,0 +1,9 @@
+{
+  "commit": "d5f43fb27286bf54d4d0b51d072924e72aef2504",
+  "container": "375a41088e926f61a98b2b4e9eb7c48d0ab381dbd842fb6ebfe55933e0799e6e",
+  "image": "sha256:a110aab1fed9e94d123d0c7ad9bf4805001b1327a49cf0d272dd28876323654d",
+  "health": "healthy",
+  "unrelated_container_ids_unchanged": true,
+  "empty_job_queue_before_release": true,
+  "audit_directory": "/var/lib/doxagent/releases/w3-permit-p0-d5f43fb27286"
+}
