@@ -1,0 +1,1 @@
+{"revision": 6, "enabled": false, "changed_at": "2026-10-26T01:18:17.438909+00:00", "actor": "pipeline-freshness-20261026", "reason": "One-hour maximum verification completed; preserve in-flight and durable work", "expires_at": "2026-10-26T01:22:44.651176+00:00", "tickers": [], "sources": [], "effective": false, "state": "DISABLED"}

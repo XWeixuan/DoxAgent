@@ -89,13 +89,101 @@
       "tests": 34,
       "failed": 0,
       "skipped": 0
+    },
+    {
+      "file": "admission-fix.xml",
+      "tests": 7,
+      "failed": 1,
+      "skipped": 0
+    },
+    {
+      "file": "trend-routing-tests.xml",
+      "tests": 1,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "live-fix-tests.xml",
+      "tests": 30,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "cadence-link-tests.xml",
+      "tests": 36,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "fresh-priority-tests.xml",
+      "tests": 68,
+      "failed": 1,
+      "skipped": 0
+    },
+    {
+      "file": "fresh-priority-retest.xml",
+      "tests": 1,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "delivery-priority-tests.xml",
+      "tests": 33,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "fresh-priority-smoke.xml",
+      "tests": 3,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "orchestration-phase-tests.xml",
+      "tests": 1,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "candidate-final-tests.xml",
+      "tests": 72,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "anchor-cost-tests.xml",
+      "tests": 3,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "anchor-native-tests.xml",
+      "tests": 9,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "queue-canonical-tests.xml",
+      "tests": 4,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "public-listing-auth-tests.xml",
+      "tests": 11,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "public-auth-isolation.xml",
+      "tests": 1,
+      "failed": 0,
+      "skipped": 0
     }
   ],
-  "latest_unique": {
-    "passed": 454,
-    "failed": 0,
+  "latest_unique_cases": {
+    "passed": 469,
     "skipped": 1
   },
-  "failed_cases": [],
-  "note": "Earlier failed artifacts retained; current per-case result uses most recent rerun. Two malformed-origin fallback canaries also passed."
+  "unresolved_failures": []
 }

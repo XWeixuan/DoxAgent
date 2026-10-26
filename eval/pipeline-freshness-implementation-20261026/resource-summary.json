@@ -1,0 +1,60 @@
+{
+  "since": "2026-10-26T00:48:28.838845+00:00",
+  "until": "2026-10-26T01:18:20.026571+00:00",
+  "memory": {
+    "MemAvailable": "3952344 kB",
+    "SwapFree": "353592 kB"
+  },
+  "roles": {
+    "v2-site-access": {
+      "mean_cpu_cores": 0.983,
+      "cpu_window": "current_container_lifetime",
+      "memory_mib": 3940,
+      "restarts": 0,
+      "commit": "c9dd47628236f83fe6525b6643fd994d2295422a"
+    },
+    "v2-message-bus": {
+      "mean_cpu_cores": 1.163,
+      "cpu_window": "current_container_lifetime",
+      "memory_mib": 678,
+      "restarts": 0,
+      "commit": "dfdd0510be20c8853220d4270991e4b8fb74eda8"
+    },
+    "v2-content-enrichment": {
+      "mean_cpu_cores": 0.038,
+      "cpu_window": "paired",
+      "memory_mib": 142,
+      "restarts": 0,
+      "commit": "ffbe2efb565135f9883ab2adaa9dd5c0b762fd8a"
+    },
+    "v2-scheduler": {
+      "mean_cpu_cores": 1.082,
+      "cpu_window": "paired",
+      "memory_mib": 1853,
+      "restarts": 0,
+      "commit": "450c17d4b33e185456c18351759fba766cccbc84"
+    },
+    "codex-worker": {
+      "mean_cpu_cores": 0.587,
+      "cpu_window": "paired",
+      "memory_mib": 918,
+      "restarts": 0,
+      "commit": "f2f0bcd66a13b469073392cd93fbdbecca2e56d2"
+    },
+    "v2-projector": {
+      "mean_cpu_cores": 0.666,
+      "cpu_window": "paired",
+      "memory_mib": 661,
+      "restarts": 0,
+      "commit": "f2f0bcd66a13b469073392cd93fbdbecca2e56d2"
+    },
+    "v2-chrome-supervisor": {
+      "mean_cpu_cores": 1.044,
+      "cpu_window": "paired",
+      "memory_mib": 4100,
+      "restarts": 0,
+      "commit": "f2f0bcd66a13b469073392cd93fbdbecca2e56d2"
+    }
+  },
+  "host_busy_percent": 78.6
+}

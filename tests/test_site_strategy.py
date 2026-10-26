@@ -715,3 +715,17 @@ async def test_crawler_honors_configured_queue_instead_of_hidden_three_second_ca
     result=await site_service.execute(AccessRequest(operation_id="queue-configured",purpose=SitePurpose.CRAWLER,url="https://finance.yahoo.com/story",mode=AccessMode.HTTP_PUBLIC,remaining_budget_ms=6000))
     assert result.disposition is AccessDisposition.SUCCESS
     assert result.queue_wait_ms>=3000
+
+
+@pytest.mark.asyncio
+async def test_barrons_public_listing_can_use_existing_identity_while_paid_body_stays_gated(site_service):
+    calls=[]
+    async def execute_runtime(request,resolved,combination,profile,egress):
+        calls.append(request.purpose)
+        return RuntimeResponse(200,request.url,{"content-type":"text/html"},"<html><title>Stock news</title><main><h1>Company news</h1><a href='/articles/news'>Company announced results</a></main></html>")
+    site_service.runtime.execute=execute_runtime
+    listing=await site_service.execute(AccessRequest(operation_id="public-listing-auth",purpose=SitePurpose.CRAWLER,url="https://www.barrons.com/market-data/stocks/mu",mode=AccessMode.BROWSER,recipe_ref="builtin:barrons_ticker@1",recipe_parameters={"ticker":"MU","channel":"Barrons"}))
+    assert listing.disposition is AccessDisposition.SUCCESS
+    body=await site_service.execute(AccessRequest(operation_id="paid-body-auth",purpose=SitePurpose.BODY,url="https://www.barrons.com/articles/news",mode=AccessMode.BROWSER))
+    assert body.disposition is AccessDisposition.AUTH_REQUIRED
+    assert calls==[SitePurpose.CRAWLER]

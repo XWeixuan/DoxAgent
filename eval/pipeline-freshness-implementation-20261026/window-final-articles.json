@@ -1,0 +1,593 @@
+{
+  "since": "2026-10-26T00:22:44.651176+00:00",
+  "at": "2026-10-26T01:18:22.969036+00:00",
+  "new_articles": 15,
+  "full_articles": 11,
+  "full_ratio": 0.7333333333333333,
+  "initial_full_articles": 11,
+  "full_consumable_articles": 11,
+  "consumable_articles": 15,
+  "within_10_seconds": 3,
+  "uncompleted_or_unpublished": 0,
+  "latency_seconds": {
+    "samples": 15,
+    "mean": 76.58320826666667,
+    "p95": 224.790441,
+    "max": 224.790441
+  },
+  "articles": [
+    {
+      "fetch_key": "ae379bfde1991e3a2bc56f8054aa1a081839a464a211c369fa0926f613c4b87d",
+      "first_observed_at": "2026-10-26T00:23:28.236177+00:00",
+      "status": "READY",
+      "next_check_at": "2026-10-26T00:56:05.146670+00:00",
+      "outcome": "FULL",
+      "source_id": "huggingnews_rss",
+      "url": "https://huggingnews.com/ai/transformer-lead-times-top-160-weeks-for-us-ai-data-centers-b0250047",
+      "final_url": "https://huggingnews.com/ai/transformer-lead-times-top-160-weeks-for-us-ai-data-centers-b0250047",
+      "eligible": 1,
+      "legacy_result": null,
+      "prior_publication_raw_id": null,
+      "acquired_at": "2026-10-26T00:26:05.146670+00:00",
+      "error": null,
+      "fetch_keys": [
+        "ae379bfde1991e3a2bc56f8054aa1a081839a464a211c369fa0926f613c4b87d"
+      ],
+      "listing_received_at": "2026-10-26T00:23:28.236177+00:00",
+      "candidate_prepared_at": "2026-10-26T00:25:55.533429+00:00",
+      "job_created_at": "2026-10-26T00:26:02.041702Z",
+      "fetch_started_at": "2026-10-26T00:26:02.616197Z",
+      "job_statuses": [
+        "completed"
+      ],
+      "readable_at": "2026-10-26T00:26:21.021950+00:00",
+      "publication_rows": 5,
+      "censored": false,
+      "first_full_at": "2026-10-26T00:26:05.070153+00:00",
+      "full_readable_at": "2026-10-26T00:26:21.021950+00:00",
+      "initial_outcome": "FULL",
+      "stages_seconds": {
+        "candidate_prepared": 147.297252,
+        "job_created": 153.805525,
+        "fetch_started": 154.38002,
+        "body_full": 156.833976,
+        "consumable": 172.785773
+      }
+    },
+    {
+      "fetch_key": "ea4ce045c641c61071fa75248758cf73c4c235df0fa09c705b0e5aaa8978b97c",
+      "first_observed_at": "2026-10-26T00:23:35.603439+00:00",
+      "status": "READY",
+      "next_check_at": "2026-10-26T00:56:33.884243+00:00",
+      "outcome": "FULL",
+      "source_id": "army_news_releases",
+      "url": "https://www.army.mil/article/296302/us_army_launches_project_gatekeeper_to_accelerate_commercial_software_adoption_streamline_cybersecurity_accreditation",
+      "final_url": "https://www.army.mil/article/296302/us_army_launches_project_gatekeeper_to_accelerate_commercial_software_adoption_streamline_cybersecurity_accreditation",
+      "eligible": 1,
+      "legacy_result": null,
+      "prior_publication_raw_id": null,
+      "acquired_at": "2026-10-26T00:26:33.884243+00:00",
+      "error": null,
+      "fetch_keys": [
+        "ea4ce045c641c61071fa75248758cf73c4c235df0fa09c705b0e5aaa8978b97c"
+      ],
+      "listing_received_at": "2026-10-26T00:23:35.603439+00:00",
+      "candidate_prepared_at": "2026-10-26T00:26:23.772825+00:00",
+      "job_created_at": "2026-10-26T00:26:27.767302Z",
+      "fetch_started_at": "2026-10-26T00:26:28.027581Z",
+      "job_statuses": [
+        "completed"
+      ],
+      "readable_at": "2026-10-26T00:27:18.745126+00:00",
+      "publication_rows": 1,
+      "censored": false,
+      "first_full_at": "2026-10-26T00:26:33.868482+00:00",
+      "full_readable_at": "2026-10-26T00:27:18.745126+00:00",
+      "initial_outcome": "FULL",
+      "stages_seconds": {
+        "candidate_prepared": 168.169386,
+        "job_created": 172.163863,
+        "fetch_started": 172.424142,
+        "body_full": 178.265043,
+        "consumable": 223.141687
+      }
+    },
+    {
+      "fetch_key": "0f4e70779462726eb67dda04cd7746eac631c008e7bb07050408df073d76a19d",
+      "first_observed_at": "2026-10-26T00:24:27.647000+00:00",
+      "status": "FAILED",
+      "next_check_at": "2026-10-26T00:29:11.760009+00:00",
+      "outcome": null,
+      "source_id": "reuters_site_search",
+      "url": "https://www.reuters.com/business/media-telecom/musk-says-spacex-raised-40-billion-debt-gpus-2026-10-25/",
+      "final_url": null,
+      "eligible": 1,
+      "legacy_result": null,
+      "prior_publication_raw_id": null,
+      "acquired_at": null,
+      "error": "transport_timeout",
+      "fetch_keys": [
+        "0f4e70779462726eb67dda04cd7746eac631c008e7bb07050408df073d76a19d"
+      ],
+      "listing_received_at": "2026-10-26T00:24:27.647000+00:00",
+      "candidate_prepared_at": "2026-10-26T00:27:15.344642+00:00",
+      "job_created_at": "2026-10-26T00:27:16.218985Z",
+      "fetch_started_at": "2026-10-26T00:27:16.500785Z",
+      "job_statuses": [
+        "failed"
+      ],
+      "readable_at": "2026-10-26T00:28:12.437441+00:00",
+      "publication_rows": 1,
+      "censored": false,
+      "first_full_at": null,
+      "full_readable_at": null,
+      "initial_outcome": "UNAVAILABLE",
+      "stages_seconds": {
+        "candidate_prepared": 167.697642,
+        "job_created": 168.571985,
+        "fetch_started": 168.853785,
+        "body_full": null,
+        "consumable": 224.790441
+      }
+    },
+    {
+      "fetch_key": "2195931c4a17ef9e47ee221c39c0611989d34b6bcb15d4d51f38de19b1512827",
+      "first_observed_at": "2026-10-26T00:27:52.919465+00:00",
+      "status": "READY",
+      "next_check_at": "2026-10-26T00:59:18.511015+00:00",
+      "outcome": "FULL",
+      "source_id": "wccftech_ai",
+      "url": "https://wccftech.com/elon-musk-goes-ballistic-on-ai-neoclouds-says-they-will-see-guppy-level-death-as-spacex-raises-40-billion-for-gpus/",
+      "final_url": "https://wccftech.com/elon-musk-goes-ballistic-on-ai-neoclouds-says-they-will-see-guppy-level-death-as-spacex-raises-40-billion-for-gpus/",
+      "eligible": 1,
+      "legacy_result": null,
+      "prior_publication_raw_id": null,
+      "acquired_at": "2026-10-26T00:29:18.511015+00:00",
+      "error": null,
+      "fetch_keys": [
+        "2195931c4a17ef9e47ee221c39c0611989d34b6bcb15d4d51f38de19b1512827"
+      ],
+      "listing_received_at": "2026-10-26T00:27:52.919465+00:00",
+      "candidate_prepared_at": "2026-10-26T00:29:13.262080+00:00",
+      "job_created_at": "2026-10-26T00:29:17.412093Z",
+      "fetch_started_at": "2026-10-26T00:29:17.706720Z",
+      "job_statuses": [
+        "completed",
+        "completed"
+      ],
+      "readable_at": "2026-10-26T00:29:32.388346+00:00",
+      "publication_rows": 5,
+      "censored": false,
+      "first_full_at": "2026-10-26T00:29:18.495064+00:00",
+      "full_readable_at": "2026-10-26T00:29:32.388346+00:00",
+      "initial_outcome": "FULL",
+      "stages_seconds": {
+        "candidate_prepared": 80.342615,
+        "job_created": 84.492628,
+        "fetch_started": 84.787255,
+        "body_full": 85.575599,
+        "consumable": 99.468881
+      }
+    },
+    {
+      "fetch_key": "eb2899deefc560ecf6dd238a1688306eeeb1248181985a61a35d28ce59a2440b",
+      "first_observed_at": "2026-10-26T00:32:00.029495+00:00",
+      "status": "READY",
+      "next_check_at": "2026-10-26T01:35:10.328029+00:00",
+      "outcome": "FULL",
+      "source_id": "yahoo_finance_news",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/3-growth-stocks-66-earnings-002406226.html?.tsrc=rss",
+      "final_url": "https://finance.yahoo.com/markets/stocks/articles/3-growth-stocks-66-earnings-002406226.html?.tsrc=rss",
+      "eligible": 1,
+      "legacy_result": null,
+      "prior_publication_raw_id": null,
+      "acquired_at": "2026-10-26T00:33:45.084743+00:00",
+      "error": null,
+      "fetch_keys": [
+        "eb2899deefc560ecf6dd238a1688306eeeb1248181985a61a35d28ce59a2440b",
+        "a0d0cd6df809118e119550e16588a5c6b17eff26ec878db1f85edb949968f736"
+      ],
+      "listing_received_at": "2026-10-26T00:32:00.029495+00:00",
+      "candidate_prepared_at": "2026-10-26T00:33:37.150102+00:00",
+      "job_created_at": "2026-10-26T00:33:40.507342Z",
+      "fetch_started_at": "2026-10-26T00:33:41.795726Z",
+      "job_statuses": [
+        "completed",
+        "completed"
+      ],
+      "readable_at": "2026-10-26T00:33:45.181100+00:00",
+      "publication_rows": 1,
+      "censored": false,
+      "first_full_at": "2026-10-26T00:33:44.419574+00:00",
+      "full_readable_at": "2026-10-26T00:33:45.181100+00:00",
+      "initial_outcome": "FULL",
+      "stages_seconds": {
+        "candidate_prepared": 97.120607,
+        "job_created": 100.477847,
+        "fetch_started": 101.766231,
+        "body_full": 104.390079,
+        "consumable": 105.151605
+      }
+    },
+    {
+      "fetch_key": "cd74ea095f293e1214f5e6a0cf85143a049454bcca5dfbc5bf2e06f44b6bb08e",
+      "first_observed_at": "2026-10-26T00:35:40.295034+00:00",
+      "status": "READY",
+      "next_check_at": "2026-10-26T01:06:31.235469+00:00",
+      "outcome": "FULL",
+      "source_id": "google_news_search_rss",
+      "url": "https://news.google.com/rss/articles/CBMi6AFBVV95cUxOSDVzX19NaHV3bFNJaUZTT0RjMlBxbVFqanNoOWdOek5tQmlJWDY5V2o4RGtVV19XT0dlZGFSUFFWY0VPRzNVZ1BDOXdSdFpQNGJSNm9lRHVqUVZYVUtHMWZscG1tZjdGN04wS25oMnNIWnhFd2x1ZURtbnBkeEhpcmwwODlYQmt4NUJyQTZwdml5S1VWamhXTXY5RnhXTFVuYy1GU1Q0TThWMVB1dDNaSm16YkFlYW1ib2d5RDZkY2laa2toSEM2cng2ak1fcVBzdHNBeEw0bHRIcnAyYXhvTUZRY084X0FV?oc=5",
+      "final_url": "https://www.gurufocus.com/news/9141490/is-bloom-energy-corp-be-significantly-overvalued-despite-q3-earnings-beat-gf-score-69100-eps-at-094-revenue-12358m",
+      "eligible": 1,
+      "legacy_result": null,
+      "prior_publication_raw_id": null,
+      "acquired_at": "2026-10-26T00:36:31.235469+00:00",
+      "error": null,
+      "fetch_keys": [
+        "cd74ea095f293e1214f5e6a0cf85143a049454bcca5dfbc5bf2e06f44b6bb08e"
+      ],
+      "listing_received_at": "2026-10-26T00:35:40.295034+00:00",
+      "candidate_prepared_at": "2026-10-26T00:36:27.835619+00:00",
+      "job_created_at": "2026-10-26T00:36:28.532734Z",
+      "fetch_started_at": "2026-10-26T00:36:28.779163Z",
+      "job_statuses": [
+        "completed"
+      ],
+      "readable_at": "2026-10-26T00:36:31.297074+00:00",
+      "publication_rows": 1,
+      "censored": false,
+      "first_full_at": "2026-10-26T00:36:31.220558+00:00",
+      "full_readable_at": "2026-10-26T00:36:31.297074+00:00",
+      "initial_outcome": "FULL",
+      "stages_seconds": {
+        "candidate_prepared": 47.540585,
+        "job_created": 48.2377,
+        "fetch_started": 48.484129,
+        "body_full": 50.925524,
+        "consumable": 51.00204
+      }
+    },
+    {
+      "fetch_key": "166a6d511ac2166b7eca10353a554cc0751dec289758553776d8ef90df3754e7",
+      "first_observed_at": "2026-10-26T00:50:02.713456+00:00",
+      "status": "READY",
+      "next_check_at": "2026-10-26T01:29:49.612117+00:00",
+      "outcome": "FULL",
+      "source_id": "yahoo_finance_news",
+      "url": "https://247wallst.com/investing/2026/10/25/ai-stocks-surge-then-plunge-which-of-4-sectors-is-worth-buying/?.tsrc=rss",
+      "final_url": "https://247wallst.com/investing/2026/10/25/ai-stocks-surge-then-plunge-which-of-4-sectors-is-worth-buying/?.tsrc=rss",
+      "eligible": 1,
+      "legacy_result": null,
+      "prior_publication_raw_id": null,
+      "acquired_at": "2026-10-26T00:59:49.612117+00:00",
+      "error": null,
+      "fetch_keys": [
+        "166a6d511ac2166b7eca10353a554cc0751dec289758553776d8ef90df3754e7"
+      ],
+      "listing_received_at": "2026-10-26T00:50:02.713456+00:00",
+      "candidate_prepared_at": "2026-10-26T00:50:04.231117+00:00",
+      "job_created_at": "2026-10-26T00:50:05.915034Z",
+      "fetch_started_at": "2026-10-26T00:50:06.568733Z",
+      "job_statuses": [
+        "completed"
+      ],
+      "readable_at": "2026-10-26T00:50:47.119859+00:00",
+      "publication_rows": 1,
+      "censored": false,
+      "first_full_at": "2026-10-26T00:50:46.537615+00:00",
+      "full_readable_at": "2026-10-26T00:50:47.119859+00:00",
+      "initial_outcome": "FULL",
+      "stages_seconds": {
+        "candidate_prepared": 1.517661,
+        "job_created": 3.201578,
+        "fetch_started": 3.855277,
+        "body_full": 43.824159,
+        "consumable": 44.406403
+      }
+    },
+    {
+      "fetch_key": "13d345b1cd9d47af5c053124afb65de2896657500800e7e9386e39e5a1e5795d",
+      "first_observed_at": "2026-10-26T00:50:03.025891+00:00",
+      "status": "READY",
+      "next_check_at": "2026-10-26T01:21:06.008114+00:00",
+      "outcome": "FULL",
+      "source_id": "google_news_search_rss",
+      "url": "https://news.google.com/rss/articles/CBMiyAFBVV95cUxQdXEwNy1WOTFnQ25ObWdlTFRZUjJNbDFLeHFjY29hQU5RejBTMlV3VEt3WEVUbW04NFNScHBibUlVYndFMjl1ZDh4V3I1M0Y0dHBta2k5YjQ4aEJHdDhhbDdyNXo2NENWdExfd0VYc0dPNkdNMEZnZTVkbG1xZ0dNUkdvU1ZIbmJGZjVyb0xzY0Y1QWZkLU0xVjljUDhVanIwcGszRWZCSHVlaUZYbHcxZ1ZxaHBWWFo3TTZhazU2aVE3RXJob3IwOA?oc=5",
+      "final_url": "https://www.fxleaders.com/news/2026/10/25/forex-signals-oct-26-google-msft-amazon-intel-sndk-earnings-preview-in-focus-this-week/",
+      "eligible": 1,
+      "legacy_result": null,
+      "prior_publication_raw_id": null,
+      "acquired_at": "2026-10-26T00:51:06.008114+00:00",
+      "error": null,
+      "fetch_keys": [
+        "13d345b1cd9d47af5c053124afb65de2896657500800e7e9386e39e5a1e5795d"
+      ],
+      "listing_received_at": "2026-10-26T00:50:03.025891+00:00",
+      "candidate_prepared_at": "2026-10-26T00:50:05.832503+00:00",
+      "job_created_at": "2026-10-26T00:50:08.595015Z",
+      "fetch_started_at": "2026-10-26T00:50:10.025094Z",
+      "job_statuses": [
+        "completed"
+      ],
+      "readable_at": "2026-10-26T00:51:06.213148+00:00",
+      "publication_rows": 1,
+      "censored": false,
+      "first_full_at": "2026-10-26T00:51:05.934259+00:00",
+      "full_readable_at": "2026-10-26T00:51:06.213148+00:00",
+      "initial_outcome": "FULL",
+      "stages_seconds": {
+        "candidate_prepared": 2.806612,
+        "job_created": 5.569124,
+        "fetch_started": 6.999203,
+        "body_full": 62.908368,
+        "consumable": 63.187257
+      }
+    },
+    {
+      "fetch_key": "60426c92638de3abcdc740d170659215e8097b4595bf96c156974e6f9f5e4060",
+      "first_observed_at": "2026-10-26T00:51:50.235000+00:00",
+      "status": "READY",
+      "next_check_at": "2026-10-26T01:22:01.601789+00:00",
+      "outcome": "FULL",
+      "source_id": "investing_ticker_news",
+      "url": "https://www.investing.com/news/stock-market-news/asian-shares-make-cautious-start-brent-eases-from-sixmonth-high-4971334",
+      "final_url": "https://www.investing.com/news/stock-market-news/asian-shares-make-cautious-start-brent-eases-from-sixmonth-high-4971334",
+      "eligible": 1,
+      "legacy_result": null,
+      "prior_publication_raw_id": null,
+      "acquired_at": "2026-10-26T00:52:01.601789+00:00",
+      "error": null,
+      "fetch_keys": [
+        "60426c92638de3abcdc740d170659215e8097b4595bf96c156974e6f9f5e4060"
+      ],
+      "listing_received_at": "2026-10-26T00:51:50.235000+00:00",
+      "candidate_prepared_at": "2026-10-26T00:51:54.225261+00:00",
+      "job_created_at": "2026-10-26T00:51:55.605144Z",
+      "fetch_started_at": "2026-10-26T00:51:56.052425Z",
+      "job_statuses": [
+        "completed"
+      ],
+      "readable_at": "2026-10-26T00:52:01.709622+00:00",
+      "publication_rows": 1,
+      "censored": false,
+      "first_full_at": "2026-10-26T00:52:01.283958+00:00",
+      "full_readable_at": "2026-10-26T00:52:01.709622+00:00",
+      "initial_outcome": "FULL",
+      "stages_seconds": {
+        "candidate_prepared": 3.990261,
+        "job_created": 5.370144,
+        "fetch_started": 5.817425,
+        "body_full": 11.048958,
+        "consumable": 11.474622
+      }
+    },
+    {
+      "fetch_key": "5d8853ef44e12439734b901eef1006111672d9573858243e77e09d7b4073c4d4",
+      "first_observed_at": "2026-10-26T00:53:37.540049+00:00",
+      "status": "FAILED",
+      "next_check_at": "2026-10-26T00:55:05.641276+00:00",
+      "outcome": null,
+      "source_id": "google_news_search_rss",
+      "url": "https://news.google.com/rss/articles/CBMi1wFBVV95cUxQbW1oY0JjdnBVWS1mbGFhbC1LMWpaTDhMSDFkV0dVSWxIdVpLYTkwQjlzbS1HN3VTcktJc2xoQ0gyRjRISURZOWZpOEZvZHBUV1dnUllvbXl3bjFVbVNEaTNIQnljX2xzZGg5Ri1KXzU4Mnh6N1pmZ1htVDJjcFpPd3VLbDJtaVVHTHRzVjR4VHk2Q3hmU2JjQk5TNG1TWVFjcHg3QkU2LVg2U0tGSlRQcWU2SkFrZkRWN3BTZ0xsQ1kzNHZMb2FPeEZyUVNndDZNR3o5OUxraw?oc=5",
+      "final_url": null,
+      "eligible": 1,
+      "legacy_result": null,
+      "prior_publication_raw_id": null,
+      "acquired_at": null,
+      "error": "empty_extract",
+      "fetch_keys": [
+        "5d8853ef44e12439734b901eef1006111672d9573858243e77e09d7b4073c4d4"
+      ],
+      "listing_received_at": "2026-10-26T00:53:37.540049+00:00",
+      "candidate_prepared_at": "2026-10-26T00:53:39.311248+00:00",
+      "job_created_at": "2026-10-26T00:53:39.421075Z",
+      "fetch_started_at": "2026-10-26T00:53:40.474785Z",
+      "job_statuses": [
+        "failed"
+      ],
+      "readable_at": "2026-10-26T00:54:05.765391+00:00",
+      "publication_rows": 1,
+      "censored": false,
+      "first_full_at": null,
+      "full_readable_at": null,
+      "initial_outcome": "UNAVAILABLE",
+      "stages_seconds": {
+        "candidate_prepared": 1.771199,
+        "job_created": 1.881026,
+        "fetch_started": 2.934736,
+        "body_full": null,
+        "consumable": 28.225342
+      }
+    },
+    {
+      "fetch_key": "3e0253a06e7eb26d7ec79e55e458fe746e2d6340b55b843ed19f21027390b868",
+      "first_observed_at": "2026-10-26T01:09:32.628381+00:00",
+      "status": "FAILED",
+      "next_check_at": "2026-10-26T01:11:39.780791+00:00",
+      "outcome": null,
+      "source_id": "google_news_search_rss",
+      "url": "https://news.google.com/rss/articles/CBMisAFBVV95cUxOdlc2VlQ2RFRkTjNpbnV6aUkwUWVMcFc1anctMTVyNk1PVGNmbjR3a0NKN3dDRFZnWG01QnJUd2dINGZKZGh5N2ZsVmM4c2pGNl9LYklDdjJhMkZvRklvdnNzaGNOTXozX2xpR29KMFprdzg2Ul9LV2dBSm9IcGNZSWluQjBZazBkQnRUQjZLNFFnaGsxeVV3QU1KZjdsaFVUZjJ5Z2dabTg0a0ZkTWprVg?oc=5",
+      "final_url": null,
+      "eligible": 1,
+      "legacy_result": null,
+      "prior_publication_raw_id": null,
+      "acquired_at": null,
+      "error": "empty_extract",
+      "fetch_keys": [
+        "3e0253a06e7eb26d7ec79e55e458fe746e2d6340b55b843ed19f21027390b868"
+      ],
+      "listing_received_at": "2026-10-26T01:09:32.628381+00:00",
+      "candidate_prepared_at": "2026-10-26T01:09:33.709462+00:00",
+      "job_created_at": "2026-10-26T01:09:34.107395Z",
+      "fetch_started_at": "2026-10-26T01:09:34.402245Z",
+      "job_statuses": [
+        "failed"
+      ],
+      "readable_at": "2026-10-26T01:10:39.903155+00:00",
+      "publication_rows": 1,
+      "censored": false,
+      "first_full_at": null,
+      "full_readable_at": null,
+      "initial_outcome": "UNAVAILABLE",
+      "stages_seconds": {
+        "candidate_prepared": 1.081081,
+        "job_created": 1.479014,
+        "fetch_started": 1.773864,
+        "body_full": null,
+        "consumable": 67.274774
+      }
+    },
+    {
+      "fetch_key": "a46532e1cd7bd9ef837db994070e1c0d149c10247349b0665e415feb37eabf69",
+      "first_observed_at": "2026-10-26T01:15:48.443176+00:00",
+      "status": "READY",
+      "next_check_at": "2026-10-26T01:47:00.558414+00:00",
+      "outcome": "FULL",
+      "source_id": "yahoo_finance_news",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/top-growth-stocks-own-october-011015671.html?.tsrc=rss",
+      "final_url": "https://finance.yahoo.com/markets/stocks/articles/top-growth-stocks-own-october-011015671.html",
+      "eligible": 1,
+      "legacy_result": null,
+      "prior_publication_raw_id": null,
+      "acquired_at": "2026-10-26T01:15:52.551799+00:00",
+      "error": null,
+      "fetch_keys": [
+        "a46532e1cd7bd9ef837db994070e1c0d149c10247349b0665e415feb37eabf69"
+      ],
+      "listing_received_at": "2026-10-26T01:15:48.443176+00:00",
+      "candidate_prepared_at": "2026-10-26T01:15:48.993510+00:00",
+      "job_created_at": "2026-10-26T01:15:49.251012Z",
+      "fetch_started_at": "2026-10-26T01:15:49.647474Z",
+      "job_statuses": [
+        "completed"
+      ],
+      "readable_at": "2026-10-26T01:15:52.741529+00:00",
+      "publication_rows": 1,
+      "censored": false,
+      "first_full_at": "2026-10-26T01:15:52.521037+00:00",
+      "full_readable_at": "2026-10-26T01:15:52.741529+00:00",
+      "initial_outcome": "FULL",
+      "stages_seconds": {
+        "candidate_prepared": 0.550334,
+        "job_created": 0.807836,
+        "fetch_started": 1.204298,
+        "body_full": 4.077861,
+        "consumable": 4.298353
+      }
+    },
+    {
+      "fetch_key": "7c2005ff65e3ffbf2357db7b163f97c66ba2eb92915314c2c8ac5bc0a34ca6dd",
+      "first_observed_at": "2026-10-26T01:15:49.878323+00:00",
+      "status": "READY",
+      "next_check_at": "2026-10-26T01:46:59.857044+00:00",
+      "outcome": "FULL",
+      "source_id": "yahoo_finance_news",
+      "url": "https://finance.yahoo.com/energy/articles/top-3-nuclear-stocks-watch-010812034.html?.tsrc=rss",
+      "final_url": "https://finance.yahoo.com/energy/articles/top-3-nuclear-stocks-watch-010812034.html",
+      "eligible": 1,
+      "legacy_result": null,
+      "prior_publication_raw_id": null,
+      "acquired_at": "2026-10-26T01:15:55.419671+00:00",
+      "error": null,
+      "fetch_keys": [
+        "7c2005ff65e3ffbf2357db7b163f97c66ba2eb92915314c2c8ac5bc0a34ca6dd"
+      ],
+      "listing_received_at": "2026-10-26T01:15:49.878323+00:00",
+      "candidate_prepared_at": "2026-10-26T01:15:50.793883+00:00",
+      "job_created_at": "2026-10-26T01:15:51.073229Z",
+      "fetch_started_at": "2026-10-26T01:15:51.228690Z",
+      "job_statuses": [
+        "completed"
+      ],
+      "readable_at": "2026-10-26T01:15:55.546221+00:00",
+      "publication_rows": 1,
+      "censored": false,
+      "first_full_at": "2026-10-26T01:15:55.299609+00:00",
+      "full_readable_at": "2026-10-26T01:15:55.546221+00:00",
+      "initial_outcome": "FULL",
+      "stages_seconds": {
+        "candidate_prepared": 0.91556,
+        "job_created": 1.194906,
+        "fetch_started": 1.350367,
+        "body_full": 5.421286,
+        "consumable": 5.667898
+      }
+    },
+    {
+      "fetch_key": "d08464eef7853e419fa6a75b4caf170eba1333c630767def779e89b9beb1e511",
+      "first_observed_at": "2026-10-26T01:16:12.588442+00:00",
+      "status": "FAILED",
+      "next_check_at": "2026-10-26T01:17:42.657911+00:00",
+      "outcome": null,
+      "source_id": "huggingnews_rss",
+      "url": "https://huggingnews.com/ai/spacex-closes-40b-debt-deal-for-ai-chips-178df6b2",
+      "final_url": null,
+      "eligible": 1,
+      "legacy_result": null,
+      "prior_publication_raw_id": null,
+      "acquired_at": null,
+      "error": "empty_extract",
+      "fetch_keys": [
+        "d08464eef7853e419fa6a75b4caf170eba1333c630767def779e89b9beb1e511"
+      ],
+      "listing_received_at": "2026-10-26T01:16:12.588442+00:00",
+      "candidate_prepared_at": "2026-10-26T01:16:13.694023+00:00",
+      "job_created_at": "2026-10-26T01:16:14.600992Z",
+      "fetch_started_at": "2026-10-26T01:16:14.887131Z",
+      "job_statuses": [
+        "failed"
+      ],
+      "readable_at": "2026-10-26T01:16:53.798422+00:00",
+      "publication_rows": 3,
+      "censored": false,
+      "first_full_at": null,
+      "full_readable_at": null,
+      "initial_outcome": "UNAVAILABLE",
+      "stages_seconds": {
+        "candidate_prepared": 1.105581,
+        "job_created": 2.01255,
+        "fetch_started": 2.298689,
+        "body_full": null,
+        "consumable": 41.20998
+      }
+    },
+    {
+      "fetch_key": "2d60b27e62c4183ca4e6bccff585085d6dc5f1afbb238edd9cd7fbe668b1e0a9",
+      "first_observed_at": "2026-10-26T01:16:50.202313+00:00",
+      "status": "READY",
+      "next_check_at": "2026-10-26T01:47:00.547951+00:00",
+      "outcome": "FULL",
+      "source_id": "yahoo_finance_news",
+      "url": "https://www.tikr.com/blog/bloom-energy-is-44-below-its-june-record-heres-the-number-that-sank-it-after-earnings?.tsrc=rss&ref=yahoofinance",
+      "final_url": "https://finance.yahoo.com/markets/stocks/articles/bloom-energy-44-below-june-005949328.html",
+      "eligible": 1,
+      "legacy_result": null,
+      "prior_publication_raw_id": null,
+      "acquired_at": "2026-10-26T01:17:00.547951+00:00",
+      "error": null,
+      "fetch_keys": [
+        "2d60b27e62c4183ca4e6bccff585085d6dc5f1afbb238edd9cd7fbe668b1e0a9"
+      ],
+      "listing_received_at": "2026-10-26T01:16:50.202313+00:00",
+      "candidate_prepared_at": "2026-10-26T01:16:51.146962+00:00",
+      "job_created_at": "2026-10-26T01:16:51.469417Z",
+      "fetch_started_at": "2026-10-26T01:16:51.647201Z",
+      "job_statuses": [
+        "completed"
+      ],
+      "readable_at": "2026-10-26T01:16:56.865381+00:00",
+      "publication_rows": 1,
+      "censored": false,
+      "first_full_at": "2026-10-26T01:16:56.770123+00:00",
+      "full_readable_at": "2026-10-26T01:16:56.865381+00:00",
+      "initial_outcome": "FULL",
+      "stages_seconds": {
+        "candidate_prepared": 0.944649,
+        "job_created": 1.267104,
+        "fetch_started": 1.444888,
+        "body_full": 6.56781,
+        "consumable": 6.663068
+      }
+    }
+  ]
+}
