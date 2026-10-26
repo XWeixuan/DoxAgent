@@ -1,0 +1,2700 @@
+[
+  {
+    "window": "window",
+    "source_id": "barrons_ticker_news",
+    "expected": 1176,
+    "actual_grid_request_slots": 1132,
+    "actual_grid_fresh_slots": 1130,
+    "actual_grid_fresh_coverage": 0.9608843537414966,
+    "request_gaps": {
+      "samples": 1225,
+      "mean": 51.69037940081637,
+      "p95": 68.253597,
+      "max": 127.540936
+    },
+    "fresh_gaps": {
+      "samples": 1220,
+      "mean": 51.90222521803274,
+      "p95": 68.607196,
+      "max": 127.694804
+    },
+    "request_intervals": {
+      "samples": 1045,
+      "mean": 55.539373233492874,
+      "p95": 69.482998,
+      "max": 127.540936
+    },
+    "fresh_intervals": {
+      "samples": 1040,
+      "mean": 55.762969854807636,
+      "p95": 70.189465,
+      "max": 127.694804
+    },
+    "physical_response_seconds": {
+      "samples": 1134,
+      "mean": 0.3836737292768959,
+      "p95": 0.845087,
+      "max": 1.493855
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "benzinga_news",
+    "expected": 527,
+    "actual_grid_request_slots": 527,
+    "actual_grid_fresh_slots": 527,
+    "actual_grid_fresh_coverage": 1.0,
+    "request_gaps": {
+      "samples": 653,
+      "mean": 48.484467661562,
+      "p95": 67.785028,
+      "max": 85.24093
+    },
+    "fresh_gaps": {
+      "samples": 536,
+      "mean": 59.0678309384328,
+      "p95": 70.510069,
+      "max": 86.740153
+    },
+    "request_intervals": {
+      "samples": 635,
+      "mean": 48.96739418267714,
+      "p95": 68.647645,
+      "max": 85.24093
+    },
+    "fresh_intervals": {
+      "samples": 518,
+      "mean": 60.02722695173741,
+      "p95": 70.832952,
+      "max": 86.740153
+    },
+    "physical_response_seconds": {
+      "samples": 643,
+      "mean": 0.61194199066874,
+      "p95": 0.97335,
+      "max": 1.69143
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "digitimes_semiconductors",
+    "expected": 290,
+    "actual_grid_request_slots": 285,
+    "actual_grid_fresh_slots": 280,
+    "actual_grid_fresh_coverage": 0.9655172413793104,
+    "request_gaps": {
+      "samples": 290,
+      "mean": 60.65202563793106,
+      "p95": 73.23,
+      "max": 143.857
+    },
+    "fresh_gaps": {
+      "samples": 285,
+      "mean": 61.716096263157915,
+      "p95": 91.608046,
+      "max": 144.494555
+    },
+    "request_intervals": {
+      "samples": 280,
+      "mean": 61.13042857142859,
+      "p95": 73.23,
+      "max": 143.857
+    },
+    "fresh_intervals": {
+      "samples": 275,
+      "mean": 62.210958327272756,
+      "p95": 91.608046,
+      "max": 144.494555
+    },
+    "physical_response_seconds": {
+      "samples": 57,
+      "mean": 0.8633333333333332,
+      "p95": 1.246,
+      "max": 1.64
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "digitimes_tw_rss",
+    "expected": 290,
+    "actual_grid_request_slots": 290,
+    "actual_grid_fresh_slots": 280,
+    "actual_grid_fresh_coverage": 0.9655172413793104,
+    "request_gaps": {
+      "samples": 585,
+      "mean": 30.066816128205105,
+      "p95": 65.533506,
+      "max": 82.249892
+    },
+    "fresh_gaps": {
+      "samples": 285,
+      "mean": 61.71609626315784,
+      "p95": 82.808893,
+      "max": 144.085267
+    },
+    "request_intervals": {
+      "samples": 575,
+      "mean": 29.77624919130432,
+      "p95": 65.533506,
+      "max": 82.249892
+    },
+    "fresh_intervals": {
+      "samples": 275,
+      "mean": 62.25004147272721,
+      "p95": 82.808893,
+      "max": 144.085267
+    },
+    "physical_response_seconds": {
+      "samples": 57,
+      "mean": 1.0385189649122808,
+      "p95": 1.19728,
+      "max": 1.512011
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "etnews_rss",
+    "expected": 290,
+    "actual_grid_request_slots": 290,
+    "actual_grid_fresh_slots": 285,
+    "actual_grid_fresh_coverage": 0.9827586206896551,
+    "request_gaps": {
+      "samples": 295,
+      "mean": 59.624025203389834,
+      "p95": 75.614349,
+      "max": 82.074723
+    },
+    "fresh_gaps": {
+      "samples": 290,
+      "mean": 60.652025637931025,
+      "p95": 75.612305,
+      "max": 142.184945
+    },
+    "request_intervals": {
+      "samples": 285,
+      "mean": 60.07351415789476,
+      "p95": 75.614349,
+      "max": 82.074723
+    },
+    "fresh_intervals": {
+      "samples": 280,
+      "mean": 61.14667705357142,
+      "p95": 75.612305,
+      "max": 142.184945
+    },
+    "physical_response_seconds": {
+      "samples": 58,
+      "mean": 0.15126446551724132,
+      "p95": 0.181084,
+      "max": 0.220744
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "finnhub_company_news",
+    "expected": 527,
+    "actual_grid_request_slots": 527,
+    "actual_grid_fresh_slots": 527,
+    "actual_grid_fresh_coverage": 1.0,
+    "request_gaps": {
+      "samples": 537,
+      "mean": 58.957834977653604,
+      "p95": 70.063647,
+      "max": 86.50788
+    },
+    "fresh_gaps": {
+      "samples": 536,
+      "mean": 59.06783093843282,
+      "p95": 70.245128,
+      "max": 86.559549
+    },
+    "request_intervals": {
+      "samples": 519,
+      "mean": 59.91078481502889,
+      "p95": 70.224841,
+      "max": 86.50788
+    },
+    "fresh_intervals": {
+      "samples": 518,
+      "mean": 60.03212004054054,
+      "p95": 70.561634,
+      "max": 86.559549
+    },
+    "physical_response_seconds": {
+      "samples": 528,
+      "mean": 0.41196969128787886,
+      "p95": 0.842268,
+      "max": 2.023287
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "globenewswire_search",
+    "expected": 1407,
+    "actual_grid_request_slots": 1395,
+    "actual_grid_fresh_slots": 1394,
+    "actual_grid_fresh_coverage": 0.9907604832977968,
+    "request_gaps": {
+      "samples": 1420,
+      "mean": 59.45607020281701,
+      "p95": 71.094,
+      "max": 128.254
+    },
+    "fresh_gaps": {
+      "samples": 1418,
+      "mean": 59.53992925811008,
+      "p95": 71.19,
+      "max": 128.585
+    },
+    "request_intervals": {
+      "samples": 1372,
+      "mean": 60.49923469387763,
+      "p95": 71.163,
+      "max": 128.254
+    },
+    "fresh_intervals": {
+      "samples": 1370,
+      "mean": 60.54642919708037,
+      "p95": 71.248,
+      "max": 128.585
+    },
+    "physical_response_seconds": {
+      "samples": 1396,
+      "mean": 0.2281969914040117,
+      "p95": 0.392,
+      "max": 1.314
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "globenewswire_semiconductors_rss",
+    "expected": 290,
+    "actual_grid_request_slots": 285,
+    "actual_grid_fresh_slots": 280,
+    "actual_grid_fresh_coverage": 0.9655172413793104,
+    "request_gaps": {
+      "samples": 570,
+      "mean": 30.858048131578975,
+      "p95": 66.37645,
+      "max": 134.943202
+    },
+    "fresh_gaps": {
+      "samples": 285,
+      "mean": 61.71609626315779,
+      "p95": 92.409659,
+      "max": 142.985423
+    },
+    "request_intervals": {
+      "samples": 560,
+      "mean": 30.57501104464288,
+      "p95": 66.37645,
+      "max": 134.943202
+    },
+    "fresh_intervals": {
+      "samples": 275,
+      "mean": 62.25401247272715,
+      "p95": 92.409659,
+      "max": 142.985423
+    },
+    "physical_response_seconds": {
+      "samples": 113,
+      "mean": 0.15193898230088498,
+      "p95": 0.422,
+      "max": 0.746
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "google_news_search_rss",
+    "expected": 118,
+    "actual_grid_request_slots": 117,
+    "actual_grid_fresh_slots": 117,
+    "actual_grid_fresh_coverage": 0.9915254237288136,
+    "request_gaps": {
+      "samples": 119,
+      "mean": 59.12298297478993,
+      "p95": 69.478119,
+      "max": 77.208488
+    },
+    "fresh_gaps": {
+      "samples": 119,
+      "mean": 59.122982974789906,
+      "p95": 69.479979,
+      "max": 77.522991
+    },
+    "request_intervals": {
+      "samples": 115,
+      "mean": 60.014715417391315,
+      "p95": 69.478119,
+      "max": 77.208488
+    },
+    "fresh_intervals": {
+      "samples": 115,
+      "mean": 60.01179606086954,
+      "p95": 69.479979,
+      "max": 77.522991
+    },
+    "physical_response_seconds": {
+      "samples": 117,
+      "mean": 0.16347775213675214,
+      "p95": 0.373823,
+      "max": 1.29244
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "huggingnews_rss",
+    "expected": 290,
+    "actual_grid_request_slots": 285,
+    "actual_grid_fresh_slots": 280,
+    "actual_grid_fresh_coverage": 0.9655172413793104,
+    "request_gaps": {
+      "samples": 575,
+      "mean": 30.58971727826086,
+      "p95": 65.745965,
+      "max": 134.661878
+    },
+    "fresh_gaps": {
+      "samples": 285,
+      "mean": 61.71609626315787,
+      "p95": 82.347423,
+      "max": 143.778631
+    },
+    "request_intervals": {
+      "samples": 565,
+      "mean": 30.310365362831853,
+      "p95": 65.745965,
+      "max": 134.661878
+    },
+    "fresh_intervals": {
+      "samples": 275,
+      "mean": 62.26517934545451,
+      "p95": 82.347423,
+      "max": 143.778631
+    },
+    "physical_response_seconds": {
+      "samples": 57,
+      "mean": 0.42164619298245615,
+      "p95": 0.910696,
+      "max": 1.036643
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "ibkr_news",
+    "expected": 527,
+    "actual_grid_request_slots": 527,
+    "actual_grid_fresh_slots": 527,
+    "actual_grid_fresh_coverage": 1.0,
+    "request_gaps": {
+      "samples": 537,
+      "mean": 58.957834977653626,
+      "p95": 70.683042,
+      "max": 86.406458
+    },
+    "fresh_gaps": {
+      "samples": 582,
+      "mean": 54.39923948969075,
+      "p95": 70.343611,
+      "max": 86.516121
+    },
+    "request_intervals": {
+      "samples": 519,
+      "mean": 59.90957294990365,
+      "p95": 70.85907,
+      "max": 86.406458
+    },
+    "fresh_intervals": {
+      "samples": 564,
+      "mean": 55.1290706879433,
+      "p95": 70.380946,
+      "max": 86.516121
+    },
+    "physical_response_seconds": {
+      "samples": 528,
+      "mean": 0.6449140946969693,
+      "p95": 0.871736,
+      "max": 12.423726
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "investing_ticker_news",
+    "expected": 592,
+    "actual_grid_request_slots": 566,
+    "actual_grid_fresh_slots": 562,
+    "actual_grid_fresh_coverage": 0.9493243243243243,
+    "request_gaps": {
+      "samples": 620,
+      "mean": 51.06509255322585,
+      "p95": 70.004,
+      "max": 127.214
+    },
+    "fresh_gaps": {
+      "samples": 609,
+      "mean": 51.987450546798094,
+      "p95": 70.589,
+      "max": 127.221
+    },
+    "request_intervals": {
+      "samples": 530,
+      "mean": 54.93055094339626,
+      "p95": 70.953,
+      "max": 127.214
+    },
+    "fresh_intervals": {
+      "samples": 519,
+      "mean": 55.959233140655165,
+      "p95": 71.387,
+      "max": 127.221
+    },
+    "physical_response_seconds": {
+      "samples": 574,
+      "mean": 0.41144947735191617,
+      "p95": 0.933,
+      "max": 5.132
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "investorshub_ticker_news",
+    "expected": 583,
+    "actual_grid_request_slots": 562,
+    "actual_grid_fresh_slots": 556,
+    "actual_grid_fresh_coverage": 0.9536878216123499,
+    "request_gaps": {
+      "samples": 712,
+      "mean": 44.466794077247215,
+      "p95": 73.776,
+      "max": 127.023
+    },
+    "fresh_gaps": {
+      "samples": 601,
+      "mean": 52.67946319966722,
+      "p95": 76.032,
+      "max": 127.673
+    },
+    "request_intervals": {
+      "samples": 622,
+      "mean": 46.88633922829584,
+      "p95": 74.624,
+      "max": 127.023
+    },
+    "fresh_intervals": {
+      "samples": 511,
+      "mean": 56.64934050880625,
+      "p95": 76.491,
+      "max": 127.673
+    },
+    "physical_response_seconds": {
+      "samples": 658,
+      "mean": 2.8555744680851043,
+      "p95": 4.841,
+      "max": 10.339
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "reuters_site_search",
+    "expected": 1407,
+    "actual_grid_request_slots": 0,
+    "actual_grid_fresh_slots": 0,
+    "actual_grid_fresh_coverage": 0.0,
+    "request_gaps": {
+      "samples": 24,
+      "mean": 3517.8174869999984,
+      "p95": 3517.817487,
+      "max": 3517.817487
+    },
+    "fresh_gaps": {
+      "samples": 24,
+      "mean": 3517.8174869999984,
+      "p95": 3517.817487,
+      "max": 3517.817487
+    },
+    "request_intervals": {
+      "samples": 0,
+      "mean": null,
+      "p95": null,
+      "max": null
+    },
+    "fresh_intervals": {
+      "samples": 0,
+      "mean": null,
+      "p95": null,
+      "max": null
+    },
+    "physical_response_seconds": {
+      "samples": 0,
+      "mean": null,
+      "p95": null,
+      "max": null
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "thelec_semiconductors_rss",
+    "expected": 290,
+    "actual_grid_request_slots": 290,
+    "actual_grid_fresh_slots": 285,
+    "actual_grid_fresh_coverage": 0.9827586206896551,
+    "request_gaps": {
+      "samples": 295,
+      "mean": 59.62402520338987,
+      "p95": 74.844737,
+      "max": 82.572774
+    },
+    "fresh_gaps": {
+      "samples": 290,
+      "mean": 60.652025637931004,
+      "p95": 74.865397,
+      "max": 142.038975
+    },
+    "request_intervals": {
+      "samples": 285,
+      "mean": 60.065492017543924,
+      "p95": 74.844737,
+      "max": 82.572774
+    },
+    "fresh_intervals": {
+      "samples": 280,
+      "mean": 61.13800928571427,
+      "p95": 74.865397,
+      "max": 142.038975
+    },
+    "physical_response_seconds": {
+      "samples": 58,
+      "mean": 0.08507646551724139,
+      "p95": 0.139583,
+      "max": 0.244354
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "tomshardware_rss",
+    "expected": 290,
+    "actual_grid_request_slots": 290,
+    "actual_grid_fresh_slots": 280,
+    "actual_grid_fresh_coverage": 0.9655172413793104,
+    "request_gaps": {
+      "samples": 295,
+      "mean": 59.624025203389735,
+      "p95": 72.689174,
+      "max": 82.332237
+    },
+    "fresh_gaps": {
+      "samples": 285,
+      "mean": 61.71609626315786,
+      "p95": 81.866643,
+      "max": 143.757107
+    },
+    "request_intervals": {
+      "samples": 285,
+      "mean": 60.049187771929724,
+      "p95": 72.689174,
+      "max": 82.332237
+    },
+    "fresh_intervals": {
+      "samples": 275,
+      "mean": 62.23616118181814,
+      "p95": 81.866643,
+      "max": 143.757107
+    },
+    "physical_response_seconds": {
+      "samples": 58,
+      "mean": 0.6003031896551723,
+      "p95": 0.687417,
+      "max": 0.74814
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "trendforce_news",
+    "expected": 290,
+    "actual_grid_request_slots": 285,
+    "actual_grid_fresh_slots": 280,
+    "actual_grid_fresh_coverage": 0.9655172413793104,
+    "request_gaps": {
+      "samples": 290,
+      "mean": 60.65202563793096,
+      "p95": 75.909,
+      "max": 143.798
+    },
+    "fresh_gaps": {
+      "samples": 285,
+      "mean": 61.71609626315789,
+      "p95": 92.397922,
+      "max": 144.768
+    },
+    "request_intervals": {
+      "samples": 280,
+      "mean": 61.12155357142851,
+      "p95": 75.909,
+      "max": 143.798
+    },
+    "fresh_intervals": {
+      "samples": 275,
+      "mean": 62.20363227272726,
+      "p95": 92.397922,
+      "max": 144.768
+    },
+    "physical_response_seconds": {
+      "samples": 57,
+      "mean": 0.19263157894736846,
+      "p95": 0.349,
+      "max": 0.388
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "trendforce_press_releases",
+    "expected": 290,
+    "actual_grid_request_slots": 290,
+    "actual_grid_fresh_slots": 285,
+    "actual_grid_fresh_coverage": 0.9827586206896551,
+    "request_gaps": {
+      "samples": 295,
+      "mean": 59.624025203389934,
+      "p95": 76.141224,
+      "max": 86.023097
+    },
+    "fresh_gaps": {
+      "samples": 290,
+      "mean": 60.652025637931075,
+      "p95": 76.174119,
+      "max": 147.554044
+    },
+    "request_intervals": {
+      "samples": 285,
+      "mean": 60.116572456140496,
+      "p95": 76.141224,
+      "max": 86.023097
+    },
+    "fresh_intervals": {
+      "samples": 280,
+      "mean": 61.1876943214286,
+      "p95": 76.174119,
+      "max": 147.554044
+    },
+    "physical_response_seconds": {
+      "samples": 58,
+      "mean": 0.2326033448275862,
+      "p95": 0.489416,
+      "max": 0.562936
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "yahoo_finance_news",
+    "expected": 2110,
+    "actual_grid_request_slots": 2077,
+    "actual_grid_fresh_slots": 2074,
+    "actual_grid_fresh_coverage": 0.9829383886255925,
+    "request_gaps": {
+      "samples": 2124,
+      "mean": 29.812012601694924,
+      "p95": 40.928,
+      "max": 73.118
+    },
+    "fresh_gaps": {
+      "samples": 2119,
+      "mean": 29.882357133553533,
+      "p95": 41.289243,
+      "max": 73.113
+    },
+    "request_intervals": {
+      "samples": 2088,
+      "mean": 30.012370412835246,
+      "p95": 41.031365,
+      "max": 73.118
+    },
+    "fresh_intervals": {
+      "samples": 2083,
+      "mean": 30.072149693230894,
+      "p95": 41.429067,
+      "max": 73.113
+    },
+    "physical_response_seconds": {
+      "samples": 2105,
+      "mean": 0.44991207980997633,
+      "p95": 0.609,
+      "max": 1.333
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "newswire_rss",
+    "expected": 642,
+    "actual_grid_request_slots": 640,
+    "actual_grid_fresh_slots": 580,
+    "actual_grid_fresh_coverage": 0.9034267912772586,
+    "request_gaps": {
+      "samples": 712,
+      "mean": 54.34830387219109,
+      "p95": 68.746649,
+      "max": 84.801477
+    },
+    "fresh_gaps": {
+      "samples": 591,
+      "mean": 65.47545238071066,
+      "p95": 69.846016,
+      "max": 3517.817487
+    },
+    "request_intervals": {
+      "samples": 690,
+      "mean": 54.723319073913125,
+      "p95": 68.882549,
+      "max": 84.801477
+    },
+    "fresh_intervals": {
+      "samples": 570,
+      "mean": 60.23771824736841,
+      "p95": 69.846016,
+      "max": 135.340231
+    },
+    "physical_response_seconds": {
+      "samples": 640,
+      "mean": 0.2537870499999999,
+      "p95": 0.61401,
+      "max": 8.83044
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "ctee_semiconductor",
+    "expected": 116,
+    "actual_grid_request_slots": 114,
+    "actual_grid_fresh_slots": 112,
+    "actual_grid_fresh_coverage": 0.9655172413793104,
+    "request_gaps": {
+      "samples": 116,
+      "mean": 60.65202563793109,
+      "p95": 86.024,
+      "max": 135.372
+    },
+    "fresh_gaps": {
+      "samples": 114,
+      "mean": 61.716096263157894,
+      "p95": 91.810418,
+      "max": 147.459323
+    },
+    "request_intervals": {
+      "samples": 112,
+      "mean": 61.13560714285719,
+      "p95": 86.024,
+      "max": 135.372
+    },
+    "fresh_intervals": {
+      "samples": 110,
+      "mean": 62.246189109090906,
+      "p95": 91.810418,
+      "max": 147.459323
+    },
+    "physical_response_seconds": {
+      "samples": 57,
+      "mean": 0.06519298245614036,
+      "p95": 0.13,
+      "max": 1.152
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "optical_systems_official_rss",
+    "expected": 59,
+    "actual_grid_request_slots": 59,
+    "actual_grid_fresh_slots": 59,
+    "actual_grid_fresh_coverage": 1.0,
+    "request_gaps": {
+      "samples": 60,
+      "mean": 58.630291449999994,
+      "p95": 73.912729,
+      "max": 80.262577
+    },
+    "fresh_gaps": {
+      "samples": 60,
+      "mean": 58.63029145000003,
+      "p95": 73.915411,
+      "max": 80.269118
+    },
+    "request_intervals": {
+      "samples": 58,
+      "mean": 60.088537206896554,
+      "p95": 75.25802,
+      "max": 80.262577
+    },
+    "fresh_intervals": {
+      "samples": 58,
+      "mean": 60.08848527586208,
+      "p95": 75.257364,
+      "max": 80.269118
+    },
+    "physical_response_seconds": {
+      "samples": 59,
+      "mean": 0.009622915254237288,
+      "p95": 0.026267,
+      "max": 0.081718
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "tikhub_x_user_posts",
+    "expected": 6,
+    "actual_grid_request_slots": 6,
+    "actual_grid_fresh_slots": 6,
+    "actual_grid_fresh_coverage": 1.0,
+    "request_gaps": {
+      "samples": 7,
+      "mean": 502.54535528571427,
+      "p95": 610.268162,
+      "max": 610.268162
+    },
+    "fresh_gaps": {
+      "samples": 7,
+      "mean": 502.54535528571427,
+      "p95": 609.14684,
+      "max": 609.14684
+    },
+    "request_intervals": {
+      "samples": 5,
+      "mean": 600.3457946,
+      "p95": 610.268162,
+      "max": 610.268162
+    },
+    "fresh_intervals": {
+      "samples": 5,
+      "mean": 601.170926,
+      "p95": 609.14684,
+      "max": 609.14684
+    },
+    "physical_response_seconds": {
+      "samples": 6,
+      "mean": 3.5309068333333333,
+      "p95": 7.267278,
+      "max": 7.267278
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "army_news_releases",
+    "expected": 58,
+    "actual_grid_request_slots": 58,
+    "actual_grid_fresh_slots": 56,
+    "actual_grid_fresh_coverage": 0.9655172413793104,
+    "request_gaps": {
+      "samples": 59,
+      "mean": 59.624025203389834,
+      "p95": 72.318367,
+      "max": 82.436501
+    },
+    "fresh_gaps": {
+      "samples": 57,
+      "mean": 61.716096263157866,
+      "p95": 86.268741,
+      "max": 148.514327
+    },
+    "request_intervals": {
+      "samples": 57,
+      "mean": 60.06315915789474,
+      "p95": 72.318367,
+      "max": 82.436501
+    },
+    "fresh_intervals": {
+      "samples": 55,
+      "mean": 62.23880929090906,
+      "p95": 86.268741,
+      "max": 148.514327
+    },
+    "physical_response_seconds": {
+      "samples": 57,
+      "mean": 3.595452771929825,
+      "p95": 5.983106,
+      "max": 6.809141
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "army_news_rss",
+    "expected": 58,
+    "actual_grid_request_slots": 58,
+    "actual_grid_fresh_slots": 56,
+    "actual_grid_fresh_coverage": 0.9655172413793104,
+    "request_gaps": {
+      "samples": 59,
+      "mean": 59.62402520338983,
+      "p95": 72.385534,
+      "max": 81.261401
+    },
+    "fresh_gaps": {
+      "samples": 57,
+      "mean": 61.716096263157894,
+      "p95": 86.782235,
+      "max": 149.036835
+    },
+    "request_intervals": {
+      "samples": 57,
+      "mean": 60.06092794736842,
+      "p95": 72.385534,
+      "max": 81.261401
+    },
+    "fresh_intervals": {
+      "samples": 55,
+      "mean": 62.243259272727265,
+      "p95": 86.782235,
+      "max": 149.036835
+    },
+    "physical_response_seconds": {
+      "samples": 57,
+      "mean": 3.527272421052631,
+      "p95": 5.871234,
+      "max": 6.051674
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "defensescoop_drones",
+    "expected": 58,
+    "actual_grid_request_slots": 58,
+    "actual_grid_fresh_slots": 56,
+    "actual_grid_fresh_coverage": 0.9655172413793104,
+    "request_gaps": {
+      "samples": 117,
+      "mean": 30.06681612820513,
+      "p95": 65.470782,
+      "max": 81.627604
+    },
+    "fresh_gaps": {
+      "samples": 57,
+      "mean": 61.716096263157915,
+      "p95": 82.131181,
+      "max": 144.06504
+    },
+    "request_intervals": {
+      "samples": 115,
+      "mean": 29.780088452173914,
+      "p95": 65.470782,
+      "max": 81.627604
+    },
+    "fresh_intervals": {
+      "samples": 55,
+      "mean": 62.24978330909092,
+      "p95": 82.131181,
+      "max": 144.06504
+    },
+    "physical_response_seconds": {
+      "samples": 116,
+      "mean": 0.022126801724137935,
+      "p95": 0.061051,
+      "max": 0.181566
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "dod_contracts",
+    "expected": 116,
+    "actual_grid_request_slots": 116,
+    "actual_grid_fresh_slots": 114,
+    "actual_grid_fresh_coverage": 0.9827586206896551,
+    "request_gaps": {
+      "samples": 118,
+      "mean": 59.624025203389834,
+      "p95": 75.694274,
+      "max": 87.120815
+    },
+    "fresh_gaps": {
+      "samples": 116,
+      "mean": 60.65202563793105,
+      "p95": 75.684953,
+      "max": 148.599238
+    },
+    "request_intervals": {
+      "samples": 114,
+      "mean": 60.05492196491229,
+      "p95": 75.694274,
+      "max": 87.120815
+    },
+    "fresh_intervals": {
+      "samples": 112,
+      "mean": 61.125901250000005,
+      "p95": 75.684953,
+      "max": 148.599238
+    },
+    "physical_response_seconds": {
+      "samples": 58,
+      "mean": 0.058363775862068965,
+      "p95": 0.160792,
+      "max": 0.260589
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "dod_releases",
+    "expected": 116,
+    "actual_grid_request_slots": 116,
+    "actual_grid_fresh_slots": 112,
+    "actual_grid_fresh_coverage": 0.9655172413793104,
+    "request_gaps": {
+      "samples": 118,
+      "mean": 59.62402520338985,
+      "p95": 72.530926,
+      "max": 81.894837
+    },
+    "fresh_gaps": {
+      "samples": 114,
+      "mean": 61.71609626315792,
+      "p95": 82.003965,
+      "max": 143.591461
+    },
+    "request_intervals": {
+      "samples": 114,
+      "mean": 60.05911747368424,
+      "p95": 72.530926,
+      "max": 81.894837
+    },
+    "fresh_intervals": {
+      "samples": 110,
+      "mean": 62.24569650909093,
+      "p95": 82.003965,
+      "max": 143.591461
+    },
+    "physical_response_seconds": {
+      "samples": 58,
+      "mean": 0.7930406206896553,
+      "p95": 1.050212,
+      "max": 1.272886
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "shephard_uncrewed",
+    "expected": 58,
+    "actual_grid_request_slots": 58,
+    "actual_grid_fresh_slots": 56,
+    "actual_grid_fresh_coverage": 0.9655172413793104,
+    "request_gaps": {
+      "samples": 117,
+      "mean": 30.066816128205122,
+      "p95": 65.266768,
+      "max": 90.338883
+    },
+    "fresh_gaps": {
+      "samples": 57,
+      "mean": 61.71609626315788,
+      "p95": 90.860847,
+      "max": 144.661439
+    },
+    "request_intervals": {
+      "samples": 115,
+      "mean": 29.773958243478262,
+      "p95": 65.266768,
+      "max": 90.338883
+    },
+    "fresh_intervals": {
+      "samples": 55,
+      "mean": 62.23908323636362,
+      "p95": 90.860847,
+      "max": 144.661439
+    },
+    "physical_response_seconds": {
+      "samples": 115,
+      "mean": 0.8905872434782607,
+      "p95": 1.68395,
+      "max": 2.226502
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "unmannedairspace_counteruas",
+    "expected": 58,
+    "actual_grid_request_slots": 58,
+    "actual_grid_fresh_slots": 56,
+    "actual_grid_fresh_coverage": 0.9655172413793104,
+    "request_gaps": {
+      "samples": 117,
+      "mean": 30.066816128205122,
+      "p95": 65.547035,
+      "max": 82.21566
+    },
+    "fresh_gaps": {
+      "samples": 57,
+      "mean": 61.71609626315788,
+      "p95": 81.991856,
+      "max": 143.130052
+    },
+    "request_intervals": {
+      "samples": 115,
+      "mean": 29.772840469565214,
+      "p95": 65.547035,
+      "max": 82.21566
+    },
+    "fresh_intervals": {
+      "samples": 55,
+      "mean": 62.24285610909091,
+      "p95": 81.991856,
+      "max": 143.130052
+    },
+    "physical_response_seconds": {
+      "samples": 115,
+      "mean": 0.5330676173913043,
+      "p95": 1.274523,
+      "max": 3.313862
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "airspaceforces_space",
+    "expected": 58,
+    "actual_grid_request_slots": 58,
+    "actual_grid_fresh_slots": 57,
+    "actual_grid_fresh_coverage": 0.9827586206896551,
+    "request_gaps": {
+      "samples": 59,
+      "mean": 59.624025203389834,
+      "p95": 75.373331,
+      "max": 87.150825
+    },
+    "fresh_gaps": {
+      "samples": 58,
+      "mean": 60.65202563793104,
+      "p95": 75.382043,
+      "max": 148.720656
+    },
+    "request_intervals": {
+      "samples": 57,
+      "mean": 60.07059598245613,
+      "p95": 75.373331,
+      "max": 87.150825
+    },
+    "fresh_intervals": {
+      "samples": 56,
+      "mean": 61.14327246428571,
+      "p95": 75.382043,
+      "max": 148.720656
+    },
+    "physical_response_seconds": {
+      "samples": 58,
+      "mean": 0.038128948275862065,
+      "p95": 0.05728,
+      "max": 0.5077
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "aviationweek_rocketlab",
+    "expected": 58,
+    "actual_grid_request_slots": 58,
+    "actual_grid_fresh_slots": 58,
+    "actual_grid_fresh_coverage": 1.0,
+    "request_gaps": {
+      "samples": 59,
+      "mean": 59.62402520338983,
+      "p95": 67.349547,
+      "max": 75.289624
+    },
+    "fresh_gaps": {
+      "samples": 59,
+      "mean": 59.62402520338981,
+      "p95": 68.173458,
+      "max": 75.168056
+    },
+    "request_intervals": {
+      "samples": 57,
+      "mean": 60.04352907017543,
+      "p95": 67.349547,
+      "max": 75.289624
+    },
+    "fresh_intervals": {
+      "samples": 57,
+      "mean": 60.039404228070154,
+      "p95": 68.173458,
+      "max": 75.168056
+    },
+    "physical_response_seconds": {
+      "samples": 58,
+      "mean": 0.5904910344827586,
+      "p95": 1.538643,
+      "max": 3.343053
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "aviationweek_rss",
+    "expected": 58,
+    "actual_grid_request_slots": 58,
+    "actual_grid_fresh_slots": 56,
+    "actual_grid_fresh_coverage": 0.9655172413793104,
+    "request_gaps": {
+      "samples": 59,
+      "mean": 59.62402520338981,
+      "p95": 72.556424,
+      "max": 83.521395
+    },
+    "fresh_gaps": {
+      "samples": 57,
+      "mean": 61.71609626315786,
+      "p95": 83.79596,
+      "max": 144.786056
+    },
+    "request_intervals": {
+      "samples": 57,
+      "mean": 60.06194357894735,
+      "p95": 72.556424,
+      "max": 83.521395
+    },
+    "fresh_intervals": {
+      "samples": 55,
+      "mean": 62.22455050909088,
+      "p95": 83.79596,
+      "max": 144.786056
+    },
+    "physical_response_seconds": {
+      "samples": 58,
+      "mean": 0.8306068103448276,
+      "p95": 2.856177,
+      "max": 3.863608
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "breakingdefense_space",
+    "expected": 58,
+    "actual_grid_request_slots": 58,
+    "actual_grid_fresh_slots": 56,
+    "actual_grid_fresh_coverage": 0.9655172413793104,
+    "request_gaps": {
+      "samples": 59,
+      "mean": 59.624025203389834,
+      "p95": 72.547465,
+      "max": 81.851072
+    },
+    "fresh_gaps": {
+      "samples": 57,
+      "mean": 61.71609626315787,
+      "p95": 81.556431,
+      "max": 143.648894
+    },
+    "request_intervals": {
+      "samples": 57,
+      "mean": 60.04993324561404,
+      "p95": 72.547465,
+      "max": 81.851072
+    },
+    "fresh_intervals": {
+      "samples": 55,
+      "mean": 62.23496385454544,
+      "p95": 81.556431,
+      "max": 143.648894
+    },
+    "physical_response_seconds": {
+      "samples": 58,
+      "mean": 0.801759603448276,
+      "p95": 0.966263,
+      "max": 1.015661
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "defensescoop_space",
+    "expected": 58,
+    "actual_grid_request_slots": 58,
+    "actual_grid_fresh_slots": 57,
+    "actual_grid_fresh_coverage": 0.9827586206896551,
+    "request_gaps": {
+      "samples": 59,
+      "mean": 59.624025203389834,
+      "p95": 76.265797,
+      "max": 87.15478
+    },
+    "fresh_gaps": {
+      "samples": 58,
+      "mean": 60.65202563793104,
+      "p95": 76.264028,
+      "max": 148.661073
+    },
+    "request_intervals": {
+      "samples": 57,
+      "mean": 60.09216054385965,
+      "p95": 76.265797,
+      "max": 87.15478
+    },
+    "fresh_intervals": {
+      "samples": 56,
+      "mean": 61.164325714285724,
+      "p95": 76.264028,
+      "max": 148.661073
+    },
+    "physical_response_seconds": {
+      "samples": 58,
+      "mean": 0.01943977586206896,
+      "p95": 0.059724,
+      "max": 0.074369
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "iridium_press_releases",
+    "expected": 58,
+    "actual_grid_request_slots": 58,
+    "actual_grid_fresh_slots": 58,
+    "actual_grid_fresh_coverage": 1.0,
+    "request_gaps": {
+      "samples": 59,
+      "mean": 59.624025203389834,
+      "p95": 67.558626,
+      "max": 75.239962
+    },
+    "fresh_gaps": {
+      "samples": 59,
+      "mean": 59.624025203389856,
+      "p95": 67.544009,
+      "max": 75.267463
+    },
+    "request_intervals": {
+      "samples": 57,
+      "mean": 60.0444089122807,
+      "p95": 67.558626,
+      "max": 75.239962
+    },
+    "fresh_intervals": {
+      "samples": 57,
+      "mean": 60.04437068421054,
+      "p95": 67.544009,
+      "max": 75.267463
+    },
+    "physical_response_seconds": {
+      "samples": 58,
+      "mean": 0.13687291379310348,
+      "p95": 0.203273,
+      "max": 0.231882
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "nasa_2026_releases",
+    "expected": 58,
+    "actual_grid_request_slots": 58,
+    "actual_grid_fresh_slots": 57,
+    "actual_grid_fresh_coverage": 0.9827586206896551,
+    "request_gaps": {
+      "samples": 59,
+      "mean": 59.62402520338982,
+      "p95": 75.531434,
+      "max": 87.13516
+    },
+    "fresh_gaps": {
+      "samples": 58,
+      "mean": 60.65202563793104,
+      "p95": 75.603497,
+      "max": 148.444861
+    },
+    "request_intervals": {
+      "samples": 57,
+      "mean": 60.075760877192984,
+      "p95": 75.531434,
+      "max": 87.13516
+    },
+    "fresh_intervals": {
+      "samples": 56,
+      "mean": 61.148602303571415,
+      "p95": 75.603497,
+      "max": 148.444861
+    },
+    "physical_response_seconds": {
+      "samples": 58,
+      "mean": 0.05015213793103449,
+      "p95": 0.07569,
+      "max": 1.196927
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "spacecom_launches",
+    "expected": 58,
+    "actual_grid_request_slots": 58,
+    "actual_grid_fresh_slots": 56,
+    "actual_grid_fresh_coverage": 0.9655172413793104,
+    "request_gaps": {
+      "samples": 59,
+      "mean": 59.624025203389806,
+      "p95": 72.78599,
+      "max": 82.203516
+    },
+    "fresh_gaps": {
+      "samples": 57,
+      "mean": 61.716096263157894,
+      "p95": 82.374639,
+      "max": 143.899035
+    },
+    "request_intervals": {
+      "samples": 57,
+      "mean": 60.062924947368394,
+      "p95": 72.78599,
+      "max": 82.203516
+    },
+    "fresh_intervals": {
+      "samples": 55,
+      "mean": 62.248935381818185,
+      "p95": 82.374639,
+      "max": 143.899035
+    },
+    "physical_response_seconds": {
+      "samples": 58,
+      "mean": 0.877625724137931,
+      "p95": 1.063537,
+      "max": 1.075008
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "spacenews_rss",
+    "expected": 58,
+    "actual_grid_request_slots": 58,
+    "actual_grid_fresh_slots": 56,
+    "actual_grid_fresh_coverage": 0.9655172413793104,
+    "request_gaps": {
+      "samples": 117,
+      "mean": 30.06681612820513,
+      "p95": 66.281934,
+      "max": 82.130114
+    },
+    "fresh_gaps": {
+      "samples": 57,
+      "mean": 61.716096263157915,
+      "p95": 81.723844,
+      "max": 143.793332
+    },
+    "request_intervals": {
+      "samples": 115,
+      "mean": 29.761446704347822,
+      "p95": 66.281934,
+      "max": 82.130114
+    },
+    "fresh_intervals": {
+      "samples": 55,
+      "mean": 62.22693165454547,
+      "p95": 81.723844,
+      "max": 143.793332
+    },
+    "physical_response_seconds": {
+      "samples": 116,
+      "mean": 0.8295356810344829,
+      "p95": 0.923489,
+      "max": 1.227118
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "ssc_newsroom",
+    "expected": 58,
+    "actual_grid_request_slots": 58,
+    "actual_grid_fresh_slots": 58,
+    "actual_grid_fresh_coverage": 1.0,
+    "request_gaps": {
+      "samples": 60,
+      "mean": 58.63029145,
+      "p95": 66.029893,
+      "max": 74.754127
+    },
+    "fresh_gaps": {
+      "samples": 59,
+      "mean": 59.62402520338983,
+      "p95": 73.401043,
+      "max": 82.238026
+    },
+    "request_intervals": {
+      "samples": 58,
+      "mean": 59.013436034482766,
+      "p95": 67.6612,
+      "max": 74.754127
+    },
+    "fresh_intervals": {
+      "samples": 57,
+      "mean": 60.04947271929826,
+      "p95": 73.401043,
+      "max": 82.238026
+    },
+    "physical_response_seconds": {
+      "samples": 59,
+      "mean": 4.072092186440678,
+      "p95": 5.812642,
+      "max": 5.891225
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "corporate_ir_press_releases",
+    "expected": 1404,
+    "actual_grid_request_slots": 1401,
+    "actual_grid_fresh_slots": 1401,
+    "actual_grid_fresh_coverage": 0.9978632478632479,
+    "request_gaps": {
+      "samples": 1415,
+      "mean": 29.833081161837463,
+      "p95": 38.794376,
+      "max": 71.950288
+    },
+    "fresh_gaps": {
+      "samples": 1414,
+      "mean": 29.854179521923644,
+      "p95": 39.010194,
+      "max": 71.939609
+    },
+    "request_intervals": {
+      "samples": 1391,
+      "mean": 30.029028743350114,
+      "p95": 38.891292,
+      "max": 71.950288
+    },
+    "fresh_intervals": {
+      "samples": 1390,
+      "mean": 30.050730809352537,
+      "p95": 39.033391,
+      "max": 71.939609
+    },
+    "physical_response_seconds": {
+      "samples": 1403,
+      "mean": 0.2643672587312903,
+      "p95": 1.07261,
+      "max": 1.857969
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "sec_edgar",
+    "expected": 1056,
+    "actual_grid_request_slots": 1052,
+    "actual_grid_fresh_slots": 1052,
+    "actual_grid_fresh_coverage": 0.9962121212121212,
+    "request_gaps": {
+      "samples": 1070,
+      "mean": 29.589119049532687,
+      "p95": 38.88251,
+      "max": 58.941717
+    },
+    "fresh_gaps": {
+      "samples": 1063,
+      "mean": 29.78396743461902,
+      "p95": 39.025922,
+      "max": 58.956083
+    },
+    "request_intervals": {
+      "samples": 1052,
+      "mean": 29.79788620057031,
+      "p95": 38.924725,
+      "max": 58.941717
+    },
+    "fresh_intervals": {
+      "samples": 1045,
+      "mean": 29.997246451674652,
+      "p95": 39.028173,
+      "max": 58.956083
+    },
+    "physical_response_seconds": {
+      "samples": 1061,
+      "mean": 0.08245842224316687,
+      "p95": 0.274683,
+      "max": 0.679203
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "calcalist_search",
+    "expected": 174,
+    "actual_grid_request_slots": 174,
+    "actual_grid_fresh_slots": 174,
+    "actual_grid_fresh_coverage": 1.0,
+    "request_gaps": {
+      "samples": 183,
+      "mean": 57.66913913114749,
+      "p95": 66.419392,
+      "max": 77.13626
+    },
+    "fresh_gaps": {
+      "samples": 177,
+      "mean": 59.62402520338983,
+      "p95": 66.821495,
+      "max": 76.633847
+    },
+    "request_intervals": {
+      "samples": 177,
+      "mean": 58.00831883050843,
+      "p95": 66.819284,
+      "max": 77.13626
+    },
+    "fresh_intervals": {
+      "samples": 171,
+      "mean": 60.04332081286549,
+      "p95": 66.821495,
+      "max": 76.633847
+    },
+    "physical_response_seconds": {
+      "samples": 180,
+      "mean": 0.6048789944444445,
+      "p95": 0.985372,
+      "max": 1.123886
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "thefly_ticker_news",
+    "expected": 528,
+    "actual_grid_request_slots": 527,
+    "actual_grid_fresh_slots": 526,
+    "actual_grid_fresh_coverage": 0.9962121212121212,
+    "request_gaps": {
+      "samples": 537,
+      "mean": 58.95783497765366,
+      "p95": 70.332363,
+      "max": 86.317766
+    },
+    "fresh_gaps": {
+      "samples": 535,
+      "mean": 59.17823809906542,
+      "p95": 70.727958,
+      "max": 87.102063
+    },
+    "request_intervals": {
+      "samples": 519,
+      "mean": 59.870560086705225,
+      "p95": 70.648314,
+      "max": 86.317766
+    },
+    "fresh_intervals": {
+      "samples": 517,
+      "mean": 59.98819646228239,
+      "p95": 70.727958,
+      "max": 87.102063
+    },
+    "physical_response_seconds": {
+      "samples": 526,
+      "mean": 0.6501488041825093,
+      "p95": 1.216155,
+      "max": 1.938437
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "nbis_official_actor_rss",
+    "expected": 118,
+    "actual_grid_request_slots": 118,
+    "actual_grid_fresh_slots": 118,
+    "actual_grid_fresh_coverage": 1.0,
+    "request_gaps": {
+      "samples": 120,
+      "mean": 58.63029145000001,
+      "p95": 67.752071,
+      "max": 80.313408
+    },
+    "fresh_gaps": {
+      "samples": 120,
+      "mean": 58.63029145,
+      "p95": 67.760854,
+      "max": 80.306283
+    },
+    "request_intervals": {
+      "samples": 116,
+      "mean": 59.99256194827588,
+      "p95": 67.908004,
+      "max": 80.313408
+    },
+    "fresh_intervals": {
+      "samples": 116,
+      "mean": 59.99231646551725,
+      "p95": 67.866722,
+      "max": 80.306283
+    },
+    "physical_response_seconds": {
+      "samples": 118,
+      "mean": 0.10242405084745763,
+      "p95": 0.237871,
+      "max": 0.762719
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "aws_platform_marketplace_rss",
+    "expected": 118,
+    "actual_grid_request_slots": 118,
+    "actual_grid_fresh_slots": 118,
+    "actual_grid_fresh_coverage": 1.0,
+    "request_gaps": {
+      "samples": 120,
+      "mean": 58.63029145000002,
+      "p95": 67.615547,
+      "max": 80.338343
+    },
+    "fresh_gaps": {
+      "samples": 120,
+      "mean": 58.63029144999998,
+      "p95": 67.279531,
+      "max": 80.36231
+    },
+    "request_intervals": {
+      "samples": 116,
+      "mean": 60.08601150862071,
+      "p95": 74.718023,
+      "max": 80.338343
+    },
+    "fresh_intervals": {
+      "samples": 116,
+      "mean": 60.09066263793102,
+      "p95": 74.756836,
+      "max": 80.36231
+    },
+    "physical_response_seconds": {
+      "samples": 118,
+      "mean": 0.2535458813559321,
+      "p95": 0.563435,
+      "max": 0.924276
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "enterprise_apps_official_rss",
+    "expected": 177,
+    "actual_grid_request_slots": 177,
+    "actual_grid_fresh_slots": 177,
+    "actual_grid_fresh_coverage": 1.0,
+    "request_gaps": {
+      "samples": 180,
+      "mean": 58.63029145,
+      "p95": 72.57185,
+      "max": 77.768898
+    },
+    "fresh_gaps": {
+      "samples": 180,
+      "mean": 58.630291449999994,
+      "p95": 72.587945,
+      "max": 77.789742
+    },
+    "request_intervals": {
+      "samples": 174,
+      "mean": 59.99266453448278,
+      "p95": 73.75944,
+      "max": 77.768898
+    },
+    "fresh_intervals": {
+      "samples": 174,
+      "mean": 59.99295870689654,
+      "p95": 73.701712,
+      "max": 77.789742
+    },
+    "physical_response_seconds": {
+      "samples": 177,
+      "mean": 0.4473707853107343,
+      "p95": 0.760266,
+      "max": 2.089015
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "lakehouse_platform_official_rss",
+    "expected": 118,
+    "actual_grid_request_slots": 118,
+    "actual_grid_fresh_slots": 118,
+    "actual_grid_fresh_coverage": 1.0,
+    "request_gaps": {
+      "samples": 120,
+      "mean": 58.63029144999999,
+      "p95": 68.898728,
+      "max": 78.207923
+    },
+    "fresh_gaps": {
+      "samples": 120,
+      "mean": 58.63029144999997,
+      "p95": 68.905667,
+      "max": 78.200979
+    },
+    "request_intervals": {
+      "samples": 116,
+      "mean": 60.003531353448274,
+      "p95": 69.344591,
+      "max": 78.207923
+    },
+    "fresh_intervals": {
+      "samples": 116,
+      "mean": 60.00357196551722,
+      "p95": 69.346451,
+      "max": 78.200979
+    },
+    "physical_response_seconds": {
+      "samples": 118,
+      "mean": 0.3792448813559322,
+      "p95": 0.749048,
+      "max": 0.850789
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "observability_vendors_official_rss",
+    "expected": 118,
+    "actual_grid_request_slots": 118,
+    "actual_grid_fresh_slots": 118,
+    "actual_grid_fresh_coverage": 1.0,
+    "request_gaps": {
+      "samples": 120,
+      "mean": 58.63029144999998,
+      "p95": 67.290811,
+      "max": 75.815765
+    },
+    "fresh_gaps": {
+      "samples": 120,
+      "mean": 58.630291449999994,
+      "p95": 67.252363,
+      "max": 75.880128
+    },
+    "request_intervals": {
+      "samples": 116,
+      "mean": 60.03228892241378,
+      "p95": 67.305622,
+      "max": 75.815765
+    },
+    "fresh_intervals": {
+      "samples": 116,
+      "mean": 60.03342197413794,
+      "p95": 67.307119,
+      "max": 75.880128
+    },
+    "physical_response_seconds": {
+      "samples": 118,
+      "mean": 0.2002726779661018,
+      "p95": 0.456218,
+      "max": 0.602294
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "technews_hardware",
+    "expected": 590,
+    "actual_grid_request_slots": 580,
+    "actual_grid_fresh_slots": 580,
+    "actual_grid_fresh_coverage": 0.9830508474576272,
+    "request_gaps": {
+      "samples": 600,
+      "mean": 58.630291450000044,
+      "p95": 73.674884,
+      "max": 85.816809
+    },
+    "fresh_gaps": {
+      "samples": 590,
+      "mean": 59.624025203389884,
+      "p95": 84.410398,
+      "max": 103.883891
+    },
+    "request_intervals": {
+      "samples": 580,
+      "mean": 59.99316933620695,
+      "p95": 83.903819,
+      "max": 85.816809
+    },
+    "fresh_intervals": {
+      "samples": 570,
+      "mean": 61.045503385964984,
+      "p95": 84.410398,
+      "max": 103.883891
+    },
+    "physical_response_seconds": {
+      "samples": 118,
+      "mean": 0.014192838983050847,
+      "p95": 0.035154,
+      "max": 0.066298
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "wccftech_hardware",
+    "expected": 880,
+    "actual_grid_request_slots": 870,
+    "actual_grid_fresh_slots": 860,
+    "actual_grid_fresh_coverage": 0.9772727272727273,
+    "request_gaps": {
+      "samples": 895,
+      "mean": 58.95783497765362,
+      "p95": 72.796746,
+      "max": 85.196126
+    },
+    "fresh_gaps": {
+      "samples": 875,
+      "mean": 60.30544263428566,
+      "p95": 84.19201,
+      "max": 143.416135
+    },
+    "request_intervals": {
+      "samples": 865,
+      "mean": 60.017763132947984,
+      "p95": 72.796746,
+      "max": 85.196126
+    },
+    "fresh_intervals": {
+      "samples": 845,
+      "mean": 61.43811710059166,
+      "p95": 84.19201,
+      "max": 143.416135
+    },
+    "physical_response_seconds": {
+      "samples": 175,
+      "mean": 0.7131145542857141,
+      "p95": 0.9028,
+      "max": 1.314536
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "darpa_news",
+    "expected": 290,
+    "actual_grid_request_slots": 290,
+    "actual_grid_fresh_slots": 275,
+    "actual_grid_fresh_coverage": 0.9482758620689655,
+    "request_gaps": {
+      "samples": 295,
+      "mean": 59.62402520338982,
+      "p95": 74.429097,
+      "max": 91.257465
+    },
+    "fresh_gaps": {
+      "samples": 280,
+      "mean": 62.818169410714255,
+      "p95": 126.487466,
+      "max": 138.472284
+    },
+    "request_intervals": {
+      "samples": 285,
+      "mean": 60.06057508771931,
+      "p95": 74.429097,
+      "max": 91.257465
+    },
+    "fresh_intervals": {
+      "samples": 270,
+      "mean": 63.396390259259256,
+      "p95": 126.487466,
+      "max": 138.472284
+    },
+    "physical_response_seconds": {
+      "samples": 56,
+      "mean": 5.802381839285714,
+      "p95": 5.908202,
+      "max": 7.10804
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "sdxcentral_news",
+    "expected": 295,
+    "actual_grid_request_slots": 290,
+    "actual_grid_fresh_slots": 290,
+    "actual_grid_fresh_coverage": 0.9830508474576272,
+    "request_gaps": {
+      "samples": 300,
+      "mean": 58.63029145,
+      "p95": 72.883603,
+      "max": 85.952868
+    },
+    "fresh_gaps": {
+      "samples": 295,
+      "mean": 59.62402520338977,
+      "p95": 84.935084,
+      "max": 103.299578
+    },
+    "request_intervals": {
+      "samples": 290,
+      "mean": 59.99114879310344,
+      "p95": 84.041547,
+      "max": 85.952868
+    },
+    "fresh_intervals": {
+      "samples": 285,
+      "mean": 61.04188843859642,
+      "p95": 84.935084,
+      "max": 103.299578
+    },
+    "physical_response_seconds": {
+      "samples": 59,
+      "mean": 0.17515888135593222,
+      "p95": 0.26172,
+      "max": 0.397475
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "siliconangle_ai",
+    "expected": 295,
+    "actual_grid_request_slots": 290,
+    "actual_grid_fresh_slots": 290,
+    "actual_grid_fresh_coverage": 0.9830508474576272,
+    "request_gaps": {
+      "samples": 300,
+      "mean": 58.63029145000003,
+      "p95": 71.770865,
+      "max": 85.917117
+    },
+    "fresh_gaps": {
+      "samples": 295,
+      "mean": 59.624025203389834,
+      "p95": 84.448033,
+      "max": 104.23195
+    },
+    "request_intervals": {
+      "samples": 290,
+      "mean": 60.00083065517246,
+      "p95": 84.14045,
+      "max": 85.917117
+    },
+    "fresh_intervals": {
+      "samples": 285,
+      "mean": 61.04721049122808,
+      "p95": 84.448033,
+      "max": 104.23195
+    },
+    "physical_response_seconds": {
+      "samples": 59,
+      "mean": 0.520986186440678,
+      "p95": 0.891025,
+      "max": 1.080919
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "venturebeat_ai",
+    "expected": 295,
+    "actual_grid_request_slots": 290,
+    "actual_grid_fresh_slots": 290,
+    "actual_grid_fresh_coverage": 0.9830508474576272,
+    "request_gaps": {
+      "samples": 300,
+      "mean": 58.63029144999993,
+      "p95": 73.913749,
+      "max": 86.148519
+    },
+    "fresh_gaps": {
+      "samples": 295,
+      "mean": 59.6240252033899,
+      "p95": 84.921569,
+      "max": 103.157146
+    },
+    "request_intervals": {
+      "samples": 290,
+      "mean": 59.99650649999992,
+      "p95": 83.918845,
+      "max": 86.148519
+    },
+    "fresh_intervals": {
+      "samples": 285,
+      "mean": 61.04865680701762,
+      "p95": 84.921569,
+      "max": 103.157146
+    },
+    "physical_response_seconds": {
+      "samples": 59,
+      "mean": 0.040665084745762706,
+      "p95": 0.068093,
+      "max": 0.120468
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "crn_cloud_security_datacenter",
+    "expected": 177,
+    "actual_grid_request_slots": 174,
+    "actual_grid_fresh_slots": 174,
+    "actual_grid_fresh_coverage": 0.9830508474576272,
+    "request_gaps": {
+      "samples": 180,
+      "mean": 58.630291450000016,
+      "p95": 72.627384,
+      "max": 85.472293
+    },
+    "fresh_gaps": {
+      "samples": 177,
+      "mean": 59.624025203389834,
+      "p95": 84.730643,
+      "max": 104.654289
+    },
+    "request_intervals": {
+      "samples": 174,
+      "mean": 59.9896524310345,
+      "p95": 82.500214,
+      "max": 85.472293
+    },
+    "fresh_intervals": {
+      "samples": 171,
+      "mean": 61.04190078362573,
+      "p95": 84.730643,
+      "max": 104.654289
+    },
+    "physical_response_seconds": {
+      "samples": 177,
+      "mean": 0.10006240677966105,
+      "p95": 0.180656,
+      "max": 0.555329
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "register_software_cloud_security",
+    "expected": 175,
+    "actual_grid_request_slots": 172,
+    "actual_grid_fresh_slots": 169,
+    "actual_grid_fresh_coverage": 0.9657142857142857,
+    "request_gaps": {
+      "samples": 176,
+      "mean": 59.96279807386361,
+      "p95": 71.626901,
+      "max": 144.471785
+    },
+    "fresh_gaps": {
+      "samples": 172,
+      "mean": 61.357281750000006,
+      "p95": 79.781355,
+      "max": 144.753267
+    },
+    "request_intervals": {
+      "samples": 170,
+      "mean": 60.743190976470565,
+      "p95": 71.626901,
+      "max": 144.471785
+    },
+    "fresh_intervals": {
+      "samples": 166,
+      "mean": 62.21348994578315,
+      "p95": 79.781355,
+      "max": 144.753267
+    },
+    "physical_response_seconds": {
+      "samples": 172,
+      "mean": 0.6225128720930232,
+      "p95": 0.929978,
+      "max": 1.435327
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "siliconangle_software",
+    "expected": 175,
+    "actual_grid_request_slots": 173,
+    "actual_grid_fresh_slots": 170,
+    "actual_grid_fresh_coverage": 0.9714285714285714,
+    "request_gaps": {
+      "samples": 177,
+      "mean": 59.62402520338981,
+      "p95": 71.439911,
+      "max": 144.824089
+    },
+    "fresh_gaps": {
+      "samples": 173,
+      "mean": 61.00261538150285,
+      "p95": 79.837927,
+      "max": 145.163473
+    },
+    "request_intervals": {
+      "samples": 171,
+      "mean": 60.383697415204665,
+      "p95": 71.439911,
+      "max": 144.824089
+    },
+    "fresh_intervals": {
+      "samples": 167,
+      "mean": 61.831271688622714,
+      "p95": 79.837927,
+      "max": 145.163473
+    },
+    "physical_response_seconds": {
+      "samples": 173,
+      "mean": 0.47896155491329473,
+      "p95": 1.059068,
+      "max": 1.306261
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "venturebeat_software",
+    "expected": 175,
+    "actual_grid_request_slots": 173,
+    "actual_grid_fresh_slots": 172,
+    "actual_grid_fresh_coverage": 0.9828571428571429,
+    "request_gaps": {
+      "samples": 177,
+      "mean": 59.62402520338986,
+      "p95": 71.597977,
+      "max": 144.113367
+    },
+    "fresh_gaps": {
+      "samples": 175,
+      "mean": 60.30544263428567,
+      "p95": 74.039129,
+      "max": 144.471066
+    },
+    "request_intervals": {
+      "samples": 171,
+      "mean": 60.20335287719302,
+      "p95": 71.597977,
+      "max": 144.113367
+    },
+    "fresh_intervals": {
+      "samples": 169,
+      "mean": 60.915508213017716,
+      "p95": 74.039129,
+      "max": 144.471066
+    },
+    "physical_response_seconds": {
+      "samples": 174,
+      "mean": 0.03949367241379311,
+      "p95": 0.087214,
+      "max": 0.293187
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "canary_media",
+    "expected": 116,
+    "actual_grid_request_slots": 116,
+    "actual_grid_fresh_slots": 114,
+    "actual_grid_fresh_coverage": 0.9827586206896551,
+    "request_gaps": {
+      "samples": 118,
+      "mean": 59.62402520338982,
+      "p95": 75.40243,
+      "max": 85.951796
+    },
+    "fresh_gaps": {
+      "samples": 116,
+      "mean": 60.65202563793105,
+      "p95": 75.409683,
+      "max": 147.076653
+    },
+    "request_intervals": {
+      "samples": 114,
+      "mean": 60.05887485964913,
+      "p95": 75.40243,
+      "max": 85.951796
+    },
+    "fresh_intervals": {
+      "samples": 112,
+      "mean": 61.1314006607143,
+      "p95": 75.409683,
+      "max": 147.076653
+    },
+    "physical_response_seconds": {
+      "samples": 58,
+      "mean": 0.1685487586206896,
+      "p95": 0.269383,
+      "max": 0.401086
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "data_center_frontier",
+    "expected": 348,
+    "actual_grid_request_slots": 342,
+    "actual_grid_fresh_slots": 336,
+    "actual_grid_fresh_coverage": 0.9655172413793104,
+    "request_gaps": {
+      "samples": 348,
+      "mean": 60.65202563793102,
+      "p95": 81.742537,
+      "max": 135.335519
+    },
+    "fresh_gaps": {
+      "samples": 342,
+      "mean": 61.716096263157844,
+      "p95": 82.013872,
+      "max": 143.51961
+    },
+    "request_intervals": {
+      "samples": 336,
+      "mean": 61.15383414285715,
+      "p95": 81.742537,
+      "max": 135.335519
+    },
+    "fresh_intervals": {
+      "samples": 330,
+      "mean": 62.265592254545396,
+      "p95": 82.013872,
+      "max": 143.51961
+    },
+    "physical_response_seconds": {
+      "samples": 57,
+      "mean": 0.8076090526315789,
+      "p95": 0.97933,
+      "max": 1.785784
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "dcd_energy_ticker",
+    "expected": 117,
+    "actual_grid_request_slots": 117,
+    "actual_grid_fresh_slots": 117,
+    "actual_grid_fresh_coverage": 1.0,
+    "request_gaps": {
+      "samples": 120,
+      "mean": 58.63029144999998,
+      "p95": 67.823589,
+      "max": 75.186079
+    },
+    "fresh_gaps": {
+      "samples": 119,
+      "mean": 59.12298297478993,
+      "p95": 70.706209,
+      "max": 75.213535
+    },
+    "request_intervals": {
+      "samples": 116,
+      "mean": 59.50315096551723,
+      "p95": 70.635568,
+      "max": 75.186079
+    },
+    "fresh_intervals": {
+      "samples": 115,
+      "mean": 60.019297373913055,
+      "p95": 70.706209,
+      "max": 75.213535
+    },
+    "physical_response_seconds": {
+      "samples": 117,
+      "mean": 0.7635732051282051,
+      "p95": 0.856301,
+      "max": 0.908347
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "dcd_infrastructure_rss",
+    "expected": 348,
+    "actual_grid_request_slots": 348,
+    "actual_grid_fresh_slots": 342,
+    "actual_grid_fresh_coverage": 0.9827586206896551,
+    "request_gaps": {
+      "samples": 354,
+      "mean": 59.62402520338977,
+      "p95": 78.427619,
+      "max": 83.758131
+    },
+    "fresh_gaps": {
+      "samples": 348,
+      "mean": 60.652025637931025,
+      "p95": 78.46502,
+      "max": 127.93353
+    },
+    "request_intervals": {
+      "samples": 342,
+      "mean": 60.072144368420986,
+      "p95": 78.427619,
+      "max": 83.758131
+    },
+    "fresh_intervals": {
+      "samples": 336,
+      "mean": 61.14453198214288,
+      "p95": 78.46502,
+      "max": 127.93353
+    },
+    "physical_response_seconds": {
+      "samples": 58,
+      "mean": 0.28724239655172407,
+      "p95": 0.792825,
+      "max": 0.85636
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "doe_energy_news",
+    "expected": 406,
+    "actual_grid_request_slots": 406,
+    "actual_grid_fresh_slots": 399,
+    "actual_grid_fresh_coverage": 0.9827586206896551,
+    "request_gaps": {
+      "samples": 413,
+      "mean": 59.62402520338976,
+      "p95": 78.373265,
+      "max": 84.267832
+    },
+    "fresh_gaps": {
+      "samples": 406,
+      "mean": 60.65202563793094,
+      "p95": 78.418786,
+      "max": 127.729238
+    },
+    "request_intervals": {
+      "samples": 399,
+      "mean": 60.07191357644103,
+      "p95": 78.373265,
+      "max": 84.267832
+    },
+    "fresh_intervals": {
+      "samples": 392,
+      "mean": 61.14428310204073,
+      "p95": 78.418786,
+      "max": 127.729238
+    },
+    "physical_response_seconds": {
+      "samples": 232,
+      "mean": 0.24689321120689645,
+      "p95": 0.525363,
+      "max": 0.573265
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "power_engineering_energy",
+    "expected": 406,
+    "actual_grid_request_slots": 406,
+    "actual_grid_fresh_slots": 397,
+    "actual_grid_fresh_coverage": 0.9778325123152709,
+    "request_gaps": {
+      "samples": 413,
+      "mean": 59.62402520338984,
+      "p95": 77.063919,
+      "max": 92.72905
+    },
+    "fresh_gaps": {
+      "samples": 404,
+      "mean": 60.95228319059403,
+      "p95": 78.547708,
+      "max": 145.196726
+    },
+    "request_intervals": {
+      "samples": 399,
+      "mean": 60.06859673182957,
+      "p95": 77.227732,
+      "max": 92.72905
+    },
+    "fresh_intervals": {
+      "samples": 390,
+      "mean": 61.4564706153846,
+      "p95": 79.024402,
+      "max": 145.196726
+    },
+    "physical_response_seconds": {
+      "samples": 348,
+      "mean": 0.46857961494252875,
+      "p95": 0.824743,
+      "max": 1.525437
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "power_magazine_energy",
+    "expected": 527,
+    "actual_grid_request_slots": 411,
+    "actual_grid_fresh_slots": 410,
+    "actual_grid_fresh_coverage": 0.777988614800759,
+    "request_gaps": {
+      "samples": 420,
+      "mean": 75.38180329285714,
+      "p95": 173.909789,
+      "max": 1333.16951
+    },
+    "fresh_gaps": {
+      "samples": 419,
+      "mean": 75.56171213126484,
+      "p95": 175.82181,
+      "max": 1333.176779
+    },
+    "request_intervals": {
+      "samples": 402,
+      "mean": 75.70544112935323,
+      "p95": 168.349149,
+      "max": 1333.16951
+    },
+    "fresh_intervals": {
+      "samples": 401,
+      "mean": 75.89442885785529,
+      "p95": 168.355298,
+      "max": 1333.176779
+    },
+    "physical_response_seconds": {
+      "samples": 411,
+      "mean": 0.49554248661800504,
+      "p95": 1.06876,
+      "max": 1.790427
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "utility_dive",
+    "expected": 116,
+    "actual_grid_request_slots": 116,
+    "actual_grid_fresh_slots": 114,
+    "actual_grid_fresh_coverage": 0.9827586206896551,
+    "request_gaps": {
+      "samples": 118,
+      "mean": 59.624025203389834,
+      "p95": 75.396544,
+      "max": 82.581282
+    },
+    "fresh_gaps": {
+      "samples": 116,
+      "mean": 60.65202563793105,
+      "p95": 75.586305,
+      "max": 142.524326
+    },
+    "request_intervals": {
+      "samples": 114,
+      "mean": 60.080456473684215,
+      "p95": 75.396544,
+      "max": 82.581282
+    },
+    "fresh_intervals": {
+      "samples": 112,
+      "mean": 61.15267033928573,
+      "p95": 75.586305,
+      "max": 142.524326
+    },
+    "physical_response_seconds": {
+      "samples": 58,
+      "mean": 0.22764387931034485,
+      "p95": 0.395194,
+      "max": 1.006589
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "ans_nuclear_newswire",
+    "expected": 59,
+    "actual_grid_request_slots": 58,
+    "actual_grid_fresh_slots": 58,
+    "actual_grid_fresh_coverage": 0.9830508474576272,
+    "request_gaps": {
+      "samples": 60,
+      "mean": 58.63029144999998,
+      "p95": 74.620722,
+      "max": 87.806381
+    },
+    "fresh_gaps": {
+      "samples": 59,
+      "mean": 59.62402520338984,
+      "p95": 80.949161,
+      "max": 104.002348
+    },
+    "request_intervals": {
+      "samples": 58,
+      "mean": 59.95845531034482,
+      "p95": 76.171096,
+      "max": 87.806381
+    },
+    "fresh_intervals": {
+      "samples": 57,
+      "mean": 61.0265526140351,
+      "p95": 80.949161,
+      "max": 104.002348
+    },
+    "physical_response_seconds": {
+      "samples": 58,
+      "mean": 1.035958896551724,
+      "p95": 1.682758,
+      "max": 2.169628
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "nrc_event_notifications",
+    "expected": 59,
+    "actual_grid_request_slots": 59,
+    "actual_grid_fresh_slots": 59,
+    "actual_grid_fresh_coverage": 1.0,
+    "request_gaps": {
+      "samples": 60,
+      "mean": 58.63029144999998,
+      "p95": 70.650753,
+      "max": 75.371925
+    },
+    "fresh_gaps": {
+      "samples": 60,
+      "mean": 58.63029145,
+      "p95": 70.635311,
+      "max": 75.382152
+    },
+    "request_intervals": {
+      "samples": 58,
+      "mean": 59.98554979310343,
+      "p95": 70.856581,
+      "max": 75.371925
+    },
+    "fresh_intervals": {
+      "samples": 58,
+      "mean": 59.98496694827586,
+      "p95": 70.841353,
+      "max": 75.382152
+    },
+    "physical_response_seconds": {
+      "samples": 59,
+      "mean": 0.07619879661016948,
+      "p95": 0.159028,
+      "max": 0.251824
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "nrc_news_releases",
+    "expected": 58,
+    "actual_grid_request_slots": 58,
+    "actual_grid_fresh_slots": 57,
+    "actual_grid_fresh_coverage": 0.9827586206896551,
+    "request_gaps": {
+      "samples": 59,
+      "mean": 59.62402520338984,
+      "p95": 78.410784,
+      "max": 83.553546
+    },
+    "fresh_gaps": {
+      "samples": 58,
+      "mean": 60.652025637931025,
+      "p95": 78.994202,
+      "max": 128.361082
+    },
+    "request_intervals": {
+      "samples": 57,
+      "mean": 60.07711608771931,
+      "p95": 78.410784,
+      "max": 83.553546
+    },
+    "fresh_intervals": {
+      "samples": 56,
+      "mean": 61.14826548214285,
+      "p95": 78.994202,
+      "max": 128.361082
+    },
+    "physical_response_seconds": {
+      "samples": 58,
+      "mean": 0.06481151724137933,
+      "p95": 0.108439,
+      "max": 0.118844
+    }
+  },
+  {
+    "window": "window",
+    "source_id": "world_nuclear_news",
+    "expected": 58,
+    "actual_grid_request_slots": 58,
+    "actual_grid_fresh_slots": 56,
+    "actual_grid_fresh_coverage": 0.9655172413793104,
+    "request_gaps": {
+      "samples": 59,
+      "mean": 59.62402520338982,
+      "p95": 74.210062,
+      "max": 82.564705
+    },
+    "fresh_gaps": {
+      "samples": 57,
+      "mean": 61.716096263157894,
+      "p95": 82.795303,
+      "max": 143.946148
+    },
+    "request_intervals": {
+      "samples": 57,
+      "mean": 60.068205543859634,
+      "p95": 74.210062,
+      "max": 82.564705
+    },
+    "fresh_intervals": {
+      "samples": 55,
+      "mean": 62.25564436363636,
+      "p95": 82.795303,
+      "max": 143.946148
+    },
+    "physical_response_seconds": {
+      "samples": 57,
+      "mean": 1.6137949649122805,
+      "p95": 2.184941,
+      "max": 2.265014
+    }
+  }
+]
