@@ -58,11 +58,23 @@ class IdentityWorkerManager:
         self.epochs = {}
         self._locks = {}
         self.owner = TargetOwner(repository)
+        self._snapshot_cache = {}
 
     def snapshot(self, identity, egress):
         profile = self.repository.get_profile(identity.profile_id)
         if profile is None:
             raise ValueError("identity profile is missing")
+        # This one cheap catalog generation read replaces decoding every scope
+        # and strategy for every command. Any committed configuration invalidates.
+        with self.repository._lock:
+            generation = self.repository._connection.execute(
+                'SELECT (SELECT coalesce(sum(active_revision),0) FROM site_strategy_heads),'
+                '(SELECT coalesce(sum(revision),0) FROM source_access_scopes)'
+            ).fetchone()
+        key = (tuple(generation), identity.model_dump_json(), egress.model_dump_json(),profile.model_dump_json())
+        cached = self._snapshot_cache.get(identity.identity_id)
+        if cached and cached[0] == key:
+            return cached[1]
         strategies = self.repository.list_active_strategies()
         owner = next(
             (
@@ -85,7 +97,7 @@ class IdentityWorkerManager:
             }
             | {profile.site_id}
         )
-        return {
+        result = {
             "identity": identity.model_dump(mode="json"),
             "profile": profile.model_dump(mode="json"),
             "egress": egress.model_dump(mode="json"),
@@ -106,6 +118,8 @@ class IdentityWorkerManager:
                 for h, s in strategies
             ],
         }
+        self._snapshot_cache[identity.identity_id] = (key, result)
+        return result
 
     async def ensure(self, identity, egress):
         current_spec = self.repository.get_identity(identity.identity_id)

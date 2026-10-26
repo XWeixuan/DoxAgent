@@ -63,7 +63,7 @@ def source_status(store, binding, seq, view, cadences=None):
                  "next_target_at":instant(datetime.fromisoformat(s["next_due_at"])) if s.get("next_due_at") else None,
                  "latency_ms":s.get("latency_ms",0),"http_status":s.get("http_status"),
                  "error":s.get("last_error_message")}
-                for s in poll.get("checkpoint",{}).get("ir_endpoints",[])
+                for s in (poll.get("checkpoint",{}).get("ir_endpoints") or [])
             ],
             "source": {
                 "source_id": native.source_id,
@@ -84,8 +84,8 @@ def source_status(store, binding, seq, view, cadences=None):
             "last_published_count": observed("last_standard_revision_count"),
             "last_poll_latency_seconds": observed("last_latency_ms", lambda value: value / 1000),
             "coverage_state":poll.get("last_window_coverage","UNKNOWN"),
-            "pending_query_count":len({key for cp in checkpoints for key,q in cp.get('queries',{}).items() if not q.get('done',False)}),
-            "pending_timestamp_count":len({r['link'] for cp in checkpoints for r in cp.get('pending_timestamp_rows',[])}),
+            "pending_query_count":poll.get('projection_counts',{}).get('pending_query_count',len({key for cp in checkpoints for key,q in cp.get('queries',{}).items() if not q.get('done',False)})),
+            "pending_timestamp_count":poll.get('projection_counts',{}).get('pending_timestamp_count',len({r['link'] for cp in checkpoints for r in cp.get('pending_timestamp_rows',[])})),
             "stage_timings_ms":poll.get("last_stage_timings",{}),
             "capture_age_seconds": max(0,(now-datetime.fromisoformat(poll["last_capture_at"])).total_seconds()) if poll.get("last_capture_at") else None,
             "capture_to_first_intake_seconds": max(0,(datetime.fromisoformat(poll["last_first_intake_at"])-datetime.fromisoformat(poll["last_first_capture_at"])).total_seconds()) if poll.get("last_first_intake_at") and poll.get("last_first_capture_at") else None,
@@ -167,7 +167,7 @@ def install(app: FastAPI):
 
     @app.get(prefix + "/sources")
     async def sources(ticker: str, request: Request):
-        args = app.state.query(request, {"view_id", "limit", "cursor"})
+        args = app.state.query(request, {"view_id", "limit", "cursor", "diagnostics", "today_counts"})
         view = context(request, ticker, args)
         page = views.page(
             request.state.principal.user_id,
@@ -180,13 +180,18 @@ def install(app: FastAPI):
             cursor=args.get("cursor"),
         )
         until = datetime.fromisoformat(view['as_of'])
-        cadences = poll_cadence(store,ticker,view['seq'],until-timedelta(minutes=30),until,by_binding=True)
+        cadences = poll_cadence(store,ticker,view['seq'],until-timedelta(minutes=30),until,by_binding=True) if args.get('diagnostics') == 'true' else None
         page["items"] = [source_status(store,binding,view["seq"],view,cadences) for binding in page["items"]]
+        if args.get('today_counts') == 'true':
+            from .bus_metrics import source_counts_today
+            today = source_counts_today(store,ticker,view['seq'],view['wire']['clock']['semantic_day'])
+            for item in page['items']:
+                item['published_today'] = today.get(item['source']['source_id'], available(0)) if today is not None else missing()
         return app.state.respond(request, "SourceStatusPage", page, view_id=args["view_id"])
 
     @app.get(prefix + "/status")
     async def status(ticker: str, request: Request):
-        args = app.state.query(request, {"view_id"})
+        args = app.state.query(request, {"view_id", "diagnostics"})
         view = context(request, ticker, args)
         state = store.get("ticker", ticker, ticker, view["seq"])
         native = store.get("native:ticker_monitoring_states", ticker, ticker, view["seq"]) or {}
@@ -211,6 +216,6 @@ def install(app: FastAPI):
             else missing(),
             "average_poll_latency_seconds": latency,
             "latency_sample_count": samples,
-            "timeliness": poll_window(store,ticker,view["seq"],view["as_of"]),
+            **({"timeliness": poll_window(store,ticker,view["seq"],view["as_of"])} if args.get('diagnostics') == 'true' else {}),
         }
         return app.state.respond(request, "BusStatus", data, view_id=args["view_id"])

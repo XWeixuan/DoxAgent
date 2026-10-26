@@ -23,8 +23,6 @@ from .relevance import regex_relevant
 from .schema import (
     RawMessageInput,
     SourceDefinition,
-    TickerMonitoringStatus,
-    TickerSourceBinding,
     utc_now,
 )
 from .service import MessageBusV2Service
@@ -52,6 +50,21 @@ class DistributionWorker:
         self._retirement_at = 0.0
         self._active: set[asyncio.Task] = set()
         self._active_decisions: set[asyncio.Task] = set()
+        self._pump_task = None
+
+    def start(self):
+        if self._pump_task is None or self._pump_task.done():
+            self._pump_task = asyncio.create_task(self._pump())
+
+    async def _pump(self):
+        while True:
+            try:
+                await self.run_available()
+            except asyncio.CancelledError:
+                raise
+            except Exception:
+                logger.exception('distribution pump deferred; durable claims remain recoverable')
+            await asyncio.sleep(.25)
 
     async def _read(self, operation, *args):
         return await self.bus.storage.read(self.bus.repository.read_only, operation, *args)
@@ -63,28 +76,17 @@ class DistributionWorker:
                 self._active_decisions.remove(task)
                 if not task.cancelled() and task.exception():
                     logger.error(
-                        "distribution continuation failed: %s", type(task.exception()).__name__
+                        "distribution continuation failed: %s", task.exception(),
+                        exc_info=task.exception(),
                     )
-        available_decisions = 2 - len(self._active_decisions)
-        if available_decisions > 0:
-            decisions = await self.bus.storage.call(
-                self.repository.claim_decisions, available_decisions
-            )
-            self._active_decisions.update(
-                asyncio.create_task(self._continue_decisions(*row)) for row in decisions
-            )
         for task in tuple(self._active):
             if task.done():
                 self._active.remove(task)
                 if not task.cancelled() and task.exception():
                     logger.error("distribution article failed: %s", type(task.exception()).__name__)
-        if time.monotonic() >= self._retirement_at:
-            self._retirement_at = time.monotonic() + 60
-            await self.bus.storage.call(self.repository.expire_runs)
         available = self.concurrency - len(self._active)
-        if available <= 0:
-            return 0
-        rows = await self.bus.storage.call(self.repository.claim_deliveries, article_limit=available, _lane_priority=0)
+        ready, decisions_ready = await self._read(self.repository.ready_work)
+        rows = await self.bus.storage.call(self.repository.claim_deliveries, article_limit=available, _lane_priority=0) if available > 0 and ready else []
         groups = defaultdict(list)
         for row in rows:
             groups[(row["article_id"], int(row["terms_revision"]))].append(row)
@@ -92,9 +94,19 @@ class DistributionWorker:
             asyncio.create_task(self._article(group, offload_decisions=True))
             for group in groups.values()
         )
+        available_decisions = 2 - len(self._active_decisions)
+        if available_decisions > 0 and decisions_ready:
+            decisions = await self.bus.storage.call(self.repository.claim_decisions, available_decisions)
+            self._active_decisions.update(asyncio.create_task(self._continue_decisions(*row)) for row in decisions)
+        if time.monotonic() >= self._retirement_at:
+            self._retirement_at = time.monotonic() + 60
+            await self.bus.storage.call(self.repository.expire_runs)
         return len(rows)
 
     async def close(self):
+        if self._pump_task:
+            self._pump_task.cancel()
+            await asyncio.gather(self._pump_task, return_exceptions=True)
         for task in self._active | self._active_decisions:
             task.cancel()
         await asyncio.gather(*(self._active | self._active_decisions), return_exceptions=True)
@@ -179,7 +191,8 @@ class DistributionWorker:
             definitions[row["ticker"]] = found[1]
             relevant[row["ticker"]] = regex_relevant(found[1], language, message)
 
-        # Start the experimental comparison in parallel; deterministic positives need not wait.
+        # Only undecided tickers need the business classifier. L1 comparisons
+        # are optional offline evaluation, not recurring production work.
         jev_enabled = bool(
             definitions and source.distribution_policy and source.distribution_policy.jev_enabled
         )
@@ -194,6 +207,12 @@ class DistributionWorker:
                     jev_attempts=0,
                     error_code=None,
                 )
+        eligible_rows = [row for row in eligible_rows
+                         if row["ticker"] in definitions and not relevant.get(row["ticker"])]
+        definitions = {ticker: value for ticker, value in definitions.items()
+                       if not relevant.get(ticker)}
+        if not eligible_rows:
+            return
         if offload_decisions and jev_enabled:
             from .schema import sha256_text, canonical_json
 
@@ -227,14 +246,36 @@ class DistributionWorker:
         payload = json.loads(
             await self.bus.storage.prepare(self.bus.repository.content.text, payload)
         )
-        await self._finish_article_decisions(
-            RawMessageInput.model_validate(payload["message"]),
-            SourceDefinition.model_validate(payload["source"]),
-            payload["rows"],
-            {k: TickerMonitoringTerms.model_validate(v) for k, v in payload["definitions"].items()},
-            payload["relevant"],
-            True,
+        rows = await self.bus.storage.call(
+            self.repository.resume_decisions, identity, token, payload["rows"], _lane_priority=0
         )
+        async def renew():
+            while True:
+                await asyncio.sleep(25)
+                await self.bus.storage.call(
+                    self.repository.renew_decisions, identity, token, rows, _lane_priority=0
+                )
+        heartbeat = asyncio.create_task(renew()) if rows else None
+        processing = None
+        try:
+            if rows:
+                definitions = {row["ticker"]: TickerMonitoringTerms.model_validate(
+                    payload["definitions"][row["ticker"]]) for row in rows}
+                processing = asyncio.create_task(self._finish_article_decisions(
+                    RawMessageInput.model_validate(payload["message"]),
+                    SourceDefinition.model_validate(payload["source"]), rows,
+                    definitions, {row["ticker"]: False for row in rows}, True,
+                ))
+                await asyncio.wait({processing, heartbeat}, return_when=asyncio.FIRST_COMPLETED)
+                if heartbeat.done():
+                    heartbeat.result()
+                await processing
+        finally:
+            if heartbeat:
+                heartbeat.cancel()
+                if processing:
+                    processing.cancel()
+                await asyncio.gather(heartbeat, *([processing] if processing else []), return_exceptions=True)
         await self.bus.storage.call(self.repository.finish_decisions, identity, token)
 
     async def _finish_article_decisions(
@@ -243,8 +284,22 @@ class DistributionWorker:
         scores: dict[str, float] = {}
         attempts: dict[str, int] = {}
         errors: dict[str, str] = {}
+        cached = await self._read(self.repository.cached_decisions, eligible_rows)
+        for ticker, value in cached.items():
+            scores[ticker] = 1.0 if value["regex_result"] else value["jev_result"]
+            attempts[ticker] = value["jev_attempts"]
+        definitions = {k:v for k,v in definitions.items() if k not in cached}
+        delivered = set()
+        async def positive(ticker, score, attempt):
+            for row in eligible_rows:
+                if row['ticker'] == ticker:
+                    await self._deliver(row, source, message, regex_hit=False,
+                        jev_result=score, jev_attempts=attempt, error_code=None)
+                    delivered.add(ticker)
         if jev_enabled:
-            scores, attempts, errors = await self._jev(message, definitions)
+            new_scores, new_attempts, errors = await self._jev(message, definitions, on_positive=positive) if definitions else ({},{},{})
+            scores.update(new_scores)
+            attempts.update(new_attempts)
             for row in eligible_rows:
                 if relevant.get(row["ticker"]):
                     await self.bus.storage.call(
@@ -255,7 +310,9 @@ class DistributionWorker:
                         errors.get(row["ticker"]),
                     )
         for row in eligible_rows:
-            if row["ticker"] in definitions and not relevant[row["ticker"]]:
+            if row['ticker'] in delivered:
+                continue
+            if (row["ticker"] in definitions or row["ticker"] in cached) and not relevant[row["ticker"]]:
                 await self._deliver(
                     row,
                     source,
@@ -267,7 +324,7 @@ class DistributionWorker:
                 )
 
     async def _jev(
-        self, message: RawMessageInput, definitions: dict[str, TickerMonitoringTerms]
+        self, message: RawMessageInput, definitions: dict[str, TickerMonitoringTerms], *, on_positive=None
     ) -> tuple[dict[str, float], dict[str, int], dict[str, str]]:
         if self.jev is None:
             return {}, {}, {ticker: "JEV_DISABLED" for ticker in definitions}
@@ -277,13 +334,13 @@ class DistributionWorker:
         if half_open:
             self._jev_half_open = True
         try:
-            return await self._jev_attempts(message, definitions)
+            return await self._jev_attempts(message, definitions, on_positive=on_positive)
         finally:
             if half_open:
                 self._jev_half_open = False
 
     async def _jev_attempts(
-        self, message: RawMessageInput, definitions: dict[str, TickerMonitoringTerms]
+        self, message: RawMessageInput, definitions: dict[str, TickerMonitoringTerms], *, on_positive=None
     ) -> tuple[dict[str, float], dict[str, int], dict[str, str]]:
         states = _article_states(message)
         if states is None:
@@ -344,6 +401,8 @@ class DistributionWorker:
                     answered[ticker][index] = score
                     if score >= 0.5:
                         positive.add(ticker)
+                        if on_positive:
+                            await on_positive(ticker, score, round_number)
             incomplete = {
                 ticker
                 for ticker in definitions
@@ -379,109 +438,22 @@ class DistributionWorker:
         jev_attempts: int,
         error_code: str | None,
     ) -> None:
-        relevant = regex_hit or (jev_result is not None and jev_result >= 0.5)
-        decision_id = await self.bus.storage.call(
-            self.repository.record_decision,
-            row,
-            regex_result=regex_hit,
-            jev_result=jev_result,
-            jev_attempts=jev_attempts,
-            error_code=error_code,
-            final_result="RELEVANT" if relevant else "NOT_RELEVANT",
-            _lane_priority=0 if relevant else 1,
-        )
-        if not relevant:
-            await self.bus.storage.call(
-                self.repository.finish_delivery,
-                row["delivery_id"],
-                row["claim_token"],
-                "NOT_RELEVANT",
-                {"decision_id": decision_id, "reason": error_code},
-            )
-            return
-        snapshot = TickerSourceBinding.model_validate_json(row["binding_json"])
-        current = await self._read(self.bus.repository.get_binding, snapshot.binding_id)
-        ticker_state = await self._read(
-            self.bus.repository.get_ticker_state, snapshot.ticker
-        )
-        if (
-            current is None
-            or not current.enabled
-            or ticker_state is None
-            or ticker_state.status != TickerMonitoringStatus.RUNNING
-        ):
-            await self.bus.storage.call(
-                self.repository.finish_delivery,
-                row["delivery_id"],
-                row["claim_token"],
-                "CANCELLED",
-                {"decision_id": decision_id},
-            )
-            return
-        context = AdmissionContext.model_validate(json.loads(row["admission_json"]))
-        reason = evaluate_admission(
-            message.published_at, context, utc_now(), message.publication_time_basis
-        )
-        if reason:
-            await self.bus.storage.call(
-                self.repository.finish_delivery,
-                row["delivery_id"],
-                row["claim_token"],
-                "ADMISSION_REJECTED",
-                {"reason": reason, "decision_id": decision_id},
-            )
-            return
-        metadata = {
-            **message.metadata,
-            "distribution": {
-                "decision_id": decision_id,
-                "terms_revision": row["terms_revision"],
-                "regex_hit": regex_hit,
-                "jev_result": jev_result,
-            },
-        }
-        enriched = message.model_copy(update={"admission_context": context, "metadata": metadata})
-        original = RawMessageInput.model_validate_json(row["original_json"])
         try:
-            result = await self.bus.accept_message(
-                source=source,
-                binding=current,
-                message=enriched,
-                bootstrap=False,
-                trusted_enrichment=True,
-                enrichment_input=original,
+            completed = await self.bus.storage.call(
+                self.repository.settle_delivery, self.bus, row, source, message,
+                regex_result=regex_hit, jev_result=jev_result, jev_attempts=jev_attempts,
+                error_code=error_code, _lane_priority=0 if regex_hit or (jev_result or 0)>=.5 else 1,
             )
-        except Exception as exc:
-            logger.warning(
-                "distribution delivery failed delivery_id=%s code=%s",
-                row["delivery_id"],
-                type(exc).__name__,
-            )
-            if int(row["attempts"]) >= 2:
-                await self.bus.storage.call(
-                    self.repository.finish_delivery,
-                    row["delivery_id"],
-                    row["claim_token"],
-                    "FAILED",
-                    {"reason": type(exc).__name__},
-                )
-            else:
-                await self.bus.storage.call(
-                    self.repository.finish_delivery,
-                    row["delivery_id"],
-                    row["claim_token"],
-                    "PENDING",
-                    {"reason": type(exc).__name__},
-                )
+        except Exception:
+            logger.exception("distribution delivery failed delivery_id=%s", row["delivery_id"])
+            await self.bus.storage.call(self.repository.finish_delivery,
+                row["delivery_id"],row["claim_token"],
+                "FAILED" if int(row["attempts"])>=2 else "PENDING",
+                {"reason":"DELIVERY_COMMIT_FAILED"})
             return
-        state = "DEDUPLICATED" if result.decision.value == "duplicate" else "PUBLISHED"
-        await self.bus.storage.call(
-            self.repository.finish_delivery,
-            row["delivery_id"],
-            row["claim_token"],
-            state,
-            {"decision_id": decision_id, "ingest": result.model_dump(mode="json")},
-        )
+        if completed:
+            result, enriched = completed
+            await self.bus.record_consumable(result, enriched)
 
 
 def _article_states(message: RawMessageInput) -> list[RawMessageInput] | None:

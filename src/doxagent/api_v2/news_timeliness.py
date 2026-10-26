@@ -1,7 +1,6 @@
 """Bounded read-model queries for discovery cohorts and actual poll windows."""
 
 import json
-import math
 from datetime import date, datetime, timedelta
 
 from doxagent.semantic_clock import boundary, semantic_day
@@ -95,52 +94,11 @@ def body_cohort(store, ticker, seq, filters, days):
 def poll_window(store, ticker, seq, as_of):
     until = datetime.fromisoformat(as_of)
     since = until - timedelta(minutes=30)
-    days = sorted({semantic_day(since).isoformat(), semantic_day(until).isoformat()})
-    clause = "kind='native:poll_states' AND ticker=? AND day IN (SELECT value FROM json_each(?)) AND valid_from<=?"
-    with store.connect() as db:
-        rows = db.execute(
-            "SELECT id,json_extract(payload,'$.last_dispatch_at'),json_extract(payload,'$.last_attempt_at'),"
-            "json_extract(payload,'$.status'),json_extract(payload,'$.last_latency_ms'),"
-            "json_extract(payload,'$.last_error_code'),valid_from FROM object_current WHERE "
-            + clause
-            + " UNION ALL SELECT id,json_extract(payload,'$.last_dispatch_at'),json_extract(payload,'$.last_attempt_at'),"
-            "json_extract(payload,'$.status'),json_extract(payload,'$.last_latency_ms'),"
-            "json_extract(payload,'$.last_error_code'),valid_from FROM "
-            + store.history_table
-            + " WHERE "
-            + clause
-            + " ORDER BY valid_from DESC LIMIT 4000",
-            (ticker, json.dumps(days), seq, ticker, json.dumps(days), seq),
-        ).fetchall()
-    captures = {}
-    for binding, dispatch, attempt, status, latency, error, _ in rows:
-        value = dict(status=status,last_latency_ms=latency,last_error_code=error)
-        at = dispatch or attempt
-        if at and since <= datetime.fromisoformat(at) <= until:
-            captures.setdefault((binding, at), value)
-    succeeded = [
-        v
-        for v in captures.values()
-        if v.get("status") == "succeeded"
-        and v.get("last_latency_ms") is not None
-        and not (v.get("last_error_code") or "").startswith("SOURCE_DEFERRED:")
-    ]
-    latencies = sorted(v["last_latency_ms"] / 1000 for v in succeeded)
-    return {
-        "cadence": poll_cadence(store, ticker, seq, since, until),
-        "window_seconds": 1800,
-        "samples": len(latencies),
-        "mean_seconds": sum(latencies) / len(latencies) if latencies else None,
-        "p95_seconds": latencies[max(0, math.ceil(0.95 * len(latencies)) - 1)]
-        if latencies
-        else None,
-        "deferred": sum(
-            (v.get("last_error_code") or "").startswith("SOURCE_DEFERRED:")
-            for v in captures.values()
-        ),
-        "failed": sum(v.get("status") == "failed" for v in captures.values()),
-        "sample_limit_reached": len(rows) >= 4000,
-    }
+    result = poll_cadence(store, ticker, seq, since, until)
+    # Legacy successful-poll averages are retired; cadence retains every due slot.
+    return {"cadence": result, "window_seconds": 1800, "samples": result["fresh_cycles"],
+            "mean_seconds": None, "p95_seconds": None, "deferred": result["deferred"],
+            "failed": result["failed"], "sample_limit_reached": result["sample_limit_reached"]}
 
 
 def poll_cadence(store, ticker, seq, since, until, binding_id=None, *, by_binding=False):

@@ -1250,7 +1250,10 @@ class MessageBusV2Repository:
 
     def _json(self, model: BaseModel) -> str:
         if isinstance(model, (RawMessage, EnrichmentJob)):
-            return self.content.encode(model.model_dump(mode="json"))
+            return self.content.encode(model.model_dump(mode="json"), keep=(
+                "message", "metadata", "message.metadata", "metadata.content_evidence",
+                "message.metadata.content_evidence", "metadata.content_evidence.input_fields",
+                "message.metadata.content_evidence.input_fields"))
         return model.model_dump_json()
 
     @staticmethod
@@ -1925,8 +1928,9 @@ class MessageBusV2Repository:
         cutoff = (now or utc_now()) - timedelta(days=7)
         with self.transaction() as connection:
             return connection.execute(
-                "delete from site_strategy_result_outbox where status='CONFIRMED' "
-                "and confirmed_at<?",
+                "delete from site_strategy_result_outbox where outbox_id IN ("
+                "SELECT outbox_id FROM site_strategy_result_outbox WHERE status='CONFIRMED' "
+                "and confirmed_at<? LIMIT 200)",
                 (cutoff.isoformat(),),
             ).rowcount
 
@@ -2387,6 +2391,7 @@ class MessageBusV2Repository:
                 "delete from source_item_baselines where binding_id=?", (binding_id,)
             )
             connection.execute("delete from poll_states where binding_id=?", (binding_id,))
+            connection.execute("delete from poll_unit_states where binding_id=?", (binding_id,))
 
     def save_standard(self, message: StandardMessage) -> None:
         with self.transaction() as connection:
@@ -2874,8 +2879,24 @@ class MessageBusV2Repository:
 
     # -- Poll state, failures, alerts and audit --------------------------------------
 
-    def save_poll_state(self, state: PollState) -> None:
+    def save_poll_state(self, state: PollState, *, persist_units=True) -> None:
+        checkpoints = [state.checkpoint, *[v.get('checkpoint',{}) for k,v in state.units.items()
+                                         if not k.startswith('TAIL:')]]
+        state = state.model_copy(update={'projection_counts': {
+            'pending_query_count': len({k for cp in checkpoints for k,v in cp.get('queries',{}).items()
+                                        if not v.get('done',False)}),
+            'pending_timestamp_count': len({r['link'] for cp in checkpoints
+                                            for r in cp.get('pending_timestamp_rows',[])})}})
         with self.transaction() as connection:
+            if persist_units and state.units:
+                old = {r['unit']: json.loads(r['data_json']) for r in connection.execute(
+                    'SELECT unit,data_json FROM poll_unit_states WHERE binding_id=?', (state.binding_id,))}
+                for unit, value in state.units.items():
+                    if old.get(unit) != value:
+                        connection.execute(
+                            'INSERT INTO poll_unit_states VALUES(?,?,?) ON CONFLICT(binding_id,unit) '
+                            'DO UPDATE SET data_json=excluded.data_json',
+                            (state.binding_id, unit, self.content.encode(value)))
             connection.execute(
                 """insert into poll_states(
                      binding_id,source_id,ticker,status,next_dispatch_at,data_json)
@@ -2888,7 +2909,7 @@ class MessageBusV2Repository:
                     state.ticker,
                     state.status.value,
                     state.next_dispatch_at.isoformat() if state.next_dispatch_at else None,
-                    self._json(state),
+                    self.content.encode(state.model_dump(mode='json', exclude={'units'})),
                 ),
             )
 
@@ -2905,6 +2926,10 @@ class MessageBusV2Repository:
             current = self.get_poll_state(binding) if binding else state
             snapshot = state.model_dump(mode="json", exclude={"units", *COUNTERS})
             units = {**current.units, unit:snapshot}
+            # Migrate inherited unit checkpoints once, then update only this unit.
+            for key, value in current.units.items():
+                self._save_unit_snapshot(key, state.binding_id, value, insert_only=True)
+            self._save_unit_snapshot(unit, state.binding_id, snapshot)
             changed = {"units":units}
             if unit in {"HEAD","SHARED"}:
                 changed.update(state.model_dump(exclude={"units", *COUNTERS}))
@@ -2958,8 +2983,20 @@ class MessageBusV2Repository:
                         changed.pop('last_success_at',None)
                     checkpoint['query_cycle']=cycle
                     changed['checkpoint']=checkpoint
-            self.save_poll_state(current.model_copy(update=changed))
+            if isinstance(changed.get('failure_since'),str):
+                changed['failure_since'] = datetime.fromisoformat(changed['failure_since'])
+            self.save_poll_state(current.model_copy(update=changed), persist_units=False)
         return True
+
+    def _save_unit_snapshot(self, unit, binding_id, value, *, insert_only=False):
+        with self._connect() as db:
+            if insert_only and db.execute(
+                'SELECT 1 FROM poll_unit_states WHERE binding_id=? AND unit=?', (binding_id,unit)
+            ).fetchone():
+                return
+            db.execute('INSERT INTO poll_unit_states VALUES(?,?,?) ON CONFLICT(binding_id,unit) '
+                       'DO UPDATE SET data_json=excluded.data_json',
+                       (binding_id,unit,self.content.encode(value)))
 
     def poll_generation_matches(self,source_id,source_version,binding_id,binding_version):
         with self._connect() as db:
@@ -2969,8 +3006,19 @@ class MessageBusV2Repository:
                 (source_id,source_version,binding_id,binding_version)).fetchone() is not None
 
     def get_poll_unit_state(self, binding, unit="HEAD"):
-        base = self.get_poll_state(binding)
         unit = "HEAD" if unit == "ALL" else unit
+        with self._connect() as db:
+            row = db.execute('SELECT data_json AS encoded FROM poll_states WHERE binding_id=?',
+                             (binding.binding_id,)).fetchone()
+            selected = db.execute('SELECT data_json AS encoded FROM poll_unit_states WHERE binding_id=? AND unit=?',
+                                  (binding.binding_id,unit)).fetchone()
+        if selected:
+            root = json.loads(row[0]) if row else {'binding_id':binding.binding_id,
+                'source_id':binding.source_id,'ticker':binding.ticker}
+            root.update(json.loads(selected[0]))
+            root['units'] = {}
+            return PollState.model_validate(self.content.decode(root))
+        base = self.get_poll_state(binding)
         value = base.units.get(unit)
         if value:
             return PollState.model_validate({**base.model_dump(), **value, "units": {}})
@@ -2985,9 +3033,12 @@ class MessageBusV2Repository:
             row = connection.execute(
                 "select data_json from poll_states where binding_id=?", (binding.binding_id,)
             ).fetchone()
-        return self._model(PollState, row) or PollState(
+            units = {r['unit']: json.loads(r['data_json']) for r in connection.execute(
+                'SELECT unit,data_json FROM poll_unit_states WHERE binding_id=?', (binding.binding_id,))}
+        state = self._model(PollState, row) or PollState(
             binding_id=binding.binding_id, source_id=binding.source_id, ticker=binding.ticker
         )
+        return state.model_copy(update={'units': {**state.units, **units}}) if units else state
 
     def list_poll_states(self, *, ticker: str | None = None) -> list[PollState]:
         where = "where ticker=?" if ticker else ""
@@ -2996,7 +3047,12 @@ class MessageBusV2Repository:
             rows = connection.execute(
                 f"select data_json from poll_states {where} order by ticker,source_id", params
             ).fetchall()
-        return self._models(PollState, rows)
+            units = {}
+            for r in connection.execute('SELECT u.binding_id,u.unit,u.data_json FROM poll_unit_states u '
+                + ('JOIN ticker_source_bindings b USING(binding_id) WHERE b.ticker=?' if ticker else ''), params):
+                units.setdefault(r['binding_id'],{})[r['unit']] = json.loads(r['data_json'])
+        return [s.model_copy(update={'units': {**s.units, **units.get(s.binding_id,{})}})
+                for s in self._models(PollState, rows)]
 
     def save_failure(self, failure: AcquisitionFailure) -> AcquisitionFailure:
         with self.transaction() as connection:

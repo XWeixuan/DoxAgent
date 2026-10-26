@@ -560,8 +560,9 @@ async def test_distribution_fills_freed_slot_before_slow_article_finishes():
     from doxagent.message_bus_v2.distribution import DistributionWorker
     from doxagent.message_bus_v2.storage_lane import StorageLane
 
-    repo = SimpleNamespace(expire_runs=lambda: 0, claim_deliveries=lambda **kw: [], claim_decisions=lambda limit: [])
-    worker = DistributionWorker(repo, SimpleNamespace(storage=StorageLane()), None, concurrency=2)
+    repo = SimpleNamespace(expire_runs=lambda: 0, claim_deliveries=lambda **kw: [], claim_decisions=lambda limit: [], ready_work=lambda: (True,False))
+    worker = DistributionWorker(repo, SimpleNamespace(storage=StorageLane(),repository=SimpleNamespace(
+        read_only=lambda operation,*args: operation(*args))), None, concurrency=2)
 
     def row(name):
         return {"article_id": name, "terms_revision": 1}

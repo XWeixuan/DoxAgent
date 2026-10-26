@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "source_sha256": "6c32be0f4645da9c2e00ec0c0f696970292c0518213859c65392c3cd0feb1d15",
+  "source_sha256": "e08593a73cf7422f000542b8c2ef788cebba8d59dfd7a90448dc905a2dd53029",
   "$defs": {
     "Id": {
       "type": "string"
@@ -6587,6 +6587,9 @@
     "SourceStatus": {
       "type": "object",
       "properties": {
+        "published_today": {
+          "$ref": "#/$defs/Value%3CCount%3E"
+        },
         "cadence": {
           "$ref": "#/$defs/PollCadence"
         },

@@ -27,6 +27,8 @@ class W3ReadySlots:
         self.lock = asyncio.Lock()
         self.configs, self.tasks = {}, {}
         self.closed = False
+        self._retire_cursor = ""
+        self.retirement_status = {}
         with closing(jobs.store.connect()) as db, db:
             db.execute("""CREATE TABLE IF NOT EXISTS w3_ready_slots (
                 id TEXT PRIMARY KEY, scope TEXT NOT NULL, config TEXT NOT NULL,
@@ -44,12 +46,19 @@ class W3ReadySlots:
                 "ready_recovery_count",
                 "recovery_error",
                 "prepare_deadline_at",
+                "retire_next_at",
+                "retire_checked_at",
+                "retire_error",
             ):
                 if column not in columns:
                     db.execute(f"ALTER TABLE w3_ready_slots ADD COLUMN {column} TEXT")
             # Old unclaimed slots lost their resident SDK on Worker restart.
             db.execute(
                 "UPDATE w3_ready_slots SET state='RETIRING' WHERE state IN ('READY','BUILDING')"
+            )
+            db.execute(
+                "CREATE INDEX IF NOT EXISTS w3_ready_retirement ON w3_ready_slots(id) "
+                "WHERE (state='RETIRING' AND case_id IS NULL) OR state='ABANDONED'"
             )
 
     async def configure(self, config):
@@ -379,33 +388,134 @@ class W3ReadySlots:
                 if key in self.configs:
                     await self.fill(key)
 
-    async def retire(self):
+    async def retire(self, *, dry_run=False):
+        if not getattr(self.jobs, "_processes_recovered", True):
+            return []
         with closing(self.jobs.store.connect()) as db:
+            db.row_factory = __import__("sqlite3").Row
             rows = db.execute(
-                "SELECT id,thread_id FROM w3_ready_slots "
-                "WHERE (state='RETIRING' AND case_id IS NULL) OR state='ABANDONED' LIMIT 4"
+                "SELECT id,run_id,thread_id,case_id,retire_next_at FROM w3_ready_slots "
+                "WHERE ((state='RETIRING' AND case_id IS NULL) OR state='ABANDONED') "
+                "AND id>? ORDER BY id LIMIT 4",
+                (self._retire_cursor,),
             ).fetchall()
-        for identity, thread_id in rows:
-            if identity in self.tasks:
+            if not rows and self._retire_cursor:
+                self._retire_cursor = ""
+                rows = db.execute(
+                    "SELECT id,run_id,thread_id,case_id,retire_next_at FROM w3_ready_slots "
+                    "WHERE (state='RETIRING' AND case_id IS NULL) OR state='ABANDONED' "
+                    "ORDER BY id LIMIT 4"
+                ).fetchall()
+        preview = [dict(row) for row in rows]
+        for value in preview:
+            key = "w3-slot-fork:" + value["id"]
+            op = self.jobs.thread_lifecycle.operation(key) or {}
+            task = self.jobs.thread_lifecycle.preparations.get(key)
+            build = self.tasks.get(value["id"])
+            value.update(
+                operation_status=op.get("status"),
+                original_child=op.get("thread_id"),
+                fork_dispatched_at=op.get("fork_dispatched_at"),
+                owner_alive=(task is not None and not task.done())
+                or (build is not None and not build.done()),
+            )
+        if dry_run:
+            return preview
+        # A bounded preview precedes each batch; no prompt/research bodies retained.
+        if preview:
+            self.jobs.store.metadata("w3_retirement_preview", preview)
+        retired = deferred = 0
+        for row in rows:
+            identity, thread_id = row["id"], row["thread_id"]
+            self._retire_cursor = identity
+            task = self.tasks.get(identity)
+            if (task is not None and not task.done()) or float(
+                row["retire_next_at"] or 0
+            ) > time.time():
+                deferred += 1
                 continue
-            if not thread_id:
-                operation = self.jobs.thread_lifecycle.operation("w3-slot-fork:" + identity)
-                if operation and operation["status"] == "CREATING":
-                    continue
-                thread_id = operation.get("thread_id") if operation else None
-            if thread_id:
-                try:
+            key = "w3-slot-fork:" + identity
+            operation = self.jobs.thread_lifecycle.operation(key)
+            owner = self.jobs.thread_lifecycle.preparations.get(key)
+            if owner is not None and not owner.done():
+                deferred += 1
+                continue
+            try:
+                if operation and not (
+                    operation.get("fork_dispatched_at") == ""
+                    and not operation.get("thread_id")
+                    and not thread_id
+                ):
+                    with startup_scope(
+                        key="retire:" + identity, priority=2, deadline=time.time() + 15
+                    ):
+                        async with asyncio.timeout(15):
+                            thread_id = await self.jobs.thread_lifecycle.retiring_child(
+                                key, row["run_id"], thread_id, case=bool(row["case_id"])
+                            )
+                            await self.jobs.thread_lifecycle.delete(thread_id)
+                elif thread_id:
                     await self.jobs.thread_lifecycle.delete(thread_id)
-                except Exception:
-                    continue
-            else:
-                await asyncio.to_thread(
-                    self.workspaces.retire_w3_ready_workspace,
-                    "w3-ready-" + identity,
-                    preserve_evidence=False,
-                )
+                else:
+                    if operation:
+                        self.jobs.thread_lifecycle._operation_update(
+                            key,
+                            owner=operation.get("owner_token"),
+                            status="FAILED",
+                            step="RETIRED",
+                            error_code="W3_RETIRED_BEFORE_FORK",
+                            error_message="Unowned inventory retired before Fork dispatch",
+                        )
+                    await asyncio.to_thread(
+                        self.workspaces.retire_w3_ready_workspace,
+                        row["run_id"],
+                        preserve_evidence=bool(row["case_id"]),
+                    )
+            except Exception as exc:
+                with closing(self.jobs.store.connect()) as db, db:
+                    db.execute(
+                        "UPDATE w3_ready_slots SET retire_next_at=?,retire_checked_at=?,"
+                        "retire_error=? WHERE id=?",
+                        (
+                            str(time.time() + 60),
+                            datetime.now(UTC).isoformat(),
+                            str(exc)[:500],
+                            identity,
+                        ),
+                    )
+                deferred += 1
+                continue
             with closing(self.jobs.store.connect()) as db, db:
-                db.execute("UPDATE w3_ready_slots SET state='RETIRED' WHERE id=?", (identity,))
+                db.execute(
+                    "UPDATE w3_ready_slots SET state='RETIRED',thread_id=?,retire_checked_at=?,"
+                    "retire_error=NULL,retire_next_at=NULL WHERE id=?",
+                    (thread_id, datetime.now(UTC).isoformat(), identity),
+                )
+            retired += 1
+        with closing(self.jobs.store.connect()) as db:
+            count, oldest = db.execute(
+                "SELECT count(*),min(created_at) FROM w3_ready_slots "
+                "WHERE (state='RETIRING' AND case_id IS NULL) OR state='ABANDONED'"
+            ).fetchone()
+        self.retirement_status = dict(
+            pending=count,
+            oldest_created_at=oldest,
+            scanned=len(rows),
+            retired=retired,
+            deferred=deferred,
+            scanned_unowned_creating=sum(
+                value["operation_status"] == "CREATING" and not value["owner_alive"]
+                for value in preview
+            ),
+            scanned_needs_confirmation=sum(
+                not value["owner_alive"]
+                and not value["original_child"]
+                and not value["thread_id"]
+                and value["fork_dispatched_at"] != ""
+                for value in preview
+            ),
+        )
+        return preview
 
     async def claim(self, request):
         key = sha(compact([request["parent_thread_id"], request["profile"], ENTRY]))

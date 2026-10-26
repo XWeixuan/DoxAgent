@@ -29,6 +29,9 @@ class BusOrchestration:
 
     async def run_once(self, scheduler: Any) -> list[Any]:
         now = self.journal.clock()
+        worker = getattr(scheduler, 'distribution_worker', None)
+        if worker is not None and hasattr(worker, 'start'):
+            worker.start()
         results = []
         for key, running in list(self._inflight.items()):
             if running.done():
@@ -248,6 +251,7 @@ class BusOrchestration:
         # Let newly scheduled I/O start, without waiting for a source or model.
         if (
             scheduler.distribution_worker is not None
+            and not hasattr(scheduler.distribution_worker, 'start')
             and "distribution-worker" not in self._inflight
         ):
             self._inflight["distribution-worker"] = asyncio.create_task(

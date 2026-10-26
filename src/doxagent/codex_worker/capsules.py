@@ -15,6 +15,7 @@ from uuid import uuid4
 from doxagent.codex_runtime.schema import CodexAgentRole, ResearchLane
 from doxagent.w3_timing import observed, span
 
+from .cleanup import await_owned
 from .process_tree import owned_processes, signal_owned, terminate_owned
 from .result_receipt import receipt_path
 from .schema import WorkerRunRequest, WorkerTurnTelemetry
@@ -29,6 +30,9 @@ class CapsuleError(RuntimeError):
 
 
 class Capsule:
+    GRACEFUL_CLOSE_SECONDS = 1
+    CLEANUP_TIMEOUT_SECONDS = 15
+
     def __init__(self, root: Path, boot_timeout: float = 90) -> None:
         self.identity = uuid4().hex
         self.root = root
@@ -49,6 +53,11 @@ class Capsule:
         self.handoff_until = 0.0
         self.close_reason = None
         self.run_command_sent = False
+        self.cleanup_state = None
+        self.cleanup_error = None
+        self.cleanup_started_at = None
+        self.cleanup_retry_at = 0.0
+        self._cleanup_task = None
 
     @observed("capsule.spawn")
     async def launch(self) -> None:
@@ -172,20 +181,70 @@ class Capsule:
         await self.send({"type": "interrupt"})
 
     async def close(self) -> None:
+        if self._cleanup_task is None or (
+            self._cleanup_task.done()
+            and self.cleanup_state == "QUARANTINED"
+            and time.monotonic() >= self.cleanup_retry_at
+        ):
+            self.healthy, self.busy, self.ready_slot = False, True, False
+            self.cleanup_state = "CLOSING"
+            self.cleanup_started_at = time.monotonic()
+            self._cleanup_task = asyncio.create_task(self._close_owned())
+        await await_owned(self._cleanup_task)
+
+    def _record_cleanup(self):
+        # Reuse the small owner record. Diagnostics must never prevent a kill.
+        target = self.root / "capsules" / self.identity / "owner.json"
+        try:
+            value = (
+                json.loads(target.read_text())
+                if target.exists()
+                else {"identity": self.identity, "pid": getattr(self.process, "pid", None)}
+            )
+            if not isinstance(value, dict):
+                value = {"identity": self.identity, "pid": getattr(self.process, "pid", None)}
+            value.update(
+                cleanup_state=self.cleanup_state,
+                cleanup_error=self.cleanup_error,
+                close_reason=self.close_reason,
+            )
+            if target.parent.is_dir():
+                temporary = target.with_suffix(".tmp")
+                temporary.write_text(json.dumps(value), encoding="utf-8")
+                temporary.replace(target)
+        except (OSError, ValueError):
+            pass
+
+    async def _close_owned(self):
+        self._record_cleanup()
+        try:
+            async with asyncio.timeout(self.CLEANUP_TIMEOUT_SECONDS):
+                await self._close_process()
+        except BaseException as exc:
+            self.cleanup_state = "QUARANTINED"
+            self.cleanup_error = f"{type(exc).__name__}: {str(exc)[:250]}"
+            self.cleanup_retry_at = time.monotonic() + 30
+            self._record_cleanup()
+            if isinstance(exc, asyncio.CancelledError):
+                raise
+            raise CapsuleError(
+                "CAPSULE_CLEANUP_QUARANTINED", "owned process cleanup failed"
+            ) from exc
+        self.cleanup_state = "CLOSED"
+        self.cleanup_error = None
+        self._record_cleanup()
+
+    async def _close_process(self):
         self.capture_process()
         if self.process is not None:
             if self.process.returncode is None:
                 try:
-                    await self.send({"type": "close"})
-                    await asyncio.wait_for(self.process.wait(), 5)
-                except (TimeoutError, BrokenPipeError, ConnectionError):
+                    async with asyncio.timeout(self.GRACEFUL_CLOSE_SECONDS):
+                        await self.send({"type": "close"})
+                        await self.process.wait()
+                except Exception:
                     pass
-            try:
-                await terminate_owned(self.process, self.identity)
-            except Exception as exc:
-                raise CapsuleError(
-                    "CAPSULE_CLEANUP_QUARANTINED", "owned process cleanup failed"
-                ) from exc
+            await terminate_owned(self.process, self.identity)
             self.capture_process()
         if self._log is not None:
             self._log.close()
@@ -240,7 +299,80 @@ class CapsuleRuntime:
 
     @staticmethod
     def live(c):
-        return c.healthy and getattr(getattr(c, "process", None), "returncode", None) is None
+        return (
+            c.healthy
+            and not getattr(c, "cleanup_state", None)
+            and getattr(getattr(c, "process", None), "returncode", None) is None
+        )
+
+    async def _dispose(self, capsule, *, cold=False):
+        try:
+            await capsule.close()
+            capsule.cleanup_state = "CLOSED"
+        except BaseException:
+            if getattr(capsule, "cleanup_state", None) != "CLOSED":
+                capsule.cleanup_state = "QUARANTINED"
+                capsule.cleanup_retry_at = max(
+                    getattr(capsule, "cleanup_retry_at", 0), time.monotonic() + 30
+                )
+                capsule.healthy, capsule.busy = False, True
+                if cold:
+                    self.admission.quarantined.add(getattr(capsule, "identity", None))
+            raise
+        finally:
+            if getattr(capsule, "cleanup_state", None) == "CLOSED":
+                if capsule in self.pool:
+                    self.pool.remove(capsule)
+                self.admission.quarantined.discard(getattr(capsule, "identity", None))
+                for key, active in list(self.active.items()):
+                    if active is capsule:
+                        self.active.pop(key, None)
+
+    def cleanup_complete_for(self, request):
+        return self.cleanup_complete_key(self.key(request))
+
+    def cleanup_complete_key(self, key):
+        return key not in self.active
+
+    async def _dispose_batch(self, selected):
+        remaining_batch = list(selected)
+        errors = []
+        try:
+            for capsule in selected:
+                remaining_batch.remove(capsule)
+                try:
+                    await self._dispose(capsule)
+                except Exception as exc:
+                    errors.append(exc)
+        finally:
+            for capsule in remaining_batch:
+                if capsule in self.pool and not getattr(capsule, "cleanup_state", None):
+                    capsule.busy = False
+        if errors:
+            raise errors[0]
+
+    def cleanup_snapshot(self):
+        selected = [c for c in self.pool if getattr(c, "cleanup_state", None)]
+        return dict(
+            closing=sum(c.cleanup_state == "CLOSING" for c in selected),
+            quarantined=sum(c.cleanup_state == "QUARANTINED" for c in selected),
+            oldest_seconds=max(
+                (
+                    time.monotonic() - (getattr(c, "cleanup_started_at", None) or time.monotonic())
+                    for c in selected
+                ),
+                default=0,
+            ),
+            owners=[
+                dict(
+                    identity=c.identity,
+                    state=c.cleanup_state,
+                    error=getattr(c, "cleanup_error", None),
+                    pid=getattr(getattr(c, "process", None), "pid", None),
+                )
+                for c in selected[:8]
+            ],
+        )
 
     async def _reserve(self, thread_id):
         async with self._lock:
@@ -271,8 +403,7 @@ class CapsuleRuntime:
                 progress("BOOT_ATTEMPT", capsule_id=getattr(capsule, "identity", None))
                 await capsule.launch()
             except BaseException as exc:
-                await capsule.close()
-                self.pool.remove(capsule)
+                await self._dispose(capsule, cold=True)
                 capsule.boot_timing = getattr(capsule, "boot_timing", None) or {}
                 capsule.boot_timing["run_command_sent"] = False
                 exc.startup_receipt = capsule.boot_timing
@@ -327,8 +458,7 @@ class CapsuleRuntime:
                 )
             self._warm_next_at = self._warm_failed_until
             if capsule is not None:
-                await capsule.close()
-                self.pool.remove(capsule)
+                await self._dispose(capsule)
 
     async def prepare_fork(self, request, cwd, parent_thread_id):
         return await self._prepare(request, cwd, parent_thread_id)
@@ -362,8 +492,7 @@ class CapsuleRuntime:
             return capsule.thread_id
         except BaseException as exc:
             capsule.close_reason = type(exc).__name__
-            await capsule.close()
-            self.pool.remove(capsule)
+            await self._dispose(capsule)
             exc.startup_receipt = capsule.boot_timing
             raise
 
@@ -374,9 +503,7 @@ class CapsuleRuntime:
                 raise ValueError("cannot release an active thread capsule")
             for capsule in selected:
                 capsule.busy = True
-        for capsule in selected:
-            await capsule.close()
-            self.pool.remove(capsule)
+        await self._dispose_batch(selected)
 
     async def start(self, request: WorkerRunRequest, cwd: Path) -> Capsule:
         try:
@@ -436,8 +563,11 @@ class CapsuleRuntime:
                     **(capsule.boot_timing or {}),
                     "run_command_sent": capsule.run_command_sent,
                 }
-            await capsule.close()
-            self.pool.remove(capsule)
+            try:
+                await self._dispose(capsule)
+            finally:
+                if capsule not in self.pool:
+                    self.active.pop(self.key(request), None)
         else:
             capsule.busy = False
             capsule.idle_at = time.monotonic()
@@ -462,29 +592,33 @@ class CapsuleRuntime:
             selected = [
                 c
                 for c in self.pool
-                if not c.busy
-                and (
-                    all_idle
-                    or not self.live(c)
-                    or (
-                        pressure
-                        and c.identity not in protected
-                        and getattr(c, "handoff_until", 0) <= time.monotonic()
-                    )
-                    or (
-                        not pressure
-                        and getattr(c, "handoff_until", 0) <= time.monotonic()
-                        and c.thread_id is not None
-                        and not c.ready_slot
-                        and time.monotonic() - c.idle_at >= (300 if c.prepared else 30)
+                if (
+                    getattr(c, "cleanup_state", None) == "QUARANTINED"
+                    and time.monotonic() >= getattr(c, "cleanup_retry_at", 0)
+                )
+                or (
+                    not c.busy
+                    and (
+                        all_idle
+                        or not self.live(c)
+                        or (
+                            pressure
+                            and c.identity not in protected
+                            and getattr(c, "handoff_until", 0) <= time.monotonic()
+                        )
+                        or (
+                            not pressure
+                            and getattr(c, "handoff_until", 0) <= time.monotonic()
+                            and c.thread_id is not None
+                            and not c.ready_slot
+                            and time.monotonic() - c.idle_at >= (300 if c.prepared else 30)
+                        )
                     )
                 )
             ]
             for capsule in selected:
                 capsule.busy = True
-        for capsule in selected:
-            await capsule.close()
-            self.pool.remove(capsule)
+        await self._dispose_batch(selected)
         return len(selected)
 
     async def probe(self) -> dict[str, object]:
@@ -495,11 +629,10 @@ class CapsuleRuntime:
             await capsule.send({"type": "probe"})
             return dict((await asyncio.wait_for(capsule.receive(), 30))["result"])
         except BaseException:
-            await capsule.close()
-            self.pool.remove(capsule)
+            await self._dispose(capsule)
             raise
         finally:
-            if capsule in self.pool:
+            if capsule in self.pool and not getattr(capsule, "cleanup_state", None):
                 capsule.healthy, capsule.busy = True, False
                 capsule.idle_at = time.monotonic()
 
@@ -507,6 +640,4 @@ class CapsuleRuntime:
         for task in list(self._warming):
             task.cancel()
         await asyncio.gather(*list(self._warming), return_exceptions=True)
-        for capsule in list(self.pool):
-            await capsule.close()
-            self.pool.remove(capsule)
+        await self._dispose_batch(list(self.pool))

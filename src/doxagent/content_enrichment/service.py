@@ -70,6 +70,8 @@ class ContentEnrichmentHub:
         self.extractor = extractor or SharedContentExtractor(concurrency=self.concurrency)
         self.site_access_client = site_access_client
         self._last_outbox_flush = 0.0
+        self._outcome_task = None
+        self._outbox_pruned_at = 0.0
         self.ir_body_reader = None
         self.defense_body_reader = None
         self.sec_body_reader = None
@@ -161,7 +163,10 @@ class ContentEnrichmentHub:
         active: set[asyncio.Task[None]] = set()
         try:
             while not stop.is_set():
-                await self._flush_outcomes()
+                if self._outcome_task is None or self._outcome_task.done():
+                    if self._outcome_task is not None:
+                        self._outcome_task.result()
+                    self._outcome_task = asyncio.create_task(self._flush_outcomes())
                 finished = {task for task in active if task.done()}
                 for task in finished:
                     task.result()
@@ -188,6 +193,9 @@ class ContentEnrichmentHub:
             await asyncio.gather(*active, return_exceptions=True)
 
     async def close(self) -> None:
+        if self._outcome_task is not None:
+            self._outcome_task.cancel()
+            await asyncio.gather(self._outcome_task, return_exceptions=True)
         if self._google_client is not None:
             await self._google_client.aclose()
         for task in self._google_flights.values():
@@ -243,6 +251,11 @@ class ContentEnrichmentHub:
     @source_routed
     async def _process(self, job: EnrichmentJob, now: datetime) -> None:
         from doxagent.message_bus_v2.admission import evaluate_admission
+
+        if job.source.content_language and not (job.message.metadata.get('language') or job.message.metadata.get('identity_evidence',{}).get('language')):
+            message = job.message.model_copy(update={'metadata': {
+                **job.message.metadata, 'language': job.source.content_language.strip().lower()}})
+            job = job.model_copy(update={'message': message})
 
         reason = (
             None
@@ -703,7 +716,9 @@ class ContentEnrichmentHub:
             logger.warning("Site Strategy outcome flush failed", exc_info=True)
         else:
             await self.bus.storage.call(self.repository.confirm_site_strategy_outbox, ids)
-            await self.bus.storage.call(self.repository.prune_site_strategy_outbox)
+            if now - self._outbox_pruned_at >= 600:
+                self._outbox_pruned_at = now
+                await self.bus.storage.call(self.repository.prune_site_strategy_outbox)
 
     def _retry_after(self, attempts: Sequence[FetchAttempt]) -> float:
         values = [item.retry_after_seconds for item in attempts if item.retry_after_seconds]

@@ -190,7 +190,7 @@ class ScopeResolver:
                 "lifecycle": template.lifecycle.model_copy(
                     update={
                         "residency": BrowserResidency.ON_DEMAND,
-                        "idle_seconds": 600,
+                        "idle_seconds": 180,
                     }
                 ),
             }

@@ -5,7 +5,6 @@ from __future__ import annotations
 import asyncio
 import json
 import os
-import signal
 import time
 from contextlib import closing
 from dataclasses import replace
@@ -16,6 +15,7 @@ from pydantic import BaseModel, ConfigDict
 
 from doxagent.w3_timing import file_trace, observed, span
 
+from .cleanup import await_owned
 from .startup_admission import PriorityGate, startup_scope
 
 
@@ -40,12 +40,17 @@ class AppServerThreads:
         self.generation = None
         self.identities = {}
         self.quarantined = False
+        self._closing = {}
+        self._closing_processes = {}
+        self._quarantine_check_at = 0.0
 
     async def request(self, method, params):
         # Queue cancellation must not touch the client serving another request.
         async with self._rpc_gate.acquire(
-            priority=2 if method == "thread/delete" else 0, timeout=30
+            priority=2 if method == "thread/delete" else 0, timeout=30, label=method
         ):
+            if self.quarantined:
+                await self._reconcile_quarantine()
             if self.quarantined:
                 raise LifecycleCleanupError("previous helper owner has not exited")
             return await self._request(method, params)
@@ -84,15 +89,23 @@ class AppServerThreads:
                                 )
                             self._record(client, "SDK_INITIALIZE")
                             await client.initialize()
+                            self.identities[client]["sdk_ready"] = True
                             self._record(client, "SDK_READY")
+
+                    async def initialize_owned():
+                        try:
+                            await initialize()
+                        except BaseException:
+                            await self._close_client(client)
+                            raise
 
                     if self.admission is not None:
                         async with self.admission.boot(
                             priority=2 if method == "thread/delete" else None
                         ):
-                            await initialize()
+                            await initialize_owned()
                     else:
-                        await initialize()
+                        await initialize_owned()
                 except BaseException:
                     await self._close_client(client)
                     raise
@@ -123,44 +136,119 @@ class AppServerThreads:
         value = self.identities.get(client, {})
         value["stage"] = stage
         proc = getattr(getattr(client, "_sync", None), "_proc", None)
-        value["returncode"] = proc.poll() if proc is not None else None
+        try:
+            value["returncode"] = proc.poll() if proc is not None else None
+        except OSError:
+            value["returncode"] = None
         if self.root is not None:
             directory = Path(self.root) / "lifecycle-owners"
-            directory.mkdir(exist_ok=True, parents=True)
-            (directory / (value["identity"] + ".json")).write_text(
-                json.dumps(value), encoding="utf-8"
-            )
+            try:
+                directory.mkdir(exist_ok=True, parents=True)
+                target = directory / (value["identity"] + ".json")
+                temporary = target.with_suffix(".tmp")
+                temporary.write_text(json.dumps(value), encoding="utf-8")
+                temporary.replace(target)
+            except OSError:
+                pass
 
     async def _close_client(self, client):
-        identity = self.identities.get(client, {}).get("identity")
-        try:
-            try:
-                await asyncio.wait_for(client.close(), 5)
-            finally:
-                if identity and os.name == "posix":
-                    from .process_tree import owned_processes, signal_owned
+        task = self._closing.get(client)
+        if task is None:
+            if client not in self.identities and client not in self.clients:
+                return
+            task = asyncio.create_task(self._close_client_owned(client))
+            self._closing[client] = task
+        await await_owned(task)
 
-                    for sig in (signal.SIGTERM, signal.SIGKILL):
-                        end = time.monotonic() + 5
-                        while True:
-                            owned = await asyncio.to_thread(owned_processes, identity)
-                            if not owned:
-                                break
-                            await asyncio.to_thread(signal_owned, owned, sig)
-                            if time.monotonic() >= end:
-                                break
-                            await asyncio.sleep(0.1)
-                    if await asyncio.to_thread(owned_processes, identity):
-                        self.quarantined = True
-                        raise LifecycleCleanupError("owned helper process cleanup failed")
-        finally:
-            try:
-                self._record(client, "QUARANTINED" if self.quarantined else "CLOSED")
-            finally:
-                self.clients.discard(client)
-                self.identities.pop(client, None)
-                if self.client is client:
-                    self.client = None
+    async def _close_client_owned(self, client):
+        identity = self.identities.get(client, {}).get("identity")
+        proc = getattr(getattr(client, "_sync", None), "_proc", None)
+        self._closing_processes[client] = proc
+        self.identities[client]["closing_since"] = time.monotonic()
+        self._record(client, "CLOSING")
+        try:
+            async with asyncio.timeout(15):
+                try:
+                    async with asyncio.timeout(1):
+                        await client.close()
+                except Exception:
+                    pass  # A failed graceful close must still reach the owned kill.
+                from .process_tree import PopenProcess, terminate_owned
+
+                await terminate_owned(
+                    PopenProcess(proc) if proc is not None else None, identity, kill_group=False
+                )
+        except BaseException as exc:
+            self.quarantined = True
+            self.identities[client]["cleanup_error"] = f"{type(exc).__name__}: {str(exc)[:250]}"
+            self.clients.add(client)
+            if self.admission and not self.identities[client].get("sdk_ready"):
+                self.admission.quarantined.add(identity)
+            self._record(client, "QUARANTINED")
+            if isinstance(exc, asyncio.CancelledError):
+                raise
+            raise LifecycleCleanupError("owned helper process cleanup failed") from exc
+        self._forget_client(client)
+
+    def _forget_client(self, client):
+        identity = self.identities.get(client, {}).get("identity")
+        self._record(client, "CLOSED")
+        if self.admission:
+            self.admission.quarantined.discard(identity)
+        self.clients.discard(client)
+        self.identities.pop(client, None)
+        self._closing.pop(client, None)
+        self._closing_processes.pop(client, None)
+        if self.client is client:
+            self.client = None
+
+    async def _reconcile_quarantine(self):
+        if time.monotonic() < self._quarantine_check_at:
+            return
+        self._quarantine_check_at = time.monotonic() + 30
+        from .process_tree import owned_processes
+
+        for client, value in list(self.identities.items()):
+            if value.get("stage") != "QUARANTINED":
+                continue
+            proc = self._closing_processes.get(client)
+            gone = (
+                not await asyncio.to_thread(owned_processes, value["identity"])
+                if os.name == "posix"
+                else proc is not None and proc.poll() is not None
+            )
+            if gone:
+                self._forget_client(client)
+        self.quarantined = any(v.get("stage") == "QUARANTINED" for v in self.identities.values())
+
+    async def reconcile_cleanup(self):
+        if not self.quarantined:
+            return
+        try:
+            async with asyncio.timeout(1):
+                async with self._rpc_gate.acquire(priority=2, timeout=1, label="cleanup-reconcile"):
+                    await self._reconcile_quarantine()
+        except TimeoutError:
+            pass  # Retry on the existing maintenance tick; never interrupt an RPC owner.
+
+    def snapshot(self):
+        return dict(
+            gate=self._rpc_gate.snapshot(),
+            quarantined=self.quarantined,
+            closing=len(self._closing),
+            owners=[
+                {k: value.get(k) for k in ("identity", "pid", "stage", "cleanup_error")}
+                for value in list(self.identities.values())[:8]
+            ],
+            oldest_cleanup_seconds=max(
+                (
+                    time.monotonic() - v["closing_since"]
+                    for v in self.identities.values()
+                    if "closing_since" in v
+                ),
+                default=0.0,
+            ),
+        )
 
     async def close(self):
         async with self._rpc_gate.acquire(timeout=30):
@@ -547,6 +635,89 @@ class WorkerThreadLifecycle:
             else None
         )
 
+    async def _state_threads(self, cwd):
+        """Bounded state-index lookup only; never scan rollout bodies for GC."""
+        cursor = None
+        found = {}
+        async with asyncio.timeout(10):
+            while True:
+                params = dict(cwd=str(cwd), limit=100, useStateDbOnly=True)
+                if cursor:
+                    params["cursor"] = cursor
+                result = await self.transport.request("thread/list", params)
+                for value in result.get("data", []):
+                    if value.get("cwd") == str(cwd):
+                        found[value["id"]] = value
+                cursor = result.get("nextCursor")
+                if not cursor:
+                    return found
+
+    async def retiring_child(self, key, run_id, child=None, *, case=False):
+        """Adopt only an original, verified child for deletion, never for reuse."""
+        task = self.preparations.get(key)
+        if task is not None and not task.done():
+            raise ValueError("prepare still has a live owner")
+        with closing(self.jobs.store.connect()) as db:
+            row = db.execute(
+                "SELECT request,thread_id FROM w3_thread_operations WHERE operation_key=?", (key,)
+            ).fetchone()
+        if row is None:
+            raise ValueError("missing retirement operation")
+        request = json.loads(row[0])
+        parent = request.get("parent_thread_id")
+        registered_parent = self._row(parent)
+        if (
+            request.get("run_id") != run_id
+            or not registered_parent
+            or registered_parent["kind"] != "TEMPLATE"
+        ):
+            raise ValueError("retirement requires the original run and registered parent")
+        cwd = self.workspaces._run_root(run_id)
+        child = child or row[1]
+        receipt = cwd / ".w3-fork-receipt.json"
+        recorded = json.loads(receipt.read_text()) if receipt.is_file() else {}
+        receipt_matches = (
+            recorded.get("run_id") == run_id
+            and recorded.get("parent_id") == parent
+            and bool(recorded.get("thread_id"))
+        )
+        if receipt_matches and child and child != recorded["thread_id"]:
+            raise ValueError("retirement receipt conflicts with the recorded child")
+        child = child or (recorded["thread_id"] if receipt_matches else None)
+        registered = self._row(child) if child else None
+        if registered:
+            if (
+                registered["kind"] == "TEMPLATE"
+                or registered["run_id"] != run_id
+                or registered["parent_id"] != parent
+            ):
+                raise ValueError("retirement child belongs to a different owner")
+            return child
+        if not receipt_matches:
+            matches = [
+                t
+                for t in (await self._state_threads(cwd)).values()
+                if t.get("forkedFromId") == parent and (not child or t["id"] == child)
+            ]
+            if len(matches) != 1:
+                raise ValueError("retirement unresolved; no unique child in receipt/state index")
+            child = matches[0]["id"]
+        if self.active(child):
+            raise ValueError("retirement child has an active or queued job")
+        with closing(self.jobs.store.connect()) as db, db:
+            db.execute(
+                "INSERT OR IGNORE INTO w3_thread_registry VALUES(?,?,?,?, 'ACTIVE')",
+                (child, "CASE" if case else "PREPARED", parent, run_id),
+            )
+        registered = self._row(child)
+        if (
+            registered["run_id"] != run_id
+            or registered["parent_id"] != parent
+            or registered["kind"] == "TEMPLATE"
+        ):
+            raise ValueError("retirement registration identity conflict")
+        return child
+
     def validate_run(self, request):
         if request.task_phase is None:
             return
@@ -715,9 +886,17 @@ class WorkerThreadLifecycle:
                 state = response.get("thread", {}).get("status", {})
                 row["active"] = row["active"] or state.get("type") == "active"
             except Exception as exc:
-                if not self._missing(exc):
+                if self._missing(exc):
+                    row["exists"] = False
+                elif "not loaded" in str(exc).lower():
+                    value = (
+                        await self._state_threads(self.workspaces._run_root(row["run_id"]))
+                    ).get(thread_id)
+                    if value is None:
+                        raise
+                    row["active"] = row["active"] or value.get("status", {}).get("type") == "active"
+                else:
                     raise
-                row["exists"] = False
         return row
 
     @staticmethod

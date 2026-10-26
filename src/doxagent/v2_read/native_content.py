@@ -18,16 +18,18 @@ class NativeContent:
         self.files = ContentFiles(Path(database).resolve().parent / "native-files")
 
     def encode(self, value, *, keep=()):
-        def pack(item, root=False):
+        def pack(item, root=False, path=""):
+            root = root or path in keep
             raw = json.dumps(item, ensure_ascii=False, separators=(",", ":"), sort_keys=True).encode()
             if not root and len(raw) >= 16384:
                 return {MARKER: self.files.put(raw), "bytes": len(raw)}
             if isinstance(item, dict):
                 if MARKER in item:
                     raise ValueError("reserved native content marker")
-                return {key: pack(child, root=root and key in keep) for key, child in item.items()}
+                return {key: pack(child, root=root and key in keep,
+                                  path=f'{path}.{key}' if path else key) for key, child in item.items()}
             if isinstance(item, list):
-                return [pack(child) for child in item]
+                return [pack(child, path=path+'[]') for child in item]
             return item
         return json.dumps(pack(value, root=isinstance(value, dict)), ensure_ascii=False, separators=(",", ":"), sort_keys=True)
 

@@ -520,6 +520,9 @@ class DistributionRepository:
         outcome_payload: dict[str, Any] | None,
     ) -> None:
         assert job.article_id
+        message = message.model_copy(update={'metadata': {**message.metadata,
+            'pipeline_trace': {**message.metadata.get('pipeline_trace', {}),
+                               'body_ready_at': utc_now().isoformat()}}})
         content_version = sha256_text(
             canonical_json(
                 [
@@ -600,12 +603,74 @@ class DistributionRepository:
                 result.append((row["id"], token, row["encoded"]))
         return result
 
+    def ready_work(self):
+        now = utc_now().isoformat()
+        with self.bus._connect() as db:
+            deliveries = db.execute("SELECT 1 FROM distribution_deliveries WHERE state='PENDING' "
+                "OR (state='RUNNING' AND lease_until<=?) LIMIT 1", (now,)).fetchone()
+            decisions = db.execute("SELECT 1 FROM distribution_jev_continuations WHERE state='PENDING' "
+                "OR (state='RUNNING' AND lease_until<=?) LIMIT 1", (now,)).fetchone()
+        return bool(deliveries), bool(decisions)
+
     def finish_decisions(self, identity, token):
         with self.bus.transaction() as db:
             db.execute(
                 "DELETE FROM distribution_jev_continuations WHERE id=? AND claim_token=?",
                 (identity, token),
             )
+
+    def resume_decisions(self, identity, token, rows):
+        """Recover only unfinished deliveries; payload tokens are never reusable leases."""
+        with self.bus.transaction() as db:
+            owner = db.execute(
+                "SELECT 1 FROM distribution_jev_continuations WHERE id=? AND claim_token=?",
+                (identity, token),
+            ).fetchone()
+            if not owner:
+                raise RuntimeError("distribution_continuation_lease_lost")
+            pending = []
+            for row in rows:
+                live = db.execute(
+                    "SELECT state FROM distribution_deliveries WHERE delivery_id=?",
+                    (row["delivery_id"],),
+                ).fetchone()
+                if not live or live[0] != "L2_WAIT":
+                    continue
+                fresh = new_id("decision-delivery")
+                db.execute(
+                    "UPDATE distribution_deliveries SET claim_token=?,lease_until=? "
+                    "WHERE delivery_id=? AND state='L2_WAIT'",
+                    (fresh, (utc_now()+timedelta(seconds=90)).isoformat(), row["delivery_id"]),
+                )
+                pending.append({**row, "claim_token": fresh})
+            return pending
+
+    def renew_decisions(self, identity, token, rows):
+        with self.bus.transaction() as db:
+            until = (utc_now()+timedelta(seconds=90)).isoformat()
+            changed = db.execute(
+                "UPDATE distribution_jev_continuations SET lease_until=? WHERE id=? AND claim_token=?",
+                (until, identity, token),
+            ).rowcount
+            if not changed:
+                raise RuntimeError("distribution_continuation_lease_lost")
+            db.executemany(
+                "UPDATE distribution_deliveries SET lease_until=? WHERE delivery_id=? AND claim_token=?",
+                [(until, row["delivery_id"], row["claim_token"]) for row in rows],
+            )
+
+    def cached_decisions(self, rows):
+        with self.bus._connect() as db:
+            result = {}
+            for row in rows:
+                value = db.execute(
+                    "SELECT * FROM distribution_decisions WHERE article_id=? AND content_version=? "
+                    "AND ticker=? AND terms_revision=? AND classifier_version='v1' AND error_code IS NULL",
+                    (row["article_id"], row["content_version"], row["ticker"], row["terms_revision"]),
+                ).fetchone()
+                if value:
+                    result[row["ticker"]] = dict(value)
+            return result
 
     def claim_deliveries(self, *, limit: int = 16, article_limit: int | None = None) -> list[dict[str, Any]]:
         now = utc_now()
@@ -727,6 +792,57 @@ class DistributionRepository:
             ).rowcount
             if not changed:
                 raise RuntimeError("distribution_delivery_lease_lost")
+
+    def settle_delivery(self, bus, row, source, message, *, regex_result,
+                        jev_result, jev_attempts, error_code):
+        """One fenced business commit, including decision and publication receipt."""
+        from .schema import TickerMonitoringStatus
+        with self.bus.atomic_intake() as db:
+            live = db.execute('SELECT d.claim_token,d.state,a.content_version '
+                'FROM distribution_deliveries d JOIN distribution_articles a USING(article_id) '
+                'WHERE d.delivery_id=?', (row['delivery_id'],)).fetchone()
+            if not live or live['claim_token'] != row['claim_token']:
+                return None
+            if live['content_version'] != row['content_version']:
+                self.finish_delivery(row['delivery_id'],row['claim_token'],'PENDING',
+                                     {'reason':'CONTENT_VERSION_CHANGED'})
+                return None
+            relevant = regex_result or (jev_result is not None and jev_result >= .5)
+            decision = self.record_decision(row,regex_result=regex_result,jev_result=jev_result,
+                jev_attempts=jev_attempts,error_code=error_code,
+                final_result='RELEVANT' if relevant else 'NOT_RELEVANT')
+            if not relevant:
+                self.finish_delivery(row['delivery_id'],row['claim_token'],'NOT_RELEVANT',
+                                     {'decision_id':decision,'reason':error_code})
+                return None
+            snapshot = TickerSourceBinding.model_validate_json(row['binding_json'])
+            binding = self.bus.get_binding(snapshot.binding_id)
+            ticker = self.bus.get_ticker_state(snapshot.ticker)
+            current_source = self.bus.get_source(source.source_id)
+            if (not binding or not binding.enabled or binding.tombstoned_at
+                    or not current_source or not current_source.enabled or not ticker
+                    or ticker.status != TickerMonitoringStatus.RUNNING):
+                self.finish_delivery(row['delivery_id'],row['claim_token'],'CANCELLED',{'decision_id':decision})
+                return None
+            context = AdmissionContext.model_validate_json(row['admission_json'])
+            reason = evaluate_admission(message.published_at,context,utc_now(),message.publication_time_basis)
+            if reason:
+                self.finish_delivery(row['delivery_id'],row['claim_token'],'ADMISSION_REJECTED',
+                                     {'decision_id':decision,'reason':reason})
+                return None
+            enriched = message.model_copy(update={'admission_context':context,'metadata':{
+                **message.metadata, 'distribution': {'decision_id':decision,
+                'terms_revision':row['terms_revision'],'regex_hit':regex_result,'jev_result':jev_result},
+                'pipeline_trace': {**message.metadata.get('pipeline_trace',{}),
+                                   'decision_ready_at':utc_now().isoformat()}}})
+            result = bus._accept_message(source=current_source,binding=binding,message=enriched,
+                bootstrap=False,trusted_enrichment=True,
+                enrichment_input=RawMessageInput.model_validate_json(row['original_json']))
+            state = ('DEDUPLICATED' if result.decision.value=='duplicate' else
+                     'ADMISSION_REJECTED' if result.decision.value=='filtered' else 'PUBLISHED')
+            self.finish_delivery(row['delivery_id'],row['claim_token'],state,
+                                 {'decision_id':decision,'ingest':result.model_dump(mode='json')})
+            return result, enriched
 
     def record_decision(
         self,

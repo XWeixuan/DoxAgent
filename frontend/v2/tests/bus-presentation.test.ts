@@ -40,7 +40,7 @@ const status = {
 } as SourceStatus;
 it("shows the day aggregate, never the last poll count under the day label", () => {
   const html = renderToStaticMarkup(
-    createElement(SourceCard, { status, today: metric }),
+    createElement(SourceCard, { status, today: { state: "AVAILABLE", value: 17, reason: null } }),
   );
   expect(html).toContain("当天新增");
   expect(html).toContain("17");

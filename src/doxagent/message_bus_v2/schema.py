@@ -593,6 +593,7 @@ class ConsumerOffset(BusModel):
 
 
 class PollState(BusModel):
+    projection_counts: JsonObject = Field(default_factory=dict)
     source_definition_version: int | None = None
     binding_version: int | None = None
     units: JsonObject = Field(default_factory=dict)

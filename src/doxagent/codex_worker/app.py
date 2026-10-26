@@ -222,9 +222,19 @@ def create_worker_app(
                 n for scope, state, n in rows if scope == key and state == "READY"
             )
         return {
-            "ready": all(profiles.get(model, 0) > 0 for model in ("gpt-6-luna", "gpt-6.1-sol")),
+            "ready": jobs.dispatcher_status()["ready"]
+            and all(profiles.get(model, 0) > 0 for model in ("gpt-6-luna", "gpt-6.1-sol")),
             "profiles": profiles,
             "mcp_calls": research_mcp.calls,
+            "dispatcher": jobs.dispatcher_status(),
+            "retirement": ready_slots.retirement_status,
+        }
+
+    @app.get("/v1/w3/retirement/preview", dependencies=[Depends(require_service_auth)])
+    async def retirement_preview():
+        return {
+            "candidates": await ready_slots.retire(dry_run=True),
+            "status": ready_slots.retirement_status,
         }
 
     @app.post("/v1/w3/ready-slots/claim", dependencies=[Depends(require_service_auth)])
@@ -365,7 +375,8 @@ def create_worker_app(
 
     @app.get("/healthz")
     async def healthz() -> dict[str, object]:
-        return {"ok": True, "service": "codex-worker", "data_mcp_enabled": True}
+        return {"ok": True, "service": "codex-worker", "data_mcp_enabled": True,
+                "dispatcher": jobs.dispatcher_status()}
 
     @app.get("/v1/resources", dependencies=[Depends(require_service_auth)])
     async def resources() -> dict[str, object]:

@@ -8,6 +8,9 @@ for (const width of [1262,1559]) {
     await page.goto("http://127.0.0.1:5174/tests/browser/news-timeliness.html");
     await expect(page.getByText("新文章正文成功率")).toBeVisible();
     await expect(page.getByText("84.0%")).toBeVisible();
+    await expect(page.getByText("启用源最近耗时均值")).toBeVisible();
+    expect(await page.evaluate(()=>(window as unknown as {busFixtureCalls:string[]}).busFixtureCalls.filter(x=>x.startsWith("BusMetrics:")).length)).toBe(1);
+    await page.getByRole("button",{name:"采集诊断",exact:true}).click();
     await expect(page.getByText("近30分钟实际刷新间隔")).toBeVisible();
     await expect(page.getByText("30.28s").first()).toBeVisible();
     await expect(page.getByText(/兑现 96.4%/)).toBeVisible();

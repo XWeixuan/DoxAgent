@@ -306,7 +306,10 @@ def assess_media_body(body: str | None, title: str | None = None) -> BodyQuality
         return BodyQuality(body_length, sentence_count, "html_or_entity_body", False)
     if body_length < 160:
         return BodyQuality(body_length, sentence_count, "very_short", False)
-    if text.endswith(("...", "…")) or any(marker in lower for marker in TRUNCATION_MARKERS):
+    preview = body_length < 3000 and any(marker in lower for marker in (
+        'already a subscriber', 'subscribe now to read', 'subscribe to read the full',
+        'unlock the full article', 'this article is available to subscribers'))
+    if preview or text.endswith(("...", "…")) or any(marker in lower for marker in TRUNCATION_MARKERS):
         return BodyQuality(body_length, sentence_count, "truncated_or_paywall_marker", False)
     if body_length < COMPLETE_BODY_MIN_CHARS or sentence_count < COMPLETE_BODY_MIN_SENTENCES:
         return BodyQuality(body_length, sentence_count, "short_summary", False)

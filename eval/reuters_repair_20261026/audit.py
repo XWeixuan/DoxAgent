@@ -117,12 +117,46 @@ out["targets"] = query(
     "select allocation_id,identity_id,browser_instance_id,target_id,owner_kind,state from owned_browser_targets "
     "where identity_id in ('digitimes-de-1','reuters-backup') and state not in ('CLOSED','LOST')",
 )
+out['route'] = []
+for row in r.execute("select data_json from site_runtime where runtime_key='scope:source:reuters_site_search'"):
+    value = json.loads(row[0])
+    route = pick(value, 'runtime_key active_combination_id generation updated_at')
+    route['members'] = {}
+    for identity_id, member in value.get('combinations', {}).items():
+        info = pick(member, 'state cooldown_until manual_attention_required purpose_rejected_until')
+        info['capabilities'] = {purpose: pick(capability, 'state result checked_at instance_id')
+                                for purpose, capability in member.get('capabilities', {}).items()}
+        route['members'][identity_id] = info
+    out['route'].append(route)
+out['maintenance_operations'] = []
+for row in r.execute("select data_json from maintenance_operations where julianday(updated_at)>=julianday(?)", (args.since,)):
+    value = json.loads(row[0])
+    if value.get('identity_id') in ('digitimes-de-1', 'reuters-backup'):
+        operation = pick(value, 'operation_id action identity_id state stage created_at updated_at deadline_at')
+        operation['result'] = pick(value.get('result') or {}, 'ready reason identity_id canary')
+        out['maintenance_operations'].append(operation)
 out["body"] = query(
     r,
     "select outcome,reason,count(*) n,min(completed_at) first_at,max(completed_at) last_at from body_outcomes "
     "where final_site_id='reuters' and julianday(completed_at)>=julianday(?) and julianday(completed_at)<julianday(?) group by outcome,reason",
     (args.since, end),
 )
+out['new_article_cohort'] = query(b,
+    "select status,json_extract(data_json,'$.eligible') eligible,json_extract(data_json,'$.outcome') outcome,"
+    "case when julianday(first_observed_at)<=julianday(?,'-5 minutes') then 1 else 0 end mature_5m,"
+    "count(*) n,min(first_observed_at) first_at,max(first_observed_at) last_at from article_body_results "
+    "where json_extract(data_json,'$.source_id')='reuters_site_search' and "
+    "julianday(first_observed_at)>=julianday(?) and julianday(first_observed_at)<julianday(?) "
+    "group by status,eligible,outcome,mature_5m",(end,args.since,end))
+out['pending_source_body_jobs'] = query(b,
+    "select status,json_extract(data_json,'$.work_kind') work_kind,count(*) n,min(created_at) first_at,max(created_at) last_at from content_enrichment_jobs "
+    "where json_extract(data_json,'$.source.source_id')='reuters_site_search' "
+    "and status not in ('completed','failed') group by status,work_kind")
+out['source_raw_delivery'] = query(b,
+    "select ticker,json_extract(data_json,'$.metadata.media_enrichment.outcome') outcome,count(*) n,"
+    "count(distinct coalesce(json_extract(data_json,'$.metadata.article_body_result_key'),identity_key)) article_keys "
+    "from raw_messages where source_id='reuters_site_search' and julianday(collected_at)>=julianday(?) "
+    "and julianday(collected_at)<julianday(?) group by ticker,outcome",(args.since,end))
 out["poll_states"] = []
 for row in b.execute("select data_json from poll_states where source_id='reuters_site_search'"):
     v = json.loads(row[0])

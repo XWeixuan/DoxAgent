@@ -122,6 +122,7 @@ function MessageStream({
   const [p, setP] = useSearchParams();
   const [search, setSearch] = useState(p.get("q") ?? "");
   const [searchOpen, setSearchOpen] = useState(!!p.get("q"));
+  const [showDiagnostics, setShowDiagnostics] = useState(false);
   const view = context.data.view_id;
   const set = (key: string, v: string) => {
     const n = new URLSearchParams(p);
@@ -145,91 +146,33 @@ function MessageStream({
     filters.source_id,
     filters.route,
   ];
-  const readMinute = async () => {
-    const c = await api.request(
-      "ReadContext",
-      "/read-context" +
-        queryString({ ticker, page: "MESSAGE_BUS", period, refresh: "MINUTE" }),
-    );
-    const v = c.data.view_id;
-    const [status, metrics, sources] = await Promise.all([
-      api.request(
-        "BusStatus",
-        tickerPath(ticker) +
-          "/message-bus/status" +
-          queryString({ view_id: v }),
-        { view: v },
-      ),
-      api.request(
-        "BusMetrics",
-        tickerPath(ticker) +
-          "/message-bus/metrics" +
-          queryString({ view_id: v, ...filters }),
-        { view: v },
-      ),
-      api.request(
-        "Sources",
-        tickerPath(ticker) +
-          "/message-bus/sources" +
-          queryString({ view_id: v, limit: "100" }),
-        { view: v },
-      ),
-    ]);
-    return { status, metrics, sources };
-  };
-  const minute = useQuery({
-    queryKey: minuteKey,
-    queryFn: readMinute,
-    staleTime: 0,
-    refetchOnMount: "always",
-    refetchOnWindowFocus: "always",
+  const minuteContext = useQuery({
+    queryKey: [...minuteKey, "context"],
+    queryFn: ({ signal }) => api.request("ReadContext", "/read-context" +
+      queryString({ ticker, page: "MESSAGE_BUS", period, refresh: "MINUTE" }), { signal }),
+    staleTime: 0, refetchOnMount: "always", refetchOnWindowFocus: "always",
   });
-  const sourceIds = [
-    ...new Set(
-      minute.data?.sources.data.data?.items.map((s) => s.source.source_id) ??
-        [],
-    ),
-  ].sort();
-  const daily = useQuery({
-    queryKey: [scope, "bus-source-today", ticker, sourceIds],
-    enabled: sourceIds.length > 0,
-    staleTime: 0,
-    refetchOnMount: "always",
-    refetchOnWindowFocus: "always",
-    queryFn: async () => {
-      const c = await api.request(
-        "ReadContext",
-        "/read-context" +
-          queryString({
-            ticker,
-            page: "MESSAGE_BUS",
-            period: "CURRENT_TRADING_DAY",
-            refresh: "MINUTE",
-          }),
-      );
-      const counts = await Promise.all(
-        sourceIds.map(async (source_id) => {
-          const r = await api.request(
-            "BusMetrics",
-            tickerPath(ticker) +
-              "/message-bus/metrics" +
-              queryString({ view_id: c.data.view_id, source_id }),
-            { view: c.data.view_id },
-          );
-          return [source_id, r.data.data?.published_revisions] as const;
-        }),
-      );
-      return {
-        counts: Object.fromEntries(counts),
-        day: c.data.clock.semantic_day,
-      };
-    },
+  const minuteView = minuteContext.data?.data.view_id;
+  const statusQuery = useQuery({
+    queryKey: [...minuteKey, "status", minuteView, showDiagnostics], enabled: !!minuteView,
+    queryFn: ({ signal }) => api.request("BusStatus", tickerPath(ticker) +
+      "/message-bus/status" + queryString({ view_id: minuteView, diagnostics: showDiagnostics ? "true" : undefined }), { view: minuteView, signal }),
+    refetchOnWindowFocus: false,
+  });
+  const metricsQuery = useQuery({
+    queryKey: [...minuteKey, "metrics", minuteView], enabled: !!minuteView,
+    queryFn: ({ signal }) => api.request("BusMetrics", tickerPath(ticker) +
+      "/message-bus/metrics" + queryString({ view_id: minuteView, ...filters }), { view: minuteView, signal }),
+    refetchOnWindowFocus: false,
+  });
+  const sourcesQuery = useQuery({
+    queryKey: [...minuteKey, "sources", minuteView, showDiagnostics], enabled: !!minuteView,
+    queryFn: ({ signal }) => api.request("Sources", tickerPath(ticker) +
+      "/message-bus/sources" + queryString({ view_id: minuteView, limit: "100", today_counts: "true", diagnostics: showDiagnostics ? "true" : undefined }), { view: minuteView, signal }),
+    refetchOnWindowFocus: false,
   });
   const minuteError = useMinuteReads(context, async () => {
-    await Promise.all([
-      minute.refetch(),
-      ...(sourceIds.length ? [daily.refetch()] : []),
-    ]);
+    await minuteContext.refetch();
   });
   const path =
     tickerPath(ticker) +
@@ -331,12 +274,12 @@ function MessageStream({
     },
     reset,
   );
-  const status = minute.data?.status.data.data,
-    metrics = minute.data?.metrics.data.data,
-    sources = minute.data?.sources.data.data?.items ?? [];
+  const status = statusQuery.data?.data.data,
+    metrics = metricsQuery.data?.data.data,
+    sources = sourcesQuery.data?.data.data?.items ?? [];
   return (
     <>
-      {minute.error && <Notice danger>{minute.error.message}</Notice>}
+      {minuteContext.error && <Notice danger>{minuteContext.error.message}</Notice>}
       <div className="business-metrics bus-metrics">
         <article>
           <span>
@@ -419,6 +362,8 @@ function MessageStream({
           <span>
             <Clock3 aria-hidden="true" />
             {status?.timeliness?.cadence ? "近30分钟实际刷新间隔" : status?.timeliness ? "近30分钟单次轮询耗时" : "启用源最近耗时均值"}
+            <Button size="sm" variant="ghost" aria-pressed={showDiagnostics}
+              onClick={() => setShowDiagnostics((value) => !value)}>采集诊断</Button>
           </span>
           <strong>
             {status?.timeliness?.cadence
@@ -443,11 +388,11 @@ function MessageStream({
       </div>
       {streamError && <Notice danger>{streamError}</Notice>}
       {minuteError && <Notice danger>{minuteError}</Notice>}
-      {minute.error && (
-        <Notice danger>消息源状态刷新失败：{minute.error.message}</Notice>
+      {sourcesQuery.error && (
+        <Notice danger>消息源状态刷新失败：{sourcesQuery.error.message}</Notice>
       )}
-      {daily.error && (
-        <Notice danger>当天消息统计读取失败：{daily.error.message}</Notice>
+      {metricsQuery.error && (
+        <Notice danger>消息统计读取失败：{metricsQuery.error.message}</Notice>
       )}
       <div className="bus-layout">
         <section className="stream-panel">
@@ -593,8 +538,8 @@ function MessageStream({
             <SourceCard
               key={s.source.binding_id}
               status={s}
-              today={daily.data?.counts[s.source.source_id]}
-              semanticDay={daily.data?.day ?? context.data.clock.semantic_day}
+              today={s.published_today}
+              semanticDay={minuteContext.data?.data.clock.semantic_day ?? context.data.clock.semantic_day}
             />
           ))}
           {!sources.length && <p>没有已绑定消息源</p>}
@@ -610,7 +555,7 @@ export function SourceCard({
 }: {
   status: SourceStatus;
   semanticDay?: string;
-  today?: import("@contract").Metric;
+  today?: import("@contract").Value<import("@contract").Count>;
 }) {
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
@@ -704,7 +649,7 @@ export function SourceCard({
             )}
           </dd>
           <dt>当天新增</dt>
-          <dd>{today ? metricText(today) : "未记录"}</dd>
+          <dd>{today ? valueText(today) : "未记录"}</dd>
           <dt>轮询耗时</dt>
           <dd title={s.stage_timings_ms ? `源排队 ${s.stage_timings_ms.source_wait_ms ?? 0}ms · Site排队 ${s.stage_timings_ms.site_wait_ms ?? 0}ms · 执行 ${s.stage_timings_ms.runtime_ms ?? 0}ms · 接纳 ${s.stage_timings_ms.accept_ms ?? 0}ms` : undefined}>
             {valueText(s.last_poll_latency_seconds, (v) => v.toFixed(2) + "s")}

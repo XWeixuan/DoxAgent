@@ -6,6 +6,8 @@
 
 本次故障发生在模型任务提交之前。Worker 冷启动许可被永久占用，使后续 W3 准备操作一直排队，最终报 `trade_decision/PREPARE: ready-slot preparation failed: TimeoutError`。这解释了界面 Case 失败、却看不到 W3 模型启动或输出的现象。
 
+**后续追溯补记（同日）：** 本文验证并修复的是释放标记泄漏路径；再次追溯最初窗口发现 11 条真实锁状态错误，并在当前实现复现了重复取消导致 Condition 锁遗留的另一条路径。因此不能把本文理解为已唯一证明整次事故的所有触发原因。详见 [鲁棒性审查与优化方案](../dev_plan/workflow_v2/w3_startup_robustness_audit_and_optimization_plan_20261026.md)，本轮审查未再次修改或部署生产代码。
+
 首次快照的近三天 Case 中，160 条为 `w3_ready_prepare_failed`，另有 67 条 `provider_request_failed`；后者不合并归因于本故障。本次修复不改变模型、提示词、交易判断或券商行为。
 
 ## 生产证据与因果边界

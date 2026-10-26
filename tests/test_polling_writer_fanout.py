@@ -155,7 +155,7 @@ def test_old_shared_backlog_advances_in_bulk_without_dropping_live_candidate_or_
     receipt = repo.polling.run_receipt(run['run_id'])
     assert receipt.collected_count == 261 and receipt.filtered_count == 260 and receipt.queued_count == 1
     assert len(repo.list_enrichment_jobs()) == 1
-    assert len(json.loads(repo.polling.load(capture_id)['payload_json'])['result']['messages']) == 261
+    assert len(repo.polling.load(capture_id)['decoded_payload']['result']['messages']) == 261
     unknown = old[0].model_copy(update={'publication_time_basis':'UNKNOWN_FIRST_SEEN','published_at':now})
     assert repo.resolve_first_seen(unknown,binding.binding_id).published_at == old[0].published_at
 
@@ -163,9 +163,9 @@ def test_old_shared_backlog_advances_in_bulk_without_dropping_live_candidate_or_
     context = AdmissionContext(mode='CLOSED_SWEEP',sweep_id='s',source_task_id='task',
         window_start=now-timedelta(days=3),cutoff=now,observed_at=now).model_dump(mode='json')
     info['roster'][0]['admission'] = context
-    payload = json.loads(repo.polling.load(capture_id)['payload_json'])
+    payload = dict(repo.polling.load(capture_id)['decoded_payload'])
     payload['distribution'] = info
-    row = {**repo.polling.load(capture_id),'intake_position':0,'payload_json':json.dumps(payload)}
+    row = {**repo.polling.load(capture_id),'intake_position':0,'decoded_payload':payload}
     piece = repo.polling.prepare_piece(row)
     assert len(piece[4].messages) == 16 and piece[4].acquisition_metadata['intake_prefiltered'] == 0
 
@@ -216,10 +216,10 @@ async def test_old_published_identity_is_retained_and_publication_race_reprepare
     _, token = repo.polling.claim()
     row = repo.polling.load(capture_id)
     if shared:
-        payload = json.loads(row['payload_json'])
-        payload['distribution'] = {'roster': [{'binding': binding.model_dump(mode='json'),
+        payload = dict(row['decoded_payload'])
+        payload['distribution'] = {'roster': [{'binding': binding.model_dump(mode='json'), 'terms_revision':1,
             'admission': AdmissionContext(observed_at=now).model_dump(mode='json')}]}
-        row = {**row, 'payload_json': json.dumps(payload)}
+        row = {**row, 'decoded_payload': payload}
     prepared = repo.polling.prepare_piece(row)
     assert prepared[4].messages == []
     await bus.accept_message(source=source,binding=binding,message=live,bootstrap=False,collected_at=now)
@@ -378,7 +378,7 @@ def test_identical_waiting_captures_reuse_intake_without_erasing_captures_or_rep
         row=repo.polling.load(capture_id);receipt=repo.polling.run_receipt(row['run_id'])
         assert row['status']=='COMPLETED' and row['intake_position']==row['message_count']==1
         assert receipt.collected_count==receipt.duplicate_count==1 and receipt.queued_count==0
-        assert len(__import__('json').loads(row['payload_json'])['result']['messages'])==1
+        assert len(row['decoded_payload']['result']['messages'])==1
     with repo._connect() as db:
         assert db.execute('SELECT count(*) FROM poll_capture_inputs WHERE reused_from=?',(ids[0],)).fetchone()[0]==2
         assert db.execute("SELECT count(*) FROM poll_captures WHERE status='PENDING'").fetchone()[0]==4
@@ -417,14 +417,22 @@ def test_partial_duplicate_reuses_only_unprocessed_suffix_and_keeps_prior_receip
     messages=[_message(92000+i) for i in range(33)]
     ids=[repo.polling.commit(repo.polling.prepare(source=source,binding=binding,
         result=PollResult(messages=messages),observed_at=now-timedelta(seconds=10-i),run_id=f'partial-{i}')) for i in range(2)]
-    first_time=None
-    for expected in [ids[0],ids[1],ids[0],ids[1],ids[0]]:
+    # Pre-upgrade partially consumed peers had independent claims. New peers
+    # coalesce at commit and cannot create this legacy state on their own.
+    with repo.transaction() as db:
+        db.execute('UPDATE poll_capture_inputs SET reused_from=NULL WHERE capture_id=?',(ids[1],))
+        db.execute('INSERT OR REPLACE INTO poll_capture_priority VALUES(?,33)',(ids[1],))
+    for expected in ids:
         capture,token=repo.polling.claim();assert capture==expected
         repo.polling.accept_piece(bus,repo.polling.prepare_piece(repo.polling.load(capture)),token)
-        if capture==ids[1] and first_time is None:first_time=repo.polling.load(capture)['first_intake_at']
+    partial=repo.polling.load(ids[1]);first_time=partial['first_intake_at']
+    before=__import__('doxagent.message_bus_v2.schema',fromlist=['PollExecutionResult']).PollExecutionResult.model_validate_json(partial['receipt_json'])
+    capture,token=repo.polling.claim();assert capture==ids[0]
+    repo.polling.accept_piece(bus,repo.polling.prepare_piece(repo.polling.load(capture)),token)
     peer=repo.polling.load(ids[1]);receipt=repo.polling.run_receipt('partial-1')
     assert peer['status']=='COMPLETED' and peer['intake_position']==33
     assert peer['first_intake_at']==first_time
-    assert receipt.collected_count==33 and receipt.duplicate_count==1 and receipt.queued_count==0
+    assert receipt.collected_count==33 and receipt.duplicate_count==before.duplicate_count+1
+    assert receipt.queued_count==before.queued_count
     assert repo.get_poll_state(binding).collected_count==66
     assert len(repo.list_enrichment_jobs())==33 and repo.latest_stream_offset(binding.ticker)==0

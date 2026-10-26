@@ -8,6 +8,18 @@ from doxagent.v2_read.metrics import compare, decimal_text
 from .dto import available, coverage, missing
 
 
+def source_counts_today(store, ticker, seq, day):
+    """One existing bucket reduction, without per-source BODY/history queries."""
+    with store.connect() as db:
+        start = db.execute("SELECT value FROM read_meta WHERE key='bus_aggregates_from'").fetchone()
+        if not start or seq < int(start[0]):
+            return None
+        return {r[0]: available(int(r[1])) for r in db.execute(
+            'SELECT source_id,sum(CAST(value AS INTEGER)) FROM '+store.metric_table(seq)
+            +" WHERE metric='bus_messages' AND ticker=? AND day=? AND valid_from<=? "
+            'AND (valid_to IS NULL OR valid_to>?) GROUP BY source_id', (ticker,day,seq,seq))}
+
+
 def counts(store, ticker, seq, filters, days):
     if not filters.get("q"):
         with store.connect() as db:

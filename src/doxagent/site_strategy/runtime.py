@@ -990,6 +990,12 @@ class _DocumentNavigationGate:
             return False
         target = self.resolver.resolve(url)
         host = parsed.hostname or ""
+        original = self.resolved.match_evidence.get('host', '')
+        if (self.resolved.site_id == 'generic' and original
+                and host.removeprefix('www.') == original.removeprefix('www.')):
+            # Public publisher canonical www redirects are the same publisher,
+            # not a cross-site navigation. public_url validation still applies.
+            return True
         return target.runtime_key == self.resolved.runtime_key or self.resolver.supports_host(
             self.resolved.site_id, host
         )

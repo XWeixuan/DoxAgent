@@ -600,6 +600,7 @@ export interface BusStatus {
   timeliness?: PollTimeliness;
 }
 export interface SourceStatus {
+  published_today?: Value<Count>;
   cadence?: PollCadence;
   coverage_state?: "COMPLETE" | "PARTIAL" | "UNKNOWN";
   pending_query_count?: Count; pending_timestamp_count?: Count;

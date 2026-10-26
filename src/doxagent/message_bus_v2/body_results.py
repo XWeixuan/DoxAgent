@@ -77,12 +77,25 @@ class ArticleBodyResults:
 
     def observe(self, message, source_id: str, *, now: datetime | None = None, known_article=None) -> dict:
         now = now or utc_now()
+        original_key = article_key(message, source_id)
+        if not (message.metadata.get('language') or message.metadata.get('identity_evidence',{}).get('language')):
+            source = self.repository.get_source(source_id)
+            if source and source.content_language:
+                message = message.model_copy(update={'metadata': {**message.metadata,
+                    'language': source.content_language.strip().lower()}})
         key, hint = article_key(message, source_id), update_hint(message)
         language = message.metadata.get("language") or message.metadata.get("identity_evidence", {}).get("language") or ""
         with self.repository.transaction() as db:
             row = db.execute(
                 "SELECT data_json FROM article_body_results WHERE fetch_key=?", (key,)
             ).fetchone()
+            if not row and key != original_key:
+                legacy = db.execute('SELECT data_json FROM article_body_results WHERE fetch_key=?',
+                                    (original_key,)).fetchone()
+                if legacy:
+                    prior = json.loads(legacy[0])
+                    if prior.get('language','') in {'',language} and self.compatible(prior,message,source_id):
+                        row, key = legacy, original_key
             if row and not self.compatible(json.loads(row[0]), message, source_id):
                 key = sha256_text(canonical_json([key, "scope:source:" + source_id]))
                 row = db.execute(
@@ -118,6 +131,9 @@ class ArticleBodyResults:
             if row:
                 result = json.loads(row[0])
                 changed = False
+                if language and not result.get('language'):
+                    result['language'] = language
+                    changed = True
                 if known_article and known_article.first_seen_at.isoformat() < result["first_observed_at"]:
                     result["first_observed_at"] = known_article.first_seen_at.isoformat()
                     result["prior_publication_raw_id"] = known_article.raw_message_id
@@ -184,6 +200,9 @@ class ArticleBodyResults:
                     or old_metadata.get("identity_evidence", {}).get("language")
                     or ""
                 )
+                if not old_language:
+                    old_source = self.repository.get_source(old['source_id'])
+                    old_language = (old_source.content_language or '').strip().lower() if old_source else ''
                 if access_scope(old_input, old["source_id"]) != result[
                     "access_scope"
                 ] or old_language != result.get("language", ""):

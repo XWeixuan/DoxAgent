@@ -849,6 +849,15 @@ class SiteStrategyService:
             "queue_locked": joint._condition.locked(),
             "site_active": dict(joint._site_active),
             "identity_active": dict(joint._identity_active),
+            "global_active": joint._active,
+            "global_limit": joint.max_concurrency,
+            "body_active": joint._body_active,
+            "body_limit": joint.body_max_concurrency,
+            "site_ready_in_ms": {k:max(0,int((v-now)*1000)) for k,v in joint._site_next.items() if v>now},
+            "identity_ready_in_ms": {k:max(0,int((v-now)*1000)) for k,v in joint._identity_next.items() if v>now},
+            "waiters": [{"site":w.site_key,"identity":w.identity_id,"purpose":w.purpose.value,
+                         "age_ms":int((now-w.enqueued_at)*1000),"site_limit":w.site_limit,
+                         "identity_limit":w.identity_limit} for w in joint._waiters[:64]],
         }
 
     @property

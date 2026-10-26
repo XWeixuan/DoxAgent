@@ -879,7 +879,7 @@ class GlobalPollScheduler:
                 with self.repository.atomic_intake():
                     for run_id, binding, state in zip(ids, bindings, states, strict=True):
                         self.repository.polling.start(
-                            run_id, source, binding, state.target_due_at or attempted_at,
+                            run_id, source, binding, self._current_due(state.target_due_at, attempted_at, binding.polling.target_interval_seconds),
                             attempted_at, "TAIL:SHARED" if kwargs.get("window_cutoff")
                             else kwargs.get("acquisition_unit", "SHARED"),
                         )
@@ -1386,7 +1386,8 @@ class GlobalPollScheduler:
         # Snapshot source and binding for this poll. Updates become visible on the next poll.
         state = await self.read_call(self.repository.get_poll_unit_state, binding, acquisition_unit)
         state = state.model_copy(
-            update={"source_definition_version": source.version, "binding_version": binding.version}
+            update={"source_definition_version": source.version, "binding_version": binding.version,
+                    "target_due_at": self._current_due(state.target_due_at, attempted_at, binding.polling.target_interval_seconds)}
         )
         if source.source_id == "yahoo_finance_news" and acquisition_unit == "TAIL:YAHOO_TIME":
             primary = await self.read_call(
@@ -1590,7 +1591,7 @@ class GlobalPollScheduler:
             if source.source_id != "corporate_ir_press_releases" and (
                 result.messages
                 or (valid_list and not page_captures)
-                or (result.next_checkpoint and result.next_checkpoint != last_checkpoint)
+                or (not page_captures and result.next_checkpoint and result.next_checkpoint != last_checkpoint)
             ):
                 # Final non-paged inputs use the same durable receipt as early pages.
                 await on_page(
@@ -1695,6 +1696,8 @@ class GlobalPollScheduler:
                     a.network_ms for a in accesses if not a.served_from_shared_capture
                 ),
             }
+            if run_details is not None:
+                run_details['stages_ms'] = timing
             captures = [
                 a.capture_acquired_at for a in accesses if a.capture_acquired_at
             ] + page_captures
@@ -1813,11 +1816,15 @@ class GlobalPollScheduler:
             return execution
 
     @staticmethod
+    def _current_due(previous_due, now, interval_seconds):
+        value = previous_due or now
+        # Missing old slots remain in the durable SCHEDULE denominator. A new
+        # physical request belongs to the current grid slot, never an hours-old retry.
+        return value + timedelta(seconds=max(0, int((now-value).total_seconds() // interval_seconds))*interval_seconds)
+
+    @staticmethod
     def _next_due(previous_due: datetime, now: datetime, interval_seconds: int) -> datetime:
-        value = previous_due
-        while value <= now:
-            value += timedelta(seconds=interval_seconds)
-        return value
+        return previous_due + timedelta(seconds=max(0, int((now-previous_due).total_seconds() // interval_seconds)+1)*interval_seconds)
 
     def _limiter(self, source: SourceDefinition, unit="ALL") -> SchedulerGroupLimiter:
         key = (
@@ -1943,6 +1950,16 @@ class GlobalPollScheduler:
     def _update_capacity_alerts(
         self, bindings: list[tuple[SourceDefinition, TickerSourceBinding]]
     ) -> None:
+        signature = (tuple((s.source_id,s.version,b.binding_id,b.version) for s,b in bindings),
+                     getattr(self, '_intake_backlogged', False))
+        now = time.monotonic()
+        if signature == getattr(self, '_capacity_alert_signature', None) and now < getattr(self, '_capacity_alert_at', 0):
+            return
+        self._capacity_alert_signature, self._capacity_alert_at = signature, now+60
+        with self.repository.atomic_intake():
+            self._write_capacity_alerts(bindings)
+
+    def _write_capacity_alerts(self, bindings):
         from .pressure import background_allowed, cpu_pressure
 
         if not background_allowed():

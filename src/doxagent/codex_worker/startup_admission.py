@@ -45,6 +45,11 @@ class PriorityGate:
 
     def snapshot(self):
         return {
+            "condition_locked": self.condition.locked(),
+            "queued": len(self.waiters),
+            "oldest_wait_seconds": max(
+                (time.monotonic() - entry[2] for entry in self.waiters), default=0.0
+            ),
             "owner_alive": self._owner is not None and not self._owner.done(),
             "owner_label": self._owner_label,
             "held_seconds": (
@@ -60,30 +65,34 @@ class PriorityGate:
         owner = asyncio.current_task()
         admitted = False
         try:
-            async with self.condition:
-                if len(self.waiters) >= self.max_pending:
-                    raise RuntimeError("startup admission queue full; retry original operation")
-                self.sequence += 1
-                entry = (rank, self.sequence)
-                self.waiters.append(entry)
-                try:
-                    async with asyncio.timeout(timeout):
+            # The initial lock acquisition is part of the admission budget too.
+            async with asyncio.timeout(timeout):
+                async with self.condition:
+                    if len(self.waiters) >= self.max_pending:
+                        raise RuntimeError("startup admission queue full; retry original operation")
+                    self.sequence += 1
+                    entry = (rank, self.sequence, time.monotonic())
+                    self.waiters.append(entry)
+                    try:
                         while (
                             self.active
                             or min(self.waiters, key=lambda x: (x[0](), x[1])) != entry
                             or not allowed()
                         ):
                             try:
-                                await asyncio.wait_for(self.condition.wait(), 0.25)
+                                # Condition owns the current task's lock. A wait_for
+                                # child can outlive a repeatedly cancelled parent.
+                                async with asyncio.timeout(0.25):
+                                    await self.condition.wait()
                             except TimeoutError:
                                 pass
-                    self.active = admitted = True
-                    self._owner = owner
-                    self._owner_since = time.monotonic()
-                    self._owner_label = label
-                finally:
-                    self.waiters.remove(entry)
-                    self.condition.notify_all()
+                        self.active = admitted = True
+                        self._owner = owner
+                        self._owner_since = time.monotonic()
+                        self._owner_label = label
+                    finally:
+                        self.waiters.remove(entry)
+                        self.condition.notify_all()
             yield
         finally:
             if admitted and self._owner is owner:
@@ -103,6 +112,7 @@ class StartupAdmission:
         self.startup_pressure = False
         self._sample_at = 0.0
         self._healthy_at = None
+        self.quarantined = set()
 
     def memory_level(self):
         if self.safety:
@@ -147,7 +157,11 @@ class StartupAdmission:
         progress("WAIT_BOOT_SLOT")
         async with self.cold.acquire(
             rank,
-            lambda: self.memory_level() != "CRITICAL" and (rank() == 0 or self.allow_speculation()),
+            lambda: (
+                not self.quarantined
+                and self.memory_level() != "CRITICAL"
+                and (rank() == 0 or self.allow_speculation())
+            ),
             remaining(180),
             label=scope.get("key"),
         ):

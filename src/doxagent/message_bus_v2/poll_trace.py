@@ -60,7 +60,7 @@ async def httpx_response(response):
         event["response_received_at"] = utc_now().isoformat()
         event["validators"] = {
             key: response.headers[key]
-            for key in ("date", "age", "etag", "last-modified")
+            for key in ("date", "age", "etag", "last-modified", "cache-control", "expires", "via")
             if key in response.headers
         }
 

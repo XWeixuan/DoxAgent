@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import json
+import logging
 import time
 from collections.abc import AsyncIterator
 from contextlib import suppress
@@ -13,6 +14,7 @@ from pathlib import Path
 from uuid import uuid4
 
 from doxagent.codex_runtime.schema import utc_now
+from doxagent.codex_worker.cleanup import await_owned
 from doxagent.codex_worker.io_budget import blocking
 from doxagent.codex_worker.job_store import JobStore
 from doxagent.codex_worker.result_receipt import receipt_path
@@ -62,6 +64,8 @@ class _Jobs:
 
 
 class WorkerJobManager:
+    EVENT_HEARTBEAT_SECONDS = 15
+
     def __init__(
         self,
         runtime: CodexExecutionRuntime,
@@ -96,6 +100,18 @@ class WorkerJobManager:
         self.safety = SafetyStateReader(safety_state_path)
         self._reaper = None
         self._reap_error = None
+        self._dispatcher_state = "STARTING"
+        self._dispatcher_error = None
+        self._dispatcher_progress = None
+        self._dispatcher_retry_at = None
+        self._dispatch_failures = 0
+        self._observation_gc_task = None
+        self._observation_gc_at = 0.0
+        self._session_gc_at = time.monotonic() + 60
+        self._settling = {}
+        self._settle_retries = {}
+        self._cleanup_quarantines = {}
+        self._cleanup_recheck_at = 0.0
         if hasattr(runtime, "admission"):
             runtime.admission.safety = self.safety
             runtime.admission.handshake = self._startup
@@ -114,7 +130,7 @@ class WorkerJobManager:
         self._retention_settings=session_retention_settings
         self._session_gc_task = None
         if session_retention_settings is not None:
-            from .session_retention import TerminalSessions,business_holds
+            from .session_retention import TerminalSessions, business_holds
             self.session_retention=TerminalSessions(self,self.thread_lifecycle.transport,
                 owner_holds=partial(business_holds,session_retention_settings))
         self._condition = asyncio.Condition()
@@ -174,15 +190,40 @@ class WorkerJobManager:
         return job.model_copy(deep=True)
 
     def start(self) -> None:
-        if self._pump is None and not self._closed:
+        if not self._closed and (self._pump is None or self._pump.done()):
+            if self._pump is not None and not self._pump.cancelled():
+                self._pump.exception()
             self._pump = asyncio.create_task(self._dispatch_loop())
+
+    def dispatcher_status(self):
+        running = self._pump is not None and not self._pump.done()
+        return dict(
+            ready=running and self._processes_recovered and self._dispatcher_state == "RUNNING",
+            running=running,
+            state=self._dispatcher_state,
+            processes_recovered=self._processes_recovered,
+            last_progress_age_seconds=(
+                time.monotonic() - self._dispatcher_progress
+                if self._dispatcher_progress is not None
+                else None
+            ),
+            last_error=self._dispatcher_error,
+            retry_at=self._dispatcher_retry_at,
+            settlements_pending=len(self._settle_retries),
+        )
 
     async def _collect_owned_resources(self):
         from .workspace_retention import collect
-        result=await self.session_retention.collect()
-        result['workspaces']=await asyncio.to_thread(collect,self._workspaces,self,self._retention_settings)
+
+        result = await self.session_retention.collect()
+        result["workspaces"] = await asyncio.to_thread(
+            collect, self._workspaces, self, self._retention_settings
+        )
         from .snapshot_retention import collect as collect_snapshots
-        result['initialization_snapshots']=await asyncio.to_thread(collect_snapshots,self._workspaces,self,self._retention_settings)
+
+        result["initialization_snapshots"] = await asyncio.to_thread(
+            collect_snapshots, self._workspaces, self, self._retention_settings
+        )
         return result
 
     async def probe(self) -> dict[str, object]:
@@ -208,26 +249,56 @@ class WorkerJobManager:
             self._probe_active = quarantined
 
     async def _dispatch_loop(self) -> None:
-        observation_gc_at = 0.0
-        session_gc_at = time.monotonic()+60
+        while not self._closed:
+            try:
+                await self._dispatch_attempt()
+            except asyncio.CancelledError:
+                raise
+            except Exception as exc:
+                self._dispatcher_state = "RETRYING"
+                self._dispatcher_error = f"{type(exc).__name__}: {str(exc)[:250]}"
+                delay = (1, 2, 5, 10)[min(self._dispatch_failures, 3)]
+                self._dispatch_failures += 1
+                self._dispatcher_retry_at = time.time() + delay
+                logging.getLogger(__name__).exception("Worker dispatcher will retry in %ss", delay)
+                await asyncio.sleep(delay)
+
+    def _observation_done(self, task):
+        if not task.cancelled() and task.exception():
+            logging.getLogger(__name__).warning("Observation GC failed: %s", task.exception())
+
+    async def _dispatch_attempt(self):
         if not self._processes_recovered:
+            self._dispatcher_state = "RECOVERING"
             recover = getattr(self._runtime, "recover", None)
             if recover is not None:
                 await recover()
-            self._processes_recovered = True
             self._recover_snapshots()  # Completions may commit during old-process cleanup.
+            self._processes_recovered = True
         while not self._closed:
-            if self.session_retention is not None and time.monotonic()>=session_gc_at and (self._session_gc_task is None or self._session_gc_task.done()):
+            if (
+                self.session_retention is not None
+                and time.monotonic() >= self._session_gc_at
+                and (self._session_gc_task is None or self._session_gc_task.done())
+            ):
                 if self._session_gc_task is not None:
-                    try:self.store.metadata('session_retention',self._session_gc_task.result())
-                    except Exception as exc:self.store.metadata('session_retention',{'error':str(exc)[:250]})
-                self._session_gc_task=asyncio.create_task(self._collect_owned_resources())
-                session_gc_at=time.monotonic()+600
-            if time.monotonic() >= observation_gc_at:
+                    try:
+                        if not self._session_gc_task.cancelled():
+                            self.store.metadata("session_retention", self._session_gc_task.result())
+                    except Exception as exc:
+                        self.store.metadata("session_retention", {"error": str(exc)[:250]})
+                self._session_gc_task = asyncio.create_task(self._collect_owned_resources())
+                self._session_gc_at = time.monotonic() + 600
+            if time.monotonic() >= self._observation_gc_at and (
+                self._observation_gc_task is None or self._observation_gc_task.done()
+            ):
                 from .w3_turn_probe import maintenance
 
-                await asyncio.to_thread(maintenance, self.store.root)
-                observation_gc_at = time.monotonic() + 3600
+                self._observation_gc_task = asyncio.create_task(
+                    asyncio.to_thread(maintenance, self.store.root)
+                )
+                self._observation_gc_task.add_done_callback(self._observation_done)
+                self._observation_gc_at = time.monotonic() + 3600
             snapshot = self.safety.read()
             self.store.metadata(
                 "safety",
@@ -267,8 +338,9 @@ class WorkerJobManager:
             reap = getattr(self._runtime, "reap_idle", None)
             if reap is not None and (self._reaper is None or self._reaper.done()):
                 if self._reaper is not None:
-                    error = self._reaper.exception()
-                    self._reap_error = type(error).__name__ if error else None
+                    error = None if self._reaper.cancelled() else self._reaper.exception()
+                    if error:
+                        self._reap_error = type(error).__name__
                 kwargs = {"all_idle": snapshot.level is SafetyLevel.CRITICAL}
                 if getattr(self._runtime, "manages_startup_capacity", False):
                     kwargs["pressure"] = snapshot.level is SafetyLevel.PRESSURE
@@ -276,7 +348,21 @@ class WorkerJobManager:
             warm = getattr(self._runtime, "warm", None)
             if warm is not None and snapshot.level is SafetyLevel.NORMAL:
                 await warm(self.launch_wave_size, self._startup, self.launch_interval_seconds)
+            self._retry_settlements()
+            helper = self.thread_lifecycle.transport
+            if (
+                self._cleanup_quarantines or getattr(helper, "quarantined", False)
+            ) and time.monotonic() >= self._cleanup_recheck_at:
+                self._cleanup_recheck_at = time.monotonic() + 30
+                await self._reconcile_cleanups()
+                reconcile = getattr(helper, "reconcile_cleanup", None)
+                if reconcile is not None:
+                    await reconcile()
             self._schedule()
+            self._dispatcher_state = "RUNNING"
+            self._dispatcher_progress = time.monotonic()
+            self._dispatcher_retry_at = None
+            self._dispatch_failures = 0
             await asyncio.sleep(0.25)
 
     def _schedule(self) -> None:
@@ -312,7 +398,7 @@ class WorkerJobManager:
             max(0, self.startup_concurrency - len(self._starting)),
         )
         for job_id in queued:
-            if job_id in self._tasks:
+            if job_id in self._tasks or job_id in self._settle_retries or job_id in self._settling:
                 continue
             job = self._jobs[job_id]
             if job.next_retry_at > time.time():
@@ -391,8 +477,63 @@ class WorkerJobManager:
         try:
             await self._run(job_id, request)
         finally:
+            await await_owned(self._launch_settlement(job_id, request))
+
+    def _launch_settlement(self, job_id, request):
+        task = self._settling.get(job_id)
+        if task is None or task.done():
+            task = asyncio.create_task(self._settle_execution(job_id, request))
+            self._settling[job_id] = task
+            task.add_done_callback(partial(self._settlement_done, job_id))
+        return task
+
+    def _settlement_done(self, job_id, task):
+        if self._settling.get(job_id) is task:
+            self._settling.pop(job_id, None)
+        if not task.cancelled():
+            task.exception()
+
+    def _retry_settlements(self):
+        for job_id, retry in list(self._settle_retries.items()):
+            if retry["at"] > time.monotonic() or job_id in self._settling:
+                continue
+            request = self.store.request(job_id)
+            if request is not None:
+                self._launch_settlement(job_id, request)
+            elif self._jobs[job_id].status in {"succeeded", "failed", "cancelled"}:
+                # ACK can remove the request after the terminal SQL commit but
+                # before a failed mirror/event acknowledgement is retried.
+                if self._jobs[job_id].execution_phase == "SETTLED":
+                    self._active.pop(job_id, None)
+                    self._active_lanes.pop(job_id, None)
+                self._settle_retries.pop(job_id, None)
+                self._pending_finish.pop(job_id, None)
+
+    async def _reconcile_cleanups(self):
+        complete = getattr(self._runtime, "cleanup_complete_for", None)
+        if complete is None:
+            return
+        for job_id, key in list(self._cleanup_quarantines.items()):
+            request = self.store.request(job_id)
+            complete_key = getattr(self._runtime, "cleanup_complete_key", None)
+            gone = (
+                complete(request)
+                if request is not None
+                else key is not None and complete_key is not None and complete_key(key)
+            )
+            if gone:
+                await self._update(job_id, execution_phase="SETTLED")
+                self._active.pop(job_id, None)
+                self._active_lanes.pop(job_id, None)
+                self._cleanup_quarantines.pop(job_id, None)
+
+    async def _settle_execution(self, job_id, request):
+        try:
             cleanup_started = time.monotonic()
-            await self._update(job_id, execution_phase="CLEANING")
+            try:
+                await self._update(job_id, execution_phase="CLEANING")
+            except Exception:
+                logging.getLogger(__name__).warning("Cleaning marker failed for %s", job_id)
             cleanup = getattr(self._runtime, "release", None)
             cleanup_ok = True
             if callable(cleanup):
@@ -400,10 +541,13 @@ class WorkerJobManager:
                     await cleanup(request)
                 except Exception as exc:
                     cleanup_ok = False
-                    await self._update(job_id, cleanup_error=type(exc).__name__)
-            finish = self._pending_finish.pop(
-                job_id, {"status": "failed", "error_code": "WORKER_INTERRUPTED"}
+                    logging.getLogger(__name__).warning("Job %s cleanup: %s", job_id, exc)
+            finish = dict(
+                self._pending_finish.get(
+                    job_id, {"status": "failed", "error_code": "WORKER_INTERRUPTED"}
+                )
             )
+            planned = finish.pop("_settlement_planned", False)
             if finish.get("error_code") == "CAPSULE_CLEANUP_QUARANTINED":
                 cleanup_ok = False
             forced = self._forced_reason.pop(job_id, None)
@@ -414,20 +558,24 @@ class WorkerJobManager:
                     "status": "failed",
                     "error_code": "WORKER_INFRA_RECOVERY_EXHAUSTED",
                     "error_message": "owned process cleanup failed; "
-                    "slot quarantined until manual reconciliation",
+                    "slot quarantined until owned-process exit is confirmed",
                 }
             current = self._jobs[job_id]
             startup_failure = getattr(self._runtime, "failure_for", lambda _: None)(request)
             if startup_failure:
                 await self._update(
-                    job_id, resource_receipt={
-                        **current.resource_receipt, "startup_failure": startup_failure,
+                    job_id,
+                    resource_receipt={
+                        **current.resource_receipt,
+                        "startup_failure": startup_failure,
                     },
                 )
                 current = self._jobs[job_id]
-            safe_start_retry = (finish.get("error_code") == "CODEX_START_TIMEOUT"
-                                and startup_failure is not None
-                                and startup_failure.get("run_command_sent") is False)
+            safe_start_retry = (
+                finish.get("error_code") == "CODEX_START_TIMEOUT"
+                and startup_failure is not None
+                and startup_failure.get("run_command_sent") is False
+            )
             infrastructure = safe_start_retry or finish.get("error_code") in {
                 "WORKER_PROCESS_EXITED",
                 "WORKER_RESOURCE_PRESSURE",
@@ -435,10 +583,12 @@ class WorkerJobManager:
                 "WORKER_RESTARTED",
                 "WORKER_MCP_UNAVAILABLE",
             }
-            if infrastructure and cleanup_ok and not self._closed:
+            if infrastructure and cleanup_ok and not self._closed and not planned:
                 retry_limit = (
-                    1 if startup_failure is not None
-                    and startup_failure.get("run_command_sent") is False else 2
+                    1
+                    if startup_failure is not None
+                    and startup_failure.get("run_command_sent") is False
+                    else 2
                 )
                 if current.infra_recovery_count < retry_limit:
                     finish = {
@@ -452,10 +602,23 @@ class WorkerJobManager:
                 else:
                     finish["error_code"] = "WORKER_INFRA_RECOVERY_EXHAUSTED"
             observation = finish.pop("w3_observation", None)
+            # A mirror/event write can fail after SQLite committed. Retrying the
+            # settlement must not spend another infrastructure retry generation.
+            self._pending_finish[job_id] = {
+                **finish,
+                "_settlement_planned": True,
+                "w3_observation": observation,
+            }
+            if not cleanup_ok:
+                # Only retain the physical lookup key, never a second prompt copy.
+                key_for = getattr(self._runtime, "key", lambda _: None)
+                self._cleanup_quarantines[job_id] = key_for(request)
             await self._update(
                 job_id,
                 **finish,
-                finished_at=None if finish.get("status") == "queued" else utc_now(),
+                finished_at=None
+                if finish.get("status") == "queued"
+                else (current.finished_at or utc_now()),
                 execution_phase=("QUEUED" if finish.get("status") == "queued" else "SETTLED")
                 if cleanup_ok
                 else "CLEANUP_QUARANTINED",
@@ -465,16 +628,34 @@ class WorkerJobManager:
                     "cleanup_ms": int((time.monotonic() - cleanup_started) * 1000),
                 },
             )
-            await blocking(self._persist_telemetry, request, self._jobs[job_id])
             if cleanup_ok:
                 self._active.pop(job_id, None)
                 self._active_lanes.pop(job_id, None)
+            self._pending_finish.pop(job_id, None)
+            self._settle_retries.pop(job_id, None)
+            try:
+                await blocking(self._persist_telemetry, request, self._jobs[job_id])
+            except Exception:
+                logging.getLogger(__name__).warning("Terminal job telemetry failed for %s", job_id)
+        except Exception as exc:
+            attempts = self._settle_retries.get(job_id, {}).get("attempts", 0)
+            self._settle_retries[job_id] = dict(
+                attempts=attempts + 1,
+                at=time.monotonic() + (1, 2, 5, 10)[min(attempts, 3)],
+                error=f"{type(exc).__name__}: {str(exc)[:250]}",
+            )
+            logging.getLogger(__name__).exception("Job %s finalization will retry", job_id)
+            raise
 
     async def close(self) -> None:
         self._closed = True
+        self._dispatcher_state = "STOPPED"
+        if self._observation_gc_task is not None:
+            self._observation_gc_task.cancel()
+            await asyncio.gather(self._observation_gc_task, return_exceptions=True)
         if self._session_gc_task is not None:
             self._session_gc_task.cancel()
-            await asyncio.gather(self._session_gc_task,return_exceptions=True)
+            await asyncio.gather(self._session_gc_task, return_exceptions=True)
         if self._pump is not None:
             self._pump.cancel()
             await asyncio.gather(self._pump, return_exceptions=True)
@@ -532,10 +713,14 @@ class WorkerJobManager:
                 "cold_active": getattr(cold, "active", False),
                 "cold_waiters": len(getattr(cold, "waiters", [])),
                 "cold_owner": cold.snapshot() if cold is not None else None,
+                "cold_quarantined_owners": list(getattr(admission, "quarantined", ()))[:8],
                 "startup_pressure": getattr(admission, "startup_pressure", False),
                 "reap_error": self._reap_error,
             },
             "dispatcher_running": self._pump is not None and not self._pump.done(),
+            "dispatcher_status": self.dispatcher_status(),
+            "cleanup": getattr(self._runtime, "cleanup_snapshot", lambda: {})(),
+            "lifecycle": getattr(self.thread_lifecycle.transport, "snapshot", lambda: {})(),
             "generation": self.generation,
         }
 
@@ -575,14 +760,14 @@ class WorkerJobManager:
             if self._jobs[job_id].status in {"succeeded", "failed", "cancelled"}:
                 return
             async with self._condition:
+                timed_out = False
                 try:
-                    await asyncio.wait_for(self._condition.wait(), timeout=15)
+                    async with asyncio.timeout(self.EVENT_HEARTBEAT_SECONDS):
+                        await self._condition.wait()
                 except TimeoutError:
-                    yield WorkerEvent(
-                        sequence=after_sequence,
-                        event_type="heartbeat",
-                        payload={},
-                    )
+                    timed_out = True
+            if timed_out:
+                yield WorkerEvent(sequence=after_sequence, event_type="heartbeat", payload={})
 
     async def _run(self, job_id: str, request: WorkerRunRequest) -> None:
         if str(request.node) != "persistent_runtime_w3":
@@ -630,18 +815,18 @@ class WorkerJobManager:
                         await self._startup.acquire()
                 try:
                     with span("worker.runtime_start"):
-                        handle = await asyncio.wait_for(
-                            self._runtime.start(request, run_root),
-                            timeout=max(
-                                .001, min(120, request.timeout_seconds) - (15 if managed else 0)
-                            ),
-                        )
+                        async with asyncio.timeout(
+                            max(.001, min(120, request.timeout_seconds) - (15 if managed else 0))
+                        ):
+                            handle = await self._runtime.start(request, run_root)
                 finally:
                     if not managed:
                         self._startup.release()
             finally:
                 self._starting.discard(job_id)
             self._handles[job_id] = handle
+            if self._closed or asyncio.current_task().cancelling():
+                raise asyncio.CancelledError
             process = getattr(handle, "process", None)
             await self._update(
                 job_id,
@@ -666,7 +851,8 @@ class WorkerJobManager:
                 },
             )
             phase = "RUN_TURN"
-            result = await asyncio.wait_for(handle.run(), timeout=request.timeout_seconds)
+            async with asyncio.timeout(request.timeout_seconds):
+                result = await handle.run()
             telemetry = result.telemetry
             if telemetry is not None:
                 telemetry = telemetry.model_copy(

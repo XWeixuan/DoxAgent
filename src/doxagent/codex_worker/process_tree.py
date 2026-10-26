@@ -40,8 +40,32 @@ def signal_owned(owned: dict[int, tuple[str, int]], sig: int) -> None:
             pass
 
 
-async def terminate_owned(process: asyncio.subprocess.Process, identity: str) -> None:
+class PopenProcess:
+    """Async view of the SDK's synchronous Popen; retain it across client.close."""
+
+    def __init__(self, process):
+        self.process = process
+
+    @property
+    def pid(self):
+        return self.process.pid
+
+    @property
+    def returncode(self):
+        return self.process.poll()
+
+    async def wait(self):
+        # Popen.wait in a thread cannot be cancelled if the process is stuck.
+        # Poll only while this bounded cleanup is alive; leave no blocked thread.
+        while self.returncode is None:
+            await asyncio.sleep(0.05)
+        return self.returncode
+
+
+async def terminate_owned(process, identity: str, *, kill_group=True) -> None:
     if os.name == "nt":
+        if process is None:
+            return
         if process.returncode is None:
             import subprocess
 
@@ -64,13 +88,19 @@ async def terminate_owned(process: asyncio.subprocess.Process, identity: str) ->
         while True:
             owned = await asyncio.to_thread(owned_processes, identity)
             await asyncio.to_thread(signal_owned, owned, sig)
-            if process.returncode is None and process.pid in owned:
+            if (
+                kill_group
+                and process is not None
+                and process.returncode is None
+                and process.pid in owned
+            ):
                 try:
                     os.killpg(process.pid, sig)
                 except ProcessLookupError:
                     pass
-            if not owned and process.returncode is not None:
-                await process.wait()
+            if not owned and (process is None or process.returncode is not None):
+                if process is not None:
+                    await process.wait()
                 return
             if asyncio.get_running_loop().time() >= end:
                 break

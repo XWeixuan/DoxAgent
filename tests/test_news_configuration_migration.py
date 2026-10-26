@@ -8,6 +8,24 @@ from scripts.ops.configure_news_latency import plan
 from tests.test_content_enrichment_hub import _setup
 
 
+def test_reuters_capacity_is_explicit_and_keeps_bounded_site_pacing(tmp_path):
+    repo, _, _, _ = _setup(tmp_path)
+    source = repo.get_source('reuters_site_search')
+    repo.save_source(source.model_copy(update={'scheduler_constraints':
+        source.scheduler_constraints.model_copy(update={'max_concurrency':1,
+            'minimum_request_gap_seconds':3})}))
+    site = SiteStrategyRepository(tmp_path/'site.db')
+    bootstrap_seed(site,SiteStrategyService(site,profile_root=tmp_path/'profiles'))
+    assert not any(c['id']=='reuters_site_search' for c in plan(repo.path,site.path))
+    changes=plan(repo.path,site.path,include_reuters=True)
+    change=next(c for c in changes if c['id']=='reuters_site_search')
+    assert change['patch']['scheduler_constraints']['max_concurrency']==2
+    assert change['patch']['scheduler_constraints']['minimum_request_gap_seconds']==0
+    strategy=next(c for c in changes if c['kind']=='site' and c['id']=='reuters')
+    assert strategy['spec']['access']['max_concurrency']==2
+    assert strategy['spec']['access']['min_interval_ms']<=1500
+
+
 def test_explicit_binding_migration_survives_source_revision_cascade(tmp_path):
     repo, bus, _, _ = _setup(tmp_path)
     source = repo.get_source("yahoo_finance_news")

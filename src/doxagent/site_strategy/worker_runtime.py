@@ -49,15 +49,19 @@ class WorkerRuntimeFacade:
         }
         active = set()
         hot = set()
-        for scope in store.list_scopes():
-            route = self.runtime.repository.get_runtime(f"scope:{scope.scope_id}")
-            selected = route.active_combination_id or scope.primary_identity_id
+        scopes = store.list_scopes()
+        identities = dict((spec.identity_id,spec) for _,spec in self.runtime.repository.list_active_identities())
+        reuters_ids = {member for scope in scopes if scope.owner_site_id=='reuters'
+                       for member in (scope.primary_identity_id,scope.fallback_identity_id) if member}
+        for scope in scopes:
+            route = self.runtime.repository.get_runtime(f"scope:{scope.scope_id}") if scope.fallback_identity_id else None
+            selected = (route.active_combination_id if route else None) or scope.primary_identity_id
             active.add(selected)
-            primary = self.runtime.repository.get_identity(scope.primary_identity_id)
+            primary = identities.get(scope.primary_identity_id) or self.runtime.repository.get_identity(scope.primary_identity_id)
             if (
                 scope.enabled
                 and scope.source_id
-                and primary.lifecycle.residency.value == "always_on"
+                and primary and primary.lifecycle.residency.value == "always_on"
             ):
                 hot.add(selected)
         now = time.monotonic()
@@ -77,9 +81,10 @@ class WorkerRuntimeFacade:
                 human or recovering_page
             ) and identity.runtime_kind is BrowserRuntimeKind.MANAGED_PLAYWRIGHT:
                 continue
-            reuters = any(s.owner_site_id=='reuters' and identity_id in {s.primary_identity_id,s.fallback_identity_id}
-                          for s in store.list_scopes())
+            reuters = identity_id in reuters_ids
             timeout = identity.lifecycle.idle_seconds if reuters else min(identity.lifecycle.idle_seconds, 600 if identity_id in active else 120)
+            if (identity.owner_scope_id or '').startswith('publisher:'):
+                timeout = min(timeout,180)
             rotate = status["age_seconds"] >= 4 * 3600 or status["high_rss_samples"] >= 3
             driver_idle = status["idle_seconds"] >= 600
             native_idle = (
@@ -98,7 +103,7 @@ class WorkerRuntimeFacade:
                 closed += 1
         # A detached controller is not a reason to leave an inactive native Chrome forever.
         live = self.runtime.workers.status()
-        for _, identity in self.runtime.repository.list_active_identities():
+        for identity in identities.values():
             recovery = store.get_recovery(identity.identity_id)
             if (
                 recovery
@@ -121,8 +126,7 @@ class WorkerRuntimeFacade:
             if profile and profile.maintenance_session_id and not lost_scene:
                 continue
             status = live.get(identity.identity_id)
-            reuters = any(s.owner_site_id=='reuters' and identity.identity_id in {s.primary_identity_id,s.fallback_identity_id}
-                          for s in store.list_scopes())
+            reuters = identity.identity_id in reuters_ids
             if reuters and identity.identity_id in active:
                 continue
             timeout = identity.lifecycle.idle_seconds if reuters else min(

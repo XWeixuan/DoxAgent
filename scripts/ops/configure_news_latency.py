@@ -28,7 +28,9 @@ def read(path, query):
         return [dict(row) for row in db.execute(query)]
 
 
-def plan(bus_path, registry_path, *, site_capacity=8, validated_identity_capacity=2):
+def plan(bus_path, registry_path, *, site_capacity=8, validated_identity_capacity=2, include_reuters=False):
+    targets = {**TARGETS, **({"reuters_site_search":"reuters"} if include_reuters else {})}
+    reuters_identities = set()
     if not 1 <= validated_identity_capacity <= site_capacity <= 8:
         raise ValueError("capacity requires 1 <= validated identity <= site <= 8")
     codec = NativeContent(bus_path)
@@ -36,7 +38,7 @@ def plan(bus_path, registry_path, *, site_capacity=8, validated_identity_capacit
         codec.decode(json.loads(r["data_json"]))
         for r in read(bus_path, "SELECT data_json FROM source_definitions")
     ]
-    groups = {s["scheduler_group"] for s in sources if s["source_id"] in TARGETS}
+    groups = {s["scheduler_group"] for s in sources if s["source_id"] in targets}
     changes = []
     for source in sources:
         if source["scheduler_group"] not in groups:
@@ -44,7 +46,7 @@ def plan(bus_path, registry_path, *, site_capacity=8, validated_identity_capacit
         patch = {
             "scheduler_constraints": {
                 **source["scheduler_constraints"],
-                "max_concurrency": site_capacity,
+                "max_concurrency": min(site_capacity,2) if source["source_id"] == "reuters_site_search" else site_capacity,
                 "capacity_mode": "adaptive",
                 # Transport/host and Site/Identity own actual request pacing.
                 # A second Bus-wide gap would serialize independent ticker heads.
@@ -61,7 +63,7 @@ def plan(bus_path, registry_path, *, site_capacity=8, validated_identity_capacit
                 **source["default_polling_config"],
                 "target_interval_seconds": 30,
             }
-        if source["source_id"] in TARGETS:
+        if source["source_id"] in targets:
             properties = dict(source.get("parameter_schema", {}).get("properties", {}))
             if source["source_id"] in {
                 "globenewswire_search",
@@ -120,8 +122,10 @@ def plan(bus_path, registry_path, *, site_capacity=8, validated_identity_capacit
     scoped_sites = set()
     for row in read(registry_path, "SELECT data_json FROM source_access_scopes"):
         scope = json.loads(row["data_json"])
-        if scope.get("source_id") in TARGETS:
+        if scope.get("source_id") in targets:
             scoped_sites.add(scope["owner_site_id"])
+            if scope.get("source_id") == "reuters_site_search":
+                reuters_identities.update(i for i in (scope.get("primary_identity_id"),scope.get("fallback_identity_id")) if i)
             desired_identities.update(
                 i
                 for i in (scope.get("primary_identity_id"), scope.get("fallback_identity_id"))
@@ -129,14 +133,14 @@ def plan(bus_path, registry_path, *, site_capacity=8, validated_identity_capacit
             )
     for row in sites:
         old = json.loads(row["spec_json"])
-        if old["site_id"] not in TARGETS.values():
+        if old["site_id"] not in targets.values():
             continue
         desired = {
             **old,
             "access": {
                 **old["access"],
-                "max_concurrency": site_capacity,
-                "min_interval_ms": min(old["access"]["min_interval_ms"], 500),
+                "max_concurrency": min(site_capacity,2) if old["site_id"] == "reuters" else site_capacity,
+                "min_interval_ms": min(old["access"]["min_interval_ms"], 1500 if old["site_id"] == "reuters" else 500),
                 "body_queue_timeout_ms": 3000,
                 "crawler_queue_timeout_ms": 3000,
             },
@@ -167,7 +171,7 @@ def plan(bus_path, registry_path, *, site_capacity=8, validated_identity_capacit
                 "max_concurrency": max(
                     old["access"]["max_concurrency"], validated_identity_capacity
                 ),
-                "min_interval_ms": min(old["access"]["min_interval_ms"], 500),
+                "min_interval_ms": min(old["access"]["min_interval_ms"], 1500 if identity_id in reuters_identities else 500),
             }
             if old
             else None
@@ -217,12 +221,14 @@ def main():
         default=2,
         help="Use 3/4 only after a same-identity canary; this is a validated ceiling.",
     )
+    parser.add_argument("--include-reuters", action="store_true")
     args = parser.parse_args()
     changes = plan(
         args.bus,
         args.registry,
         site_capacity=args.site_capacity,
         validated_identity_capacity=args.validated_identity_capacity,
+        include_reuters=args.include_reuters,
     )
     receipt = {
         "created_at": datetime.now(UTC).isoformat(),

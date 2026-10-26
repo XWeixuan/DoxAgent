@@ -936,7 +936,7 @@ class ReadStore:
                     "objects_parent" if table == history_name else "current_parent"
                 ) if parent is not None else (
                     "history_recent" if table == history_name else (
-                        "current_page" if kind == "case" and identity is None else None
+                        "current_page" if kind in {"case", "message"} and identity is None else None
                     )
                 )
                 rows.extend(db.execute(

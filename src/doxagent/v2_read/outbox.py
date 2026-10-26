@@ -207,6 +207,31 @@ class SourceOutbox:
                     )
                     alias = "OLD" if operation == "DELETE" else "NEW"
                     values = ",".join(f"'{r[1]}',{alias}.{quoted(r[1])}" for r in columns)
+                    if table == 'poll_states':
+                        # The Owner retains full checkpoints. Read versions need
+                        # health/counts and small endpoint summaries, not input lists.
+                        data = f'{alias}.data_json'
+                        thin = (f"json_set(json_remove({data},'$.units','$.checkpoint'),'$.checkpoint',"
+                                f"json_object('ir_endpoints',json_extract({data},'$.checkpoint.ir_endpoints'),"
+                                f"'query_cycle',json_extract({data},'$.checkpoint.query_cycle')))")
+                        values = ",".join(f"'{r[1]}'," + (f"({thin} || '')" if r[1]=='data_json' else
+                                             f'{alias}.{quoted(r[1])}') for r in columns)
+                    if table in {'article_body_results', 'content_enrichment_jobs'}:
+                        data = f'{alias}.data_json'
+                        if table == 'article_body_results':
+                            thin = f"json_remove({data},'$.content','$.diagnostics')"
+                        else:
+                            thin = (f"json_set(json_remove({data},'$.message','$.source','$.binding','$.result'),"
+                                f"'$.source',json_object('source_id',json_extract({data},'$.source.source_id')),"
+                                f"'$.binding',CASE WHEN json_extract({data},'$.binding.ticker') IS NULL THEN NULL ELSE "
+                                f"json_object('ticker',json_extract({data},'$.binding.ticker'),'binding_id',json_extract({data},'$.binding.binding_id')) END,"
+                                f"'$.result',json_object('outcome',json_extract({data},'$.result.outcome'),"
+                                f"'reason',json_extract({data},'$.result.reason'),'completed_at',json_extract({data},'$.result.completed_at')))")
+                        # Receipt columns keep their native SQL TEXT shape. JSON
+                        # functions otherwise make json_object embed data_json as
+                        # an object, bypassing the existing native-row decoder.
+                        values = ",".join(f"'{r[1]}',"+(f"({thin} || '')" if r[1]=='data_json' else
+                                             f'{alias}.{quoted(r[1])}') for r in columns)
                     key = "json_array(" + ",".join(f"{alias}.{quoted(r[1])}" for r in primary) + ")"
                     if not primary:
                         key = f"CAST({alias}.rowid AS TEXT)"
