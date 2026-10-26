@@ -2215,3 +2215,4 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-26 生产消息总线恢复：schema生成同步MessageSummary正文更新字段，修复发布后消息投影被additionalProperties拒绝、界面停留周五的问题；projector正常循环增加有预算的失败事件自动重试，保留原始证据与水位防重。修正poll运行时点sort元数据；30分钟采集指标按原生时间索引读取物理当前/历史分支，轮询状态只读标量，避免扫描技术历史和解码完整checkpoint使源列表/状态请求超时。统一按完整main重建必要正式容器并核验，不通过临时容器提供生产服务。
 2026-10-26 生产恢复补充：快照分页将物理history分支改为直接valid_to范围，正文尝试按body_result_key索引读取，避免固定水位下历史OR条件造成广扫；新增受既有projector写锁保护、可预览且幂等的消息摘要修复脚本，仅恢复已发布消息的读模型，不改业务发布或原始失败账目。必要回归及无重复发布测试通过。
 2026-10-26 源列表真实路由复验发现固定水位get仍通过兼容UNION对旧版本排序，导致每张卡重复读取source/ticker/poll历史，20张卡整体超时。改为同一只读事务优先按current精确身份取值，头已移动才按历史主键查一条前驱；保留固定水位语义，新增静态身份不访问history回归。
+2026-10-26 生产发布核验发现Bus启动三次争用Runtime写锁：已预置Runtime库按initialize=False打开，不再由Bus启动重复执行Runtime DDL；新库保留初始化路径。持有真实Runtime写事务时Bus仍可启动的回归通过。投影器生产批量从100调整500（每源仍保留既有时间预算），减少积压追赶期间重复扫描/确认开销，不增加并发或修改采集周期。

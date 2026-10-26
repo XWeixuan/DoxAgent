@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 
 from doxagent.crawler_plane.factory import build_crawler_plane_service
 from doxagent.crawler_plane.service import CrawlerPlaneService
@@ -60,10 +61,11 @@ def build_message_bus_v2_runtime(settings: DoxAgentSettings) -> MessageBusV2Runt
         from doxagent.persistent_runtime_v2.journal import RuntimeJournal
 
         scheduler.runtime_orchestration = BusOrchestration(
-            # Owner transactions now run off the network loop. A 50 ms budget
-            # also applied to startup DDL and caused restart loops during normal
-            # Runtime writes; use a bounded wait rather than declaring an outage.
-            RuntimeJournal(settings.persistent_runtime_v2_sqlite_path, busy_timeout_seconds=5)
+            # Runtime owns this schema. Opening an already provisioned journal
+            # must not rerun DDL or wait for its writer just to start collection.
+            RuntimeJournal(settings.persistent_runtime_v2_sqlite_path,
+                initialize=not Path(settings.persistent_runtime_v2_sqlite_path).is_file(),
+                busy_timeout_seconds=5)
         )
     if settings.ticker_initialization_control_path:
         from doxagent.ticker_initialization.consumers import admit_bus_revisions
