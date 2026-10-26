@@ -803,11 +803,22 @@ class ReadStore:
                     (kind, ticker, identity),
                 ).fetchone()
                 return json.loads(row[0]) if row else None
+            # A UNION compatibility view can sort every old revision before
+            # LIMIT, even for a static source referenced by every source card.
+            # Prefer the physical current identity; only a moved head needs one
+            # indexed historical predecessor in this same read transaction.
             row = db.execute(
-                "SELECT payload,valid_to FROM objects WHERE kind=? AND ticker=? AND id=? "
-                "AND valid_from<=? ORDER BY valid_from DESC LIMIT 1",
-                (kind, ticker, identity, seq),
+                "SELECT payload,valid_to FROM object_current WHERE kind=? AND ticker=? AND id=? "
+                "AND valid_from<=?", (kind,ticker,identity,seq)
             ).fetchone()
+            if row is None:
+                from .serving_schema import history_relation
+                row = db.execute(
+                    "SELECT payload,valid_to FROM "+history_relation(db)+
+                    " WHERE kind=? AND ticker=? AND id=? "
+                    "AND valid_from<=? ORDER BY valid_from DESC LIMIT 1",
+                    (kind,ticker,identity,seq)
+                ).fetchone()
             return json.loads(row[0]) if row and (row[1] is None or row[1] > seq) else None
 
     def page(

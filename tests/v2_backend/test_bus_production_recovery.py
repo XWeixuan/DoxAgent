@@ -11,6 +11,18 @@ def test_message_summary_schema_keeps_article_once_update_status():
     }
 
 
+def test_static_snapshot_identity_uses_current_without_union(tmp_path, monkeypatch):
+    store=ReadStore(tmp_path/'read.db')
+    store.migrate()
+    first=store.ingest('test','one',[dict(kind='native:source_definitions',ticker='',id='news',
+                                        data={'display_name':'News'})])
+    store.ingest('test','two',[dict(kind='other',ticker='',id='two',data={'v':2})])
+    def no_history(*args):
+        raise AssertionError('unchanged current identity must not read history')
+    monkeypatch.setattr('doxagent.v2_read.serving_schema.history_relation',no_history)
+    assert store.get('native:source_definitions','','news',first)=={'display_name':'News'}
+
+
 def test_native_poll_time_is_snapshot_sort_metadata(tmp_path):
     store=ReadStore(tmp_path/'read.db')
     store.migrate()
