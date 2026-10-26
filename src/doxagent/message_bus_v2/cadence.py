@@ -21,6 +21,9 @@ def distribution(values):
 
 def cadence(runs, captures, since, until):
     groups = defaultdict(lambda: {"schedule": [], "runs": [], "captures": []})
+    shared_captures = defaultdict(list)
+    for capture in captures:
+        shared_captures[capture['run_id']].append(capture)
     for row in runs:
         if row["unit"].startswith("TAIL:"):
             continue
@@ -29,6 +32,24 @@ def cadence(runs, captures, since, until):
     for row in captures:
         if not row["unit"].startswith("TAIL:"):
             groups[(row["binding_id"], row["unit"])]["captures"].append(row)
+    for data in groups.values():
+        seen = {r.get('capture_id') or (r['run_id'], r['observed_at']) for r in data['captures']}
+        for run in data['runs']:
+            # Distribution performs one physical acquisition for its frozen roster.
+            # Its durable capture belongs to the producer binding; consumer runs
+            # reference that exact acquisition, not a fresh synthetic response.
+            shared = run.get('shared_run_id')
+            if not shared or run['status'] != 'CAPTURED' or not run.get('requests'):
+                continue
+            for capture in shared_captures.get(shared, []):
+                key = capture.get('capture_id') or (capture['run_id'], capture['observed_at'])
+                if key in seen or capture.get('source_id') != run.get('source_id'):
+                    continue
+                if capture.get('source_version') not in (None, run.get('source_version')):
+                    continue
+                data['captures'].append({**capture, 'binding_id':run['binding_id'],
+                    'binding_version':run.get('binding_version'), 'unit':run['unit']})
+                seen.add(key)
     output = []
     all_gaps = []
     for (binding, unit), data in groups.items():
@@ -127,6 +148,7 @@ def cadence(runs, captures, since, until):
                 if (
                     key
                     and generation_matches(requested, run)
+                    and generation_matches(at, row)
                     and due <= requested < due + timedelta(seconds=run["interval_seconds"])
                     and requested <= at <= requested + timedelta(seconds=run["interval_seconds"])
                 ):

@@ -576,7 +576,7 @@ class ContentEnrichmentHub:
                 )
                 body(job, message)
 
-            await self.bus.storage.call(finalize)
+            await self.bus.storage.call(finalize, _lane_priority=0 if job.work_kind != 'recheck' and not job.bootstrap else 1)
             return
         assert job.binding is not None
 
@@ -598,7 +598,8 @@ class ContentEnrichmentHub:
             return accepted
 
         try:
-            accepted = await self.bus.storage.call(finalize_binding)
+            accepted = await self.bus.storage.call(finalize_binding,
+                _lane_priority=0 if job.work_kind != 'recheck' and not job.bootstrap else 1)
         except RuntimeError as exc:
             if not job.known_article_raw_id or str(exc) not in {
                 "known_article_revision_identity_changed", "known_article_revision_not_authorized"

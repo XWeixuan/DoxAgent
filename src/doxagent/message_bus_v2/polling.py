@@ -57,6 +57,7 @@ class PreparedCapture:
     request_started_at: str | None = None
     source_version: int | None = None
     input_key: str = ""
+    fresh_count: int = 0
 
 
 def capture_input_key(payload, unit):
@@ -126,6 +127,9 @@ class PollJournal:
                     input_hash TEXT PRIMARY KEY, capture_id TEXT NOT NULL, valid_until TEXT NOT NULL
                 );
                 CREATE INDEX IF NOT EXISTS poll_intake_reuse_expiry ON poll_intake_reuse(valid_until);
+                CREATE TABLE IF NOT EXISTS poll_capture_priority (
+                    capture_id TEXT PRIMARY KEY, fresh_remaining INTEGER NOT NULL
+                );
             """)
             if "targets_json" not in {r[1] for r in db.execute("PRAGMA table_info(poll_captures)")}:
                 db.execute(
@@ -174,6 +178,8 @@ class PollJournal:
                     source.version,
                     binding.version,
                     binding.polling.target_interval_seconds,
+                    round(epoch.timestamp()*1_000_000) % (binding.polling.target_interval_seconds*1_000_000)
+                    if epoch else None,
                     enabled,
                 ]
                 if cache.get(key) == signature:
@@ -305,8 +311,10 @@ class PollJournal:
                 "checkpoint": checkpoint,
                 "distribution": distribution,
             }
-            if not distribution:
-                value["intake_order"] = self.candidate_order(binding, result.messages)
+            value["intake_order"], value["fresh_count"] = self.candidate_order(
+                binding, result.messages, distribution=bool(distribution), with_count=True,
+                context=context,
+            )
             # File compression/hash/fsync happen before taking the business writer.
             payload = self.repo.content.encode(value)
             input_key = capture_input_key(value, unit)
@@ -334,6 +342,7 @@ class PollJournal:
             request_at,
             source.version,
             input_key,
+            value.get('fresh_count', 0) if result.messages else 0,
         )
 
     def commit(self, capture):
@@ -407,6 +416,9 @@ class PollJournal:
                     capture.binding.version,
                 ),
             )
+            if capture.fresh_count and not reusable:
+                db.execute('INSERT INTO poll_capture_priority VALUES(?,?)',
+                           (capture.capture_id, capture.fresh_count))
             if not capture.distribution:
                 state = self.repo.get_poll_unit_state(capture.binding, capture.unit)
                 # A newer physical capture must never be rolled back by a late response.
@@ -448,15 +460,21 @@ class PollJournal:
         now = utc_now()
         with self.repo.transaction() as db:
             row = db.execute(
-                "SELECT capture_id FROM poll_captures WHERE "
+                "SELECT p.capture_id FROM poll_captures p LEFT JOIN poll_capture_priority f "
+                "ON f.capture_id=p.capture_id WHERE "
                 "((status='PENDING' AND not_before<=?) OR "
                 "(status='RUNNING' AND lease_until<=?)) "
-                + ("AND capture_id=? " if capture_id else "") +
-                "ORDER BY (unit LIKE 'TAIL:%' AND unit!='TAIL:YAHOO_TIME'),queue_at LIMIT 1",
+                + ("AND p.capture_id=? " if capture_id else "") +
+                "ORDER BY (unit LIKE 'TAIL:%' AND unit!='TAIL:YAHOO_TIME'),"
+                + ("" if getattr(self, '_fresh_streak', 0) >= 8 else "(coalesce(f.fresh_remaining,0)<=0),")
+                + "queue_at LIMIT 1",
                 (now.isoformat(), now.isoformat(), *([capture_id] if capture_id else [])),
             ).fetchone()
             if not row:
                 return None
+            fresh = db.execute('SELECT fresh_remaining FROM poll_capture_priority WHERE capture_id=?',
+                               (row[0],)).fetchone()
+            self._fresh_streak = getattr(self, '_fresh_streak', 0)+1 if fresh and fresh[0]>0 else 0
             token = new_id("intake")
             db.execute(
                 "UPDATE poll_captures SET status='RUNNING',claim_token=?,lease_until=? "
@@ -465,11 +483,12 @@ class PollJournal:
             )
             return row[0], token
 
-    def candidate_order(self, binding, messages):
+    def candidate_order(self, binding, messages, *, distribution=False, with_count=False, context=None):
         """Put absent/changed identities first; keep every original array offset durable."""
         from .deduplication import stable_fingerprint
 
-        keys = [identity_key_for(binding.source_id, m) for m in messages]
+        keys = [sha256_text(canonical_json([binding.source_id, m.external_id or m.url]))
+                if distribution else identity_key_for(binding.source_id, m) for m in messages]
         known = {}
         with self.repo._connect() as db:
             for offset in range(0, len(keys), 400):
@@ -477,17 +496,24 @@ class PollJournal:
                 if not batch:
                     continue
                 rows = db.execute(
+                    "SELECT article_key,input_version FROM distribution_articles WHERE article_key IN ("
+                    + ",".join("?" for _ in batch) + ")" if distribution else
                     "SELECT identity_key,input_fingerprint FROM message_observations "
                     "WHERE ticker=? AND source_id=? AND identity_key IN ("
                     + ",".join("?" for _ in batch)
                     + ")",
-                    (binding.ticker, binding.source_id, *batch),
+                    tuple(batch) if distribution else (binding.ticker, binding.source_id, *batch),
                 ).fetchall()
                 known.update((r[0], r[1]) for r in rows)
-        return sorted(
-            range(len(messages)),
-            key=lambda i: keys[i] in known and known[keys[i]] == stable_fingerprint(messages[i]),
-        )
+        def fresh(i):
+            message = messages[i]
+            if context and evaluate_admission(message.published_at, context, context.observed_at,
+                    message.publication_time_basis) in {'EXPIRED_PUBLICATION','OUTSIDE_RECENT_DATES'}:
+                return False
+            return keys[i] not in known or (not distribution and known[keys[i]] != stable_fingerprint(message))
+        flags = [fresh(i) for i in range(len(messages))]
+        order = sorted(range(len(messages)), key=lambda i: not flags[i])
+        return (order, sum(flags)) if with_count else order
 
     def load(self, capture_id):
         with self.repo._connect() as db:
@@ -765,6 +791,10 @@ class PollJournal:
                     self.repo.save_poll_unit_state(unit_state, row["unit"])
             following = row["intake_position"] + advanced
             done = following >= row["message_count"]
+            db.execute('UPDATE poll_capture_priority SET fresh_remaining=max(0,fresh_remaining-?) WHERE capture_id=?',
+                       (advanced, row['capture_id']))
+            if done:
+                db.execute('DELETE FROM poll_capture_priority WHERE capture_id=?', (row['capture_id'],))
             db.execute(
                 "UPDATE poll_captures SET status=?,intake_position=?,queue_at=?,claim_token=NULL,"
                 "lease_until=NULL,receipt_json=?,first_intake_at=coalesce(first_intake_at,?),"
@@ -874,7 +904,12 @@ class PollJournal:
             if stopping():
                 return None
             if continue_capture and prepared[4].acquisition_metadata.get('intake_input_key'):
-                following = self.claim(prepared[0]['capture_id'])
+                with self.repo._connect() as db:
+                    fresh_waiting = db.execute("SELECT 1 FROM poll_capture_priority f JOIN poll_captures p "
+                        "USING(capture_id) WHERE f.fresh_remaining>0 AND p.status='PENDING' "
+                        "AND p.not_before<=? AND p.capture_id!=? LIMIT 1",
+                        (utc_now().isoformat(),prepared[0]['capture_id'])).fetchone()
+                following = None if fresh_waiting else self.claim(prepared[0]['capture_id'])
                 if following:
                     return following
             return self.claim()
@@ -923,6 +958,10 @@ class PollJournal:
         """Bound completed diagnostic history; unresolved input and boundary proof survive."""
         cutoff = ((now or utc_now()) - timedelta(days=3)).isoformat()
         with self.repo.atomic_intake() as db:
+            db.execute('DELETE FROM poll_capture_priority WHERE capture_id IN ('
+                       'SELECT f.capture_id FROM poll_capture_priority f LEFT JOIN poll_captures p '
+                       "USING(capture_id) WHERE p.capture_id IS NULL OR p.status IN ('COMPLETED','CANCELLED') LIMIT ?)",
+                       (limit,))
             db.execute("DELETE FROM poll_intake_reuse WHERE input_hash IN (SELECT input_hash "
                        "FROM poll_intake_reuse WHERE valid_until<? ORDER BY valid_until LIMIT ?)",
                        ((now or utc_now()).isoformat(), limit))
@@ -1018,7 +1057,7 @@ class CaptureIntake:
                     self.journal.accept_and_claim, self.bus, prepared, token, self.distribution,
                     lambda: self.stopping,
                     continue_capture=burst<4,
-                    _lane_priority=0,
+                    _lane_priority=0 if row['intake_position'] < row['decoded_payload'].get('fresh_count', 0) else 1,
                 )
             except asyncio.CancelledError:
                 # Claim expires on process loss; a drained commit remains durable.

@@ -1184,6 +1184,7 @@ class MessageBusV2Service:
             enrichment_input=enrichment_input,
             enrichment_claim=enrichment_claim,
             known_article_raw_id=known_article_raw_id,
+            _lane_priority=0 if trusted_enrichment and not bootstrap and not known_article_raw_id else 1,
         )
         await self.record_consumable(result, message)
         return result

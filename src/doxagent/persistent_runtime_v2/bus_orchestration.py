@@ -135,7 +135,8 @@ class BusOrchestration:
                 temporary_bindings.add(binding.binding_id)
             if hasattr(scheduler, "work_units"):
                 schedule_entries.extend((source,binding,options['acquisition_unit'],
-                                         poll_states[binding.binding_id].target_due_at or now,
+                                         scheduler.schedule_epoch(poll_states[binding.binding_id], options['acquisition_unit'])
+                                         if hasattr(scheduler, 'schedule_epoch') else poll_states[binding.binding_id].target_due_at or now,
                                          "UNKNOWN" if realtime_mode is None else realtime)
                     for _,options in scheduler.work_units(source,binding,poll_states[binding.binding_id],now,include_all=True))
             if realtime:

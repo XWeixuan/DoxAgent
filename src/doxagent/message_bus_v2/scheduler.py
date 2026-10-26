@@ -243,7 +243,7 @@ class GlobalPollScheduler:
                 source,
                 binding,
                 options["acquisition_unit"],
-                poll_states[binding.binding_id].target_due_at or now,
+                self.schedule_epoch(poll_states[binding.binding_id], options['acquisition_unit']),
                 True,
             )
             for source, binding in eligible
@@ -510,6 +510,11 @@ class GlobalPollScheduler:
             self._capacity_checked_at = self._clock()
             await self.storage_call(self._update_capacity_alerts, eligible)
         return eligible, roster, states
+
+    @staticmethod
+    def schedule_epoch(state, unit):
+        value = state.target_due_at if unit == 'SHARED' else state.units.get(unit, {}).get('target_due_at') or state.target_due_at
+        return datetime.fromisoformat(value) if isinstance(value,str) else value
 
     def work_units(self, source, binding, state, now, *, include_all=False):
         from .pressure import background_allowed

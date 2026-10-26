@@ -84,7 +84,7 @@ class DistributionWorker:
         available = self.concurrency - len(self._active)
         if available <= 0:
             return 0
-        rows = await self.bus.storage.call(self.repository.claim_deliveries, article_limit=available)
+        rows = await self.bus.storage.call(self.repository.claim_deliveries, article_limit=available, _lane_priority=0)
         groups = defaultdict(list)
         for row in rows:
             groups[(row["article_id"], int(row["terms_revision"]))].append(row)
@@ -388,6 +388,7 @@ class DistributionWorker:
             jev_attempts=jev_attempts,
             error_code=error_code,
             final_result="RELEVANT" if relevant else "NOT_RELEVANT",
+            _lane_priority=0 if relevant else 1,
         )
         if not relevant:
             await self.bus.storage.call(

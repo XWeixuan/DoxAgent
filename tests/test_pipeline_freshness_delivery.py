@@ -571,3 +571,54 @@ async def test_shared_trendforce_press_selects_its_http_capable_adapter():
     context = SimpleNamespace(source=SimpleNamespace(source_id="trendforce_press_releases",entry_url="https://www.trendforce.com/presscenter/news"))
     await SiteStrategyCrawlerAdapter(registry).poll_shared(context)
     press.poll_shared.assert_awaited_once_with(context)
+
+
+def test_cadence_links_shared_physical_capture_to_each_frozen_consumer():
+    from doxagent.message_bus_v2.cadence import cadence
+    at = utc_now().replace(microsecond=0)
+    runs=[]
+    for ticker, version in (("MU",1),("BE",2)):
+        base=dict(binding_id=ticker+":feed",source_id="feed",unit="SHARED",source_version=1,binding_version=version,interval_seconds=30,due_at=at.isoformat(),dispatch_at=at.isoformat())
+        runs += [{**base,"run_id":ticker+"schedule","status":"SCHEDULE","reason":"ENABLED"},
+            {**base,"run_id":ticker,"status":"CAPTURED","shared_run_id":"physical-shared",
+             "requests":[{"request_started_at":(at+timedelta(seconds=1)).isoformat(),"role":"listing"}]}]
+    capture=dict(capture_id="capture",run_id="physical-shared",binding_id="MU:feed",source_id="feed",unit="SHARED",source_version=1,binding_version=1,observed_at=(at+timedelta(seconds=2)).isoformat())
+    result=cadence(runs,[capture],at,at+timedelta(seconds=30))
+    assert result["fresh_cycles"]==2 and result["expected_cycles"]==2
+    # A missing physical receipt or another source version cannot fill the gap.
+    assert cadence(runs,[],at,at+timedelta(seconds=30))["fresh_cycles"]==0
+    assert cadence(runs,[{**capture,"source_version":99}],at,at+timedelta(seconds=30))["fresh_cycles"]==0
+
+
+def test_new_capture_passes_old_daily_work_after_restart_without_dropping_inputs(tmp_path):
+    from doxagent.message_bus_v2.repository import MessageBusV2Repository
+    from doxagent.message_bus_v2.schema import PollResult
+    repo,bus,source,binding=_setup(tmp_path)
+    now=utc_now()
+    old=_message(701).model_copy(update={"published_at":now-timedelta(days=30)})
+    old_capture=repo.polling.prepare(source=source,binding=binding,result=PollResult(messages=[old]*80),run_id="old-work",observed_at=now)
+    repo.polling.commit(old_capture)
+    fresh=repo.polling.prepare(source=source,binding=binding,result=PollResult(messages=[_message(702)]),run_id="new-work",observed_at=now)
+    repo.polling.commit(fresh)
+    restarted=MessageBusV2Repository(repo.path)
+    assert restarted.polling.claim()[0]==fresh.capture_id
+    row=restarted.polling.load(old_capture.capture_id)
+    assert len(row["decoded_payload"]["result"]["messages"])==80
+    assert restarted.polling.claim()[0]==old_capture.capture_id
+
+
+def test_schedule_tracks_unit_phase_changes_without_writing_each_period(tmp_path):
+    from doxagent.message_bus_v2.scheduler import GlobalPollScheduler
+    from doxagent.message_bus_v2.schema import PollState
+    repo,bus,source,binding=_setup(tmp_path)
+    at=utc_now().replace(microsecond=0)
+    journal=repo.polling
+    journal.schedules([(source,binding,"HEAD",at,True)],at)
+    journal.schedules([(source,binding,"HEAD",at+timedelta(seconds=binding.polling.target_interval_seconds),True)],at+timedelta(seconds=1))
+    with repo._connect() as db:
+        assert db.execute("select count(*) from poll_runs where status='SCHEDULE'").fetchone()[0]==1
+    journal.schedules([(source,binding,"HEAD",at+timedelta(seconds=3),True)],at+timedelta(seconds=2))
+    with repo._connect() as db:
+        assert db.execute("select count(*) from poll_runs where status='SCHEDULE'").fetchone()[0]==2
+    state=repo.get_poll_state(binding).model_copy(update={"target_due_at":at,"units":{"OTHER_HEAD":{"target_due_at":(at+timedelta(seconds=7)).isoformat()}}})
+    assert GlobalPollScheduler.schedule_epoch(state,"OTHER_HEAD")==at+timedelta(seconds=7)

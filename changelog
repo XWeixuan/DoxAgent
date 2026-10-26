@@ -2201,3 +2201,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-26 发布前补充：生产仍为旧Google单并发/1秒源限速，补精确旧默认迁移；按真实terms revision/source version复用query plan，避免每个调度tick重新解析完整词表。TrendForce Press在批准server-direct出口单次HTTP 200、5条合同通过、404ms，接入轻量主路径且保留浏览器回退。IBKR周期历史重复项仅在durable capture成功后记录有界收据，保留更新回调、重启重合对账；即时回调沿用Bus活跃绑定和临时开关到期门禁，防止关闭后再启动未持久化的SDK正文请求。新增HEAD/中尾部新候选、SDK慢ticker隔离/完整正文回调/到期、真实publisher别名FULL复用、query-plan失效等专项；发布前最新去重回归454通过、1跳过（前期失败及修复记录保留）。
 
 2026-10-26 实测修复：Bus已接纳配置的周期检查/心跳改为读取当前head与运行状态，避免每tick对每ticker重新构造live/candidate仓库并重复DDL及提交；指针变化仍执行原安装/回滚。修复Site共享策略选择TrendForce Press时错误复用news适配器，确保已开发的公开HTTP主路径实际被调用。补稳态无迁移、激活/回滚回归。
+
+2026-10-26 运行测试继续修复：capture增加独立持久候选优先级，新增候选所在列表可越过日常旧文章工作，分发源亦先处理未见文章；原数组及全部输入保留，8次优先服务后仍让旧队列推进，完成候选片段后降为普通优先级，新正文/真实发布优先于旧扫描。补共享物理收据逐订阅关联与generation验证；调度journal按各必需单元的真实due相位记录，相位变更生成新段而正常周期推进不写新段，修正新共享源首次获取及多频道相位造成的验收归属偏差。统计修复与执行提速单独验收。
