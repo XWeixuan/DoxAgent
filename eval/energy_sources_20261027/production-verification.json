@@ -1,0 +1,525 @@
+{
+  "commit": "12bf384c2c611eb4d9246e2577e473b96ac37c12",
+  "components": {
+    "v2-message-bus": {
+      "image": "sha256:838bb36e3b5dc4b3771f22ef42df2f3f281dab8e9c1eaea46c90b4d7ff3a839a",
+      "running": true,
+      "restarts": 0,
+      "started_at": "2026-10-26T17:13:30.345290165Z"
+    },
+    "v2-content-enrichment": {
+      "image": "sha256:838bb36e3b5dc4b3771f22ef42df2f3f281dab8e9c1eaea46c90b4d7ff3a839a",
+      "running": true,
+      "restarts": 0,
+      "started_at": "2026-10-26T17:13:21.132656463Z"
+    }
+  },
+  "configuration": {
+    "sources": 16,
+    "internal_endpoints": 31,
+    "bindings": 28,
+    "by_ticker": {
+      "CEG": 12,
+      "BE": 8,
+      "NBIS": 2,
+      "COHR": 2,
+      "INTC": 2,
+      "MU": 2
+    },
+    "reserved": [
+      {
+        "ticker": "IONQ",
+        "source_id": "national_quantum_initiative"
+      },
+      {
+        "ticker": "IONQ",
+        "source_id": "nist_news"
+      },
+      {
+        "ticker": "IONQ",
+        "source_id": "nro_press_releases"
+      },
+      {
+        "ticker": "IONQ",
+        "source_id": "nsf_news"
+      }
+    ],
+    "ionq_bus_registered": false,
+    "languages": {
+      "MU": [
+        "en",
+        "ko",
+        "zh-Hant"
+      ],
+      "RKLB": [
+        "en"
+      ],
+      "BE": [
+        "en",
+        "ko",
+        "zh-Hant"
+      ],
+      "INTC": [
+        "en",
+        "ko",
+        "zh-Hant"
+      ],
+      "NBIS": [
+        "en",
+        "ko",
+        "zh-Hant"
+      ],
+      "COHR": [
+        "en",
+        "ko",
+        "zh-Hant"
+      ],
+      "ONDS": [
+        "en",
+        "he"
+      ],
+      "CEG": [
+        "en"
+      ],
+      "SNOW": [
+        "en"
+      ]
+    },
+    "endpoint_health": [
+      {
+        "source_id": "dcd_energy_ticker",
+        "unit": "FEED:d4867808738354c7d3f528d2",
+        "status": "succeeded",
+        "last_success_at": "2026-10-26T17:21:54.518226Z",
+        "last_error_code": null
+      },
+      {
+        "source_id": "dcd_energy_ticker",
+        "unit": "FEED:fdbe4abf7101a6815b08c315",
+        "status": "succeeded",
+        "last_success_at": "2026-10-26T17:21:37.293173Z",
+        "last_error_code": null
+      },
+      {
+        "source_id": "power_magazine_energy",
+        "unit": "FEED:688954476fb783325f0d3da7",
+        "status": "succeeded",
+        "last_success_at": "2026-10-26T17:21:52.489127Z",
+        "last_error_code": null
+      },
+      {
+        "source_id": "power_magazine_energy",
+        "unit": "FEED:6a7ae168d38a67f3cdc374d5",
+        "status": "succeeded",
+        "last_success_at": "2026-10-26T17:21:52.887941Z",
+        "last_error_code": null
+      },
+      {
+        "source_id": "power_magazine_energy",
+        "unit": "FEED:06ac57747b943fda8c48db5c",
+        "status": "succeeded",
+        "last_success_at": "2026-10-26T17:21:36.338946Z",
+        "last_error_code": null
+      },
+      {
+        "source_id": "power_magazine_energy",
+        "unit": "FEED:65afdcc79ada3849d46bc36a",
+        "status": "succeeded",
+        "last_success_at": "2026-10-26T17:21:54.701891Z",
+        "last_error_code": null
+      },
+      {
+        "source_id": "power_magazine_energy",
+        "unit": "FEED:5f57ca2d9bbc49199a5051bb",
+        "status": "succeeded",
+        "last_success_at": "2026-10-26T17:21:36.527474Z",
+        "last_error_code": null
+      },
+      {
+        "source_id": "power_magazine_energy",
+        "unit": "FEED:f0d36bead962ddb9312b970d",
+        "status": "succeeded",
+        "last_success_at": "2026-10-26T17:21:52.912338Z",
+        "last_error_code": null
+      },
+      {
+        "source_id": "power_magazine_energy",
+        "unit": "FEED:dfb1378278e648d1d303df54",
+        "status": "succeeded",
+        "last_success_at": "2026-10-26T17:21:53.896760Z",
+        "last_error_code": null
+      },
+      {
+        "source_id": "power_engineering_energy",
+        "unit": "FEED:1d260e200becdf607e2b4cf7",
+        "status": "succeeded",
+        "last_success_at": "2026-10-26T17:21:45.968741Z",
+        "last_error_code": null
+      },
+      {
+        "source_id": "power_engineering_energy",
+        "unit": "FEED:6ec1b73774c1ba4ec0ad6176",
+        "status": "succeeded",
+        "last_success_at": "2026-10-26T17:21:46.156144Z",
+        "last_error_code": null
+      },
+      {
+        "source_id": "power_engineering_energy",
+        "unit": "FEED:d0de8f7c3d7a516320f92e4d",
+        "status": "succeeded",
+        "last_success_at": "2026-10-26T17:21:47.166098Z",
+        "last_error_code": null
+      },
+      {
+        "source_id": "power_engineering_energy",
+        "unit": "FEED:235e5a72b5dba92b980467f1",
+        "status": "succeeded",
+        "last_success_at": "2026-10-26T17:21:45.020030Z",
+        "last_error_code": null
+      },
+      {
+        "source_id": "power_engineering_energy",
+        "unit": "FEED:400f9d2cc69c1b3f88094a48",
+        "status": "succeeded",
+        "last_success_at": "2026-10-26T17:21:45.817255Z",
+        "last_error_code": null
+      },
+      {
+        "source_id": "power_engineering_energy",
+        "unit": "FEED:d635e1b6f2a794fcf3de63b4",
+        "status": "succeeded",
+        "last_success_at": "2026-10-26T17:21:45.756292Z",
+        "last_error_code": null
+      },
+      {
+        "source_id": "utility_dive",
+        "unit": "FEED:f0fb325afe07ff21bf307014",
+        "status": "succeeded",
+        "last_success_at": "2026-10-26T17:21:38.749401Z",
+        "last_error_code": null
+      },
+      {
+        "source_id": "world_nuclear_news",
+        "unit": "FEED:7aeff12b5dff2df82855fb85",
+        "status": "succeeded",
+        "last_success_at": "2026-10-26T17:21:45.855920Z",
+        "last_error_code": null
+      },
+      {
+        "source_id": "ans_nuclear_newswire",
+        "unit": "FEED:391841846a827fda0e706bd6",
+        "status": "succeeded",
+        "last_success_at": "2026-10-26T17:20:52.802266Z",
+        "last_error_code": null
+      },
+      {
+        "source_id": "canary_media",
+        "unit": "FEED:bd9f86f953b4a5cb13216d0d",
+        "status": "succeeded",
+        "last_success_at": "2026-10-26T17:21:44.783194Z",
+        "last_error_code": null
+      },
+      {
+        "source_id": "nrc_news_releases",
+        "unit": "FEED:13558bfebc804201ba5980ec",
+        "status": "succeeded",
+        "last_success_at": "2026-10-26T17:21:38.523145Z",
+        "last_error_code": null
+      },
+      {
+        "source_id": "nrc_event_notifications",
+        "unit": "FEED:6bbe84acf8686ebb137e8c53",
+        "status": "succeeded",
+        "last_success_at": "2026-10-26T17:21:37.134757Z",
+        "last_error_code": null
+      },
+      {
+        "source_id": "doe_energy_news",
+        "unit": "FEED:6ef71a729c05e0d5efee567c",
+        "status": "succeeded",
+        "last_success_at": "2026-10-26T17:21:44.398860Z",
+        "last_error_code": null
+      },
+      {
+        "source_id": "doe_energy_news",
+        "unit": "FEED:e5d5acfcb339375945d4a516",
+        "status": "succeeded",
+        "last_success_at": "2026-10-26T17:21:38.629226Z",
+        "last_error_code": null
+      },
+      {
+        "source_id": "doe_energy_news",
+        "unit": "FEED:b6764e3fd2255cb78f61933a",
+        "status": "succeeded",
+        "last_success_at": "2026-10-26T17:21:38.647537Z",
+        "last_error_code": null
+      },
+      {
+        "source_id": "doe_energy_news",
+        "unit": "FEED:7977bdcae7432b207598cbbc",
+        "status": "succeeded",
+        "last_success_at": "2026-10-26T17:21:38.767271Z",
+        "last_error_code": null
+      },
+      {
+        "source_id": "dcd_infrastructure_rss",
+        "unit": "FEED:7278213ee8f6cdb74ee2b957",
+        "status": "succeeded",
+        "last_success_at": "2026-10-26T17:21:38.611178Z",
+        "last_error_code": null
+      },
+      {
+        "source_id": "data_center_frontier",
+        "unit": "FEED:89de5d09f5f486ad42605b0a",
+        "status": "succeeded",
+        "last_success_at": "2026-10-26T17:21:46.042285Z",
+        "last_error_code": null
+      }
+    ],
+    "projection_current": true
+  },
+  "old_bindings_unchanged": 257,
+  "old_sources_unchanged": 83,
+  "old_terms_unchanged": {
+    "BE": 2,
+    "INTC": 2,
+    "MU": 5,
+    "NBIS": 1,
+    "COHR": 1,
+    "RKLB": 2,
+    "ONDS": 3,
+    "SNOW": 1
+  },
+  "new_terms": {
+    "CEG": 1
+  },
+  "natural_poll_runs": [
+    [
+      "ans_nuclear_newswire",
+      "FEED:391841846a827fda0e706bd6",
+      "CAPTURED",
+      null,
+      6
+    ],
+    [
+      "ans_nuclear_newswire",
+      "FEED:391841846a827fda0e706bd6",
+      "DISPATCHED",
+      null,
+      1
+    ],
+    [
+      "canary_media",
+      "FEED:bd9f86f953b4a5cb13216d0d",
+      "CAPTURED",
+      null,
+      14
+    ],
+    [
+      "data_center_frontier",
+      "FEED:89de5d09f5f486ad42605b0a",
+      "CAPTURED",
+      null,
+      42
+    ],
+    [
+      "dcd_energy_ticker",
+      "FEED:d4867808738354c7d3f528d2",
+      "CAPTURED",
+      null,
+      8
+    ],
+    [
+      "dcd_energy_ticker",
+      "FEED:fdbe4abf7101a6815b08c315",
+      "CAPTURED",
+      null,
+      8
+    ],
+    [
+      "dcd_energy_ticker",
+      "FEED:fdbe4abf7101a6815b08c315",
+      "DISPATCHED",
+      null,
+      1
+    ],
+    [
+      "dcd_infrastructure_rss",
+      "FEED:7278213ee8f6cdb74ee2b957",
+      "CAPTURED",
+      null,
+      42
+    ],
+    [
+      "doe_energy_news",
+      "FEED:6ef71a729c05e0d5efee567c",
+      "CAPTURED",
+      null,
+      7
+    ],
+    [
+      "doe_energy_news",
+      "FEED:7977bdcae7432b207598cbbc",
+      "CAPTURED",
+      null,
+      14
+    ],
+    [
+      "doe_energy_news",
+      "FEED:b6764e3fd2255cb78f61933a",
+      "CAPTURED",
+      null,
+      14
+    ],
+    [
+      "doe_energy_news",
+      "FEED:e5d5acfcb339375945d4a516",
+      "CAPTURED",
+      null,
+      14
+    ],
+    [
+      "nrc_event_notifications",
+      "FEED:6bbe84acf8686ebb137e8c53",
+      "CAPTURED",
+      null,
+      8
+    ],
+    [
+      "nrc_event_notifications",
+      "FEED:6bbe84acf8686ebb137e8c53",
+      "DISPATCHED",
+      null,
+      1
+    ],
+    [
+      "nrc_news_releases",
+      "FEED:13558bfebc804201ba5980ec",
+      "CAPTURED",
+      null,
+      7
+    ],
+    [
+      "power_engineering_energy",
+      "FEED:1d260e200becdf607e2b4cf7",
+      "CAPTURED",
+      null,
+      7
+    ],
+    [
+      "power_engineering_energy",
+      "FEED:235e5a72b5dba92b980467f1",
+      "CAPTURED",
+      null,
+      7
+    ],
+    [
+      "power_engineering_energy",
+      "FEED:400f9d2cc69c1b3f88094a48",
+      "CAPTURED",
+      null,
+      7
+    ],
+    [
+      "power_engineering_energy",
+      "FEED:6ec1b73774c1ba4ec0ad6176",
+      "CAPTURED",
+      null,
+      7
+    ],
+    [
+      "power_engineering_energy",
+      "FEED:d0de8f7c3d7a516320f92e4d",
+      "CAPTURED",
+      null,
+      14
+    ],
+    [
+      "power_engineering_energy",
+      "FEED:d635e1b6f2a794fcf3de63b4",
+      "CAPTURED",
+      null,
+      7
+    ],
+    [
+      "power_magazine_energy",
+      "FEED:06ac57747b943fda8c48db5c",
+      "CAPTURED",
+      null,
+      16
+    ],
+    [
+      "power_magazine_energy",
+      "FEED:06ac57747b943fda8c48db5c",
+      "DISPATCHED",
+      null,
+      2
+    ],
+    [
+      "power_magazine_energy",
+      "FEED:5f57ca2d9bbc49199a5051bb",
+      "CAPTURED",
+      null,
+      8
+    ],
+    [
+      "power_magazine_energy",
+      "FEED:5f57ca2d9bbc49199a5051bb",
+      "DISPATCHED",
+      null,
+      1
+    ],
+    [
+      "power_magazine_energy",
+      "FEED:65afdcc79ada3849d46bc36a",
+      "CAPTURED",
+      null,
+      8
+    ],
+    [
+      "power_magazine_energy",
+      "FEED:688954476fb783325f0d3da7",
+      "CAPTURED",
+      null,
+      8
+    ],
+    [
+      "power_magazine_energy",
+      "FEED:6a7ae168d38a67f3cdc374d5",
+      "CAPTURED",
+      null,
+      16
+    ],
+    [
+      "power_magazine_energy",
+      "FEED:dfb1378278e648d1d303df54",
+      "CAPTURED",
+      null,
+      8
+    ],
+    [
+      "power_magazine_energy",
+      "FEED:f0d36bead962ddb9312b970d",
+      "CAPTURED",
+      null,
+      8
+    ],
+    [
+      "utility_dive",
+      "FEED:f0fb325afe07ff21bf307014",
+      "CAPTURED",
+      null,
+      14
+    ],
+    [
+      "world_nuclear_news",
+      "FEED:7aeff12b5dff2df82855fb85",
+      "CAPTURED",
+      null,
+      7
+    ]
+  ],
+  "idempotent": true,
+  "other_component_changes": [],
+  "timer_active": true
+}

@@ -1,0 +1,39 @@
+{
+  "at": "2026-10-26T17:26:09.796587+00:00",
+  "source_id": "dcd_infrastructure_rss",
+  "unique_articles": 4,
+  "standard_messages_by_ticker_outcome": [
+    [
+      "BE",
+      "FULL",
+      1
+    ],
+    [
+      "CEG",
+      "FULL",
+      4
+    ],
+    [
+      "COHR",
+      "FULL",
+      2
+    ],
+    [
+      "INTC",
+      "FULL",
+      4
+    ],
+    [
+      "MU",
+      "FULL",
+      4
+    ],
+    [
+      "NBIS",
+      "FULL",
+      4
+    ]
+  ],
+  "messages": 19,
+  "stream_members": 19
+}
