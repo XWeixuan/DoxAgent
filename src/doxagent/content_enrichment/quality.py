@@ -296,6 +296,17 @@ def inspect_html(
         return result
     path = urlparse(url).path.lower()
     if (
+        (urlparse(url).hostname or '').lower() == 'investorshub.advfn.com'
+        and path.rstrip('/').endswith('/news')
+        and root.xpath('//div[contains(concat(" ",normalize-space(@class)," ")," quote-news-item ")]'
+                       '//a[contains(@href,"/stock-news/") or contains(@href,"/market-news/article/")]')
+    ):
+        # This is a verified news-list document. Running article extraction over
+        # all cards on every access only consumes browser/CPU time; the adapter
+        # still validates the requested ticker, links and publication dates.
+        result.page_kind = 'listing'
+        return result
+    if (
         (urlparse(url).hostname or "").lower() in {"www.investing.com", "investing.com"}
         and path.startswith("/equities/")
         and path.rstrip("/").endswith("-news")

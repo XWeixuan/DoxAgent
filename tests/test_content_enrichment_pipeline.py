@@ -281,6 +281,19 @@ def test_pcguide_product_expansion_is_not_article_expansion():
     assert choose_candidate(info,TITLE)[2]=='expand_required'
 
 
+def test_investorshub_listing_never_runs_body_extraction(monkeypatch):
+    import doxagent.content_enrichment.quality as quality
+    def unexpected():
+        raise AssertionError('listing must not invoke article extractor')
+    monkeypatch.setattr(quality,'_default_extractor',unexpected)
+    html='<div class="quote-news-item"><a href="/stock-market/NASDAQ/Micron-MU/stock-news/12345/chip-news">Micron news</a></div>'
+    info=quality.inspect_html(html,'https://investorshub.advfn.com/stock-market/NASDAQ/Micron-MU/news','')
+    assert info.page_kind=='listing' and not info.candidates
+    info=quality.inspect_html('<title>Verify you are human</title>'+html,
+        'https://investorshub.advfn.com/stock-market/NASDAQ/Micron-MU/news','')
+    assert info.access_reason=='challenge_required'
+
+
 def test_finnhub_redirect_uses_explicit_target_not_external_asset():
     info = inspect_html(
         '<script src="https://cdn.example/player.js"></script>'
