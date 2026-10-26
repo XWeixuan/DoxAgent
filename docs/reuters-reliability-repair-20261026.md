@@ -44,3 +44,4 @@
 - 初始 [14:12:36,14:13:33Z) 全窗：17 次 CRAWLER ACCESS_RESULT SUCCESS、1 次 BODY SUCCESS、1 条正式 FULL；另 1 次 BODY BUDGET_DEFERRED/site_queue_timeout。没有新恢复事件或付费作业；不以此宣称持续稳定，也不把排队延期改叫 Challenge。
 - 初始查看发现旧 unit 回执能混入迁移后的首次 query_cycle；已增加回归并改为从当前新回执初始化周期，而非继承最老历史时点。后续仅窄发布 Bus；首个跨迁移周期不计入三轮纯新版本覆盖。小时验收仍需分版本、全部查询、BODY 与延期分别统计。
 - 两个历史实际白屏 PNG 均目视核对，且由新检查器判为 BLANK_SUSPECTED；未称能从白屏识别验证码。当前没有可解现场，真实 RETRY→slider→paid→正式恢复尚未覆盖。
+- 统计修正 `f6ef4040` 已单独发布 Message Bus；Site Access/BODY 继续运行 `e56b8697`，三个角色逐文件核验均为各自预期源码，Chrome instance/PID 再次核对未变。补充调度/词表/迁移回归 36 项通过。最终一小时窗口为 **UTC 14:21:13–15:21:13 / 北京时间 22:21:13–23:21:13**，以 `observation-window.json` 为准；已安排本聊天每约 10 分钟一次验收，到期自动停止并汇报，发现真实内部故障按用户授权继续窄修。

@@ -1,0 +1,10 @@
+{
+  "baseline_utc": "2026-10-26T14:21:13Z",
+  "deadline_utc": "2026-10-26T15:21:13Z",
+  "site_access_commit": "e56b8697e21692e782783efc97da803fa62a42fb",
+  "body_commit": "e56b8697e21692e782783efc97da803fa62a42fb",
+  "message_bus_commit": "f6ef40407ab7dd5871eb3a6a8c0fbf1ea65b9ea0",
+  "cadence_minutes": 10,
+  "automation_id": "reuters",
+  "note": "Final one-hour window after the query-cycle migration correction. Earlier initial-release evidence is retained separately."
+}
