@@ -438,6 +438,10 @@ class DistributionWorker:
         jev_attempts: int,
         error_code: str | None,
     ) -> None:
+        message = message.model_copy(update={'metadata':{
+            **message.metadata, 'pipeline_trace':{
+                **message.metadata.get('pipeline_trace',{}),
+                'decision_ready_at':utc_now().isoformat()}}})
         try:
             completed = await self.bus.storage.call(
                 self.repository.settle_delivery, self.bus, row, source, message,

@@ -37,6 +37,20 @@ async def test_completed_continuation_releases_slot_without_decoding_or_model(tm
         assert not db.execute('SELECT 1 FROM distribution_jev_continuations').fetchone()
 
 
+async def test_decision_ready_clock_precedes_storage_admission(monkeypatch):
+    import doxagent.message_bus_v2.distribution as module
+    now=utc_now()
+    monkeypatch.setattr(module,'utc_now',lambda:now)
+    async def queued_call(operation,bus,row,source,message,**kwargs):
+        monkeypatch.setattr(module,'utc_now',lambda:now+timedelta(seconds=5))
+        assert message.metadata['pipeline_trace']['decision_ready_at']==now.isoformat()
+        return None
+    worker=DistributionWorker(SimpleNamespace(settle_delivery=None),
+        SimpleNamespace(storage=SimpleNamespace(call=queued_call)),None)
+    await worker._deliver({},None,_message(919191),regex_hit=True,
+        jev_result=None,jev_attempts=0,error_code=None)
+
+
 def test_partial_continuation_recovers_only_remaining_and_fences_old_owner(tmp_path):
     repo = MessageBusV2Repository(tmp_path/'bus.db');dist=DistributionRepository(repo)
     with repo.transaction() as db:

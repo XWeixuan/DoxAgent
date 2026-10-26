@@ -834,7 +834,8 @@ class DistributionRepository:
                 **message.metadata, 'distribution': {'decision_id':decision,
                 'terms_revision':row['terms_revision'],'regex_hit':regex_result,'jev_result':jev_result},
                 'pipeline_trace': {**message.metadata.get('pipeline_trace',{}),
-                                   'decision_ready_at':utc_now().isoformat()}}})
+                                   'decision_ready_at':message.metadata.get('pipeline_trace',{}).get(
+                                       'decision_ready_at') or utc_now().isoformat()}}})
             result = bus._accept_message(source=current_source,binding=binding,message=enriched,
                 bootstrap=False,trusted_enrichment=True,
                 enrichment_input=RawMessageInput.model_validate_json(row['original_json']))
