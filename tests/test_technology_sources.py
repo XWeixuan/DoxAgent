@@ -16,10 +16,12 @@ from doxagent.message_bus_v2.service import MessageBusV2Service
 from doxagent.message_bus_v2.technology_body import TechnologyBodyReader
 from doxagent.message_bus_v2.technology_sources import (
     CATALOG,
+    LEGACY_CATALOG,
     SOURCES,
     Capture,
     TechnologyAdapter,
     TechnologyHttp,
+    endpoint_units,
     initial_sources,
     parse_listing,
 )
@@ -36,14 +38,21 @@ async def permit():
     yield
 
 
-def context(source_id, checkpoint=None, at=NOW):
+def context(source_id, checkpoint=None, at=NOW, unit="SHARED"):
     return SharedPollContext(
         run_id="test",
-        source=next(s for s in initial_sources() if s.source_id == source_id),
+        source=source_definition(source_id),
+        acquisition_unit=unit,
         requested_at=at,
         checkpoint=checkpoint or {},
         request_permit=permit,
     )
+
+
+def source_definition(source_id):
+    spec = SOURCES[source_id]
+    base = next(s for s in initial_sources() if SOURCES[s.source_id].domain == spec.domain)
+    return base.model_copy(update={"source_id": source_id, "entry_url": spec.urls[0]})
 
 
 def fixture(source_id):
@@ -52,7 +61,7 @@ def fixture(source_id):
     ).read_text(encoding="utf-8")
 
 
-@pytest.mark.parametrize("spec", CATALOG, ids=lambda s: s.source_id)
+@pytest.mark.parametrize("spec", LEGACY_CATALOG, ids=lambda s: s.source_id)
 def test_real_publisher_listing_contracts(spec):
     messages = parse_listing(spec, fixture(spec.source_id), spec.urls[0], NOW)
     assert messages and all(spec.accepts(m.url) for m in messages)
@@ -66,13 +75,15 @@ def test_real_publisher_listing_contracts(spec):
 
 def test_catalog_shares_publisher_schedule_and_has_no_browser_or_global_subscription():
     sources = initial_sources()
-    assert len(sources) == 26
+    assert len(sources) == 13
     assert len({s.source_id for s in sources}) == len(sources)
     for domain in {s.domain for s in CATALOG}:
         assert (
             len({s.scheduler_group for s in sources if SOURCES[s.source_id].domain == domain}) == 1
         )
-    assert all(len(spec.urls) == 1 for spec in CATALOG)
+    assert sum(len(spec.urls) for spec in CATALOG) == 26
+    assert len(SOURCES["siliconangle_software"].urls) == 3
+    assert len(SOURCES["siliconangle_ai"].urls) == 1
     assert all(s.distribution_policy.require_complete_body for s in sources)
     assert all(s.scheduler_constraints.max_concurrency == 2 for s in sources)
     assert all(s.default_polling_config.target_interval_seconds == 60 for s in sources)
@@ -177,7 +188,7 @@ def test_cross_column_article_identity_reuses_download_but_changed_message_is_vi
 
 
 def body_job(source_id="register_software", title="Company announces a new cloud platform"):
-    source = next(s for s in initial_sources() if s.source_id == source_id)
+    source = source_definition(source_id)
     url = "https://" + SOURCES[source_id].domain + "/2026/10/23/example/"
     message = RawMessageInput(title=title, url=url, published_at=NOW, raw_payload={})
     record = MediaEnrichmentRecord(
@@ -267,7 +278,7 @@ def test_configuration_is_idempotent_preserves_terms_and_reserves_ionq(tmp_path)
                 _terms().model_copy(update={"ticker": ticker}), actor="test"
             )
     first = configure(service)
-    assert len(first["bindings"]) == 57 and len(first["reserved"]) == 5
+    assert len(first["bindings"]) == 34 and len(first["reserved"]) == 3
     assert first["initial_terms"] == [{"ticker": "SNOW", "revision": 1}]
     assert repo.get_ticker_state("IONQ") is None
     assert all(item["action"] == "unchanged" for item in configure(service)["bindings"])
@@ -275,7 +286,7 @@ def test_configuration_is_idempotent_preserves_terms_and_reserves_ionq(tmp_path)
     service.start_ticker("IONQ")
     assert not any(b.source_id.startswith("quantum_") for b in repo.list_bindings(ticker="IONQ"))
     later = configure(service)
-    assert len(later["bindings"]) == 62 and not later["reserved"]
+    assert len(later["bindings"]) == 37 and not later["reserved"]
     assert later["initial_terms"] == [{"ticker": "IONQ", "revision": 1}]
 
 
@@ -287,7 +298,7 @@ async def test_shared_endpoint_backoff_is_durable_and_sweep_does_not_replace_liv
     bus.bootstrap()
     bus.start_ticker("SNOW")
     configure(bus)
-    binding = repo.get_binding("SNOW:venturebeat_data")
+    binding = repo.get_binding("SNOW:venturebeat_software")
     source = repo.get_source(binding.source_id)
     adapter = TechnologyAdapter(
         SimpleNamespace(
@@ -298,9 +309,10 @@ async def test_shared_endpoint_backoff_is_durable_and_sweep_does_not_replace_liv
     )
     scheduler = GlobalPollScheduler(repo, bus, SimpleNamespace(resolve=lambda *a, **k: adapter))
     try:
-        result = await scheduler._poll_distribution(source, [binding], NOW)
+        unit = next(iter(endpoint_units(source)))
+        result = await scheduler._poll_distribution(source, [binding], NOW, acquisition_unit=unit)
         assert result.site_access_deferred
-        state = repo.get_poll_state(binding)
+        state = repo.get_poll_unit_state(binding, unit)
         saved = state.checkpoint["technology_public"]
         assert state.next_dispatch_at == NOW + timedelta(seconds=120)
         assert saved["checkpoint"]["endpoints"][source.entry_url]["failures"] == 1
@@ -308,7 +320,7 @@ async def test_shared_endpoint_backoff_is_durable_and_sweep_does_not_replace_liv
         http = SimpleNamespace(fetch=AsyncMock(side_effect=AssertionError("backoff ignored")))
         restarted = TechnologyAdapter(http)
         next_result = await restarted.poll_shared(
-            context(source.source_id, saved["checkpoint"], NOW + timedelta(seconds=60))
+            context(source.source_id, saved["checkpoint"], NOW + timedelta(seconds=60), unit)
         )
         assert next_result.site_access_deferred
         http.fetch.assert_not_awaited()
@@ -322,7 +334,7 @@ async def test_shared_endpoint_backoff_is_durable_and_sweep_does_not_replace_liv
             },
             acquisition_checkpoint={"sweep": True},
         )
-        assert repo.get_poll_state(binding).checkpoint["technology_public"] == saved
+        assert repo.get_poll_unit_state(binding, unit).checkpoint["technology_public"] == saved
     finally:
         repo.close()
 
@@ -364,3 +376,231 @@ async def test_http_pool_caps_same_publisher_across_separate_column_sources():
     release.set()
     assert all(result.status == 200 for result in await asyncio.gather(*tasks))
     assert maximum == 2 and active == 0
+
+
+async def test_grouped_endpoint_runs_commit_independently_and_keep_separate_backoff(
+    tmp_path, monkeypatch
+):
+    import asyncio
+
+    monkeypatch.setattr("doxagent.message_bus_v2.scheduler.utc_now", lambda: NOW)
+    repo = MessageBusV2Repository(tmp_path / "bus.db")
+    bus = MessageBusV2Service(repo)
+    bus.bootstrap()
+    bus.start_ticker("SNOW")
+    configure(bus)
+    source = repo.get_source("siliconangle_software")
+    binding = repo.get_binding("SNOW:" + source.source_id)
+    units = list(endpoint_units(source))
+    release = asyncio.Event()
+    started = asyncio.Event()
+    calls = []
+
+    async def fetch(url, spec, **kwargs):
+        calls.append(url)
+        urls = SOURCES[source.source_id].urls
+        if url == urls[1]:
+            started.set()
+            await release.wait()
+        if url == urls[2]:
+            return Capture(429, url, "rate limited", {"retry-after": "120"})
+        old = next(s for s in LEGACY_CATALOG if s.urls == (url,))
+        return Capture(200, url, fixture(old.source_id), {"etag": old.source_id})
+
+    adapter = TechnologyAdapter(SimpleNamespace(fetch=fetch))
+    scheduler = GlobalPollScheduler(repo, bus, SimpleNamespace(resolve=lambda *a, **k: adapter))
+    slow = asyncio.create_task(
+        scheduler._poll_distribution(source, [binding], NOW, acquisition_unit=units[1])
+    )
+    try:
+        await asyncio.wait_for(started.wait(), 2)
+        healthy = await asyncio.wait_for(
+            scheduler._poll_distribution(source, [binding], NOW, acquisition_unit=units[0]), 3
+        )
+        assert healthy.collected_count and not slow.done()
+        saved = repo.get_poll_unit_state(binding, units[0])
+        assert saved.checkpoint["technology_public"]["checkpoint"]["endpoints"][source.entry_url][
+            "etag"
+        ]
+        failed = await scheduler._poll_distribution(
+            source, [binding], NOW, acquisition_unit=units[2]
+        )
+        assert failed.site_access_deferred
+        assert repo.get_poll_unit_state(binding, units[2]).next_dispatch_at == NOW + timedelta(
+            seconds=120
+        )
+        assert repo.get_poll_unit_state(binding, units[0]) == saved
+        calls.clear()
+        await scheduler._poll_distribution(
+            source, [binding], NOW + timedelta(seconds=60), acquisition_unit=units[2]
+        )
+        assert not calls  # A new slot reuses the endpoint's durable backoff.
+        release.set()
+        assert (await slow).collected_count
+        assert set(repo.get_poll_state(binding).units) == set(units)
+        plans = list(
+            scheduler.distribution_work_units(
+                source,
+                [binding],
+                NOW + timedelta(seconds=61),
+                poll_states={binding.binding_id: repo.get_poll_state(binding)},
+            )
+        )
+        assert all(options["acquisition_unit"] != units[2] for _, _, options in plans)
+        assert {options["acquisition_unit"] for _, _, options in plans} == set(units[:2])
+    finally:
+        release.set()
+        await asyncio.gather(slow, return_exceptions=True)
+        await scheduler.close()
+
+
+def test_migration_keeps_endpoint_state_legacy_history_and_idempotence(tmp_path):
+    from doxagent.message_bus_v2.schema import PollStatus, UpdateActor
+
+    repo = MessageBusV2Repository(tmp_path / "bus.db")
+    bus = MessageBusV2Service(repo)
+    bus.bootstrap()
+    bus.start_ticker("SNOW")
+    bus.start_ticker("MU")
+    MonitoringTermsService(repo).apply(_terms().model_copy(update={"ticker": "MU"}), actor="test")
+    # Register the exact former public definitions, including the Wccftech collision.
+    for old in LEGACY_CATALOG:
+        source = source_definition(old.source_id).model_copy(
+            update={
+                "entry_url": old.urls[0],
+                "display_name": old.name,
+            }
+        )
+        if repo.get_source(old.source_id):
+            if old.source_id == "wccftech_hardware":
+                bus.update_source(
+                    old.source_id,
+                    {"entry_url": old.urls[0], "display_name": old.name},
+                    actor=UpdateActor.SYSTEM,
+                )
+        else:
+            bus.register_source(source)
+        if old.source_id not in {
+            "siliconangle_big_data",
+            "siliconangle_cloud",
+            "siliconangle_security",
+            "wccftech_ai",
+            "wccftech_industry",
+            "wccftech_hardware",
+        }:
+            continue
+        ticker = "SNOW" if old.domain == "siliconangle.com" else "MU"
+        if ticker == "SNOW" and MonitoringTermsService(repo).get(ticker) is None:
+            MonitoringTermsService(repo).apply(
+                _terms().model_copy(update={"ticker": ticker}), actor="test"
+            )
+        binding = bus.configure_binding(
+            ticker=ticker, source_id=old.source_id, actor=UpdateActor.SYSTEM
+        )
+        state = repo.get_poll_state(binding)
+        repo.save_poll_state(
+            state.model_copy(
+                update={
+                    "status": PollStatus.SUCCEEDED,
+                    "bootstrap_complete": True,
+                    "last_attempt_at": NOW,
+                    "next_dispatch_at": NOW + timedelta(seconds=60),
+                    "checkpoint": {
+                        "technology_public": {
+                            "source_version": source.version,
+                            "checkpoint": {
+                                "endpoints": {
+                                    old.urls[0]: {
+                                        "baseline": True,
+                                        "etag": old.source_id,
+                                        "seen": {"article": "signature"},
+                                    }
+                                }
+                            },
+                        }
+                    },
+                }
+            )
+        )
+    old_versions = repo.list_source_revisions("siliconangle_cloud")
+    report = configure(bus)
+    assert len(report["migration"]["units"]) == 6
+    assert len(report["migration"]["retired_bindings"]) == 5
+    assert len(report["migration"]["retired_sources"]) == 19
+    for group_id, ticker in (("siliconangle_software", "SNOW"), ("wccftech_hardware", "MU")):
+        source = repo.get_source(group_id)
+        binding = repo.get_binding(ticker + ":" + group_id)
+        state = repo.get_poll_state(binding)
+        assert len(state.units) == 3
+        for unit, url in endpoint_units(source).items():
+            saved = repo.get_poll_unit_state(binding, unit)
+            cp = saved.checkpoint["technology_public"]
+            assert cp["source_version"] == source.version
+            assert cp["checkpoint"]["endpoints"][url]["seen"] == {"article": "signature"}
+            assert saved.bootstrap_complete
+    assert repo.get_binding("SNOW:siliconangle_cloud") is None
+    assert repo.get_binding("SNOW:siliconangle_cloud", include_tombstoned=True).tombstoned_at
+    assert not repo.get_source("siliconangle_cloud").enabled
+    assert repo.list_source_revisions("siliconangle_cloud")[-len(old_versions) :] == old_versions
+    assert all(not values for values in configure(bus)["migration"].values())
+    assert len(SOURCES["siliconangle_cloud"].urls) == 1  # Old queued BODY still resolves.
+    repo.close()
+
+
+async def test_article_published_before_merge_is_not_republished_after_merge(tmp_path):
+    from doxagent.message_bus_v2.schema import UpdateActor, utc_now
+
+    repo = MessageBusV2Repository(tmp_path / "bus.db")
+    bus = MessageBusV2Service(repo)
+    bus.bootstrap()
+    bus.start_ticker("SNOW")
+    MonitoringTermsService(repo).apply(_terms().model_copy(update={"ticker": "SNOW"}), actor="test")
+    old_source = source_definition("siliconangle_cloud")
+    bus.register_source(old_source)
+    old_binding = bus.configure_binding(
+        ticker="SNOW", source_id=old_source.source_id, actor=UpdateActor.SYSTEM
+    )
+    now = utc_now()
+    message = RawMessageInput(
+        title="Snowflake announces cloud infrastructure agreement",
+        body=(
+            "Snowflake signed a five-year cloud infrastructure agreement. "
+            "The company will invest $200 million and begin deployment in December. "
+        )
+        * 12,
+        source="SiliconANGLE",
+        url="https://siliconangle.com/2026/10/26/test-agreement/",
+        published_at=now,
+        raw_payload={},
+        metadata={
+            "body_access_scope": "public",
+            "language": "en",
+            "identity_evidence": {"url_kind": "article"},
+        },
+    )
+    try:
+        first = await bus.accept_message(
+            source=old_source,
+            binding=old_binding,
+            message=message,
+            bootstrap=False,
+            collected_at=now,
+        )
+        assert first.decision.value == "inserted"
+        configure(bus)
+        source = repo.get_source("siliconangle_software")
+        binding = repo.get_binding("SNOW:" + source.source_id)
+        second = await bus.accept_message(
+            source=source,
+            binding=binding,
+            message=message,
+            bootstrap=False,
+            collected_at=now,
+        )
+        assert second.decision.value == "duplicate"
+        assert second.raw_message_id == first.raw_message_id
+        assert repo.latest_stream_offset("SNOW") == 1
+        assert len(repo.list_standard(ticker="SNOW")) == 1
+        assert article_key(message, old_source.source_id) == article_key(message, source.source_id)
+    finally:
+        repo.close()

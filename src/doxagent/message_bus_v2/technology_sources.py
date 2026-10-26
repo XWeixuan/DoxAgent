@@ -211,9 +211,8 @@ _COLUMNS = {
     ),
     "technews_hardware": (("technews_semiconductor", "半導體"), ("technews_ai", "AI")),
 }
-# Each column is independently runnable and auditable. Its publisher still has
-# one scheduler group and a single shared HTTP pool, including across tickers.
-CATALOG = tuple(
+# Retain old identities for queued BODY jobs and migration, never advertise them.
+LEGACY_CATALOG = tuple(
     replace(
         spec,
         source_id=identity,
@@ -227,7 +226,16 @@ CATALOG = tuple(
         strict=True,
     )
 )
-SOURCES = {spec.source_id: spec for spec in CATALOG}
+CATALOG = FAMILIES
+SOURCES = {spec.source_id: spec for spec in (*LEGACY_CATALOG, *CATALOG)}
+
+
+def endpoint_units(source):
+    """Internal units share the external source and the publisher's HTTP pool."""
+    return {
+        "FEED:" + sha256_text(url)[:24]: url
+        for url in SOURCES[source.source_id].urls
+    }
 
 
 def initial_sources():
@@ -444,6 +452,8 @@ class TechnologyAdapter:
 
     async def poll_shared(self, context):
         spec = SOURCES[context.source.source_id]
+        if context.acquisition_unit != "SHARED":
+            spec = replace(spec, urls=(endpoint_units(context.source)[context.acquisition_unit],))
         states = {
             key: dict(value) for key, value in context.checkpoint.get("endpoints", {}).items()
         }

@@ -167,5 +167,5 @@ def test_configure_fly_binds_registered_tickers_and_keeps_future_ionq_reserved(t
     report = configure(service, include_fly=True)
     assert repo.get_binding("SNOW:" + SOURCE_ID).enabled
     assert repo.get_ticker_state("IONQ") is None
-    assert len(report["bindings"]) == 17  # twelve software columns, four common sources, Fly
+    assert len(report["bindings"]) == 9  # four software groups, four common sources, Fly
     assert configure(service, include_fly=True)["initial_terms"] == []

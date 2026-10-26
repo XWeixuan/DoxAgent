@@ -1,10 +1,10 @@
 # 软件、量子与硬件消息源接入
 
-日期：2026-10-26。新增 26 个常规栏目源和 1 个 The Fly By Ticker 源。生产发布及订阅验收补充于文末。
+日期：2026-10-26。当前归并为 13 个常规消息源（26 个内部采集入口）和 1 个 The Fly By Ticker 源。首次上线记录保留于文末；粒度纠正与迁移见 `technology-source-granularity-correction-20261026.md`。
 
 ## 实现与资源边界
 
-- 常规栏目为 By Distribution，多个 ticker 共享采集及正文结果。每栏目有独立 source、checkpoint、失败退避和轮询任务。同网站共用 scheduler_group 和 HTTP 客户端，最多 2 个并发请求、请求间隔 0.5 秒；采集进程的公共 HTTP 池上限 4。
+- 常规源为 By Distribution，多个 ticker 共享采集及正文结果。外部按同站、同板块、同采集方式统一管理；内部每栏目有独立 FEED 任务、checkpoint、失败退避和采集记录，健康栏目无需等待同源慢栏目结束。同网站共用 scheduler_group 和 HTTP 客户端，最多 2 个并发请求、请求间隔 0.5 秒；采集进程的公共 HTTP 池上限 4。
 - 目标间隔 60 秒，沿用现有会话日历。不新增 Chrome、Profile、Site Access 身份或常驻页面。Quantum Zeitgeist 使用标准库 HTTP；其他入口使用已有 curl_cffi。The Quantum Insider、The Register、Wccftech、DARPA 使用实测可用的固定美国 HTTP 出口。
 - 只有解析通过后才提交 ETag/Last-Modified 基线。支持 304、未变化内容跳过、5 分钟检查心跳及 60–900 秒失败退避；429 遵循 Retry-After。实时 checkpoint 持久化至现有 PollState，闭市 sweep 不覆盖实时进度。
 - 正文复用现有文章台账与 ARTICLE_ONCE，保留 URL、语言及访问范围隔离。常规源仍要求 FULL/SHORT_FULL，预览、登录页、验证页均不冒充全文。
@@ -15,17 +15,17 @@
 
 | 分组 | Source ID | 订阅 |
 | --- | --- | --- |
-| 量子 | quantum_computing_report、quantum_insider_business、quantum_insider_national、quantum_insider_capital_markets、quantum_zeitgeist | 为 IONQ 预留 |
-| The Register | register_software、register_cloud、register_security | SNOW |
-| VentureBeat 软件 | venturebeat_orchestration、venturebeat_data、venturebeat_security | SNOW |
-| SiliconANGLE 软件 | siliconangle_big_data、siliconangle_cloud、siliconangle_security | SNOW |
-| CRN | crn_cloud、crn_security、crn_data_center | SNOW |
+| 量子 | quantum_computing_report、quantum_insider、quantum_zeitgeist | 为 IONQ 预留 |
+| The Register | register_software_cloud_security | SNOW |
+| VentureBeat 软件 | venturebeat_software | SNOW |
+| SiliconANGLE 软件 | siliconangle_software | SNOW |
+| CRN | crn_cloud_security_datacenter | SNOW |
 | 通用 | darpa_news、siliconangle_ai、venturebeat_ai、sdxcentral_news | SNOW、INTC、MU、COHR、NBIS |
-| Wccftech | wccftech_ai、wccftech_industry、wccftech_hardware | INTC、MU、COHR、NBIS、BE |
-| TechNews | technews_semiconductor、technews_ai | INTC、MU、COHR、NBIS、BE |
+| Wccftech | wccftech_hardware | INTC、MU、COHR、NBIS、BE |
+| TechNews | technews_hardware | INTC、MU、COHR、NBIS、BE |
 | The Fly | thefly_ticker_news | 当前已注册 ticker |
 
-常规生产订阅目标 57 个。IONQ 尚未注册时，5 个量子栏目仅注册源并保留配置，不创建 IONQ、不启动其轮询；注册后重新执行配置脚本即可建立这些订阅。SNOW 没有词表时创建专用英文 L1/L2/定义种子；其他 ticker 的已有词表保持原样。
+常规生产订阅目标 34 个。IONQ 尚未注册时，3 个量子源（5 个入口）仅注册源并保留配置，不创建 IONQ、不启动其轮询；注册后重新执行配置脚本即可建立这些订阅。SNOW 没有词表时创建专用英文 L1/L2/定义种子；其他 ticker 的已有词表保持原样。
 
 ## The Fly 的公开能力与限制
 
@@ -50,7 +50,7 @@
 /app/.venv/bin/python /tmp/technology-onboarding/configure_technology_sources.py --bus /data/bus/bus.sqlite3 --apply --include-fly --receipt /tmp/technology-source-configuration.json
 ```
 
-## 生产发布与配置验收
+## 首次生产发布与配置验收（粒度纠正前的历史记录）
 
 运行代码：`e2b308bc8aad4da29428e5648e573ca0e8da5861`，功能提交为 `5a0b2c4c`。已推送 origin/main 并同步新加坡仓库，通过标准 storage_release 锁及构建/发布函数更新 `v2-content-enrichment`、`v2-message-bus`。两组件实际镜像均为 `sha256:0e4864f33ab3ee293c0d390dc3fa04b783174417f265f6b8631f150f154f30b8`，运行正常、零重启；新增三个模块的实际文件 SHA256 与提交一致。其他组件发布记录不变，资源回收 timer 已恢复。
 

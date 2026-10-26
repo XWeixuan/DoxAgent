@@ -706,6 +706,7 @@ class PollContext(BusModel):
 class SharedPollContext(BusModel):
     run_id: str
     source: SourceDefinition
+    acquisition_unit: str = "SHARED"
     checkpoint: JsonObject = Field(default_factory=dict)
     window_start: datetime | None = None
     window_cutoff: datetime | None = None

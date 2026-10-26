@@ -170,15 +170,20 @@ class BusOrchestration:
         if update_streams is not None:
             update_streams(live_stream_bindings)
         for source, bindings in shared_realtime.values():
-            key = f"shared:{source.source_id}"
-            if key not in self._inflight and scheduler.distribution_due(
-                bindings, now, poll_states=poll_states
-            ):
+            units = scheduler.distribution_work_units(
+                source, bindings, now, poll_states=poll_states
+            ) if hasattr(scheduler, "distribution_work_units") else (
+                [(f"shared:{source.source_id}", bindings, {})]
+                if scheduler.distribution_due(bindings, now, poll_states=poll_states) else []
+            )
+            for key, targets, options in units:
+                if key in self._inflight:
+                    continue
                 self._inflight[key] = asyncio.create_task(
                     asyncio.wait_for(
                         self._acquire(
-                            scheduler, override if any(b.binding_id in temporary_bindings for b in bindings) else None,
-                            bindings, scheduler._poll_distribution, source, bindings, now
+                            scheduler, override if any(b.binding_id in temporary_bindings for b in targets) else None,
+                            targets, scheduler._poll_distribution, source, targets, now, **options
                         ), timeout=600
                     )
                 )

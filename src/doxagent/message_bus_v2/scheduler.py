@@ -292,11 +292,12 @@ class GlobalPollScheduler:
             if source.acquisition_mode is AcquisitionMode.BY_DISTRIBUTION:
                 shared.setdefault(source.source_id, (source, []))[1].append(binding)
         for source, bindings in shared.values():
-            if self.distribution_due(bindings, now, poll_states=poll_states):
-                key = "shared:" + source.source_id
+            for key, targets, options in self.distribution_work_units(
+                source, bindings, now, poll_states=poll_states
+            ):
                 if key in inflight:
                     continue
-                task = asyncio.create_task(self._poll_distribution(source, bindings, now))
+                task = asyncio.create_task(self._poll_distribution(source, targets, now, **options))
                 if long_running:
                     inflight[key] = task
                 else:
@@ -522,7 +523,11 @@ class GlobalPollScheduler:
         units = [
             ("SHARED" if source.acquisition_mode is AcquisitionMode.BY_DISTRIBUTION else "HEAD", {})
         ]
-        if source.source_id == "yahoo_finance_news":
+        if source.adapter_ref == "builtin:technology_public@1":
+            from .technology_sources import endpoint_units
+
+            units = [(unit, {}) for unit in endpoint_units(source)]
+        elif source.source_id == "yahoo_finance_news":
             units.append(("SUPPLEMENT_HEAD", {}))
             head = state.units.get("SUPPLEMENT_HEAD", {}).get("checkpoint", {})
             tail = state.units.get("TAIL:YAHOO_TIME", {}).get("checkpoint", {})
@@ -619,6 +624,8 @@ class GlobalPollScheduler:
             value = PollState.model_validate(
                 {**state.model_dump(), **state.units.get(unit, {}), "units": {}}
             )
+            if source.adapter_ref == "builtin:technology_public@1" and unit not in state.units:
+                value = value.model_copy(update={"next_dispatch_at": None})
             changed_timestamps = unit == "TAIL:YAHOO_TIME" and options["checkpoint"][
                 "pending_timestamp_rows"
             ] != state.units.get(unit, {}).get("checkpoint", {}).get("pending_timestamp_rows")
@@ -630,6 +637,29 @@ class GlobalPollScheduler:
             ):
                 key = binding.binding_id if unit == "HEAD" else binding.binding_id + "#" + unit
                 yield key, {**options, "acquisition_unit": unit}
+
+    def distribution_work_units(self, source, bindings, now, *, poll_states):
+        """One shared acquisition per due endpoint, with its own ticker roster."""
+        if source.adapter_ref != "builtin:technology_public@1":
+            if self.distribution_due(bindings, now, poll_states=poll_states):
+                yield "shared:" + source.source_id, bindings, {}
+            return
+        due = {}
+        for binding in bindings:
+            for _, options in self.work_units(source, binding, poll_states[binding.binding_id], now):
+                due.setdefault(options["acquisition_unit"], []).append(binding)
+        for unit, targets in due.items():
+            yield "shared:" + source.source_id + "#" + unit, targets, {"acquisition_unit": unit}
+
+    def _distribution_state(self, binding, unit):
+        if unit == "SHARED":
+            return self.repository.get_poll_state(binding)
+        state = self.repository.get_poll_unit_state(binding, unit)
+        if unit not in self.repository.get_poll_state(binding).units:
+            state = state.model_copy(update={
+                "last_attempt_at": None, "target_due_at": None, "next_dispatch_at": None,
+            })
+        return state
 
     def _initialize_due_slots(
         self,
@@ -809,7 +839,9 @@ class GlobalPollScheduler:
         error = None
         try:
             states = await self.read_call(
-                lambda: [self.repository.get_poll_state(binding) for binding in bindings]
+                lambda: [self._distribution_state(
+                    binding, kwargs.get("acquisition_unit", "SHARED")
+                ) for binding in bindings]
             )
             ids = [new_id("poll") for _ in bindings]
 
@@ -818,7 +850,8 @@ class GlobalPollScheduler:
                     for run_id, binding, state in zip(ids, bindings, states, strict=True):
                         self.repository.polling.start(
                             run_id, source, binding, state.target_due_at or attempted_at,
-                            attempted_at, "TAIL:SHARED" if kwargs.get("window_cutoff") else "SHARED",
+                            attempted_at, "TAIL:SHARED" if kwargs.get("window_cutoff")
+                            else kwargs.get("acquisition_unit", "SHARED"),
                         )
 
             await self.service.storage.call(start_runs, _lane_priority=0)
@@ -866,6 +899,7 @@ class GlobalPollScheduler:
         window_start: datetime | None = None,
         window_cutoff: datetime | None = None,
         admission_context: AdmissionContext | None = None,
+        acquisition_unit: str = "SHARED",
     ) -> PollExecutionResult:
         if not bindings:
             return PollExecutionResult(binding_id=f"shared:{source.source_id}")
@@ -880,6 +914,8 @@ class GlobalPollScheduler:
                 f"{source.source_id}:{source.version}:CLOSED_SWEEP:"
                 f"{window_start.isoformat()}:{window_cutoff.isoformat()}"
             )
+        if acquisition_unit != "SHARED":
+            work_key += ":" + acquisition_unit
         definitions = await self.read_call(
             lambda: [self.terms.get(binding.ticker) for binding in bindings]
         )
@@ -906,7 +942,11 @@ class GlobalPollScheduler:
         if run["status"] == "DONE" or await self.read_call(
             self.repository.polling.pending, run["run_id"]
         ):
-            await self.storage_call(self._record_distribution_poll, source, roster, run)
+            await self.storage_call(
+                self._record_distribution_poll, source, roster, run,
+                acquisition_unit=acquisition_unit,
+                acquisition_checkpoint=__import__("json").loads(run["checkpoint_json"]),
+            )
             return PollExecutionResult(
                 binding_id=f"shared:{source.source_id}",
                 poll_run_id=run["run_id"],
@@ -932,7 +972,7 @@ class GlobalPollScheduler:
                 and source.adapter_ref in SHARED_HTTP_CHECKPOINTS
             ):
                 previous_state = await self.read_call(
-                    self.repository.get_poll_state, roster[0][0]
+                    self._distribution_state, roster[0][0], acquisition_unit
                 )
                 saved = previous_state.checkpoint.get(
                     SHARED_HTTP_CHECKPOINTS[source.adapter_ref], {}
@@ -942,6 +982,7 @@ class GlobalPollScheduler:
             context = SharedPollContext(
                 run_id=run["run_id"],
                 source=source,
+                acquisition_unit=acquisition_unit,
                 checkpoint=shared_checkpoint,
                 window_start=window_start,
                 window_cutoff=window_cutoff,
@@ -962,13 +1003,20 @@ class GlobalPollScheduler:
                         source
                     )
                     for binding, _, _ in roster:
-                        state = await self.read_call(self.repository.get_poll_state, binding)
+                        state = await self.read_call(
+                            self._distribution_state, binding, acquisition_unit
+                        )
                         await self.storage_call(
-                            self.repository.save_poll_state,
+                            self.repository.save_poll_unit_state,
                             state.model_copy(
                                 update={
                                     "next_dispatch_at": retry_at,
                                     "updated_at": utc_now(),
+                                    "source_definition_version": source.version,
+                                    "binding_version": binding.version,
+                                    "status": PollStatus.FAILED,
+                                    "last_attempt_at": attempted_at,
+                                    "last_failure_at": attempted_at,
                                     "last_error_code": "SOURCE_DEFERRED:"
                                     + (
                                         result.site_access_deferred_reason
@@ -987,6 +1035,7 @@ class GlobalPollScheduler:
                                     else state.checkpoint,
                                 }
                             ),
+                            acquisition_unit,
                         )
                 return PollExecutionResult(
                     binding_id=f"shared:{source.source_id}",
@@ -1029,7 +1078,7 @@ class GlobalPollScheduler:
                     result=PollResult(messages=result.messages),
                     run_id=run["run_id"],
                     observed_at=observed_at,
-                    unit="SHARED",
+                    unit=acquisition_unit,
                     distribution=info,
                 )
                 await self.service.storage.call(
@@ -1059,6 +1108,7 @@ class GlobalPollScheduler:
                     coverage=result.window_coverage,
                     observed_at=utc_now(),
                     acquisition_checkpoint=result.next_checkpoint,
+                    acquisition_unit=acquisition_unit,
                 )
             return PollExecutionResult(
                 binding_id=f"shared:{source.source_id}",
@@ -1092,11 +1142,13 @@ class GlobalPollScheduler:
                     code=type(exc).__name__,
                     message=str(exc),
                     attempted_at=attempted_at,
+                    acquisition_unit=acquisition_unit,
+                    source_version=source.version,
                 )
                 if mode == "REALTIME":
                     next_due = self._next_distribution_due(source)
                     await self.storage_call(
-                        self.repository.save_poll_state,
+                        self.repository.save_poll_unit_state,
                         failed.model_copy(
                             update={
                                 "target_due_at": next_due,
@@ -1104,6 +1156,7 @@ class GlobalPollScheduler:
                                 "updated_at": utc_now(),
                             }
                         ),
+                        acquisition_unit,
                     )
             raise
 
@@ -1130,6 +1183,7 @@ class GlobalPollScheduler:
         coverage: str | None = None,
         observed_at: datetime | None = None,
         acquisition_checkpoint: JsonObject | None = None,
+        acquisition_unit: str = "SHARED",
     ) -> None:
         """Project one shared acquisition onto its subscribed ticker poll states."""
         with self.repository.atomic_intake():
@@ -1154,7 +1208,7 @@ class GlobalPollScheduler:
             )
             partial = (coverage or str(run["coverage"])) != "COMPLETE"
             for binding, _, _ in roster:
-                previous = self.repository.get_poll_state(binding)
+                previous = self._distribution_state(binding, acquisition_unit)
                 next_due = self._next_due(
                     previous.target_due_at or observed_at,
                     observed_at,
@@ -1197,7 +1251,7 @@ class GlobalPollScheduler:
                             "checkpoint": checkpoint,
                         }
                     ),
-                    "SHARED",
+                    acquisition_unit,
                 )
 
     @source_routed
