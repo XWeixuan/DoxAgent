@@ -2244,3 +2244,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-27 分发覆盖补漏：L2临时错误不再终结为NOT_RELEVANT，使用既有PENDING/lease时点延后重试并释放续作槽；失败决策可被后来成功判定纠正且成功结果仍复用，确定性输入超限明确FAILED。补provider失败、无空转重试、恢复后判定与缓存一致性回归，不批量重跑历史。
 
 2026-10-27 30秒实测修复：旧HEAD/unit快照的schedule_interval_seconds会覆盖刚更新的绑定级周期，导致每轮重复重分相和SCHEDULE写放大。周期改由绑定root持有，读取旧unit时忽略该字段，HEAD收尾也不回写旧值；补60→30后多轮不重分相回归。
+
+2026-10-27 真实正文抽检修复：确认一条On3短付费预览由推荐列表凑长误标FULL；HTML/Reader共同拦截带订阅价格的短预览，Reader在Recommendations处截断，旧预览缓存不再作为完整正文复用。保留长完整正文普通订阅页脚，不将标签率冒称真实完整率。

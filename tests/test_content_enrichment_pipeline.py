@@ -294,6 +294,16 @@ def test_investorshub_listing_never_runs_body_extraction(monkeypatch):
     assert info.access_reason=='challenge_required'
 
 
+def test_reader_subscription_preview_cannot_be_padded_by_recommendations():
+    preview='# '+TITLE+'\nA short summary of the company news.\nRECOMMENDATIONS\n'+('Other story about unrelated events. '*25)+'\n60% off your first year\nthen billed annually at $119.99/year\nOne subscription: all access.\nAlready a subscriber?'
+    info=inspect_reader(preview,'https://www.on3.com/news/article',TITLE)
+    assert choose_candidate(info,TITLE)[2]=='subscription_required'
+    normal='# '+TITLE+'\n'+'\n'.join(PARAGRAPHS*4)+'\nAlready a subscriber?'
+    assert choose_candidate(inspect_reader(normal,'https://example.com/a',TITLE),TITLE)[1]=='FULL'
+    html='<h1>'+TITLE+'</h1><article><p>'+preview.replace('\n','</p><p>')+'</p></article>'
+    assert choose_candidate(inspect_html(html,'https://www.on3.com/news/article',TITLE),TITLE)[1]!='FULL'
+
+
 def test_finnhub_redirect_uses_explicit_target_not_external_asset():
     info = inspect_html(
         '<script src="https://cdn.example/player.js"></script>'

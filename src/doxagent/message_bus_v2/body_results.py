@@ -257,12 +257,14 @@ class ArticleBodyResults:
 
     @staticmethod
     def reusable(result: dict, message, now: datetime | None = None) -> bool:
+        from doxagent.content_enrichment.quality import short_subscription_preview
         source_id = message.metadata.get("body_observation_source_id")
         verified_hint = result.get("verified_hints", {}).get(source_id, result.get("verified_hint"))
         return bool(
             result.get("outcome") in {"FULL", "SHORT_FULL"}
             and ArticleBodyResults.compatible(result, message, source_id or result["source_id"])
             and result.get("content")
+            and not short_subscription_preview(result['content'])
             and verified_hint == update_hint(message)
             and result.get("next_check_at", "") > (now or utc_now()).isoformat()
         )

@@ -142,6 +142,11 @@ WALL = re.compile(
 EXPAND = re.compile(r"^(?:continue reading|read more|show more|read full article)$", re.I)
 
 
+def short_subscription_preview(text: str) -> bool:
+    return bool(len(text)<3000 and re.search(r'already a subscriber',text,re.I)
+        and re.search(r'billed annually|one subscription\s*:',text,re.I))
+
+
 def _json_articles(value: Any) -> list[dict[str, Any]]:
     if isinstance(value, list):
         return [node for item in value for node in _json_articles(item)]
@@ -471,6 +476,12 @@ def inspect_reader(
     if CHALLENGE.search(text[:2000]):
         result.page_kind, result.access_reason = "challenge", "challenge_required"
         return result
+    if short_subscription_preview(text):
+        # A short reader preview plus a paid offer is not full article evidence.
+        # Keep ordinary subscription footers on long, complete articles usable.
+        result.access_reason='subscription_required'
+        result.subscription_article=True
+        return result
     # Locate article heading; do not fall back to arbitrary navigation text for Yahoo.
     lines = text.splitlines()
     heads = [
@@ -515,7 +526,7 @@ def inspect_reader(
         if plain == "Share" and sum(map(len, selected)) > 600:
             break
         if re.match(
-            r"^(?:#+\s*)?(?:recommended|related articles|more from|daily brief|read next)\b",
+            r"^(?:#+\s*)?(?:recommended|recommendations|related articles|more from|daily brief|read next)\b",
             line,
             re.I,
         ):
@@ -582,6 +593,9 @@ def choose_candidate(
     accepted = []
     for candidate in info.candidates:
         body = candidate.text
+        if short_subscription_preview(body):
+            info.subscription_article=True
+            continue
         if re.match(r"(?:Search results for|1\.\s*News\s*[•·])", body.strip(), re.I):
             continue
         if WALL.search(body) or body.rstrip().endswith(("...", "…")):
