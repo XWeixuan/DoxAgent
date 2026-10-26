@@ -63,6 +63,8 @@ for row in r.execute(
         {
             "at": row["occurred_at"],
             "category": cat,
+            'operation_id':row['operation_id'],
+            'stage_timings':{k:v for k,v in p.get('stage_timings',{}).items() if isinstance(v,(int,float))},
             **pick(
                 p,
                 "identity_id recovery_id purpose disposition reason reason_code result error_type probe_id request_sent "
@@ -144,6 +146,7 @@ out["poll_runs"] = query(
     "group by ticker,unit,status,reason",
     (args.since, end),
 )
+out['projection_read_at']=datetime.now(timezone.utc).isoformat()
 out["physical_intervals"] = {}
 for row in b.execute(
     "select ticker,unit,dispatch_at from poll_runs where source_id='reuters_site_search' and status='CAPTURED' "

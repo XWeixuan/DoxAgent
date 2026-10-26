@@ -2938,9 +2938,12 @@ class MessageBusV2Repository:
                     # because each succeeded at some point in the past.
                     checkpoint=dict(current.checkpoint)
                     cycle=dict(checkpoint.get('query_cycle',{}))
-                    start=cycle.get('started_at') or min(
-                        (v.get('last_attempt_at') for v in primary if v.get('last_attempt_at')),
-                        default=state.updated_at.isoformat())
+                    # Initialize from this new receipt, not the oldest inherited
+                    # unit in a pre-migration projection. Old green units cannot
+                    # certify the first post-release complete query round.
+                    start=cycle.get('started_at') or (
+                        state.last_success_at.isoformat() if state.status is PollStatus.SUCCEEDED
+                        and state.last_success_at else state.updated_at.isoformat())
                     receipts=[v.get('last_success_at') for v in primary]
                     complete=all(t and datetime.fromisoformat(t)>=datetime.fromisoformat(start) for t in receipts)
                     cycle.update(started_at=start,required_queries=len(expected),complete=complete)

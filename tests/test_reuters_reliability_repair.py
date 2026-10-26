@@ -248,6 +248,29 @@ async def test_reuters_head_is_one_navigation_tail_keeps_remaining_page(tmp_path
     repo.close()
 
 
+def test_first_complete_cycle_cannot_borrow_a_legacy_green_query(tmp_path):
+    from tests.test_message_bus_v2_news_sources import _context
+    from doxagent.message_bus_v2.schema import PollStatus
+    ctx,repo=_context(tmp_path,'reuters_site_search',{})
+    now=utc_now()
+    base=repo.get_poll_state(ctx.binding)
+    old=base.model_copy(update={'status':PollStatus.SUCCEEDED,'last_success_at':now-timedelta(hours=1),
+        'last_attempt_at':now-timedelta(hours=1),'units':{}})
+    repo.save_poll_unit_state(old,'QUERY:legacy')
+    # Drop new-format migration metadata to represent an actual legacy projection.
+    current=repo.get_poll_state(ctx.binding)
+    repo.save_poll_state(current.model_copy(update={'checkpoint':{}}))
+    fresh=base.model_copy(update={'status':PollStatus.SUCCEEDED,'last_success_at':now,
+        'last_attempt_at':now-timedelta(seconds=2),'units':{}})
+    repo.save_poll_unit_state(fresh,'QUERY:fresh')
+    state=repo.get_poll_state(ctx.binding)
+    assert state.status is PollStatus.PARTIAL
+    assert not state.checkpoint['query_cycle']['complete']
+    repo.save_poll_unit_state(fresh.model_copy(update={'last_success_at':now+timedelta(seconds=1)}),'QUERY:legacy')
+    assert repo.get_poll_state(ctx.binding).checkpoint['query_cycle']['complete']
+    repo.close()
+
+
 @pytest.mark.asyncio
 async def test_widget_uses_rendered_not_hidden_retry_and_loaded_puzzle():
     from pathlib import Path

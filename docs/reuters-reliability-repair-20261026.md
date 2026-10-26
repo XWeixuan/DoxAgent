@@ -36,3 +36,11 @@
 ### 外部协议依据
 
 原生输入使用 [Chrome DevTools Input 协议](https://chromedevtools.github.io/devtools-protocol/tot/Input/)；供应商必须使用原浏览器 UA 与一致出口，且封禁状态不是可解题面，参见 [2Captcha DataDome 协议](https://2captcha.com/api-docs/datadome-slider-captcha)。不以协议接线通过代替 Reuters 正式采集和全文回执。
+
+## 生产发布及初次验收
+
+- `e56b8697` 已推 origin/main 并在 UTC 14:11:23 完成三个角色的标准发布；每角色 19 个改动源码 SHA-256 全匹配。Supervisor 容器 `d00bf01c2738...` 未重建，主 Chrome instance `1722ba0e74324f4b813505f691ee4e2f` / PID 712 未变。发布前无 LIVE owned Challenge 待办，旧已 RESOLVED 事件的历史 target 不伪称仍存在；未更换 Profile 或 Cookie。
+- 发布前完整 Registry 在线备份保留在宿主机 root 私有 release/backups；Owner/CAS 配置更新也保留一份独立私有备份。Reuters site rev12、scope rev2、backup rev2/900秒；dry-run 重跑 changes=[]。现有凭据引用不可用，auto_login=false。桌面两个现有程序已窄更新，不重装 xRDP。
+- 初始 [14:12:36,14:13:33Z) 全窗：17 次 CRAWLER ACCESS_RESULT SUCCESS、1 次 BODY SUCCESS、1 条正式 FULL；另 1 次 BODY BUDGET_DEFERRED/site_queue_timeout。没有新恢复事件或付费作业；不以此宣称持续稳定，也不把排队延期改叫 Challenge。
+- 初始查看发现旧 unit 回执能混入迁移后的首次 query_cycle；已增加回归并改为从当前新回执初始化周期，而非继承最老历史时点。后续仅窄发布 Bus；首个跨迁移周期不计入三轮纯新版本覆盖。小时验收仍需分版本、全部查询、BODY 与延期分别统计。
+- 两个历史实际白屏 PNG 均目视核对，且由新检查器判为 BLANK_SUSPECTED；未称能从白屏识别验证码。当前没有可解现场，真实 RETRY→slider→paid→正式恢复尚未覆盖。
