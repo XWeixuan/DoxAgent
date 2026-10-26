@@ -2240,3 +2240,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-27 正文实测修复：PCGuide公开文章导航恢复后，商品卡Read more和作者卡仍污染完整性判断；按明确DOM移除嵌入商品卡、联盟说明和作者卡，保留真正正文Continue Reading拦截。67项正文/发布者回归通过。
 
 2026-10-27 InvestorsHub轮询减负：已验证/news列表不再运行全文候选提取，避免同一列表在warm fetch、合同核验及Site结果分类时重复调用正文提取器；继续优先检测挑战、校验ticker/新闻链接/日期。补列表不调用提取器及挑战不被列表标记掩盖的回归。
+
+2026-10-27 分发覆盖补漏：L2临时错误不再终结为NOT_RELEVANT，使用既有PENDING/lease时点延后重试并释放续作槽；失败决策可被后来成功判定纠正且成功结果仍复用，确定性输入超限明确FAILED。补provider失败、无空转重试、恢复后判定与缓存一致性回归，不批量重跑历史。

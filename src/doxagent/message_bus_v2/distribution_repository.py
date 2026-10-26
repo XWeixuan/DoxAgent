@@ -606,8 +606,9 @@ class DistributionRepository:
     def ready_work(self):
         now = utc_now().isoformat()
         with self.bus._connect() as db:
-            deliveries = db.execute("SELECT 1 FROM distribution_deliveries WHERE state='PENDING' "
-                "OR (state='RUNNING' AND lease_until<=?) LIMIT 1", (now,)).fetchone()
+            deliveries = db.execute("SELECT 1 FROM distribution_deliveries WHERE "
+                "(state='PENDING' AND (lease_until IS NULL OR lease_until<=?)) "
+                "OR (state='RUNNING' AND lease_until<=?) LIMIT 1", (now,now)).fetchone()
             decisions = db.execute("SELECT 1 FROM distribution_jev_continuations WHERE state='PENDING' "
                 "OR (state='RUNNING' AND lease_until<=?) LIMIT 1", (now,)).fetchone()
         return bool(deliveries), bool(decisions)
@@ -682,24 +683,24 @@ class DistributionRepository:
                 (canonical_json({"reason": "DELIVERY_RETRY_EXHAUSTED"}), now.isoformat()),
             )
             group_filter = ""
-            params = [now.isoformat()]
+            params = [now.isoformat(),now.isoformat()]
             if article_limit is not None:
                 group_filter = (
                     "AND (d.article_id,d.terms_revision) IN ("
                     "SELECT d2.article_id,d2.terms_revision FROM distribution_deliveries d2 "
                     "JOIN distribution_runs r2 USING(run_id) "
                     "WHERE r2.status NOT IN ('EXPIRED','ABANDONED') AND "
-                    "(d2.state='PENDING' OR (d2.state='RUNNING' AND d2.lease_until<=?)) "
+                    "((d2.state='PENDING' AND (d2.lease_until IS NULL OR d2.lease_until<=?)) OR (d2.state='RUNNING' AND d2.lease_until<=?)) "
                     "GROUP BY d2.article_id,d2.terms_revision ORDER BY min(d2.created_at) LIMIT ?) "
                 )
-                params.extend([now.isoformat(), article_limit])
+                params.extend([now.isoformat(),now.isoformat(), article_limit])
             params.append(1000 if article_limit is not None else limit)
             rows = db.execute(
                 "SELECT d.*,a.enriched_json,a.original_json,a.content_version,r.source_json "
                 "FROM distribution_deliveries d JOIN distribution_articles a USING(article_id) "
                 "JOIN distribution_runs r USING(run_id) "
                 "WHERE r.status NOT IN ('EXPIRED','ABANDONED') AND "
-                "(d.state='PENDING' OR (d.state='RUNNING' AND d.lease_until<=?)) "
+                "((d.state='PENDING' AND (d.lease_until IS NULL OR d.lease_until<=?)) OR (d.state='RUNNING' AND d.lease_until<=?)) "
                 + group_filter + "ORDER BY d.created_at LIMIT ?",
                 params,
             ).fetchall()
@@ -808,9 +809,21 @@ class DistributionRepository:
                                      {'reason':'CONTENT_VERSION_CHANGED'})
                 return None
             relevant = regex_result or (jev_result is not None and jev_result >= .5)
+            unresolved = not relevant and jev_result is None and bool(error_code)
             decision = self.record_decision(row,regex_result=regex_result,jev_result=jev_result,
                 jev_attempts=jev_attempts,error_code=error_code,
-                final_result='RELEVANT' if relevant else 'NOT_RELEVANT')
+                final_result='ERROR' if unresolved else 'RELEVANT' if relevant else 'NOT_RELEVANT')
+            if unresolved:
+                terminal = error_code == 'JEV_INPUT_LIMIT'
+                self.finish_delivery(row['delivery_id'],row['claim_token'],
+                    'FAILED' if terminal else 'PENDING',{'decision_id':decision,'reason':error_code})
+                if not terminal:
+                    # Reuse the existing pending lease clock as a not-before.
+                    # Release the continuation slot; a provider outage is not a
+                    # permanent negative relevance decision or a tight retry loop.
+                    db.execute('UPDATE distribution_deliveries SET lease_until=? WHERE delivery_id=?',
+                        ((utc_now()+timedelta(seconds=60)).isoformat(),row['delivery_id']))
+                return None
             if not relevant:
                 self.finish_delivery(row['delivery_id'],row['claim_token'],'NOT_RELEVANT',
                                      {'decision_id':decision,'reason':error_code})
@@ -871,7 +884,11 @@ class DistributionRepository:
         )
         with self.bus.transaction() as db:
             db.execute(
-                "INSERT OR IGNORE INTO distribution_decisions VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
+                "INSERT INTO distribution_decisions VALUES(?,?,?,?,?,?,?,?,?,?,?,?) "
+                "ON CONFLICT(decision_id) DO UPDATE SET regex_result=excluded.regex_result,"
+                "jev_result=excluded.jev_result,jev_attempts=excluded.jev_attempts,"
+                "error_code=excluded.error_code,final_result=excluded.final_result,created_at=excluded.created_at "
+                "WHERE distribution_decisions.error_code IS NOT NULL",
                 (
                     decision_id,
                     row["article_id"],

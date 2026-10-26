@@ -51,6 +51,33 @@ async def test_decision_ready_clock_precedes_storage_admission(monkeypatch):
         jev_result=None,jev_attempts=0,error_code=None)
 
 
+def test_transient_classifier_error_retries_without_caching_negative(tmp_path,monkeypatch):
+    import doxagent.message_bus_v2.distribution_repository as module
+    repo,_,source,binding=_setup(tmp_path);dist=DistributionRepository(repo)
+    run=dist.get_or_create_run(work_key='retry-classifier',source=source,mode='REALTIME',
+        window_start=None,cutoff=None,roster=[(binding,1,AdmissionContext().model_dump(mode='json'))])
+    now=utc_now()
+    with repo.transaction() as db:
+        delivery(db,'MU','PENDING',None)
+        db.execute('UPDATE distribution_deliveries SET run_id=?',(run['run_id'],))
+        db.execute('INSERT INTO distribution_articles VALUES(?,?,?,?,?,?,?,?,?,?)',
+            ('article','key','v1',source.source_id,'{}','{}','body1','READY',now.isoformat(),now.isoformat()))
+    row=dist.claim_deliveries(article_limit=1)[0]
+    dist.settle_delivery(None,row,source,None,regex_result=False,jev_result=None,
+        jev_attempts=2,error_code='JEV_PROVIDER_UNAVAILABLE')
+    assert dist.ready_work()==(False,False)
+    assert not dist.claim_deliveries(article_limit=1)
+    assert not dist.cached_decisions([row])
+    monkeypatch.setattr(module,'utc_now',lambda:now+timedelta(seconds=65))
+    assert dist.ready_work()[0]
+    retry=dist.claim_deliveries(article_limit=1)[0]
+    dist.settle_delivery(None,retry,source,None,regex_result=False,jev_result=0,
+        jev_attempts=1,error_code=None)
+    assert dist.cached_decisions([retry])['MU']['error_code'] is None
+    with repo._connect() as db:
+        assert db.execute('SELECT state FROM distribution_deliveries').fetchone()[0]=='NOT_RELEVANT'
+
+
 def test_partial_continuation_recovers_only_remaining_and_fences_old_owner(tmp_path):
     repo = MessageBusV2Repository(tmp_path/'bus.db');dist=DistributionRepository(repo)
     with repo.transaction() as db:

@@ -126,7 +126,10 @@ async def test_shared_article_one_body_job_independent_ticker_decisions(tmp_path
     assert len(jobs) == 1 and jobs[0].binding is None
     enriched = message.model_copy(update={"body": "Micron memory production rose."})
     distribution.finalize_article(jobs[0], enriched, None)
-    worker = DistributionWorker(distribution, bus, terms, jev=None)
+    class NegativeJev:
+        async def classify(self, message, definitions):
+            return {ticker:0.0 for ticker in definitions}
+    worker = DistributionWorker(distribution, bus, terms, jev=NegativeJev())
     assert await worker.run_once() == 2
     assert distribution.pending_for_run(run["run_id"], "MU") == []
     assert distribution.pending_for_run(run["run_id"], "NVDA") == []
