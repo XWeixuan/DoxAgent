@@ -1,0 +1,37 @@
+{"ticker": "INTC", "route": "/tickers/INTC/message-bus/metrics", "status": 503, "error": "SERVICE_BUSY", "seconds": 1.001}
+{"ticker": "INTC", "route": "/tickers/INTC/messages", "status": 503, "error": "SERVICE_BUSY", "seconds": 1.001}
+{"ticker": "INTC", "route": "/tickers/INTC/message-bus/sources", "status": 200, "seconds": 1.904, "error": null, "summary": {"has_more": true, "items": 20}}
+{"ticker": "INTC", "route": "/tickers/INTC/message-bus/status", "status": 200, "seconds": 2.461, "error": null, "summary": {"source_counts": {"normal": {"state": "AVAILABLE", "value": 32, "reason": null}, "abnormal": {"state": "AVAILABLE", "value": 0, "reason": null}}, "latency_sample_count": 14}}
+{"ticker": "MU", "route": "/tickers/MU/message-bus/metrics", "status": 503, "error": "SERVICE_BUSY", "seconds": 1.002}
+{"ticker": "MU", "route": "/tickers/MU/messages", "status": 503, "error": "SERVICE_BUSY", "seconds": 1.003}
+{"ticker": "MU", "route": "/tickers/MU/message-bus/sources", "status": 200, "seconds": 1.342, "error": null, "summary": {"has_more": true, "items": 20}}
+{"ticker": "MU", "route": "/tickers/MU/message-bus/status", "status": 200, "seconds": 2.095, "error": null, "summary": {"source_counts": {"normal": {"state": "AVAILABLE", "value": 30, "reason": null}, "abnormal": {"state": "AVAILABLE", "value": 1, "reason": null}}, "latency_sample_count": 13}}
+{"ticker": "BE", "route": "/tickers/BE/message-bus/sources", "status": 200, "seconds": 0.719, "error": null, "summary": {"has_more": true, "items": 20}}
+{"ticker": "BE", "route": "/tickers/BE/messages", "status": 503, "error": "SERVICE_BUSY", "seconds": 1.001}
+{"ticker": "BE", "route": "/tickers/BE/message-bus/metrics", "status": 200, "seconds": 1.155, "error": null, "summary": {"published": {"state": "AVAILABLE", "value": "10", "reason": null}}}
+{"ticker": "BE", "route": "/tickers/BE/message-bus/status", "status": 200, "seconds": 1.608, "error": null, "summary": {"source_counts": {"normal": {"state": "AVAILABLE", "value": 27, "reason": null}, "abnormal": {"state": "AVAILABLE", "value": 1, "reason": null}}, "latency_sample_count": 14}}
+{"ticker": "COHR", "route": "/tickers/COHR/message-bus/sources", "status": 200, "seconds": 0.688, "error": null, "summary": {"has_more": true, "items": 20}}
+{"ticker": "COHR", "route": "/tickers/COHR/message-bus/metrics", "status": 200, "seconds": 0.745, "error": null, "summary": {"published": {"state": "AVAILABLE", "value": "2", "reason": null}}}
+{"ticker": "COHR", "route": "/tickers/COHR/message-bus/status", "status": 200, "seconds": 1.583, "error": null, "summary": {"source_counts": {"normal": {"state": "AVAILABLE", "value": 33, "reason": null}, "abnormal": {"state": "AVAILABLE", "value": 0, "reason": null}}, "latency_sample_count": 14}}
+{"ticker": "COHR", "route": "/tickers/COHR/messages", "status": 504, "seconds": 3.789, "error": {"code": "QUERY_TIMEOUT", "message": "QUERY_TIMEOUT", "retryable": true, "request_id": "eaebd1a8e80c4966889d71b05bb234be", "fields": [], "content_id": null}, "summary": {}}
+{"ticker": "NBIS", "route": "/tickers/NBIS/message-bus/sources", "status": 200, "seconds": 0.561, "error": null, "summary": {"has_more": true, "items": 20}}
+{"ticker": "NBIS", "route": "/tickers/NBIS/message-bus/metrics", "status": 200, "seconds": 0.653, "error": null, "summary": {"published": {"state": "AVAILABLE", "value": "32", "reason": null}}}
+{"ticker": "NBIS", "route": "/tickers/NBIS/message-bus/status", "status": 200, "seconds": 0.853, "error": null, "summary": {"source_counts": {"normal": {"state": "AVAILABLE", "value": 32, "reason": null}, "abnormal": {"state": "AVAILABLE", "value": 1, "reason": null}}, "latency_sample_count": 14}}
+{"ticker": "NBIS", "route": "/tickers/NBIS/messages", "status": 200, "seconds": 1.158, "error": null, "summary": {}}
+{"ticker": "CEG", "route": "/tickers/CEG/message-bus/sources", "status": 200, "seconds": 0.267, "error": null, "summary": {"has_more": false, "items": 13}}
+{"ticker": "CEG", "route": "/tickers/CEG/message-bus/metrics", "status": 200, "seconds": 0.317, "error": null, "summary": {"published": {"state": "NOT_RECORDED", "value": null, "reason": "NOT_RECORDED"}}}
+{"ticker": "CEG", "route": "/tickers/CEG/messages", "status": 200, "seconds": 0.373, "error": null, "summary": {}}
+{"ticker": "CEG", "route": "/tickers/CEG/message-bus/status", "status": 200, "seconds": 1.408, "error": null, "summary": {"source_counts": {"normal": {"state": "AVAILABLE", "value": 12, "reason": null}, "abnormal": {"state": "AVAILABLE", "value": 1, "reason": null}}, "latency_sample_count": 13}}
+{"ticker": "RKLB", "route": "/tickers/RKLB/message-bus/sources", "status": 200, "seconds": 0.69, "error": null, "summary": {"has_more": true, "items": 20}}
+{"ticker": "RKLB", "route": "/tickers/RKLB/message-bus/metrics", "status": 200, "seconds": 0.787, "error": null, "summary": {"published": {"state": "NOT_RECORDED", "value": null, "reason": "NOT_RECORDED"}}}
+{"ticker": "RKLB", "route": "/tickers/RKLB/messages", "status": 200, "seconds": 0.899, "error": null, "summary": {}}
+{"ticker": "RKLB", "route": "/tickers/RKLB/message-bus/status", "status": 200, "seconds": 1.373, "error": null, "summary": {"source_counts": {"normal": {"state": "AVAILABLE", "value": 21, "reason": null}, "abnormal": {"state": "AVAILABLE", "value": 3, "reason": null}}, "latency_sample_count": 15}}
+{"ticker": "SNOW", "route": "/tickers/SNOW/message-bus/metrics", "status": 503, "error": "SERVICE_BUSY", "seconds": 1.001}
+{"ticker": "SNOW", "route": "/tickers/SNOW/messages", "status": 503, "error": "SERVICE_BUSY", "seconds": 1.002}
+{"ticker": "SNOW", "route": "/tickers/SNOW/message-bus/sources", "status": 200, "seconds": 1.745, "error": null, "summary": {"has_more": true, "items": 20}}
+{"ticker": "SNOW", "route": "/tickers/SNOW/message-bus/status", "status": 200, "seconds": 1.896, "error": null, "summary": {"source_counts": {"normal": {"state": "AVAILABLE", "value": 32, "reason": null}, "abnormal": {"state": "AVAILABLE", "value": 1, "reason": null}}, "latency_sample_count": 17}}
+{"ticker": "ONDS", "route": "/tickers/ONDS/message-bus/sources", "status": 200, "seconds": 0.454, "error": null, "summary": {"has_more": true, "items": 20}}
+{"ticker": "ONDS", "route": "/tickers/ONDS/message-bus/metrics", "status": 200, "seconds": 0.505, "error": null, "summary": {"published": {"state": "AVAILABLE", "value": "1", "reason": null}}}
+{"ticker": "ONDS", "route": "/tickers/ONDS/messages", "status": 200, "seconds": 0.558, "error": null, "summary": {}}
+{"ticker": "ONDS", "route": "/tickers/ONDS/message-bus/status", "status": 200, "seconds": 0.924, "error": null, "summary": {"source_counts": {"normal": {"state": "AVAILABLE", "value": 17, "reason": null}, "abnormal": {"state": "AVAILABLE", "value": 3, "reason": null}}, "latency_sample_count": 13}}
+{"total": 36, "failures": 8}
