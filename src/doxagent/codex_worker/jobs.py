@@ -531,6 +531,7 @@ class WorkerJobManager:
             "startup_admission": {
                 "cold_active": getattr(cold, "active", False),
                 "cold_waiters": len(getattr(cold, "waiters", [])),
+                "cold_owner": cold.snapshot() if cold is not None else None,
                 "startup_pressure": getattr(admission, "startup_pressure", False),
                 "reap_error": self._reap_error,
             },

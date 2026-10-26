@@ -7,6 +7,59 @@ from doxagent.codex_worker.startup_admission import StartupAdmission, startup_sc
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("cancel_body", [False, True])
+async def test_cancel_during_release_notification_never_strands_permit(cancel_body):
+    from doxagent.codex_worker.startup_admission import PriorityGate
+
+    gate = PriorityGate()
+    entered, leave = asyncio.Event(), asyncio.Event()
+
+    async def work():
+        async with gate.acquire(label="original"):
+            entered.set()
+            await leave.wait()
+
+    owner = asyncio.create_task(work())
+    await entered.wait()
+    assert gate.snapshot()["owner_alive"] and gate.active
+    await gate.condition.acquire()
+    try:
+        if cancel_body:
+            owner.cancel()
+        else:
+            leave.set()
+        await asyncio.sleep(0)
+        # Cancel while context exit is waiting to reacquire its notification lock.
+        owner.cancel()
+        await asyncio.gather(owner, return_exceptions=True)
+        assert not gate.active and not gate.snapshot()["owner_alive"]
+    finally:
+        gate.condition.release()
+    async with gate.acquire(timeout=0.1, label="next"):
+        assert gate.active and gate.snapshot()["owner_label"] == "next"
+    assert not gate.active and not gate.waiters
+
+
+@pytest.mark.asyncio
+async def test_cancelled_waiter_cannot_release_live_owners_permit():
+    from doxagent.codex_worker.startup_admission import PriorityGate
+
+    gate = PriorityGate()
+    async with gate.acquire(label="live-owner"):
+
+        async def waiter():
+            async with gate.acquire():
+                pytest.fail("live owner lost exclusive admission")
+
+        task = asyncio.create_task(waiter())
+        await asyncio.sleep(0)
+        task.cancel()
+        await asyncio.gather(task, return_exceptions=True)
+        assert gate.active and gate.snapshot()["owner_label"] == "live-owner"
+        assert not gate.waiters
+
+
+@pytest.mark.asyncio
 async def test_twenty_cold_starts_serialize_and_bound_waiter_is_promoted():
     admission = StartupAdmission()
     active = maximum = 0

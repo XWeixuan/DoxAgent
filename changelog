@@ -2217,3 +2217,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-26 源列表真实路由复验发现固定水位get仍通过兼容UNION对旧版本排序，导致每张卡重复读取source/ticker/poll历史，20张卡整体超时。改为同一只读事务优先按current精确身份取值，头已移动才按历史主键查一条前驱；保留固定水位语义，新增静态身份不访问history回归。
 2026-10-26 生产发布核验发现Bus启动三次争用Runtime写锁：已预置Runtime库按initialize=False打开，不再由Bus启动重复执行Runtime DDL；新库保留初始化路径。持有真实Runtime写事务时Bus仍可启动的回归通过。投影器生产批量从100调整500（每源仍保留既有时间预算），减少积压追赶期间重复扫描/确认开销，不增加并发或修改采集周期。
 2026-10-26 冷进程复验修复：同屏四个读请求在两个worker下，原1秒队列上限会拒绝尚未执行的健康请求。生产读队列预算改3秒，仍保留2个worker、16条队列和3秒SQL执行中断，不增并发或放宽慢SQL；真实路由探针读取实际生产Limits，并保留冷/暖失败样本。
+
+2026-10-26 W3 P0: fix cancellation during PriorityGate release permanently stranding cold/helper admission. Release ownership synchronously before cancellable notification; retain live-owner exclusivity, add owner label/liveness/age diagnostics and cancellation-race regressions. Production evidence: cold_active=true with zero SDK jobs/capsules and zero physical boot attempts on failed prepares; source matches pre-fix main. Canonical Worker-only release and natural-flow acceptance recorded in docs/w3-prepare-permit-p0-20261026.md.

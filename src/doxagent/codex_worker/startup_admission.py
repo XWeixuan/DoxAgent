@@ -39,37 +39,60 @@ class PriorityGate:
         self.waiters = []
         self.sequence = 0
         self.active = False
+        self._owner = None
+        self._owner_since = None
+        self._owner_label = None
+
+    def snapshot(self):
+        return {
+            "owner_alive": self._owner is not None and not self._owner.done(),
+            "owner_label": self._owner_label,
+            "held_seconds": (
+                max(0.0, time.monotonic() - self._owner_since)
+                if self._owner_since is not None
+                else None
+            ),
+        }
 
     @asynccontextmanager
-    async def acquire(self, priority=0, allowed=lambda: True, timeout=180):
+    async def acquire(self, priority=0, allowed=lambda: True, timeout=180, label=None):
         rank = priority if callable(priority) else lambda: priority
-        async with self.condition:
-            if len(self.waiters) >= self.max_pending:
-                raise RuntimeError("startup admission queue full; retry original operation")
-            self.sequence += 1
-            entry = (rank, self.sequence)
-            self.waiters.append(entry)
-            try:
-                async with asyncio.timeout(timeout):
-                    while (
-                        self.active
-                        or min(self.waiters, key=lambda x: (x[0](), x[1])) != entry
-                        or not allowed()
-                    ):
-                        try:
-                            await asyncio.wait_for(self.condition.wait(), 0.25)
-                        except TimeoutError:
-                            pass
-                self.active = True
-            finally:
-                self.waiters.remove(entry)
-                self.condition.notify_all()
+        owner = asyncio.current_task()
+        admitted = False
         try:
+            async with self.condition:
+                if len(self.waiters) >= self.max_pending:
+                    raise RuntimeError("startup admission queue full; retry original operation")
+                self.sequence += 1
+                entry = (rank, self.sequence)
+                self.waiters.append(entry)
+                try:
+                    async with asyncio.timeout(timeout):
+                        while (
+                            self.active
+                            or min(self.waiters, key=lambda x: (x[0](), x[1])) != entry
+                            or not allowed()
+                        ):
+                            try:
+                                await asyncio.wait_for(self.condition.wait(), 0.25)
+                            except TimeoutError:
+                                pass
+                    self.active = admitted = True
+                    self._owner = owner
+                    self._owner_since = time.monotonic()
+                    self._owner_label = label
+                finally:
+                    self.waiters.remove(entry)
+                    self.condition.notify_all()
             yield
         finally:
-            async with self.condition:
+            if admitted and self._owner is owner:
+                # Ownership release must precede every await. Notification may be
+                # cancelled; waiters already recheck admission every 250ms.
                 self.active = False
-                self.condition.notify_all()
+                self._owner = self._owner_since = self._owner_label = None
+                async with self.condition:
+                    self.condition.notify_all()
 
 
 class StartupAdmission:
@@ -126,5 +149,6 @@ class StartupAdmission:
             rank,
             lambda: self.memory_level() != "CRITICAL" and (rank() == 0 or self.allow_speculation()),
             remaining(180),
+            label=scope.get("key"),
         ):
             yield
