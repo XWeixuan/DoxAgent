@@ -1162,6 +1162,7 @@ class SiteAccessRuntime:
         self._maintenance_pages: dict[str, _MaintenancePage] = {}
         from .fetch_anchors import FetchAnchors
         self.fetch_anchors = FetchAnchors()
+        self._listing_urls = {}
         from .targets import TargetOwner
 
         self.target_owner = TargetOwner(repository)
@@ -1292,6 +1293,11 @@ class SiteAccessRuntime:
         finally:
             _BROWSER_TIMINGS.reset(token)
 
+    def _remember_listing_url(self, key, url):
+        self._listing_urls[key] = url
+        if len(self._listing_urls) > 128:
+            self._listing_urls.pop(next(iter(self._listing_urls)))
+
     async def _browser_impl(
         self,
         request: AccessRequest,
@@ -1318,6 +1324,7 @@ class SiteAccessRuntime:
             )
         )
         anchor = await self.fetch_anchors.take(identity, egress) if anchor_eligible else None
+        listing_key = (identity.identity_id, identity.revision, egress.egress_id, request.url)
         lease = anchor.lease if anchor else await self.browser_runtimes.page(identity, egress, deadline=deadline)
         _BROWSER_TIMINGS.get()["page_acquire_ms"] = int((time.monotonic()-lease_started)*1000)
         _BROWSER_TIMINGS.get()["fetch_anchor_reused"] = int(anchor is not None)
@@ -1469,9 +1476,11 @@ class SiteAccessRuntime:
                 ):
                     from .origin_listing import fetch, valid_market, yahoo_rows
 
+                    fetch_url = self._listing_urls.get(listing_key, request.url)
+                    command_timings['canonical_listing_direct'] = int(fetch_url != request.url)
                     fetched = await fetch(
                         page,
-                        request.url,
+                        fetch_url,
                         budget_ms=max(1, min(8000, int((deadline - time.monotonic()) * 1000))),
                         max_bytes=request.max_response_bytes,
                     )
@@ -1490,6 +1499,8 @@ class SiteAccessRuntime:
                             resolved.site_id,
                             request.recipe_parameters.get("ticker"),
                         ):
+                            if resolved.site_id == 'investorshub':
+                                self._remember_listing_url(listing_key, fetched['url'])
                             result = RuntimeResponse(
                                 200,
                                 fetched['url'],
@@ -1908,6 +1919,8 @@ class SiteAccessRuntime:
                         resolved.site_id,
                         request.recipe_parameters.get("ticker"),
                     ):
+                        if resolved.site_id == 'investorshub':
+                            self._remember_listing_url(listing_key, native_document[1] if native_document else page.url)
                         from .fetch_anchors import FetchAnchor
 
                         keep_anchor = self.fetch_anchors.put(

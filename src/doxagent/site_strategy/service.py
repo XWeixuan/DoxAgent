@@ -1961,7 +1961,8 @@ class SiteStrategyService:
                 if request.purpose is SitePurpose.BODY
                 else resolved.access.crawler_queue_timeout_ms
             ) / 1000
-            queue_cap = min(queue_cap, 3.0)
+            if request.purpose is SitePurpose.BODY:
+                queue_cap = min(queue_cap, 3.0)
             permit = (
                 budget.permit(request.purpose, timeout_seconds=min(remaining, queue_cap))
                 if request.mode is AccessMode.HTTP_PUBLIC

@@ -700,3 +700,16 @@ async def test_body_v22_uses_registry_strategy_and_records_access_provenance(
     assert result.diagnostics["strategy_ref"] == "builtin:yahoo@1"
     trace = result.diagnostics["site_access_trace"]
     assert trace[-1]["combination_id"] == "yahoo_finance-1"
+
+
+@pytest.mark.asyncio
+async def test_crawler_honors_configured_queue_instead_of_hidden_three_second_cap(site_service):
+    import time
+    async def execute_runtime(request, resolved, combination, profile, egress):
+        return RuntimeResponse(200,request.url,{"content-type":"text/html"},"<html><article><h1>Story</h1><p>Body.</p></article></html>")
+    site_service.runtime.execute=execute_runtime
+    budget=site_service.budgets.get("yahoo_finance",max_concurrency=2,min_interval_ms=0)
+    budget._next_start=time.monotonic()+3.2
+    result=await site_service.execute(AccessRequest(operation_id="queue-configured",purpose=SitePurpose.CRAWLER,url="https://finance.yahoo.com/story",mode=AccessMode.HTTP_PUBLIC,remaining_budget_ms=6000))
+    assert result.disposition is AccessDisposition.SUCCESS
+    assert result.queue_wait_ms>=3000
