@@ -261,7 +261,7 @@ def test_cjk_article_identity_and_source_language_registry() -> None:
     }
     assert sources["trendforce_press_releases"].acquisition_mode is AcquisitionMode.BY_DISTRIBUTION
     sites = {site.site_id: site for site in seed_specs()}
-    assert sites["barrons"].auth.crawler_requirement == "required"
+    assert sites["barrons"].auth.crawler_requirement == "none"
     assert sites["barrons"].access.overrides == {
         "body": ["barrons-1", "barrons-2"],
         "crawler": ["barrons-1", "barrons-2"],

@@ -239,7 +239,7 @@ def test_barrons_crawler_and_body_share_dow_jones_identity_policy(
     old = site_service.apply_strategy(
         current.model_copy(
             update={
-                "auth": current.auth.model_copy(update={"crawler_requirement": "none"}),
+                "auth": current.auth.model_copy(update={"crawler_requirement": "required"}),
                 "access": current.access.model_copy(update={"overrides": {}}),
             }
         ),
@@ -249,7 +249,9 @@ def test_barrons_crawler_and_body_share_dow_jones_identity_policy(
     bootstrap_seed(repository, site_service)
     upgraded = repository.get_strategy("barrons")
     assert upgraded is not None and upgraded.revision == old.revision + 1
-    assert upgraded.auth.crawler_requirement == "required"
+    assert upgraded.auth.crawler_requirement == "none"
+    assert site_service._auth_required(site_service.resolve("https://www.barrons.com/market-data/stocks/mu"), SitePurpose.CRAWLER) is False
+    assert site_service._auth_required(site_service.resolve("https://www.barrons.com/articles/example"), SitePurpose.BODY) is True
     assert upgraded.access.overrides["crawler"] == upgraded.access.overrides["body"]
     assert upgraded.access.overrides["body"] == ["barrons-1", "barrons-2"]
     apply_first_wave(repository)

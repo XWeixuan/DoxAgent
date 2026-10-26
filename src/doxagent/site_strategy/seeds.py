@@ -116,8 +116,10 @@ def bootstrap_seed(repository: SiteStrategyRepository, service: SiteStrategyServ
                     and spec.auth.crawler_requirement == "none"
                 ):
                     auth_updates["crawler_requirement"] = "none"
-                if spec.site_id == "barrons" and current.auth.crawler_requirement != "required":
-                    auth_updates["crawler_requirement"] = "required"
+                if spec.site_id == "barrons" and current.auth.crawler_requirement != "none":
+                    # The public stock-news JSON requires no subscription login.
+                    # BODY continues to inherit the required paid-article policy.
+                    auth_updates["crawler_requirement"] = "none"
                 domains = list(current.domains)
                 known_domains = {(r.match,r.host,r.role) for r in domains}
                 for rule in spec.domains:
@@ -230,7 +232,7 @@ def seed_specs() -> list[SiteStrategySpec]:
             crawler="builtin:barrons_ticker@1",
             egresses=("us-standard-5", "jp-standard-6"),
             auth="required",
-            crawler_auth="required",
+            crawler_auth="none",
             access_overrides={
                 "body": ["barrons-1", "barrons-2"],
                 "crawler": ["barrons-1", "barrons-2"],

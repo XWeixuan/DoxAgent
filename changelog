@@ -2207,3 +2207,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-26 20 ticker实测修复：现有身份并发2时仅1个idle fetch文档导致并发任务反复冷导航；文档池现跟随已配置身份容量、最多2个，不提高身份/执行并发。仅已验证的业务文档idle期间使用Chrome原生生命周期冻结脚本，借用前恢复，降低广告脚本CPU；失败回到正常导航，挑战/维护页不进入池。Bus稳态激活检查进入短任务优先lane，避免例行扫描的写队列拖慢整个调度tick。
 
 2026-10-26 30秒压力路径修复：CRAWLER遵循已有Site配置的准入排队预算，删除隐藏的全用途3秒截断（BODY仍短排队/持久续跑），不延长整个访问预算、不扩大身份/浏览器执行并发；已验证InvestorsHub规范股票URL按identity revision/出口缓存，后续同源fetch直取规范地址，避免每轮重复跳转，响应与ticker合同继续逐次验证。
+
+2026-10-26 Barrons回退修复：实测公共双频道JSON在增量压力后部分403，而Chrome回退被seed强制的CRAWLER付费登录前置门禁拒绝。将Barrons公开列表CRAWLER设为无需订阅认证，继续使用现有Chrome身份、出口、风控恢复与原BODY付费正文认证要求；实际登录页/挑战及正文完整性仍按原规则判断，seed升级及BODY认证隔离有回归。
