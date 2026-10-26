@@ -228,6 +228,32 @@ async def test_power_shared_http_request_survives_cancelled_ticker_and_reuses_sl
     await http.close()
 
 
+async def test_power_siblings_reference_the_same_real_request():
+    import asyncio
+    from doxagent.message_bus_v2.poll_trace import REQUESTS,request_started
+    calls=[]
+    class Transport:
+        async def fetch(self,url,spec,**kwargs):
+            event=request_started('GET',url)
+            calls.append(url)
+            await asyncio.sleep(.01)
+            event.update(response_received_at='2026-10-26T21:00:00+00:00',status_code=200)
+            return SimpleNamespace(status=200,text='<rss/>')
+    http=EnergyHttp(Transport());spec=SOURCES['power_magazine_energy']
+    async def consumer():
+        events=[];token=REQUESTS.set(events)
+        try:
+            await http.fetch(POWER_CEG[1],spec)
+            return events
+        finally:REQUESTS.reset(token)
+    first,second=await asyncio.gather(consumer(),consumer())
+    cached=await consumer()
+    assert len(calls)==1
+    assert first==second==cached and len(first)==1
+    assert first[0]['physical_request_id'] and first[0]['response_received_at']
+    await http.close()
+
+
 async def test_public_transport_retries_only_transient_failures_and_empty_200_once():
     spec = SOURCES["nist_news"]
     empty = Capture(200, spec.urls[0], "", {})

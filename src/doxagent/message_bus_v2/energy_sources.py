@@ -189,18 +189,31 @@ class EnergyHttp:
                 del self.feeds[old]
         entry = self.feeds.get(key)
         if entry is None:
-            task = asyncio.create_task(self._fetch(url, spec, headers=headers))
+            async def capture():
+                from .poll_trace import REQUESTS
+                events=[]
+                token=REQUESTS.set(events)
+                try:
+                    return await self._fetch(url,spec,headers=headers),events
+                finally:
+                    REQUESTS.reset(token)
+            task = asyncio.create_task(capture())
             entry = {"task": task, "completed": None}
             self.feeds[key] = entry
             task.add_done_callback(lambda _: entry.update(completed=time.monotonic()))
         try:
             # One cancelled ticker must not cancel a physical request shared by its sibling.
-            result = await asyncio.shield(entry["task"])
+            result,events = await asyncio.shield(entry["task"])
         except Exception:
             self.feeds.pop(key, None)
             raise
         if result.status not in (200, 304):
             self.feeds.pop(key, None)
+        from .poll_trace import REQUESTS
+        consumer=REQUESTS.get()
+        if consumer is not None:
+            known={e.get('physical_request_id') for e in consumer}
+            consumer.extend(dict(e) for e in events if e.get('physical_request_id') not in known)
         return result
 
     async def _fetch(self, url, spec, *, headers=None):
