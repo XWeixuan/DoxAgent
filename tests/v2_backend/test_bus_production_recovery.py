@@ -36,3 +36,44 @@ def test_poll_time_lookup_has_index_for_legacy_sort_keys(tmp_path):
             ('native:poll_runs','MU','2026-10-26T08:30')))
     assert 'object_current_poll_time' in plan
     assert 'TEMP B-TREE' not in plan
+
+
+def test_missing_summary_repair_is_idempotent_and_does_not_republish(tmp_path):
+    import json
+    import sqlite3
+    from scripts.ops.repair_bus_message_projection import repair
+    from doxagent.v2_read.outbox import SourceOutbox
+    from doxagent.v2_read.source_snapshot import rebuild_current
+
+    path=tmp_path/'bus.db'
+    at='2026-10-26T09:00:00Z'
+    values={
+        'source_definitions':dict(source_id='news',display_name='News',kind='api'),
+        'standard_messages':dict(ticker='MU',standard_message_id='message',raw_message_id='raw',
+            revision=1,url='https://example.com/article',title='Article',source_id='news',
+            binding_id='MU:news',published_at=at,collected_at=at,normalized_at=at,
+            body='Complete article',metadata={'v2_control_origin':{'epoch':1}}),
+        'stream_items':dict(ticker='MU',stream_item_id='stream',published_at=at,stream_offset=1),
+        'stream_members':dict(stream_item_id='stream',standard_message_id='message',member_index=0),
+    }
+    with sqlite3.connect(path) as db:
+        for table,value in values.items():
+            columns=[k for k in value if k in {'source_id','ticker','standard_message_id',
+                                              'stream_item_id','member_index'}]
+            db.execute('CREATE TABLE '+table+'('+','.join(c+' TEXT' for c in columns)+',data_json TEXT)')
+            db.execute('INSERT INTO '+table+' VALUES('+','.join('?' for _ in range(len(columns)+1))+')',
+                       [*(value[c] for c in columns),json.dumps(value)])
+    source=SourceOutbox(path,'bus')
+    source.migrate(tuple(values))
+    result=rebuild_current([source],tmp_path/'read'/'read.db')
+    assert result['verified']
+    store=ReadStore(result['path'])
+    checkpoint=store.position('bus')
+    store.ingest('fixture','remove-summary',[dict(kind='message',ticker='MU',id='message',data=None)])
+    assert repair(store.path,path)['missing']==1
+    assert repair(store.path,path,apply=True)==dict(missing=1,restored=1,failures=[])
+    assert repair(store.path,path,apply=True)['missing']==0
+    assert store.position('bus')==checkpoint
+    assert store.get('message','MU','message')['content_update']['revision']==1
+    with sqlite3.connect(path) as db:
+        assert db.execute('SELECT count(*) FROM stream_items').fetchone()[0]==1

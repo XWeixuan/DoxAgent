@@ -63,10 +63,21 @@ def body_cohort(store, ticker, seq, filters, days):
     full = sum(v.get("outcome") in {"FULL", "SHORT_FULL"} for v in unique.values())
     pending = sum(v.get("status") == "PENDING" for v in unique.values())
     with store.connect() as db:
-        attempts = db.execute(
-            f"SELECT coalesce(sum(json_extract(payload,'$.network_attempted')),0),coalesce(sum(json_extract(payload,'$.network_attempted') AND json_extract(payload,'$.succeeded')),0),coalesce(sum(json_extract(payload,'$.cache_reused')),0) FROM {table} WHERE kind='body_attempt' AND ticker=? AND valid_from<=? AND (valid_to IS NULL OR valid_to>?) AND json_extract(payload,'$.body_result_key') IN (SELECT value FROM json_each(?))",
-            (ticker, seq, seq, json.dumps(list(unique))),
-        ).fetchone()
+        from doxagent.v2_read.serving_schema import history_relation
+        attempts=[0,0,0]
+        for relation in ('object_current',history_relation(db)):
+            history = ' AND valid_to>?' if relation!='object_current' else ''
+            values = db.execute(
+                "SELECT coalesce(sum(json_extract(payload,'$.network_attempted')),0),"
+                "coalesce(sum(json_extract(payload,'$.network_attempted') AND "
+                "json_extract(payload,'$.succeeded')),0),"
+                "coalesce(sum(json_extract(payload,'$.cache_reused')),0) FROM "+relation+
+                " WHERE kind='body_attempt' AND ticker=? AND valid_from<=? "
+                "AND json_extract(payload,'$.body_result_key') IN "
+                "(SELECT value FROM json_each(?))"+history,
+                [ticker,seq,json.dumps(list(unique)),*([seq] if history else [])]
+            ).fetchone()
+            attempts=[a+b for a,b in zip(attempts,values)]
     return {
         "total": len(unique),
         "full": full,

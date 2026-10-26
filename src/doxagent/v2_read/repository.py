@@ -832,8 +832,8 @@ class ReadStore:
     ) -> list[dict[str, Any]]:
         if not 1 <= limit <= 101:
             raise ValueError("invalid limit")
-        where = ["kind=?", "ticker=?", "valid_from<=?", "(valid_to IS NULL OR valid_to>?)"]
-        params: list[Any] = [kind, ticker, seq, seq]
+        where = ["kind=?", "ticker=?", "valid_from<=?"]
+        params: list[Any] = [kind, ticker, seq]
         if identity is not None:
             where.append("id=?")
             params.append(identity)
@@ -919,7 +919,8 @@ class ReadStore:
             branches = ["object_current"] if seq == self.highwater(db) else ["object_current", history_name]
             rows = []
             for table in branches:
-                history = " AND valid_to IS NOT NULL" if table == history_name else ""
+                history = " AND valid_to IS NOT NULL AND valid_to>?" if table == history_name else ""
+                branch_params = [*params,seq] if table == history_name else params
                 index = (
                     "objects_parent" if table == history_name else "current_parent"
                 ) if parent is not None else (
@@ -930,7 +931,7 @@ class ReadStore:
                 rows.extend(db.execute(
                     "SELECT id,sort_key,payload,valid_from FROM " + table + " AS objects" + (" INDEXED BY " + index if index else "") + " WHERE "
                     + " AND ".join(where) + history
-                    + " ORDER BY sort_key DESC,id DESC LIMIT ?", [*params, limit]
+                    + " ORDER BY sort_key DESC,id DESC LIMIT ?", [*branch_params, limit]
                 ).fetchall())
             rows = sorted(rows, key=lambda row: (row["sort_key"], row["id"]), reverse=True)[:limit]
             return [
