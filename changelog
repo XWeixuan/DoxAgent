@@ -2246,3 +2246,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-27 30秒实测修复：旧HEAD/unit快照的schedule_interval_seconds会覆盖刚更新的绑定级周期，导致每轮重复重分相和SCHEDULE写放大。周期改由绑定root持有，读取旧unit时忽略该字段，HEAD收尾也不回写旧值；补60→30后多轮不重分相回归。
 
 2026-10-27 真实正文抽检修复：确认一条On3短付费预览由推荐列表凑长误标FULL；HTML/Reader共同拦截带订阅价格的短预览，Reader在Recommendations处截断，旧预览缓存不再作为完整正文复用。保留长完整正文普通订阅页脚，不将标签率冒称真实完整率。
+
+2026-10-27 写通道实测减负：不变SCHEDULE不再开启SQLite写事务，已被准备阶段证明为空/重复/过期的片段不再占新候选紧急优先级；共享采集结束的调度状态提交进入已有短任务优先级，避免被历史扫描推迟下一次采集。保留单写与8次紧急后普通工作公平推进，33项接纳/写队列回归通过。

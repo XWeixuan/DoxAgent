@@ -99,6 +99,16 @@ def test_old_unit_interval_cannot_rephase_new_binding_each_poll(tmp_path):
     assert repo.get_poll_unit_state(binding).target_due_at==before
 
 
+def test_unchanged_schedule_does_not_acquire_writer(tmp_path,monkeypatch):
+    repo,_,source,binding=_setup(tmp_path);now=utc_now()
+    entries=[(source,binding,'HEAD',now,True)]
+    repo.polling.schedules(entries,now)
+    def unexpected():
+        raise AssertionError('unchanged clock must not acquire SQLite writer')
+    monkeypatch.setattr(repo,'atomic_intake',unexpected)
+    repo.polling.schedules(entries,now+timedelta(seconds=1))
+
+
 def test_partial_continuation_recovers_only_remaining_and_fences_old_owner(tmp_path):
     repo = MessageBusV2Repository(tmp_path/'bus.db');dist=DistributionRepository(repo)
     with repo.transaction() as db:

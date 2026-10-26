@@ -214,19 +214,20 @@ class PollJournal:
                 (r["binding_id"], r["unit"]): json.loads(r["data_json"])["signature"] for r in rows
             }
         cache = dict(self._schedule_cache)
-        present = set()
+        prepared = []
+        for source,binding,unit,epoch,enabled in entries:
+            key=binding.binding_id,unit
+            signature=[source.version,binding.version,binding.polling.target_interval_seconds,
+                round(epoch.timestamp()*1_000_000) % (binding.polling.target_interval_seconds*1_000_000)
+                if epoch else None,enabled]
+            prepared.append(((source,binding,unit,epoch,enabled),key,signature))
+        present = {key for _,key,_ in prepared}
+        retired = any(key not in present and signature[-1] and
+            (key[1].startswith('IR:') == (owner=='ir')) for key,signature in cache.items())
+        if not retired and all(cache.get(key)==signature for _,key,signature in prepared):
+            return  # Unchanged schedule evidence requires no SQLite writer visit.
         with self.repo.atomic_intake():
-            for source, binding, unit, epoch, enabled in entries:
-                key = binding.binding_id, unit
-                present.add(key)
-                signature = [
-                    source.version,
-                    binding.version,
-                    binding.polling.target_interval_seconds,
-                    round(epoch.timestamp()*1_000_000) % (binding.polling.target_interval_seconds*1_000_000)
-                    if epoch else None,
-                    enabled,
-                ]
+            for (source,binding,unit,epoch,enabled),key,signature in prepared:
                 if cache.get(key) == signature:
                     continue
                 run_id = new_id("schedule")
@@ -1180,7 +1181,7 @@ class CaptureIntake:
                     self.journal.accept_and_claim, self.bus, prepared, token, self.distribution,
                     lambda: self.stopping,
                     continue_capture=burst<4,
-                    _lane_priority=0 if row['intake_position'] < row['decoded_payload'].get('fresh_count', 0) else 1,
+                    _lane_priority=0 if prepared[4].messages and row['intake_position'] < row['decoded_payload'].get('fresh_count', 0) else 1,
                 )
             except asyncio.CancelledError:
                 # Claim expires on process loss; a drained commit remains durable.

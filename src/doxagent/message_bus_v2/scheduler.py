@@ -974,6 +974,7 @@ class GlobalPollScheduler:
         ):
             await self.storage_call(
                 self._record_distribution_poll, source, roster, run,
+                _lane_priority=0,
                 acquisition_unit=acquisition_unit,
                 acquisition_checkpoint=__import__("json").loads(run["checkpoint_json"]),
             )
@@ -1135,6 +1136,7 @@ class GlobalPollScheduler:
                     source,
                     roster,
                     run,
+                    _lane_priority=0,
                     coverage=result.window_coverage,
                     observed_at=utc_now(),
                     acquisition_checkpoint=result.next_checkpoint,
