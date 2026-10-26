@@ -2924,7 +2924,9 @@ class MessageBusV2Repository:
                 return False
             binding = self.get_binding(state.binding_id)
             current = self.get_poll_state(binding) if binding else state
-            snapshot = state.model_dump(mode="json", exclude={"units", *COUNTERS})
+            # The configured interval belongs to the binding, not a transport
+            # unit snapshot. An old unit must not undo a live interval change.
+            snapshot = state.model_dump(mode="json", exclude={"units", "schedule_interval_seconds", *COUNTERS})
             units = {**current.units, unit:snapshot}
             # Migrate inherited unit checkpoints once, then update only this unit.
             for key, value in current.units.items():
@@ -2932,7 +2934,7 @@ class MessageBusV2Repository:
             self._save_unit_snapshot(unit, state.binding_id, snapshot)
             changed = {"units":units}
             if unit in {"HEAD","SHARED"}:
-                changed.update(state.model_dump(exclude={"units", *COUNTERS}))
+                changed.update(state.model_dump(exclude={"units", "schedule_interval_seconds", *COUNTERS}))
             for name in ("last_capture_at", "last_attempt_at", "last_success_at"):
                 value, old = getattr(state,name), getattr(current,name)
                 if not unit.startswith('TAIL:') and value and (not old or value > old):
@@ -3015,13 +3017,14 @@ class MessageBusV2Repository:
         if selected:
             root = json.loads(row[0]) if row else {'binding_id':binding.binding_id,
                 'source_id':binding.source_id,'ticker':binding.ticker}
-            root.update(json.loads(selected[0]))
+            root.update({k:v for k,v in json.loads(selected[0]).items() if k!='schedule_interval_seconds'})
             root['units'] = {}
             return PollState.model_validate(self.content.decode(root))
         base = self.get_poll_state(binding)
         value = base.units.get(unit)
         if value:
-            return PollState.model_validate({**base.model_dump(), **value, "units": {}})
+            return PollState.model_validate({**base.model_dump(), **value,
+                "schedule_interval_seconds":base.schedule_interval_seconds, "units": {}})
         if unit == "HEAD":
             return base
         return base.model_copy(update={"units": {}, "checkpoint": {},

@@ -78,6 +78,27 @@ def test_transient_classifier_error_retries_without_caching_negative(tmp_path,mo
         assert db.execute('SELECT state FROM distribution_deliveries').fetchone()[0]=='NOT_RELEVANT'
 
 
+def test_old_unit_interval_cannot_rephase_new_binding_each_poll(tmp_path):
+    from doxagent.message_bus_v2.scheduler import GlobalPollScheduler
+    repo,bus,source,binding=_setup(tmp_path);now=utc_now()
+    root=repo.get_poll_state(binding).model_copy(update={'schedule_interval_seconds':60,
+        'target_due_at':now,'next_dispatch_at':now})
+    repo.save_poll_state(root.model_copy(update={'units':{'HEAD':root.model_dump(mode='json',exclude={'units'})}}))
+    binding=binding.model_copy(update={'polling':binding.polling.model_copy(update={'target_interval_seconds':30})})
+    repo.save_binding(binding)
+    scheduler=GlobalPollScheduler(repo,bus,SimpleNamespace())
+    scheduler._initialize_due_slots([(source,binding)],now)
+    current=repo.get_poll_state(binding)
+    assert current.schedule_interval_seconds==30
+    unit=repo.get_poll_unit_state(binding,'HEAD')
+    assert unit.schedule_interval_seconds==30
+    repo.save_poll_unit_state(unit.model_copy(update={'schedule_interval_seconds':60}), 'HEAD')
+    assert repo.get_poll_state(binding).schedule_interval_seconds==30
+    before=repo.get_poll_unit_state(binding).target_due_at
+    scheduler._initialize_due_slots([(source,binding)],now+timedelta(seconds=10))
+    assert repo.get_poll_unit_state(binding).target_due_at==before
+
+
 def test_partial_continuation_recovers_only_remaining_and_fences_old_owner(tmp_path):
     repo = MessageBusV2Repository(tmp_path/'bus.db');dist=DistributionRepository(repo)
     with repo.transaction() as db:
