@@ -439,6 +439,10 @@ class SiteStrategyCrawlerAdapter:
         if resolved.crawler is None:
             raise AdapterLoadError(f"site {resolved.site_id} has no crawler strategy")
         builtin = self.BUILTIN_REFS.get(resolved.crawler.ref)
+        if (resolved.crawler.ref == "builtin:trendforce_listings@1"
+                and context.source.source_id == "trendforce_press_releases"):
+            # Both columns share a Site recipe, but Press has a lighter HTTP entry.
+            builtin = "trendforce_press_releases"
         if builtin is None:
             raise AdapterLoadError(
                 f"unsupported shared builtin crawler strategy: {resolved.crawler.ref}"

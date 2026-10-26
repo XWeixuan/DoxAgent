@@ -174,3 +174,21 @@ def test_replacement_rollback_restores_config_and_same_operation_can_be_reactiva
     admit_bus_revisions(control, bus)
     assert candidate.current_head() == newer.initialization_id
     assert control.revision_acknowledged("MU", second, "bus")
+
+
+def test_bus_steady_admission_and_heartbeat_do_not_reopen_candidate_repositories(tmp_path, monkeypatch):
+    from doxagent.ticker_initialization import consumers
+    control = InitializationRepository(tmp_path / "control.db")
+    run, lease, config, identity = stage(control, tmp_path / "bus.db")
+    bus = MessageBusV2Service(config.live)
+    admit_bus_revisions(control, bus)
+    revision = control.active_revisions()[0]
+    def unexpected(*args, **kwargs):
+        raise AssertionError("steady admission must not construct/migrate candidate databases")
+    monkeypatch.setattr(consumers, "CandidateConfiguration", unexpected)
+    admit_bus_revisions(control, bus)
+    assert consumers.bus_revision_usable(bus, revision)
+    assert control.revision_acknowledged("MU", identity, "bus")
+    from doxagent.message_bus_v2.schema import TickerMonitoringStatus, UpdateActor
+    bus.set_ticker_status("MU", TickerMonitoringStatus.PAUSED, actor=UpdateActor.USER)
+    assert not consumers.bus_revision_usable(bus, revision)

@@ -2199,3 +2199,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-26 科技消息源生产验收：e2b308bc精确构建并仅发布Bus/BODY，镜像文件指纹及运行/零重启核验通过；66个新绑定已启用（常规57、The Fly9），重复应用66项全部unchanged。旧182绑定哈希及7个已有词表版本保持，SNOW新增词表v1，IONQ未启动/无绑定，5量子栏目预留。隔离检出114项回归通过，常规26入口/26正文实测通过；The Fly440样本75FULL、365权限预览，不发布预览且不消耗浏览器重试。当前休市保留原日历；验收记录和公开回执归档，其他会话未提交修改保留。
 
 2026-10-26 发布前补充：生产仍为旧Google单并发/1秒源限速，补精确旧默认迁移；按真实terms revision/source version复用query plan，避免每个调度tick重新解析完整词表。TrendForce Press在批准server-direct出口单次HTTP 200、5条合同通过、404ms，接入轻量主路径且保留浏览器回退。IBKR周期历史重复项仅在durable capture成功后记录有界收据，保留更新回调、重启重合对账；即时回调沿用Bus活跃绑定和临时开关到期门禁，防止关闭后再启动未持久化的SDK正文请求。新增HEAD/中尾部新候选、SDK慢ticker隔离/完整正文回调/到期、真实publisher别名FULL复用、query-plan失效等专项；发布前最新去重回归454通过、1跳过（前期失败及修复记录保留）。
+
+2026-10-26 实测修复：Bus已接纳配置的周期检查/心跳改为读取当前head与运行状态，避免每tick对每ticker重新构造live/candidate仓库并重复DDL及提交；指针变化仍执行原安装/回滚。修复Site共享策略选择TrendForce Press时错误复用news适配器，确保已开发的公开HTTP主路径实际被调用。补稳态无迁移、激活/回滚回归。

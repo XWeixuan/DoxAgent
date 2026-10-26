@@ -64,16 +64,26 @@ def consumer_heartbeat(
 
 def bus_revision_usable(bus: MessageBusV2Service, revision: dict[str, Any]) -> bool:
     state = bus.repository.get_ticker_state(revision["ticker"])
-    configuration = CandidateConfiguration(
-        bus.repository.path,
-        revision["artifacts"]["monitoring_configuration"]["initialization_id"],
-        revision["ticker"],
-    )
     return bool(
         state
         and state.status is TickerMonitoringStatus.RUNNING
-        and configuration.current_head() == configuration.initialization_id
+        and _bus_configuration_head(bus, revision["ticker"])
+        == revision["artifacts"]["monitoring_configuration"]["initialization_id"]
     )
+
+
+def _bus_configuration_head(bus: MessageBusV2Service, ticker: str) -> str | None:
+    # Admission/heartbeat runs every scheduler tick. Opening a CandidateConfiguration
+    # also opens two repositories and executes their schema migrations.
+    with bus.repository._connect() as db:
+        if not db.execute(
+            "SELECT 1 FROM sqlite_master WHERE name='initialization_config_head'"
+        ).fetchone():
+            return None
+        row = db.execute(
+            "SELECT initialization_id FROM initialization_config_head WHERE ticker=?", (ticker,)
+        ).fetchone()
+        return str(row[0]) if row else None
 
 
 def admit_bus_revisions(control: InitializationRepository, bus: MessageBusV2Service) -> None:
@@ -91,27 +101,27 @@ def _admit_bus(
     control: InitializationRepository, bus: MessageBusV2Service, revision: dict[str, Any]
 ) -> None:
     refs = revision["artifacts"]["monitoring_configuration"]
-    candidate = CandidateConfiguration(
-        bus.repository.path, refs["initialization_id"], revision["ticker"]
-    )
-    head = candidate.current_head()
-    if head and head != candidate.initialization_id and candidate.installed():
-        # An automatic rollback restores the immediately preceding portfolio.
-        current = CandidateConfiguration(bus.repository.path, head, revision["ticker"])
-        if current.previous_head() == candidate.initialization_id:
-            current.rollback()
-    if head != candidate.initialization_id:
+    head = _bus_configuration_head(bus, revision["ticker"])
+    if head != refs["initialization_id"]:
+        candidate = CandidateConfiguration(
+            bus.repository.path, refs["initialization_id"], revision["ticker"]
+        )
+        if head and candidate.installed():
+            # An automatic rollback restores the immediately preceding portfolio.
+            current = CandidateConfiguration(bus.repository.path, head, revision["ticker"])
+            if current.previous_head() == candidate.initialization_id:
+                current.rollback()
         candidate.install()
-    if candidate.current_head() != candidate.initialization_id:
-        raise ValueError("Message Bus configuration does not match active revision")
+        if candidate.current_head() != candidate.initialization_id:
+            raise ValueError("Message Bus configuration does not match active revision")
     state = bus.repository.get_ticker_state(revision["ticker"])
-    with bus.repository.transaction() as db:
+    with bus.repository._connect() as db:
         from doxagent.v2_control.mirror import state_in
 
         desired = state_in(db, revision["ticker"])
     if (
         state is None
-        or head != candidate.initialization_id
+        or head != refs["initialization_id"]
         or (
             desired
             and desired.get("admission_allowed")

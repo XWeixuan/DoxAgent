@@ -557,3 +557,17 @@ async def test_dispatch_ticks_reuse_query_plans_until_real_terms_revision_change
         assert scheduler._query_plans[('google_news_search_rss','MU')]['terms_revision']==1
     finally:
         await scheduler.close()
+
+
+async def test_shared_trendforce_press_selects_its_http_capable_adapter():
+    from doxagent.message_bus_v2.adapters import SiteStrategyCrawlerAdapter
+    from doxagent.message_bus_v2.schema import PollResult
+    press = SimpleNamespace(poll_shared=AsyncMock(return_value=PollResult(messages=[])))
+    news = SimpleNamespace(poll_shared=AsyncMock(side_effect=AssertionError("wrong column")))
+    client = SimpleNamespace(resolve=AsyncMock(return_value=SimpleNamespace(
+        crawler=SimpleNamespace(ref="builtin:trendforce_listings@1"),site_id="trendforce",strategy_revision=1)))
+    registry = SimpleNamespace(crawler_plane=SimpleNamespace(site_access_client=client),
+        _builtins={"trendforce_news":news,"trendforce_press_releases":press})
+    context = SimpleNamespace(source=SimpleNamespace(source_id="trendforce_press_releases",entry_url="https://www.trendforce.com/presscenter/news"))
+    await SiteStrategyCrawlerAdapter(registry).poll_shared(context)
+    press.poll_shared.assert_awaited_once_with(context)
