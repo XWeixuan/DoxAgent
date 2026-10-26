@@ -26,6 +26,8 @@ def body_verification_url(scope, *candidates, excluded_urls=()):
         ) or (
             parsed.hostname == "investorshub.advfn.com"
             and bool(re.fullmatch(r"/stock-market/(NASDAQ|NYSE|AMEX)/[^/]+/news/?", parsed.path))
+        ) or (
+            parsed.hostname in {'www.reuters.com','reuters.com'} and parsed.path.startswith('/site-search')
         )
 
     return next(
@@ -64,6 +66,8 @@ class VerificationReport:
     route_identity_id: str | None = None
     solver_state: str | None = None
     solver_cost: str | None = None
+    business_recovered_by: str | None = None
+    business_recovered_at: str | None = None
 
     def as_dict(self):
         return asdict(self)

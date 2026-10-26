@@ -4,7 +4,7 @@ import asyncio
 import logging
 import time
 from contextlib import AsyncExitStack
-from datetime import timedelta
+from datetime import datetime, timedelta
 from types import SimpleNamespace
 from uuid import uuid4
 
@@ -22,6 +22,23 @@ from .schema import (
 from .verification import VerificationReport, validate_capture, validate_crawler_capture
 
 logger = logging.getLogger(__name__)
+
+
+def register_auth_recovery(service,scope,identity,request):
+    """A proven BODY login wall is recoverable without inventing a CAPTCHA task."""
+    from .governance_models import BrowserRecovery
+    store=GovernanceRepository(service.repository)
+    with service.repository.transaction() as connection:
+        current=store.get_recovery(identity.identity_id)
+        if current and current.phase != 'RESOLVED':
+            return current
+        value=BrowserRecovery(identity_id=identity.identity_id,scope_id=scope.scope_id,
+            site_id=scope.owner_site_id,page_status='LOST',
+            assessment={'provider':'NONE','kind':'NONE','policy_reason':'auth_recovery'},
+            affected_contexts=[recovery_context(request)],next_probe_at=utc_now(),
+            fingerprint=capability_fingerprint(service.repository,scope,identity,
+                service.repository.get_egress(identity.egress_id)))
+        return store._write_recovery(connection,value)
 
 
 def recovery_context(request):
@@ -539,13 +556,22 @@ class BrowserRecoveryCoordinator:
                     solver_pending = await self.datadome_solver.tick(
                         recovery, scope, identity, egress
                     )
+                    latest=self.store.get_recovery(identity_id)
+                    if latest and latest.generation == recovery.generation:
+                        recovery=latest  # Preserve durable scene actions saved by the solver.
                     if (
                         solver_pending
                         or recovery.recovery_id in self.datadome_solver.provider_ticks
                     ):
                         self.service.failover.schedule(scope, SitePurpose(context["purpose"]))
                         recovery = recovery.model_copy(update={"next_probe_at": utc_now()})
-                        await self._defer(recovery, "datadome_solver_pending", delay=5)
+                        delay=5
+                        preparation=recovery.scene_preparation
+                        if (preparation.get('started_at') and recovery.recovery_id not in self.datadome_solver.provider_ticks):
+                            age=(utc_now()-datetime.fromisoformat(preparation['started_at'])).total_seconds()
+                            point=next((p for p in (5,15,30,60) if p>age),60)
+                            delay=max(1,point-age)
+                        await self._defer(recovery, "datadome_solver_pending", delay=delay)
                         return
                     if (
                         scope.source_id == "ctee_semiconductor"
@@ -608,6 +634,7 @@ class BrowserRecoveryCoordinator:
                                 )
                     if (
                         capture is None
+                        and recovery.assessment.get('policy_reason') != 'auth_recovery'
                         and recovery.handling_mode == "AUTO"
                         and (utc_now() - recovery.opened_at).total_seconds()
                         >= max(180, min(300, spec.challenge.automatic_wait_seconds * 3))
@@ -929,6 +956,9 @@ class BrowserRecoveryCoordinator:
                 await self._defer(recovery, "controller_shutdown", delay=5)
                 raise
             except Exception as exc:
+                probe_timing['error_type']=type(exc).__name__
+                from .verification import verification_failure_reason
+                probe_timing['reason_code']=verification_failure_reason(exc)
                 probe_result = (
                     "QUEUE_DEFERRED"
                     if stage == "QUEUE"
@@ -1059,6 +1089,7 @@ class BrowserRecoveryCoordinator:
             recovery.site_id == "reuters"
             and spec.auth.auto_login
             and report.authentication == "REAUTH_REQUIRED"
+            and context['purpose'] == 'BODY'
         ):
             credential_id = (
                 identity.credential_ref
@@ -1099,6 +1130,8 @@ class BrowserRecoveryCoordinator:
                     delay=60,
                 )
                 return
+            await self._defer(recovery,'auth_credentials_or_retry_pending',delay=600)
+            return
         value = self.store.finish_recovery(
             recovery, report, context=context, resolved_by=resolved_by
         )
@@ -1118,6 +1151,7 @@ class BrowserRecoveryCoordinator:
             recovery_id=recovery.recovery_id,
             purpose=context["purpose"],
             probe_id=recovery.probe_id,
+            recovered_by='original_observation' if resolved_by == 'original_document' else 'background_probe',
         )
         self.service.failover.reconcile(scope, SitePurpose(context["purpose"]))
         await self.service.profile_use.release_recovered(identity)

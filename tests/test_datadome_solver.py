@@ -271,6 +271,7 @@ def solver_setup(setup):
             }
         ),
         reload=AsyncMock(),
+        prepare_retry=AsyncMock(),
         apply=AsyncMock(),
     )
     solver.browser_factory = lambda *args: browser
@@ -300,7 +301,9 @@ async def test_paid_task_resumes_and_cookie_does_not_mark_business_success(solve
     saved = solver.jobs(value.recovery_id)[0]
     assert saved["status"] == "APPLIED" and "secret" not in json.dumps(saved)
     assert solver.coordinator.store.get_recovery(value.identity_id).phase != "RESOLVED"
-    assert not await solver.tick(value, scope, identity, egress)
+    assert await solver.tick(value, scope, identity, egress)  # Free RETRY preparation after application; no repurchase.
+    browser.prepare_retry.assert_awaited_once()
+    assert sum(c.args[1] == 'createTask' for c in solver.provider.request.await_args_list) == 1
 
 
 @pytest.mark.asyncio
@@ -326,21 +329,25 @@ async def test_waiting_slider_updates_terminal_ip_denial_without_purchase(solver
 
 
 @pytest.mark.asyncio
-async def test_retry_reload_is_bounded_and_not_billed_until_real_slider(solver_setup):
+async def test_retry_click_is_durable_and_not_billed_until_real_slider(solver_setup):
     solver, value, scope, identity, egress, browser = solver_setup
     browser.inspect.return_value["state"] = "RETRY"
     assert await solver.tick(value, scope, identity, egress)
     from datetime import timedelta
     from doxagent.site_strategy.schema import utc_now
 
-    job = solver.jobs(value.recovery_id)[-1]
-    job["created_at"] = (utc_now() - timedelta(seconds=61)).isoformat()
-    solver.save(job)
-    assert not await solver.tick(value, scope, identity, egress)
-    browser.reload.assert_awaited_once()
+    stored=solver.coordinator.store.get_recovery(value.identity_id)
+    stored.scene_preparation['started_at']=(utc_now()-timedelta(seconds=61)).isoformat()
+    solver.coordinator.store.save_recovery(stored,expected_generation=stored.generation)
+    assert await solver.tick(value, scope, identity, egress)
+    stored=solver.coordinator.store.get_recovery(value.identity_id)
+    stored.scene_preparation['started_at']=(utc_now()-timedelta(seconds=61)).isoformat()
+    solver.coordinator.store.save_recovery(stored,expected_generation=stored.generation)
+    assert not await solver.tick(value,scope,identity,egress)
+    assert browser.prepare_retry.await_count == 2
+    browser.reload.assert_not_awaited()
     solver.provider.request.assert_not_awaited()
-    assert solver.jobs(value.recovery_id)[0]["reason"] == "DATADOME_RETRY"
-    assert solver.jobs(value.recovery_id)[0]["status"] == "WAITING_SLIDER"
+    assert not solver.jobs(value.recovery_id)
     browser.inspect.return_value["state"] = "SOLVABLE"
     assert await solver.tick(value, scope, identity, egress)
     solver.provider.request.assert_awaited_once()
@@ -354,12 +361,10 @@ async def test_unloaded_datadome_bootstrap_gets_one_recovery_refresh(solver_setu
     from datetime import timedelta
     from doxagent.site_strategy.schema import utc_now
 
-    job = solver.jobs(value.recovery_id)[-1]
-    job["created_at"] = (utc_now() - timedelta(seconds=61)).isoformat()
-    solver.save(job)
     assert not await solver.tick(value, scope, identity, egress)
     browser.reload.assert_awaited_once()
     solver.provider.request.assert_not_awaited()
+    assert solver.coordinator.store.get_recovery(value.identity_id).scene_preparation['status']=='BOOTSTRAP_REFRESHED'
 
 
 @pytest.mark.asyncio

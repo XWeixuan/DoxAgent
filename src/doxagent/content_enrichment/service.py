@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import sqlite3
 import time
 from collections.abc import Sequence
-from contextlib import suppress
 from contextlib import asynccontextmanager
 from dataclasses import replace
 from datetime import UTC, datetime, timedelta
@@ -26,6 +26,7 @@ from doxagent.message_bus_v2.pressure import background_allowed
 from doxagent.message_bus_v2.repository import MessageBusV2Repository
 from doxagent.message_bus_v2.schema import ContentEnrichmentMode, RawMessageInput, utc_now
 from doxagent.message_bus_v2.service import MessageBusV2Service
+from doxagent.message_bus_v2.storage_lane import WriteAdmissionBusy
 from doxagent.monitoring.media_enrichment import (
     FetchAttempt,
     MediaEnrichmentRecord,
@@ -37,6 +38,12 @@ from doxagent.site_strategy.schema import BodyOutcome
 from doxagent.site_strategy.scope import source_routed
 
 logger = logging.getLogger(__name__)
+
+
+def _storage_busy(exc):
+    return isinstance(exc,WriteAdmissionBusy) or isinstance(exc,sqlite3.OperationalError) and (
+        (getattr(exc,'sqlite_errorcode',0)&255) in {5,6}
+        or str(exc).lower() in {'database is locked','database table is locked','database is busy'})
 
 
 class ExtractorLike(Protocol):
@@ -94,12 +101,19 @@ class ContentEnrichmentHub:
         work_token = WORK_CLASS.set("recheck" if job.work_kind == "recheck" else "backfill" if job.bootstrap else "foreground")
         age_token = WORK_AGE.set(max(0, (utc_now() - job.created_at).total_seconds()))
         heartbeat = asyncio.create_task(self._renew(job))
+        processing = asyncio.create_task(self._process(job,now))
         try:
-            await self._process(job, now)
+            await asyncio.wait({processing,heartbeat},return_when=asyncio.FIRST_COMPLETED)
+            if heartbeat.done() and not heartbeat.cancelled() and heartbeat.exception():
+                raise heartbeat.exception()
+            await processing
         except Exception as exc:
             if isinstance(exc, RuntimeError) and str(exc) == "enrichment_lease_lost":
                 logger.warning("discarded stale enrichment worker job_id=%s", job.job_id)
                 return
+            if _storage_busy(exc):
+                logger.warning('enrichment job deferred for storage contention job_id=%s',job.job_id)
+                return  # Durable claim expires; no stale result or broad worker restart.
             logger.exception(
                 "content enrichment infrastructure failure job_id=%s ticker=%s source_id=%s",
                 job.job_id,
@@ -111,26 +125,35 @@ class ContentEnrichmentHub:
             WORK_CLASS.reset(work_token)
             WORK_AGE.reset(age_token)
             heartbeat.cancel()
-            with suppress(asyncio.CancelledError):
-                await heartbeat
+            processing.cancel()
+            await asyncio.gather(heartbeat,processing,return_exceptions=True)
             if job.body_result_key:
                 from doxagent.message_bus_v2.body_results import ArticleBodyResults
 
-                await self.bus.storage.call(
-                    ArticleBodyResults(self.repository).release, job.body_result_key, job.execution_id
-                )
+                try:
+                    await self.bus.storage.call(
+                        ArticleBodyResults(self.repository).release, job.body_result_key, job.execution_id)
+                except (sqlite3.OperationalError,WriteAdmissionBusy) as exc:
+                    if not _storage_busy(exc):
+                        raise
+                    logger.warning('body result release deferred job_id=%s',job.job_id)
 
     async def _renew(self, job: EnrichmentJob) -> None:
         while job.claim_token:
             await asyncio.sleep(20)
-            try:
-                await self.bus.storage.call(
-                    self.repository.renew_enrichment_claim, job.job_id, job.claim_token
-                )
-            except RuntimeError as exc:
-                if str(exc) == "enrichment_lease_lost":
-                    return
-                raise
+            for attempt in range(3):
+                try:
+                    async with asyncio.timeout(10):
+                        await self.bus.storage.call(self.repository.renew_enrichment_claim,job.job_id,job.claim_token)
+                    break
+                except TimeoutError as exc:
+                    raise RuntimeError('enrichment_lease_lost') from exc
+                except (sqlite3.OperationalError,WriteAdmissionBusy) as exc:
+                    if not _storage_busy(exc):
+                        raise
+                    if attempt==2:
+                        raise RuntimeError('enrichment_lease_lost') from exc
+                    await asyncio.sleep((.5,1)[attempt])
 
     async def run(self, stop: asyncio.Event, *, sleep_seconds: float = 0.25) -> None:
         """Keep free slots occupied without waiting for the slowest member of a batch."""

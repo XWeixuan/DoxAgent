@@ -799,7 +799,7 @@ class ReutersSiteSearchAdapter:
             queries = [(query, sha256_text(query)[:24], legacy_source)]
         results: list[PollResult] = []
         checkpoints: dict[str, JsonObject] = {}
-        prior = context.checkpoint.get("queries", {}) if context.is_gap_recovery else {}
+        prior = context.checkpoint.get("queries", {}) if (context.is_gap_recovery or context.acquisition_unit.startswith('TAIL:')) else {}
         storage_unavailable = False
         for query, query_key, query_source in queries:
             saved = prior.get(query_key, {}) if isinstance(prior, dict) else {}
@@ -923,24 +923,24 @@ class ReutersSiteSearchAdapter:
     ) -> PollResult:
         assert self.browser is not None
         max_pages = int(context.binding.source_parameters.get("max_pages", 2))
+        head_only=context.acquisition_unit.startswith('QUERY:') and not context.is_gap_recovery
         cutoff = (context.window_cutoff or context.requested_at).astimezone(
             ZoneInfo("America/New_York")
         ).date() - timedelta(days=1)
         messages: list[RawMessageInput] = []
         failures: list[AcquisitionFailure] = []
         seen: set[str] = set()
-        stopped_on_old = False
         exhausted = False
         search_result_count = 0
         pages_fetched = 0
         prior = (
             context.checkpoint.get("queries", {}).get(query_key, {})
-            if context.is_gap_recovery
+            if context.is_gap_recovery or context.acquisition_unit.startswith('TAIL:')
             else {}
         )
         start_page = int(prior.get("page", 0))
         last_page = start_page
-        for page in range(start_page, max_pages):
+        for page in range(start_page, min(max_pages,1) if head_only else max_pages):
             last_page = page
             try:
                 async with context.request_permit():
@@ -977,12 +977,12 @@ class ReutersSiteSearchAdapter:
             if not rows:
                 exhausted = True
                 break
+            page_begin=len(messages)
             for raw in rows:
                 row = dict(raw)
                 published_date = _reuters_date(row.get("date"))
                 basis = "DATE" if published_date is not None else "UNKNOWN_FIRST_SEEN"
                 if published_date is not None and published_date < cutoff:
-                    stopped_on_old = True
                     continue
                 url = str(row.get("url") or "")
                 if url.startswith("/"):
@@ -1057,7 +1057,12 @@ class ReutersSiteSearchAdapter:
                         },
                     )
                 )
-            if stopped_on_old or len(rows) < 20:
+            if context.on_page and len(messages)>page_begin:
+                await context.on_page(messages[page_begin:],checkpoint={'queries':{query_key:{'page':page+1,'done':False,
+                    'coverage':'PARTIAL','head_at':prior.get('head_at') or context.requested_at.isoformat()}}})
+            # Search ordering is not guaranteed chronological. An old hit may
+            # precede fresh hits on the next page; the bounded tail owns them.
+            if len(rows) < 20:
                 exhausted = True
                 break
         return PollResult(
@@ -1066,12 +1071,14 @@ class ReutersSiteSearchAdapter:
             next_checkpoint={
                 "page": last_page + 1,
                 "done": True,
+                'head_at':prior.get('head_at') or context.requested_at.isoformat(),
+                'tail_pending':bool(head_only and not exhausted and last_page+1<max_pages),
                 "coverage": (
-                    "PARTIAL" if failures or not (stopped_on_old or exhausted) else "COMPLETE"
+                    "PARTIAL" if failures or not exhausted else "COMPLETE"
                 ),
             },
             window_coverage=(
-                "PARTIAL" if failures or not (stopped_on_old or exhausted) else "COMPLETE"
+                "PARTIAL" if failures or not exhausted else "COMPLETE"
             ),
             acquisition_metadata={
                 "provider": "reuters",
@@ -1081,6 +1088,7 @@ class ReutersSiteSearchAdapter:
                 "date_cutoff": cutoff.isoformat(),
                 "date_window": "today_and_previous_day",
                 "pages_fetched": pages_fetched,
+                'head_only':head_only,
                 "search_result_count": search_result_count,
             },
         )

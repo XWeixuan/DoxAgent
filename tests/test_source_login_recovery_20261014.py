@@ -17,7 +17,7 @@ from doxagent.site_strategy.schema import BrowserProfile
 
 def make_runtime(monkeypatch, *, select_error=None):
     monkeypatch.setattr(module, "public_url", AsyncMock())
-    page = SimpleNamespace(url="about:blank")
+    page = SimpleNamespace(url="about:blank",close=AsyncMock())
     cdp = SimpleNamespace(send=AsyncMock())
 
     async def send(method, params=None, **kwargs):
@@ -29,7 +29,9 @@ def make_runtime(monkeypatch, *, select_error=None):
 
     cdp.send.side_effect = send
     lease = SimpleNamespace(
-        browser_cdp=cdp, __aenter__=AsyncMock(return_value=page), __aexit__=AsyncMock()
+        browser_cdp=cdp, __aenter__=AsyncMock(return_value=page), __aexit__=AsyncMock(),
+        abandon=AsyncMock(),
+        provenance=SimpleNamespace(instance_id='fixture-instance'),
     )
     gate = SimpleNamespace(start=AsyncMock(), close=AsyncMock(), root_target_id="owned")
     monkeypatch.setattr(module, "_DocumentNavigationGate", lambda *args: gate)
@@ -69,13 +71,17 @@ async def test_navigation_failure_retains_real_window_and_token(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_viewer_selection_failure_releases_owned_page(monkeypatch):
+async def test_viewer_selection_failure_retains_page_for_retry(monkeypatch):
     runtime, profile, lease, gate = make_runtime(monkeypatch, select_error=RuntimeError("secret"))
-    with pytest.raises(module.MaintenanceOpenError, match="viewer_selection") as caught:
-        await runtime.open_login(
-            profile, SimpleNamespace(egress_id="proxy"), "https://example.com/login"
-        )
-    assert "secret" not in str(caught.value)
+    result=await runtime.open_login(
+        profile, SimpleNamespace(egress_id="proxy"), "https://example.com/login"
+    )
+    assert result['viewer_ready'] is False
+    assert 'secret' not in str(result)
+    lease.__aexit__.assert_not_awaited()
+    assert result['login_token'] in runtime._maintenance_pages
+    await runtime._maintenance_pages[result['login_token']].navigation_task
+    await runtime.close_login(result['login_token'])
     gate.close.assert_awaited_once()
     lease.__aexit__.assert_awaited_once()
     assert not runtime._maintenance_pages

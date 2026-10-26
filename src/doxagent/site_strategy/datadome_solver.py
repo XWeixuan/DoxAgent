@@ -19,6 +19,7 @@ def mark_solver_outcome(
     recovery_id=None,
     purpose=None,
     probe_id=None,
+    recovered_by=None,
     _connection=None,
 ):
     """Link only the current identity's exact incident; never infer cross-incident success."""
@@ -33,31 +34,39 @@ def mark_solver_outcome(
         ).fetchall()
         for row in rows:
             job = json.loads(row[0])
-            if job.get("status") != "APPLIED":
+            if job.get("status") != "APPLIED" and not (
+                field in {'business_verified_at','natural_success_at','route_activated_at'}
+                and (job.get('task_id') or job.get('submitted_at'))
+            ):
                 continue
             if field == "natural_success_at" and purpose not in job.get("verified_purposes", []):
                 continue
             if (
                 field == "route_activated_at"
                 and job.get("verification_state") != "BUSINESS_VERIFIED"
+                and not job.get("business_recovery")
             ):
                 continue
             now = utc_now().isoformat()
             job.setdefault(field, now)
             if field == "business_verified_at":
-                job.update(
-                    verification_state="BUSINESS_VERIFIED",
-                    business_probe_id=probe_id,
-                    verified_purposes=list(
-                        dict.fromkeys([*job.get("verified_purposes", []), purpose])
-                    ),
-                )
-                job["verification_reason"] = (
-                    "late_recovery"
-                    if not job.get("applied_at")
-                    or (utc_now() - datetime.fromisoformat(job["applied_at"])).total_seconds() > 120
-                    else "confirmation_window_business_proof"
-                )
+                in_window = (job.get('status')=='APPLIED' and recovered_by != 'manual' and job.get('applied_at')
+                             and (utc_now()-datetime.fromisoformat(job['applied_at'])).total_seconds() <= 120
+                             and job.get('verification_state') in {'PENDING','ORIGINAL_CLEARED','BUSINESS_VERIFIED'})
+                job['business_recovery'] = {'at':now,'purpose':purpose,'proof_id':probe_id,
+                    'recovered_by': 'solver_confirmation' if in_window else recovered_by or 'background_probe'}
+                job['business_recoveries']=[*job.get('business_recoveries',[]),job['business_recovery']][-8:]
+                job['verified_purposes'] = list(dict.fromkeys([*job.get('verified_purposes', []), purpose]))
+                if in_window:
+                    job.update(verification_state='BUSINESS_VERIFIED', solver_verification='VERIFIED_IN_WINDOW',
+                               business_probe_id=probe_id, verification_reason='confirmation_window_business_proof')
+                else:
+                    job.setdefault('late_recovery_at',now)
+                    job.setdefault('solver_verification', 'INDETERMINATE')
+                    # Do not erase a failed confirmation window or claim causality for manual recovery.
+                    if job.get('verification_state') in {'PENDING','ORIGINAL_CLEARED'}:
+                        job['verification_state']='INDETERMINATE'
+                    job.setdefault('verification_reason','late_recovery')
             job["updated_at"] = now
             db.execute(
                 "update datadome_solver_jobs set updated_at=?,data_json=? where job_id=?",
@@ -99,6 +108,9 @@ class DataDomeSolver:
         self.provider = TwoCaptcha()
         self.browser_factory = NativeChallenge
         self.provider_ticks = set()
+        self._egress_checks = {}
+        self._proof_refresh_at = {}
+        self.egress_reason = 'NOT_CHECKED'
 
     def config(self):
         credentials = getattr(self.coordinator.service, "credential_store", None)
@@ -179,6 +191,13 @@ class DataDomeSolver:
                 "select 1 from browser_recoveries r where r.phase<>'RESOLVED' and "
                 "json_extract(r.data_json,'$.recovery_id')=j.recovery_id) limit 2"
             ).fetchall()
+        # Unpaid preparation is not a live provider task after its incident ends.
+        with repo.transaction() as db:
+            db.execute("update datadome_solver_jobs set data_json=json_set(data_json,'$.status','SUPERSEDED',"
+                "'$.verification_state','SUPERSEDED','$.reason','INCIDENT_ENDED_WITHOUT_PURCHASE') where "
+                "json_extract(data_json,'$.status') in ('PREPARING','REGENERATED','WAITING_SLIDER') "
+                "and json_extract(data_json,'$.task_id') is null and not exists (select 1 from browser_recoveries r "
+                "where r.phase<>'RESOLVED' and json_extract(r.data_json,'$.recovery_id')=datadome_solver_jobs.recovery_id)")
         for row in rows:
             job = json.loads(row[0])
             now = utc_now()
@@ -246,9 +265,17 @@ class DataDomeSolver:
             or not egress.observed_ip
             or not egress.observed_at
         ):
+            self.egress_reason = 'BINDING_MISMATCH'
             return False
         if utc_now() - egress.observed_at > timedelta(hours=1):
+            self.egress_reason = 'OBSERVATION_STALE'
             return False
+        key = digest_json([egress.egress_id,egress.generation,egress.observed_ip,egress.observed_at.isoformat(),
+                           binding.get('localAddress'),binding.get('proxyPort')])
+        cached=self._egress_checks.get(key)
+        if cached and cached[0] > utc_now():
+            self.egress_reason=cached[2]
+            return cached[1]
         proxy = (
             "http://"
             + quote(binding["proxyLogin"], safe="")
@@ -263,9 +290,58 @@ class DataDomeSolver:
             async with httpx.AsyncClient(proxy=proxy, trust_env=False, timeout=8) as client:
                 response = await client.get("https://api.ipify.org")
                 response.raise_for_status()
-                return response.text.strip() == egress.observed_ip
+                matches=response.text.strip() == egress.observed_ip
+                self.egress_reason='MATCH' if matches else 'IP_MISMATCH'
         except httpx.HTTPError:
+            matches=False
+            self.egress_reason='LOCAL_PROXY_UNREACHABLE'
+        self._egress_checks={key:(utc_now()+timedelta(seconds=60 if matches else 15),matches,self.egress_reason)}
+        return matches
+
+    async def prepare_scene(self, recovery, browser, scene):
+        """Free, durable preparation independent of whether the incident already bought a task."""
+        if scene.get('state') == 'IP_BANNED' or scene.get('scene_state') == 'DENIED':
             return False
+        current=self.coordinator.store.get_recovery(recovery.identity_id)
+        if not current or (current.recovery_id,current.generation) != (recovery.recovery_id,recovery.generation):
+            return False
+        recovery=current
+        previous = recovery.scene_preparation
+        signature = scene_key(scene)
+        now=utc_now()
+        if scene.get('state') == 'RETRY':
+            attempts=int(previous.get('attempt_no',0))
+            if attempts and previous.get('started_at'):
+                age=(now-datetime.fromisoformat(previous['started_at'])).total_seconds()
+                if age < 60:
+                    return True
+                if attempts >= 2 or previous.get('status') == 'UNCERTAIN':
+                    return False
+            action={ 'retry_action_id':new_id('retry'), 'scene_signature':signature,
+                'instance_id':recovery.original_instance_id,'target_id':recovery.original_target_id,
+                'attempt_no':attempts+1,'started_at':now.isoformat(),'status':'UNCERTAIN'}
+            value=recovery.model_copy(update={'scene_preparation':action})
+            self.coordinator.store.save_recovery(value,expected_generation=recovery.generation)
+            # Persist before interaction. An interrupted action is observed, never blindly replayed.
+            await browser.prepare_retry(scene)
+            action={**action,'status':'CLICKED'}
+            self.coordinator.store.save_recovery(value.model_copy(update={'scene_preparation':action}),
+                                                  expected_generation=recovery.generation)
+            self.coordinator.event(recovery,'DATADOME_RETRY_CLICKED',attempt_no=attempts+1,
+                                   retry_action_id=action['retry_action_id'])
+            return True
+        if scene.get('state') in {'INTERSTITIAL','UNAVAILABLE'} and not previous:
+            # Only a genuinely stalled bootstrap gets one normal refresh, not an IP denial or a loading widget.
+            if scene.get('scene_state') == 'SLIDER_LOADING':
+                return False
+            action={'status':'BOOTSTRAP_REFRESHED','started_at':now.isoformat(),'attempt_no':0,
+                    'scene_signature':signature}
+            self.coordinator.store.save_recovery(recovery.model_copy(update={'scene_preparation':action}),
+                                                 expected_generation=recovery.generation)
+            await browser.reload()
+            self.coordinator.event(recovery,'DATADOME_RETRY_REGENERATED',previous_state=scene['state'])
+            return True
+        return False
 
     async def tick(self, recovery, scope, identity, egress):
         """Return True while a task/retry owns the page, False for normal recovery/manual fallback."""
@@ -292,6 +368,7 @@ class DataDomeSolver:
         active = jobs[-1] if jobs else None
         if not active and utc_now() - recovery.opened_at > timedelta(days=7):
             return False  # Historic GC may have removed an already-paid tombstone.
+        paid_terminal = bool(active and active['status'] in {'FAILED','APPLIED','SUBMITTING','APPLYING','SUPERSEDED'})
         if active and active["status"] in {"FAILED", "APPLIED", "SUBMITTING", "APPLYING"}:
             # SUBMITTING after interruption is ambiguous. Never silently buy another task.
             if active["status"] == "SUBMITTING":
@@ -309,7 +386,9 @@ class DataDomeSolver:
                     verification_reason="legacy_application_without_proof",
                 )
                 self.save(active)
-            return False
+            if active['status'] in {'SUBMITTING','APPLYING'} or active.get('verification_reason') in {
+                'application_interrupted','application_outcome_unknown'}:
+                return False
         if active and active["status"] == "PENDING":
             if utc_now() - datetime.fromisoformat(
                 active.get("submitted_at", active["created_at"])
@@ -341,6 +420,18 @@ class DataDomeSolver:
                 if data:
                     self.fail(active, recovery, "PAID_RESULT_ORIGINAL_UNAVAILABLE")
                 return False
+            # Refresh stale main-route telemetry once, outside the Profile writer.
+            # The normal maintenance loop owns the half-hour cadence; never probe
+            # both routes again on every five-second solver tick.
+            if (not paid_terminal or data) and (not egress.observed_at or utc_now()-egress.observed_at>timedelta(hours=1)):
+                last=self._proof_refresh_at.get(egress.egress_id)
+                if not last or utc_now()-last>timedelta(minutes=1):
+                    self._proof_refresh_at[egress.egress_id]=utc_now()
+                    try:
+                        await self.coordinator.service.probe_egress(egress.egress_id)
+                    except (httpx.HTTPError, RuntimeError, TimeoutError):
+                        self.egress_reason='OBSERVATION_STALE'
+                egress=self.coordinator.service.repository.get_egress(identity.egress_id)
             async with self.coordinator.service.profile_use.recovery(
                 identity, recovery.recovery_id, recovery.generation
             ):
@@ -364,6 +455,7 @@ class DataDomeSolver:
                 if active and active["status"] == "PENDING":
                     if active["scene"] != signature or active["binding"] != route:
                         self.fail(active, recovery, "SCENE_OR_EGRESS_CHANGED")
+                        self.coordinator.event(recovery,'DATADOME_SOLVER_UNAVAILABLE',egress_reason=self.egress_reason)
                         return False
                     current_egress = self.coordinator.service.repository.get_egress(
                         identity.egress_id
@@ -399,42 +491,23 @@ class DataDomeSolver:
                     return (
                         True  # Next tick must prove the real listing/body, never mark healthy here.
                     )
-                if scene["state"] in {"RETRY", "IP_BANNED", "UNAVAILABLE", "INTERSTITIAL"}:
-                    if active and active["status"] == "WAITING_SLIDER":
-                        reason = "DATADOME_" + scene["state"]
-                        if active.get("reason") != reason:
-                            active["reason"] = reason
+                if scene['state'] != 'SOLVABLE':
+                    preparing=await self.prepare_scene(recovery,browser,scene)
+                    if active and active.get('status') == 'WAITING_SLIDER':
+                        reason='DATADOME_'+scene['state']
+                        if active.get('reason') != reason:
+                            active['reason']=reason
                             self.save(active)
-                            self.coordinator.event(
-                                recovery, "DATADOME_SOLVER_WAITING", reason=reason
-                            )
-                        return False
-                    if active and active["status"] == "REGENERATED":
-                        if utc_now() - datetime.fromisoformat(active["created_at"]) < timedelta(
-                            seconds=60
-                        ):
-                            return True
-                        active.update(status="WAITING_SLIDER", reason="DATADOME_" + scene["state"])
-                        self.save(active)
-                        self.coordinator.event(
-                            recovery, "DATADOME_SOLVER_WAITING", reason=active["reason"]
-                        )
-                        return False
-                    active = self.new_job(recovery, scene, route)
-                    active["status"] = "REGENERATED"
-                    self.save(
-                        active
-                    )  # Persist before mutating; restart cannot create a reload loop.
-                    await browser.reload()
-                    self.coordinator.event(
-                        recovery, "DATADOME_RETRY_REGENERATED", previous_state=scene["state"]
-                    )
-                    return True
-                if scene["state"] != "SOLVABLE":
+                    return preparing
+                if paid_terminal:
+                    return False
+                runtime=self.coordinator.service.repository.get_identity_runtime(identity.identity_id)
+                if runtime.paid_cooldown_until and runtime.paid_cooldown_until > utc_now():
                     return False
                 if not await self.egress_matches(binding, egress):
                     self.coordinator.event(
-                        recovery, "DATADOME_SOLVER_UNAVAILABLE", reason="PROXY_EGRESS_NOT_VERIFIED"
+                        recovery, "DATADOME_SOLVER_UNAVAILABLE", reason="PROXY_EGRESS_NOT_VERIFIED",
+                        egress_reason=self.egress_reason,
                     )
                     return False
                 if active is None:
@@ -589,6 +662,7 @@ class DataDomeSolver:
             if reason in {"SCENE_OR_EGRESS_CHANGED", "EGRESS_CHANGED"}
             else "INDETERMINATE",
             verification_reason=reason,
+            solver_verification='STILL_BLOCKED' if reason == 'ERROR_CAPTCHA_UNSOLVABLE' else 'INDETERMINATE',
         )
         self.save(job)
         self.coordinator.event(

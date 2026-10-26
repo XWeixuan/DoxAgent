@@ -795,7 +795,7 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser("list", add_help=False)
     evidence = subparsers.add_parser("evidence", add_help=False)
     evidence.add_argument("task_id")
-    evidence.add_argument("phase", choices=("first", "confirmed"), default="confirmed", nargs="?")
+    evidence.add_argument("phase", choices=("first", "confirmed", "latest_actionable", "after_action"), default="confirmed", nargs="?")
     open_parser = subparsers.add_parser("open", add_help=False)
     open_parser.add_argument("profile_id")
     open_parser.add_argument("--site-id")

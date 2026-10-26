@@ -2933,6 +2933,28 @@ class MessageBusV2Repository:
                     times = [datetime.fromisoformat(value[name]) for value in primary if value.get(name)]
                     if times:
                         changed[name] = min(times)
+                if state.source_id == 'reuters_site_search' and all(k.startswith('QUERY:') for k in expected):
+                    # Independent query jobs are not a fresh complete ticker round merely
+                    # because each succeeded at some point in the past.
+                    checkpoint=dict(current.checkpoint)
+                    cycle=dict(checkpoint.get('query_cycle',{}))
+                    start=cycle.get('started_at') or min(
+                        (v.get('last_attempt_at') for v in primary if v.get('last_attempt_at')),
+                        default=state.updated_at.isoformat())
+                    receipts=[v.get('last_success_at') for v in primary]
+                    complete=all(t and datetime.fromisoformat(t)>=datetime.fromisoformat(start) for t in receipts)
+                    cycle.update(started_at=start,required_queries=len(expected),complete=complete)
+                    if complete:
+                        finished=max(datetime.fromisoformat(t) for t in receipts)
+                        cycle.update(last_complete_at=finished.isoformat(),
+                            last_cycle_seconds=max(0,(finished-datetime.fromisoformat(start)).total_seconds()),
+                            started_at=(finished+timedelta(microseconds=1)).isoformat())
+                        changed['last_success_at']=finished
+                    elif all(value=='succeeded' for value in statuses):
+                        changed['status']=PollStatus.PARTIAL
+                        changed.pop('last_success_at',None)
+                    checkpoint['query_cycle']=cycle
+                    changed['checkpoint']=checkpoint
             self.save_poll_state(current.model_copy(update=changed))
         return True
 

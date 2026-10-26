@@ -572,6 +572,21 @@ class GlobalPollScheduler:
                     )
                     for query in plan["queries"]
                 ]
+                if source.source_id == 'reuters_site_search':
+                    for query in plan['queries']:
+                        head_cp=state.units.get('QUERY:'+query['query_key'],{}).get('checkpoint',{})
+                        saved=head_cp.get('queries',{}).get(query['query_key'],{})
+                        if not saved.get('tail_pending'):
+                            continue
+                        unit='TAIL:'+query['query_key']
+                        old=state.units.get(unit,{}).get('checkpoint',{})
+                        tail=old.get('queries',{}).get(query['query_key'],{})
+                        if tail.get('done') and tail.get('head_at')==saved.get('head_at'):
+                            continue
+                        checkpoint=old if tail and not tail.get('done') else {
+                            'queries':{query['query_key']:{**saved,'done':False}}}
+                        units.append((unit,{'freeze_query_plan':True,
+                            'query_plan_override':{**plan,'queries':[query]},'checkpoint':checkpoint}))
                 if source.source_id == "globenewswire_search":
                     for query in plan["queries"]:
                         head = state.units.get("QUERY:" + query["query_key"], {})

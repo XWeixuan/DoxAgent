@@ -84,13 +84,14 @@ class FetchAnchors:
                 except Exception:
                     pass
 
-    def put(self, identity, anchor):
+    def put(self, identity, anchor, *, freeze=True, limit=None):
         bucket = self.idle.setdefault(identity.identity_id, [])
-        limit = min(2, max(1, getattr(getattr(identity, 'access', None), 'max_concurrency', 1)))
+        limit = limit or min(2, max(1, getattr(getattr(identity, 'access', None), 'max_concurrency', 1)))
         if len(bucket) >= limit:
             return False
         bucket.append(anchor)
-        anchor.lifecycle_task = asyncio.create_task(self._lifecycle(anchor, 'frozen'))
+        if freeze:
+            anchor.lifecycle_task = asyncio.create_task(self._lifecycle(anchor, 'frozen'))
         anchor.expiry = asyncio.create_task(self._expire(identity.identity_id, anchor))
         return True
 

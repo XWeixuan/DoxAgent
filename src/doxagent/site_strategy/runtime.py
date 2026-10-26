@@ -1314,7 +1314,7 @@ class SiteAccessRuntime:
         lease_started = time.monotonic()
         anchor_eligible = (
             (
-                request.recipe_ref in {"builtin:barrons_ticker@1", "builtin:yahoo_latest_news@1"}
+                request.recipe_ref in {"builtin:barrons_ticker@1", "builtin:yahoo_latest_news@1",'builtin:reuters_search@1'}
                 or resolved.site_id in {"investorshub", "investing"}
             )
             and request.purpose is SitePurpose.CRAWLER
@@ -1627,7 +1627,13 @@ class SiteAccessRuntime:
                         str(request.recipe_parameters["query"]),
                         int(request.recipe_parameters.get("offset", 0)),
                     )
-                    return await recipe_capture(rows)
+                    result=await recipe_capture(rows)
+                    if anchor_eligible and not retained and result.recipe_result is not None:
+                        from .fetch_anchors import FetchAnchor
+                        keep_anchor=self.fetch_anchors.put(identity,FetchAnchor(lease,page,gate,response,
+                            identity.revision,egress.egress_id,
+                            anchor.created_at if anchor else time.monotonic()),freeze=False,limit=1)
+                    return result
                 navigation_started = time.monotonic()
                 response = response if anchor else await page.goto(
                     request.url,
@@ -1712,12 +1718,14 @@ class SiteAccessRuntime:
                 headers = await response.all_headers() if response is not None else {}
                 if resolved.site_id == "reuters" and status == 200:
                     await page.wait_for_function(
-                        """() => Boolean(
+                        r"""() => Boolean(
                           [...document.querySelectorAll(
                             '[data-testid="ArticleBody"], [itemprop="articleBody"], article')]
                             .some(node => (node.textContent || '').trim().length > 200)
                           || document.querySelector('iframe[src*="captcha-delivery.com"]')
                           || /verify you are human|enable js|access is temporarily restricted/i
+                            .test(document.body?.innerText || '')
+                          || /(?:sign|log)\s*in\s+to\s+(?:continue|read)/i
                             .test(document.body?.innerText || '')
                         )""",
                         polling=250,

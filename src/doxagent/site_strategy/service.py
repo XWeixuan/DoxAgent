@@ -2167,6 +2167,10 @@ class SiteStrategyService:
                 # invalidate a Profile that can still read other articles.
                 if category is FailureCategory.AUTH_REQUIRED:
                     self._mark_identity_auth(resolved, combination, profile)
+                    if (scope and resolved.site_id=='reuters' and request.purpose is SitePurpose.BODY
+                            and resolved.auth.auto_login):
+                        from .recovery import register_auth_recovery
+                        register_auth_recovery(self,scope,identity,request)
                     if scope:
                         auth_missing += 1
                         continue  # Only the already-authenticated scoped backup may replace it.
@@ -2331,11 +2335,19 @@ class SiteStrategyService:
                     purpose=request.purpose.value,
                 )
                 identity_state = self.repository.get_identity_runtime(identity.identity_id)
-                if identity_state.recovered_at and not identity_state.natural_success_at:
+                windows={k:dict(v) for k,v in identity_state.capability_windows.items()}
+                window=windows.get(request.purpose.value)
+                if window and not window.get('blocked_again_at'):
+                    window['last_success_at']=utc_now().isoformat()
+                    if request.purpose is SitePurpose.CRAWLER:
+                        query_key=digest_json([request.recipe_parameters.get('query'),request.recipe_parameters.get('offset',0)])
+                        window['natural_queries']=list(dict.fromkeys([*window.get('natural_queries',[]),query_key]))[-3:]
+                if identity_state.recovered_at and (not identity_state.natural_success_at or window):
                     self.repository.save_identity_runtime(
                         identity_state.model_copy(
                             update={
                                 "natural_success_at": utc_now(),
+                                'capability_windows':windows,
                             }
                         ),
                         expected_generation=identity_state.generation,
@@ -3426,10 +3438,13 @@ class SiteStrategyService:
                     "business_verified_at",
                     recovery_id=current.recovery_id,
                     purpose="CRAWLER" if report.crawler == "READY" else "BODY",
+                    recovered_by='manual',
                 )
             jobs = self.recovery.datadome_solver.jobs(current.recovery_id)
             if jobs:
-                report.solver_state = jobs[-1].get("verification_state", "INDETERMINATE")
+                report.solver_state = jobs[-1].get("solver_verification",jobs[-1].get("verification_state", "INDETERMINATE"))
+                report.business_recovered_by=jobs[-1].get('business_recovery',{}).get('recovered_by')
+                report.business_recovered_at=jobs[-1].get('business_recovery',{}).get('at')
                 cost = jobs[-1].get("provider_cost", jobs[-1].get("cost"))
                 report.solver_cost = str(cost) if cost is not None else None
         return report

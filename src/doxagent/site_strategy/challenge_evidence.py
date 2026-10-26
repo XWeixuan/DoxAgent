@@ -17,7 +17,7 @@ from lxml import html as H
 from lxml.etree import ParserError
 
 ID = re.compile(r"[a-f0-9]{32}\Z")
-ARTIFACT = re.compile(r"[a-f0-9]{32}(?:\.(?:first|confirmed)\.png|\.json)\Z")
+ARTIFACT = re.compile(r"[a-f0-9]{32}(?:\.(?:first|confirmed|latest_actionable|after_action)\.png|\.json)\Z")
 MAX_IMAGE = 4 * 1024 * 1024
 
 
@@ -179,7 +179,7 @@ class EvidenceStore:
             if not record:
                 return "NOT_RECORDED"
             frames = record.get("frames", {})
-            result = (frames.get("confirmed") or frames.get("first") or {}).get(
+            result = (frames.get('latest_actionable') or frames.get("confirmed") or frames.get("first") or {}).get(
                 "classification", {}
             )
             if result.get("assessment"):
@@ -218,7 +218,7 @@ class EvidenceStore:
         return json.loads(path.read_text(encoding="utf-8"))
 
     def image_path(self, evidence_id, phase):
-        if not ID.fullmatch(evidence_id) or phase not in {"first", "confirmed"}:
+        if not ID.fullmatch(evidence_id) or phase not in {"first", "confirmed", "latest_actionable", "after_action"}:
             raise ValueError("invalid evidence image")
         path = self.root / f"{evidence_id}.{phase}.png"
         if path.is_symlink() or not path.is_file() or path.stat().st_size > MAX_IMAGE:
@@ -239,7 +239,7 @@ class EvidenceStore:
         ]
 
     def save(self, context, analysis, phase, image=None, image_error=None):
-        if phase not in {"first", "confirmed", "cleared"}:
+        if phase not in {"first", "confirmed", "cleared", "latest_actionable", "after_action"}:
             raise ValueError("invalid evidence phase")
         evidence_id = self.key(context)
         prior = self.get(evidence_id) or {}
@@ -278,16 +278,27 @@ class EvidenceStore:
                 "frame_sequence": prior.get("frames", {}).get(phase, {}).get("frame_sequence", 0) + 1,
                 "classification": analysis,
                 "screenshot_status": image_error or "NOT_CAPTURED",
+                'image_quality':analysis.get('image_quality','FAILED'),
+                'scene_signature':analysis.get('scene_signature'),
+                'frame_read_state':analysis.get('frame_read_state'),
             }
             if image and len(image) <= MAX_IMAGE and image.startswith(b"\x89PNG\r\n\x1a\n"):
                 self._atomic(f"{evidence_id}.{phase}.png", image)
                 frame["screenshot_status"] = "CAPTURED"
             record["frames"][phase] = frame
+            if phase=='latest_actionable' and 'confirmed' in record['frames']:
+                # Promotion replaces the legacy confirmed slot, not a fourth
+                # accumulating phase. Immutable first is never removed.
+                record['frames'].pop('confirmed')
+                legacy=self.image_path(evidence_id,'confirmed')
+                if legacy:
+                    legacy.unlink(missing_ok=True)
         self._atomic(evidence_id + ".json", json.dumps(record, ensure_ascii=True).encode())
         return evidence_id
 
     async def capture(
-        self, context, html, *, phase="confirmed", screenshot=None, status=0, headers=None, policy=None, assessment=None
+        self, context, html, *, phase="confirmed", screenshot=None, status=0, headers=None, policy=None, assessment=None,
+        scene_signature=None, frame_read_state=None,
     ):
         """Cross-worker bounded screenshots; metadata remains useful on timeout."""
         try:
@@ -295,10 +306,16 @@ class EvidenceStore:
             prior = await asyncio.to_thread(self.get, evidence_id)
             if phase == "first" and prior and "first" in prior.get("frames", {}):
                 return evidence_id
-            previous_confirmed = (prior or {}).get("frames", {}).get("confirmed", {})
+            if phase=='confirmed' and (prior or {}).get('frames',{}).get('latest_actionable'):
+                return evidence_id
+            previous_confirmed = (prior or {}).get("frames", {}).get(phase, {})
+            if phase in {'latest_actionable','after_action'} and previous_confirmed.get('scene_signature') == scene_signature and (
+                previous_confirmed.get('image_quality') == 'READABLE' or previous_confirmed.get('frame_sequence',0)>=2
+            ):
+                return evidence_id
             if phase == "confirmed" and previous_confirmed and (
                 previous_confirmed.get("frame_sequence", 0) >= 2
-                or previous_confirmed.get("screenshot_status") == "CAPTURED"
+                or previous_confirmed.get('image_quality') == 'READABLE'
             ):
                 return evidence_id
             analysis = classify(html, status=status, headers=headers)
@@ -307,7 +324,8 @@ class EvidenceStore:
             sample = (VerificationAssessment.model_validate(assessment) if assessment else
                       assess(html, status=status, headers=headers, policy=policy))
             analysis.update({"assessment": sample.model_dump(mode="json"),
-                             "sample_id": sample.sample_id, "assessment_at": sample.observed_at})
+                             "sample_id": sample.sample_id, "assessment_at": sample.observed_at,
+                             'scene_signature':scene_signature,'frame_read_state':frame_read_state})
             image, error = None, None
             if screenshot is not None and phase != "cleared":
                 from .runtime import OwnerFileLock
@@ -320,16 +338,18 @@ class EvidenceStore:
                     acquired = True
                     async with asyncio.timeout(2 if phase == "first" else 5):
                         image = await screenshot()
+                        from .image_quality import png_quality
+                        analysis['image_quality']=await asyncio.to_thread(png_quality,image)
                         # A small PNG can be a white/unrendered canvas, but is
                         # not proof of it. One bounded confirmed resample only;
                         # never overwrite the immutable first frame.
-                        if phase == "confirmed" and not previous_confirmed and image and len(image) < 20_000:
-                            analysis["image_quality"] = "LOW_DETAIL_SUSPECTED"
+                        if phase != 'first' and not previous_confirmed and image and analysis['image_quality'] != 'READABLE':
                             await asyncio.sleep(1)
                             analysis["screenshot_retries"] = 1
                             replacement = await screenshot()
                             if replacement:
                                 image = replacement
+                                analysis['image_quality']=await asyncio.to_thread(png_quality,image)
                     if len(image) > MAX_IMAGE:
                         image, error = None, "TOO_LARGE"
                 except Exception as exc:

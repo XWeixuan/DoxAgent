@@ -249,7 +249,7 @@ def create_app(
         return JSONResponse({"evidence": record}, headers={"Cache-Control": "no-store"})
 
     @app.get("/v1/recoveries/{recovery_id}/evidence/{phase}", dependencies=[Depends(admin)])
-    async def recovery_evidence_image(recovery_id: str, phase: Literal["first", "confirmed"]):
+    async def recovery_evidence_image(recovery_id: str, phase: Literal["first", "confirmed", "latest_actionable", "after_action"]):
         import json
 
         result = await recovery_evidence(recovery_id)
@@ -486,10 +486,12 @@ def create_app(
         return JSONResponse(record, headers={"Cache-Control": "no-store"})
 
     @app.get("/v1/challenges/{task_id}/evidence/{phase}", dependencies=[Depends(admin)])
-    async def challenge_evidence_image(task_id: str, phase: Literal["first", "confirmed"]):
+    async def challenge_evidence_image(task_id: str, phase: Literal["first", "confirmed", "latest_actionable", "after_action"]):
         def read():
             record = evidence_for_task(task_id)
-            chosen = phase if phase in record["frames"] else "first"
+            chosen = phase if phase in record["frames"] else (
+                'latest_actionable' if 'latest_actionable' in record['frames'] else 'confirmed'
+                if 'confirmed' in record['frames'] else 'first')
             path = service.runtime.evidence_store.image_path(record["evidence_id"], chosen)
             return {
                 "record": record,

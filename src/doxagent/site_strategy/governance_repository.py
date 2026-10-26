@@ -5,6 +5,7 @@ by inventory readers or a browser control worker.
 """
 
 from contextlib import nullcontext
+import json
 from datetime import datetime, timedelta
 from urllib.parse import urlsplit, urlunsplit
 
@@ -16,7 +17,7 @@ from .governance_models import (
     OwnedBrowserTarget,
     SourceAccessScope,
 )
-from .schema import utc_now
+from .schema import AccessEvent, utc_now
 
 
 def migrate_governance(connection):
@@ -1006,7 +1007,9 @@ class GovernanceRepository:
             }
         )
         self._write_recovery(connection, value)
-        self._record_recovered_window(connection, current, runtime)
+        for purpose in proven:
+            self._record_recovered_window(connection,current,
+                self.repository.get_identity_runtime(identity_id),purpose=purpose)
         event = AccessEvent(
             operation_id=value.recovery_id,
             site_id=value.site_id,
@@ -1269,6 +1272,7 @@ class GovernanceRepository:
             }:
                 raise ValueError("recovery identity is outside scope")
             previous = self.get_recovery(value.identity_id)
+            self._record_capability_relapse(connection,value)
             # A recovered capability may relapse while another purpose still
             # awaits login. Keep separate incidents, without stealing a human original.
             if (
@@ -1293,6 +1297,7 @@ class GovernanceRepository:
                 runtime = self.repository.get_identity_runtime(value.identity_id)
                 if (
                     runtime.recovered_at
+                    and not runtime.capability_windows
                     and runtime.last_recovery_id != value.recovery_id
                     and (utc_now() - runtime.recovered_at).total_seconds() <= 300
                 ):
@@ -1594,7 +1599,7 @@ class GovernanceRepository:
                         ),
                     )
             now = utc_now()
-            self._record_recovered_window(connection, current, runtime)
+            self._record_recovered_window(connection, current, runtime, purpose=context['purpose'])
             value = current.model_copy(
                 update={
                     "phase": "BACKOFF" if remaining else "RESOLVED",
@@ -1636,8 +1641,48 @@ class GovernanceRepository:
                     )
             return value
 
-    def _record_recovered_window(self, connection, recovery, runtime):
-        if runtime.last_recovery_id == recovery.recovery_id:
+    def _record_capability_relapse(self, connection, recovery):
+        if recovery.assessment.get('kind') not in {'INTERACTIVE','AUTO_CHECK','ACCESS_BLOCK'}:
+            return
+        runtime=self.repository.get_identity_runtime(recovery.identity_id)
+        windows={k:dict(v) for k,v in runtime.capability_windows.items()}
+        relapses=list(runtime.recent_relapses)
+        changed=False
+        now=utc_now()
+        for purpose in {c['purpose'] for c in recovery.affected_contexts}:
+            window=windows.get(purpose)
+            if not window or not window.get('recovered_at') or window.get('blocked_again_at'):
+                continue
+            window['blocked_again_at']=now.isoformat()
+            window['probation_until']=None
+            changed=True
+            seconds=(now-datetime.fromisoformat(window['recovered_at'])).total_seconds()
+            if seconds<=120:
+                relapses.append({'previous_recovery_id':window.get('recovery_id'),
+                    'recovery_id':recovery.recovery_id,'purpose':purpose,'capability_epoch':window['capability_epoch'],
+                    'at':now.isoformat(),'previous_recovered_at':window['recovered_at'],'seconds_to_recurrence':seconds})
+        if changed:
+            recent=[r for r in relapses if now-datetime.fromisoformat(r['at'])<=timedelta(minutes=15)]
+            # CRAWLER and BODY can report the same physical relapse separately.
+            # Count another paid episode only after a fresh business recovery.
+            episodes=[]
+            for item in recent:
+                if not episodes or item.get('previous_recovered_at','') > episodes[-1]['at']:
+                    episodes.append(item)
+            self._write_identity_window(connection,runtime.model_copy(update={
+                'capability_windows':windows,'recent_relapses':relapses[-8:],
+                'paid_cooldown_until':now+timedelta(minutes=30) if len(episodes)>=2 else runtime.paid_cooldown_until}))
+            event=AccessEvent(operation_id=recovery.recovery_id,site_id=recovery.site_id,category='CAPABILITY_RELAPSE',
+                payload={'identity_id':recovery.identity_id,'recovery_id':recovery.recovery_id,
+                         'purposes':[k for k,v in windows.items() if v.get('blocked_again_at')==now.isoformat()]})
+            connection.execute('insert into access_events values(?,?,?,?,?,?,?)',
+                (event.event_id,event.operation_id,event.site_id,event.combination_id,event.occurred_at.isoformat(),
+                 event.category,json.dumps(event.payload)))
+
+    def _record_recovered_window(self, connection, recovery, runtime, *, purpose=None):
+        purpose=purpose or (recovery.affected_contexts[0]['purpose'] if recovery.affected_contexts else 'CRAWLER')
+        window=dict(runtime.capability_windows.get(purpose,{}))
+        if window.get('recovery_id') == recovery.recovery_id and not window.get('blocked_again_at'):
             return
         now = utc_now()
         policy = self.repository.get_strategy(recovery.site_id).challenge
@@ -1660,6 +1705,11 @@ class GovernanceRepository:
                     "probation_interval_ms": policy.probation_interval_ms if seconds else 0,
                     "last_recovery_id": recovery.recovery_id,
                     "natural_success_at": None,
+                    'capability_windows':{**runtime.capability_windows,purpose:{
+                        'capability_epoch':int(window.get('capability_epoch',0))+1,
+                        'recovery_id':recovery.recovery_id,'recovered_at':now.isoformat(),
+                        'last_success_at':None,'blocked_again_at':None,
+                        'probation_until':(now+timedelta(seconds=seconds)).isoformat() if seconds else None}},
                 }
             ),
         )

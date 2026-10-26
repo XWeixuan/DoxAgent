@@ -229,6 +229,8 @@ class NativeChallenge:
             frame_html = ""
             observations = document["frames"]
             visible = None
+            widget = {}
+            selected = None
             for frame in observations:
                 if (
                     frame["loaded"]
@@ -237,20 +239,97 @@ class NativeChallenge:
                 ):
                     url, frame_html = frame["url"], frame["html"]
                     visible = frame["visible"]
+                    selected = frame
                     break
             state = challenge_state(url, frame_html) if frame_html else "UNAVAILABLE"
             if state == "SOLVABLE" and (
                 visible is not True or document["assessment"].kind != "INTERACTIVE"
             ):
                 state = "UNAVAILABLE"
+            if selected and visible is True:
+                from .verification_frames import observe_widget
+                try:
+                    widget = await observe_widget(call, selected['frame_id'])
+                except (RuntimeError, TimeoutError):
+                    widget = {}
+            if state == 'IP_BANNED':
+                scene_state = 'IP_BANNED'
+            elif widget.get('denied'):
+                scene_state = 'DENIED'
+            elif widget.get('retry_control'):
+                scene_state = 'RETRY_READY'
+            elif state == 'INTERSTITIAL':
+                scene_state = 'AUTO_RUNNING'
+            elif widget.get('widget_ready') and visible is True:
+                scene_state = 'SLIDER_READY'
+            elif selected and selected.get('loaded') and frame_html:
+                scene_state = 'SLIDER_LOADING'
+            else:
+                scene_state = 'UNREADABLE'
+            # Only current visible widget evidence admits a paid task.
+            state = {'SLIDER_READY': 'SOLVABLE', 'RETRY_READY': 'RETRY',
+                     'IP_BANNED': 'IP_BANNED', 'AUTO_RUNNING': 'INTERSTITIAL'}.get(scene_state, 'UNAVAILABLE')
+            if scene_state in {'RETRY_READY','SLIDER_READY'}:
+                from .schema import digest_json
+                await self._evidence(call, document, 'latest_actionable',digest_json([url,scene_state]))
             self.check()
             return {
                 "url": url,
                 "website": root.get("documentURL"),
                 "user_agent": ua,
                 "state": state,
+                "scene_state": scene_state,
+                "loaded_frame_id": selected.get('frame_id') if selected else None,
+                "owner_node_id": selected.get('owner_node_id') if selected else None,
+                "retry_control": widget.get('retry_control'),
+                "widget_ready": bool(widget.get('widget_ready')),
+                "visible": visible,
                 "presence_state": document["presence_state"],
             }
+
+    async def _evidence(self,call,document,phase,signature):
+        store=getattr(self.coordinator.service.runtime,'evidence_store',None)
+        if store is None:
+            return
+        async def screenshot():
+            return base64.b64decode((await call('Page.captureScreenshot',{'format':'png','captureBeyondViewport':False}))['data'])
+        await store.capture({'scope_id':self.recovery.scope_id,'site_id':self.recovery.site_id,
+            'identity_id':self.identity.identity_id,'browser_instance_id':self.target.browser_instance_id,
+            'target_id':self.target.target_id,'operation_id':'scene:'+self.recovery.recovery_id,
+            'url':document['root'].get('documentURL','')},document['html'],phase=phase,screenshot=screenshot,
+            assessment=document['assessment'].model_dump(mode='json'),scene_signature=signature,
+            frame_read_state='READABLE')
+
+    async def prepare_retry(self, expected):
+        """A native mouse click on one visible RETRY, never a puzzle answer or reload."""
+        scene = await self.inspect()
+        if (scene.get('scene_state') != 'RETRY_READY' or not scene.get('retry_control')
+                or scene.get('url') != expected.get('url')
+                or scene.get('loaded_frame_id') != expected.get('loaded_frame_id')):
+            raise RuntimeError('solver_retry_scene_changed')
+        async with self.connection() as call:
+            # Recheck owner/frame after opening the new transport; CDP node IDs are transport-local.
+            from .verification_frames import observe_verification_document, observe_widget
+            doc = await observe_verification_document(call)
+            frame = next((f for f in doc['frames'] if f.get('frame_id') == scene['loaded_frame_id']
+                          and f.get('visible') is True and f.get('url') == scene['url']), None)
+            if not frame:
+                raise RuntimeError('solver_retry_scene_changed')
+            widget = await observe_widget(call, frame['frame_id'])
+            control = widget.get('retry_control')
+            if not control:
+                raise RuntimeError('solver_retry_control_unavailable')
+            box = (await call('DOM.getBoxModel', {'nodeId': frame['owner_node_id']}))['model']['content']
+            x, y = box[0] + control['x'], box[1] + control['y']
+            if not (0 <= x <= 10000 and 0 <= y <= 10000):
+                raise RuntimeError('solver_retry_control_outside_view')
+            self.check()
+            await call('Input.dispatchMouseEvent', {'type':'mouseMoved','x':x,'y':y})
+            for kind in ('mousePressed','mouseReleased'):
+                await call('Input.dispatchMouseEvent', {'type':kind,'x':x,'y':y,'button':'left','clickCount':1})
+            from .schema import digest_json
+            after = await observe_verification_document(call)
+            await self._evidence(call,after,'after_action',digest_json([scene['url'],'retry_clicked']))
 
     async def reload(self):
         async with self.connection() as call:

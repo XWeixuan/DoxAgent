@@ -77,7 +77,9 @@ class WorkerRuntimeFacade:
                 human or recovering_page
             ) and identity.runtime_kind is BrowserRuntimeKind.MANAGED_PLAYWRIGHT:
                 continue
-            timeout = min(identity.lifecycle.idle_seconds, 600 if identity_id in active else 120)
+            reuters = any(s.owner_site_id=='reuters' and identity_id in {s.primary_identity_id,s.fallback_identity_id}
+                          for s in store.list_scopes())
+            timeout = identity.lifecycle.idle_seconds if reuters else min(identity.lifecycle.idle_seconds, 600 if identity_id in active else 120)
             rotate = status["age_seconds"] >= 4 * 3600 or status["high_rss_samples"] >= 3
             driver_idle = status["idle_seconds"] >= 600
             native_idle = (
@@ -86,7 +88,7 @@ class WorkerRuntimeFacade:
                 and (identity_id not in hot or lost_scene)
                 and status["idle_seconds"] >= timeout
             )
-            if rotate or driver_idle or native_idle:
+            if rotate or driver_idle or (native_idle and not (reuters and identity_id in active)):
                 await self.runtime.workers.retire(identity_id)
                 if identity.runtime_kind is BrowserRuntimeKind.MANAGED_PLAYWRIGHT:
                     if await self.runtime.workers.graceful_drain_managed(identity):
@@ -119,7 +121,11 @@ class WorkerRuntimeFacade:
             if profile and profile.maintenance_session_id and not lost_scene:
                 continue
             status = live.get(identity.identity_id)
-            timeout = min(
+            reuters = any(s.owner_site_id=='reuters' and identity.identity_id in {s.primary_identity_id,s.fallback_identity_id}
+                          for s in store.list_scopes())
+            if reuters and identity.identity_id in active:
+                continue
+            timeout = identity.lifecycle.idle_seconds if reuters else min(
                 identity.lifecycle.idle_seconds, 600 if identity.identity_id in active else 120
             )
             if lost_scene:
@@ -253,6 +259,9 @@ class WorkerSiteAccessRuntime(SiteAccessRuntime):
                         or deadline - time.monotonic() <= 1
                     ):
                         raise
+                    if (resolved.site_id == 'reuters' and identity.runtime_kind is BrowserRuntimeKind.EXTERNAL_CHROME
+                            and exc.reason_code == 'browser_cdp_attach_failed'):
+                        raise  # One bounded transport attempt; do not repeat a full cold attach in the same budget.
                     await self.workers.retire(identity.identity_id, graceful=False)
             response.stage_timings["global_wait_ms"] = slot_wait_ms
             response.stage_timings["worker_roundtrip_ms"] = int((time.monotonic()-worker_started)*1000)

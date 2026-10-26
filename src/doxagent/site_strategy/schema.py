@@ -373,6 +373,8 @@ class BrowserIdentityRuntime(SiteModel):
     recent_relapses: list[dict] = Field(default_factory=list, max_length=8)
     last_recovery_id: str | None = None
     natural_success_at: datetime | None = None
+    capability_windows: dict = Field(default_factory=dict)
+    paid_cooldown_until: datetime | None = None
     updated_at: datetime = Field(default_factory=utc_now)
 
 

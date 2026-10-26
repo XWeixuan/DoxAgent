@@ -79,6 +79,7 @@ def verification_message(details):
         + " (" + str(details.get("presence_checked_at") or "not checked") + ")"
         + "; solver: " + str(details.get("solver_state") or "not used")
         + "; cost: " + str(details.get("solver_cost") or "unknown")
+        + "; business recovery: " + str(details.get("business_recovered_by") or "not proven")
         + ". " + str(details.get("crawler_reason") or "")
         + " " + str(details.get("body_reason") or "")
     ).strip()
@@ -375,7 +376,7 @@ class SiteLoginApp:
         keys = self.tree.selection()
         return self.rows.get(keys[0]) if keys else None
 
-    def _view_evidence(self, phase="confirmed"):
+    def _view_evidence(self, phase="latest_actionable"):
         keys = self.challenge_tree.selection()
         if not keys:
             self.status_value.set("Select a Challenge task first.")
@@ -392,7 +393,10 @@ class SiteLoginApp:
             ttk.Label(window, text=f"{shown_phase} / {record.get('state')} / "
                       f"Target {record.get('target_id')}").pack(anchor="w")
             frame = record.get("frames", {}).get(shown_phase, {})
-            text = json.dumps(frame.get("classification", {}), ensure_ascii=True, indent=2)
+            text = json.dumps({**frame.get("classification", {}),
+                'image_quality':frame.get('image_quality','UNKNOWN'),
+                'frame_read_state':frame.get('frame_read_state','UNKNOWN'),
+                'scene_signature':frame.get('scene_signature')}, ensure_ascii=True, indent=2)
             details = tk.Text(window, height=10, width=100, wrap="word")
             details.insert("1.0", text)
             details.configure(state="disabled")
@@ -405,10 +409,10 @@ class SiteLoginApp:
                 ttk.Label(window, image=window.evidence_image).pack()
             else:
                 ttk.Label(window, text="Screenshot unavailable; metadata is retained.").pack()
-            other = "first" if shown_phase == "confirmed" else "confirmed"
-            ttk.Button(window, text="View " + other,
-                       command=lambda: self._view_evidence(other),
-                       state="normal" if other in record.get("frames", {}) else "disabled").pack()
+            for other in ('first','confirmed','latest_actionable','after_action'):
+                if other != shown_phase and other in record.get('frames',{}):
+                    ttk.Button(window,text='View '+other,
+                        command=lambda p=other:self._view_evidence(p)).pack()
 
         self._run(lambda: call_admin(["evidence", keys[0], phase]), show, channel="evidence")
 
