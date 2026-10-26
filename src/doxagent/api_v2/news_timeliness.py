@@ -88,9 +88,13 @@ def poll_window(store, ticker, seq, as_of):
     clause = "kind='native:poll_states' AND ticker=? AND day IN (SELECT value FROM json_each(?)) AND valid_from<=?"
     with store.connect() as db:
         rows = db.execute(
-            "SELECT id,payload,valid_from FROM object_current WHERE "
+            "SELECT id,json_extract(payload,'$.last_dispatch_at'),json_extract(payload,'$.last_attempt_at'),"
+            "json_extract(payload,'$.status'),json_extract(payload,'$.last_latency_ms'),"
+            "json_extract(payload,'$.last_error_code'),valid_from FROM object_current WHERE "
             + clause
-            + " UNION ALL SELECT id,payload,valid_from FROM "
+            + " UNION ALL SELECT id,json_extract(payload,'$.last_dispatch_at'),json_extract(payload,'$.last_attempt_at'),"
+            "json_extract(payload,'$.status'),json_extract(payload,'$.last_latency_ms'),"
+            "json_extract(payload,'$.last_error_code'),valid_from FROM "
             + store.history_table
             + " WHERE "
             + clause
@@ -98,9 +102,9 @@ def poll_window(store, ticker, seq, as_of):
             (ticker, json.dumps(days), seq, ticker, json.dumps(days), seq),
         ).fetchall()
     captures = {}
-    for binding, payload, _ in rows:
-        value = json.loads(payload)
-        at = value.get("last_dispatch_at") or value.get("last_attempt_at")
+    for binding, dispatch, attempt, status, latency, error, _ in rows:
+        value = dict(status=status,last_latency_ms=latency,last_error_code=error)
+        at = dispatch or attempt
         if at and since <= datetime.fromisoformat(at) <= until:
             captures.setdefault((binding, at), value)
     succeeded = [
@@ -144,18 +148,24 @@ def poll_cadence(store, ticker, seq, since, until, binding_id=None, *, by_bindin
             + " ORDER BY valid_from DESC LIMIT 4000",
             args,
         ).fetchall()
-        runs = db.execute(
-            f"SELECT payload FROM {table} WHERE kind='native:poll_runs' AND "
-            + where
-            + " AND sort_key>=? ORDER BY valid_from DESC LIMIT 16000",
-            [*args, since.isoformat()],
-        ).fetchall()
-        captures = db.execute(
-            f"SELECT payload FROM {table} WHERE kind='native:poll_captures' AND "
-            + where
-            + " ORDER BY valid_from DESC LIMIT 16000",
-            args,
-        ).fetchall()
+        # Physical branches avoid materializing the entire technical ledger at
+        # a pinned watermark. Time is read from native scalars, including rows
+        # written before the poll projector's sort metadata was corrected.
+        from doxagent.v2_read.serving_schema import history_relation
+        relations = ['object_current',history_relation(db)]
+        def recent(kind):
+            rows=[]
+            for relation in relations:
+                rows.extend(db.execute(
+                    f"SELECT payload,valid_from FROM {relation} WHERE kind=? AND "+where+
+                    " AND kind IN ('native:poll_runs','native:poll_captures')"
+                    " AND coalesce(json_extract(payload,'$.dispatch_at'),json_extract(payload,'$.observed_at'))>=?"
+                    " AND coalesce(json_extract(payload,'$.dispatch_at'),json_extract(payload,'$.observed_at'))<=?"
+                    " ORDER BY coalesce(json_extract(payload,'$.dispatch_at'),json_extract(payload,'$.observed_at')) DESC LIMIT 16000",
+                    [kind,*args,since.isoformat(),until.isoformat()]).fetchall())
+            return sorted(rows,key=lambda row: row[1],reverse=True)[:16000]
+        runs=recent('native:poll_runs')
+        captures=recent('native:poll_captures')
     capture_rows = [json.loads(r[0]) for r in captures]
     run_rows = [json.loads(r[0]) for r in [*schedules, *runs]]
     limited = len(runs) >= 16000 or len(captures) >= 16000 or len(schedules) >= 4000

@@ -90,6 +90,7 @@ if (existsSync(backendPath)) {
     "PollTimeliness",
     "PollCadence",
     "BusMetrics",
+    "MessageSummary",
   ])
     add(name, true);
   backend.source_sha256 = createHash("sha256").update(contract).digest("hex");

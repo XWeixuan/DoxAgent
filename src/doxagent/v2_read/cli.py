@@ -294,10 +294,14 @@ def main() -> None:
         from doxagent.trade_execution.worker import WriterLock
 
         with WriterLock(Path(str(store.path) + ".projector")):
+            next_repair = 0
             while True:
                 processed = 0
                 try:
                     processed = worker.tick(limit=args.limit)
+                    if not args.once and time.monotonic() >= next_repair:
+                        worker.repair(limit=100)
+                        next_repair = time.monotonic() + 5
                 except sqlite3.OperationalError as exc:
                     if args.once or (getattr(exc, "sqlite_errorcode", 0) & 255) not in (
                         sqlite3.SQLITE_BUSY, sqlite3.SQLITE_LOCKED

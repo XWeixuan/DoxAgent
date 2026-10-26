@@ -6299,21 +6299,62 @@
         "revision": {
           "$ref": "#/$defs/Count"
         },
-        "source_name": {
-          "anyOf": [
-            {
-              "type": "string"
+        "content_update": {
+          "type": "object",
+          "properties": {
+            "revision": {
+              "$ref": "#/$defs/Count"
             },
-            {
-              "type": "null"
+            "pending": {
+              "type": "boolean"
+            },
+            "last_error": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "last_checked_at": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Instant"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "body_acquired_at": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Instant"
+                },
+                {
+                  "type": "null"
+                }
+              ]
             }
+          },
+          "required": [
+            "revision",
+            "pending",
+            "last_error",
+            "last_checked_at",
+            "body_acquired_at"
+          ],
+          "additionalProperties": false
+        },
+        "source_name": {
+          "type": [
+            "string",
+            "null"
           ]
         },
         "row_revision": {
           "$ref": "#/$defs/Count"
         },
         "title": {
-          "$ref": "#/$defs/Value__8f3d8a04fb57"
+          "$ref": "#/$defs/Value%3Cstring%3E"
         },
         "source": {
           "$ref": "#/$defs/SourceLabel"
@@ -6343,7 +6384,7 @@
           "$ref": "#/$defs/Count"
         },
         "exact_duplicate_count": {
-          "$ref": "#/$defs/Value__61b35f382dc9"
+          "$ref": "#/$defs/Value%3CCount%3E"
         },
         "case": {
           "$ref": "#/$defs/CaseLink"
@@ -6353,22 +6394,22 @@
         }
       },
       "required": [
-        "standard_message_id",
+        "body",
+        "case",
+        "collected_at",
+        "exact_duplicate_count",
+        "member_index",
+        "normalized_at",
         "revision",
         "row_revision",
-        "title",
         "source",
-        "url",
         "source_published_at",
-        "collected_at",
-        "normalized_at",
-        "stream_published_at",
+        "standard_message_id",
         "stream_item_id",
         "stream_offset",
-        "member_index",
-        "exact_duplicate_count",
-        "case",
-        "body"
+        "stream_published_at",
+        "title",
+        "url"
       ],
       "additionalProperties": false
     },
@@ -27384,6 +27425,59 @@
         "legacy_excluded"
       ],
       "additionalProperties": false
+    },
+    "Value<string>": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "state": {
+              "type": "string",
+              "const": "AVAILABLE"
+            },
+            "value": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "null"
+            }
+          },
+          "required": [
+            "state",
+            "value",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "state": {
+              "type": "string",
+              "enum": [
+                "NOT_PRODUCED",
+                "NOT_RECORDED",
+                "UNAVAILABLE",
+                "NOT_APPLICABLE",
+                "FORBIDDEN",
+                "ERROR"
+              ]
+            },
+            "value": {
+              "type": "null"
+            },
+            "reason": {
+              "$ref": "#/$defs/Reason"
+            }
+          },
+          "required": [
+            "state",
+            "value",
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      ]
     }
   }
 }

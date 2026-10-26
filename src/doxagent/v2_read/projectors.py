@@ -115,7 +115,7 @@ class DomainProjectors:
             targets = targets or [{'binding_id':row['binding_id'],'ticker':row['ticker']}]
             return [{"kind":kind, "ticker":target['ticker'],
                      "source_id":row['source_id'], "id":event['entity_id'],
-                     "sort_key":row.get('dispatch_at') or row['observed_at'],
+                     "sort":row.get('dispatch_at') or row['observed_at'],
                      "day":semantic_day(datetime.fromisoformat(row.get('dispatch_at') or row['observed_at'])).isoformat(),
                      "data":None if event['operation']=='DELETE' else {**value,**target}}
                     for target in targets], []

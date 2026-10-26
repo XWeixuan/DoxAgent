@@ -120,17 +120,20 @@ def test_batch_reader_reuses_schema_without_pinning_source_snapshot(tmp_path, mo
 def test_projector_does_not_sleep_between_productive_ticks(tmp_path, monkeypatch):
     counts = iter([10, 0])
     sleeps = []
+    repairs = []
     def tick(self, **kwargs):
         try:
             return next(counts)
         except StopIteration:
             raise SystemExit(0)
     monkeypatch.setattr(cli.ProjectionWorker, "tick", tick)
+    monkeypatch.setattr(cli.ProjectionWorker, "repair", lambda self, **kwargs: repairs.append(kwargs))
     monkeypatch.setattr(cli.time, "sleep", sleeps.append)
     monkeypatch.setattr(sys, "argv", ["projector", "project", "--read-db", str(tmp_path / "read.db")])
     with pytest.raises(SystemExit):
         cli.main()
     assert sleeps == [1]
+    assert repairs == [{"limit": 100}]
 
 
 def test_projection_indexes_are_explicit_idempotent_and_cover_hot_predicates(tmp_path):

@@ -66,6 +66,9 @@ class ReadStore:
                     "(kind,json_extract(payload,'$.first_observed_at'),id) WHERE kind='native:article_body_results'")
                 db.execute("CREATE INDEX IF NOT EXISTS "+relation+"_body_execution_key ON "+relation+
                     "(kind,ticker,json_extract(payload,'$.body_result_key'),valid_from) WHERE kind='body_attempt'")
+                db.execute("CREATE INDEX IF NOT EXISTS "+relation+"_poll_time ON "+relation+
+                    "(kind,ticker,coalesce(json_extract(payload,'$.dispatch_at'),json_extract(payload,'$.observed_at')),valid_from) "
+                    "WHERE kind IN ('native:poll_runs','native:poll_captures')")
             db.execute("CREATE INDEX IF NOT EXISTS current_kind_revision ON object_current(kind,valid_from)")
             db.execute("CREATE INDEX IF NOT EXISTS contribution_metric_revision "
                        "ON contributions_current(metric,valid_from)")

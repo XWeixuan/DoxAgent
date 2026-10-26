@@ -180,12 +180,12 @@ class ProjectionWorker:
         self.store.ingest("capture_coverage", f"policy-proof-v1:{source}:{uuid4().hex}", records)
         self._coverage_keys[source] = key
 
-    def repair(self, *, limit: int = 20) -> int:
+    def repair(self, *, limit: int = 20, budget: float = 1) -> int:
         now = datetime.now(UTC)
         with self.store.connect(write=True) as db:
             gaps = db.execute(
                 "SELECT source,event,attempts FROM gaps WHERE next_attempt_at<=? "
-                "ORDER BY attempts,source,CAST(event AS INTEGER) LIMIT ?",
+                "ORDER BY attempts,source,CAST(event AS INTEGER) DESC LIMIT ?",
                 (instant(now), limit),
             ).fetchall()
             for gap in gaps:
@@ -199,8 +199,11 @@ class ProjectionWorker:
                     ),
                 )
         repaired = 0
+        started = time.monotonic()
         sources = {source.source: source for source in self.sources}
         for gap in gaps:
+            if time.monotonic() - started >= budget:
+                break
             source = sources.get(gap[0])
             if source is None or not gap[1].isdigit():
                 continue
@@ -223,7 +226,7 @@ class ProjectionWorker:
                     resolved_gap=gap[1],
                 )
                 repaired += 1
-            except (ValueError, KeyError, TypeError, sqlite3.OperationalError):
+            except (ValueError, KeyError, TypeError, OSError, sqlite3.OperationalError):
                 continue
         return repaired
 
