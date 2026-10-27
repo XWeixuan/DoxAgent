@@ -62,6 +62,18 @@ def test_production_switch_is_loaded_from_the_compose_environment(monkeypatch):
     assert DoxAgentSettings(_env_file=None).message_bus_v2_collection_plane_enabled
 
 
+def test_real_configuration_loader_is_read_only_under_a_business_writer(tmp_path):
+    from doxagent.message_bus_v2.collection_plane.config import load
+    repo,bus,worker,adapter,store=setup_plane(tmp_path)
+    settings=SimpleNamespace(message_bus_v2_sqlite_path=repo.path,
+        persistent_runtime_v2_sqlite_path=tmp_path/'absent-runtime.sqlite3')
+    lock=sqlite3.connect(repo.path,isolation_level=None);lock.execute('BEGIN IMMEDIATE')
+    try:
+        configuration=load(settings,seeds=True)
+        assert configuration.bindings and configuration.sources and configuration.seeds
+    finally:lock.rollback();lock.close()
+
+
 async def test_acquisition_does_not_wait_for_business_writer_and_repeated_lists_are_thin(tmp_path):
     repo, bus, worker, adapter, store = setup_plane(tmp_path)
     await worker.refresh(seeds=True)

@@ -148,6 +148,7 @@ def validate_terms(terms: TickerMonitoringTerms, languages: set[str]) -> None:
 class MonitoringTermsService:
     def __init__(self, repository: MessageBusV2Repository) -> None:
         self.repository = repository
+        if not getattr(repository,'initialize',True):return
         with repository.transaction() as db:
             migrate(db)
 
