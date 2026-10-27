@@ -32,3 +32,9 @@
 - 在本轮创建的 OPEN 维护会话独占期间，对该原页执行**一次** `Page.reload(ignoreCache=false)`，ACK 成功，target/instance/PID 不变。随后 DOM 81ms/OuterHTML367ms/截图202ms，未见活动验证；UTC18:34 主备 recovery 均 RESOLVED。此恢复属于人工操作触发的普通刷新恢复，**不是打码成功**。已释放本轮 Viewer；继续采集自然业务证据。
 - 永久修复：外部原页连续两轮不可读、事件已超过180秒时，在现有 Profile 独占锁和 recovery generation/lease/target 校验内，允许一次同原页普通刷新；先持久保留 UNCERTAIN 预约，重启或响应丢失不重放。OPEN人工会话、PENDING/SUBMITTING/APPLYING付费任务、已丢页、已用过刷新均禁止。保留独立 `document_recovery` 账，不覆盖 RETRY 点击额度、不清 Cookie、不创造验证码 URL。重新观察与业务验收才能恢复，刷新 ACK 本身不是恢复证明。
 - AviationWeek：普通 Managed CfT 实测两个入口均 Cloudflare403；现有 us-standard-5 与 de-standard-1 均取得列表25条、RSS100条。选定固定 us-standard-5 同时供采集与正文，不按403自动轮换、不新增 Chrome。实测两篇最新文章 HTTP200，但明确 subscription_required/PARTIAL，无订阅正文，不伪报FULL。正常免费文章仍沿现有正文识别器；付费内容需要实际账号权限。
+
+## Investing 与资源边界
+
+Investing primary 的旧业务页没有持久所有权记录（0C06E304…），另一个空白页也不可读；不把这些页当已登记 Challenge 或擅自清除。一次控制器 detach + 同页刷新 ACK 后，两个页仍不可读。对该身份先通过受限管理 API 预约 Profile 为 MAINTENANCE、排空在途、断开 Python/Node 控制器，核实没有 LOGIN/CHALLENGE/RECOVERY 活页，再执行一次正常 `:drain`。Chrome正常SIGTERM退出，未强杀、清理Cookie或重建Supervisor。随后撤销本轮操作预约，交给自然轮询使用原Profile重新启动；是否业务恢复仍需后续回执。
+
+同时修正容器PID容量与合法身份并发不匹配：Supervisor允许最多16个External身份，原2304 task/thread限额低于16个Chrome的常见线程总量；Site Access还同时承载控制Worker与最多8个Managed Chrome，原1024也不足。实际已观察 pids.events max282及OCI spawn EAGAIN，且清理活页后旧Chrome仍可能留在不可读状态。保留内存限制，分别将PID上限调整为4096/2048；使用Docker live update生效，不为此重建Supervisor或其他身份。Compose保留相同值供后续正常发布。此举与遗留业务页清理一起降低反复线程创建失败风险，不以提高限额替代页面收尾或内存治理；实际每个来源的业务与资源增量继续独立验收。

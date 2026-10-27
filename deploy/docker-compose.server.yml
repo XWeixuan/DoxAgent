@@ -9,7 +9,7 @@ services:
         BASE_IMAGE: ${DOXAGENT_BACKEND_DEPS_IMAGE:-doxagent-deps:backend}
     mem_limit: 6g
     memswap_limit: 7g
-    pids_limit: 1024
+    pids_limit: 2048
     shm_size: 1g
     image: ${DOXAGENT_SITE_ACCESS_IMAGE:-doxagent-site-access:server}
     environment:
@@ -24,7 +24,7 @@ services:
     image: ${DOXAGENT_CHROME_SUPERVISOR_IMAGE:-doxagent-chrome-supervisor:server}
     mem_limit: 8g
     memswap_limit: 9g
-    pids_limit: 2304
+    pids_limit: 4096
   v2-migrate:
     <<: *cgroup-boundary
     mem_limit: 4g
