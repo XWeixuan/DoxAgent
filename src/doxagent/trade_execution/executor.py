@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import threading
 import time
 from datetime import datetime
 from decimal import Decimal
@@ -14,8 +15,11 @@ from .portfolio import account_funds, margin_after
 from .recovery import (
     ENTRY_ABANDONED,
     ENTRY_FAILURE_LIMIT,
+    ENTRY_QUEUE_EXPIRED,
     AccountRecovery,
     RecoveryDeferred,
+    entry_queue_expired,
+    storage_busy,
     transient,
 )
 from .repository import TERMINAL_ORDERS, ExecutionRepository
@@ -34,6 +38,7 @@ class Executor:
         self.repository = repository
         self.journal = repository.journal
         self.sessions = Sessions(self.journal)
+        self.broker_lock = threading.Lock()
         self.broker_factory = broker_factory or IbkrSession
         self.write_guard = write_guard
         self.brokers: dict[tuple[Any, ...], Any] = {}
@@ -52,19 +57,20 @@ class Executor:
             profile = profile.model_copy(update=endpoint["endpoint"])
         # Different strategy revisions share the same socket/client identity.
         key = (profile.expected_account_id, profile.host, profile.port, profile.client_id)
-        if key not in self.brokers:
-            self.brokers[key] = self.broker_factory(
-                profile,
-                event_sink=lambda kind, value: self.repository.event(
-                    profile.expected_account_id, kind, value
-                ),
-                write_guard=self.write_guard,
-            )
-        return self.brokers[key]
+        with self.broker_lock:
+            if key not in self.brokers:
+                self.brokers[key] = self.broker_factory(
+                    profile,
+                    event_sink=lambda kind, value: self.repository.event(
+                        profile.expected_account_id, kind, value
+                    ),
+                    write_guard=self.write_guard,
+                )
+            return self.brokers[key]
 
     def drain_events(self) -> Any:
         cursor = self.journal.get("trade_execution", "event_cursor", 0)
-        with self.journal.transaction(write=False) as db:
+        with self.repository.transaction(write=False) as db:
             rows = db.execute(
                 "SELECT * FROM te_events WHERE id>? ORDER BY id LIMIT 500", (cursor,)
             ).fetchall()
@@ -100,7 +106,7 @@ class Executor:
             self.repository.apply_error(row["account"], value)
         elif row["kind"] == "fill":
             # Resolve offset from the pinned execution rather than the current config.
-            with self.journal.transaction(write=False) as db:
+            with self.repository.transaction(write=False) as db:
                 match = db.execute(
                     "SELECT j.execution_id FROM te_attempts a "
                     "JOIN te_jobs j ON a.job_id=j.id WHERE a.account=? "
@@ -133,15 +139,21 @@ class Executor:
             current.get("failures", 0),
             self.recovery.state(current["account"]).get("failures", 0),
         )
-        if failures < ENTRY_FAILURE_LIMIT and not current.get("entry_abandoned_at"):
+        stale = entry_queue_expired(
+            repo.require("executions", current["execution_id"]), self.journal.clock()
+        )
+        if failures < ENTRY_FAILURE_LIMIT and not stale and not current.get("entry_abandoned_at"):
             return False
+        reason = current.get("entry_abandon_reason") or (
+            ENTRY_ABANDONED if failures >= ENTRY_FAILURE_LIMIT else ENTRY_QUEUE_EXPIRED
+        )
         if not current.get("entry_abandoned_at"):
             current = repo.update_job(
                 current,
                 entry_failures=failures,
-                entry_abandon_reason=ENTRY_ABANDONED,
+                entry_abandon_reason=reason,
                 entry_abandoned_at=self.journal.clock().isoformat(),
-                error=ENTRY_ABANDONED,
+                error=reason,
             )
         attempts = repo.attempts(current["id"])
         for attempt in attempts:
@@ -154,16 +166,16 @@ class Executor:
             repo.update_job(
                 repo.require("jobs", current["id"]),
                 state="RECONCILE_REQUIRED",
-                error=ENTRY_ABANDONED,
+                error=reason,
                 delay=self.recovery.delay(current["account"]),
             )
         else:
-            repo.finish(repo.require("jobs", current["id"]), ENTRY_ABANDONED)
+            repo.finish(repo.require("jobs", current["id"]), reason)
         return True
 
     def enforce_entry_failure_limits(self, account: str | None = None) -> None:
         # Includes jobs deferred by the shared cooldown, even when not due yet.
-        with self.journal.transaction(write=False) as db:
+        with self.repository.transaction(write=False) as db:
             jobs = [
                 json.loads(r[0])
                 for r in db.execute(
@@ -206,6 +218,9 @@ class Executor:
             except RecoveryDeferred:
                 return
             except Exception as exc:
+                if storage_busy(exc):
+                    # No broker failure happened. Preserve attempt identity/cursor for retry.
+                    raise
                 current = repo.require("jobs", job_id)
                 failures = current.get("failures", 0) + 1
                 if current["leg"] == "ENTRY":
@@ -233,7 +248,9 @@ class Executor:
                         state="RECONCILE_REQUIRED" if outstanding else "WAIT_QUOTE",
                         failures=failures,
                         delay=self.recovery.delay(job["account"]),
-                        error=ENTRY_ABANDONED if current.get("entry_abandoned_at") else str(exc),
+                        error=current.get("entry_abandon_reason", ENTRY_ABANDONED)
+                        if current.get("entry_abandoned_at")
+                        else str(exc),
                     )
                     return
                 self.abandon_entry(current)
@@ -252,7 +269,9 @@ class Executor:
                         state="RECONCILE_REQUIRED",
                         failures=failures,
                         delay=30 if failures >= 3 else failures,
-                        error=ENTRY_ABANDONED if current.get("entry_abandoned_at") else str(exc),
+                        error=current.get("entry_abandon_reason", ENTRY_ABANDONED)
+                        if current.get("entry_abandoned_at")
+                        else str(exc),
                     )
                 elif failures >= 3 and current["leg"] != "ENTRY":
                     repo.finish(current, str(exc))
@@ -290,12 +309,12 @@ class Executor:
 
     async def _sync_fresh(self, broker: Any, account: Any) -> Any:
         value = await asyncio.to_thread(broker.sync)
-        with self.journal.transaction(write=False) as db:
+        with self.repository.transaction(write=False) as db:
             watermark = db.execute("SELECT COALESCE(MAX(id),0) FROM te_events").fetchone()[0]
         while self.journal.get("trade_execution", "event_cursor", 0) < watermark:
             self.drain_events()
             await asyncio.sleep(0)
-        with self.journal.transaction() as db:
+        with self.repository.transaction() as db:
             db.execute(
                 "INSERT OR REPLACE INTO te_sync_state VALUES(?,?)", (account, json.dumps(value))
             )
@@ -318,7 +337,7 @@ class Executor:
             cycle_id = self.sessions.cycle_id(
                 self.journal.clock(), profile.strategy.exit_offset_minutes
             )
-            with self.journal.transaction(write=False) as db:
+            with self.repository.transaction(write=False) as db:
                 existing = db.execute(
                     "SELECT 1 FROM te_account_cycles WHERE account=? AND environment=? "
                     "AND cycle_id=? AND status='ACTIVE'",
@@ -414,7 +433,7 @@ class Executor:
                 active,
                 broker,
                 expired,
-                ENTRY_ABANDONED
+                job.get("entry_abandon_reason", ENTRY_ABANDONED)
                 if job.get("entry_abandoned_at")
                 else "CYCLE_CLOSED"
                 if cycle_ended
@@ -424,7 +443,7 @@ class Executor:
         if expired:
             repo.finish(
                 job,
-                ENTRY_ABANDONED
+                job.get("entry_abandon_reason", ENTRY_ABANDONED)
                 if job.get("entry_abandoned_at")
                 else "CYCLE_CLOSED"
                 if cycle_ended
@@ -457,7 +476,7 @@ class Executor:
             repo.finish(job, "NO_OWNED_POSITION", complete=True)
             return
         # An unresolved order for this contract must settle before an exit or another entry.
-        with self.journal.transaction(write=False) as db:
+        with self.repository.transaction(write=False) as db:
             busy = db.execute(
                 "SELECT 1 FROM te_attempts a JOIN te_jobs j ON a.job_id=j.id "
                 "WHERE j.account=? AND j.ticker=? AND a.state NOT IN ('SETTLED','NOT_SENT')",
@@ -560,7 +579,7 @@ class Executor:
                     )
                     return
                 # A submit with no broker acknowledgement can already consume funds.
-                with self.journal.transaction(write=False) as db:
+                with self.repository.transaction(write=False) as db:
                     unknown = db.execute(
                         "SELECT 1 FROM te_attempts a JOIN te_jobs j ON a.job_id=j.id "
                         "WHERE a.account=? AND j.leg='ENTRY' "
@@ -707,7 +726,7 @@ class Executor:
                 contract["con_id"], sync["positions"].get(str(contract["con_id"]), 0)
             )
         )
-        with self.journal.transaction(write=False) as db:
+        with self.repository.transaction(write=False) as db:
             fills = self.repository._effective_fills(db, job["account"], contract["con_id"])
             adjustments = [
                 json.loads(row[0])

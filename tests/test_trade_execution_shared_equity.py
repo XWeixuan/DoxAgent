@@ -341,7 +341,8 @@ def test_old_cycle_unfilled_entry_is_cancelled_at_exit_cutoff(tmp_path):
     clock.value = datetime(2026, 9, 8, 19, 30, tzinfo=ZoneInfo("UTC"))
     asyncio.run(run_job(executor, repo, clock, "trade:MU:entry"))
     assert len(broker.sent) == 1
-    assert repo.require("executions", "trade:MU")["entry_reason"] == "CYCLE_CLOSED"
+    # The new five-minute queue-age bound expires this order before cycle close.
+    assert repo.require("executions", "trade:MU")["entry_reason"] == "ENTRY_QUEUE_AGE_EXCEEDED"
     assert repo.require("jobs", "trade:MU:entry")["reserved_open_usd"] == "0"
 
 

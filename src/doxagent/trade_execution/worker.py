@@ -6,7 +6,6 @@ import asyncio
 import json
 import logging
 import os
-import time
 from pathlib import Path
 from typing import Any
 
@@ -139,92 +138,132 @@ class WriterLock:
             self.handle = None
 
 
+async def _periodic(name, operation, interval, stop, *, once=False):
+    """One in-flight operation per lane; a failed lane backs off independently."""
+    failures = 0
+    while not stop.is_set():
+        delay = interval
+        try:
+            await operation()
+            failures = 0
+        except Exception as exc:
+            failures += 1
+            delay = DELAYS[min(failures - 1, 4)] if transient(exc) else 30
+            logging.getLogger(__name__).exception("executor_maintenance_deferred lane=%s", name)
+        if once:
+            return
+        try:
+            await asyncio.wait_for(stop.wait(), timeout=delay)
+        except TimeoutError:
+            pass
+
+
+def scheduler_health(executor):
+    """Read actual job lag; a live process heartbeat is not business acceptance."""
+    from datetime import datetime
+
+    from .recovery import ENTRY_MAX_QUEUE_SECONDS
+
+    now = executor.journal.clock()
+    overdue = []
+    old_entries = []
+    with executor.repository.transaction(write=False) as db:
+        rows = db.execute(
+            "SELECT j.payload,e.payload,"
+            "(SELECT COUNT(*) FROM te_attempts a WHERE a.job_id=j.id),l.payload "
+            "FROM te_jobs j JOIN te_executions e ON e.id=j.execution_id "
+            "LEFT JOIN te_lots l ON l.id=j.execution_id "
+            "WHERE j.state NOT IN ('DONE','FAILED')"
+        ).fetchall()
+    for row in rows:
+        job, execution, attempts = json.loads(row[0]), json.loads(row[1]), row[2]
+        lot = json.loads(row[3]) if row[3] else {}
+        deadline = (
+            lot.get("scheduled_exit", job["due_at"]) if job["leg"] == "EXIT" else job["due_at"]
+        )
+        lag = (now - datetime.fromisoformat(deadline)).total_seconds()
+        if job["leg"] == "EXIT" and lag >= 60:
+            overdue.append(
+                {"job_id": job["id"], "due_lag_seconds": round(lag), "attempts": attempts}
+            )
+        stamp = execution["intent"].get("released_at") or execution["created_at"]
+        age = (now - datetime.fromisoformat(stamp)).total_seconds()
+        if job["leg"] == "ENTRY" and age >= ENTRY_MAX_QUEUE_SECONDS:
+            old_entries.append(
+                {"job_id": job["id"], "age_seconds": round(age), "attempts": attempts}
+            )
+    value = {"checked_at": now.isoformat(), "overdue_exits": overdue, "old_entries": old_entries}
+    if overdue or old_entries:
+        logging.getLogger(__name__).warning("execution_jobs_stalled %s", json.dumps(value))
+    executor.journal.set("execution_scheduler", "health", value)
+    executor.journal.set("v2_workers", "executor", {"heartbeat_at": now.isoformat()})
+
+
 async def run_worker(executor: Any, *, once: Any = False) -> Any:
     from .acceptance import tick_suites
 
     pending: dict[tuple[Any, ...], asyncio.Task[Any]] = {}
-    acceptance = None
-    next_acceptance = 0.0
-    next_heartbeat = 0.0
-    next_connection_check = 0.0
-    next_cycle_check = 0.0
-    cycle_capture = None
-    next_exit_recovery = 0.0
-    next_entry_check = 0.0
-    idle_recovery = None
-    storage_failures = 0
+    stop = asyncio.Event()
+
+    async def synchronous(operation):
+        # Ledger mutation stays on this loop, with short storage waits. In particular,
+        # drain_events cannot race another _sync/drain and move the cursor backwards.
+        operation()
+
+    async def connections():
+        await asyncio.to_thread(maintain_connections, executor)
+        await recover_idle_accounts(executor)
+
+    async def cycles():
+        revisions = await asyncio.to_thread(active_profile_revisions, executor)
+        await executor.capture_ready_cycles(revisions)
+
+    async def step(job):
+        try:
+            await executor.step(job["id"])
+        except Exception as exc:
+            logging.getLogger(__name__).exception("executor_job_deferred job=%s", job["id"])
+            if not once:
+                # Contention defers only this ticker, never the entire queue.
+                await asyncio.sleep(2 if transient(exc) else 30)
+
+    lanes = [
+        ("heartbeat", lambda: asyncio.to_thread(scheduler_health, executor), 10),
+        ("connections", connections, 1),
+        ("cycles", cycles, 30),
+        ("entry_limits", lambda: synchronous(executor.enforce_entry_failure_limits), 10),
+        ("exit_recovery", lambda: synchronous(executor.repository.recover_failed_exits), 60),
+        ("events", lambda: synchronous(executor.drain_events), 0.2),
+        ("acceptance", lambda: tick_suites(executor), 30),
+    ]
+    maintenance = []
     try:
         while True:
+            for key, task in list(pending.items()):
+                if task.done():
+                    pending.pop(key)
+                    await task
             try:
-                if time.monotonic() >= next_entry_check:
-                    executor.enforce_entry_failure_limits()
-                    next_entry_check = time.monotonic() + 60
-                if time.monotonic() >= next_heartbeat:
-                    executor.journal.set(
-                        "v2_workers",
-                        "executor",
-                        {
-                            "heartbeat_at": executor.journal.clock().isoformat(),
-                        },
-                    )
-                    next_heartbeat = time.monotonic() + 10
-                if time.monotonic() >= next_connection_check:
-                    await asyncio.to_thread(maintain_connections, executor)
-                    if idle_recovery is None or idle_recovery.done():
-                        if idle_recovery is not None:
-                            await idle_recovery
-                        idle_recovery = asyncio.create_task(recover_idle_accounts(executor))
-                    next_connection_check = time.monotonic() + 1
-                if (
-                    cycle_capture is None or cycle_capture.done()
-                ) and time.monotonic() >= next_cycle_check:
-                    if cycle_capture is not None:
-                        await cycle_capture
-                    cycle_capture = asyncio.create_task(
-                        executor.capture_ready_cycles(active_profile_revisions(executor))
-                    )
-                    next_cycle_check = time.monotonic() + 30
-                if time.monotonic() >= next_exit_recovery:
-                    executor.repository.recover_failed_exits()
-                    next_exit_recovery = time.monotonic() + 60
-                executor.drain_events()
-                if (
-                    acceptance is None or acceptance.done()
-                ) and time.monotonic() >= next_acceptance:
-                    if acceptance is not None:
-                        await acceptance
-                    acceptance = asyncio.create_task(tick_suites(executor))
-                    next_acceptance = time.monotonic() + 30
-                for key, task in list(pending.items()):
-                    if task.done():
-                        pending.pop(key)
-                        await task
-                for job in executor.repository.jobs():
+                jobs = await asyncio.to_thread(executor.repository.jobs)
+                for job in jobs:
                     key = (job["account"], job["ticker"])
                     if key not in pending:
-                        pending[key] = asyncio.create_task(executor.step(job["id"]))
-                if once:
-                    await asyncio.gather(*pending.values())
-                    if cycle_capture:
-                        await cycle_capture
-                    if acceptance:
-                        await acceptance
-                    return
-                storage_failures = 0
-            except Exception as exc:
-                if not transient(exc):
-                    raise
-                logging.getLogger(__name__).warning("executor_tick_deferred: %s", exc)
-                storage_failures += 1
-                await asyncio.sleep(DELAYS[min(storage_failures - 1, 4)])
+                        pending[key] = asyncio.create_task(step(job))
+            except Exception:
+                logging.getLogger(__name__).exception("executor_job_scan_deferred")
+            # Dispatch comes first. No health write, connection probe or cycle capture
+            # is a prerequisite for advancing an existing EXIT or reconciling an order.
+            if not maintenance:
+                maintenance = [
+                    asyncio.create_task(_periodic(name, operation, interval, stop, once=once))
+                    for name, operation, interval in lanes
+                ]
+            if once:
+                await asyncio.gather(*pending.values(), *maintenance)
+                return
             await asyncio.sleep(0.2)
     finally:
-        # Let bounded socket requests finish before releasing the OS writer lock.
-        await asyncio.gather(*pending.values(), return_exceptions=True)
-        if cycle_capture:
-            await asyncio.gather(cycle_capture, return_exceptions=True)
-        if acceptance:
-            await asyncio.gather(acceptance, return_exceptions=True)
-        if idle_recovery:
-            await asyncio.gather(idle_recovery, return_exceptions=True)
+        stop.set()
+        # Do not cancel physical socket/SQLite work or release the sole writer early.
+        await asyncio.gather(*pending.values(), *maintenance, return_exceptions=True)
         executor.close()
