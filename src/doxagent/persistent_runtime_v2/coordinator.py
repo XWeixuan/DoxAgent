@@ -326,7 +326,7 @@ class RuntimeCoordinator:
             self._tick(ticker, existing_only=True)
 
     def _tick(self, ticker: str, *, existing_only=False) -> None:
-        if self._closed:
+        if self._closed or getattr(self, "_should_stop", lambda: False)():
             return
         if ticker not in self._reconciled:
             self.journal.reconcile_interrupted(self.runtime.repository, ticker)
@@ -417,10 +417,18 @@ class RuntimeCoordinator:
                 del self._futures[identity]
                 self._leases.pop(identity, None)
         for task in self.journal.task_controls(ticker):
+            if getattr(self, "_should_stop", lambda: False)():
+                break
             if task["id"] in self._futures or task["status"] in {"SUCCEEDED", "FAILED", "HELD"}:
                 continue
             kind = task["kind"]
             if task["due_at"] > self.journal.clock().isoformat():
+                continue
+            if kind in {"SWEEP", "MAINTENANCE"} and any(
+                lease["kind"] == kind and lease["ticker"] == ticker
+                for key, lease in self._leases.items()
+                if key in self._futures
+            ):
                 continue
             if kind != "CASE":
                 task = self.journal.get_task(task["id"])
@@ -437,21 +445,9 @@ class RuntimeCoordinator:
                     for identity, lease in self._leases.items()
                 ):
                     continue  # Live sweeps retain their wave ownership and ordering.
-            if kind == "SWEEP" and any(
-                (self.journal.get_task(key) or {})["kind"] == "SWEEP"
-                and (self.journal.get_task(key) or {})["ticker"] == ticker
-                for key in self._futures
-            ):
-                continue
             if kind == "SWEEP" and not self.journal.get("sweep_roster", task["id"]):
                 continue  # Bus has not snapshotted the source roster yet.
             if kind == "MAINTENANCE":
-                if any(
-                    (self.journal.get_task(key) or {})["kind"] == "MAINTENANCE"
-                    and (self.journal.get_task(key) or {})["ticker"] == ticker
-                    for key in self._futures
-                ):
-                    continue
                 if self._waiting_cases(task):
                     continue
             if kind == "SELECTION":

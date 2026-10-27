@@ -186,6 +186,10 @@ def test_existing_recovery_does_not_read_ack(tmp_path, monkeypatch):
     monkeypatch.setattr(ControlRepository, "get", lambda *args: {"analysis_allowed": True})
     scheduler._recover_existing_once()
     assert seen == ["MU"]
+    scheduler._should_stop = lambda: True
+    seen.clear()
+    scheduler._recover_existing_once()
+    assert seen == []
 
 
 def test_wrapper_timeout_reconnects_one_original_future(tmp_path):

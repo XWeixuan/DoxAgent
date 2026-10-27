@@ -43,6 +43,8 @@ class V2Scheduler(UnifiedRuntimeSchedulerService):
                 )
             ]
         for ticker in tickers:
+            if getattr(self, "_should_stop", lambda: False)():
+                break
             try:
                 state = ControlRepository(journal).get(ticker)
                 if state and state["analysis_allowed"]:
@@ -87,6 +89,8 @@ class V2Scheduler(UnifiedRuntimeSchedulerService):
         control = ControlRepository(self.runtime_v2_service.journal)
         result = []
         for ticker in sorted(admitted or ()):
+            if getattr(self, "_should_stop", lambda: False)():
+                break
             state = control.get(ticker)
             if not state or not state["analysis_allowed"]:
                 continue
@@ -149,6 +153,8 @@ def main():
     settings = DoxAgentSettings()
     with WriterLock(Path(str(settings.runtime_scheduler_sqlite_path) + ".v2-scheduler")):
         scheduler = build(settings)
+        scheduler._should_stop = stop.is_set
+        scheduler.runtime_v2_service.coordinator._should_stop = stop.is_set
         from doxagent.ticker_initialization.consumers import consumer_heartbeat
         from doxagent.ticker_initialization.repository import InitializationRepository
 

@@ -2304,3 +2304,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-28 Runtime/W3 P0 生产基础验收补齐：ReadySlot/生命周期与行情停止 SQL 按库短写 offload，启动进度回调可 await 且保持原 SDK task；空 Fork 物理 owner 在 SQL commit 后发布，原 prepare deadline 不刷新。修复 Runtime 独立心跳实际小写枚举；资源退役引用检查、fsync、递归删除和正文编码移出业务 writer，以 data_version 再校验和短原子改名保留竞态保护。
 
 2026-10-28 W3 P0 收口：ReadySlot readiness/configure/operation API 的剩余 SQL 与 ACK 统一 offload；Worker 结算重试异步读取，任务取消回调用进程内 entered 标记识别尚未启动的协程，避免在事件循环回调里等 SQLite。
+
+2026-10-28 Runtime P0 发布收口：同类活动任务检查直接复用内存租约，避免在调度控制循环反复 get_task/展开正文；SIGTERM 在 ticker/task 调度边界停止新增派发，已提交 provider/Worker 执行仍按原 owner 收束。

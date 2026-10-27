@@ -1,4 +1,4 @@
-"""Final Worker API boundary patch; canonical release, no unrelated restarts."""
+"""Final Worker/Scheduler boundary patch; canonical targeted release."""
 
 import copy
 import hashlib
@@ -24,10 +24,13 @@ with release.lock(root):
     built = release.build(repo, commit, root, ["backend"])
     state = json.loads((root / "state.json").read_text())
     config = json.loads((root / "compose.current.json").read_text())
-    selected = copy.deepcopy(config["services"]["codex-worker"])
-    selected["image"] = built["images"]["backend"]["tag"]
-    selected.setdefault("environment", {})["DOXAGENT_BUILD_COMMIT"] = commit
-    selected["health_seconds"] = 180
+    selected = {}
+    for name in ("codex-worker", "v2-scheduler"):
+        value = copy.deepcopy(config["services"][name])
+        value["image"] = built["images"]["backend"]["tag"]
+        value.setdefault("environment", {})["DOXAGENT_BUILD_COMMIT"] = commit
+        value["health_seconds"] = 180
+        selected[name] = value
     # Wait for original jobs to settle before replacing their process owner.
     query = "import sqlite3,json;d=sqlite3.connect('file:/data/workspaces/worker-jobs.sqlite3?mode=ro',uri=True,timeout=.1);print(json.dumps(d.execute(\"SELECT id FROM jobs WHERE status='running'\").fetchall()))"
     due = time.monotonic() + 180
@@ -43,14 +46,13 @@ with release.lock(root):
     manifest = dict(
         commit=commit,
         compose_command=state["compose_base_command"],
-        components={"codex-worker": selected},
+        components=selected,
     )
     result = release.deploy(root, state, manifest)
     containers = {
         c["Config"]["Labels"].get("com.docker.compose.service"): c
         for c in release.inspect_containers()
     }
-    worker = containers["codex-worker"]
     files = json.loads((repo / "eval/runtime_p0_repair_20261028/source_files.json").read_text())
     expected = {
         f: hashlib.sha256(
@@ -63,19 +65,23 @@ with release.lock(root):
         + repr(files)
         + ";print(json.dumps({f:hashlib.sha256((pathlib.Path('/app')/f).read_bytes()).hexdigest() for f in files}))"
     )
-    assert (
-        json.loads(release.run(["docker", "exec", worker["Id"], "python", "-c", query])) == expected
-    )
+    verified = {}
+    for name in selected:
+        container = containers[name]
+        assert (
+            json.loads(release.run(["docker", "exec", container["Id"], "python", "-c", query]))
+            == expected
+        )
+        verified[name] = dict(
+            container=container["Id"], image=container["Image"], source_files_verified=len(files)
+        )
     receipt = dict(
         commit=commit,
-        component="codex-worker",
-        container=worker["Id"],
-        image=worker["Image"],
-        source_files_verified=len(files),
+        components=verified,
         unrelated_services_unchanged={
             n: containers.get(n, {}).get("Id") == identity
             for n, identity in before.items()
-            if n != "codex-worker"
+            if n not in selected
         },
         release=result,
     )
