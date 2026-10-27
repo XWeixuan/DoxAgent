@@ -217,12 +217,13 @@ class _RawBrowserCDP:
         self._owned_targets: set[str] = set()
         self._children: dict[str, tuple[str, str, _PopupPolicy]] = {}
         self._tasks: set[asyncio.Task[None]] = set()
+        self._popup_control = False
 
     @property
     def connected(self) -> bool:
         return self._socket is not None and self._reader is not None and not self._reader.done()
 
-    async def start(self) -> None:
+    async def start(self, *, manage_popups: bool = True) -> None:
         from websockets.asyncio.client import connect
 
         # Native DOM observations may include the same bounded article HTML as
@@ -230,6 +231,9 @@ class _RawBrowserCDP:
         # this shared owner channel on an otherwise valid larger document.
         self._socket = await connect(self.websocket_url, max_size=21_000_000)
         self._reader = asyncio.create_task(self._read())
+        if not manage_popups:
+            return  # Browser-level cleanup must not pause or attach live human pages.
+        self._popup_control = True
         await self.send(
             "Target.setAutoAttach",
             {
@@ -290,10 +294,11 @@ class _RawBrowserCDP:
                     self._owned_targets.discard(target_id)
                 except Exception:
                     logger.warning("owned target cleanup failed target=%s", target_id)
-            await self.send(
-                "Target.setAutoAttach",
-                {"autoAttach": False, "waitForDebuggerOnStart": False, "flatten": True},
-            )
+            if self._popup_control:
+                await self.send(
+                    "Target.setAutoAttach",
+                    {"autoAttach": False, "waitForDebuggerOnStart": False, "flatten": True},
+                )
         except Exception:
             pass
         finally:

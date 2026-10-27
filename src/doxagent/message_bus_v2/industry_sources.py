@@ -433,7 +433,7 @@ class IndustryListingAdapter:
 
     async def _get(self, context: PollContext | SharedPollContext, url: str) -> PollResult:
         deadline = time.monotonic() + 45
-        if self.variant == 'trendforce_press' and time.monotonic() >= self._public_retry_at:
+        if self.variant in {'trendforce_press', 'trendforce_news'} and time.monotonic() >= self._public_retry_at:
             try:
                 from curl_cffi.requests import AsyncSession
                 from .poll_trace import request_started
@@ -447,7 +447,7 @@ class IndustryListingAdapter:
                         event.update(response_received_at=utc_now().isoformat(),status_code=response.status_code)
                 if response.status_code != 200 or urlparse(response.url).hostname != urlparse(url).hostname:
                     raise RuntimeError('trendforce_public_listing_refused')
-                messages = parse_trendforce_listing(response.text,press=True,now=context.requested_at)
+                messages = parse_trendforce_listing(response.text,press=self.variant=='trendforce_press',now=context.requested_at)
                 return PollResult(messages=messages,window_coverage='PARTIAL' if context.window_start else 'COMPLETE',
                     acquisition_metadata={'listing_url':url,'listing_variant':self.variant,'listing_transport':'public_http'})
             except Exception:

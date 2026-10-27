@@ -9,6 +9,7 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+from types import SimpleNamespace
 from uuid import uuid4
 
 from doxagent.resource_safety import SafetyLevel, SafetyStateReader
@@ -110,6 +111,8 @@ class ExternalChromeRuntime:
         self._rotation_due = False
         self._stopping = False
         self.target_owner = None
+        self._target_cleanup_tasks = {}
+        self._target_cleanup_at = {}
         self.last_recovery_reason: str | None = None
         self._safety = SafetyStateReader(Path(safety_path) if safety_path else None)
 
@@ -200,6 +203,11 @@ class ExternalChromeRuntime:
     async def _detach_driver(self) -> None:
         # Old leases retain their own entry and release their own permits exactly
         # once. They cannot decrement a replacement attachment's counters.
+        for task in self._target_cleanup_tasks.values():
+            task.cancel()
+        if self._target_cleanup_tasks:
+            await asyncio.gather(*self._target_cleanup_tasks.values(), return_exceptions=True)
+            self._target_cleanup_tasks.clear()
         entries = list(self._entries.values())
         for entry in entries:
             try:
@@ -336,6 +344,7 @@ class ExternalChromeRuntime:
                     and entry.browser.is_connected()
                     and getattr(entry.cdp, "connected", True)
                 ):
+                    self._schedule_pending_cleanup(entry)
                     return entry
                 if entry.active_pages:
                     raise RuntimeError("external_identity_changed_while_busy")
@@ -349,6 +358,19 @@ class ExternalChromeRuntime:
                 await self.client.claim_controller(
                     identity.identity_id, expected_epoch=instance.controller_epoch
                 )
+            # A cancelled/disconnected driver can leave owned business targets.
+            # Playwright initializes every existing page during CDP attach, so
+            # reconciling only AFTER attach creates a deadlock when one is stuck.
+            # This independent browser-level channel never attaches human pages.
+            if self.target_owner:
+                cleanup = _RawBrowserCDP(instance.cdp_websocket_url)
+                try:
+                    await cleanup.start(manage_popups=False)
+                    await self._reconcile_targets(
+                        SimpleNamespace(identity=identity, instance=instance, cdp=cleanup)
+                    )
+                finally:
+                    await cleanup.detach_transport()
             browser = await self._playwright.chromium.connect_over_cdp(
                 instance.cdp_http_url, timeout=20_000, no_defaults=True
             )
@@ -369,12 +391,27 @@ class ExternalChromeRuntime:
                 last_used=time.monotonic(),
                 driver_epoch=epoch,
             )
-            if self.target_owner:
-                await self._reconcile_targets(entry)
             self._entries[identity.identity_id] = entry
             return entry
 
-    async def _reconcile_targets(self, entry):
+    def _schedule_pending_cleanup(self, entry):
+        key = entry.identity.identity_id
+        task = self._target_cleanup_tasks.get(key)
+        if not self.target_owner or (task and not task.done()):
+            return
+        now = time.monotonic()
+        if now - self._target_cleanup_at.get(key, 0) < 30:
+            return
+        self._target_cleanup_at[key] = now
+        async def cleanup():
+            try:
+                async with asyncio.timeout(5):
+                    await self._reconcile_targets(entry, pending_only=True)
+            except Exception as exc:
+                logger.warning('owned pending cleanup deferred identity=%s error=%s', key, type(exc).__name__)
+        self._target_cleanup_tasks[key] = asyncio.create_task(cleanup())
+
+    async def _reconcile_targets(self, entry, *, pending_only=False):
         records = await self.target_owner.event(
             "list",
             {
@@ -385,6 +422,8 @@ class ExternalChromeRuntime:
         targets = (await entry.cdp.send("Target.getTargets"))["targetInfos"]
         live = {str(t["targetId"]): t for t in targets}
         for record in records:
+            if pending_only and record['state'] != 'CLOSE_PENDING':
+                continue  # Never close a sibling's live business or a human original.
             allocation_id = record["allocation_id"]
             target_id = record["target_id"]
             if not target_id:
@@ -408,7 +447,9 @@ class ExternalChromeRuntime:
             if not claim["claimed"]:
                 continue
             try:
-                await entry.cdp.send("Target.closeTarget", {"targetId": target_id})
+                result = await entry.cdp.send("Target.closeTarget", {"targetId": target_id})
+                if result.get('success') is False:
+                    raise RuntimeError('target_close_unconfirmed')
             except Exception as exc:
                 raise RuntimeError("owned_target_cleanup_pending") from exc
             await self.target_owner.event(

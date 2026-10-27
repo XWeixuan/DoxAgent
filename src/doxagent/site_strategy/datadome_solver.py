@@ -311,19 +311,43 @@ class DataDomeSolver:
         now=utc_now()
         if scene.get('state') == 'RETRY':
             attempts=int(previous.get('attempt_no',0))
-            if attempts and previous.get('started_at'):
+            if previous.get('started_at'):
                 age=(now-datetime.fromisoformat(previous['started_at'])).total_seconds()
                 if age < 60:
                     return True
-                if attempts >= 2 or previous.get('status') == 'UNCERTAIN':
+                if attempts >= 2 or int(previous.get('preflight_failures', 0)) >= 3:
                     return False
+                if previous.get('status') == 'UNCERTAIN':
+                    # A free RETRY is not a paid purchase. Reconcile only from
+                    # a new exact-target observation of a visible RETRY button;
+                    # never blindly replay after a transport interruption.
+                    if (scene.get('scene_state') != 'RETRY_READY' or not scene.get('retry_control')
+                            or previous.get('instance_id') != recovery.original_instance_id
+                            or previous.get('target_id') != recovery.original_target_id):
+                        return False
             action={ 'retry_action_id':new_id('retry'), 'scene_signature':signature,
                 'instance_id':recovery.original_instance_id,'target_id':recovery.original_target_id,
-                'attempt_no':attempts+1,'started_at':now.isoformat(),'status':'UNCERTAIN'}
+                'attempt_no':attempts+1,'started_at':now.isoformat(),'status':'PREPARING',
+                'preflight_failures':int(previous.get('preflight_failures',0))}
             value=recovery.model_copy(update={'scene_preparation':action})
             self.coordinator.store.save_recovery(value,expected_generation=recovery.generation)
-            # Persist before interaction. An interrupted action is observed, never blindly replayed.
-            await browser.prepare_retry(scene)
+            async def dispatched():
+                action['status']='UNCERTAIN'
+                self.coordinator.store.save_recovery(
+                    value.model_copy(update={'scene_preparation':dict(action)}),
+                    expected_generation=recovery.generation)
+            try:
+                await browser.prepare_retry(scene,on_dispatch=dispatched)
+            except Exception:
+                if action['status']=='PREPARING':
+                    action.update(status='NOT_DISPATCHED',attempt_no=attempts,
+                                  preflight_failures=action['preflight_failures']+1)
+                    self.coordinator.store.save_recovery(
+                        value.model_copy(update={'scene_preparation':dict(action)}),
+                        expected_generation=recovery.generation)
+                    self.coordinator.event(recovery,'DATADOME_RETRY_NOT_DISPATCHED',
+                                           retry_action_id=action['retry_action_id'])
+                raise
             action={**action,'status':'CLICKED'}
             self.coordinator.store.save_recovery(value.model_copy(update={'scene_preparation':action}),
                                                   expected_generation=recovery.generation)

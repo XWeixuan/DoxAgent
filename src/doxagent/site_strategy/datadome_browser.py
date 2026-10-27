@@ -300,7 +300,7 @@ class NativeChallenge:
             assessment=document['assessment'].model_dump(mode='json'),scene_signature=signature,
             frame_read_state='READABLE')
 
-    async def prepare_retry(self, expected):
+    async def prepare_retry(self, expected, *, on_dispatch=None):
         """A native mouse click on one visible RETRY, never a puzzle answer or reload."""
         scene = await self.inspect()
         if (scene.get('scene_state') != 'RETRY_READY' or not scene.get('retry_control')
@@ -325,6 +325,8 @@ class NativeChallenge:
                 raise RuntimeError('solver_retry_control_outside_view')
             self.check()
             await call('Input.dispatchMouseEvent', {'type':'mouseMoved','x':x,'y':y})
+            if on_dispatch is not None:
+                await on_dispatch()  # Persist uncertainty only at the actual mutation boundary.
             for kind in ('mousePressed','mouseReleased'):
                 await call('Input.dispatchMouseEvent', {'type':kind,'x':x,'y':y,'button':'left','clickCount':1})
             from .schema import digest_json

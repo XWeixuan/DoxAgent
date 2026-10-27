@@ -25,14 +25,16 @@ class CteeSemiconductorAdapter:
     async def poll_shared(self, context: SharedPollContext) -> PollResult:
         if self.browser is None:
             raise RuntimeError("CTEE requires Site Access browser")
-        page = int(context.checkpoint.get("page", 1))
+        # A realtime poll always refreshes the head. A previous sweep cursor is
+        # not a permanent starting page for every future collection cycle.
+        page = max(1, int(context.checkpoint.get("page", 1))) if context.window_start else 1
         max_pages = int(context.source.default_parameters.get("max_pages", 8))
         lower = context.window_start or context.requested_at - timedelta(minutes=30)
         messages: list[RawMessageInput] = []
         old_found = False
         exhausted = False
         pages_fetched = 0
-        while page <= max_pages:
+        while pages_fetched < max_pages:
             url = f"https://www.ctee.com.tw/api/category/semi/{page}"
             try:
                 async with context.request_permit():
@@ -73,9 +75,9 @@ class CteeSemiconductorAdapter:
         complete = exhausted or old_found
         return PollResult(
             messages=messages,
-            next_checkpoint={"page": page + 1 if complete else page},
+            next_checkpoint={"page": 1 if complete else page},
             window_coverage="COMPLETE" if complete else "PARTIAL",
-            window_done=True,
+            window_done=complete,
             acquisition_metadata={
                 "provider": "ctee",
                 "pages_fetched": pages_fetched,

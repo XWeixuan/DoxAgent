@@ -129,7 +129,10 @@ def test_unsolvable_task_records_later_manual_recovery_without_changing_solver_f
 async def test_interrupted_free_retry_is_not_replayed_or_rebought(solver_setup):
     solver, recovery, _, _, _, browser = solver_setup
     store = solver.coordinator.store
-    browser.prepare_retry.side_effect = RuntimeError("transport_interrupted")
+    async def interrupted(scene, *, on_dispatch):
+        await on_dispatch()
+        raise RuntimeError("transport_interrupted")
+    browser.prepare_retry.side_effect = interrupted
     scene = {"state": "RETRY", "scene_state": "RETRY_READY", "url": paid.URL}
     with pytest.raises(RuntimeError):
         await solver.prepare_scene(recovery, browser, scene)
