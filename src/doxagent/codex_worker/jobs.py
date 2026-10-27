@@ -123,6 +123,7 @@ class WorkerJobManager:
         self._pump: asyncio.Task[None] | None = None
         self._tasks: dict[str, asyncio.Task[None]] = {}
         self._starting: set[str] = set()
+        self._entered: set[str] = set()
         self._handles: dict[str, TurnHandle] = {}
         from .thread_lifecycle import WorkerThreadLifecycle
 
@@ -400,7 +401,7 @@ class WorkerJobManager:
             warm = getattr(self._runtime, "warm", None)
             if warm is not None and snapshot.level is SafetyLevel.NORMAL:
                 await warm(self.launch_wave_size, self._startup, self.launch_interval_seconds)
-            self._retry_settlements()
+            await self._retry_settlements()
             helper = self.thread_lifecycle.transport
             if (
                 self._cleanup_quarantines or getattr(helper, "quarantined", False)
@@ -537,9 +538,10 @@ class WorkerJobManager:
     def _task_done(self, job_id: str, task: asyncio.Task[None]) -> None:
         self._tasks.pop(job_id, None)
         # Cancellation before the coroutine's first instruction has no finally block.
-        if task.cancelled() and (self.store.get(job_id)).execution_phase == "QUEUED":
+        if task.cancelled() and job_id not in self._entered:
             self._active.pop(job_id, None)
             self._active_lanes.pop(job_id, None)
+        self._entered.discard(job_id)
         self._starting.discard(job_id)
         if not task.cancelled():
             task.exception()  # Retrieve supervisor errors; durable status remains inspectable.
@@ -548,6 +550,7 @@ class WorkerJobManager:
         await self._execute_leased(job_id, request)
 
     async def _execute_leased(self, job_id: str, request: WorkerRunRequest) -> None:
+        self._entered.add(job_id)
         try:
             await self._run(job_id, request)
         except asyncio.CancelledError:
@@ -572,17 +575,21 @@ class WorkerJobManager:
         if not task.cancelled():
             task.exception()
 
-    def _retry_settlements(self):
+    async def _retry_settlements(self):
         for job_id, retry in list(self._settle_retries.items()):
             if retry["at"] > time.monotonic() or job_id in self._settling:
                 continue
-            request = self.store.request(job_id)
+            request = await read_io(self.store.request, job_id)
             if request is not None:
                 self._launch_settlement(job_id, request)
-            elif (self.store.get(job_id)).status in {"succeeded", "failed", "cancelled"}:
+            elif (job := await read_io(self.store.get, job_id)) is not None and job.status in {
+                "succeeded",
+                "failed",
+                "cancelled",
+            }:
                 # ACK can remove the request after the terminal SQL commit but
                 # before a failed mirror/event acknowledgement is retried.
-                if (self.store.get(job_id)).execution_phase == "SETTLED":
+                if job.execution_phase == "SETTLED":
                     self._active.pop(job_id, None)
                     self._active_lanes.pop(job_id, None)
                 self._settle_retries.pop(job_id, None)

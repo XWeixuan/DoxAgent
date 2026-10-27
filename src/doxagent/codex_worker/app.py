@@ -33,7 +33,7 @@ from doxagent.codex_worker.schema import (
 )
 from doxagent.codex_worker.sdk_runtime import CodexExecutionRuntime
 from doxagent.codex_worker.workspace_store import LocalWorkspaceStore
-from doxagent.control_io import write_io
+from doxagent.control_io import read_io, write_io
 from doxagent.observations.models import PersistedObservation
 
 
@@ -204,21 +204,29 @@ def create_worker_app(
         from contextlib import closing
 
         key = await ready_slots.configure(payload)
-        with closing(jobs.store.connect()) as db:
-            count = db.execute(
-                "SELECT count(*) FROM w3_ready_slots WHERE scope=? AND state='READY'", (key,)
-            ).fetchone()[0]
+
+        def count_ready():
+            with closing(jobs.store.connect()) as db:
+                return db.execute(
+                    "SELECT count(*) FROM w3_ready_slots WHERE scope=? AND state='READY'", (key,)
+                ).fetchone()[0]
+
+        count = await read_io(count_ready)
         return {"scope": key, "ready": count > 0}
 
     @app.get("/v1/w3/readiness", dependencies=[Depends(require_service_auth)])
     async def w3_readiness():
         from contextlib import closing
 
-        ready_slots.reconcile_residents()
-        with closing(jobs.store.connect()) as db:
-            rows = db.execute(
-                "SELECT scope,state,count(*) FROM w3_ready_slots GROUP BY scope,state"
-            ).fetchall()
+        await write_io(jobs.store.path, ready_slots.reconcile_residents, retry=True)
+
+        def ready_counts():
+            with closing(jobs.store.connect()) as db:
+                return db.execute(
+                    "SELECT scope,state,count(*) FROM w3_ready_slots GROUP BY scope,state"
+                ).fetchall()
+
+        rows = await read_io(ready_counts)
         profiles = {}
         for key, config in ready_slots.configs.items():
             if not config.get("active_public", True):
@@ -294,7 +302,7 @@ def create_worker_app(
     @app.post("/v1/jobs/{job_id}/acknowledge", dependencies=[Depends(require_service_auth)])
     async def acknowledge_job(job_id: str):
         try:
-            job = await disk.run(jobs.store.acknowledge, job_id)
+            job = await write_io(jobs.store.path, jobs.store.acknowledge, job_id, retry=True)
             await disk.run(jobs._persist, job)
             return {"job_id": job.job_id, "acknowledged": True}
         except ValueError as exc:
@@ -344,7 +352,7 @@ def create_worker_app(
 
     @app.get("/v1/w3/operations/{operation_key:path}", dependencies=[Depends(require_service_auth)])
     async def w3_operation(operation_key: str):
-        value = jobs.thread_lifecycle.operation(operation_key)
+        value = await read_io(jobs.thread_lifecycle.operation, operation_key)
         if value is None:
             raise HTTPException(404, "operation not found")
         return value
