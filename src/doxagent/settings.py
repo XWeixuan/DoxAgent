@@ -514,7 +514,8 @@ class DoxAgentSettings(BaseSettings):
         default=".tmp/message_bus_v2.sqlite3",
         validation_alias="DOXAGENT_MESSAGE_BUS_V2_SQLITE_PATH",
     )
-    message_bus_v2_collection_plane_enabled: bool = False
+    message_bus_v2_collection_plane_enabled: bool = Field(
+        default=False,validation_alias='DOXAGENT_MESSAGE_BUS_V2_COLLECTION_PLANE_ENABLED')
     message_bus_v2_worker_sleep_seconds: float = Field(
         default=1.0,
         ge=0.05,
