@@ -348,3 +348,29 @@ async def test_real_d3_shell_compile_rerun_only_invokes_selected_wave_in_pre_nod
     assert control.active_revision("MU") is None
     assert control.get(initial.initialization_id).status == "SUCCEEDED"
     assert control.get(rerun.initialization_id).status == "SUCCEEDED"
+
+def test_initialization_snapshot_excludes_root_tool_caches_but_rejects_research_symlinks(tmp_path):
+    store = LocalWorkspaceStore(tmp_path)
+    root = store.ensure_run('d2ws-ionq')
+    (root / 'artifacts' / 'research.json').write_text('{"value":1}')
+    (root / '.venv').mkdir()
+    (root / '.uv-cache').mkdir()
+    try:
+        (root / '.venv' / 'python').symlink_to(tmp_path / 'external')
+        (root / '.uv-cache' / 'linked').symlink_to(tmp_path / 'external')
+    except OSError:
+        pytest.skip('symlink creation unavailable')
+    attempt = root / 'attempts' / 'attempt-1' / 'output'
+    attempt.mkdir(parents=True)
+    (attempt / '.venv').mkdir()
+    (attempt / '.venv' / 'python').symlink_to(tmp_path / 'external')
+    store.snapshot('d2ws-ionq', 'pre-state')
+    store.fork_snapshot('d2ws-ionq', 'pre-state', 'fork-ionq')
+    fork = store.ensure_run('fork-ionq')
+    assert (fork / 'artifacts' / 'research.json').read_text() == '{"value":1}'
+    assert not (fork / '.venv').exists()
+    assert not (fork / '.uv-cache').exists()
+    assert not (fork / 'attempts' / 'attempt-1' / 'output' / '.venv').exists()
+    (root / 'artifacts' / 'bad').symlink_to(tmp_path / 'external')
+    with pytest.raises(InvalidWorkspacePath):
+        store.snapshot('d2ws-ionq', 'must-reject')

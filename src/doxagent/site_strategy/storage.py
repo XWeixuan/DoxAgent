@@ -6,8 +6,23 @@ import os
 import shutil
 import sqlite3
 import time
+import asyncio
 from datetime import UTC, datetime
 from pathlib import Path
+
+
+async def registry_io(function, *args, **kwargs):
+    """Keep the async owner/health gate until its synchronous work really ends."""
+    work=asyncio.create_task(asyncio.to_thread(function,*args,**kwargs))
+    try:
+        return await asyncio.shield(work)
+    except asyncio.CancelledError:
+        while not work.done():
+            try:await asyncio.shield(work)
+            except asyncio.CancelledError:continue
+            except Exception:break
+        await asyncio.gather(work,return_exceptions=True)
+        raise
 
 
 def sqlite_primary_code(exc: BaseException) -> int | None:

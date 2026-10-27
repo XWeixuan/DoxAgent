@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+from .storage import registry_io
 from collections import defaultdict
 from datetime import datetime, timedelta
 
@@ -42,7 +43,7 @@ class CombinationHealthManager:
     ) -> tuple[SiteRuntimeState, list[AccessCombination], datetime | None]:
         instant = now or utc_now()
         async with self._locks[runtime_key]:
-            state = self.repository.get_runtime(runtime_key)
+            state = (await registry_io(self.repository.get_runtime, runtime_key))
             changed = self._ensure_entries(state, combinations, instant)
             ordered = sorted(
                 (
@@ -85,7 +86,7 @@ class CombinationHealthManager:
                 else:
                     from .governance_repository import GovernanceRepository
 
-                    recovery = GovernanceRepository(self.repository).get_recovery(item.identity_id or item.profile_id or "")
+                    recovery = (await registry_io(GovernanceRepository(self.repository).get_recovery, item.identity_id or item.profile_id or ""))
                     recovering = recovery is not None and recovery.phase != "RESOLVED"
                     if recovering and (purpose is None or any(
                         c["purpose"] == purpose.value for c in recovery.affected_contexts
@@ -106,7 +107,7 @@ class CombinationHealthManager:
             if changed and not read_only:
                 prior = state.generation
                 state.generation += 1
-                self.repository.save_runtime(state, expected_generation=prior)
+                (await registry_io(self.repository.save_runtime, state, expected_generation=prior))
             return state, ready, next_retry
 
     async def mark_unknown_denial(
@@ -120,7 +121,7 @@ class CombinationHealthManager:
     ) -> None:
         instant = now or utc_now()
         async with self._locks[runtime_key]:
-            state = self.repository.get_runtime(runtime_key)
+            state = (await registry_io(self.repository.get_runtime, runtime_key))
             runtime = state.combinations.setdefault(combination_id, CombinationRuntime())
             # Retain distinct operations only, not retry attempts. This evidence
             # is purpose-specific: a homepage probe cannot clear search denial.
@@ -137,7 +138,7 @@ class CombinationHealthManager:
                 runtime.purpose_rejected_until[purpose.value] = instant + timedelta(minutes=5)
             runtime.last_failure = "http_403_unclassified"
             runtime.last_failure_at = instant
-            self.repository.save_runtime(state, expected_generation=state.generation)
+            (await registry_io(self.repository.save_runtime, state, expected_generation=state.generation))
 
     async def clear_purpose_denial(
         self,
@@ -146,11 +147,11 @@ class CombinationHealthManager:
         purpose: SitePurpose,
     ) -> None:
         async with self._locks[runtime_key]:
-            state = self.repository.get_runtime(runtime_key)
+            state = (await registry_io(self.repository.get_runtime, runtime_key))
             runtime = state.combinations.setdefault(combination_id, CombinationRuntime())
             runtime.purpose_denials.pop(purpose.value, None)
             runtime.purpose_rejected_until.pop(purpose.value, None)
-            self.repository.save_runtime(state, expected_generation=state.generation)
+            (await registry_io(self.repository.save_runtime, state, expected_generation=state.generation))
 
     async def claim_due_probe(
         self,
@@ -162,14 +163,14 @@ class CombinationHealthManager:
         """Claim at most one expired combination for the low-priority probe lane."""
         instant = now or utc_now()
         async with self._locks[runtime_key]:
-            state = self.repository.get_runtime(runtime_key)
+            state = (await registry_io(self.repository.get_runtime, runtime_key))
             self._ensure_entries(state, combinations, instant)
             for item in sorted(
                 combinations, key=lambda value: (value.priority, value.combination_id)
             ):
                 from .governance_repository import GovernanceRepository
 
-                recovery = GovernanceRepository(self.repository).get_recovery(item.identity_id or item.profile_id or "")
+                recovery = (await registry_io(GovernanceRepository(self.repository).get_recovery, item.identity_id or item.profile_id or ""))
                 if recovery and recovery.phase != "RESOLVED":
                     continue
                 runtime = state.combinations[item.combination_id]
@@ -185,7 +186,7 @@ class CombinationHealthManager:
                     runtime.state = "HALF_OPEN"
                     runtime.probe_in_flight = True
                     state.generation += 1
-                    self.repository.save_runtime(state, expected_generation=prior)
+                    (await registry_io(self.repository.save_runtime, state, expected_generation=prior))
                     return item, state.generation
             return None
 
@@ -197,14 +198,14 @@ class CombinationHealthManager:
         delay_seconds: int = 60,
     ) -> SiteRuntimeState:
         async with self._locks[runtime_key]:
-            state = self.repository.get_runtime(runtime_key)
+            state = (await registry_io(self.repository.get_runtime, runtime_key))
             runtime = state.combinations.setdefault(combination_id, CombinationRuntime())
             prior = state.generation
             runtime.state = "COOLDOWN"
             runtime.probe_in_flight = False
             runtime.cooldown_until = utc_now() + timedelta(seconds=max(1, delay_seconds))
             state.generation += 1
-            self.repository.save_runtime(state, expected_generation=prior)
+            (await registry_io(self.repository.save_runtime, state, expected_generation=prior))
             return state
 
     async def mark_success(
@@ -216,13 +217,13 @@ class CombinationHealthManager:
         transport: AccessMode | None = None,
     ) -> SiteRuntimeState:
         async with self._locks[runtime_key]:
-            state = self.repository.get_runtime(runtime_key)
+            state = (await registry_io(self.repository.get_runtime, runtime_key))
             runtime = state.combinations.setdefault(combination_id, CombinationRuntime())
             runtime.last_success_at = utc_now()
             if runtime_key.startswith("scope:") and assigned_generation != state.generation:
                 # A late pre-failure page cannot erase a newer challenge/cooldown
                 # or reopen the primary while a successor is being activated.
-                self.repository.save_runtime(state, expected_generation=state.generation)
+                (await registry_io(self.repository.save_runtime, state, expected_generation=state.generation))
                 return state
             if transport in {AccessMode.BROWSER, AccessMode.BROWSER_FETCH}:
                 runtime.probe_in_flight = False
@@ -248,7 +249,7 @@ class CombinationHealthManager:
             if assigned_generation == state.generation and state.active_combination_id is None:
                 state.active_combination_id = combination_id
                 state.generation += 1
-            self.repository.save_runtime(state, expected_generation=prior)
+            (await registry_io(self.repository.save_runtime, state, expected_generation=prior))
             return state
 
     async def mark_failure(
@@ -264,7 +265,7 @@ class CombinationHealthManager:
         handling_mode: str | None = None,
     ) -> SiteRuntimeState:
         async with self._locks[runtime_key]:
-            state = self.repository.get_runtime(runtime_key)
+            state = (await registry_io(self.repository.get_runtime, runtime_key))
             runtime = state.combinations.setdefault(combination_id, CombinationRuntime())
             if (runtime_key.startswith("scope:") and transport in {AccessMode.BROWSER, AccessMode.BROWSER_FETCH}
                     and assigned_generation != state.generation):
@@ -307,28 +308,28 @@ class CombinationHealthManager:
                     if not runtime_key.startswith("scope:"):
                         state.active_combination_id = None
                     state.generation += 1
-            self.repository.save_runtime(state, expected_generation=prior)
+            (await registry_io(self.repository.save_runtime, state, expected_generation=prior))
             return state
 
     async def activate(
         self, runtime_key: str, combination_id: str, *, expected_generation: int | None = None
     ) -> SiteRuntimeState:
         async with self._locks[runtime_key]:
-            state = self.repository.get_runtime(runtime_key)
+            state = (await registry_io(self.repository.get_runtime, runtime_key))
             if expected_generation is not None and state.generation != expected_generation:
                 raise RuntimeError("site runtime generation conflict")
             state.combinations.setdefault(combination_id, CombinationRuntime())
             prior = state.generation
             state.active_combination_id = combination_id
             state.generation += 1
-            self.repository.save_runtime(state, expected_generation=prior)
+            (await registry_io(self.repository.save_runtime, state, expected_generation=prior))
             return state
 
     async def clear_manual_attention(
         self, runtime_key: str, combination_id: str
     ) -> SiteRuntimeState:
         async with self._locks[runtime_key]:
-            state = self.repository.get_runtime(runtime_key)
+            state = (await registry_io(self.repository.get_runtime, runtime_key))
             runtime = state.combinations.setdefault(combination_id, CombinationRuntime())
             prior = state.generation
             runtime.manual_attention_required = False
@@ -336,7 +337,7 @@ class CombinationHealthManager:
             runtime.state = "READY"
             runtime.cooldown_until = None
             state.generation += 1
-            self.repository.save_runtime(state, expected_generation=prior)
+            (await registry_io(self.repository.save_runtime, state, expected_generation=prior))
             return state
 
     @staticmethod

@@ -113,6 +113,8 @@ class PollJournal:
         self._decoded = OrderedDict()
         self._decoded_bytes = 0
         self._decoded_lock = threading.Lock()
+        if not getattr(repository, 'initialize', True):
+            return
         with repository.transaction() as db:
             db.executescript("""
                 CREATE TABLE IF NOT EXISTS poll_runs (
@@ -544,7 +546,16 @@ class PollJournal:
                         update={"collected_count": state.collected_count + capture.count+capture.repeated_count}))
         return capture.capture_id
 
+    def ready(self):
+        now=utc_now().isoformat()
+        with self.repo._connect() as db:
+            return db.execute("SELECT 1 FROM poll_captures WHERE "
+                "(status='PENDING' AND not_before<=?) OR "
+                "(status='RUNNING' AND lease_until<=?) LIMIT 1",(now,now)).fetchone() is not None
+
     def claim(self, capture_id=None):
+        if not self.ready():
+            return None
         now = utc_now()
         with self.repo.atomic_intake() as db:
             # Followers are receipts, not independent business workers. Drain
@@ -1158,13 +1169,13 @@ class CaptureIntake:
         previous_capture, burst = None, 0
         while not self.stopping:
             if claim is None:
-                claim = await self.bus.storage.call(self.journal.claim, _lane_priority=0)
+                if await self.bus.storage.read(self.journal.ready):
+                    claim = await self.bus.storage.call(self.journal.claim, _lane_priority=0)
             if not claim:
                 import time
 
-                if time.monotonic() >= self._maintenance_at:
-                    self._maintenance_at = time.monotonic() + 1
-                    await self.bus.storage.call(self.journal.maintain)
+                # History retirement is an independent maintenance job. An
+                # empty intake queue is not evidence the realtime writer is idle.
                 self.wake.clear()
                 try:
                     await asyncio.wait_for(self.wake.wait(), 0.25)

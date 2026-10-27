@@ -600,6 +600,8 @@ export interface BusStatus {
   timeliness?: PollTimeliness;
 }
 export interface SourceStatus {
+  collection_observed_at?: Instant;
+  collection_state_source?: "ACQUISITION_LEDGER";
   published_today?: Value<Count>;
   cadence?: PollCadence;
   coverage_state?: "COMPLETE" | "PARTIAL" | "UNKNOWN";
@@ -845,6 +847,15 @@ export interface CaseDetail {
   candidate_count: Value<Count>; execution_count: Value<Count>;
   results: ResultKind[];
 }
+export interface ExitStrategySummary {
+  position_id: Id; phase: "TRACKING" | "ARMED" | "EXIT_REQUESTED" | "CLOSED";
+  data_health: string | null; policy_revision: Id; first_fill_at: Instant;
+  notional: number; pnl: number | null; mfe: number | null; atr: number | null;
+  stop_net: number | null; activated_at: Instant | null;
+  exit_requested_at: Instant | null; exit_reason: string | null; updated_at: Instant;
+  remaining_quantity: Count; group_status: "SINGLE_LEG" | "EXPLICIT_GROUP";
+  valid_observations: Count; invalid_observations: Count; confirmation: (boolean | null)[];
+}
 export interface ExecutionSummary {
   execution_id: Id; intent_id: Id; case_id: Id;
   environment: Value<"PAPER" | "LIVE">; profile_revision: Value<Id>;
@@ -854,6 +865,7 @@ export interface ExecutionSummary {
   entry_result: "FILLED" | "PARTIAL_FILLED" | "FAILED" | "DIRECTION_DISABLED" | null;
   entry_reason: string | null;
   has_actual_fill: boolean;
+  exit_strategy?: ExitStrategySummary | null;
   triggered_at: Value<Instant>; accepted_at: Value<Instant>; first_fill_at: Value<Instant>;
   filled_quantity: Value<DecimalString>; filled_notional_usd: Value<DecimalString>;
 }

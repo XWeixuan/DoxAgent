@@ -18,7 +18,30 @@ EFFORT = ReasoningEffort("medium")
 def report_schema() -> dict[str, Any]:
     schema = RepairAgentReport.model_json_schema()
     schema["additionalProperties"] = False
+    # Structured output cannot express arbitrary-key dictionaries. Keep the
+    # durable report contract, but use closed records on the model wire.
+    schema["properties"]["changed_files"] = {
+        "type": "array", "items": {"type": "object",
+            "properties": {"path": {"type": "string"}, "reason": {"type": "string"}},
+            "required": ["path", "reason"], "additionalProperties": False},
+    }
+    schema["properties"]["tests"] = {
+        "type": "array", "items": {"type": "object",
+            "properties": {"command": {"type": "string"}, "result": {"type": "string"}},
+            "required": ["command", "result"], "additionalProperties": False},
+    }
     return schema
+
+
+def decode_report(text: str) -> RepairAgentReport:
+    payload = json.loads(text)
+    changes = payload.get("changed_files")
+    if isinstance(changes, list):
+        paths = [item["path"] for item in changes]
+        if len(paths) != len(set(paths)):
+            raise ValueError("duplicate changed file paths")
+        payload["changed_files"] = {item["path"]: item["reason"] for item in changes}
+    return RepairAgentReport.model_validate(payload)
 
 
 def _write_json(path: Path, payload: dict[str, Any]) -> None:
@@ -193,7 +216,7 @@ class RepairAgent:
         if not result.final_response:
             raise RuntimeError("repair turn completed without a structured report")
         try:
-            report = RepairAgentReport.model_validate_json(result.final_response)
+            report = decode_report(result.final_response)
         except ValueError as exc:
             raise RuntimeError("repair turn returned an invalid structured report") from exc
         _write_json(report_path, report.model_dump(mode="json"))
@@ -261,6 +284,6 @@ class RepairAgent:
         if not responses:
             raise RuntimeError("completed repair turn has no final report")
         try:
-            return RepairAgentReport.model_validate_json(responses[-1])
+            return decode_report(responses[-1])
         except ValueError as exc:
             raise RuntimeError("persisted repair turn has an invalid report") from exc

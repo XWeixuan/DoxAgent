@@ -201,3 +201,24 @@ async def test_failed_independent_verification_continues_same_round_and_thread(t
         "verification_log": "verification.log",
         "handled_by_turn_id": "turn-2",
     }
+
+def test_report_wire_schema_uses_only_closed_objects_and_roundtrips():
+    from doxagent.initialization_repair.agent import report_schema, decode_report
+    schema = report_schema()
+    def walk(value):
+        if isinstance(value, dict):
+            if value.get('type') == 'object':
+                assert value.get('additionalProperties') is False
+                assert set(value['required']) == set(value['properties'])
+            for child in value.values():
+                walk(child)
+        elif isinstance(value, list):
+            for child in value:
+                walk(child)
+    walk(schema)
+    wire = {**REPORT, 'changed_files': [{'path': 'src/file.py', 'reason': 'fixed'}]}
+    assert decode_report(json.dumps(wire)).model_dump() == REPORT
+    assert decode_report(json.dumps(REPORT)).model_dump() == REPORT
+    wire['changed_files'] *= 2
+    with pytest.raises(ValueError, match='duplicate'):
+        decode_report(json.dumps(wire))

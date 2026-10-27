@@ -48,10 +48,12 @@ class _ClosingConnection(sqlite3.Connection):
 
 
 class CrawlerPlaneRepository:
-    def __init__(self, sqlite_path: str | Path) -> None:
+    def __init__(self, sqlite_path: str | Path, *, initialize: bool = True) -> None:
         self.path = Path(sqlite_path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        self._initialize()
+        if initialize:
+            with self._connect() as db:db.execute('pragma journal_mode=WAL')
+            self._initialize()
 
     def _connect(self) -> sqlite3.Connection:
         connection = sqlite3.connect(
@@ -61,7 +63,6 @@ class CrawlerPlaneRepository:
             factory=_ClosingConnection,
         )
         connection.row_factory = sqlite3.Row
-        connection.execute("pragma journal_mode=WAL")
         connection.execute("pragma synchronous=NORMAL")
         connection.execute("pragma foreign_keys=ON")
         connection.execute("pragma busy_timeout=30000")

@@ -408,8 +408,10 @@ class IdentityWorkerManager:
                     try:
                         handle.stage = action.upper()
                         wait_ms = int((time.monotonic()-waited_at)*1000)
+                        from .storage import registry_io
+                        snapshot=await registry_io(self.snapshot,identity,egress)
                         value = await self._roundtrip(handle,action,
-                            {**payload,"snapshot":self.snapshot(identity,egress)},
+                            {**payload,"snapshot":snapshot},
                             timeout=deadline-time.monotonic())
                         if action == "execute" and isinstance(value,dict) and "status_code" in value:
                             value.setdefault("stage_timings",{})["worker_wait_ms"] = wait_ms

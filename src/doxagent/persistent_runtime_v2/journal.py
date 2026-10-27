@@ -52,6 +52,9 @@ def retry_write(call, *, seconds=30):
 
 
 def is_sqlite_contention(exc: BaseException) -> bool:
+    from doxagent.message_bus_v2.storage_lane import WriteAdmissionBusy
+    if isinstance(exc, WriteAdmissionBusy):
+        return True
     return isinstance(exc, sqlite3.OperationalError) and (
         getattr(exc, "sqlite_errorcode", 0) & 255
     ) in {sqlite3.SQLITE_BUSY, sqlite3.SQLITE_LOCKED}

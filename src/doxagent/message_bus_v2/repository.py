@@ -88,20 +88,24 @@ class _BorrowedConnection:
 
 
 class MessageBusV2Repository:
-    def __init__(self, sqlite_path: str | Path, *, terminal_receipts_enabled: bool = True) -> None:
+    def __init__(self, sqlite_path: str | Path, *, terminal_receipts_enabled: bool = True,
+                 initialize: bool | None = None) -> None:
         self.terminal_receipts_enabled = terminal_receipts_enabled
         self._atomic_connection = ContextVar("bus_atomic_connection", default=None)
         self._scope_connection = ContextVar("bus_scope_connection", default=None)
         self.path = Path(sqlite_path)
+        self.initialize = initialize if initialize is not None else (
+            not self.path.exists() or self.path.stat().st_size == 0)
         from doxagent.v2_read.native_content import NativeContent
 
         self.content = NativeContent(self.path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         # WAL is persistent database state. Reissuing journal_mode on every
         # short read/write connection adds schema-lock negotiation under load.
-        with self._connect() as connection:
-            connection.execute("pragma journal_mode = WAL")
-        self._initialize()
+        if self.initialize:
+            with self._connect() as connection:
+                connection.execute("pragma journal_mode = WAL")
+            self._initialize()
         from .polling import PollJournal
 
         self.polling = PollJournal(self)
@@ -314,6 +318,8 @@ class MessageBusV2Repository:
         from .collection_override import SCHEMA as collection_schema
 
         with self.transaction() as connection:
+            connection.execute('CREATE TABLE IF NOT EXISTS collection_acceptances '
+                               '(capture_id TEXT PRIMARY KEY,accepted_at TEXT NOT NULL)')
             connection.executescript(collection_schema)
             connection.execute(
                 "CREATE TABLE IF NOT EXISTS ir_endpoint_states "
@@ -415,6 +421,12 @@ class MessageBusV2Repository:
                 );
                 create index if not exists idx_body_results_cohort
                     on article_body_results(first_observed_at,status);
+                create index if not exists idx_body_results_due on article_body_results(next_check_at,fetch_key);
+                create index if not exists idx_body_results_check_due on article_body_results(next_check_at,fetch_key)
+                    where coalesce(json_extract(data_json,'$.check_pending'),0)=0
+                      and coalesce(json_extract(data_json,'$.eligible'),1)=1;
+                create index if not exists idx_enrichment_body_template on content_enrichment_jobs(
+                    json_extract(data_json,'$.body_result_key'),created_at desc);
                 create index if not exists idx_body_results_verified_url on article_body_results(
                     json_extract(data_json,'$.final_canonical_url'),json_extract(data_json,'$.access_scope'),
                     coalesce(json_extract(data_json,'$.language'),'')) WHERE status='READY';
@@ -1678,8 +1690,7 @@ class MessageBusV2Repository:
         current = (now or utc_now()).astimezone(UTC)
         lease_until = current + timedelta(seconds=lease_seconds)
         allow_rechecks = allow_rechecks and not self.polling.backlogged(now=current)
-        foreground_filter = (" AND coalesce(json_extract(data_json,'$.work_kind'),'new_article')!='recheck' "
-                             if not allow_rechecks else " ")
+        foreground_filter = " AND coalesce(json_extract(data_json,'$.work_kind'),'new_article')!='recheck' "
         # An idle BODY loop must not reserve the shared DB writer just to learn
         # that only paused background checks remain. A new enqueue after this
         # snapshot is picked up on the next loop; real claims still recheck below.
@@ -1689,7 +1700,9 @@ class MessageBusV2Repository:
                 (EnrichmentJobStatus.QUEUED.value,EnrichmentJobStatus.RETRY_WAIT.value,current.isoformat())).fetchone()
             expired = probe.execute("SELECT 1 FROM content_enrichment_jobs WHERE status=? "
                 "AND lease_expires_at<=? LIMIT 1",(EnrichmentJobStatus.RUNNING.value,current.isoformat())).fetchone()
-        if not due and not expired:
+            rechecking=probe.execute("SELECT 1 FROM content_enrichment_jobs WHERE status='running' AND json_extract(data_json,'$.work_kind')='recheck' LIMIT 1").fetchone()
+            background=probe.execute("SELECT 1 FROM content_enrichment_jobs WHERE status IN ('queued','retry_wait') AND not_before<=? AND json_extract(data_json,'$.work_kind')='recheck' LIMIT 1",(current.isoformat(),)).fetchone() if allow_rechecks and not rechecking else None
+        if not due and not expired and not background:
             return []
         with self.transaction() as connection:
             expired = connection.execute(
@@ -1725,6 +1738,9 @@ class MessageBusV2Repository:
             # A bounded ready window spreads claims across publishers; the HTTP
             # controller still enforces actual request pacing after redirects.
             ready = [EnrichmentJob.model_validate_json(row["data_json"]) for row in rows]
+            if background and len(ready)<limit:
+                background_row=connection.execute("SELECT data_json FROM content_enrichment_jobs WHERE status IN ('queued','retry_wait') AND not_before<=? AND json_extract(data_json,'$.work_kind')='recheck' ORDER BY created_at LIMIT 1",(current.isoformat(),)).fetchone()
+                if background_row:ready.append(EnrichmentJob.model_validate_json(background_row[0]))
             host_counts: dict[str, int] = {}
             running = connection.execute(
                 "select data_json from content_enrichment_jobs where status=?",
@@ -1976,16 +1992,17 @@ class MessageBusV2Repository:
         claim_token: str,
     ) -> EnrichmentJob:
         row = connection.execute(
-            "select data_json from content_enrichment_jobs where job_id=?",
+            "select data_json,lease_expires_at from content_enrichment_jobs where job_id=?",
             (job_id,),
         ).fetchone()
         job = EnrichmentJob.model_validate_json(row["data_json"]) if row else None
+        if job and row['lease_expires_at']:
+            job=job.model_copy(update={'lease_expires_at':datetime.fromisoformat(row['lease_expires_at'])})
         if (
             job is None
             or job.status is not EnrichmentJobStatus.RUNNING
             or job.claim_token != claim_token
             or job.lease_expires_at is None
-            or job.lease_expires_at <= utc_now()
         ):
             raise RuntimeError("enrichment_lease_lost")
         return job
@@ -1996,8 +2013,8 @@ class MessageBusV2Repository:
             renewed = job.model_copy(update={"lease_expires_at": utc_now() + timedelta(seconds=60)})
             assert renewed.lease_expires_at is not None
             connection.execute(
-                "update content_enrichment_jobs set lease_expires_at=?,data_json=? where job_id=?",
-                (renewed.lease_expires_at.isoformat(), self._json(renewed), job_id),
+                "update content_enrichment_jobs set lease_expires_at=? where job_id=?",
+                (renewed.lease_expires_at.isoformat(), job_id),
             )
 
     def list_enrichment_jobs(self, *, limit: int = 100, include_terminal: bool = False) -> list[EnrichmentJob]:

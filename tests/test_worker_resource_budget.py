@@ -85,6 +85,21 @@ async def settle():
 
 
 @pytest.mark.asyncio
+async def test_new_message_reserve_defers_research_and_keeps_persistent_owner_admission(tmp_path,monkeypatch):
+    monkeypatch.setattr('doxagent.message_bus_v2.pressure.background_allowed',lambda:False)
+    runtime=Runtime()
+    manager=WorkerJobManager(runtime,LocalWorkspaceStore(tmp_path))
+    try:
+        deferred=await manager.submit(request(100))
+        protected=await manager.submit(request(101,research_lane=ResearchLane.PERSISTENT_RUNTIME))
+        await settle()
+        assert manager.get(deferred.job_id).wait_reason=='MESSAGE_PIPELINE_RESOURCE_RESERVE'
+        assert manager.get(protected.job_id).status=='running'
+        assert [r.run_id for r in runtime.started]==['run-101']
+    finally:await manager.close()
+
+
+@pytest.mark.asyncio
 async def test_burst_20_has_no_fixed_active_capacity_and_queue_is_durable(tmp_path):
     runtime = Runtime()
     manager = WorkerJobManager(

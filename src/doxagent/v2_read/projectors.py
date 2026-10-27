@@ -105,6 +105,9 @@ class DomainProjectors:
         }
 
     def __call__(self, event: dict[str, Any]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+        from doxagent.message_bus_v2.collection_plane.observability import enabled,RETIRED_TABLES
+        if enabled() and event['table_name'] in RETIRED_TABLES:
+            return [],[]
         table, row, value = event["table_name"], event["row"], native(event)
         if table in {'poll_runs', 'poll_captures'}:
             value = {**row, **value}

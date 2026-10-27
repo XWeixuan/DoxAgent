@@ -663,6 +663,12 @@ class SiteStrategyRepository:
                 ),
             )
 
+    def append_events(self,events):
+        with self.transaction() as connection:
+            connection.executemany('INSERT OR IGNORE INTO access_events VALUES(?,?,?,?,?,?,?)',[
+                (e.event_id,e.operation_id,e.site_id,e.combination_id,e.occurred_at.isoformat(),e.category,canonical_json(e.payload))
+                for e in events])
+
     def list_events(
         self, *, site_id: str | None = None, since: datetime | None = None, limit: int = 200
     ) -> list[AccessEvent]:

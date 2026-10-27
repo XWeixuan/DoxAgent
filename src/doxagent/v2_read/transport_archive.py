@@ -88,9 +88,14 @@ def main():
     args = parser.parse_args()
     sources = [SourceOutbox(path, name) for name, path in (item.split('=', 1) for item in args.source)]
     for source in sources:
-        source.migrate()  # Explicit owner startup migration, never an HTTP read.
+        if source.capture() is None:raise ValueError('source transport requires explicit migration: '+source.source)
     capacity_at=0
     while True:
+        from doxagent.message_bus_v2.pressure import background_allowed
+        if not args.once and not background_allowed():
+            print(json.dumps({'maintenance':'transport_expiry','deferred':'MESSAGE_PIPELINE_RESOURCE_RESERVE'}),flush=True)
+            time.sleep(15)
+            continue
         started = time.monotonic()
         result = {}
         for source in sources:

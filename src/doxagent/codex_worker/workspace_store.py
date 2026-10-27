@@ -172,9 +172,29 @@ class LocalWorkspaceStore:
     def _copy_atomic(
         self, source: Path, destination: Path, *, identity: dict[str, str] | None = None,shared_snapshot=False
     ) -> None:
-        if source.is_symlink() or any(
-            item.is_symlink() or not self._is_contained(item, source) for item in source.rglob("*")
-        ):
+        # Tool environments at the workspace root or an attempt output root
+        # are disposable. Never skip equally named directories inside research
+        # artifacts, or weaken symlink checks on any other path.
+        transient = {".venv", ".uv-cache"} if shared_snapshot else set()
+        def ignored(directory, names):
+            relative = Path(directory).relative_to(source).parts
+            allowed = not relative or (
+                len(relative) == 3 and relative[0] == "attempts" and relative[2] == "output"
+            )
+            return set(names) & transient if allowed else set()
+
+        invalid = source.is_symlink()
+        for directory, dirs, files in os.walk(source, followlinks=False):
+            skipped = ignored(directory, dirs + files)
+            dirs[:] = [name for name in dirs if name not in skipped]
+            for name in dirs + [name for name in files if name not in skipped]:
+                item = Path(directory) / name
+                if item.is_symlink() or not self._is_contained(item, source):
+                    invalid = True
+                    break
+            if invalid:
+                break
+        if invalid:
             raise InvalidWorkspacePath("snapshot cannot include symlinks or escaping paths")
         destination.parent.mkdir(parents=True, exist_ok=True)
         with tempfile.TemporaryDirectory(prefix=".s-", dir=destination.parent) as temporary:
@@ -184,7 +204,7 @@ class LocalWorkspaceStore:
                 def copy_file(origin,target):
                     adopt_file(origin,target,self.root/'.init-contents',mode=stat.S_IMODE(Path(origin).stat().st_mode))
                     return str(target)
-                shutil.copytree(source,staging,copy_function=copy_file)
+                shutil.copytree(source,staging,copy_function=copy_file,ignore=ignored)
             else:
                 shutil.copytree(source, staging)
             if identity is not None:

@@ -551,6 +551,9 @@ def prepare_inputs(root, state):
 def release_components(root, state, repo, commit, components):
     if not components:raise ValueError('release requires explicit --component selections')
     unknown=set(components)-set(state.get('components',{}))
+    # This is a permanent Compose role, registered only after its first healthy
+    # deployment. All other unknown role names remain errors.
+    unknown.discard('v2-message-collector')
     if unknown:raise ValueError('unregistered components: '+','.join(sorted(unknown)))
     kinds={'v2-site-access':'site','v2-chrome-supervisor':'supervisor','v2-web':'web','initialization-guardian':'guardian'}
     selected={c:kinds.get(c,'backend') for c in components}
@@ -566,11 +569,34 @@ def release_components(root, state, repo, commit, components):
             if i and base[i-1]=='-f':del base[i-1:i+1]
     manifest=dict(compose_command=base,commit=built['commit'],components={})
     for component,kind in selected.items():
-        current=state['components'][component]['current']
+        current=state.get('components',{}).get(component,{}).get('current',{})
         import copy
         candidate={**copy.deepcopy(current.get('compose',{})),'image':built['images'][kind]['image']}
+        if 'v2-message-collector' in components:
+            candidate.setdefault('environment',{})['DOXAGENT_MESSAGE_BUS_V2_COLLECTION_PLANE_ENABLED']='true'
         if kind=='guardian':candidate.setdefault('environment',{})['DOXAGENT_INITIALIZATION_REPAIR_AGENT_IMAGE']=built['images']['repair-agent']['tag']
         candidate['schema']=current.get('schema');manifest['components'][component]=candidate
+    if 'v2-message-collector' in components:
+        # Cut over acquisition ownership once. Use the existing formal migration
+        # service, never a one-off temporary runtime or an in-container code patch.
+        override=root/'compose.current.json'
+        configuration=json.loads(override.read_text()) if override.exists() else {'services':{}}
+        old_migration=configuration['services'].get('v2-migrate')
+        configuration['services']['v2-migrate']={'image':built['images']['backend']['image'],
+            'command':['python','-m','doxagent.message_bus_v2.collection_plane.install'],
+            'environment':{'DOXAGENT_MESSAGE_BUS_V2_COLLECTION_PLANE_ENABLED':'true'}}
+        atomic(override,configuration)
+        command=[*base,'-f',str(override)]
+        subprocess.run([*command,'stop','v2-message-bus','v2-content-enrichment'],check=True)
+        subprocess.run([*command,'up','-d','--no-deps','--no-build','--force-recreate','v2-migrate'],check=True)
+        container=run([*command,'ps','-a','-q','v2-migrate'])
+        exit_code=run(['docker','wait',container])
+        if exit_code.strip()!='0':raise RuntimeError('collection migration failed; acquisition remains stopped, inspect v2-migrate logs')
+        manifest['migration']={'container':container,'exit_code':exit_code.strip()}
+        # Restore the normal explicit provisioning command for the next release.
+        configuration['services']['v2-migrate']={'image':built['images']['backend']['image'],
+            'command':['python','-m','doxagent.production_v2','migrate']}
+        atomic(override,configuration)
     atomic(root/(built['commit']+'.release.json'),manifest)
     return deploy(root,state,manifest)
 

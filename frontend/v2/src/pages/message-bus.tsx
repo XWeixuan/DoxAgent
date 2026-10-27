@@ -650,11 +650,12 @@ export function SourceCard({
           </dd>
           <dt>当天新增</dt>
           <dd>{today ? valueText(today) : "未记录"}</dd>
-          <dt>轮询耗时</dt>
+          <dt>{s.collection_state_source ? "采集耗时" : "轮询耗时"}</dt>
           <dd title={s.stage_timings_ms ? `源排队 ${s.stage_timings_ms.source_wait_ms ?? 0}ms · Site排队 ${s.stage_timings_ms.site_wait_ms ?? 0}ms · 执行 ${s.stage_timings_ms.runtime_ms ?? 0}ms · 接纳 ${s.stage_timings_ms.accept_ms ?? 0}ms` : undefined}>
             {valueText(s.last_poll_latency_seconds, (v) => v.toFixed(2) + "s")}
           </dd>
-          {s.capture_age_seconds != null && <><dt>采集距今</dt><dd title={s.capture_to_first_intake_seconds == null ? undefined : `采集至首次接纳 ${s.capture_to_first_intake_seconds.toFixed(2)}s`}>{s.capture_age_seconds.toFixed(1)}s</dd></>}
+          {s.capture_age_seconds != null && <><dt>采集距今</dt><dd title={s.collection_state_source ? "全部必需单元中最久未刷新的列表；不以RSS替代浏览器频道" : s.capture_to_first_intake_seconds == null ? undefined : `采集至首次接纳 ${s.capture_to_first_intake_seconds.toFixed(2)}s`}>{s.capture_age_seconds.toFixed(1)}s</dd></>}
+          {s.collection_observed_at && <><dt>账本观察</dt><dd title="直接读取采集面；业务消息仍以发布和Read投影时点为准">{new Date(s.collection_observed_at).toLocaleTimeString()}</dd></>}
           {s.cadence && <>
             <dt>实际间隔</dt><dd title={`P95 ${s.cadence.gap_p95_seconds?.toFixed(2) ?? "—"}s · 最长空窗 ${s.cadence.max_gap_seconds?.toFixed(2) ?? "—"}s · 请求启动P95 ${s.cadence.worst_request_p95_seconds?.toFixed(2) ?? "—"}s`}>
               {s.cadence.gap_mean_seconds?.toFixed(2) ?? "—"}s

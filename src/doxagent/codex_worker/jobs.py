@@ -406,6 +406,13 @@ class WorkerJobManager:
             request = self.store.request(job_id)
             if request is None:
                 continue
+            # W1/W2/W3 and their required preparation keep the existing
+            # admission policy. Only deferrable research/initialization waits.
+            if request.research_lane.value != 'persistent_runtime':
+                from doxagent.message_bus_v2.pressure import background_allowed
+                if not background_allowed():
+                    self._mark_waiting([job_id],'MESSAGE_PIPELINE_RESOURCE_RESERVE')
+                    continue
             warm = str(request.node) == "persistent_runtime_w3" and getattr(
                 self._runtime,
                 "can_start_warm",

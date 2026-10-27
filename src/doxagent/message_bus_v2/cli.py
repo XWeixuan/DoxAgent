@@ -47,6 +47,25 @@ async def _run_worker(settings: DoxAgentSettings, *, once: bool) -> int:
         await runtime.close()
 
 
+async def _run_collector(settings):
+    from doxagent.crawler_plane.factory import build_crawler_plane_service
+    from .adapters import AdapterRegistry
+    from .factory import build_message_bus_v2_service
+    from .collection_plane.worker import Collector
+    from .collection_plane.store import path_for
+    from doxagent.trade_execution.worker import WriterLock
+    repository,service=build_message_bus_v2_service(settings)
+    crawler=build_crawler_plane_service(settings,message_bus=service)
+    adapters=AdapterRegistry(settings,adapter_root=settings.message_bus_v2_adapter_root,crawler_plane=crawler)
+    try:
+        with WriterLock(Path(str(path_for(repository.path))+'.collector')):
+            await Collector(settings,adapters).run(_worker_stop_event())
+    finally:
+        await adapters.close()
+        await crawler.close()
+        repository.close()
+
+
 def _worker_stop_event() -> asyncio.Event:
     stop = asyncio.Event()
     loop = asyncio.get_running_loop()
@@ -65,7 +84,7 @@ def main() -> None:
     parser.add_argument(
         "command",
         choices=(
-            "run-worker", "run-once", "status", "terms", "distribution", "migration", "collection"
+            "run-worker", "run-collector", "run-once", "status", "terms", "distribution", "migration", "collection"
         ),
     )
     parser.add_argument("action", nargs="?")
@@ -80,6 +99,12 @@ def main() -> None:
     parser.add_argument("--until", help="ISO 8601 deadline including timezone")
     parser.add_argument("--reason")
     args = parser.parse_args()
+    if args.command == 'run-collector':
+        settings=DoxAgentSettings()
+        if not settings.message_bus_v2_collection_plane_enabled:
+            parser.error('run-collector requires the collection plane flag')
+        asyncio.run(_run_collector(settings))
+        return
     settings = DoxAgentSettings()
     output: Any
     if args.command == "collection":

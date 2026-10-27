@@ -66,11 +66,19 @@ class CollectionControl:
         expired = bool(
             state.get("expires_at") and self.clock() >= datetime.fromisoformat(state["expires_at"])
         )
-        return {
+        result = {
             **state,
             "effective": state["enabled"] and not expired,
             "state": "DISABLED" if not state["enabled"] else "EXPIRED" if expired else "ACTIVE",
         }
+        import os
+        if os.getenv('DOXAGENT_MESSAGE_BUS_V2_COLLECTION_PLANE_ENABLED','').lower() in {'true','1'}:
+            from .collection_plane.store import AcquisitionStore,path_for
+            path=path_for(self.repository.path)
+            applied=AcquisitionStore(path).get_meta('configuration',{}) if path.is_file() else {}
+            result.update(applied_revision=applied.get('override_revision'),applied_at=applied.get('at'),
+                          apply_state='APPLIED' if applied.get('override_revision')==state['revision'] else 'PENDING')
+        return result
 
     def update(self, *, enabled, actor, reason, expires_at=None, tickers=(), sources=()):
         if not actor.strip() or not reason.strip():

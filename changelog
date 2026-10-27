@@ -2252,3 +2252,23 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-27 固定窗口离线对账补证据：POWER两组共享HTTP响应的消费者丢失物理request trace，117个周期不能证明采集。共享任务现持有独立真实请求记录，各消费者复制同一physical_request_id及原始时点；不增加请求、不生成合成时点，不反向改旧窗口覆盖率。保留2秒复用与取消隔离，回归验证并发/缓存消费者同一真实请求。
 
 2026-10-27 本轮消息管线实测收尾：固定观测58分38秒，全应执行23285周期中实际网络列表证据21312（91.53%）；37条已发布样本均值18.67s/P9545.72s，eligible新正文key纠正后29/43标签FULL。未宣称99%/10s/80%达标；两轮27订阅30s测试均恢复，Reuters401/恢复阻塞、正文权限和残留写队列等待详见实施实测报告。完整main整合、正式容器发布、身份/数据保留与旧镜像清退已核验。
+
+2026-10-27: Fixed initialization repair-agent structured output: changed_files uses closed path/reason records and tests closed command/result records on the wire; normalize back to existing durable dictionary contract with duplicate-path rejection. Added schema and backwards-compatibility regression (12 tests passed). IONQ same-run recovery quarantined generated .venv/.uv-cache outside workspace without deleting data; 342 research files unchanged and strict snapshot verified. Dedicated repair-agent image updated; no research Worker restart.
+
+2026-10-27 verification: Corrected repair schema passed a real gpt-6.1-sol SDK structured-output turn. Guardian configured agent tag updated to image 2f8c3275c62a; historical failed incident retained/cancelled with operator reason, formal Control resume dde096074f014823aeaa9c17a6b9153e accepted and original D2 State now dispatches successfully. Blockage and maintenance-failure reports recorded separately under eval/ionq_initialization_recovery_20261027/.
+
+2026-10-27: IONQ initialization snapshot recovery: shared initialization snapshots exclude only disposable .venv and .uv-cache at workspace root and attempts/<id>/output; continue rejecting symlinks in research paths and all other workspaces. Linux tests verified synthetic security cases and real IONQ workspace; production Worker image f3fe79492599 deployed when zero jobs were active; original run resumed via Control epoch3 without rerunning 1370 successful nodes. Historical initial root-only patch and nested-cache follow-up are retained in eval/ionq_initialization_recovery_20261027/.
+
+2026-10-27: 补充 by_distribution 表现勘察报告 §1.1：从冻结全量case标注计算召回明确标签正例基准率38.78%（517未决单列）、正式判定基准率33.52%、模型有分数基准率33.56%，并加入四轨Precision lift和九ticker明细；更新离线报告生成脚本、baseline-lift.json与报告哈希回执。逐项核对分子分母、ticker汇总、报告哈希与gold标签不变；未修改生产配置或重新标注。
+
+2026-10-27: Prevent ticker initialization dispatcher from terminating on transient SQLite BUSY/LOCKED errors; execute the serial claim outside the asyncio event loop and back off one second on contention while existing work and lease heartbeats continue. Four regression tests passed plus Linux image probe. Deployed initialization-only image 6712be549cd8; IONQ same-run lease was reclaimed, original Worker jobs remain running; other services/Worker not restarted. This mitigates claim lock handling, not the underlying source of SQLite contention.
+
+2026-10-27: 生成by_distribution GOLD人工复核80-case Markdown：固定种子两阶段随机相关/不相关各20例，人工挑选边缘相关/不相关各20例；80篇不重复，保留原标题与完整快照body，附ticker、原标签、复核栏及边缘选择关注点。明确非空正文抽样限制；增加可复现脚本及哈希manifest，逐字验证80份正文和原GOLD未改。
+
+2026-10-27 IONQ 初始化 SQLite 锁后续：本地隔离执行任务中的 busy/locked 与失租异常，心跳调用移出事件循环并在锁冲突时重试；7 项测试通过。远端镜像已构建，部署及持锁方定位待完成。
+
+2026-10-27: 消息管线结构修复开发中：取消接纳空闲触发的每秒历史清理；已有数据库运行态不再反复DDL；正文基础设施竞争不再直接导致进程退出，恢复等待继续具体阶段并修正缺失重试时间，取消排队年龄冒充下载失败；引入独立采集账本与幂等业务增量桥接。尚未发布，完整验证和生产结果后续补充。
+
+2026-10-27 退出策略模块开发方案：新增 dev_plan/workflow_v2/exit_strategy_module_development_plan_20261027.md，固定50%MFE+2.5ATR、5%激活与30秒确认；按现有执行器单写入架构设计并列exit_strategy模块，复用IBKR/Runtime，明确真实成交起点、完整BBO、ATR预热、提前EXIT幂等及剩余仓位恢复、对冲组接入边界、资源预算和生产验收。只读核查8核16GB生产机及执行器快照；本轮仅方案与留痕，未改业务代码、配置或部署。
+
+2026-10-27 消息管线结构修复：新增正式独立采集角色与 acquisition.sqlite3，按端点/查询/频道复用原适配器及身份；网络采集不再等待 Bus/正文/分发/Read，变化输入持久化后经幂等桥交付，空/未变列表只保留真实采集证据。技术轮询 CDC 退出业务投影，旧技术积压按薄头跳过但保留业务坐标及原始归档；源卡读取薄快照并显示观察时点和最久未刷新的必需单元。取消接纳空闲清理风暴，运行态避免重复迁移；显式发布迁移及独立有预算清理。Site Registry、身份恢复/切换检查移出事件循环，技术事件有界异步批写，保留所有权和统一访问截止时间。BODY 修复排队预算、恢复阶段续作、正值重试时点和瞬时锁退出；续约只写租约列，旧 token 仍受 fencing；新正文与单槽旧文重检分开，独立小预算维持更新、Google 别名语言一致性和 ARTICLE_ONCE。资源压力只延后研究/初始化新任务和非实时维护，持久化运行 admission 不新增限制。已通过 183 项综合回归（1 skip）、63 项 Site/恢复回归（1 skip）、79 项 main/交易整合回归及21项关键切换测试；生产发布与实际指标另记，不将离线通过等同于性能达标。

@@ -1084,6 +1084,8 @@ class MessageBusV2Service:
             clean_metadata = dict(message.metadata)
             clean_metadata.pop("v2_body_completion", None)
             clean_metadata["body_observation_source_id"] = source.source_id
+            if source.content_language and not (clean_metadata.get('language') or clean_metadata.get('identity_evidence',{}).get('language')):
+                clean_metadata['language']=source.content_language.strip().lower()
             clean_metadata["intake_policy"] = policy
             from doxagent.content_enrichment.native import native_article
 

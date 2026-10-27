@@ -236,6 +236,7 @@ class ExecutionProjector:
             "ExecutionSummary",
             with_execution_state(
                 {
+                    "exit_strategy": execution.get("exit_strategy"),
                     "execution_id": identity,
                     "intent_id": intent["intent_id"],
                     "case_id": case_id,

@@ -398,13 +398,16 @@ class ArticleBodyResults:
                 lease_until=None,
                 check_pending=False,
                 next_check_at=(
-                    now + timedelta(seconds=1800 if extracted.succeeded else 60)
+                    now + timedelta(seconds=1800 if extracted.succeeded else min(1800,60*2**min(5,max(0,result.get('check_seq',1)-1))))
                 ).isoformat(),
             )
             self._save(db, result)
             return result
 
     def release(self, key: str, execution_id: str) -> None:
+        result = self.get(key)
+        if not result or result.get("fetch_owner") != execution_id:
+            return
         with self.repository.transaction() as db:
             result = self.get(key)
             if result and result.get("fetch_owner") == execution_id:

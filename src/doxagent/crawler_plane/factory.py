@@ -20,7 +20,9 @@ def build_crawler_plane_service(
 ) -> CrawlerPlaneService:
     """Build one application service shared by O4 tools and human APIs."""
 
-    repository = CrawlerPlaneRepository(settings.crawler_plane_sqlite_path)
+    from pathlib import Path
+    repository = CrawlerPlaneRepository(settings.crawler_plane_sqlite_path,
+        initialize=not Path(settings.crawler_plane_sqlite_path).is_file())
     assets = CrawlerAssetStore(settings.crawler_plane_root)
     worker_pool = CrawlerWorkerPool(process_count=settings.crawler_plane_worker_processes)
     site_token = read_token(

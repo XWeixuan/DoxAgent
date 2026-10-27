@@ -522,7 +522,7 @@ async def test_permanent_failure_keeps_native_body_without_retry(tmp_path: Path)
     assert raw.metadata["v2_body_completion"]["attempt_count"] == 1
 
 
-async def test_expired_retry_is_discarded_to_fallback(tmp_path: Path) -> None:
+async def test_late_queue_preserves_original_admission_and_gets_real_fetch_budget(tmp_path: Path) -> None:
     repository, bus, source, binding = _setup(tmp_path)
     bus.enqueue_enrichment(
         source=source,
@@ -536,9 +536,58 @@ async def test_expired_retry_is_discarded_to_fallback(tmp_path: Path) -> None:
     hub = ContentEnrichmentHub(repository, bus, extractor=extractor, retry_delay_seconds=0)
 
     assert await hub.run_once() == 1
+    assert extractor.calls == 1
+    assert await hub.run_once() == 1
     assert repository.list_enrichment_jobs() == []
-    assert repository.list_raw(ticker="MU")[0].body == "deadline fallback"
-    assert extractor.calls == 0
+    assert repository.list_raw(ticker="MU")[0].body == "Recovered full article body"
+    assert extractor.calls == 2
+
+
+async def test_independent_recheck_updates_original_without_republication(tmp_path):
+    from doxagent.content_enrichment.rechecks import enqueue_due
+    from doxagent.message_bus_v2.body_results import ArticleBodyResults
+    repo,bus,source,binding=_setup(tmp_path)
+    bus.enqueue_enrichment(source=source,binding=binding,message=_message(910),bootstrap=False,poll_run_id='first')
+    class Extractor:
+        calls=0
+        async def extract(self,record):
+            self.calls+=1
+            return MediaExtractionResult(record=record,content=('Initial complete article with investment details.' if self.calls==1 else 'Updated complete article: investment doubles to one billion dollars.'),
+                final_url=record.url,diagnostics={'outcome':'FULL'})
+    extractor=Extractor();hub=ContentEnrichmentHub(repo,bus,extractor=extractor)
+    await hub.run_once()
+    offset=repo.latest_stream_offset('MU');raw=repo.list_raw(ticker='MU')[0]
+    results=ArticleBodyResults(repo)
+    key=repo.list_enrichment_jobs(include_terminal=True)[0].body_result_key
+    value=results.get(key);value['next_check_at']=(utc_now()-timedelta(seconds=1)).isoformat()
+    with repo.transaction() as db:results._save(db,value)
+    assert enqueue_due(repo)==1
+    assert enqueue_due(repo)==0
+    await hub.run_once()
+    assert extractor.calls==2
+    assert repo.latest_stream_offset('MU')==offset
+    assert repo.get_raw(raw.raw_message_id).body.startswith('Updated complete article')
+
+
+@pytest.mark.parametrize('delay',[None,0,75])
+async def test_capability_wait_resumes_browser_without_repeating_http(tmp_path,delay):
+    from doxagent.content_enrichment.transport import RESUME_STAGE
+    repo,bus,source,binding=_setup(tmp_path)
+    bus.enqueue_enrichment(source=source,binding=binding,message=_message(920),bootstrap=False,poll_run_id='recovery')
+    stages=[]
+    class Extractor:
+        async def extract(self,record):
+            stages.append(RESUME_STAGE.get())
+            if len(stages)==1:
+                return MediaExtractionResult(record=record,reason='site_recovery_pending',attempts=(
+                    FetchAttempt(phase='browser',url=record.url,reason='site_recovery_pending',retry_after_seconds=delay),))
+            return MediaExtractionResult(record=record,content='Recovered full news article.',diagnostics={'outcome':'FULL'})
+    hub=ContentEnrichmentHub(repo,bus,extractor=Extractor())
+    before=utc_now();await hub.run_once()
+    job=repo.list_enrichment_jobs()[0]
+    assert (job.not_before-before).total_seconds()>=(delay or 60)-1
+    await hub.run_once(now=job.not_before+timedelta(seconds=1))
+    assert stages==[None,'browser']
 
 
 def test_pending_durable_input_skips_rebuilding_body_job_without_claiming_success(tmp_path, monkeypatch):

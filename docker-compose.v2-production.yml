@@ -15,6 +15,7 @@ x-environment: &environment
   DOXAGENT_PERSISTENT_RUNTIME_V2_W3_MODEL: gpt-6-luna
   DOXAGENT_PERSISTENT_RUNTIME_V2_MAINTENANCE_EXECUTION_MODEL_OVERRIDE: gpt-6-luna
   DOXAGENT_MESSAGE_BUS_V2_ENABLED: "true"
+  DOXAGENT_MESSAGE_BUS_V2_COLLECTION_PLANE_ENABLED: "true"
   DOXAGENT_MESSAGE_BUS_V2_SQLITE_PATH: /data/bus/bus.sqlite3
   DOXAGENT_MESSAGE_BUS_V2_ADAPTER_ROOT: /data/bus/adapters
   DOXAGENT_RUNTIME_SCHEDULER_STORAGE_MODE: sqlite
@@ -238,6 +239,20 @@ services:
     depends_on:
       v2-migrate: {condition: service_completed_successfully}
       v2-site-access: {condition: service_healthy}
+  v2-message-collector:
+    <<: *backend
+    cpu_shares: 1536
+    command: [python, -m, doxagent.message_bus_v2.cli, run-collector]
+    secrets: [site_access_worker_token]
+    depends_on:
+      v2-migrate: {condition: service_completed_successfully}
+      v2-site-access: {condition: service_healthy}
+    healthcheck:
+      test: [CMD, python, -m, doxagent.message_bus_v2.collection_plane.install, health]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
   v2-content-enrichment:
     cpu_shares: 1024
     <<: *backend

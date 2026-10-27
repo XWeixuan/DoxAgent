@@ -31,11 +31,14 @@ from .schema import (
 
 
 class InitializationRepository:
-    def __init__(self, path: str | Path) -> None:
+    def __init__(self, path: str | Path, *, initialize: bool = True) -> None:
         self.path = Path(path).resolve()
         from doxagent.v2_read.native_content import NativeContent
 
         self.content = NativeContent(self.path)
+        if not initialize:
+            if not self.path.is_file():raise ValueError('Initialization database has not been migrated')
+            return
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with self._connection() as db:
             db.execute("PRAGMA journal_mode=WAL")

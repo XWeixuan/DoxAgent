@@ -196,7 +196,7 @@ def migrate(*, resume_backup=None):
         SQLiteCodexRuntimeRepository(locations["research"])
         SQLiteDocument3PolicyRepository(locations["research"])
         InitializationRepository(locations["initialization"])
-        bus_repository = MessageBusV2Repository(locations["bus"])
+        bus_repository = MessageBusV2Repository(locations["bus"],initialize=True)
         MessageBusV2Service(bus_repository).bootstrap()
         SQLitePersistentRuntimeV2Repository(locations["runtime"])
         journal = RuntimeJournal(locations["runtime"])

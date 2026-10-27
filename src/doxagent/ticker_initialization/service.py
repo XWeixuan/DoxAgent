@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import sqlite3
 from collections.abc import Callable
 from typing import Any, Protocol
 from uuid import uuid4
@@ -95,7 +96,16 @@ class InitializationWorker:
     async def _heartbeat(self, lease: Lease) -> None:
         while True:
             await asyncio.sleep(self.lease_seconds / 3)
-            self.repository.heartbeat(lease, lease_seconds=self.lease_seconds)
+            while True:
+                try:
+                    await asyncio.to_thread(
+                        self.repository.heartbeat, lease, lease_seconds=self.lease_seconds
+                    )
+                    break
+                except sqlite3.OperationalError as exc:
+                    if "locked" not in str(exc).lower() and "busy" not in str(exc).lower():
+                        raise
+                    await asyncio.sleep(1)
 
     async def _drive(self, lease: Lease) -> RunRecord:
         while True:

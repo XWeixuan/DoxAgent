@@ -45,6 +45,10 @@ def build_message_bus_v2_runtime(settings: DoxAgentSettings) -> MessageBusV2Runt
         crawler_plane=crawler_plane,
     )
     scheduler = GlobalPollScheduler(repository, service, adapters)
+    scheduler.collection_plane_enabled = settings.message_bus_v2_collection_plane_enabled
+    if scheduler.collection_plane_enabled:
+        from .collection_plane.bridge import CaptureBridge
+        scheduler.capture_bridge = CaptureBridge(service)
     secret = settings.dashscope_api_key or ""
     jev = BailianDecisionClient(
         secret,
@@ -71,7 +75,8 @@ def build_message_bus_v2_runtime(settings: DoxAgentSettings) -> MessageBusV2Runt
         from doxagent.ticker_initialization.consumers import admit_bus_revisions
         from doxagent.ticker_initialization.repository import InitializationRepository
 
-        control = InitializationRepository(settings.ticker_initialization_control_path)
+        control = InitializationRepository(settings.ticker_initialization_control_path,
+            initialize=not Path(settings.ticker_initialization_control_path).is_file())
         scheduler.activation_admission = lambda: admit_bus_revisions(control, service)
         scheduler.initialization_control = control
     return MessageBusV2Runtime(
@@ -88,7 +93,9 @@ def build_message_bus_v2_service(
     settings: DoxAgentSettings,
 ) -> tuple[MessageBusV2Repository, MessageBusV2Service]:
     def site_language(site_id: str) -> str | None:
-        registry = SiteStrategyRepository(settings.site_access_sqlite_path)
+        if not Path(settings.site_access_sqlite_path).is_file():
+            return None
+        registry = SiteStrategyRepository(settings.site_access_sqlite_path, read_only=True)
         try:
             strategy = registry.get_strategy(site_id)
             return strategy.default_content_language if strategy else None
@@ -115,7 +122,8 @@ def build_message_bus_v2_service(
         ),
         site_language_resolver=site_language,
     )
-    service.bootstrap()
+    if repository.initialize or not settings.message_bus_v2_collection_plane_enabled:
+        service.bootstrap()
     return repository, service
 
 

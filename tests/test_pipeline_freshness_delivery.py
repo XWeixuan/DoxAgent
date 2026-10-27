@@ -266,7 +266,7 @@ async def test_consumable_receipt_requires_committed_members_and_complete_body(t
         await hub.close()
 
 
-async def test_future_identical_input_reuses_receipt_but_due_recheck_is_not_swallowed(tmp_path):
+async def test_future_identical_input_reuses_receipt_and_independent_pump_preserves_recheck(tmp_path):
     from doxagent.content_enrichment.service import ContentEnrichmentHub
     from doxagent.message_bus_v2.polling import CaptureIntake
     from tests.test_body_completion_receipts import Extractor
@@ -289,9 +289,13 @@ async def test_future_identical_input_reuses_receipt_but_due_recheck_is_not_swal
             reused = db.execute('SELECT reused_from FROM poll_capture_inputs WHERE capture_id=?',(third,)).fetchone()[0]
         assert reused and repo.polling.load(third)['status'] == 'COMPLETED'
         with repo.transaction() as db:
-            db.execute('UPDATE article_body_results SET next_check_at=?',( (utc_now()-timedelta(seconds=1)).isoformat(),))
+            due=(utc_now()-timedelta(seconds=1)).isoformat()
+            db.execute("UPDATE article_body_results SET next_check_at=?,data_json=json_set(data_json,'$.next_check_at',?)",(due,due))
         fourth = capture('due')
-        assert repo.polling.load(fourth)['status'] == 'PENDING'
+        assert repo.polling.load(fourth)['status'] == 'COMPLETED'
+        from doxagent.content_enrichment.rechecks import enqueue_due
+        assert enqueue_due(repo)==1
+        assert repo.list_enrichment_jobs()[0].work_kind=='recheck'
         assert repo.latest_stream_offset('MU') == 1
     finally:
         await intake.close()

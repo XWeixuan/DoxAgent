@@ -58,6 +58,8 @@ def _admission_reason(message: RawMessageInput, admission: dict[str, Any]) -> st
 class DistributionRepository:
     def __init__(self, bus: MessageBusV2Repository) -> None:
         self.bus = bus
+        if not getattr(bus, 'initialize', True):
+            return
         with bus.transaction() as db:
             db.executescript("""
                 CREATE TABLE IF NOT EXISTS distribution_runs (
@@ -839,7 +841,8 @@ class DistributionRepository:
                 return None
             context = AdmissionContext.model_validate_json(row['admission_json'])
             reason = evaluate_admission(message.published_at,context,utc_now(),message.publication_time_basis)
-            if reason:
+            known=self.bus.known_published_article(binding,message)
+            if reason and not known:
                 self.finish_delivery(row['delivery_id'],row['claim_token'],'ADMISSION_REJECTED',
                                      {'decision_id':decision,'reason':reason})
                 return None
@@ -851,7 +854,8 @@ class DistributionRepository:
                                        'decision_ready_at') or utc_now().isoformat()}}})
             result = bus._accept_message(source=current_source,binding=binding,message=enriched,
                 bootstrap=False,trusted_enrichment=True,
-                enrichment_input=RawMessageInput.model_validate_json(row['original_json']))
+                enrichment_input=RawMessageInput.model_validate_json(row['original_json']),
+                known_article_raw_id=known.raw_message_id if known else None)
             state = ('DEDUPLICATED' if result.decision.value=='duplicate' else
                      'ADMISSION_REJECTED' if result.decision.value=='filtered' else 'PUBLISHED')
             self.finish_delivery(row['delivery_id'],row['claim_token'],state,

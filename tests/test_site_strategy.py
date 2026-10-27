@@ -52,6 +52,24 @@ def test_browser_profile_preserves_legacy_challenge_markers() -> None:
     assert BrowserProfile.model_validate_json(profile.model_dump_json()) == profile
 
 
+@pytest.mark.asyncio
+async def test_slow_registry_preparation_keeps_other_callbacks_schedulable(site_service,monkeypatch):
+    import asyncio,time
+    def slow_key(request):
+        time.sleep(.3)
+        return None
+    monkeypatch.setattr(site_service,'_shared_key',slow_key)
+    async def runtime(request,*args,**kwargs):
+        return RuntimeResponse(200,request.url,{'content-type':'text/html'},'<main>Fresh listing</main>')
+    monkeypatch.setattr(site_service.runtime,'execute',runtime)
+    started=time.monotonic()
+    task=asyncio.create_task(site_service.execute(AccessRequest(operation_id='slow-registry',
+        purpose=SitePurpose.CRAWLER,url='https://finance.yahoo.com/list',mode=AccessMode.HTTP_PUBLIC)))
+    await asyncio.sleep(.03)
+    assert time.monotonic()-started<.2
+    await asyncio.wait_for(task,10)
+
+
 def test_browser_identity_lifecycle_preserves_legacy_context_page_limit() -> None:
     lifecycle = BrowserIdentityLifecycle.model_validate(
         {"residency": "on_demand", "idle_seconds": 43_200, "max_context_pages": 200}

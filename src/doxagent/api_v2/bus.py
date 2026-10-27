@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 from fastapi import FastAPI, Request
 
@@ -21,6 +21,10 @@ def source_status(store, binding, seq, view, cadences=None):
     if source is None:
         raise ApiFailure("SOURCE_GAP", 503, retryable=True)
     poll = store.get("native:poll_states", native.ticker, native.binding_id, seq) or {}
+    from doxagent.message_bus_v2.collection_plane.observability import binding_states
+    live=binding_states([native.ticker])
+    if live is not None:
+        poll=live.get(native.binding_id,{'status':'never_polled'})
     checkpoints = [poll.get('checkpoint',{}),*[value.get('checkpoint',{})
         for unit,value in poll.get('units',{}).items() if not unit.startswith('TAIL:')]]
     ticker = store.get("ticker", native.ticker, native.ticker, seq) or {}
@@ -37,7 +41,7 @@ def source_status(store, binding, seq, view, cadences=None):
     if deferred and enabled:
         health = "ABNORMAL"
     due = poll.get("target_due_at")
-    now = datetime.fromisoformat(view["as_of"])
+    now = datetime.now(UTC) if live is not None else datetime.fromisoformat(view["as_of"])
     countdown = "SCHEDULED" if due else "UNKNOWN"
     if not enabled:
         countdown = "DISABLED"
@@ -54,6 +58,8 @@ def source_status(store, binding, seq, view, cadences=None):
     return validate(
         "SourceStatus",
         {
+            **({'collection_observed_at':instant(datetime.fromisoformat(poll['collection_observed_at'])),
+                'collection_state_source':'ACQUISITION_LEDGER'} if poll.get('collection_observed_at') else {}),
             **({"cadence":cadences.get(native.binding_id)} if cadences and native.binding_id in cadences else {}),
             "internal_endpoints": [
                 {"endpoint_id":s["endpoint_id"],"name":s["display_name"],"url":s["entry_url"],
@@ -122,6 +128,11 @@ def aggregates_many(store, tickers, seq):
     for offset in range(0, len(poll_ids), 500):
         polls.update({(row[0], row[1]): (row[2], row[3]) for row in store.source_scalars("native:poll_states", poll_ids[offset:offset + 500], seq)})
     totals = {ticker: [0, 0, 0, []] for ticker in tickers}
+    from doxagent.message_bus_v2.collection_plane.observability import binding_states
+    live=binding_states(tickers)
+    if live is not None:
+        polls={(ticker,identity):(live[identity].get('status','never_polled'),live[identity].get('last_latency_ms'))
+               for ticker,identity,*_ in bindings if identity in live}
     for ticker, identity, source, enabled, poll_enabled in bindings:
         value = totals[ticker]
         value[0] += source not in sources

@@ -7,11 +7,12 @@ import asyncio
 import json
 import logging
 import signal
+import sqlite3
 from datetime import datetime
 from pathlib import Path
 
 from .repository import InitializationRepository
-from .schema import InitializationError, NodeSpec, RunStatus
+from .schema import InitializationError, LeaseLost, NodeSpec, RunStatus
 from .service import InitializationWorker
 
 
@@ -151,8 +152,17 @@ async def _run_parallel_loop(workers: list[InitializationWorker]) -> int:
         while True:
             while available and loop.time() >= next_claim:
                 worker = available[-1]
-                lease = worker.repository.claim(worker.owner, lease_seconds=worker.lease_seconds)
                 claims += 1
+                try:
+                    lease = await asyncio.to_thread(
+                        worker.repository.claim, worker.owner, lease_seconds=worker.lease_seconds
+                    )
+                except sqlite3.OperationalError as exc:
+                    if "locked" not in str(exc).lower() and "busy" not in str(exc).lower():
+                        raise
+                    logging.getLogger(__name__).warning("initialization claim deferred: %s", exc)
+                    next_claim = loop.time() + 1.0
+                    break
                 if lease is None:
                     next_claim = loop.time() + 0.5
                     break
@@ -180,7 +190,18 @@ async def _run_parallel_loop(workers: list[InitializationWorker]) -> int:
             deferred = False
             for task in done:
                 available.append(running.pop(task))
-                result = task.result()
+                try:
+                    result = task.result()
+                except LeaseLost as exc:
+                    logging.getLogger(__name__).warning("initialization lease lost: %s", exc)
+                    deferred = True
+                    continue
+                except sqlite3.OperationalError as exc:
+                    if "locked" not in str(exc).lower() and "busy" not in str(exc).lower():
+                        raise
+                    logging.getLogger(__name__).warning("initialization execution deferred: %s", exc)
+                    deferred = True
+                    continue
                 if result is not None:
                     print(result.model_dump_json())
                 # A deferred run releases its lease. Do not hot-loop by immediately

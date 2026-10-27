@@ -82,7 +82,7 @@ def apply(path: str | Path, *, backup_dir: str | Path | None = None) -> dict[str
         with sqlite3.connect(target) as source, sqlite3.connect(backup_path) as destination:
             source.backup(destination)
         backup = str(backup_path)
-    repository = MessageBusV2Repository(target)
+    repository = MessageBusV2Repository(target,initialize=True)
     MonitoringTermsService(repository)
     DistributionRepository(repository)
     MessageBusV2Service(repository)._migrate_acquisition_modes()

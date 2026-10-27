@@ -427,7 +427,7 @@ class Worker:
             )
         except asyncio.CancelledError:
             await self.send({"kind": "result", "id": command["id"], "epoch": self.epoch,
-                             "ok": False, "failure_category": "TRANSIENT", "reason_code": "operation_cancelled"})
+                             "ok": False, "failure_category": "TRANSIENT_TRANSPORT", "reason_code": "operation_cancelled"})
         except Exception as exc:
             from .service import classify_exception
             import traceback

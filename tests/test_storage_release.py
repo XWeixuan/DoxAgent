@@ -141,3 +141,24 @@ def test_one_command_release_builds_and_retargets_companion_without_mutating_pre
         return {'accepted':True}
     monkeypatch.setattr(release,'build',build);monkeypatch.setattr(release,'deploy',deploy)
     assert release.release_components(tmp_path,state,tmp_path,'new',['initialization-guardian'])=={'accepted':True}
+
+
+def test_collector_registration_uses_formal_migration_and_stops_old_acquisition(tmp_path,monkeypatch):
+    state={'compose_base_command':['docker','compose','-f','base.yml'],'components':{
+        'v2-message-bus':{'current':{'image':'old','compose':{}}},
+        'v2-content-enrichment':{'current':{'image':'old','compose':{}}}}}
+    release.atomic(tmp_path/'state.json',state)
+    calls=[]
+    monkeypatch.setattr(release,'build',lambda *a:{'commit':'new','images':{'backend':{'image':'new-backend'}}})
+    monkeypatch.setattr(release.subprocess,'run',lambda c,**kw:calls.append(c))
+    monkeypatch.setattr(release,'run',lambda c,**kw:'0' if c[:2]==['docker','wait'] else 'formal-migration-id')
+    def deployed(root,current,manifest):
+        assert manifest['migration']['exit_code']=='0'
+        assert manifest['components']['v2-message-collector']['image']=='new-backend'
+        assert manifest['components']['v2-message-bus']['environment']['DOXAGENT_MESSAGE_BUS_V2_COLLECTION_PLANE_ENABLED']=='true'
+        return True
+    monkeypatch.setattr(release,'deploy',deployed)
+    assert release.release_components(tmp_path,state,tmp_path,'new',['v2-message-bus','v2-content-enrichment','v2-message-collector'])
+    assert any(c[-3:]==['stop','v2-message-bus','v2-content-enrichment'] for c in calls)
+    assert any(c[-1]=='v2-migrate' and '--force-recreate' in c for c in calls)
+    assert not any('run' in c for c in calls)

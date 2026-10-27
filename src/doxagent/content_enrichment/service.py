@@ -72,6 +72,7 @@ class ContentEnrichmentHub:
         self._last_outbox_flush = 0.0
         self._outcome_task = None
         self._outbox_pruned_at = 0.0
+        self._last_recheck_pump = 0.0
         self.ir_body_reader = None
         self.defense_body_reader = None
         self.sec_body_reader = None
@@ -146,8 +147,8 @@ class ContentEnrichmentHub:
             await asyncio.sleep(20)
             for attempt in range(3):
                 try:
-                    async with asyncio.timeout(10):
-                        await self.bus.storage.call(self.repository.renew_enrichment_claim,job.job_id,job.claim_token)
+                    await self.bus.storage.call(self.repository.renew_enrichment_claim,
+                        job.job_id,job.claim_token, _lane_priority=0)
                     break
                 except TimeoutError as exc:
                     raise RuntimeError('enrichment_lease_lost') from exc
@@ -155,7 +156,8 @@ class ContentEnrichmentHub:
                     if not _storage_busy(exc):
                         raise
                     if attempt==2:
-                        raise RuntimeError('enrichment_lease_lost') from exc
+                        logger.warning('body lease renewal awaiting storage job_id=%s',job.job_id)
+                        break
                     await asyncio.sleep((.5,1)[attempt])
 
     async def run(self, stop: asyncio.Event, *, sleep_seconds: float = 0.25) -> None:
@@ -163,6 +165,12 @@ class ContentEnrichmentHub:
         active: set[asyncio.Task[None]] = set()
         try:
             while not stop.is_set():
+                if time.monotonic()-self._last_recheck_pump>10 and background_allowed():
+                    from .rechecks import enqueue_due
+                    try:await self.bus.storage.call(enqueue_due,self.repository,_lane_priority=2)
+                    except (sqlite3.OperationalError,WriteAdmissionBusy) as exc:
+                        if not _storage_busy(exc):raise
+                    self._last_recheck_pump=time.monotonic()
                 if self._outcome_task is None or self._outcome_task.done():
                     if self._outcome_task is not None:
                         self._outcome_task.result()
@@ -173,13 +181,16 @@ class ContentEnrichmentHub:
                 active -= finished
                 if len(active) < self.concurrency:
                     now = utc_now()
-                    jobs = await self.bus.storage.call(
-                        self.repository.claim_enrichment_jobs,
-                        limit=self.concurrency - len(active),
-                        now=now,
-                        lease_seconds=60,
-                        allow_rechecks=background_allowed(),
-                    )
+                    try:
+                        jobs = await self.bus.storage.call(
+                            self.repository.claim_enrichment_jobs,
+                            limit=self.concurrency - len(active), now=now,
+                            lease_seconds=60, allow_rechecks=background_allowed())
+                    except (sqlite3.OperationalError, WriteAdmissionBusy) as exc:
+                        if not _storage_busy(exc):
+                            raise
+                        jobs = []
+                        await asyncio.sleep(1)
                     active.update(
                         asyncio.create_task(self._process_guarded(job, now)) for job in jobs
                     )
@@ -334,14 +345,16 @@ class ContentEnrichmentHub:
             (
                 a.get("phase")
                 for a in reversed(job.prior_attempts)
-                if a.get("reason") == "site_budget_deferred"
+                if a.get("reason") in {"site_budget_deferred", "site_recovery_pending", "storage_unavailable"}
             ),
             None,
         )
         continuation_token = RESUME_STAGE.set(continuation)
         try:
             seconds = (job.deadline_at - max(now, utc_now())).total_seconds()
-            queue_expired = job.budget_started_at is None and utc_now()-job.created_at > timedelta(minutes=10)
+            # Queue lateness is an SLO breach, not evidence the article cannot
+            # be downloaded. Its original publication/admission proof survives.
+            queue_expired = False
             if not reused and job.claim_token and not queue_expired:
                 job = await self.bus.storage.call(self.repository.start_enrichment_fetch,job)
                 seconds = (job.deadline_at-utc_now()).total_seconds()
@@ -485,8 +498,9 @@ class ContentEnrichmentHub:
             job, result, started_at=now, reused=reused)
         attempts = [*job.prior_attempts, *(item.to_payload() for item in result.attempts)]
         if not result.succeeded and result.reason in {"storage_unavailable", "site_recovery_pending", "site_budget_deferred"}:
-            delay = max((item.retry_after_seconds or 0 for item in result.attempts), default=60)
-            not_before = finished_at + timedelta(seconds=max(1, delay) if result.reason == "site_recovery_pending" else 1 if result.reason == "site_budget_deferred" else 60)
+            delay = max((item.retry_after_seconds for item in result.attempts
+                         if item.retry_after_seconds and item.retry_after_seconds > 0), default=60)
+            not_before = finished_at + timedelta(seconds=max(10, delay) if result.reason == "site_recovery_pending" else 1 if result.reason == "site_budget_deferred" else 60)
             if not_before < job.deadline_at:
                 await self.bus.storage.call(
                     self.repository.requeue_enrichment_job,
@@ -629,10 +643,20 @@ class ContentEnrichmentHub:
             return
         if job.owner_kind == "distribution_article":
             def finalize():
-                self.distribution.finalize_article(
-                    job, message, self._outcome_payload(job, message)
-                )
-                body(job, message)
+                with self.repository.atomic_intake() as db:
+                    self.distribution.finalize_article(job, message, self._outcome_payload(job, message))
+                    if job.work_kind=='recheck' and message.metadata.get('media_enrichment',{}).get('succeeded'):
+                        from doxagent.message_bus_v2.schema import TickerSourceBinding
+                        targets=db.execute("SELECT binding_json FROM distribution_deliveries WHERE article_id=? AND state IN ('PUBLISHED','DEDUPLICATED')",(job.article_id,)).fetchall()
+                        for row in targets:
+                            snapshot=TickerSourceBinding.model_validate_json(row[0])
+                            binding=self.repository.get_binding(snapshot.binding_id)
+                            if not binding or not binding.enabled:continue
+                            known=self.repository.known_published_article(binding,message)
+                            if known:self.bus._accept_message(source=job.source,binding=binding,message=message,
+                                bootstrap=False,trusted_enrichment=True,enrichment_input=job.message,
+                                known_article_raw_id=known.raw_message_id)
+                    body(job, message)
 
             await self.bus.storage.call(finalize, _lane_priority=0 if job.work_kind != 'recheck' and not job.bootstrap else 1)
             return

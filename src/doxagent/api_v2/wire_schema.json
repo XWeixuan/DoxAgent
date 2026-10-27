@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "source_sha256": "e08593a73cf7422f000542b8c2ef788cebba8d59dfd7a90448dc905a2dd53029",
+  "source_sha256": "ad8a9a3d63f55fdf242ef89d2f2b779ca2e22b1916ec5eeca145219a1f2bd6e3",
   "$defs": {
     "Id": {
       "type": "string"
@@ -6587,6 +6587,13 @@
     "SourceStatus": {
       "type": "object",
       "properties": {
+        "collection_observed_at": {
+          "$ref": "#/$defs/Instant"
+        },
+        "collection_state_source": {
+          "type": "string",
+          "const": "ACQUISITION_LEDGER"
+        },
         "published_today": {
           "$ref": "#/$defs/Value%3CCount%3E"
         },
@@ -10037,38 +10044,28 @@
           "$ref": "#/$defs/Id"
         },
         "environment": {
-          "$ref": "#/$defs/Value__be2f2ee4df6a"
+          "$ref": "#/$defs/Value%3C(%22PAPER%22%7C%22LIVE%22)%3E"
         },
         "profile_revision": {
-          "$ref": "#/$defs/Value__2b242cfa317b"
+          "$ref": "#/$defs/Value%3CId%3E"
         },
         "direction": {
-          "anyOf": [
-            {
-              "const": "LONG"
-            },
-            {
-              "const": "SHORT"
-            }
+          "type": "string",
+          "enum": [
+            "LONG",
+            "SHORT"
           ]
         },
         "intent_status": {
           "type": "string"
         },
         "intake_status": {
-          "anyOf": [
-            {
-              "const": "NOT_RECEIVED"
-            },
-            {
-              "const": "EXECUTION_ACCEPTED"
-            },
-            {
-              "const": "REJECTED"
-            },
-            {
-              "const": "UNKNOWN"
-            }
+          "type": "string",
+          "enum": [
+            "NOT_RECEIVED",
+            "EXECUTION_ACCEPTED",
+            "REJECTED",
+            "UNKNOWN"
           ]
         },
         "execution_state": {
@@ -10081,51 +10078,51 @@
           }
         },
         "entry_result": {
-          "anyOf": [
-            {
-              "const": "FILLED"
-            },
-            {
-              "const": "PARTIAL_FILLED"
-            },
-            {
-              "const": "FAILED"
-            },
-            {
-              "const": "DIRECTION_DISABLED"
-            },
-            {
-              "type": "null"
-            }
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "FILLED",
+            "PARTIAL_FILLED",
+            "FAILED",
+            "DIRECTION_DISABLED",
+            null
           ]
         },
         "entry_reason": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
+          "type": [
+            "string",
+            "null"
           ]
         },
         "has_actual_fill": {
           "type": "boolean"
         },
+        "exit_strategy": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExitStrategySummary"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "triggered_at": {
-          "$ref": "#/$defs/Value__dad5025586c8"
+          "$ref": "#/$defs/Value%3CInstant%3E"
         },
         "accepted_at": {
-          "$ref": "#/$defs/Value__dad5025586c8"
+          "$ref": "#/$defs/Value%3CInstant%3E"
         },
         "first_fill_at": {
-          "$ref": "#/$defs/Value__dad5025586c8"
+          "$ref": "#/$defs/Value%3CInstant%3E"
         },
         "filled_quantity": {
-          "$ref": "#/$defs/Value__7760d6d54550"
+          "$ref": "#/$defs/Value%3CDecimalString%3E"
         },
         "filled_notional_usd": {
-          "$ref": "#/$defs/Value__7760d6d54550"
+          "$ref": "#/$defs/Value%3CDecimalString%3E"
         }
       },
       "required": [
@@ -27481,6 +27478,248 @@
           "additionalProperties": false
         }
       ]
+    },
+    "Value<(\"PAPER\"|\"LIVE\")>": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "state": {
+              "type": "string",
+              "const": "AVAILABLE"
+            },
+            "value": {
+              "type": "string",
+              "enum": [
+                "PAPER",
+                "LIVE"
+              ]
+            },
+            "reason": {
+              "type": "null"
+            }
+          },
+          "required": [
+            "state",
+            "value",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "state": {
+              "type": "string",
+              "enum": [
+                "NOT_PRODUCED",
+                "NOT_RECORDED",
+                "UNAVAILABLE",
+                "NOT_APPLICABLE",
+                "FORBIDDEN",
+                "ERROR"
+              ]
+            },
+            "value": {
+              "type": "null"
+            },
+            "reason": {
+              "$ref": "#/$defs/Reason"
+            }
+          },
+          "required": [
+            "state",
+            "value",
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Value<Id>": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "state": {
+              "type": "string",
+              "const": "AVAILABLE"
+            },
+            "value": {
+              "$ref": "#/$defs/Id"
+            },
+            "reason": {
+              "type": "null"
+            }
+          },
+          "required": [
+            "state",
+            "value",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "state": {
+              "type": "string",
+              "enum": [
+                "NOT_PRODUCED",
+                "NOT_RECORDED",
+                "UNAVAILABLE",
+                "NOT_APPLICABLE",
+                "FORBIDDEN",
+                "ERROR"
+              ]
+            },
+            "value": {
+              "type": "null"
+            },
+            "reason": {
+              "$ref": "#/$defs/Reason"
+            }
+          },
+          "required": [
+            "state",
+            "value",
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "ExitStrategySummary": {
+      "type": "object",
+      "properties": {
+        "position_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "phase": {
+          "type": "string",
+          "enum": [
+            "TRACKING",
+            "ARMED",
+            "EXIT_REQUESTED",
+            "CLOSED"
+          ]
+        },
+        "data_health": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "policy_revision": {
+          "$ref": "#/$defs/Id"
+        },
+        "first_fill_at": {
+          "$ref": "#/$defs/Instant"
+        },
+        "notional": {
+          "type": "number"
+        },
+        "pnl": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "mfe": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "atr": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "stop_net": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "activated_at": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Instant"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "exit_requested_at": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Instant"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "exit_reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "updated_at": {
+          "$ref": "#/$defs/Instant"
+        },
+        "remaining_quantity": {
+          "$ref": "#/$defs/Count"
+        },
+        "group_status": {
+          "type": "string",
+          "enum": [
+            "SINGLE_LEG",
+            "EXPLICIT_GROUP"
+          ]
+        },
+        "valid_observations": {
+          "$ref": "#/$defs/Count"
+        },
+        "invalid_observations": {
+          "$ref": "#/$defs/Count"
+        },
+        "confirmation": {
+          "type": "array",
+          "items": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          }
+        }
+      },
+      "required": [
+        "position_id",
+        "phase",
+        "data_health",
+        "policy_revision",
+        "first_fill_at",
+        "notional",
+        "pnl",
+        "mfe",
+        "atr",
+        "stop_net",
+        "activated_at",
+        "exit_requested_at",
+        "exit_reason",
+        "updated_at",
+        "remaining_quantity",
+        "group_status",
+        "valid_observations",
+        "invalid_observations",
+        "confirmation"
+      ],
+      "additionalProperties": false
     }
   }
 }

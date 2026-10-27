@@ -8,6 +8,7 @@ from uuid import uuid4
 from .governance_models import MaintenanceOperation
 from .governance_repository import GovernanceRepository, capability_fingerprint
 from .schema import AccessCombination, AccessMode, AccessRequest, SitePurpose, utc_now
+from .storage import registry_io
 from .verification import body_verification_url, validate_capture, validate_crawler_capture
 
 
@@ -135,7 +136,7 @@ class FailoverCoordinator:
         if self.tasks:
             await asyncio.wait(tuple(self.tasks.values()), timeout=3)
 
-    def schedule(self, scope, purpose, candidate_id=None):
+    def _schedule_candidate(self, scope, purpose, candidate_id=None):
         if scope is None:
             return None
         state = self.service.repository.get_runtime(f"scope:{scope.scope_id}")
@@ -207,6 +208,18 @@ class FailoverCoordinator:
                 or len(member.capabilities.get("BODY", {}).get("subscription_samples", [])) < 2
             ):
                 return None
+        return candidate_id
+
+    async def schedule_async(self,scope,purpose,candidate_id=None):
+        selected=await registry_io(self._schedule_candidate,scope,purpose,candidate_id)
+        return self._launch(scope,purpose,selected)
+
+    def schedule(self,scope,purpose,candidate_id=None):
+        return self._launch(scope,purpose,self._schedule_candidate(scope,purpose,candidate_id))
+
+    def _launch(self,scope,purpose,candidate_id):
+        if not candidate_id:return None
+        key=(scope.scope_id,purpose)
         existing = self.tasks.get(key)
         if existing and not existing.done():
             return existing
@@ -228,15 +241,15 @@ class FailoverCoordinator:
         primary = identity_id == scope.primary_identity_id
         lock = self._locks.setdefault(scope.scope_id, asyncio.Lock())
         async with lock:
-            status = self.candidate_status(scope, identity_id, purpose)
+            status = (await registry_io(self.candidate_status, scope, identity_id, purpose))
             if not status.get("eligible", False):
                 return {"ready": False, "reason": status["skip_reasons"][0]}
             if status["proof_ready"]:
-                before = self.service.repository.get_runtime(f"scope:{scope.scope_id}")
+                before = (await registry_io(self.service.repository.get_runtime, f"scope:{scope.scope_id}"))
                 active = before.active_combination_id or scope.primary_identity_id
                 if (
                     purpose is not SitePurpose.BODY
-                    or not self.candidate_status(scope, active, SitePurpose.CRAWLER)["selectable"]
+                    or not (await registry_io(self.candidate_status, scope, active, SitePurpose.CRAWLER))["selectable"]
                 ):
                     try:
                         await self.service.health.activate(
@@ -247,7 +260,7 @@ class FailoverCoordinator:
                 from .datadome_solver import mark_solver_outcome
 
                 if (
-                    self.service.repository.get_runtime(before.runtime_key).active_combination_id
+                    (await registry_io(self.service.repository.get_runtime, before.runtime_key)).active_combination_id
                     == identity_id
                 ):
                     mark_solver_outcome(self.service.repository, identity_id, "route_activated_at")
@@ -257,7 +270,7 @@ class FailoverCoordinator:
                     "canary": purpose.value,
                     "warm": True,
                 }
-            operation = self.store.save_operation(
+            operation = (await registry_io(self.store.save_operation,
                 MaintenanceOperation(
                     action="ACTIVATE_PRIMARY" if primary else "ACTIVATE_FALLBACK",
                     idempotency_key=f"cold-activation:{scope.scope_id}:{uuid4().hex}",
@@ -267,7 +280,7 @@ class FailoverCoordinator:
                     state="RUNNING",
                     stage="STARTING_BROWSER",
                 )
-            )
+            ))
             attempt = asyncio.create_task(
                 self._canary(scope, identity_id, purpose, primary=primary)
             )
@@ -281,13 +294,13 @@ class FailoverCoordinator:
                     result = attempt.result()
             except asyncio.CancelledError:
                 attempt.cancel()
-                self.store.save_operation(
+                (await registry_io(self.store.save_operation,
                     operation.model_copy(update={"state": "CANCELLED", "stage": "CANCELLED"})
-                )
+                ))
                 raise
             except Exception:
                 result = {"ready": False, "reason": "cold_activation_failed"}
-            self.store.save_operation(
+            (await registry_io(self.store.save_operation,
                 operation.model_copy(
                     update={
                         "state": "DONE" if result.get("ready") else "FAILED",
@@ -296,13 +309,13 @@ class FailoverCoordinator:
                         "updated_at": utc_now(),
                     }
                 )
-            )
+            ))
             return result
 
     async def _canary(self, scope, identity_id, purpose, *, primary):
         deadline = time.monotonic() + 45
         service = self.service
-        if self.store.current_challenge(identity_id):
+        if (await registry_io(self.store.current_challenge, identity_id)):
             return {"ready": False, "reason": "human_challenge_required"}
         identity = service.repository.get_identity(identity_id)
         profile = service.repository.get_profile(identity.profile_id)
@@ -372,13 +385,13 @@ class FailoverCoordinator:
             ):
                 return {"ready": False, "reason": "fallback_egress_not_independent"}
             if main_egress.node_ref != "DIRECT" and (
-                not self.store.egress_region(main_egress)
-                or self.store.egress_region(main_egress) != self.store.egress_region(egress)
+                not (await registry_io(self.store.egress_region, main_egress))
+                or (await registry_io(self.store.egress_region, main_egress)) != (await registry_io(self.store.egress_region, egress))
             ):
                 return {"ready": False, "reason": "fallback_same_region_unverified"}
         cold = not primary and before.active_combination_id != identity_id
         async with service.profile_use.control(profile.profile_id, identity_id):
-            recovery = self.store.get_recovery(identity_id)
+            recovery = (await registry_io(self.store.get_recovery, identity_id))
             if recovery and recovery.phase != "RESOLVED":
                 return {"ready": False, "reason": "recovery_pending"}
             if cold:
@@ -431,10 +444,10 @@ class FailoverCoordinator:
         )
         if not proof:
             return {"ready": False, "reason": "canary_contract_failed"}
-        current_scope = self.store.get_scope(scope.scope_id)
+        current_scope = (await registry_io(self.store.get_scope, scope.scope_id))
         if current_scope.revision != scope.revision:
             return {"ready": False, "reason": "scope_changed_during_activation"}
-        self.store.record_capability(
+        (await registry_io(self.store.record_capability,
             scope,
             identity_id,
             purpose.value,
@@ -443,7 +456,7 @@ class FailoverCoordinator:
             instance_id=response.provenance.instance_id if response.provenance else None,
             cold_verified=cold,
             subscription_verified=response.subscription_verified,
-        )
+        ))
         await service.health.mark_success(
             resolved.runtime_key,
             identity_id,
@@ -454,7 +467,7 @@ class FailoverCoordinator:
         active = before.active_combination_id or scope.primary_identity_id
         if (
             purpose is not SitePurpose.BODY
-            or not self.candidate_status(scope, active, SitePurpose.CRAWLER)["selectable"]
+            or not (await registry_io(self.candidate_status, scope, active, SitePurpose.CRAWLER))["selectable"]
         ):
             try:
                 await service.health.activate(

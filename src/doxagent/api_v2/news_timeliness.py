@@ -102,6 +102,16 @@ def poll_window(store, ticker, seq, as_of):
 
 
 def poll_cadence(store, ticker, seq, since, until, binding_id=None, *, by_binding=False):
+    from doxagent.message_bus_v2.collection_plane.observability import window,store_from_environment
+    if store_from_environment() is not None:
+        from datetime import UTC
+        duration=until-since
+        until=datetime.now(UTC);since=until-duration
+    live=window(ticker,since,until,binding_id,by_binding=by_binding)
+    if live is not None:
+        if by_binding:
+            return {bid:_cadence_summary(result,receipts,False) for bid,(result,receipts) in live.items()}
+        return _cadence_summary(live[0],live[1],False)
     from doxagent.message_bus_v2.cadence import cadence
 
     table = store.snapshot_table(seq)

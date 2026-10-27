@@ -205,6 +205,11 @@ class GlobalPollScheduler:
             return saved
 
     async def run_once(self) -> list[PollExecutionResult]:
+        if getattr(self, 'collection_plane_enabled', False):
+            self.intake.start()
+            self.capture_bridge.start()
+            if self.distribution_worker is not None:
+                self.distribution_worker.start()
         admission = getattr(self, "activation_admission", None)
         if admission is not None:
             await self.storage_call(admission, _lane_priority=0)
@@ -225,6 +230,12 @@ class GlobalPollScheduler:
 
     async def _run_admitted_once(self) -> list[PollExecutionResult]:
         self.intake.start()
+        if getattr(self, 'collection_plane_enabled', False):
+            if self.runtime_orchestration is not None:
+                return await self.runtime_orchestration.run_once(self, collect=False)
+            await self.storage_call(self.service.flush_due_buffers, now=utc_now())
+            await self.storage_call(self.service.retry_pending_raw)
+            return []
         if self._request_starts:
             starts, self._request_starts = self._request_starts, {}
             await self.service.storage.call(self._flush_request_starts, starts, _lane_priority=0)
@@ -349,6 +360,8 @@ class GlobalPollScheduler:
                 await asyncio.gather(stop_task, wake_task, return_exceptions=True)
 
     async def close(self) -> None:
+        if getattr(self, 'capture_bridge', None) is not None:
+            await self.capture_bridge.close()
         tasks = list(getattr(self, "_standalone_inflight", {}).values())
         for task in tasks:
             task.cancel()

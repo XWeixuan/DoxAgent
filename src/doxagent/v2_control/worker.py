@@ -34,13 +34,17 @@ def main() -> None:
         db.execute("SELECT id FROM v2_operations LIMIT 0")
     service = ControlService(
         control,
-        InitializationRepository(args.initialization_db),
+        InitializationRepository(args.initialization_db,initialize=False),
         MessageBusV2Service(MessageBusV2Repository(args.bus_db)),
         SQLiteRuntimeSchedulerRepository(args.scheduler_db),
     )
     with WriterLock(Path(str(args.runtime_db) + ".v2-control")):
         while True:
-            service.tick()
+            try:service.tick()
+            except Exception as exc:
+                from doxagent.persistent_runtime_v2.journal import is_sqlite_contention
+                if not is_sqlite_contention(exc):raise
+                logging.getLogger(__name__).warning('control owner waiting for transient storage contention')
             if args.once:
                 return
             time.sleep(1)

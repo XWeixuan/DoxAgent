@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+from .storage import registry_io
 import hashlib
 import inspect
 import logging
@@ -18,6 +19,9 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from urllib.parse import urlsplit
 from uuid import uuid4
+from contextvars import ContextVar
+
+ACCESS_DEADLINE=ContextVar('site_access_entry_deadline',default=None)
 
 from doxagent.content_enrichment.quality import inspect_html
 from doxagent.content_enrichment.strategies import validate_body_strategy
@@ -98,14 +102,14 @@ class ProfileUseCoordinator:
             from .governance_repository import GovernanceRepository
 
             store = GovernanceRepository(self.repository)
-            sessions = store.list_sessions()
+            sessions = (await registry_io(store.list_sessions))
             session_profiles = {}
             for session in sorted(sessions, key=lambda s: (s.state == "OPEN", s.updated_at)):
                 if session.state != "OPEN":
                     continue
-                identity = self.repository.get_identity(session.identity_id)
+                identity = (await registry_io(self.repository.get_identity, session.identity_id))
                 if session.kind == "CHALLENGE":
-                    task = store.current_challenge(session.identity_id)
+                    task = (await registry_io(store.current_challenge, session.identity_id))
                     if (
                         not task
                         or session.task_id != task.task_id
@@ -117,20 +121,20 @@ class ProfileUseCoordinator:
                     session_profiles[identity.profile_id] = session
             external_profiles = {
                 identity.profile_id
-                for _, identity in self.repository.list_active_identities()
+                for _, identity in (await registry_io(self.repository.list_active_identities))
                 if identity.runtime_kind is BrowserRuntimeKind.EXTERNAL_CHROME
             }
-            for profile in self.repository.list_profiles():
+            for profile in (await registry_io(self.repository.list_profiles)):
                 session = session_profiles.get(profile.profile_id)
                 if session:
-                    self.repository.save_profile(
+                    (await registry_io(self.repository.save_profile,
                         profile.model_copy(
                             update={
                                 "operational_state": ProfileOperationalState.MAINTENANCE,
                                 "maintenance_session_id": session.control_token,
                             }
                         )
-                    )
+                    ))
                     if session.state == "OPEN":
                         self._maintenance_profile = profile.profile_id
                     if session.kind == "CHALLENGE":
@@ -142,7 +146,7 @@ class ProfileUseCoordinator:
                     and profile.maintenance_session_id
                     and not any(
                         r.identity_id == profile.challenge_identity_id and r.phase != "RESOLVED"
-                        for r in store.list_recoveries()
+                        for r in (await registry_io(store.list_recoveries))
                     )
                     and profile.operational_state
                     in {
@@ -155,7 +159,7 @@ class ProfileUseCoordinator:
                         profile.operational_state
                         is ProfileOperationalState.DRAINING_FOR_MAINTENANCE
                     ):
-                        self.repository.save_profile(
+                        (await registry_io(self.repository.save_profile,
                             profile.model_copy(
                                 update={
                                     "operational_state": ProfileOperationalState.MAINTENANCE,
@@ -163,7 +167,7 @@ class ProfileUseCoordinator:
                                     "updated_at": utc_now(),
                                 }
                             )
-                        )
+                        ))
                     continue
                 if (
                     profile.profile_id in external_profiles
@@ -176,7 +180,7 @@ class ProfileUseCoordinator:
                     and self._maintenance_profile is None
                     and not any(
                         r.identity_id == profile.challenge_identity_id and r.phase != "RESOLVED"
-                        for r in store.list_recoveries()
+                        for r in (await registry_io(store.list_recoveries))
                     )
                 ):
                     self._maintenance_profile = profile.profile_id
@@ -184,7 +188,7 @@ class ProfileUseCoordinator:
                         profile.operational_state
                         is ProfileOperationalState.DRAINING_FOR_MAINTENANCE
                     ):
-                        self.repository.save_profile(
+                        (await registry_io(self.repository.save_profile,
                             profile.model_copy(
                                 update={
                                     "operational_state": ProfileOperationalState.MAINTENANCE,
@@ -192,7 +196,7 @@ class ProfileUseCoordinator:
                                     "updated_at": utc_now(),
                                 }
                             )
-                        )
+                        ))
                     continue
                 auth_state = (
                     AuthState.UNKNOWN
@@ -204,7 +208,7 @@ class ProfileUseCoordinator:
                     or profile.maintenance_session_id is not None
                     or auth_state is not profile.auth_state
                 ):
-                    self.repository.save_profile(
+                    (await registry_io(self.repository.save_profile,
                         profile.model_copy(
                             update={
                                 "auth_state": auth_state,
@@ -214,7 +218,7 @@ class ProfileUseCoordinator:
                                 "updated_at": utc_now(),
                             }
                         )
-                    )
+                    ))
 
     @asynccontextmanager
     async def recovery(self, identity, recovery_id, expected_generation, *, deadline=None):
@@ -222,7 +226,7 @@ class ProfileUseCoordinator:
 
         async with self._condition:
             store = GovernanceRepository(self.repository)
-            value = store.get_recovery(identity.identity_id)
+            value = (await registry_io(store.get_recovery, identity.identity_id))
             if (
                 not self._accepting
                 or not value
@@ -234,7 +238,7 @@ class ProfileUseCoordinator:
         async with self.control(
             identity.profile_id, identity.identity_id, deadline=deadline
         ) as profile:
-            value = store.get_recovery(identity.identity_id)
+            value = (await registry_io(store.get_recovery, identity.identity_id))
             if (
                 value.generation != expected_generation
                 or not value.lease_until
@@ -281,7 +285,7 @@ class ProfileUseCoordinator:
                 raise
             self._active[profile_id] = self._active.get(profile_id, 0) + 1
         try:
-            yield self.repository.get_profile(profile_id)
+            yield (await registry_io(self.repository.get_profile, profile_id))
         finally:
             async with self._condition:
                 self._exclusive.discard(profile_id)
@@ -302,7 +306,7 @@ class ProfileUseCoordinator:
         async with self._condition:
             if browser and profile_id in self._exclusive:
                 raise ProfileUnavailableError("profile_control_in_progress")
-            profile = self.repository.get_profile(profile_id)
+            profile = (await registry_io(self.repository.get_profile, profile_id))
             if profile is None:
                 raise ProfileUnavailableError("profile_not_found")
             if not self._accepting:
@@ -342,13 +346,13 @@ class ProfileUseCoordinator:
                 raise ProfileUnavailableError("service_draining")
             if self._maintenance_profile is not None:
                 raise ProfileUnavailableError("another_profile_is_in_maintenance")
-            profile = self.repository.get_profile(profile_id)
+            profile = (await registry_io(self.repository.get_profile, profile_id))
             if profile is None:
                 raise KeyError(profile_id)
             if profile.operational_state is not ProfileOperationalState.AVAILABLE:
                 raise ProfileUnavailableError("profile_in_maintenance")
             self._maintenance_profile = profile_id
-            self.repository.save_profile(
+            (await registry_io(self.repository.save_profile,
                 profile.model_copy(
                     update={
                         "operational_state": ProfileOperationalState.DRAINING_FOR_MAINTENANCE,
@@ -357,7 +361,7 @@ class ProfileUseCoordinator:
                         "updated_at": utc_now(),
                     }
                 )
-            )
+            ))
             try:
                 async with asyncio.timeout(timeout_seconds):
                     while self._active.get(profile_id, 0):
@@ -365,9 +369,9 @@ class ProfileUseCoordinator:
             except TimeoutError:
                 await self._release_locked(profile_id, session_id)
                 raise
-            profile = self.repository.get_profile(profile_id)
+            profile = (await registry_io(self.repository.get_profile, profile_id))
             assert profile is not None
-            self.repository.save_profile(
+            (await registry_io(self.repository.save_profile,
                 profile.model_copy(
                     update={
                         "operational_state": ProfileOperationalState.MAINTENANCE,
@@ -375,7 +379,7 @@ class ProfileUseCoordinator:
                         "updated_at": utc_now(),
                     }
                 )
-            )
+            ))
             return session_id
 
     async def prepare_login(self, profile_id: str, identity_id: str) -> None:
@@ -384,15 +388,15 @@ class ProfileUseCoordinator:
 
         async with self._condition:
             store = GovernanceRepository(self.repository)
-            task = store.current_challenge(identity_id)
-            for session in store.list_sessions():
+            task = (await registry_io(store.current_challenge, identity_id))
+            for session in (await registry_io(store.list_sessions)):
                 if session.identity_id != identity_id or session.kind != "CHALLENGE":
                     continue
                 if (
                     task and task.state == "TARGET_LOST" and session.task_id == task.task_id
                 ) or not session.target_id:
-                    store.save_session(session.model_copy(update={"state": "CLOSED"}))
-            profile = self.repository.get_profile(profile_id)
+                    (await registry_io(store.save_session, session.model_copy(update={"state": "CLOSED"})))
+            profile = (await registry_io(self.repository.get_profile, profile_id))
             if task and profile and profile.maintenance_session_id:
                 if self._maintenance_profile not in {None, profile_id}:
                     raise ProfileUnavailableError("another_profile_is_in_maintenance")
@@ -417,7 +421,7 @@ class ProfileUseCoordinator:
         async with self._condition:
             if not self._accepting:
                 raise ProfileUnavailableError("service_draining")
-            profile = self.repository.get_profile(profile_id)
+            profile = (await registry_io(self.repository.get_profile, profile_id))
             if (
                 profile
                 and profile.maintenance_session_id == token
@@ -435,7 +439,7 @@ class ProfileUseCoordinator:
             ):
                 raise ProfileUnavailableError("profile_in_maintenance")
             self._challenge_profiles.add(profile_id)
-            self.repository.save_profile(
+            (await registry_io(self.repository.save_profile,
                 profile.model_copy(
                     update={
                         "operational_state": ProfileOperationalState.DRAINING_FOR_MAINTENANCE,
@@ -450,17 +454,17 @@ class ProfileUseCoordinator:
                         "updated_at": utc_now(),
                     }
                 )
-            )
+            ))
 
     async def finish_challenge(self, profile_id: str, token: str) -> None:
         async with self._condition:
             async with asyncio.timeout(30):
                 while self._active.get(profile_id, 0):
                     await self._condition.wait()
-            profile = self.repository.get_profile(profile_id)
+            profile = (await registry_io(self.repository.get_profile, profile_id))
             if profile is None or profile.maintenance_session_id != token:
                 raise ProfileUnavailableError("invalid_maintenance_session")
-            self.repository.save_profile(
+            (await registry_io(self.repository.save_profile,
                 profile.model_copy(
                     update={
                         "operational_state": ProfileOperationalState.MAINTENANCE,
@@ -468,7 +472,7 @@ class ProfileUseCoordinator:
                         "updated_at": utc_now(),
                     }
                 )
-            )
+            ))
 
     async def recover_maintenance(
         self, profile_id: str, session_id: str, *, timeout_seconds: float = 20
@@ -476,7 +480,7 @@ class ProfileUseCoordinator:
         async with self._condition:
             if self._maintenance_profile not in {None, profile_id}:
                 raise ProfileUnavailableError("another_profile_is_in_maintenance")
-            profile = self.repository.get_profile(profile_id)
+            profile = (await registry_io(self.repository.get_profile, profile_id))
             if profile is None:
                 raise KeyError(profile_id)
             if (
@@ -486,7 +490,7 @@ class ProfileUseCoordinator:
             ):
                 return profile
             self._maintenance_profile = profile_id
-            self.repository.save_profile(
+            (await registry_io(self.repository.save_profile,
                 profile.model_copy(
                     update={
                         "operational_state": ProfileOperationalState.DRAINING_FOR_MAINTENANCE,
@@ -495,25 +499,25 @@ class ProfileUseCoordinator:
                         "updated_at": utc_now(),
                     }
                 )
-            )
+            ))
             try:
                 async with asyncio.timeout(timeout_seconds):
                     while self._active.get(profile_id, 0):
                         await self._condition.wait()
             except BaseException:
                 # A failed Viewer handoff must not become a new permanent gate.
-                self.repository.save_profile(
+                (await registry_io(self.repository.save_profile,
                     profile.model_copy(
                         update={
                             "operational_revision": profile.operational_revision + 2,
                             "updated_at": utc_now(),
                         }
                     )
-                )
+                ))
                 self._maintenance_profile = None
                 self._condition.notify_all()
                 raise
-            profile = self.repository.get_profile(profile_id)
+            profile = (await registry_io(self.repository.get_profile, profile_id))
             updated = profile.model_copy(
                 update={
                     "operational_state": ProfileOperationalState.MAINTENANCE,
@@ -522,12 +526,12 @@ class ProfileUseCoordinator:
                     "updated_at": utc_now(),
                 }
             )
-            self.repository.save_profile(updated)
+            (await registry_io(self.repository.save_profile, updated))
             return updated
 
     async def assert_session(self, profile_id: str, session_id: str) -> BrowserProfile:
         async with self._condition:
-            profile = self.repository.get_profile(profile_id)
+            profile = (await registry_io(self.repository.get_profile, profile_id))
             if (
                 profile is None
                 or profile.operational_state is not ProfileOperationalState.MAINTENANCE
@@ -542,16 +546,16 @@ class ProfileUseCoordinator:
 
     async def release_viewer(self, profile_id: str, session_id: str) -> None:
         async with self._condition:
-            profile = self.repository.get_profile(profile_id)
+            profile = (await registry_io(self.repository.get_profile, profile_id))
             if profile is None or profile.maintenance_session_id != session_id:
                 raise ProfileUnavailableError("invalid_maintenance_session")
             from .governance_repository import GovernanceRepository
 
             store = GovernanceRepository(self.repository)
             session = next(
-                (s for s in store.list_sessions() if s.control_token == session_id), None
+                (s for s in (await registry_io(store.list_sessions)) if s.control_token == session_id), None
             )
-            recovery = store.get_recovery(session.identity_id) if session else None
+            recovery = (await registry_io(store.get_recovery, session.identity_id)) if session else None
             if recovery and recovery.phase != "RESOLVED":
                 # Recovery/Task owns the exact page independently. Releasing its
                 # Viewer restores proven capabilities and background probes.
@@ -564,10 +568,10 @@ class ProfileUseCoordinator:
     async def _release_locked(
         self, profile_id: str, session_id: str, *, preserve_challenge=True
     ) -> None:
-        profile = self.repository.get_profile(profile_id)
+        profile = (await registry_io(self.repository.get_profile, profile_id))
         if profile is None or profile.maintenance_session_id != session_id:
             raise ProfileUnavailableError("invalid_maintenance_session")
-        self.repository.save_profile(
+        (await registry_io(self.repository.save_profile,
             profile.model_copy(
                 update={
                     "operational_state": ProfileOperationalState.AVAILABLE,
@@ -582,7 +586,7 @@ class ProfileUseCoordinator:
                     "updated_at": utc_now(),
                 }
             )
-        )
+        ))
         if self._maintenance_profile == profile_id:
             self._maintenance_profile = None
         self._challenge_profiles.discard(profile_id)
@@ -593,20 +597,20 @@ class ProfileUseCoordinator:
             task = next(
                 (
                     t
-                    for t in store.list_challenges()
+                    for t in (await registry_io(store.list_challenges))
                     if (identity := self.repository.get_identity(t.identity_id))
                     and identity.profile_id == profile_id
                     and t.state != "TARGET_LOST"
                 ),
                 None,
             )
-            recovery = store.get_recovery(task.identity_id) if task else None
+            recovery = (await registry_io(store.get_recovery, task.identity_id)) if task else None
             if task and not (recovery and recovery.phase != "RESOLVED"):
                 retained = next(
-                    (s for s in store.list_sessions() if s.task_id == task.task_id), None
+                    (s for s in (await registry_io(store.list_sessions)) if s.task_id == task.task_id), None
                 )
-                current = self.repository.get_profile(profile_id)
-                self.repository.save_profile(
+                current = (await registry_io(self.repository.get_profile, profile_id))
+                (await registry_io(self.repository.save_profile,
                     current.model_copy(
                         update={
                             "operational_state": ProfileOperationalState.MAINTENANCE,
@@ -620,7 +624,7 @@ class ProfileUseCoordinator:
                             "challenge_verified": False,
                         }
                     )
-                )
+                ))
                 self._challenge_profiles.add(profile_id)
         self._condition.notify_all()
 
@@ -628,9 +632,9 @@ class ProfileUseCoordinator:
         async with self._condition:
             self._accepting = False
             for profile_id in self._active:
-                profile = self.repository.get_profile(profile_id)
+                profile = (await registry_io(self.repository.get_profile, profile_id))
                 if profile is not None:
-                    self.repository.save_profile(
+                    (await registry_io(self.repository.save_profile,
                         profile.model_copy(
                             update={
                                 "operational_state": ProfileOperationalState.DRAINING_FOR_SHUTDOWN,
@@ -638,7 +642,7 @@ class ProfileUseCoordinator:
                                 "updated_at": utc_now(),
                             }
                         )
-                    )
+                    ))
 
 
 class SiteStrategyService:
@@ -660,6 +664,9 @@ class SiteStrategyService:
         isolated_browser_workers: bool = False,
     ) -> None:
         self.repository = repository
+        from .telemetry import DiagnosticEvents
+        self.diagnostic_events=DiagnosticEvents(repository) if os.getenv(
+            'DOXAGENT_MESSAGE_BUS_V2_COLLECTION_PLANE_ENABLED','').lower() in {'true','1'} else None
         self.resolver = SiteResolver(repository)
         self.budgets = SiteBudgetManager()
         self.budgets.joint.max_concurrency = browser_max_pages
@@ -713,9 +720,9 @@ class SiteStrategyService:
         await self.profile_use.recover()
         # A persisted HALF_OPEN claim belonged to the previous owner process.
         # Return it to a bounded cooldown; do not clear genuine manual attention.
-        for head, spec in self.repository.list_active_strategies():
+        for head, spec in (await registry_io(self.repository.list_active_strategies)):
             if head.enabled:
-                state = self.repository.get_runtime(spec.site_id)
+                state = (await registry_io(self.repository.get_runtime, spec.site_id))
                 for combination_id, value in state.combinations.items():
                     if value.probe_in_flight or value.state == "HALF_OPEN":
                         await self.health.mark_probe_uncertain(spec.site_id, combination_id)
@@ -736,7 +743,7 @@ class SiteStrategyService:
         root = self.runtime.browser_pool.root
         # Preserve the production retention fix: retired identities still own
         # profiles, and the shared owner lock fences both browser runtime types.
-        for profile in self.repository.list_profiles():
+        for profile in (await registry_io(self.repository.list_profiles)):
             if not profile.maintenance_session_id:
                 await asyncio.to_thread(
                     maintain_profile, root, profile.directory_key, allow_cache=True
@@ -747,18 +754,18 @@ class SiteStrategyService:
     async def _prewarm_identities(self) -> None:
         from .governance_repository import GovernanceRepository
 
-        scopes = GovernanceRepository(self.repository).list_scopes()
+        scopes = (await registry_io(GovernanceRepository(self.repository).list_scopes))
         hot = set()
         for scope in scopes:
-            primary = self.repository.get_identity(scope.primary_identity_id)
+            primary = (await registry_io(self.repository.get_identity, scope.primary_identity_id))
             if (
                 scope.enabled
                 and scope.source_id
                 and primary.lifecycle.residency is BrowserResidency.ALWAYS_ON
             ):
-                route = self.repository.get_runtime(f"scope:{scope.scope_id}")
+                route = (await registry_io(self.repository.get_runtime, f"scope:{scope.scope_id}"))
                 hot.add(route.active_combination_id or scope.primary_identity_id)
-        for head, identity in self.repository.list_active_identities():
+        for head, identity in (await registry_io(self.repository.list_active_identities)):
             if (
                 not head.enabled
                 or not identity.enabled
@@ -767,26 +774,26 @@ class SiteStrategyService:
                 or (not scopes and identity.lifecycle.residency is not BrowserResidency.ALWAYS_ON)
             ):
                 continue
-            profile = self.repository.get_profile(identity.profile_id)
+            profile = (await registry_io(self.repository.get_profile, identity.profile_id))
             if (profile and profile.maintenance_session_id) or (
-                self.repository.get_identity_runtime(identity.identity_id).operational_state
+                (await registry_io(self.repository.get_identity_runtime, identity.identity_id)).operational_state
                 is IdentityOperationalState.UNHEALTHY
             ):
                 continue
-            egress = self.repository.get_egress(identity.egress_id)
+            egress = (await registry_io(self.repository.get_egress, identity.egress_id))
             if egress is None or not egress.enabled:
                 continue
             try:
                 provenance = await self.runtime.browser_runtimes.prewarm(identity, egress)
                 if provenance is not None:
-                    current = self.repository.get_identity_runtime(identity.identity_id)
+                    current = (await registry_io(self.repository.get_identity_runtime, identity.identity_id))
                     if (
                         current.instance_id == provenance.instance_id
                         and current.operational_state is IdentityOperationalState.AVAILABLE
                         and current.diagnostic is None
                     ):
                         continue
-                    self.repository.save_identity_runtime(
+                    (await registry_io(self.repository.save_identity_runtime,
                         current.model_copy(
                             update={
                                 "operational_state": IdentityOperationalState.AVAILABLE,
@@ -796,7 +803,7 @@ class SiteStrategyService:
                             }
                         ),
                         expected_generation=current.generation,
-                    )
+                    ))
             except Exception as exc:
                 logger.error(
                     "external identity prewarm failed identity=%s error=%s",
@@ -845,6 +852,8 @@ class SiteStrategyService:
             "stalled": any(item["stalled"] for item in operations),
             "operations": operations,
             "storage": self.repository.storage.diagnostics(),
+            "diagnostic_events": {'queued':self.diagnostic_events.queue.qsize(),'dropped':self.diagnostic_events.dropped}
+                if self.diagnostic_events else {'queued':0,'dropped':0},
             "queue_waiters": len(joint._waiters),
             "queue_locked": joint._condition.locked(),
             "site_active": dict(joint._site_active),
@@ -896,7 +905,9 @@ class SiteStrategyService:
             async with asyncio.timeout(30):
                 await self.runtime.close()
         finally:
-            self.repository.close()
+            if self.diagnostic_events is not None:
+                await self.diagnostic_events.close()
+            (await registry_io(self.repository.close))
 
     async def _maintenance_loop(self) -> None:
         while True:
@@ -968,15 +979,15 @@ class SiteStrategyService:
         await asyncio.gather(*(check_egress(e) for e in self.repository.list_egresses()))
         from .governance_repository import GovernanceRepository
 
-        scopes = GovernanceRepository(self.repository).list_scopes()
+        scopes = (await registry_io(GovernanceRepository(self.repository).list_scopes))
         if scopes:
             for scope in scopes:
                 if not scope.enabled:
                     continue
                 key = f"scope:{scope.scope_id}"
-                state = self.repository.get_runtime(key)
+                state = (await registry_io(self.repository.get_runtime, key))
                 target = state.active_combination_id or scope.primary_identity_id
-                if GovernanceRepository(self.repository).current_challenge(target):
+                if (await registry_io(GovernanceRepository(self.repository).current_challenge, target)):
                     continue
                 claimed = await self.health.claim_due_probe(
                     key,
@@ -999,7 +1010,7 @@ class SiteStrategyService:
                     if not outcome.get("ready"):
                         await self.health.mark_probe_uncertain(key, target)
             return  # Never probe retired legacy combinations after source routing activates.
-        for head, spec in self.repository.list_active_strategies():
+        for head, spec in (await registry_io(self.repository.list_active_strategies)):
             if not head.enabled or spec.site_id == "generic" or not self._recovery_probe_url(spec):
                 continue
             claimed = await self.health.claim_due_probe(spec.site_id, spec.access.combinations)
@@ -1036,12 +1047,12 @@ class SiteStrategyService:
         return None
 
     async def probe_egress(self, egress_id: str) -> ProxyEgress:
-        prior = self.repository.get_egress(egress_id)
+        prior = (await registry_io(self.repository.get_egress, egress_id))
         if prior is None:
             raise KeyError(egress_id)
         updated = await probe_egress(self.repository, egress_id)
         if updated.status != prior.status:
-            self.repository.append_event(
+            (await self._append_diagnostic(
                 AccessEvent(
                     operation_id=f"egress-state:{egress_id}:{utc_now().isoformat()}",
                     site_id="_egress",
@@ -1054,10 +1065,10 @@ class SiteStrategyService:
                         "seconds": updated.last_probe_seconds,
                     },
                 )
-            )
+            ))
         if updated.generation != prior.generation:
             await self.runtime.reset_egress(egress_id)
-            self.repository.append_event(
+            (await self._append_diagnostic(
                 AccessEvent(
                     operation_id=f"egress-probe:{egress_id}:{updated.generation}",
                     site_id="_egress",
@@ -1069,24 +1080,24 @@ class SiteStrategyService:
                         "probe_endpoint": updated.probe_endpoint,
                     },
                 )
-            )
+            ))
         duplicates = [
             item.egress_id
-            for item in self.repository.list_egresses()
+            for item in (await registry_io(self.repository.list_egresses))
             if item.egress_id != egress_id
             and item.status == "READY"
             and item.observed_ip == updated.observed_ip
             and updated.observed_ip is not None
         ]
         if duplicates:
-            self.repository.append_event(
+            (await self._append_diagnostic(
                 AccessEvent(
                     operation_id=f"egress-probe:{egress_id}:{updated.generation}",
                     site_id="_egress",
                     category="DUPLICATE_EXIT",
                     payload={"egress_id": egress_id, "duplicates": duplicates},
                 )
-            )
+            ))
         return updated
 
     async def _probe_combination(
@@ -1099,15 +1110,15 @@ class SiteStrategyService:
         if probe_url is None:
             await self.health.mark_probe_uncertain(spec.site_id, combination.combination_id)
             return
-        resolved = self.resolve(probe_url, revision=spec.revision)
-        materialized = self._materialize_combination(combination)
+        resolved = (await registry_io(self.resolve, probe_url, revision=spec.revision))
+        materialized = (await registry_io(self._materialize_combination, combination))
         if materialized is None:
             await self.health.mark_probe_uncertain(spec.site_id, combination.combination_id)
             return
         combination = materialized
-        profile = self._profile(resolved, combination)
+        profile = (await registry_io(self._profile, resolved, combination))
         assert combination.egress_id is not None
-        egress = self.repository.get_egress(combination.egress_id)
+        egress = (await registry_io(self.repository.get_egress, combination.egress_id))
         if profile is None or egress is None or not egress.enabled:
             await self.health.mark_probe_uncertain(spec.site_id, combination.combination_id)
             return
@@ -1120,7 +1131,7 @@ class SiteStrategyService:
             remaining_budget_ms=15_000,
             max_response_bytes=2_000_000,
         )
-        identity = self._identity_for(combination, profile)
+        identity = (await registry_io(self._identity_for, combination, profile))
         try:
             async with self.budgets.joint.permit(
                 SitePurpose.PROBE,
@@ -1382,12 +1393,25 @@ class SiteStrategyService:
         )
 
     async def execute(self, request: AccessRequest) -> AccessResult:
+        token=ACCESS_DEADLINE.set(time.monotonic()+request.remaining_budget_ms/1000)
+        try:
+            return await self._execute_entry(request)
+        finally:
+            ACCESS_DEADLINE.reset(token)
+
+    async def _append_diagnostic(self,event):
+        if self.diagnostic_events is not None and event.category in {'ACCESS_RESULT','CAPTURE_CONSUMED'}:
+            self.diagnostic_events.submit(event)
+        else:
+            await registry_io(self.repository.append_event,event)
+
+    async def _execute_entry(self, request: AccessRequest) -> AccessResult:
         consumed_at = time.monotonic()
         if self.repository.storage.diagnostics()["unavailable"]:
             return self._storage_deferred(request)
         if not self.profile_use.accepting:
             return await self._execute_idempotent(request)
-        key = self._shared_key(request)
+        key = (await registry_io(self._shared_key, request))
         if key is None:
             return await self._execute_idempotent(request)
         shared = False
@@ -1412,9 +1436,9 @@ class SiteStrategyService:
                     update={"capture_id": result.capture_id or result.request_id,
                             "capture_acquired_at": result.capture_acquired_at or utc_now()}
                 )
-                await self._put_cache(result, cache_key=self._shared_key(request), ttl=15)
+                await self._put_cache(result, cache_key=(await registry_io(self._shared_key, request)), ttl=15)
         if shared:
-            self.repository.append_event(
+            (await self._append_diagnostic(
                 AccessEvent(
                     operation_id=request.operation_id,
                     site_id=result.site_id,
@@ -1427,7 +1451,7 @@ class SiteStrategyService:
                         "consumer_elapsed_ms": int((time.monotonic() - consumed_at)*1000),
                     },
                 )
-            )
+            ))
         return result.model_copy(
             update={
                 "request_id": request.request_id,
@@ -1442,7 +1466,7 @@ class SiteStrategyService:
         if self.repository.storage.diagnostics()["unavailable"]:
             return self._storage_deferred(request)
         if not self.profile_use.accepting:
-            resolved = self.resolve(request.url, revision=request.strategy_revision)
+            resolved = (await registry_io(self.resolve, request.url, revision=request.strategy_revision))
             return self._result(
                 request,
                 resolved,
@@ -1452,7 +1476,7 @@ class SiteStrategyService:
                 started=time.monotonic(),
             )
         created = False
-        cache_key = self._cache_key(request)
+        cache_key = (await registry_io(self._cache_key, request))
         async with self._cache_lock:
             self._expire_cache()
             cached = self._cache.get(cache_key)
@@ -1463,7 +1487,7 @@ class SiteStrategyService:
             if task is None:
                 task = asyncio.create_task(
                     self._execute_deadlined(request),
-                    name=f"site-access:{self.resolve(request.url).site_id}:{request.request_id}",
+                    name=f"site-access:{urlsplit(request.url).hostname}:{request.request_id}",
                 )
                 self._inflight[cache_key] = task
                 self._inflight_started[cache_key] = (
@@ -1492,12 +1516,12 @@ class SiteStrategyService:
                 from .governance_repository import GovernanceRepository
 
                 store = GovernanceRepository(self.repository)
-                scope = store.get_scope(result.effective_scope_id)
-                route = self.repository.get_runtime(result.runtime_key)
+                scope = (await registry_io(store.get_scope, result.effective_scope_id))
+                route = (await registry_io(self.repository.get_runtime, result.runtime_key))
                 blocked_task = (
-                    store.current_challenge(
+                    (await registry_io(store.current_challenge,
                         route.active_combination_id or scope.primary_identity_id
-                    )
+                    ))
                     if scope
                     else None
                 )
@@ -1506,14 +1530,14 @@ class SiteStrategyService:
                         not result.attempts
                         and result.disposition is not AccessDisposition.RECOVERY_PENDING
                     ):
-                        store.save_challenge(
+                        (await registry_io(store.save_challenge,
                             blocked_task.model_copy(
                                 update={
                                     "seen_count": blocked_task.seen_count + 1,
                                     "last_check": utc_now(),
                                 }
                             )
-                        )
+                        ))
                     result = result.model_copy(update={"challenge_task_id": blocked_task.task_id})
                     if (
                         not result.attempts
@@ -1535,8 +1559,8 @@ class SiteStrategyService:
             await self._put_cache(result, cache_key=cache_key)
             # This operation itself may activate a new route. Lost-response retries
             # should observe its receipt without performing the website I/O again.
-            post_key = self._cache_key(request)
-            route = self.repository.get_runtime(result.runtime_key)
+            post_key = (await registry_io(self._cache_key, request))
+            route = (await registry_io(self.repository.get_runtime, result.runtime_key))
             if result.route_generation == route.generation and post_key != cache_key:
                 await self._put_cache(result, cache_key=post_key)
             if (
@@ -1548,9 +1572,9 @@ class SiteStrategyService:
             ):
                 event_strategy_ref = request.recipe_ref
                 if event_strategy_ref is None and request.purpose is SitePurpose.CRAWLER:
-                    event_site = self.resolve(request.url, revision=result.strategy_revision)
+                    event_site = (await registry_io(self.resolve, request.url, revision=result.strategy_revision))
                     event_strategy_ref = event_site.crawler.ref if event_site.crawler else None
-                self.repository.append_event(
+                (await self._append_diagnostic(
                     AccessEvent(
                         operation_id=request.operation_id,
                         site_id=result.site_id,
@@ -1576,7 +1600,7 @@ class SiteStrategyService:
                             "work_class": request.work_class,
                         },
                     )
-                )
+                ))
         return result
 
     def _storage_deferred(self, request: AccessRequest) -> AccessResult:
@@ -1624,20 +1648,20 @@ class SiteStrategyService:
 
     async def _execute_deadlined(self, request: AccessRequest) -> AccessResult:
         started = time.monotonic()
-        resolved = self._resolve_request(request)
+        resolved = (await registry_io(self._resolve_request, request))
         key = resolved.runtime_key
         self._scope_inflight[key] = self._scope_inflight.get(key, 0) + 1
         try:
-            async with asyncio.timeout_at(started + request.remaining_budget_ms / 1000):
+            async with asyncio.timeout_at(ACCESS_DEADLINE.get() or started + request.remaining_budget_ms / 1000):
                 return await self._execute_uncached(request)
         except TimeoutError:
             if resolved.match_evidence.get("scope_id"):
                 from .governance_repository import GovernanceRepository
 
-                scope = GovernanceRepository(self.repository).get_scope(
+                scope = (await registry_io(GovernanceRepository(self.repository).get_scope,
                     resolved.match_evidence["scope_id"]
-                )
-                self.failover.schedule(scope, request.purpose)
+                ))
+                (await self.failover.schedule_async(scope, request.purpose))
             return self._result(
                 request,
                 resolved,
@@ -1659,7 +1683,7 @@ class SiteStrategyService:
         excluded: set[str] | None = None,
     ) -> list[dict[str, object]]:
         """Read-only explanation of the real purpose/health/resource selection."""
-        combinations = self._purpose_combinations(resolved, purpose)
+        combinations = (await registry_io(self._purpose_combinations, resolved, purpose))
         state, ready, _ = await self.health.candidates(
             resolved.runtime_key,
             combinations,
@@ -1673,14 +1697,14 @@ class SiteStrategyService:
         rows = []
         from .governance_repository import GovernanceRepository
 
-        scope = GovernanceRepository(self.repository).get_scope(
+        scope = (await registry_io(GovernanceRepository(self.repository).get_scope,
             resolved.match_evidence.get("scope_id", "")
-        )
+        ))
         for original in resolved.access.combinations:
-            combo = self._materialize_combination(original)
+            combo = (await registry_io(self._materialize_combination, original))
             runtime = state.combinations.get(original.combination_id)
-            profile = self.repository.get_profile(combo.profile_id or "") if combo else None
-            egress = self.repository.get_egress(combo.egress_id or "") if combo else None
+            profile = (await registry_io(self.repository.get_profile, combo.profile_id or "")) if combo else None
+            egress = (await registry_io(self.repository.get_egress, combo.egress_id or "")) if combo else None
             reasons = []
             if not original.enabled:
                 reasons.append("disabled")
@@ -1701,7 +1725,7 @@ class SiteStrategyService:
             ):
                 reasons.append("egress_unavailable")
             auth_state = (
-                self._auth_state(resolved, combo, profile)
+                (await registry_io(self._auth_state, resolved, combo, profile))
                 if combo and profile
                 else AuthState.UNKNOWN
             )
@@ -1715,11 +1739,11 @@ class SiteStrategyService:
                 elif original.enabled and original.combination_id in purpose_ids:
                     reasons.append("cooldown")
             if scope and mode is not AccessMode.HTTP_PUBLIC:
-                status = self.failover.candidate_status(
+                status = (await registry_io(self.failover.candidate_status,
                     scope, original.identity_id or original.combination_id, purpose
-                )
+                ))
                 reasons = list(dict.fromkeys([*reasons, *status["skip_reasons"]]))
-            identity = self._identity_for(combo, profile) if combo and profile else None
+            identity = (await registry_io(self._identity_for, combo, profile)) if combo and profile else None
             external = getattr(getattr(self.runtime, "browser_runtimes", None), "external", None)
             entries = getattr(external, "_entries", {})
             attached = bool(identity and identity.identity_id in entries)
@@ -1745,7 +1769,7 @@ class SiteStrategyService:
 
     async def _execute_uncached(self, request: AccessRequest) -> AccessResult:
         started = time.monotonic()
-        resolved = self._resolve_request(request)
+        resolved = (await registry_io(self._resolve_request, request))
         if resolved.runtime_key in self._switching_scopes:
             return self._result(
                 request,
@@ -1764,7 +1788,7 @@ class SiteStrategyService:
                 reason="site_disabled",
                 started=started,
             )
-        combinations = self._purpose_combinations(resolved, request.purpose)
+        combinations = (await registry_io(self._purpose_combinations, resolved, request.purpose))
         view = await self.effective_candidates(
             resolved, request.purpose, request.mode, set(request.excluded_combinations)
         )
@@ -1780,33 +1804,34 @@ class SiteStrategyService:
         if resolved.match_evidence.get("scope_id"):
             from .governance_repository import GovernanceRepository
 
-            scope = GovernanceRepository(self.repository).get_scope(
+            scope = (await registry_io(GovernanceRepository(self.repository).get_scope,
                 resolved.match_evidence["scope_id"]
-            )
+            ))
             if scope and request.mode is not AccessMode.HTTP_PUBLIC:
                 candidates = [
                     c
                     for c in candidates
-                    if self.failover.candidate_status(
+                    if (await registry_io(self.failover.candidate_status,
                         scope, c.identity_id or c.combination_id, request.purpose
-                    )["selectable"]
+                    ))["selectable"]
                 ]
         if not candidates:
             if scope and request.mode is not AccessMode.HTTP_PUBLIC:
                 for candidate in (scope.primary_identity_id, scope.fallback_identity_id):
                     if candidate and candidate not in request.excluded_combinations:
-                        status = self.failover.candidate_status(scope, candidate, request.purpose)
+                        status = (await registry_io(self.failover.candidate_status, scope, candidate, request.purpose))
                         if status.get("eligible") and not status["selectable"]:
-                            self.failover.schedule(scope, request.purpose, candidate_id=candidate)
+                            (await self.failover.schedule_async(scope, request.purpose, candidate_id=candidate))
             if request.mode is not AccessMode.HTTP_PUBLIC:
                 from .governance_repository import GovernanceRepository
 
                 store = GovernanceRepository(self.repository)
+                recoveries=await registry_io(lambda:[store.get_recovery(c.identity_id or c.profile_id or '') for c in combinations])
                 pending = next(
                     (
                         r
-                        for c in combinations
-                        if (r := store.get_recovery(c.identity_id or c.profile_id or ""))
+                        for r in recoveries
+                        if r
                         and r.phase != "RESOLVED"
                         and any(x["purpose"] == request.purpose.value for x in r.affected_contexts)
                     ),
@@ -1862,14 +1887,14 @@ class SiteStrategyService:
         runtime_failure = None
         pending_result = None
         for combination in candidates:
-            materialized = self._materialize_combination(combination)
+            materialized = (await registry_io(self._materialize_combination, combination))
             if materialized is None:
                 unavailable += 1
                 continue
             combination = materialized
             remaining = request.remaining_budget_ms / 1000 - (time.monotonic() - started)
             if scope and combination.identity_id == scope.fallback_identity_id and remaining < 5:
-                activation = self.failover.schedule(scope, request.purpose)
+                activation = (await self.failover.schedule_async(scope, request.purpose))
                 return self._result(
                     request,
                     resolved,
@@ -1890,20 +1915,20 @@ class SiteStrategyService:
                     attempts=attempts,
                     started=started,
                 )
-            profile = self._profile(resolved, combination)
+            profile = (await registry_io(self._profile, resolved, combination))
             if profile and profile.operational_state is not ProfileOperationalState.AVAILABLE:
                 maintenance_blocked += 1
                 continue
             assert combination.egress_id is not None
-            egress = self.repository.get_egress(combination.egress_id)
+            egress = (await registry_io(self.repository.get_egress, combination.egress_id))
             if (
                 scope
                 and combination.identity_id == scope.fallback_identity_id
                 and egress
                 and route.active_combination_id != scope.fallback_identity_id
             ):
-                primary = self.repository.get_identity(scope.primary_identity_id)
-                main_egress = self.repository.get_egress(primary.egress_id)
+                primary = (await registry_io(self.repository.get_identity, scope.primary_identity_id))
+                main_egress = (await registry_io(self.repository.get_egress, primary.egress_id))
                 if (
                     main_egress
                     and main_egress.node_ref != "DIRECT"
@@ -1937,7 +1962,7 @@ class SiteStrategyService:
                 continue
             if (
                 self._auth_required(resolved, request.purpose)
-                and self._auth_state(resolved, combination, profile) is not AuthState.VALID
+                and (await registry_io(self._auth_state, resolved, combination, profile)) is not AuthState.VALID
             ):
                 auth_missing += 1
                 continue
@@ -1946,9 +1971,9 @@ class SiteStrategyService:
                 and combination.identity_id == scope.fallback_identity_id
                 and route.active_combination_id != scope.fallback_identity_id
                 and request.mode is not AccessMode.HTTP_PUBLIC
-                and not self.failover.usable(scope, combination.identity_id, request.purpose)
+                and not (await registry_io(self.failover.usable, scope, combination.identity_id, request.purpose))
             ):
-                activation = self.failover.schedule(scope, request.purpose)
+                activation = (await self.failover.schedule_async(scope, request.purpose))
                 return self._result(
                     request,
                     resolved,
@@ -1964,7 +1989,7 @@ class SiteStrategyService:
                 max_concurrency=resolved.access.max_concurrency,
                 min_interval_ms=resolved.access.min_interval_ms,
             )
-            identity = self._identity_for(combination, profile)
+            identity = (await registry_io(self._identity_for, combination, profile))
             queue_cap = (
                 resolved.access.body_queue_timeout_ms
                 if request.purpose is SitePurpose.BODY
@@ -1994,13 +2019,13 @@ class SiteStrategyService:
             queue_started = time.monotonic()
             try:
                 async with permit as queue_wait_ms:
-                    current = self.repository.get_runtime(resolved.runtime_key)
+                    current = (await registry_io(self.repository.get_runtime, resolved.runtime_key))
                     async with self.profile_use.business(
                         profile.profile_id, browser=request.mode is not AccessMode.HTTP_PUBLIC
                     ) as current_profile:
                         if (
                             self._auth_required(resolved, request.purpose)
-                            and self._auth_state(resolved, combination, current_profile)
+                            and (await registry_io(self._auth_state, resolved, combination, current_profile))
                             is not AuthState.VALID
                         ):
                             auth_missing += 1
@@ -2062,9 +2087,9 @@ class SiteStrategyService:
                 if str(exc) == "profile_control_in_progress":
                     from .governance_repository import GovernanceRepository
 
-                    pending = GovernanceRepository(self.repository).get_recovery(
+                    pending = (await registry_io(GovernanceRepository(self.repository).get_recovery,
                         identity.identity_id
-                    )
+                    ))
                     retry_at = utc_now() + timedelta(seconds=60)
                     result = self._result(
                         request,
@@ -2132,13 +2157,13 @@ class SiteStrategyService:
                 if response.recovery_id:
                     from .governance_repository import GovernanceRepository
 
-                    pending = GovernanceRepository(self.repository).get_recovery(
+                    pending = (await registry_io(GovernanceRepository(self.repository).get_recovery,
                         identity.identity_id
-                    )
+                    ))
                     retry_at = max(pending.next_due_at, utc_now() + timedelta(seconds=60))
-                    self.failover.schedule(
+                    (await self.failover.schedule_async(
                         scope, request.purpose
-                    ) if pending.handling_mode == "HUMAN" else None
+                    )) if pending.handling_mode == "HUMAN" else None
                     result = self._result_from_response(
                         request,
                         resolved,
@@ -2274,7 +2299,7 @@ class SiteStrategyService:
                     attempts,
                     started,
                 )
-            final_resolved = self.resolve(response.final_url)
+            final_resolved = (await registry_io(self.resolve, response.final_url))
             final_host = urlsplit(response.final_url).hostname or ""
             if (
                 final_resolved.site_id != resolved.site_id
@@ -2312,7 +2337,7 @@ class SiteStrategyService:
             if scope and request.mode is not AccessMode.HTTP_PUBLIC:
                 from .governance_repository import GovernanceRepository
 
-                GovernanceRepository(self.repository).record_capability(
+                (await registry_io(GovernanceRepository(self.repository).record_capability,
                     scope,
                     identity.identity_id,
                     request.purpose.value,
@@ -2322,13 +2347,13 @@ class SiteStrategyService:
                     url=response.final_url,
                     instance_id=response.provenance.instance_id if response.provenance else None,
                     subscription_verified=response.subscription_verified,
-                )
-                active = self.repository.get_runtime(resolved.runtime_key)
+                ))
+                active = (await registry_io(self.repository.get_runtime, resolved.runtime_key))
                 if active.active_combination_id != identity.identity_id and (
                     active.active_combination_id is None
-                    or not self.failover.candidate_status(
+                    or not (await registry_io(self.failover.candidate_status,
                         scope, active.active_combination_id, SitePurpose.CRAWLER
-                    )["selectable"]
+                    ))["selectable"]
                 ):
                     await self.health.activate(
                         resolved.runtime_key,
@@ -2343,7 +2368,7 @@ class SiteStrategyService:
                     "natural_success_at",
                     purpose=request.purpose.value,
                 )
-                identity_state = self.repository.get_identity_runtime(identity.identity_id)
+                identity_state = (await registry_io(self.repository.get_identity_runtime, identity.identity_id))
                 windows={k:dict(v) for k,v in identity_state.capability_windows.items()}
                 window=windows.get(request.purpose.value)
                 if window and not window.get('blocked_again_at'):
@@ -2352,7 +2377,7 @@ class SiteStrategyService:
                         query_key=digest_json([request.recipe_parameters.get('query'),request.recipe_parameters.get('offset',0)])
                         window['natural_queries']=list(dict.fromkeys([*window.get('natural_queries',[]),query_key]))[-3:]
                 if identity_state.recovered_at and (not identity_state.natural_success_at or window):
-                    self.repository.save_identity_runtime(
+                    (await registry_io(self.repository.save_identity_runtime,
                         identity_state.model_copy(
                             update={
                                 "natural_success_at": utc_now(),
@@ -2360,8 +2385,8 @@ class SiteStrategyService:
                             }
                         ),
                         expected_generation=identity_state.generation,
-                    )
-            current_generation = self.repository.get_runtime(resolved.runtime_key).generation
+                    ))
+            current_generation = (await registry_io(self.repository.get_runtime, resolved.runtime_key)).generation
             return self._result_from_response(
                 request,
                 resolved,
@@ -2448,7 +2473,7 @@ class SiteStrategyService:
                     from .governance_repository import GovernanceRepository
                     from .verification import validate_capture, validate_crawler_capture
 
-                    scope = GovernanceRepository(self.repository).get_scope(str(scope_id))
+                    scope = (await registry_io(GovernanceRepository(self.repository).get_scope, str(scope_id)))
                     if request.purpose is SitePurpose.CRAWLER and scope and scope.source_id:
                         try:
                             ready = validate_crawler_capture(scope.source_id, response, request)
@@ -2495,9 +2520,9 @@ class SiteStrategyService:
                 )
                 if category is FailureCategory.RUNTIME_UNAVAILABLE:
                     identity_id = combination.identity_id or profile.profile_id
-                    identity_runtime = self.repository.get_identity_runtime(identity_id)
+                    identity_runtime = (await registry_io(self.repository.get_identity_runtime, identity_id))
                     try:
-                        self.repository.save_identity_runtime(
+                        (await registry_io(self.repository.save_identity_runtime,
                             identity_runtime.model_copy(
                                 update={
                                     "operational_state": IdentityOperationalState.UNHEALTHY,
@@ -2506,7 +2531,7 @@ class SiteStrategyService:
                                 }
                             ),
                             expected_generation=identity_runtime.generation,
-                        )
+                        ))
                     except RuntimeError:
                         pass
                     if getattr(exc, "control_recovery_attempted", False) and reason in {
@@ -2514,7 +2539,7 @@ class SiteStrategyService:
                         "browser_driver_unavailable",
                         "identity_worker_disconnected",
                     }:
-                        identity = self.repository.get_identity(identity_id)
+                        identity = (await registry_io(self.repository.get_identity, identity_id))
                         if identity and identity.runtime_kind is BrowserRuntimeKind.EXTERNAL_CHROME:
                             self._schedule_native_drain(identity)
             elapsed = int((time.monotonic() - started) * 1000)
@@ -2543,14 +2568,14 @@ class SiteStrategyService:
                 from .governance_repository import GovernanceRepository
 
                 store = GovernanceRepository(self.repository)
-                scope = store.get_scope(resolved.match_evidence["scope_id"])
-                store.record_capability(
+                scope = (await registry_io(store.get_scope, resolved.match_evidence["scope_id"]))
+                (await registry_io(store.record_capability,
                     scope,
                     combination.identity_id or profile.profile_id,
                     request.purpose.value,
                     category.value,
                     url=request.url,
-                )
+                ))
             last = response, category, reason, int((time.monotonic() - total_started)*1000)
             if category is not FailureCategory.TRANSIENT_TRANSPORT or retry == 1:
                 break
@@ -2751,10 +2776,10 @@ class SiteStrategyService:
     async def probe_profile(self, profile_id: str, url: str) -> AccessResult:
         """Exercise an exact Profile+egress for rollout diagnosis, without auth mutation."""
         started = time.monotonic()
-        profile = self.repository.get_profile(profile_id)
+        profile = (await registry_io(self.repository.get_profile, profile_id))
         if profile is None:
             raise KeyError(profile_id)
-        resolved = self.resolve(url)
+        resolved = (await registry_io(self.resolve, url))
         # A shared Identity can serve several sites. The active combination
         from .governance_repository import GovernanceRepository
 
@@ -2774,7 +2799,7 @@ class SiteStrategyService:
         if owner:
             if owner.owner_site_id != resolved.site_id:
                 raise ValueError("profile scope does not own the requested publisher")
-            resolved = self._resolve_request(
+            resolved = (await registry_io(self._resolve_request,
                 AccessRequest(
                     operation_id="profile-probe-resolve",
                     purpose=SitePurpose.PROBE,
@@ -2782,7 +2807,7 @@ class SiteStrategyService:
                     url=url,
                     origin_scope_id=owner.scope_id,
                 )
-            )
+            ))
         # below, rather than the legacy Profile owner, establishes ownership.
         combination = next(
             (
@@ -2796,7 +2821,7 @@ class SiteStrategyService:
         )
         if combination is None:
             raise ValueError("profile is not referenced by the active site strategy")
-        egress = self.repository.get_egress(profile.bound_egress_id)
+        egress = (await registry_io(self.repository.get_egress, profile.bound_egress_id))
         if egress is None or not egress.enabled or egress.status == "CONFIG_MISSING":
             raise RuntimeError("bound egress is unavailable")
         request = AccessRequest(
@@ -2806,7 +2831,7 @@ class SiteStrategyService:
             mode=AccessMode.BROWSER,
             remaining_budget_ms=30_000,
         )
-        identity = self._identity_for(combination, profile)
+        identity = (await registry_io(self._identity_for, combination, profile))
         async with self.budgets.joint.permit(
             SitePurpose.PROBE,
             site_key=resolved.runtime_key,
@@ -2822,7 +2847,7 @@ class SiteStrategyService:
                     request, resolved, combination, current_profile, egress
                 )
                 if response.challenge_token is not None:
-                    identity = self._identity_for(combination, current_profile)
+                    identity = (await registry_io(self._identity_for, combination, current_profile))
                     await self.profile_use.begin_challenge(
                         profile_id,
                         token=response.challenge_token,
@@ -2832,7 +2857,7 @@ class SiteStrategyService:
                         article_url=url,
                         target_id=response.challenge_target_id,
                     )
-        runtime = self.repository.get_runtime(resolved.runtime_key)
+        runtime = (await registry_io(self.repository.get_runtime, resolved.runtime_key))
         attempt = AccessAttempt(
             combination_id=combination.combination_id,
             generation=runtime.generation,
@@ -2890,14 +2915,14 @@ class SiteStrategyService:
             reason,
             [attempt],
             started,
-            generation=self.repository.get_runtime(resolved.runtime_key).generation,
+            generation=(await registry_io(self.repository.get_runtime, resolved.runtime_key)).generation,
         )
 
     async def certify_profile_probe(
         self, profile_id: str, article_url: str, result: AccessResult
     ) -> None:
         """Record site auth after the admin probe proves a full titled article."""
-        resolved = self.resolve(article_url)
+        resolved = (await registry_io(self.resolve, article_url))
         if (
             result.disposition is not AccessDisposition.SUCCESS
             or result.site_id != resolved.site_id
@@ -2905,18 +2930,18 @@ class SiteStrategyService:
             or not result.identity_id
         ):
             raise ValueError("probe result does not match the requested site profile")
-        identity = self.repository.get_identity(result.identity_id)
+        identity = (await registry_io(self.repository.get_identity, result.identity_id))
         if identity is None or identity.profile_id != profile_id:
             raise ValueError("probe identity binding is unavailable")
         async with self.profile_use.business(profile_id):
-            runtime = self.repository.get_identity_runtime(identity.identity_id)
+            runtime = (await registry_io(self.repository.get_identity_runtime, identity.identity_id))
             if (
                 result.runtime_instance_id
                 and runtime.instance_id
                 and result.runtime_instance_id != runtime.instance_id
             ):
                 raise RuntimeError("browser instance changed after article probe")
-            self.repository.save_site_identity_auth(
+            (await registry_io(self.repository.save_site_identity_auth,
                 SiteIdentityAuth(
                     site_id=resolved.site_id,
                     identity_id=identity.identity_id,
@@ -2926,8 +2951,8 @@ class SiteStrategyService:
                     reason_code="full_article_probe",
                     observed_session_revision=runtime.session_revision,
                 )
-            )
-            self.repository.append_event(
+            ))
+            (await self._append_diagnostic(
                 AccessEvent(
                     operation_id=result.operation_id,
                     site_id=resolved.site_id,
@@ -2940,7 +2965,7 @@ class SiteStrategyService:
                         "reason": "full_article_probe",
                     },
                 )
-            )
+            ))
 
     async def snapshot_profile(
         self, profile_id: str, *, browser_version: str, batch_id: str | None = None
@@ -3004,12 +3029,12 @@ class SiteStrategyService:
             await self.profile_use.end_maintenance(profile_id, session_id)
 
     async def open_profile_login(self, profile_id: str) -> dict[str, str]:
-        profile = self.repository.get_profile(profile_id)
+        profile = (await registry_io(self.repository.get_profile, profile_id))
         if profile is None:
             raise KeyError(profile_id)
         identities = [
             value
-            for _, value in self.repository.list_active_identities()
+            for _, value in (await registry_io(self.repository.list_active_identities))
             if value.profile_id == profile_id
         ]
         if len(identities) > 1:
@@ -3017,14 +3042,14 @@ class SiteStrategyService:
         identity = (
             identities[0]
             if identities
-            else self._identity_for(
+            else (await registry_io(self._identity_for,
                 AccessCombination(
                     id=profile_id,
                     profile_id=profile.profile_id,
                     egress_id=profile.bound_egress_id,
                 ),
                 profile,
-            )
+            ))
         )
         return await self.open_identity_login(profile.site_id, identity.identity_id)
 
@@ -3035,14 +3060,14 @@ class SiteStrategyService:
         *,
         control_token: str | None = None,
     ) -> dict[str, str]:
-        identity = self.repository.get_identity(identity_id)
+        identity = (await registry_io(self.repository.get_identity, identity_id))
         if identity is None or not identity.enabled:
             raise KeyError(identity_id)
-        profile = self.repository.get_profile(identity.profile_id)
-        egress = self.repository.get_egress(identity.egress_id)
+        profile = (await registry_io(self.repository.get_profile, identity.profile_id))
+        egress = (await registry_io(self.repository.get_egress, identity.egress_id))
         if profile is None or egress is None or not egress.enabled:
             raise RuntimeError("bound identity resources are unavailable")
-        spec = self.repository.get_strategy(site_id)
+        spec = (await registry_io(self.repository.get_strategy, site_id))
         if spec is None or not self._identity_belongs_to_site(site_id, identity_id):
             raise ValueError("identity is not referenced by the selected site")
         url = (spec.auth.maintenance_url or spec.auth.login_url) or profile.login_url
@@ -3106,7 +3131,7 @@ class SiteStrategyService:
         )
 
         store = GovernanceRepository(self.repository)
-        scope = store.maintenance_scope(session.scope_id)
+        scope = (await registry_io(store.maintenance_scope, session.scope_id))
         if scope is None:
             raise ValueError("maintenance scope is no longer configured")
         # Independent stages leave a cleanup reserve; losing the historical page
@@ -3122,8 +3147,8 @@ class SiteStrategyService:
             original = RuntimeResponse(
                 0,
                 scope.verification_plan.get("crawler", {}).get("url")
-                or self.repository.get_strategy(scope.owner_site_id).auth.login_url
-                or "https://" + self.repository.get_strategy(scope.owner_site_id).domains[0].host,
+                or (await registry_io(self.repository.get_strategy, scope.owner_site_id)).auth.login_url
+                or "https://" + (await registry_io(self.repository.get_strategy, scope.owner_site_id)).domains[0].host,
                 {},
                 reason=verification_failure_reason(exc),
             )
@@ -3163,7 +3188,7 @@ class SiteStrategyService:
                     original.body,
                     status=original.status_code,
                     headers=original.headers,
-                    policy=self.repository.get_strategy(scope.owner_site_id).challenge,
+                    policy=(await registry_io(self.repository.get_strategy, scope.owner_site_id)).challenge,
                     blocked=True,
                 )
             )
@@ -3178,7 +3203,7 @@ class SiteStrategyService:
             ):
                 from .governance_models import ChallengeTask
 
-                task = store.handoff_challenge(
+                task = (await registry_io(store.handoff_challenge,
                     ChallengeTask(
                         scope_id=scope.scope_id,
                         identity_id=session.identity_id,
@@ -3192,14 +3217,14 @@ class SiteStrategyService:
                         reason="login_challenge_required",
                     ),
                     session=session,
-                )
+                ))
                 report.challenge_task_id = task.task_id
-                session = store.get_session(session.session_id)
-                identity = self.repository.get_identity(session.identity_id)
-                profile = self.repository.get_profile(identity.profile_id)
+                session = (await registry_io(store.get_session, session.session_id))
+                identity = (await registry_io(self.repository.get_identity, session.identity_id))
+                profile = (await registry_io(self.repository.get_profile, identity.profile_id))
                 await self.runtime.adopt_challenge(
                     profile,
-                    self.repository.get_egress(identity.egress_id),
+                    (await registry_io(self.repository.get_egress, identity.egress_id)),
                     identity=identity,
                     site_id=session.site_id,
                     token=session.control_token,
@@ -3208,14 +3233,14 @@ class SiteStrategyService:
                 from .recovery import register_login_recovery
 
                 register_login_recovery(self, scope, session, assessment)
-                return store.commit_verification(
+                return (await registry_io(store.commit_verification,
                     scope, session.identity_id, report, session=session
-                )
+                ))
         if original.challenge_cleared:
             report.challenge = "CLEARED"
-        spec = self.repository.get_strategy(scope.owner_site_id)
+        spec = (await registry_io(self.repository.get_strategy, scope.owner_site_id))
         crawler = scope.verification_plan.get("crawler")
-        triggering_task = store.current_challenge(session.identity_id)
+        triggering_task = (await registry_io(store.current_challenge, session.identity_id))
         if (
             scope.source_id == "reuters_site_search"
             and session.kind == "CHALLENGE"
@@ -3295,9 +3320,9 @@ class SiteStrategyService:
                     # just to read the same listing again under a short budget.
                     capture = original
                 else:
-                    identity = self.repository.get_identity(session.identity_id)
+                    identity = (await registry_io(self.repository.get_identity, session.identity_id))
                     capture = await self.runtime.probe_recovery(
-                        request, identity, self.repository.get_egress(identity.egress_id)
+                        request, identity, (await registry_io(self.repository.get_egress, identity.egress_id))
                     )
                 ready = validate_crawler_capture(scope.source_id, capture, request)
             except Exception as exc:
@@ -3327,9 +3352,9 @@ class SiteStrategyService:
                     raw = row.get("url") if isinstance(row, dict) else row.url
                     if raw:
                         candidate = urljoin(request.url, str(raw))
-                        if self.resolve(candidate).site_id == scope.owner_site_id:
+                        if (await registry_io(self.resolve, candidate)).site_id == scope.owner_site_id:
                             article_candidates.append(candidate)
-        triggering = store.current_challenge(session.identity_id)
+        triggering = (await registry_io(store.current_challenge, session.identity_id))
         trigger_url = (
             triggering.original_url
             if triggering
@@ -3356,7 +3381,7 @@ class SiteStrategyService:
             and not article_url
         )
         if url and check_body and time.monotonic() < deadline:
-            if self.resolve(url).site_id != scope.owner_site_id:
+            if (await registry_io(self.resolve, url)).site_id != scope.owner_site_id:
                 raise ValueError("verification article belongs to another publisher")
             if stage:
                 stage("CHECKING_BODY")
@@ -3364,7 +3389,7 @@ class SiteStrategyService:
 
             report.verification_url = safe_display_url(url)
             try:
-                identity = self.repository.get_identity(session.identity_id)
+                identity = (await registry_io(self.repository.get_identity, session.identity_id))
                 capture = await self.runtime.probe_recovery(
                     AccessRequest(
                         operation_id=f"verify-body:{uuid4().hex}",
@@ -3376,7 +3401,7 @@ class SiteStrategyService:
                         ),
                     ),
                     identity,
-                    self.repository.get_egress(identity.egress_id),
+                    (await registry_io(self.repository.get_egress, identity.egress_id)),
                 )
                 if capture.status_code in {404, 410} and not article_url:
                     replacement = next((u for u in article_candidates if u != url), None)
@@ -3393,11 +3418,11 @@ class SiteStrategyService:
                                 ),
                             ),
                             identity,
-                            self.repository.get_egress(identity.egress_id),
+                            (await registry_io(self.repository.get_egress, identity.egress_id)),
                         )
                 body = validate_capture(
                     capture,
-                    self.resolve(url),
+                    (await registry_io(self.resolve, url)),
                     observed_document=capture.reason == "observed_document_after_verification",
                     expected_subscription=(
                         spec.auth.verification_kind == "subscription_article"
@@ -3426,7 +3451,7 @@ class SiteStrategyService:
             report.reason = "challenge_cleared"
         if stage:
             stage("APPLYING_HEALTH")
-        report = store.commit_verification(
+        report = (await registry_io(store.commit_verification,
             scope,
             session.identity_id,
             report,
@@ -3435,8 +3460,8 @@ class SiteStrategyService:
                 session.kind == "LOGIN" or bool(triggering and triggering.purpose == "LOGIN")
             )
             and report.authentication == "VALID",
-        )
-        current = store.get_recovery(session.identity_id)
+        ))
+        current = (await registry_io(store.get_recovery, session.identity_id))
         if current:
             from .datadome_solver import mark_solver_outcome
 
@@ -3466,17 +3491,17 @@ class SiteStrategyService:
         *,
         target_id: str | None = None,
     ) -> dict[str, str]:
-        identity = self.repository.get_identity(identity_id)
+        identity = (await registry_io(self.repository.get_identity, identity_id))
         if identity is None:
             raise KeyError(identity_id)
-        egress = self.repository.get_egress(identity.egress_id)
+        egress = (await registry_io(self.repository.get_egress, identity.egress_id))
         if egress is None or not egress.enabled:
             raise RuntimeError("bound egress is unavailable")
-        stored_profile = self.repository.get_profile(identity.profile_id)
+        stored_profile = (await registry_io(self.repository.get_profile, identity.profile_id))
         from .governance_repository import GovernanceRepository
 
         store = GovernanceRepository(self.repository)
-        session = next((s for s in store.list_sessions() if s.control_token == login_token), None)
+        session = next((s for s in (await registry_io(store.list_sessions)) if s.control_token == login_token), None)
         if session:
             if session.identity_id != identity_id or session.site_id != site_id:
                 raise ValueError("maintenance session binding mismatch")
@@ -3492,7 +3517,7 @@ class SiteStrategyService:
             ):
                 raise ValueError("challenge session binding mismatch")
         task = (
-            store.current_challenge(identity_id)
+            (await registry_io(store.current_challenge, identity_id))
             if session and session.kind == "CHALLENGE"
             else None
         )
@@ -3512,7 +3537,7 @@ class SiteStrategyService:
                     "challenge_target_id": session.target_id,
                 }
             )
-            self.repository.save_profile(profile)
+            (await registry_io(self.repository.save_profile, profile))
         if target_id:
             profile = profile.model_copy(update={"challenge_target_id": target_id})
         external = self.runtime.browser_runtimes.external
@@ -3569,7 +3594,7 @@ class SiteStrategyService:
                 None,
             )
             if identity is not None:
-                egress = self.repository.get_egress(identity.egress_id)
+                egress = (await registry_io(self.repository.get_egress, identity.egress_id))
                 if egress is not None:
                     if challenge_profile is not None:
                         await self.runtime.recover_login(
@@ -3585,7 +3610,7 @@ class SiteStrategyService:
             profile_id = profile.profile_id
         await self.profile_use.end_maintenance(profile_id, token)
         if challenge_profile is not None and challenge_profile.challenge_combination_id:
-            resolved = self.resolve(challenge_profile.challenge_url)
+            resolved = (await registry_io(self.resolve, challenge_profile.challenge_url))
             await self.health.clear_manual_attention(
                 resolved.runtime_key, challenge_profile.challenge_combination_id
             )
@@ -3594,10 +3619,10 @@ class SiteStrategyService:
         self, profile_id: str, article_url: str, login_token: str
     ) -> tuple[BrowserProfile, str]:
         await self.profile_use.assert_session(profile_id, login_token)
-        resolved = self.resolve(article_url)
+        resolved = (await registry_io(self.resolve, article_url))
         identities = [
             value
-            for _, value in self.repository.list_active_identities()
+            for _, value in (await registry_io(self.repository.list_active_identities))
             if value.profile_id == profile_id
             and any(
                 item.identity_id == value.identity_id
@@ -3618,7 +3643,7 @@ class SiteStrategyService:
     async def verify_identity(
         self, site_id: str, identity_id: str, article_url: str, login_token: str
     ) -> tuple[BrowserProfile, str]:
-        identity = self.repository.get_identity(identity_id)
+        identity = (await registry_io(self.repository.get_identity, identity_id))
         if identity is None:
             raise KeyError(identity_id)
         profile = await self.profile_use.assert_session(identity.profile_id, login_token)
@@ -3629,10 +3654,10 @@ class SiteStrategyService:
                 or profile.challenge_url != article_url
             ):
                 raise ValueError("challenge verification must use the triggering article")
-        egress = self.repository.get_egress(identity.egress_id)
+        egress = (await registry_io(self.repository.get_egress, identity.egress_id))
         if egress is None or not egress.enabled:
             raise RuntimeError("bound egress is unavailable")
-        resolved = self.resolve(article_url)
+        resolved = (await registry_io(self.resolve, article_url))
         if resolved.site_id != site_id:
             raise ValueError("verification article does not belong to the selected site")
         combination = next(
@@ -3651,9 +3676,9 @@ class SiteStrategyService:
         if combination is None:
             if not self._identity_belongs_to_site(site_id, identity_id):
                 raise ValueError("profile is not referenced by the active site strategy")
-            combination = self._materialize_combination(
+            combination = (await registry_io(self._materialize_combination,
                 AccessCombination(id=identity_id, identity_id=identity_id)
-            )
+            ))
         operation_id = f"identity-verify:{site_id}:{identity_id}:{int(time.time())}"
         response = await self.runtime.verify_login(login_token, article_url)
         category, reason = classify_response(response)
@@ -3701,15 +3726,15 @@ class SiteStrategyService:
                 "updated_at": utc_now(),
             }
         )
-        self.repository.save_profile(updated)
+        (await registry_io(self.repository.save_profile, updated))
         if profile.challenge_url is not None and (
             state is AuthState.VALID or reason == "public_access_ready"
         ):
             updated = updated.model_copy(update={"challenge_verified": True})
-            self.repository.save_profile(updated)
-        identity_runtime = self.repository.get_identity_runtime(identity_id)
+            (await registry_io(self.repository.save_profile, updated))
+        identity_runtime = (await registry_io(self.repository.get_identity_runtime, identity_id))
         next_session_revision = identity_runtime.session_revision
-        self.repository.save_identity_runtime(
+        (await registry_io(self.repository.save_identity_runtime,
             identity_runtime.model_copy(
                 update={
                     "session_revision": next_session_revision,
@@ -3718,8 +3743,8 @@ class SiteStrategyService:
                 }
             ),
             expected_generation=identity_runtime.generation,
-        )
-        self.repository.save_site_identity_auth(
+        ))
+        (await registry_io(self.repository.save_site_identity_auth,
             SiteIdentityAuth(
                 site_id=resolved.site_id,
                 identity_id=identity_id,
@@ -3729,8 +3754,8 @@ class SiteStrategyService:
                 reason_code=reason,
                 observed_session_revision=next_session_revision,
             )
-        )
-        self.repository.append_event(
+        ))
+        (await self._append_diagnostic(
             AccessEvent(
                 operation_id=operation_id,
                 site_id=resolved.site_id,
@@ -3744,12 +3769,12 @@ class SiteStrategyService:
                     "verification_kind": verification_kind,
                 },
             )
-        )
+        ))
         if reason == "public_access_ready" or state is AuthState.VALID:
             # Authentication and access-health are separate records. A real
             # successful human verification must release the browser circuit,
             # otherwise manual_attention would suppress all subsequent traffic.
-            access_state = self.repository.get_runtime(resolved.runtime_key)
+            access_state = (await registry_io(self.repository.get_runtime, resolved.runtime_key))
             await self.health.mark_success(
                 resolved.runtime_key,
                 combination.combination_id,
@@ -3757,7 +3782,7 @@ class SiteStrategyService:
                 transport=AccessMode.BROWSER,
             )
             if reason == "public_access_ready" and article_url == (
-                self.repository.get_strategy(resolved.site_id).auth.maintenance_url
+                (await registry_io(self.repository.get_strategy, resolved.site_id)).auth.maintenance_url
             ):
                 await self.health.clear_purpose_denial(
                     resolved.runtime_key, combination.combination_id, SitePurpose.CRAWLER

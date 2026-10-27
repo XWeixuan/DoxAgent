@@ -27,11 +27,15 @@ class BusOrchestration:
         self._inflight: dict[str, asyncio.Task[Any]] = {}
         self._inflight_groups = {}
 
-    async def run_once(self, scheduler: Any) -> list[Any]:
+    async def run_once(self, scheduler: Any, *, collect=True) -> list[Any]:
         now = self.journal.clock()
         worker = getattr(scheduler, 'distribution_worker', None)
         if worker is not None and hasattr(worker, 'start'):
             worker.start()
+        if not collect:
+            sweeps=await self._journal_call(self.journal.tasks,kind='SWEEP',active_only=True)
+            if not sweeps:
+                return []
         results = []
         for key, running in list(self._inflight.items()):
             if running.done():
@@ -64,7 +68,11 @@ class BusOrchestration:
                     self._inflight_groups.pop(key, None)
         # Completed tasks have committed their next due time. Read it only after
         # removing them; tasks completing later retain their in-flight exclusion.
-        if hasattr(scheduler, "prepare_cycle"):
+        if not collect:
+            eligible, poll_states = [], {}
+            roster_eligible = await scheduler.read_call(scheduler._eligible_bindings, now,
+                include_inactive_hours=True,mark_disabled=False)
+        elif hasattr(scheduler, "prepare_cycle"):
             eligible, roster_eligible, poll_states = await scheduler.prepare_cycle(now)
         else:
             eligible, roster_eligible, poll_states = await self._storage(
@@ -239,7 +247,7 @@ class BusOrchestration:
                     if not key.startswith("sweep:"):
                         self._inflight_groups[key] = group
 
-        if hasattr(scheduler, "intake"):
+        if collect and hasattr(scheduler, "intake"):
             await scheduler.service.storage.call(scheduler.repository.polling.schedules,
                                                  schedule_entries, now, _lane_priority=0)
         # Completion wakes the fixed-rate dispatcher without waiting for the next tick.

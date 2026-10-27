@@ -425,6 +425,11 @@ def run_gc(store, *, once=False, interval=15, budget=2):
     with WriterLock(Path(str(store.path) + ".maintenance")):
         batch = 128
         while True:
+            from doxagent.message_bus_v2.pressure import background_allowed
+            if not once and not background_allowed():
+                print(json.dumps({'maintenance':'gc','deferred':'MESSAGE_PIPELINE_RESOURCE_RESERVE'}),flush=True)
+                time.sleep(interval)
+                continue
             started = time.monotonic()
             total = {}
             errors = []

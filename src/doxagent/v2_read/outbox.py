@@ -109,9 +109,18 @@ class SourceOutbox:
         try:
             names = {r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
             selected = [t for t in (tables or TABLES[self.source]) if t in names]
+            retired=set()
+            if self.source=='bus':
+                from doxagent.message_bus_v2.collection_plane.observability import enabled,RETIRED_TABLES
+                if enabled():
+                    retired=RETIRED_TABLES
+                    selected=[t for t in selected if t not in retired]
             if dry_run:
                 return selected
             db.execute("BEGIN IMMEDIATE")
+            for table in retired:
+                for operation in ('INSERT','UPDATE','DELETE'):
+                    db.execute('DROP TRIGGER IF EXISTS '+quoted('v2_capture_'+table+'_'+operation))
             db.execute(
                 "CREATE TABLE IF NOT EXISTS v2_capture_meta "
                 "(source TEXT PRIMARY KEY,started_at TEXT NOT NULL,tables_json TEXT NOT NULL)"
@@ -357,6 +366,18 @@ class SourceOutbox:
         try:
             from .source_lifecycle import check_replay
             check_replay(db, after)
+            from doxagent.message_bus_v2.collection_plane.observability import enabled,RETIRED_TABLES
+            if self.source=='bus' and enabled():
+                # Advance through retired technical history using headers only.
+                # Bounded scan and real terminal coordinate preserve concurrent
+                # business events and archived transport order.
+                headers=db.execute('SELECT seq,table_name FROM v2_source_outbox WHERE seq>? ORDER BY seq LIMIT 4096',(after,)).fetchall()
+                hot=[r[0] for r in headers if r[1] not in RETIRED_TABLES]
+                if headers:hot.append(headers[-1][0])
+                cold=[r[0] for r in db.execute('SELECT seq FROM v2_receipt_archive WHERE seq>? ORDER BY seq LIMIT ?',(after,limit))]
+                from .transport_archive import has_packs
+                if has_packs(db):cold.extend(r[0] for r in db.execute('SELECT seq FROM v2_receipt_packs WHERE seq>? ORDER BY seq LIMIT ?',(after,limit)))
+                return sorted(set(hot+cold))[:limit]
             from .transport_archive import has_packs
             packed = (" UNION SELECT seq FROM (SELECT seq FROM v2_receipt_packs WHERE seq>? ORDER BY seq LIMIT ?)"
                       if has_packs(db) else "")
@@ -414,6 +435,11 @@ class SourceOutbox:
             return {**value,'row':self.content.source_row(json.loads(value['payload']))} if decode else dict(value)
         db = connection if connection is not None else self.connection()
         try:
+            from doxagent.message_bus_v2.collection_plane.observability import enabled,RETIRED_TABLES
+            if decode and self.source=='bus' and enabled():
+                header=db.execute('SELECT * FROM v2_source_outbox WHERE seq=?',(sequence,)).fetchone()
+                if header and header['table_name'] in RETIRED_TABLES:
+                    return {**dict(header),'row':{}}
             row = db.execute(
                 "SELECT o.*,r.payload FROM v2_source_outbox o JOIN "
                 "v2_source_receipts r ON r.id=o.receipt_id WHERE o.seq=?",
