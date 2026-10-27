@@ -13,6 +13,7 @@ from .budget import BROWSER_ADMITTED
 from .runtime import SiteAccessRuntime
 from .schema import AccessMode, AccessRequest, BrowserRuntimeKind, IdentityOperationalState, utc_now
 from .worker_manager import IdentityOperationError, IdentityWorkerManager
+from .storage import registry_io
 
 
 class WorkerRuntimeFacade:
@@ -42,22 +43,22 @@ class WorkerRuntimeFacade:
         from .governance_repository import GovernanceRepository
 
         closed = 0
-        self.runtime.workers.sample_resources()
+        await registry_io(self.runtime.workers.sample_resources)
         store = GovernanceRepository(self.runtime.repository)
         viewer_identities = {
-            session.identity_id for session in store.list_sessions() if session.state == "OPEN"
+            session.identity_id for session in (await registry_io(store.list_sessions)) if session.state == "OPEN"
         }
         active = set()
         hot = set()
-        scopes = store.list_scopes()
-        identities = dict((spec.identity_id,spec) for _,spec in self.runtime.repository.list_active_identities())
+        scopes = await registry_io(store.list_scopes)
+        identities = dict((spec.identity_id,spec) for _,spec in (await registry_io(self.runtime.repository.list_active_identities)))
         reuters_ids = {member for scope in scopes if scope.owner_site_id=='reuters'
                        for member in (scope.primary_identity_id,scope.fallback_identity_id) if member}
         for scope in scopes:
-            route = self.runtime.repository.get_runtime(f"scope:{scope.scope_id}") if scope.fallback_identity_id else None
+            route = await registry_io(self.runtime.repository.get_runtime, f"scope:{scope.scope_id}") if scope.fallback_identity_id else None
             selected = (route.active_combination_id if route else None) or scope.primary_identity_id
             active.add(selected)
-            primary = identities.get(scope.primary_identity_id) or self.runtime.repository.get_identity(scope.primary_identity_id)
+            primary = identities.get(scope.primary_identity_id) or await registry_io(self.runtime.repository.get_identity, scope.primary_identity_id)
             if (
                 scope.enabled
                 and scope.source_id
@@ -66,15 +67,15 @@ class WorkerRuntimeFacade:
                 hot.add(selected)
         now = time.monotonic()
         for identity_id, status in list(self.runtime.workers.status().items()):
-            identity = self.runtime.repository.get_identity(identity_id)
+            identity = await registry_io(self.runtime.repository.get_identity, identity_id)
             if not identity or status["stage"] != "IDLE" or identity_id in viewer_identities:
                 continue
-            profile = self.runtime.repository.get_profile(identity.profile_id)
-            recovery = store.get_recovery(identity_id)
+            profile = await registry_io(self.runtime.repository.get_profile, identity.profile_id)
+            recovery = await registry_io(store.get_recovery, identity_id)
             recovering_page = bool(
                 recovery and recovery.phase != "RESOLVED" and recovery.page_status != "LOST"
             )
-            challenge = store.current_challenge(identity_id)
+            challenge = await registry_io(store.current_challenge, identity_id)
             lost_scene = challenge is not None and challenge.state == "TARGET_LOST"
             human = bool(profile and profile.maintenance_session_id and not lost_scene)
             if (
@@ -97,14 +98,14 @@ class WorkerRuntimeFacade:
                 await self.runtime.workers.retire(identity_id)
                 if identity.runtime_kind is BrowserRuntimeKind.MANAGED_PLAYWRIGHT:
                     if await self.runtime.workers.graceful_drain_managed(identity):
-                        old = self.runtime.repository.get_identity_runtime(identity_id)
-                        store.mark_instance_lost(identity_id, old.instance_id)
+                        old = await registry_io(self.runtime.repository.get_identity_runtime, identity_id)
+                        await registry_io(store.mark_instance_lost, identity_id, old.instance_id)
                 self._inactive_since.setdefault(identity_id, now - status["idle_seconds"])
                 closed += 1
         # A detached controller is not a reason to leave an inactive native Chrome forever.
         live = self.runtime.workers.status()
         for identity in identities.values():
-            recovery = store.get_recovery(identity.identity_id)
+            recovery = await registry_io(store.get_recovery, identity.identity_id)
             if (
                 recovery
                 and recovery.phase != "RESOLVED"
@@ -114,7 +115,7 @@ class WorkerRuntimeFacade:
                 )
             ):
                 continue
-            challenge = store.current_challenge(identity.identity_id)
+            challenge = await registry_io(store.current_challenge, identity.identity_id)
             lost_scene = challenge is not None and challenge.state == "TARGET_LOST"
             if (
                 identity.runtime_kind is not BrowserRuntimeKind.EXTERNAL_CHROME
@@ -122,7 +123,7 @@ class WorkerRuntimeFacade:
                 or (identity.identity_id in hot and not lost_scene)
             ):
                 continue
-            profile = self.runtime.repository.get_profile(identity.profile_id)
+            profile = await registry_io(self.runtime.repository.get_profile, identity.profile_id)
             if profile and profile.maintenance_session_id and not lost_scene:
                 continue
             status = live.get(identity.identity_id)
@@ -164,8 +165,8 @@ class WorkerRuntimeFacade:
             if stopped:
                 from .governance_repository import GovernanceRepository
 
-                GovernanceRepository(self.runtime.repository).mark_instance_lost(
-                    identity.identity_id,
+                await registry_io(
+                    GovernanceRepository(self.runtime.repository).mark_instance_lost, identity.identity_id,
                     status.get("instance_id"),
                 )
             return stopped
