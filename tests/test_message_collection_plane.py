@@ -2,8 +2,6 @@ from datetime import timedelta
 from types import SimpleNamespace
 import sqlite3
 
-import pytest
-
 from doxagent.message_bus_v2.collection_plane.store import AcquisitionStore
 from doxagent.message_bus_v2.collection_plane.config import Configuration
 from doxagent.message_bus_v2.collection_plane.worker import Collector

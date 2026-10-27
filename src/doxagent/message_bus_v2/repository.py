@@ -1912,12 +1912,12 @@ class MessageBusV2Repository:
     def confirm_site_strategy_outbox(self, outbox_ids: list[str]) -> None:
         if not outbox_ids:
             return
-        now = utc_now().isoformat()
         with self.transaction() as connection:
             connection.execute(
-                """update site_strategy_result_outbox set status='CONFIRMED',confirmed_at=?
-                   where outbox_id in (select value from json_each(?))""",
-                (now, json.dumps(outbox_ids)),
+                # Site owns the durable outcome; completed job/article facts stay
+                # in their business ledgers. This is only an unacknowledged queue.
+                "delete from site_strategy_result_outbox where outbox_id in (select value from json_each(?))",
+                (json.dumps(outbox_ids),),
             )
 
     def retry_site_strategy_outbox(self, outbox_ids: list[str]) -> None:

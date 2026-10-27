@@ -2287,3 +2287,5 @@ V2 mock verification: all 84 Case detail/message/candidate associations validate
 2026-10-28 Site空闲维护补齐异步边界：生产实测仍有全站超时，审查发现close_idle在事件循环同步读取全部scope、session、identity及recovery；改为沿用取消安全registry_io执行目录读与必要实例落账，保持原空闲/维护/挑战保护条件。增加慢库存不阻塞独立请求回归。
 
 2026-10-28 采集相位实测修复：逐源时点对账发现全部单元同秒启动，原因是refresh计算相位误用上一循环遗留key，所有任务hash相同。改为实际物理unit key；phase版本一次迁移只调整时钟并保留checkpoint/基线，后续refresh与重启保持稳定，不重复抖动。补双ticker分相位、稳定刷新及游标保留回归。
+
+2026-10-28 BODY实测退出修复：Site结果outbox确认SQLITE_BUSY经异步任务result上抛，导致整个正文进程退出；回执交付边界恢复瞬时写竞争，保留pending及Site execution幂等重放。已确认回执按主键删除，正文/任务/Site事实仍保留，不再从BODY热路径扫描七天CONFIRMED历史（实测占写事务11秒）；列表只读不占writer。补确认竞争不退出、队列重放和确认后零残留回归。

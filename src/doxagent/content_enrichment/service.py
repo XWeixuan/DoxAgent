@@ -722,13 +722,23 @@ class ContentEnrichmentHub:
         }
 
     async def _flush_outcomes(self, *, force: bool = False) -> None:
+        try:
+            await self._deliver_outcomes(force=force)
+        except (sqlite3.OperationalError, WriteAdmissionBusy) as exc:
+            if not _storage_busy(exc):
+                raise
+            # Site deduplicates execution IDs. An ack failure leaves this durable
+            # queue replayable; it must not cancel unrelated in-flight bodies.
+            logger.warning('Site outcome acknowledgement deferred for storage contention')
+
+    async def _deliver_outcomes(self, *, force: bool = False) -> None:
         if self.site_access_client is None:
             return
         now = time.monotonic()
         if not force and now - self._last_outbox_flush < 10:
             return
         self._last_outbox_flush = now
-        rows = await self.bus.storage.call(self.repository.list_site_strategy_outbox, limit=100)
+        rows = await self.bus.storage.read(self.repository.list_site_strategy_outbox, limit=100)
         if not rows:
             return
         ids = [str(row["outbox_id"]) for row in rows]
@@ -740,9 +750,6 @@ class ContentEnrichmentHub:
             logger.warning("Site Strategy outcome flush failed", exc_info=True)
         else:
             await self.bus.storage.call(self.repository.confirm_site_strategy_outbox, ids)
-            if now - self._outbox_pruned_at >= 600:
-                self._outbox_pruned_at = now
-                await self.bus.storage.call(self.repository.prune_site_strategy_outbox)
 
     def _retry_after(self, attempts: Sequence[FetchAttempt]) -> float:
         values = [item.retry_after_seconds for item in attempts if item.retry_after_seconds]

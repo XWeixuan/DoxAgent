@@ -227,6 +227,31 @@ async def test_body_v22_result_uses_transactional_outbox_and_confirms_delivery(
     assert len(client.outcomes) == 1
     assert client.outcomes[0].outcome == "FULL"
     assert repository.list_site_strategy_outbox() == []
+    with repository._connect() as connection:
+        assert connection.execute('SELECT count(*) FROM site_strategy_result_outbox').fetchone()[0] == 0
+
+
+async def test_outcome_ack_contention_keeps_queue_without_crashing_body_worker(tmp_path, monkeypatch):
+    from doxagent.message_bus_v2.storage_lane import WriteAdmissionBusy
+    repository, bus, source, binding = _setup(tmp_path)
+    bus.enrichment_pipeline_version = 'body_v2.2'
+    bus.enqueue_enrichment(source=source, binding=binding, message=_message(59),
+        bootstrap=False, poll_run_id=new_id('poll'))
+    client = _OutcomeClient()
+    client.fail_once = False
+    hub = ContentEnrichmentHub(repository, bus, extractor=_GovernedExtractor(), site_access_client=client)
+    original = repository.confirm_site_strategy_outbox
+
+    def busy(ids):
+        raise WriteAdmissionBusy()
+
+    monkeypatch.setattr(repository, 'confirm_site_strategy_outbox', busy)
+    assert await hub.run_once() == 1
+    assert len(repository.list_site_strategy_outbox()) == 1
+    assert repository.list_enrichment_jobs() == []
+    monkeypatch.setattr(repository, 'confirm_site_strategy_outbox', original)
+    await hub._flush_outcomes(force=True)
+    assert repository.list_site_strategy_outbox() == []
 
 
 async def test_completed_bootstrap_payload_is_not_reenriched_or_published(
