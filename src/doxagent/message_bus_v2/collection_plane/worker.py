@@ -138,7 +138,7 @@ class Collector:
         # Demand is physical endpoints/queries/channels, never a fixed ticker count.
         rates = defaultdict(float)
         groups = defaultdict(float)
-        for s, targets, unit, options in desired.values():
+        for key, (s, targets, unit, options) in desired.items():
             period = (
                 options["ir_spec"].target_interval_seconds
                 if "ir_spec" in options
@@ -150,7 +150,8 @@ class Collector:
             generation = self.generation(s, targets, options)
             for b in targets:
                 state = self.states.get((b.binding_id, unit))
-                if state and state["generation"] == generation and state.get("required", 0) >= 0:
+                if (state and state["generation"] == generation and state.get("required", 0) >= 0
+                    and state["state"].get("schedule_phase_version") == 2):
                     continue
                 seed = config.seeds.get(b.binding_id)
                 old = (
@@ -173,6 +174,7 @@ class Collector:
                     seconds=(int(sha256_text(":".join(key))[:8], 16) % max(1, period * 1000)) / 1000
                 )
                 old.update(
+                    schedule_phase_version=2,
                     target_due_at=epoch.isoformat(),
                     next_dispatch_at=epoch.isoformat(),
                     schedule_interval_seconds=period,

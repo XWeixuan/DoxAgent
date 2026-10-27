@@ -62,6 +62,27 @@ def test_production_switch_is_loaded_from_the_compose_environment(monkeypatch):
     assert DoxAgentSettings(_env_file=None).message_bus_v2_collection_plane_enabled
 
 
+async def test_physical_units_have_distinct_stable_phases_without_losing_checkpoints(tmp_path):
+    _, _, worker, _, _ = setup_plane(tmp_path)
+    cfg = worker.config_loader()
+    binding = next(iter(cfg.bindings.values()))
+    second = binding.model_copy(update={'binding_id': 'SECOND:' + binding.source_id, 'ticker': 'MU'})
+    cfg.bindings[second.binding_id] = second
+    await worker.refresh(seeds=True)
+    assert len(worker.desired) == 2
+    phases = {key: value['state']['target_due_at'] for key, value in worker.states.items()}
+    assert len(set(phases.values())) == 2
+    first_key = next(iter(worker.states))
+    worker.states[first_key]['state']['checkpoint'] = {'anchor': 'keep'}
+    await worker.refresh()
+    assert phases == {key: value['state']['target_due_at'] for key, value in worker.states.items()}
+    # Repair the original synchronized phase once, retaining business cursor facts.
+    worker.states[first_key]['state'].pop('schedule_phase_version')
+    await worker.refresh()
+    assert worker.states[first_key]['state']['checkpoint'] == {'anchor': 'keep'}
+    assert worker.states[first_key]['state']['schedule_phase_version'] == 2
+
+
 def test_real_configuration_loader_is_read_only_under_a_business_writer(tmp_path):
     from doxagent.message_bus_v2.collection_plane.config import load
     repo,bus,worker,adapter,store=setup_plane(tmp_path)
