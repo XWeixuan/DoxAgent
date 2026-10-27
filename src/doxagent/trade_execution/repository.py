@@ -70,6 +70,9 @@ class ExecutionRepository:
             if version and version[0] == "1":
                 db.execute("UPDATE te_meta SET value='2' WHERE key='version'")
 
+    def transaction(self, *, write=True):
+        return self.journal.transaction(write=write, timeout=0.2)
+
     def import_profile(self, profile: ExecutionProfile) -> str:
         payload = profile.model_dump(mode="json")
         revision = "ep_" + digest(payload)[:24]
@@ -106,7 +109,7 @@ class ExecutionRepository:
         return revision
 
     def profile(self, revision: str) -> ExecutionProfile:
-        with self.journal.transaction(write=False) as db:
+        with self.transaction(write=False) as db:
             row = db.execute(
                 "SELECT payload FROM te_profiles WHERE revision=?", (revision,)
             ).fetchone()
@@ -115,7 +118,7 @@ class ExecutionRepository:
         return ExecutionProfile.model_validate_json(row[0])
 
     def profile_payload(self, revision: str) -> dict[str, Any]:
-        with self.journal.transaction(write=False) as db:
+        with self.transaction(write=False) as db:
             row = db.execute(
                 "SELECT payload FROM te_profiles WHERE revision=?", (revision,)
             ).fetchone()
@@ -161,7 +164,7 @@ class ExecutionRepository:
             "entry_result": None,
             "created_at": self.journal.clock().isoformat(),
         }
-        with self.journal.transaction() as db:
+        with self.transaction() as db:
             old = db.execute("SELECT payload FROM te_executions WHERE id=?", (identity,)).fetchone()
             if old:
                 previous = json.loads(old[0])
@@ -211,7 +214,7 @@ class ExecutionRepository:
     def get(self, table: str, identity: str) -> dict[str, Any] | None:
         if table not in {"executions", "jobs", "attempts", "lots", "acceptance_runs"}:
             raise ValueError("invalid execution table")
-        with self.journal.transaction(write=False) as db:
+        with self.transaction(write=False) as db:
             row = db.execute(f"SELECT payload FROM te_{table} WHERE id=?", (identity,)).fetchone()
         return json.loads(row[0]) if row else None
 
@@ -222,7 +225,7 @@ class ExecutionRepository:
         return value
 
     def jobs(self) -> list[dict[str, Any]]:
-        with self.journal.transaction(write=False) as db:
+        with self.transaction(write=False) as db:
             rows = db.execute(
                 "SELECT payload FROM te_jobs WHERE state IN "
                 "('READY','WAIT_SESSION','WAIT_QUOTE','ACTIVE','RECONCILE_REQUIRED') "
@@ -238,7 +241,7 @@ class ExecutionRepository:
             **updates,
             "due_at": (self.journal.clock() + timedelta(seconds=delay)).isoformat(),
         }
-        with self.journal.transaction() as db:
+        with self.transaction() as db:
             db.execute(
                 "UPDATE te_jobs SET state=?,due_at=?,payload=? WHERE id=?",
                 (job["state"], job["due_at"], encode(job), job["id"]),
@@ -246,7 +249,7 @@ class ExecutionRepository:
         return job
 
     def attempts(self, job_id: str) -> list[dict[str, Any]]:
-        with self.journal.transaction(write=False) as db:
+        with self.transaction(write=False) as db:
             rows = db.execute(
                 "SELECT payload FROM te_attempts WHERE job_id=? ORDER BY id", (job_id,)
             )
@@ -255,7 +258,7 @@ class ExecutionRepository:
     def prepare_attempt(
         self, job: Any, data: dict[str, Any], broker_next_id: int, client_id: int
     ) -> dict[str, Any]:
-        with self.journal.transaction() as db:
+        with self.transaction() as db:
             return self._prepare_attempt_in(db, job, data, broker_next_id, client_id)
 
     def _prepare_attempt_in(
@@ -308,7 +311,7 @@ class ExecutionRepository:
         min_ratio: Decimal,
     ) -> dict[str, Any] | None:
         equity = account_funds(snapshot)["NetLiquidation"]
-        with self.journal.transaction() as db:
+        with self.transaction() as db:
             existing = db.execute(
                 "SELECT payload FROM te_account_cycles WHERE account=? AND environment=? "
                 "AND cycle_id=? AND status='ACTIVE'",
@@ -394,7 +397,7 @@ class ExecutionRepository:
         snapshot_at: str,
     ) -> tuple[dict[str, Any] | None, str | None]:
         """Reserve the shared pool and create the durable pre-send attempt atomically."""
-        with self.journal.transaction() as db:
+        with self.transaction() as db:
             row = db.execute("SELECT payload FROM te_jobs WHERE id=?", (job["id"],)).fetchone()
             current = json.loads(row[0])
             active = db.execute(
@@ -570,7 +573,7 @@ class ExecutionRepository:
         )
 
     def void_prepared_attempt(self, attempt: dict[str, Any], *, if_prepared: bool = False) -> None:
-        with self.journal.transaction() as db:
+        with self.transaction() as db:
             row = db.execute(
                 "SELECT payload FROM te_attempts WHERE id=?", (attempt["id"],)
             ).fetchone()
@@ -596,7 +599,7 @@ class ExecutionRepository:
         """Final atomic entry admission before the external broker call."""
         from .recovery import ENTRY_FAILURE_LIMIT
 
-        with self.journal.transaction() as db:
+        with self.transaction() as db:
             value = json.loads(
                 db.execute(
                     "SELECT payload FROM te_attempts WHERE id=?", (attempt["id"],)
@@ -610,6 +613,15 @@ class ExecutionRepository:
             if value["state"] != "PREPARED" or job["state"] in {"DONE", "FAILED"}:
                 return None
             if job["leg"] == "ENTRY":
+                from .recovery import entry_queue_expired
+
+                execution = json.loads(
+                    db.execute(
+                        "SELECT payload FROM te_executions WHERE id=?", (job["execution_id"],)
+                    ).fetchone()[0]
+                )
+                if entry_queue_expired(execution, self.journal.clock()):
+                    return None
                 recovery = db.execute(
                     "SELECT payload FROM runtime_values "
                     "WHERE namespace='execution_recovery' AND key=?",
@@ -639,7 +651,7 @@ class ExecutionRepository:
         return value
 
     def update_attempt(self, attempt: dict[str, Any], **updates: Any) -> dict[str, Any]:
-        with self.journal.transaction() as db:
+        with self.transaction() as db:
             row = db.execute(
                 "SELECT payload FROM te_attempts WHERE id=?", (attempt["id"],)
             ).fetchone()
@@ -651,6 +663,7 @@ class ExecutionRepository:
         return value
 
     def event(self, account: str, kind: str, payload: dict[str, Any]) -> None:
+        # SDK callbacks run off-loop; do not shorten their durable-write window.
         with self.journal.transaction() as db:
             db.execute(
                 "INSERT INTO te_events(account,kind,payload,created_at) VALUES(?,?,?,?)",
@@ -658,7 +671,7 @@ class ExecutionRepository:
             )
 
     def apply_order(self, account: str, event: dict[str, Any]) -> None:
-        with self.journal.transaction() as db:
+        with self.transaction() as db:
             row = db.execute(
                 "SELECT payload FROM te_attempts WHERE account=? AND "
                 "((client_id=? AND order_id=?) OR order_ref=?)",
@@ -691,7 +704,7 @@ class ExecutionRepository:
             db.execute("UPDATE te_attempts SET payload=? WHERE id=?", (encode(value), value["id"]))
 
     def apply_error(self, account: str, event: dict[str, Any]) -> None:
-        with self.journal.transaction() as db:
+        with self.transaction() as db:
             row = db.execute(
                 "SELECT payload FROM te_attempts WHERE account=? AND client_id=? AND order_id=?",
                 (account, event.get("client_id"), event.get("order_id")),
@@ -708,7 +721,7 @@ class ExecutionRepository:
         qty = decimal(fill["quantity"])
         if qty < 0 or qty != int(qty):
             raise ValueError("NON_INTEGER_FILL")
-        with self.journal.transaction() as db:
+        with self.transaction() as db:
             row = db.execute(
                 "SELECT payload FROM te_attempts WHERE account=? AND "
                 "((client_id=? AND order_id=?) OR order_ref=?)",
@@ -837,7 +850,7 @@ class ExecutionRepository:
         )
 
     def fills(self, job_id: str) -> list[dict[str, Any]]:
-        with self.journal.transaction(write=False) as db:
+        with self.transaction(write=False) as db:
             attempts = db.execute(
                 "SELECT id,account FROM te_attempts WHERE job_id=?", (job_id,)
             ).fetchall()
@@ -997,7 +1010,7 @@ class ExecutionRepository:
             "time": effective_at,
             "reason": reason,
         }
-        with self.journal.transaction() as db:
+        with self.transaction() as db:
             busy = db.execute(
                 "SELECT 1 FROM te_attempts WHERE account=? AND state NOT IN ('SETTLED','NOT_SENT')",
                 (lot["account"],),
@@ -1024,11 +1037,11 @@ class ExecutionRepository:
             profile = self.profile(
                 self.require("executions", job["execution_id"])["profile_revision"]
             )
-            with self.journal.transaction() as db:
+            with self.transaction() as db:
                 new_position_notional = self._entry_position_notional(db, job)
             minimum = Decimal(0)
             if profile.strategy.capital_model == "SHARED_CYCLE" and job.get("cycle_id"):
-                with self.journal.transaction() as db:
+                with self.transaction() as db:
                     row = db.execute(
                         "SELECT equity,payload FROM te_account_cycles WHERE account=? "
                         "AND environment=? AND cycle_id=?",
@@ -1067,7 +1080,7 @@ class ExecutionRepository:
                 if quantity
                 else "FAILED"
             )
-            with self.journal.transaction() as db:
+            with self.transaction() as db:
                 value = json.loads(
                     db.execute(
                         "SELECT payload FROM te_executions WHERE id=?", (job["execution_id"],)
@@ -1130,13 +1143,22 @@ class ExecutionRepository:
         """Resume only overdue transient failures, preserving all attempt identities."""
         from .recovery import transient
 
+        # Idle maintenance must not acquire the shared SQLite write lock.
+        with self.transaction(write=False) as db:
+            candidates = [
+                r[0]
+                for r in db.execute("SELECT id FROM te_jobs WHERE leg='EXIT' AND state='FAILED'")
+            ]
         recovered = 0
-        with self.journal.transaction() as db:
-            rows = db.execute(
-                "SELECT j.payload,l.payload FROM te_jobs j JOIN te_lots l "
-                "ON l.id=j.execution_id WHERE j.leg='EXIT' AND j.state='FAILED'"
-            ).fetchall()
-            for row in rows:
+        for identity in candidates:
+            with self.transaction() as db:
+                row = db.execute(
+                    "SELECT j.payload,l.payload FROM te_jobs j JOIN te_lots l "
+                    "ON l.id=j.execution_id WHERE j.id=? AND j.state='FAILED'",
+                    (identity,),
+                ).fetchone()
+                if not row:
+                    continue
                 job, lot = map(json.loads, row)
                 if not (
                     decimal(lot["remaining_qty"]) > 0
@@ -1159,7 +1181,7 @@ class ExecutionRepository:
 
     def allocate_order_id(self, account: Any, client_id: Any, suggested: Any) -> Any:
         key = f"{account}:{client_id}"
-        with self.journal.transaction() as db:
+        with self.transaction() as db:
             row = db.execute(
                 "SELECT payload FROM runtime_values WHERE namespace='execution_ids' AND key=?",
                 (key,),

@@ -6,6 +6,21 @@ from datetime import datetime, timedelta
 DELAYS = (2, 5, 10, 30, 60)
 ENTRY_FAILURE_LIMIT = 3
 ENTRY_ABANDONED = "ENTRY_FAILURE_BUDGET_EXHAUSTED"
+ENTRY_MAX_QUEUE_SECONDS = 300
+ENTRY_QUEUE_EXPIRED = "ENTRY_QUEUE_AGE_EXCEEDED"
+
+
+def entry_queue_expired(execution, now):
+    # Release time includes intake/delivery lag. Legacy records fall back to admission.
+    stamp = execution["intent"].get("released_at") or execution["created_at"]
+    return (now - datetime.fromisoformat(stamp)).total_seconds() >= ENTRY_MAX_QUEUE_SECONDS
+
+
+def storage_busy(exc):
+    return isinstance(exc, sqlite3.OperationalError) and (
+        (getattr(exc, "sqlite_errorcode", 0) & 255) in {sqlite3.SQLITE_BUSY, sqlite3.SQLITE_LOCKED}
+        or str(exc) in {"database is locked", "database table is locked"}
+    )
 
 
 def transient(exc):
@@ -61,6 +76,8 @@ class AccountRecovery:
             raise RecoveryDeferred(self.state(account).get("error", "ACCOUNT_RECOVERY_WAIT"))
 
     def fail(self, account, exc):
+        if storage_busy(exc):
+            return  # Runtime contention is not a failed broker connectivity probe.
         # Several already-running jobs may see the same outage. Count one failed probe.
         if self.delay(account):
             return
