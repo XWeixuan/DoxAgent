@@ -206,9 +206,28 @@ def promote(state, component, image, *, commit, schema=None, at=None):
     state['candidates'] = [c for c in state.get('candidates',[]) if c['image'] != image]
 
 
+def reclamation_pressure():
+    import re
+    result={}
+    for name in ('cpu','io','memory'):
+        try:
+            value=re.search(r'avg60=([\d.]+)',Path('/proc/pressure',name).read_text())
+            if value:result[name]=float(value[1])
+        except OSError:pass
+    return result
+
+
 def reconcile(root, state):
     if state.get('format') != 'doxagent.component-releases.1' or not state.get('components'):
         raise ValueError('bootstrap the audited component rollback inventory before retirement')
+    pressure=reclamation_pressure()
+    available=shutil.disk_usage('/').free
+    if available>=20*1024**3 and any(pressure.get(k,0)>=v for k,v in [('cpu',10),('io',10),('memory',2)]):
+        report=dict(at=time.time(),available_before=available,available_after=available,retired=[],errors=[],
+                    deferred='message pipeline resource reserve',pressure=pressure)
+        state['cleanup_pending']=True;state['last_reconcile']=report
+        atomic(root/'state.json',state);atomic(root/'last-reconcile.json',report)
+        return report
     images, containers = inspect_images(), inspect_containers()
     record_live_references(state,images,containers)
     record_repair_references(state,containers)

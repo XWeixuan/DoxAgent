@@ -98,6 +98,15 @@ def test_retirement_requires_bootstrapped_rollback_inventory(tmp_path):
     with pytest.raises(ValueError,match='bootstrap'):release.reconcile(tmp_path,{})
 
 
+def test_optional_image_inventory_and_gc_defer_under_pipeline_pressure(tmp_path,monkeypatch):
+    state={'format':'doxagent.component-releases.1','components':{'bus':{'current':{'image':'live'}}}}
+    monkeypatch.setattr(release,'reclamation_pressure',lambda:{'io':80})
+    monkeypatch.setattr(release.shutil,'disk_usage',lambda _:SimpleNamespace(free=30*1024**3))
+    monkeypatch.setattr(release,'inspect_images',lambda:(_ for _ in ()).throw(AssertionError('optional inventory ran under pressure')))
+    result=release.reconcile(tmp_path,state)
+    assert result['deferred']=='message pipeline resource reserve' and state['cleanup_pending']
+
+
 def test_companion_exits_with_its_guardian_and_live_reference_survives_promotion():
     state={'components':{'guardian':{'current':{'image':'g2'},'previous':{'image':'g1'}}},
            'holds':[{'image':'a1','component':'guardian','release_image':'g1'}]}
